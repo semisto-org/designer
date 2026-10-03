@@ -1,33 +1,18 @@
 require "test_helper"
 
 class SessionsControllerTest < ActionDispatch::IntegrationTest
-  setup { @user = User.take }
+  include ActionMailer::TestHelper
 
-  test "new" do
-    get new_session_path
-    assert_response :success
-  end
-
-  test "create with valid credentials" do
-    post session_path, params: { email_address: @user.email_address, password: "password" }
-
-    assert_redirected_to root_path
-    assert cookies[:session_id]
-  end
-
-  test "create with invalid credentials" do
-    post session_path, params: { email_address: @user.email_address, password: "wrong" }
-
+  test "sends a magic link and signs in with it once" do
+    assert_enqueued_emails 1 do
+      post session_path, params: { email_address: "new@example.org" }
+    end
+    user = User.find_by!(email_address: "new@example.org")
+    token = user.generate_token_for(:magic_link)
+    get magic_link_path(token)
+    assert_redirected_to root_url
+    sign_out
+    get magic_link_path(token)
     assert_redirected_to new_session_path
-    assert_nil cookies[:session_id]
-  end
-
-  test "destroy" do
-    sign_in_as(User.take)
-
-    delete session_path
-
-    assert_redirected_to new_session_path
-    assert_empty cookies[:session_id]
   end
 end

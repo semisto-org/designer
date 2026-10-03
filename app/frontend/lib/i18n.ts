@@ -1,9 +1,28 @@
-// Interface strings live in config/locales/fr.yml (Rails I18n), shared by
-// the server and this frontend. Keys are English, values French.
-import fr from '../../../config/locales/fr.yml'
-
+// Interface strings live in config/locales/*.yml (Rails I18n), shared by
+// the server and this frontend. Keys are English, values French. Each
+// feature area keeps its own file (config/locales/<area>.fr.yml).
 type Dict = Record<string, unknown>
-const locales: Record<string, Dict> = { fr: (fr as Dict).fr as Dict }
+
+const files = import.meta.glob<{ default: Dict }>('../../../config/locales/*.yml', { eager: true })
+
+function deepMerge(target: Dict, source: Dict): Dict {
+  for (const [key, value] of Object.entries(source)) {
+    const existing = target[key]
+    if (value && typeof value === 'object' && !Array.isArray(value) && existing && typeof existing === 'object') {
+      deepMerge(existing as Dict, value as Dict)
+    } else {
+      target[key] = value
+    }
+  }
+  return target
+}
+
+const locales: Record<string, Dict> = {}
+for (const file of Object.values(files)) {
+  for (const [locale, tree] of Object.entries(file.default ?? {})) {
+    locales[locale] = deepMerge(locales[locale] ?? {}, tree as Dict)
+  }
+}
 let current = 'fr'
 
 export function setLocale(locale: string) {

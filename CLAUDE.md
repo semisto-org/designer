@@ -1,0 +1,54 @@
+# CLAUDE.md — Semisto Designer
+
+Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden or permaculture plan on it, with an AI that knows the place. Hosted by Semisto at https://designer.semisto.org. Product plan: `/mnt/project-files/designer/plan.md` (when available) — the v1 scope is steps 1 to 4 of its roadmap.
+
+## Stack (decided, do not change)
+
+- Rails 8.1, Ruby 3.3, PostgreSQL 16+ with **PostGIS** (`activerecord-postgis-adapter`, RGeo, SRID 4326 everywhere; measure in meters with `::geography`).
+- **Inertia** (`inertia_rails`) + **React 19 + TypeScript** + **Vite** (`vite_rails`). No Hotwire, no importmap.
+- **MapLibre GL JS** (map), **Terra Draw** (drawing), **turf** (client geometry), **three.js** (3D relief).
+- Tailwind CSS 4 with the Semisto "Humus & Prune" tokens (`app/frontend/entrypoints/application.css`: `prune`, `loam`, `leaf`, `humus`, `lichen`, `clay`).
+- Solid Queue / Cache / Cable. Auth: Rails 8 sessions + Google (OmniAuth) + magic links. **No passwords, no Devise.**
+- Minitest (+ WebMock: external HTTP is always stubbed in tests). Playwright for screenshots (`script/screenshot.mjs`).
+
+## Language
+
+- **Code, comments, commit messages: English.**
+- **Interface: French only (v1)**, through Rails I18n files: `config/locales/*.yml`. The React frontend imports the same YAML files (`app/frontend/lib/i18n.ts`, `t('key')`). Never hardcode French strings in components or controllers. Each feature area owns its own file `config/locales/<area>.fr.yml` (top-level key `fr:`), to avoid merge conflicts.
+- French typography in UI copy: sentence case for titles (« Mes cartes », not « Mes Cartes »), `«  »` quotes, non-breaking feel; friendly, concrete, encouraging tone (the "particulier" designing their own forest garden is the core user).
+
+## Layout
+
+- Pages: `app/frontend/pages/<controller_path>/<action>.tsx` (Inertia component name = `"#{controller_path}/#{action}"`). Default layout is chosen in `app/frontend/entrypoints/inertia.tsx` (AppLayout, PublicLayout, or none for full-screen pages).
+- UI primitives: `app/frontend/components/ui/*` (Button, Field/Input/Select/Textarea, Card, EmptyState, Flash). Reuse them.
+- Shared props (`ApplicationController#inertia_share`): `currentUser`, `entitlements`, `env`. Types in `app/frontend/types/index.ts`.
+- JSON endpoints for the map editor live next to the pages (`respond_to :json` or dedicated `Maps::*Controller`), called with `api()` from `app/frontend/lib/api.ts` (CSRF handled).
+- **Map editor** (`pages/maps/show.tsx`): full-screen MapLibre (`map/MapView.tsx`) + `EditorContext` (`map/editor/EditorContext.tsx`). Panels and tools go through `useEditor()`: `features`, `createFeature`, `updateFeature` (optimistic locking with `lockVersion`), `deleteFeature`, `select`, `draw(shape)` (Terra Draw, resolves a GeoJSON geometry or null), `notify`, `regionLayers`, `entitlements`, `canEdit`.
+  - Register a side panel in `app/frontend/map/panels/index.ts` (`PANELS`, groups: `map`, `understand`, `design`, `share`) and inspector sections for a selected feature in `INSPECTOR_SECTIONS`. One line per entry.
+  - MapLibre sources/layers helpers live in `app/frontend/map/layers/*`. Use stable ids; install idempotently.
+- Everything drawn on a map is a `MapFeature` (PostGIS `geometry`, `layer` = existing | water | access | structures | plants | animals | networks | notes, free `kind`, `properties` jsonb, `status` active | draft | rejected, `source` human | ai, `rationale`). Prefer adding a `kind` + `properties` over a new table, unless the object has real relations (plants → species, comments, photos…).
+- External APIs: one class per provider under `app/services/providers/` behind a small stable interface, configured by ENV, with a graceful "not configured / unavailable" state (UI disables the feature instead of failing). Server calls go through Faraday with timeouts; cache responses with `Rails.cache`.
+- Regions (`Region`, `RegionLayer`): everything territory-specific (layers, cadastre, elevation, rules, native species) hangs off the map's region. Never hardcode Wallonia in code paths; seed it.
+- Plans and paid features: `Entitlements` (`app/models/entitlements.rb`). A map's features follow its **owner's** plan (`Entitlements.for_map(map)`). While Stripe is not configured, everything is unlocked (beta).
+- Roles per map: owner (1), editors (max 3, free), viewers (unlimited, read + comment). `MapScoped` concern: `set_map`, `require_editor!`, `require_owner!`.
+
+## Databases
+
+`config/database.yml` derives the development and test database names from the working directory path, so each worktree/clone has its own (no shared, mixed schema). `bin/rails db:prepare` creates them. Never dump `db/schema.rb` from a database that ran other branches' migrations.
+
+## Commands
+
+- `bin/rails db:prepare db:seed` — databases + regions and layer catalogue.
+- `bin/rails test` — must stay green. Add tests for every model, controller and service you write.
+- `npx tsc -p tsconfig.app.json` — TypeScript must stay clean.
+- `bin/rails s` + `RAILS_ENV=development bin/vite build` (or `bin/vite dev`); sign in locally at `/dev/login?email=dev@semisto.org&return_to=/maps` (development only).
+- `CHROMIUM_PATH=/opt/pw-browsers/chromium node script/screenshot.mjs /maps/1 tmp/shot.png [--mobile]` — screenshot as the dev user (in the cloud sandbox, external tile servers and geoservices.wallonie.be are blocked; layout still renders).
+
+## Data and licences (non-negotiable)
+
+- Plant data provenance is stored **per field** (source, upstream source, licence, status: sourced / to_verify / empty).
+- PFAF: values may be shown, each citing PFAF as source; **never copy PFAF texts or images**.
+- Rekentool (Dutch financial tool): **no data from it** in the repo or UI.
+- Open-Meteo free API is non-commercial: weather/climate go through a configurable provider with an "unavailable" state.
+- Code ported from Claudy (MIT, © Fondation Les 4 Sources) keeps a header comment: `# Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)`. Terranova has no licence and contains personal data: port logic file by file, never data or history.
+- Sensitive layers (networks: water, gas, electricity, ethernet) are hidden by default in public views, exports and the MCP.

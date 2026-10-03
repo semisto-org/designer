@@ -1,0 +1,7 @@
+ahinvaux:
+  name: Domaine d'Ahinvaux
+  owner: michael
+  region: wallonia
+  stage: design
+  boundary: "SRID=4326;MULTIPOLYGON(((4.903 50.339, 4.912 50.339, 4.912 50.343, 4.903 50.343, 4.903 50.339)))"
+  center: "SRID=4326;POINT(4.9075 50.341)"

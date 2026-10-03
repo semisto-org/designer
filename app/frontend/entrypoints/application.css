@@ -1,7 +1,7 @@
+@import "maplibre-gl/dist/maplibre-gl.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
-@import "maplibre-gl/dist/maplibre-gl.css";
 
 /* Semisto design system "Humus & Prune" (tokens from Terranova's
    docs/design-tokens.json): Prune for the brand, Loam neutrals, Feuille

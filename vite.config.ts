@@ -25,6 +25,7 @@ export default defineConfig({
     react(),
     railsLocales(),
   ],
+  worker: { format: 'es' },
   server: {
     watch: { ignored: ['**/tmp/**', '**/log/**', '**/node_modules/**'] },
   },

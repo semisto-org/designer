@@ -1,0 +1,8 @@
+wallonia:
+  key: wallonia
+  name: Wallonie
+  country_code: BE
+  locale: fr
+  default_zoom: 8
+  center: "SRID=4326;POINT(4.87 50.47)"
+  bounds: "SRID=4326;POLYGON((2.84 49.49, 6.41 49.49, 6.41 50.82, 2.84 50.82, 2.84 49.49))"

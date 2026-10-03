@@ -1,7 +1,12 @@
 import * as maplibregl from 'maplibre-gl'
 import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { MapContext } from '@/map/MapContext'
+
+// MapLibre locates its worker next to its own module, which a bundler moves:
+// point it at the worker Vite builds.
+maplibregl.setWorkerUrl(workerUrl)
 import type { BBox, LngLat } from '@/types'
 
 // Neutral fallback base until the region's base layers are added on top.
@@ -70,7 +75,7 @@ export function MapView({ center, zoom, bbox, style, className, children, onRead
 
   return (
     <div className={className ?? 'relative h-full w-full'}>
-      <div ref={container} className="absolute inset-0" />
+      <div ref={container} className="h-full w-full" />
       <MapContext.Provider value={map}>{map && children}</MapContext.Provider>
     </div>
   )

@@ -1,0 +1,6 @@
+pond:
+  map: ahinvaux
+  layer: water
+  kind: pond
+  name: Mare du verger
+  geometry: "SRID=4326;POLYGON((4.905 50.340, 4.9052 50.340, 4.9052 50.3402, 4.905 50.3402, 4.905 50.340))"

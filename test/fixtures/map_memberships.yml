@@ -1,0 +1,9 @@
+ahinvaux_owner:
+  map: ahinvaux
+  user: michael
+  role: owner
+
+ahinvaux_viewer:
+  map: ahinvaux
+  user: alice
+  role: viewer

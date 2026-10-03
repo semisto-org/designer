@@ -12,6 +12,11 @@ module SessionTestHelper
     Current.session&.destroy!
     cookies.delete("session_id")
   end
+
+  # Inertia requests in integration tests.
+  def inertia_headers
+    { "X-Inertia" => "true", "X-Inertia-Version" => InertiaRails.configuration.version.to_s }
+  end
 end
 
 ActiveSupport.on_load(:action_dispatch_integration_test) do
