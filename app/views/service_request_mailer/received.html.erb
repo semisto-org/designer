@@ -1,0 +1,13 @@
+<p><%= t(".intro", user: @user.display_name, kind: kind_label.downcase) %></p>
+<table style="border-collapse:collapse;font-size:14px">
+  <tr><td style="padding:4px 12px 4px 0;color:#6b6257"><%= t(".who") %></td><td><%= @user.display_name %> · <a href="mailto:<%= @user.email_address %>"><%= @user.email_address %></a><% if @request.phone.present? %> · <%= @request.phone %><% end %></td></tr>
+  <tr><td style="padding:4px 12px 4px 0;color:#6b6257"><%= t(".map") %></td><td><a href="<%= @map_url %>"><%= @map.name %></a><% if @map.address.present? %> · <%= @map.address %><% end %></td></tr>
+  <% @summary.each do |line| %>
+    <tr><td style="padding:4px 12px 4px 0;color:#6b6257;vertical-align:top"><%= line[:label] %></td><td style="white-space:pre-line"><%= line[:value] %></td></tr>
+  <% end %>
+</table>
+<p style="color:#6b6257;font-size:13px"><%= t(".consent") %></p>
+<p>
+  <a href="<%= @map_url %>" style="display:inline-block;padding:12px 20px;background:#3b5d3a;color:#fff;border-radius:8px;text-decoration:none"><%= t(".open_map") %></a>
+  <a href="<%= @admin_url %>" style="display:inline-block;padding:12px 20px;color:#3b5d3a"><%= t(".open_admin") %></a>
+</p>

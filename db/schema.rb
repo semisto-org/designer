@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -152,6 +152,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["key"], name: "index_regions_on_key", unique: true
   end
 
+  create_table "service_requests", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "user_id", null: false
+    t.string "kind", null: false
+    t.string "status", default: "new", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.jsonb "snapshot", default: {}, null: false
+    t.boolean "contact_consent", default: false, null: false
+    t.datetime "consented_at"
+    t.bigint "handled_by_id"
+    t.text "admin_notes"
+    t.datetime "contacted_at"
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["handled_by_id"], name: "index_service_requests_on_handled_by_id"
+    t.index ["kind"], name: "index_service_requests_on_kind"
+    t.index ["map_id"], name: "index_service_requests_on_map_id"
+    t.index ["status", "created_at"], name: "index_service_requests_on_status_and_created_at"
+    t.index ["user_id"], name: "index_service_requests_on_user_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "ip_address"
@@ -189,5 +211,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
   add_foreign_key "region_layers", "regions"
+  add_foreign_key "service_requests", "maps"
+  add_foreign_key "service_requests", "users"
+  add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify
   add_foreign_key "sessions", "users"
 end

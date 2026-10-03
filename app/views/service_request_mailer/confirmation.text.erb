@@ -1,0 +1,12 @@
+<%= t(".greeting", name: @user.display_name) %>
+
+<%= t(".body", kind: kind_label.downcase, map: @map.name) %>
+<% @summary.each do |line| %>
+<%= line[:label] %> : <%= line[:value] %>
+<% end %>
+
+<%= t(".next") %>
+
+<%= t(".privacy") %>
+
+<%= t(".open_map") %> : <%= @map_url %>
