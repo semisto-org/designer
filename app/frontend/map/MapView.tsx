@@ -1,4 +1,5 @@
-import maplibregl, { type Map as MapLibreMap, type StyleSpecification } from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
+import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MapContext } from '@/map/MapContext'
 import type { BBox, LngLat } from '@/types'

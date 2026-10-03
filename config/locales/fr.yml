@@ -1,0 +1,101 @@
+# Interface strings. Keys in English, values in French. The React frontend
+# imports this file directly (app/frontend/lib/i18n.ts): one source of truth.
+# Agents adding a feature add their keys under their own top-level section.
+fr:
+  meta:
+    description: "Cartographiez votre terrain, concevez votre jardin-forêt et votre design permaculturel, avec une IA qui connaît le lieu."
+  nav:
+    maps: "Mes cartes"
+    plants: "Plantes"
+    help: "Aide"
+    account: "Mon compte"
+    sign_out: "Se déconnecter"
+  sessions:
+    rate_limited: "Trop de tentatives. Réessayez dans quelques minutes."
+    link_sent: "Un lien de connexion a été envoyé à %{email}."
+    invalid_email: "Cette adresse e-mail ne semble pas valide."
+    signed_in: "Vous êtes connecté."
+    link_expired: "Ce lien a expiré ou a déjà servi. Demandez-en un nouveau."
+    google_failed: "La connexion avec Google n'a pas abouti."
+    new:
+      title: "Se connecter"
+      intro: "Pas de mot de passe à retenir : connectez-vous avec Google ou recevez un lien par e-mail."
+      google: "Continuer avec Google"
+      or: "ou"
+      email: "Adresse e-mail"
+      send_link: "Recevoir un lien de connexion"
+      no_password: "Le lien est valable 20 minutes et ne sert qu'une fois."
+      check_inbox: "Un lien vient d'être envoyé à %{email}. Ouvrez-le depuis cet appareil pour vous connecter."
+  magic_link_mailer:
+    sign_in:
+      subject: "Votre lien de connexion à Semisto Designer"
+      greeting: "Bonjour,"
+      body: "Cliquez sur le bouton ci-dessous pour vous connecter à Semisto Designer."
+      button: "Me connecter"
+      expiry: "Ce lien est valable 20 minutes et ne sert qu'une fois. Si vous n'avez rien demandé, ignorez cet e-mail."
+  maps:
+    created: "Carte créée. Dessinez maintenant le contour de votre terrain."
+    updated: "Carte enregistrée."
+    archived: "Carte archivée."
+    area: "Surface"
+    stage: "Étape"
+    role: "Rôle"
+    stages:
+      observe: "Observer"
+      map: "Cartographier"
+      design: "Concevoir"
+      plant: "Planter"
+    roles:
+      owner: "Propriétaire"
+      editor: "Éditeur"
+      viewer: "Lecteur"
+    fields:
+      name: "Nom de la carte"
+      address: "Adresse"
+      description: "Description"
+    errors:
+      read_only: "Vous avez accès à cette carte en lecture seule."
+      owner_only: "Seul le propriétaire de la carte peut faire cela."
+      plan_limit: "Votre formule ne permet pas de nouvelle carte. Passez au forfait pour en créer d'autres."
+      stale: "Quelqu'un a modifié cet élément entre-temps. Voici sa dernière version."
+    index:
+      title: "Mes cartes"
+      new: "Nouvelle carte"
+      upgrade: "Passer au forfait"
+      empty_title: "Votre première carte"
+      empty_body: "Partez d'une adresse ou d'une parcelle cadastrale : le fond de carte, le relief et les couches du Géoportail sont prêts en quelques minutes."
+    new:
+      title: "Nouvelle carte"
+      intro: "Région : %{region}. Vous dessinerez ou importerez le contour du terrain à l'étape suivante."
+      name_placeholder: "Le jardin-forêt de la Ferme du Bois"
+      address_hint: "Facultatif : aide à centrer la carte."
+      submit: "Créer la carte"
+    show:
+      back: "Retour à mes cartes"
+  activerecord:
+    models:
+      map: "Carte"
+      user: "Utilisateur"
+    attributes:
+      map:
+        name: "Nom"
+      map_membership:
+        role: "Rôle"
+    errors:
+      models:
+        map_membership:
+          attributes:
+            role:
+              editor_limit: "est limité à %{count} éditeurs par carte"
+  public:
+    nav:
+      features: "Fonctionnalités"
+      pricing: "Tarifs"
+      help: "Aide"
+      open_source: "Open source"
+      sign_in: "Se connecter"
+      my_maps: "Mes cartes"
+    footer:
+      license: "Code source (AGPL-3.0)"
+      privacy: "Confidentialité"
+      terms: "Conditions"

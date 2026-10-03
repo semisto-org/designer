@@ -8,7 +8,7 @@ class CreateMaps < ActiveRecord::Migration[8.1]
       t.references :region, null: false, foreign_key: true
       t.string :address
       t.jsonb :parcels, null: false, default: []
-      t.st_multi_polygon :boundary, srid: 4326
+      t.multi_polygon :boundary, srid: 4326
       t.st_point :center, srid: 4326
       t.integer :zoom
       t.float :area_m2

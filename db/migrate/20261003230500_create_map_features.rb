@@ -11,7 +11,7 @@ class CreateMapFeatures < ActiveRecord::Migration[8.1]
       t.string :kind, null: false
       t.string :name
       t.text :notes
-      t.st_geometry :geometry, srid: 4326, null: false
+      t.geometry :geometry, srid: 4326, null: false
       t.jsonb :properties, null: false, default: {}
       t.jsonb :style, null: false, default: {}
       # active | draft (proposed by an AI, waiting for human review) | rejected

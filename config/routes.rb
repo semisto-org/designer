@@ -1,18 +1,20 @@
 Rails.application.routes.draw do
-  resource :session
-  resources :passwords, param: :token
-  root 'inertia_example#index'
-  get 'inertia-example', to: 'inertia_example#index'
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Sign-in: Google or magic link, no passwords.
+  resource :session, only: %i[new create destroy]
+  get "magic/:token", to: "magic_links#show", as: :magic_link
+  get "auth/google_oauth2/callback", to: "omniauth_callbacks#google"
+  get "auth/failure", to: "omniauth_callbacks#failure"
+  get "dev/login", to: "dev/logins#show" if Rails.env.local?
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  resources :maps do
+    scope module: :maps do
+      resources :features, only: %i[index create update destroy]
+    end
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  # root "posts#index"
+  root "maps#index"
 end
