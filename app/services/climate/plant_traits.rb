@@ -62,8 +62,13 @@ module Climate
           value.is_a?(Numeric) ? value.to_f : Float(value.to_s.tr(",", "."), exception: false)
         end
 
-        # Explicit drought fields only; soil moisture "dry" / "wet" and a
-        # watering need on a 1-5 scale are clear enough signals too.
+        DRY_SOILS = %w[dry sec].freeze
+        WET_SOILS = %w[wet waterlogged humide aquatic].freeze
+
+        # Explicit drought fields first, then a watering need on a 1-5
+        # scale, then the soil moisture the plant accepts (a single value or
+        # a list of vocabulary keys): accepting dry soil means tolerant,
+        # accepting only wet soils means sensitive.
         def drought_of(species)
           flag = read(species, :drought_tolerant?, :drought_tolerant)
           return flag ? :tolerant : :sensitive if flag == true || flag == false
@@ -73,15 +78,14 @@ module Climate
           when "low", "none", "sensitive", "faible", "nulle", "1", "2" then return :sensitive
           end
 
-          case read(species, :soil_moisture).to_s.downcase
-          when "dry", "sec" then return :tolerant
-          when "wet", "humide", "aquatic" then return :sensitive
+          case number(read(species, :watering_need, :water_need))&.round
+          when 1 then return :tolerant
+          when 4, 5 then return :sensitive
           end
 
-          case number(read(species, :watering_need, :water_need))&.round
-          when 1 then :tolerant
-          when 4, 5 then :sensitive
-          end
+          moisture = Array(read(species, :soil_moisture)).map { _1.to_s.downcase }.reject(&:empty?)
+          return :tolerant if moisture.intersect?(DRY_SOILS)
+          :sensitive if moisture.any? && moisture.all? { WET_SOILS.include?(_1) }
         end
     end
   end

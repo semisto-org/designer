@@ -185,9 +185,14 @@ class FinancialPlan
         sheet.add_row []
         sheet.add_row [ title ], style: @styles[:total_label]
         return sheet.add_row([ t("assumptions.empty") ], style: @styles[:note]) if rows.empty?
-        header = translate ? columns.map { I18n.t("finances.fields.#{translate}.#{_1}") } : columns.map { t("assumptions.#{_1}") }
+        header = translate ? columns.map { field_header(translate, _1) } : columns.map { t("assumptions.#{_1}") }
         sheet.add_row header, style: @styles[:header]
         rows.each { |row| sheet.add_row row.map { _1 == true ? t("assumptions.yes") : _1 == false ? t("assumptions.no") : _1 } }
+      end
+
+      # The form's label, or a more explicit one for a sheet (with its unit).
+      def field_header(list, column)
+        I18n.t("finances.export.headers.#{list}.#{column}", default: I18n.t("finances.fields.#{list}.#{column}"))
       end
 
       def enum_label(list, column, value)

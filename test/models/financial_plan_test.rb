@@ -43,6 +43,15 @@ class FinancialPlanTest < ActiveSupport::TestCase
     restricted.define_singleton_method(:provenance_for) { |_field| "Rekentool 5.0" }
     inventory = MapPlantInventory.new(@map, palette: [ palette_item(id: 1, quantity: 1, plant_species: restricted) ])
     assert_nil FinancialPlan.build_for(@map, inventory:).inputs["species"].sole["first_harvest_age"]
+
+    # The catalogue's provenance rows carry the source in their own fields.
+    row = Struct.new(:source, :upstream_source, :url, :license).new("import", "Rekentool", nil, nil)
+    restricted.define_singleton_method(:provenance_for) { |_field| row }
+    assert_nil FinancialPlan.build_for(@map, inventory:).inputs["species"].sole["first_harvest_age"]
+
+    sourced = Struct.new(:source, :upstream_source, :url, :license).new("semisto", "PFAF", nil, nil)
+    restricted.define_singleton_method(:provenance_for) { |_field| sourced }
+    assert_equal 4, FinancialPlan.build_for(@map, inventory:).inputs["species"].sole["first_harvest_age"]
   end
 
   test "sync brings new plants and quantities, and keeps the user's figures" do

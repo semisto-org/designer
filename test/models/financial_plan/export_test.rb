@@ -30,13 +30,16 @@ class FinancialPlan::ExportTest < ActiveSupport::TestCase
   test "XLSX workbook with the five sheets" do
     data = @export.to_xlsx
     assert data.start_with?("PK"), "an OOXML zip"
-    entries = workbook = nil
+    entries = workbook = cells = nil
     Zip::File.open_buffer(StringIO.new(data)) do |zip|
       entries = zip.map(&:name)
       workbook = zip.read("xl/workbook.xml").force_encoding("UTF-8")
+      cells = entries.grep(%r{\Axl/(worksheets/sheet|sharedStrings)}).map { zip.read(_1).force_encoding("UTF-8") }.join
     end
     assert_equal 5, entries.count { _1.start_with?("xl/worksheets/sheet") }
     [ "Synthèse", "Compte de résultat", "Trésorerie", "Récoltes", "Hypothèses" ].each { assert_includes workbook, _1 }
+    # Assumption columns keep their unit in the sheet.
+    assert_includes cells, "Récolte par plant adulte (kg/an)"
   end
 
   test "file names" do

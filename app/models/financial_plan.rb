@@ -82,9 +82,17 @@ class FinancialPlan < ApplicationRecord
       value = species.public_send(field)
       return nil if value.blank?
       provenance = species.respond_to?(:provenance_for) ? species.provenance_for(field) : nil
-      return nil if provenance.to_s.downcase.include?("rekentool")
+      return nil if rekentool?(provenance)
       value
     rescue StandardError
       nil
+    end
+
+    # A provenance row (source, upstream source, url…) or a plain string.
+    def rekentool?(provenance)
+      return false if provenance.nil?
+      texts = %i[source upstream_source url license].filter_map { provenance.public_send(_1) if provenance.respond_to?(_1) }
+      texts << provenance if provenance.is_a?(String) || provenance.is_a?(Hash)
+      texts.any? { _1.to_s.downcase.include?("rekentool") }
     end
 end

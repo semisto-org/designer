@@ -1,10 +1,14 @@
 # The plants of a map, as one list of lines (one per palette item or per
-# species), for the climate checks and the financial plan. Two sources:
+# species), for the climate checks and the financial plan.
 #
-# - the palette (PaletteItem, owned by the plants area), with its planned
-#   quantity and its catalogue species;
-# - the plants placed on the map (MapFeature, layer "plants"), counted per
-#   palette item or species they reference in their properties.
+# When the plants area's single addition of a planting exists
+# (PlantedQuantities: palette items, patch compositions and isolated plant
+# points), its figures are used as they are, never recounted here. Without
+# it, two simpler sources:
+#
+# - the palette (PaletteItem), with its planned quantity and species;
+# - the plants placed on the map (active MapFeatures of layer "plants"),
+#   counted per palette item or species they reference in their properties.
 #
 # The catalogue models live in another feature area and may evolve, so they
 # are read defensively (`defined?`, `respond_to?`); without them, the
@@ -21,15 +25,17 @@ class MapPlantInventory
 
   # palette: enumerable of palette items (defaults to the map's palette);
   # species_lookup: ->(ids) { { id => species } } for placed plants that
-  # reference a species directly.
-  def initialize(map, palette: nil, species_lookup: nil)
+  # reference a species directly; quantities: a PlantedQuantities-like
+  # object (palette, by_key, species_index, variety_index).
+  def initialize(map, palette: nil, species_lookup: nil, quantities: nil)
     @map = map
     @palette = palette
     @species_lookup = species_lookup
+    @quantities = quantities
   end
 
   def lines
-    @lines ||= palette_lines + loose_lines
+    @lines ||= (planted = quantities) ? quantity_lines(planted) : palette_lines + loose_lines
   end
 
   def empty? = lines.empty?
@@ -37,6 +43,71 @@ class MapPlantInventory
   def total_quantity = lines.sum { _1.quantity.to_i }
 
   private
+    def quantities
+      return @quantities if @quantities || @palette || @quantities_tried
+      @quantities_tried = true
+      @quantities =
+        if @map.respond_to?(:planted_quantities) then @map.planted_quantities
+        elsif defined?(::PlantedQuantities) && ::PlantedQuantities.respond_to?(:for) then ::PlantedQuantities.for(@map)
+        end
+    rescue ActiveRecord::ActiveRecordError, NoMethodError => error
+      Rails.logger.warn("[plants] planted quantities unavailable: #{error.class}")
+      nil
+    end
+
+    # Palette items first (planned on the map, else the count aimed at),
+    # then every other species or cultivar planned or placed on the map.
+    def quantity_lines(planted)
+      slots = read(planted, :by_key) || {}
+      items = Array(read(planted, :palette))
+      palette_keys = items.map { item_key(_1) }
+      from_palette = items.map do |item|
+        slot = slots[item_key(item)]
+        planned = integer(read(slot, :planned)).to_i
+        placed = integer(read(slot, :placed)).to_i
+        target = integer(read(item, :target_count))
+        species = read(item, :species)
+        Line.new(
+          key: "palette-#{read(item, :id)}",
+          name: first_present(item, :display_name) || first_present(species, :common_name),
+          latin_name: first_present(read(item, :variety), :full_latin_name) || first_present(species, :latin_name),
+          quantity: [ planned.positive? ? planned : target.to_i, placed ].max,
+          planned_quantity: planned.positive? ? planned : target,
+          placed_count: placed,
+          species:,
+          palette_item_id: read(item, :id),
+          species_id: read(item, :species_id) || read(species, :id)
+        )
+      end
+      species_index = read(planted, :species_index) || {}
+      variety_index = read(planted, :variety_index) || {}
+      others = slots.filter_map do |key, slot|
+        next if palette_keys.include?(key)
+        species_id, variety_id = Array(key)
+        planned = integer(read(slot, :planned)).to_i
+        placed = integer(read(slot, :placed)).to_i
+        next unless planned.positive? || placed.positive?
+        species = species_index[species_id]
+        variety = variety_id && variety_index[variety_id]
+        Line.new(
+          key: variety_id ? "variety-#{variety_id}" : "species-#{species_id}",
+          name: first_present(variety, :common_name) || first_present(species, :common_name),
+          latin_name: first_present(variety, :full_latin_name) || first_present(species, :latin_name),
+          quantity: [ planned, placed ].max,
+          planned_quantity: planned,
+          placed_count: placed,
+          species:,
+          palette_item_id: nil,
+          species_id:
+        )
+      end
+      from_palette + others
+    end
+
+    def item_key(item)
+      read(item, :key) || [ read(item, :species_id), read(item, :variety_id) ]
+    end
+
     def palette
       @palette ||= begin
         if @map.respond_to?(:palette_items)
@@ -58,7 +129,7 @@ class MapPlantInventory
         species = species_of(item)
         id = read(item, :id)
         placed = placed_by_palette_item[id.to_s].to_i
-        planned = integer(read(item, :quantity))
+        planned = integer(read(item, :target_count) || read(item, :quantity))
         Line.new(
           key: "palette-#{id}",
           name: first_present(item, :common_name, :display_name, :name) || first_present(species, :common_name, :name_fr, :display_name),
@@ -97,7 +168,7 @@ class MapPlantInventory
     end
 
     def plant_features
-      @plant_features ||= @map.features.where(layer: "plants").where.not(status: "rejected").to_a
+      @plant_features ||= @map.features.where(layer: "plants", status: "active").to_a
     end
 
     def placed_by_palette_item

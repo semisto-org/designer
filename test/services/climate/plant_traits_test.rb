@@ -26,6 +26,13 @@ class Climate::PlantTraitsTest < ActiveSupport::TestCase
     assert_equal :tolerant, Climate::PlantTraits.from(species(soil_moisture: "dry")).drought
     assert_equal :sensitive, Climate::PlantTraits.from(species(watering_need: "5")).drought
     assert_nil Climate::PlantTraits.from(species(soil_moisture: "moist", watering_need: "3")).drought
+    # The catalogue stores soil moisture as a list of vocabulary keys.
+    assert_equal :tolerant, Climate::PlantTraits.from(species(soil_moisture: %w[dry moist])).drought
+    assert_equal :sensitive, Climate::PlantTraits.from(species(soil_moisture: %w[wet waterlogged])).drought
+    assert_nil Climate::PlantTraits.from(species(soil_moisture: %w[moist wet])).drought
+    assert_nil Climate::PlantTraits.from(species(soil_moisture: [])).drought
+    # An explicit watering need wins over the soil heuristic.
+    assert_equal :sensitive, Climate::PlantTraits.from(species(soil_moisture: %w[dry], watering_need: 5)).drought
   end
 
   test "unknown or missing species" do
