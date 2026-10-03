@@ -3,7 +3,7 @@
 <%= t(".who") %> : <%= @user.display_name %> · <%= @user.email_address %><%= " · #{@request.phone}" if @request.phone.present? %>
 <%= t(".map") %> : <%= @map.name %><%= " · #{@map.address}" if @map.address.present? %>
 <% @summary.each do |line| %>
-<%= line[:label] %> : <%= line[:value] %>
+<%= text_line(line) %>
 <% end %>
 
 <%= t(".consent") %>

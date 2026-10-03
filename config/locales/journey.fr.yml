@@ -32,10 +32,10 @@ fr:
     items:
       project_sheet:
         label: "Remplir la fiche projet"
-        hint: "Qui, ambitions, budget, temps disponible… au moins %{target} %."
+        hint: "Qui, ambitions, budget, temps disponible… au moins %{target} %."
       layers_seen:
         label: "Parcourir les couches du terrain"
-        hint: "Sols, pentes, eau, zones protégées : ce que le lieu sait déjà de lui-même."
+        hint: "Sols, pentes, eau, zones protégées : ce que le lieu sait déjà de lui-même."
       boundary:
         label: "Dessiner le contour du terrain"
         hint: "Il sert de cadre à tout le reste."
@@ -57,7 +57,7 @@ fr:
       take_action:
         label: "Passer à l'action avec Semisto"
         hint: "Commander des plants, demander la mise en œuvre ou confier le suivi."
-      progress: "%{percent} %"
+      progress: "%{percent} %"
       count: "%{count} sur %{target}"
 
     # ----- Journey panel and chip -----
@@ -69,12 +69,12 @@ fr:
       open: "Ouvrir"
       mark_stage: "Je suis à cette étape"
       current: "Étape actuelle"
-      stage_saved: "Étape enregistrée : %{stage}."
+      stage_saved: "Étape enregistrée : %{stage}."
       step_done: "Étape complète"
       step_count: "%{done} sur %{total}"
       advance_title: "Étape terminée"
-      advance_body: "Vous avez fait le tour de cette étape. Passez à « %{stage} » quand vous êtes prêt·e."
-      advance_cta: "Passer à « %{stage} »"
+      advance_body: "Vous avez fait le tour de cette étape. Passez à « %{stage} » quand vous êtes prêt·e."
+      advance_cta: "Passer à « %{stage} »"
       complete_title: "Le parcours est complet"
       complete_body: "Votre jardin-forêt est dessiné et prêt à planter. Continuez à l'affiner, ou confiez la suite à Semisto."
       tick: "Marquer comme fait"
@@ -89,9 +89,9 @@ fr:
     project:
       title: "Fiche projet"
       page_title: "Fiche projet · %{map}"
-      intro: "Racontez votre projet en plusieurs séances : tout s'enregistre automatiquement. Cette fiche aide Semisto, vos co-concepteurs et, plus tard, Claude à proposer des aménagements qui vous ressemblent."
+      intro: "Racontez votre projet en plusieurs séances : tout s'enregistre automatiquement. Cette fiche aide Semisto, vos co-concepteurs et, plus tard, Claude à proposer des aménagements qui vous ressemblent."
       invalid: "Certaines réponses ne sont pas valides."
-      overall: "Fiche complétée à %{percent} %"
+      overall: "Fiche complétée à %{percent} %"
       section_progress: "%{answered} sur %{total}"
       status:
         empty: "À faire"
@@ -108,7 +108,7 @@ fr:
       unmark_done: "Section terminée, cliquer pour rouvrir"
       open_page: "Ouvrir en pleine page"
       back_to_map: "Retour à la carte"
-      resume: "Reprendre avec « %{section} »"
+      resume: "Reprendre avec « %{section} »"
       sections_nav: "Sections de la fiche"
       read_only: "Vous consultez cette fiche en lecture seule."
       choose: "Choisir…"
@@ -161,7 +161,7 @@ fr:
               placeholder: "Ce qui vous a amené·e à ce projet…"
         ambitions:
           title: "Ambitions"
-          hint: "Qu'attendez-vous de ce lieu dans dix ans ? Cochez ce qui compte, puis dites-le avec vos mots."
+          hint: "Qu'attendez-vous de ce lieu dans dix ans ? Cochez ce qui compte, puis dites-le avec vos mots."
           fields:
             goals:
               label: "Vos objectifs"
@@ -185,7 +185,7 @@ fr:
               placeholder: "Dans dix ans, je vois…"
         uses:
           title: "Usages"
-          hint: "Comment voulez-vous vivre ce jardin au quotidien ?"
+          hint: "Comment voulez-vous vivre ce jardin au quotidien ?"
           fields:
             uses:
               label: "Ce que vous voulez y faire"
@@ -206,7 +206,7 @@ fr:
                 medicinal: "Plantes médicinales et tisanes"
                 wildlife_watch: "Observer la faune"
             presence:
-              label: "Combien de temps y êtes-vous ?"
+              label: "Combien de temps y êtes-vous ?"
               options:
                 daily: "Tous les jours"
                 several_per_week: "Plusieurs fois par semaine"
@@ -223,22 +223,22 @@ fr:
             initial:
               label: "Budget pour démarrer (plants, matériel, aménagements)"
               options:
-                under_500: "Moins de 500 €"
-                up_to_2000: "500 à 2 000 €"
-                up_to_5000: "2 000 à 5 000 €"
-                up_to_15000: "5 000 à 15 000 €"
-                over_15000: "Plus de 15 000 €"
+                under_500: "Moins de 500 €"
+                up_to_2000: "500 à 2 000 €"
+                up_to_5000: "2 000 à 5 000 €"
+                up_to_15000: "5 000 à 15 000 €"
+                over_15000: "Plus de 15 000 €"
                 unknown: "Je ne sais pas encore"
             yearly:
               label: "Budget annuel d'entretien"
               options:
-                under_100: "Moins de 100 €"
-                up_to_500: "100 à 500 €"
-                up_to_1500: "500 à 1 500 €"
-                over_1500: "Plus de 1 500 €"
+                under_100: "Moins de 100 €"
+                up_to_500: "100 à 500 €"
+                up_to_1500: "500 à 1 500 €"
+                over_1500: "Plus de 1 500 €"
                 unknown: "Je ne sais pas encore"
             spend_priorities:
-              label: "Où mettre votre budget en priorité ?"
+              label: "Où mettre votre budget en priorité ?"
               hint: "Plusieurs choix possibles."
               options:
                 quality_plants: "Des plants de qualité"
@@ -259,7 +259,7 @@ fr:
               label: "Précisions sur le budget"
         time:
           title: "Temps disponible"
-          hint: "Un jardin-forêt demande surtout du temps les premières années : soyez réaliste."
+          hint: "Un jardin-forêt demande surtout du temps les premières années : soyez réaliste."
           fields:
             hours_per_week:
               label: "Heures par semaine pour le jardin"
@@ -273,7 +273,7 @@ fr:
                 autumn: "Automne"
                 winter: "Hiver"
             help:
-              label: "Qui peut vous aider ?"
+              label: "Qui peut vous aider ?"
               options:
                 alone: "Je suis seul·e"
                 household: "Mon foyer"
@@ -311,7 +311,7 @@ fr:
               label: "Précisions"
         constraints:
           title: "Contraintes"
-          hint: "Ce qui limite ou complique le projet. « Je ne sais pas encore » est une réponse valable."
+          hint: "Ce qui limite ou complique le projet. « Je ne sais pas encore » est une réponse valable."
           fields:
             soil:
               label: "Sol"
@@ -400,7 +400,7 @@ fr:
               label: "Précisions"
         livestock:
           title: "Élevages"
-          hint: "Poules, moutons, abeilles… Les animaux changent le plan : clôtures, abris, plantes toxiques."
+          hint: "Poules, moutons, abeilles… Les animaux changent le plan : clôtures, abris, plantes toxiques."
           fields:
             species:
               label: "Animaux envisagés"
@@ -421,7 +421,7 @@ fr:
               placeholder: "Effectifs, parcs souhaités…"
         calendar:
           title: "Calendrier"
-          hint: "Quand voulez-vous planter ? Les arbres et arbustes à racines nues se plantent de novembre à mars."
+          hint: "Quand voulez-vous planter ? Les arbres et arbustes à racines nues se plantent de novembre à mars."
           fields:
             planting_seasons:
               label: "Saisons de plantation"
@@ -444,7 +444,7 @@ fr:
     # ----- Passer à l'action (requests to Semisto) -----
     requests:
       panel_title: "Passer à l'action"
-      intro: "Passez du plan à la réalité : Semisto vous accompagne là où cela compte le plus."
+      intro: "Passez du plan à la réalité : Semisto vous accompagne là où cela compte le plus."
       cta: "Faire la demande"
       list_title: "Mes demandes"
       list_empty: "Aucune demande pour l'instant."
@@ -459,10 +459,13 @@ fr:
       cancel: "Annuler"
       close: "Fermer"
       consent: "J'accepte que Semisto consulte cette carte et me contacte au sujet de cette demande."
-      consent_hint: "Votre carte reste privée : seule l'équipe de Semisto peut la lire, et seulement tant que la demande est ouverte."
+      consent_hint: "Votre carte reste privée : seule l'équipe de Semisto peut la lire, et seulement tant que la demande est ouverte."
+      attached:
+        one: "Une ligne de plants sera jointe à la demande."
+        other: "%{count} lignes de plants seront jointes à la demande."
       prefill_plant_list: "Pré-rempli d'après la liste de plants de votre carte. Vous pouvez la corriger."
       prefill_features: "Pré-rempli d'après les plantes placées sur votre carte. Vérifiez les noms et les quantités."
-      prefill_none: "Aucune plante sur votre carte pour l'instant : listez ce que vous cherchez ci-dessous."
+      prefill_none: "Aucune plante sur votre carte pour l'instant : listez ce que vous cherchez ci-dessous."
       status:
         new: "Envoyée"
         contacted: "En cours de traitement"
@@ -485,7 +488,7 @@ fr:
                   label: "Précision"
             plants_free_text:
               label: "Ou décrivez ce que vous cherchez"
-              hint: "Pas encore de liste ? Dites-nous ce que vous voulez planter."
+              hint: "Pas encore de liste ? Dites-nous ce que vous voulez planter."
             desired_period:
               label: "Période souhaitée"
               placeholder: "Novembre 2026"
@@ -498,12 +501,13 @@ fr:
             commune:
               label: "Commune de livraison"
             phone:
-              label: "Téléphone (facultatif)"
+              label: "Téléphone"
+              hint: "Facultatif : pour vous appeler plutôt que vous écrire."
             message:
               label: "Message pour la pépinière"
         implementation:
           title: "Demander la mise en œuvre"
-          summary: "Faites réaliser la plantation et les aménagements : un devis à partir de votre plan et de votre liste de plants."
+          summary: "Faites réaliser la plantation et les aménagements : un devis à partir de votre plan et de votre liste de plants."
           fields:
             surface_m2:
               label: "Surface à aménager"
@@ -518,11 +522,11 @@ fr:
             budget:
               label: "Budget envisagé"
               options:
-                under_2000: "Moins de 2 000 €"
-                up_to_5000: "2 000 à 5 000 €"
-                up_to_10000: "5 000 à 10 000 €"
-                up_to_25000: "10 000 à 25 000 €"
-                over_25000: "Plus de 25 000 €"
+                under_2000: "Moins de 2 000 €"
+                up_to_5000: "2 000 à 5 000 €"
+                up_to_10000: "5 000 à 10 000 €"
+                up_to_25000: "10 000 à 25 000 €"
+                over_25000: "Plus de 25 000 €"
                 unknown: "Je ne sais pas encore"
             include_plant_list:
               label: "Joindre ma liste de plants au devis"
@@ -538,7 +542,8 @@ fr:
                 note:
                   label: "Précision"
             phone:
-              label: "Téléphone (facultatif)"
+              label: "Téléphone"
+              hint: "Facultatif : pour vous appeler plutôt que vous écrire."
             message:
               label: "Message"
         co_management:
@@ -566,13 +571,14 @@ fr:
             budget:
               label: "Budget annuel"
               options:
-                under_500: "Moins de 500 €"
-                up_to_1500: "500 à 1 500 €"
-                up_to_5000: "1 500 à 5 000 €"
-                over_5000: "Plus de 5 000 €"
+                under_500: "Moins de 500 €"
+                up_to_1500: "500 à 1 500 €"
+                up_to_5000: "1 500 à 5 000 €"
+                over_5000: "Plus de 5 000 €"
                 unknown: "Je ne sais pas encore"
             phone:
-              label: "Téléphone (facultatif)"
+              label: "Téléphone"
+              hint: "Facultatif : pour vous appeler plutôt que vous écrire."
             message:
               label: "Message"
 
@@ -597,7 +603,7 @@ fr:
       status: "Statut"
       save: "Enregistrer"
       handled_by: "Suivi par %{name}"
-      map_facts: "%{area} · %{plants} plantes placées · fiche projet à %{percent} %"
+      map_facts: "%{area} · %{plants} plantes placées · fiche projet à %{percent} %"
       no_phone: "Pas de téléphone"
       consent_ok: "Consentement donné"
       status_options:
@@ -609,7 +615,7 @@ fr:
   service_request_mailer:
     received:
       subject: "Nouvelle demande : %{kind} · %{map}"
-      intro: "%{user} a envoyé une demande depuis Semisto Designer : %{kind}."
+      intro: "%{user} a envoyé une demande depuis Semisto Designer : %{kind}."
       who: "De"
       map: "Carte"
       consent: "La personne a accepté que Semisto consulte sa carte et la contacte au sujet de cette demande. Répondre à cet e-mail lui écrit directement."
@@ -618,8 +624,8 @@ fr:
     confirmation:
       subject: "Votre demande à Semisto : %{kind}"
       greeting: "Bonjour %{name},"
-      body: "Merci : votre demande (%{kind}) pour la carte « %{map} » est bien arrivée chez Semisto. Voici ce que vous avez envoyé."
-      next: "Quelqu'un de l'équipe vous répond par e-mail ou par téléphone pour la suite. Vous pouvez suivre l'état de votre demande dans le panneau « Passer à l'action » de votre carte."
+      body: "Merci : votre demande (%{kind}) pour la carte « %{map} » est bien arrivée chez Semisto. Voici ce que vous avez envoyé."
+      next: "Quelqu'un de l'équipe vous répond par e-mail ou par téléphone pour la suite. Vous pouvez suivre l'état de votre demande dans le panneau « Passer à l'action » de votre carte."
       privacy: "Tant que votre demande est ouverte, l'équipe de Semisto peut consulter votre carte (en lecture seule). Elle reste privée pour tout le monde d'autre."
       open_map: "Ouvrir ma carte"
 
@@ -630,7 +636,7 @@ fr:
           attributes:
             base:
               consent_missing: "Pour envoyer une demande, acceptez que Semisto consulte votre carte."
-              invalid_field: "Le champ « %{field} » n'est pas valide."
+              invalid_field: "Le champ « %{field} » n'est pas valide."
               plants_missing: "Indiquez au moins une plante, ou décrivez ce que vous cherchez."
               location_missing: "Indiquez l'adresse ou la commune du chantier."
               details_missing: "Précisez ce que vous souhaitez confier, ou écrivez un message."

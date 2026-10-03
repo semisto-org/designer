@@ -2,7 +2,7 @@
 # SEMISTO_REQUESTS_EMAIL, replying goes to the person), one confirming to the
 # person what they sent.
 class ServiceRequestMailer < ApplicationMailer
-  helper_method :kind_label
+  helper_method :kind_label, :text_line
 
   def received(service_request)
     load_request(service_request)
@@ -24,6 +24,12 @@ class ServiceRequestMailer < ApplicationMailer
       @map = service_request.map
       @map_url = map_url(@map)
       @summary = ServiceRequest::Summary.new(service_request).lines
+    end
+
+    # "Label : value", with multi-line values (plant lists) indented below the label.
+    def text_line(line)
+      return "#{line[:label]} : #{line[:value]}" unless line[:value].include?("\n")
+      "#{line[:label]} :\n" + line[:value].lines.map { |l| "  #{l.strip}" }.join("\n")
     end
 
     def kind_label

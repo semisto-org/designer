@@ -2,7 +2,7 @@
 
 <%= t(".body", kind: kind_label.downcase, map: @map.name) %>
 <% @summary.each do |line| %>
-<%= line[:label] %> : <%= line[:value] %>
+<%= text_line(line) %>
 <% end %>
 
 <%= t(".next") %>

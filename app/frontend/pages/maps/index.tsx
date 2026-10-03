@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import { MapPinned, Plus } from 'lucide-react'
 import { ButtonLink } from '@/components/ui/Button'
-import { EmptyState } from '@/components/ui/Card'
+import { WelcomeCard } from '@/components/journey/WelcomeCard'
 import { formatArea, t } from '@/lib/i18n'
 import type { MapData } from '@/types'
 
@@ -12,19 +12,15 @@ export default function MapsIndex({ maps, canCreate }: { maps: MapData[]; canCre
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl">{t('maps.index.title')}</h1>
         {canCreate ? (
-          <ButtonLink href="/maps/new"><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>
+          // The welcome card carries the call to action for a first map.
+          maps.length > 0 && <ButtonLink href="/maps/new"><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>
         ) : (
           <ButtonLink href="/billing" variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
         )}
       </div>
       {maps.length === 0 ? (
         <div className="mt-8">
-          <EmptyState
-            title={t('maps.index.empty_title')}
-            action={<ButtonLink href="/maps/new"><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>}
-          >
-            {t('maps.index.empty_body')}
-          </EmptyState>
+          <WelcomeCard canCreate={canCreate} />
         </div>
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
