@@ -805,7 +805,10 @@ export class ReliefController {
       const sc = Math.min(sim.cols - 1, Math.floor(col / this.simFactor))
       const sr = Math.min(sim.rows - 1, Math.floor(row / this.simFactor))
       const k = sr * sim.cols + sc
-      water = { depth: sim.depth[k], speed: Math.hypot(sim.velX[k], sim.velY[k]) }
+      // A film under half a millimetre is not water one sees, and the speed
+      // of an almost dry cell (flux / depth) means nothing.
+      const depth = sim.depth[k]
+      if (depth >= 0.0005) water = { depth, speed: depth >= 0.002 ? Math.hypot(sim.velX[k], sim.velY[k]) : 0 }
     }
     return {
       altitude: this.ground[i],

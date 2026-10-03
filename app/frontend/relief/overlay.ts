@@ -54,7 +54,7 @@ export function drainageImage(drainage: Pick<Drainage, 'accumulation' | 'depress
   return image
 }
 
-export type OverlayFeature = Feature<Geometry, { color?: string; layer?: string; kind?: string }>
+export type OverlayFeature = Feature<Geometry, { color?: unknown; layer?: string; kind?: string; style?: Record<string, unknown> | null } | null>
 
 /**
  * Draw the overlay: drainage raster (scaled to the canvas), the map's
@@ -94,7 +94,9 @@ export function drawOverlay(
     context.lineJoin = 'round'
     context.lineCap = 'round'
     for (const feature of features) {
-      const color = feature.properties?.color || colors[feature.properties?.layer ?? ''] || '#fafaf9'
+      const props = feature.properties
+      const own = props?.style?.color ?? props?.color
+      const color = (typeof own === 'string' && own) || colors[props?.layer ?? ''] || '#fafaf9'
       context.strokeStyle = color
       context.fillStyle = color
       drawGeometry(context, feature.geometry, project, pxPerMetre)

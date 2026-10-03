@@ -55,10 +55,7 @@ if (wallonia = Region.find_by(key: "wallonia"))
         "loam" => { "rate_factor" => 1.0, "storage_factor" => 1.0 },
         "stony" => { "rate_factor" => 1.4, "storage_factor" => 0.8 },
         "sandy" => { "rate_factor" => 2.5, "storage_factor" => 0.6 }
-      },
-      "rain_presets" => [
-        { "key" => "july_2021", "date" => "2021-07-13", "days" => 3 }
-      ]
+      }
     }
   )
   wallonia.save!
