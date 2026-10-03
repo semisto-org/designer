@@ -134,11 +134,23 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     relation = Struct.new(:rows) { def limit(_) = rows }
     model = Class.new do
       define_singleton_method(:matching) { |_q| relation.new([ walnut ]) }
+      define_singleton_method(:find_by) { |id:| id == 7 ? walnut : nil }
     end
+    text, error = call_tool(@owner, "get_plant", { plant_id: 7 })
+    assert error
+    assert_match(/catalogue/, text)
+
     stubbing(Mcp::PlantCatalog, :model, model) do
       data, error = call_tool(@owner, "search_plants", { query: "noyer" })
       refute error
       assert_equal "Juglans regia", data["results"].sole["latin_name"]
+
+      data, error = call_tool(@owner, "get_plant", { plant_id: 7 })
+      refute error
+      assert_equal "Juglans regia", data["latin_name"]
+
+      _text, error = call_tool(@owner, "get_plant", { plant_id: 8 })
+      assert error
     end
   end
 
