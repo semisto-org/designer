@@ -2,7 +2,7 @@
 # Idempotent: merges two keys into the region settings, leaves the others.
 #
 # Wallonia: the SPW's LiDAR models and land cover, sampled through ArcGIS
-# REST `identify` (see Providers::ArcgisIdentify), and hydrology orders of
+# REST `identify` (see Providers::ArcgisElevation), and hydrology orders of
 # magnitude for Walloon loamy soils. Land cover rates/storage come from
 # Claudy's rain model (orders of magnitude from runoff models, not
 # measurements): they only make the simulation indicative.
@@ -11,7 +11,7 @@ spw = "https://geoservices.wallonie.be/arcgis/rest/services"
 if (wallonia = Region.find_by(key: "wallonia"))
   wallonia.settings = wallonia.settings.merge(
     "relief" => {
-      "provider" => "arcgis_identify",
+      "provider" => "arcgis_elevation",
       "label" => "Géoportail de la Wallonie (SPW)",
       "attribution" => "© SPW — Géoportail de la Wallonie (MNT/MNS LiDAR 2021-2022, WalOUS 2023, ortho 2026)",
       "timezone" => "Europe/Brussels",

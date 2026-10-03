@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../../test_helpers/relief_test_helper"
 
-class Providers::ArcgisIdentifyTest < ActiveSupport::TestCase
+class Providers::ArcgisElevationTest < ActiveSupport::TestCase
   include ReliefTestHelper
 
   setup do
@@ -12,7 +12,7 @@ class Providers::ArcgisIdentifyTest < ActiveSupport::TestCase
   end
 
   test "the region decides the provider; other regions have none" do
-    assert_kind_of Providers::ArcgisIdentify, @provider
+    assert_kind_of Providers::ArcgisElevation, @provider
     assert_equal "SPW de test", @provider.label
     assert @provider.dataset?(:surface)
     other = Region.create!(key: "flanders", name: "Flandre", country_code: "BE")
@@ -52,13 +52,13 @@ class Providers::ArcgisIdentifyTest < ActiveSupport::TestCase
 
   test "refuses a short answer rather than shifting the grid" do
     stub_request(:post, "#{ReliefTestHelper::MNT}/identify").to_return(status: 200, body: file_fixture("relief/identify_mnt.json").read)
-    error = assert_raises(Providers::ArcgisIdentify::Error) { @provider.sample(:terrain, @points.first(3), @extent) }
+    error = assert_raises(Providers::ArcgisElevation::Error) { @provider.sample(:terrain, @points.first(3), @extent) }
     assert_match(/4 values for 3 points/, error.message)
   end
 
   test "gives up after three attempts" do
     stub = stub_request(:post, "#{ReliefTestHelper::MNT}/identify").to_return(status: 500, body: "down")
-    assert_raises(Providers::ArcgisIdentify::Error) { @provider.sample(:terrain, @points, @extent) }
+    assert_raises(Providers::ArcgisElevation::Error) { @provider.sample(:terrain, @points, @extent) }
     assert_requested stub, times: 3
   end
 
@@ -73,6 +73,6 @@ class Providers::ArcgisIdentifyTest < ActiveSupport::TestCase
     assert_requested stub
 
     stub_request(:get, %r{#{Regexp.escape(ReliefTestHelper::ORTHO)}/export}).to_return(status: 200, body: "<html>")
-    assert_raises(Providers::ArcgisIdentify::Error) { @provider.texture(extent) }
+    assert_raises(Providers::ArcgisElevation::Error) { @provider.texture(extent) }
   end
 end

@@ -12,7 +12,7 @@ module Providers
   # Configuration (region settings `relief`):
   #   datasets: { terrain: { url:, label: }, surface: {…}, landcover: {…}, texture: {…} }
   #   attribution, label, chunk (points per request), threads.
-  class ArcgisIdentify
+  class ArcgisElevation
     class Error < StandardError; end
 
     OPEN_TIMEOUT = 10
@@ -33,7 +33,7 @@ module Providers
       @sleeper = sleeper
     end
 
-    def key = "arcgis_identify"
+    def key = "arcgis_elevation"
     def label = config["label"].presence || config.dig("datasets", "terrain", "label")
     def attribution = config["attribution"]
     def chunk_size = (config["chunk"] || CHUNK).to_i

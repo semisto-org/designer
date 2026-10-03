@@ -3,7 +3,7 @@
 # an invented but plausible terrain through the real import pipeline, so the
 # editor panel and the 3D page can be tried and screenshotted offline.
 module ReliefDev
-  # A provider with the interface of Providers::ArcgisIdentify, computing
+  # A provider with the interface of Providers::ArcgisElevation, computing
   # its values instead of asking a server: a sloping valley with a stream,
   # a hollow, a wood on one side, a meadow, a field and a house.
   class SyntheticProvider

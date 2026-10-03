@@ -12,7 +12,7 @@ module ReliefTestHelper
   def relief_settings(**overrides)
     {
       "relief" => {
-        "provider" => "arcgis_identify", "label" => "SPW de test", "attribution" => "© SPW (test)",
+        "provider" => "arcgis_elevation", "label" => "SPW de test", "attribution" => "© SPW (test)",
         "timezone" => "Europe/Brussels", "margin_m" => 4, "chunk" => 300, "threads" => 2,
         "datasets" => {
           "terrain" => { "url" => MNT, "label" => "MNT de test" },

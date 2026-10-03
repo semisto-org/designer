@@ -12,7 +12,7 @@ module Providers
   # - `texture(extent, width:, height:)` → JPEG bytes of the ortho photo.
   module Elevation
     PROVIDERS = {
-      "arcgis_identify" => "Providers::ArcgisIdentify"
+      "arcgis_elevation" => "Providers::ArcgisElevation"
     }.freeze
 
     module_function
