@@ -4,6 +4,7 @@
   "devDependencies": {
     "@inertiajs/core": "^3.8.0",
     "@types/geojson": "^7946.0.16",
+    "@types/rails__actioncable": "^8.0.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
@@ -18,6 +19,7 @@
   "dependencies": {
     "@inertiajs/react": "^3.8.0",
     "@inertiajs/vite": "^3.8.0",
+    "@rails/actioncable": "^8.1.400",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",

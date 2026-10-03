@@ -1,0 +1,421 @@
+# Element library of the map editor (map-drawing).
+#
+# One source of truth for the server (MapElements validates kinds, geometry
+# types and properties) and the frontend (drawing toolbar, map styling,
+# inspector forms), which imports this file through Vite.
+#
+# For each design layer: its colour and the kinds of elements one can draw.
+# A kind has:
+#   geometry  Point | LineString | Polygon (or a list when several are allowed)
+#   icon      lucide icon name (frontend registry: map/drawing/icons.ts)
+#   color     default colour; a feature's `style.color` overrides it
+#   line      line styling: width (px), dash ([dash, gap] in line widths), casing (halo colour)
+#   fill      polygon styling: opacity, pattern (hatch | dots)
+#   defaults  properties set on creation
+#   fields    editable properties: key, type (number | integer | select | boolean | text),
+#             unit, min, max, step, options (select)
+#   computed  derived values shown in the inspector (formulas in map/drawing/computed.ts)
+#   pickable  false when the kind is created by a tool, not from the library
+#
+# Labels are in config/locales/drawing.fr.yml: editor.kinds.<kind>,
+# drawing.fields.<field>, drawing.options.<field>.<option>.
+# Plants and patches (layer "plants") belong to the plants module.
+layers:
+  existing:
+    color: "#6e6355"
+    elements:
+      building:
+        geometry: Polygon
+        icon: house
+        color: "#6e6355"
+        fill: { opacity: 0.55 }
+        defaults: { height_m: 6 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0, max: 80, step: 0.5 }
+          - { key: floors, type: integer, min: 0, max: 30 }
+          - { key: roof, type: select, options: [pitched, flat, green] }
+      existing_tree:
+        geometry: Point
+        icon: tree-deciduous
+        color: "#58684c"
+        crown: crown_diameter_m
+        defaults: { crown_diameter_m: 6, health: good, keep: true }
+        fields:
+          - { key: species, type: text }
+          - { key: height_m, type: number, unit: m, min: 0, max: 60, step: 0.5 }
+          - { key: crown_diameter_m, type: number, unit: m, min: 0, max: 40, step: 0.5 }
+          - { key: trunk_circumference_cm, type: integer, unit: cm, min: 0, max: 2000 }
+          - { key: health, type: select, options: [good, fair, poor, dead] }
+          - { key: keep, type: boolean }
+      existing_hedge:
+        geometry: LineString
+        icon: shrub
+        color: "#58684c"
+        line: { width: 6, opacity: 0.85 }
+        defaults: { height_m: 2 }
+        fields:
+          - { key: species, type: text }
+          - { key: height_m, type: number, unit: m, min: 0, max: 30, step: 0.5 }
+          - { key: width_m, type: number, unit: m, min: 0, max: 20, step: 0.5 }
+      wall:
+        geometry: LineString
+        icon: brick-wall
+        color: "#554c3f"
+        line: { width: 4 }
+        defaults: { height_m: 1 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: material, type: select, options: [dry_stone, stone, brick, concrete, wood] }
+      slope_break:
+        geometry: LineString
+        icon: mountain
+        color: "#946614"
+        line: { width: 2, dash: [3, 1.5] }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0, max: 50, step: 0.1 }
+      wet_area:
+        geometry: Polygon
+        icon: droplets
+        color: "#3b7ea1"
+        fill: { opacity: 0.18, pattern: hatch }
+        fields:
+          - { key: seasonality, type: select, options: [permanent, winter, after_rain] }
+      path_existing:
+        geometry: LineString
+        icon: footprints
+        color: "#8a6f47"
+        line: { width: 3, dash: [2, 1.5] }
+        fields:
+          - { key: width_m, type: number, unit: m, min: 0, max: 20, step: 0.1 }
+          - { key: surface, type: select, options: [earth, grass, gravel, wood_chips, paved, stone] }
+      land_cover:
+        geometry: Polygon
+        icon: land-plot
+        color: "#899e79"
+        fill: { opacity: 0.22 }
+        defaults: { cover: meadow }
+        fields:
+          - { key: cover, type: select, options: [lawn, meadow, woodland, crop, orchard, vegetable_garden, fallow, bare] }
+
+  water:
+    color: "#2b7bb9"
+    elements:
+      pond:
+        geometry: Polygon
+        icon: waves
+        color: "#2b7bb9"
+        fill: { opacity: 0.45 }
+        defaults: { depth_m: 1, purpose: wildlife }
+        fields:
+          - { key: depth_m, type: number, unit: m, min: 0.1, max: 6, step: 0.1 }
+          - { key: liner, type: select, options: [natural, clay, epdm] }
+          - { key: purpose, type: select, options: [wildlife, irrigation, ornamental, swimming] }
+        computed: [pond_volume]
+      swale:
+        geometry: LineString
+        icon: spline
+        color: "#2b7bb9"
+        line: { width: 5, casing: "#ffffff" }
+        defaults: { width_m: 1, depth_m: 0.4 }
+        fields:
+          - { key: width_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
+          - { key: depth_m, type: number, unit: m, min: 0.1, max: 3, step: 0.05 }
+        computed: [swale_volume]
+      ditch:
+        geometry: LineString
+        icon: route
+        color: "#1f5f8b"
+        line: { width: 3, dash: [3, 1] }
+        defaults: { width_m: 0.6, depth_m: 0.5 }
+        fields:
+          - { key: width_m, type: number, unit: m, min: 0.1, max: 10, step: 0.1 }
+          - { key: depth_m, type: number, unit: m, min: 0.1, max: 5, step: 0.05 }
+      water_tank:
+        geometry: Point
+        icon: cylinder
+        color: "#2b7bb9"
+        defaults: { capacity_l: 5000, tank_type: buried }
+        fields:
+          - { key: capacity_l, type: integer, unit: L, min: 0, max: 1000000, step: 100 }
+          - { key: tank_type, type: select, options: [buried, above_ground, ibc] }
+      well:
+        geometry: Point
+        icon: circle-dot
+        color: "#1f5f8b"
+        fields:
+          - { key: depth_m, type: number, unit: m, min: 0, max: 500, step: 0.5 }
+          - { key: potable, type: boolean }
+      spring:
+        geometry: Point
+        icon: droplet
+        color: "#2b7bb9"
+        defaults: { permanent: true }
+        fields:
+          - { key: flow_l_min, type: number, unit: L/min, min: 0, max: 10000, step: 0.1 }
+          - { key: permanent, type: boolean }
+      rain_garden:
+        geometry: Polygon
+        icon: cloud-rain
+        color: "#4a90c2"
+        fill: { opacity: 0.2, pattern: dots }
+        defaults: { depth_m: 0.2 }
+        fields:
+          - { key: depth_m, type: number, unit: m, min: 0.05, max: 1, step: 0.05 }
+          - { key: catchment_m2, type: number, unit: m², min: 0, max: 100000, step: 1 }
+        computed: [rain_garden_volume]
+
+  access:
+    color: "#b8851a"
+    elements:
+      path:
+        geometry: LineString
+        icon: footprints
+        color: "#b8851a"
+        line: { width: 3, dash: [2, 1] }
+        defaults: { width_m: 1.2, surface: wood_chips }
+        fields:
+          - { key: width_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
+          - { key: surface, type: select, options: [earth, grass, wood_chips, gravel, stepping_stones, paved] }
+      track:
+        geometry: LineString
+        icon: tractor
+        color: "#946614"
+        line: { width: 7, opacity: 0.75, casing: "#ffffff" }
+        defaults: { width_m: 3, surface: gravel }
+        fields:
+          - { key: width_m, type: number, unit: m, min: 1, max: 20, step: 0.1 }
+          - { key: surface, type: select, options: [earth, grass, gravel, paved] }
+      gate:
+        geometry: Point
+        icon: door-open
+        color: "#b8851a"
+        defaults: { width_m: 1, gate_type: pedestrian }
+        fields:
+          - { key: width_m, type: number, unit: m, min: 0.5, max: 10, step: 0.1 }
+          - { key: gate_type, type: select, options: [pedestrian, vehicle] }
+      parking:
+        geometry: Polygon
+        icon: square-parking
+        color: "#b8851a"
+        fill: { opacity: 0.2, pattern: hatch }
+        fields:
+          - { key: spaces, type: integer, min: 0, max: 500 }
+
+  structures:
+    color: "#5b5781"
+    elements:
+      greenhouse:
+        geometry: Polygon
+        icon: thermometer-sun
+        color: "#5b5781"
+        fill: { opacity: 0.3, pattern: hatch }
+        defaults: { height_m: 2.5, covering: polycarbonate }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: covering, type: select, options: [glass, polycarbonate, plastic] }
+          - { key: heated, type: boolean }
+      shelter:
+        geometry: Polygon
+        icon: tent
+        color: "#5b5781"
+        fill: { opacity: 0.35 }
+        defaults: { height_m: 2.5 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+      shed:
+        geometry: Polygon
+        icon: warehouse
+        color: "#4a4668"
+        fill: { opacity: 0.5 }
+        defaults: { height_m: 2.5 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+      compost:
+        geometry: Point
+        icon: recycle
+        color: "#6e6355"
+        defaults: { compost_type: bins, bins: 3 }
+        fields:
+          - { key: compost_type, type: select, options: [heap, bins, worm] }
+          - { key: bins, type: integer, min: 0, max: 20 }
+      raised_bed:
+        geometry: Polygon
+        icon: rectangle-horizontal
+        color: "#8a6f47"
+        fill: { opacity: 0.4 }
+        defaults: { height_m: 0.4 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.1, max: 1.5, step: 0.05 }
+        computed: [raised_bed_soil]
+      terrace:
+        geometry: Polygon
+        icon: armchair
+        color: "#726b9f"
+        fill: { opacity: 0.3, pattern: dots }
+        fields:
+          - { key: surface, type: select, options: [wood, stone, gravel, paved, grass] }
+      playground:
+        geometry: Polygon
+        icon: toy-brick
+        color: "#9189b8"
+        fill: { opacity: 0.25, pattern: dots }
+      fence:
+        geometry: LineString
+        icon: fence
+        color: "#5b5781"
+        line: { width: 2, dash: [4, 2] }
+        defaults: { height_m: 1.2, fence_type: wire_mesh }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.2, max: 4, step: 0.1 }
+          - { key: fence_type, type: select, options: [wire_mesh, electric, wood, chestnut_paling, wire] }
+      hedge:
+        geometry: LineString
+        icon: trees
+        color: "#3d7d42"
+        line: { width: 7, opacity: 0.85, dash: [1, 0.4] }
+        defaults: { rows: 2, spacing_m: 1 }
+        fields:
+          - { key: rows, type: integer, min: 1, max: 5 }
+          - { key: spacing_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
+          - { key: height_m, type: number, unit: m, min: 0.5, max: 20, step: 0.5 }
+        computed: [hedge_plants]
+      windbreak:
+        geometry: LineString
+        icon: wind
+        color: "#2f6334"
+        line: { width: 9, opacity: 0.8 }
+        defaults: { rows: 3, spacing_m: 2, height_m: 10 }
+        fields:
+          - { key: rows, type: integer, min: 1, max: 6 }
+          - { key: spacing_m, type: number, unit: m, min: 0.5, max: 20, step: 0.5 }
+          - { key: height_m, type: number, unit: m, min: 1, max: 40, step: 0.5 }
+        computed: [hedge_plants]
+
+  animals:
+    color: "#946614"
+    elements:
+      paddock:
+        geometry: Polygon
+        icon: paw-print
+        color: "#946614"
+        fill: { opacity: 0.18, pattern: hatch }
+        line: { width: 2, dash: [3, 1.5] }
+        defaults: { species: sheep, headcount: 3 }
+        fields:
+          - { key: species, type: select, options: [sheep, goats, donkeys, horses, cattle, pigs, chickens, ducks, geese, alpacas, llamas, rabbits, other] }
+          - { key: headcount, type: integer, min: 0, max: 1000 }
+          - { key: fence_type, type: select, options: [electric, wire_mesh, wood, wire] }
+        computed: [paddock_density]
+      poultry_house:
+        geometry: Point
+        icon: egg
+        color: "#946614"
+        defaults: { species: chickens, capacity: 6 }
+        fields:
+          - { key: species, type: select, options: [chickens, ducks, geese, quails] }
+          - { key: capacity, type: integer, min: 0, max: 1000 }
+      beehive:
+        geometry: Point
+        icon: hexagon
+        color: "#d9a527"
+        defaults: { hives: 1 }
+        fields:
+          - { key: hives, type: integer, min: 1, max: 100 }
+
+  networks:
+    color: "#c03c28"
+    elements:
+      water_pipe:
+        geometry: LineString
+        icon: git-commit-horizontal
+        color: "#2563eb"
+        line: { width: 2.5, dash: [3, 1.5] }
+        defaults: { diameter_mm: 32, material: pe, potable: true }
+        fields:
+          - { key: diameter_mm, type: integer, unit: mm, min: 4, max: 1000 }
+          - { key: material, type: select, options: [pe, pvc, copper, steel] }
+          - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
+          - { key: potable, type: boolean }
+      electric_line:
+        geometry: LineString
+        icon: zap
+        color: "#d97706"
+        line: { width: 2.5, dash: [3, 1.5] }
+        defaults: { voltage: v230, buried: true }
+        fields:
+          - { key: voltage, type: select, options: [v230, v400, low_voltage] }
+          - { key: section_mm2, type: number, unit: mm², min: 0.5, max: 300, step: 0.5 }
+          - { key: buried, type: boolean }
+          - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
+      gas_line:
+        geometry: LineString
+        icon: flame
+        color: "#ca8a04"
+        line: { width: 2.5, dash: [1, 1] }
+        defaults: { diameter_mm: 25 }
+        fields:
+          - { key: diameter_mm, type: integer, unit: mm, min: 4, max: 1000 }
+          - { key: material, type: select, options: [pe, copper, steel] }
+          - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
+      ethernet_line:
+        geometry: LineString
+        icon: ethernet-port
+        color: "#7c3aed"
+        line: { width: 2, dash: [2, 1] }
+        defaults: { cable: cat6, buried: true }
+        fields:
+          - { key: cable, type: select, options: [cat5e, cat6, cat6a, fiber] }
+          - { key: buried, type: boolean }
+      valve:
+        geometry: Point
+        icon: circle-gauge
+        color: "#2563eb"
+        defaults: { network: water }
+        fields:
+          - { key: network, type: select, options: [water, gas] }
+      meter:
+        geometry: Point
+        icon: gauge
+        color: "#2563eb"
+        defaults: { network: water }
+        fields:
+          - { key: network, type: select, options: [water, electricity, gas] }
+      socket:
+        geometry: Point
+        icon: plug-zap
+        color: "#d97706"
+        defaults: { network: electricity, outdoor: true }
+        fields:
+          - { key: network, type: select, options: [electricity, ethernet] }
+          - { key: outdoor, type: boolean }
+      tap:
+        geometry: Point
+        icon: faucet
+        color: "#2563eb"
+        defaults: { potable: true }
+        fields:
+          - { key: potable, type: boolean }
+
+  notes:
+    color: "#726b9f"
+    elements:
+      note_point:
+        geometry: Point
+        icon: sticky-note
+        color: "#726b9f"
+      sketch:
+        geometry: LineString
+        icon: signature
+        color: "#ffffff"
+        line: { width: 3, casing: "#1b1712" }
+        pickable: false
+      measure:
+        geometry: [LineString, Polygon]
+        icon: ruler
+        color: "#c97b3d"
+        line: { width: 2.5, dash: [2, 1] }
+        fill: { opacity: 0.12 }
+        pickable: false
+        fields:
+          - { key: length_m, type: number, unit: m, min: 0, readonly: true }
+          - { key: area_m2, type: number, unit: m², min: 0, readonly: true }

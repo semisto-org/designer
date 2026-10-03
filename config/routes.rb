@@ -12,6 +12,13 @@ Rails.application.routes.draw do
     end
   end
 
+  # --- map-drawing ---
+  scope "maps/:map_id", module: :maps, as: :map, constraints: { map_id: /\d+/ } do
+    get "alerts", to: "alerts#index", as: :alerts, defaults: { format: :json }
+    get "export.geojson", to: "exports#show", as: :geojson_export, format: false
+  end
+  # --- end map-drawing ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
