@@ -1,11 +1,10 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t designer .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name designer designer
-
-# For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
+# Production image, built by Coolify on every push to main:
+#   docker build -t designer .
+#   docker run -d -p 80:80 -e SECRET_KEY_BASE=... -e DATABASE_URL=postgis://... designer
+# The database server needs the PostGIS extension (e.g. image postgis/postgis:16-3.4).
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
 ARG RUBY_VERSION=3.3.6
@@ -16,7 +15,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client libgeos-c1v5 && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
@@ -32,8 +31,14 @@ FROM base AS build
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev libvips libyaml-dev pkg-config && \
+    apt-get install --no-install-recommends -y build-essential git libpq-dev libvips libyaml-dev pkg-config libgeos-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Node.js to build the React frontend with Vite
+COPY --from=docker.io/library/node:22-slim /usr/local/bin/node /usr/local/bin/node
+COPY --from=docker.io/library/node:22-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 
 # Install application gems
 COPY vendor/* ./vendor/
@@ -44,6 +49,10 @@ RUN bundle install && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
+# Install JavaScript dependencies
+COPY package.json package-lock.json ./
+RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+
 # Copy application code
 COPY . .
 
@@ -51,8 +60,9 @@ COPY . .
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# Precompiling assets (Vite build included) without requiring production secrets
+RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile && \
+    rm -rf node_modules tmp/cache
 
 
 

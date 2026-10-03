@@ -20,24 +20,28 @@ test:
   <<: *default
   database: <%= ENV.fetch("DESIGNER_TEST_DATABASE") { "designer_test_#{suffix}" } %><%= ENV["TEST_ENV_NUMBER"] %>
 
-# Production: one PostgreSQL server, four databases (app, cache, queue, cable).
-# Only DATABASE_URL is required; the others are derived from it.
+# Production: one PostgreSQL + PostGIS server, four databases (app, cache,
+# queue, cable). Only DATABASE_URL is required, with the postgis:// scheme
+# (postgis://user:password@host:5432/designer_production); the three other
+# databases are derived from it unless set explicitly.
+<% primary_url = ENV["DATABASE_URL"].to_s.sub(%r{\Apostgres(ql)?://}, "postgis://") %>
+<% derived = ->(suffix) { primary_url.sub(%r{\Apostgis://}, "postgresql://").sub(%r{/([^/?]+)(\?|$)}, "/\\1_#{suffix}\\2") } %>
 production:
   primary: &primary_production
     <<: *default
-    url: <%= ENV["DATABASE_URL"] %>
+    url: <%= primary_url %>
   cache:
     <<: *primary_production
     adapter: postgresql
-    url: <%= ENV["CACHE_DATABASE_URL"] || ENV["DATABASE_URL"].to_s.sub(%r{/([^/?]+)(\?|$)}, '/\1_cache\2') %>
+    url: <%= ENV["CACHE_DATABASE_URL"] || derived.call("cache") %>
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
     adapter: postgresql
-    url: <%= ENV["QUEUE_DATABASE_URL"] || ENV["DATABASE_URL"].to_s.sub(%r{/([^/?]+)(\?|$)}, '/\1_queue\2') %>
+    url: <%= ENV["QUEUE_DATABASE_URL"] || derived.call("queue") %>
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
     adapter: postgresql
-    url: <%= ENV["CABLE_DATABASE_URL"] || ENV["DATABASE_URL"].to_s.sub(%r{/([^/?]+)(\?|$)}, '/\1_cable\2') %>
+    url: <%= ENV["CABLE_DATABASE_URL"] || derived.call("cable") %>
     migrations_paths: db/cable_migrate
