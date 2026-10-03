@@ -10,10 +10,22 @@ module MapScoped
     end
 
     def require_editor!
-      return if %w[owner editor].include?(@role)
+      if %w[owner editor].include?(@role)
+        return unless @map.read_only_by_plan?
+        return deny_editing_by_plan
+      end
       respond_to do |format|
         format.json { render json: { message: t("maps.errors.read_only") }, status: :forbidden }
         format.any { redirect_to map_path(@map), alert: t("maps.errors.read_only") }
+      end
+    end
+
+    # The owner's plan ran out and this map is over the free limit: readable,
+    # not editable. Tells the user how to get editing back.
+    def deny_editing_by_plan
+      respond_to do |format|
+        format.json { render json: { message: t("billing.read_only_by_plan"), code: "read_only_by_plan", upsellUrl: billing_path }, status: :forbidden }
+        format.any { redirect_to map_path(@map), alert: t("billing.read_only_by_plan") }
       end
     end
 

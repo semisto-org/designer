@@ -19,6 +19,8 @@ import AiJournalPanel from '@/map/panels/AiJournalPanel'
 import DraftsBar from '@/map/drafts/DraftsBar'
 import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
+import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
+import HelpAction from '@/map/panels/HelpAction'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -43,6 +45,8 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
 // Top bar actions (right side), e.g. share, export.
 export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'share', component: ShareButton, order: 80 },
+  { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
+  { id: 'help', component: HelpAction, order: 95 },
 ]
 
 // Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.

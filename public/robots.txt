@@ -1,1 +1,11 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# Semisto Designer: the public site and the help center are open to crawlers;
+# maps, the account and billing pages are private.
+User-agent: *
+Allow: /
+Disallow: /maps
+Disallow: /account
+Disallow: /billing
+Disallow: /session
+Disallow: /webhooks
+
+Sitemap: https://designer.semisto.org/sitemap.xml

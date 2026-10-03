@@ -1,0 +1,6 @@
+<p><%= t("account_mailer.deletion_request.body", name: @user.display_name, email: @user.email_address) %></p>
+<ul>
+  <li><%= t("account_mailer.deletion_request.owned_maps", count: @user.owned_maps.count) %></li>
+  <li><%= t("account_mailer.deletion_request.payments", count: @user.billing_payments.count) %></li>
+</ul>
+<p><%= t("account_mailer.deletion_request.next") %></p>

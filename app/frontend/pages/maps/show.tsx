@@ -64,7 +64,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
   const [drawing, setDrawing] = useState(false)
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(null)
   const drawer = useRef<Drawer | null>(null)
-  const canEdit = map.role === 'owner' || map.role === 'editor'
+  const canEdit = (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan
 
   useEffect(() => {
     drawer.current = new Drawer(instance)
