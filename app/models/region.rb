@@ -2,7 +2,7 @@
 # regulatory rules and native species. Wallonia first, then France,
 # Luxembourg, Flanders and the Netherlands, without rewriting the app.
 class Region < ApplicationRecord
-  has_many :layers, -> { order(:position) }, class_name: "RegionLayer", dependent: :destroy
+  has_many :layers, -> { order(:position, :id) }, class_name: "RegionLayer", dependent: :destroy
   has_many :maps, dependent: :restrict_with_error
 
   validates :key, :name, :country_code, presence: true

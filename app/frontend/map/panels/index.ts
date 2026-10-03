@@ -1,8 +1,7 @@
-import { ClipboardList, Handshake, Layers3, Map as MapIcon, MapPinned, Route } from 'lucide-react'
+import { Bot, ClipboardList, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Route } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
-import { Globe } from 'lucide-react'
 import CollabOverlay from '@/collab/CollabOverlay'
 import DiscussionSection from '@/collab/DiscussionSection'
 import DiscussionsPanel from '@/collab/DiscussionsPanel'
@@ -16,6 +15,9 @@ import ActionsPanel from '@/map/panels/ActionsPanel'
 import LayersPanel from '@/map/panels/LayersPanel'
 import RegionLayersOverlay from '@/map/data/RegionLayersOverlay'
 import IdentifyOverlay from '@/map/data/IdentifyOverlay'
+import AiJournalPanel from '@/map/panels/AiJournalPanel'
+import DraftsBar from '@/map/drafts/DraftsBar'
+import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -27,11 +29,13 @@ export const PANELS: EditorPanel[] = [
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
   { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'share', component: ActionsPanel, order: 20 },
+  { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
 ]
 
 // Register inspector sections for a selected feature here.
 export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'discussion', applies: () => true, component: DiscussionSection, order: 90 },
+  { id: 'draft-review', applies: (f) => f.properties.status === 'draft', component: DraftReviewSection, order: 5 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
@@ -45,4 +49,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
+  { id: 'drafts-bar', component: DraftsBar, order: 40 },
 ]

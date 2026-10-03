@@ -1,0 +1,354 @@
+# « Claude sur la carte » : serveur MCP, autorisation OAuth, brouillons de
+# l'IA, journal IA, page « Connecter Claude » et documentation publique.
+# Les descriptions des outils MCP vivent ici : le serveur les envoie aux
+# agents et la page /docs/mcp les affiche, depuis la même source.
+fr:
+  mcp:
+    server:
+      instructions: |-
+        Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Vous agissez au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
+        Commencez par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
+        Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
+        Vous ne modifiez jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
+        Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
+    params:
+      map_id: "Identifiant de la carte, donné par list_maps."
+      layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), notes."
+      kind: "Type d'élément (kind), par exemple tree, pond, hedge, path, swale."
+      bbox: "Emprise [ouest, sud, est, nord] en degrés WGS84 : seuls les éléments qui la touchent sont renvoyés."
+      status: "active : éléments validés ; draft : brouillons en attente de revue ; all : les deux. Les brouillons refusés ne sont jamais renvoyés."
+      include_networks: "Inclure les réseaux (eau, gaz, électricité, câbles). Réservé aux éditeurs et au propriétaire de la carte."
+      include_geometry: "false pour une liste légère, sans les géométries."
+      limit: "Nombre maximal de résultats."
+      after_id: "Pagination : la valeur next_after_id de la page précédente."
+      feature_id: "Identifiant de l'élément."
+      lng: "Longitude WGS84 du point, en degrés décimaux."
+      lat: "Latitude WGS84 du point, en degrés décimaux."
+    tools:
+      list_maps:
+        title: "Lister mes cartes"
+        description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passez ensuite l'identifiant d'une carte à get_map."
+      get_map:
+        title: "Lire une carte"
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
+      list_features:
+        title: "Lister les éléments"
+        description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passez next_after_id dans after_id pour la page suivante."
+      get_feature:
+        title: "Lire un élément"
+        description: "Un élément de la carte : géométrie, attributs, justification s'il a été proposé par une IA, et mesures (surface en m², longueur et périmètre en m)."
+      get_region_layers:
+        title: "Couches de la région"
+        description: "Catalogue des couches de données de la région de la carte (en Wallonie, celles du Géoportail : sols, relief, zones inondables, plan de secteur, cadastre…) : clé, nom, groupe, et si la couche s'interroge en un point avec identify_at_point."
+      identify_at_point:
+        title: "Interroger les couches en un point"
+        description: "Ce que disent les couches de la région en un point du terrain : type de sol, aléa d'inondation, affectation au plan de secteur, parcelle cadastrale… Le point doit se trouver à moins de 1 km du terrain. Sans layers, toutes les couches interrogeables sont interrogées."
+        params:
+          layers: "Clés des couches à interroger (voir get_region_layers). Par défaut : toutes les couches interrogeables."
+      search_plants:
+        title: "Chercher une plante"
+        description: "Recherche dans le catalogue de plantes de Semisto, par nom latin ou nom commun français. Chaque donnée du catalogue garde sa source."
+        params:
+          query: "Nom latin ou nom commun, au moins 2 caractères."
+      get_plant:
+        title: "Fiche d'une plante"
+        description: "La fiche d'une espèce du catalogue : nom latin, noms communs, port, strate, exigences et usages, avec la provenance de chaque donnée."
+        params:
+          plant_id: "Identifiant de la plante, donné par search_plants."
+      propose_features:
+        title: "Proposer des brouillons"
+        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrigez et renvoyez seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          summary: "Résumé de la proposition dans son ensemble, montré à l'humain au-dessus des brouillons."
+          features: "Les éléments proposés, de 1 à 200."
+          feature_layer: "Couche de l'élément. Les réseaux ne peuvent pas être proposés."
+          feature_kind: "Type d'élément en snake_case, par exemple fruit_tree, hedge, pond, swale, path, raised_bed. Les types connus de l'éditeur sont dans known_kinds (get_map)."
+          feature_geometry: "Géométrie GeoJSON (Point, LineString, Polygon ou Multi…), coordonnées [longitude, latitude] en WGS84."
+          feature_name: "Nom court affiché sur la carte."
+          feature_notes: "Notes complémentaires : variétés, entretien, phasage…"
+          feature_rationale: "Pourquoi cet élément, ici, et avec quelles données (fiche projet, couches, relief, existant…). Obligatoire, 10 caractères au moins."
+          feature_properties: "Attributs libres, par exemple species, height_m, spacing_m."
+      withdraw_draft:
+        title: "Retirer des brouillons"
+        description: "Retire des brouillons proposés par une IA et pas encore revus, par exemple pour les remplacer par une meilleure proposition. Les éléments acceptés appartiennent aux humains : ils ne peuvent pas être retirés."
+        params:
+          feature_ids: "Identifiants des brouillons à retirer."
+    permissions:
+      scope: "Cette connexion n'a que l'accès en lecture : reconnectez le connecteur en choisissant « Lecture et brouillons »."
+      role: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer des brouillons."
+      plan: "Le forfait du propriétaire de la carte ne comprend pas les brouillons de l'IA."
+      boundary: "La carte n'a pas encore de contour de terrain."
+    notes:
+      networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
+      networks_on_request: "Les réseaux sont masqués par défaut : passez include_networks à true dans list_features pour les lire."
+      networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
+      review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
+    errors:
+      unauthorized: "Connexion requise : autorisez ce client depuis Semisto Designer (OAuth) ou utilisez un jeton personnel."
+      invalid_token: "Ce jeton n'est pas valide, a expiré ou a été révoqué."
+      rate_limited: "Trop de requêtes. Réessayez dans une minute."
+      map_not_found: "Carte %{id} introuvable, ou vous n'y avez pas accès. list_maps donne vos cartes."
+      feature_not_found: "Élément %{id} introuvable sur cette carte."
+      scope_drafts: "Cette connexion n'a que l'accès en lecture. Pour proposer des brouillons, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
+      editor_only: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer ou retirer des brouillons. L'utilisateur est lecteur de cette carte."
+      plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite. La lecture de la carte reste possible."
+      no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
+      too_many_features: "Au plus %{max} éléments par appel."
+      too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attendez que l'humain les revoie avant d'en proposer d'autres."
+      nothing_created: "Aucun brouillon créé. %{details}"
+      bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
+      identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Designer."
+      identify_layer_failed: "Le service de cette couche n'a pas répondu."
+      point_too_far: "Le point doit se trouver à moins de %{distance} m du terrain de la carte."
+      no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
+      plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Designer."
+      plant_not_found: "Plante %{id} introuvable dans le catalogue."
+    draft_errors:
+      not_an_object: "l'élément doit être un objet."
+      layer: "couche inconnue (couches possibles : %{layers})."
+      kind: "kind doit être en snake_case (minuscules, chiffres, _), par exemple fruit_tree."
+      rationale: "la justification (rationale) est obligatoire, 10 caractères au moins."
+      geometry: "géométrie GeoJSON illisible."
+      coordinates: "coordonnées hors limites : [longitude, latitude] en degrés WGS84."
+      too_complex: "géométrie trop détaillée (%{max} sommets au plus)."
+      properties: "properties doit être un objet de moins de %{max} octets."
+      empty: "géométrie vide."
+      invalid: "géométrie invalide (%{reason})."
+      outside: "hors du terrain : la géométrie doit rester à moins de %{buffer} m du contour."
+  activerecord:
+    models:
+      api_token: "Jeton personnel"
+    attributes:
+      api_token:
+        name: "Nom"
+        scopes: "Accès"
+    errors:
+      models:
+        api_token:
+          attributes:
+            base:
+              too_many: "Vous avez déjà %{count} jetons actifs : révoquez-en un avant d'en créer un autre."
+  drafts:
+    default_author: "L'IA"
+    title:
+      one: "%{author} propose 1 élément"
+      other: "%{author} propose %{count} éléments"
+    region: "Brouillons proposés par une IA"
+    cta: "À revoir : acceptez ou refusez chaque élément"
+    viewer_hint: "Un éditeur de la carte doit les revoir avant qu'ils n'en fassent partie."
+    focus: "Voir sur la carte"
+    accept: "Accepter"
+    reject: "Refuser"
+    accept_one: "Accepter « %{name} »"
+    reject_one: "Refuser « %{name} »"
+    accept_all: "Tout accepter"
+    reject_all: "Tout refuser"
+    confirm_reject_all:
+      one: "Refuser ce brouillon ?"
+      other: "Refuser les %{count} brouillons ?"
+    accepted: "Élément accepté : il fait maintenant partie de la carte."
+    rejected: "Brouillon refusé."
+    accepted_all:
+      one: "1 élément accepté."
+      other: "%{count} éléments acceptés."
+    rejected_all:
+      one: "1 brouillon refusé."
+      other: "%{count} brouillons refusés."
+    inspector_hint: "Ajustez-le si besoin (nom, notes), puis acceptez-le ou refusez-le."
+  ai_journal:
+    title: "Journal IA"
+    intro: "Chaque action d'une IA sur cette carte, par le serveur MCP : avec quel client, pour quel compte, ce qu'elle a lu ou proposé."
+    error: "Le journal n'a pas pu être chargé."
+    empty: "Aucune IA n'a encore travaillé sur cette carte. Connectez votre Claude depuis votre compte : il pourra lire la carte et, avec le forfait, y proposer des brouillons."
+    refused: "a tenté « %{tool} », sans succès"
+    by: "compte de %{name}"
+    more: "Voir les actions plus anciennes"
+    connect: "Connecter Claude"
+    docs: "Documentation du serveur MCP"
+    actions:
+      list_maps: "a listé les cartes"
+      get_map: "a lu la fiche de la carte"
+      list_features:
+        zero: "a cherché des éléments, sans résultat"
+        one: "a lu 1 élément"
+        other: "a lu %{count} éléments"
+      get_feature: "a lu un élément"
+      get_region_layers: "a consulté les couches de la région"
+      identify_at_point: "a interrogé les couches en un point"
+      search_plants: "a cherché dans le catalogue des plantes"
+      get_plant: "a lu une fiche plante"
+      propose_features:
+        one: "a proposé 1 brouillon"
+        other: "a proposé %{count} brouillons"
+      withdraw_draft:
+        one: "a retiré 1 brouillon"
+        other: "a retiré %{count} brouillons"
+    outcome:
+      active:
+        one: "1 accepté"
+        other: "%{count} acceptés"
+      rejected:
+        one: "1 refusé"
+        other: "%{count} refusés"
+      draft:
+        one: "1 en attente"
+        other: "%{count} en attente"
+      withdrawn:
+        one: "1 retiré"
+        other: "%{count} retirés"
+  copy_field:
+    copy: "Copier"
+    copied: "Copié"
+  account_ai:
+    title: "Connecter Claude"
+    intro: "Branchez votre propre Claude, ou tout agent compatible MCP, sur vos cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait et le rôle d'éditeur, il y pose des brouillons que vous acceptez ou refusez un par un."
+    url:
+      title: "Adresse du connecteur"
+      hint: "C'est la seule chose à copier : vous choisissez ensuite, sur Semisto Designer, l'accès que vous donnez."
+    plan_hint: "Avec la formule gratuite, Claude lit vos cartes. Les brouillons qu'il pose sur la carte font partie du forfait."
+    claude_ai:
+      title: "Dans claude.ai ou Claude Desktop"
+      step1: "Ouvrez Paramètres → Connecteurs."
+      step2: "Cliquez sur « Ajouter un connecteur personnalisé »."
+      step3: "Nom : Semisto Designer. URL : l'adresse ci-dessus."
+      step4: "Cliquez sur « Se connecter » : Semisto Designer vous demande quel accès donner, lecture ou lecture et brouillons."
+      step5: "Dans une conversation, activez le connecteur depuis le menu des outils."
+      example: "« Lis ma carte du jardin et propose une haie fruitière le long de la limite nord, en tenant compte de la fiche projet. »"
+    claude_code:
+      title: "Dans Claude Code"
+      step1: "Ajoutez le serveur :"
+      step2: "Tapez ensuite /mcp dans Claude Code pour vous connecter : la page d'autorisation s'ouvre dans votre navigateur."
+    other:
+      title: "Autres agents"
+      body: "Un agent qui ne gère pas OAuth utilise un jeton personnel (ci-dessous), envoyé dans l'en-tête « Authorization: Bearer »."
+    apps:
+      title: "Applications autorisées"
+      intro: "Les connecteurs que vous avez autorisés. Révoquer coupe leur accès immédiatement."
+      empty_title: "Aucune application autorisée"
+      empty_body: "Quand vous connectez Claude, il apparaît ici."
+      meta: "Autorisée le %{authorized} · dernière utilisation : %{used}"
+      confirm_revoke: "Révoquer l'accès de « %{name} » ? Il faudra l'autoriser à nouveau."
+      revoked: "Accès de « %{name} » révoqué."
+    revoke: "Révoquer"
+    access:
+      read: "Lecture"
+      drafts: "Lecture et brouillons"
+    tokens:
+      title: "Jetons personnels"
+      intro: "Pour les scripts et les agents sans OAuth. Un jeton agit en votre nom sur toutes vos cartes : gardez-le secret."
+      name: "Nom"
+      name_placeholder: "Claude Code sur mon portable"
+      access: "Accès"
+      expiry: "Expiration"
+      days:
+        one: "Dans 1 jour"
+        other: "Dans %{count} jours"
+      never: "Jamais"
+      create: "Créer le jeton"
+      created: "Jeton « %{name} » créé."
+      copy_now: "Copiez-le maintenant : il ne sera plus jamais affiché."
+      meta: "créé le %{created} · utilisé : %{used} · expire : %{expires}"
+      confirm_revoke: "Révoquer le jeton « %{name} » ?"
+      revoked: "Jeton révoqué."
+      error: "Le jeton n'a pas pu être créé."
+    guardrails:
+      title: "Garde-fous"
+      never: "L'IA ne modifie jamais la carte sans votre validation : elle pose des brouillons."
+      networks: "Les réseaux (eau, gaz, électricité, câbles) restent masqués par défaut."
+      journal: "Chaque action est inscrite au journal IA de la carte, visible par son propriétaire."
+      revoke: "Vous retirez l'accès quand vous voulez, depuis votre compte."
+    docs_link: "Documentation du serveur MCP →"
+  oauth:
+    authorize:
+      page_title: "Autoriser une application"
+      title: "« %{client} » souhaite accéder à vos cartes Semisto Designer"
+      signed_in_as: "Connecté en tant que %{name} (%{email})."
+      redirect_notice: "Vous serez ensuite renvoyé vers %{host}. N'autorisez que les applications que vous venez vous-même de connecter."
+      client_site: "Site de l'application"
+      access_legend: "Accès donné"
+      access:
+        read:
+          title: "Lecture"
+          body: "Lire vos cartes, leurs couches, leurs éléments et la fiche projet."
+        drafts:
+          title: "Lecture et brouillons"
+          body: "Lire, et proposer des éléments en brouillon que vous acceptez ou refusez un par un, sur les cartes dont vous êtes propriétaire ou éditeur."
+          plan: "Les brouillons demandent le forfait du propriétaire de la carte : votre formule actuelle n'en donne pas sur vos propres cartes."
+      guardrails_title: "Garde-fous"
+      deny: "Refuser"
+      approve: "Autoriser %{client}"
+    error:
+      title: "Cette demande de connexion n'est pas valide"
+      unknown_client: "L'application qui vous envoie ici n'est pas enregistrée chez Semisto Designer. Relancez la connexion depuis l'application, par exemple claude.ai."
+      bad_redirect: "L'adresse de retour demandée n'est pas celle que l'application a enregistrée. Par prudence, la connexion est bloquée."
+      help: "Comment connecter Claude"
+  docs_mcp:
+    page_title: "Serveur MCP"
+    eyebrow: "Documentation"
+    title: "Claude sur la carte : le serveur MCP de Semisto Designer"
+    intro: "Branchez votre Claude, ou tout agent compatible MCP, sur vos cartes. Il lit le terrain, ses couches et la fiche projet, et propose des aménagements en brouillon que vous validez un par un. Cette page est générée à partir du code du serveur."
+    toc: "Sommaire"
+    sections:
+      connect: "Se connecter"
+      auth: "Autorisation"
+      guardrails: "Garde-fous"
+      tools: "Outils"
+      limits: "Limites"
+    connect:
+      url: "L'adresse du serveur (Streamable HTTP) :"
+      claude_ai_title: "claude.ai et Claude Desktop"
+      claude_ai: "Paramètres → Connecteurs → « Ajouter un connecteur personnalisé ». Collez l'adresse, puis « Se connecter » : vous choisissez l'accès donné, sur Semisto Designer."
+      claude_code_title: "Claude Code"
+      claude_code: "Ajoutez le serveur, puis tapez /mcp pour vous connecter."
+      other_title: "Autres agents"
+      other: "Tout client MCP qui gère OAuth 2.1 se connecte seul. Sinon, créez un jeton personnel et envoyez-le dans l'en-tête « Authorization: Bearer »."
+      account: "Applications autorisées et jetons personnels se gèrent dans votre compte :"
+      account_link: "Connecter Claude"
+    auth:
+      intro: "Le serveur suit la spécification d'autorisation MCP : OAuth 2.1 avec enregistrement dynamique des clients (RFC 7591), code d'autorisation avec PKCE S256, indicateur de ressource (RFC 8707) et jetons de rafraîchissement à usage unique. Les jetons d'accès durent %{minutes} minutes, les jetons de rafraîchissement %{days} jours."
+      endpoints:
+        protectedResourceMetadata: "Métadonnées de la ressource (RFC 9728)"
+        authorizationServerMetadata: "Métadonnées du serveur d'autorisation (RFC 8414)"
+        register: "Enregistrement des clients"
+        authorize: "Autorisation (consentement)"
+        token: "Jetons"
+        revoke: "Révocation (RFC 7009)"
+      scopes_title: "Accès (scopes)"
+      scopes:
+        read: "Lire les cartes de l'utilisateur, leurs couches, leurs éléments et la fiche projet. Toujours accordé."
+        drafts: "Proposer et retirer des brouillons. L'utilisateur le choisit sur la page de consentement ; il faut aussi le rôle d'éditeur ou de propriétaire sur la carte et, pour proposer, le forfait du propriétaire de la carte."
+      tokens: "Les jetons personnels (sdp_…) se créent dans le compte de l'utilisateur, avec les mêmes accès. Exemple d'appel :"
+    guardrails:
+      never: "L'IA ne modifie jamais la carte directement : elle pose des brouillons, que l'humain accepte, ajuste ou refuse un par un."
+      rationale: "Chaque brouillon porte sa justification (rationale) : pourquoi, et avec quelles données."
+      networks: "Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut : seuls les éditeurs peuvent les demander, et l'IA ne peut pas en proposer."
+      roles: "L'IA agit avec le rôle de l'utilisateur sur chaque carte : un lecteur ne propose rien."
+      journal: "Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire."
+      revoke: "L'utilisateur révoque un accès à tout moment depuis son compte."
+    tool:
+      read_only: "Lecture"
+      writes_drafts: "Écrit des brouillons"
+      no_parameters: "Aucun paramètre."
+      parameter: "Paramètre"
+      type: "Type"
+      description: "Description"
+      required: "requis"
+    requirements:
+      read: "Toute connexion, quel que soit le rôle sur la carte."
+      propose: "Accès « brouillons », rôle d'éditeur ou de propriétaire, forfait du propriétaire de la carte."
+      withdraw: "Accès « brouillons », rôle d'éditeur ou de propriétaire."
+    constraints:
+      range: "de %{min} à %{max}"
+      min: "au moins %{min}"
+      length: "%{min} à %{max} caractères"
+      max_length: "%{max} caractères au plus"
+      items: "%{min} à %{max} éléments"
+      max_items: "%{max} éléments au plus"
+      max_properties: "%{max} clés au plus"
+      default: "par défaut : %{value}"
+    limits:
+      rate: "%{count} requêtes par minute et par jeton."
+      proposal: "%{count} éléments au plus par appel à propose_features."
+      pending: "%{count} brouillons en attente au plus par carte."
+      buffer: "Géométries proposées à moins de %{meters} m du contour du terrain."
+      transport: "Serveur sans état : une requête POST par message JSON-RPC, réponses en JSON ; ni session ni flux SSE."
