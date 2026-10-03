@@ -1,0 +1,360 @@
+# Perennials and aromatics (herbaceous strata).
+- latin_name: Lavandula angustifolia
+  common_names: [Lavande vraie, Lavande officinale]
+  plant_type: small-shrub
+  strata: herbaceous
+  foliage_type: evergreen
+  growth_rate: medium
+  height_m: [0.3, 0.6]
+  spread_m: [0.4, 0.8]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  edible_rating: 2
+  medicinal_rating: 4
+  edible_parts: [flower]
+  eco_services: [mellifere, beneficial-insects]
+  flowering_months: [6, 7, 8]
+  harvest_months: [6, 7, 8]
+  pruning_months: [8, 9]
+  maturity_years: 3
+
+- latin_name: Symphytum × uplandicum
+  common_names: [Consoude de Russie]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: deep
+  height_m: [0.8, 1.5]
+  spread_m: [0.6, 1]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  medicinal_rating: 3
+  eco_services: [minerals, mellifere, organic-matter, beneficial-insects]
+  flowering_months: [5, 6, 7, 8, 9]
+  pruning_months: [5, 6, 7, 8, 9]
+  toxic_for: [humans]
+  maturity_years: 2
+  varieties: [Bocking 14]
+
+- latin_name: Allium schoenoprasum
+  common_names: [Ciboulette]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.2, 0.4]
+  spread_m: [0.2, 0.3]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [leaf, flower]
+  eco_services: [mellifere]
+  flowering_months: [6, 7]
+  harvest_months: [3, 4, 5, 6, 7, 8, 9, 10]
+  toxic_for: [dogs, cats]
+  maturity_years: 1
+
+- latin_name: Rheum × hybridum
+  common_names: [Rhubarbe]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.6, 1.2]
+  spread_m: [1, 1.5]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [shoot]
+  flowering_months: [5, 6]
+  harvest_months: [4, 5, 6]
+  toxic_for: [humans, dogs, cats]
+  maturity_years: 2
+  production_start_year: 2
+
+- latin_name: Levisticum officinale
+  common_names: [Livèche, Céleri perpétuel]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [1, 2]
+  spread_m: [0.6, 1]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 3
+  medicinal_rating: 2
+  edible_parts: [leaf, seed, root]
+  eco_services: [beneficial-insects, mellifere]
+  flowering_months: [6, 7]
+  harvest_months: [4, 5, 6, 7, 8, 9]
+  maturity_years: 2
+
+- latin_name: Melissa officinalis
+  common_names: [Mélisse, Citronnelle]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.5, 0.8]
+  spread_m: [0.4, 0.6]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 3
+  medicinal_rating: 4
+  edible_parts: [leaf]
+  eco_services: [mellifere]
+  flowering_months: [6, 7, 8]
+  harvest_months: [5, 6, 7, 8, 9]
+  maturity_years: 2
+
+- latin_name: Mentha × piperita
+  common_names: [Menthe poivrée]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: spreading
+  height_m: [0.3, 0.6]
+  spread_m: [0.5, 1]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  watering_need: 4
+  edible_rating: 3
+  medicinal_rating: 4
+  edible_parts: [leaf]
+  eco_services: [mellifere, beneficial-insects, ground-cover]
+  flowering_months: [7, 8, 9]
+  harvest_months: [5, 6, 7, 8, 9]
+  maturity_years: 1
+
+- latin_name: Origanum vulgare
+  common_names: [Origan commun, Marjolaine sauvage]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.3, 0.6]
+  spread_m: [0.3, 0.5]
+  hardiness_zone: 4
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [leaf, flower]
+  eco_services: [mellifere, beneficial-insects]
+  flowering_months: [7, 8, 9]
+  harvest_months: [6, 7, 8, 9]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+
+- latin_name: Achillea millefolium
+  common_names: [Achillée millefeuille]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.3, 0.6]
+  spread_m: [0.3, 0.6]
+  hardiness_zone: 3
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 1
+  medicinal_rating: 3
+  edible_parts: [leaf]
+  eco_services: [beneficial-insects, minerals, mellifere]
+  flowering_months: [6, 7, 8, 9]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+
+- latin_name: Foeniculum vulgare
+  common_names: [Fenouil commun, Fenouil sauvage]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: taproot
+  height_m: [1, 2]
+  spread_m: [0.5, 0.8]
+  hardiness_zone: 6
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  watering_need: 2
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [leaf, seed, flower]
+  eco_services: [beneficial-insects, mellifere]
+  flowering_months: [7, 8, 9]
+  harvest_months: [6, 7, 8, 9, 10]
+  maturity_years: 2
+
+- latin_name: Cynara cardunculus
+  common_names: [Artichaut, Cardon]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [1, 1.8]
+  spread_m: [1, 1.5]
+  hardiness_zone: 8
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [flower, shoot]
+  eco_services: [mellifere, beneficial-insects, ornamental]
+  flowering_months: [7, 8, 9]
+  harvest_months: [6, 7, 8, 9]
+  maturity_years: 2
+  production_start_year: 2
+
+- latin_name: Asparagus officinalis
+  common_names: [Asperge]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [1, 1.5]
+  spread_m: [0.4, 0.6]
+  hardiness_zone: 4
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  soil_types: [sandy, loam]
+  watering_need: 2
+  edible_rating: 4
+  edible_parts: [shoot]
+  flowering_months: [6, 7]
+  harvest_months: [4, 5, 6]
+  fertility: dioecious
+  toxic_for: [humans]
+  maturity_years: 3
+  production_start_year: 3
+
+- latin_name: Hemerocallis fulva
+  common_names: [Hémérocalle fauve, Lis d'un jour]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.6, 1]
+  spread_m: [0.6, 1]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 3
+  edible_parts: [flower, shoot, root]
+  eco_services: [erosion-control, ornamental]
+  flowering_months: [6, 7, 8]
+  harvest_months: [4, 5, 6, 7, 8]
+  toxic_for: [cats]
+  maturity_years: 2
+
+- latin_name: Rumex acetosa
+  common_names: [Oseille commune, Grande oseille]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.3, 0.6]
+  spread_m: [0.3, 0.3]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 3
+  edible_parts: [leaf]
+  flowering_months: [5, 6, 7]
+  harvest_months: [3, 4, 5, 6, 7, 8, 9, 10]
+  fertility: dioecious
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+
+- latin_name: Blitum bonus-henricus
+  common_names: [Chénopode bon-henri, Épinard sauvage]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.3, 0.6]
+  spread_m: [0.3, 0.4]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 3
+  edible_parts: [leaf, shoot, seed]
+  flowering_months: [5, 6, 7, 8]
+  harvest_months: [4, 5, 6]
+  maturity_years: 2
+
+- latin_name: Urtica dioica
+  common_names: [Grande ortie, Ortie dioïque]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: spreading
+  height_m: [0.5, 1.5]
+  spread_m: [0.5, 1]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 4
+  medicinal_rating: 4
+  edible_parts: [leaf, seed]
+  eco_services: [minerals, organic-matter, beneficial-insects, birds]
+  flowering_months: [6, 7, 8, 9]
+  harvest_months: [3, 4, 5, 6]
+  fertility: dioecious
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+
+- latin_name: Trifolium pratense
+  common_names: [Trèfle violet, Trèfle des prés]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: taproot
+  height_m: [0.2, 0.6]
+  spread_m: [0.3, 0.3]
+  hardiness_zone: 4
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 3
+  edible_rating: 2
+  medicinal_rating: 2
+  edible_parts: [flower, leaf]
+  eco_services: [nitrogen, mellifere, organic-matter]
+  flowering_months: [5, 6, 7, 8, 9]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1

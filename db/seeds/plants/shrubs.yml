@@ -1,0 +1,519 @@
+# Shrubs, small fruits and nitrogen-fixing shrubs (1 to 4 m).
+- latin_name: Sambucus nigra
+  common_names: [Sureau noir]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [3, 6]
+  spread_m: [2, 4]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  medicinal_rating: 4
+  edible_parts: [flower, fruit]
+  eco_services: [mellifere, birds, pioneer]
+  flowering_months: [5, 6]
+  harvest_months: [5, 6, 8, 9]
+  pruning_months: [11, 12, 1, 2]
+  fertility: partially-self-fertile
+  native_countries: [BE, FR, LU, NL]
+  toxic_for: [humans]
+  maturity_years: 4
+  production_start_year: 2
+
+- latin_name: Corylus avellana
+  common_names: [Noisetier, Coudrier]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [3, 6]
+  spread_m: [3, 5]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [seed]
+  eco_services: [mellifere, birds, windbreak]
+  flowering_months: [1, 2, 3]
+  harvest_months: [8, 9]
+  pruning_months: [12, 1, 2]
+  fertility: self-sterile
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 8
+  production_start_year: 4
+  varieties: [Merveille de Bollwiller, Fertile de Coutard]
+
+- latin_name: Salix viminalis
+  common_names: [Osier vannier, Saule des vanniers]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [3, 6]
+  spread_m: [2, 4]
+  hardiness_zone: 4
+  exposures: [sun]
+  soil_moisture: [moist, wet]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 4
+  eco_services: [organic-matter, erosion-control, mellifere, windbreak]
+  flowering_months: [3, 4]
+  pruning_months: [12, 1, 2]
+  fertility: dioecious
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 3
+
+- latin_name: Ribes nigrum
+  common_names: [Cassissier, Cassis]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [1, 2]
+  spread_m: [1, 1.5]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 4
+  medicinal_rating: 3
+  edible_parts: [fruit, leaf]
+  eco_services: [mellifere]
+  flowering_months: [4, 5]
+  harvest_months: [7]
+  pruning_months: [11, 12, 1, 2]
+  fertility: self-fertile
+  native_countries: [BE]
+  maturity_years: 3
+  production_start_year: 2
+  varieties: [Noir de Bourgogne, Titania]
+
+- latin_name: Ribes rubrum
+  common_names: [Groseillier à grappes, Groseillier rouge]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [1, 1.5]
+  spread_m: [1, 1.5]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [4, 5]
+  harvest_months: [6, 7]
+  pruning_months: [11, 12, 1, 2]
+  fertility: self-fertile
+  native_countries: [BE, FR, NL]
+  maturity_years: 3
+  production_start_year: 2
+
+- latin_name: Ribes uva-crispa
+  common_names: [Groseillier à maquereau]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [1, 1.5]
+  spread_m: [1, 1.5]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [4]
+  harvest_months: [6, 7]
+  pruning_months: [11, 12, 1, 2]
+  fertility: self-fertile
+  native_countries: [BE, FR, NL]
+  maturity_years: 3
+  production_start_year: 2
+
+- latin_name: Ribes × nidigrolaria
+  common_names: [Casseillier, Josta]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [1.5, 2]
+  spread_m: [1.5, 2]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [4, 5]
+  harvest_months: [7]
+  fertility: partially-self-fertile
+  maturity_years: 3
+  production_start_year: 2
+
+- latin_name: Rubus idaeus
+  common_names: [Framboisier]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  root_system: spreading
+  height_m: [1, 2]
+  spread_m: [1, 1.5]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 5
+  medicinal_rating: 2
+  edible_parts: [fruit, leaf]
+  eco_services: [mellifere, birds]
+  flowering_months: [5, 6, 7]
+  harvest_months: [6, 7, 8, 9]
+  pruning_months: [11, 12, 1, 2, 3]
+  fertility: self-fertile
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+  production_start_year: 2
+  varieties: [Malling Promise, Héritage]
+
+- latin_name: Rubus fruticosus
+  common_names: [Ronce commune, Mûrier des haies]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: semi-evergreen
+  growth_rate: fast
+  height_m: [1, 3]
+  spread_m: [2, 4]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 4
+  edible_parts: [fruit, leaf]
+  eco_services: [mellifere, birds, beneficial-insects]
+  flowering_months: [6, 7, 8]
+  harvest_months: [8, 9]
+  pruning_months: [11, 12, 1, 2]
+  fertility: self-fertile
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+  production_start_year: 2
+  varieties: [Loch Ness, Thornfree]
+
+- latin_name: Vaccinium corymbosum
+  common_names: [Myrtillier arbustif, Bleuet]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: slow
+  height_m: [1.5, 2]
+  spread_m: [1, 1.5]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere, ornamental]
+  flowering_months: [4, 5]
+  harvest_months: [7, 8]
+  fertility: partially-self-fertile
+  maturity_years: 6
+  production_start_year: 3
+
+- latin_name: Lonicera caerulea
+  common_names: [Camérisier bleu, Baie de mai]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [1, 2]
+  spread_m: [1, 1.5]
+  hardiness_zone: 2
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [3, 4]
+  harvest_months: [5, 6]
+  fertility: self-sterile
+  maturity_years: 4
+  production_start_year: 2
+
+- latin_name: Aronia melanocarpa
+  common_names: [Aronia noir, Aronie à fruits noirs]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [1, 2]
+  spread_m: [1, 2]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 3
+  edible_parts: [fruit]
+  eco_services: [mellifere, birds, ornamental]
+  flowering_months: [5]
+  harvest_months: [8, 9]
+  fertility: self-fertile
+  maturity_years: 4
+  production_start_year: 2
+
+- latin_name: Hippophae rhamnoides
+  common_names: [Argousier]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  root_system: spreading
+  height_m: [2, 6]
+  spread_m: [2, 5]
+  hardiness_zone: 3
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  soil_types: [sandy]
+  watering_need: 1
+  edible_rating: 4
+  medicinal_rating: 3
+  edible_parts: [fruit]
+  eco_services: [nitrogen, pioneer, erosion-control, windbreak, birds]
+  flowering_months: [3, 4]
+  harvest_months: [8, 9, 10]
+  fertility: dioecious
+  native_countries: [BE, FR, NL]
+  maturity_years: 5
+  production_start_year: 3
+
+- latin_name: Elaeagnus × ebbingei
+  common_names: [Chalef d'Ebbinge, Éléagnus d'Ebbinge]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: evergreen
+  growth_rate: fast
+  height_m: [3, 5]
+  spread_m: [3, 5]
+  hardiness_zone: 7
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 3
+  edible_parts: [fruit]
+  eco_services: [nitrogen, windbreak, mellifere]
+  flowering_months: [10, 11]
+  harvest_months: [4, 5]
+  fertility: partially-self-fertile
+  maturity_years: 5
+  production_start_year: 3
+
+- latin_name: Elaeagnus multiflora
+  common_names: [Goumi du Japon]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [2, 3]
+  spread_m: [2, 3]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [nitrogen, mellifere, birds]
+  flowering_months: [4, 5]
+  harvest_months: [6, 7]
+  fertility: self-fertile
+  maturity_years: 4
+  production_start_year: 3
+
+- latin_name: Caragana arborescens
+  common_names: [Caragana de Sibérie, Acacia jaune]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [3, 5]
+  spread_m: [2, 4]
+  hardiness_zone: 2
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 1
+  edible_rating: 2
+  edible_parts: [seed]
+  eco_services: [nitrogen, windbreak, mellifere, pioneer]
+  flowering_months: [5]
+  harvest_months: [7, 8]
+  maturity_years: 5
+
+- latin_name: Colutea arborescens
+  common_names: [Baguenaudier]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [2, 4]
+  spread_m: [2, 3]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  eco_services: [nitrogen, mellifere, pioneer, ornamental]
+  flowering_months: [5, 6, 7, 8]
+  toxic_for: [humans]
+  maturity_years: 3
+
+- latin_name: Rosa canina
+  common_names: [Églantier, Rosier des chiens]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [2, 3]
+  spread_m: [2, 3]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [fruit, flower]
+  eco_services: [birds, mellifere, windbreak]
+  flowering_months: [5, 6]
+  harvest_months: [9, 10, 11]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 4
+  production_start_year: 2
+
+- latin_name: Viburnum opulus
+  common_names: [Viorne obier]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [3, 4]
+  spread_m: [2, 4]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 4
+  edible_rating: 1
+  edible_parts: [fruit]
+  eco_services: [birds, beneficial-insects, ornamental]
+  flowering_months: [5, 6]
+  harvest_months: [9, 10]
+  native_countries: [BE, FR, LU, NL]
+  toxic_for: [humans]
+  maturity_years: 5
+
+- latin_name: Prunus spinosa
+  common_names: [Prunellier, Épine noire]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  root_system: spreading
+  height_m: [2, 4]
+  spread_m: [2, 4]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 2
+  edible_parts: [fruit, flower]
+  eco_services: [birds, mellifere, windbreak, beneficial-insects]
+  flowering_months: [3, 4]
+  harvest_months: [10, 11]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 5
+
+- latin_name: Chaenomeles japonica
+  common_names: [Cognassier du Japon]
+  plant_type: small-shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: slow
+  height_m: [0.8, 1.2]
+  spread_m: [1, 2]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 2
+  edible_rating: 3
+  edible_parts: [fruit]
+  eco_services: [mellifere, ornamental]
+  flowering_months: [3, 4]
+  harvest_months: [9, 10]
+  maturity_years: 3
+
+- latin_name: Ilex aquifolium
+  common_names: [Houx]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: evergreen
+  growth_rate: slow
+  height_m: [3, 10]
+  spread_m: [2, 5]
+  hardiness_zone: 6
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  eco_services: [birds, windbreak, mellifere]
+  flowering_months: [5, 6]
+  fertility: dioecious
+  native_countries: [BE, FR, LU, NL]
+  toxic_for: [humans, dogs, cats]
+  maturity_years: 20
+
+- latin_name: Salvia rosmarinus
+  common_names: [Romarin]
+  plant_type: small-shrub
+  strata: shrub
+  foliage_type: evergreen
+  growth_rate: medium
+  height_m: [0.6, 1.5]
+  spread_m: [0.6, 1.2]
+  hardiness_zone: 8
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [leaf, flower]
+  eco_services: [mellifere]
+  flowering_months: [3, 4, 5]
+  harvest_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  maturity_years: 3

@@ -3,6 +3,7 @@
 # plants, animals), `kind` says what the element is.
 class MapFeature < ApplicationRecord
   include GeoJsonGeometry
+  include PlantableFeature
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze

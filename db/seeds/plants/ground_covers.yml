@@ -1,0 +1,187 @@
+# Ground covers: low, spreading plants that keep the soil covered.
+- latin_name: Thymus vulgaris
+  common_names: [Thym commun]
+  plant_type: small-shrub
+  strata: ground_cover
+  foliage_type: evergreen
+  growth_rate: medium
+  height_m: [0.2, 0.3]
+  spread_m: [0.3, 0.4]
+  hardiness_zone: 6
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [leaf, flower]
+  eco_services: [mellifere, beneficial-insects, ground-cover]
+  flowering_months: [5, 6, 7]
+  harvest_months: [4, 5, 6, 7, 8, 9, 10]
+  maturity_years: 2
+
+- latin_name: Trifolium repens
+  common_names: [Trèfle blanc, Trèfle rampant]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.1, 0.2]
+  spread_m: [0.3, 0.6]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 2
+  edible_parts: [flower, leaf]
+  eco_services: [nitrogen, mellifere, ground-cover]
+  flowering_months: [5, 6, 7, 8, 9]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+
+- latin_name: Fragaria vesca
+  common_names: [Fraisier des bois]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.1, 0.2]
+  spread_m: [0.2, 0.3]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit, leaf]
+  eco_services: [ground-cover, mellifere]
+  flowering_months: [4, 5, 6]
+  harvest_months: [6, 7, 8, 9]
+  fertility: self-fertile
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+  production_start_year: 1
+
+- latin_name: Fragaria × ananassa
+  common_names: [Fraisier, Fraisier cultivé]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.15, 0.3]
+  spread_m: [0.3, 0.4]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 5
+  edible_parts: [fruit]
+  eco_services: [ground-cover, mellifere]
+  flowering_months: [4, 5, 6]
+  harvest_months: [5, 6, 7, 8, 9]
+  fertility: self-fertile
+  maturity_years: 1
+  production_start_year: 1
+  varieties: [Mara des bois, Gariguette]
+
+- latin_name: Vinca minor
+  common_names: [Petite pervenche]
+  plant_type: ground-cover
+  strata: ground_cover
+  foliage_type: evergreen
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.1, 0.2]
+  spread_m: [0.5, 1]
+  hardiness_zone: 4
+  exposures: [partial-shade, shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  medicinal_rating: 1
+  eco_services: [ground-cover, erosion-control]
+  flowering_months: [3, 4, 5]
+  toxic_for: [humans, dogs, cats, horses]
+  maturity_years: 2
+
+- latin_name: Ajuga reptans
+  common_names: [Bugle rampante]
+  plant_type: ground-cover
+  strata: ground_cover
+  foliage_type: semi-evergreen
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.1, 0.2]
+  spread_m: [0.3, 0.6]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  medicinal_rating: 2
+  eco_services: [ground-cover, mellifere]
+  flowering_months: [4, 5, 6]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+
+- latin_name: Geranium macrorrhizum
+  common_names: [Géranium à gros rhizome]
+  plant_type: ground-cover
+  strata: ground_cover
+  foliage_type: semi-evergreen
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.3, 0.4]
+  spread_m: [0.5, 0.6]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [dry, moist]
+  watering_need: 2
+  eco_services: [ground-cover, mellifere, erosion-control]
+  flowering_months: [5, 6, 7]
+  maturity_years: 2
+
+- latin_name: Galium odoratum
+  common_names: [Aspérule odorante, Gaillet odorant]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.15, 0.3]
+  spread_m: [0.3, 0.5]
+  hardiness_zone: 4
+  exposures: [partial-shade, shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 2
+  medicinal_rating: 2
+  edible_parts: [leaf]
+  eco_services: [ground-cover]
+  flowering_months: [4, 5, 6]
+  harvest_months: [4, 5]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+
+- latin_name: Allium ursinum
+  common_names: [Ail des ours]
+  plant_type: herbaceous
+  strata: ground_cover
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.2, 0.4]
+  spread_m: [0.2, 0.3]
+  hardiness_zone: 4
+  exposures: [partial-shade, shade]
+  soil_moisture: [moist]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 4
+  medicinal_rating: 3
+  edible_parts: [leaf, flower, root]
+  eco_services: [ground-cover]
+  flowering_months: [4, 5]
+  harvest_months: [3, 4, 5]
+  native_countries: [BE, FR, LU, NL]
+  toxic_for: [dogs, cats]
+  maturity_years: 3
