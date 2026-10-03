@@ -18,6 +18,12 @@ class Map < ApplicationRecord
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }
 
+  # Photos and soil (understand cycle)
+  has_many :photos, class_name: "MapPhoto", dependent: :destroy
+  has_many :photo_albums, dependent: :destroy
+  has_many :soil_samples, dependent: :destroy
+  has_many :bioindicator_observations, dependent: :destroy
+
   scope :active, -> { where(archived_at: nil) }
 
   after_create :add_owner_membership
