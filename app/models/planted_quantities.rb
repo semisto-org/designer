@@ -55,8 +55,9 @@ class PlantedQuantities
     end
     areas = connection.select_rows(PATCH_AREAS_SQL, "patch areas", [ map.id ]).to_h { |id, area| [ id, area.to_f.round(1) ] }
     features = map.features.where(id: areas.keys).order(:id).to_a
-    items = PatchItem.where(map_feature_id: areas.keys).includes(:species, :variety).order(:position, :id).group_by(&:map_feature_id)
-    palette = map.palette_items.includes(:species, :variety).to_a
+    items = PatchItem.where(map_feature_id: areas.keys).includes(species: :common_names, variety: :common_names)
+                     .order(:position, :id).group_by(&:map_feature_id)
+    palette = map.palette_items.includes(species: :common_names, variety: [ :common_names, :species ]).to_a
     new(map:, plants:, palette:, patches: features.map { |f| [ f, areas[f.id], items.fetch(f.id, []) ] })
   end
 
@@ -122,7 +123,8 @@ class PlantedQuantities
   end
 
   def variety_index
-    @variety_index ||= PlantVariety.where(id: by_key.keys.filter_map(&:last)).includes(:common_names).index_by(&:id)
+    @variety_index ||= PlantVariety.where(id: by_key.keys.filter_map(&:last) | palette.filter_map(&:variety_id))
+                                   .includes(:common_names, :species).index_by(&:id)
   end
 
   # Strata of a key on this map: palette override, else the species default.

@@ -360,6 +360,7 @@ fr:
     read_only: "Lecture seule : seuls les éditeurs de la carte modifient la palette."
     load_error: "La palette n'a pas pu être chargée."
   plant_list:
+    csv_filename: "liste-de-plants"
     intro: "Ce qu'il faut commander et planter : plants isolés et compositions des patches."
     totals: "%{total} plants · %{species} espèces"
     isolated: "%{count} isolés"

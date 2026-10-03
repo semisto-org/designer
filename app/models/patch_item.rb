@@ -38,6 +38,11 @@ class PatchItem < ApplicationRecord
     [ (effective_density(palette_strata) * area_m2.to_f).round, 1 ].max
   end
 
+  def as_json(*)
+    { id:, featureId: map_feature_id, speciesId: species_id, varietyId: variety_id, strata:,
+      density: density&.to_f, count:, position: }
+  end
+
   private
     def belongs_to_a_patch
       errors.add(:map_feature, :invalid) unless map_feature&.kind == "patch"
