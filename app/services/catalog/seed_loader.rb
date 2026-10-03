@@ -4,8 +4,9 @@ module Catalog
   # knowledge. Values only (no copied text), source « semisto », status
   # « to_verify » until someone checks each value against a reference.
   #
-  # Idempotent by latin name: a re-run updates values, never duplicates, and
-  # never overwrites a value someone marked « sourced » from another source.
+  # Idempotent by latin name: a re-run (every deploy) updates its own values
+  # and fills blanks, never duplicates, and never overwrites a value another
+  # source (an import, a person) wrote since.
   #
   # YAML keys are column names, plus:
   #   common_names: [..]        French names, the first one is the usual one;
@@ -20,7 +21,7 @@ module Catalog
 
     def initialize(paths = self.class.default_paths)
       @paths = paths
-      @writer = SpeciesWriter.new(source: SOURCE, status: "to_verify")
+      @writer = SpeciesWriter.new(source: SOURCE, status: "to_verify", keep_others: true)
     end
 
     # Returns { created:, updated: }.

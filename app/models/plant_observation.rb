@@ -68,7 +68,7 @@ class PlantObservation < ApplicationRecord
     end
 
     def not_in_the_future
-      errors.add(:observed_on, :in_future) if observed_on && observed_on > Date.current
+      errors.add(:observed_on, :in_future) if observed_on && observed_on > PlantableFeature.latest_today
     end
 
     def photo_is_an_image

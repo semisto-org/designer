@@ -23,7 +23,7 @@ class PlantingTest < ActiveSupport::TestCase
                                       properties: { "species_id" => plant_species(:alder).id, "variety_id" => plant_varieties(:reinette).id })
     assert_not wrong_variety.valid?
     future = @map.features.new(layer: "plants", kind: "plant", geometry: point,
-                               properties: { "species_id" => plant_species(:alder).id, "planted_on" => (Date.current + 1).iso8601 })
+                               properties: { "species_id" => plant_species(:alder).id, "planted_on" => (Date.current + 2).iso8601 })
     assert_not future.valid?
     polygon_plant = @map.features.new(layer: "plants", kind: "plant", geometry: square)
     assert_not polygon_plant.valid?
@@ -167,7 +167,8 @@ class PlantingTest < ActiveSupport::TestCase
     assert_equal 4.0, stats[:averageVigor]
     assert_nil PlantObservation.stats_for(plant_species(:alder))
 
-    assert_not plant.plant_observations.new(observed_on: Date.current + 1, survival: "dead").valid?
+    assert_not plant.plant_observations.new(observed_on: Date.current + 2, survival: "dead").valid?
+    assert plant.plant_observations.new(observed_on: Date.current + 1, survival: "dead").valid?, "a day ahead for time zones"
     assert_not @patch.plant_observations.new(observed_on: Date.current, survival: "dead").valid?
   end
 

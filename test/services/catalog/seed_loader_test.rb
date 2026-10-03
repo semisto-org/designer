@@ -31,6 +31,16 @@ class Catalog::SeedLoaderTest < ActiveSupport::TestCase
     assert_equal "trefle", hazel.provenance_for(:height_max_m).source
   end
 
+  test "a re-run never reverts an imported value" do
+    Catalog::SeedLoader.new.call
+    hazel = PlantSpecies.find_by_latin_name("Corylus avellana")
+    hazel.update!(height_max_m: 5.5)
+    hazel.record_provenance!(%w[height_max_m], source: "terranova", status: "to_verify")
+    Catalog::SeedLoader.new.call
+    assert_equal 5.5, hazel.reload.height_max_m.to_f
+    assert_equal "terranova", hazel.provenance_for(:height_max_m).source
+  end
+
   test "every seed entry uses canonical vocabulary" do
     entries = Catalog::SeedLoader.new.entries
     assert_equal entries.size, entries.map { |e| e["latin_name"].downcase }.uniq.size, "no duplicate latin names"

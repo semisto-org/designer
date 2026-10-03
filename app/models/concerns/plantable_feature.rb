@@ -18,6 +18,10 @@ module PlantableFeature
     validate :validate_patch, if: :patch?
   end
 
+  # The latest date that is « today » somewhere: the gardener's browser may
+  # already be tomorrow compared with the server (UTC).
+  def self.latest_today = Date.current + 1
+
   def plant? = kind == PLANT
   def patch? = kind == PATCH
 
@@ -68,7 +72,7 @@ module PlantableFeature
       end
       if properties["planted_on"].present?
         date = planted_on
-        errors.add(:properties, :invalid) if date.nil? || date > Date.current
+        errors.add(:properties, :invalid) if date.nil? || date > PlantableFeature.latest_today
       end
     end
 
