@@ -1,0 +1,4 @@
+{"genera": [
+  {"id": 11, "latin_name": "Sambucus", "common_name": "Sureau", "description": "Texte libre à ne jamais importer.", "species_ids": [101]},
+  {"id": 12, "latin_name": "Elaeagnus", "common_name": "Chalef", "description": "", "species_ids": [102, 103]}
+], "meta": {"page": 1, "per_page": 200, "total": 2, "pages": 1}}

@@ -1,0 +1,78 @@
+# Test values, written for these tests (not copied from any source).
+apple:
+  genus: malus
+  latin_name: Malus domestica
+  plant_type: tree
+  strata: sub_canopy
+  height_min_m: 3
+  height_max_m: 6
+  spread_min_m: 3
+  spread_max_m: 5
+  hardiness_zone: 5
+  min_temperature_c: -28.8
+  exposures: [sun]
+  soil_moisture: [moist]
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  edible_rating: 5
+  harvest_months: [8, 9, 10]
+  flowering_months: [4, 5]
+  fertility: self-sterile
+  native_countries: []
+
+alder:
+  genus: alnus
+  latin_name: Alnus glutinosa
+  plant_type: tree
+  strata: canopy
+  height_max_m: 20
+  spread_max_m: 8
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  eco_services: [nitrogen, pioneer]
+  native_countries: [BE, FR]
+
+comfrey:
+  latin_name: Symphytum officinale
+  plant_type: herbaceous
+  strata: herbaceous
+  height_max_m: 1.2
+  spread_max_m: 0.6
+  hardiness_zone: 4
+  exposures: [sun, partial-shade, shade]
+  eco_services: [minerals, mellifere, organic-matter]
+  medicinal_rating: 3
+  native_countries: [BE]
+
+rosemary:
+  latin_name: Salvia rosmarinus
+  plant_type: small-shrub
+  strata: shrub
+  height_max_m: 1.5
+  spread_max_m: 1
+  hardiness_zone: 8
+  exposures: [sun]
+  edible_parts: [leaf]
+  edible_rating: 3
+  eco_services: [mellifere]
+
+robinia:
+  latin_name: Robinia pseudoacacia
+  plant_type: tree
+  strata: canopy
+  hardiness_zone: 4
+  eco_services: [nitrogen, mellifere]
+  invasive_countries: [BE]
+
+strawberry:
+  latin_name: Fragaria vesca
+  plant_type: ground-cover
+  strata: ground_cover
+  height_max_m: 0.2
+  spread_max_m: 0.3
+  hardiness_zone: 5
+  exposures: [partial-shade]
+  edible_parts: [fruit]
+  edible_rating: 4
+  native_countries: [BE]

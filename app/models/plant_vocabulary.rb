@@ -270,10 +270,11 @@ module PlantVocabulary
   # USDA zone of an absolute minimum in °C: zone 2 starts at -45.6 °C and each
   # zone is 5.6 °C wide. -25 → 5, -20 → 6, -15 → 7, -10 → 8.
   def zone_for_temperature(celsius)
-    (2 + ((celsius.to_f - -45.6) / 5.6).floor).clamp(1, 13)
+    (2 + ((celsius.to_f + 45.6) / 5.6 + 1e-9).floor).clamp(1, 13)
   end
 
-  # Lower bound of a zone (the coldest night it is rated for): 7 → -17.8 °C.
+  # Lower bound of a zone (the coldest night it is rated for): 7 → -17.6 °C
+  # (5.6 °C steps approximate the 10 °F USDA bands).
   def min_temperature_for_zone(zone)
     return nil if zone.nil?
     (-45.6 + (zone.to_i - 2) * 5.6).round(1)

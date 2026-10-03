@@ -1,11 +1,11 @@
 # A cultivar of a species (Malus domestica 'Reinette d'Orléans').
 class PlantVariety < ApplicationRecord
   include FieldProvenance
+  include CommonNamed
   provenanced_fields :fertility, :taste_rating, :productivity, :ripening, :disease_resistance,
                      :maturity_years, :production_start_year, :common_names
 
   belongs_to :species, class_name: "PlantSpecies", inverse_of: :varieties
-  has_many :common_names, -> { order(:position, :id) }, class_name: "PlantCommonName", as: :nameable, dependent: :delete_all
 
   normalizes :name, with: ->(n) { n.to_s.squish.delete_prefix("'").delete_suffix("'") }
 
@@ -21,10 +21,6 @@ class PlantVariety < ApplicationRecord
     genus_word = species.latin_name.split.first.to_s.downcase
     return name if name.downcase.start_with?("#{genus_word} ")
     "#{species.latin_name} '#{name}'"
-  end
-
-  def common_name(language = "fr")
-    common_names.detect { |n| n.language == language }&.name
   end
 
   def summary_json

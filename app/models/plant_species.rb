@@ -9,6 +9,7 @@ class PlantSpecies < ApplicationRecord
   self.table_name = "plant_species"
 
   include FieldProvenance
+  include CommonNamed
 
   SINGLE_FACETS = %i[plant_type strata foliage_type life_cycle growth_rate root_system fertility soil_richness].freeze
   LIST_FACETS = %i[exposures soil_moisture soil_types soil_ph edible_parts eco_services toxic_for].freeze
@@ -31,7 +32,6 @@ class PlantSpecies < ApplicationRecord
   belongs_to :genus, class_name: "PlantGenus", optional: true, inverse_of: :species
   has_many :varieties, -> { order(Arel.sql("lower(plant_varieties.name)")) }, class_name: "PlantVariety",
            foreign_key: :species_id, inverse_of: :species, dependent: :destroy
-  has_many :common_names, -> { order(:position, :id) }, class_name: "PlantCommonName", as: :nameable, dependent: :delete_all
   has_many :palette_items, foreign_key: :species_id, inverse_of: :species, dependent: :restrict_with_error
   has_many :observations, class_name: "PlantObservation", foreign_key: :species_id, inverse_of: :species, dependent: :nullify
 
@@ -77,10 +77,6 @@ class PlantSpecies < ApplicationRecord
 
   def to_param = [ id, latin_name.parameterize ].join("-")
 
-  def common_name(language = "fr")
-    common_names.detect { |n| n.language == language }&.name
-  end
-
   def default_strata = strata.presence || self.class.default_strata_for(plant_type) || "shrub"
 
   def nitrogen_fixer? = eco_services.include?("nitrogen")
@@ -93,16 +89,6 @@ class PlantSpecies < ApplicationRecord
   # Adult crown and height (m), with the strata default when unknown.
   def adult_spread(strata = default_strata) = PlantGrowth.spread(strata:, species: self)
   def adult_height(strata = default_strata) = PlantGrowth.height(strata:, species: self)
-
-  # Replaces the common names of one language, keeping their order.
-  def replace_common_names!(names, language: "fr")
-    names = Array(names).map { |n| n.to_s.squish }.reject(&:blank?).uniq { |n| n.downcase }
-    transaction do
-      common_names.where(language:).delete_all
-      names.each_with_index { |name, i| common_names.create!(language:, name:, position: i) }
-    end
-    common_names.reset
-  end
 
   # Compact form for cards, the palette and the map overlay.
   def summary_json

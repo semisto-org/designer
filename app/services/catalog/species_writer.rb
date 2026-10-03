@@ -47,13 +47,21 @@ module Catalog
     private
       def blank?(value) = value.nil? || (value.respond_to?(:empty?) && value.empty?)
 
-      # Zone and temperature derive from each other: the derived one carries
-      # the provenance of the one that was written.
+      # Zone and temperature derive from each other. When a source gives only
+      # one, the other is (re)derived unless it already agrees, and carries
+      # the same provenance.
       def derived_hardiness(record, written)
         return [] unless record.respond_to?(:hardiness_zone)
-        if written.include?("hardiness_zone") && !written.include?("min_temperature_c") && record.min_temperature_c.nil?
+        zone, temperature = record.hardiness_zone, record.min_temperature_c
+        if written.include?("hardiness_zone") && !written.include?("min_temperature_c")
+          return [] if temperature && PlantVocabulary.zone_for_temperature(temperature) == zone
+          return [] unless record.provenance_writable?("min_temperature_c", source)
+          record.min_temperature_c = PlantVocabulary.min_temperature_for_zone(zone)
           [ "min_temperature_c" ]
-        elsif written.include?("min_temperature_c") && !written.include?("hardiness_zone") && record.hardiness_zone.nil?
+        elsif written.include?("min_temperature_c") && !written.include?("hardiness_zone")
+          derived = PlantVocabulary.zone_for_temperature(temperature)
+          return [] if zone == derived || !record.provenance_writable?("hardiness_zone", source)
+          record.hardiness_zone = derived
           [ "hardiness_zone" ]
         else
           []
