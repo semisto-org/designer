@@ -4,6 +4,7 @@
 class Map < ApplicationRecord
   include GeoJsonGeometry
   include Commentable
+  include HasTerrain
 
   # Raised when a fourth editor would be added.
   class EditorLimitReached < StandardError

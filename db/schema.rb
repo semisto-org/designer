@@ -17,6 +17,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_090000) do
   enable_extension "pgcrypto"
   enable_extension "postgis"
 
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
   create_table "ai_actions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "map_id"
@@ -182,6 +210,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_090000) do
     t.index ["token"], name: "index_map_share_links_on_token", unique: true
   end
 
+  create_table "map_terrains", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "provider"
+    t.string "crs", default: "EPSG:3857", null: false
+    t.float "west"
+    t.float "north"
+    t.float "step"
+    t.float "cell_size_m"
+    t.integer "cols"
+    t.integer "rows"
+    t.float "lat0"
+    t.float "margin_m"
+    t.float "z_min"
+    t.float "z_max"
+    t.float "z_unit", default: 0.01, null: false
+    t.integer "nodata", default: 65535, null: false
+    t.integer "nodata_count"
+    t.geometry "extent", limit: {:srid=>4326, :type=>"st_polygon"}
+    t.jsonb "metadata", default: {}, null: false
+    t.integer "progress", default: 0, null: false
+    t.datetime "started_at"
+    t.datetime "fetched_at"
+    t.text "error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_map_terrains_on_map_id", unique: true
+  end
+
   create_table "maps", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -200,6 +257,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_090000) do
     t.integer "lock_version", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "water_settings", default: {}, null: false
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["organization_id"], name: "index_maps_on_organization_id"
     t.index ["owner_id"], name: "index_maps_on_owner_id"
@@ -365,6 +423,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_090000) do
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "ai_actions", "maps", on_delete: :cascade
   add_foreign_key "ai_actions", "users", on_delete: :cascade
   add_foreign_key "api_tokens", "users", on_delete: :cascade
@@ -386,6 +446,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_090000) do
   add_foreign_key "map_publications", "users", column: "published_by_id"
   add_foreign_key "map_share_links", "maps"
   add_foreign_key "map_share_links", "users", column: "created_by_id"
+  add_foreign_key "map_terrains", "maps"
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "owner_id"

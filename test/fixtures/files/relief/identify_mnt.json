@@ -1,0 +1,8 @@
+{
+  "results": [
+    { "layerId": 0, "layerName": "WALLONIE_MNT_2021_2022", "value": "245.37", "displayFieldName": "", "attributes": { "Pixel Value": "245.37", "Stretched value": "142" } },
+    { "layerId": 0, "layerName": "WALLONIE_MNT_2021_2022", "value": "245.12", "displayFieldName": "", "attributes": { "Pixel Value": "245.12", "Stretched value": "141" } },
+    { "layerId": 0, "layerName": "WALLONIE_MNT_2021_2022", "value": "NoData", "displayFieldName": "", "attributes": { "Pixel Value": "NoData", "Stretched value": "NoData" } },
+    { "layerId": 0, "layerName": "WALLONIE_MNT_2021_2022", "value": "244.98", "displayFieldName": "", "attributes": { "Pixel Value": "244.98", "Stretched value": "141" } }
+  ]
+}

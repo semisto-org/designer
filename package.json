@@ -13,7 +13,8 @@
     "vite-plugin-ruby": "^5.2.5"
   },
   "scripts": {
-    "check": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"
+    "check": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
+    "test:relief": "node --experimental-strip-types --test test/frontend/relief/*.test.ts"
   },
   "dependencies": {
     "@inertiajs/react": "^3.8.0",

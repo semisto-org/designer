@@ -59,6 +59,9 @@ jobs:
       - name: Type-check
         run: npx tsc -p tsconfig.app.json
 
+      - name: Unit tests (TypeScript)
+        run: npm run test:relief
+
   test:
     runs-on: ubuntu-latest
 

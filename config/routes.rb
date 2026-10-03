@@ -116,6 +116,17 @@ Rails.application.routes.draw do
   end
   get "docs/mcp", to: "docs#mcp", as: :mcp_docs
   # --- end mcp ---
+  # --- relief-water ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :relief, only: :show do
+        get "files/:kind", action: :file, as: :file, constraints: { kind: /grid|surface|landcover|texture/ }
+      end
+      resource :terrain, only: %i[show create]
+      resource :water_settings, only: :update
+    end
+  end
+  # --- end relief-water ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

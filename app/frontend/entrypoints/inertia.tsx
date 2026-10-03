@@ -6,7 +6,7 @@ import PublicLayout from '@/layouts/PublicLayout'
 // Default layouts: the marketing site and sign-in use PublicLayout, the map
 // editor (maps/show) and public map views draw their own full-screen chrome,
 // everything else uses AppLayout. A page can still set `Page.layout`.
-const FULL_SCREEN = ['maps/show', 'public_maps/show']
+const FULL_SCREEN = ['maps/show', 'public_maps/show', 'maps/reliefs/show']
 
 void createInertiaApp({
   pages: '../pages',

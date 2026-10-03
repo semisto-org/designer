@@ -1,4 +1,4 @@
-import { Bot, ClipboardList, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Route } from 'lucide-react'
+import { Bot, ClipboardList, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Mountain, Route } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -18,6 +18,7 @@ import IdentifyOverlay from '@/map/data/IdentifyOverlay'
 import AiJournalPanel from '@/map/panels/AiJournalPanel'
 import DraftsBar from '@/map/drafts/DraftsBar'
 import DraftReviewSection from '@/map/drafts/DraftReviewSection'
+import ReliefPanel from '@/map/panels/ReliefPanel'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -25,6 +26,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'map', component: ProjectPanel, order: 5 },
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'map', component: LayersPanel, order: 20 },
+  { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'understand', component: ReliefPanel, order: 30 },
   { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 90 },
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
