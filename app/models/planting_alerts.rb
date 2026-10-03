@@ -152,7 +152,7 @@ class PlantingAlerts
       if fixers.zero?
         [ Alert.new(level: "warning", rule: "nitrogen", message: t("nitrogen_none", count: woody_total)) ]
       elsif share < NITROGEN_MIN_SHARE
-        [ Alert.new(level: "info", rule: "nitrogen", message: t("nitrogen_low", share: (share * 100).round, fixers:, count: woody_total)) ]
+        [ Alert.new(level: "info", rule: "nitrogen", message: t("nitrogen_low", share: number(share * 100, share < 0.01 ? 1 : 0), fixers:, count: woody_total)) ]
       else
         []
       end

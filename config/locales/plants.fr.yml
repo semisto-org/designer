@@ -46,6 +46,8 @@ fr:
       zone: "Zone %{zone}"
       height: "%{value} m de haut"
       unknown_zone: "Rusticité inconnue"
+      native: "Indigène"
+      invasive: "Invasive ici"
     show:
       back: "Retour au catalogue"
       common_names: "Aussi appelée"
@@ -330,6 +332,7 @@ fr:
     place: "Placer"
     place_title: "Placer %{name} sur la carte"
     placing: "Cliquez sur la carte pour planter %{name}. Échap pour terminer."
+    stop_placing: "Terminer"
     placed_count:
       zero: "Pas encore placé"
       one: "1 plant prévu"
@@ -375,6 +378,13 @@ fr:
     coherence: "Cohérence du plan"
     coherence_none: "Rien à signaler : le plan est cohérent avec ce que l'on sait des espèces."
     why: "Pourquoi ?"
+    in_patches:
+      one: "en patch"
+      other: "en patches"
+    alone:
+      one: "isolé"
+      other: "isolés"
+    split: "%{isolated} isolé(s) + %{composed} en patches"
     load_error: "La liste n'a pas pu être chargée."
     print_page:
       title: "Liste de plants"
@@ -438,7 +448,7 @@ fr:
       NL: "Pays-Bas"
   patches:
     composition: "Composition du patch"
-    area: "Surface mesurée : %{area}"
+    area: "%{area} mesurés"
     total:
       zero: "Aucun plant"
       one: "1 plant"
@@ -459,6 +469,8 @@ fr:
       one: "≈ 1 plant"
       other: "≈ %{count} plants"
     spacing: "espacement ≈ %{value} m"
+    plants_unit: "plants"
+    density_unit: "plants/m²"
     remove: "Retirer du patch"
     exposure: "Exposition du patch"
     exposure_unknown: "Non précisée"
@@ -478,7 +490,7 @@ fr:
     planted_on: "Planté le %{date}"
     mark_planted: "Marquer comme planté"
     planted_date: "Date de plantation"
-    unmark: "Annuler « planté »"
+    unmark: "Annuler"
     planted: "Plant marqué comme planté."
   plant_observations:
     title: "Suivi de reprise"
@@ -500,7 +512,8 @@ fr:
     note: "Note"
     note_placeholder: "Feuillage, dégâts, paillage, arrosage…"
     photo: "Photo"
-    save: "Enregistrer l'observation"
+    choose_photo: "Ajouter une photo (facultatif)"
+    save: "Enregistrer"
     saved: "Observation enregistrée."
     deleted: "Observation supprimée."
     delete: "Supprimer l'observation"
