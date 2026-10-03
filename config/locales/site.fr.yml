@@ -1,0 +1,29 @@
+# Public website: home, features, pricing, drone mission, open source,
+# privacy, terms.
+fr:
+  site:
+    seo:
+      home:
+        title: "Cartographiez votre terrain, concevez votre jardin-forêt"
+        description: "L'atelier en ligne de Semisto : cartographiez votre terrain avec précision, comprenez-le, puis concevez votre jardin-forêt pour le climat qui vient, avec Claude à vos côtés."
+      features:
+        title: "Fonctionnalités"
+        description: "Fond de carte et couches du Géoportail, dessin de l'existant, palette de plantes, fiche projet, partage et commentaires, et Claude qui lit votre carte."
+      pricing:
+        title: "Tarifs"
+        description: "Une carte gratuite, un forfait particulier à 79 € par an payé une seule fois, des formules pour les professionnels. 30 % de réduction pour les membres de Semisto."
+      drone:
+        title: "Mission drone"
+        description: "Une vue aérienne datée de votre terrain, prise par Semisto et configurée sur votre carte. 280 € TTC, achat unique."
+      open_source:
+        title: "Open source"
+        description: "Semisto Designer est un logiciel libre (AGPL-3.0). Le code, les sources de données et leurs licences, en toute transparence."
+      privacy:
+        title: "Politique de confidentialité"
+        description: "Quelles données Semisto Designer collecte, pourquoi, qui les héberge et comment exercer vos droits. Projet à valider."
+      terms:
+        title: "Conditions d'utilisation"
+        description: "Les conditions d'utilisation de Semisto Designer : compte, formules, paiement, contenus et responsabilités. Projet à valider."
+      help:
+        title: "Centre d'aide"
+        description: "Des guides concrets pour créer sa première carte, lire les couches du Géoportail, dessiner l'existant, construire sa palette et connecter Claude."

@@ -1,0 +1,6 @@
+<p><%= t("billing_mailer.drone_ordered.body", name: @user.display_name, email: @user.email_address) %></p>
+<% if @payment %>
+  <p><%= t("billing_mailer.drone_ordered.amount", amount: number_to_currency(@payment.amount_cents / 100.0, unit: "€", format: "%n %u", separator: ",", delimiter: " ")) %>
+  <% if @payment.promotion_code.present? %><br><%= t("billing_mailer.drone_ordered.promo", code: @payment.promotion_code) %><% end %></p>
+<% end %>
+<p><%= t("billing_mailer.drone_ordered.next") %></p>

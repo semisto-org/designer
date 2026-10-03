@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  include Billable
+
   has_many :sessions, dependent: :destroy
   has_many :organization_memberships, dependent: :destroy
   has_many :organizations, through: :organization_memberships

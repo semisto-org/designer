@@ -1,0 +1,192 @@
+# Plans, billing (Stripe), the account page and their e-mails.
+fr:
+  billing:
+    title: "Formule et facturation"
+    intro: "Votre formule, sa date d'échéance, et de quoi la renouveler ou en changer."
+    read_only_by_plan: "Cette carte est en lecture seule : votre forfait a pris fin et elle dépasse le nombre de cartes de la formule gratuite. Vous pouvez toujours la consulter, l'exporter et la commenter ; renouvelez votre forfait pour la modifier à nouveau."
+    read_only_badge: "Lecture seule · renouveler"
+    read_only_hint: "Votre forfait a pris fin : cette carte reste lisible, exportable et commentable, mais ne peut plus être modifiée."
+    errors:
+      not_configured: "Les paiements ne sont pas encore ouverts : tout est débloqué pendant la bêta."
+      unknown_plan: "Cette formule n'existe pas."
+      price_missing: "Cette formule n'est pas encore disponible à l'achat. Réessayez bientôt."
+      manage_in_portal: "Vous avez déjà un abonnement : changez de formule depuis « Gérer l'abonnement »."
+      no_portal: "Le portail de facturation sera disponible après votre premier paiement."
+      stripe: "Le paiement est momentanément indisponible. Réessayez dans quelques minutes."
+    checkout:
+      terms: "En payant, vous acceptez les [conditions d'utilisation](%{url}) de Semisto Designer."
+      success_title: "Merci, votre paiement est bien reçu."
+      success_body: "Votre formule est activée dans quelques instants. Une facture vous est envoyée par e-mail."
+      success_waiting: "Nous confirmons votre paiement auprès de Stripe… cette page se met à jour toute seule."
+      cancelled: "Paiement annulé : rien n'a été débloqué et rien n'a été débité."
+    status:
+      beta_title: "Bêta fermée : tout est débloqué"
+      beta_body: "Les paiements ne sont pas encore ouverts. Pendant la bêta, vous disposez de toutes les fonctions, sans limite de cartes."
+      current: "Votre formule"
+      free_title: "Formule gratuite"
+      free_body: "Une carte, avec le fond de carte, le dessin, la palette, la fiche projet, les commentaires, le partage et Claude en lecture. Le forfait ajoute les autres cartes, le PDF à l'échelle, les analyses et les brouillons de Claude."
+      yearly_title: "Forfait particulier"
+      yearly_until: "Valable jusqu'au %{date}"
+      yearly_days:
+        one: "Il reste %{count} jour. Rien n'est prélevé automatiquement."
+        other: "Il reste %{count} jours. Rien n'est prélevé automatiquement."
+      yearly_renew_note: "Renouveler maintenant ne fait perdre aucun jour : la nouvelle année commence à l'échéance."
+      expired_title: "Votre forfait particulier a pris fin"
+      expired_on: "Terminé le %{date}."
+      expired_body: "Vos cartes restent lisibles et rien n'est supprimé."
+      read_only_maps:
+        one: "%{count} carte est en lecture seule : elle dépasse le nombre de cartes de la formule gratuite. Renouvelez pour la modifier à nouveau."
+        other: "%{count} cartes sont en lecture seule : elles dépassent le nombre de cartes de la formule gratuite. Renouvelez pour les modifier à nouveau."
+      subscription_next: "Prochaine échéance le %{date}"
+      subscription_canceling: "Résiliation prévue : l'accès continue jusqu'au %{date}."
+      subscription_past_due: "Le dernier paiement a échoué. Mettez à jour votre moyen de paiement pour garder l'accès."
+      subscription_ended: "Abonnement terminé"
+      maps_used: "Cartes : %{used} sur %{max}"
+      maps_used_unlimited: "Cartes : %{used}"
+    actions:
+      choose: "Choisir"
+      renew: "Renouveler pour un an"
+      buy_drone: "Commander la mission"
+      manage: "Gérer l'abonnement"
+      invoices: "Factures et moyen de paiement"
+      current: "Votre formule actuelle"
+      redirecting: "Redirection vers le paiement…"
+      pay_securely: "Paiement sécurisé par Stripe. Prix TTC, TVA comprise."
+    plans_title: "Choisir ou changer de formule"
+    plans:
+      free:
+        name: "Carte gratuite"
+        tagline: "Pour commencer son jardin-forêt"
+        price: "0 €"
+        features:
+          map: "1 carte à vous"
+          draw: "Fond de carte, dessin et couches du Géoportail"
+          palette: "Palette, liste de plants et fiche projet"
+          share: "Commentaires et partage"
+          claude: "Claude en lecture seule (MCP)"
+      yearly:
+        name: "Forfait particulier"
+        tagline: "Pour mener son projet jusqu'au bout"
+        price_note: "par an, payé une seule fois"
+        renewal_note: "Sans reconduction automatique"
+        features:
+          maps: "Jusqu'à 10 cartes"
+          pdf: "PDF à l'échelle"
+          analyses: "Analyses : eau et relief, climat futur, sol"
+          claude: "Brouillons de Claude sur la carte"
+          all_free: "Tout ce que contient la carte gratuite"
+      atelier:
+        name: "Atelier"
+        tagline: "Pour les professionnels, en petite équipe"
+        price_note: "par mois"
+        renewal_note: "Abonnement mensuel, résiliable à tout moment"
+        features:
+          maps: "Jusqu'à 5 cartes"
+          all: "PDF, analyses et brouillons de Claude"
+          invite: "Éditeurs invités gratuits"
+      bureau:
+        name: "Bureau d'études"
+        tagline: "Pour les bureaux d'études et les pépiniéristes"
+        price_note: "par mois"
+        renewal_note: "Abonnement mensuel, résiliable à tout moment"
+        features:
+          maps: "Jusqu'à 20 cartes"
+          all: "PDF, analyses et brouillons de Claude"
+          invite: "Éditeurs invités gratuits"
+      drone:
+        name: "Mission drone"
+        tagline: "Une vue aérienne datée de votre terrain"
+        price_note: "achat unique"
+        renewal_note: "Prestation réalisée par Semisto"
+        features:
+          view: "Configuration de la vue drone sur votre carte"
+          team: "Semisto vous recontacte pour organiser la prise de vue"
+    member:
+      title: "Membre de Semisto ?"
+      body: "Vous avez reçu un code promotionnel personnel par e-mail : saisissez-le sur la page de paiement du forfait particulier pour obtenir 30 % de réduction, soit %{price} au lieu de %{full}."
+    payments:
+      title: "Paiements récents"
+      empty: "Aucun paiement pour l'instant."
+      invoice: "Facture"
+      refunded: "Remboursé : %{amount}"
+      kind:
+        yearly: "Forfait particulier"
+        atelier: "Atelier"
+        bureau: "Bureau d'études"
+        drone: "Mission drone"
+    drone:
+      title: "Missions drone commandées"
+      body: "Commandée le %{date}. Semisto vous contacte pour organiser la prise de vue."
+    per_month: "%{price} par mois"
+    per_year: "%{price} par an"
+  account:
+    title: "Mon compte"
+    profile: "Profil"
+    name: "Nom"
+    name_hint: "Affiché dans vos cartes et vos commentaires."
+    email: "Adresse e-mail"
+    email_hint: "Vous vous connectez avec cette adresse ou avec Google."
+    google: "Connexion Google activée"
+    member_since: "Inscrit depuis le %{date}"
+    saved: "Compte enregistré."
+    save: "Enregistrer"
+    plan: "Ma formule"
+    plan_names:
+      free: "Carte gratuite"
+      yearly: "Forfait particulier"
+      atelier: "Atelier"
+      bureau: "Bureau d'études"
+    plan_until: "valable jusqu'au %{date}"
+    maps: "Cartes : %{used} sur %{max}"
+    maps_unlimited: "Cartes : %{used}"
+    manage_plan: "Formule et facturation"
+    ai_title: "Claude et vos cartes"
+    ai_body: "Branchez votre Claude (ou un autre assistant compatible MCP) sur vos cartes pour qu'il les lise, et propose des brouillons."
+    ai_link: "Connecter Claude"
+    danger_title: "Supprimer mon compte"
+    danger_body: "Votre demande est transmise à Semisto, qui vous répond sous quelques jours. Vos cartes sont exportées ou archivées avant la suppression ; les pièces comptables (factures) sont conservées comme la loi l'exige."
+    delete_request: "Demander la suppression de mon compte"
+    delete_confirm: "Envoyer la demande de suppression de votre compte à Semisto ?"
+    deletion_sent: "Votre demande a été envoyée à Semisto. Un e-mail de confirmation vous a été envoyé."
+    rate_limited: "Vous avez déjà envoyé une demande. Semisto vous répond sous quelques jours."
+  billing_mailer:
+    months: [ "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre" ]
+    greeting: "Bonjour %{name},"
+    signature: "À bientôt sur Semisto Designer,"
+    team: "L'équipe Semisto"
+    renewal_reminder:
+      cta: "Renouveler mon forfait"
+      no_auto: "Rien n'est prélevé automatiquement : vous gardez la main."
+      keep_days: "Si vous renouvelez avant l'échéance, aucun jour n'est perdu : la nouvelle année commence à la fin de celle-ci."
+      readable: "Vos cartes restent toujours lisibles, exportables et commentables ; rien n'est jamais supprimé."
+      d30:
+        subject: "Votre forfait Semisto Designer se termine le %{date}"
+        body: "Votre forfait particulier est valable jusqu'au %{date}, soit dans un mois. Il couvre vos cartes supplémentaires, le PDF à l'échelle, les analyses et les brouillons de Claude."
+      d7:
+        subject: "Plus que 7 jours : votre forfait Semisto Designer se termine le %{date}"
+        body: "Votre forfait particulier se termine le %{date}, dans une semaine. Si votre projet avance encore, vous pouvez le renouveler dès maintenant."
+      expired:
+        subject: "Votre forfait Semisto Designer est arrivé à échéance"
+        body: "Votre forfait particulier a pris fin le %{date}."
+        read_only:
+          one: "%{count} de vos cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Renouvelez le forfait pour la modifier à nouveau."
+          other: "%{count} de vos cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Renouvelez le forfait pour les modifier à nouveau."
+        free_ok: "Votre première carte reste entièrement modifiable, comme avant."
+    drone_ordered:
+      subject: "Mission drone commandée par %{name}"
+      body: "%{name} (%{email}) vient de commander une mission drone sur Semisto Designer."
+      amount: "Montant payé : %{amount} (TVA comprise)."
+      promo: "Code promotionnel utilisé : %{code}."
+      next: "Prochaine étape : le contacter (répondre à cet e-mail) pour organiser la prise de vue, puis configurer la vue drone sur sa carte."
+  account_mailer:
+    deletion_request:
+      subject: "Demande de suppression de compte : %{email}"
+      body: "%{name} (%{email}) demande la suppression de son compte Semisto Designer."
+      owned_maps: "Cartes possédées : %{count}."
+      payments: "Paiements enregistrés : %{count} (pièces comptables à conserver)."
+      next: "À faire : exporter ou archiver ses cartes, puis supprimer le compte. Répondre à cet e-mail pour lui écrire."
+    deletion_confirmation:
+      subject: "Nous avons bien reçu votre demande de suppression de compte"
+      greeting: "Bonjour %{name},"
+      body: "Nous avons bien reçu votre demande de suppression de votre compte Semisto Designer. Nous vous répondons sous quelques jours."
+      note: "D'ici là, rien n'est supprimé et vous pouvez continuer à utiliser vos cartes. Les factures sont conservées comme la loi l'exige. Si vous n'êtes pas à l'origine de cette demande, répondez simplement à cet e-mail."

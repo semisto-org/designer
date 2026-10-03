@@ -34,7 +34,7 @@ class MapsController < ApplicationController
 
   def show
     render inertia: "maps/show", props: {
-      map: @map.as_inertia(Current.user),
+      map: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?),
       layers: @map.region.layers.enabled.map(&:as_inertia),
       features: @map.features.where.not(status: "rejected").map(&:as_geojson),
       mapEntitlements: map_entitlements.as_json

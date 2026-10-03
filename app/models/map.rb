@@ -34,6 +34,16 @@ class Map < ApplicationRecord
   def editable_by?(user) = %w[owner editor].include?(role_for(user))
   def manageable_by?(user) = role_for(user) == "owner"
 
+  # After a plan ends, the owner's maps beyond the plan's limit stay readable
+  # (view, export, comment) but cannot be edited: the oldest maps keep the
+  # allowance, up to max_maps. Nothing is ever deleted. Never true while
+  # billing is disabled (closed beta).
+  def read_only_by_plan?
+    return false unless Billing.enabled? && archived_at.nil?
+    allowed = Entitlements.for(owner).max_maps
+    owner.owned_maps.active.order(:created_at, :id).limit(allowed).pluck(:id).exclude?(id)
+  end
+
   def editors_count
     memberships.where(role: "editor").count
   end

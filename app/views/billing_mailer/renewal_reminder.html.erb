@@ -1,0 +1,14 @@
+<p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
+<p><%= t("billing_mailer.renewal_reminder.#{@kind}.body", date: @expires_on) %></p>
+<% if @kind == "expired" %>
+  <% if @read_only_maps.positive? %>
+    <p><%= t("billing_mailer.renewal_reminder.expired.read_only", count: @read_only_maps) %></p>
+  <% else %>
+    <p><%= t("billing_mailer.renewal_reminder.expired.free_ok") %></p>
+  <% end %>
+<% else %>
+  <p><%= t("billing_mailer.renewal_reminder.keep_days") %></p>
+<% end %>
+<p><a href="<%= @billing_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t("billing_mailer.renewal_reminder.cta") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t("billing_mailer.renewal_reminder.no_auto") %> <%= t("billing_mailer.renewal_reminder.readable") %></p>
+<p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

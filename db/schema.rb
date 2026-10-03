@@ -10,12 +10,64 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_060200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
   enable_extension "postgis"
+
+  create_table "billing_accounts", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "stripe_customer_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["stripe_customer_id"], name: "index_billing_accounts_on_stripe_customer_id", unique: true
+    t.index ["user_id"], name: "index_billing_accounts_on_user_id", unique: true
+  end
+
+  create_table "billing_notices", force: :cascade do |t|
+    t.bigint "plan_purchase_id", null: false
+    t.string "kind", null: false
+    t.datetime "sent_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["plan_purchase_id", "kind"], name: "index_billing_notices_on_plan_purchase_id_and_kind", unique: true
+    t.index ["plan_purchase_id"], name: "index_billing_notices_on_plan_purchase_id"
+  end
+
+  create_table "billing_payments", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "plan_purchase_id"
+    t.bigint "plan_subscription_id"
+    t.string "plan_key", null: false
+    t.integer "amount_cents", null: false
+    t.integer "tax_cents", default: 0, null: false
+    t.integer "discount_cents", default: 0, null: false
+    t.string "currency", default: "eur", null: false
+    t.string "promotion_code"
+    t.datetime "paid_at", null: false
+    t.integer "refunded_cents", default: 0, null: false
+    t.datetime "refunded_at"
+    t.boolean "livemode", default: true, null: false
+    t.string "stripe_checkout_session_id"
+    t.string "stripe_invoice_id"
+    t.string "stripe_payment_intent_id"
+    t.string "stripe_charge_id"
+    t.string "stripe_customer_id"
+    t.text "hosted_invoice_url"
+    t.text "invoice_pdf_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["paid_at"], name: "index_billing_payments_on_paid_at"
+    t.index ["plan_purchase_id"], name: "index_billing_payments_on_plan_purchase_id"
+    t.index ["plan_subscription_id"], name: "index_billing_payments_on_plan_subscription_id"
+    t.index ["promotion_code"], name: "index_billing_payments_on_promotion_code"
+    t.index ["stripe_checkout_session_id"], name: "index_billing_payments_on_stripe_checkout_session_id", unique: true
+    t.index ["stripe_invoice_id"], name: "index_billing_payments_on_stripe_invoice_id", unique: true
+    t.index ["stripe_payment_intent_id"], name: "index_billing_payments_on_stripe_payment_intent_id"
+    t.index ["user_id"], name: "index_billing_payments_on_user_id"
+  end
 
   create_table "map_features", force: :cascade do |t|
     t.bigint "map_id", null: false
@@ -112,6 +164,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
 
+  create_table "plan_purchases", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "plan_key", null: false
+    t.string "status", default: "paid", null: false
+    t.datetime "starts_at", null: false
+    t.datetime "expires_at"
+    t.string "stripe_checkout_session_id", null: false
+    t.string "stripe_payment_intent_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["stripe_checkout_session_id"], name: "index_plan_purchases_on_stripe_checkout_session_id", unique: true
+    t.index ["stripe_payment_intent_id"], name: "index_plan_purchases_on_stripe_payment_intent_id"
+    t.index ["user_id", "plan_key", "status", "expires_at"], name: "index_plan_purchases_on_user_plan_status_expiry"
+    t.index ["user_id"], name: "index_plan_purchases_on_user_id"
+  end
+
+  create_table "plan_subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "plan_key", null: false
+    t.string "status", null: false
+    t.string "stripe_subscription_id", null: false
+    t.string "stripe_customer_id"
+    t.string "stripe_price_id"
+    t.datetime "current_period_start"
+    t.datetime "current_period_end"
+    t.boolean "cancel_at_period_end", default: false, null: false
+    t.datetime "canceled_at"
+    t.datetime "ended_at"
+    t.datetime "past_due_since"
+    t.datetime "synced_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["stripe_subscription_id"], name: "index_plan_subscriptions_on_stripe_subscription_id", unique: true
+    t.index ["user_id"], name: "index_plan_subscriptions_on_user_id"
+  end
+
   create_table "region_layers", force: :cascade do |t|
     t.bigint "region_id", null: false
     t.string "key", null: false
@@ -161,6 +249,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "stripe_events", force: :cascade do |t|
+    t.string "stripe_event_id", null: false
+    t.string "event_type", null: false
+    t.boolean "livemode", default: true, null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.integer "attempts", default: 0, null: false
+    t.text "error"
+    t.string "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_stripe_events_on_created_at"
+    t.index ["event_type"], name: "index_stripe_events_on_event_type"
+    t.index ["stripe_event_id"], name: "index_stripe_events_on_stripe_event_id", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.citext "email_address", null: false
     t.string "name"
@@ -175,6 +279,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
 
+  add_foreign_key "billing_accounts", "users"
+  add_foreign_key "billing_notices", "plan_purchases"
+  add_foreign_key "billing_payments", "plan_purchases"
+  add_foreign_key "billing_payments", "plan_subscriptions"
+  add_foreign_key "billing_payments", "users"
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
@@ -188,6 +297,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
   add_foreign_key "maps", "users", column: "owner_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "plan_purchases", "users"
+  add_foreign_key "plan_subscriptions", "users"
   add_foreign_key "region_layers", "regions"
   add_foreign_key "sessions", "users"
 end

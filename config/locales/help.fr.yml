@@ -1,0 +1,4 @@
+# Help center (articles live in app/help/*.md; these are the interface strings).
+fr:
+  help:
+    not_found: "Cet article d'aide n'existe pas."
