@@ -1,0 +1,46 @@
+{
+  "results": [
+    {
+      "layerId": 1,
+      "layerName": "Sigles pédologiques",
+      "value": "Gbbfi2",
+      "displayFieldName": "Sigle pédologique repris sur la carte",
+      "attributes": {
+        "OBJECTID": "418271",
+        "Sigle pédologique repris sur la carte": "Gbbfi2",
+        "Définiton du sigle pédologique": "Sols limono-caillouteux à charge schisto-gréseuse, à drainage naturel favorable, à horizon B textural",
+        "Pourcentage estimé de la charge caillouteuse en surface": "15",
+        "Lien vers la fiche de synthèse de la légende": "https://geoapps.wallonie.be/cigale/fiches/CNSW/Gbbfi2.pdf",
+        "Shape": "Polygone"
+      }
+    },
+    {
+      "layerId": 2,
+      "layerName": "Sigles pédologiques (ravins)",
+      "value": "Gbbfi2",
+      "displayFieldName": "Sigle pédologique repris sur la carte",
+      "attributes": {
+        "OBJECTID": "418272",
+        "Sigle pédologique repris sur la carte": "Gbbfi2",
+        "Définiton du sigle pédologique": "Sols limono-caillouteux à charge schisto-gréseuse, à drainage naturel favorable, à horizon B textural",
+        "Pourcentage estimé de la charge caillouteuse en surface": "15",
+        "Lien vers la fiche de synthèse de la légende": "https://geoapps.wallonie.be/cigale/fiches/CNSW/Gbbfi2.pdf",
+        "Shape": "Polygone"
+      }
+    },
+    {
+      "layerId": 2,
+      "layerName": "Sigles pédologiques (ravins)",
+      "value": "Null",
+      "displayFieldName": "Sigle pédologique repris sur la carte",
+      "attributes": {
+        "OBJECTID": "418273",
+        "Sigle pédologique repris sur la carte": "OB",
+        "Définiton du sigle pédologique": "Zone bâtie",
+        "Pourcentage estimé de la charge caillouteuse en surface": "Null",
+        "Lien vers la fiche de synthèse de la légende": "javascript:alert(1)",
+        "Shape": "Polygone"
+      }
+    }
+  ]
+}

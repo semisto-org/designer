@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Parcelle A" },
+      "geometry": { "type": "Polygon", "coordinates": [[[4.9050, 50.3400], [4.9060, 50.3400], [4.9060, 50.3410], [4.9050, 50.3410], [4.9050, 50.3400]]] } },
+    { "type": "Feature", "properties": { "name": "Mare" },
+      "geometry": { "type": "Point", "coordinates": [4.9055, 50.3405] } }
+  ]
+}

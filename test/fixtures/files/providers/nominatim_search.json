@@ -1,0 +1,51 @@
+[
+  {
+    "place_id": 128947120,
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+    "osm_type": "node",
+    "osm_id": 4876421221,
+    "lat": "50.3289013",
+    "lon": "4.8801242",
+    "category": "place",
+    "type": "house",
+    "place_rank": 30,
+    "importance": 0.00000999999999995449,
+    "addresstype": "place",
+    "name": "",
+    "display_name": "3, Rue du Bois, Yvoir, Dinant, Namur, Wallonie, 5530, België / Belgique / Belgien",
+    "address": {
+      "house_number": "3",
+      "road": "Rue du Bois",
+      "village": "Yvoir",
+      "municipality": "Yvoir",
+      "county": "Dinant",
+      "state": "Namur",
+      "ISO3166-2-lvl6": "BE-WNA",
+      "region": "Wallonie",
+      "postcode": "5530",
+      "country": "België / Belgique / Belgien",
+      "country_code": "be"
+    },
+    "boundingbox": ["50.3288513", "50.3289513", "4.8800742", "4.8801742"]
+  },
+  {
+    "place_id": 128150612,
+    "lat": "50.3276712",
+    "lon": "4.8787455",
+    "category": "boundary",
+    "type": "administrative",
+    "place_rank": 16,
+    "addresstype": "village",
+    "name": "Yvoir",
+    "display_name": "Yvoir, Dinant, Namur, Wallonie, 5530, België / Belgique / Belgien",
+    "address": {
+      "village": "Yvoir",
+      "county": "Dinant",
+      "state": "Namur",
+      "region": "Wallonie",
+      "postcode": "5530",
+      "country_code": "be"
+    },
+    "boundingbox": ["50.2803468", "50.3613812", "4.8139047", "4.9631457"]
+  }
+]

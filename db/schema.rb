@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -133,6 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.jsonb "options", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "description"
     t.index ["region_id", "key"], name: "index_region_layers_on_region_id_and_key", unique: true
     t.index ["region_id"], name: "index_region_layers_on_region_id"
   end
