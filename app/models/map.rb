@@ -14,6 +14,7 @@ class Map < ApplicationRecord
   has_many :members, through: :memberships, source: :user
   has_many :invitations, class_name: "MapInvitation", dependent: :destroy
   has_many :features, class_name: "MapFeature", dependent: :destroy
+  has_one :financial_plan, dependent: :destroy
 
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }

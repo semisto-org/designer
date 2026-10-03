@@ -78,3 +78,7 @@ group :development do
   gem "web-console"
 end
 
+
+# Spreadsheet exports (financial dashboard for banks and funders)
+gem "caxlsx", "~> 4.5"
+gem "csv"

@@ -10,12 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
   enable_extension "postgis"
+
+  create_table "financial_plans", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.jsonb "inputs", default: {}, null: false
+    t.integer "schema_version", default: 1, null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_financial_plans_on_map_id", unique: true
+    t.index ["updated_by_id"], name: "index_financial_plans_on_updated_by_id"
+  end
 
   create_table "map_features", force: :cascade do |t|
     t.bigint "map_id", null: false
@@ -175,6 +187,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
 
+  add_foreign_key "financial_plans", "maps"
+  add_foreign_key "financial_plans", "users", column: "updated_by_id"
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
