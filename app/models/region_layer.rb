@@ -103,7 +103,7 @@ class RegionLayer < ApplicationRecord
       layers:, attribution:, opacity:, legendUrl: legend_url,
       minZoom: min_zoom, maxZoom: max_zoom, identifiable: identifiable?,
       proxied:, url: proxied ? nil : url, options:,
-      description:, tileUrl: tile_url, tileSize: tile_size, version: cache_version
+      description:, tileUrl: tile_url, tileSize: tile_size, version: cache_version, position:
     }
   end
 

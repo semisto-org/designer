@@ -45,7 +45,7 @@ export type RegionLayerData = {
   name: string
   group: string | null
   category: 'base' | 'overlay'
-  kind: 'wms' | 'xyz' | 'arcgis_rest'
+  kind: 'wms' | 'xyz' | 'arcgis_rest' | 'style'
   layers: string | null
   attribution: string | null
   opacity: number
@@ -56,6 +56,14 @@ export type RegionLayerData = {
   proxied: boolean
   url: string | null
   options: Record<string, unknown>
+  /** Short plain-language explanation shown in the layers panel. */
+  description?: string | null
+  /** MapLibre tile template (relay path for proxied layers) or style URL. */
+  tileUrl?: string | null
+  tileSize?: number
+  version?: number
+  /** Stacking order (higher draws above). */
+  position?: number
 }
 
 export type MapRole = 'owner' | 'editor' | 'viewer'

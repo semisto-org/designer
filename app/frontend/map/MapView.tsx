@@ -60,7 +60,9 @@ export function MapView({ center, zoom, bbox, style, className, children, onRead
       new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }),
       'top-right',
     )
-    instance.on('load', () => {
+    // 'style.load', not 'load': 'load' waits for the first tiles, so a slow
+    // tile server would hold back the whole editor (and its own base maps).
+    instance.once('style.load', () => {
       if (bbox) instance.fitBounds(bbox as [number, number, number, number], { padding: 60, duration: 0, maxZoom: 19 })
       setMap(instance)
       onReady?.(instance)
