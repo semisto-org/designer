@@ -23,7 +23,10 @@ module Maps
         overview: Relief::Overview.new(@map).as_json,
         features: @map.features.where.not(status: "rejected").map(&:as_geojson),
         timezone: @map.region.setting(:relief, :timezone) || Time.zone.tzinfo.name,
-        location: location
+        location: location,
+        landcoverClasses: @map.region.setting(:relief, :landcover_classes) || {},
+        soilModel: soil_model,
+        canEdit: @map.editable_by?(Current.user)
       }
     end
 
@@ -37,6 +40,13 @@ module Maps
     end
 
     private
+      def soil_model
+        settings = @map.effective_water_settings
+        { soil: settings["soil"], uniformRate: settings["uniform_rate_mm_h"].to_f, storage: settings["storage_mm"].to_f,
+          rateFactor: settings["rate_factor"].to_f, storageFactor: settings["storage_factor"].to_f,
+          percolation: settings["percolation_mm_h"].to_f }
+      end
+
       # Where the sun is computed: the boundary's centroid, else the map's
       # centre, else the region's.
       def location
