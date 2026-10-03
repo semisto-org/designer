@@ -68,9 +68,9 @@ module HasTerrain
     def water_settings_are_valid
       (water_settings || {}).each do |key, value|
         if key == "soil"
-          errors.add(:water_settings, I18n.t("relief.errors.unknown_soil")) unless hydrology_defaults["soils"].to_h.key?(value)
+          errors.add(:base, I18n.t("relief.errors.unknown_soil")) unless hydrology_defaults["soils"].to_h.key?(value)
         elsif (range = WATER_RANGES[key]) && !(value.is_a?(Numeric) && range.cover?(value))
-          errors.add(:water_settings, I18n.t("relief.errors.out_of_range", field: I18n.t("relief.settings.#{key}"), min: range.min, max: range.max))
+          errors.add(:base, I18n.t("relief.errors.out_of_range", field: I18n.t("relief.settings.#{key}"), min: range.min, max: range.max))
         end
       end
     end

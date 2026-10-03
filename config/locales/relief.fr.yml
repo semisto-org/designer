@@ -27,6 +27,10 @@ fr:
       storage_mm: "Réserve d'eau du sol (mm)"
       soil: "Type de sol"
       region_default: "Par défaut pour la région : %{value}"
+      region_default_none: "Pas de valeur par défaut pour cette région : indiquez la pluie annuelle de votre coin."
+      roof_coefficient_hint: "0,8 : 80 % de la pluie tombée sur le toit arrive à la citerne (le reste s'évapore ou déborde)."
+      soil_hint: "Le type de sol multiplie l'infiltration de la simulation de pluie (argile : moins, sable : plus)."
+      save: "Enregistrer"
       saved: "Réglages de l'eau enregistrés."
       limits: "Ces réglages donnent des ordres de grandeur. L'infiltration dépend de l'occupation du sol (forêt, prairie, bâti…), multipliée par un facteur selon le type de sol ; elle ne connaît ni la compaction, ni la profondeur du sol, ni la nappe, ni le drainage. Pour dimensionner un ouvrage, faites un test d'infiltration sur place."
     soils:
@@ -70,6 +74,10 @@ fr:
       overlay_loading: "Calcul de la surimpression…"
       overlay_flow_legend: "Bleu : axes d'écoulement (plus foncé = plus d'eau drainée). Bleu clair : cuvettes où l'eau stagne."
       sources: "Sources : %{sources}"
+      imported: "Le relief est prêt."
+      warnings: "À savoir"
+      overlay_shade_legend: "Ombrage du relief, éclairé du nord-ouest comme sur une carte topographique."
+      overlay_failed: "La surimpression n'a pas pu être calculée."
     page:
       title: "Relief et eau"
       back: "Retour à la carte"

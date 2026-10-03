@@ -1,7 +1,8 @@
 module Relief
   # Everything the editor's "Eau et relief" panel shows, in one JSON: can
-  # the relief be imported here, its state and key numbers, the water
-  # settings (with the region's defaults) and the roofs' rainwater.
+  # the relief be imported here, its state and key numbers, the grid (for
+  # the 2D overlay), the water settings (with the region's defaults) and the
+  # roofs' rainwater.
   class Overview
     def initialize(map)
       @map = map
@@ -17,6 +18,7 @@ module Relief
         hasBoundary: @map.boundary.present?,
         grid: grid_preview,
         terrain: @map.terrain&.as_summary,
+        terrainGrid: terrain_grid,
         settings: settings.slice(*HasTerrain::WATER_KEYS).transform_keys { |k| k.camelize(:lower) },
         defaults: defaults.slice(*HasTerrain::WATER_KEYS).transform_keys { |k| k.camelize(:lower) },
         soils: defaults["soils"].to_h.keys,
@@ -25,6 +27,15 @@ module Relief
     end
 
     private
+      # The grid and its file URLs, for the 2D map's flow and shade overlay.
+      def terrain_grid
+        terrain = @map.terrain
+        return nil unless terrain&.ready?
+
+        routes = Rails.application.routes.url_helpers
+        terrain.as_grid(url_for: ->(kind) { routes.file_map_relief_path(@map, kind, v: terrain.version) })
+      end
+
       # The grid an import would produce, or why it would be refused.
       def grid_preview
         return nil unless @provider && @map.boundary

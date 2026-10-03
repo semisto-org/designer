@@ -21,6 +21,7 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_equal "SPW de test", body["providerLabel"]
     assert_equal 1.0, body.dig("grid", "cellSizeM")
     assert_nil body["terrain"]
+    assert_nil body["terrainGrid"]
     assert_equal 850, body.dig("settings", "annualRainfallMm")
     assert_equal %w[clay loam], body["soils"]
     rain = body["rainwater"]
@@ -128,6 +129,8 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_equal 202, grid.dig("surface", "zMin").round
     assert_match %r{/maps/#{@map.id}/relief/files/grid\?v=}, grid.dig("files", "grid")
     assert_equal "Petit jardin", props.dig("map", "name")
+    assert_equal grid.dig("files", "grid"), props.dig("overview", "terrainGrid", "files", "grid")
+    assert_equal "ready", props.dig("overview", "terrain", "status")
 
     get grid.dig("files", "grid")
     assert_response :success
@@ -161,7 +164,7 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
 
     patch map_water_settings_path(@map), params: { water_settings: { annual_rainfall_mm: 20_000 } }, as: :json
     assert_response :unprocessable_entity
-    assert_match(/Pluie annuelle/, response.parsed_body["message"])
+    assert_match(/\APluie annuelle \(mm\) : la valeur/, response.parsed_body["message"])
 
     patch map_water_settings_path(@map), params: { water_settings: { soil: "lava" } }, as: :json
     assert_response :unprocessable_entity

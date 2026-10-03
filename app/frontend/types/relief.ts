@@ -50,6 +50,8 @@ export type ReliefOverview = {
   hasBoundary: boolean
   grid: { cellSizeM: number; cols: number; rows: number; areaKm2: number; marginM: number } | { error: string } | null
   terrain: TerrainSummary | null
+  /** Set once the terrain is ready: the grid and its files, for the 2D overlay. */
+  terrainGrid: TerrainGridData | null
   settings: WaterSettings
   defaults: WaterSettings
   soils: string[]
