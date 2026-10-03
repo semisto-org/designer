@@ -1,0 +1,12 @@
+<%= t(".intro", user: @user.display_name, kind: kind_label.downcase) %>
+
+<%= t(".who") %> : <%= @user.display_name %> · <%= @user.email_address %><%= " · #{@request.phone}" if @request.phone.present? %>
+<%= t(".map") %> : <%= @map.name %><%= " · #{@map.address}" if @map.address.present? %>
+<% @summary.each do |line| %>
+<%= text_line(line) %>
+<% end %>
+
+<%= t(".consent") %>
+
+<%= t(".open_map") %> : <%= @map_url %>
+<%= t(".open_admin") %> : <%= @admin_url %>

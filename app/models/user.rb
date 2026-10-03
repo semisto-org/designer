@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :comment_subscriptions, dependent: :destroy
   has_many :comment_reads, dependent: :destroy
   has_many :applauses, dependent: :destroy
+  has_many :service_requests, dependent: :destroy
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }

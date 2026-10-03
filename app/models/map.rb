@@ -26,9 +26,11 @@ class Map < ApplicationRecord
   has_one :publication, class_name: "MapPublication", dependent: :destroy
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
+  has_many :service_requests, dependent: :destroy
 
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }
+  validate :project_matches_schema, if: :will_save_change_to_project?
 
   scope :active, -> { where(archived_at: nil) }
 
@@ -39,8 +41,11 @@ class Map < ApplicationRecord
     return nil unless user
     return "owner" if owner_id == user.id
     return "editor" if organization_id && user.organization_memberships.exists?(organization_id:)
-    memberships.find_by(user:)&.role
+    memberships.find_by(user:)&.role || support_role_for(user)
   end
+
+  # The project sheet, read leniently (invalid stored values are dropped).
+  def project_sheet = ProjectSheet.parse(project, strict: false)
 
   def viewable_by?(user) = role_for(user).present?
   def editable_by?(user) = %w[owner editor].include?(role_for(user))
@@ -116,6 +121,17 @@ class Map < ApplicationRecord
   end
 
   private
+    # Semisto staff can read a map while a request sent from it is open: the
+    # owner consented to that when sending it (see ServiceRequest).
+    def support_role_for(user)
+      "viewer" if user.admin? && service_requests.pending.where(contact_consent: true).exists?
+    end
+
+    def project_matches_schema
+      sheet = ProjectSheet.parse(project)
+      errors.add(:project, :invalid_sheet, fields: sheet.errors.keys.to_sentence) unless sheet.valid?
+    end
+
     def add_owner_membership
       memberships.find_or_create_by!(user: owner) { |m| m.role = "owner" }
     end

@@ -62,7 +62,7 @@ class MapsController < ApplicationController
 
   private
     def map_params
-      permitted = params.require(:map).permit(:name, :description, :address, :stage, :zoom, :lock_version, parcels: [], project: {})
+      permitted = params.require(:map).permit(:name, :description, :address, :stage, :zoom, :lock_version, parcels: [])
       permitted[:boundary] = params[:map][:boundary] if params[:map].key?(:boundary)
       permitted[:center] = point_from(params[:map][:center]) if params[:map][:center].present?
       permitted

@@ -12,6 +12,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { href: '/maps', label: t('nav.maps') },
     { href: '/plants', label: t('nav.plants') },
     { href: '/help', label: t('nav.help') },
+    ...(currentUser?.admin ? [{ href: '/admin/requests', label: t('journey.nav.requests') }] : []),
   ]
   return (
     <div className="min-h-dvh">

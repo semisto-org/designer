@@ -1,0 +1,646 @@
+# Project sheet ("fiche projet"), journey (parcours en étapes), bridges to
+# Semisto ("Passer à l'action") and their e-mails. Keys in English, values in
+# French. The frontend imports this file too (app/frontend/lib/i18n.ts).
+#
+# Careful with YAML 1.1: never use yes/no/on/off/y/n as keys.
+fr:
+  journey:
+    affirmative: "Oui"
+    nav:
+      requests: "Demandes"
+
+    # ----- Welcome card on /maps -----
+    welcome:
+      title: "Bienvenue dans votre atelier de jardin-forêt"
+      intro: "Concevez votre jardin-forêt pas à pas, à votre rythme. Semisto reste à vos côtés pour de beaux plants, la mise en œuvre et le suivi."
+      steps_title: "Votre parcours en quatre étapes"
+      create: "Créer ma première carte"
+      free_note: "Votre première carte est gratuite."
+      upgrade: "Voir les formules"
+
+    steps:
+      observe:
+        summary: "Comprendre votre terrain et ce que vous voulez en faire."
+      map:
+        summary: "Dessiner le contour, relever ce qui existe déjà."
+      design:
+        summary: "Choisir les aménagements et les plantes, avec les bonnes quantités."
+      plant:
+        summary: "Passer à la plantation, avec de beaux plants et de l'aide si besoin."
+
+    # ----- Checklist items -----
+    items:
+      project_sheet:
+        label: "Remplir la fiche projet"
+        hint: "Qui, ambitions, budget, temps disponible… au moins %{target} %."
+      layers_seen:
+        label: "Parcourir les couches du terrain"
+        hint: "Sols, pentes, eau, zones protégées : ce que le lieu sait déjà de lui-même."
+      boundary:
+        label: "Dessiner le contour du terrain"
+        hint: "Il sert de cadre à tout le reste."
+      existing:
+        label: "Relever ce qui existe déjà"
+        hint: "Arbres, bâtiments, mares, chemins… au moins %{target} éléments."
+      palette:
+        label: "Commencer la palette de plantes"
+        hint: "Les espèces qui vous plaisent et qui conviennent au lieu."
+      design_elements:
+        label: "Dessiner un premier aménagement"
+        hint: "Mare, haie, abri, chemin, clôture…"
+      plant_plan:
+        label: "Placer des plantes sur le plan"
+        hint: "Chaque plante placée alimente votre liste de plants."
+      plant_list:
+        label: "Préparer la liste de plants"
+        hint: "Espèces et quantités, prêtes à commander."
+      take_action:
+        label: "Passer à l'action avec Semisto"
+        hint: "Commander des plants, demander la mise en œuvre ou confier le suivi."
+      progress: "%{percent} %"
+      count: "%{count} sur %{target}"
+
+    # ----- Journey panel and chip -----
+    panel:
+      title: "Parcours"
+      intro: "Quatre étapes pour aller de l'observation à la plantation. Les cases se cochent d'elles-mêmes à mesure que votre carte avance."
+      step_of: "Étape %{index} sur %{total}"
+      next_label: "Prochaine action"
+      open: "Ouvrir"
+      mark_stage: "Je suis à cette étape"
+      current: "Étape actuelle"
+      stage_saved: "Étape enregistrée : %{stage}."
+      step_done: "Étape complète"
+      step_count: "%{done} sur %{total}"
+      advance_title: "Étape terminée"
+      advance_body: "Vous avez fait le tour de cette étape. Passez à « %{stage} » quand vous êtes prêt·e."
+      advance_cta: "Passer à « %{stage} »"
+      complete_title: "Le parcours est complet"
+      complete_body: "Votre jardin-forêt est dessiné et prêt à planter. Continuez à l'affiner, ou confiez la suite à Semisto."
+      tick: "Marquer comme fait"
+      untick: "Décocher"
+      loading: "Chargement du parcours…"
+      unavailable: "Le parcours est momentanément indisponible."
+      chip_hide: "Masquer"
+      chip_show: "Afficher le parcours"
+      read_only: "Seuls le propriétaire et les éditeurs peuvent changer l'étape."
+
+    # ----- Project sheet -----
+    project:
+      title: "Fiche projet"
+      page_title: "Fiche projet · %{map}"
+      intro: "Racontez votre projet en plusieurs séances : tout s'enregistre automatiquement. Cette fiche aide Semisto, vos co-concepteurs et, plus tard, Claude à proposer des aménagements qui vous ressemblent."
+      invalid: "Certaines réponses ne sont pas valides."
+      overall: "Fiche complétée à %{percent} %"
+      section_progress: "%{answered} sur %{total}"
+      status:
+        empty: "À faire"
+        partial: "En cours"
+        complete: "Complet"
+      saving: "Enregistrement…"
+      saved: "Enregistré"
+      unsaved: "Modifications en attente…"
+      error: "L'enregistrement a échoué. Vos réponses restent à l'écran."
+      retry: "Réessayer"
+      previous: "Précédent"
+      next: "Suivant"
+      mark_done: "Marquer cette section comme terminée"
+      unmark_done: "Section terminée, cliquer pour rouvrir"
+      open_page: "Ouvrir en pleine page"
+      back_to_map: "Retour à la carte"
+      resume: "Reprendre avec « %{section} »"
+      sections_nav: "Sections de la fiche"
+      read_only: "Vous consultez cette fiche en lecture seule."
+      choose: "Choisir…"
+      untouched: "Pas encore commencée"
+      touched: "Modifiée %{when}"
+      sections:
+        who:
+          title: "Qui"
+          hint: "Une ou plusieurs personnes portent ce projet. Dites-nous qui vous êtes."
+          fields:
+            people:
+              label: "Les personnes du projet"
+              hint: "Ajoutez toutes les personnes concernées, même celles qui aident de temps en temps."
+              add: "Ajouter une personne"
+              remove: "Retirer cette personne"
+              item:
+                name:
+                  label: "Prénom ou nom"
+                role:
+                  label: "Rôle"
+                  options:
+                    lead: "Porte le projet"
+                    partner: "Conjoint·e"
+                    family: "Famille"
+                    friend: "Ami·e"
+                    collective: "Membre du collectif"
+                    employee: "Collègue"
+                    other: "Autre"
+                note:
+                  label: "Précision"
+            profile:
+              label: "Vous êtes"
+              options:
+                individual: "Un·e particulier·ère"
+                collective: "Un collectif ou une association"
+                school: "Une école"
+                business: "Une entreprise"
+                farm: "Une exploitation agricole"
+                commune: "Une commune"
+                other: "Autre"
+            experience:
+              label: "Votre expérience du jardinage"
+              options:
+                beginner: "Je débute"
+                some: "Quelques saisons de potager"
+                experienced: "Jardinier·ère confirmé·e"
+                professional: "Professionnel·le"
+            notes:
+              label: "Quelques mots sur vous"
+              placeholder: "Ce qui vous a amené·e à ce projet…"
+        ambitions:
+          title: "Ambitions"
+          hint: "Qu'attendez-vous de ce lieu dans dix ans ? Cochez ce qui compte, puis dites-le avec vos mots."
+          fields:
+            goals:
+              label: "Vos objectifs"
+              hint: "Plusieurs choix possibles."
+              options: &goals
+                food_autonomy: "Autonomie alimentaire"
+                biodiversity: "Biodiversité"
+                income: "Revenu complémentaire"
+                education: "Pédagogie et transmission"
+                hospitality: "Accueil (hôtes, visiteurs)"
+                landscape: "Paysage et beauté du lieu"
+                climate_resilience: "Résilience au climat"
+                soil_water: "Sol vivant et eau"
+                wood_energy: "Bois et énergie"
+                wellbeing: "Bien-être et détente"
+            main_goal:
+              label: "Le plus important pour vous"
+              options: *goals
+            notes:
+              label: "Votre vision, avec vos mots"
+              placeholder: "Dans dix ans, je vois…"
+        uses:
+          title: "Usages"
+          hint: "Comment voulez-vous vivre ce jardin au quotidien ?"
+          fields:
+            uses:
+              label: "Ce que vous voulez y faire"
+              hint: "Plusieurs choix possibles."
+              options:
+                eat_fresh: "Manger frais, de saison"
+                preserve: "Transformer et conserver"
+                forage_walk: "Se promener et cueillir"
+                children_play: "Jeux d'enfants"
+                relax: "Se reposer, lire, rêver"
+                gatherings: "Repas et fêtes entre amis"
+                work_outdoors: "Travailler dehors, atelier"
+                teaching: "Accueillir des groupes, enseigner"
+                guests: "Héberger des hôtes"
+                market_sales: "Vendre une partie des récoltes"
+                animals_care: "Prendre soin d'animaux"
+                wood_craft: "Bois, vannerie, artisanat"
+                medicinal: "Plantes médicinales et tisanes"
+                wildlife_watch: "Observer la faune"
+            presence:
+              label: "Combien de temps y êtes-vous ?"
+              options:
+                daily: "Tous les jours"
+                several_per_week: "Plusieurs fois par semaine"
+                weekends: "Les week-ends"
+                holidays: "Pendant les congés"
+                remote: "Rarement, le terrain est loin"
+            notes:
+              label: "Précisions"
+              placeholder: "Une journée idéale au jardin…"
+        budget:
+          title: "Budget"
+          hint: "Des tranches suffisent. Cela aide à proposer des aménagements réalistes, par étapes."
+          fields:
+            initial:
+              label: "Budget pour démarrer (plants, matériel, aménagements)"
+              options:
+                under_500: "Moins de 500 €"
+                up_to_2000: "500 à 2 000 €"
+                up_to_5000: "2 000 à 5 000 €"
+                up_to_15000: "5 000 à 15 000 €"
+                over_15000: "Plus de 15 000 €"
+                unknown: "Je ne sais pas encore"
+            yearly:
+              label: "Budget annuel d'entretien"
+              options:
+                under_100: "Moins de 100 €"
+                up_to_500: "100 à 500 €"
+                up_to_1500: "500 à 1 500 €"
+                over_1500: "Plus de 1 500 €"
+                unknown: "Je ne sais pas encore"
+            spend_priorities:
+              label: "Où mettre votre budget en priorité ?"
+              hint: "Plusieurs choix possibles."
+              options:
+                quality_plants: "Des plants de qualité"
+                implementation: "La mise en œuvre (plantation, terrassement)"
+                co_management: "Le suivi et la co-gestion"
+                design: "L'accompagnement au design"
+                tools: "Outils et matériel"
+                fencing: "Clôtures et protections"
+                earthworks_water: "Eau et terrassement"
+            funding:
+              label: "Financement"
+              options:
+                self: "Fonds propres"
+                subsidy: "Subsides"
+                loan: "Emprunt"
+                crowdfunding: "Financement participatif"
+            notes:
+              label: "Précisions sur le budget"
+        time:
+          title: "Temps disponible"
+          hint: "Un jardin-forêt demande surtout du temps les premières années : soyez réaliste."
+          fields:
+            hours_per_week:
+              label: "Heures par semaine pour le jardin"
+              hint: "En moyenne sur l'année."
+              unit: "h par semaine"
+            seasons:
+              label: "Saisons où vous êtes disponible"
+              options:
+                spring: "Printemps"
+                summer: "Été"
+                autumn: "Automne"
+                winter: "Hiver"
+            help:
+              label: "Qui peut vous aider ?"
+              options:
+                alone: "Je suis seul·e"
+                household: "Mon foyer"
+                friends: "Des ami·es"
+                volunteers: "Des bénévoles ou un groupe"
+                paid_help: "De l'aide payée"
+            notes:
+              label: "Précisions"
+              placeholder: "Périodes chargées, absences prévues…"
+        skills:
+          title: "Compétences"
+          hint: "Ce que vous savez déjà faire, et ce que vous aimeriez apprendre."
+          fields:
+            skills:
+              label: "Ce que vous savez faire"
+              options: &skills
+                none: "Je débute"
+                gardening: "Jardiner"
+                pruning: "Tailler"
+                grafting: "Greffer"
+                propagation: "Bouturer, semer"
+                carpentry: "Menuiserie, construction"
+                masonry: "Maçonnerie"
+                machinery: "Machines (tracteur, tronçonneuse…)"
+                earthworks: "Terrassement"
+                animal_care: "Soigner des animaux"
+                botany: "Reconnaître les plantes"
+                irrigation: "Eau et irrigation"
+                beekeeping: "Apiculture"
+                preserving: "Cuisine et conservation"
+            to_learn:
+              label: "Ce que vous voulez apprendre"
+              options: *skills
+            notes:
+              label: "Précisions"
+        constraints:
+          title: "Contraintes"
+          hint: "Ce qui limite ou complique le projet. « Je ne sais pas encore » est une réponse valable."
+          fields:
+            soil:
+              label: "Sol"
+              options:
+                clay: "Argileux"
+                sandy: "Sableux"
+                stony: "Caillouteux"
+                compacted: "Compacté"
+                wet: "Humide, retient l'eau"
+                dry: "Sec, filtrant"
+                acidic: "Acide"
+                calcareous: "Calcaire"
+                shallow: "Peu profond"
+                unknown: "Je ne sais pas encore"
+            water:
+              label: "Eau"
+              options:
+                tap_only: "Robinet seulement"
+                well: "Puits ou forage"
+                pond_stream: "Mare, ruisseau ou étang"
+                rain_tank: "Récupération d'eau de pluie"
+                no_water: "Aucun point d'eau"
+                flooding: "Zones inondables"
+                unknown: "Je ne sais pas encore"
+            neighborhood:
+              label: "Voisinage"
+              options:
+                none: "Rien de particulier"
+                close_neighbors: "Voisins proches"
+                spray_drift: "Cultures voisines traitées"
+                road_noise: "Route ou bruit"
+                shade_casters: "Ombre de bâtiments ou de grands arbres voisins"
+                wind: "Vent fort"
+                unknown: "Je ne sais pas encore"
+            regulation:
+              label: "Réglementation"
+              options:
+                none: "Rien de particulier"
+                heritage: "Patrimoine ou site classé"
+                natura2000: "Zone Natura 2000"
+                flood_zone: "Zone inondable"
+                forest_code: "Code forestier (abattage, défrichement)"
+                hedge_permit: "Permis ou déclaration pour haies et arbres"
+                tenant_limits: "Location (limites sur les travaux)"
+                unknown: "Je ne sais pas encore"
+            access:
+              label: "Accès"
+              options:
+                vehicle_ok: "Accessible en camion ou tracteur"
+                narrow: "Accès étroit"
+                no_vehicle: "Aucun accès véhicule"
+                steep_path: "Chemin raide"
+                far_from_home: "Éloigné de la maison"
+                unknown: "Je ne sais pas encore"
+            slope:
+              label: "Pente"
+              options:
+                flat: "Plat"
+                gentle: "Faible"
+                moderate: "Marquée"
+                steep: "Forte"
+                unknown: "Je ne sais pas"
+            notes:
+              label: "Précisions"
+              placeholder: "Servitudes, voisin à ménager, zone humide…"
+        opportunities:
+          title: "Opportunités"
+          hint: "Ce qui joue déjà en votre faveur."
+          fields:
+            items:
+              label: "Vos atouts"
+              hint: "Plusieurs choix possibles."
+              options:
+                sunny_south: "Bonne exposition au soleil"
+                existing_trees: "De beaux arbres déjà là"
+                existing_hedge: "Des haies existantes"
+                pond_stream: "Une mare ou un ruisseau"
+                buildings: "Des bâtiments pour s'abriter et stocker"
+                mulch_source: "Compost, fumier ou broyat à proximité"
+                local_nursery: "Une pépinière locale proche"
+                neighbors_help: "Des voisins prêts à aider"
+                subsidies: "Des subsides possibles"
+                community: "Un groupe, une école ou une association à proximité"
+                visibility: "Un lieu de passage, visible"
+            notes:
+              label: "Précisions"
+        livestock:
+          title: "Élevages"
+          hint: "Poules, moutons, abeilles… Les animaux changent le plan : clôtures, abris, plantes toxiques."
+          fields:
+            species:
+              label: "Animaux envisagés"
+              options:
+                none: "Aucun élevage prévu"
+                chickens: "Poules"
+                ducks_geese: "Canards, oies"
+                sheep: "Moutons"
+                goats: "Chèvres"
+                pigs: "Cochons"
+                donkeys_horses: "Ânes, chevaux"
+                cattle: "Bovins"
+                rabbits: "Lapins"
+                bees: "Abeilles"
+                other: "Autre"
+            notes:
+              label: "Précisions"
+              placeholder: "Effectifs, parcs souhaités…"
+        calendar:
+          title: "Calendrier"
+          hint: "Quand voulez-vous planter ? Les arbres et arbustes à racines nues se plantent de novembre à mars."
+          fields:
+            planting_seasons:
+              label: "Saisons de plantation"
+              options:
+                autumn: "Automne"
+                winter: "Hiver"
+                spring: "Début de printemps"
+            start_year:
+              label: "Première plantation prévue en"
+              unit: "(année)"
+            phasing:
+              label: "Rythme"
+              options:
+                one_go: "Tout d'un coup"
+                two_three_years: "Sur deux ou trois ans"
+                as_budget_allows: "Petit à petit, selon le budget"
+            notes:
+              label: "Étapes et échéances"
+
+    # ----- Passer à l'action (requests to Semisto) -----
+    requests:
+      panel_title: "Passer à l'action"
+      intro: "Passez du plan à la réalité : Semisto vous accompagne là où cela compte le plus."
+      cta: "Faire la demande"
+      list_title: "Mes demandes"
+      list_empty: "Aucune demande pour l'instant."
+      owner_only: "Seul le propriétaire de la carte peut envoyer une demande à Semisto."
+      staff_notice: "Tant qu'une demande est ouverte, l'équipe de Semisto peut consulter cette carte (en lecture seule)."
+      unavailable: "Les demandes sont momentanément indisponibles."
+      unnamed_plant: "Plante à préciser"
+      rate_limited: "Vous avez envoyé beaucoup de demandes d'un coup. Réessayez dans une heure."
+      sent: "Votre demande est envoyée. Vous recevrez une confirmation par e-mail."
+      sending: "Envoi…"
+      submit: "Envoyer ma demande"
+      cancel: "Annuler"
+      close: "Fermer"
+      consent: "J'accepte que Semisto consulte cette carte et me contacte au sujet de cette demande."
+      consent_hint: "Votre carte reste privée : seule l'équipe de Semisto peut la lire, et seulement tant que la demande est ouverte."
+      attached:
+        one: "Une ligne de plants sera jointe à la demande."
+        other: "%{count} lignes de plants seront jointes à la demande."
+      prefill_plant_list: "Pré-rempli d'après la liste de plants de votre carte. Vous pouvez la corriger."
+      prefill_features: "Pré-rempli d'après les plantes placées sur votre carte. Vérifiez les noms et les quantités."
+      prefill_none: "Aucune plante sur votre carte pour l'instant : listez ce que vous cherchez ci-dessous."
+      status:
+        new: "Envoyée"
+        contacted: "En cours de traitement"
+        closed: "Clôturée"
+      kinds:
+        order_plants:
+          title: "Commander des plants de qualité"
+          summary: "Commandez à la pépinière de Semisto, à partir de la liste de plants de votre carte."
+          fields:
+            plants:
+              label: "Plants souhaités"
+              add: "Ajouter une ligne"
+              remove: "Retirer cette ligne"
+              item:
+                name:
+                  label: "Plante ou variété"
+                quantity:
+                  label: "Quantité"
+                note:
+                  label: "Précision"
+            plants_free_text:
+              label: "Ou décrivez ce que vous cherchez"
+              hint: "Pas encore de liste ? Dites-nous ce que vous voulez planter."
+            desired_period:
+              label: "Période souhaitée"
+              placeholder: "Novembre 2026"
+            delivery:
+              label: "Retrait ou livraison"
+              options:
+                pickup: "Je viens chercher"
+                shipping: "Livraison"
+                either: "Peu importe"
+            commune:
+              label: "Commune de livraison"
+            phone:
+              label: "Téléphone"
+              hint: "Facultatif : pour vous appeler plutôt que vous écrire."
+            message:
+              label: "Message pour la pépinière"
+        implementation:
+          title: "Demander la mise en œuvre"
+          summary: "Faites réaliser la plantation et les aménagements : un devis à partir de votre plan et de votre liste de plants."
+          fields:
+            surface_m2:
+              label: "Surface à aménager"
+              unit: "m²"
+            address:
+              label: "Adresse du chantier"
+            commune:
+              label: "Commune"
+            desired_period:
+              label: "Période souhaitée"
+              placeholder: "Plantation cet hiver"
+            budget:
+              label: "Budget envisagé"
+              options:
+                under_2000: "Moins de 2 000 €"
+                up_to_5000: "2 000 à 5 000 €"
+                up_to_10000: "5 000 à 10 000 €"
+                up_to_25000: "10 000 à 25 000 €"
+                over_25000: "Plus de 25 000 €"
+                unknown: "Je ne sais pas encore"
+            include_plant_list:
+              label: "Joindre ma liste de plants au devis"
+            plants:
+              label: "Liste de plants jointe"
+              add: "Ajouter une ligne"
+              remove: "Retirer cette ligne"
+              item:
+                name:
+                  label: "Plante ou variété"
+                quantity:
+                  label: "Quantité"
+                note:
+                  label: "Précision"
+            phone:
+              label: "Téléphone"
+              hint: "Facultatif : pour vous appeler plutôt que vous écrire."
+            message:
+              label: "Message"
+        co_management:
+          title: "Confier le suivi en co-gestion"
+          summary: "Semisto entretient et suit votre jardin-forêt avec vous, dans la même carte, le même calendrier et les mêmes tâches."
+          fields:
+            scope:
+              label: "Ce que vous souhaitez confier"
+              options:
+                maintenance: "Entretien courant"
+                pruning: "Tailles"
+                harvest: "Récoltes"
+                monitoring: "Suivi de la reprise et de la vigueur"
+                replacement: "Remplacement des manquants"
+                tasks: "Calendrier des tâches"
+            frequency:
+              label: "Fréquence des passages"
+              options:
+                seasonal: "À chaque saison"
+                monthly: "Chaque mois"
+                on_demand: "À la demande"
+            desired_start:
+              label: "Début souhaité"
+              placeholder: "Au printemps"
+            budget:
+              label: "Budget annuel"
+              options:
+                under_500: "Moins de 500 €"
+                up_to_1500: "500 à 1 500 €"
+                up_to_5000: "1 500 à 5 000 €"
+                over_5000: "Plus de 5 000 €"
+                unknown: "Je ne sais pas encore"
+            phone:
+              label: "Téléphone"
+              hint: "Facultatif : pour vous appeler plutôt que vous écrire."
+            message:
+              label: "Message"
+
+    # ----- Staff page -----
+    admin:
+      title: "Demandes envoyées à Semisto"
+      intro: "Les demandes de plants, de mise en œuvre et de co-gestion envoyées depuis les cartes."
+      saved: "Demande mise à jour."
+      empty: "Aucune demande dans cette liste."
+      filters:
+        open: "En cours"
+        new: "Nouvelles"
+        contacted: "Contactées"
+        closed: "Clôturées"
+        all: "Toutes"
+      all_kinds: "Tous les types"
+      open_map: "Ouvrir la carte"
+      archived: "carte archivée"
+      from: "De"
+      received: "Reçue %{when}"
+      notes: "Notes internes"
+      status: "Statut"
+      save: "Enregistrer"
+      handled_by: "Suivi par %{name}"
+      map_facts: "%{area} · %{plants} plantes placées · fiche projet à %{percent} %"
+      no_phone: "Pas de téléphone"
+      consent_ok: "Consentement donné"
+      status_options:
+        new: "Nouvelle"
+        contacted: "Contactée"
+        closed: "Clôturée"
+
+  # ----- E-mails -----
+  service_request_mailer:
+    received:
+      subject: "Nouvelle demande : %{kind} · %{map}"
+      intro: "%{user} a envoyé une demande depuis Semisto Designer : %{kind}."
+      who: "De"
+      map: "Carte"
+      consent: "La personne a accepté que Semisto consulte sa carte et la contacte au sujet de cette demande. Répondre à cet e-mail lui écrit directement."
+      open_map: "Ouvrir la carte"
+      open_admin: "Voir toutes les demandes"
+    confirmation:
+      subject: "Votre demande à Semisto : %{kind}"
+      greeting: "Bonjour %{name},"
+      body: "Merci : votre demande (%{kind}) pour la carte « %{map} » est bien arrivée chez Semisto. Voici ce que vous avez envoyé."
+      next: "Quelqu'un de l'équipe vous répond par e-mail ou par téléphone pour la suite. Vous pouvez suivre l'état de votre demande dans le panneau « Passer à l'action » de votre carte."
+      privacy: "Tant que votre demande est ouverte, l'équipe de Semisto peut consulter votre carte (en lecture seule). Elle reste privée pour tout le monde d'autre."
+      open_map: "Ouvrir ma carte"
+
+  activerecord:
+    errors:
+      models:
+        service_request:
+          attributes:
+            base:
+              consent_missing: "Pour envoyer une demande, acceptez que Semisto consulte votre carte."
+              invalid_field: "Le champ « %{field} » n'est pas valide."
+              plants_missing: "Indiquez au moins une plante, ou décrivez ce que vous cherchez."
+              location_missing: "Indiquez l'adresse ou la commune du chantier."
+              details_missing: "Précisez ce que vous souhaitez confier, ou écrivez un message."
+        map:
+          attributes:
+            project:
+              invalid_sheet: "contient des réponses invalides (%{fields})"
