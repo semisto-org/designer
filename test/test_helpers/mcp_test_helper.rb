@@ -41,6 +41,15 @@ module McpTestHelper
     ENV["STRIPE_SECRET_KEY"] = previous
   end
 
+  # Minitest 6 has no stubs: swap a singleton method for the block.
+  def stubbing(object, name, value)
+    original = object.method(name)
+    object.define_singleton_method(name) { |*, **| value }
+    yield
+  ensure
+    object.define_singleton_method(name, original)
+  end
+
   def inside_square
     square(lng: 4.905, lat: 50.3405, size: 0.0005)
   end

@@ -19,7 +19,7 @@ module Mcp
           id: map.id, name: map.name, description: map.description, address: map.address, url: map_url(map),
           role: @role, stage: map.stage, stage_label: I18n.t("maps.stages.#{map.stage}", default: map.stage),
           region: { key: map.region.key, name: map.region.name, country_code: map.region.country_code },
-          area_m2: map.area_m2,
+          area_m2: map.area_m2 || (map.boundary && map.measure_geometry(:boundary)["area"]),
           centroid: centroid(map),
           bbox: map.bbox&.map { |v| v.round(Geo::PRECISION) },
           boundary: Geo.encode(map.boundary),
