@@ -1,0 +1,208 @@
+# Collaboration: sharing a map, discussions "façon Basecamp", public view.
+# Keys in English, values in French. Backend (mailers, controllers) and the
+# React frontend read the same file.
+fr:
+  activerecord:
+    models:
+      comment: "Commentaire"
+      map_publication: "Vue publique"
+      map_invitation: "Invitation"
+    attributes:
+      comment:
+        body: "Commentaire"
+      map_publication:
+        title: "Titre"
+        description: "Présentation"
+      map_invitation:
+        email_address: "Adresse e-mail"
+        role: "Rôle"
+    errors:
+      models:
+        map_invitation:
+          attributes:
+            email_address:
+              already_participant: "a déjà accès à cette carte"
+            role:
+              editor_limit: "est limité à %{count} éditeurs par carte"
+        comment:
+          attributes:
+            body:
+              blank: "ne peut pas être vide"
+              too_long: "est trop long (maximum %{count} caractères)"
+            commentable:
+              invalid: "n'appartient pas à cette carte"
+        map_publication:
+          attributes:
+            title:
+              blank: "ne peut pas être vide"
+  collab:
+    panels:
+      discussions: "Discussions"
+      publish: "Publier"
+    share:
+      button: "Partager"
+      title: "Partager la carte"
+      load_error: "Impossible de charger les accès à cette carte. Réessayez dans un instant."
+      error: "L'opération n'a pas abouti. Réessayez."
+      members: "Personnes ayant accès"
+      you: "(vous)"
+      editors_count:
+        one: "%{count} éditeur sur %{max}"
+        other: "%{count} éditeurs sur %{max}"
+      full: "(complet)"
+      role_of: "Rôle de %{name}"
+      remove: "Retirer %{name}"
+      remove_confirm: "Retirer %{name} de la carte ? Cette personne ne pourra plus l'ouvrir."
+      leave: "Quitter la carte"
+      leave_confirm: "Quitter cette carte ? Vous ne pourrez la rouvrir que si le propriétaire vous invite à nouveau."
+      team: "Les %{count} membres de l'équipe %{name} voient et modifient cette carte, sans compter parmi les éditeurs."
+      invite_title: "Inviter par e-mail"
+      invite_email: "Adresse e-mail"
+      invite_placeholder: "prenom@exemple.org"
+      invite_role: "Rôle"
+      invite_send: "Inviter"
+      invited: "Invitation envoyée à %{email}."
+      role_help_viewer: "Un lecteur consulte la carte et participe aux discussions."
+      role_help_editor: "Un éditeur dessine et modifie la carte, gratuitement : il travaille avec le forfait du propriétaire."
+      editors_full: "Les %{max} places d'éditeur sont prises (invitations en attente comprises). Passez un éditeur en lecteur ou annulez une invitation pour en libérer une."
+      pending: "Invitations en attente"
+      resend: "Renvoyer l'invitation à %{email}"
+      resent: "Invitation renvoyée à %{email}."
+      cancel_invitation: "Annuler l'invitation de %{email}"
+      link_title: "Inviter par lien"
+      link_hint: "Toute personne qui ouvre le lien et se connecte rejoint la carte."
+      link_role: "Rôle donné :"
+      link_role_hint: "Changer de rôle crée un nouveau lien."
+      reset: "Nouveau lien"
+      reset_confirm: "Créer un nouveau lien ? L'ancien cessera de fonctionner."
+      reset_done: "Nouveau lien créé : l'ancien ne fonctionne plus."
+      copy: "Copier"
+      copied: "Copié"
+    comments:
+      placeholder: "Écrire un commentaire…"
+      send: "Publier"
+      mention_hint: "@ pour mentionner quelqu'un"
+      empty: "Pas encore de commentaire. Lancez la discussion."
+      new: "Nouveau"
+      edited: "(modifié)"
+      applaud: "Applaudir"
+      unapplaud: "Retirer mon applaudissement"
+      confirm_delete: "Supprimer ce commentaire ?"
+      follow: "Suivre cette discussion"
+      following: "Vous suivez cette discussion"
+      load_error: "Impossible de charger la discussion."
+      error: "Le commentaire n'a pas pu être enregistré."
+      errors:
+        author_only: "Seul l'auteur peut modifier ce commentaire."
+        cannot_delete: "Seuls l'auteur du commentaire et le propriétaire de la carte peuvent le supprimer."
+    sharing:
+      errors:
+        editor_limit: "Cette carte a déjà ses %{count} éditeurs, le maximum. Passez un éditeur en lecteur pour libérer une place."
+        editor_limit_invite: "Cette carte a déjà ses %{count} éditeurs (invitations en attente comprises). Invitez cette personne comme lecteur, ou libérez une place d'éditeur."
+        role: "Ce rôle n'existe pas : choisissez éditeur ou lecteur."
+        owner_fixed: "Le rôle du propriétaire ne peut pas changer."
+        owner_stays: "Le propriétaire ne peut pas quitter sa carte."
+        already_participant: "Cette personne a déjà accès à la carte."
+        invalid_email: "Cette adresse e-mail ne semble pas valide."
+        rate_limited: "Trop d'invitations envoyées. Réessayez dans une heure."
+    discussion:
+      title: "Discussion"
+    discussions:
+      intro: "Toutes les conversations de la carte. Un clic ouvre l'élément concerné."
+      general: "Discussion générale"
+      general_hint: "Pour tout ce qui concerne la carte entière."
+      general_empty: "Pas encore de message sur la carte. Présentez le projet ou posez une question."
+      elements: "Discussions sur les éléments"
+      empty: "Aucun élément n'a encore été commenté. Sélectionnez un élément sur la carte pour lancer une discussion."
+      back: "Toutes les discussions"
+      unread: "Nouveaux commentaires"
+      emails: "Recevoir les discussions par e-mail"
+      emails_hint: "Mentions et nouveaux commentaires des discussions que vous suivez."
+    publish:
+      intro: "Publiez une vue de la carte à une adresse que vous partagez : elle se lit sans compte, sans modification possible. Idéal pour présenter le design à un client."
+      unpublished: "Cette vue n'est plus publiée : son adresse affiche un message d'indisponibilité. Republiez-la quand vous voulez."
+      live: "Vue publiée"
+      address: "Adresse de la vue publique"
+      open: "Ouvrir la vue publique"
+      version: "Version %{version}, publiée le %{date}."
+      stale: "La carte a changé depuis la publication : ces modifications ne sont pas visibles du public."
+      title: "Titre de la vue"
+      description: "Présentation"
+      description_hint: "Affichée sur la vue publique. Facultatif."
+      feature_layers: "Couches visibles"
+      region_layers: "Couches du territoire"
+      base: "Fond :"
+      base_none: "Fond neutre"
+      sensitive: "(réseaux)"
+      privacy: "Confidentialité"
+      hide_networks: "Masquer les réseaux (eau, gaz, électricité, internet)"
+      hide_address: "Masquer l'adresse et les parcelles"
+      show_notes: "Afficher les notes des éléments"
+      privacy_hint: "Les brouillons de l'IA, les éléments refusés et les noms des collaborateurs ne sont jamais publiés."
+      publish: "Publier la vue"
+      update: "Mettre à jour la vue publiée"
+      snapshot_hint: "La vue publiée est une photo de la carte prise à cet instant."
+      published: "Vue publiée. Copiez son adresse pour la partager."
+      updated: "Vue publique mise à jour."
+      unpublish: "Dépublier"
+      unpublish_confirm: "Dépublier la vue ? Son adresse affichera un message d'indisponibilité."
+      unpublished_done: "Vue dépubliée."
+      renew: "Nouvelle adresse"
+      renew_confirm: "Changer l'adresse de la vue ? L'ancienne cessera de fonctionner."
+      renewed: "Nouvelle adresse créée : l'ancienne ne fonctionne plus."
+      republish_hint: "Réglez la vue puis publiez-la : la même adresse est réutilisée."
+      load_error: "Impossible de charger les réglages de publication."
+      error: "La publication n'a pas abouti. Réessayez."
+    joining:
+      sign_in_first: "Connectez-vous pour rejoindre la carte « %{map} » : un lien vous sera envoyé par e-mail, sans mot de passe."
+      joined: "Bienvenue sur la carte « %{map} »."
+      my_maps: "Mes cartes"
+      problems:
+        invalid:
+          title: "Lien introuvable"
+          body: "Ce lien ne correspond à aucune invitation. Vérifiez qu'il est complet, ou demandez-en un nouveau au propriétaire de la carte."
+        used:
+          title: "Invitation déjà utilisée"
+          body: "Cette invitation à la carte « %{map} » a déjà été acceptée par une autre personne. Demandez-en une nouvelle au propriétaire."
+        expired:
+          title: "Invitation expirée"
+          body: "Cette invitation à la carte « %{map} » n'est plus valable (30 jours). Demandez au propriétaire de la renvoyer."
+        disabled:
+          title: "Lien désactivé"
+          body: "Le propriétaire de la carte « %{map} » a désactivé ce lien. Demandez-lui un nouveau lien ou une invitation par e-mail."
+        editor_limit:
+          title: "Plus de place d'éditeur"
+          body: "La carte « %{map} » a déjà ses 3 éditeurs. Demandez au propriétaire de libérer une place, ou de vous inviter comme lecteur."
+  public_maps:
+    read_only: "Lecture seule"
+    published_on: "Vue publiée le %{date}"
+    made_with: "Fait avec Semisto Designer"
+    about: "À propos de cette carte"
+    legend: "Légende"
+    gone:
+      title: "Cette carte n'est plus publiée"
+      body: "La vue « %{title} » a été retirée par son propriétaire."
+      hint: "Si vous pensiez y avoir accès, demandez-lui un nouveau lien."
+      home: "Découvrir Semisto Designer"
+  map_invitation_mailer:
+    invite:
+      subject: "%{inviter} vous invite sur la carte « %{map} »"
+      greeting: "Bonjour,"
+      body: "%{inviter} vous invite à rejoindre la carte « %{map} » sur Semisto Designer, en tant que %{role}."
+      role_editor: "Un éditeur dessine et modifie la carte, et participe aux discussions."
+      role_viewer: "Un lecteur consulte la carte et participe aux discussions."
+      button: "Rejoindre la carte"
+      signin_hint: "Vous serez invité à vous connecter (avec Google ou un lien par e-mail, sans mot de passe) si ce n'est pas déjà fait."
+      expiry: "Cette invitation est valable jusqu'au %{date}."
+  comment_mailer:
+    open_thread: "Voir la discussion"
+    how_to_stop: "Pour ne plus recevoir ces e-mails, ouvrez le panneau « Discussions » de la carte et décochez « Recevoir les discussions par e-mail »."
+    on_element: "« %{title} » (carte « %{map} »)"
+    mentioned:
+      subject: "%{author} vous a mentionné dans « %{title} »"
+      intro: "%{author} vous a mentionné dans la discussion de %{title} :"
+      reason: "Vous recevez ce message parce que vous avez été mentionné."
+    new_comment:
+      subject: "%{author} a commenté « %{title} »"
+      intro: "%{author} a écrit dans la discussion de %{title} :"
+      reason: "Vous recevez ce message parce que vous suivez cette discussion."

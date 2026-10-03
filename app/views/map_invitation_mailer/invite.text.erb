@@ -1,0 +1,9 @@
+<%= t(".greeting") %>
+
+<%= t(".body", inviter: @inviter.display_name, map: @map.name, role: t("maps.roles.#{@invitation.role}").downcase) %>
+<%= t(".role_#{@invitation.role}") %>
+
+<%= @url %>
+
+<%= t(".signin_hint") %>
+<%= t(".expiry", date: @invitation.expires_at.strftime("%d/%m/%Y")) %>

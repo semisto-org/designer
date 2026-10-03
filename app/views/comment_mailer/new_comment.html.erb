@@ -1,0 +1,6 @@
+<p><%= t(".intro", author: @author.display_name, title: @thread_title) %></p>
+<blockquote style="margin:16px 0;padding:8px 16px;border-left:3px solid #b4acce;color:#332d25">
+  <%= comment_body_html(@comment) %>
+</blockquote>
+<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t("comment_mailer.open_thread") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".reason") %> <%= t("comment_mailer.how_to_stop") %></p>

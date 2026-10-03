@@ -10,12 +10,60 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_040300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
   enable_extension "postgis"
+
+  create_table "applauses", force: :cascade do |t|
+    t.bigint "comment_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comment_id", "user_id"], name: "index_applauses_on_comment_id_and_user_id", unique: true
+    t.index ["comment_id"], name: "index_applauses_on_comment_id"
+    t.index ["user_id"], name: "index_applauses_on_user_id"
+  end
+
+  create_table "comment_reads", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "commentable_type", null: false
+    t.bigint "commentable_id", null: false
+    t.datetime "last_read_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "commentable_type", "commentable_id"], name: "index_comment_reads_unique", unique: true
+    t.index ["user_id"], name: "index_comment_reads_on_user_id"
+  end
+
+  create_table "comment_subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "commentable_type", null: false
+    t.bigint "commentable_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commentable_type", "commentable_id", "user_id"], name: "index_comment_subscriptions_unique", unique: true
+    t.index ["user_id"], name: "index_comment_subscriptions_on_user_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "commentable_type", null: false
+    t.bigint "commentable_id", null: false
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.bigint "mentioned_user_ids", default: [], null: false, array: true
+    t.datetime "edited_at"
+    t.datetime "deleted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_comments_on_author_id"
+    t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
+    t.index ["map_id", "created_at"], name: "index_comments_on_map_id_and_created_at"
+    t.index ["map_id"], name: "index_comments_on_map_id"
+  end
 
   create_table "map_features", force: :cascade do |t|
     t.bigint "map_id", null: false
@@ -51,6 +99,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "expires_at"
+    t.datetime "last_sent_at"
     t.index ["invited_by_id"], name: "index_map_invitations_on_invited_by_id"
     t.index ["map_id"], name: "index_map_invitations_on_map_id"
     t.index ["token"], name: "index_map_invitations_on_token", unique: true
@@ -67,6 +117,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["map_id", "user_id"], name: "index_map_memberships_on_map_id_and_user_id", unique: true
     t.index ["map_id"], name: "index_map_memberships_on_map_id"
     t.index ["user_id"], name: "index_map_memberships_on_user_id"
+  end
+
+  create_table "map_publications", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "token", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.datetime "published_at", null: false
+    t.datetime "unpublished_at"
+    t.integer "version", default: 1, null: false
+    t.jsonb "options", default: {}, null: false
+    t.jsonb "snapshot", default: {}, null: false
+    t.bigint "published_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_map_publications_on_map_id", unique: true
+    t.index ["published_by_id"], name: "index_map_publications_on_published_by_id"
+    t.index ["token"], name: "index_map_publications_on_token", unique: true
+  end
+
+  create_table "map_share_links", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "role", default: "viewer", null: false
+    t.string "token", null: false
+    t.datetime "disabled_at"
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_map_share_links_on_created_by_id"
+    t.index ["map_id"], name: "index_map_share_links_on_map_id", unique: true
+    t.index ["token"], name: "index_map_share_links_on_token", unique: true
   end
 
   create_table "maps", force: :cascade do |t|
@@ -171,10 +252,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.datetime "last_signed_in_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "comment_emails", default: true, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
 
+  add_foreign_key "applauses", "comments"
+  add_foreign_key "applauses", "users"
+  add_foreign_key "comment_reads", "users"
+  add_foreign_key "comment_subscriptions", "users"
+  add_foreign_key "comments", "maps"
+  add_foreign_key "comments", "users", column: "author_id"
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
@@ -183,6 +271,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
   add_foreign_key "map_memberships", "maps"
   add_foreign_key "map_memberships", "users"
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
+  add_foreign_key "map_publications", "maps"
+  add_foreign_key "map_publications", "users", column: "published_by_id"
+  add_foreign_key "map_share_links", "maps"
+  add_foreign_key "map_share_links", "users", column: "created_by_id"
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "owner_id"
