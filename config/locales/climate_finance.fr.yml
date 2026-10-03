@@ -42,10 +42,11 @@ fr:
         high: "Les émissions mondiales continuent d'augmenter (%{ipcc})."
       period: "%{period}"
       zone_from_to: "Zone %{from} → %{to}"
-      coldest_night: "Nuit la plus froide : %{temp}"
-      mean_delta: "Moyenne annuelle : %{delta}"
-      summer: "Été : %{delta}, pluie %{precip}"
-      range: "fourchette %{low} à %{high}"
+      coldest_night: "Nuit la plus froide"
+      mean: "Moyenne annuelle"
+      range: "(%{low} à %{high} selon les modèles)"
+      summer: "Été"
+      summer_value: "%{delta}, pluie %{precip}"
       explanation_same: "D'ici %{horizon}, avec %{scenario}, votre terrain resterait en zone %{to}, mais avec des étés plus chauds (%{summer}) et une pluie d'été qui varierait de %{precip}."
       explanation_change: "D'ici %{horizon}, avec %{scenario}, votre terrain passerait de la zone %{from} à la zone %{to} : des hivers moins rudes, des étés plus chauds (%{summer}) et une pluie d'été qui varierait de %{precip}."
       scenario_inline:
@@ -56,10 +57,15 @@ fr:
       title: "Vos plantes face au climat"
       empty: "Ajoutez des plantes à la palette ou placez-en sur la carte pour vérifier leur adaptation au climat, aujourd'hui et demain."
       count:
-        one: "%{count} plante vérifiée"
-        other: "%{count} plantes vérifiées"
-      today: "Auj."
+        one: "%{count} espèce"
+        other: "%{count} espèces"
+      today_long: "Aujourd'hui"
+      risk_at: "%{when} : %{risks}"
       unknown_traits: "Rusticité inconnue dans le catalogue"
+      unknown_group:
+        one: "Rusticité inconnue pour %{count} espèce :"
+        other: "Rusticité inconnue pour %{count} espèces :"
+      unknown_hint: "La vérification se fera dès que la fiche de l'espèce indiquera sa température minimale ou sa zone de rusticité."
       cold_limit: "Supporte jusqu'à %{temp}"
       quantity: "× %{count}"
       checks_note: "Le froid est vérifié pour toutes les plantes dont la rusticité est connue ; la chaleur et la sécheresse seulement quand la fiche de l'espèce l'indique."
@@ -69,21 +75,28 @@ fr:
         at_risk: "À risque"
         unknown: "Inconnu"
       summary:
-        ok: "%{count} adaptée(s)"
-        borderline: "%{count} limite(s)"
-        at_risk: "%{count} à risque"
-        unknown: "%{count} sans donnée"
+        ok:
+          one: "%{count} adaptée"
+          other: "%{count} adaptées"
+        borderline:
+          one: "%{count} limite"
+          other: "%{count} limites"
+        at_risk:
+          one: "%{count} à risque"
+          other: "%{count} à risque"
+        unknown:
+          one: "%{count} sans donnée"
+          other: "%{count} sans donnée"
       risks:
         cold: "froid"
         heat: "chaleur"
         drought: "sécheresse"
-      risk_label: "Risque : %{risks}"
     locked:
       title: "Climat futur et vérification des plantes"
       body: "Voyez comment le climat de votre terrain évoluera d'ici 2050 et 2080, et quelles plantes de votre palette risquent de souffrir du froid, de la chaleur ou de la sécheresse."
       plants_count:
-        one: "%{count} plante de votre carte attend sa vérification."
-        other: "%{count} plantes de votre carte attendent leur vérification."
+        one: "%{count} espèce de votre carte attend sa vérification."
+        other: "%{count} espèces de votre carte attendent leur vérification."
       included: "Inclus dans le forfait, avec les autres analyses du terrain."
       cta: "Découvrir le forfait"
     forecast:
@@ -146,15 +159,18 @@ fr:
     kpis:
       total_investment: "Investissement total"
       break_even_year: "Année d'équilibre"
-      break_even_hint: "Première année à partir de laquelle le résultat reste positif"
+      break_even_hint: "la première à partir de laquelle le résultat reste positif"
       payback_year: "Retour sur investissement"
-      payback_hint: "Année où les recettes cumulées ont remboursé les investissements"
+      payback_hint: "les recettes cumulées ont remboursé les investissements"
       funding_need: "Besoin de financement"
-      funding_need_hint: "Le creux de trésorerie le plus bas sur 20 ans (%{year})"
+      funding_need_hint: "Le creux de trésorerie le plus bas sur 20 ans, en %{calendar} (année %{year} du plan)"
       final_cash: "Trésorerie après 20 ans"
       peak_hours: "Heures de cueillette"
       peak_hours_hint: "L'année de la plus grosse récolte (%{kg})"
       never: "Pas sur 20 ans"
+      plan_year: "Année %{year} du plan"
+      break_even_never: "Le résultat ne devient pas durablement positif sur 20 ans."
+      payback_never: "Les recettes cumulées ne remboursent pas les investissements sur 20 ans."
       year: "Année %{year} (%{calendar})"
       year_short: "an %{year}"
     chart:
@@ -216,8 +232,13 @@ fr:
       restaurant: "Restauration"
       direct: "Vente directe"
     units:
+      plants:
+        zero: "aucun plant"
+        one: "%{count} plant"
+        other: "%{count} plants"
       eur: "€"
       eur_per_year: "€/an"
+      kg_per_year: "kg/an"
       years: "ans"
       pct: "%"
       kg: "kg"
@@ -250,7 +271,7 @@ fr:
         planting_year: "Année de plantation"
         first_harvest_age: "Première récolte (âge)"
         full_production_age: "Pleine production (âge)"
-        yield_kg_per_plant: "Rendement adulte (kg/plant/an)"
+        yield_kg_per_plant: "Récolte par plant adulte"
         picking_rate_kg_per_hour: "Cueillette (kg/h)"
         loss_pct: "Pertes (%)"
         retail_share_pct: "Grande distribution (%)"
@@ -336,6 +357,9 @@ fr:
       title: "Plan financier : %{map}"
       disclaimer: "Estimation indicative calculée par Semisto Designer à partir des hypothèses saisies par l'utilisateur. Euros constants, hors TVA, avant impôts."
       generated_on: "Généré le %{date}"
+      headers:
+        species:
+          yield_kg_per_plant: "Récolte par plant adulte (kg/an)"
       columns:
         item: "Poste"
         year: "Année %{year} (%{calendar})"
@@ -389,6 +413,9 @@ fr:
         loan_balance_end: "Capital restant dû après 20 ans"
         warnings: "Points à compléter"
         never: "Pas sur 20 ans"
+      plan_year: "Année %{year} du plan"
+      break_even_never: "Le résultat ne devient pas durablement positif sur 20 ans."
+      payback_never: "Les recettes cumulées ne remboursent pas les investissements sur 20 ans."
       assumptions:
         note: "Toutes les valeurs ci-dessous ont été saisies par l'utilisateur."
         settings: "Hypothèses générales"
