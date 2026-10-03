@@ -149,7 +149,7 @@ function Section({ id, icon: Icon, children }: { id: string; icon: typeof Bot; c
 
 function Step({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-xl bg-white p-4 text-sm text-loam-700 ring-1 ring-loam-200/70">
+    <div className="min-w-0 rounded-xl bg-white p-4 text-sm text-loam-700 ring-1 ring-loam-200/70">
       <h3 className="mb-1.5 text-sm font-semibold text-loam-900">{title}</h3>
       {children}
     </div>
@@ -171,31 +171,28 @@ function ToolCard({ tool }: { tool: McpToolDoc }) {
       {tool.parameters.length === 0 ? (
         <p className="mt-3 text-xs italic text-loam-500">{t('docs_mcp.tool.no_parameters')}</p>
       ) : (
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full min-w-[34rem] text-left text-sm">
-            <thead className="text-xs uppercase tracking-wide text-loam-500">
-              <tr>
-                <th className="py-1.5 pr-3 font-medium">{t('docs_mcp.tool.parameter')}</th>
-                <th className="py-1.5 pr-3 font-medium">{t('docs_mcp.tool.type')}</th>
-                <th className="py-1.5 font-medium">{t('docs_mcp.tool.description')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-loam-100 align-top">
-              {tool.parameters.map((param) => (
-                <tr key={param.name}>
-                  <td className="py-2 pr-3">
-                    <code className="font-mono text-xs text-prune-700">{param.name}</code>
-                    {param.required && <span className="ml-1 text-xs text-clay-500">{t('docs_mcp.tool.required')}</span>}
-                  </td>
-                  <td className="py-2 pr-3 font-mono text-xs text-loam-600">{param.type}</td>
-                  <td className="py-2 text-loam-700">
-                    {param.description}
-                    <ParameterDetails param={param} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-3 text-sm">
+          <div className="hidden grid-cols-[13rem_7.5rem_1fr] gap-3 py-1.5 text-xs uppercase tracking-wide text-loam-500 sm:grid" aria-hidden="true">
+            <span className="font-medium">{t('docs_mcp.tool.parameter')}</span>
+            <span className="font-medium">{t('docs_mcp.tool.type')}</span>
+            <span className="font-medium">{t('docs_mcp.tool.description')}</span>
+          </div>
+          <dl className="divide-y divide-loam-100 border-t border-loam-100 sm:border-t-0">
+            {tool.parameters.map((param) => (
+              <div key={param.name} className="grid gap-x-3 gap-y-1 py-2 sm:grid-cols-[13rem_7.5rem_1fr]">
+                <dt className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+                  <code className="break-all font-mono text-xs text-prune-700">{param.name}</code>
+                  {param.required && <span className="text-xs text-clay-500">{t('docs_mcp.tool.required')}</span>}
+                  <span className="font-mono text-xs text-loam-500 sm:hidden">· {param.type}</span>
+                </dt>
+                <dd className="hidden font-mono text-xs text-loam-600 sm:block">{param.type}</dd>
+                <dd className="min-w-0 text-loam-700">
+                  {param.description}
+                  <ParameterDetails param={param} />
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       )}
     </article>

@@ -134,7 +134,7 @@ fr:
       one: "%{author} propose 1 élément"
       other: "%{author} propose %{count} éléments"
     region: "Brouillons proposés par une IA"
-    cta: "Revoir : accepter, ajuster ou refuser chaque élément"
+    cta: "À revoir : acceptez ou refusez chaque élément"
     viewer_hint: "Un éditeur de la carte doit les revoir avant qu'ils n'en fassent partie."
     focus: "Voir sur la carte"
     accept: "Accepter"

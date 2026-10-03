@@ -12,6 +12,9 @@ import type { DraftsResponse } from '@/types/mcp'
 import type { FeatureLayer, MapFeature } from '@/types'
 
 const POLL_MS = 30_000
+const DESKTOP = '(min-width: 768px)'
+// Room the inspector takes on the right of the map on desktop (w-80 + margins).
+const INSPECTOR_PX = 352
 const LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks', 'notes']
 
 /**
@@ -23,6 +26,8 @@ const LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'pl
 export default function DraftsBar() {
   const editor = useEditor()
   const [open, setOpen] = useState(false)
+  const isDesktop = useMediaQuery(DESKTOP)
+  const sectionRef = useRef<HTMLElement>(null)
   const [busy, setBusy] = useState<number | 'all' | null>(null)
   const [meta, setMeta] = useState<{ author: string | null; summary: string | null }>({ author: null, summary: null })
   const mapId = editor.map.id
@@ -74,10 +79,25 @@ export default function DraftsBar() {
   const author = meta.author || t('drafts.default_author')
   const title = t('drafts.title', { count: drafts.length, author })
 
+  // Frame the element in the part of the map left visible by the open list
+  // (desktop) or by the inspector bottom sheet (mobile, where the list folds).
   function focus(feature: MapFeature) {
     editor.select(feature.properties.id)
+    const map = editor.instance
+    const box = map.getContainer().getBoundingClientRect()
+    const padding = { top: 72, bottom: 72, left: 72, right: 72 }
+    if (isDesktop) {
+      padding.right = INSPECTOR_PX + 24
+      const list = sectionRef.current?.getBoundingClientRect()
+      if (list) padding.left = Math.max(padding.left, list.right - box.left + 24)
+      const spare = box.width - padding.left - padding.right
+      if (spare < 160) padding.left = Math.max(24, padding.left - (160 - spare))
+    } else {
+      padding.top = 96
+      padding.bottom = Math.round(box.height * 0.6) + 16
+    }
     const [minX, minY, maxX, maxY] = turfBbox(feature)
-    editor.instance.fitBounds([[minX, minY], [maxX, maxY]], { padding: 96, maxZoom: 19, duration: 600 })
+    map.fitBounds([[minX, minY], [maxX, maxY]], { padding, maxZoom: 19, duration: 600 })
   }
 
   async function run<T>(key: number | 'all', action: () => Promise<T>, done?: (value: T) => string) {
@@ -94,36 +114,43 @@ export default function DraftsBar() {
 
   const panelOpen = editor.activePanel != null
   const inspectorOpen = editor.selected != null
+  // On a phone the inspector is a bottom sheet: fold the list while it is up.
+  const expanded = open && (isDesktop || !inspectorOpen)
 
   return (
     <div
       className={clsx(
-        'pointer-events-none absolute top-2 z-20 flex justify-center',
-        'left-14 right-2',
+        'pointer-events-none absolute top-2 z-20 flex justify-center md:justify-start',
+        // Clear of the tool rail (left) and the zoom controls (right).
+        'left-14 right-12',
         panelOpen ? 'md:left-[23.5rem]' : 'md:left-14',
-        inspectorOpen ? 'md:right-[21.5rem]' : 'md:right-2',
+        inspectorOpen ? 'md:right-[21.5rem]' : 'md:right-14',
       )}
     >
       <section
+        ref={sectionRef}
         aria-label={t('drafts.region')}
-        className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-humus-200"
+        className="pointer-events-auto w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-humus-200"
       >
         <button
           type="button"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
+          onClick={() => {
+            if (!expanded && !isDesktop && inspectorOpen) editor.select(null)
+            setOpen(!expanded)
+          }}
+          aria-expanded={expanded}
           className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-humus-50"
         >
           <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-humus-100 text-humus-700">
             <Sparkles className="h-4 w-4" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold text-loam-900">{title}</span>
-            {!open && <span className="block truncate text-xs text-loam-500">{t(editor.canEdit ? 'drafts.cta' : 'drafts.viewer_hint')}</span>}
+            <span className="line-clamp-2 text-sm font-semibold leading-snug text-loam-900">{title}</span>
+            {!expanded && <span className="block truncate text-xs text-loam-500">{t(editor.canEdit ? 'drafts.cta' : 'drafts.viewer_hint')}</span>}
           </span>
-          {open ? <ChevronUp className="h-4 w-4 text-loam-400" /> : <ChevronDown className="h-4 w-4 text-loam-400" />}
+          {expanded ? <ChevronUp className="h-4 w-4 text-loam-400" /> : <ChevronDown className="h-4 w-4 text-loam-400" />}
         </button>
-        {open && (
+        {expanded && (
           <div className="border-t border-humus-100">
             {meta.summary && (
               <p className="whitespace-pre-line bg-humus-50/60 px-3 py-2 text-xs text-loam-700">{meta.summary}</p>
@@ -209,6 +236,18 @@ export default function DraftsBar() {
       </section>
     </div>
   )
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const list = window.matchMedia(query)
+    const update = () => setMatches(list.matches)
+    update()
+    list.addEventListener('change', update)
+    return () => list.removeEventListener('change', update)
+  }, [query])
+  return matches
 }
 
 function IconAction({ label, tone, disabled, onClick, children }: {

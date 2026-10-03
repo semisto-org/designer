@@ -44,7 +44,7 @@ export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, e
       </Card>
 
       <section className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card className="min-w-0">
           <h2 className="text-base">{t('account_ai.claude_ai.title')}</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-loam-700">
             <li>{t('account_ai.claude_ai.step1')}</li>
@@ -55,7 +55,7 @@ export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, e
           </ol>
           <p className="mt-3 rounded-lg bg-loam-50 p-3 text-sm italic text-loam-600">{t('account_ai.claude_ai.example')}</p>
         </Card>
-        <Card>
+        <Card className="min-w-0">
           <h2 className="flex items-center gap-2 text-base"><Terminal className="h-4 w-4 text-loam-500" />{t('account_ai.claude_code.title')}</h2>
           <p className="mt-2 text-sm text-loam-700">{t('account_ai.claude_code.step1')}</p>
           <CopyField value={claudeCode} className="mt-2" mono />

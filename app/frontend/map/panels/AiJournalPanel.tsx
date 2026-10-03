@@ -105,12 +105,11 @@ export default function AiJournalPanel() {
           {t('ai_journal.more')}
         </Button>
       )}
-      <div className="border-t border-loam-100 pt-3 text-xs text-loam-500">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-loam-100 pt-3 text-xs text-loam-500">
         <Link href="/account/ai" className="inline-flex items-center gap-1 font-medium text-prune-600 hover:text-prune-800">
           <Bot className="h-3.5 w-3.5" />
           {t('ai_journal.connect')}
         </Link>
-        <span className="mx-1.5">·</span>
         <a href="/docs/mcp" className="hover:text-loam-800">{t('ai_journal.docs')}</a>
       </div>
     </div>
