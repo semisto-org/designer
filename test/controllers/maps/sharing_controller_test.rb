@@ -112,6 +112,13 @@ class Maps::SharingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "editor", @map.invitations.last.role
   end
 
+  test "an unknown role in an invitation never becomes a privilege: it falls back to viewer" do
+    sign_in_as @owner
+    post map_invitations_path(@map), params: { invitation: { email_address: "y@example.org", role: "owner" } }, as: :json
+    assert_response :created
+    assert_equal "viewer", @map.invitations.find_by(email_address: "y@example.org").role
+  end
+
   test "invitation errors are in French: editor limit, existing member, bad address" do
     3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
     sign_in_as @owner

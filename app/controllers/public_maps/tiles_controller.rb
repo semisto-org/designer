@@ -4,6 +4,8 @@ module PublicMaps
   # owner published, only while the view is published.
   class TilesController < ApplicationController
     allow_unauthenticated_access
+    # A map page asks for a few dozen tiles at once; this only stops abuse of the proxy.
+    rate_limit to: 900, within: 1.minute, with: -> { head :too_many_requests }
 
     def show
       publication = MapPublication.includes(:map).find_by!(token: params[:token])

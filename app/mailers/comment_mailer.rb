@@ -21,7 +21,7 @@ class CommentMailer < ApplicationMailer
       @author = comment.author
       @map = comment.map
       @title = comment.commentable.comment_title
-      @thread_title = comment.commentable.is_a?(Map) ? @map.name : t("comment_mailer.on_element", title: @title, map: @map.name)
+      @thread_title = comment.commentable.is_a?(Map) ? "« #{@map.name} »" : t("comment_mailer.on_element", title: @title, map: @map.name)
       @url = map_url(@map, discussion: comment.commentable.comment_key, anchor: "comment-#{comment.id}")
     end
 end

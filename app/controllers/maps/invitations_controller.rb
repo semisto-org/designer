@@ -11,16 +11,22 @@ module Maps
     before_action :set_invitation, only: %i[destroy resend]
 
     def create
-      attrs = params.require(:invitation).permit(:email_address, :role)
-      invitation = @map.invitations.pending.find_by(email_address: attrs[:email_address].to_s.strip.downcase)
+      email = params.require(:invitation).permit(:email_address)[:email_address].to_s.strip.downcase
+      # The role is read on its own and checked against an allowlist: an unknown value
+      # falls back to the model default (viewer), never to an arbitrary string.
+      requested = params.dig(:invitation, :role).to_s
+      role = MapInvitation::ROLES.include?(requested) ? requested : nil
+
+      invitation = @map.invitations.pending.find_by(email_address: email)
       if invitation
         # Same address invited again: update the role and send it again.
-        invitation.assign_attributes(role: attrs[:role].presence || invitation.role)
-        return render_invalid(invitation) unless invitation.save
+        invitation.role = role if role
       else
-        invitation = @map.invitations.new(attrs.merge(invited_by: Current.user))
-        return render_invalid(invitation) unless invitation.save
+        invitation = @map.invitations.new(email_address: email, invited_by: Current.user)
+        invitation.role = role if role
       end
+      return render_invalid(invitation) unless invitation.save
+
       invitation.deliver!
       render json: Collab::SharingPayload.new(@map, Current.user, url_helpers: self), status: :created
     end

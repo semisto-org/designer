@@ -1,12 +1,13 @@
 class MapInvitation < ApplicationRecord
   EXPIRES_IN = 30.days
+  ROLES = %w[editor viewer].freeze
 
   belongs_to :map
   belongs_to :invited_by, class_name: "User"
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
   validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :role, inclusion: { in: %w[editor viewer] }
+  validates :role, inclusion: { in: ROLES }
   validate :not_already_a_participant, on: :create
   validate :editor_slot_available, on: :create
 
