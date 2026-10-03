@@ -43,7 +43,7 @@ export default function OpenSource() {
 
       <Section tone="white" id="donnees">
         <SectionHeading title={tf('site.open_source.data.title')} intro={tf('site.open_source.data.intro')} />
-        <div className="mt-8 overflow-x-auto rounded-xl ring-1 ring-loam-200">
+        <div className="relative mt-8 overflow-x-auto rounded-xl ring-1 ring-loam-200">
           <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
             <thead>
               <tr className="bg-loam-50 text-loam-700">

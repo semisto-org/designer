@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   get "open-source", to: "pages#open_source", as: :open_source
   get "confidentialite", to: "pages#privacy", as: :privacy
   get "conditions", to: "pages#terms", as: :terms
+  get "sitemap", to: "pages#sitemap", defaults: { format: "xml" }, as: :sitemap
   # Help center (Markdown articles in app/help); /help/:slug.json feeds the help drawer.
   get "help", to: "help#index", as: :help_center
   get "help/:slug", to: "help#show", as: :help_article, constraints: { slug: /[a-z0-9-]+/ }

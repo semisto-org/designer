@@ -59,4 +59,16 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Connecter Claude · Semisto Designer", meta.dig("title", "innerContent")
     assert_includes meta.dig("description", "content"), "assistant IA"
   end
+
+  test "the index is also served as JSON for the help drawer, with search" do
+    get "/help.json"
+    assert_response :success
+    body = response.parsed_body
+    assert_equal HelpArticle.all.size, body["categories"].sum { |c| c["articles"].size }
+    assert_empty body["results"]
+
+    get "/help.json", params: { q: "parcelle" }
+    assert_response :success
+    assert_not_empty response.parsed_body["results"]
+  end
 end

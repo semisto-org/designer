@@ -34,6 +34,14 @@ class PagesController < ApplicationController
   def privacy = render_public("pages/privacy", page: :privacy, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json })
   def terms = render_public("pages/terms", page: :terms, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json })
 
+  # The public pages and every help article, for search engines.
+  def sitemap
+    @urls = [ [ "/", 1.0 ], [ "/fonctionnalites", 0.9 ], [ "/tarifs", 0.9 ], [ "/mission-drone", 0.6 ], [ "/open-source", 0.5 ],
+              [ "/help", 0.7 ], [ "/confidentialite", 0.2 ], [ "/conditions", 0.2 ] ]
+    @urls += HelpArticle.all.map { |article| [ "/help/#{article.slug}", 0.6 ] }
+    render formats: :xml
+  end
+
   private
     # The pricing FAQ as schema.org FAQPage, straight from the page copy.
     def faq_json_ld

@@ -70,11 +70,11 @@ export default function AccountShow({ account }: { account: AccountData }) {
 
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-xl">
+          <div className="min-w-0 max-w-xl flex-1">
             <h2 className="flex items-center gap-2 text-base"><Sparkles className="h-4 w-4 text-prune-500" aria-hidden="true" />{t('account.ai_title')}</h2>
             <p className="mt-2 text-sm text-loam-600">{t('account.ai_body')}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <HelpButton slug="connecter-claude" />
             <Link href="/account/ai" className="inline-flex items-center justify-center rounded-lg bg-prune-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-prune-700">
               {t('account.ai_link')}

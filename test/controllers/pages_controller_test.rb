@@ -71,4 +71,28 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=canonical][href='http://www.example.com/tarifs']"
     assert_select "meta[property='og:title'][content=Tarifs]"
   end
+
+  test "the pricing page declares its FAQ as structured data" do
+    meta = inertia_page("/tarifs").dig("props", "_inertia_meta")
+    ld = meta.find { |tag| tag["headKey"] == "ld-json" }
+    assert_equal "FAQPage", ld.dig("innerContent", "@type")
+    questions = ld.dig("innerContent", "mainEntity")
+    assert_operator questions.size, :>=, 5
+    assert(questions.all? { |q| q["name"].present? && q.dig("acceptedAnswer", "text").present? })
+  end
+
+  test "the legal pages and the pricing page get the contact address" do
+    %w[/confidentialite /conditions /tarifs].each do |path|
+      assert_equal Billing.contact_email, inertia_page(path).dig("props", "contactEmail"), path
+    end
+  end
+
+  test "the sitemap lists the public pages and every help article" do
+    get "/sitemap.xml"
+    assert_response :success
+    assert_equal "application/xml", response.media_type
+    assert_includes response.body, "<loc>http://www.example.com/tarifs</loc>"
+    assert_includes response.body, "<loc>http://www.example.com/help/#{HelpArticle.all.first.slug}</loc>"
+    assert_not_includes response.body, "/billing"
+  end
 end

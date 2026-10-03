@@ -72,7 +72,7 @@ export default function Pricing({ catalog, memberPriceCents, contactEmail }: { c
 
       <Section tone="white">
         <SectionHeading title={tf('site.pricing.compare.title')} />
-        <div className="mt-8 overflow-x-auto rounded-xl ring-1 ring-loam-200">
+        <div className="relative mt-8 overflow-x-auto rounded-xl ring-1 ring-loam-200">
           <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
             <thead>
               <tr className="bg-loam-50 text-loam-700">

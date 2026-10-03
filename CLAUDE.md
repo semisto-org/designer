@@ -52,3 +52,11 @@ Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden 
 - Open-Meteo free API is non-commercial: weather/climate go through a configurable provider with an "unavailable" state.
 - Code ported from Claudy (MIT, © Fondation Les 4 Sources) keeps a header comment: `# Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)`. Terranova has no licence and contains personal data: port logic file by file, never data or history.
 - Sensitive layers (networks: water, gas, electricity, ethernet) are hidden by default in public views, exports and the MCP.
+
+## Billing, public site and help center
+
+- Billing is off without `STRIPE_SECRET_KEY` (`Billing.enabled?`): everything is unlocked. Prices are cents in `Billing::Catalog` and must match the Stripe prices (tax inclusive); Stripe ids come from `STRIPE_PRICE_*`. All Stripe calls go through `Providers::StripeGateway` (stub it with WebMock in tests; `test/test_helpers/billing_test_helper.rb` has the payload builders). Webhook events are stored once in `StripeEvent` (idempotent); every payment lands in `BillingPayment` (the revenue-share ledger).
+- A user's plan is `User#current_plan_key`. Maps beyond the plan's limit are read-only (`Map#read_only_by_plan?`, enforced in `MapScoped#require_editor!`, `readOnlyByPlan` in the map props, badge in the editor header). Nothing is ever deleted when a pass expires.
+- Public pages (`PagesController`, `app/frontend/pages/pages/*`) render server-side meta tags through `PublicMeta#render_public` and the page copy lives in `config/locales/site.fr.yml` (read with `content()` / `tf()` from `lib/content.ts`, which also applies French typography). The legal pages are drafts marked « Projet — à valider ».
+- Help center: Markdown articles in `app/help/*.md` (front matter: title, summary, category, order), served by `HelpController` (`/help`, `/help/:slug`, and `.json` for both). Put `<HelpButton slug="…" />` (components/help) next to any screen that needs contextual help.
+

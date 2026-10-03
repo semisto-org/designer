@@ -78,4 +78,3 @@ module BillingTestHelper
       .to_return(status:, body: body.to_json, headers: { "Content-Type" => "application/json" })
   end
 end
-
