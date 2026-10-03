@@ -1,5 +1,5 @@
-# The help center: Markdown articles from app/help, public. /help/:slug.json
-# returns one article as JSON for the help drawer (components/help/HelpDrawer).
+# The help center: Markdown articles from app/help, public. /help.json and
+# /help/:slug.json feed the help drawer (components/help/HelpDrawer).
 class HelpController < ApplicationController
   include PublicMeta
 
@@ -9,11 +9,15 @@ class HelpController < ApplicationController
     query = params[:q].to_s.strip.first(100)
     results = query.present? ? HelpArticle.search(query) : []
     words = HelpArticle.tokenize(query)
-    render_public "help/index", page: :help, props: {
+    props = {
       query:,
       categories: HelpArticle.categories.map { |c| { name: c[:name], articles: c[:articles].map(&:as_json) } },
       results: results.map { |a| a.as_json.merge(excerpt: a.excerpt(words)) }
     }
+    respond_to do |format|
+      format.html { render_public "help/index", page: :help, props: props.merge(contactEmail: Billing.contact_email) }
+      format.json { render json: props }
+    end
   end
 
   def show
@@ -24,7 +28,8 @@ class HelpController < ApplicationController
         siblings = HelpArticle.all.select { |a| a.category == article.category && a != article }
         render_public "help/show", page: :help, title: article.title, description: article.summary, props: {
           article: article.to_drawer_json,
-          related: siblings.map(&:as_json)
+          related: siblings.map(&:as_json),
+          contactEmail: Billing.contact_email
         }
       end
       format.json do

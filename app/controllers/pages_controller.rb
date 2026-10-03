@@ -6,7 +6,7 @@ class PagesController < ApplicationController
 
   def home
     return redirect_to(maps_path) if authenticated?
-    render_public "pages/home", page: :home, json_ld: {
+    render_public "pages/home", page: :home, props: { catalog: Billing::Catalog.as_json }, json_ld: {
       "@context" => "https://schema.org",
       "@type" => "WebApplication",
       "name" => PublicMeta::SITE_NAME,
@@ -22,14 +22,29 @@ class PagesController < ApplicationController
   def features = render_public("pages/features", page: :features)
 
   def pricing
-    render_public "pages/pricing", page: :pricing, props: {
+    render_public "pages/pricing", page: :pricing, json_ld: faq_json_ld, props: {
       catalog: Billing::Catalog.as_json,
-      memberPriceCents: Billing::Catalog.member_price_cents
+      memberPriceCents: Billing::Catalog.member_price_cents,
+      contactEmail: Billing.contact_email
     }
   end
 
   def drone = render_public("pages/drone", page: :drone, props: { priceCents: Billing::Catalog.find("drone").price_cents })
   def open_source = render_public("pages/open_source", page: :open_source)
-  def privacy = render_public("pages/privacy", page: :privacy)
-  def terms = render_public("pages/terms", page: :terms)
+  def privacy = render_public("pages/privacy", page: :privacy, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json })
+  def terms = render_public("pages/terms", page: :terms, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json })
+
+  private
+    # The pricing FAQ as schema.org FAQPage, straight from the page copy.
+    def faq_json_ld
+      items = Array(t("site.pricing.faq.items"))
+      return if items.empty?
+      {
+        "@context" => "https://schema.org",
+        "@type" => "FAQPage",
+        "mainEntity" => items.map do |item|
+          { "@type" => "Question", "name" => item[:q], "acceptedAnswer" => { "@type" => "Answer", "text" => item[:a] } }
+        end
+      }
+    end
 end

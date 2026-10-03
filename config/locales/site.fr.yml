@@ -1,5 +1,6 @@
 # Public website: home, features, pricing, drone mission, open source,
-# privacy, terms.
+# privacy, terms. Long copy is kept as YAML lists and maps and read on the
+# client with content('site.…'); prices come from the catalogue as %{vars}.
 fr:
   site:
     seo:
@@ -27,3 +28,451 @@ fr:
       help:
         title: "Centre d'aide"
         description: "Des guides concrets pour créer sa première carte, lire les couches du Géoportail, dessiner l'existant, construire sa palette et connecter Claude."
+    common:
+      start_free: "Créer ma carte gratuite"
+      see_pricing: "Voir les tarifs"
+      see_features: "Découvrir les fonctionnalités"
+      open_maps: "Ouvrir mes cartes"
+      with_plan: "Avec le forfait"
+      included: "Inclus"
+      not_included: "Non inclus"
+      contact: "Écrire à Semisto"
+      draft_banner: "Projet — à valider"
+      draft_note: "Ce texte est un projet de travail. Il sera relu par un juriste avant l'ouverture des paiements et peut encore changer."
+      updated: "Dernière mise à jour : %{date}"
+    nav:
+      menu: "Menu principal"
+    footer:
+      tagline: "Un outil libre pour cartographier son terrain et concevoir son jardin-forêt."
+      product: "Le produit"
+      about: "À propos"
+      drone: "Mission drone"
+      rights: "© Semisto"
+    home:
+      hero:
+        eyebrow: "Une carte gratuite pour commencer"
+        title: "Votre terrain, compris en profondeur. Votre jardin-forêt, pensé pour le climat qui vient."
+        lead: "Semisto Designer est l'atelier en ligne où l'on cartographie son terrain avec précision, puis où l'on dessine son jardin-forêt, avec un Claude qui connaît le lieu, ses données et vos envies."
+        cta_primary: "Créer ma carte gratuite"
+        cta_secondary: "Découvrir les fonctionnalités"
+        note: "Sans carte bancaire. Votre première carte reste gratuite, pour de bon."
+        map_alt: "Illustration : le plan d'un terrain sur fond de courbes de niveau, avec sa parcelle, ses arbres, une mare, un chemin et un brouillon proposé par Claude."
+        chip_parcel: "Votre parcelle"
+        chip_parcel_detail: "38 ares, pente vers le sud-est"
+        chip_claude: "Claude propose un verger"
+        chip_claude_detail: "Brouillon à accepter ou refuser"
+        chip_pond: "Mare"
+        north: "N"
+        scale: "20 m"
+      trust:
+        - "Données du Géoportail de Wallonie"
+        - "Fond de carte OpenStreetMap"
+        - "Logiciel libre (AGPL-3.0)"
+        - "Conçu par Semisto"
+      cycle:
+        eyebrow: "Le chemin"
+        title: "De la parcelle au jardin-forêt, en quatre temps"
+        intro: "Un seul outil pour avancer à votre rythme, de l'observation à la plantation."
+        steps:
+          - title: "Cartographier"
+            body: "Votre parcelle apparaît sur un vrai fond de carte, avec le cadastre, les orthophotos, le relief et les couches du Géoportail de Wallonie. Vous dessinez ce qui existe : haies, arbres, bâtiments, mares."
+          - title: "Comprendre"
+            body: "Où l'eau ruisselle-t-elle ? Quel sol ? Quel climat en 2050 ? Les analyses transforment les données publiques en réponses sur votre terrain."
+          - title: "Concevoir"
+            body: "Vous posez zones, chemins, mares et patches de plantes. La palette se construit avec des filtres et des suggestions, et la liste de plants se calcule toute seule."
+          - title: "Partager"
+            body: "Un lien pour montrer votre projet, des commentaires posés à l'endroit exact, un PDF à l'échelle pour le chantier ou un dossier."
+      highlights:
+        eyebrow: "Dans la boîte à outils"
+        title: "Tout ce qu'il faut pour que le projet prenne forme"
+        items:
+          - icon: "map"
+            title: "Un vrai fond de carte"
+            body: "Orthophotos, cadastre, relief : votre parcelle telle qu'elle est, pas un schéma."
+          - icon: "layers"
+            title: "Les couches du Géoportail"
+            body: "Sols, pentes, ruissellement, Natura 2000, plan de secteur… Cliquez sur la carte pour lire la donnée."
+          - icon: "pencil"
+            title: "Dessiner l'existant et le projet"
+            body: "Zones, lignes, points et mesures : tout est géolocalisé, et reste modifiable à tout moment."
+          - icon: "sprout"
+            title: "Une palette qui se construit"
+            body: "Choisissez les plantes par strate, sol, exposition et usage. La liste de plants suit vos patches."
+          - icon: "sparkles"
+            title: "Claude lit votre carte"
+            body: "Branchez votre Claude : il lit votre terrain et propose des brouillons que vous acceptez ou refusez."
+          - icon: "users"
+            title: "Partage et commentaires"
+            body: "Invitez, commentez directement sur la carte, partagez un lien en lecture seule."
+        cta: "Tout voir en détail"
+      claude:
+        eyebrow: "Avec Claude"
+        title: "Un assistant qui connaît vraiment votre terrain"
+        body: "Designer n'embarque pas d'IA dans un coin : c'est votre propre Claude, ou tout autre assistant compatible MCP, qui se branche sur vos cartes. Il lit les couches, la pente, le sol et la fiche projet, puis propose des aménagements sur la carte, en brouillon."
+        points:
+          - "Vous gardez la main : chaque proposition est un brouillon que vous acceptez ou refusez."
+          - "Votre assistant, vos conditions : Designer n'envoie vos cartes à aucune IA de son côté."
+          - "Lecture seule gratuite ; les brouillons sur la carte font partie du forfait."
+        cta: "Comment connecter Claude"
+      showcase:
+        eyebrow: "Né sur un vrai terrain"
+        title: "Éprouvé aux 4 Sources, à Yvoir"
+        body: "Designer prolonge Claudy, l'outil que la Fondation Les 4 Sources a construit pour cartographier et faire vivre son domaine d'Ahinvaux, en Belgique. On l'a d'abord mis à l'épreuve sur un lieu réel, avec de vraies pentes et de vraies saisons, avant de l'ouvrir à tout le monde."
+        cta: "Un outil libre et transparent"
+      pricing:
+        eyebrow: "Simple"
+        title: "Gratuit pour commencer, un forfait quand le projet s'étoffe"
+        body: "Pas d'abonnement pour les particuliers : le forfait se paie une fois par an, sans reconduction automatique."
+        tiers:
+          - name: "Carte gratuite"
+            price: "0 €"
+            note: "Une carte, pour de bon"
+          - name: "Forfait particulier"
+            price: "%{yearly}"
+            note: "par an, payé une seule fois"
+          - name: "Pour les pros"
+            price: "dès %{atelier}"
+            note: "par mois, résiliable"
+        cta: "Comparer les formules"
+      open_source:
+        title: "Un outil libre, construit au grand jour"
+        body: "Le code est publié sous licence AGPL-3.0 : vous pouvez le lire, le vérifier, l'améliorer. Les sources de données et leurs licences sont citées en toute transparence."
+        cta: "Voir la page open source"
+      final:
+        title: "Prêt à voir votre terrain d'en haut ?"
+        body: "Créez votre première carte en quelques minutes : une adresse ou un numéro de parcelle suffit pour commencer."
+        cta: "Créer ma carte gratuite"
+    features:
+      hero:
+        eyebrow: "Fonctionnalités"
+        title: "Tout ce qu'il faut pour passer de la parcelle au projet"
+        lead: "Cartographier, comprendre, concevoir, partager : chaque étape s'appuie sur la précédente, et Claude peut lire le tout."
+      groups:
+        - id: "cartographier"
+          icon: "map"
+          title: "Cartographier"
+          intro: "Retrouvez votre parcelle, voyez ce qu'elle contient et relevez l'existant."
+          items:
+            - title: "Fond de carte et cadastre"
+              body: "Satellite, orthophotos du SPW (y compris les prises de vue plus anciennes) et cadastre. Votre parcelle se retrouve à partir d'une adresse ou d'un numéro de parcelle."
+            - title: "Couches du Géoportail de Wallonie"
+              body: "Sols, pentes, ruissellement, Natura 2000, plan de secteur, forêts anciennes… Chaque couche s'active en un clic, et un clic sur la carte lit la donnée sous votre curseur."
+            - title: "Dessin de l'existant"
+              body: "Zones, lignes et points : haies, arbres, bâtiments, réseaux, mares. Longueurs et surfaces se mesurent sur la carte."
+            - title: "Vue drone datée"
+              body: "Une prise de vue récente de votre terrain, réalisée par Semisto et configurée sur votre carte."
+              link: "/mission-drone"
+              link_label: "En savoir plus sur la mission drone"
+        - id: "comprendre"
+          icon: "mountain"
+          title: "Comprendre"
+          intro: "Les données publiques deviennent des réponses sur votre terrain."
+          items:
+            - title: "Eau et relief"
+              body: "Le terrain en relief et en courbes de niveau, simulation de pluie et de ruissellement, axes d'écoulement, cuvettes : où poser une mare ou une baissière."
+              plan: "yearly"
+            - title: "Climat futur"
+              body: "Ce que sera le climat de votre terrain en 2050 et 2080, et ce que cela change pour le choix des plantes."
+              plan: "yearly"
+            - title: "Sol"
+              body: "Un guide pour bien prélever, la carte des sols de la Wallonie et les plantes bio-indicatrices qui parlent de votre terre."
+              plan: "yearly"
+            - title: "Photos du lieu"
+              body: "Vos photos se rangent sur la carte, là où elles ont été prises : un journal visuel du terrain, saison après saison."
+        - id: "concevoir"
+          icon: "sprout"
+          title: "Concevoir"
+          intro: "Dessinez le jardin-forêt, plante après plante, sans perdre de vue le terrain."
+          items:
+            - title: "Éléments et patches"
+              body: "Posez mares, haies, chemins, serres et abris, puis des patches de plantes : ces zones où se mêlent arbres, arbustes, vivaces et couvre-sols."
+            - title: "Palette de plantes"
+              body: "Un catalogue de plantes avec leurs besoins, leur rusticité et leurs usages. Filtrez par strate, sol, exposition, mellifère, fixateur d'azote…"
+            - title: "Liste de plants"
+              body: "Les quantités viennent des patches que vous dessinez : la liste de plants se calcule toute seule, prête pour la commande."
+            - title: "Fiche projet"
+              body: "Objectifs, contraintes, rythme de l'année : tout ce qui doit guider le design est noté au même endroit, et lu par Claude."
+            - title: "Brouillons de Claude"
+              body: "Claude propose des aménagements directement sur la carte. Chaque proposition reste un brouillon que vous acceptez ou refusez."
+              plan: "yearly"
+        - id: "partager"
+          icon: "users"
+          title: "Partager"
+          intro: "Montrez, discutez, imprimez."
+          items:
+            - title: "Commentaires sur la carte"
+              body: "Posez un commentaire à l'endroit exact : sur un arbre, une zone, un point. Le fil de discussion reste attaché au lieu."
+            - title: "Invitations et lien de partage"
+              body: "Invitez des personnes en lecture ou en édition, ou partagez un lien en lecture seule avec ceux qui n'ont pas de compte."
+            - title: "PDF à l'échelle"
+              body: "Un plan imprimable à l'échelle, pour le chantier, un dossier ou l'affichage."
+              plan: "yearly"
+            - title: "Claude lit votre carte"
+              body: "Connectez votre assistant en MCP : il lit les couches, les dessins et la fiche projet. La lecture est gratuite."
+              link: "/help/connecter-claude"
+              link_label: "Comment connecter Claude"
+      cta:
+        title: "Essayez avec votre propre terrain"
+        body: "La première carte est gratuite : il suffit d'une adresse ou d'un numéro de parcelle."
+    pricing:
+      hero:
+        eyebrow: "Tarifs"
+        title: "Gratuit pour commencer, un forfait quand le projet s'étoffe"
+        lead: "Pas d'abonnement pour les particuliers : le forfait se paie une fois par an, sans reconduction automatique. Tous les prix sont TTC, TVA comprise."
+      individuals:
+        title: "Pour les particuliers"
+        intro: "Concevoir son propre jardin-forêt, à son rythme."
+      pros:
+        title: "Pour les professionnels"
+        intro: "Bureaux d'études, pépiniéristes : plusieurs projets à la fois, en abonnement mensuel résiliable."
+      badge_individual: "Sans abonnement"
+      cta_free: "Créer ma carte gratuite"
+      cta_choose: "Choisir"
+      compare:
+        title: "Ce que contient chaque formule"
+        columns:
+          free: "Gratuit"
+          yearly: "Forfait"
+          atelier: "Atelier"
+          bureau: "Bureau d'études"
+        rows:
+          - label: "Cartes que vous possédez"
+            values: ["1", "10", "5", "20"]
+          - label: "Fond de carte et couches du Géoportail"
+            values: ["yes", "yes", "yes", "yes"]
+          - label: "Dessin, palette, liste de plants, fiche projet"
+            values: ["yes", "yes", "yes", "yes"]
+          - label: "Commentaires et partage"
+            values: ["yes", "yes", "yes", "yes"]
+          - label: "Claude en lecture seule (MCP)"
+            values: ["yes", "yes", "yes", "yes"]
+          - label: "Autres cartes que la première"
+            values: ["no", "yes", "yes", "yes"]
+          - label: "PDF à l'échelle"
+            values: ["no", "yes", "yes", "yes"]
+          - label: "Analyses : eau et relief, climat futur, sol"
+            values: ["no", "yes", "yes", "yes"]
+          - label: "Brouillons de Claude sur la carte"
+            values: ["no", "yes", "yes", "yes"]
+          - label: "Éditeurs invités gratuits"
+            values: ["no", "no", "yes", "yes"]
+      member:
+        eyebrow: "Membres de Semisto"
+        title: "30 % de réduction sur le forfait particulier"
+        body: "Les membres de Semisto reçoivent par e-mail un code promotionnel personnel. Saisissez-le sur la page de paiement : le forfait passe de %{yearly} à %{member}."
+        note: "Pas encore membre ? Rejoignez Semisto et soutenez la mission qui fait vivre cet outil."
+        cta: "Découvrir Semisto"
+      drone:
+        title: "Mission drone : %{drone}, achat unique"
+        body: "Une vue aérienne datée de votre terrain, prise par Semisto et configurée sur votre carte. Elle se commande à part, sans forfait obligatoire."
+        cta: "Voir la mission drone"
+      faq:
+        title: "Questions fréquentes"
+        items:
+          - q: "Que se passe-t-il à l'échéance de mon forfait particulier ?"
+            a: "Rien ne se renouvelle tout seul et rien n'est supprimé. Vos cartes restent lisibles, exportables et commentables, et la plus ancienne reste modifiable comme dans la formule gratuite. Quelques semaines avant l'échéance, Designer vous propose de renouveler ; si vous le faites avant la date, aucun jour n'est perdu : la nouvelle année commence à la fin de l'ancienne."
+          - q: "Pourquoi pas d'abonnement pour les particuliers ?"
+            a: "Un projet de jardin-forêt avance par saisons, pas par mois. Vous payez une année quand vous en avez besoin, sans prélèvement automatique à surveiller."
+          - q: "Quelle différence avec Atelier et Bureau d'études ?"
+            a: "Le forfait particulier couvre jusqu'à 10 cartes pour votre usage personnel. Atelier (5 cartes) et Bureau d'études (20 cartes) sont des abonnements mensuels résiliables à tout moment, pensés pour mener des projets de clients, avec des éditeurs invités gratuits."
+          - q: "Les prix sont-ils TTC ?"
+            a: "Oui. Le prix affiché est celui que vous payez, TVA comprise. La TVA applicable est calculée au paiement selon votre pays, et une facture détaillée vous est envoyée automatiquement par e-mail."
+          - q: "Comment se passe le paiement ?"
+            a: "Le paiement est traité par Stripe, un prestataire de paiement spécialisé : Semisto ne voit ni ne conserve votre numéro de carte. Vous recevez une facture par e-mail, et vous la retrouvez dans votre page « Formule et facturation »."
+          - q: "Comment obtenir la réduction de 30 % des membres de Semisto ?"
+            a: "Les membres reçoivent un code promotionnel personnel par e-mail. Il se saisit à la caisse, sur la page de paiement du forfait particulier."
+          - q: "Puis-je résilier un abonnement professionnel ?"
+            a: "À tout moment, depuis « Gérer l'abonnement » dans votre page de facturation. L'accès continue jusqu'à la fin de la période déjà payée."
+          - q: "Mes cartes m'appartiennent-elles ?"
+            a: "Oui. Vos cartes et vos dessins restent à vous. Le code de Designer est libre, et vous pouvez à tout moment demander la suppression de votre compte."
+      contact:
+        title: "Une question avant de vous lancer ?"
+        body: "Écrivez-nous, nous répondons volontiers : %{email}."
+    drone:
+      hero:
+        eyebrow: "Mission drone"
+        title: "Une vue aérienne de votre terrain, prise par Semisto"
+        lead: "Les orthophotos publiques ont quelques années. Avec la mission drone, Semisto photographie votre terrain d'en haut, à une date que vous choisissez, et configure la vue sur votre carte."
+        price_note: "achat unique, TTC"
+        cta_signed_out: "Commander la mission"
+        cta_signed_in: "Commander la mission"
+        needs_account: "Un compte gratuit suffit : vous serez invité à vous connecter avant le paiement."
+      how:
+        title: "Comment ça se passe"
+        steps:
+          - title: "Vous commandez en ligne"
+            body: "Le paiement est sécurisé et une facture vous est envoyée par e-mail. Aucun forfait n'est nécessaire."
+          - title: "Semisto vous recontacte"
+            body: "Nous organisons ensemble la prise de vue : l'accès au terrain, la période, la météo."
+          - title: "La vue arrive sur votre carte"
+            body: "Semisto configure la vue drone sur votre carte, datée, à côté des orthophotos publiques."
+      gets:
+        title: "Ce que vous obtenez"
+        items:
+          - "Une vue aérienne récente de votre terrain, datée, qui s'ajoute aux orthophotos publiques."
+          - "La vue configurée sur votre carte par Semisto : elle sert directement de fond pour dessiner."
+          - "Une trace dans l'historique des vues : vous pourrez comparer d'une saison, d'une année à l'autre."
+      good_to_know:
+        title: "Bon à savoir"
+        items:
+          - "Le vol dépend de la météo et du lieu : Semisto vous confirme qu'il est possible avant de commencer."
+          - "Le prix est TTC. Il s'agit d'une prestation réalisée par une équipe, pas d'un téléchargement automatique : comptez un échange par e-mail pour organiser la prise de vue."
+      faq:
+        title: "Questions fréquentes"
+        items:
+          - q: "Faut-il un forfait pour commander ?"
+            a: "Non. Il suffit d'un compte, gratuit. La mission drone est un achat à part, avec ou sans forfait."
+          - q: "Pour quels terrains ?"
+            a: "Pour tout terrain où le survol par drone est autorisé. Si ce n'est pas possible chez vous, Semisto vous l'explique avant toute prise de vue."
+          - q: "Qui voit la vue drone ?"
+            a: "Elle est ajoutée à votre carte : elle est visible par les personnes avec qui vous partagez cette carte."
+    open_source:
+      hero:
+        eyebrow: "Open source"
+        title: "Un outil libre, construit au grand jour"
+        lead: "Semisto Designer est un logiciel libre. Vous pouvez lire son code, le vérifier, l'améliorer et même l'héberger vous-même."
+      licence:
+        title: "Licence AGPL-3.0"
+        body:
+          - "Le code de Semisto Designer est publié sous la licence GNU AGPL-3.0. En clair : vous pouvez l'utiliser, l'étudier, le modifier et le partager. Si vous le modifiez et l'offrez en ligne à d'autres personnes, vous partagez vos modifications sous la même licence."
+          - "Le service hébergé sur designer.semisto.org est celui de Semisto. Le code est celui que tout le monde peut lire."
+        cta: "Voir le code sur GitHub"
+        url: "https://github.com/semisto-org/designer"
+      why:
+        title: "Pourquoi libre ?"
+        body: "Parce que le savoir sur le sol, l'eau et le vivant gagne à circuler, et parce que vous devez pouvoir vérifier ce que fait l'outil de votre terrain. Le service payant finance le temps nécessaire pour le faire vivre ; le code reste à tous."
+      heritage:
+        title: "Né de Claudy"
+        body: "Designer reprend et prolonge Claudy, l'application que la Fondation Les 4 Sources a construite pour son domaine d'Ahinvaux, à Yvoir. Claudy est publié sous licence MIT (© Fondation Les 4 Sources), et le code qui en est repris en garde la mention."
+      data:
+        title: "Données et licences"
+        intro: "Designer n'invente pas les données du terrain : il les affiche, avec leur source. Voici d'où elles viennent."
+        columns:
+          source: "Source"
+          use: "Ce que nous en faisons"
+          licence: "Licence et mention"
+        rows:
+          - source: "Géoportail de Wallonie (SPW)"
+            use: "Orthophotos, cadastre, relief, sols, pentes, ruissellement, Natura 2000, plan de secteur et autres couches."
+            licence: "Données ouvertes du Service public de Wallonie, réutilisées selon la licence de chaque couche. La source est citée sur la carte."
+          - source: "OpenStreetMap"
+            use: "Données du fond de carte."
+            licence: "ODbL. © les contributrices et contributeurs d'OpenStreetMap."
+          - source: "OpenFreeMap"
+            use: "Diffusion des tuiles vectorielles du fond de carte."
+            licence: "Service ouvert, fondé sur les données OpenStreetMap (ODbL)."
+          - source: "PFAF (Plants For A Future)"
+            use: "Certaines valeurs de la base de plantes (rusticité, usages…)."
+            licence: "Licence non commerciale : les valeurs sont affichées avec PFAF cité comme source, sans reprise de ses textes ni de ses images."
+          - source: "Base de plantes de Semisto"
+            use: "Les fiches de plantes, enrichies par les contributrices et contributeurs."
+            licence: "La provenance est indiquée champ par champ (sourcé, à vérifier, vide)."
+        outro: "D'autres sources (météo, climat) pourront s'ajouter ; chacune sera citée ici avec sa licence."
+      contribute:
+        title: "Contribuer"
+        body: "Une erreur, une idée, une couche de données à ajouter ? Ouvrez une discussion sur GitHub ou écrivez-nous. Les contributions sont les bienvenues, des développeuses comme des jardinières."
+        cta: "Ouvrir une discussion"
+        url: "https://github.com/semisto-org/designer/issues"
+    legal:
+      updated_on: "3 octobre 2026"
+      privacy:
+        title: "Politique de confidentialité"
+        lead: "Ce que Semisto Designer collecte, pourquoi, qui l'héberge, et comment exercer vos droits."
+        sections:
+          - title: "Qui est responsable de vos données ?"
+            paragraphs:
+              - "Le responsable du traitement est Marco & Vespucci SRL, qui édite le service Semisto Designer sous la marque Semisto."
+              - "Adresse : [adresse à compléter]. Numéro d'entreprise (BCE) : [numéro BCE à compléter]."
+              - "Pour toute question sur vos données : %{email}."
+          - title: "Quelles données collectons-nous ?"
+            items:
+              - "Votre compte : votre adresse e-mail, votre nom, et votre photo de profil si vous vous connectez avec Google."
+              - "Vos contenus : les cartes, contours, dessins, notes, commentaires et photos que vous créez ou ajoutez."
+              - "Vos paiements : la formule achetée, le montant, la TVA, la date et le code promotionnel éventuel. Le paiement lui-même est traité par Stripe : nous ne voyons ni ne conservons votre numéro de carte."
+              - "Des données techniques : votre adresse IP et des journaux de connexion, utiles à la sécurité et au dépannage."
+            outro: "Nous utilisons un cookie de session, nécessaire pour vous garder connecté. Nous n'utilisons ni cookies publicitaires ni traceurs tiers."
+          - title: "Pourquoi, et sur quelle base légale ?"
+            items:
+              - "Fournir le service que vous avez demandé (créer vos cartes, les partager, vous envoyer un lien de connexion) : l'exécution du contrat."
+              - "Facturer et tenir la comptabilité : une obligation légale."
+              - "Vous prévenir de l'échéance de votre forfait : l'exécution du contrat et notre intérêt légitime à vous éviter une surprise."
+              - "Sécuriser le service et prévenir les abus : notre intérêt légitime."
+          - title: "Qui reçoit vos données ?"
+            paragraphs:
+              - "Nous faisons appel à des prestataires, qui ne traitent vos données que pour notre compte :"
+            items:
+              - "Hébergement : un serveur privé virtuel (VPS) [hébergeur et pays à confirmer]."
+              - "Stripe : paiement, facturation et calcul de la TVA."
+              - "Google : uniquement si vous choisissez de vous connecter avec votre compte Google."
+              - "Un service d'envoi d'e-mails [prestataire à confirmer] : liens de connexion, factures, rappels."
+              - "Votre propre assistant IA : uniquement si vous le connectez à vos cartes via MCP. C'est vous qui le choisissez et qui décidez de ce qu'il lit ; Designer n'envoie vos cartes à aucune IA de son côté."
+              - "Les services de cartographie (Service public de Wallonie, OpenFreeMap) : pour afficher les fonds de carte et les couches, ils reçoivent la zone affichée et l'adresse IP de votre navigateur ou de notre serveur."
+            outro: "Nous ne vendons pas vos données et ne les utilisons pas pour de la publicité."
+          - title: "Combien de temps les conservons-nous ?"
+            items:
+              - "Votre compte et vos cartes : tant que votre compte existe."
+              - "Les pièces comptables (factures, paiements) : [7 ans, à valider], comme la loi l'exige."
+              - "Les journaux techniques : [durée à définir]."
+          - title: "Vos données quittent-elles l'Union européenne ?"
+            paragraphs:
+              - "Certains prestataires (Stripe, Google) peuvent traiter des données hors de l'Union européenne, avec les garanties prévues par le RGPD (clauses contractuelles types, cadre de protection des données UE-États-Unis). [À valider.]"
+          - title: "Vos droits"
+            paragraphs:
+              - "Vous pouvez à tout moment demander l'accès à vos données, leur rectification, leur effacement, la limitation de leur traitement, leur portabilité, ou vous opposer à un traitement fondé sur notre intérêt légitime."
+              - "Pour supprimer votre compte, utilisez le bouton de votre page « Mon compte » ou écrivez à %{email}. Nous vous répondons dans un délai d'un mois."
+              - "Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une plainte auprès de l'Autorité de protection des données (autoriteprotectiondonnees.be)."
+          - title: "Sécurité"
+            paragraphs:
+              - "Les échanges sont chiffrés (HTTPS). La connexion se fait par lien envoyé par e-mail ou par Google : il n'y a pas de mot de passe à voler. L'accès à vos cartes est limité à vous et aux personnes que vous invitez."
+          - title: "Modifications de cette politique"
+            paragraphs:
+              - "Si cette politique change de façon importante, nous vous en informons par e-mail ou sur le site avant que le changement ne s'applique."
+      terms:
+        title: "Conditions d'utilisation"
+        lead: "Les règles du jeu pour utiliser Semisto Designer : compte, formules, paiement, contenus et responsabilités."
+        sections:
+          - title: "Qui sommes-nous ?"
+            paragraphs:
+              - "Semisto Designer est un service en ligne de cartographie et de conception de jardins-forêts, édité par Marco & Vespucci SRL sous la marque Semisto. Adresse : [adresse à compléter]. Numéro d'entreprise (BCE) : [numéro BCE à compléter]. Contact : %{email}."
+          - title: "Votre compte"
+            paragraphs:
+              - "Vous vous connectez avec votre adresse e-mail ou avec Google. Vous êtes responsable de l'accès à votre adresse e-mail et des actions faites avec votre compte. Les informations que vous donnez doivent être exactes."
+          - title: "Les formules et les prix"
+            items:
+              - "La carte gratuite comprend une carte que vous possédez, avec les fonctions décrites sur la page des tarifs."
+              - "Le forfait particulier coûte %{yearly} TTC. Il se paie en une fois, vaut un an à partir du paiement et ne se renouvelle pas automatiquement. Un renouvellement fait avant l'échéance s'ajoute à la période en cours."
+              - "Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, 20 cartes) sont des abonnements mensuels, reconduits chaque mois jusqu'à résiliation. Vous pouvez résilier à tout moment depuis votre page de facturation ; l'accès continue jusqu'à la fin de la période payée."
+              - "La mission drone (%{drone} TTC) est une prestation unique, réalisée par Semisto après un échange avec vous."
+              - "Tous les prix sont TTC. Un prix peut changer pour l'avenir ; il ne change jamais une période déjà payée."
+            outro: "Les membres de Semisto bénéficient de 30 % de réduction sur le forfait particulier, avec un code personnel."
+          - title: "Paiement et facturation"
+            paragraphs:
+              - "Le paiement passe par Stripe. Une facture vous est envoyée par e-mail. Si le paiement d'un abonnement échoue, l'accès est maintenu pendant 7 jours, le temps de mettre à jour votre moyen de paiement, puis revient à la formule gratuite."
+          - title: "À l'échéance, rien n'est supprimé"
+            paragraphs:
+              - "Quand un forfait prend fin, vos cartes restent lisibles, exportables et commentables, et la plus ancienne reste modifiable comme dans la formule gratuite. Les cartes qui dépassent la formule gratuite passent en lecture seule jusqu'au renouvellement."
+          - title: "Rétractation et remboursement"
+            paragraphs:
+              - "[À valider avec un juriste : droit de rétractation de 14 jours des consommateurs et ses exceptions pour les contenus numériques fournis immédiatement avec votre accord, conditions de remboursement.]"
+          - title: "Vos contenus"
+            paragraphs:
+              - "Vos cartes, dessins, notes et photos restent à vous. Vous nous donnez seulement le droit de les héberger et de les afficher pour faire fonctionner le service, y compris auprès des personnes avec qui vous choisissez de les partager."
+              - "Vous êtes responsable de ce que vous ajoutez et de ce que vous partagez. N'ajoutez pas de contenu illicite, ni de contenu qui porte atteinte aux droits d'autrui."
+          - title: "Données publiques et aides à la décision"
+            paragraphs:
+              - "Les couches de données viennent de sources publiques, affichées en l'état. Les analyses, suggestions et brouillons de Claude sont des aides à la réflexion : vérifiez-les sur le terrain et auprès des autorités compétentes (urbanisme, cadastre, zones protégées, règles sur les mares et les haies) avant de vous engager dans des travaux."
+          - title: "Votre assistant IA"
+            paragraphs:
+              - "Si vous connectez un assistant IA à vos cartes via MCP, vous choisissez l'assistant et ce qu'il lit. Ce qu'il fait des données qu'il lit relève des conditions de son fournisseur. Vous pouvez révoquer l'accès à tout moment."
+          - title: "Disponibilité et responsabilité"
+            paragraphs:
+              - "Nous faisons de notre mieux pour que le service fonctionne bien, sans pouvoir garantir qu'il ne sera jamais interrompu. Dans la mesure permise par la loi, et sans exclure les droits que la loi vous reconnaît en tant que consommateur, notre responsabilité est limitée aux dommages directs."
+          - title: "Open source"
+            paragraphs:
+              - "Le code de Semisto Designer est publié sous licence AGPL-3.0. Ces conditions régissent l'utilisation du service hébergé par Semisto, pas votre droit d'utiliser le code."
+          - title: "Fin du compte"
+            paragraphs:
+              - "Vous pouvez demander la suppression de votre compte à tout moment. Nous pouvons suspendre un compte en cas d'abus ou de non-respect de ces conditions, en vous prévenant autant que possible."
+          - title: "Droit applicable"
+            paragraphs:
+              - "Ces conditions sont régies par le droit belge. En cas de litige, les tribunaux de [arrondissement à préciser] sont compétents, sans préjudice des règles impératives de protection des consommateurs. [Médiation de la consommation à préciser.]"

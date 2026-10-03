@@ -5,6 +5,8 @@ fr:
     intro: "Votre formule, sa date d'échéance, et de quoi la renouveler ou en changer."
     read_only_by_plan: "Cette carte est en lecture seule : votre forfait a pris fin et elle dépasse le nombre de cartes de la formule gratuite. Vous pouvez toujours la consulter, l'exporter et la commenter ; renouvelez votre forfait pour la modifier à nouveau."
     read_only_badge: "Lecture seule · renouveler"
+    read_only_short: "Lecture seule"
+    read_only_editor_hint: "Le forfait du propriétaire de cette carte a pris fin : elle est temporairement en lecture seule."
     read_only_hint: "Votre forfait a pris fin : cette carte reste lisible, exportable et commentable, mais ne peut plus être modifiée."
     errors:
       not_configured: "Les paiements ne sont pas encore ouverts : tout est débloqué pendant la bêta."
@@ -51,6 +53,8 @@ fr:
       invoices: "Factures et moyen de paiement"
       current: "Votre formule actuelle"
       redirecting: "Redirection vers le paiement…"
+      unavailable: "Bientôt disponible"
+      contact_us: "Une question sur les formules ?"
       pay_securely: "Paiement sécurisé par Stripe. Prix TTC, TVA comprise."
     plans_title: "Choisir ou changer de formule"
     plans:

@@ -2,6 +2,8 @@ import { Layers3, MapPinned } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
+import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
+import HelpAction from '@/map/panels/HelpAction'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -13,7 +15,10 @@ export const PANELS: EditorPanel[] = [
 export const INSPECTOR_SECTIONS: InspectorSection[] = []
 
 // Top bar actions (right side), e.g. share, export.
-export const HEADER_ACTIONS: EditorSlot[] = []
+export const HEADER_ACTIONS: EditorSlot[] = [
+  { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
+  { id: 'help', component: HelpAction, order: 95 },
+]
 
 // Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.
 export const OVERLAYS: EditorSlot[] = []

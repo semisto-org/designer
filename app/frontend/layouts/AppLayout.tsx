@@ -17,10 +17,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-dvh">
       <Flash />
       <header className="border-b border-loam-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6">
           <Link href="/maps" className="flex items-center gap-2 font-semibold text-loam-900">
             <Logo />
-            <span>Designer</span>
+            <span className="hidden sm:inline">Designer</span>
           </Link>
           <nav className="flex items-center gap-1 text-sm">
             {nav.map((item) => (
@@ -28,7 +28,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={
-                  'rounded-md px-2.5 py-1.5 ' +
+                  'whitespace-nowrap rounded-md px-2.5 py-1.5 ' +
                   (url.startsWith(item.href) ? 'bg-prune-50 text-prune-700' : 'text-loam-600 hover:bg-loam-100')
                 }
               >
@@ -49,7 +49,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   )}
                   <span className="hidden sm:inline">{currentUser.name}</span>
                 </Link>
-                <Link href="/session" method="delete" as="button" className="text-loam-500 hover:text-loam-900">
+                <Link href="/session" method="delete" as="button" className="hidden whitespace-nowrap text-loam-500 hover:text-loam-900 sm:inline">
                   {t('nav.sign_out')}
                 </Link>
               </>
