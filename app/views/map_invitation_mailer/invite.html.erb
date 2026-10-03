@@ -1,0 +1,6 @@
+<p><%= t(".greeting") %></p>
+<p><%= t(".body", inviter: @inviter.display_name, map: @map.name, role: t("maps.roles.#{@invitation.role}").downcase) %></p>
+<p style="color:#6b6257"><%= t(".role_#{@invitation.role}") %></p>
+<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".button") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".signin_hint") %></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".expiry", date: @invitation.expires_at.strftime("%d/%m/%Y")) %></p>

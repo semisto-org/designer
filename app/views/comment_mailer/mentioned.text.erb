@@ -1,0 +1,7 @@
+<%= t(".intro", author: @author.display_name, title: @thread_title) %>
+
+<%= @comment.body %>
+
+<%= t("comment_mailer.open_thread") %> : <%= @url %>
+
+<%= t(".reason") %> <%= t("comment_mailer.how_to_stop") %>

@@ -3,6 +3,7 @@
 # plants, animals), `kind` says what the element is.
 class MapFeature < ApplicationRecord
   include GeoJsonGeometry
+  include Commentable
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze
@@ -25,6 +26,9 @@ class MapFeature < ApplicationRecord
     value = self.class.parse_geojson(value) unless value.nil? || value.is_a?(RGeo::Feature::Instance)
     super(value)
   end
+
+  def comment_map = map
+  def comment_title = name.presence || I18n.t("editor.kinds.#{kind}", default: kind.to_s.humanize)
 
   def as_geojson
     {

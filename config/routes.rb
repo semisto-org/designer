@@ -12,6 +12,43 @@ Rails.application.routes.draw do
     end
   end
 
+  # --- collab ---
+  # Joining from a link: e-mail invitation or the map's share link.
+  get "invitations/:token", to: "invitations#show", as: :invitation
+  get "join/:token", to: "joins#show", as: :join
+  resource :comment_preference, only: :update
+
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :sharing, only: :show
+      resources :memberships, only: %i[update destroy]
+      resources :invitations, only: %i[create destroy] do
+        post :resend, on: :member
+      end
+      resource :share_link, only: %i[create update destroy] do
+        post :reset
+      end
+      resources :comments, only: %i[index create update destroy] do
+        collection do
+          get :threads
+          post :subscribe, to: "comment_subscriptions#create"
+          delete :subscribe, to: "comment_subscriptions#destroy"
+        end
+        resource :applause, only: %i[create destroy], controller: "comments/applauses"
+      end
+      resource :publication, only: %i[show create update destroy] do
+        post :renew
+      end
+    end
+  end
+
+  # Public, account-free view of a published map (snapshot) and its tiles.
+  constraints token: MapPublication::TOKEN_PATTERN do
+    get "p/:token", to: "public_maps#show", as: :public_map
+    get "p/:token/tiles/:layer_key/:z/:x/:y", to: "public_maps/tiles#show", as: :public_map_tile
+  end
+  # --- end collab ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

@@ -4,6 +4,10 @@ class User < ApplicationRecord
   has_many :organizations, through: :organization_memberships
   has_many :map_memberships, dependent: :destroy
   has_many :maps, through: :map_memberships
+  has_many :comments, foreign_key: :author_id, inverse_of: :author, dependent: :restrict_with_error
+  has_many :comment_subscriptions, dependent: :destroy
+  has_many :comment_reads, dependent: :destroy
+  has_many :applauses, dependent: :destroy
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
