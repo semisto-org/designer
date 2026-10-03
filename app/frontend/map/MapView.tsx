@@ -1,0 +1,76 @@
+import maplibregl, { type Map as MapLibreMap, type StyleSpecification } from 'maplibre-gl'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { MapContext } from '@/map/MapContext'
+import type { BBox, LngLat } from '@/types'
+
+// Neutral fallback base until the region's base layers are added on top.
+const FALLBACK_STYLE: StyleSpecification = {
+  version: 8,
+  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    },
+  },
+  layers: [
+    { id: 'background', type: 'background', paint: { 'background-color': '#ede9e3' } },
+    { id: 'osm', type: 'raster', source: 'osm' },
+  ],
+}
+
+type Props = {
+  center?: LngLat | null
+  zoom?: number | null
+  bbox?: BBox | null
+  style?: StyleSpecification | string
+  className?: string
+  children?: ReactNode
+  onReady?: (map: MapLibreMap) => void
+}
+
+export function MapView({ center, zoom, bbox, style, className, children, onReady }: Props) {
+  const container = useRef<HTMLDivElement>(null)
+  const [map, setMap] = useState<MapLibreMap | null>(null)
+
+  useEffect(() => {
+    if (!container.current) return
+    const instance = new maplibregl.Map({
+      container: container.current,
+      style: style ?? FALLBACK_STYLE,
+      center: center ?? [4.87, 50.47],
+      zoom: zoom ?? 8,
+      maxZoom: 22,
+      attributionControl: { compact: true },
+      // Needed to export the canvas (scaled PDF, thumbnails).
+      canvasContextAttributes: { preserveDrawingBuffer: true },
+    })
+    instance.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right')
+    instance.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left')
+    instance.addControl(
+      new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }),
+      'top-right',
+    )
+    instance.on('load', () => {
+      if (bbox) instance.fitBounds(bbox as [number, number, number, number], { padding: 60, duration: 0, maxZoom: 19 })
+      setMap(instance)
+      onReady?.(instance)
+    })
+    return () => {
+      setMap(null)
+      instance.remove()
+    }
+    // The map is created once; props are initial values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <div className={className ?? 'relative h-full w-full'}>
+      <div ref={container} className="absolute inset-0" />
+      <MapContext.Provider value={map}>{map && children}</MapContext.Provider>
+    </div>
+  )
+}

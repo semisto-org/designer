@@ -1,0 +1,43 @@
+# PostgreSQL with PostGIS. Each working directory (main checkout, worktree,
+# agent clone) gets its own development and test databases, derived from its
+# path, so parallel branches never share or corrupt a schema.
+# DATABASE_URL (production) or DESIGNER_DATABASE (local override) win.
+<% suffix = ENV.fetch("DESIGNER_DATABASE_SUFFIX") { require "digest"; Digest::SHA1.hexdigest(Rails.root.to_s)[0, 6] } %>
+default: &default
+  adapter: postgis
+  encoding: unicode
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
+  username: <%= ENV.fetch("PGUSER", "postgres") %>
+  password: <%= ENV.fetch("PGPASSWORD", "postgres") %>
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  schema_search_path: public
+
+development:
+  <<: *default
+  database: <%= ENV.fetch("DESIGNER_DATABASE") { "designer_development_#{suffix}" } %>
+
+test:
+  <<: *default
+  database: <%= ENV.fetch("DESIGNER_TEST_DATABASE") { "designer_test_#{suffix}" } %><%= ENV["TEST_ENV_NUMBER"] %>
+
+# Production: one PostgreSQL server, four databases (app, cache, queue, cable).
+# Only DATABASE_URL is required; the others are derived from it.
+production:
+  primary: &primary_production
+    <<: *default
+    url: <%= ENV["DATABASE_URL"] %>
+  cache:
+    <<: *primary_production
+    adapter: postgresql
+    url: <%= ENV["CACHE_DATABASE_URL"] || ENV["DATABASE_URL"].to_s.sub(%r{/([^/?]+)(\?|$)}, '/\1_cache\2') %>
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_production
+    adapter: postgresql
+    url: <%= ENV["QUEUE_DATABASE_URL"] || ENV["DATABASE_URL"].to_s.sub(%r{/([^/?]+)(\?|$)}, '/\1_queue\2') %>
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_production
+    adapter: postgresql
+    url: <%= ENV["CABLE_DATABASE_URL"] || ENV["DATABASE_URL"].to_s.sub(%r{/([^/?]+)(\?|$)}, '/\1_cable\2') %>
+    migrations_paths: db/cable_migrate
