@@ -33,3 +33,14 @@ export type InspectorSection = {
   component: ComponentType<{ feature: MapFeature }>
   order?: number
 }
+
+/**
+ * Components mounted inside the editor (with access to useEditor()):
+ * - header actions render in the top bar, right side (share, export…);
+ * - overlays render over the map (toolbars, popups, live presence…).
+ */
+export type EditorSlot = {
+  id: string
+  component: ComponentType
+  order?: number
+}

@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import { ArrowLeft } from 'lucide-react'
 import type { MapGeoJSONFeature, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Flash } from '@/components/ui/Flash'
 import { api } from '@/lib/api'
 import { formatArea, t } from '@/lib/i18n'
@@ -12,7 +13,7 @@ import { EditorContext, type Editor, type FeaturePatch, type NewFeature } from '
 import { Inspector } from '@/map/editor/Inspector'
 import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
-import { PANELS } from '@/map/panels'
+import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
 import type { PanelGroup } from '@/map/panels/registry'
 import type { EntitlementsData, MapData, MapFeature, RegionLayerData } from '@/types'
 
@@ -37,6 +38,7 @@ export default function MapShow(props: Props) {
         <h1 className="truncate text-base">{map.name}</h1>
         <span className="hidden text-sm text-loam-400 sm:inline">{formatArea(map.areaM2)}</span>
         <span className="ml-auto rounded-full bg-loam-100 px-2 py-0.5 text-xs text-loam-600">{t(`maps.roles.${map.role}`)}</span>
+        <div id="editor-header-actions" className="flex items-center gap-2" />
       </header>
       <div className="relative min-h-0 flex-1">
         <MapView
@@ -202,11 +204,23 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
         </section>
       )}
       {editor.selected && <Inspector feature={editor.selected} />}
+      {[...OVERLAYS].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)).map((o) => <o.component key={o.id} />)}
+      <HeaderActions />
       {toast && (
         <div className={'absolute bottom-10 left-1/2 z-30 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
           {toast.message}
         </div>
       )}
     </EditorContext.Provider>
+  )
+}
+
+function HeaderActions() {
+  const [target, setTarget] = useState<HTMLElement | null>(null)
+  useEffect(() => setTarget(document.getElementById('editor-header-actions')), [])
+  if (!target || HEADER_ACTIONS.length === 0) return null
+  return createPortal(
+    <>{[...HEADER_ACTIONS].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)).map((a) => <a.component key={a.id} />)}</>,
+    target,
   )
 }

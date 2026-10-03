@@ -1,5 +1,5 @@
 import { Layers3, MapPinned } from 'lucide-react'
-import type { EditorPanel, InspectorSection } from '@/map/panels/registry'
+import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
 
@@ -11,3 +11,9 @@ export const PANELS: EditorPanel[] = [
 
 // Register inspector sections for a selected feature here.
 export const INSPECTOR_SECTIONS: InspectorSection[] = []
+
+// Top bar actions (right side), e.g. share, export.
+export const HEADER_ACTIONS: EditorSlot[] = []
+
+// Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.
+export const OVERLAYS: EditorSlot[] = []
