@@ -1,0 +1,8 @@
+{
+  "results": [
+    { "layerId": 0, "layerName": "WAL_OCS_IA__2023", "value": "7", "displayFieldName": "", "attributes": { "Pixel Value": "7" } },
+    { "layerId": 0, "layerName": "WAL_OCS_IA__2023", "value": "9", "displayFieldName": "", "attributes": { "Pixel Value": "9" } },
+    { "layerId": 0, "layerName": "WAL_OCS_IA__2023", "value": "2", "displayFieldName": "", "attributes": { "Pixel Value": "2" } },
+    { "layerId": 0, "layerName": "WAL_OCS_IA__2023", "value": "NoData", "displayFieldName": "", "attributes": { "Pixel Value": "NoData" } }
+  ]
+}

@@ -3,6 +3,7 @@
 # three editors and any number of viewers.
 class Map < ApplicationRecord
   include GeoJsonGeometry
+  include HasTerrain
 
   MAX_EDITORS = 3
   STAGES = %w[observe map design plant].freeze
