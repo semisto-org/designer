@@ -1,0 +1,130 @@
+# « Claude sur la carte » : serveur MCP, autorisation OAuth, brouillons de
+# l'IA, journal IA, page « Connecter Claude » et documentation publique.
+# Les descriptions des outils MCP vivent ici : le serveur les envoie aux
+# agents et la page /docs/mcp les affiche, depuis la même source.
+fr:
+  mcp:
+    server:
+      instructions: |-
+        Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Vous agissez au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
+        Commencez par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
+        Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
+        Vous ne modifiez jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
+        Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
+    params:
+      map_id: "Identifiant de la carte, donné par list_maps."
+      layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), notes."
+      kind: "Type d'élément (kind), par exemple tree, pond, hedge, path, swale."
+      bbox: "Emprise [ouest, sud, est, nord] en degrés WGS84 : seuls les éléments qui la touchent sont renvoyés."
+      status: "active : éléments validés ; draft : brouillons en attente de revue ; all : les deux. Les brouillons refusés ne sont jamais renvoyés."
+      include_networks: "Inclure les réseaux (eau, gaz, électricité, câbles). Réservé aux éditeurs et au propriétaire de la carte."
+      include_geometry: "false pour une liste légère, sans les géométries."
+      limit: "Nombre maximal de résultats."
+      after_id: "Pagination : la valeur next_after_id de la page précédente."
+      feature_id: "Identifiant de l'élément."
+      lng: "Longitude WGS84 du point, en degrés décimaux."
+      lat: "Latitude WGS84 du point, en degrés décimaux."
+    tools:
+      list_maps:
+        title: "Lister mes cartes"
+        description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passez ensuite l'identifiant d'une carte à get_map."
+      get_map:
+        title: "Lire une carte"
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
+      list_features:
+        title: "Lister les éléments"
+        description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passez next_after_id dans after_id pour la page suivante."
+      get_feature:
+        title: "Lire un élément"
+        description: "Un élément de la carte : géométrie, attributs, justification s'il a été proposé par une IA, et mesures (surface en m², longueur et périmètre en m)."
+      get_region_layers:
+        title: "Couches de la région"
+        description: "Catalogue des couches de données de la région de la carte (en Wallonie, celles du Géoportail : sols, relief, zones inondables, plan de secteur, cadastre…) : clé, nom, groupe, et si la couche s'interroge en un point avec identify_at_point."
+      identify_at_point:
+        title: "Interroger les couches en un point"
+        description: "Ce que disent les couches de la région en un point du terrain : type de sol, aléa d'inondation, affectation au plan de secteur, parcelle cadastrale… Le point doit se trouver à moins de 1 km du terrain. Sans layers, toutes les couches interrogeables sont interrogées."
+        params:
+          layers: "Clés des couches à interroger (voir get_region_layers). Par défaut : toutes les couches interrogeables."
+      search_plants:
+        title: "Chercher une plante"
+        description: "Recherche dans le catalogue de plantes de Semisto, par nom latin ou nom commun français. Chaque donnée du catalogue garde sa source."
+        params:
+          query: "Nom latin ou nom commun, au moins 2 caractères."
+      get_plant:
+        title: "Fiche d'une plante"
+        description: "La fiche d'une espèce du catalogue : nom latin, noms communs, port, strate, exigences et usages, avec la provenance de chaque donnée."
+        params:
+          plant_id: "Identifiant de la plante, donné par search_plants."
+      propose_features:
+        title: "Proposer des brouillons"
+        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrigez et renvoyez seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          summary: "Résumé de la proposition dans son ensemble, montré à l'humain au-dessus des brouillons."
+          features: "Les éléments proposés, de 1 à 200."
+          feature_layer: "Couche de l'élément. Les réseaux ne peuvent pas être proposés."
+          feature_kind: "Type d'élément en snake_case, par exemple fruit_tree, hedge, pond, swale, path, raised_bed. Les types connus de l'éditeur sont dans known_kinds (get_map)."
+          feature_geometry: "Géométrie GeoJSON (Point, LineString, Polygon ou Multi…), coordonnées [longitude, latitude] en WGS84."
+          feature_name: "Nom court affiché sur la carte."
+          feature_notes: "Notes complémentaires : variétés, entretien, phasage…"
+          feature_rationale: "Pourquoi cet élément, ici, et avec quelles données (fiche projet, couches, relief, existant…). Obligatoire, 10 caractères au moins."
+          feature_properties: "Attributs libres, par exemple species, height_m, spacing_m."
+      withdraw_draft:
+        title: "Retirer des brouillons"
+        description: "Retire des brouillons proposés par une IA et pas encore revus, par exemple pour les remplacer par une meilleure proposition. Les éléments acceptés appartiennent aux humains : ils ne peuvent pas être retirés."
+        params:
+          feature_ids: "Identifiants des brouillons à retirer."
+    permissions:
+      scope: "Cette connexion n'a que l'accès en lecture : reconnectez le connecteur en choisissant « Lecture et brouillons »."
+      role: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer des brouillons."
+      plan: "Le forfait du propriétaire de la carte ne comprend pas les brouillons de l'IA."
+      boundary: "La carte n'a pas encore de contour de terrain."
+    notes:
+      networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
+      networks_on_request: "Les réseaux sont masqués par défaut : passez include_networks à true dans list_features pour les lire."
+      networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
+      review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
+    errors:
+      unauthorized: "Connexion requise : autorisez ce client depuis Semisto Designer (OAuth) ou utilisez un jeton personnel."
+      invalid_token: "Ce jeton n'est pas valide, a expiré ou a été révoqué."
+      rate_limited: "Trop de requêtes. Réessayez dans une minute."
+      map_not_found: "Carte %{id} introuvable, ou vous n'y avez pas accès. list_maps donne vos cartes."
+      feature_not_found: "Élément %{id} introuvable sur cette carte."
+      scope_drafts: "Cette connexion n'a que l'accès en lecture. Pour proposer des brouillons, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
+      editor_only: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer ou retirer des brouillons. L'utilisateur est lecteur de cette carte."
+      plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite. La lecture de la carte reste possible."
+      no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
+      too_many_features: "Au plus %{max} éléments par appel."
+      too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attendez que l'humain les revoie avant d'en proposer d'autres."
+      nothing_created: "Aucun brouillon créé. %{details}"
+      bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
+      identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Designer."
+      identify_layer_failed: "Le service de cette couche n'a pas répondu."
+      point_too_far: "Le point doit se trouver à moins de %{distance} m du terrain de la carte."
+      no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
+      plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Designer."
+      plant_not_found: "Plante %{id} introuvable dans le catalogue."
+    draft_errors:
+      not_an_object: "l'élément doit être un objet."
+      layer: "couche inconnue (couches possibles : %{layers})."
+      kind: "kind doit être en snake_case (minuscules, chiffres, _), par exemple fruit_tree."
+      rationale: "la justification (rationale) est obligatoire, 10 caractères au moins."
+      geometry: "géométrie GeoJSON illisible."
+      coordinates: "coordonnées hors limites : [longitude, latitude] en degrés WGS84."
+      too_complex: "géométrie trop détaillée (%{max} sommets au plus)."
+      properties: "properties doit être un objet de moins de %{max} octets."
+      empty: "géométrie vide."
+      invalid: "géométrie invalide (%{reason})."
+      outside: "hors du terrain : la géométrie doit rester à moins de %{buffer} m du contour."
+  activerecord:
+    models:
+      api_token: "Jeton personnel"
+    attributes:
+      api_token:
+        name: "Nom"
+        scopes: "Accès"
+    errors:
+      models:
+        api_token:
+          attributes:
+            base:
+              too_many: "Vous avez déjà %{count} jetons actifs : révoquez-en un avant d'en créer un autre."
