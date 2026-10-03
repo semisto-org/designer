@@ -11,6 +11,7 @@
 class HelpArticle
   DIR = Rails.root.join("app/help")
   FRONT_MATTER = /\A---\s*\n(.*?)\n---\s*\n/m
+  HEADING_ANCHOR = %r{<a href="#[^"]*" aria-label="[^"]*" data-heading-content="[^"]*" class="anchor"></a>}
   MARKDOWN_OPTIONS = {
     extension: { table: true, strikethrough: true, autolink: true, tasklist: true, header_ids: "" },
     parse: { smart: true },
@@ -55,7 +56,9 @@ class HelpArticle
     end
 
     def normalize(text)
-      I18n.transliterate(text.to_s.downcase.tr("’", "'").gsub("œ", "oe").gsub("æ", "ae"))
+      text = text.to_s.dup
+      text.force_encoding(Encoding::UTF_8) if text.encoding == Encoding::BINARY
+      I18n.transliterate(text.scrub.downcase.tr("’", "'").gsub("œ", "oe").gsub("æ", "ae"))
     end
 
     private
@@ -66,6 +69,10 @@ class HelpArticle
         meta = YAML.safe_load(match[1]) || {}
         new(slug: File.basename(file, ".md"), title: meta.fetch("title"), summary: meta["summary"].to_s,
             category: meta.fetch("category"), order: meta.fetch("order", 100).to_i, markdown: raw[match.end(0)..])
+      rescue Psych::SyntaxError, KeyError => e
+        # One broken article must not take the whole help center down.
+        Rails.logger.error("Help article #{File.basename(file)} ignored: #{e.message}")
+        nil
       end
   end
 
@@ -75,11 +82,12 @@ class HelpArticle
 
   def html
     @html ||= Commonmarker.to_html(markdown, options: MARKDOWN_OPTIONS, plugins: { syntax_highlighter: nil })
+      .gsub(HEADING_ANCHOR, "")   # keep the heading ids, drop the English "Link to heading" anchors
   end
 
   # Level-2 headings, for the "on this page" list: [{ id:, text: }].
   def headings
-    @headings ||= html.scan(%r{<h2><a href="#([^"]+)"[^>]*></a>(.*?)</h2>}m).map { |id, text| { id:, text: ActionController::Base.helpers.strip_tags(text) } }
+    @headings ||= html.scan(%r{<h2 id="([^"]+)">(.*?)</h2>}m).map { |id, text| { id:, text: ActionController::Base.helpers.strip_tags(text) } }
   end
 
   # Plain text of the body (no Markdown), for search and excerpts.
@@ -87,16 +95,16 @@ class HelpArticle
     @plain_text ||= ActionController::Base.helpers.strip_tags(html).squish
   end
 
-  # nil when a word is missing, otherwise a relevance score.
+  # nil when a query word is missing, otherwise a relevance score. A word
+  # matches the start of a word of the text ("plant" finds "plants").
   def score(words)
-    title_text = self.class.normalize(title)
-    summary_text = self.class.normalize(summary)
-    category_text = self.class.normalize(category)
-    body_text = self.class.normalize(plain_text)
-    return nil unless words.all? { |w| [ title_text, summary_text, category_text, body_text ].any? { |text| text.include?(w) } }
-    words.sum do |word|
-      (title_text.include?(word) ? 10 : 0) + (summary_text.include?(word) ? 4 : 0) +
-        (category_text.include?(word) ? 2 : 0) + [ body_text.scan(word).size, 5 ].min
+    fields = { title: title, summary: summary, category: category, body: plain_text }
+      .transform_values { |text| self.class.normalize(text) }
+    patterns = words.index_with { |word| /\b#{Regexp.escape(word)}/ }
+    return nil unless patterns.all? { |_, pattern| fields.values.any? { |text| text.match?(pattern) } }
+    patterns.sum do |_, pattern|
+      (fields[:title].match?(pattern) ? 10 : 0) + (fields[:summary].match?(pattern) ? 4 : 0) +
+        (fields[:category].match?(pattern) ? 2 : 0) + [ fields[:body].scan(pattern).size, 5 ].min
     end
   end
 
@@ -104,7 +112,7 @@ class HelpArticle
   def excerpt(words, length: 160)
     return summary if words.blank?
     haystack = self.class.normalize(plain_text)
-    position = words.filter_map { |w| haystack.index(w) }.min
+    position = words.filter_map { |w| haystack.index(/\b#{Regexp.escape(w)}/) }.min
     return summary if position.nil?
     start = [ position - 50, 0 ].max
     snippet = plain_text[start, length].to_s
