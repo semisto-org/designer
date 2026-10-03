@@ -10,12 +10,59 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_080200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
   enable_extension "postgis"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "bioindicator_observations", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "observed_by_id"
+    t.string "species_name", null: false
+    t.string "latin_name"
+    t.string "catalog_key"
+    t.bigint "plant_species_id"
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.date "observed_on"
+    t.string "abundance", default: "present", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location"], name: "index_bioindicator_observations_on_location", using: :gist
+    t.index ["map_id", "catalog_key"], name: "index_bioindicator_observations_on_map_id_and_catalog_key"
+    t.index ["map_id"], name: "index_bioindicator_observations_on_map_id"
+    t.index ["observed_by_id"], name: "index_bioindicator_observations_on_observed_by_id"
+  end
 
   create_table "map_features", force: :cascade do |t|
     t.bigint "map_id", null: false
@@ -69,6 +116,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["user_id"], name: "index_map_memberships_on_user_id"
   end
 
+  create_table "map_photos", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "uploaded_by_id"
+    t.bigint "photo_album_id"
+    t.bigint "map_feature_id"
+    t.datetime "taken_at"
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.string "location_source"
+    t.float "heading"
+    t.string "caption", limit: 500
+    t.string "source", default: "web", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
+    t.index ["location"], name: "index_map_photos_on_location", using: :gist
+    t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"
+    t.index ["map_id", "checksum"], name: "index_map_photos_on_map_id_and_checksum", unique: true, where: "(checksum IS NOT NULL)"
+    t.index ["map_id", "taken_at"], name: "index_map_photos_on_map_id_and_taken_at"
+    t.index ["map_id"], name: "index_map_photos_on_map_id"
+    t.index ["photo_album_id"], name: "index_map_photos_on_photo_album_id"
+    t.index ["uploaded_by_id"], name: "index_map_photos_on_uploaded_by_id"
+  end
+
   create_table "maps", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -110,6 +181,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
+  end
+
+  create_table "photo_albums", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_photo_albums_on_map_id"
   end
 
   create_table "region_layers", force: :cascade do |t|
@@ -161,6 +242,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "soil_samples", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "created_by_id"
+    t.string "label", null: false
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.integer "depth_from_cm", default: 0, null: false
+    t.integer "depth_to_cm", default: 20, null: false
+    t.string "status", default: "planned", null: false
+    t.string "source", default: "human", null: false
+    t.date "sampled_on"
+    t.string "lab"
+    t.string "lab_reference"
+    t.jsonb "results", default: {}, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_soil_samples_on_created_by_id"
+    t.index ["location"], name: "index_soil_samples_on_location", using: :gist
+    t.index ["map_id", "label"], name: "index_soil_samples_on_map_id_and_label"
+    t.index ["map_id"], name: "index_soil_samples_on_map_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.citext "email_address", null: false
     t.string "name"
@@ -175,6 +278,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bioindicator_observations", "maps"
+  add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
@@ -183,11 +290,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_230500) do
   add_foreign_key "map_memberships", "maps"
   add_foreign_key "map_memberships", "users"
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
+  add_foreign_key "map_photos", "map_features", on_delete: :nullify
+  add_foreign_key "map_photos", "maps"
+  add_foreign_key "map_photos", "photo_albums", on_delete: :nullify
+  add_foreign_key "map_photos", "users", column: "uploaded_by_id", on_delete: :nullify
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "owner_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "photo_albums", "maps"
   add_foreign_key "region_layers", "regions"
   add_foreign_key "sessions", "users"
+  add_foreign_key "soil_samples", "maps"
+  add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
 end
