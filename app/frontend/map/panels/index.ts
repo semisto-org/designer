@@ -1,4 +1,4 @@
-import { ClipboardList, Handshake, Layers3, MapPinned, Route } from 'lucide-react'
+import { ClipboardList, Handshake, Layers3, Map as MapIcon, MapPinned, Route } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -13,12 +13,16 @@ import JourneyPanel from '@/map/panels/JourneyPanel'
 import JourneyOverlay from '@/map/panels/JourneyOverlay'
 import ProjectPanel from '@/map/panels/ProjectPanel'
 import ActionsPanel from '@/map/panels/ActionsPanel'
+import LayersPanel from '@/map/panels/LayersPanel'
+import RegionLayersOverlay from '@/map/data/RegionLayersOverlay'
+import IdentifyOverlay from '@/map/data/IdentifyOverlay'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
   { id: 'journey', label: 'journey.panel.title', icon: Route, group: 'map', component: JourneyPanel, order: 1 },
   { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'map', component: ProjectPanel, order: 5 },
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
+  { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'map', component: LayersPanel, order: 20 },
   { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 90 },
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
@@ -39,4 +43,6 @@ export const HEADER_ACTIONS: EditorSlot[] = [
 export const OVERLAYS: EditorSlot[] = [
   { id: 'collab', component: CollabOverlay, order: 90 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
+  { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
+  { id: 'identify', component: IdentifyOverlay, order: 40 },
 ]

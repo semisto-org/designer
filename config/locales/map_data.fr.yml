@@ -1,0 +1,145 @@
+# Map data: base maps, region data layers, identify, address search,
+# cadastral parcels and boundary import (feature area "map-data").
+fr:
+  map_data:
+    panels:
+      layers: "Couches"
+    groups:
+      plan: "Plan"
+      photos: "Photos aériennes"
+      terrain: "Relief, sol et eau"
+      milieux: "Milieux et règles"
+      other: "Autres couches"
+    layers:
+      base_title: "Fond de carte"
+      overlays_title: "Couches de données"
+      intro: "Superposez les données officielles à votre terrain. Touchez la carte pour lire ce qu'elles disent à cet endroit."
+      opacity: "Opacité de « %{name} »"
+      zoom_in: "Zoomez pour voir cette couche."
+      unreachable: "Injoignable pour le moment."
+      base_unreachable: "Ce fond de carte ne répond pas pour le moment."
+      hide_all: "Tout masquer"
+      active_count:
+        zero: "Aucune couche affichée"
+        one: "1 couche affichée"
+        other: "%{count} couches affichées"
+      group_count: "%{on} / %{total}"
+      identify_hint: "Touchez la carte pour lire les données des couches affichées."
+      empty: "Aucune couche de données n'est disponible pour cette région."
+    identify:
+      title: "À cet endroit"
+      loading: "Chargement…"
+      empty: "Rien à cet endroit."
+      unavailable: "Géoportail injoignable pour le moment."
+      more: "En savoir plus"
+      close: "Fermer"
+      invalid: "Ce point n'est pas valide."
+      rate_limited: "Trop de demandes. Patientez un instant."
+      formatters:
+        sols:
+          title: "Sol %{sigle}"
+          stones: "Charge caillouteuse en surface : %{value} %"
+          link: "Fiche du type de sol"
+        natura2000:
+          site: "Site %{name} (%{code})"
+          site_link: "Fiche du site"
+          unit_link: "Fiche de l'unité de gestion"
+        parcellaire_agricole:
+          declared: "%{value} ha déclarés"
+          campaign: "campagne %{year}"
+          organic: "bio"
+          element: "Élément %{kind}"
+          landscape:
+            woody: "ligneux"
+            grassy: "herbacé"
+            water: "eau"
+            stony: "minéral"
+        cadastre:
+          title: "Parcelle %{number}, section %{section}"
+        courbes:
+          title: "Altitude %{value} m"
+          detail: "Terrain nu, MNT LiDAR 2021-2022"
+        pentes:
+          title: "Pente %{value} %"
+          detail: "MNT LiDAR 2013-2014"
+        ruissellement:
+          axis: "Axe de ruissellement concentré"
+          axis_detail: "L'eau de pluie se concentre ici"
+        essences:
+          line: "%{label} : %{value}"
+          nt_desc: "Niveau trophique"
+          nh_desc: "Niveau hydrique"
+          ss_desc: "Climat"
+          ae_desc: "Apports d'eau"
+        forets_anciennes:
+          ferraris: "Vers 1777 (carte de Ferraris)"
+        plan_secteur:
+          codt: "CoDT %{article}"
+          link: "Texte sur Wallex"
+    search:
+      placeholder: "Rue, numéro, commune…"
+      submit: "Chercher l'adresse"
+      results: "Adresses trouvées"
+      too_short: "Tapez au moins 3 caractères."
+      no_results: "Aucune adresse trouvée. Essayez avec le nom de la commune."
+      error: "La recherche d'adresse a échoué. Réessayez dans un instant."
+      disabled: "La recherche d'adresse n'est pas disponible."
+    terrain:
+      find_address: "Aller à une adresse"
+      outline_title: "Contour du terrain"
+      pick_parcels: "Choisir mes parcelles"
+      pick_hint: "Touchez sur la carte chaque parcelle cadastrale de votre terrain. Touchez-la de nouveau pour la retirer."
+      pick_zoom: "Zoomez sur votre terrain pour voir les limites des parcelles."
+      looking: "Recherche de la parcelle…"
+      no_parcel: "Aucune parcelle choisie pour l'instant."
+      remove_parcel: "Retirer %{label}"
+      selection:
+        one: "1 parcelle · %{area}"
+        other: "%{count} parcelles · %{area}"
+      replace_warning: "Le contour actuel sera remplacé par celui des parcelles."
+      validate: "Valider le contour"
+      parcels_saved:
+        one: "Contour créé à partir d'une parcelle."
+        other: "Contour créé à partir de %{count} parcelles."
+      import: "Importer un fichier"
+      import_hint: "GeoJSON ou KML, par exemple exporté de Google Earth, de QGIS ou envoyé par un géomètre."
+      imported: "Contour importé."
+      error: "Cela n'a pas fonctionné. Réessayez dans un instant."
+    new:
+      intro: "Partez de l'adresse du terrain : la carte s'ouvrira dessus, sur la photo aérienne, avec les données officielles de la région (%{region})."
+      address_label: "Où se trouve le terrain ?"
+      address_placeholder: "Rue du Bois 3, Yvoir"
+      address_hint: "Cherchez l'adresse, puis choisissez-la dans la liste."
+      address_chosen: "Déplacez l'épingle si besoin : la carte s'ouvrira à cet endroit."
+      next_label: "Ensuite"
+      next:
+        parcels: "Choisir mes parcelles"
+        parcels_hint: "Le contour se dessine à partir du cadastre."
+        draw: "Dessiner le contour"
+        draw_hint: "À la main, point par point sur la photo."
+        import: "Importer un fichier"
+        import_hint: "Un contour GeoJSON ou KML que vous avez déjà."
+        later: "Plus tard"
+        later_hint: "Ouvrir la carte sans contour pour l'instant."
+    geocode:
+      unavailable: "La recherche d'adresse ne répond pas pour le moment. Réessayez dans un instant."
+      rate_limited: "Trop de recherches d'affilée. Patientez un instant."
+    parcels:
+      nothing_here: "Aucune parcelle cadastrale à cet endroit."
+      errors:
+        unavailable: "Le cadastre n'est pas disponible pour cette région."
+        unreachable: "Le cadastre ne répond pas pour le moment. Réessayez dans un instant."
+        none: "Choisissez au moins une parcelle."
+        too_many: "Choisissez au plus %{count} parcelles."
+        not_found: "La parcelle %{capakey} est introuvable. Touchez-la de nouveau."
+        geometry: "Le contour de ces parcelles n'a pas pu être calculé."
+    import:
+      errors:
+        missing: "Choisissez un fichier GeoJSON ou KML."
+        too_large: "Ce fichier est trop lourd (5 Mo au plus)."
+        invalid: "Ce fichier n'est pas un GeoJSON ou un KML lisible."
+        no_polygon: "Ce fichier ne contient aucune surface (polygone)."
+        too_many: "Ce fichier contient trop de surfaces."
+        projection: "Les coordonnées de ce fichier ne sont pas en degrés : exportez-le en WGS 84 (EPSG:4326)."
+        too_big: "Ce contour fait plus de 10 000 ha : est-ce bien votre terrain ?"
+        outside_region: "Ce contour est en dehors de la région de la carte."

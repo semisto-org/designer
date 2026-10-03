@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [4.8801242, 50.3289013] },
+      "properties": {
+        "osm_type": "N", "osm_id": 4876421221, "osm_key": "place", "osm_value": "house",
+        "type": "house", "housenumber": "3", "street": "Rue du Bois", "postcode": "5530",
+        "city": "Yvoir", "county": "Dinant", "state": "Namur", "country": "Belgique", "countrycode": "BE"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [6.1296751, 49.611277] },
+      "properties": {
+        "osm_type": "W", "osm_id": 1, "osm_key": "highway", "osm_value": "residential", "type": "street",
+        "name": "Rue du Bois", "city": "Luxembourg", "country": "Luxembourg", "countrycode": "LU",
+        "extent": [6.128, 49.612, 6.131, 49.610]
+      }
+    }
+  ]
+}

@@ -214,6 +214,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_090000) do
     t.jsonb "options", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "description"
     t.index ["region_id", "key"], name: "index_region_layers_on_region_id_and_key", unique: true
     t.index ["region_id"], name: "index_region_layers_on_region_id"
   end

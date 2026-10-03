@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react'
+import { LogOut } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Flash } from '@/components/ui/Flash'
 import { Logo } from '@/components/Logo'
@@ -18,18 +19,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-dvh">
       <Flash />
       <header className="border-b border-loam-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6">
           <Link href="/maps" className="flex items-center gap-2 font-semibold text-loam-900">
             <Logo />
-            <span>Designer</span>
+            <span className="hidden sm:inline">Designer</span>
           </Link>
-          <nav className="flex items-center gap-1 text-sm">
+          <nav className="-mx-1 flex min-w-0 items-center gap-1 overflow-x-auto px-1 text-sm">
             {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={
-                  'rounded-md px-2.5 py-1.5 ' +
+                  'shrink-0 whitespace-nowrap rounded-md px-2.5 py-1.5 ' +
                   (url.startsWith(item.href) ? 'bg-prune-50 text-prune-700' : 'text-loam-600 hover:bg-loam-100')
                 }
               >
@@ -37,7 +38,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm">
+          <div className="ml-auto flex shrink-0 items-center gap-3 text-sm">
             {currentUser && (
               <>
                 <Link href="/account" className="flex items-center gap-2 text-loam-600 hover:text-loam-900">
@@ -50,8 +51,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   )}
                   <span className="hidden sm:inline">{currentUser.name}</span>
                 </Link>
-                <Link href="/session" method="delete" as="button" className="text-loam-500 hover:text-loam-900">
-                  {t('nav.sign_out')}
+                <Link
+                  href="/session"
+                  method="delete"
+                  as="button"
+                  className="text-loam-500 hover:text-loam-900"
+                  aria-label={t('nav.sign_out')}
+                  title={t('nav.sign_out')}
+                >
+                  <LogOut className="h-4 w-4 sm:hidden" aria-hidden />
+                  <span className="hidden sm:inline">{t('nav.sign_out')}</span>
                 </Link>
               </>
             )}

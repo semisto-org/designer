@@ -34,7 +34,7 @@ fr:
       button: "Me connecter"
       expiry: "Ce lien est valable 20 minutes et ne sert qu'une fois. Si vous n'avez rien demandé, ignorez cet e-mail."
   maps:
-    created: "Carte créée. Dessinez maintenant le contour de votre terrain."
+    created: "Carte créée. Délimitons maintenant votre terrain."
     updated: "Carte enregistrée."
     archived: "Carte archivée."
     area: "Surface"

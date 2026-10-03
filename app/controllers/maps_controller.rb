@@ -16,7 +16,8 @@ class MapsController < ApplicationController
   end
 
   def new
-    render inertia: "maps/new", props: { region: Region.default.as_inertia }
+    region = Region.default
+    render inertia: "maps/new", props: { region: region.as_inertia, layers: region.layers.enabled.bases.map(&:as_inertia) }
   end
 
   def create
@@ -26,7 +27,8 @@ class MapsController < ApplicationController
     map = Current.user.owned_maps.new(map_params)
     map.region ||= Region.default
     if map.save
-      redirect_to map_path(map), notice: t("maps.created")
+      # `next`: what the editor starts with (pick parcels, draw, import).
+      redirect_to map_path(map, terrain: params[:next].presence_in(%w[parcels draw import])), notice: t("maps.created")
     else
       redirect_to new_map_path, inertia: { errors: map.errors }
     end

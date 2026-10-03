@@ -1,0 +1,31 @@
+{
+  "results": [
+    {
+      "layerId": 0,
+      "layerName": "Parcelles cadastrales",
+      "displayFieldName": "CAPAKEY",
+      "value": "92142B0247/00X009",
+      "attributes": {
+        "OBJECTID": "5527193",
+        "CAPAKEY": "92142B0247/00X009",
+        "Code INS Division": "92142",
+        "Nom Division": "YVOIR 2 DIV/EVREHAILLES/",
+        "Section": "B",
+        "Radical": "0247",
+        "Bis": "00",
+        "Exposant": "X",
+        "Puissance": "009",
+        "Shape": "Polygone",
+        "Shape.STArea()": "4152,8834",
+        "Shape.STLength()": "266,3021"
+      },
+      "geometryType": "esriGeometryPolygon",
+      "geometry": {
+        "rings": [
+          [[4.9050, 50.3400], [4.9050, 50.3410], [4.9060, 50.3410], [4.9060, 50.3400], [4.9050, 50.3400]]
+        ],
+        "spatialReference": { "wkid": 4326, "latestWkid": 4326 }
+      }
+    }
+  ]
+}

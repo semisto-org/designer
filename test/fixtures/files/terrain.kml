@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Mon terrain</name>
+    <Placemark>
+      <name>Verger</name>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>
+          4.9050,50.3400,0 4.9060,50.3400,0 4.9060,50.3410,0 4.9050,50.3410,0 4.9050,50.3400,0
+        </coordinates></LinearRing></outerBoundaryIs>
+        <innerBoundaryIs><LinearRing><coordinates>
+          4.9054,50.3404,0 4.9056,50.3404,0 4.9056,50.3406,0 4.9054,50.3406,0 4.9054,50.3404,0
+        </coordinates></LinearRing></innerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>Prairie</name>
+      <MultiGeometry>
+        <Polygon><outerBoundaryIs><LinearRing><coordinates>
+          4.9060,50.3400 4.9070,50.3400 4.9070,50.3410 4.9060,50.3410 4.9060,50.3400
+        </coordinates></LinearRing></outerBoundaryIs></Polygon>
+        <Point><coordinates>4.9065,50.3405</coordinates></Point>
+      </MultiGeometry>
+    </Placemark>
+  </Document>
+</kml>
