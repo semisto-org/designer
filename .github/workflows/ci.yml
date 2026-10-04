@@ -82,10 +82,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      # The rgeo gem compiles its GEOS extension only when libgeos-dev is
+      # present, which is the case in this job alone: its own cache key keeps
+      # it from restoring a bundle built by the jobs above.
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+          cache-version: geos
+
+      - name: Check RGeo has GEOS
+        run: bundle exec ruby -e 'require "rgeo"; abort "RGeo was built without GEOS" unless RGeo::Geos.capi_supported?'
 
       - name: Set up Node
         uses: actions/setup-node@v4

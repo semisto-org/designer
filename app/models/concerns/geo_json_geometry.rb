@@ -3,7 +3,10 @@
 module GeoJsonGeometry
   extend ActiveSupport::Concern
 
-  FACTORY = RGeo::Geos.factory(srid: 4326)
+  # RGeo returns nil instead of a factory when its C extension was compiled
+  # without the GEOS headers; every geometry would then be nil. Fail at load.
+  FACTORY = RGeo::Geos.factory(srid: 4326) ||
+    raise(LoadError, "RGeo was built without GEOS: install libgeos-dev, then reinstall the rgeo gem (gem pristine rgeo)")
 
   class_methods do
     def parse_geojson(value)
