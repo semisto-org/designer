@@ -234,6 +234,13 @@ Rails.application.routes.draw do
   end
   # --- end teams ---
 
+  # --- dossier ---
+  # The printable project dossier (page and its JSON).
+  resources :maps, only: [] do
+    resource :dossier, only: :show, controller: "maps/dossiers"
+  end
+  # --- end dossier ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

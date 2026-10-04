@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
-import { ArrowLeft, ArrowRight, ChevronLeft } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, ChevronLeft } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useMemo, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -36,9 +36,14 @@ export default function MapProject({ map, project, progress: initialProgress, sc
   return (
     <div className="mx-auto max-w-5xl">
       <Head title={t('journey.project.page_title', { map: map.name })} />
-      <Link href={`/maps/${map.id}`} className="inline-flex items-center gap-1.5 text-sm text-loam-500 hover:text-loam-800">
-        <ArrowLeft className="h-4 w-4" />{t('journey.project.back_to_map')}
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <Link href={`/maps/${map.id}`} className="inline-flex items-center gap-1.5 text-sm text-loam-500 hover:text-loam-800">
+          <ArrowLeft className="h-4 w-4" />{t('journey.project.back_to_map')}
+        </Link>
+        <Link href={`/maps/${map.id}/dossier`} className="inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline">
+          <BookOpen className="h-4 w-4" />{t('dossier.open')}
+        </Link>
+      </div>
       <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div>
           <div className="flex items-center gap-2">
