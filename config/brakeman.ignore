@@ -1,0 +1,167 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Redirect",
+      "warning_code": 18,
+      "fingerprint": "0bc3977f2e234e1522d1816107cc6f18ef362394248a100a6245488017747a73",
+      "check_name": "Redirect",
+      "message": "Possible unprotected redirect",
+      "file": "app/controllers/maps/soil_sample_reports_controller.rb",
+      "line": 15,
+      "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
+      "code": "redirect_to(Map.find((params[:map_id] or params[:id])).soil_samples.find(params[:soil_sample_id]).lab_report.url(:expires_in => 5.minutes, :disposition => (params[:download].present? ? (:attachment) : (:inline))), :allow_other_host => true)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Maps::SoilSampleReportsController",
+        "method": "show"
+      },
+      "user_input": "Map.find((params[:map_id] or params[:id])).soil_samples.find(params[:soil_sample_id]).lab_report.url(:expires_in => 5.minutes, :disposition => (params[:download].present? ? (:attachment) : (:inline)))",
+      "confidence": "Weak",
+      "cwe_id": [
+        601
+      ],
+      "note": "Redirects to a short-lived Active Storage URL of a record scoped to the map the user can access (MapScoped); the target host is the storage service, never user input."
+    },
+    {
+      "warning_type": "Redirect",
+      "warning_code": 18,
+      "fingerprint": "1553d432ce6f7aae092567fa0a0c07a4c99f1fcae7a92bcdc49fceaf913bd389",
+      "check_name": "Redirect",
+      "message": "Possible unprotected redirect",
+      "file": "app/controllers/maps/photos_controller.rb",
+      "line": 75,
+      "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
+      "code": "redirect_to(storage_link(Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image, :download => false), :allow_other_host => true)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Maps::PhotosController",
+        "method": "image"
+      },
+      "user_input": "Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image",
+      "confidence": "Weak",
+      "cwe_id": [
+        601
+      ],
+      "note": "Redirects to a short-lived Active Storage URL of a record scoped to the map the user can access (MapScoped); the target host is the storage service, never user input."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "55bc9e705ee5827f44e459b54a4c0fb435397e728ae81b365680e0c54dd1a161",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/services/boundaries/geometry_union.rb",
+      "line": 36,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "ActiveRecord::Base.connection.select_value(\"WITH input AS (\\n  SELECT ST_MakeValid(ST_SnapToGrid(ST_MakeValid(g), 0.0000001)) AS g\\n  FROM unnest(ARRAY[#{geometries.map do\n \"ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON(#{ActiveRecord::Base.connection.quote(geometry.to_json)}), #{Integer(srid)}), 4326)\"\n end.join(\", \")}]) AS g\\n), merged AS (\\n  SELECT ST_CollectionExtract(ST_MakeValid(ST_UnaryUnion(ST_Collect(g))), 3) AS g FROM input\\n), closed AS (\\n  SELECT ST_CollectionExtract(ST_MakeValid(\\n    ST_Buffer(ST_Buffer(g, #{7.0e-07}, 'join=mitre mitre_limit=5'), -#{7.0e-07}, 'join=mitre mitre_limit=5')\\n  ), 3) AS g FROM merged\\n)\\nSELECT ST_AsGeoJSON(ST_Multi(CASE WHEN ST_IsEmpty(closed.g) THEN merged.g ELSE closed.g END), 8)\\nFROM closed, merged\\n\".squish, \"Boundaries::GeometryUnion\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Boundaries::GeometryUnion",
+        "method": "call"
+      },
+      "user_input": "geometries.map do\n \"ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON(#{ActiveRecord::Base.connection.quote(geometry.to_json)}), #{Integer(srid)}), 4326)\"\n end.join(\", \")",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "Every geometry is passed through connection.quote and the SRID through Integer(); nothing is interpolated raw."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "56dca8ac471b488bf138ddaf3016259f8ceda972b2d34bc739219680f85ec56a",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/plant_search.rb",
+      "line": 50,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "PlantSpecies.matching(query).where(\"#{((\"COALESCE(plant_species.strata, CASE plant_species.plant_type \" + PlantSpecies::STRATA_BY_PLANT_TYPE.map do\n \"WHEN '#{type}' THEN '#{strata}'\"\n end.join(\" \")) + \" ELSE 'shrub' END)\")} IN (?)\", v)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "PlantSearch",
+        "method": "scope"
+      },
+      "user_input": "PlantSpecies::STRATA_BY_PLANT_TYPE.map",
+      "confidence": "High",
+      "cwe_id": [
+        89
+      ],
+      "note": "The interpolated CASE is built only from the PlantSpecies::STRATA_BY_PLANT_TYPE constant; the user value is a bound parameter (?)."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "b1257be6554d8492b32548aa8da70ad889ac1688a61d236d4c21bf1ddf3e6f75",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/map_photo.rb",
+      "line": 54,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "where(:map_id => feature.map_id).where(\"map_photos.map_feature_id = :id OR (map_photos.location IS NOT NULL AND ST_DWithin(map_photos.location::geography, #{\"(SELECT geometry::geography FROM map_features WHERE map_features.id = #{Integer(feature.id)})\"}, :meters))\", :id => feature.id, :meters => meters)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "MapPhoto",
+        "method": "MapPhoto.around_feature"
+      },
+      "user_input": "Integer(feature.id)",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "The only interpolation is Integer(feature.id); user values are bound parameters."
+    },
+    {
+      "warning_type": "Redirect",
+      "warning_code": 18,
+      "fingerprint": "e31163c12ecbaf1c9e56fc601f386ce21c00fecad445869fe5f563fbbdfa6f91",
+      "check_name": "Redirect",
+      "message": "Possible unprotected redirect",
+      "file": "app/controllers/maps/photos_controller.rb",
+      "line": 70,
+      "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
+      "code": "redirect_to(storage_link((Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image or Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image.variant((:BRAKEMAN_SAFE_LITERAL or \"large\").to_sym).processed), :download => params[:download].present?), :allow_other_host => true)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Maps::PhotosController",
+        "method": "image"
+      },
+      "user_input": "Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image",
+      "confidence": "Weak",
+      "cwe_id": [
+        601
+      ],
+      "note": "Redirects to a short-lived Active Storage URL of a record scoped to the map the user can access (MapScoped); the target host is the storage service, never user input."
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 105,
+      "fingerprint": "e97c768a825b1ab5e857c3f442afd6b8e08c3aec7f5c72725aa481d6d486d62a",
+      "check_name": "PermitAttributes",
+      "message": "Potentially dangerous key allowed for mass assignment",
+      "file": "app/controllers/maps/palette_items_controller.rb",
+      "line": 48,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.require(:palette_item).permit(:species_id, :variety_id, :strata, :role, :notes, :target_count)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Maps::PaletteItemsController",
+        "method": "item_params"
+      },
+      "user_input": ":role",
+      "confidence": "Medium",
+      "cwe_id": [
+        915
+      ],
+      "note": "`role` here is the plant role in the palette (nitrogen fixer, nurse…), not an authorization role; editing requires require_editor!."
+    }
+  ],
+  "updated": "2026-10-04 01:30:00 +0000",
+  "brakeman_version": "8.1.0"
+}
