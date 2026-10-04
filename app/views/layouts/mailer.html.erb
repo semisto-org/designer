@@ -1,13 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <style>
-      /* Email styles need to be inline */
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
   </head>
-
-  <body>
-    <%= yield %>
+  <%# Inline styles and tables only: e-mail clients ignore style sheets. Colours: Semisto loam and prune tokens. %>
+  <% font = "-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" %>
+  <body style="margin:0;padding:0;background:#f7f5f2;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f5f2;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+            <tr>
+              <td style="padding:0 4px 14px;font:600 16px/1.4 <%= font %>;color:#5b5781;">Semisto Designer</td>
+            </tr>
+            <tr>
+              <td style="background:#ffffff;border:1px solid #dbd3c9;border-radius:12px;padding:24px;font:15px/1.6 <%= font %>;color:#1b1712;">
+                <%= yield %>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:14px 4px 0;font:12px/1.5 <%= font %>;color:#6e6355;">
+                <%= t("mailer.footer") %>
+                <a href="<%= root_url %>" style="color:#5b5781;"><%= root_url.sub(%r{\Ahttps?://}, "").delete_suffix("/") %></a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
