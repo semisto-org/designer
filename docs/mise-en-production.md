@@ -85,6 +85,15 @@ Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la car
 
 Utilisées seulement par la commande ponctuelle `bin/rails catalog:import_terranova` (genres, espèces et variétés, valeurs seulement, jamais de texte libre ni de donnée personnelle).
 
+### Identification des plantes (Pl@ntNet)
+
+| Variable | Rôle |
+|---|---|
+| `PLANTNET_API_KEY` | Facultatif. Active « Identifier l'espèce par photo » dans la fiche d'une plante de la carte. Clé créée sur https://my.plantnet.org. Sans elle, le bouton est grisé et l'interface explique pourquoi. |
+| `PLANTNET_API_URL` | Facultatif : autre adresse de l'API (défaut `https://my-api.plantnet.org`). |
+
+Une à cinq photos d'une même plante partent chez Pl@ntNet, qui répond des espèces probables ; l'éditeur choisit, rien n'est enregistré sans son choix et Designer ne conserve pas les photos. L'interface affiche « Identification : Pl@ntNet ». **Avant d'activer la fonction sur un service payant, vérifiez les conditions d'utilisation de Pl@ntNet** (usage commercial, quota d'identifications, mention de la source) : l'offre gratuite est limitée.
+
 ### Climat et météo
 
 | Variable | Rôle |
@@ -102,7 +111,7 @@ Utilisées seulement par la commande ponctuelle `bin/rails catalog:import_terran
 
 ## Connexions sortantes
 
-Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo.
+Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo.
 
 ## Claude (MCP)
 
@@ -114,4 +123,5 @@ Aucune variable. Adresse à donner aux utilisateurs : `https://designer.semisto.
 - Un import de relief réel et les couches du Géoportail depuis le serveur (identifiants de couches, zooms, champ CAPAKEY du cadastre).
 - La licence des données du SPW pour un relais de tuiles avec cache.
 - Les valeurs indicatives écrites sans accès aux sources : normales et projections climatiques de Wallonie, fourchettes d'analyse de sol, règles d'urbanisme (CoDT), catalogue de départ (92 espèces « à vérifier »), plantes bio-indicatrices.
+- Les conditions d'utilisation de Pl@ntNet pour un service payant, avant de définir `PLANTNET_API_KEY`.
 - Les pages Confidentialité et Conditions, brouillons marqués « Projet — à valider ».
