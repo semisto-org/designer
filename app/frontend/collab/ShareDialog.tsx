@@ -8,6 +8,7 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { SharingData, SharingMember } from '@/types/collab'
 import { MapTeamSection } from '@/teams/MapTeamSection'
+import { MapTransferSection } from '@/transfer/MapTransferSection'
 import { Avatar } from './Avatar'
 import { Dialog } from './Dialog'
 
@@ -56,6 +57,7 @@ export function ShareDialog({ onClose }: { onClose: () => void }) {
           {owner && <Invite data={data} busy={busy} base={base} run={run} />}
           {owner && <ShareLink data={data} busy={busy} base={base} run={run} />}
           {owner && <MapTeamSection data={data} busy={busy} base={base} run={run} />}
+          {owner && <MapTransferSection data={data} base={base} />}
         </div>
       )}
     </Dialog>

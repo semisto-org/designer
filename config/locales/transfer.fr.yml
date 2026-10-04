@@ -46,6 +46,7 @@ fr:
       archived: "Cette carte est archivée : elle ne peut pas être transférée."
       load_error: "Impossible de charger le transfert de propriété. Réessayez dans un instant."
     notice:
+      list_label: "Propositions de transfert"
       banner: "%{from} vous propose de devenir propriétaire de la carte « %{map} »."
       banner_until: "Vous avez jusqu'au %{date} pour répondre."
       see: "Voir la proposition"
@@ -80,9 +81,10 @@ fr:
       fine:
         one: "Avec votre formule actuelle (%{plan}, %{count} carte modifiable), cette carte et toutes vos cartes resteront modifiables."
         other: "Avec votre formule actuelle (%{plan}, %{count} cartes modifiables), cette carte et toutes vos cartes resteront modifiables."
-      map_read_only:
-        one: "Avec votre formule actuelle (%{plan}, %{count} carte modifiable), cette carte serait en lecture seule chez vous : vos cartes plus anciennes gardent leur place."
-        other: "Avec votre formule actuelle (%{plan}, %{count} cartes modifiables), cette carte serait en lecture seule chez vous : vos cartes plus anciennes gardent leur place."
+      current:
+        one: "Votre formule actuelle : %{plan}, %{count} carte modifiable."
+        other: "Votre formule actuelle : %{plan}, %{count} cartes modifiables."
+      map_read_only: "Cette carte serait en lecture seule chez vous : vos cartes plus anciennes gardent leur place dans votre formule."
       maps_read_only:
         one: "Votre carte %{names} passerait en lecture seule : la carte reprise, plus ancienne, prendrait sa place dans votre formule."
         other: "Vos cartes %{names} passeraient en lecture seule : la carte reprise, plus ancienne, prendrait leur place dans votre formule."
@@ -93,6 +95,8 @@ fr:
         ai_drafts: "les brouillons de Claude"
       nothing_deleted: "Rien n'est supprimé : une carte en lecture seule reste consultable, exportable et commentable, et redevient modifiable avec une formule qui la couvre."
       see_plans: "Voir les formules"
+      quoted: "« %{name} »"
+      and: "et"
       plan_names:
         free: "carte gratuite"
         yearly: "forfait particulier"

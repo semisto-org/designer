@@ -249,4 +249,10 @@ class MapTransferTest < ActiveSupport::TestCase
       @lea.destroy!
     end
   end
+
+  test "the sharing help article explains the transfer, with the same delay" do
+    article = HelpArticle.find("partager-et-commenter")
+    assert_includes article.headings.map { |h| h[:text] }, "Transférer la carte"
+    assert_includes article.markdown, "valable #{MapTransfer::EXPIRES_IN.in_days.to_i} jours"
+  end
 end

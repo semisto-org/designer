@@ -9,7 +9,7 @@ Un projet de jardin-forêt se construit rarement seul. Designer permet d'inviter
 
 ## Trois rôles par carte
 
-- **Propriétaire** (un seul) : la personne dont le forfait porte la carte. Elle gère le partage, peut archiver la carte.
+- **Propriétaire** (un seul) : la personne dont le forfait porte la carte. Elle gère le partage, peut archiver la carte ou la transférer.
 - **Éditeur** (jusqu'à 3, gratuits) : modifie la carte à part entière. Il travaille avec ce que permet le forfait du propriétaire, et n'a pas besoin de payer.
 - **Lecteur** (autant que vous voulez) : consulte la carte et la commente, sans la modifier.
 
@@ -22,6 +22,21 @@ Depuis la carte, touchez **Partager** en haut de l'écran, puis invitez par adre
 ## Commenter sur la carte
 
 Les commentaires sont attachés à ce dont on parle : un élément, une plante, une zone. Pas de messages perdus dans une boîte mail : la discussion reste là où elle a un sens, avec ceux qui ont accès à la carte. Les lecteurs peuvent commenter : c'est idéal pour un voisin, un ami ou un animateur de stage qui veut donner son avis sans toucher au plan.
+
+## Transférer la carte
+
+Une carte peut changer de propriétaire : un designer la confie à son client à la fin du projet, un proche reprend le jardin… Le propriétaire propose, la personne choisie accepte ou décline : rien ne se fait sans son accord.
+
+1. La personne doit d'abord être **éditeur** de la carte : invitez-la comme éditeur, ou passez un lecteur en éditeur dans la liste des membres. Un membre de l'équipe de la carte peut aussi la recevoir, s'il reste une place d'éditeur pour l'ancien propriétaire.
+2. Dans **Partager**, section **Transférer la propriété**, choisissez-la puis proposez-lui la carte. Elle reçoit un e-mail, et la proposition l'attend aussi dans **Mes cartes** et en haut de la carte.
+3. Avant d'accepter, elle voit ce que cela change pour sa formule : si cette carte, ou l'une de ses cartes, passerait en lecture seule, et quelles fonctions payantes ne seraient plus disponibles.
+4. La proposition est valable 14 jours. Vous pouvez l'annuler d'ici là ; sans réponse, la carte reste la vôtre.
+
+Une fois la proposition acceptée :
+
+- la carte suit la **formule du nouveau propriétaire** et ne compte plus dans la vôtre ;
+- vous restez **éditeur** : vous pouvez continuer à la modifier ;
+- tout est conservé : équipe, vue publique, discussions, photos, brouillons et historique. Rien n'est supprimé.
 
 ## Publier une vue
 
