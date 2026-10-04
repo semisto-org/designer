@@ -3,7 +3,6 @@ import { t } from '@/lib/i18n'
 import { regionKeyOfSource } from '@/map/layers/region'
 import { aerialLayerId, aerialMove, aerialViewIdOf } from '@/drone/placement'
 import { ensurePmtilesProtocol } from '@/drone/pmtiles'
-import type { RegionLayerData } from '@/types'
 import type { AerialView } from '@/types/drone'
 
 // Drone views on the map: one raster source and layer per view (stable id
@@ -63,8 +62,8 @@ export function syncAerialViews(map: MapLibreMap, views: AerialView[], viewId: n
  * nothing when the order is already right, so it is safe to call on
  * every `styledata` event.
  */
-export function placeAerialLayers(map: MapLibreMap, regionLayers: RegionLayerData[]) {
-  const bases = new Set(regionLayers.filter((l) => l.category === 'base').map((l) => l.key))
+export function placeAerialLayers(map: MapLibreMap, layers: { key: string; category: string }[]) {
+  const bases = new Set(layers.filter((l) => l.category === 'base').map((l) => l.key))
   const isFloor = (id: string) => {
     const key = regionKeyOfSource(id)
     return MAPVIEW_LAYERS.has(id) || (key != null && bases.has(key))
@@ -73,4 +72,14 @@ export function placeAerialLayers(map: MapLibreMap, regionLayers: RegionLayerDat
   const move = aerialMove(order, isFloor)
   if (!move) return
   order.filter((id) => aerialViewIdOf(id) != null).forEach((id) => map.moveLayer(id, move.before))
+}
+
+/**
+ * A published map (/p/:token): the drone view the owner chose to show,
+ * right above its base map. Returns a function removing it.
+ */
+export function installPublicAerialView(map: MapLibreMap, view: AerialView, layers: { key: string; category: string }[]): () => void {
+  syncAerialViews(map, [view], view.id, 1)
+  placeAerialLayers(map, layers)
+  return () => syncAerialViews(map, [], null, 1)
 }

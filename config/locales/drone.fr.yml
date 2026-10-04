@@ -67,6 +67,12 @@ fr:
       unreachable: "Cette vue drone ne répond pas pour l'instant. Réessayez un peu plus tard ; si cela dure, écrivez à Semisto."
       help: "La vue drone"
 
+    # « Publier » panel (owner) and the public view (/p/:token).
+    publish:
+      legend: "Vue drone"
+      show: "Montrer « %{label} »"
+      hint: "Désactivée par défaut. Cochée, la plus récente de vos vues drone sert de fond à la vue publique, pour tous ceux qui ont le lien."
+
     # Staff screen (/admin/drone-views).
     admin:
       title: "Vues drone"

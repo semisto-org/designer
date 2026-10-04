@@ -1,11 +1,13 @@
 import { Head } from '@inertiajs/react'
-import { ChevronDown, Eye, X } from 'lucide-react'
+import { ChevronDown, Drone, Eye, X } from 'lucide-react'
 import type { MapGeoJSONFeature } from 'maplibre-gl'
 import { useEffect, useMemo, useState } from 'react'
 import { Logo } from '@/components/Logo'
 import { formatArea, formatLength, t } from '@/lib/i18n'
 import { installPublicLayers } from '@/collab/publicLayers'
 import { formatDate } from '@/collab/time'
+import { aerialViewLabel } from '@/drone/format'
+import { installPublicAerialView } from '@/drone/layers'
 import { measure } from '@/map/editor/measure'
 import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, LAYER_COLORS, installFeatureLayers } from '@/map/layers/features'
@@ -53,22 +55,29 @@ export default function PublicMapShow(props: PublicMapProps) {
       </div>
       <footer className="flex h-9 shrink-0 items-center justify-between gap-3 border-t border-loam-200 bg-white px-3 text-xs text-loam-500">
         <span>{t('public_maps.published_on', { date: formatDate(props.publishedAt) })}</span>
+        {props.aerialView && (
+          <span className="hidden min-w-0 items-center gap-1 truncate sm:inline-flex"><Drone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />{aerialViewLabel(props.aerialView)}</span>
+        )}
         <a href="/" className="font-medium text-prune-700 hover:underline">{t('public_maps.made_with')}</a>
       </footer>
     </div>
   )
 }
 
-function PublicLayers({ layers, features, map, selectedId, onSelect }: PublicMapProps & { selectedId: number | null; onSelect: (id: number | null) => void }) {
+function PublicLayers({ layers, features, map, aerialView, selectedId, onSelect }: PublicMapProps & { selectedId: number | null; onSelect: (id: number | null) => void }) {
   const instance = useMapInstance()
 
   useEffect(() => {
     if (!instance) return
     const remove = installPublicLayers(instance, layers)
+    const removeAerial = aerialView ? installPublicAerialView(instance, aerialView, layers) : null
     installBoundary(instance, map.boundary)
     installFeatureLayers(instance, features as never)
-    return remove
-  }, [instance, layers, features, map.boundary])
+    return () => {
+      removeAerial?.()
+      remove()
+    }
+  }, [instance, layers, aerialView, features, map.boundary])
 
   useEffect(() => {
     if (!instance || selectedId == null) return

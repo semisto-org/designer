@@ -35,7 +35,9 @@ Pour remonter plus loin, gardez la vue drone et choisissez une photo ancienne co
 
 ## Qui voit la vue drone ?
 
-Elle fait partie de votre carte : toutes les personnes avec qui vous partagez cette carte la voient, qu'elles puissent la modifier ou seulement la consulter. Elle n'apparaît pas dans la vue publique d'une carte publiée.
+Elle fait partie de votre carte : toutes les personnes avec qui vous partagez cette carte la voient, qu'elles puissent la modifier ou seulement la consulter.
+
+Si vous publiez votre carte (panneau **Publier**), la vue drone n'apparaît pas dans la vue publique, sauf si vous cochez **Vue drone** : la plus récente sert alors de fond, pour tous ceux qui ont le lien. Une vue arrivée après la publication n'y apparaît qu'après **Mettre à jour la vue publiée**. Voir [Publier sa carte](/help/publier-sa-carte).
 
 ## Si la vue ne s'affiche pas
 

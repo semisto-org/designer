@@ -2,6 +2,7 @@ import { Check, Copy, ExternalLink, Globe, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
+import { aerialViewLabel } from '@/drone/format'
 import { ApiError, api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -172,6 +173,16 @@ export default function PublishPanel() {
                 )
               })}
             </div>
+          </fieldset>
+        )}
+
+        {data.aerialView && (
+          <fieldset>
+            <legend className="text-sm font-medium text-loam-700">{t('drone.publish.legend')}</legend>
+            <div className="mt-1">
+              <Toggle checked={options.show_aerial_view ?? false} onChange={(v) => setOptions({ ...options, show_aerial_view: v })} label={t('drone.publish.show', { label: aerialViewLabel(data.aerialView) })} />
+            </div>
+            <p className="mt-1 text-xs text-loam-400">{t('drone.publish.hint')}</p>
           </fieldset>
         )}
 

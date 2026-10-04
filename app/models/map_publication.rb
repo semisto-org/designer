@@ -29,7 +29,9 @@ class MapPublication < ApplicationRecord
       "region_layers" => Array(raw["region_layers"]).map(&:to_s) & map.region.layers.enabled.pluck(:key),
       "hide_networks" => flag.call("hide_networks", true),
       "hide_address" => flag.call("hide_address", true),
-      "show_notes" => flag.call("show_notes", false)
+      "show_notes" => flag.call("show_notes", false),
+      # The newest drone view (« Vues drone »), off unless the owner asks.
+      "show_aerial_view" => flag.call("show_aerial_view", false)
     }
   end
 
@@ -76,6 +78,13 @@ class MapPublication < ApplicationRecord
 
   def region_layer(key) = region_layers.find { |layer| layer.key == key }
 
+  # The drone view frozen at publication, while it still exists and the
+  # owner still shows it.
+  def aerial_view
+    id = snapshot["aerial_view_id"]
+    id && options["show_aerial_view"] ? map.aerial_views.find_by(id:) : nil
+  end
+
   def public_path = "/p/#{token}"
 
   def as_inertia
@@ -97,7 +106,8 @@ class MapPublication < ApplicationRecord
         regionName: data.dig("region", "name")
       },
       features: { type: "FeatureCollection", features: features },
-      layers: region_layers.map { |layer| public_layer(layer) }
+      layers: region_layers.map { |layer| public_layer(layer) },
+      aerialView: aerial_view&.as_inertia
     }
   end
 

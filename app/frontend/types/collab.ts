@@ -1,5 +1,6 @@
 import type { FeatureCollection, Geometry, MultiPolygon } from 'geojson'
 import type { BBox, LngLat, MapFeatureProperties } from '@/types'
+import type { AerialView } from '@/types/drone'
 
 /** What a discussion can hang on (server whitelist: Commentable::TYPES). */
 export type ThreadType = 'Map' | 'MapFeature'
@@ -81,6 +82,8 @@ export type PublicationOptions = {
   hide_networks: boolean
   hide_address: boolean
   show_notes: boolean
+  /** The newest drone view (drone area); off by default. */
+  show_aerial_view?: boolean
 }
 
 export type PublicationState = {
@@ -101,6 +104,8 @@ export type PublicationData = {
   defaults: { title: string; options: PublicationOptions }
   featureLayers: { key: string; count: number }[]
   regionLayers: { key: string; name: string; category: 'base' | 'overlay'; group: string | null; sensitive: boolean }[]
+  /** The drone view a publication would show (drone area), null without one. */
+  aerialView?: Pick<AerialView, 'name' | 'capturedOn'> | null
 }
 
 /** A region layer as the public view receives it: tiles come from our own proxy. */
@@ -135,4 +140,6 @@ export type PublicMapProps = {
   }
   features: FeatureCollection<Geometry, MapFeatureProperties>
   layers: PublicLayer[]
+  /** The drone view the owner chose to show (drone area): tiles straight from Semisto's host. */
+  aerialView?: AerialView | null
 }
