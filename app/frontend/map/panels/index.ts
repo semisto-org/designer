@@ -43,6 +43,7 @@ import ElementSection, { appliesToElement } from '@/map/drawing/ElementSection'
 import ExportMenu from '@/map/drawing/ExportMenu'
 import DrawingLayersPanel from '@/map/drawing/LayersPanel'
 import LiveSync from '@/map/drawing/LiveSync'
+import AerialViewsOverlay from '@/drone/AerialViewsOverlay'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -99,4 +100,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'drawing-layers', component: DrawingLayers, order: 10 },
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },
+  { id: 'aerial-views', component: AerialViewsOverlay, order: 1 },
 ]
