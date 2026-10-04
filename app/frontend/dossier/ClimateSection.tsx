@@ -47,7 +47,7 @@ export function ClimateSection({ dossier, number, isOwner }: { dossier: Dossier;
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className={locked ? 'space-y-2 print:hidden' : 'space-y-2'}>
         <SubTitle>{t('dossier.climate.tomorrow')}<Indicative /></SubTitle>
         {locked ? (
           <LockedNote body={t('dossier.locked.climate')} isOwner={isOwner} />

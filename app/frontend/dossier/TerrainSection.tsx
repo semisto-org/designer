@@ -94,7 +94,7 @@ function LayerReadings({ mapId, point, identify }: {
 function Relief({ relief, isOwner }: { relief: Dossier['terrain']['relief']; isOwner: boolean }) {
   if ('locked' in relief) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 print:hidden">
         <SubTitle>{t('dossier.terrain.relief_title')}</SubTitle>
         <LockedNote body={t('dossier.locked.terrain')} isOwner={isOwner} />
       </div>
