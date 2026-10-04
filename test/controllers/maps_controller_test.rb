@@ -66,4 +66,14 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     delete map_feature_path(map, id), as: :json
     assert_response :no_content
   end
+
+  test "saves a drawn boundary sent as JSON (the editor's « Dessiner le contour »)" do
+    sign_in_as users(:michael)
+    map = maps(:ahinvaux)
+    multi = { "type" => "MultiPolygon", "coordinates" => [ square["coordinates"] ] }
+    patch map_path(map), params: { map: { boundary: multi } }, as: :json
+    assert_response :success
+    assert_equal "MultiPolygon", response.parsed_body.dig("map", "boundary", "type")
+    assert map.reload.boundary.present?
+  end
 end
