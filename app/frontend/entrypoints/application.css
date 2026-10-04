@@ -1,19 +1,27 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 @import "tailwindcss";
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/inter/wght-italic.css";
+@import "@fontsource-variable/eb-garamond/wght.css";
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
 
-/* Semisto design system "Humus & Prune" (tokens from Terranova's
-   docs/design-tokens.json): Prune for the brand, Loam neutrals, Feuille
-   green for design and success, Humus amber for attention. */
+/* Semisto Design System (Claude Design export, docs/design-system/):
+   plum (prune) is the brand chrome, warm neutrals on beige clair and ink,
+   artichaut green (leaf) for the design pole and success, mangue (humus)
+   for attention, grenade (clay) for errors. Inter for UI and body,
+   EB Garamond for display titles, never in italics. Fonts are self-hosted
+   (no request to Google). The token names stay those of the v1 so every
+   component follows. */
 @theme {
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Inter Variable", "Allotrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "EB Garamond Variable", "Sole Serif Small", "Cormorant Garamond", Georgia, serif;
 
   --color-prune-50: #f4f3f8;
   --color-prune-100: #e8e6f0;
   --color-prune-200: #d1cce2;
   --color-prune-300: #b4acce;
-  --color-prune-400: #9189b8;
+  --color-prune-400: #8d89ad;
   --color-prune-500: #726b9f;
   --color-prune-600: #5b5781;
   --color-prune-700: #4a4668;
@@ -21,64 +29,108 @@
   --color-prune-900: #2b2940;
   --color-prune-950: #1a1829;
 
-  --color-loam-50: #f7f5f2;
-  --color-loam-100: #ede9e3;
-  --color-loam-200: #dbd3c9;
-  --color-loam-300: #c3b8aa;
-  --color-loam-400: #6e6355;
-  --color-loam-500: #554c3f;
-  --color-loam-600: #423a30;
-  --color-loam-700: #332d25;
-  --color-loam-800: #262119;
-  --color-loam-900: #1b1712;
-  --color-loam-950: #12100c;
+  /* Neutrals: beige clair (50) to ink (900). */
+  --color-loam-50: #f7f3ea;
+  --color-loam-100: #efe9dc;
+  --color-loam-200: #e2dacb;
+  --color-loam-300: #cbc1af;
+  --color-loam-400: #6b665c;
+  --color-loam-500: #595650;
+  --color-loam-600: #4d4a45;
+  --color-loam-700: #36342f;
+  --color-loam-800: #262522;
+  --color-loam-900: #1a1a1a;
+  --color-loam-950: #0f0f0e;
 
-  --color-leaf-50: #f0f5f0;
-  --color-leaf-100: #daeadb;
-  --color-leaf-200: #b6d4b8;
-  --color-leaf-300: #87b88a;
-  --color-leaf-400: #5a9a5e;
-  --color-leaf-500: #3d7d42;
-  --color-leaf-600: #2f6334;
-  --color-leaf-700: #264f2b;
-  --color-leaf-800: #1e3f22;
-  --color-leaf-900: #17301b;
+  /* Artichaut: 50 is the charte's « vert pâle », 400 the pole colour,
+     600 its darkened form for white text (4.5:1). */
+  --color-leaf-50: #eef0dc;
+  --color-leaf-100: #e2e7c2;
+  --color-leaf-200: #d3dc8f;
+  --color-leaf-300: #c2cf45;
+  --color-leaf-400: #afbd00;
+  --color-leaf-500: #7d8900;
+  --color-leaf-600: #6d7a00;
+  --color-leaf-700: #4d5500;
+  --color-leaf-800: #3a4000;
+  --color-leaf-900: #2a2e00;
 
-  --color-humus-50: #fdf8ee;
-  --color-humus-100: #f9edcc;
-  --color-humus-200: #f3d98a;
-  --color-humus-300: #ebc24a;
-  --color-humus-400: #d9a527;
-  --color-humus-500: #b8851a;
-  --color-humus-600: #946614;
-  --color-humus-700: #724f10;
+  /* Mangue: 400 is the pole colour, 600 its darkened form. */
+  --color-humus-50: #fef7ea;
+  --color-humus-100: #fbe8c8;
+  --color-humus-200: #f8d08e;
+  --color-humus-300: #f4b44c;
+  --color-humus-400: #ef9b0d;
+  --color-humus-500: #c97f05;
+  --color-humus-600: #a05f00;
+  --color-humus-700: #7a4800;
+  --color-humus-800: #5a3500;
+  --color-humus-900: #3d2400;
 
-  --color-lichen-50: #f3f5f0;
-  --color-lichen-100: #e3e8dc;
-  --color-lichen-200: #c8d2bc;
-  --color-lichen-300: #a9b89a;
-  --color-lichen-400: #899e79;
-  --color-lichen-500: #6e835f;
-  --color-lichen-600: #58684c;
-  --color-lichen-700: #45523b;
+  --color-lichen-50: #f3f4ef;
+  --color-lichen-100: #e4e6dc;
+  --color-lichen-200: #c9cdbc;
+  --color-lichen-300: #a9ae98;
+  --color-lichen-400: #8a917a;
+  --color-lichen-500: #6f7661;
+  --color-lichen-600: #5a604e;
+  --color-lichen-700: #454a3c;
 
-  --color-clay-50: #fdf2f0;
-  --color-clay-100: #fae0db;
-  --color-clay-500: #c03c28;
-  --color-clay-700: #7a2518;
+  /* Grenade, for errors. */
+  --color-clay-50: #fbefee;
+  --color-clay-100: #f8dedc;
+  --color-clay-500: #b01a19;
+  --color-clay-600: #9c1716;
+  --color-clay-700: #8a1413;
+  --color-clay-800: #6a0f0f;
 
-  --color-pole-design: #6d7a00;
+  --color-pole-design: #afbd00;
   --color-pole-academy: #b01a19;
   --color-pole-nursery: #ef9b0d;
   --color-pole-heroes: #234766;
+
+  /* Fruit & vegetable palette of the charte (hex values are the design
+     system's best guess). */
+  --color-artichaud: #afbd00;
+  --color-mangue: #ef9b0d;
+  --color-abricot: #f08a3e;
+  --color-peche: #f3b58a;
+  --color-grenade: #b01a19;
+  --color-framboise: #c8305e;
+  --color-aubergine: #5a2a4a;
+  --color-myrtille: #234766;
+
+  /* Modest corners (4 / 8 / 16 px) and soft, warm shadows. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --shadow-xs: 0 1px 2px rgba(26, 26, 26, 0.06);
+  --shadow-sm: 0 2px 6px rgba(26, 26, 26, 0.08);
+  --shadow-md: 0 6px 16px rgba(26, 26, 26, 0.10);
+  --shadow-lg: 0 14px 40px rgba(26, 26, 26, 0.14);
 }
 
 @layer base {
   html { font-size: 15px; }
-  body { @apply bg-loam-50 text-loam-800 antialiased; }
-  h1, h2, h3 { @apply font-semibold text-loam-900; }
+  body { @apply bg-loam-50 font-sans text-loam-800 antialiased; }
+  /* Display titles in serif, never in italics. */
+  h1, h2 { @apply font-serif font-semibold text-prune-800; font-style: normal; letter-spacing: -0.01em; }
+  h3 { @apply font-semibold text-loam-900; }
   .latin { font-style: italic; }
+  ::selection { background: var(--color-prune-600); color: #fff; }
+  :where(a, button, input, textarea, select, summary):focus-visible {
+    outline: 2px solid var(--color-prune-600);
+    outline-offset: 2px;
+  }
 }
+
+/* EB Garamond reads smaller than Inter at the same size: small serif
+   titles (panels, cards) go up a step so they stay legible. Unlayered on
+   purpose, to win over the text-* utilities. */
+h1.text-base, h2.text-base { font-size: 1.2rem; line-height: 1.5rem; letter-spacing: 0; }
+h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 
 /* Map editor on a phone: the panel bar runs along the bottom, so the
    scale and attribution move above it. */

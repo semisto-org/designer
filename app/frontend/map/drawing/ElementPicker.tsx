@@ -56,7 +56,7 @@ export function ElementPicker({ onPick, onClose }: { onPick: (spec: ElementSpec)
   return (
     <div className="pointer-events-auto max-h-[70dvh] overflow-y-auto rounded-xl bg-white p-3 shadow-xl ring-1 ring-loam-200" role="dialog" aria-label={t('drawing.toolbar.choose')}>
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-loam-900">{t('drawing.toolbar.choose')}</h2>
+        <h2 className="font-sans text-sm font-semibold text-loam-900">{t('drawing.toolbar.choose')}</h2>
         <button type="button" onClick={onClose} className="rounded p-1 text-loam-400 hover:bg-loam-100" aria-label={t('common.close')}>
           <X className="h-4 w-4" />
         </button>

@@ -9,3 +9,19 @@ export function Logo({ className = 'h-7 w-7' }: { className?: string }) {
     </svg>
   )
 }
+
+/** The charte's lockup: « semisto » in serif, a thin vertical rule, then the
+ * product name in lowercase sans. */
+export function Wordmark({ className, compact = false }: { className?: string; compact?: boolean }) {
+  return (
+    <span className={'inline-flex items-center gap-2 leading-none ' + (className ?? '')}>
+      <span className="font-serif text-[1.6rem] font-semibold tracking-tight text-prune-800">semisto</span>
+      {!compact && (
+        <>
+          <span aria-hidden="true" className="h-5 w-px bg-prune-300" />
+          <span className="text-[0.95rem] font-medium lowercase text-loam-600">designer</span>
+        </>
+      )}
+    </span>
+  )
+}

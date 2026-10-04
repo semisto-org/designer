@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react'
 import type { ReactNode } from 'react'
 import { Flash } from '@/components/ui/Flash'
-import { Logo } from '@/components/Logo'
+import { Wordmark } from '@/components/Logo'
 import { MetaHead } from '@/components/MetaHead'
 import { buttonClass } from '@/components/ui/Button'
 import { tf } from '@/lib/content'
@@ -21,15 +21,14 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh flex-col">
       <MetaHead />
       <Flash />
-      <header className="border-b border-loam-200/70 bg-loam-50/90 backdrop-blur">
+      <header className="border-b border-loam-900/10 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-loam-900">
-            <Logo />
-            <span>Semisto Designer</span>
+          <Link href="/" className="flex items-center" aria-label="Semisto Designer">
+            <Wordmark />
           </Link>
-          <nav className="hidden items-center gap-5 text-sm text-loam-600 md:flex" aria-label={t('site.nav.menu')}>
+          <nav className="hidden items-center gap-6 text-[0.95rem] font-medium text-loam-700 md:flex" aria-label={t('site.nav.menu')}>
             {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className="hover:text-loam-900">{t(item.label)}</Link>
+              <Link key={item.href} href={item.href} className="border-b-2 border-transparent py-1 transition-colors hover:border-prune-600 hover:text-prune-600">{t(item.label)}</Link>
             ))}
           </nav>
           <div className="ml-auto">
@@ -54,14 +53,13 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <footer className="border-t border-loam-200 bg-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <Link href="/" className="flex items-center gap-2 font-semibold text-loam-900">
-              <Logo />
-              <span>Semisto Designer</span>
+            <Link href="/" className="flex items-center" aria-label="Semisto Designer">
+              <Wordmark />
             </Link>
             <p className="mt-3 max-w-xs text-sm text-loam-500">{tf('site.footer.tagline')}</p>
           </div>
           <nav aria-label={t('site.footer.product')}>
-            <h2 className="text-sm font-semibold text-loam-900">{t('site.footer.product')}</h2>
+            <h2 className="font-sans text-sm font-semibold text-loam-900">{t('site.footer.product')}</h2>
             <ul className="mt-3 space-y-2 text-sm text-loam-500">
               <li><Link href="/fonctionnalites" className="hover:text-loam-900">{t('public.nav.features')}</Link></li>
               <li><Link href="/tarifs" className="hover:text-loam-900">{t('public.nav.pricing')}</Link></li>
@@ -70,7 +68,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </ul>
           </nav>
           <nav aria-label={t('site.footer.about')}>
-            <h2 className="text-sm font-semibold text-loam-900">{t('site.footer.about')}</h2>
+            <h2 className="font-sans text-sm font-semibold text-loam-900">{t('site.footer.about')}</h2>
             <ul className="mt-3 space-y-2 text-sm text-loam-500">
               <li><Link href="/open-source" className="hover:text-loam-900">{t('public.footer.license')}</Link></li>
               <li><Link href="/confidentialite" className="hover:text-loam-900">{t('public.footer.privacy')}</Link></li>

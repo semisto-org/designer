@@ -7,7 +7,7 @@ Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden 
 - Rails 8.1, Ruby 3.3, PostgreSQL 16+ with **PostGIS** (`activerecord-postgis-adapter`, RGeo, SRID 4326 everywhere; measure in meters with `::geography`).
 - **Inertia** (`inertia_rails`) + **React 19 + TypeScript** + **Vite** (`vite_rails`). No Hotwire, no importmap.
 - **MapLibre GL JS** (map), **Terra Draw** (drawing), **turf** (client geometry), **three.js** (3D relief).
-- Tailwind CSS 4 with the Semisto "Humus & Prune" tokens (`app/frontend/entrypoints/application.css`: `prune`, `loam`, `leaf`, `humus`, `lichen`, `clay`).
+- Tailwind CSS 4 with the **Semisto Design System** (Claude Design export in `docs/design-system/`, read its README before any visual work). Tokens in `app/frontend/entrypoints/application.css`: `prune` (brand plum), `loam` (neutrals, beige clair to ink), `leaf` (artichaut, design pole and success), `humus` (mangue, attention), `lichen`, `clay` (grenade, errors). Inter (`font-sans`) for UI and body, EB Garamond (`font-serif`) for h1/h2 and display, **never in italics**; fonts self-hosted through `@fontsource-variable`. Buttons are pills, cards 16 px radius.
 - Solid Queue / Cache / Cable. Auth: Rails 8 sessions + Google (OmniAuth) + magic links. **No passwords, no Devise.**
 - Minitest (+ WebMock: external HTTP is always stubbed in tests). Playwright for screenshots (`script/screenshot.mjs`).
 
