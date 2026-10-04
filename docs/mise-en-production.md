@@ -10,6 +10,7 @@ Référence des réglages de Semisto Designer en production (https://designer.se
 - Quatre bases sont créées à partir de `DATABASE_URL` : la principale, puis `_cache`, `_queue` et `_cable`.
 - Fichiers (photos, PDF de labo, relief importé) : un stockage S3 dès que `S3_BUCKET` est défini, sinon le disque local `/rails/storage`, qu'il faut alors monter sur un **volume persistant** (sinon tout disparaît au déploiement suivant). Un volume Docker nommé convient tel quel ; un dossier de l'hôte doit appartenir à l'utilisateur de l'image (`chown -R 1000:1000 <dossier>`), sinon les envois échouent.
 - DNS : `designer.semisto.org` → enregistrement A/AAAA vers le VPS ; le certificat TLS est géré par le proxy du VPS.
+- Déploiement automatique : `.github/workflows/deploy.yml` demande un déploiement à l'API de Coolify après chaque CI verte sur `main` (ou à la main, onglet Actions). Dans GitHub (Réglages, Secrets and variables, Actions) : le secret `COOLIFY_TOKEN` (jeton d'API Coolify avec la permission « deploy ») et la variable `COOLIFY_APP_UUID` (identifiant de l'application `designer`, visible dans son adresse sur Coolify) ; `COOLIFY_URL` est facultative (défaut `https://dash.semisto.org`). Sans ces réglages, le workflow ne fait rien.
 
 ## Variables d'environnement
 

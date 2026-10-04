@@ -1,0 +1,48 @@
+name: Deploy
+
+# Deploys main to https://designer.semisto.org through the Coolify API, once
+# CI is green on a push to main. Can also be started by hand (Actions tab).
+#
+# Repository settings (Secrets and variables, Actions):
+#   secret   COOLIFY_TOKEN     Coolify API token with the "deploy" permission
+#   variable COOLIFY_APP_UUID  UUID of the "designer" application in Coolify
+#   variable COOLIFY_URL       optional, defaults to https://dash.semisto.org
+# Without COOLIFY_TOKEN the job only prints a notice and succeeds.
+
+on:
+  workflow_run:
+    workflows: [ CI ]
+    types: [ completed ]
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ask Coolify to deploy
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_APP_UUID: ${{ vars.COOLIFY_APP_UUID }}
+          COOLIFY_URL: ${{ vars.COOLIFY_URL || 'https://dash.semisto.org' }}
+        run: |
+          if [ -z "$COOLIFY_TOKEN" ] || [ -z "$COOLIFY_APP_UUID" ]; then
+            echo "::notice::COOLIFY_TOKEN or COOLIFY_APP_UUID is not set; skipping deployment."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 60 \
+            --get "${COOLIFY_URL%/}/api/v1/deploy" \
+            --data-urlencode "uuid=${COOLIFY_APP_UUID}" \
+            --data-urlencode "force=false" \
+            --header "Authorization: Bearer ${COOLIFY_TOKEN}"
