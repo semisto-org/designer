@@ -6,6 +6,7 @@ import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { visibleOffset } from '@/map/visiblePadding'
 import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
 import { photoActions, usePhotos } from '@/map/photos/store'
@@ -87,7 +88,7 @@ export function PhotoLightbox() {
 
   function locate() {
     if (photo!.lng == null || photo!.lat == null) return
-    editor.instance.flyTo({ center: [photo!.lng, photo!.lat], zoom: Math.max(editor.instance.getZoom(), 18.5), duration: 800 })
+    editor.instance.flyTo({ center: [photo!.lng, photo!.lat], zoom: Math.max(editor.instance.getZoom(), 18.5), duration: 800, offset: visibleOffset(editor.activePanel != null) })
     photoActions.open(null)
   }
 
