@@ -1,22 +1,31 @@
 {
-  "name": "Designer",
+  "name": "Semisto Designer",
+  "short_name": "Designer",
+  "description": <%= t("meta.description").to_json.html_safe %>,
+  "lang": "fr",
   "icons": [
     {
       "src": "/icon.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     },
     {
-      "src": "/icon.png",
+      "src": "/icon-maskable.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
     }
   ],
-  "start_url": "/",
+  "start_url": "/maps",
   "display": "standalone",
   "scope": "/",
-  "description": "Designer.",
-  "theme_color": "red",
-  "background_color": "red"
+  "theme_color": "#5b5781",
+  "background_color": "#f7f5f2"
 }
