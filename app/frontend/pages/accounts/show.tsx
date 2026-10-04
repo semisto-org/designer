@@ -14,7 +14,7 @@ export default function AccountShow({ account }: { account: AccountData }) {
   const maps = account.maxMaps < 1000
     ? t('account.maps', { used: account.ownedMaps, max: account.maxMaps })
     : t('account.maps_unlimited', { used: account.ownedMaps })
-  const planName = account.subscriptionPlan ? t(`account.plan_names.${account.subscriptionPlan}`) : t(`account.plan_names.${account.plan}`)
+  const planName = t(`account.plan_names.${account.plan}`)
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -61,7 +61,7 @@ export default function AccountShow({ account }: { account: AccountData }) {
             <h2 className="flex items-center gap-2 text-base"><CreditCard className="h-4 w-4 text-leaf-500" aria-hidden="true" />{t('account.plan')}</h2>
             <p className="mt-3 text-lg font-semibold text-loam-900">{planName}</p>
             <p className="mt-1 text-sm text-loam-500">
-              {account.passExpiresAt && account.plan === 'yearly' ? `${t('account.plan_until', { date: formatDate(account.passExpiresAt) })} · ` : ''}
+              {account.planEndsAt ? `${t('account.plan_until', { date: formatDate(account.planEndsAt) })} · ` : ''}
               {maps}
             </p>
           </div>

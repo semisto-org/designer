@@ -93,8 +93,8 @@ export type AccountData = {
   signedUpAt: string
   googleLinked: boolean
   plan: PlanKey
-  passExpiresAt: string | null
-  subscriptionPlan: 'atelier' | 'bureau' | null
+  /** When the plan stops unless renewed (pass or plan paid on invoice); null for a subscription or the free map. */
+  planEndsAt: string | null
   ownedMaps: number
   maxMaps: number
   readOnlyMaps: number

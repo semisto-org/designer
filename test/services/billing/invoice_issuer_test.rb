@@ -33,10 +33,12 @@ class Billing::InvoiceIssuerTest < ActiveSupport::TestCase
       issue
 
       customer = @log[:customer].sole
-      assert_equal [ "Administration communale de Yvoir", "compta@yvoir.be", @user.id.to_s ], [ customer["name"], customer["email"], customer.dig("metadata", "user_id") ]
+      assert_equal [ "Administration communale de Yvoir", "compta@yvoir.be", @user.id.to_s, @request.id.to_s ],
+                   [ customer["name"], customer["email"], customer.dig("metadata", "user_id"), customer.dig("metadata", "invoice_request_id") ]
       assert_equal({ "line1" => "Rue de l'Hôtel de Ville 1", "postal_code" => "5530", "city" => "Yvoir", "country" => "BE" }, customer["address"])
       assert_equal [ "fr" ], customer["preferred_locales"].values
-      assert_equal "cus_new", @user.reload.billing_account.stripe_customer_id
+      assert_equal "cus_new", @request.reload.stripe_customer_id
+      assert_nil @user.reload.billing_account, "the organisation's customer is not the user's own"
 
       assert_equal({ "type" => "eu_vat", "value" => "BE0207360311" }, @log[:tax_id].sole)
 
@@ -59,15 +61,32 @@ class Billing::InvoiceIssuerTest < ActiveSupport::TestCase
     end
   end
 
-  test "reuses the user's Stripe customer and does not add a VAT number twice" do
+  test "never writes the organisation onto the user's own Stripe customer" do
     with_billing do
-      @user.create_billing_account!(stripe_customer_id: "cus_old")
-      stub_invoice_flow(customer: "cus_old")
-      stub_stripe_get("customers/cus_old/tax_ids", { object: "list", data: [ { id: "txi_0", type: "eu_vat", value: "BE0207360311" } ] })
+      @user.create_billing_account!(stripe_customer_id: "cus_personal")
+      stub_invoice_flow
+      issue
+      assert_equal 1, @log[:customer].size
+      assert_equal "cus_new", @request.reload.stripe_customer_id
+      assert_not_requested :post, stripe_api("customers/cus_personal")
+      assert_equal "cus_personal", @user.reload.billing_account.stripe_customer_id
+      assert_equal "cus_new", @log[:invoice].sole["customer"]
+    end
+  end
+
+  test "a renewal for the same organisation reuses its customer and does not add the VAT number twice" do
+    with_billing do
+      @user.invoice_requests.create!(@request.slice(:organization_name, :billing_address, :billing_email, :company_number, :plan_key)
+                                       .merge(status: "paid", stripe_customer_id: "cus_yvoir"))
+      @user.invoice_requests.create!(@request.slice(:billing_address, :billing_email, :plan_key)
+                                       .merge(organization_name: "CPAS de Yvoir", status: "paid", stripe_customer_id: "cus_cpas"))
+      stub_invoice_flow(customer: "cus_yvoir")
+      stub_stripe_get("customers/cus_yvoir/tax_ids", { object: "list", data: [ { id: "txi_0", type: "eu_vat", value: "BE0207360311" } ] })
       issue
       assert_equal [ "compta@yvoir.be", "Administration communale de Yvoir" ], @log[:update].sole.values_at("email", "name")
       assert_not_requested :post, stripe_api("customers")
       assert_empty @log[:tax_id]
+      assert_equal "cus_yvoir", @request.reload.stripe_customer_id
     end
   end
 
@@ -122,12 +141,14 @@ class Billing::InvoiceIssuerTest < ActiveSupport::TestCase
 
   test "creates a new customer when the saved one is unknown to Stripe" do
     with_billing do
-      @user.create_billing_account!(stripe_customer_id: "cus_test_mode")
+      @user.invoice_requests.create!(@request.slice(:organization_name, :billing_address, :billing_email, :company_number, :plan_key)
+                                       .merge(status: "paid", stripe_customer_id: "cus_test_mode"))
       stub_request(:post, stripe_api("customers/cus_test_mode"))
         .to_return(status: 400, body: { error: { type: "invalid_request_error", message: "No such customer: 'cus_test_mode'" } }.to_json, headers: { "Content-Type" => "application/json" })
       stub_invoice_flow
       issue
-      assert_equal "cus_new", @user.reload.billing_account.stripe_customer_id
+      assert_equal 1, @log[:customer].size
+      assert_equal "cus_new", @request.reload.stripe_customer_id
     end
   end
 

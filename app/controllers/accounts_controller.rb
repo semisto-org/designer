@@ -4,15 +4,13 @@ class AccountsController < ApplicationController
 
   def show
     user = Current.user
-    subscription = user.current_plan_subscription
-    pass = user.current_yearly_pass
+    plan = user.current_plan_key
     render inertia: "accounts/show", props: {
       account: {
         name: user.name, email: user.email_address, avatarUrl: user.avatar_url, signedUpAt: user.created_at.iso8601,
         googleLinked: user.google_uid.present?,
-        plan: user.current_plan_key,
-        passExpiresAt: pass&.expires_at&.iso8601,
-        subscriptionPlan: subscription&.plan_key,
+        plan:,
+        planEndsAt: plan_ends_at(user, plan)&.iso8601,
         ownedMaps: user.owned_maps.active.count,
         maxMaps: user.entitlements.max_maps,
         readOnlyMaps: user.read_only_maps_count
@@ -35,4 +33,15 @@ class AccountsController < ApplicationController
     AccountMailer.deletion_confirmation(Current.user).deliver_later
     redirect_to account_path, notice: t("account.deletion_sent")
   end
+
+  private
+    # When the current plan stops unless renewed: the yearly pass or the plan
+    # given on invoice (PlanGrant), whichever lasts longer. None for a
+    # subscription, which renews by itself.
+    def plan_ends_at(user, plan)
+      return nil if user.current_plan_subscription&.plan_key == plan
+      ends = user.plan_grants.active_at(Time.current).where(plan_key: plan).pluck(:ends_at)
+      ends << user.current_yearly_pass&.expires_at if plan == "yearly"
+      ends.compact.max
+    end
 end

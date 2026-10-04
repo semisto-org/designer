@@ -1,8 +1,11 @@
 module Billing
   # « Créer la facture dans Stripe »: sends the invoice of an InvoiceRequest
-  # with Stripe Invoicing. The user's Stripe customer (one per user, as for
-  # Checkout) is created or reused and takes the organisation's name,
-  # address and billing e-mail; an EU VAT number is attached as a tax id.
+  # with Stripe Invoicing. The invoice goes to a Stripe customer of its own
+  # for the organisation (name, address, billing e-mail, EU VAT number as a
+  # tax id), never to the user's personal customer: a commune's address must
+  # not end up on the receipts of a pass the same person buys for themself.
+  # A later request of the same user for the same organisation (a renewal)
+  # reuses that customer.
   # The invoice is due in 30 days (bank transfer or its payment page), shows
   # the purchase-order number, and carries the request id in its metadata so
   # that invoice.paid finds the request (InvoiceRequestPayment).
@@ -53,24 +56,30 @@ module Billing
       def customer
         attempts = 0
         begin
-          upsert_customer
+          upsert_customer(reuse: attempts.zero?)
         rescue Providers::StripeGateway::Error => e
           raise unless e.message.match?(/no such customer/i) && (attempts += 1) == 1
-          @user.billing_account&.destroy
-          @user.reload
+          @request.update!(stripe_customer_id: nil)
           retry
         end
       end
 
-      def upsert_customer
-        if (account = @user.billing_account)
-          gateway.update_customer(account.stripe_customer_id, customer_fields)
-          return account.stripe_customer_id
+      def upsert_customer(reuse:)
+        if (customer_id = @request.stripe_customer_id || (reuse && earlier_customer_id))
+          gateway.update_customer(customer_id, customer_fields)
+        else
+          fields = customer_fields
+          customer_id = gateway.create_customer(email: fields.delete(:email), name: fields.delete(:name), metadata: { user_id: @user.id.to_s, invoice_request_id: @request.id.to_s }, **fields).fetch("id")
         end
-        fields = customer_fields
-        created = gateway.create_customer(email: fields.delete(:email), name: fields.delete(:name), metadata: { user_id: @user.id.to_s }, **fields)
-        Identity.link_customer(@user, created.fetch("id"))
-        @user.reload.billing_account.stripe_customer_id
+        @request.update!(stripe_customer_id: customer_id)
+        customer_id
+      end
+
+      # The customer of an earlier invoice of this user to the same organisation.
+      def earlier_customer_id
+        @user.invoice_requests.where.not(id: @request.id).where.not(stripe_customer_id: nil)
+          .where(organization_name: @request.organization_name, company_number: @request.company_number)
+          .newest_first.pick(:stripe_customer_id)
       end
 
       def customer_fields

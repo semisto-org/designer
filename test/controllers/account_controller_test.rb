@@ -22,7 +22,18 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
       assert_equal "accounts/show", response.parsed_body["component"]
       account = response.parsed_body["props"]["account"]
       assert_equal [ "Bob", "bob@example.org", "yearly", true ], account.values_at("name", "email", "plan", "googleLinked")
-      assert account["passExpiresAt"]
+      assert_equal @user.plan_purchases.sole.expires_at.iso8601, account["planEndsAt"]
+    end
+  end
+
+  test "a plan paid on invoice shows its end date" do
+    ends_at = 10.months.from_now.change(usec: 0)
+    @user.plan_grants.create!(plan_key: "bureau", starts_at: 2.months.ago, ends_at:)
+    sign_in_as @user
+    with_billing do
+      get "/account", headers: inertia_headers
+      account = response.parsed_body["props"]["account"]
+      assert_equal [ "bureau", ends_at.iso8601 ], account.values_at("plan", "planEndsAt")
     end
   end
 

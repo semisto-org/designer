@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_160200) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_160201) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -252,8 +252,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_160200) do
     t.bigint "handled_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "stripe_customer_id"
     t.index ["handled_by_id"], name: "index_invoice_requests_on_handled_by_id"
     t.index ["status", "created_at"], name: "index_invoice_requests_on_status_and_created_at"
+    t.index ["stripe_customer_id"], name: "index_invoice_requests_on_stripe_customer_id"
     t.index ["stripe_invoice_id"], name: "index_invoice_requests_on_stripe_invoice_id", unique: true
     t.index ["user_id"], name: "index_invoice_requests_on_user_id"
   end

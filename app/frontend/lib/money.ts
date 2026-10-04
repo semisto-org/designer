@@ -6,7 +6,8 @@ export function formatPrice(amountCents: number): string {
   return (amountCents % 100 === 0 ? whole : cents).format(amountCents / 100)
 }
 
-const longDate = new Intl.DateTimeFormat('fr-BE', { dateStyle: 'long' })
+// Billing dates are days in Brussels (the app's time zone), wherever the reader is.
+const longDate = new Intl.DateTimeFormat('fr-BE', { dateStyle: 'long', timeZone: 'Europe/Brussels' })
 
 /** "12 octobre 2027" */
 export function formatDate(iso: string | Date): string {
