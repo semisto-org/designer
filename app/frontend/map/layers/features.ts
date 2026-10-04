@@ -16,12 +16,14 @@ export const LAYER_COLORS: Record<string, string> = {
 }
 
 // `style` is an object, except past the source's max zoom where MapLibre
-// hands nested properties over as JSON strings: read its color only when it
-// is an object, else fall back to the layer color.
-const styleColor = ['let', 'style', ['get', 'style'],
-  ['case', ['==', ['typeof', ['var', 'style']], 'object'], ['get', 'color', ['object', ['var', 'style']]], null]]
-const color = ['coalesce', styleColor, ['match', ['get', 'layer'],
-  ...Object.entries(LAYER_COLORS).flat(), '#6e6355']] as unknown as string
+// hands nested properties over as JSON strings: use its color only when it
+// is an object that has one, else the layer color.
+const layerColor = ['match', ['get', 'layer'], ...Object.entries(LAYER_COLORS).flat(), '#6e6355']
+const color = ['let', 'style', ['get', 'style'], ['case',
+  ['all', ['==', ['typeof', ['var', 'style']], 'object'], ['has', 'color', ['object', ['var', 'style']]]],
+  ['to-color', ['get', 'color', ['object', ['var', 'style']]], layerColor],
+  layerColor,
+]] as unknown as string
 
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
 export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollection) {
