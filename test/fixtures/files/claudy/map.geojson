@@ -1,0 +1,203 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": 110,
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.906,
+       50.3405
+      ],
+      [
+       4.9068,
+       50.3405
+      ],
+      [
+       4.9068,
+       50.3413
+      ],
+      [
+       4.906,
+       50.3413
+      ],
+      [
+       4.906,
+       50.3405
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": 110,
+    "feature_kind": "zone",
+    "name": "Verger du haut",
+    "layer_id": 2,
+    "venue_keys": [],
+    "photos_count": 1,
+    "properties": {
+     "management_notes": "Fauche tardive."
+    }
+   }
+  },
+  {
+   "type": "Feature",
+   "id": 140,
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.9075,
+      50.3402
+     ],
+     [
+      4.9079,
+      50.3406
+     ]
+    ]
+   },
+   "properties": {
+    "id": 140,
+    "feature_kind": "line",
+    "name": null,
+    "layer_id": 7,
+    "venue_keys": [],
+    "photos_count": 0,
+    "properties": {},
+    "network": "ethernet",
+    "color": "#7C3AED",
+    "gauge": "medium",
+    "length_m": 51.2
+   }
+  },
+  {
+   "type": "Feature",
+   "id": 175,
+   "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+     [
+      [
+       [
+        4.9091,
+        50.339
+       ],
+       [
+        4.909199999999999,
+        50.339
+       ],
+       [
+        4.909199999999999,
+        50.3391
+       ],
+       [
+        4.9091,
+        50.3391
+       ],
+       [
+        4.9091,
+        50.339
+       ]
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": 175,
+    "feature_kind": "zone",
+    "name": "Mare double",
+    "layer_id": 11,
+    "venue_keys": [],
+    "photos_count": 0,
+    "properties": {
+     "design": {
+      "type": "pond",
+      "depth": 0.8
+     }
+    },
+    "design": {
+     "type": "pond",
+     "depth": 0.8
+    }
+   }
+  },
+  {
+   "type": "Feature",
+   "id": 101,
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.904,
+       50.34
+      ],
+      [
+       4.9044,
+       50.34
+      ],
+      [
+       4.9044,
+       50.3404
+      ],
+      [
+       4.904,
+       50.3404
+      ],
+      [
+       4.904,
+       50.34
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": 101,
+    "feature_kind": "lodging",
+    "name": "Gîte des Fauvettes",
+    "layer_id": 1,
+    "venue_keys": [
+     "Lodging:3"
+    ],
+    "photos_count": 0,
+    "properties": {}
+   }
+  },
+  {
+   "type": "Feature",
+   "id": 190,
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9062,
+     50.3407
+    ]
+   },
+   "properties": {
+    "id": 190,
+    "feature_kind": "plant",
+    "name": "Pommier Reinette grise",
+    "layer_id": 4,
+    "venue_keys": [],
+    "photos_count": 0,
+    "properties": {},
+    "plant_id": 7,
+    "number": "12",
+    "health": "healthy",
+    "stratum": "tree",
+    "status": "existing",
+    "dead": false,
+    "planned": false,
+    "species": "Pommier",
+    "mature": {
+     "height": 6,
+     "spread": 5,
+     "source": "species"
+    }
+   }
+  }
+ ]
+}

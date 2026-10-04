@@ -1,0 +1,462 @@
+{
+ "data": [
+  {
+   "id": 130,
+   "type": "map_feature",
+   "feature_kind": "line",
+   "layer_id": 6,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.907,
+      50.34
+     ],
+     [
+      4.9072,
+      50.3405
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {},
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 131,
+   "type": "map_feature",
+   "feature_kind": "node",
+   "layer_id": 6,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9072,
+     50.3405
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "node_type": "outlet"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 132,
+   "type": "map_feature",
+   "feature_kind": "node",
+   "layer_id": 6,
+   "layer_kind": "network",
+   "name": "Tableau de l'atelier",
+   "name_i18n": {
+    "fr": "Tableau de l'atelier"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.907,
+     50.34
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "node_type": "panel"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 140,
+   "type": "map_feature",
+   "feature_kind": "line",
+   "layer_id": 7,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.9075,
+      50.3402
+     ],
+     [
+      4.9079,
+      50.3406
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {},
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 150,
+   "type": "map_feature",
+   "feature_kind": "comment",
+   "layer_id": 9,
+   "layer_kind": "comments",
+   "name": "Commentaire",
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9068,
+     50.3407
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {},
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 160,
+   "type": "map_feature",
+   "feature_kind": "observation",
+   "layer_id": 10,
+   "layer_kind": "biodiversity",
+   "name": "Hérisson d'Europe",
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9081,
+     50.3411
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "realm": "fauna",
+    "species_common": "Hérisson d'Europe",
+    "species_latin": "Erinaceus europaeus",
+    "observed_on": "2026-05-03",
+    "observer_id": 4,
+    "count": 2
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 161,
+   "type": "map_feature",
+   "feature_kind": "observation",
+   "layer_id": 10,
+   "layer_kind": "biodiversity",
+   "name": "Pic épeiche",
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9083,
+     50.3412
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "realm": "fauna",
+    "species_common": "Pic épeiche",
+    "species_latin": "Dendrocopos major",
+    "observed_on": "2026-04-11",
+    "source": "observations.be",
+    "source_id": "998877",
+    "source_url": "https://observations.be/observation/998877/",
+    "observer_name": "Jean Exemple",
+    "accuracy": 10,
+    "photo_urls": [
+     "https://observations.be/media/photo/998877.jpg"
+    ]
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 170,
+   "type": "map_feature",
+   "feature_kind": "line",
+   "layer_id": 11,
+   "layer_kind": "design",
+   "name": "Baissière 1",
+   "name_i18n": {
+    "fr": "Baissière 1"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.9085,
+      50.3398
+     ],
+     [
+      4.909,
+      50.3399
+     ],
+     [
+      4.9095,
+      50.3398
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {
+    "design": {
+     "type": "swale",
+     "width": 2,
+     "depth": 0.5,
+     "berm": 0.4,
+     "grade": 0,
+     "enabled": true
+    }
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 171,
+   "type": "map_feature",
+   "feature_kind": "line",
+   "layer_id": 11,
+   "layer_kind": "design",
+   "name": "Keyline du bas",
+   "name_i18n": {
+    "fr": "Keyline du bas"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.9085,
+      50.3394
+     ],
+     [
+      4.9095,
+      50.3393
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {
+    "design": {
+     "type": "keyline",
+     "width": 1,
+     "depth": 0.3,
+     "grade": 1.5,
+     "enabled": false
+    }
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 172,
+   "type": "map_feature",
+   "feature_kind": "zone",
+   "layer_id": 11,
+   "layer_kind": "design",
+   "name": "Mare 2",
+   "name_i18n": {
+    "fr": "Mare 2"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.9088,
+       50.339
+      ],
+      [
+       4.909000000000001,
+       50.339
+      ],
+      [
+       4.909000000000001,
+       50.3392
+      ],
+      [
+       4.9088,
+       50.3392
+      ],
+      [
+       4.9088,
+       50.339
+      ]
+     ]
+    ]
+   },
+   "geometry_type": "Polygon",
+   "properties": {
+    "design": {
+     "type": "pond",
+     "depth": 1.2,
+     "radius": 8,
+     "center": [
+      4.9089,
+      50.3391
+     ],
+     "enabled": true
+    }
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 180,
+   "type": "map_feature",
+   "feature_kind": "bioindicator",
+   "layer_id": 12,
+   "layer_kind": "bioindicators",
+   "name": "Plantain majeur, Ortie dioïque",
+   "name_i18n": {},
+   "description_i18n": {
+    "fr": "Entrée du pré, sol piétiné."
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9056,
+     50.3399
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "observed_on": "2026-04-18",
+    "observer_id": 4,
+    "status": "analyzed",
+    "analysis": {
+     "analyzed_on": "2026-04-20",
+     "analyst": "Claude",
+     "summary": "Sol tassé et riche en azote à l'entrée du pré.",
+     "agronomy": "degrading",
+     "indicators": [
+      {
+       "key": "compaction",
+       "strength": 3
+      },
+      {
+       "key": "nitrogen_excess",
+       "strength": 2
+      }
+     ],
+     "species": [
+      {
+       "species_id": 3,
+       "name": "Plantain majeur",
+       "latin_name": "Plantago major",
+       "confidence": "high",
+       "abundance": "frequent",
+       "note": "En bordure du chemin."
+      },
+      {
+       "species_id": null,
+       "name": "Ortie dioïque",
+       "latin_name": "Urtica dioica",
+       "confidence": "medium",
+       "abundance": "dominant"
+      }
+     ],
+     "advice": "Aérer à la grelinette, limiter le passage.",
+     "caution": "Une seule visite, au printemps."
+    }
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 181,
+   "type": "map_feature",
+   "feature_kind": "bioindicator",
+   "layer_id": 12,
+   "layer_kind": "bioindicators",
+   "name": "Relevé du 1 septembre 2026",
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.909,
+     50.3415
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "observed_on": "2026-09-01",
+    "observer_id": 4,
+    "status": "to_analyze"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 190,
+   "type": "map_feature",
+   "feature_kind": "plant",
+   "layer_id": 4,
+   "layer_kind": "plants",
+   "name": "n° 12 Pommier",
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9062,
+     50.3407
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {},
+   "position": 0,
+   "plant_id": 7,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  }
+ ],
+ "meta": {
+  "page": 2,
+  "per_page": 200,
+  "total": 22,
+  "pages": 2
+ }
+}

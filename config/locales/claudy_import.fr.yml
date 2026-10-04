@@ -1,0 +1,237 @@
+# Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)
+# One-shot import of the Claudy map plan (Les 4 Sources) into a Designer map:
+# bin/rails claudy:import (lib/tasks/claudy.rake, app/services/imports/claudy).
+# The labels of Claudy's vocabulary (node types, plant statuses, water
+# sources…) come from Claudy's models (MapLayer, Plant, MapFeature).
+fr:
+  claudy_import:
+    date_format: "%d/%m/%Y"
+
+    errors:
+      map_missing: "Donnez la carte à remplir : MAP_ID=…"
+      map_not_found: "Carte n° %{id} introuvable."
+      not_configured: "Aucune source : donnez FILE=chemin/vers/claudy-map.json, ou CLAUDY_API_KEY (et au besoin CLAUDY_API_URL)."
+      unauthorized: "Claudy refuse la clé (HTTP %{status}) sur %{url} : vérifiez CLAUDY_API_KEY, un des jetons AGENT_API_TOKEN de Claudy."
+      unavailable: "Claudy ne répond pas comme prévu sur %{url} (%{detail})."
+      unreadable: "Réponse illisible de Claudy sur %{url}."
+      file_missing: "Fichier introuvable : %{path}"
+      file_unreadable: "Fichier illisible (%{detail}) : %{path}"
+      file_format: "Format inconnu : %{path}. Attendu : l'export de la carte de Claudy (voir docs/import-claudy.md), une réponse de son API ou un GeoJSON FeatureCollection."
+      photo_url: "Adresse de photo inutilisable : %{url}"
+      photo_too_large: "Photo trop lourde (plus de %{max} Mo) : %{url}"
+      photo_file_missing: "Fichier de photo introuvable à côté de l'export : %{path}"
+      photo_missing: "Photo sans fichier ni adresse dans l'export."
+      network_layers: "CLAUDY_NETWORK_LAYERS illisible : « %{value} ». Exemple : CLAUDY_NETWORK_LAYERS=5=water,6=electric"
+
+    notes:
+      management: "Gestion : %{text}"
+      instructions: "Consignes : %{text}"
+      water_source: "Origine de l'eau : %{label}."
+      non_potable: "Eau non potable."
+      journal: "Journal (Claudy) :"
+      journal_entry: "%{date} — %{body}"
+      design_disabled: "Désactivé dans la vue 3D de Claudy."
+      keyline: "Keyline tracée dans la vue 3D de Claudy."
+
+    plants:
+      numbered_name: "n° %{number} — %{name}"
+      number_only: "n° %{number}"
+      status: "Statut dans Claudy : %{label}."
+      health: "Santé : %{label}."
+      zone: "Zone : %{zone}."
+      count: "Nombre de plants : %{count}."
+      planted_year: "Plantée en %{year}."
+      statuses:
+        existing: "Existante"
+        to_confirm: "À confirmer"
+        to_place: "À placer"
+        on_plan: "Sur plan"
+        awaiting_planting: "En attente de plantation"
+        planted: "Plantée"
+        dead: "Morte"
+        to_move: "À déplacer"
+        wild: "Flore sauvage"
+      healths:
+        healthy: "Saine"
+        worrying: "Inquiétante"
+        sick: "Malade"
+
+    networks:
+      water: "Eau"
+      electricity: "Électricité"
+      ethernet: "Ethernet"
+      gas: "Gaz"
+      water_sources:
+        rain: "Eau de pluie"
+        forest_catchment: "Captage forestier"
+        well: "Eau de puits"
+      node_types:
+        water:
+          source: "Source"
+          catchment: "Captage"
+          cistern: "Citerne"
+          valve: "Vanne"
+          manifold: "Répartiteur"
+          meter: "Compteur"
+          tap: "Robinet"
+          trough: "Abreuvoir"
+          manhole: "Regard"
+        electricity:
+          panel: "Tableau"
+          meter: "Compteur"
+          outlet: "Prise"
+          breaker: "Disjoncteur"
+          lighting: "Éclairage"
+        ethernet:
+          switch: "Switch"
+          access_point: "Borne wifi"
+          wall_jack: "Prise murale"
+          router: "Routeur"
+          rack: "Baie"
+          fiber_box: "Boîtier fibre"
+        gas:
+          tank: "Citerne"
+          cylinder: "Bouteille"
+          regulator: "Détendeur"
+          valve: "Vanne"
+          meter: "Compteur"
+          boiler: "Chaudière"
+          cooker: "Cuisinière"
+
+    observations:
+      realms:
+        flora: "Flore"
+        fauna: "Faune"
+        fungi: "Fonge"
+      seen_on: "%{realm}, observée le %{date}."
+      seen: "%{realm}."
+      latin: "Nom latin : %{latin}."
+      count:
+        one: "%{count} individu."
+        other: "%{count} individus."
+
+    bioindicators:
+      name: "Relevé de plantes bio-indicatrices du %{date}"
+      name_undated: "Relevé de plantes bio-indicatrices"
+      pending: "À analyser : les photos attendent qu'on identifie les plantes (panneau Sol)."
+      summary: "Diagnostic : %{text}"
+      advice: "Pistes : %{text}"
+      caution: "Limites : %{text}"
+      record_label: "Plante bio-indicatrice observée"
+      confidence:
+        high: "Identification sûre."
+        medium: "Identification probable."
+        low: "Identification incertaine."
+
+    photos:
+      caption: "%{name} (photo importée de Claudy)"
+      caption_unnamed: "Photo importée de Claudy"
+
+    report:
+      title: "Import de Claudy dans « %{map} » (carte n° %{id})"
+      source: "Source : %{source}"
+      source_api: "API %{url}"
+      source_file: "fichier %{path}"
+      dry_run: "Simulation (DRY_RUN=1) : rien n'a été enregistré."
+      nothing: "Rien à importer."
+      elements: "Éléments de la carte :"
+      kind_line: "  %{label} : %{counts}"
+      kind_label: "%{kind} · %{layer}"
+      counts:
+        created:
+          one: "%{count} créé"
+          other: "%{count} créés"
+        updated:
+          one: "%{count} mis à jour"
+          other: "%{count} mis à jour"
+        unchanged:
+          one: "%{count} inchangé"
+          other: "%{count} inchangés"
+        skipped:
+          one: "%{count} ignoré"
+          other: "%{count} ignorés"
+      photos: "Photos : %{counts}."
+      photo_counts:
+        created:
+          one: "%{count} ajoutée"
+          other: "%{count} ajoutées"
+        planned:
+          one: "%{count} à ajouter"
+          other: "%{count} à ajouter"
+        known:
+          one: "%{count} déjà importée"
+          other: "%{count} déjà importées"
+        duplicate:
+          one: "%{count} déjà présente sur la carte"
+          other: "%{count} déjà présentes sur la carte"
+        unsupported:
+          one: "%{count} refusée (format non accepté, HEIC par exemple)"
+          other: "%{count} refusées (format non accepté, HEIC par exemple)"
+        too_large:
+          one: "%{count} trop lourde"
+          other: "%{count} trop lourdes"
+        failed:
+          one: "%{count} en échec"
+          other: "%{count} en échec"
+      photos_none: "Photos : aucune."
+      photos_off: "Photos : non importées (PHOTOS=0)."
+      palette:
+        one: "Palette : %{count} espèce ou variété ajoutée."
+        other: "Palette : %{count} espèces ou variétés ajoutées."
+      unmatched_species: "Espèces introuvables dans le catalogue de Designer (plantes importées sans espèce, propriété unmatched_species) :"
+      unmatched_species_line:
+        one: "  - %{name} : %{count} plante"
+        other: "  - %{name} : %{count} plantes"
+      unmatched_varieties: "Variétés introuvables (plantes liées à l'espèce seule, propriété unmatched_variety) :"
+      no_species_name: "plante sans espèce"
+      skipped: "Non importé :"
+      skipped_reasons:
+        welcome_map:
+          one: "  - %{count} élément de la carte d'accueil (hébergements, salles, couche Accueil) : il reste dans Claudy."
+          other: "  - %{count} éléments de la carte d'accueil (hébergements, salles, couche Accueil) : ils restent dans Claudy."
+        comments:
+          one: "  - %{count} fil de commentaires : ses messages portent le nom de leurs auteurs (et l'API ne les expose pas)."
+          other: "  - %{count} fils de commentaires : leurs messages portent le nom de leurs auteurs (et l'API ne les expose pas)."
+        third_party_observation:
+          one: "  - %{count} relevé venu d'observations.be : données de tiers, avec le nom de l'observateur."
+          other: "  - %{count} relevés venus d'observations.be : données de tiers, avec le nom des observateurs."
+        dead_plant:
+          one: "  - %{count} plante morte."
+          other: "  - %{count} plantes mortes."
+        unplaced_plant:
+          one: "  - %{count} plante à placer, sans position (son espèce est dans la palette)."
+          other: "  - %{count} plantes à placer, sans position (leurs espèces sont dans la palette)."
+        unknown_layer:
+          one: "  - %{count} élément d'une couche inconnue."
+          other: "  - %{count} éléments de couches inconnues."
+        no_geometry:
+          one: "  - %{count} élément sans géométrie lisible."
+          other: "  - %{count} éléments sans géométrie lisible."
+        empty_sketch:
+          one: "  - %{count} note manuscrite sans trait."
+          other: "  - %{count} notes manuscrites sans trait."
+        tasks:
+          one: "  - %{count} tâche du carnet : Designer n'a pas encore de carnet de tâches."
+          other: "  - %{count} tâches du carnet : Designer n'a pas encore de carnet de tâches."
+      sketches_missing:
+        api: "  - Les notes manuscrites : l'API de Claudy ne les expose pas (utilisez l'export, FILE=…)."
+        file: "  - Les notes manuscrites : ce fichier ne les contient pas (utilisez l'export de Claudy, voir docs/import-claudy.md)."
+      kept: "Laissé tel quel dans Designer :"
+      kept_reasons:
+        edited:
+          one: "  - %{count} élément modifié dans Designer depuis le dernier import (FORCE=1 pour le remplacer)."
+          other: "  - %{count} éléments modifiés dans Designer depuis le dernier import (FORCE=1 pour les remplacer)."
+        deleted:
+          one: "  - %{count} élément supprimé dans Designer depuis le dernier import (FORCE=1 pour le recréer)."
+          other: "  - %{count} éléments supprimés dans Designer depuis le dernier import (FORCE=1 pour les recréer)."
+      warnings: "À vérifier :"
+      warning_line: "  - %{text}"
+      fallback: "« %{name} » (Claudy %{type} n° %{id}) ne convient pas à « %{kind} » (%{reason}) : importé comme « %{generic} »."
+      unknown_network:
+        one: "Réseau de la couche Claudy n° %{layer} non reconnu : %{count} élément importé sans réseau (CLAUDY_NETWORK_LAYERS=%{layer}=water pour le préciser)."
+        other: "Réseau de la couche Claudy n° %{layer} non reconnu : %{count} éléments importés sans réseau (CLAUDY_NETWORK_LAYERS=%{layer}=water pour le préciser)."
+      errors:
+        one: "%{count} erreur :"
+        other: "%{count} erreurs :"
+      error_line: "  - Claudy %{type} n° %{id} (%{name}) : %{message}"
+      unnamed: "sans nom"

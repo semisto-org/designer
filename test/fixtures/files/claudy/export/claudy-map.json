@@ -1,0 +1,352 @@
+{
+ "format": "claudy-map-export",
+ "version": 1,
+ "exported_at": "2026-10-04T06:00:00Z",
+ "map_layers": [
+  {
+   "id": 2,
+   "kind": "management",
+   "name": "Gestion",
+   "settings": {}
+  },
+  {
+   "id": 5,
+   "kind": "network",
+   "name": "Eau",
+   "settings": {
+    "network": "water",
+    "color": "#2563EB"
+   }
+  },
+  {
+   "id": 6,
+   "kind": "network",
+   "name": "Électricité",
+   "settings": {
+    "network": "electric",
+    "color": "#D97706"
+   }
+  }
+ ],
+ "map_features": [
+  {
+   "id": 110,
+   "type": "map_feature",
+   "feature_kind": "zone",
+   "layer_id": 2,
+   "layer_kind": "management",
+   "name": "Verger du haut",
+   "name_i18n": {
+    "fr": "Verger du haut"
+   },
+   "description_i18n": {
+    "fr": "Vieux pommiers haute tige sur prairie."
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.906,
+       50.3405
+      ],
+      [
+       4.9068,
+       50.3405
+      ],
+      [
+       4.9068,
+       50.3413
+      ],
+      [
+       4.906,
+       50.3413
+      ],
+      [
+       4.906,
+       50.3405
+      ]
+     ]
+    ]
+   },
+   "geometry_type": "Polygon",
+   "properties": {
+    "management_notes": "Fauche tardive après le 15 juillet."
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "notes_log": [],
+   "photos": [
+    {
+     "id": 41,
+     "filename": "verger.jpg",
+     "content_type": "image/jpeg",
+     "byte_size": 1035,
+     "url": "https://app.example/rails/active_storage/blobs/redirect/x/verger.jpg",
+     "created_at": "2026-06-02T09:15:00.000+02:00",
+     "path": "photos/41.jpg"
+    }
+   ],
+   "tasks": []
+  },
+  {
+   "id": 120,
+   "type": "map_feature",
+   "feature_kind": "line",
+   "layer_id": 5,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.9058,
+      50.3402
+     ],
+     [
+      4.9064,
+      50.3406
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {
+    "gauge": "thick"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "notes_log": [],
+   "photos": [],
+   "tasks": []
+  },
+  {
+   "id": 121,
+   "type": "map_feature",
+   "feature_kind": "node",
+   "layer_id": 5,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9058,
+     50.3402
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "node_type": "cistern"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "notes_log": [],
+   "photos": [],
+   "tasks": []
+  },
+  {
+   "id": 130,
+   "type": "map_feature",
+   "feature_kind": "line",
+   "layer_id": 6,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.907,
+      50.34
+     ],
+     [
+      4.9072,
+      50.3405
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {},
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "notes_log": [],
+   "photos": [],
+   "tasks": []
+  }
+ ],
+ "plants": [
+  {
+   "id": 7,
+   "type": "plant",
+   "name": null,
+   "display_name": "Pommier Reinette grise",
+   "number": 12.0,
+   "number_label": "12",
+   "status": "existing",
+   "status_label": "Existante",
+   "health": "healthy",
+   "production": null,
+   "habit": null,
+   "stratum": "tree",
+   "population": null,
+   "stock_type": null,
+   "zone": "Verger du haut",
+   "plant_count": null,
+   "purchase_price_cents": null,
+   "planted_on": null,
+   "planted_year": 2015,
+   "altitude": null,
+   "mature_height": null,
+   "mature_spread": null,
+   "nursery": "Pépinière Exemple",
+   "notion_url": "https://www.notion.so/exemple/pommier-12",
+   "notes": "Greffé sur franc.",
+   "placed": true,
+   "latitude": 50.3407,
+   "longitude": 4.9062,
+   "map_feature_id": 190,
+   "species": {
+    "id": 2,
+    "name": "Pommier",
+    "latin_name": "Malus domestica Borkh."
+   },
+   "variety": {
+    "id": 5,
+    "name": "Reinette grise",
+    "plant_species_id": 2
+   },
+   "harvest_windows": [],
+   "harvest_windows_inherited": true,
+   "harvest_windows_effective": [],
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "notes_log": [],
+   "photos": [],
+   "tasks": []
+  },
+  {
+   "id": 10,
+   "type": "plant",
+   "name": "Néflier du talus",
+   "display_name": "Néflier du talus",
+   "number": null,
+   "number_label": null,
+   "status": "existing",
+   "status_label": "Existante",
+   "health": "worrying",
+   "production": null,
+   "habit": null,
+   "stratum": null,
+   "population": null,
+   "stock_type": null,
+   "zone": null,
+   "plant_count": 3,
+   "purchase_price_cents": null,
+   "planted_on": null,
+   "planted_year": null,
+   "altitude": null,
+   "mature_height": null,
+   "mature_spread": null,
+   "nursery": null,
+   "notion_url": null,
+   "notes": null,
+   "placed": true,
+   "latitude": 50.3409,
+   "longitude": 4.9067,
+   "map_feature_id": null,
+   "species": {
+    "id": 5,
+    "name": "Néflier",
+    "latin_name": "Mespilus germanica L."
+   },
+   "variety": null,
+   "harvest_windows": [],
+   "harvest_windows_inherited": true,
+   "harvest_windows_effective": [],
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "notes_log": [],
+   "photos": [],
+   "tasks": []
+  }
+ ],
+ "map_sketches": [
+  {
+   "id": 3,
+   "name": "Idées pour la mare",
+   "folder": "Printemps",
+   "strokes_count": 3,
+   "lock_version": 4,
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "strokes": [
+    {
+     "id": "k3f9a2",
+     "points": [
+      [
+       50.3391,
+       4.9087
+      ],
+      [
+       50.33915,
+       4.90875
+      ],
+      [
+       50.3392,
+       4.9088
+      ]
+     ],
+     "width": 3
+    },
+    {
+     "id": "p0int",
+     "points": [
+      [
+       50.3393,
+       4.9089
+      ]
+     ],
+     "width": 3
+    },
+    {
+     "id": "z8q1",
+     "points": [
+      [
+       50.3394,
+       4.909
+      ],
+      [
+       50.3394,
+       4.909
+      ],
+      [
+       50.3395,
+       4.9092
+      ]
+     ],
+     "width": 3
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "name": "Brouillon vide",
+   "folder": null,
+   "strokes_count": 0,
+   "lock_version": 0,
+   "updated_at": "2026-06-02T09:15:00.000+02:00",
+   "strokes": []
+  }
+ ]
+}

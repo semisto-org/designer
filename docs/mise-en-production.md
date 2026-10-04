@@ -94,6 +94,16 @@ Utilisées seulement par la commande ponctuelle `bin/rails catalog:import_terran
 
 Une à cinq photos d'une même plante partent chez Pl@ntNet, qui répond des espèces probables ; l'éditeur choisit, rien n'est enregistré sans son choix et Designer ne conserve pas les photos. L'interface affiche « Identification : Pl@ntNet ». **Avant d'activer la fonction sur un service payant, vérifiez les conditions d'utilisation de Pl@ntNet** (usage commercial, quota d'identifications, mention de la source) : l'offre gratuite est limitée.
 
+### Import de Claudy (Les 4 Sources)
+
+| Variable | Rôle |
+|---|---|
+| `CLAUDY_API_URL` | Défaut `https://app.les4sources.be/api/v1` (`/api/v1` est ajouté s'il manque). |
+| `CLAUDY_API_KEY` | Un des jetons `AGENT_API_TOKEN` de Claudy (lecture seule). |
+| `CLAUDY_NETWORK_LAYERS` | Facultatif : réseau d'une couche que l'API ne permet pas de reconnaître, par exemple `7=ethernet`. |
+
+Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=…`, qui verse le plan de la carte de Claudy dans une carte de Designer. Sans clé, on lui donne un export de Claudy (`FILE=…`). Elle peut être relancée sans risque de doublon. Mode d'emploi : `docs/import-claudy.md`.
+
 ### Climat et météo
 
 | Variable | Rôle |
@@ -111,7 +121,7 @@ Une à cinq photos d'une même plante partent chez Pl@ntNet, qui répond des esp
 
 ## Connexions sortantes
 
-Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo.
+Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo. L'import ponctuel de Claudy joint `app.les4sources.be`.
 
 ## Claude (MCP)
 
