@@ -122,11 +122,18 @@ export type SoilIndicatorKey =
 
 export type Abundance = 'rare' | 'present' | 'frequent' | 'dominant'
 
+export type EvidenceSource = { label: string; title: string; url: string | null }
+
+export type IndicatorEvidence = { status: 'sourced' | 'to_verify'; detail: string | null; sources: EvidenceSource[] }
+
 export type CatalogPlant = {
   key: string
   name: string
   latin: string
   indicates: SoilIndicatorKey[]
+  /** The claims no open dataset supports (« à vérifier »). */
+  unverified: SoilIndicatorKey[]
+  evidence: Partial<Record<SoilIndicatorKey, IndicatorEvidence>>
   note: string
   provenance: string
 }
@@ -143,12 +150,13 @@ export type BioObservation = {
   lat: number | null
   notes: string | null
   indicators: SoilIndicatorKey[]
+  unverified: SoilIndicatorKey[]
   note: string | null
   provenance: string | null
   observedBy: string | null
 }
 
-export type IndicatorTally = { key: SoilIndicatorKey; score: number; plants: string[] }
+export type IndicatorTally = { key: SoilIndicatorKey; score: number; plants: string[]; unverified: boolean }
 
 export type BioObservationsResponse = {
   observations: BioObservation[]

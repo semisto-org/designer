@@ -88,8 +88,8 @@ class BioindicatorObservationTest < ActiveSupport::TestCase
     assert obs.valid?
     assert_equal "Plantain majeur", obs.species_name
     assert_equal "Plantago major", obs.latin_name
-    assert_equal %w[compaction trampled], obs.indicators
-    assert_equal "semisto, à vérifier", obs.as_inertia[:provenance]
+    assert_equal %w[trampled disturbed compaction], obs.indicators
+    assert_includes obs.as_inertia[:provenance], "EIVE"
   end
 
   test "a plant outside the list is free text and indicates nothing" do
