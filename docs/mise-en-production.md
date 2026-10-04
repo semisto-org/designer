@@ -127,7 +127,7 @@ Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=
 
 | Variable | Rôle |
 |---|---|
-| `SENTRY_DSN` | Facultatif : envoie les erreurs à Sentry. |
+| `SENTRY_DSN` | Facultatif : envoie les erreurs à Sentry, celles du serveur (Rails) et celles du navigateur (React). Le DSN est lu au démarrage et transmis à la page : rien à définir au moment du build. |
 | `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | Facultatifs. |
 
 ## Connexions sortantes
