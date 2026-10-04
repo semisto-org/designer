@@ -275,6 +275,11 @@ fr:
           body: "Lire, et proposer des éléments en brouillon que vous acceptez ou refusez un par un, sur les cartes dont vous êtes propriétaire ou éditeur."
           plan: "Les brouillons demandent le forfait du propriétaire de la carte : votre formule actuelle n'en donne pas sur vos propres cartes."
       guardrails_title: "Garde-fous"
+      mobile_app:
+        title: "Connecter l'app Semisto Designer de ce téléphone"
+        body: "L'app pourra consulter et modifier vos cartes comme vous le faites sur le site : photos, plantations, relevés et commentaires. Vos rôles sur chaque carte et votre forfait s'appliquent de la même façon."
+        revoke: "Vous pourrez la déconnecter depuis l'app, ou depuis « Mon compte » sur le site."
+        approve: "Connecter l'app"
       deny: "Refuser"
       approve: "Autoriser %{client}"
     error:

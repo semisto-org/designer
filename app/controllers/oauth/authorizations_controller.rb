@@ -15,6 +15,7 @@ module Oauth
           clientUri: @client.metadata["client_uri"].to_s.start_with?("https://") ? @client.metadata["client_uri"] : nil
         },
         account: { name: Current.user.display_name, email: Current.user.email_address },
+        mobileApp: MobileApp.client?(@client),
         requestedAccess: AiAccess.level(params[:scope].to_s),
         planAllowsDrafts: Current.user.entitlements.ai_drafts?,
         fields: forwarded_params
@@ -26,7 +27,9 @@ module Oauth
       grant = OauthGrant.create!(
         user: Current.user, oauth_client: @client, redirect_uri: @redirect_uri,
         code_challenge: params[:code_challenge], code_challenge_method: "S256",
-        scopes: AiAccess.scopes_for(params[:access]).join(" "),
+        # Semisto's own app gets the user's full access once they approve
+        # (MobileApp); any other client, read or drafts as chosen.
+        scopes: (MobileApp.client?(@client) ? MobileApp::SCOPES : AiAccess.scopes_for(params[:access])).join(" "),
         resource: params[:resource].presence&.chomp("/") || Mcp::Endpoints.resource(origin)
       )
       redirect_to callback_url(code: grant.plaintext_code), allow_other_host: true
@@ -36,7 +39,7 @@ module Oauth
       def origin = Mcp::Endpoints.origin(request)
 
       def load_client
-        @client = OauthClient.find_by_client_id(params[:client_id])
+        @client = params[:client_id] == MobileApp::CLIENT_ID ? MobileApp.client : OauthClient.find_by_client_id(params[:client_id])
         return render_error(:unknown_client) unless @client
         @redirect_uri = params[:redirect_uri].presence || @client.default_redirect_uri
         render_error(:bad_redirect) unless @client.redirect_uri_allowed?(@redirect_uri)

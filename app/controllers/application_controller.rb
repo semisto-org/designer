@@ -2,7 +2,8 @@ class ApplicationController < ActionController::Base
   include Authentication
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
+  # The phone app (MobileApp) is not a browser: no check for it.
+  allow_browser versions: :modern, unless: -> { mobile_app_token }
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes if respond_to?(:stale_when_importmap_changes)
@@ -16,6 +17,12 @@ class ApplicationController < ActionController::Base
   end
 
   private
+    # The phone app authenticates with a bearer token, never a cookie: a
+    # forged cross-site request cannot carry it, so no CSRF token is needed.
+    def verified_request?
+      super || mobile_app_token.present?
+    end
+
     # JSON errors for the map editor's fetch calls.
     def render_errors(record, status: :unprocessable_entity)
       render json: { errors: record.errors.to_hash(true), message: record.errors.full_messages.to_sentence }, status:

@@ -75,6 +75,16 @@ Rails.application.routes.draw do
     end
   end
   # --- end map-data ---
+  # --- mobile ---
+  # Semisto's phone app (mobile/, MobileApp): its own endpoints; it also
+  # calls the editor's JSON endpoints with the same bearer token.
+  namespace :api do
+    namespace :v1 do
+      resource :me, only: :show, controller: "me"
+      resources :maps, only: %i[index show]
+    end
+  end
+  # --- end mobile ---
   # --- mcp ---
   # Remote MCP server (Streamable HTTP, stateless) and its OAuth 2.1
   # authorization server, for Claude and other agents.

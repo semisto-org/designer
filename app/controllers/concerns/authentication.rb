@@ -18,11 +18,28 @@ module Authentication
     end
 
     def require_authentication
-      resume_session || request_authentication
+      resume_session || (mobile_app_request? ? head(:unauthorized) : request_authentication)
     end
 
     def resume_session
-      Current.session ||= find_session_by_cookie
+      Current.session ||= session_for_mobile_app || find_session_by_cookie
+    end
+
+    # Semisto's own app sends `Authorization: Bearer` with an APP-scoped
+    # OAuth token (MobileApp). It acts as a signed-in user, in memory only:
+    # no Session row, no cookie.
+    def mobile_app_token
+      return @mobile_app_token if defined?(@mobile_app_token)
+      @mobile_app_token = MobileApp.token_for(request.authorization)
+    end
+
+    def mobile_app_request? = request.authorization.to_s.start_with?("Bearer ")
+
+    def session_for_mobile_app
+      token = mobile_app_token
+      return nil unless token
+      token.record_use!
+      Session.new(user: token.user, user_agent: request.user_agent, ip_address: request.remote_ip).tap(&:readonly!)
     end
 
     def find_session_by_cookie
