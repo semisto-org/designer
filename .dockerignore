@@ -46,3 +46,6 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# The phone app (mobile/) is built by EAS, not shipped with the server.
+/mobile/

@@ -64,3 +64,8 @@ Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden 
 - Public pages (`PagesController`, `app/frontend/pages/pages/*`) render server-side meta tags through `PublicMeta#render_public` and the page copy lives in `config/locales/site.fr.yml` (read with `content()` / `tf()` from `lib/content.ts`, which also applies French typography). The legal pages are drafts marked « Projet — à valider ».
 - Help center: Markdown articles in `app/help/*.md` (front matter: title, summary, category, order), served by `HelpController` (`/help`, `/help/:slug`, and `.json` for both). Put `<HelpButton slug="…" />` (components/help) next to any screen that needs contextual help.
 
+## Phone app (`mobile/`)
+
+- Expo (React Native) + MapLibre Native, its own `package.json`; CI job `mobile` runs `npm run locales -- --check`, `npm run typecheck`, `npm test`. See `mobile/README.md`.
+- Signs in through the server's OAuth with the fixed client `MobileApp` (scope `app`, never granted to another client); its bearer token acts as the user on `/api/v1/*` and on the editor's JSON endpoints. A new editor endpoint the app needs works as is; keep bearer requests in mind (no CSRF, 401 instead of a redirect).
+- Strings: `config/locales/mobile.fr.yml` (plus shared keys listed in `mobile/scripts/locales.mjs`), copied into `mobile/src/i18n/` by `npm run locales`. No in-app purchase or link to plans (store rules): plans live on the website.

@@ -11,6 +11,7 @@ import type { AiAccessLevel } from '@/types/mcp'
 type Props = {
   client: { name: string; redirectHost: string; clientUri: string | null }
   account: { name: string; email: string }
+  mobileApp: boolean
   requestedAccess: AiAccessLevel
   planAllowsDrafts: boolean
   fields: Record<string, string>
@@ -24,7 +25,50 @@ function csrfToken(): string {
  * OAuth consent: a regular HTML form (not an Inertia visit), because the
  * answer is a redirect to the client (claude.ai, a local port, an app).
  */
-export default function OauthAuthorize({ client, account, requestedAccess, planAllowsDrafts, fields }: Props) {
+export default function OauthAuthorize(props: Props) {
+  return props.mobileApp ? <MobileAppConsent {...props} /> : <ClientConsent {...props} />
+}
+
+function ConsentForm({ fields, children }: { fields: Record<string, string>; children: React.ReactNode }) {
+  return (
+    <form method="post" action="/oauth/authorize" className="mt-6">
+      <input type="hidden" name="authenticity_token" value={csrfToken()} />
+      {Object.entries(fields).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
+      {children}
+    </form>
+  )
+}
+
+/** Semisto's own phone app: one clear sentence, no access level to choose. */
+function MobileAppConsent({ account, fields }: Props) {
+  return (
+    <div className="px-4 py-10 sm:py-16">
+      <Head title={t('oauth.authorize.page_title')} />
+      <div className="mx-auto max-w-lg rounded-2xl bg-white p-6 shadow-sm ring-1 ring-loam-200/70 sm:p-8">
+        <div className="flex items-center gap-2 text-sm text-loam-500">
+          <Logo />
+          <span>Semisto Designer</span>
+        </div>
+        <h1 className="mt-5 text-xl leading-snug">{t('oauth.authorize.mobile_app.title')}</h1>
+        <p className="mt-2 text-sm text-loam-600">
+          {t('oauth.authorize.signed_in_as', { name: account.name, email: account.email })}
+        </p>
+        <p className="mt-4 text-sm text-loam-700">{t('oauth.authorize.mobile_app.body')}</p>
+        <p className="mt-2 text-xs text-loam-500">{t('oauth.authorize.mobile_app.revoke')}</p>
+        <ConsentForm fields={fields}>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button type="submit" name="decision" value="deny" variant="secondary">{t('oauth.authorize.deny')}</Button>
+            <Button type="submit" name="decision" value="approve">{t('oauth.authorize.mobile_app.approve')}</Button>
+          </div>
+        </ConsentForm>
+      </div>
+    </div>
+  )
+}
+
+function ClientConsent({ client, account, requestedAccess, planAllowsDrafts, fields }: Props) {
   const [access, setAccess] = useState<AiAccessLevel>(requestedAccess)
   return (
     <div className="px-4 py-10 sm:py-16">
@@ -48,11 +92,7 @@ export default function OauthAuthorize({ client, account, requestedAccess, planA
           )}
         </p>
 
-        <form method="post" action="/oauth/authorize" className="mt-6">
-          <input type="hidden" name="authenticity_token" value={csrfToken()} />
-          {Object.entries(fields).map(([name, value]) => (
-            <input key={name} type="hidden" name={name} value={value} />
-          ))}
+        <ConsentForm fields={fields}>
           <fieldset>
             <legend className="text-sm font-semibold text-loam-900">{t('oauth.authorize.access_legend')}</legend>
             <div className="mt-2 space-y-2">
@@ -100,7 +140,7 @@ export default function OauthAuthorize({ client, account, requestedAccess, planA
             <Button type="submit" name="decision" value="deny" variant="secondary">{t('oauth.authorize.deny')}</Button>
             <Button type="submit" name="decision" value="approve">{t('oauth.authorize.approve', { client: client.name })}</Button>
           </div>
-        </form>
+        </ConsentForm>
       </div>
     </div>
   )

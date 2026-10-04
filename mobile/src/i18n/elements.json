@@ -1,0 +1,340 @@
+{
+  "existing": {
+    "color": "#6e6355",
+    "elements": {
+      "building": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#6e6355",
+        "pickable": true
+      },
+      "existing_tree": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#58684c",
+        "pickable": true
+      },
+      "existing_hedge": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#58684c",
+        "pickable": true
+      },
+      "wall": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#554c3f",
+        "pickable": true
+      },
+      "slope_break": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#946614",
+        "pickable": true
+      },
+      "wet_area": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#3b7ea1",
+        "pickable": true
+      },
+      "path_existing": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#8a6f47",
+        "pickable": true
+      },
+      "land_cover": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#899e79",
+        "pickable": true
+      }
+    }
+  },
+  "water": {
+    "color": "#2b7bb9",
+    "elements": {
+      "pond": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#2b7bb9",
+        "pickable": true
+      },
+      "swale": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#2b7bb9",
+        "pickable": true
+      },
+      "ditch": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#1f5f8b",
+        "pickable": true
+      },
+      "water_tank": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#2b7bb9",
+        "pickable": true
+      },
+      "well": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#1f5f8b",
+        "pickable": true
+      },
+      "spring": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#2b7bb9",
+        "pickable": true
+      },
+      "rain_garden": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#4a90c2",
+        "pickable": true
+      }
+    }
+  },
+  "access": {
+    "color": "#b8851a",
+    "elements": {
+      "path": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#b8851a",
+        "pickable": true
+      },
+      "track": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#946614",
+        "pickable": true
+      },
+      "gate": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#b8851a",
+        "pickable": true
+      },
+      "parking": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#b8851a",
+        "pickable": true
+      }
+    }
+  },
+  "structures": {
+    "color": "#5b5781",
+    "elements": {
+      "greenhouse": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#5b5781",
+        "pickable": true
+      },
+      "shelter": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#5b5781",
+        "pickable": true
+      },
+      "shed": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#4a4668",
+        "pickable": true
+      },
+      "compost": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#6e6355",
+        "pickable": true
+      },
+      "raised_bed": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#8a6f47",
+        "pickable": true
+      },
+      "terrace": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#726b9f",
+        "pickable": true
+      },
+      "playground": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#9189b8",
+        "pickable": true
+      },
+      "fence": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#5b5781",
+        "pickable": true
+      },
+      "hedge": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#3d7d42",
+        "pickable": true
+      },
+      "windbreak": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#2f6334",
+        "pickable": true
+      }
+    }
+  },
+  "animals": {
+    "color": "#946614",
+    "elements": {
+      "paddock": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#946614",
+        "pickable": true
+      },
+      "poultry_house": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#946614",
+        "pickable": true
+      },
+      "beehive": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#d9a527",
+        "pickable": true
+      }
+    }
+  },
+  "networks": {
+    "color": "#c03c28",
+    "elements": {
+      "water_pipe": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#2563eb",
+        "pickable": true
+      },
+      "electric_line": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#d97706",
+        "pickable": true
+      },
+      "gas_line": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#ca8a04",
+        "pickable": true
+      },
+      "ethernet_line": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#7c3aed",
+        "pickable": true
+      },
+      "valve": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#2563eb",
+        "pickable": true
+      },
+      "meter": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#2563eb",
+        "pickable": true
+      },
+      "socket": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#d97706",
+        "pickable": true
+      },
+      "tap": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#2563eb",
+        "pickable": true
+      }
+    }
+  },
+  "notes": {
+    "color": "#726b9f",
+    "elements": {
+      "note_point": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#726b9f",
+        "pickable": true
+      },
+      "sketch": {
+        "geometries": [
+          "LineString",
+          "MultiLineString"
+        ],
+        "color": "#ffffff",
+        "pickable": false
+      },
+      "measure": {
+        "geometries": [
+          "LineString",
+          "Polygon"
+        ],
+        "color": "#c97b3d",
+        "pickable": false
+      }
+    }
+  }
+}

@@ -1,0 +1,336 @@
+{
+  "mobile": {
+    "common": {
+      "back": "Retour",
+      "close": "Fermer",
+      "cancel": "Annuler"
+    },
+    "roles": {
+      "owner": "Propriétaire",
+      "editor": "Éditeur",
+      "viewer": "Lecteur"
+    },
+    "sign_in": {
+      "title": "Ton terrain dans la poche",
+      "intro": "Retrouve tes cartes Semisto Designer sur le terrain, même sans réseau : où tu es, ce qui est planté, ce qu'il reste à faire.",
+      "button": "Se connecter",
+      "how": "La connexion se fait sur designer.semisto.org, avec ton compte Google ou un lien reçu par e-mail.",
+      "offline": "Pas de réseau : connecte-toi une première fois avec une connexion, puis l'app fonctionne hors ligne.",
+      "denied": "Connexion annulée. Tu peux réessayer quand tu veux.",
+      "failed": "La connexion n'a pas abouti. Réessaie dans un instant."
+    },
+    "maps": {
+      "title": "Mes cartes",
+      "empty": "Aucune carte pour l'instant. Crée ta première carte sur designer.semisto.org : elle apparaîtra ici.",
+      "offline": "Hors ligne : voici tes cartes telles qu'au dernier passage.",
+      "failed": "Impossible de mettre à jour la liste. Tire vers le bas pour réessayer.",
+      "updated": "modifiée le %{date}",
+      "read_only_by_plan": "Carte en lecture seule : elle dépasse le nombre de cartes de ta formule.",
+      "download": "Télécharger pour le terrain",
+      "download_retry": "Téléchargement interrompu, réessayer",
+      "downloading": "Téléchargement… %{percent} %",
+      "downloaded": "Disponible hors ligne"
+    },
+    "account": {
+      "title": "Mon compte",
+      "unknown": "Compte Semisto Designer",
+      "website": "Ouvrir designer.semisto.org",
+      "pending_changes": {
+        "one": "%{count} modification attend encore d'être envoyée : si tu te déconnectes maintenant, elle sera perdue.",
+        "other": "%{count} modifications attendent encore d'être envoyées : si tu te déconnectes maintenant, elles seront perdues."
+      },
+      "sign_out": "Se déconnecter"
+    },
+    "terrain": {
+      "loading": "Chargement de la carte…",
+      "not_found": "Cette carte n'existe plus, ou tu n'y as plus accès.",
+      "offline_not_downloaded": "Pas de réseau, et cette carte n'a pas été téléchargée. Télécharge-la avant d'aller sur le terrain.",
+      "synced": "Tout est enregistré",
+      "offline": "Hors ligne",
+      "sending": {
+        "one": "Envoi de %{count} modification…",
+        "other": "Envoi de %{count} modifications…"
+      },
+      "waiting": {
+        "one": "%{count} modification en attente du réseau",
+        "other": "%{count} modifications en attente du réseau"
+      },
+      "failed": {
+        "one": "%{count} modification refusée : voir",
+        "other": "%{count} modifications refusées : voir"
+      },
+      "follow": "Suivre ma position",
+      "distance": "à %{distance} %{direction}",
+      "open": "Ouvrir",
+      "viewer": "Tu consultes cette carte : tu peux la parcourir et commenter ses éléments."
+    },
+    "actions": {
+      "photo": "Photo",
+      "plant": "Planter",
+      "record": "Relever",
+      "identify": "Identifier"
+    },
+    "photo": {
+      "saved_title": "Photo gardée",
+      "saved": "Elle sera ajoutée aux photos de la carte, à l'endroit où tu es.",
+      "saved_feature": "Elle sera ajoutée aux photos de cet élément."
+    },
+    "feature": {
+      "untitled": "Élément",
+      "gone": "Cet élément n'est plus sur la carte.",
+      "not_sent": "Pas encore envoyé : il le sera dès que le réseau revient.",
+      "to_plant": "À planter",
+      "planted_today": "Planté aujourd'hui",
+      "photos": "Photos",
+      "no_photos": "Pas encore de photo.",
+      "add_photo": "Prendre une photo",
+      "retake_photo": "Reprendre la photo",
+      "comments": "Commentaires",
+      "no_comments": "Pas encore de commentaire.",
+      "comment_placeholder": "Une remarque, une question…",
+      "send_comment": "Commenter",
+      "pending": "en attente d'envoi",
+      "history_offline": "L'historique s'affichera quand tu auras du réseau."
+    },
+    "plant": {
+      "title": "Planter ici",
+      "locating": "Recherche de ta position…",
+      "no_position": "Position introuvable. Autorise la localisation et sors à découvert, puis réessaie.",
+      "position": "Le plant sera placé où tu es (à %{accuracy} près).",
+      "position_unknown_accuracy": "Le plant sera placé où tu es.",
+      "search": "Chercher une espèce",
+      "no_match": "Aucune espèce de cette carte ne correspond. Ajoute-la à la palette sur le site, ou utilise « Identifier ».",
+      "planted_today": "Planté aujourd'hui",
+      "save": "Placer le plant"
+    },
+    "identify": {
+      "title": "Identifier une plante",
+      "for_plant": "Espèce de : %{name}",
+      "new_plant": "Une plante sans espèce ? Pl@ntNet propose des noms, tu choisis, puis tu la places sur la carte.",
+      "offline": "L'identification a besoin du réseau. Prends tes photos maintenant et identifie-les plus tard, ou reviens quand tu captes.",
+      "remove_hint": "appui long pour retirer"
+    },
+    "record": {
+      "title": "Relever",
+      "point": "Un point",
+      "point_intro": "Une source, un arbre remarquable, une zone humide, un problème à noter : enregistré là où tu es.",
+      "point_button": "Relever ce point",
+      "trace": "Une trace",
+      "trace_intro": "Marche le long d'une haie, d'un chemin ou d'une limite. La trace continue écran éteint.",
+      "trace_start": "Commencer la trace",
+      "trace_stop": "Terminer la trace",
+      "tracing_hint": "Marche à allure normale. Tu peux éteindre l'écran : la trace continue.",
+      "points": {
+        "one": "%{count} point",
+        "other": "%{count} points"
+      },
+      "accuracy": "précision %{accuracy}",
+      "too_short": "Trace trop courte : marche quelques mètres de plus, à découvert.",
+      "no_permission": "Autorise la localisation pour enregistrer une trace.",
+      "cancel_title": "Abandonner la trace ?",
+      "cancel_body": "Les points enregistrés seront perdus.",
+      "keep_going": "Continuer",
+      "discard": "Abandonner",
+      "as_line": "Une ligne",
+      "as_surface": "Une surface fermée",
+      "length": "Longueur : %{length}",
+      "area": "Surface : %{area} m²",
+      "kind": "Ce que c'est",
+      "name": "Nom",
+      "name_placeholder": "Facultatif",
+      "notes": "Notes",
+      "notes_placeholder": "Ce que tu vois, ce qu'il faudrait faire…",
+      "save": "Ajouter à la carte"
+    },
+    "outbox": {
+      "title": "Envois",
+      "online": "Tes modifications partent dès qu'elles sont faites.",
+      "offline": "Hors ligne : tes modifications sont gardées sur le téléphone et partiront au retour du réseau.",
+      "empty": "Rien en attente : tout est enregistré.",
+      "send_now": "Envoyer maintenant",
+      "waiting": "En attente d'envoi",
+      "refused": "Refusé par le serveur : %{reason}",
+      "parent_failed": "Pas envoyé : l'élément auquel il se rapporte a été refusé.",
+      "discard": "Abandonner",
+      "discard_title": "Abandonner cette modification ?",
+      "discard_body": "Elle ne sera jamais envoyée.",
+      "ops": {
+        "createFeature": "Nouvel élément",
+        "updateFeature": "Modification d'un élément",
+        "uploadPhoto": "Photo",
+        "createObservation": "Observation de reprise",
+        "createComment": "Commentaire"
+      }
+    },
+    "trace": {
+      "notification_title": "Trace en cours",
+      "notification_body": "Semisto Designer enregistre ta trace."
+    }
+  },
+  "plants": {
+    "strata": {
+      "canopy": "Canopée",
+      "sub_canopy": "Arborée basse",
+      "shrub": "Arbustive",
+      "herbaceous": "Herbacée",
+      "ground_cover": "Couvre-sol",
+      "vine": "Grimpantes",
+      "root": "Rhizosphère",
+      "aquatic": "Aquatique"
+    }
+  },
+  "plant_feature": {
+    "title": "Plante",
+    "species": "Espèce",
+    "variety": "Variété",
+    "variety_none": "Espèce type (sans variété)",
+    "choose": "Choisir l'espèce",
+    "choose_placeholder": "Choisir dans la palette…",
+    "no_species": "Aucune espèce : ce plant n'est pas compté dans la liste.",
+    "open_sheet": "Voir la fiche",
+    "crown": "Couronne adulte ≈ %{value} m",
+    "crown_indicative": "valeur moyenne de la strate",
+    "planted_on": "Planté le %{date}",
+    "mark_planted": "Marquer comme planté",
+    "planted_date": "Date de plantation",
+    "unmark": "Annuler",
+    "planted": "Plant marqué comme planté."
+  },
+  "plant_observations": {
+    "title": "Suivi de reprise",
+    "add": "Noter une observation",
+    "observed_on": "Date",
+    "survival": "Reprise",
+    "survivals": {
+      "established": "Repris",
+      "struggling": "En difficulté",
+      "dead": "Mort"
+    },
+    "vigor": "Vigueur",
+    "vigor_hint": "De 1 (chétif) à 5 (vigoureux)",
+    "vigors": {
+      "1": "Chétif",
+      "2": "Faible",
+      "3": "Moyen",
+      "4": "Bon",
+      "5": "Vigoureux"
+    },
+    "note": "Note",
+    "note_placeholder": "Feuillage, dégâts, paillage, arrosage…",
+    "photo": "Photo",
+    "choose_photo": "Ajouter une photo (facultatif)",
+    "save": "Enregistrer",
+    "saved": "Observation enregistrée.",
+    "deleted": "Observation supprimée.",
+    "delete": "Supprimer l'observation",
+    "confirm_delete": "Supprimer cette observation ?",
+    "empty": "Pas encore d'observation.",
+    "plant_first": "Marquez d'abord ce plant comme planté pour suivre sa reprise.",
+    "by": "par %{name}"
+  },
+  "editor": {
+    "layers": {
+      "existing": "Existant",
+      "water": "Eau",
+      "access": "Accès",
+      "structures": "Structures",
+      "plants": "Plantes",
+      "animals": "Animaux",
+      "networks": "Réseaux",
+      "notes": "Notes"
+    },
+    "kinds": {
+      "building": "Bâtiment",
+      "existing_tree": "Arbre existant",
+      "existing_hedge": "Haie existante",
+      "wall": "Mur ou muret",
+      "slope_break": "Rupture de pente",
+      "wet_area": "Zone humide",
+      "path_existing": "Chemin existant",
+      "land_cover": "Occupation du sol",
+      "pond": "Mare",
+      "swale": "Baissière",
+      "ditch": "Fossé",
+      "water_tank": "Citerne",
+      "well": "Puits",
+      "spring": "Source",
+      "rain_garden": "Jardin de pluie",
+      "path": "Cheminement",
+      "track": "Chemin carrossable",
+      "gate": "Portail ou barrière",
+      "parking": "Stationnement",
+      "greenhouse": "Serre",
+      "shelter": "Abri",
+      "shed": "Cabane ou remise",
+      "compost": "Compost",
+      "raised_bed": "Bac surélevé",
+      "terrace": "Terrasse",
+      "playground": "Aire de jeux",
+      "fence": "Clôture",
+      "hedge": "Haie à planter",
+      "windbreak": "Brise-vent",
+      "paddock": "Parc à animaux",
+      "poultry_house": "Poulailler",
+      "beehive": "Ruche",
+      "water_pipe": "Conduite d'eau",
+      "electric_line": "Câble électrique",
+      "gas_line": "Conduite de gaz",
+      "ethernet_line": "Câble réseau",
+      "valve": "Vanne",
+      "meter": "Compteur",
+      "socket": "Prise",
+      "tap": "Robinet",
+      "note_point": "Note",
+      "sketch": "Croquis",
+      "zone": "Zone",
+      "line": "Ligne",
+      "point": "Point",
+      "measure": "Mesure",
+      "plant": "Plante",
+      "patch": "Patch"
+    }
+  },
+  "plantnet": {
+    "errors": {
+      "not_configured": "L'identification par photo n'est pas activée sur ce serveur.",
+      "unavailable": "Pl@ntNet ne répond pas pour le moment. Réessayez dans quelques minutes, ou choisissez l'espèce dans la palette.",
+      "quota": "Le service d'identification a atteint sa limite. Réessayez plus tard, ou choisissez l'espèce dans la palette.",
+      "rate_limited": "Trop d'identifications d'un coup. Patientez une minute, puis recommencez.",
+      "no_images": "Choisissez au moins une photo de la plante.",
+      "too_many": "%{max} photos au plus, toutes de la même plante.",
+      "not_a_photo": "« %{name} » n'est pas une photo JPEG ou PNG.",
+      "too_large": "« %{name} » est trop lourde : %{max} Mo au plus."
+    },
+    "section": {
+      "title": "Identifier l'espèce par photo",
+      "intro": "Photographiez une seule plante, de près : une feuille, une fleur, un fruit ou l'écorce. Pl@ntNet propose des espèces, et c'est vous qui décidez.",
+      "help": "Bien photographier une plante",
+      "not_configured": "L'identification par photo n'est pas activée sur ce serveur. En attendant, choisissez l'espèce dans la palette.",
+      "take": "Prendre une photo",
+      "choose": "Choisir des photos",
+      "count": "%{count} sur %{max} photos",
+      "remove": "Retirer cette photo",
+      "photo_alt": "Photo %{index} de la plante à identifier",
+      "identify": "Identifier",
+      "identifying": "Identification en cours…",
+      "resizing": "Préparation des photos…",
+      "network_error": "Impossible de joindre le serveur. Vérifiez votre connexion, puis recommencez.",
+      "too_many": "Vous pouvez joindre %{max} photos au plus : les premières sont gardées."
+    },
+    "results": {
+      "title": "Espèces possibles",
+      "score": "%{percent} % de confiance",
+      "common_names": "Aussi appelée : %{names}",
+      "family": "Famille : %{family}",
+      "in_catalogue": "Dans le catalogue : %{name}",
+      "choose": "C'est elle",
+      "not_in_catalogue": "Cette espèce n'est pas encore dans le catalogue : elle ne peut pas être choisie pour l'instant.",
+      "none": "Aucune ne correspond",
+      "retry": "Recommencer avec d'autres photos",
+      "empty": "Pl@ntNet n'a reconnu aucune plante sur ces photos. Essayez avec une photo plus proche et bien nette d'une feuille ou d'une fleur.",
+      "hint": "Rien n'est enregistré tant que vous n'avez pas choisi.",
+      "saved": "Espèce enregistrée : %{name}.",
+      "credit": "Identification : "
+    }
+  }
+}
