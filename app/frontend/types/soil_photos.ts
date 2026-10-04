@@ -64,6 +64,7 @@ export type SoilParameterReading = {
   unit: string | null
   band: SoilBand
   explanation: string
+  sources: { label: string; url: string }[]
 }
 
 export type SoilTextureReading = {
@@ -108,7 +109,7 @@ export type SoilSamplesResponse = {
   samples: SoilSampleData[]
   analyses: boolean
   fields: SoilFieldSpec[]
-  bands: Record<string, { low_below: number; high_above: number }> | null
+  bands: Record<string, { low_below: number; high_above?: number }> | null
   provenance: string
 }
 

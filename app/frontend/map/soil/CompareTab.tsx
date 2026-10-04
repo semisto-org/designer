@@ -69,7 +69,7 @@ export default function CompareTab() {
                 <tr key={key}>
                   <th scope="row" className="sticky left-0 z-10 w-28 min-w-28 max-w-28 bg-white px-3 py-2 text-left font-normal">
                     <span className="block text-loam-800">{t(`soil.fields.${key}.short`)}{units.get(key) ? <span className="text-xs text-loam-400"> ({units.get(key)})</span> : null}</span>
-                    {limits && <span className="block text-[11px] leading-tight text-loam-400">{t('soil.compare.limits', { low: formatValue(limits.low_below), high: formatValue(limits.high_above) })}</span>}
+                    {limits && <span className="block text-[11px] leading-tight text-loam-400">{limits.high_above == null ? t('soil.compare.limits_low', { low: formatValue(limits.low_below) }) : t('soil.compare.limits', { low: formatValue(limits.low_below), high: formatValue(limits.high_above) })}</span>}
                   </th>
                   {columns.map((sample) => {
                     const value = sample.results[key]

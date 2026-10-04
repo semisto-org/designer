@@ -4,12 +4,25 @@ class SoilAnalysis::InterpretationTest < ActiveSupport::TestCase
   I = SoilAnalysis::Interpretation
 
   test "bands: below the limit is low, above is high, between (limits included) is ok" do
-    assert_equal "low", I.band("ph_water", 5.4)
-    assert_equal "ok", I.band("ph_water", 5.5)
+    assert_equal "low", I.band("ph_water", 5.9)
+    assert_equal "ok", I.band("ph_water", 6.0)
     assert_equal "ok", I.band("ph_water", 7.5)
     assert_equal "high", I.band("ph_water", 7.6)
-    assert_equal "low", I.band("organic_matter_pct", 1.2)
+    assert_equal "low", I.band("organic_matter_pct", 3.0)
     assert_equal "high", I.band("c_n_ratio", 15)
+  end
+
+  test "calcium has no upper limit: no Walloon reference gives one" do
+    assert_equal "low", I.band("ca_mg_100g", 120)
+    assert_equal "ok", I.band("ca_mg_100g", 3000)
+  end
+
+  test "every banded parameter names its references" do
+    I::BANDED.each do |key|
+      sources = I.sources(key)
+      assert_not_empty sources, key
+      assert sources.all? { |s| s[:url].start_with?("https://") && s[:label].present? }, key
+    end
   end
 
   test "no band for the texture fractions, unknown keys or missing values" do
@@ -32,7 +45,7 @@ class SoilAnalysis::InterpretationTest < ActiveSupport::TestCase
 
   test "reads a sample: parameters in order, bands, explanations and the texture class" do
     sample = SoilSample.new(map: maps(:ahinvaux), label: "Verger", results: {
-      "ph_water" => "5,1", "organic_matter_pct" => 3.2, "c_n_ratio" => 15,
+      "ph_water" => "5,1", "organic_matter_pct" => 4.2, "c_n_ratio" => 15,
       "sand_pct" => 20, "silt_pct" => 65, "clay_pct" => 15
     })
     reading = I.for(sample)
@@ -41,7 +54,8 @@ class SoilAnalysis::InterpretationTest < ActiveSupport::TestCase
     assert_match(/Sol acide/, reading[:parameters].first[:explanation])
     assert_equal "silt_loam", reading[:texture][:key]
     assert_equal "Limon", reading[:texture][:name]
-    assert_equal "semisto, à vérifier", reading[:provenance]
+    assert_includes reading[:provenance], "REQUASUD"
+    assert_includes reading[:parameters].first[:sources].first[:label], "Fourrages Mieux"
   end
 
   test "a sample without results has nothing to read" do
