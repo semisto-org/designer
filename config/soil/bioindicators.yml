@@ -1,0 +1,176 @@
+# Bio-indicator plants of Belgian soils: what a plant growing wild on a plot
+# says about its soil. A short curated list written from general knowledge
+# (ecological indicator values and the permaculture literature), NOT from a
+# single source: provenance "semisto, à vérifier" on every entry. One plant
+# alone proves nothing; look for groups of plants that point the same way.
+#
+# `indicates` uses the keys of fr.soil.indicators in config/locales/soil_photos.fr.yml:
+# compaction, waterlogging, acidic, calcareous, nitrogen_rich, nitrogen_poor,
+# disturbed, dry, fertile, trampled.
+provenance: "semisto, à vérifier"
+plants:
+  - key: pissenlit
+    name: Pissenlit
+    latin: Taraxacum officinale (groupe)
+    indicates: [nitrogen_rich, compaction]
+    note: "Sol riche en azote et souvent tassé. Sa racine pivotante perce et aère les couches dures."
+  - key: plantain_majeur
+    name: Plantain majeur
+    latin: Plantago major
+    indicates: [compaction, trampled]
+    note: "Sol tassé en surface, piétiné ou roulé : chemins, entrées de champ, zones de passage."
+  - key: plantain_lanceole
+    name: Plantain lancéolé
+    latin: Plantago lanceolata
+    indicates: [compaction, nitrogen_poor]
+    note: "Fréquent sur les sols moyens à pauvres, plutôt tassés. Résiste bien à la sécheresse."
+  - key: renouee_oiseaux
+    name: Renouée des oiseaux
+    latin: Polygonum aviculare
+    indicates: [compaction, trampled]
+    note: "Sol très tassé et piétiné : cours, chemins, bords de passage."
+  - key: chiendent
+    name: Chiendent rampant
+    latin: Elymus repens
+    indicates: [compaction, disturbed]
+    note: "Sol travaillé et tassé en profondeur (semelle de labour), souvent après des années de travail du sol."
+  - key: rumex_a_feuilles_obtuses
+    name: Rumex à feuilles obtuses
+    latin: Rumex obtusifolius
+    indicates: [nitrogen_rich, compaction]
+    note: "Sol riche en azote et tassé : surpâturage, zones d'apport de fumier ou de lisier."
+  - key: rumex_crepu
+    name: Rumex crépu
+    latin: Rumex crispus
+    indicates: [waterlogging, compaction]
+    note: "Sol lourd, mal drainé, tassé. L'eau stagne en hiver."
+  - key: chardon_des_champs
+    name: Chardon des champs
+    latin: Cirsium arvense
+    indicates: [disturbed, compaction]
+    note: "Sol remué puis laissé nu, souvent tassé en profondeur. Revient après les travaux du sol."
+  - key: ortie
+    name: Ortie dioïque
+    latin: Urtica dioica
+    indicates: [nitrogen_rich, fertile]
+    note: "Sol riche en azote et en phosphore, humifère. Souvent d'anciens dépôts, tas de compost ou abords d'étable."
+  - key: liseron_des_champs
+    name: Liseron des champs
+    latin: Convolvulus arvensis
+    indicates: [compaction, disturbed]
+    note: "Sol compact en profondeur, travaillé en surface. Sa racine profonde traverse les couches dures."
+  - key: prele_des_champs
+    name: Prêle des champs
+    latin: Equisetum arvense
+    indicates: [waterlogging, acidic]
+    note: "Sol argileux, humide en profondeur, souvent un peu acide et tassé."
+  - key: jonc_epars
+    name: Jonc épars
+    latin: Juncus effusus
+    indicates: [waterlogging, acidic]
+    note: "Sol détrempé une grande partie de l'année, souvent acide et pauvre."
+  - key: reine_des_pres
+    name: Reine-des-prés
+    latin: Filipendula ulmaria
+    indicates: [waterlogging, fertile]
+    note: "Sol humide à engorgé mais riche : bords de fossés, prairies fraîches."
+  - key: renoncule_rampante
+    name: Renoncule rampante
+    latin: Ranunculus repens
+    indicates: [waterlogging, compaction]
+    note: "Sol humide et tassé, surtout au printemps. Typique des prairies piétinées et mal drainées."
+  - key: tussilage
+    name: Tussilage
+    latin: Tussilago farfara
+    indicates: [compaction, waterlogging]
+    note: "Sol argileux, lourd et mal drainé en profondeur, souvent calcaire. Pionnier des sols remaniés."
+  - key: paturin_annuel
+    name: Pâturin annuel
+    latin: Poa annua
+    indicates: [compaction, trampled, disturbed]
+    note: "Sol tassé et piétiné. Colonise vite les zones nues très fréquentées."
+  - key: mouron_des_oiseaux
+    name: Mouron des oiseaux
+    latin: Stellaria media
+    indicates: [nitrogen_rich, fertile, disturbed]
+    note: "Sol meuble, riche en humus et en azote, régulièrement travaillé : typique des potagers bien nourris."
+  - key: capselle
+    name: Capselle bourse-à-pasteur
+    latin: Capsella bursa-pastoris
+    indicates: [disturbed]
+    note: "Sol remué et plutôt pauvre en matière organique. Apparaît sur sol nu."
+  - key: senecon_commun
+    name: Séneçon commun
+    latin: Senecio vulgaris
+    indicates: [nitrogen_rich, disturbed]
+    note: "Sol meuble, riche, régulièrement travaillé."
+  - key: chenopode_blanc
+    name: Chénopode blanc
+    latin: Chenopodium album
+    indicates: [nitrogen_rich, disturbed]
+    note: "Sol riche en azote, souvent après un apport de fumier ou un travail du sol."
+  - key: mauve_sylvestre
+    name: Mauve sylvestre
+    latin: Malva sylvestris
+    indicates: [nitrogen_rich, disturbed]
+    note: "Sol riche et remué : bords de chemins, anciennes zones de dépôt."
+  - key: gaillet_gratteron
+    name: Gaillet gratteron
+    latin: Galium aparine
+    indicates: [nitrogen_rich, fertile, disturbed]
+    note: "Sol riche en azote, meuble et plutôt frais."
+  - key: egopode
+    name: Égopode (herbe aux goutteux)
+    latin: Aegopodium podagraria
+    indicates: [nitrogen_rich, fertile]
+    note: "Sol riche, frais et humifère, à mi-ombre. Difficile à éliminer, mais bon signe de fertilité."
+  - key: petite_oseille
+    name: Petite oseille
+    latin: Rumex acetosella
+    indicates: [acidic, nitrogen_poor, dry]
+    note: "Sol acide, pauvre, sableux ou caillouteux, qui filtre vite l'eau."
+  - key: callune
+    name: Callune
+    latin: Calluna vulgaris
+    indicates: [acidic, nitrogen_poor]
+    note: "Sol très acide et pauvre : landes, sols sableux ou schisteux."
+  - key: fougere_aigle
+    name: Fougère aigle
+    latin: Pteridium aquilinum
+    indicates: [acidic]
+    note: "Sol acide, profond et frais. Colonise les clairières et les sols qui s'acidifient."
+  - key: genet_a_balais
+    name: Genêt à balais
+    latin: Cytisus scoparius
+    indicates: [acidic, nitrogen_poor, dry]
+    note: "Sol acide, léger et pauvre. Légumineuse qui fixe l'azote et prépare le terrain."
+  - key: trefle_blanc
+    name: Trèfle blanc
+    latin: Trifolium repens
+    indicates: [nitrogen_poor, trampled]
+    note: "Sol pauvre en azote (il le fixe lui-même), souvent piétiné ou tondu court."
+  - key: lotier
+    name: Lotier corniculé
+    latin: Lotus corniculatus
+    indicates: [nitrogen_poor, dry, calcareous]
+    note: "Sol maigre, sec, neutre à calcaire. Légumineuse des prairies pauvres."
+  - key: carotte_sauvage
+    name: Carotte sauvage
+    latin: Daucus carota
+    indicates: [dry, nitrogen_poor, calcareous]
+    note: "Sol sec et pauvre, souvent calcaire ou caillouteux."
+  - key: brunelle
+    name: Brunelle commune
+    latin: Prunella vulgaris
+    indicates: [compaction, trampled]
+    note: "Sol tassé, plutôt frais : pelouses piétinées ou tondues court."
+  - key: achillee_millefeuille
+    name: Achillée millefeuille
+    latin: Achillea millefolium
+    indicates: [dry, nitrogen_poor]
+    note: "Sol sec et maigre. Se plaît aussi sur les sols appauvris."
+  - key: coquelicot
+    name: Coquelicot
+    latin: Papaver rhoeas
+    indicates: [disturbed, calcareous]
+    note: "Sol travaillé : ses graines lèvent quand elles remontent à la lumière. Souvent limoneux à calcaire."

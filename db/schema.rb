@@ -140,6 +140,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
     t.index ["user_id"], name: "index_billing_payments_on_user_id"
   end
 
+  create_table "bioindicator_observations", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "observed_by_id"
+    t.string "species_name", null: false
+    t.string "latin_name"
+    t.string "catalog_key"
+    t.bigint "plant_species_id"
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.date "observed_on"
+    t.string "abundance", default: "present", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location"], name: "index_bioindicator_observations_on_location", using: :gist
+    t.index ["map_id", "catalog_key"], name: "index_bioindicator_observations_on_map_id_and_catalog_key"
+    t.index ["map_id"], name: "index_bioindicator_observations_on_map_id"
+    t.index ["observed_by_id"], name: "index_bioindicator_observations_on_observed_by_id"
+  end
+
   create_table "comment_reads", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "commentable_type", null: false
@@ -242,6 +261,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
     t.index ["map_id", "user_id"], name: "index_map_memberships_on_map_id_and_user_id", unique: true
     t.index ["map_id"], name: "index_map_memberships_on_map_id"
     t.index ["user_id"], name: "index_map_memberships_on_user_id"
+  end
+
+  create_table "map_photos", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "uploaded_by_id"
+    t.bigint "photo_album_id"
+    t.bigint "map_feature_id"
+    t.datetime "taken_at"
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.string "location_source"
+    t.float "heading"
+    t.string "caption", limit: 500
+    t.string "source", default: "web", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
+    t.index ["location"], name: "index_map_photos_on_location", using: :gist
+    t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"
+    t.index ["map_id", "checksum"], name: "index_map_photos_on_map_id_and_checksum", unique: true, where: "(checksum IS NOT NULL)"
+    t.index ["map_id", "taken_at"], name: "index_map_photos_on_map_id_and_taken_at"
+    t.index ["map_id"], name: "index_map_photos_on_map_id"
+    t.index ["photo_album_id"], name: "index_map_photos_on_photo_album_id"
+    t.index ["uploaded_by_id"], name: "index_map_photos_on_uploaded_by_id"
   end
 
   create_table "map_publications", force: :cascade do |t|
@@ -438,6 +481,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
     t.index ["map_id"], name: "index_patch_items_on_map_id"
     t.index ["species_id"], name: "index_patch_items_on_species_id"
     t.index ["variety_id"], name: "index_patch_items_on_variety_id"
+  end
+
+  create_table "photo_albums", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_photo_albums_on_map_id"
   end
 
   create_table "plan_purchases", force: :cascade do |t|
@@ -670,6 +723,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "soil_samples", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "created_by_id"
+    t.string "label", null: false
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.integer "depth_from_cm", default: 0, null: false
+    t.integer "depth_to_cm", default: 20, null: false
+    t.string "status", default: "planned", null: false
+    t.string "source", default: "human", null: false
+    t.date "sampled_on"
+    t.string "lab"
+    t.string "lab_reference"
+    t.jsonb "results", default: {}, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_soil_samples_on_created_by_id"
+    t.index ["location"], name: "index_soil_samples_on_location", using: :gist
+    t.index ["map_id", "label"], name: "index_soil_samples_on_map_id_and_label"
+    t.index ["map_id"], name: "index_soil_samples_on_map_id"
+  end
+
   create_table "stripe_events", force: :cascade do |t|
     t.string "stripe_event_id", null: false
     t.string "event_type", null: false
@@ -713,6 +788,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
   add_foreign_key "billing_payments", "plan_purchases"
   add_foreign_key "billing_payments", "plan_subscriptions"
   add_foreign_key "billing_payments", "users"
+  add_foreign_key "bioindicator_observations", "maps"
+  add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
   add_foreign_key "comment_reads", "users"
   add_foreign_key "comment_subscriptions", "users"
   add_foreign_key "comments", "maps"
@@ -727,6 +804,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
   add_foreign_key "map_memberships", "maps"
   add_foreign_key "map_memberships", "users"
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
+  add_foreign_key "map_photos", "map_features", on_delete: :nullify
+  add_foreign_key "map_photos", "maps"
+  add_foreign_key "map_photos", "photo_albums", on_delete: :nullify
+  add_foreign_key "map_photos", "users", column: "uploaded_by_id", on_delete: :nullify
   add_foreign_key "map_publications", "maps"
   add_foreign_key "map_publications", "users", column: "published_by_id"
   add_foreign_key "map_share_links", "maps"
@@ -750,6 +831,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
   add_foreign_key "patch_items", "maps", on_delete: :cascade
   add_foreign_key "patch_items", "plant_species", column: "species_id"
   add_foreign_key "patch_items", "plant_varieties", column: "variety_id"
+  add_foreign_key "photo_albums", "maps"
   add_foreign_key "plan_purchases", "users"
   add_foreign_key "plan_subscriptions", "users"
   add_foreign_key "plant_observations", "map_features", on_delete: :cascade
@@ -764,4 +846,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
   add_foreign_key "service_requests", "users"
   add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify
   add_foreign_key "sessions", "users"
+  add_foreign_key "soil_samples", "maps"
+  add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
 end

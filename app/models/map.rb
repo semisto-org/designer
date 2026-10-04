@@ -35,6 +35,12 @@ class Map < ApplicationRecord
   validates :stage, inclusion: { in: STAGES }
   validate :project_matches_schema, if: :will_save_change_to_project?
 
+  # Photos and soil (understand cycle)
+  has_many :photos, class_name: "MapPhoto", dependent: :destroy
+  has_many :photo_albums, dependent: :destroy
+  has_many :soil_samples, dependent: :destroy
+  has_many :bioindicator_observations, dependent: :destroy
+
   scope :active, -> { where(archived_at: nil) }
 
   after_create :add_owner_membership
