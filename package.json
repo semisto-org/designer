@@ -23,6 +23,7 @@
     "@inertiajs/react": "^3.8.0",
     "@inertiajs/vite": "^3.8.0",
     "@rails/actioncable": "^8.1.400",
+    "@sentry/react": "^11.4.0",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",

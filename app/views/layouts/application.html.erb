@@ -15,6 +15,7 @@
     <% end %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= sentry_meta_tags %>
     <%= yield :head %>
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">

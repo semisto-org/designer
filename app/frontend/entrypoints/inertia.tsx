@@ -1,3 +1,4 @@
+import '@/lib/sentry'
 import { createInertiaApp } from '@inertiajs/react'
 import AppLayout from '@/layouts/AppLayout'
 import PublicLayout from '@/layouts/PublicLayout'
