@@ -1,4 +1,4 @@
-import { Bot, ClipboardList, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Mountain, Route, Sprout } from 'lucide-react'
+import { Bot, ClipboardList, CloudSun, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -28,6 +28,8 @@ import ObservationsSection from '@/map/plants/ObservationsSection'
 import PatchSection from '@/map/plants/PatchSection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
 import { isPatch, isPlant } from '@/map/plants/properties'
+import ClimatePanel from '@/map/panels/ClimatePanel'
+import FinancesPanel from '@/map/panels/FinancesPanel'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -43,6 +45,9 @@ export const PANELS: EditorPanel[] = [
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
   { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'share', component: ActionsPanel, order: 20 },
   { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
+  { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'understand', component: ClimatePanel, order: 40 },
+  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 90 },
+  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'design', component: FinancesPanel, order: 80 },
 ]
 
 // Register inspector sections for a selected feature here.

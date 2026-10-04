@@ -29,6 +29,7 @@ class Map < ApplicationRecord
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
   has_many :service_requests, dependent: :destroy
+  has_one :financial_plan, dependent: :destroy
 
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }

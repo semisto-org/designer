@@ -18,17 +18,28 @@ module MapPlanting
 
   def planting_alerts = PlantingAlerts.new(planted_quantities)
 
-  # Hardiness of the site: the region's climate setting for now (a future
-  # climate area can refine it per map).
+  # Hardiness of the site: the climate normals at the map's location (USDA
+  # zone of the coldest night of the year), else the region's setting.
   def hardiness_zone
-    zone = region&.setting(:climate, :hardiness_zone)
-    zone.present? ? zone.to_i : nil
+    site_climate&.dig(:zone, :number) || region&.setting(:climate, :hardiness_zone).presence&.to_i
   end
 
   def min_temperature_c
-    temperature = region&.setting(:climate, :min_temperature_c)
-    temperature.present? ? temperature.to_f : PlantVocabulary.min_temperature_for_zone(hardiness_zone)
+    site_climate&.dig(:normals, :extreme_min_c)&.to_f ||
+      region&.setting(:climate, :min_temperature_c).presence&.to_f ||
+      PlantVocabulary.min_temperature_for_zone(hardiness_zone)
   end
 
   def country_code = region&.country_code
+
+  private
+    def site_climate
+      return @site_climate if defined?(@site_climate)
+      point = center || boundary&.centroid
+      result = point && Providers::Climate.for(region).current_normals(point)
+      @site_climate = result&.available? ? result.data.deep_symbolize_keys : nil
+    rescue StandardError => error
+      Rails.logger.warn("[plants] site climate unavailable: #{error.class}: #{error.message}")
+      @site_climate = nil
+    end
 end

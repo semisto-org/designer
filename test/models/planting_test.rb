@@ -9,6 +9,20 @@ class PlantingTest < ActiveSupport::TestCase
     @patch = @map.features.create!(layer: "plants", kind: "patch", name: "Lisière", geometry: square(lng: 4.904, lat: 50.3395, size: 0.0002))
   end
 
+  test "the site's hardiness comes from the climate at the map, else from the region" do
+    assert_equal 7, @map.hardiness_zone
+    data = { zone: { number: 6 }, normals: { extreme_min_c: -21.0 } }
+    climate = Object.new
+    climate.define_singleton_method(:current_normals) { |_point| Providers::Climate::Result.ok(data, provider: "static") }
+    original = Providers::Climate.method(:for)
+    Providers::Climate.define_singleton_method(:for) { |*| climate }
+    map = Map.find(@map.id)
+    assert_equal 6, map.hardiness_zone
+    assert_equal(-21.0, map.min_temperature_c)
+  ensure
+    Providers::Climate.define_singleton_method(:for, original) if original
+  end
+
   def plant!(species, variety: nil, lng: 4.906, lat: 50.341, planted_on: nil)
     @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng:, lat:),
                           properties: { "species_id" => species.id, "variety_id" => variety&.id, "planted_on" => planted_on }.compact)

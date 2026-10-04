@@ -80,3 +80,6 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end
+
+# Spreadsheet exports (financial dashboard for banks and funders)
+gem "caxlsx", "~> 4.5"

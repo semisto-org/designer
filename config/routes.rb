@@ -165,6 +165,18 @@ Rails.application.routes.draw do
     end
   end
   # --- end plants ---
+  # --- climate-finance ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :climate, only: :show do
+        get :forecast
+      end
+      resource :finances, only: %i[show update] do
+        post :sync
+      end
+    end
+  end
+  # --- end climate-finance ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
