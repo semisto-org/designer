@@ -70,7 +70,12 @@ class MapsController < ApplicationController
   private
     def map_params
       permitted = params.require(:map).permit(:name, :description, :address, :stage, :zoom, :lock_version, parcels: [])
-      permitted[:boundary] = params[:map][:boundary] if params[:map].key?(:boundary)
+      if params[:map].key?(:boundary)
+        # GeoJSON is free-form: hand the model a plain hash, never nested Parameters
+        # (mass assignment would raise UnfilteredParameters on them).
+        boundary = params[:map][:boundary]
+        permitted[:boundary] = boundary.respond_to?(:to_unsafe_h) ? boundary.to_unsafe_h : boundary
+      end
       permitted[:center] = point_from(params[:map][:center]) if params[:map][:center].present?
       permitted
     end
