@@ -35,6 +35,10 @@ Sans `STRIPE_SECRET_KEY`, les paiements sont désactivés et tout est débloqué
 
 Autres variables : `SEMISTO_CONTACT_EMAIL` (adresse affichée sur le site et destinataire des demandes, `designer@semisto.org` par défaut). `bin/rails billing:payments` liste les paiements enregistrés (base du partage de revenus avec Semisto) ; `bin/rails billing:renewal_reminders` envoie les rappels d'échéance à la main (une tâche récurrente le fait chaque jour en production).
 
+## Mise en production
+
+Toutes les variables d'environnement, l'hébergement et la liste des vérifications avant l'ouverture : [docs/mise-en-production.md](docs/mise-en-production.md).
+
 ## Licences
 
 Code : AGPL-3.0. Le code repris de [Claudy](https://github.com/les4sources/claudy) garde sa mention MIT (© Fondation Les 4 Sources).
