@@ -1,5 +1,6 @@
 # Semisto Designer: the public site and the help center are open to crawlers;
-# maps, the account and billing pages are private.
+# maps, accounts, teams and admin pages are private. Public map views (/p/)
+# stay crawlable so that their noindex tag is seen.
 User-agent: *
 Allow: /
 Disallow: /maps
@@ -7,5 +8,13 @@ Disallow: /account
 Disallow: /billing
 Disallow: /session
 Disallow: /webhooks
+Disallow: /plants
+Disallow: /teams
+Disallow: /admin
+Disallow: /invitations
+Disallow: /join
+Disallow: /magic
+Disallow: /oauth
+Disallow: /mcp
 
 Sitemap: https://designer.semisto.org/sitemap.xml
