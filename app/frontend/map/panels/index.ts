@@ -1,4 +1,4 @@
-import { Bot, ClipboardList, CloudSun, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout } from 'lucide-react'
+import { Bot, ClipboardList, CloudSun, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -38,16 +38,15 @@ export const PANELS: EditorPanel[] = [
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'map', component: LayersPanel, order: 20 },
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'understand', component: ReliefPanel, order: 30 },
+  { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'understand', component: ClimatePanel, order: 40 },
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
-  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ClipboardList, group: 'design', component: PlantListPanel, order: 30 },
+  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'design', component: PlantListPanel, order: 30 },
+  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'design', component: FinancesPanel, order: 80 },
   { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 90 },
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
   { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'share', component: ActionsPanel, order: 20 },
   { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
-  { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'understand', component: ClimatePanel, order: 40 },
-  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 90 },
-  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'design', component: FinancesPanel, order: 80 },
 ]
 
 // Register inspector sections for a selected feature here.
