@@ -60,9 +60,12 @@ COPY . .
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
-# Precompiling assets (Vite build included) without requiring production secrets
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile && \
-    rm -rf node_modules tmp/cache
+# Precompiling assets (Vite build included) without requiring production secrets.
+# node_modules is already installed above: vite_ruby must not run `npm ci` a
+# second time. Keep tmp/cache/bootsnap (the two precompile steps above write
+# there); only Vite's build metadata goes.
+RUN SECRET_KEY_BASE_DUMMY=1 VITE_RUBY_SKIP_ASSETS_PRECOMPILE_INSTALL=true ./bin/rails assets:precompile && \
+    rm -rf node_modules tmp/cache/vite
 
 
 
