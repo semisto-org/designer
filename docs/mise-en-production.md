@@ -86,6 +86,8 @@ Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la car
 | `GEOCODER_PROVIDER` | `nominatim` (défaut), `photon` ou `none`. |
 | `GEOCODER_URL` | Facultatif : autre serveur. |
 | `GEOCODER_USER_AGENT_EMAIL` | Adresse de contact exigée par la règle d'usage de Nominatim. |
+| `GEOCODER_FALLBACK` | `photon` (défaut avec Nominatim) ou `none` : interrogé quand Nominatim ne trouve rien ou ne répond pas (Photon tolère les fautes, « Fonds » pour « Fond »). |
+| `GEOCODER_FALLBACK_URL` | Facultatif : autre serveur Photon. |
 | `MAP_RELAY_EXTRA_HOSTS` | Facultatif : autres serveurs de couches que `geoservices.wallonie.be`. |
 
 ### Catalogue de plantes
