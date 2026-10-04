@@ -15,6 +15,15 @@ class GeocodingControllerTest < ActionDispatch::IntegrationTest
     assert_equal 18, first["zoom"]
   end
 
+  test "on the European base, searches every country" do
+    load Rails.root.join("db/seeds/01_regions.rb").to_s
+    stub_request(:get, %r{nominatim\.openstreetmap\.org/search}).to_return(json_response("nominatim_search.json"))
+    sign_in_as users(:michael)
+    get geocode_path, params: { q: "Rue de Lille 3 Paris", region_id: Region.europe.id }, as: :json
+    assert_response :success
+    assert_requested(:get, %r{nominatim\.openstreetmap\.org/search}) { |request| !request.uri.query_values.key?("countrycodes") }
+  end
+
   test "upstream down: 503 with a French message" do
     stub_request(:get, %r{nominatim}).to_return(status: 503)
     sign_in_as users(:michael)

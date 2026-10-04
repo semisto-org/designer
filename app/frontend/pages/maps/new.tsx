@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input, Textarea } from '@/components/ui/Field'
+import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { MapView } from '@/map/MapView'
 import { useMapInstance } from '@/map/MapContext'
@@ -29,7 +30,7 @@ type FormData = {
  * on the aerial photo), and what to do next — pick the cadastral parcels,
  * draw the outline or import a file.
  */
-export default function MapsNew({ region, layers = [] }: { region: RegionData; layers?: RegionLayerData[] }) {
+export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }: { region: RegionData; layers?: RegionLayerData[] }) {
   const form = useForm<FormData>({
     map: { name: '', address: '', description: '', center: null, zoom: null },
     next: 'parcels',
@@ -37,6 +38,22 @@ export default function MapsNew({ region, layers = [] }: { region: RegionData; l
   const { map } = form.data
   const setMap = (patch: Partial<FormData['map']>) => form.setData('map', { ...form.data.map, ...patch })
   const [focus, setFocus] = useState<Focus | null>(null)
+  // The region of the chosen place (its base maps: the aerial photo where
+  // one exists); the page opens on the pan-European base.
+  const [located, setLocated] = useState<{ region: RegionData; layers: RegionLayerData[] } | null>(null)
+  const region = located?.region ?? baseRegion
+  const layers = located?.layers ?? baseLayers
+  const lng = map.center?.[0]
+  const lat = map.center?.[1]
+
+  useEffect(() => {
+    if (lng === undefined || lat === undefined) return
+    const controller = new AbortController()
+    api<{ region: RegionData; layers: RegionLayerData[] }>(`/regions/locate?lng=${lng}&lat=${lat}`, { signal: controller.signal })
+      .then((data) => setLocated((current) => (current?.region.id === data.region.id ? current : data)))
+      .catch(() => undefined)
+    return () => controller.abort()
+  }, [lng, lat])
 
   function choose(result: GeocodeResult) {
     const center: LngLat = [result.lng, result.lat]
@@ -48,7 +65,7 @@ export default function MapsNew({ region, layers = [] }: { region: RegionData; l
     <div className="mx-auto max-w-2xl">
       <Head title={t('maps.new.title')} />
       <h1 className="text-2xl">{t('maps.new.title')}</h1>
-      <p className="mt-2 text-loam-500">{t('map_data.new.intro', { region: region.name })}</p>
+      <p className="mt-2 text-loam-500">{t('map_data.new.intro')}</p>
       <Card className="mt-6">
         <form
           className="space-y-5"
@@ -69,7 +86,7 @@ export default function MapsNew({ region, layers = [] }: { region: RegionData; l
 
           <div className="space-y-2">
             <AddressSearch
-              regionId={region.id}
+              regionId={baseRegion.id}
               label={t('map_data.new.address_label')}
               placeholder={t('map_data.new.address_placeholder')}
               onSelect={choose}
@@ -77,8 +94,15 @@ export default function MapsNew({ region, layers = [] }: { region: RegionData; l
             <p className="text-xs text-loam-500">
               {map.center ? t('map_data.new.address_chosen') : t('map_data.new.address_hint')}
             </p>
+            {located && (
+              <p className="text-xs text-loam-600">
+                {located.region.key === 'europe'
+                  ? t('map_data.new.region_europe')
+                  : t('map_data.new.region_found', { region: located.region.name })}
+              </p>
+            )}
             <div className="relative h-56 overflow-hidden rounded-lg ring-1 ring-loam-200 sm:h-64">
-              <MapView className="absolute inset-0" center={region.center} zoom={region.defaultZoom}>
+              <MapView className="absolute inset-0" center={baseRegion.center} zoom={baseRegion.defaultZoom}>
                 <PreviewMap layers={layers} region={region} pin={map.center} focus={focus} onMove={(center) => setMap({ center })} />
               </MapView>
             </div>

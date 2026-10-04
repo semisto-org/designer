@@ -21,6 +21,23 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:bob), Map.last.owner
   end
 
+  test "creates a map in the region of its place" do
+    load Rails.root.join("db/seeds/01_regions.rb").to_s
+    sign_in_as users(:bob)
+    post maps_path, params: { map: { name: "Jardin lillois", center: [ 3.06, 50.63 ] } }
+    assert_equal "france", Map.last.region.key
+  end
+
+  test "the new map form opens on the European base" do
+    load Rails.root.join("db/seeds/01_regions.rb").to_s
+    load Rails.root.join("db/seeds/03_europe_layers.rb").to_s
+    sign_in_as users(:bob)
+    get new_map_path, headers: inertia_headers
+    props = JSON.parse(response.body)["props"]
+    assert_equal "europe", props.dig("region", "key")
+    assert_equal [ "plan" ], props["layers"].map { _1["key"] }
+  end
+
   test "hides maps of others" do
     sign_in_as users(:bob)
     get map_path(maps(:ahinvaux))

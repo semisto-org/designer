@@ -38,6 +38,11 @@ class Map < ApplicationRecord
 
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }
+
+  # The region follows the terrain's place: picked at creation, and again
+  # while the map only has the pan-European base ("europe") and its place
+  # changes. A map never leaves a real region on its own.
+  before_validation :locate_region, if: -> { region.nil? || (region.europe? && (center_changed? || boundary_changed?)) }
   validate :project_matches_schema, if: :will_save_change_to_project?
 
   # Photos and soil (understand cycle)
@@ -145,6 +150,11 @@ class Map < ApplicationRecord
   end
 
   private
+    def locate_region
+      point = (boundary.centroid if boundary && !boundary.is_empty?) || center
+      self.region = point ? Region.for_point(point.x, point.y) : (region || Region.europe || Region.default)
+    end
+
     # Semisto staff can read a map while a request sent from it is open: the
     # owner consented to that when sending it (see ServiceRequest).
     def support_role_for(user)

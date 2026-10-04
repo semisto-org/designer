@@ -82,8 +82,8 @@ class RegionLayer < ApplicationRecord
     return "/regions/#{region_id}/layers/#{key}/tiles/{z}/{x}/{y}?v=#{cache_version}" if proxied
 
     case kind
-    when "wms" then "#{url}?#{wms_query(bbox: "{bbox-epsg-3857}")}"
-    when "arcgis_rest" then "#{url}?#{export_query(bbox: "{bbox-epsg-3857}")}"
+    when "wms" then with_query(wms_query(bbox: "{bbox-epsg-3857}"))
+    when "arcgis_rest" then with_query(export_query(bbox: "{bbox-epsg-3857}"))
     else url
     end
   end
@@ -91,8 +91,8 @@ class RegionLayer < ApplicationRecord
   # The upstream URL for one tile (used by the relay).
   def upstream_tile_url(z, x, y)
     case kind
-    when "wms" then "#{url}?#{wms_query(bbox: Providers::TileMath.bbox_3857(z, x, y).join(","))}"
-    when "arcgis_rest" then "#{url}?#{export_query(bbox: Providers::TileMath.bbox_3857(z, x, y).join(","))}"
+    when "wms" then with_query(wms_query(bbox: Providers::TileMath.bbox_3857(z, x, y).join(",")))
+    when "arcgis_rest" then with_query(export_query(bbox: Providers::TileMath.bbox_3857(z, x, y).join(",")))
     when "xyz" then url.gsub("{z}", z.to_s).gsub("{x}", x.to_s).gsub("{y}", y.to_s)
     end
   end
@@ -108,6 +108,11 @@ class RegionLayer < ApplicationRecord
   end
 
   private
+    # Some services carry a parameter in their base URL (SoilGrids: ?map=…).
+    def with_query(query)
+      "#{url}#{url.include?("?") ? "&" : "?"}#{query}"
+    end
+
     def wms_query(bbox:)
       transparent = image_format == "image/png" ? "TRUE" : "FALSE"
       # BBOX stays last and unescaped: MapLibre substitutes the placeholder.

@@ -60,3 +60,63 @@ if (wallonia = Region.find_by(key: "wallonia"))
   )
   wallonia.save!
 end
+
+# Europe (inherited by every region without its own relief): the Copernicus
+# DEM GLO-30, read from its open data COGs on AWS (Providers::CopernicusDem).
+# A 30 m SURFACE model, trees and roofs included: indicative only. Licence:
+# Copernicus DEM, free including commercial use, with this attribution.
+# Hydrology: the soil model without a rainfall figure (no single value makes
+# sense for a continent; a map can set its own).
+if (europe = Region.find_by(key: Region::EUROPE_KEY))
+  europe.settings = europe.settings.merge(
+    "relief" => {
+      "provider" => "copernicus_dem",
+      "label" => "Copernicus DEM GLO-30 (Europe)",
+      "attribution" => "© DLR e.V. 2010-2014 et © Airbus Defence and Space GmbH 2014-2018, fourni sous COPERNICUS par l'Union européenne et l'ESA",
+      "timezone" => "Europe/Brussels",
+      "margin_m" => 150,
+      "datasets" => {
+        "terrain" => { "url" => "https://copernicus-dem-30m.s3.amazonaws.com",
+                       "label" => "Copernicus DEM GLO-30 (30 m, modèle de surface : arbres et toits compris)" }
+      }
+    },
+    "hydrology" => {
+      "roof_coefficient" => 0.8,
+      "soil" => "loam",
+      "uniform_rate_mm_h" => 10,
+      "storage_mm" => 50,
+      "percolation_mm_h" => 0.5,
+      "soils" => {
+        "clay" => { "rate_factor" => 0.4, "storage_factor" => 1.2 },
+        "loam" => { "rate_factor" => 1.0, "storage_factor" => 1.0 },
+        "stony" => { "rate_factor" => 1.4, "storage_factor" => 0.8 },
+        "sandy" => { "rate_factor" => 2.5, "storage_factor" => 0.6 }
+      }
+    }
+  )
+  europe.save!
+end
+
+# France: the IGN altimetry API (RGE ALTI, 1 m, bare ground; 5,000 points
+# per request) and the IGN orthophoto under the relief
+# (Providers::GeopfAltimetry). Licence Ouverte 2.0.
+if (france = Region.find_by(key: "france"))
+  france.settings = france.settings.merge(
+    "relief" => {
+      "provider" => "geopf_altimetry",
+      "label" => "IGN – Géoplateforme (RGE ALTI)",
+      "attribution" => "© IGN – Géoplateforme (RGE ALTI, BD ORTHO)",
+      "timezone" => "Europe/Paris",
+      "margin_m" => 150,
+      "chunk" => 5_000,
+      "threads" => 3,
+      "datasets" => {
+        "terrain" => { "url" => "https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json",
+                       "resource" => "ign_rge_alti_wld", "label" => "IGN, RGE ALTI (1 m, terrain nu)" },
+        "texture" => { "url" => "https://data.geopf.fr/wms-r", "layers" => "HR.ORTHOIMAGERY.ORTHOPHOTOS",
+                       "label" => "IGN, BD ORTHO (photo aérienne)" }
+      }
+    }
+  )
+  france.save!
+end

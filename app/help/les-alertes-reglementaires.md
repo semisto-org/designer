@@ -39,6 +39,19 @@ Pour la Wallonie, les règles viennent aujourd'hui du document du SPW Territoire
 
 Pour les constructions proches des limites, les distances exactes dépendent de la construction : l'alerte vous invite à vous renseigner, sans plus.
 
+## Les règles vérifiées en France
+
+En France, les règles viennent du Code de l'urbanisme (articles R*421-2, R*421-9 et R*421-14) :
+
+| Élément | Ce qui déclenche l'alerte | Niveau |
+| --- | --- | --- |
+| Abri, cabane ou remise | De 5 à 20 m² : déclaration préalable en mairie | À vérifier |
+| Abri, cabane ou remise | Plus de 20 m² : permis de construire en général | Permis probable |
+
+En zone urbaine d'un plan local d'urbanisme (PLU), le seuil du permis passe à 40 m², et le PLU peut fixer d'autres règles (distances, hauteurs) : la mairie a le dernier mot. Les serres dépendent de leur hauteur et ne sont pas vérifiées.
+
+Au Luxembourg et ailleurs en Europe, aucune règle n'est encore définie : le panneau le dit.
+
 ## Ce que les alertes ne disent pas
 
 Le panneau le rappelle en tête : **indicatif, à vérifier auprès de la commune**. Les alertes ne couvrent pas tout :

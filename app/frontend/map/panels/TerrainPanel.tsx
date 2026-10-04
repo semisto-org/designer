@@ -42,7 +42,9 @@ export default function TerrainPanel() {
   const fileInput = useRef<HTMLInputElement>(null)
   const importButton = useRef<HTMLButtonElement>(null)
   const marker = useRef<maplibregl.Marker | null>(null)
-  const cadastre = editor.regionLayers.find((l) => l.options.role === 'cadastre' && l.identifiable)
+  // The cadastre layer parcels are picked on: identified through ArcGIS, or
+  // served by the region's own cadastre provider (`options.parcels`).
+  const cadastre = editor.regionLayers.find((l) => l.options.role === 'cadastre' && (l.identifiable || l.options.parcels === true))
 
   function applyMap(map: MapData) {
     editor.setMap(map)

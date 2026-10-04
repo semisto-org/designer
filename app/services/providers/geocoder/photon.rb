@@ -14,7 +14,7 @@ module Providers
           params[:bbox] = bbox.join(",")
         end
         json = GeoHttp.get_json("#{@url}/api", params:, timeout: 6, breaker: false)
-        country = region&.country_code&.upcase
+        country = Geocoder.region_country(region)&.upcase
         Array(json["features"]).filter_map do |feature|
           next unless feature.is_a?(Hash)
           props = feature["properties"].is_a?(Hash) ? feature["properties"] : {}

@@ -70,5 +70,10 @@ module Providers
     def self.region_bbox(region)
       region&.as_inertia&.dig(:bounds)
     end
+
+    # The country results are restricted to (none for the "europe" base).
+    def self.region_country(region)
+      region&.country_code.presence unless region.nil? || region.europe?
+    end
   end
 end

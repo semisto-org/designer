@@ -14,7 +14,9 @@ module Providers
       def search(query, region: nil)
         throttle!
         params = { q: query, format: "jsonv2", addressdetails: 1, limit: LIMIT, "accept-language": region&.locale || "fr" }
-        params[:countrycodes] = region.country_code.downcase if region&.country_code.present?
+        if (country = Geocoder.region_country(region))
+          params[:countrycodes] = country.downcase
+        end
         if (bbox = Geocoder.region_bbox(region))
           params[:viewbox] = bbox.join(",")
           params[:bounded] = 1

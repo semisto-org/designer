@@ -148,7 +148,7 @@ class MapDossier
 
     def cadastre_layer = region_layers.find { |l| !l.base? && l.raster? && l.role == "cadastre" }
 
-    def region_layers = @region_layers ||= map.region.layers.enabled.to_a
+    def region_layers = @region_layers ||= map.region.catalogue.enabled.to_a
 
     def raster_json(layer)
       return nil unless layer

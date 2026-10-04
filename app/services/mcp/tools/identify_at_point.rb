@@ -22,7 +22,7 @@ module Mcp
         map = find_map!(map_id)
         raise ToolError, t("errors.point_too_far", distance: MAX_DISTANCE_M) unless near_map?(map, lng, lat)
 
-        candidates = map.region.layers.enabled.select(&:identifiable?)
+        candidates = map.region.catalogue.enabled.select(&:identifiable?)
         candidates = candidates.select { |l| layers.include?(l.key) } if layers
         raise ToolError, t("errors.no_identifiable_layer") if candidates.empty?
 

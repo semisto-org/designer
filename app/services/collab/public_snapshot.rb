@@ -70,7 +70,7 @@ module Collab
       end
 
       def region_layer_keys
-        scope = @map.region.layers.enabled.where(key: @options["region_layers"])
+        scope = @map.region.catalogue.enabled.where(key: @options["region_layers"])
         scope = scope.reject { |layer| self.class.sensitive_region_layer?(layer) } if @options["hide_networks"]
         scope.map(&:key)
       end

@@ -106,7 +106,9 @@ fr:
       imported: "Contour importé."
       error: "Cela n'a pas fonctionné. Réessayez dans un instant."
     new:
-      intro: "Partez de l'adresse du terrain : la carte s'ouvrira dessus, sur la photo aérienne, avec les données officielles de la région (%{region})."
+      intro: "Partez de l'adresse du terrain : la carte s'ouvrira dessus, avec les données officielles de sa région."
+      region_found: "Données de la région : %{region}."
+      region_europe: "Ce lieu est hors des régions équipées : la carte aura les données européennes, moins précises (pas de photo aérienne ni de cadastre)."
       address_label: "Où se trouve le terrain ?"
       address_placeholder: "Rue du Bois 3, Yvoir"
       address_hint: "Cherchez l'adresse, puis choisissez-la dans la liste."
@@ -121,10 +123,14 @@ fr:
         import_hint: "Un contour GeoJSON ou KML que vous avez déjà."
         later: "Plus tard"
         later_hint: "Ouvrir la carte sans contour pour l'instant."
+    locate:
+      invalid: "Position invalide."
     geocode:
       unavailable: "La recherche d'adresse ne répond pas pour le moment. Réessayez dans un instant."
       rate_limited: "Trop de recherches d'affilée. Patientez un instant."
     parcels:
+      fr_label: "Parcelle %{section} %{number}"
+      lu_label: "Parcelle %{number}"
       nothing_here: "Aucune parcelle cadastrale à cet endroit."
       errors:
         unavailable: "Le cadastre n'est pas disponible pour cette région."

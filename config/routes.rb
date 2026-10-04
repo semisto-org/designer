@@ -65,6 +65,7 @@ Rails.application.routes.draw do
   get "regions/:region_id/layers/:key/tiles/:z/:x/:y", to: "region_layer_tiles#show", as: :region_layer_tile,
     constraints: { z: /\d+/, x: /\d+/, y: /\d+/, key: /[a-z0-9_]+/ }, format: false
   get "geocode", to: "geocoding#index", as: :geocode
+  get "regions/locate", to: "regions#locate", as: :locate_region
   resources :maps, only: [] do
     scope module: :maps do
       get "identify", to: "identify#show", as: :identify
