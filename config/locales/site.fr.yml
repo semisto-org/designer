@@ -407,6 +407,8 @@ fr:
               - "Un service d'envoi d'e-mails [prestataire à confirmer] : liens de connexion, factures, rappels."
               - "Votre propre assistant IA : uniquement si vous le connectez à vos cartes via MCP. C'est vous qui le choisissez et qui décidez de ce qu'il lit ; Designer n'envoie vos cartes à aucune IA de son côté."
               - "Les services de cartographie (Service public de Wallonie, OpenFreeMap) : pour afficher les fonds de carte et les couches, ils reçoivent la zone affichée et l'adresse IP de votre navigateur ou de notre serveur."
+              - "La recherche d'adresse (Nominatim, d'OpenStreetMap) : elle reçoit, depuis notre serveur, le texte que vous tapez pour trouver votre terrain."
+              - "Pl@ntNet : uniquement si vous demandez l'identification d'une plante par photo. Les photos choisies lui sont envoyées réduites et sans leur position GPS ; Designer ne les conserve pas. [Conditions de Pl@ntNet à vérifier.]"
             outro: "Nous ne vendons pas vos données et ne les utilisons pas pour de la publicité."
           - title: "Combien de temps les conservons-nous ?"
             items:
