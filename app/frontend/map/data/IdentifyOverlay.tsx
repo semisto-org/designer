@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { onSingleClick } from '@/map/singleClick'
 import { useLayerState, visibleOverlays } from '@/map/data/store'
 import type { RegionLayerData } from '@/types'
 import type { IdentifyLayerResult, IdentifyResponse } from '@/types/map_data'
@@ -27,7 +28,8 @@ type Query = {
 /**
  * "What is here?": a click on the map, outside any feature and any tool,
  * with at least one identifiable data layer shown, opens a popup (a bottom
- * sheet on phones) with what each layer says at that point.
+ * sheet on phones) with what each layer says at that point. A double-click
+ * zooms and opens nothing.
  */
 export default function IdentifyOverlay() {
   const editor = useEditor()
@@ -78,10 +80,8 @@ export default function IdentifyOverlay() {
           setQuery((q) => (q?.id === id ? { ...q, failed: true } : q))
         })
     }
-    instance.on('click', onClick)
-    return () => {
-      instance.off('click', onClick)
-    }
+    // A double-click only zooms: it must not open the popup too.
+    return onSingleClick(instance, onClick)
   }, [instance, map.id, regionLayers, close])
 
   useEffect(() => {
