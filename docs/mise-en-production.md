@@ -138,9 +138,42 @@ Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identifica
 
 Aucune variable. Adresse à donner aux utilisateurs : `https://designer.semisto.org/mcp` (Claude → Paramètres → Connecteurs → Ajouter un connecteur personnalisé). Guide dans l'application : `/account/ai` ; documentation publique : `/docs/mcp`.
 
+## Vues drone
+
+Aucune variable. Après une mission drone (commande payée : un e-mail « Mission drone commandée » arrive à `SEMISTO_CONTACT_EMAIL`), l'équipe pose la vue sur une carte du client depuis **Demandes → Vues drone** (`/admin/drone-views`, comptes `admin` seulement). Le client reçoit alors l'e-mail « Votre vue drone est sur votre carte ». Les tuiles ne passent pas par le serveur : le navigateur les lit directement chez l'hébergeur.
+
+1. **Produire l'orthophoto.** Assembler les photos du vol dans OpenDroneMap / WebODM et exporter l'orthomosaïque en GeoTIFF (`odm_orthophoto.tif`). Noter la date du vol.
+2. **La découper en tuiles**, au choix :
+   - **PMTiles** (conseillé : un seul fichier, zooms et emprise lus dans l'archive) :
+     ```sh
+     gdalwarp -t_srs EPSG:3857 -r bilinear odm_orthophoto.tif ortho_3857.tif
+     gdal_translate -of MBTILES -co TILE_FORMAT=PNG ortho_3857.tif vue.mbtiles   # WEBP si votre GDAL le permet : plus léger
+     gdaladdo -r average vue.mbtiles 2 4 8 16 32 64
+     pmtiles convert vue.mbtiles terrain-2027-05-12.pmtiles
+     pmtiles show terrain-2027-05-12.pmtiles   # zooms, emprise, type de tuiles (raster)
+     ```
+     (`pmtiles` est l'outil en ligne de commande de Protomaps ; `rio pmtiles` fait la même chose en une étape depuis le GeoTIFF.)
+   - **Tuiles XYZ** : `gdal2tiles.py --xyz -z 14-22 -w none odm_orthophoto.tif tuiles/`, puis envoyer le dossier. L'adresse est `https://…/tuiles/{z}/{x}/{y}.png` ; indiquer le zoom le plus fort produit dans « Zoom maximum ».
+   - Le PNG garde transparent ce qui est hors du vol ; un JPEG le peindrait en noir.
+3. **Héberger** sur un bucket compatible S3, en **https**, lisible publiquement objet par objet (sans lister le bucket). Règle CORS du bucket :
+   ```json
+   [{
+     "AllowedOrigins": ["https://designer.semisto.org"],
+     "AllowedMethods": ["GET", "HEAD"],
+     "AllowedHeaders": ["Range"],
+     "ExposeHeaders": ["ETag", "Content-Range", "Content-Length"],
+     "MaxAgeSeconds": 86400
+   }]
+   ```
+   Une archive PMTiles est lue par requêtes `Range` : sans cette règle, la vue reste vide et l'éditeur affiche « Cette vue drone ne répond pas ». Remplacer un fichier en gardant son nom est possible (l'ETag change), mais un nouveau nom par vol garde l'historique propre.
+4. **Coller l'adresse** dans l'écran Vues drone, sur la carte de l'acheteur : date du vol, format, adresse, mention facultative (par défaut « Vue drone © Semisto »). Pour contrôler un fichier avant de prévenir le client, le poser d'abord sur une carte de Semisto (formulaire « par son numéro », aucun e-mail), l'ouvrir, le retirer, puis le poser sur la commande. Un second vol s'ajoute à côté du premier : les vues ne se remplacent pas, le client compare les dates dans **Couches → Vues drone**.
+
+Aucune politique de sécurité du contenu (CSP) n'est active (`config/initializers/content_security_policy.rb` est commenté). Si on en active une, autoriser l'hôte des tuiles dans `connect-src` et `img-src` (et `blob:`), sinon les vues drone ne se chargent plus.
+
 ## À vérifier avant l'ouverture publique
 
 - Un essai complet de Stripe en mode test : forfait avec code promo, abonnement, remboursement, mission drone.
+- Une vraie vue drone (PMTiles) servie par le bucket de production, CORS compris, sur ordinateur et sur téléphone.
 - Un import de relief réel et les couches du Géoportail depuis le serveur (identifiants de couches, zooms, champ CAPAKEY du cadastre).
 - La licence des données du SPW pour un relais de tuiles avec cache.
 - Les valeurs indicatives écrites sans accès aux sources : normales et projections climatiques de Wallonie, fourchettes d'analyse de sol, règles d'urbanisme (CoDT), catalogue de départ (92 espèces « à vérifier »), plantes bio-indicatrices.

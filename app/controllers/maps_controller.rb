@@ -41,7 +41,9 @@ class MapsController < ApplicationController
       map: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?),
       layers: @map.region.layers.enabled.map(&:as_inertia),
       features: @map.features.where.not(status: "rejected").map(&:as_geojson),
-      mapEntitlements: map_entitlements.as_json
+      mapEntitlements: map_entitlements.as_json,
+      # Dated drone views, newest first (« Couches », with the base maps).
+      aerialViews: @map.aerial_views.map(&:as_inertia)
     }
   end
 

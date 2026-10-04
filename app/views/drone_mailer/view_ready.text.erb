@@ -1,0 +1,14 @@
+<%= t("billing_mailer.greeting", name: @user.display_name) %>
+
+<%= t(".body", map: @map.name, date: french_date(@view.captured_on)) %>
+
+<%= t(".where", name: @view.name) %>
+
+<%= t(".history") %>
+
+<%= t(".cta") %> : <%= @map_url %>
+
+<%= t(".shared") %> <%= t(".help") %> : <%= @help_url %>
+
+<%= t("billing_mailer.signature") %>
+<%= t("billing_mailer.team") %>

@@ -51,7 +51,9 @@ module Maps
           regionLayers: map.region.layers.enabled.map do |layer|
             { key: layer.key, name: layer.name, category: layer.category, group: layer.group_name,
               sensitive: Collab::PublicSnapshot.sensitive_region_layer?(layer) }
-          end
+          end,
+          # The drone view a publication would show (the newest), if any.
+          aerialView: map.aerial_views.first&.as_inertia&.slice(:name, :capturedOn)
         }
       end
   end

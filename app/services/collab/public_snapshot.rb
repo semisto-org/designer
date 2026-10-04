@@ -18,7 +18,9 @@ module Collab
         "taken_at" => Time.current.iso8601,
         "map" => map_data,
         "features" => features,
-        "region_layer_keys" => region_layer_keys
+        "region_layer_keys" => region_layer_keys,
+        # The newest drone view at publication, only when the owner shows it.
+        "aerial_view_id" => (@map.aerial_views.first&.id if @options["show_aerial_view"])
       }
     end
 

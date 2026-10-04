@@ -15,7 +15,8 @@
   },
   "scripts": {
     "check": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
-    "test:relief": "node --experimental-strip-types --test test/frontend/relief/*.test.ts"
+    "test:relief": "node --experimental-strip-types --test test/frontend/relief/*.test.ts",
+    "test:drone": "node --experimental-strip-types --test test/frontend/drone/*.test.ts"
   },
   "dependencies": {
     "@inertiajs/react": "^3.8.0",
@@ -31,6 +32,7 @@
     "jspdf": "^4.2.1",
     "lucide-react": "^1.51.0",
     "maplibre-gl": "^6.12.0",
+    "pmtiles": "^4.5.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "tailwindcss": "^4.3.3",

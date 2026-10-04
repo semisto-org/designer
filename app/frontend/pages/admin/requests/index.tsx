@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { ExternalLink, Landmark, Mail, Phone } from 'lucide-react'
+import { Drone, ExternalLink, Landmark, Mail, Phone } from 'lucide-react'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -39,9 +39,14 @@ export default function AdminRequests({ requests, counts, filters }: Props) {
           <h1 className="text-2xl">{t('journey.admin.title')}</h1>
           <p className="mt-1 text-loam-500">{t('journey.admin.intro')}</p>
         </div>
-        <Link href="/admin/invoice-requests" className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-loam-800 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
-          <Landmark className="h-4 w-4 text-leaf-600" aria-hidden />{t('invoicing.admin.link')}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/invoice-requests" className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-loam-800 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
+            <Landmark className="h-4 w-4 text-leaf-600" aria-hidden />{t('invoicing.admin.link')}
+          </Link>
+          <Link href="/admin/drone-views" className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-loam-800 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
+            <Drone className="h-4 w-4 text-prune-500" aria-hidden />{t('drone.admin.link')}
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">

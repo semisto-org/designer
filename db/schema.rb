@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_160201) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -44,6 +44,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_160201) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "aerial_views", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.date "captured_on", null: false
+    t.string "kind", null: false
+    t.string "url", limit: 2048, null: false
+    t.string "attribution"
+    t.integer "min_zoom"
+    t.integer "max_zoom"
+    t.bigint "plan_purchase_id"
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_aerial_views_on_created_by_id"
+    t.index ["map_id", "captured_on"], name: "index_aerial_views_on_map_id_and_captured_on"
+    t.index ["plan_purchase_id"], name: "index_aerial_views_on_plan_purchase_id"
   end
 
   create_table "ai_actions", force: :cascade do |t|
@@ -862,6 +880,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_160201) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "aerial_views", "maps"
+  add_foreign_key "aerial_views", "plan_purchases", on_delete: :nullify
+  add_foreign_key "aerial_views", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "ai_actions", "maps", on_delete: :cascade
   add_foreign_key "ai_actions", "users", on_delete: :cascade
   add_foreign_key "api_tokens", "users", on_delete: :cascade

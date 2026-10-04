@@ -259,6 +259,15 @@ Rails.application.routes.draw do
   end
   # --- end invoicing ---
 
+  # --- drone ---
+  # « Vues drone »: the staff screen where Semisto adds the dated aerial view
+  # of a drone order (or of any map) and removes one. The map editor gets a
+  # map's views in its props (MapsController#show).
+  namespace :admin do
+    resources :aerial_views, path: "drone-views", only: %i[index create destroy]
+  end
+  # --- end drone ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
