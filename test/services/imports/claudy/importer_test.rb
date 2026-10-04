@@ -126,6 +126,22 @@ class Imports::Claudy::ImporterTest < ActiveSupport::TestCase
     end
   end
 
+  test "a re-run links the plants whose species or variety entered the catalogue since" do
+    claudy_import(@map)
+    medlar = PlantSpecies.create!(latin_name: "Mespilus germanica")
+    gravenstein = plant_species(:apple).varieties.create!(name: "Gravenstein")
+
+    report = claudy_import(@map)
+
+    neflier = imported(@map, "plant", 10)
+    assert_equal medlar.id, neflier.properties["species_id"]
+    assert_nil neflier.properties["unmatched_species"]
+    assert_equal gravenstein.id, imported(@map, "plant", 8).properties["variety_id"]
+    assert_equal({ "Mystère du talus" => 1 }, report.unmatched_species)
+    assert_empty report.unmatched_varieties
+    assert @map.palette_items.exists?(species_id: medlar.id)
+  end
+
   test "a change in Claudy updates the feature, a change in Designer is kept" do
     claudy_import(@map)
     tas = imported(@map, "map_feature", 112)

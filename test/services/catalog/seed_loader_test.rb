@@ -21,6 +21,16 @@ class Catalog::SeedLoaderTest < ActiveSupport::TestCase
     assert hazel.min_temperature_c.present?
   end
 
+  test "latin synonyms are stored as names in latin, outside the French names" do
+    Catalog::SeedLoader.new.call
+    rosemary = PlantSpecies.find_by_latin_name("Salvia rosmarinus")
+    assert_equal [ "Rosmarinus officinalis" ], rosemary.common_names.select { |n| n.language == "la" }.map(&:name)
+    assert_equal "Romarin", rosemary.common_name
+    assert_includes PlantSpecies.matching("Rosmarinus"), rosemary
+    assert_equal rosemary, Imports::Claudy::SpeciesMatcher.new.find_species("Rosmarinus officinalis L.")
+    assert PlantSpecies.find_by_latin_name("Reynoutria japonica").invasive_in?("BE")
+  end
+
   test "keeps a value someone sourced elsewhere" do
     Catalog::SeedLoader.new.call
     hazel = PlantSpecies.find_by_latin_name("Corylus avellana")

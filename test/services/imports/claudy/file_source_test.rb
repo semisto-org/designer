@@ -41,7 +41,9 @@ class Imports::Claudy::FileSourceTest < ActiveSupport::TestCase
     pond = imported(@map, "map_feature", 175)
     assert_equal [ "water", "zone", "MultiPolygon" ], [ pond.layer, pond.kind, pond.geometry.geometry_type.type_name ]
     assert_match "« Mare double » (Claudy map_feature n° 175) ne convient pas à « #{MapElements.label('pond')} »", report.warnings.sole
-    assert_equal({ "name" => "Pommier" }, imported(@map, "plant", 7).properties["unmatched_species"])
+    apple = imported(@map, "plant", 7)
+    assert_equal plant_species(:apple).id, apple.properties["species_id"], "found by its only French name"
+    assert_nil apple.properties["unmatched_species"]
     assert_equal 1, report.skipped[:welcome_map]
     assert_match "Les notes manuscrites : ce fichier ne les contient pas", report.to_s
     assert_match "Photos : aucune.", report.to_s

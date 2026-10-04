@@ -10,12 +10,14 @@ module Catalog
   #
   # YAML keys are column names, plus:
   #   common_names: [..]        French names, the first one is the usual one;
+  #   synonyms: [..]            older or other latin names (names in language
+  #                             « la »: found by the search and the imports);
   #   height_m / spread_m: [min, max] in metres;
   #   varieties: [..]           cultivar names.
   class SeedLoader
     SOURCE = "semisto".freeze
     PAIRS = { "height_m" => %w[height_min_m height_max_m], "spread_m" => %w[spread_min_m spread_max_m] }.freeze
-    SPECIAL = %w[latin_name common_names varieties] + PAIRS.keys
+    SPECIAL = %w[latin_name common_names synonyms varieties] + PAIRS.keys
 
     def self.default_paths = Dir[Rails.root.join("db/seeds/plants/*.yml")].sort
 
@@ -33,6 +35,7 @@ module Catalog
         PlantSpecies.transaction do
           species.genus ||= PlantGenus.for_latin_name(species.latin_name)
           @writer.write(species, attributes(entry), common_names: entry["common_names"])
+          write_synonyms(species, entry["synonyms"])
           Array(entry["varieties"]).each { |name| variety_for(species, name) }
         end
       end
@@ -52,6 +55,14 @@ module Catalog
           attrs[max_field] = max || min
         end
         attrs
+      end
+
+      # Latin synonyms belong to this seed (no other source writes them): kept
+      # in step with the file, outside the French names and their provenance.
+      def write_synonyms(species, names)
+        names = Array(names).map { |name| name.to_s.squish }.reject(&:blank?)
+        current = species.common_names.select { |name| name.language == "la" }.map(&:name)
+        species.replace_common_names!(names, language: "la") if names.any? && current != names
       end
 
       def variety_for(species, name)

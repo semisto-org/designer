@@ -65,6 +65,7 @@
 
 - latin_name: Rheum × hybridum
   common_names: [Rhubarbe]
+  synonyms: [Rheum rhabarbarum]
   plant_type: herbaceous
   strata: herbaceous
   life_cycle: perennial
@@ -358,3 +359,173 @@
   flowering_months: [5, 6, 7, 8, 9]
   native_countries: [BE, FR, LU, NL]
   maturity_years: 1
+
+- latin_name: Hyssopus officinalis
+  common_names: [Hysope]
+  plant_type: small-shrub
+  strata: herbaceous
+  foliage_type: semi-evergreen
+  growth_rate: medium
+  height_m: [0.3, 0.6]
+  spread_m: [0.3, 0.6]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  edible_rating: 2
+  medicinal_rating: 3
+  edible_parts: [leaf, flower]
+  eco_services: [mellifere, beneficial-insects]
+  flowering_months: [7, 8, 9]
+  harvest_months: [6, 7, 8, 9]
+  pruning_months: [3, 4]
+  maturity_years: 2
+
+- latin_name: Salvia officinalis
+  common_names: [Sauge officinale]
+  plant_type: small-shrub
+  strata: herbaceous
+  foliage_type: evergreen
+  growth_rate: medium
+  height_m: [0.4, 0.7]
+  spread_m: [0.5, 0.8]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  edible_rating: 3
+  medicinal_rating: 4
+  edible_parts: [leaf, flower]
+  eco_services: [mellifere, beneficial-insects]
+  flowering_months: [5, 6, 7]
+  harvest_months: [4, 5, 6, 7, 8, 9, 10]
+  pruning_months: [3, 4]
+  maturity_years: 2
+
+- latin_name: Helichrysum italicum
+  common_names: [Immortelle d'Italie, Plante curry]
+  plant_type: small-shrub
+  strata: herbaceous
+  foliage_type: evergreen
+  growth_rate: medium
+  height_m: [0.3, 0.6]
+  spread_m: [0.4, 0.8]
+  hardiness_zone: 7
+  exposures: [sun]
+  soil_moisture: [dry]
+  soil_ph: [neutral, alkaline]
+  watering_need: 1
+  edible_rating: 2
+  medicinal_rating: 3
+  edible_parts: [leaf]
+  eco_services: [mellifere, ornamental]
+  flowering_months: [6, 7, 8]
+  harvest_months: [5, 6, 7, 8, 9]
+  pruning_months: [4, 9]
+  maturity_years: 2
+
+- latin_name: Mentha spicata
+  common_names: [Menthe verte, Menthe en épi]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: spreading
+  height_m: [0.3, 0.9]
+  spread_m: [0.6, 1]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  watering_need: 4
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [leaf]
+  eco_services: [mellifere, beneficial-insects, ground-cover]
+  flowering_months: [7, 8, 9]
+  harvest_months: [5, 6, 7, 8, 9, 10]
+  maturity_years: 1
+
+- latin_name: Ocimum tenuiflorum
+  common_names: [Basilic sacré, Tulsi]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: annual
+  growth_rate: medium
+  height_m: [0.3, 0.6]
+  spread_m: [0.3, 0.4]
+  hardiness_zone: 10
+  exposures: [sun]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 3
+  medicinal_rating: 4
+  edible_parts: [leaf, flower]
+  eco_services: [mellifere]
+  flowering_months: [7, 8, 9]
+  harvest_months: [6, 7, 8, 9]
+  maturity_years: 1
+
+- latin_name: Filipendula ulmaria
+  common_names: [Reine des prés, Spirée ulmaire]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: medium
+  height_m: [0.6, 1.5]
+  spread_m: [0.6, 1]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 4
+  edible_rating: 2
+  medicinal_rating: 4
+  edible_parts: [flower, leaf]
+  eco_services: [mellifere, beneficial-insects]
+  flowering_months: [6, 7, 8]
+  harvest_months: [6, 7, 8]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 2
+
+- latin_name: Reynoutria japonica
+  common_names: [Renouée du Japon]
+  synonyms: [Fallopia japonica, Polygonum cuspidatum]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: spreading
+  height_m: [1.5, 3]
+  spread_m: [1, 3]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 2
+  edible_parts: [shoot]
+  eco_services: [mellifere]
+  flowering_months: [8, 9, 10]
+  harvest_months: [4, 5]
+  invasive_countries: [BE, FR, LU, NL]
+  maturity_years: 1
+
+- latin_name: Zizania latifolia
+  common_names: [Riz sauvage de Mandchourie]
+  plant_type: aquatic
+  strata: aquatic
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [1, 2.5]
+  spread_m: [0.5, 1]
+  hardiness_zone: 6
+  exposures: [sun]
+  soil_moisture: [wet, waterlogged]
+  watering_need: 5
+  edible_rating: 3
+  edible_parts: [shoot, seed]
+  eco_services: [erosion-control]
+  flowering_months: [8, 9]
+  harvest_months: [9, 10]
+  maturity_years: 2

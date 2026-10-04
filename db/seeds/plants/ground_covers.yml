@@ -185,3 +185,24 @@
   native_countries: [BE, FR, LU, NL]
   toxic_for: [dogs, cats]
   maturity_years: 3
+
+- latin_name: Houttuynia cordata
+  common_names: [Houttuynia, Plante caméléon]
+  plant_type: ground-cover
+  strata: ground_cover
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: spreading
+  height_m: [0.2, 0.4]
+  spread_m: [0.5, 1]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [moist, wet]
+  watering_need: 4
+  edible_rating: 2
+  medicinal_rating: 3
+  edible_parts: [leaf, root]
+  eco_services: [ground-cover]
+  flowering_months: [6, 7]
+  harvest_months: [4, 5, 6, 7, 8, 9]
+  maturity_years: 1

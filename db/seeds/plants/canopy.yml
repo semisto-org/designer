@@ -47,6 +47,7 @@
   fertility: self-sterile
   maturity_years: 30
   production_start_year: 5
+  varieties: [Dorée de Lyon]
 
 - latin_name: Prunus avium
   common_names: [Merisier, Cerisier des oiseaux]
@@ -284,3 +285,4 @@
   harvest_months: [9, 10]
   maturity_years: 30
   production_start_year: 10
+  varieties: [Sossenheimer Riesen]

@@ -60,3 +60,23 @@
   harvest_months: [10, 11, 12, 1, 2, 3]
   maturity_years: 2
   production_start_year: 2
+
+- latin_name: Helianthus tuberosus
+  common_names: [Topinambour]
+  plant_type: herbaceous
+  strata: root
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [1.5, 3]
+  spread_m: [0.5, 1]
+  hardiness_zone: 3
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  watering_need: 2
+  edible_rating: 4
+  edible_parts: [root]
+  eco_services: [mellifere, windbreak, organic-matter]
+  flowering_months: [9, 10]
+  harvest_months: [11, 12, 1, 2, 3]
+  maturity_years: 1
+  production_start_year: 1

@@ -215,7 +215,7 @@
   native_countries: [BE, FR, LU, NL]
   maturity_years: 2
   production_start_year: 2
-  varieties: [Loch Ness, Thornfree]
+  varieties: [Loch Ness, Thornfree, Buckingham]
 
 - latin_name: Vaccinium corymbosum
   common_names: [Myrtillier arbustif, Bleuet]
@@ -241,6 +241,7 @@
 
 - latin_name: Lonicera caerulea
   common_names: [Camérisier bleu, Baie de mai]
+  synonyms: [Lonicera kamtschatica, Lonicera caerulea var. kamtschatica]
   plant_type: shrub
   strata: shrub
   foliage_type: deciduous
@@ -281,6 +282,7 @@
   fertility: self-fertile
   maturity_years: 4
   production_start_year: 2
+  varieties: [Hugin]
 
 - latin_name: Hippophae rhamnoides
   common_names: [Argousier]
@@ -499,6 +501,7 @@
 
 - latin_name: Salvia rosmarinus
   common_names: [Romarin]
+  synonyms: [Rosmarinus officinalis]
   plant_type: small-shrub
   strata: shrub
   foliage_type: evergreen
@@ -517,3 +520,70 @@
   flowering_months: [3, 4, 5]
   harvest_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
   maturity_years: 3
+
+- latin_name: Lycium barbarum
+  common_names: [Goji, Lyciet commun]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: fast
+  root_system: spreading
+  height_m: [1.5, 3]
+  spread_m: [1.5, 3]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 2
+  edible_rating: 3
+  edible_parts: [fruit, leaf]
+  eco_services: [mellifere, erosion-control]
+  flowering_months: [6, 7, 8, 9]
+  harvest_months: [8, 9, 10]
+  fertility: self-fertile
+  maturity_years: 3
+  production_start_year: 2
+
+- latin_name: Amelanchier alnifolia
+  common_names: [Amélanchier à feuilles d'aulne, Amélanchier de Saskatoon]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [2, 4]
+  spread_m: [2, 3]
+  hardiness_zone: 2
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere, birds]
+  flowering_months: [4, 5]
+  harvest_months: [6, 7]
+  fertility: self-fertile
+  maturity_years: 5
+  production_start_year: 3
+
+- latin_name: Laurus nobilis
+  common_names: [Laurier-sauce, Laurier noble]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: evergreen
+  growth_rate: slow
+  height_m: [2, 8]
+  spread_m: [1.5, 4]
+  hardiness_zone: 8
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 2
+  edible_rating: 3
+  medicinal_rating: 2
+  edible_parts: [leaf]
+  eco_services: [mellifere, windbreak]
+  flowering_months: [3, 4, 5]
+  harvest_months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  fertility: dioecious
+  maturity_years: 8

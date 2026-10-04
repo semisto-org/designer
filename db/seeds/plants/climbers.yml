@@ -68,7 +68,7 @@
   fertility: dioecious
   maturity_years: 6
   production_start_year: 3
-  varieties: [Issai, Weiki]
+  varieties: [Issai, Weiki, Purpurna Sadowa]
 
 - latin_name: Humulus lupulus
   common_names: [Houblon]
@@ -176,3 +176,21 @@
   native_countries: [BE, FR, LU, NL]
   toxic_for: [humans, dogs, cats]
   maturity_years: 10
+
+- latin_name: Wisteria sinensis
+  common_names: [Glycine de Chine]
+  plant_type: climber
+  strata: vine
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [10, 20]
+  spread_m: [5, 10]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [moist]
+  watering_need: 3
+  eco_services: [mellifere, ornamental]
+  flowering_months: [4, 5]
+  pruning_months: [2, 7, 8]
+  toxic_for: [humans, dogs, cats, horses]
+  maturity_years: 5

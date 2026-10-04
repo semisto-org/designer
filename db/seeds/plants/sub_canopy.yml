@@ -21,7 +21,35 @@
   fertility: self-sterile
   maturity_years: 12
   production_start_year: 4
-  varieties: [Belle de Boskoop, Cwastresse Double, Jacques Lebel, Reinette Hernaut]
+  varieties:
+    - Belle de Boskoop
+    - Cwastresse Double
+    - Jacques Lebel
+    - Reinette Hernaut
+    - "Cabarette / Président Van Dievoet"
+    - Mentine Rolain
+    - Moreau
+    - Reinette étoilée
+    - Tête de Cheval
+    - Bergamote Henin
+    - "Boskoop Rouge / Rode Boskoop"
+    - Buchet
+    - Calville des Prairies
+    - Cotelée Nisole
+    - Grenadier
+    - Gris Braibant
+    - Gueule de Mouton
+    - Jonathan
+    - Lemaur
+    - Ligita
+    - "Norman's Pippin"
+    - Président Roulin
+    - Rabael
+    - Reinette de France
+    - Reinette de Waleffe
+    - Reinette du Portugal
+    - Schöner von Nordhausen
+    - Verte Huet
 
 - latin_name: Malus sylvestris
   common_names: [Pommier sauvage]
@@ -69,7 +97,18 @@
   fertility: self-sterile
   maturity_years: 15
   production_start_year: 5
-  varieties: [Conférence, Durondeau, Beurré Hardy]
+  varieties:
+    - Conférence
+    - Durondeau
+    - Beurré Hardy
+    - Angers-Gal Leclercq
+    - Beurré de Naghin
+    - Calebasse à la Reine
+    - Clermontaise
+    - Poire de Brulée
+    - Poire de Gauniau
+    - Précoce Henin
+    - Saint-Mathieu
 
 - latin_name: Prunus domestica
   common_names: [Prunier, Prunier domestique]
@@ -93,7 +132,20 @@
   fertility: partially-self-fertile
   maturity_years: 10
   production_start_year: 4
-  varieties: [Reine-Claude d'Oullins, Mirabelle de Nancy]
+  varieties:
+    - "Reine-Claude d'Oullins"
+    - Mirabelle de Nancy
+    - Sainte-Catherine
+    - "Altesse Simple / Quetsche d'Alsace"
+    - Belle de Louvain
+    - Belle de Thuin
+    - Bleue de Belgique
+    - "Bronzée d'Enghien"
+    - Priesse double
+    - Prunier des pâtissiers
+    - Reine-Claude de Brye
+    - "Reine-Claude d'Althan"
+    - Wignon
 
 - latin_name: Prunus cerasus
   common_names: [Griottier, Cerisier acide]
@@ -117,6 +169,7 @@
   fertility: self-fertile
   maturity_years: 8
   production_start_year: 3
+  varieties: [Anglaise hâtive]
 
 - latin_name: Prunus persica
   common_names: [Pêcher]
@@ -140,7 +193,7 @@
   fertility: self-fertile
   maturity_years: 6
   production_start_year: 3
-  varieties: [Pêche de vigne]
+  varieties: [Pêche de vigne, Rubira]
 
 - latin_name: Prunus armeniaca
   common_names: [Abricotier]
@@ -165,6 +218,7 @@
   toxic_for: [humans]
   maturity_years: 8
   production_start_year: 4
+  varieties: [Polonais]
 
 - latin_name: Cydonia oblonga
   common_names: [Cognassier]
@@ -188,6 +242,7 @@
   fertility: self-fertile
   maturity_years: 10
   production_start_year: 4
+  varieties: [Champion]
 
 - latin_name: Mespilus germanica
   common_names: [Néflier, Néflier commun]
@@ -210,6 +265,7 @@
   fertility: self-fertile
   maturity_years: 10
   production_start_year: 4
+  varieties: ["Géant de Breda / Breda Reus"]
 
 - latin_name: Ficus carica
   common_names: [Figuier]

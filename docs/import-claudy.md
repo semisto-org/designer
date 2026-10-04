@@ -30,7 +30,7 @@ La commande imprime un résumé en français : créés, mis à jour, inchangés 
 | Vue 3D : baissière, keyline, mare, haie | Eau : baissière, ligne (`design_type: keyline`), mare ; Structures : haie. Largeur, profondeur, berme, pente. |
 | Biodiversité : relevés saisis dans Claudy | Notes : point de note (règne, noms, date, nombre). Sans l'observateur. |
 | Plantes bio-indicatrices | Notes : point de note avec le diagnostic, les pistes et les limites ; chaque espèce devient une observation du panneau Sol, reliée au catalogue des bio-indicatrices. Sans l'observateur ni l'analyste. |
-| Plantes placées | Plantes : plante liée à l'espèce et à la variété du catalogue par le nom latin normalisé ; date de plantation connue (`planted_on`, ou le 1er janvier de l'année avec `planted_on_precision: "year"`) ; numéro, statut, santé, zone et journal dans les notes. Chaque espèce ou variété entre dans la palette de la carte. |
+| Plantes placées | Plantes : plante liée à l'espèce et à la variété du catalogue par le nom latin normalisé (synonymes latins du catalogue compris, par exemple *Rosmarinus officinalis* pour *Salvia rosmarinus*), ou, pour une plante sans nom latin, par son nom commun français s'il ne désigne qu'une espèce ; date de plantation connue (`planted_on`, ou le 1er janvier de l'année avec `planted_on_precision: "year"`) ; numéro, statut, santé, zone et journal dans les notes. Chaque espèce ou variété entre dans la palette de la carte. |
 | Plantes introuvables dans le catalogue | Plantes sans espèce, avec `unmatched_species` (nom, nom latin, variété), listées dans le résumé. Le catalogue n'est jamais complété par l'import. |
 | Notes manuscrites (export seulement) | Notes : croquis (MultiLineString). |
 | Photos (JPEG, PNG, WebP) | Photos de la carte, liées à leur élément, placées s'il s'agit d'un point. Les HEIC sont refusées. |
@@ -48,6 +48,7 @@ Chaque élément importé porte `properties.import = { source: "claudy", type: "
 - ne touche jamais à ce qui a été dessiné dans Designer ;
 - n'importe une photo qu'une fois ;
 - ne supprime rien : un élément effacé dans Claudy reste dans Designer.
+- rattache les plantes dont l'espèce ou la variété est entrée au catalogue depuis l'import précédent.
 
 ## Par l'API
 
@@ -59,7 +60,7 @@ L'API v1 de Claudy donne les objets de la carte (`GET /map_features`) et les pla
 
 1. **L'export de Claudy** (recommandé : couches, notes manuscrites et fichiers des photos compris).
 2. Une réponse de l'API enregistrée telle quelle : `{ "data": [...], "meta": {...} }` (objets de la carte ou plantes, avec ou sans le détail).
-3. Le GeoJSON de la carte de Claudy (`/map/features.json`) : la couche est devinée, les plantes n'y ont que leur nom commun.
+3. Le GeoJSON de la carte de Claudy (`/map/features.json`) : la couche est devinée, les plantes n'y ont que leur nom commun (rapproché du catalogue comme ci-dessus).
 
 L'export a cette forme (les objets et les plantes sont rendus par les vues `show` de l'API de Claudy ; chaque photo a un `path` relatif au fichier) :
 

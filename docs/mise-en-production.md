@@ -176,6 +176,6 @@ Aucune politique de sécurité du contenu (CSP) n'est active (`config/initialize
 - Une vraie vue drone (PMTiles) servie par le bucket de production, CORS compris, sur ordinateur et sur téléphone.
 - Un import de relief réel et les couches du Géoportail depuis le serveur (identifiants de couches, zooms, champ CAPAKEY du cadastre).
 - La licence des données du SPW pour un relais de tuiles avec cache.
-- Les valeurs indicatives écrites sans accès aux sources : normales et projections climatiques de Wallonie, fourchettes d'analyse de sol, règles d'urbanisme (CoDT), catalogue de départ (92 espèces « à vérifier »), plantes bio-indicatrices.
+- Les valeurs indicatives écrites sans accès aux sources : normales et projections climatiques de Wallonie, fourchettes d'analyse de sol, règles d'urbanisme (CoDT), catalogue de départ (106 espèces « à vérifier »), plantes bio-indicatrices.
 - Les conditions d'utilisation de Pl@ntNet pour un service payant, avant de définir `PLANTNET_API_KEY`.
 - Les pages Confidentialité et Conditions, brouillons marqués « Projet — à valider ».
