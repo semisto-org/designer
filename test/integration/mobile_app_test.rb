@@ -70,6 +70,27 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "style of a base map, for display and offline packs" do
+    region = @map.region
+    region.layers.create!(key: "ortho", name: "Orthophoto", group_name: "photos", category: "base", kind: "wms",
+      url: "https://geoservices.wallonie.be/wms", layers: "0", proxied: true, enabled: true, options: { "default" => true })
+    region.layers.create!(key: "plan", name: "Plan", group_name: "plan", category: "base", kind: "style",
+      url: "https://tiles.openfreemap.org/styles/positron", proxied: false, enabled: true)
+    token = app_token(users(:alice))
+
+    get "/api/v1/maps/#{@map.id}/style", headers: bearer(token)
+    assert_response :success
+    style = response.parsed_body
+    assert_equal 8, style["version"]
+    assert_match %r{\Ahttp://www.example.com/regions/#{region.id}/layers/ortho/tiles/\{z\}/\{x\}/\{y\}}, style.dig("sources", "base", "tiles", 0)
+
+    get "/api/v1/maps/#{@map.id}/style", params: { base: "plan" }, headers: bearer(token)
+    assert_redirected_to "https://tiles.openfreemap.org/styles/positron"
+
+    get "/api/v1/maps/#{@map.id}/style", headers: bearer(app_token(users(:bob)))
+    assert_response :not_found
+  end
+
   test "the token works on the editor's JSON endpoints, roles still apply, no CSRF token needed" do
     with_forgery_protection do
       feature = { layer: "notes", kind: "note", name: "Repère", geometry: { type: "Point", coordinates: [ 4.95, 50.32 ] } }

@@ -81,7 +81,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resource :me, only: :show, controller: "me"
-      resources :maps, only: %i[index show]
+      resources :maps, only: %i[index show] do
+        get :style, on: :member, defaults: { format: :json }
+      end
     end
   end
   # --- end mobile ---
