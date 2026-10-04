@@ -99,7 +99,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
     with_billing do
       post map_features_path(maps(:ahinvaux)), params: { feature: { layer: "water", kind: "water_tank", geometry: point } }, as: :json
       assert_response :forbidden
-      assert_equal "Vous avez accès à cette carte en lecture seule.", response.parsed_body["message"]
+      assert_equal "Tu as accès à cette carte en lecture seule.", response.parsed_body["message"]
     end
   end
 end

@@ -67,7 +67,7 @@ class PlantIdentificationTest < ActiveSupport::TestCase
 
   test "no photo is refused before any call" do
     error = assert_raises(PlantIdentification::Invalid) { identify }
-    assert_equal "Choisissez au moins une photo de la plante.", error.message
+    assert_equal "Choisis au moins une photo de la plante.", error.message
     assert_raises(PlantIdentification::Invalid) { PlantIdentification.new(files: [ nil, "" ], provider: @provider).run }
     assert_not_requested :any, //
   end

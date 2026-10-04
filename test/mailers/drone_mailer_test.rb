@@ -10,11 +10,11 @@ class DroneMailerTest < ActionMailer::TestCase
     mail = DroneMailer.view_ready(view)
 
     assert_equal [ "michael@example.org" ], mail.to
-    assert_equal "Votre vue drone est sur votre carte", mail.subject
+    assert_equal "Ta vue drone est sur ta carte", mail.subject
     text = mail.text_part.body.to_s
     [ "Bonjour Michael,", "prise le 12 mai 2027", "« Domaine d'Ahinvaux »", "« Couches »", "« Vues drone »",
       "d'une saison, d'une année à l'autre", "http://example.com/maps/#{map.id}", "http://example.com/help/la-vue-drone",
-      "visible par les personnes avec qui vous partagez cette carte" ].each do |fragment|
+      "visible par les personnes avec qui tu partages cette carte" ].each do |fragment|
       assert_includes text, fragment
     end
     html = mail.html_part.body.to_s

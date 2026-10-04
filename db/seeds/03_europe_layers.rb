@@ -53,7 +53,7 @@ catalogue = [
     url: soilgrids.("phh2o"), layers: "phh2o_0-5cm_mean", identify_url: nil,
     legend_url: legend.(soilgrids.("phh2o"), "phh2o_0-5cm_mean"), attribution: isric,
     opacity: 0.6, position: 230, min_zoom: nil, max_zoom: 13, proxied: true, enabled: true,
-    description: "pH estimé des 5 premiers centimètres, par mailles de 250 m (SoilGrids). Un ordre de grandeur : seule une analyse dit le pH de votre sol.",
+    description: "pH estimé des 5 premiers centimètres, par mailles de 250 m (SoilGrids). Un ordre de grandeur : seule une analyse dit le pH de ton sol.",
     options: { "order" => 20 }
   },
   {

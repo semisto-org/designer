@@ -5,13 +5,13 @@ fr:
     panel_title: "Climat"
     indicative: "Indicatif"
     loading: "Chargement du climat…"
-    load_error: "Le climat de ce terrain n'a pas pu être chargé. Réessayez dans un instant."
+    load_error: "Le climat de ce terrain n'a pas pu être chargé. Réessaie dans un instant."
     retry: "Réessayer"
     reasons:
       not_configured: "Les données climatiques ne sont pas encore disponibles pour cette région."
       not_supported: "Cette donnée n'est pas fournie pour cette région."
-      no_location: "Dessinez d'abord le contour du terrain : le climat dépend de l'endroit."
-      upstream_error: "Le service météo ne répond pas pour l'instant. Réessayez plus tard."
+      no_location: "Dessine d'abord le contour du terrain : le climat dépend de l'endroit."
+      upstream_error: "Le service météo ne répond pas pour l'instant. Réessaie plus tard."
     draw_outline: "Dessiner le contour"
     current:
       title: "Le climat d'aujourd'hui"
@@ -47,15 +47,15 @@ fr:
       range: "(%{low} à %{high} selon les modèles)"
       summer: "Été"
       summer_value: "%{delta}, pluie %{precip}"
-      explanation_same: "D'ici %{horizon}, avec %{scenario}, votre terrain resterait en zone %{to}, mais avec des étés plus chauds (%{summer}) et une pluie d'été qui varierait de %{precip}."
-      explanation_change: "D'ici %{horizon}, avec %{scenario}, votre terrain passerait de la zone %{from} à la zone %{to} : des hivers moins rudes, des étés plus chauds (%{summer}) et une pluie d'été qui varierait de %{precip}."
+      explanation_same: "D'ici %{horizon}, avec %{scenario}, ton terrain resterait en zone %{to}, mais avec des étés plus chauds (%{summer}) et une pluie d'été qui varierait de %{precip}."
+      explanation_change: "D'ici %{horizon}, avec %{scenario}, ton terrain passerait de la zone %{from} à la zone %{to} : des hivers moins rudes, des étés plus chauds (%{summer}) et une pluie d'été qui varierait de %{precip}."
       scenario_inline:
         moderate: "des émissions modérées"
         high: "des émissions élevées"
       late_frost: "Les gelées tardives restent possibles, et un débourrement plus précoce peut même les rendre plus dommageables pour les floraisons."
     plants:
-      title: "Vos plantes face au climat"
-      empty: "Ajoutez des plantes à la palette ou placez-en sur la carte pour vérifier leur adaptation au climat, aujourd'hui et demain."
+      title: "Tes plantes face au climat"
+      empty: "Ajoute des plantes à la palette ou places-en sur la carte pour vérifier leur adaptation au climat, aujourd'hui et demain."
       count:
         one: "%{count} espèce"
         other: "%{count} espèces"
@@ -93,10 +93,10 @@ fr:
         drought: "sécheresse"
     locked:
       title: "Climat futur et vérification des plantes"
-      body: "Voyez comment le climat de votre terrain évoluera d'ici 2050 et 2080, et quelles plantes de votre palette risquent de souffrir du froid, de la chaleur ou de la sécheresse."
+      body: "Vois comment le climat de ton terrain évoluera d'ici 2050 et 2080, et quelles plantes de ta palette risquent de souffrir du froid, de la chaleur ou de la sécheresse."
       plants_count:
-        one: "%{count} espèce de votre carte attend sa vérification."
-        other: "%{count} espèces de votre carte attendent leur vérification."
+        one: "%{count} espèce de ta carte attend sa vérification."
+        other: "%{count} espèces de ta carte attendent leur vérification."
       included: "Inclus dans le forfait, avec les autres analyses du terrain."
       cta: "Voir les formules"
     forecast:
@@ -104,9 +104,9 @@ fr:
       soon: "Prévisions météo : bientôt disponibles."
       soon_hint: "Les prévisions à 7 jours et les alertes de gel arriveront avec notre abonnement au service météo."
       attribution: "Données météo : %{name} (%{licence})"
-      frost_alert: "Gel annoncé %{dates} (jusqu'à %{temp}) : protégez les floraisons et les jeunes plants."
+      frost_alert: "Gel annoncé %{dates} (jusqu'à %{temp}) : protège les floraisons et les jeunes plants."
       frost_plants: "Plantes sous leur seuil : %{names}."
-      heat_alert: "Fortes chaleurs annoncées %{dates} (jusqu'à %{temp}) : arrosez les jeunes plants le soir et paillez."
+      heat_alert: "Fortes chaleurs annoncées %{dates} (jusqu'à %{temp}) : arrose les jeunes plants le soir et paille."
       precip: "%{mm} mm"
       max_min: "Max %{max}, min %{min}"
       weather:
@@ -121,14 +121,14 @@ fr:
         storm: "Orage"
     sources:
       title: "Sources et méthode"
-      method: "Les normales viennent d'une synthèse par grande région naturelle ; les projections ajoutent aux normales les écarts publiés pour la Belgique. Ce sont des ordres de grandeur, pas une prévision pour votre parcelle."
+      method: "Les normales viennent d'une synthèse par grande région naturelle ; les projections ajoutent aux normales les écarts publiés pour la Belgique. Ce sont des ordres de grandeur, pas une prévision pour ta parcelle."
 
   finances:
     panel_title: "Finances"
     errors:
       stale: "Quelqu'un a modifié ce plan entre-temps. Voici sa dernière version."
     panel:
-      intro: "Estimez sur 20 ans les investissements, les coûts et les revenus de votre projet, à partir de votre palette et de vos propres chiffres."
+      intro: "Estime sur 20 ans les investissements, les coûts et les revenus de ton projet, à partir de ta palette et de tes propres chiffres."
       open: "Ouvrir le tableau financier"
       not_started: "Pas encore de plan financier pour cette carte."
       species: "Espèces"
@@ -139,8 +139,8 @@ fr:
       title: "Tableau financier"
       back: "Retour à la carte"
       disclaimer_title: "Estimation indicative"
-      disclaimer: "Ce tableau calcule à partir de vos propres hypothèses, en euros constants, hors TVA et avant impôts. Il aide à réfléchir et à présenter un projet ; il ne remplace ni un plan d'affaires validé ni l'avis d'un conseiller."
-      read_only: "Vous consultez ce plan en lecture seule."
+      disclaimer: "Ce tableau calcule à partir de tes propres hypothèses, en euros constants, hors TVA et avant impôts. Il aide à réfléchir et à présenter un projet ; il ne remplace ni un plan d'affaires validé ni l'avis d'un conseiller."
+      read_only: "Tu consultes ce plan en lecture seule."
       export_csv: "CSV"
       export_xlsx: "Excel"
       print: "Imprimer"
@@ -148,7 +148,7 @@ fr:
       saving: "Enregistrement…"
       saved: "Enregistré"
       not_saved: "Pas encore enregistré"
-      save_error: "Échec de l'enregistrement. Vos dernières modifications n'ont pas été sauvées."
+      save_error: "Échec de l'enregistrement. Tes dernières modifications n'ont pas été sauvées."
       sync: "Reprendre les plantes de la carte"
       sync_done: "%{added} plante(s) ajoutée(s), %{updated} quantité(s) mise(s) à jour."
       sync_nothing: "Le plan est déjà à jour avec les plantes de la carte."
@@ -195,8 +195,8 @@ fr:
       harvest: "Récoltes"
       year: "Année"
     sections:
-      species_intro: "Une ligne par espèce de votre palette. Saisissez vos propres rendements et prix : Designer ne les invente pas. Notez d'où viennent vos chiffres."
-      investments_intro: "Ce que vous achetez ou faites réaliser au départ. Les plants sont comptés depuis l'onglet « Plantes et récoltes »."
+      species_intro: "Une ligne par espèce de ta palette. Saisis tes propres rendements et prix : Designer ne les invente pas. Note d'où viennent tes chiffres."
+      investments_intro: "Ce que tu achètes ou fais réaliser au départ. Les plants sont comptés depuis l'onglet « Plantes et récoltes »."
       fixed_costs: "Charges fixes (par an)"
       fixed_costs_intro: "Assurance, loyer ou fermage, comptabilité, entretien courant…"
       variable_costs: "Charges variables"
@@ -204,9 +204,9 @@ fr:
       other_revenues: "Autres revenus (par an)"
       other_revenues_intro: "Ateliers, visites, vente de bois…"
       subsidies: "Aides et subsides"
-      subsidies_intro: "PAC, subsides haies et agroforesterie… Saisissez les montants que vous attendez réellement, avec les années."
+      subsidies_intro: "PAC, subsides haies et agroforesterie… Saisis les montants que tu attends réellement, avec les années."
       carbon: "Carbone stocké (facultatif)"
-      carbon_intro: "Une estimation simple, si vous comptez valoriser le carbone : tonnes de CO₂ par hectare et par an × prix par tonne. Reprenez le chiffre d'une étude ou d'un organisme de certification ; laissez vide si vous ne savez pas."
+      carbon_intro: "Une estimation simple, si tu comptes valoriser le carbone : tonnes de CO₂ par hectare et par an × prix par tonne. Reprends le chiffre d'une étude ou d'un organisme de certification ; laisse vide si tu ne sais pas."
       loans: "Emprunts"
       loans_intro: "Remboursés par annuités constantes. Les intérêts entrent dans le compte de résultat, le capital dans la trésorerie."
       settings_intro: "Le cadre du calcul. La surface sert aux charges par hectare et au carbone."
@@ -217,7 +217,7 @@ fr:
       remove_named: "Retirer « %{name} »"
       details: "Détails"
     species:
-      empty: "Aucune espèce pour l'instant. Ajoutez des plantes à la palette de la carte, puis reprenez-les ici, ou ajoutez une espèce à la main."
+      empty: "Aucune espèce pour l'instant. Ajoute des plantes à la palette de la carte, puis reprends-les ici, ou ajoute une espèce à la main."
       channels: "Canaux de vente"
       channel_share: "Part (%)"
       channel_price: "Prix (€/kg)"

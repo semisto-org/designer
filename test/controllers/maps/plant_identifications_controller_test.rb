@@ -97,7 +97,7 @@ class Maps::PlantIdentificationsControllerTest < ActionDispatch::IntegrationTest
     with_plantnet_key { post map_plant_identifications_path(@map), headers: json_headers }
     assert_response :unprocessable_entity
     assert_equal "invalid", response.parsed_body["code"]
-    assert_equal "Choisissez au moins une photo de la plante.", response.parsed_body["message"]
+    assert_equal "Choisis au moins une photo de la plante.", response.parsed_body["message"]
 
     with_plantnet_key { post map_plant_identifications_path(@map), params: { images: "not-a-file" }, headers: json_headers }
     assert_response :unprocessable_entity

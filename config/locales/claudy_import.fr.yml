@@ -8,10 +8,10 @@ fr:
     date_format: "%d/%m/%Y"
 
     errors:
-      map_missing: "Donnez la carte à remplir : MAP_ID=…"
+      map_missing: "Donne la carte à remplir : MAP_ID=…"
       map_not_found: "Carte n° %{id} introuvable."
-      not_configured: "Aucune source : donnez FILE=chemin/vers/claudy-map.json, ou CLAUDY_API_KEY (et au besoin CLAUDY_API_URL)."
-      unauthorized: "Claudy refuse la clé (HTTP %{status}) sur %{url} : vérifiez CLAUDY_API_KEY, un des jetons AGENT_API_TOKEN de Claudy."
+      not_configured: "Aucune source : donne FILE=chemin/vers/claudy-map.json, ou CLAUDY_API_KEY (et au besoin CLAUDY_API_URL)."
+      unauthorized: "Claudy refuse la clé (HTTP %{status}) sur %{url} : vérifie CLAUDY_API_KEY, un des jetons AGENT_API_TOKEN de Claudy."
       unavailable: "Claudy ne répond pas comme prévu sur %{url} (%{detail})."
       unreadable: "Réponse illisible de Claudy sur %{url}."
       file_missing: "Fichier introuvable : %{path}"
@@ -214,8 +214,8 @@ fr:
           one: "  - %{count} tâche du carnet : Designer n'a pas encore de carnet de tâches."
           other: "  - %{count} tâches du carnet : Designer n'a pas encore de carnet de tâches."
       sketches_missing:
-        api: "  - Les notes manuscrites : l'API de Claudy ne les expose pas (utilisez l'export, FILE=…)."
-        file: "  - Les notes manuscrites : ce fichier ne les contient pas (utilisez l'export de Claudy, voir docs/import-claudy.md)."
+        api: "  - Les notes manuscrites : l'API de Claudy ne les expose pas (utilise l'export, FILE=…)."
+        file: "  - Les notes manuscrites : ce fichier ne les contient pas (utilise l'export de Claudy, voir docs/import-claudy.md)."
       kept: "Laissé tel quel dans Designer :"
       kept_reasons:
         edited:

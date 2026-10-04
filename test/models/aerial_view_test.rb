@@ -31,7 +31,7 @@ class AerialViewTest < ActiveSupport::TestCase
   test "the capture date is required" do
     view = build(captured_on: nil)
     assert_not view.valid?
-    assert_equal [ "Indiquez la date de la prise de vue." ], view.errors[:captured_on]
+    assert_equal [ "Indique la date de la prise de vue." ], view.errors[:captured_on]
   end
 
   test "only https, with a host and no credentials" do
@@ -50,7 +50,7 @@ class AerialViewTest < ActiveSupport::TestCase
     assert_equal [ :pmtiles_file ], url_error(url: "https://drone.example.org/{z}/{x}/{y}.pmtiles")
     view = build(kind: "wms")
     assert_not view.valid?
-    assert_equal [ "Choisissez le format : archive PMTiles ou tuiles XYZ." ], view.errors[:kind]
+    assert_equal [ "Choisis le format : archive PMTiles ou tuiles XYZ." ], view.errors[:kind]
   end
 
   test "zoom levels are optional whole numbers from 0 to 24, in order" do

@@ -3,7 +3,7 @@
 # Agents adding a feature add their keys under their own top-level section.
 fr:
   meta:
-    description: "Cartographiez votre terrain, concevez votre jardin-forêt et votre design permaculturel, avec une IA qui connaît le lieu."
+    description: "Cartographie ton terrain, conçois ton jardin-forêt et ton design permaculturel, avec une IA qui connaît le lieu."
   nav:
     maps: "Mes cartes"
     plants: "Plantes"
@@ -11,32 +11,32 @@ fr:
     account: "Mon compte"
     sign_out: "Se déconnecter"
   sessions:
-    rate_limited: "Trop de tentatives. Réessayez dans quelques minutes."
+    rate_limited: "Trop de tentatives. Réessaie dans quelques minutes."
     link_sent: "Un lien de connexion a été envoyé à %{email}."
     invalid_email: "Cette adresse e-mail ne semble pas valide."
-    signed_in: "Vous êtes connecté."
-    link_expired: "Ce lien a expiré ou a déjà servi. Demandez-en un nouveau."
+    signed_in: "Tu es connecté."
+    link_expired: "Ce lien a expiré ou a déjà servi. Demandes-en un nouveau."
     google_failed: "La connexion avec Google n'a pas abouti."
     new:
       title: "Se connecter"
-      intro: "Pas de mot de passe à retenir : connectez-vous avec Google ou recevez un lien par e-mail."
+      intro: "Pas de mot de passe à retenir : connecte-toi avec Google ou reçois un lien par e-mail."
       google: "Continuer avec Google"
       or: "ou"
       email: "Adresse e-mail"
       send_link: "Recevoir un lien de connexion"
       no_password: "Le lien est valable 20 minutes et ne sert qu'une fois."
-      check_inbox: "Un lien vient d'être envoyé à %{email}. Ouvrez-le depuis cet appareil pour vous connecter."
+      check_inbox: "Un lien vient d'être envoyé à %{email}. Ouvre-le depuis cet appareil pour te connecter."
   mailer:
     footer: "Semisto Designer, l'atelier en ligne de Semisto pour cartographier son terrain et concevoir son jardin-forêt."
   magic_link_mailer:
     sign_in:
-      subject: "Votre lien de connexion à Semisto Designer"
+      subject: "Ton lien de connexion à Semisto Designer"
       greeting: "Bonjour,"
-      body: "Cliquez sur le bouton ci-dessous pour vous connecter à Semisto Designer."
+      body: "Clique sur le bouton ci-dessous pour te connecter à Semisto Designer."
       button: "Me connecter"
-      expiry: "Ce lien est valable 20 minutes et ne sert qu'une fois. Si vous n'avez rien demandé, ignorez cet e-mail."
+      expiry: "Ce lien est valable 20 minutes et ne sert qu'une fois. Si tu n'as rien demandé, ignore cet e-mail."
   maps:
-    created: "Carte créée. Délimitons maintenant votre terrain."
+    created: "Carte créée. Délimitons maintenant ton terrain."
     updated: "Carte enregistrée."
     archived: "Carte archivée."
     area: "Surface"
@@ -56,19 +56,19 @@ fr:
       address: "Adresse"
       description: "Description"
     errors:
-      read_only: "Vous avez accès à cette carte en lecture seule."
+      read_only: "Tu as accès à cette carte en lecture seule."
       owner_only: "Seul le propriétaire de la carte peut faire cela."
-      plan_limit: "Votre formule ne permet pas de nouvelle carte. Passez au forfait pour en créer d'autres."
+      plan_limit: "Ta formule ne permet pas de nouvelle carte. Passe au forfait pour en créer d'autres."
       stale: "Quelqu'un a modifié cet élément entre-temps. Voici sa dernière version."
     index:
       title: "Mes cartes"
       new: "Nouvelle carte"
       upgrade: "Passer au forfait"
-      empty_title: "Votre première carte"
-      empty_body: "Partez d'une adresse ou d'une parcelle cadastrale : le fond de carte, le relief et les couches du Géoportail sont prêts en quelques minutes."
+      empty_title: "Ta première carte"
+      empty_body: "Pars d'une adresse ou d'une parcelle cadastrale : le fond de carte, le relief et les couches du Géoportail sont prêts en quelques minutes."
     new:
       title: "Nouvelle carte"
-      intro: "Région : %{region}. Vous dessinerez ou importerez le contour du terrain à l'étape suivante."
+      intro: "Région : %{region}. Tu dessineras ou importeras le contour du terrain à l'étape suivante."
       name_placeholder: "Le jardin-forêt de la Ferme du Bois"
       address_hint: "Facultatif : aide à centrer la carte."
       submit: "Créer la carte"
@@ -98,7 +98,7 @@ fr:
     loading: "Chargement…"
   editor:
     panels_nav: "Panneaux de la carte"
-    draw_hint: "Cliquez point par point le contour, puis revenez au premier point ou touchez « Terminer ». Échap pour annuler."
+    draw_hint: "Clique point par point le contour, puis reviens au premier point ou touche « Terminer ». Échap pour annuler."
     draft: "Brouillon"
     draft_hint: "Proposé par une IA : à accepter ou refuser."
     panels:
@@ -111,7 +111,7 @@ fr:
       redraw: "Redessiner le contour"
       saved: "Contour enregistré."
     elements:
-      empty: "Aucun élément pour l'instant. Dessinez ce qui existe déjà sur le terrain, puis votre design."
+      empty: "Aucun élément pour l'instant. Dessine ce qui existe déjà sur le terrain, puis ton design."
     inspector:
       name: "Nom"
       notes: "Notes"

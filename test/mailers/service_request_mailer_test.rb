@@ -37,7 +37,7 @@ class ServiceRequestMailerTest < ActionMailer::TestCase
   test "confirmation: to the person, recap, and what Semisto can see" do
     mail = ServiceRequestMailer.confirmation(@sr)
     assert_equal [ "michael@example.org" ], mail.to
-    assert_equal "Votre demande à Semisto : Commander des plants de qualité", mail.subject
+    assert_equal "Ta demande à Semisto : Commander des plants de qualité", mail.subject
     text = mail.text_part.body.to_s
     assert_includes text, "Bonjour Michael,"
     assert_includes text, "Noyer commun × 3"

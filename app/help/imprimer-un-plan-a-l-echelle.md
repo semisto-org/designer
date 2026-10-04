@@ -5,27 +5,27 @@ category: Partager et collaborer
 order: 64
 ---
 
-Sur le terrain, rien ne remplace une feuille où l'on peut mesurer au double-décimètre et griffonner. Designer crée un **plan PDF à l'échelle** de votre design, prêt à imprimer.
+Sur le terrain, rien ne remplace une feuille où l'on peut mesurer au double-décimètre et griffonner. Designer crée un **plan PDF à l'échelle** de ton design, prêt à imprimer.
 
 ## Préparer la carte
 
 Le plan reprend **la vue de la carte et les couches affichées**. Avant de l'ouvrir :
 
-- choisissez le fond de carte dans le panneau **Couches** (un fond clair s'imprime mieux) ;
-- masquez dans le panneau **Calques** les couches de dessin que vous ne voulez pas sur le papier, les notes par exemple. Voir [Calques, mesures et croquis](/help/calques-mesures-et-croquis).
+- choisis le fond de carte dans le panneau **Couches** (un fond clair s'imprime mieux) ;
+- masque dans le panneau **Calques** les couches de dessin que tu ne veux pas sur le papier, les notes par exemple. Voir [Calques, mesures et croquis](/help/calques-mesures-et-croquis).
 
 Les brouillons proposés par une IA ne sont pas imprimés.
 
 ## Créer le PDF
 
-1. En haut de la carte, touchez **Exporter**, puis **Plan PDF à l'échelle**.
-2. Vérifiez le **Titre du plan** : par défaut, le nom de la carte.
-3. Choisissez le **Format** (A4 ou A3) et l'**Orientation** (**Portrait** ou **Paysage**).
-4. Choisissez l'**Échelle** :
+1. En haut de la carte, touche **Exporter**, puis **Plan PDF à l'échelle**.
+2. Vérifie le **Titre du plan** : par défaut, le nom de la carte.
+3. Choisis le **Format** (A4 ou A3) et l'**Orientation** (**Portrait** ou **Paysage**).
+4. Choisis l'**Échelle** :
    - **Ajuster au terrain** cadre tout le terrain sur la feuille et indique l'échelle retenue ;
-   - ou une échelle fixe : 1:100, 1:200, 1:250, 1:500, 1:1 000, 1:2 000 ou 1:2 500. Déplacez alors la carte : le **cadre orange** montre ce qui sera imprimé.
-5. Lisez l'**Emprise imprimée**, la taille réelle couverte par la feuille, par exemple « 60 m × 42 m ».
-6. Touchez **Créer le PDF**. Le plan se met en page puis se télécharge.
+   - ou une échelle fixe : 1:100, 1:200, 1:250, 1:500, 1:1 000, 1:2 000 ou 1:2 500. Déplace alors la carte : le **cadre orange** montre ce qui sera imprimé.
+5. Lis l'**Emprise imprimée**, la taille réelle couverte par la feuille, par exemple « 60 m × 42 m ».
+6. Touche **Créer le PDF**. Le plan se met en page puis se télécharge.
 
 ## Ce que contient le plan
 
@@ -37,7 +37,7 @@ Les brouillons proposés par une IA ne sont pas imprimés.
 
 ## Imprimer juste
 
-Pour que 1 cm sur le papier fasse bien la distance annoncée, imprimez **à 100 %** : dans la fenêtre d'impression, choisissez « Taille réelle » et jamais « Ajuster à la page ». Vérifiez ensuite la barre d'échelle avec une règle.
+Pour que 1 cm sur le papier fasse bien la distance annoncée, imprime **à 100 %** : dans la fenêtre d'impression, choisis « Taille réelle » et jamais « Ajuster à la page ». Vérifie ensuite la barre d'échelle avec une règle.
 
 Quelle échelle choisir ?
 
@@ -47,7 +47,7 @@ Quelle échelle choisir ?
 
 ## Les réseaux
 
-Les conduites et câbles de la couche **Réseaux** sont exclus du plan par défaut. Un propriétaire ou un éditeur peut cocher **Inclure les réseaux (eau, gaz, électricité, Ethernet)**, par exemple pour l'entrepreneur qui va creuser. Ne diffusez ce plan qu'en confiance.
+Les conduites et câbles de la couche **Réseaux** sont exclus du plan par défaut. Un propriétaire ou un éditeur peut cocher **Inclure les réseaux (eau, gaz, électricité, Ethernet)**, par exemple pour l'entrepreneur qui va creuser. Ne diffuse ce plan qu'en confiance.
 
 ## Le plan fait partie du forfait
 
@@ -60,4 +60,4 @@ Voir [Formules et forfait](/help/formules-et-forfait).
 
 ## Les autres exports
 
-Le menu **Exporter** propose aussi le **GeoJSON** de votre design, pour QGIS et les autres SIG, sans les réseaux ; les éditeurs ont en plus **GeoJSON avec les réseaux**. La [liste de plants](/help/la-liste-de-plants-et-la-commande) et le [tableau financier](/help/le-tableau-financier) ont leurs propres exports.
+Le menu **Exporter** propose aussi le **GeoJSON** de ton design, pour QGIS et les autres SIG, sans les réseaux ; les éditeurs ont en plus **GeoJSON avec les réseaux**. La [liste de plants](/help/la-liste-de-plants-et-la-commande) et le [tableau financier](/help/le-tableau-financier) ont leurs propres exports.

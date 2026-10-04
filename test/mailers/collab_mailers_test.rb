@@ -12,7 +12,7 @@ class CollabMailersTest < ActionMailer::TestCase
     invitation = @map.invitations.create!(email_address: "new@example.org", role: "editor", invited_by: @owner)
     mail = MapInvitationMailer.invite(invitation)
     assert_equal [ "new@example.org" ], mail.to
-    assert_match(/Michael vous invite sur la carte « Domaine d'Ahinvaux »/, mail.subject)
+    assert_match(/Michael t'invite sur la carte « Domaine d'Ahinvaux »/, mail.subject)
     assert_includes mail.html_part.body.to_s, "http://example.com/invitations/#{invitation.token}"
     assert_includes mail.text_part.body.to_s, "/invitations/#{invitation.token}"
     assert_match(/éditeur/, mail.text_part.body.to_s)
@@ -28,7 +28,7 @@ class CollabMailersTest < ActionMailer::TestCase
     assert_includes html, "&lt;script&gt;"
     assert_includes html, "<strong>@Alice</strong>"
     assert_includes html, "discussion=MapFeature%3A#{feature.id}"
-    assert_match(/Michael vous a mentionné dans « Noyer »/, mail.subject)
+    assert_match(/Michael t'a mentionné dans « Noyer »/, mail.subject)
     assert_includes mail.text_part.body.to_s, "voici\nla suite"
   end
 

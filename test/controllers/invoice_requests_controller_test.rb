@@ -60,9 +60,9 @@ class InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_invoice_request_path
     follow_redirect!(headers: inertia_headers)
     errors = response.parsed_body["props"]["errors"]
-    assert_equal [ "Indiquez le nom de l'organisation à facturer." ], Array(errors["organization_name"])
+    assert_equal [ "Indique le nom de l'organisation à facturer." ], Array(errors["organization_name"])
     assert_equal [ "Cette adresse e-mail ne semble pas valide." ], Array(errors["billing_email"])
-    assert_equal [ "Choisissez une formule." ], Array(errors["plan_key"])
+    assert_equal [ "Choisis une formule." ], Array(errors["plan_key"])
   end
 
   test "a request is only visible to its author" do

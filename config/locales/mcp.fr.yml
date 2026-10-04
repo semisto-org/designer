@@ -6,10 +6,10 @@ fr:
   mcp:
     server:
       instructions: |-
-        Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Vous agissez au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
-        Commencez par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
+        Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
+        Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
-        Vous ne modifiez jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
+        Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -27,13 +27,13 @@ fr:
     tools:
       list_maps:
         title: "Lister mes cartes"
-        description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passez ensuite l'identifiant d'une carte à get_map."
+        description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passe ensuite l'identifiant d'une carte à get_map."
       get_map:
         title: "Lire une carte"
         description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
       list_features:
         title: "Lister les éléments"
-        description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passez next_after_id dans after_id pour la page suivante."
+        description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
       get_feature:
         title: "Lire un élément"
         description: "Un élément de la carte : géométrie, attributs, justification s'il a été proposé par une IA, et mesures (surface en m², longueur et périmètre en m)."
@@ -57,7 +57,7 @@ fr:
           plant_id: "Identifiant de la plante, donné par search_plants."
       propose_features:
         title: "Proposer des brouillons"
-        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrigez et renvoyez seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
         params:
           summary: "Résumé de la proposition dans son ensemble, montré à l'humain au-dessus des brouillons."
           features: "Les éléments proposés, de 1 à 200."
@@ -74,27 +74,27 @@ fr:
         params:
           feature_ids: "Identifiants des brouillons à retirer."
     permissions:
-      scope: "Cette connexion n'a que l'accès en lecture : reconnectez le connecteur en choisissant « Lecture et brouillons »."
+      scope: "Cette connexion n'a que l'accès en lecture : reconnecte le connecteur en choisissant « Lecture et brouillons »."
       role: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer des brouillons."
       plan: "Le forfait du propriétaire de la carte ne comprend pas les brouillons de l'IA."
       boundary: "La carte n'a pas encore de contour de terrain."
     notes:
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
-      networks_on_request: "Les réseaux sont masqués par défaut : passez include_networks à true dans list_features pour les lire."
+      networks_on_request: "Les réseaux sont masqués par défaut : passe include_networks à true dans list_features pour les lire."
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
     errors:
-      unauthorized: "Connexion requise : autorisez ce client depuis Semisto Designer (OAuth) ou utilisez un jeton personnel."
+      unauthorized: "Connexion requise : autorise ce client depuis Semisto Designer (OAuth) ou utilise un jeton personnel."
       invalid_token: "Ce jeton n'est pas valide, a expiré ou a été révoqué."
-      rate_limited: "Trop de requêtes. Réessayez dans une minute."
-      map_not_found: "Carte %{id} introuvable, ou vous n'y avez pas accès. list_maps donne vos cartes."
+      rate_limited: "Trop de requêtes. Réessaie dans une minute."
+      map_not_found: "Carte %{id} introuvable, ou tu n'y as pas accès. list_maps donne tes cartes."
       feature_not_found: "Élément %{id} introuvable sur cette carte."
       scope_drafts: "Cette connexion n'a que l'accès en lecture. Pour proposer des brouillons, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
       editor_only: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer ou retirer des brouillons. L'utilisateur est lecteur de cette carte."
       plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite. La lecture de la carte reste possible."
       no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
       too_many_features: "Au plus %{max} éléments par appel."
-      too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attendez que l'humain les revoie avant d'en proposer d'autres."
+      too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
       nothing_created: "Aucun brouillon créé. %{details}"
       bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
       identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Designer."
@@ -127,14 +127,14 @@ fr:
         api_token:
           attributes:
             base:
-              too_many: "Vous avez déjà %{count} jetons actifs : révoquez-en un avant d'en créer un autre."
+              too_many: "Tu as déjà %{count} jetons actifs : révoques-en un avant d'en créer un autre."
   drafts:
     default_author: "L'IA"
     title:
       one: "%{author} propose 1 élément"
       other: "%{author} propose %{count} éléments"
     region: "Brouillons proposés par une IA"
-    cta: "À revoir : acceptez ou refusez chaque élément"
+    cta: "À revoir : accepte ou refuse chaque élément"
     viewer_hint: "Un éditeur de la carte doit les revoir avant qu'ils n'en fassent partie."
     focus: "Voir sur la carte"
     accept: "Accepter"
@@ -154,12 +154,12 @@ fr:
     rejected_all:
       one: "1 brouillon refusé."
       other: "%{count} brouillons refusés."
-    inspector_hint: "Ajustez-le si besoin (nom, notes), puis acceptez-le ou refusez-le."
+    inspector_hint: "Ajuste-le si besoin (nom, notes), puis accepte-le ou refuse-le."
   ai_journal:
     title: "Journal IA"
     intro: "Chaque action d'une IA sur cette carte, par le serveur MCP : avec quel client, pour quel compte, ce qu'elle a lu ou proposé."
     error: "Le journal n'a pas pu être chargé."
-    empty: "Aucune IA n'a encore travaillé sur cette carte. Connectez votre Claude depuis votre compte : il pourra lire la carte et, avec le forfait, y proposer des brouillons."
+    empty: "Aucune IA n'a encore travaillé sur cette carte. Connecte ton Claude depuis ton compte : il pourra lire la carte et, avec le forfait, y proposer des brouillons."
     refused: "a tenté « %{tool} », sans succès"
     by: "compte de %{name}"
     more: "Voir les actions plus anciennes"
@@ -201,31 +201,31 @@ fr:
     copied: "Copié"
   account_ai:
     title: "Connecter Claude"
-    intro: "Branchez votre propre Claude, ou tout agent compatible MCP, sur vos cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait et le rôle d'éditeur, il y pose des brouillons que vous acceptez ou refusez un par un."
+    intro: "Branche ton propre Claude, ou tout agent compatible MCP, sur tes cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait et le rôle d'éditeur, il y pose des brouillons que tu acceptes ou refuses un par un."
     url:
       title: "Adresse du connecteur"
-      hint: "C'est la seule chose à copier : vous choisissez ensuite, sur Semisto Designer, l'accès que vous donnez."
-    plan_hint: "Avec la formule gratuite, Claude lit vos cartes. Les brouillons qu'il pose sur la carte font partie du forfait."
+      hint: "C'est la seule chose à copier : tu choisis ensuite, sur Semisto Designer, l'accès que tu donnes."
+    plan_hint: "Avec la formule gratuite, Claude lit tes cartes. Les brouillons qu'il pose sur la carte font partie du forfait."
     claude_ai:
       title: "Dans claude.ai ou Claude Desktop"
-      step1: "Ouvrez Paramètres → Connecteurs."
-      step2: "Cliquez sur « Ajouter un connecteur personnalisé »."
+      step1: "Ouvre Paramètres → Connecteurs."
+      step2: "Clique sur « Ajouter un connecteur personnalisé »."
       step3: "Nom : Semisto Designer. URL : l'adresse ci-dessus."
-      step4: "Cliquez sur « Se connecter » : Semisto Designer vous demande quel accès donner, lecture ou lecture et brouillons."
-      step5: "Dans une conversation, activez le connecteur depuis le menu des outils."
+      step4: "Clique sur « Se connecter » : Semisto Designer te demande quel accès donner, lecture ou lecture et brouillons."
+      step5: "Dans une conversation, active le connecteur depuis le menu des outils."
       example: "« Lis ma carte du jardin et propose une haie fruitière le long de la limite nord, en tenant compte de la fiche projet. »"
     claude_code:
       title: "Dans Claude Code"
-      step1: "Ajoutez le serveur :"
-      step2: "Tapez ensuite /mcp dans Claude Code pour vous connecter : la page d'autorisation s'ouvre dans votre navigateur."
+      step1: "Ajoute le serveur :"
+      step2: "Tape ensuite /mcp dans Claude Code pour te connecter : la page d'autorisation s'ouvre dans ton navigateur."
     other:
       title: "Autres agents"
       body: "Un agent qui ne gère pas OAuth utilise un jeton personnel (ci-dessous), envoyé dans l'en-tête « Authorization: Bearer »."
     apps:
       title: "Applications autorisées"
-      intro: "Les connecteurs que vous avez autorisés. Révoquer coupe leur accès immédiatement."
+      intro: "Les connecteurs que tu as autorisés. Révoquer coupe leur accès immédiatement."
       empty_title: "Aucune application autorisée"
-      empty_body: "Quand vous connectez Claude, il apparaît ici."
+      empty_body: "Quand tu connectes Claude, il apparaît ici."
       meta: "Autorisée le %{authorized} · dernière utilisation : %{used}"
       confirm_revoke: "Révoquer l'accès de « %{name} » ? Il faudra l'autoriser à nouveau."
       revoked: "Accès de « %{name} » révoqué."
@@ -235,7 +235,7 @@ fr:
       drafts: "Lecture et brouillons"
     tokens:
       title: "Jetons personnels"
-      intro: "Pour les scripts et les agents sans OAuth. Un jeton agit en votre nom sur toutes vos cartes : gardez-le secret."
+      intro: "Pour les scripts et les agents sans OAuth. Un jeton agit en ton nom sur toutes tes cartes : garde-le secret."
       name: "Nom"
       name_placeholder: "Claude Code sur mon portable"
       access: "Accès"
@@ -246,47 +246,47 @@ fr:
       never: "Jamais"
       create: "Créer le jeton"
       created: "Jeton « %{name} » créé."
-      copy_now: "Copiez-le maintenant : il ne sera plus jamais affiché."
+      copy_now: "Copie-le maintenant : il ne sera plus jamais affiché."
       meta: "créé le %{created} · utilisé : %{used} · expire : %{expires}"
       confirm_revoke: "Révoquer le jeton « %{name} » ?"
       revoked: "Jeton révoqué."
       error: "Le jeton n'a pas pu être créé."
     guardrails:
       title: "Garde-fous"
-      never: "L'IA ne modifie jamais la carte sans votre validation : elle pose des brouillons."
+      never: "L'IA ne modifie jamais la carte sans ta validation : elle pose des brouillons."
       networks: "Les réseaux (eau, gaz, électricité, câbles) restent masqués par défaut."
       journal: "Chaque action est inscrite au journal IA de la carte, visible par son propriétaire."
-      revoke: "Vous retirez l'accès quand vous voulez, depuis votre compte."
+      revoke: "Tu retires l'accès quand tu veux, depuis ton compte."
     docs_link: "Documentation du serveur MCP →"
   oauth:
     authorize:
       page_title: "Autoriser une application"
-      title: "« %{client} » souhaite accéder à vos cartes Semisto Designer"
+      title: "« %{client} » souhaite accéder à tes cartes Semisto Designer"
       signed_in_as: "Connecté en tant que %{name} (%{email})."
-      redirect_notice: "Vous serez ensuite renvoyé vers %{host}. N'autorisez que les applications que vous venez vous-même de connecter."
+      redirect_notice: "Tu seras ensuite renvoyé vers %{host}. N'autorise que les applications que tu viens toi-même de connecter."
       client_site: "Site de l'application"
       access_legend: "Accès donné"
       access:
         read:
           title: "Lecture"
-          body: "Lire vos cartes, leurs couches, leurs éléments et la fiche projet."
+          body: "Lire tes cartes, leurs couches, leurs éléments et la fiche projet."
         drafts:
           title: "Lecture et brouillons"
-          body: "Lire, et proposer des éléments en brouillon que vous acceptez ou refusez un par un, sur les cartes dont vous êtes propriétaire ou éditeur."
-          plan: "Les brouillons demandent le forfait du propriétaire de la carte : votre formule actuelle n'en donne pas sur vos propres cartes."
+          body: "Lire, et proposer des éléments en brouillon que tu acceptes ou refuses un par un, sur les cartes dont tu es propriétaire ou éditeur."
+          plan: "Les brouillons demandent le forfait du propriétaire de la carte : ta formule actuelle n'en donne pas sur tes propres cartes."
       guardrails_title: "Garde-fous"
       deny: "Refuser"
       approve: "Autoriser %{client}"
     error:
       title: "Cette demande de connexion n'est pas valide"
-      unknown_client: "L'application qui vous envoie ici n'est pas enregistrée chez Semisto Designer. Relancez la connexion depuis l'application, par exemple claude.ai."
+      unknown_client: "L'application qui t'envoie ici n'est pas enregistrée chez Semisto Designer. Relance la connexion depuis l'application, par exemple claude.ai."
       bad_redirect: "L'adresse de retour demandée n'est pas celle que l'application a enregistrée. Par prudence, la connexion est bloquée."
       help: "Comment connecter Claude"
   docs_mcp:
     page_title: "Serveur MCP"
     eyebrow: "Documentation"
     title: "Claude sur la carte : le serveur MCP de Semisto Designer"
-    intro: "Branchez votre Claude, ou tout agent compatible MCP, sur vos cartes. Il lit le terrain, ses couches et la fiche projet, et propose des aménagements en brouillon que vous validez un par un. Cette page est générée à partir du code du serveur."
+    intro: "Branche ton Claude, ou tout agent compatible MCP, sur tes cartes. Il lit le terrain, ses couches et la fiche projet, et propose des aménagements en brouillon que tu valides un par un. Cette page est générée à partir du code du serveur."
     toc: "Sommaire"
     sections:
       connect: "Se connecter"
@@ -297,12 +297,12 @@ fr:
     connect:
       url: "L'adresse du serveur (Streamable HTTP) :"
       claude_ai_title: "claude.ai et Claude Desktop"
-      claude_ai: "Paramètres → Connecteurs → « Ajouter un connecteur personnalisé ». Collez l'adresse, puis « Se connecter » : vous choisissez l'accès donné, sur Semisto Designer."
+      claude_ai: "Paramètres → Connecteurs → « Ajouter un connecteur personnalisé ». Colle l'adresse, puis « Se connecter » : tu choisis l'accès donné, sur Semisto Designer."
       claude_code_title: "Claude Code"
-      claude_code: "Ajoutez le serveur, puis tapez /mcp pour vous connecter."
+      claude_code: "Ajoute le serveur, puis tape /mcp pour te connecter."
       other_title: "Autres agents"
-      other: "Tout client MCP qui gère OAuth 2.1 se connecte seul. Sinon, créez un jeton personnel et envoyez-le dans l'en-tête « Authorization: Bearer »."
-      account: "Applications autorisées et jetons personnels se gèrent dans votre compte :"
+      other: "Tout client MCP qui gère OAuth 2.1 se connecte seul. Sinon, crée un jeton personnel et envoie-le dans l'en-tête « Authorization: Bearer »."
+      account: "Applications autorisées et jetons personnels se gèrent dans ton compte :"
       account_link: "Connecter Claude"
     auth:
       intro: "Le serveur suit la spécification d'autorisation MCP : OAuth 2.1 avec enregistrement dynamique des clients (RFC 7591), code d'autorisation avec PKCE S256, indicateur de ressource (RFC 8707) et jetons de rafraîchissement à usage unique. Les jetons d'accès durent %{minutes} minutes, les jetons de rafraîchissement %{days} jours."
