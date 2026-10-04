@@ -1,0 +1,139 @@
+# Climate reference data for Luxembourg, seeded into
+# regions.settings["climate"] by db/seeds/40_climate.rb and read by
+# Providers::Climate::Static.
+#
+# Everything here is INDICATIVE: values are rounded by Semisto from the
+# published syntheses listed under `sources`, to give a coarse order of
+# magnitude per natural region (Oesling in the north, Gutland in the
+# south). They are not station data and not a forecast for a given parcel.
+# The outline is deliberately coarse; the first sub-area containing the
+# point wins, the `default: true` one covers the rest of the country.
+#
+# Units: °C, mm, days; dates as "MM-DD" (median date, indicative).
+# extreme_min_c = average annual extreme minimum temperature (coldest
+# night of the year, averaged), the basis of the USDA hardiness zone.
+version: 1
+status: indicative
+reference_period: "1991-2020"
+providers:
+  normals: static
+  projections: static
+  forecast: open_meteo
+note: >-
+  Valeurs arrondies par Semisto à partir des synthèses citées : un ordre de
+  grandeur par grande région naturelle, pas une mesure pour votre parcelle.
+  Les limites des zones sont approximatives.
+
+sources:
+  - key: meteolux_normals
+    title: "Normales climatologiques 1991-2020 (Luxembourg-Findel) et climat du Luxembourg"
+    publisher: "MeteoLux, Administration de la navigation aérienne"
+    year: 2021
+    url: "https://www.meteolux.lu"
+    used_for: normals
+  - key: list_climate
+    title: "Projections climatiques régionales pour le Luxembourg (EURO-CORDEX, modélisation régionale)"
+    publisher: "Luxembourg Institute of Science and Technology (LIST)"
+    year: 2021
+    url: "https://www.list.lu"
+    used_for: projections
+  - key: euro_cordex
+    title: "EURO-CORDEX: new high-resolution climate change projections for European impact research (Jacob et al., Regional Environmental Change 14, p. 563-578)"
+    publisher: "EURO-CORDEX"
+    year: 2014
+    url: "https://doi.org/10.1007/s10113-013-0499-2"
+    used_for: projections
+  - key: ipcc_ar6
+    title: "Sixième rapport d'évaluation, groupe I : Atlas interactif (région Europe de l'Ouest et centrale) et chapitre 11 (extrêmes : les nuits les plus froides se réchauffent plus vite que la moyenne)"
+    publisher: "GIEC (IPCC)"
+    year: 2021
+    url: "https://interactive-atlas.ipcc.ch"
+    used_for: projections
+  - key: usda_zones
+    title: "Plant Hardiness Zone Map : définition des zones de rusticité (minimum annuel moyen, par tranches de 10 °F)"
+    publisher: "USDA Agricultural Research Service"
+    year: 2023
+    url: "https://planthardiness.ars.usda.gov"
+    used_for: zones
+  - key: heinze_schreiber
+    title: "Eine neue Kartierung der Winterhärtezonen für Gehölze in Mittel- und Westeuropa (Heinze et Schreiber, Mitteilungen der Deutschen Dendrologischen Gesellschaft 75)"
+    publisher: "Deutsche Dendrologische Gesellschaft"
+    year: 1984
+    url: null
+    used_for: zones
+
+sub_areas:
+  - key: oesling
+    name: "Oesling"
+    description: "Le nord du pays, prolongement de l'Ardenne : plateaux vers 450-550 m entaillés de vallées profondes, plus froids et plus arrosés que le Gutland."
+    normals:
+      mean_temp_c: 8.5
+      summer_mean_temp_c: 16.0
+      winter_mean_temp_c: 1.0
+      annual_precip_mm: 950
+      frost_days: 85
+      extreme_min_c: -14.5
+      last_spring_frost: "05-05"
+      first_autumn_frost: "10-10"
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [5.70, 49.86]
+          - [6.25, 49.86]
+          - [6.25, 50.20]
+          - [5.70, 50.20]
+          - [5.70, 49.86]
+  - key: gutland
+    name: "Gutland"
+    description: "Le centre et le sud du pays, vers 250-400 m : un climat tempéré de transition. La vallée de la Moselle, à l'est, est la plus douce du pays."
+    default: true
+    normals:
+      mean_temp_c: 9.8
+      summer_mean_temp_c: 17.5
+      winter_mean_temp_c: 1.8
+      annual_precip_mm: 850
+      frost_days: 70
+      extreme_min_c: -12.5
+      last_spring_frost: "04-25"
+      first_autumn_frost: "10-20"
+
+# Changes against the reference period, as [low, central, high]. Same
+# deltas for the whole country (the spread between models is larger than
+# the spread between Oesling and Gutland). Rounded syntheses, see `sources`.
+projections:
+  reference_period: "1991-2020"
+  sources: [list_climate, euro_cordex, ipcc_ar6]
+  scenarios:
+    moderate:
+      ipcc: "RCP4.5 / SSP2-4.5"
+    high:
+      ipcc: "RCP8.5 / SSP5-8.5"
+  horizons:
+    "2050":
+      period: "2041-2060"
+      moderate:
+        mean_temp_delta_c: [0.8, 1.3, 2.0]
+        extreme_min_delta_c: [1.0, 2.0, 3.0]
+        summer_temp_delta_c: [0.8, 1.5, 2.5]
+        summer_precip_change_pct: [-15, -5, 5]
+        winter_precip_change_pct: [0, 5, 10]
+      high:
+        mean_temp_delta_c: [1.2, 1.8, 2.6]
+        extreme_min_delta_c: [1.5, 2.5, 4.0]
+        summer_temp_delta_c: [1.2, 2.0, 3.2]
+        summer_precip_change_pct: [-20, -10, 0]
+        winter_precip_change_pct: [0, 7, 15]
+    "2080":
+      period: "2071-2100"
+      moderate:
+        mean_temp_delta_c: [1.3, 2.0, 3.0]
+        extreme_min_delta_c: [1.5, 3.0, 4.5]
+        summer_temp_delta_c: [1.5, 2.5, 3.5]
+        summer_precip_change_pct: [-20, -10, 0]
+        winter_precip_change_pct: [0, 8, 15]
+      high:
+        mean_temp_delta_c: [2.5, 3.5, 5.0]
+        extreme_min_delta_c: [3.0, 5.0, 7.5]
+        summer_temp_delta_c: [2.5, 4.0, 6.0]
+        summer_precip_change_pct: [-35, -20, -5]
+        winter_precip_change_pct: [5, 12, 25]

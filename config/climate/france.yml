@@ -1,0 +1,371 @@
+# Climate reference data for metropolitan France and Corsica, seeded into
+# regions.settings["climate"] by db/seeds/40_climate.rb and read by
+# Providers::Climate::Static.
+#
+# Everything here is INDICATIVE: values are rounded by Semisto from the
+# published syntheses listed under `sources`, to give a coarse order of
+# magnitude per broad climate area, for low and middle altitudes. They are
+# not station data and not a forecast for a given parcel. Outlines are
+# deliberately coarse (a few vertices); the first sub-area containing the
+# point wins (mountains first), the `default: true` one covers the rest.
+#
+# Units: °C, mm, days; dates as "MM-DD" (median date, indicative).
+# extreme_min_c = average annual extreme minimum temperature (coldest
+# night of the year, averaged), the basis of the USDA hardiness zone.
+version: 1
+status: indicative
+reference_period: "1991-2020"
+providers:
+  normals: static
+  projections: static
+  forecast: open_meteo
+note: >-
+  Valeurs arrondies par Semisto à partir des synthèses citées : un ordre de
+  grandeur par grande zone climatique, pour les altitudes basses et moyennes,
+  pas une mesure pour votre parcelle. Les limites des zones sont
+  approximatives, et en montagne l'altitude compte plus que la zone.
+
+sources:
+  - key: meteofrance_normals
+    title: "Normales climatologiques 1991-2020 (fiches par station et cartes de France)"
+    publisher: "Météo-France"
+    year: 2021
+    url: "https://meteofrance.com"
+    used_for: normals
+  - key: drias_2020
+    title: "DRIAS 2020 : projections climatiques régionalisées pour la France (EURO-CORDEX corrigées)"
+    publisher: "Météo-France, IPSL, CERFACS (portail DRIAS)"
+    year: 2020
+    url: "https://www.drias-climat.fr"
+    used_for: projections
+  - key: tracc
+    title: "Trajectoire de réchauffement de référence pour l'adaptation au changement climatique (TRACC) : +2 °C en 2030, +2,7 °C en 2050, +4 °C en 2100 en France métropolitaine, par rapport à l'ère préindustrielle"
+    publisher: "Ministère de la Transition écologique"
+    year: 2024
+    url: null
+    used_for: projections
+  - key: euro_cordex
+    title: "EURO-CORDEX: new high-resolution climate change projections for European impact research (Jacob et al., Regional Environmental Change 14, p. 563-578)"
+    publisher: "EURO-CORDEX"
+    year: 2014
+    url: "https://doi.org/10.1007/s10113-013-0499-2"
+    used_for: projections
+  - key: ipcc_ar6
+    title: "Sixième rapport d'évaluation, groupe I : Atlas interactif (régions Europe de l'Ouest et centrale, Méditerranée) et chapitre 11 (extrêmes)"
+    publisher: "GIEC (IPCC)"
+    year: 2021
+    url: "https://interactive-atlas.ipcc.ch"
+    used_for: projections
+  - key: usda_zones
+    title: "Plant Hardiness Zone Map : définition des zones de rusticité (minimum annuel moyen, par tranches de 10 °F)"
+    publisher: "USDA Agricultural Research Service"
+    year: 2023
+    url: "https://planthardiness.ars.usda.gov"
+    used_for: zones
+  - key: heinze_schreiber
+    title: "Eine neue Kartierung der Winterhärtezonen für Gehölze in Mittel- und Westeuropa (Heinze et Schreiber, Mitteilungen der Deutschen Dendrologischen Gesellschaft 75)"
+    publisher: "Deutsche Dendrologische Gesellschaft"
+    year: 1984
+    url: null
+    used_for: zones
+
+sub_areas:
+  - key: alpes_jura
+    name: "Alpes et Jura"
+    description: "Massifs alpins et jurassiens : un climat de montagne, froid et enneigé. Les valeurs valent pour les vallées et versants vers 800-1 200 m ; on perd environ 0,6 °C tous les 100 m de montée."
+    normals:
+      mean_temp_c: 7.0
+      summer_mean_temp_c: 15.0
+      winter_mean_temp_c: -0.5
+      annual_precip_mm: 1300
+      frost_days: 120
+      extreme_min_c: -18.0
+      last_spring_frost: "05-20"
+      first_autumn_frost: "10-01"
+    geometry:
+      type: MultiPolygon
+      coordinates:
+        - - - [5.60, 44.20]
+            - [5.95, 45.00]
+            - [5.95, 45.40]
+            - [5.80, 45.90]
+            - [6.20, 46.40]
+            - [6.80, 46.45]
+            - [7.05, 45.90]
+            - [7.20, 45.25]
+            - [7.00, 44.70]
+            - [7.70, 44.15]
+            - [7.20, 43.95]
+            - [6.60, 43.90]
+            - [6.00, 44.00]
+            - [5.60, 44.20]
+        - - - [5.75, 46.20]
+            - [5.90, 46.75]
+            - [6.40, 47.25]
+            - [6.95, 47.45]
+            - [7.00, 47.30]
+            - [6.45, 46.90]
+            - [6.10, 46.40]
+            - [5.75, 46.20]
+  - key: pyrenees
+    name: "Pyrénées"
+    description: "La chaîne des Pyrénées : un climat de montagne, plus doux et plus ensoleillé à l'est. Les valeurs valent pour les vallées et versants vers 800-1 000 m."
+    normals:
+      mean_temp_c: 8.0
+      summer_mean_temp_c: 15.5
+      winter_mean_temp_c: 1.5
+      annual_precip_mm: 1200
+      frost_days: 100
+      extreme_min_c: -15.0
+      last_spring_frost: "05-15"
+      first_autumn_frost: "10-05"
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [-1.75, 43.30]
+          - [-0.60, 43.05]
+          - [0.60, 42.95]
+          - [1.60, 42.75]
+          - [2.60, 42.55]
+          - [3.00, 42.45]
+          - [3.00, 42.30]
+          - [-1.75, 42.30]
+          - [-1.75, 43.30]
+  - key: massif_central
+    name: "Massif central"
+    description: "Auvergne, Limousin oriental, Cévennes et Aubrac : plateaux et volcans souvent au-dessus de 600 m, aux hivers longs. La Limagne de Clermont et les vallées basses sont nettement plus douces."
+    normals:
+      mean_temp_c: 9.0
+      summer_mean_temp_c: 16.0
+      winter_mean_temp_c: 2.0
+      annual_precip_mm: 1000
+      frost_days: 85
+      extreme_min_c: -14.0
+      last_spring_frost: "05-05"
+      first_autumn_frost: "10-10"
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [2.00, 45.90]
+          - [2.60, 46.10]
+          - [3.30, 45.95]
+          - [3.90, 45.60]
+          - [4.40, 45.35]
+          - [4.50, 44.90]
+          - [4.20, 44.30]
+          - [3.60, 43.95]
+          - [2.90, 43.95]
+          - [2.40, 44.30]
+          - [2.00, 44.70]
+          - [1.60, 45.20]
+          - [1.50, 45.60]
+          - [2.00, 45.90]
+  - key: mediterranee
+    name: "Pourtour méditerranéen et Corse"
+    description: "Provence, Languedoc, Roussillon, Côte d'Azur et littoral corse : étés chauds et secs, hivers doux, pluies d'automne parfois violentes. L'arrière-pays et la montagne corse sont plus froids."
+    normals:
+      mean_temp_c: 15.5
+      summer_mean_temp_c: 23.5
+      winter_mean_temp_c: 8.5
+      annual_precip_mm: 650
+      frost_days: 10
+      extreme_min_c: -3.5
+      last_spring_frost: "02-20"
+      first_autumn_frost: "12-15"
+    geometry:
+      type: MultiPolygon
+      coordinates:
+        - - - [2.60, 42.35]
+            - [3.30, 42.35]
+            - [3.30, 43.20]
+            - [4.20, 43.40]
+            - [5.00, 43.20]
+            - [6.00, 42.95]
+            - [7.00, 43.40]
+            - [7.60, 43.70]
+            - [7.60, 44.05]
+            - [7.00, 43.95]
+            - [6.40, 43.85]
+            - [5.60, 44.05]
+            - [5.00, 44.45]
+            - [4.60, 44.60]
+            - [4.20, 44.25]
+            - [3.60, 43.95]
+            - [2.90, 43.60]
+            - [2.30, 43.20]
+            - [2.00, 42.65]
+            - [2.60, 42.35]
+        - - - [8.50, 41.30]
+            - [9.60, 41.30]
+            - [9.60, 43.05]
+            - [8.50, 43.05]
+            - [8.50, 41.30]
+  - key: ouest
+    name: "Ouest océanique"
+    description: "Bretagne, Basse-Normandie, Pays de la Loire et littoral charentais : hivers très doux, étés frais, pluies bien réparties. Le plus doux de tous près des côtes."
+    normals:
+      mean_temp_c: 12.0
+      summer_mean_temp_c: 17.5
+      winter_mean_temp_c: 6.0
+      annual_precip_mm: 850
+      frost_days: 20
+      extreme_min_c: -6.5
+      last_spring_frost: "03-25"
+      first_autumn_frost: "11-20"
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [-5.30, 47.00]
+          - [-5.30, 49.00]
+          - [-1.95, 49.75]
+          - [0.20, 49.75]
+          - [0.30, 49.20]
+          - [-0.20, 48.40]
+          - [0.00, 47.60]
+          - [-0.50, 46.60]
+          - [-0.90, 46.00]
+          - [-1.40, 45.90]
+          - [-1.60, 46.10]
+          - [-5.30, 47.00]
+  - key: sud_ouest
+    name: "Sud-Ouest aquitain"
+    description: "Aquitaine, Charentes intérieures, Gers et plaine toulousaine : un climat océanique chaud, aux étés longs et parfois secs, aux hivers doux."
+    normals:
+      mean_temp_c: 13.5
+      summer_mean_temp_c: 21.0
+      winter_mean_temp_c: 6.5
+      annual_precip_mm: 850
+      frost_days: 30
+      extreme_min_c: -7.5
+      last_spring_frost: "04-01"
+      first_autumn_frost: "11-10"
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [-1.90, 43.30]
+          - [-1.40, 45.90]
+          - [-0.90, 46.00]
+          - [-0.50, 46.60]
+          - [0.60, 46.30]
+          - [1.30, 45.60]
+          - [1.60, 45.20]
+          - [2.00, 44.70]
+          - [2.40, 44.30]
+          - [2.00, 43.60]
+          - [2.30, 43.20]
+          - [1.60, 42.75]
+          - [-0.60, 43.05]
+          - [-1.90, 43.30]
+  - key: rhone_saone
+    name: "Vallées du Rhône et de la Saône"
+    description: "Lyonnais, Bresse, Saône chalonnaise, moyenne vallée du Rhône et cuvette grenobloise : étés chauds, hivers frais, vent du nord fréquent."
+    normals:
+      mean_temp_c: 12.5
+      summer_mean_temp_c: 21.0
+      winter_mean_temp_c: 4.0
+      annual_precip_mm: 800
+      frost_days: 45
+      extreme_min_c: -9.5
+      last_spring_frost: "04-10"
+      first_autumn_frost: "11-01"
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [4.50, 44.40]
+          - [4.50, 45.30]
+          - [4.60, 45.90]
+          - [4.65, 46.90]
+          - [5.20, 46.90]
+          - [5.40, 46.20]
+          - [5.75, 46.20]
+          - [5.95, 45.40]
+          - [5.95, 45.00]
+          - [5.60, 44.20]
+          - [5.00, 44.45]
+          - [4.50, 44.40]
+  - key: nord_est
+    name: "Nord-Est continental"
+    description: "Lorraine, Alsace, Champagne orientale, Bourgogne et Franche-Comté : hivers froids, étés chauds, gelées tardives au printemps. Les Vosges et les plateaux élevés sont plus froids encore."
+    normals:
+      mean_temp_c: 10.5
+      summer_mean_temp_c: 18.5
+      winter_mean_temp_c: 2.5
+      annual_precip_mm: 750
+      frost_days: 70
+      extreme_min_c: -13.0
+      last_spring_frost: "04-25"
+      first_autumn_frost: "10-20"
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [4.00, 46.90]
+          - [3.90, 48.20]
+          - [4.00, 49.10]
+          - [4.85, 50.15]
+          - [5.80, 49.55]
+          - [6.40, 49.45]
+          - [7.00, 49.15]
+          - [8.25, 49.00]
+          - [7.55, 47.55]
+          - [6.95, 47.45]
+          - [5.90, 46.75]
+          - [5.20, 46.90]
+          - [4.65, 46.90]
+          - [4.00, 46.90]
+  - key: bassin_parisien
+    name: "Nord, Bassin parisien et Centre"
+    description: "Hauts-de-France, Haute-Normandie, Île-de-France, Centre-Val de Loire, Poitou et Limousin occidental : un climat océanique tempéré, aux pluies modérées."
+    default: true
+    normals:
+      mean_temp_c: 11.5
+      summer_mean_temp_c: 18.5
+      winter_mean_temp_c: 4.5
+      annual_precip_mm: 700
+      frost_days: 40
+      extreme_min_c: -10.0
+      last_spring_frost: "04-15"
+      first_autumn_frost: "10-30"
+
+# Changes against the reference period, as [low, central, high]. Same
+# deltas for the whole country: the spread between models is larger than
+# the spread between areas, except for summer rainfall, which drops more in
+# the south (the central value here is a national middle). Rounded
+# syntheses, see `sources`; consistent with the TRACC (about +1 °C in 2050
+# and +2.3 °C in 2100 over 1991-2020 under the reference trajectory).
+projections:
+  reference_period: "1991-2020"
+  sources: [drias_2020, tracc, euro_cordex, ipcc_ar6]
+  scenarios:
+    moderate:
+      ipcc: "RCP4.5 / SSP2-4.5"
+    high:
+      ipcc: "RCP8.5 / SSP5-8.5"
+  horizons:
+    "2050":
+      period: "2041-2060"
+      moderate:
+        mean_temp_delta_c: [0.8, 1.4, 2.0]
+        extreme_min_delta_c: [1.0, 2.0, 3.0]
+        summer_temp_delta_c: [0.9, 1.7, 2.7]
+        summer_precip_change_pct: [-20, -8, 5]
+        winter_precip_change_pct: [-5, 5, 12]
+      high:
+        mean_temp_delta_c: [1.2, 1.9, 2.7]
+        extreme_min_delta_c: [1.5, 2.5, 4.0]
+        summer_temp_delta_c: [1.3, 2.3, 3.5]
+        summer_precip_change_pct: [-25, -12, 0]
+        winter_precip_change_pct: [-5, 7, 15]
+    "2080":
+      period: "2071-2100"
+      moderate:
+        mean_temp_delta_c: [1.3, 2.1, 3.0]
+        extreme_min_delta_c: [1.5, 3.0, 4.5]
+        summer_temp_delta_c: [1.5, 2.7, 3.8]
+        summer_precip_change_pct: [-25, -12, 0]
+        winter_precip_change_pct: [-5, 7, 15]
+      high:
+        mean_temp_delta_c: [2.6, 3.7, 5.2]
+        extreme_min_delta_c: [3.0, 5.0, 7.5]
+        summer_temp_delta_c: [2.8, 4.5, 6.5]
+        summer_precip_change_pct: [-40, -25, -10]
+        winter_precip_change_pct: [0, 10, 25]

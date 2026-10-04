@@ -37,7 +37,7 @@ La section **Prévisions météo** est prévue pour afficher les sept prochains 
 
 ## D'où viennent ces chiffres
 
-Ouvrez **Sources et méthode** au bas du panneau. Les normales viennent de l'Institut royal météorologique (IRM) ; les projections ajoutent aux normales les écarts publiés pour la Belgique par CORDEX.be, EURO-CORDEX et le GIEC. Ce sont des tendances, pas une prévision pour votre parcelle.
+Ouvrez **Sources et méthode** au bas du panneau. Les normales viennent du service météo de votre pays : l'Institut royal météorologique (IRM) en Wallonie, Météo-France en France, MeteoLux au Luxembourg. Les projections ajoutent aux normales les écarts publiés pour chaque pays (CORDEX.be, DRIAS, le LIST), par EURO-CORDEX et par le GIEC. Hors de ces trois régions, le panneau Climat n'a pas encore de données. Ce sont des tendances, pas une prévision pour votre parcelle.
 
 ## Pour aller plus loin
 
