@@ -364,6 +364,7 @@ fr:
       open: "Ouvrir ce point"
     compare:
       intro: "Vos points côte à côte, chaque valeur située par rapport à des repères indicatifs pour un sol de jardin ou de verger en Belgique."
+      intro_plain: "Les résultats de vos points côte à côte."
       empty: "Saisissez les résultats d'au moins un point (onglet « Points ») pour les comparer ici."
       measure: "Mesure"
       texture: "Classe de texture"

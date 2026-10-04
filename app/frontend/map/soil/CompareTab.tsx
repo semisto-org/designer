@@ -29,7 +29,7 @@ export default function CompareTab() {
   if (columns.length === 0) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-loam-600">{t('soil.compare.intro')}</p>
+        <p className="text-sm text-loam-600">{t(analyses ? 'soil.compare.intro' : 'soil.compare.intro_plain')}</p>
         <p className="rounded-lg bg-loam-50 p-3 text-sm text-loam-500">{t('soil.compare.empty')}</p>
         {!analyses && <Upsell />}
       </div>
@@ -43,7 +43,7 @@ export default function CompareTab() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-loam-600">{t('soil.compare.intro')}</p>
+      <p className="text-sm text-loam-600">{t(analyses ? 'soil.compare.intro' : 'soil.compare.intro_plain')}</p>
       {!analyses && <Upsell />}
 
       {analyses && (
