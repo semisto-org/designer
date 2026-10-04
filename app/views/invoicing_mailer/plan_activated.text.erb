@@ -1,0 +1,10 @@
+<%= t("billing_mailer.greeting", name: @user.display_name) %>
+
+<%= t(".body", plan: @plan, start: french_date(@grant.starts_at), end: french_date(@grant.ends_at)) %>
+
+<%= t(".payment") %>
+
+<%= t(".cta") %> : <%= @maps_url %>
+
+<%= t("billing_mailer.signature") %>
+<%= t("billing_mailer.team") %>

@@ -224,6 +224,24 @@ Rails.application.routes.draw do
   end
   # --- end teams ---
 
+  # --- invoicing ---
+  # « Payer sur facture »: the request form (signed in; from /billing and
+  # /tarifs) and its confirmation, and the staff screen.
+  get "billing/invoice", to: "invoice_requests#new", as: :new_invoice_request
+  post "billing/invoice", to: "invoice_requests#create", as: :invoice_requests
+  get "billing/invoice/:id", to: "invoice_requests#show", as: :invoice_request, constraints: { id: /\d+/ }
+  namespace :admin do
+    resources :invoice_requests, path: "invoice-requests", only: :index do
+      member do
+        post :invoice
+        post :mark_paid, path: "mark-paid"
+        post :cancel
+        post :activate
+      end
+    end
+  end
+  # --- end invoicing ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

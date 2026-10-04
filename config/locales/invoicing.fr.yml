@@ -1,0 +1,252 @@
+# « Payer sur facture »: invoices for communes, schools, associations and
+# companies (request form, staff screen, Stripe invoice, plan granted on
+# invoice) and their e-mails. Keys in English, values in French; the backend
+# and the React frontend read the same file.
+fr:
+  activerecord:
+    models:
+      invoice_request: "Demande de facture"
+      plan_grant: "Formule réglée sur facture"
+    attributes:
+      invoice_request:
+        organization_name: "Nom de l'organisation"
+        billing_address: "Adresse de facturation"
+        billing_email: "E-mail de facturation"
+        company_number: "Numéro de TVA ou d'entreprise"
+        purchase_order: "Numéro de bon de commande"
+        plan_key: "Formule"
+        message: "Message"
+        status: "Statut"
+      plan_grant:
+        starts_at: "Début"
+        ends_at: "Fin"
+        plan_key: "Formule"
+    errors:
+      models:
+        invoice_request:
+          attributes:
+            organization_name:
+              blank: "Indiquez le nom de l'organisation à facturer."
+              too_long: "Ce nom est trop long (%{count} caractères au maximum)."
+            billing_address:
+              blank: "Indiquez l'adresse qui doit figurer sur la facture."
+              too_long: "Cette adresse est trop longue (%{count} caractères au maximum)."
+            billing_email:
+              blank: "Indiquez l'adresse e-mail qui recevra la facture."
+              invalid: "Cette adresse e-mail ne semble pas valide."
+              too_long: "Cette adresse e-mail est trop longue."
+            company_number:
+              too_long: "Ce numéro est trop long (%{count} caractères au maximum)."
+            purchase_order:
+              too_long: "Ce numéro est trop long (%{count} caractères au maximum)."
+            message:
+              too_long: "Ce message est trop long (%{count} caractères au maximum)."
+            plan_key:
+              inclusion: "Choisissez une formule."
+            status:
+              inclusion: "Ce statut n'existe pas."
+            duration_months:
+              not_a_number: "La durée n'est pas valide."
+              greater_than: "La durée n'est pas valide."
+            amount_cents:
+              not_a_number: "Le montant n'a pas pu être calculé."
+              greater_than: "Le montant n'a pas pu être calculé."
+            stripe_invoice_id:
+              taken: "Cette facture Stripe est déjà liée à une autre demande."
+        plan_grant:
+          attributes:
+            plan_key:
+              inclusion: "Cette formule n'existe pas."
+            starts_at:
+              blank: "Indiquez la date de début."
+            ends_at:
+              blank: "Indiquez la date de fin."
+              before_start: "doit venir après la date de début."
+            invoice_request_id:
+              taken: "Cette demande a déjà sa formule."
+        billing_notice:
+          attributes:
+            base:
+              subject: "Un rappel concerne un forfait ou une formule, pas les deux."
+  invoicing:
+    durations:
+      year: "pour un an"
+    statuses:
+      requested: "Demandée"
+      invoiced: "Facture envoyée"
+      paid: "Payée"
+      cancelled: "Annulée"
+    entry:
+      title: "Payer sur facture"
+      body: "Commune, école, association ou entreprise : recevez une facture payable par virement."
+      cta: "Demander une facture"
+    new:
+      title: "Payer sur facture"
+      intro: "Semisto vous envoie une facture au nom de votre organisation, payable par virement sous 30 jours. Votre numéro de bon de commande y figure si vous en avez un."
+      who_title: "Qui facturer"
+      organization_name: "Nom de l'organisation"
+      organization_name_placeholder: "Administration communale de Yvoir"
+      billing_address: "Adresse de facturation"
+      billing_address_hint: "Telle qu'elle doit figurer sur la facture : rue et numéro, code postal et localité, et le pays si ce n'est pas la Belgique."
+      billing_address_placeholder: "Rue de l'Hôtel de Ville 1\n5530 Yvoir"
+      company_number: "Numéro de TVA ou d'entreprise (BCE)"
+      company_number_hint: "Facultatif, par exemple BE0123456789."
+      billing_email: "E-mail de facturation"
+      billing_email_hint: "La facture est envoyée à cette adresse : la vôtre, ou celle de votre service comptable."
+      purchase_order: "Numéro de bon de commande"
+      purchase_order_hint: "Facultatif : il est repris sur la facture."
+      plan_title: "Votre formule"
+      plan: "Formule"
+      plan_option: "%{plan} — %{amount}"
+      duration: "Durée"
+      duration_value: "Pour un an (12 mois)"
+      amount: "Montant de la facture"
+      amount_monthly: "%{monthly} par mois × 12 mois, TVA comprise."
+      amount_yearly: "Le forfait d'un an, TVA comprise."
+      message: "Message"
+      message_hint: "Facultatif : un délai, le service à contacter, une référence de marché…"
+      submit: "Envoyer la demande"
+      sending: "Envoi…"
+      next_title: "Et ensuite ?"
+      next_steps:
+        - "Semisto prépare la facture et l'envoie à l'e-mail de facturation."
+        - "Votre formule peut être activée dès l'envoi de la facture, sans attendre le paiement."
+        - "Vous réglez par virement, sous 30 jours."
+      back: "Formule et facturation"
+    show:
+      title: "Demande envoyée"
+      heading: "Votre demande de facture"
+      lead: "Merci ! Semisto a bien reçu votre demande de facture pour « %{organization} »."
+      recap_title: "Votre demande"
+      email_note: "Un e-mail de confirmation vous a été envoyé à %{email}."
+      status: "Statut : %{status}"
+      open_invoice: "Voir la facture"
+      back: "Retour à Formule et facturation"
+    created: "Votre demande de facture est envoyée."
+    rate_limited: "Vous avez déjà envoyé plusieurs demandes. Semisto vous répond rapidement ; réessayez dans une heure si besoin."
+    billing:
+      requests_title: "Vos demandes de facture"
+      request_line: "%{plan} · %{organization}"
+      requested_on: "Demandée le %{date}"
+      open_invoice: "Voir la facture"
+      grant_title: "Formule réglée sur facture"
+      grant_until: "Formule %{plan} jusqu'au %{date}, réglée sur facture"
+      grant_until_manual: "Formule %{plan} jusqu'au %{date}, accordée par Semisto"
+      grant_upcoming: "Formule %{plan} du %{start} au %{end}, réglée sur facture"
+      grant_days:
+        one: "Il reste %{count} jour."
+        other: "Il reste %{count} jours."
+      grant_renew_note: "Rien n'est prélevé automatiquement : pour une nouvelle année, demandez une nouvelle facture."
+    pricing:
+      title: "Payer sur facture"
+      body: "Commune, école, association ou entreprise : recevez une facture payable par virement."
+      detail: "Atelier, Bureau d'études ou Forfait particulier, pour un an, avec votre numéro de bon de commande sur la facture."
+      cta: "Demander une facture"
+    admin:
+      title: "Demandes de facture"
+      intro: "Communes, écoles, associations et entreprises qui paient par virement. Activez la formule dès que la facture part : le paiement suit sous 30 jours."
+      link: "Demandes de facture"
+      back: "Demandes envoyées depuis les cartes"
+      stripe_note: "« Créer la facture dans Stripe » envoie la facture à l'e-mail de facturation, payable sous 30 jours, avec le numéro de bon de commande. Le paiement est enregistré tout seul à son arrivée."
+      manual_note: "Stripe n'est pas configuré : faites la facture à la main (montant TVA comprise, numéro de bon de commande), activez la formule, puis marquez la demande payée à l'arrivée du virement."
+      filters:
+        open: "À traiter"
+        paid: "Payées"
+        cancelled: "Annulées"
+        all: "Toutes"
+      empty: "Aucune demande ici."
+      received: "Reçue %{when}"
+      from: "Demandée par"
+      address: "Adresse de facturation"
+      stripe_address: "Pour Stripe : %{address}"
+      company_number: "TVA ou entreprise"
+      eu_vat: "TVA intracommunautaire"
+      billing_email: "E-mail de facturation"
+      purchase_order: "Bon de commande"
+      plan: "Formule"
+      amount: "Montant"
+      amount_value: "%{amount} TVA comprise, pour %{months} mois"
+      message: "Message"
+      invoice: "Facture"
+      invoice_number: "Facture %{number}"
+      open_invoice: "Page de paiement"
+      invoice_pdf: "PDF"
+      paid_on: "Payée le %{date}"
+      grant_active: "Formule du %{start} au %{end}"
+      grant_revoked: "Formule arrêtée le %{date}"
+      grant_none: "Formule pas encore activée"
+      handled_by: "Traitée par %{name}"
+      starts_on: "À partir du"
+      actions:
+        create_invoice: "Créer la facture dans Stripe"
+        mark_paid: "Marquer comme payée"
+        cancel: "Annuler"
+        activate: "Activer la formule"
+        working: "Un instant…"
+      confirm:
+        create_invoice: "Créer la facture de %{amount} et l'envoyer à %{email} ?"
+        mark_paid: "Marquer cette demande comme payée ? La formule est activée si elle ne l'est pas encore."
+        mark_paid_stripe: "Marquer cette demande comme payée ? La facture Stripe sera marquée « payée hors Stripe » et la formule activée si elle ne l'est pas encore."
+        cancel: "Annuler cette demande ? Si la formule a commencé, elle s'arrête aujourd'hui ; les cartes restent lisibles."
+        cancel_stripe: "Annuler cette demande ? La facture Stripe est annulée et, si la formule a commencé, elle s'arrête aujourd'hui."
+      flash:
+        invoiced: "Facture envoyée à %{email}."
+        paid: "Demande marquée comme payée."
+        cancelled: "Demande annulée."
+        activated: "Formule %{plan} activée du %{start} au %{end}."
+      errors:
+        not_configured: "Stripe n'est pas configuré : faites la facture à la main."
+        not_requested: "Cette demande a déjà une facture, ou elle est close."
+        closed: "Cette demande est close."
+        invalid_date: "Cette date n'est pas valide."
+        stripe: "Stripe a refusé l'opération : %{message}"
+    stripe:
+      line: "Semisto Designer — %{plan} — %{months} mois"
+      purchase_order: "Bon de commande"
+      company_number: "N° d'entreprise"
+  invoicing_mailer:
+    details:
+      organization: "Organisation"
+      address: "Adresse de facturation"
+      company_number: "TVA ou n° d'entreprise"
+      billing_email: "E-mail de facturation"
+      purchase_order: "Bon de commande"
+      plan: "Formule"
+      plan_value: "%{plan}, pour un an"
+      amount: "Montant"
+      amount_value: "%{amount}, TVA comprise"
+      message: "Message"
+    request_received:
+      subject: "Demande de facture : %{organization} (%{plan})"
+      intro: "%{name} (%{email}) demande à payer sur facture."
+      next: "À faire : créer la facture (depuis la page d'administration, dans Stripe ou à la main), puis activer la formule. Répondre à cet e-mail pour lui écrire."
+      open_admin: "Ouvrir les demandes de facture"
+    request_confirmation:
+      subject: "Votre demande de facture pour Semisto Designer"
+      body: "Nous avons bien reçu votre demande de facture au nom de « %{organization} ». En voici le récapitulatif :"
+      invoice: "La facture sera envoyée à %{email}, payable par virement sous 30 jours."
+      purchase_order: " Elle mentionnera votre bon de commande n° %{number}."
+      activation: "En général, nous activons votre formule dès l'envoi de la facture, sans attendre le paiement : nous vous prévenons par e-mail."
+      follow: "Suivre ma demande"
+    plan_activated:
+      subject: "Votre formule %{plan} est activée"
+      body: "Bonne nouvelle : votre formule %{plan} est activée du %{start} au %{end}, réglée sur facture."
+      payment: "Vous pouvez travailler dès maintenant, le paiement suit par virement."
+      cta: "Ouvrir mes cartes"
+    grant_reminder:
+      cta: "Demander une nouvelle facture"
+      renew: "Pour continuer une année de plus, demandez une nouvelle facture : il ne faut que quelques minutes, et votre numéro de bon de commande peut y figurer."
+      no_auto: "Rien n'est facturé automatiquement : vous gardez la main."
+      d30:
+        subject: "Votre formule Semisto Designer se termine le %{date}"
+        body: "Votre formule %{plan}, réglée sur facture, est valable jusqu'au %{date}, soit dans un mois."
+      d7:
+        subject: "Plus que 7 jours : votre formule Semisto Designer se termine le %{date}"
+        body: "Votre formule %{plan}, réglée sur facture, se termine le %{date}, dans une semaine."
+      expired:
+        subject: "Votre formule Semisto Designer est arrivée à échéance"
+        body: "Votre formule %{plan}, réglée sur facture, a pris fin le %{date}."
+        read_only:
+          one: "%{count} de vos cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Demandez une nouvelle facture pour la modifier à nouveau."
+          other: "%{count} de vos cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Demandez une nouvelle facture pour les modifier à nouveau."
+        free_ok: "Votre première carte reste entièrement modifiable, comme avant."

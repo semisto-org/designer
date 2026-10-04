@@ -1,0 +1,8 @@
+<p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
+<p><%= t(".body", organization: @request.organization_name) %></p>
+<%= render "details" %>
+<p><%= t(".invoice", email: @request.billing_email) %>
+<% if @request.purchase_order %><%= t(".purchase_order", number: @request.purchase_order) %><% end %></p>
+<p><%= t(".activation") %></p>
+<p><a href="<%= @billing_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".follow") %></a></p>
+<p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

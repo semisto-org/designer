@@ -1,0 +1,16 @@
+<table style="border-collapse:collapse;font-size:14px">
+  <tr><td style="padding:4px 12px 4px 0;color:#6b6257;vertical-align:top"><%= t("invoicing_mailer.details.organization") %></td><td><strong><%= @request.organization_name %></strong></td></tr>
+  <tr><td style="padding:4px 12px 4px 0;color:#6b6257;vertical-align:top"><%= t("invoicing_mailer.details.address") %></td><td style="white-space:pre-line"><%= @request.billing_address %></td></tr>
+  <% if @request.company_number %>
+    <tr><td style="padding:4px 12px 4px 0;color:#6b6257"><%= t("invoicing_mailer.details.company_number") %></td><td><%= @request.company_number %></td></tr>
+  <% end %>
+  <tr><td style="padding:4px 12px 4px 0;color:#6b6257"><%= t("invoicing_mailer.details.billing_email") %></td><td><%= @request.billing_email %></td></tr>
+  <% if @request.purchase_order %>
+    <tr><td style="padding:4px 12px 4px 0;color:#6b6257"><%= t("invoicing_mailer.details.purchase_order") %></td><td><%= @request.purchase_order %></td></tr>
+  <% end %>
+  <tr><td style="padding:4px 12px 4px 0;color:#6b6257"><%= t("invoicing_mailer.details.plan") %></td><td><%= t("invoicing_mailer.details.plan_value", plan: @request.plan_name) %></td></tr>
+  <tr><td style="padding:4px 12px 4px 0;color:#6b6257"><%= t("invoicing_mailer.details.amount") %></td><td><%= t("invoicing_mailer.details.amount_value", amount: @amount) %></td></tr>
+  <% if @request.message %>
+    <tr><td style="padding:4px 12px 4px 0;color:#6b6257;vertical-align:top"><%= t("invoicing_mailer.details.message") %></td><td style="white-space:pre-line"><%= @request.message %></td></tr>
+  <% end %>
+</table>

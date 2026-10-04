@@ -1,0 +1,7 @@
+<%= t(".intro", name: @user.display_name, email: @user.email_address) %>
+
+<%= render "details" %>
+
+<%= t(".next") %>
+
+<%= t(".open_admin") %> : <%= @admin_url %>

@@ -1,7 +1,8 @@
 module Billing
   # Which plan a user is on right now. The best valid source wins (most maps):
-  # a valid yearly pass, or a subscription that is active, trialing or past
-  # due within the grace period. Everything else is "free".
+  # a valid yearly pass, a subscription that is active, trialing or past due
+  # within the grace period, or a plan granted on invoice that runs now (not
+  # revoked). Everything else is "free".
   class PlanResolver
     def self.call(user, at: Time.current) = new(user, at:).plan_key
 
@@ -16,6 +17,8 @@ module Billing
       candidates << "yearly" if @user.current_yearly_pass(at: @at)
       subscription = @user.current_plan_subscription(at: @at)
       candidates << subscription.plan_key if subscription
+      grant = @user.current_plan_grant(at: @at)
+      candidates << grant.plan_key if grant
       candidates.max_by { |key| Entitlements::PLANS.fetch(key)[:max_maps] } || "free"
     end
   end

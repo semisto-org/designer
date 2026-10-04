@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_160200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -98,11 +98,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
   end
 
   create_table "billing_notices", force: :cascade do |t|
-    t.bigint "plan_purchase_id", null: false
+    t.bigint "plan_purchase_id"
     t.string "kind", null: false
     t.datetime "sent_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "plan_grant_id"
+    t.index ["plan_grant_id", "kind"], name: "index_billing_notices_on_plan_grant_id_and_kind", unique: true
+    t.index ["plan_grant_id"], name: "index_billing_notices_on_plan_grant_id"
     t.index ["plan_purchase_id", "kind"], name: "index_billing_notices_on_plan_purchase_id_and_kind", unique: true
     t.index ["plan_purchase_id"], name: "index_billing_notices_on_plan_purchase_id"
   end
@@ -130,6 +133,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
     t.text "invoice_pdf_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "invoice_request_id"
+    t.index ["invoice_request_id"], name: "index_billing_payments_on_invoice_request_id"
     t.index ["paid_at"], name: "index_billing_payments_on_paid_at"
     t.index ["plan_purchase_id"], name: "index_billing_payments_on_plan_purchase_id"
     t.index ["plan_subscription_id"], name: "index_billing_payments_on_plan_subscription_id"
@@ -207,6 +212,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_financial_plans_on_map_id", unique: true
     t.index ["updated_by_id"], name: "index_financial_plans_on_updated_by_id"
+  end
+
+  create_table "invoice_requests", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "organization_name", null: false
+    t.text "billing_address", null: false
+    t.string "company_number"
+    t.string "billing_email", null: false
+    t.string "purchase_order"
+    t.string "plan_key", null: false
+    t.integer "duration_months", default: 12, null: false
+    t.integer "amount_cents", null: false
+    t.string "currency", default: "eur", null: false
+    t.text "message"
+    t.string "status", default: "requested", null: false
+    t.string "stripe_invoice_id"
+    t.string "stripe_invoice_number"
+    t.text "hosted_invoice_url"
+    t.text "invoice_pdf_url"
+    t.datetime "invoiced_at"
+    t.datetime "paid_at"
+    t.datetime "cancelled_at"
+    t.bigint "handled_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["handled_by_id"], name: "index_invoice_requests_on_handled_by_id"
+    t.index ["status", "created_at"], name: "index_invoice_requests_on_status_and_created_at"
+    t.index ["stripe_invoice_id"], name: "index_invoice_requests_on_stripe_invoice_id", unique: true
+    t.index ["user_id"], name: "index_invoice_requests_on_user_id"
   end
 
   create_table "map_features", force: :cascade do |t|
@@ -509,6 +543,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
     t.index ["map_id"], name: "index_photo_albums_on_map_id"
   end
 
+  create_table "plan_grants", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "plan_key", null: false
+    t.datetime "starts_at", null: false
+    t.datetime "ends_at", null: false
+    t.datetime "revoked_at"
+    t.text "notes"
+    t.bigint "invoice_request_id"
+    t.bigint "granted_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["granted_by_id"], name: "index_plan_grants_on_granted_by_id"
+    t.index ["invoice_request_id"], name: "index_plan_grants_on_invoice_request_id", unique: true
+    t.index ["user_id", "ends_at"], name: "index_plan_grants_on_user_id_and_ends_at"
+    t.index ["user_id"], name: "index_plan_grants_on_user_id"
+  end
+
   create_table "plan_purchases", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "plan_key", null: false
@@ -800,7 +851,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
   add_foreign_key "applauses", "comments"
   add_foreign_key "applauses", "users"
   add_foreign_key "billing_accounts", "users"
+  add_foreign_key "billing_notices", "plan_grants"
   add_foreign_key "billing_notices", "plan_purchases"
+  add_foreign_key "billing_payments", "invoice_requests"
   add_foreign_key "billing_payments", "plan_purchases"
   add_foreign_key "billing_payments", "plan_subscriptions"
   add_foreign_key "billing_payments", "users"
@@ -812,6 +865,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
   add_foreign_key "comments", "users", column: "author_id"
   add_foreign_key "financial_plans", "maps"
   add_foreign_key "financial_plans", "users", column: "updated_by_id"
+  add_foreign_key "invoice_requests", "users"
+  add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
@@ -850,6 +905,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
   add_foreign_key "patch_items", "plant_species", column: "species_id"
   add_foreign_key "patch_items", "plant_varieties", column: "variety_id"
   add_foreign_key "photo_albums", "maps"
+  add_foreign_key "plan_grants", "invoice_requests"
+  add_foreign_key "plan_grants", "users"
+  add_foreign_key "plan_grants", "users", column: "granted_by_id", on_delete: :nullify
   add_foreign_key "plan_purchases", "users"
   add_foreign_key "plan_subscriptions", "users"
   add_foreign_key "plant_observations", "map_features", on_delete: :cascade
