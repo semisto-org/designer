@@ -98,7 +98,7 @@ fr:
         one: "%{count} espèce de votre carte attend sa vérification."
         other: "%{count} espèces de votre carte attendent leur vérification."
       included: "Inclus dans le forfait, avec les autres analyses du terrain."
-      cta: "Découvrir le forfait"
+      cta: "Voir les formules"
     forecast:
       title: "Prévisions météo"
       soon: "Prévisions météo : bientôt disponibles."

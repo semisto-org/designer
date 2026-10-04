@@ -42,14 +42,14 @@ export default function JourneyPanel() {
   }
 
   const openPanel = (panel: string) => {
-    const id = resolvePanel(panel, editor.canEdit)
+    const id = resolvePanel(panel, editor.canEdit, editor.isOwner)
     if (id) editor.openPanel(id)
   }
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-loam-600">{t('journey.panel.intro')}</p>
-      <NextAction next={data.next} onOpen={openPanel} onAdvance={(stage) => setStage(stage)} canEdit={editor.canEdit} />
+      <NextAction next={data.next} onOpen={openPanel} onAdvance={(stage) => setStage(stage)} canEdit={editor.canEdit} isOwner={editor.isOwner} />
       <ol className="space-y-2">
         {data.steps.map((step, index) => {
           const open = expanded === step.key
@@ -85,7 +85,7 @@ export default function JourneyPanel() {
                         key={item.key} item={item}
                         onOpen={() => openPanel(item.panel)}
                         onToggle={(on) => setSeen(item.key, on)}
-                        openable={resolvePanel(item.panel, editor.canEdit) != null}
+                        openable={resolvePanel(item.panel, editor.canEdit, editor.isOwner) != null}
                       />
                     ))}
                   </ul>
@@ -151,11 +151,11 @@ function ChecklistItem({ item, openable, onOpen, onToggle }: {
   )
 }
 
-export function NextAction({ next, onOpen, onAdvance, canEdit }: {
-  next: JourneyNext; onOpen: (panel: string) => void; onAdvance: (stage: MapStage) => void; canEdit: boolean
+export function NextAction({ next, onOpen, onAdvance, canEdit, isOwner = false }: {
+  next: JourneyNext; onOpen: (panel: string) => void; onAdvance: (stage: MapStage) => void; canEdit: boolean; isOwner?: boolean
 }) {
   if (next.type === 'item') {
-    const openable = resolvePanel(next.panel, canEdit) != null
+    const openable = resolvePanel(next.panel, canEdit, isOwner) != null
     return (
       <div className="rounded-xl bg-prune-600 p-3.5 text-white">
         <p className="text-xs font-medium uppercase tracking-wide text-prune-200">{t('journey.panel.next_label')}</p>

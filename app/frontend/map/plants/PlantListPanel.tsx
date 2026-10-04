@@ -48,7 +48,11 @@ export default function PlantListPanel() {
       {list.unlinked > 0 && <p className="text-xs text-humus-700">{t('plant_list.unlinked', { count: list.unlinked })}</p>}
 
       <div className="flex flex-wrap gap-2">
-        <a href={`/maps/${mapId}/plant_list.csv`} download className={buttonClass('secondary', 'sm')} aria-disabled={list.total === 0}>
+        <a
+          href={`/maps/${mapId}/plant_list.csv`} download aria-disabled={list.total === 0} tabIndex={list.total === 0 ? -1 : undefined}
+          onClick={(e) => { if (list.total === 0) e.preventDefault() }}
+          className={buttonClass('secondary', 'sm') + (list.total === 0 ? ' pointer-events-none opacity-50' : '')}
+        >
           <Download className="h-4 w-4" />{t('plant_list.export_csv')}
         </a>
         <a href={`/maps/${mapId}/plant_list/print`} target="_blank" rel="noreferrer" className={buttonClass('secondary', 'sm')}>

@@ -53,6 +53,8 @@ export type Editor = {
   finishDraw: () => void
   cancelDraw: () => void
   drawing: boolean
+  /** What is being drawn ('edit' while reshaping), null when idle. */
+  drawingShape: DrawShape | 'edit' | null
 
   activePanel: string | null
   openPanel: (id: string | null) => void

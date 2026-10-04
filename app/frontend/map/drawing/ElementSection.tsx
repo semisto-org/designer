@@ -36,7 +36,7 @@ function PropertyField({ field, value, disabled, onSave }: {
 
   if (field.readonly || disabled) {
     if (field.type === 'boolean') {
-      return <div className="flex justify-between gap-2 text-sm"><span className="text-loam-500">{label}</span><span>{value === true ? '✓' : t('drawing.element.none')}</span></div>
+      return <div className="flex justify-between gap-2 text-sm"><span className="text-loam-500">{label}</span><span>{value === true ? t('drawing.element.yes') : t('drawing.element.none')}</span></div>
     }
     return <div className="flex justify-between gap-2 text-sm"><span className="text-loam-500">{label}</span><span className="text-right">{display(field, value)}</span></div>
   }

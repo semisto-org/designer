@@ -89,7 +89,7 @@ fr:
     project:
       title: "Fiche projet"
       page_title: "Fiche projet · %{map}"
-      intro: "Racontez votre projet en plusieurs séances : tout s'enregistre automatiquement. Cette fiche aide Semisto, vos co-concepteurs et, plus tard, Claude à proposer des aménagements qui vous ressemblent."
+      intro: "Racontez votre projet en plusieurs séances : tout s'enregistre automatiquement. Cette fiche aide Semisto, vos co-concepteurs et Claude, si vous le connectez à votre carte, à proposer des aménagements qui vous ressemblent."
       invalid: "Certaines réponses ne sont pas valides."
       overall: "Fiche complétée à %{percent} %"
       section_progress: "%{answered} sur %{total}"

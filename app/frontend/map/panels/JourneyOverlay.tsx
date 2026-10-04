@@ -3,7 +3,7 @@ import { ArrowRight, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { StepBadge, itemLabel, stageLabel } from '@/components/journey/JourneyParts'
 import { JOURNEY_REFRESH, useChipHidden, useSeen } from '@/lib/journeyFlags'
-import { LAYERS_PANEL_PATTERN, resolvePanel } from '@/lib/journeyPanels'
+import { isLayersPanel, resolvePanel } from '@/lib/journeyPanels'
 import { refreshJourney, useJourneyState } from '@/lib/journeyStore'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -26,7 +26,7 @@ export default function JourneyOverlay() {
   // Opening the data layers panel counts as having looked at the layers.
   const activePanel = editor.activePanel
   useEffect(() => {
-    if (activePanel && LAYERS_PANEL_PATTERN.test(activePanel)) setSeenFlag('layers_seen', true)
+    if (activePanel && isLayersPanel(activePanel)) setSeenFlag('layers_seen', true)
   }, [activePanel, setSeenFlag])
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function JourneyOverlay() {
   const index = data.stageIndex
   const step = data.steps[index]
   const next = data.next
-  const panelId = next.type === 'item' ? resolvePanel(next.panel, editor.canEdit) : null
+  const panelId = next.type === 'item' ? resolvePanel(next.panel, editor.canEdit, editor.isOwner) : null
   // On a phone the drafts bar takes the same spot under the drawing toolbar.
   const hasDrafts = editor.features.some((f) => f.properties.status === 'draft')
 

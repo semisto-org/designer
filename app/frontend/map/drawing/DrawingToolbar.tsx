@@ -141,6 +141,16 @@ export default function DrawingToolbar() {
         </div>
       </div>
 
+      {/* A shape started from a panel (outline, patch, zone…): the same way to finish it. */}
+      {!tool && (editor.drawingShape === 'polygon' || editor.drawingShape === 'linestring') && (
+        <div className="pointer-events-none absolute inset-x-2 top-14 z-30 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
+          <HintBar text={t(editor.drawingShape === 'polygon' ? 'drawing.toolbar.hint_outline' : 'drawing.toolbar.hint_path')}>
+            <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.toolbar.finish')}</Button>
+            <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.toolbar.cancel')}</Button>
+          </HintBar>
+        </div>
+      )}
+
       {tool && (
         <div className="pointer-events-none absolute inset-x-2 top-14 z-30 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
           {tool === 'draw' && !drawingSpec && (

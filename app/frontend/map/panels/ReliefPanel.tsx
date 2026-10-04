@@ -34,7 +34,7 @@ function Upsell() {
         {t('relief.upsell.title')}
       </p>
       <p className="text-loam-600">{t('relief.upsell.body')}</p>
-      <a href="/tarifs" className={buttonClass('primary', 'sm')}>{t('relief.upsell.cta')}</a>
+      <a href="/billing" className={buttonClass('primary', 'sm')}>{t('relief.upsell.cta')}</a>
     </div>
   )
 }

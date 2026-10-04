@@ -62,7 +62,8 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [activePanel, setActivePanel] = useState<string | null>(map.boundary ? null : 'terrain')
-  const [drawing, setDrawing] = useState(false)
+  const [drawingShape, setDrawingShape] = useState<DrawShape | 'edit' | null>(null)
+  const drawing = drawingShape != null
   const drawEndedAt = useRef(0)
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(null)
   const drawer = useRef<Drawer | null>(null)
@@ -154,31 +155,32 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
         setFeatures(data.features)
       },
       async draw(shape: DrawShape, options?: DrawOptions) {
-        setDrawing(true)
+        setDrawingShape(shape)
         try {
           return (await drawer.current?.draw(shape, options)) ?? null
         } finally {
           drawEndedAt.current = performance.now()
-          setDrawing(false)
+          setDrawingShape(null)
         }
       },
       async editGeometry(geometry: Geometry, options?: DrawOptions) {
-        setDrawing(true)
+        setDrawingShape('edit')
         try {
           return (await drawer.current?.edit(geometry, options)) ?? null
         } finally {
           drawEndedAt.current = performance.now()
-          setDrawing(false)
+          setDrawingShape(null)
         }
       },
       finishDraw: () => drawer.current?.commit(),
       cancelDraw: () => drawer.current?.cancel(),
       drawing,
+      drawingShape,
       activePanel,
       openPanel: setActivePanel,
       notify,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, activePanel, notify, upsertFeatures, removeFeatures])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, notify, upsertFeatures, removeFeatures])
 
   // Keep the open panel's button in view in the scrolling bar on a phone.
   const nav = useRef<HTMLElement>(null)

@@ -8,10 +8,13 @@ const ALIASES: Record<string, string[]> = {
   palette: ['palette', 'plant-palette', 'plants', 'catalogue'],
 }
 
-/** Opening any of these counts as "I looked at the data layers". */
-export const LAYERS_PANEL_PATTERN = /layer|geoport|couche/i
+/** Opening one of these counts as "I looked at the data layers" (not the drawing layers). */
+export function isLayersPanel(id: string): boolean {
+  return ALIASES.layers.includes(id)
+}
 
-export function resolvePanel(name: string, canEdit: boolean): string | null {
-  const available = PANELS.filter((p) => !p.requires || canEdit).map((p) => p.id)
+/** The panel to open for a journey step, among those this person can open (same rule as the panel rail). */
+export function resolvePanel(name: string, canEdit: boolean, isOwner = false): string | null {
+  const available = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : isOwner)).map((p) => p.id)
   return (ALIASES[name] ?? [name]).find((id) => available.includes(id)) ?? null
 }

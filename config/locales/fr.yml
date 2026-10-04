@@ -96,7 +96,7 @@ fr:
     loading: "Chargement…"
   editor:
     panels_nav: "Panneaux de la carte"
-    draw_hint: "Cliquez sur la carte pour dessiner, double-cliquez pour terminer. Échap pour annuler."
+    draw_hint: "Cliquez point par point le contour, puis revenez au premier point ou touchez « Terminer ». Échap pour annuler."
     draft: "Brouillon"
     draft_hint: "Proposé par une IA : à accepter ou refuser."
     panels:

@@ -216,6 +216,8 @@ fr:
       hint_point: "Touchez la carte pour placer « %{kind} ». Échap pour annuler."
       hint_line: "Cliquez point par point pour tracer « %{kind} ». Double-cliquez ou touchez « Terminer » pour finir."
       hint_polygon: "Cliquez point par point le contour de « %{kind} ». Revenez au premier point ou touchez « Terminer »."
+      hint_outline: "Cliquez point par point le contour sur la carte. Revenez au premier point ou touchez « Terminer » ; Échap pour annuler."
+      hint_path: "Cliquez point par point le tracé sur la carte. Double-cliquez ou touchez « Terminer » ; Échap pour annuler."
       finish: "Terminer"
       cancel: "Annuler"
       close: "Fermer"
@@ -256,6 +258,7 @@ fr:
       color: "Couleur"
       color_reset: "Couleur par défaut"
       none: "—"
+      "yes": "Oui"
 
     layers_panel:
       intro: "Affichez ou masquez chaque couche. Ce choix ne vaut que pour votre écran."
@@ -323,7 +326,7 @@ fr:
       upsell_title: "Le plan à l'échelle fait partie du forfait"
       upsell: "Imprimez votre design en A4 ou A3, à l'échelle exacte, avec cartouche, légende et flèche du nord, pour le terrain, le pépiniériste ou un dossier de subside."
       upsell_editor: "Cette carte suit la formule de son propriétaire : c'est lui qui peut débloquer le plan à l'échelle."
-      upgrade: "Découvrir le forfait"
+      upgrade: "Voir les formules"
       paper: "Format"
       orientation: "Orientation"
       portrait: "Portrait"
