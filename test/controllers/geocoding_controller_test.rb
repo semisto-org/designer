@@ -26,6 +26,7 @@ class GeocodingControllerTest < ActionDispatch::IntegrationTest
 
   test "upstream down: 503 with a French message" do
     stub_request(:get, %r{nominatim}).to_return(status: 503)
+    stub_request(:get, %r{photon}).to_return(status: 503)
     sign_in_as users(:michael)
     get geocode_path, params: { q: "Yvoir" }, as: :json
     assert_response :service_unavailable
