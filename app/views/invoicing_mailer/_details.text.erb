@@ -1,0 +1,18 @@
+<%= t("invoicing_mailer.details.organization") %> : <%= @request.organization_name %>
+<%= t("invoicing_mailer.details.address") %> :
+<% @request.billing_address.each_line do |line| -%>
+  <%= line.strip %>
+<% end -%>
+<% if @request.company_number -%>
+<%= t("invoicing_mailer.details.company_number") %> : <%= @request.company_number %>
+<% end -%>
+<%= t("invoicing_mailer.details.billing_email") %> : <%= @request.billing_email %>
+<% if @request.purchase_order -%>
+<%= t("invoicing_mailer.details.purchase_order") %> : <%= @request.purchase_order %>
+<% end -%>
+<%= t("invoicing_mailer.details.plan") %> : <%= t("invoicing_mailer.details.plan_value", plan: @request.plan_name) %>
+<%= t("invoicing_mailer.details.amount") %> : <%= t("invoicing_mailer.details.amount_value", amount: @amount) %>
+<% if @request.message -%>
+<%= t("invoicing_mailer.details.message") %> :
+<%= @request.message %>
+<% end -%>

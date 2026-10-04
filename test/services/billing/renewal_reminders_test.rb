@@ -96,6 +96,43 @@ class Billing::RenewalRemindersTest < ActiveSupport::TestCase
     end
   end
 
+  def grant(ends_at, user: @user, plan_key: "bureau")
+    request = user.invoice_requests.create!(organization_name: "Commune", billing_address: "Rue 1\n5530 Yvoir", billing_email: "c@yvoir.be", plan_key:)
+    request.activate!(starts_at: ends_at - 1.year)
+  end
+
+  test "plans paid on invoice get the same three reminders, once each" do
+    current = grant(@now + 30.days)
+    assert_enqueued_emails 3 do
+      assert_equal 1, run_reminders(@now)                        # d30
+      assert_equal 0, run_reminders(@now + 10.days)
+      assert_equal 1, run_reminders(@now + 23.days + 1.hour)     # d7
+      assert_equal 1, run_reminders(@now + 30.days + 1.hour)     # expired
+      assert_equal 0, run_reminders(@now + 31.days)
+    end
+    assert_equal %w[d30 d7 expired], current.billing_notices.order(:sent_at).pluck(:kind)
+    assert_enqueued_email_with InvoicingMailer, :grant_reminder, args: [ current, "d30" ]
+  end
+
+  test "no grant reminder once renewed, revoked, or for a subscriber; a pass is not reminded under a longer grant" do
+    grant(@now + 5.days)
+    grant(@now + 5.days + 1.year)
+    grant(@now + 5.days, user: users(:alice)).revoke!
+    users(:michael).plan_subscriptions.create!(plan_key: "atelier", status: "active", stripe_subscription_id: "sub_m")
+    grant(@now + 5.days, user: users(:michael))
+    assert_no_enqueued_emails { assert_equal 0, run_reminders }
+
+    pass(@now + 5.days, user: users(:alice))
+    grant(@now + 3.months, user: users(:alice), plan_key: "atelier")
+    assert_no_enqueued_emails { assert_equal 0, run_reminders }
+  end
+
+  test "a pass and a grant of different users are both reminded" do
+    pass(@now + 5.days)
+    grant(@now + 5.days, user: users(:alice))
+    assert_enqueued_emails(2) { assert_equal 2, run_reminders }
+  end
+
   test "the daily job runs the reminders only when billing is configured" do
     pass(@now + 5.days)
     travel_to @now do

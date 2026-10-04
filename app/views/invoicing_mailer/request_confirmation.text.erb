@@ -1,0 +1,16 @@
+<%= t("billing_mailer.greeting", name: @user.display_name) %>
+
+<%= t(".body", organization: @request.organization_name) %>
+
+<%= render "details" %>
+
+<%= t(".invoice", email: @request.billing_email) %>
+<% if @request.purchase_order -%>
+<%= t(".purchase_order", number: @request.purchase_order) %>
+<% end -%>
+<%= t(".activation") %>
+
+<%= t(".follow") %> : <%= @billing_url %>
+
+<%= t("billing_mailer.signature") %>
+<%= t("billing_mailer.team") %>

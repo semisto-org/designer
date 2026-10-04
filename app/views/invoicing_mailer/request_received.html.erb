@@ -1,0 +1,4 @@
+<p><%= t(".intro", name: @user.display_name, email: @user.email_address) %></p>
+<%= render "details" %>
+<p><%= t(".next") %></p>
+<p><a href="<%= @admin_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".open_admin") %></a></p>

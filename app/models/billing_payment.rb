@@ -5,6 +5,7 @@ class BillingPayment < ApplicationRecord
   belongs_to :user
   belongs_to :plan_purchase, optional: true
   belongs_to :plan_subscription, optional: true
+  belongs_to :invoice_request, optional: true
 
   validates :plan_key, :currency, :paid_at, presence: true
   validates :amount_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }

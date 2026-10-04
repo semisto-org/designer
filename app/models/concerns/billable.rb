@@ -7,10 +7,13 @@ module Billable
     has_many :plan_purchases, dependent: :restrict_with_error
     has_many :plan_subscriptions, dependent: :restrict_with_error
     has_many :billing_payments, dependent: :restrict_with_error
+    has_many :invoice_requests, dependent: :restrict_with_error
+    has_many :plan_grants, dependent: :restrict_with_error
   end
 
   # "yearly" while a yearly pass is valid, "atelier" / "bureau" while the
-  # subscription gives access, otherwise "free" (best plan if several).
+  # subscription gives access, the plan granted on invoice while it runs,
+  # otherwise "free" (best plan if several).
   def current_plan_key(at: Time.current)
     Billing::PlanResolver.call(self, at:)
   end
@@ -27,6 +30,11 @@ module Billable
 
   def current_plan_subscription(at: Time.current)
     plan_subscriptions.granting_access(at).max_by { |s| Entitlements::PLANS.fetch(s.plan_key)[:max_maps] }
+  end
+
+  # The best plan granted on invoice that runs now, or nil.
+  def current_plan_grant(at: Time.current)
+    plan_grants.active_at(at).max_by { |grant| [ Entitlements::PLANS.fetch(grant.plan_key)[:max_maps], grant.ends_at ] }
   end
 
   # Owned maps that are read-only because they exceed the plan's limit.

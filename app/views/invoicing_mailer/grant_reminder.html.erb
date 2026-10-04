@@ -1,0 +1,10 @@
+<p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
+<p><%= t("invoicing_mailer.grant_reminder.#{@kind}.body", plan: @plan, date: @ends_on) %></p>
+<% if @kind == "expired" %>
+  <p><%= @read_only_maps.positive? ? t("invoicing_mailer.grant_reminder.expired.read_only", count: @read_only_maps) : t("invoicing_mailer.grant_reminder.expired.free_ok") %></p>
+<% else %>
+  <p><%= t("invoicing_mailer.grant_reminder.renew") %></p>
+<% end %>
+<p><a href="<%= @renew_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t("invoicing_mailer.grant_reminder.cta") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t("invoicing_mailer.grant_reminder.no_auto") %> <%= t("billing_mailer.renewal_reminder.readable") %></p>
+<p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

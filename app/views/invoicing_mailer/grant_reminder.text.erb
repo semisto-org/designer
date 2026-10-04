@@ -1,0 +1,16 @@
+<%= t("billing_mailer.greeting", name: @user.display_name) %>
+
+<%= t("invoicing_mailer.grant_reminder.#{@kind}.body", plan: @plan, date: @ends_on) %>
+
+<% if @kind == "expired" -%>
+<%= @read_only_maps.positive? ? t("invoicing_mailer.grant_reminder.expired.read_only", count: @read_only_maps) : t("invoicing_mailer.grant_reminder.expired.free_ok") %>
+<% else -%>
+<%= t("invoicing_mailer.grant_reminder.renew") %>
+<% end -%>
+
+<%= t("invoicing_mailer.grant_reminder.cta") %> : <%= @renew_url %>
+
+<%= t("invoicing_mailer.grant_reminder.no_auto") %> <%= t("billing_mailer.renewal_reminder.readable") %>
+
+<%= t("billing_mailer.signature") %>
+<%= t("billing_mailer.team") %>

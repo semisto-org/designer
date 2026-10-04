@@ -53,6 +53,7 @@ Renouveler **avant** l'échéance ne fait perdre aucun jour : la nouvelle année
 - Le paiement est traité par **Stripe** ; Semisto ne voit jamais votre numéro de carte.
 - Une **facture** est établie automatiquement pour chaque paiement. Retrouvez-les dans [Formule et facturation](/billing).
 - Pour les abonnements, le **portail de facturation** permet de changer de moyen de paiement, de formule ou de résilier.
+- Commune, école, association ou entreprise : vous pouvez aussi [payer sur facture](/help/payer-sur-facture), par virement, avec votre bon de commande.
 
 ## Une question ?
 

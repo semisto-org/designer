@@ -34,6 +34,8 @@ class BillingController < ApplicationController
         drone: user.plan_purchases.drone.paid.newest_first.limit(5).map { |p| { paidAt: p.starts_at.iso8601 } },
         canManage: user.billing_account.present?,
         payments: user.billing_payments.newest_first.limit(12).map { |payment| payment_json(payment) },
+        grants: user.plan_grants.current_or_upcoming(at).order(:starts_at).limit(3).map { |grant| grant.as_json_for_billing(at) },
+        invoiceRequests: user.invoice_requests.newest_first.limit(5).map(&:as_member_json),
         catalog: Billing::Catalog.as_json,
         memberPriceCents: Billing::Catalog.member_price_cents,
         checkout: CHECKOUT_RESULTS.include?(params[:checkout]) ? params[:checkout] : nil,

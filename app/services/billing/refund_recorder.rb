@@ -1,6 +1,6 @@
 module Billing
-  # charge.refunded: records the refunded amount on the payment. A pass that
-  # is refunded in full stops giving access.
+  # charge.refunded: records the refunded amount on the payment. A pass, or a
+  # plan paid on invoice, that is refunded in full stops giving access.
   class RefundRecorder
     def self.call(...) = new(...).call
 
@@ -22,6 +22,7 @@ module Billing
         stripe_charge_id: payment.stripe_charge_id || @charge["id"]
       )
       payment.plan_purchase.update!(status: "refunded") if payment.plan_purchase && payment.fully_refunded?
+      payment.invoice_request&.plan_grant&.revoke!(at: @event_at) if payment.fully_refunded?
       "refund recorded"
     end
 

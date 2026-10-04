@@ -1,6 +1,7 @@
 module Providers
   # Everything we ask Stripe, behind a small stable interface (Checkout,
-  # customer portal, lookups used while processing webhooks). Responses are
+  # customer portal, invoices sent to communes and companies, lookups used
+  # while processing webhooks). Responses are
   # plain string-keyed hashes, whatever the Stripe API version. Any Stripe or
   # network failure becomes Providers::StripeGateway::Error, so callers show a
   # French message instead of crashing.
@@ -17,8 +18,50 @@ module Providers
       @client = Stripe::StripeClient.new(api_key)
     end
 
-    def create_customer(email:, name: nil, metadata: {})
-      call { @client.v1.customers.create({ email:, name:, metadata: }.compact) }
+    # extra: address, preferred_locales… (Stripe customer fields).
+    def create_customer(email:, name: nil, metadata: {}, **extra)
+      call { @client.v1.customers.create({ email:, name:, metadata:, **extra }.compact) }
+    end
+
+    def update_customer(id, params)
+      call { @client.v1.customers.update(id, params) }
+    end
+
+    def list_tax_ids(customer)
+      call { @client.v1.customers.tax_ids.list(customer, { limit: 100 }) }
+    end
+
+    # type: "eu_vat", value: "BE0123456789".
+    def create_tax_id(customer, type:, value:)
+      call { @client.v1.customers.tax_ids.create(customer, { type:, value: }) }
+    end
+
+    # --- Invoices sent by e-mail and paid by transfer (InvoiceRequest) ---
+
+    def create_invoice(params)
+      call { @client.v1.invoices.create(params) }
+    end
+
+    def create_invoice_item(params)
+      call { @client.v1.invoice_items.create(params) }
+    end
+
+    def finalize_invoice(id)
+      call { @client.v1.invoices.finalize_invoice(id, { auto_advance: false }) }
+    end
+
+    # E-mails the invoice (with its payment page link) to the customer.
+    def send_invoice(id)
+      call { @client.v1.invoices.send_invoice(id) }
+    end
+
+    # The transfer arrived outside Stripe: the invoice is marked paid, no charge.
+    def pay_invoice_out_of_band(id)
+      call { @client.v1.invoices.pay(id, { paid_out_of_band: true }) }
+    end
+
+    def void_invoice(id)
+      call { @client.v1.invoices.void_invoice(id) }
     end
 
     def create_checkout_session(params)

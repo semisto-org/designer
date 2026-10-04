@@ -33,6 +33,8 @@ Sans `STRIPE_SECRET_KEY`, les paiements sont désactivés et tout est débloqué
 5. **Portail client** configuré et activé (annulation d'abonnement, moyen de paiement, factures) ; optionnel : `STRIPE_PORTAL_CONFIGURATION`.
 6. Reçus clients et image de marque des factures dans les réglages Stripe.
 
+Les communes, écoles et entreprises peuvent aussi **payer sur facture** (virement, bon de commande, écran d'administration `/admin/invoice-requests`, administrateurs nommés avec `bin/rails users:admin EMAIL=…`) : voir [Paiement sur facture (communes)](docs/mise-en-production.md#paiement-sur-facture-communes).
+
 Autres variables : `SEMISTO_CONTACT_EMAIL` (adresse affichée sur le site et destinataire des demandes, `designer@semisto.org` par défaut). `bin/rails billing:payments` liste les paiements enregistrés (base du partage de revenus avec Semisto) ; `bin/rails billing:renewal_reminders` envoie les rappels d'échéance à la main (une tâche récurrente le fait chaque jour en production).
 
 ## Mise en production

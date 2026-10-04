@@ -47,6 +47,17 @@ Dans la console Google Cloud : origine autorisée `https://designer.semisto.org`
 
 Événements du webhook : `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`. Prix en EUR, taxe « inclusive », Stripe Tax activé. Réduction membres : un coupon de 30 % limité au Forfait particulier, puis un code promo par membre.
 
+### Paiement sur facture (communes)
+
+Les communes, écoles, associations et entreprises qui ne peuvent pas payer par carte demandent une facture depuis **Formule et facturation** ou la page **Tarifs** (« Payer sur facture », `/billing/invoice`) : nom et adresse de l'organisation, numéro de TVA ou d'entreprise, e-mail de facturation, numéro de bon de commande, formule pour un an (Atelier 12 × 49 €, Bureau d'études 12 × 99 €, Forfait particulier 79 €, TVA comprise).
+
+1. La demande arrive par e-mail à `SEMISTO_CONTACT_EMAIL` (répondre écrit au demandeur) et dans l'écran **Demandes de facture** (`/admin/invoice-requests`, lien en tête de `/admin/requests`), réservé aux administrateurs. Donner ce rôle : `bin/rails users:admin EMAIL=prenom@semisto.org` (la personne doit s'être connectée une fois ; `users:unadmin` le retire, `users:admins` liste les administrateurs).
+2. **Avec Stripe** : « Créer la facture dans Stripe » crée (ou reprend) le client Stripe de l'utilisateur au nom de l'organisation, ajoute le numéro de TVA intracommunautaire s'il en a la forme (BE0123456789), puis envoie par e-mail une facture TVA comprise (Stripe Tax), payable sous 30 jours, avec le **numéro de bon de commande** en champ personnalisé. Le paiement est enregistré par le webhook `invoice.paid` dans le registre des paiements (`bin/rails billing:payments`), la demande passe à « Payée » et la formule démarre si elle ne l'était pas. Dans les réglages Stripe (Facturation → Factures), activer le virement bancaire comme moyen de paiement des factures.
+3. **Sans Stripe** : la facture se fait à la main (montant TVA comprise, numéro de bon de commande) ; l'écran le rappelle.
+4. « Activer la formule » la démarre pour 12 mois à partir de la date choisie (par défaut aujourd'hui, ou la fin de la formule en cours pour un renouvellement), sans attendre le paiement ; l'utilisateur est prévenu par e-mail. « Marquer comme payée » (marque aussi la facture Stripe « payée hors Stripe » si besoin) et « Annuler » (annule la facture Stripe ; une formule déjà démarrée s'arrête) complètent le suivi.
+
+À l'échéance, rien n'est supprimé : comme pour le forfait, les cartes au-delà de la formule gratuite passent en lecture seule, et les rappels partent 30 jours avant, 7 jours avant et le jour même.
+
 ### Fichiers (S3 compatible)
 
 | Variable | Rôle |
@@ -64,7 +75,7 @@ Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la car
 
 | Variable | Rôle |
 |---|---|
-| `SEMISTO_CONTACT_EMAIL` | Affiché sur le site ; reçoit les commandes de mission drone et les demandes de suppression de compte (défaut `designer@semisto.org`). |
+| `SEMISTO_CONTACT_EMAIL` | Affiché sur le site ; reçoit les commandes de mission drone, les demandes de paiement sur facture et les demandes de suppression de compte (défaut `designer@semisto.org`). |
 | `SEMISTO_REQUESTS_EMAIL` | Reçoit les demandes « Passer à l'action » : commande de plants, réalisation, co-gestion (plusieurs adresses séparées par des virgules ; défaut `designer@semisto.org`). |
 
 ### Carte et adresses
