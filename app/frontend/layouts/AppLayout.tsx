@@ -21,18 +21,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-dvh">
       <Flash />
       <header className="border-b border-loam-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6">
-          <Link href="/maps" className="flex items-center gap-2 font-semibold text-loam-900">
+        {/* On a phone the menu takes its own row under the logo and the account. */}
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 px-4 pt-2 sm:h-14 sm:flex-nowrap sm:gap-6 sm:pt-0">
+          <Link href="/maps" className="flex h-10 items-center gap-2 font-semibold text-loam-900 sm:h-auto">
             <Logo />
             <span className="hidden sm:inline">Designer</span>
           </Link>
-          <nav className="-mx-1 flex min-w-0 items-center gap-1 overflow-x-auto px-1 text-sm">
+          <nav className="order-last -mx-1 flex w-full min-w-0 items-center gap-1 overflow-x-auto px-1 pb-2 text-sm sm:order-none sm:w-auto sm:pb-0">
             {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={
-                  'shrink-0 whitespace-nowrap rounded-md px-2.5 py-1.5 ' +
+                  'shrink-0 whitespace-nowrap rounded-md px-2 py-1.5 sm:px-2.5 ' +
                   (url.startsWith(item.href) ? 'bg-prune-50 text-prune-700' : 'text-loam-600 hover:bg-loam-100')
                 }
               >

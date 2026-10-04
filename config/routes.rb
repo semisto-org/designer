@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   get "auth/failure", to: "omniauth_callbacks#failure"
   get "dev/login", to: "dev/logins#show" if Rails.env.local?
 
-  resources :maps do
+  resources :maps, except: :edit do
     scope module: :maps do
       resources :features, only: %i[index create update destroy]
     end
