@@ -1,5 +1,6 @@
 module Billing
   # invoice.paid: records the payment of a subscription invoice in the ledger,
+  # the payment of an invoice sent to a commune or a company (InvoiceRequest),
   # or links the Stripe invoice (hosted page, PDF) to the one-off payment made
   # through Checkout (invoice_creation).
   class InvoiceRecorder
@@ -16,6 +17,9 @@ module Billing
     end
 
     def call
+      if (invoice_request = InvoiceRequestPayment.request_for(@invoice))
+        return InvoiceRequestPayment.call(@invoice, invoice_request:, event_at: @event_at)
+      end
       subscription_id = Payload.invoice_subscription_id(@invoice)
       subscription_id ? record_subscription_invoice(subscription_id) : link_one_time_invoice
     end

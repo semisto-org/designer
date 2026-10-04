@@ -71,7 +71,30 @@ module BillingTestHelper
     }
   end
 
+  # The invoice Stripe returns for an InvoiceRequest (« Payer sur facture »).
+  def invoice_request_invoice(invoice_request, id: "in_req_1", status: "paid", customer: "cus_123", amount_paid: nil, tax: 2_062,
+                              number: "SEMI-0001", paid_out_of_band: false)
+    {
+      "id" => id, "object" => "invoice", "status" => status, "number" => number, "customer" => customer,
+      "currency" => "eur", "livemode" => false, "collection_method" => "send_invoice", "paid_out_of_band" => paid_out_of_band,
+      "amount_paid" => amount_paid || (status == "paid" ? invoice_request.amount_cents : 0), "total" => invoice_request.amount_cents,
+      "total_taxes" => [ { "amount" => tax, "taxability_reason" => "standard_rated" } ], "total_discount_amounts" => [], "discounts" => [],
+      "parent" => nil, "lines" => { "data" => [] },
+      "metadata" => { "invoice_request_id" => invoice_request.id.to_s, "user_id" => invoice_request.user_id.to_s, "plan_key" => invoice_request.plan_key },
+      "status_transitions" => { "paid_at" => (status == "paid" ? Time.now.to_i : nil) },
+      "hosted_invoice_url" => "https://invoice.stripe.com/i/acct/#{id}", "invoice_pdf" => "https://pay.stripe.com/invoice/acct/#{id}/pdf"
+    }
+  end
+
   def stripe_api(path) = "https://api.stripe.com/v1/#{path}"
+
+  # Stubs a POST to Stripe; each request's form body is parsed and pushed to `log`.
+  def stub_stripe_post(path, body, status: 200, log: nil)
+    stub_request(:post, stripe_api(path)).to_return do |request|
+      log&.push(Rack::Utils.parse_nested_query(request.body))
+      { status:, body: body.to_json, headers: { "Content-Type" => "application/json" } }
+    end
+  end
 
   def stub_stripe_get(path, body, status: 200)
     stub_request(:get, /\Ahttps:\/\/api\.stripe\.com\/v1\/#{Regexp.escape(path)}(\?.*)?\z/)
