@@ -1,0 +1,136 @@
+# « Vues drone »: the dated aerial views Semisto sets up on a map after a
+# drone mission (base-map choice of the editor, staff screen, e-mail to the
+# owner). Keys in English, values in French; the backend and the React
+# frontend read the same file.
+fr:
+  activerecord:
+    models:
+      aerial_view: "Vue drone"
+    attributes:
+      aerial_view:
+        name: "Nom"
+        captured_on: "Date de prise de vue"
+        kind: "Format"
+        url: "Adresse"
+        attribution: "Mention"
+        min_zoom: "Zoom minimum"
+        max_zoom: "Zoom maximum"
+        map: "Carte"
+        plan_purchase: "Commande"
+    errors:
+      models:
+        aerial_view:
+          attributes:
+            name:
+              blank: "Donnez un nom à la vue."
+              too_long: "Ce nom est trop long (%{count} caractères au maximum)."
+            captured_on:
+              blank: "Indiquez la date de la prise de vue."
+            kind:
+              inclusion: "Choisissez le format : archive PMTiles ou tuiles XYZ."
+            url:
+              blank: "Collez l'adresse de la vue."
+              too_long: "Cette adresse est trop longue (%{count} caractères au maximum)."
+              malformed: "Cette adresse n'est pas valide : vérifiez qu'elle est complète et sans espace."
+              not_https: "L'adresse doit commencer par https:// : le navigateur charge les tuiles directement chez l'hébergeur."
+              xyz_template: "Pour des tuiles XYZ, l'adresse doit contenir {z}, {x} et {y}."
+              pmtiles_file: "Pour une archive PMTiles, l'adresse doit finir par .pmtiles, sans {z}/{x}/{y}."
+            attribution:
+              too_long: "Cette mention est trop longue (%{count} caractères au maximum)."
+            min_zoom:
+              not_a_number: "Le zoom est un nombre entier, de 0 à 24."
+              not_an_integer: "Le zoom est un nombre entier, de 0 à 24."
+              in: "Le zoom est un nombre entier, de 0 à 24."
+            max_zoom:
+              not_a_number: "Le zoom est un nombre entier, de 0 à 24."
+              not_an_integer: "Le zoom est un nombre entier, de 0 à 24."
+              in: "Le zoom est un nombre entier, de 0 à 24."
+              below_min_zoom: "Le zoom maximum doit être au moins égal au zoom minimum."
+            map:
+              required: "Aucune carte active ne porte ce numéro."
+              not_buyers: "Cette carte n'appartient pas à la personne qui a commandé la mission."
+            plan_purchase:
+              not_drone: "Cette commande n'est pas une mission drone."
+
+  drone:
+    default_name: "Vue drone"
+    attribution_default: "Vue drone © Semisto"
+    view_label: "%{name} · %{date}"
+
+    # Map editor, « Couches » panel, under the base maps.
+    layers:
+      title: "Vues drone"
+      none: "Sans vue drone"
+      hint_one: "Prise par Semisto, elle se pose sur le fond choisi ci-dessus : dessinez directement dessus."
+      hint_many: "Passez d'une date à l'autre pour comparer votre terrain d'une saison, d'une année à l'autre. Chaque vue se pose sur le fond choisi ci-dessus."
+      opacity: "Opacité de la vue drone"
+      unreachable: "Cette vue drone ne répond pas pour l'instant. Réessayez un peu plus tard ; si cela dure, écrivez à Semisto."
+      help: "La vue drone"
+
+    # Staff screen (/admin/drone-views).
+    admin:
+      title: "Vues drone"
+      link: "Vues drone"
+      back: "Demandes envoyées depuis les cartes"
+      intro: "Les missions drone payées et les vues aériennes posées sur les cartes. Posez la vue sur une carte de l'acheteur : un e-mail lui donne le lien vers sa carte."
+      hosting_note: "Collez l'adresse d'une archive .pmtiles ou d'un modèle de tuiles {z}/{x}/{y}, toujours en https. Le navigateur lit les tuiles directement chez l'hébergeur : celui-ci doit autoriser designer.semisto.org (CORS, avec l'en-tête Range pour une archive PMTiles). La marche à suivre est dans docs/mise-en-production.md."
+      filters:
+        todo: "À configurer"
+        done: "Configurées"
+        all: "Toutes"
+      empty: "Aucune mission drone dans cette liste."
+      ordered: "Commandée le %{date}"
+      amount: "%{amount} TTC"
+      statuses:
+        todo: "À configurer"
+        done: "Vue en place"
+      buyer: "Commandée par"
+      maps_title: "Cartes de %{name}"
+      no_maps: "%{name} n'a pas encore de carte. Proposez-lui d'en créer une, ou posez la vue plus bas sur une carte de Semisto, par son numéro."
+      map_number: "n° %{id}"
+      views_title: "Vues livrées"
+      no_views: "Pas encore de vue pour cette commande."
+      added_by: "Ajoutée par %{name}"
+      remove: "Retirer"
+      confirm_remove: "Retirer « %{name} » du %{date} de la carte « %{map} » ? Plus personne ne la verra sur la carte. Les fichiers chez l'hébergeur ne sont pas touchés."
+      other_title: "Vues sans commande"
+      other_intro: "Pour une carte de Semisto ou un cas particulier : indiquez le numéro de la carte (dans son adresse, /maps/12). Personne n'est prévenu par e-mail."
+      other_empty: "Aucune vue posée hors commande pour l'instant."
+      form:
+        title_order: "Poser la vue sur une carte"
+        title_any: "Poser une vue sur une carte, par son numéro"
+        map: "Carte"
+        map_id: "Numéro de la carte"
+        name: "Nom"
+        captured_on: "Date de prise de vue"
+        kind: "Format"
+        kinds:
+          pmtiles: "Archive PMTiles (.pmtiles)"
+          xyz: "Tuiles XYZ ({z}/{x}/{y})"
+        url: "Adresse"
+        url_placeholders:
+          pmtiles: "https://…/terrain-2027-05-12.pmtiles"
+          xyz: "https://…/{z}/{x}/{y}.png"
+        attribution: "Mention (facultatif)"
+        attribution_hint: "Affichée en bas de la carte. Par défaut : « Vue drone © Semisto »."
+        more: "Niveaux de zoom (facultatif)"
+        min_zoom: "Zoom minimum"
+        max_zoom: "Zoom maximum"
+        zoom_hint: "Pour des tuiles XYZ, indiquez le zoom le plus fort produit : au-delà, l'image est agrandie. Une archive PMTiles le dit elle-même."
+        submit_order: "Ajouter la vue et prévenir %{name}"
+        submit_any: "Ajouter la vue"
+        working: "Un instant…"
+      flash:
+        added: "Vue ajoutée sur la carte « %{map} »."
+        added_and_notified: "Vue ajoutée sur la carte « %{map} » ; un e-mail prévient %{name}."
+        removed: "Vue retirée de la carte « %{map} »."
+
+  drone_mailer:
+    view_ready:
+      subject: "Votre vue drone est sur votre carte"
+      body: "Bonne nouvelle : la vue drone de votre terrain, prise le %{date}, est maintenant sur votre carte « %{map} »."
+      where: "Elle s'affiche dès l'ouverture de la carte, et vous la retrouvez à tout moment dans le panneau « Couches », sous « Vues drone » (« %{name} »). Elle sert directement de fond pour dessiner."
+      history: "Les prochaines vues s'ajouteront à côté de celle-ci : vous pourrez comparer votre terrain d'une saison, d'une année à l'autre."
+      cta: "Ouvrir ma carte"
+      shared: "Elle est visible par les personnes avec qui vous partagez cette carte."
+      help: "Tout savoir sur la vue drone"

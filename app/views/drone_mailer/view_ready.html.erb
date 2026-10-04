@@ -1,0 +1,7 @@
+<p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
+<p><%= t(".body", map: @map.name, date: french_date(@view.captured_on)) %></p>
+<p><%= t(".where", name: @view.name) %></p>
+<p><%= t(".history") %></p>
+<p><a href="<%= @map_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".cta") %></a></p>
+<p><%= t(".shared") %> <a href="<%= @help_url %>"><%= t(".help") %></a></p>
+<p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

@@ -8,6 +8,8 @@ class PlanPurchase < ApplicationRecord
   belongs_to :user
   has_many :billing_payments, dependent: :restrict_with_error
   has_many :billing_notices, dependent: :destroy
+  # A drone order is delivered as one (or more) aerial views on the buyer's maps.
+  has_many :aerial_views, dependent: :nullify
 
   validates :plan_key, inclusion: { in: PLAN_KEYS }
   validates :status, inclusion: { in: STATUSES }
