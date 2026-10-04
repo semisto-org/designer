@@ -115,6 +115,20 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     observation = response.parsed_body["observation"]
     assert_equal "established", observation["survival"]
     assert observation["photoUrl"].present?
+    assert_no_match %r{/rails/active_storage/blobs/}, observation["photoUrl"], "never a public link to the original"
+
+    # Viewers see the photo through a short-lived link to a stripped variant.
+    sign_in_as users(:alice)
+    get observation["thumbUrl"]
+    assert_response :redirect
+    assert_match(/private/, response.headers["Cache-Control"])
+    encoded = response.location[%r{/disk/([^/]+)/}, 1]
+    served = ActiveStorage.verifier.verified(encoded, purpose: :blob_key)
+    assert_not_equal PlantObservation.find(observation["id"]).photo.blob.key, served[:key] || served["key"]
+    sign_in_as users(:bob)
+    get observation["thumbUrl"]
+    assert_response :not_found
+    sign_in_as users(:michael)
 
     get map_feature_plant_observations_path(@map, plant), as: :json
     assert_equal 1, response.parsed_body["observations"].size

@@ -26,7 +26,8 @@ class MapPhoto < ApplicationRecord
   belongs_to :map_feature, optional: true
 
   # Variants go through libvips: rotated from EXIF, metadata (GPS included)
-  # stripped, so the files the app serves never leak the exact position.
+  # stripped. Viewers only ever get variants; the original file, EXIF and
+  # all, is served to the map's editors alone (Maps::PhotosController#image).
   has_one_attached :image do |attachable|
     attachable.variant :thumb, resize_to_limit: [ 480, 480 ], format: :jpeg, saver: { strip: true, quality: 80 }, preprocessed: true
     attachable.variant :large, resize_to_limit: [ 1800, 1800 ], format: :jpeg, saver: { strip: true, quality: 85 }

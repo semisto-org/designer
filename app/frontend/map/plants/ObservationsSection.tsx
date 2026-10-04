@@ -57,7 +57,7 @@ export default function ObservationsSection({ feature }: { feature: MapFeature }
             <ul className="space-y-2">
               {observations.map((o) => (
                 <li key={o.id} className="flex gap-2 rounded-lg bg-loam-50 p-2 text-xs">
-                  {o.photoUrl && <a href={o.photoUrl} target="_blank" rel="noreferrer"><img src={o.photoUrl} alt="" className="h-12 w-12 rounded object-cover" /></a>}
+                  {o.photoUrl && <a href={o.photoUrl} target="_blank" rel="noreferrer"><img src={o.thumbUrl ?? o.photoUrl} alt="" className="h-12 w-12 rounded object-cover" /></a>}
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-1.5">
                       <span className="font-medium text-loam-800">{formatDate(o.observedOn)}</span>
@@ -166,7 +166,7 @@ function ObservationForm({ base, plantedOn, onSaved, onCancel }: {
         <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
           <Camera className="h-4 w-4 shrink-0 text-loam-400" />
           <span className="truncate">{photo ? photo.name : t('plant_observations.choose_photo')}</span>
-          <input type="file" accept="image/*" className="sr-only" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
+          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
         </label>
         {errors.photo && <span className="mt-1 block text-xs text-clay-500">{errors.photo[0]}</span>}
       </div>

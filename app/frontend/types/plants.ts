@@ -229,6 +229,7 @@ export type PlantObservation = {
   note: string | null
   author: string | null
   photoUrl: string | null
+  thumbUrl?: string | null
   createdAt: string | null
 }
 

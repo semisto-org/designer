@@ -211,9 +211,10 @@ export function PhotoLightbox() {
             <Columns2 className="h-4 w-4" />
             {t('soil_photos.lightbox.compare')}
           </Button>
-          <a href={photoUrl(mapId, photo.id, 'original', true)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
+          {/* Viewers get the large variant, stripped of its metadata (GPS included). */}
+          <a href={photoUrl(mapId, photo.id, canEdit ? 'original' : 'large', true)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
             <Download className="h-4 w-4" />
-            {t('soil_photos.lightbox.download')}
+            {canEdit ? t('soil_photos.lightbox.download') : t('soil_photos.lightbox.download_variant')}
           </a>
         </div>
 

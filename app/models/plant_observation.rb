@@ -3,8 +3,9 @@
 # Observations of every garden feed the species sheet, as anonymous counts.
 class PlantObservation < ApplicationRecord
   SURVIVALS = %w[established struggling dead].freeze
-  PHOTO_TYPES = %w[image/jpeg image/png image/webp image/heic image/heif].freeze
-  MAX_PHOTO_BYTES = 15.megabytes
+  # Same rules as the map's photos (MapPhoto): HEIC is refused.
+  PHOTO_TYPES = MapPhoto::CONTENT_TYPES
+  MAX_PHOTO_BYTES = MapPhoto::MAX_BYTES
 
   belongs_to :map_feature
   belongs_to :map
@@ -12,7 +13,12 @@ class PlantObservation < ApplicationRecord
   belongs_to :variety, class_name: "PlantVariety", optional: true
   belongs_to :user, optional: true
 
-  has_one_attached :photo
+  # Served only as variants, metadata (GPS included) stripped, through
+  # Maps::PlantObservationsController#photo, which checks the map's roles.
+  has_one_attached :photo do |attachable|
+    attachable.variant :thumb, resize_to_limit: [ 480, 480 ], format: :jpeg, saver: { strip: true, quality: 80 }
+    attachable.variant :large, resize_to_limit: [ 1800, 1800 ], format: :jpeg, saver: { strip: true, quality: 85 }
+  end
 
   validates :observed_on, presence: true
   validates :survival, inclusion: { in: SURVIVALS }
@@ -50,12 +56,18 @@ class PlantObservation < ApplicationRecord
     {
       id:, featureId: map_feature_id, observedOn: observed_on.iso8601, survival:, vigor:, note:,
       author: user&.display_name,
-      photoUrl: photo.attached? ? Rails.application.routes.url_helpers.rails_blob_path(photo, only_path: true) : nil,
+      photoUrl: photo_path("large"),
+      thumbUrl: photo_path("thumb"),
       createdAt: created_at&.iso8601
     }
   end
 
   private
+    def photo_path(size)
+      return nil unless photo.attached?
+      Rails.application.routes.url_helpers.photo_map_feature_plant_observation_path(map_id, map_feature_id, id, size:)
+    end
+
     def copy_plant
       return unless map_feature
       self.map_id = map_feature.map_id

@@ -62,6 +62,8 @@ module Maps
     # /maps/:map_id/photos/:id/image?size=thumb|large|original[&download=1]
     def image
       size = params[:size].presence_in(IMAGE_SIZES) || "large"
+      # The original keeps its EXIF block, GPS included: only editors get it.
+      size = "large" if size == "original" && !editor?
       attachment = @photo.image
       return head :not_found unless attachment.attached?
       target = size == "original" ? attachment : attachment.variant(size.to_sym).processed
@@ -69,10 +71,13 @@ module Maps
     rescue StandardError => error
       # A file libvips cannot read still has its original.
       Rails.logger.warn("[photos] no #{params[:size]} variant for photo #{@photo.id}: #{error.class}: #{error.message}")
+      return head :not_found unless editor?
       redirect_to storage_link(@photo.image, download: false), allow_other_host: true
     end
 
     private
+      def editor? = %w[owner editor].include?(@role)
+
       def set_photo
         @photo = @map.photos.find(params[:id])
       end

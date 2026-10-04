@@ -157,7 +157,9 @@ Rails.application.routes.draw do
       end
       resources :features, only: [] do
         resources :patch_items, only: %i[index create update destroy]
-        resources :plant_observations, only: %i[index create destroy]
+        resources :plant_observations, only: %i[index create destroy] do
+          member { get :photo }
+        end
       end
       resource :plant_list, only: :show do
         get :print

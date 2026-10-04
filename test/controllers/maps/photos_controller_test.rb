@@ -228,6 +228,25 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "image: the original, EXIF and GPS included, goes to editors only" do
+    photo = create_photo(file: "terrain_gps.jpg")
+    served_key = lambda do
+      encoded = response.location[%r{/disk/([^/]+)/}, 1]
+      data = ActiveStorage.verifier.verified(encoded, purpose: :blob_key)
+      data[:key] || data["key"]
+    end
+
+    sign_in_as users(:alice)
+    get image_map_photo_path(@map, photo, size: "original", download: 1)
+    assert_response :redirect
+    assert_not_equal photo.image.blob.key, served_key.call, "a viewer must get the stripped variant"
+
+    sign_in_as users(:michael)
+    get image_map_photo_path(@map, photo, size: "original", download: 1)
+    assert_response :redirect
+    assert_equal photo.image.blob.key, served_key.call
+  end
+
   test "image: signed out or outside the map, no link" do
     photo = create_photo
     get image_map_photo_path(@map, photo, size: "thumb")

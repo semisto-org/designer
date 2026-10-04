@@ -86,6 +86,7 @@ fr:
       same_spot: "Même endroit"
       same_spot_none: "Aucune autre prise de vue de cet endroit. Dans le panneau Photos, « Avant / après » permet de choisir deux photos librement."
       download: "Original"
+      download_variant: "Télécharger"
       confirm_delete: "Supprimer cette photo ? Elle disparaît de la carte."
     compare:
       title: "Avant / après"
@@ -378,7 +379,7 @@ fr:
     upsell:
       title: "Comprendre vos résultats"
       body: "Vos mesures sont enregistrées et restent visibles. Le forfait ajoute leur lecture : repères bas, correct et élevé pour chaque valeur, classe de texture du sol, explications avec des pistes concrètes, et la comparaison de vos points côte à côte."
-      cta: "Voir les forfaits"
+      cta: "Voir les formules"
       owner_only: "Seul le propriétaire de la carte peut changer de forfait."
     plants:
       intro: "Les plantes qui s'installent seules racontent le sol : le rumex et le plantain parlent de tassement, l'ortie d'azote, la prêle d'eau qui stagne. Notez celles que vous voyez."

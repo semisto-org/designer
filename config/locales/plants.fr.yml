@@ -357,7 +357,7 @@ fr:
     balance_empty: "Rien de prévu pour l'instant."
     empty: "La palette est vide. Cherchez une espèce ou partez des suggestions."
     draw_patch: "Dessiner un patch"
-    drawing_patch: "Dessinez le contour du patch sur la carte, double-cliquez pour terminer."
+    drawing_patch: "Dessinez le contour du patch sur la carte : revenez au premier point ou touchez « Terminer »."
     patch_created: "Patch créé : composez-le dans le panneau de droite."
     open_sheet: "Fiche de l'espèce"
     read_only: "Lecture seule : seuls les éditeurs de la carte modifient la palette."
@@ -575,7 +575,7 @@ fr:
             observed_on:
               in_future: "ne peut pas être dans le futur"
             photo:
-              content_type: "doit être une image (JPEG, PNG, WebP ou HEIC)"
+              content_type: "doit être une image JPEG, PNG ou WebP"
               too_large: "est trop lourde (15 Mo au plus)"
   # Generic validation messages (no rails-i18n in the bundle yet).
   errors:
