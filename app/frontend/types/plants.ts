@@ -231,3 +231,22 @@ export type PlantObservation = {
   photoUrl: string | null
   createdAt: string | null
 }
+
+/** One candidate species of POST /maps/:id/plant_identifications (PlantIdentification::Candidate). */
+export type PlantIdentificationCandidate = {
+  latinName: string
+  authorship: string | null
+  commonNames: string[]
+  family: string | null
+  /** 0..1 */
+  score: number
+  percent: number
+  /** The matching catalogue species; null when the catalogue does not know it yet. */
+  species: { id: number; latinName: string; commonName: string | null; slug: string } | null
+}
+
+export type PlantIdentificationResponse = {
+  available: boolean
+  candidates: PlantIdentificationCandidate[]
+  credit: string
+}

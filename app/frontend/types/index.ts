@@ -24,7 +24,7 @@ export type EntitlementsData = {
 export type SharedProps = {
   currentUser: CurrentUser | null
   entitlements: EntitlementsData | null
-  env: { googleSignIn: boolean; billing: boolean }
+  env: { googleSignIn: boolean; billing: boolean; plantnet: boolean }
 }
 
 export type LngLat = [number, number]
