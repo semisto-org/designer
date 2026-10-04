@@ -8,7 +8,7 @@ Référence des réglages de Semisto Designer en production (https://designer.se
 - Port 80 (Thruster devant Puma). Contrôle de santé : `GET /up`.
 - PostgreSQL 16 **avec PostGIS** (image conseillée : `postgis/postgis:16-3.4`). L'utilisateur doit pouvoir créer des bases et les extensions `postgis`, `citext` et `unaccent` (ou un administrateur les crée à l'avance).
 - Quatre bases sont créées à partir de `DATABASE_URL` : la principale, puis `_cache`, `_queue` et `_cable`.
-- Fichiers (photos, PDF de labo, relief importé) : un stockage S3 dès que `S3_BUCKET` est défini, sinon le disque local `/rails/storage`, qu'il faut alors monter sur un **volume persistant**.
+- Fichiers (photos, PDF de labo, relief importé) : un stockage S3 dès que `S3_BUCKET` est défini, sinon le disque local `/rails/storage`, qu'il faut alors monter sur un **volume persistant** (sinon tout disparaît au déploiement suivant). Un volume Docker nommé convient tel quel ; un dossier de l'hôte doit appartenir à l'utilisateur de l'image (`chown -R 1000:1000 <dossier>`), sinon les envois échouent.
 - DNS : `designer.semisto.org` → enregistrement A/AAAA vers le VPS ; le certificat TLS est géré par le proxy du VPS.
 
 ## Variables d'environnement
@@ -18,11 +18,11 @@ Référence des réglages de Semisto Designer en production (https://designer.se
 | Variable | Rôle |
 |---|---|
 | `SECRET_KEY_BASE` | Clé de chiffrement des sessions (`bin/rails secret`). |
-| `DATABASE_URL` | `postgres://utilisateur:motdepasse@hôte:5432/designer_production`. |
-| `APP_HOST` | `designer.semisto.org` (liens des e-mails, OAuth, plan du site). |
+| `DATABASE_URL` | `postgres://utilisateur:motdepasse@hôte:5432/designer_production` (`postgis://` accepté). Le nom de la base est obligatoire : les trois autres en dérivent. |
+| `APP_HOST` | `designer.semisto.org` (liens des e-mails, OAuth, plan du site). C'est aussi le seul nom d'hôte accepté : tout autre domaine reçoit une erreur 403, sauf `/up`. |
 | `MAIL_FROM` | Expéditeur, par ex. `Semisto Designer <designer@semisto.org>`. |
-| `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Envoi des e-mails : connexion par lien magique, invitations, commentaires, demandes. |
-| `SOLID_QUEUE_IN_PUMA` | `true` : les tâches de fond tournent dans le serveur web (une seule machine). |
+| `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Envoi des e-mails : connexion par lien magique, invitations, commentaires, demandes. Sans eux, l'écran annonce « lien envoyé » mais la tâche d'envoi échoue (visible dans les journaux et Sentry) : personne ne peut se connecter par e-mail. |
+| `SOLID_QUEUE_IN_PUMA` | `true` : les tâches de fond tournent dans le serveur web (une seule machine). Sans elle, aucune tâche ne tourne : ni e-mails, ni import de relief, ni rappels de renouvellement. |
 
 ### Connexion Google
 
