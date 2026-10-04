@@ -5,7 +5,8 @@
 // depressions and the map's features as an overlay, the water of the rain
 // simulation (a tinted water film + tracers following the current), and the
 // sun (shadows at a time or hours of sun over a day, tinted on the terrain,
-// with the scene's light where the sun is).
+// with the scene's light where the sun is). Two extras from Claudy: the relief
+// in blocks, and the Niva to drive on it, by day or by night.
 //
 // This module is the ONLY one importing three.js, and the page loads it with
 // a dynamic `import()`: other pages don't pay its weight.
@@ -16,7 +17,10 @@
 
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { ATLAS_COLUMNS, ATLAS_ROWS, blockAtlas, buildBlocks, type BlocksInput } from './blocks.ts'
 import { waterColor } from './colors.ts'
+import { NIVA, type NivaState } from './niva.ts'
+import { buildNivaModel, nivaParts, setNivaLights, type NivaLights } from './nivaModel.ts'
 import type { RainSimulation } from './hydro.ts'
 import type { SunPosition } from './sun.ts'
 
@@ -24,6 +28,10 @@ import type { SunPosition } from './sun.ts'
 export const OVERLAY_SCALE = 2
 const OVERLAY_MAX_PX = 4096
 const PARTICLES = 5000
+const DAY_SKY = '#e3e9e4'
+const NIGHT_SKY = '#0a1220'
+
+export type CameraMode = 'chase' | 'orbit'
 
 export type SceneGrid = {
   heights: Float32Array
@@ -82,6 +90,8 @@ export class ReliefScene {
   controls: OrbitControls
   overlayCanvas: HTMLCanvasElement
   onFrame: (() => void) | null = null
+  night = false
+  cameraMode: CameraMode = 'chase'
 
   private hemiLight: THREE.HemisphereLight
   private sunLight: THREE.DirectionalLight
@@ -98,6 +108,19 @@ export class ReliefScene {
   private particleAge = new Float32Array(PARTICLES)
   private smoothed: Float32Array | null = null
   private resizeObserver: ResizeObserver
+  private sunIntensity = 1.9
+  private stars: THREE.Points | null = null
+  private orbitLimits: { near: number; minDistance: number }
+  private blocks: THREE.Mesh | null = null
+  private blocksInput: BlocksInput | null = null
+  private builtBlocks: { tops: Float32Array; cols: number; rows: number; size: number; cell: number } | null = null
+  private blockData: { tops: Float32Array; cols: number; rows: number; size: number; cell: number } | null = null
+  private niva: THREE.Group | null = null
+  private nivaLights: NivaLights = { low: false, bar: false }
+  private nivaBraking = false
+  private chaseDistance = 14
+  private lastNivaTarget: THREE.Vector3 | null = null
+  private onWheel: ((event: WheelEvent) => void) | null = null
 
   constructor(container: HTMLElement, grid: SceneGrid) {
     this.container = container
@@ -109,7 +132,7 @@ export class ReliefScene {
     this.renderer.domElement.classList.add('block', 'h-full', 'w-full', 'touch-none')
 
     this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color('#e3e9e4')
+    this.scene.background = new THREE.Color(DAY_SKY)
     this.world = new THREE.Group()
     this.scene.add(this.world)
 
@@ -123,6 +146,7 @@ export class ReliefScene {
     this.controls.maxPolarAngle = Math.PI * 0.47
     this.controls.minDistance = Math.max(5, span / 40)
     this.controls.maxDistance = span * 3
+    this.orbitLimits = { near: this.camera.near, minDistance: this.controls.minDistance }
 
     // The default light comes from the north-west, as on every hillshade:
     // the convention the eye reads as "hollow / bump".
@@ -228,6 +252,128 @@ export class ReliefScene {
     this.world.add(this.particles)
   }
 
+  // ---- The relief in blocks -------------------------------------------------
+  //
+  // A second, cubic mesh (blocks.ts) replaces the terrain on screen. The
+  // overlays (water, sun, axes, features) are read at the same grid
+  // coordinates, derived from the position; the smooth terrain stays in
+  // place, hidden, for the probe and placing the Niva.
+
+  /** Build (or show again) the blocks; returns the number of faces. */
+  showBlocks(input: BlocksInput): number {
+    if (this.blocks && this.blocksInput === input) {
+      this.revealBlocks()
+      return 0
+    }
+    const g = this.grid
+    const x0 = ((g.cols - 1) * g.cellSize) / 2
+    const z0 = ((g.rows - 1) * g.cellSize) / 2
+    const built = buildBlocks({ ...input, zBase: g.zBase, x0, z0 })
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(built.positions, 3))
+    geometry.setAttribute('normal', new THREE.BufferAttribute(built.normals, 3, true))
+    geometry.setAttribute('blockUv', new THREE.BufferAttribute(built.uvs, 2))
+    geometry.setAttribute('tile', new THREE.BufferAttribute(built.tiles, 1))
+    geometry.setIndex(new THREE.BufferAttribute(built.indices, 1))
+    geometry.computeBoundingSphere()
+    if (this.blocks) {
+      this.blocks.geometry.dispose()
+      this.blocks.geometry = geometry
+    } else {
+      this.blocks = new THREE.Mesh(geometry, this.blockMaterial())
+      this.world.add(this.blocks)
+    }
+    this.blocksInput = input
+    this.builtBlocks = { tops: built.groundTops, cols: built.cols, rows: built.rows, size: built.size, cell: input.cell }
+    this.revealBlocks()
+    return built.faces
+  }
+
+  private revealBlocks() {
+    if (!this.blocks) return
+    this.blockData = this.builtBlocks
+    this.blocks.visible = true
+    this.terrain.visible = false
+  }
+
+  hideBlocks() {
+    if (!this.blocks) return
+    this.blocks.visible = false
+    this.terrain.visible = true
+    this.blockData = null
+  }
+
+  /** The top of the block ground (exaggerated group frame) under a point in metres from the north-west corner, or null outside blocks. */
+  private blockTop(x: number, z: number): number | null {
+    const data = this.blockData
+    if (!data) return null
+    const { cell } = data
+    const i = Math.min(data.cols - 1, Math.max(0, Math.floor((x + cell / 2) / data.size)))
+    const j = Math.min(data.rows - 1, Math.max(0, Math.floor((z + cell / 2) / data.size)))
+    return data.tops[j * data.cols + i]
+  }
+
+  private blockMaterial(): THREE.MeshStandardMaterial {
+    const { canvas, averages } = blockAtlas()
+    const atlas = new THREE.CanvasTexture(canvas)
+    atlas.colorSpace = THREE.SRGBColorSpace
+    atlas.magFilter = THREE.NearestFilter
+    atlas.minFilter = THREE.NearestFilter
+    atlas.generateMipmaps = false
+    atlas.flipY = false
+    // The mean colours, linear like the decoded texels.
+    const linear: THREE.Color[] = []
+    for (let t = 0; t < averages.length / 3; t++) {
+      linear.push(new THREE.Color().setRGB(averages[t * 3], averages[t * 3 + 1], averages[t * 3 + 2], THREE.SRGBColorSpace))
+    }
+    const g = this.grid
+    const half = new THREE.Vector2(((g.cols - 1) * g.cellSize) / 2, ((g.rows - 1) * g.cellSize) / 2)
+    const uniforms = {
+      ...this.uniforms,
+      uContour: { value: 0 },
+      uAtlas: { value: atlas },
+      uTileAverage: { value: linear },
+      uHalf: { value: half },
+      uSize: { value: half.clone().multiplyScalar(2) },
+    }
+    const material = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0 })
+    material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, uniforms)
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', `#include <common>
+attribute vec2 blockUv;
+attribute float tile;
+uniform vec2 uHalf;
+uniform vec2 uSize;
+varying float vElevation;
+varying vec2 vGridUv;
+varying vec2 vBlockUv;
+flat varying int vTile;`)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+vElevation = 0.0;
+vGridUv = vec2((position.x + uHalf.x) / uSize.x, 1.0 - (position.z + uHalf.y) / uSize.y);
+vBlockUv = blockUv;
+vTile = int(tile + 0.5);`)
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', `#include <common>
+${OVERLAY_DECLARATIONS}
+uniform sampler2D uAtlas;
+uniform vec3 uTileAverage[${ATLAS_COLUMNS * ATLAS_ROWS}];
+varying vec2 vBlockUv;
+flat varying int vTile;`)
+        .replace('#include <map_fragment>', `vec2 inTile = vec2(fract(vBlockUv.x), 1.0 - fract(vBlockUv.y));
+vec2 cellOf = vec2(float(vTile % ${ATLAS_COLUMNS}), float(vTile / ${ATLAS_COLUMNS}));
+vec3 texel = texture2D(uAtlas, (cellOf + inTile) / vec2(${ATLAS_COLUMNS}.0, ${ATLAS_ROWS}.0)).rgb;
+// From afar, sixteen pixels per block fall under the pixel: the tile's mean
+// colour replaces the shimmer.
+vec2 spread = fwidth(vBlockUv) * 16.0;
+texel = mix(texel, uTileAverage[vTile], smoothstep(0.6, 1.6, max(spread.x, spread.y)));
+diffuseColor.rgb *= texel;
+${OVERLAY_MIX}`)
+    }
+    return material
+  }
+
   setBaseTexture(texture: THREE.Texture) {
     texture.colorSpace = THREE.SRGBColorSpace
     texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
@@ -274,13 +420,15 @@ export class ReliefScene {
     const distance = width * 1.5
     if (!sun || sun.altitude <= 0) {
       this.sunLight.position.set(-width, width * 0.9, -depth)
-      this.sunLight.intensity = 1.9
+      this.sunIntensity = 1.9
+      this.applyLighting()
       return
     }
     const horizontal = Math.cos(sun.altitude) * distance
     this.sunLight.position.set(Math.sin(sun.azimuth) * horizontal, Math.sin(sun.altitude) * distance,
                                -Math.cos(sun.azimuth) * horizontal)
-    this.sunLight.intensity = 2.2
+    this.sunIntensity = 2.2
+    this.applyLighting()
   }
 
   /** One RGBA tint per grid cell (rows north → south) laid on the terrain; null clears it. */
@@ -453,6 +601,149 @@ export class ReliefScene {
     this.particles.geometry.attributes.position.needsUpdate = true
   }
 
+  // ---- The night -------------------------------------------------------------
+  //
+  // A starry night-blue sky, a haze swallowing the distance, a cold moon: the
+  // terrain hardly shows but in the headlights.
+
+  setNight(on: boolean) {
+    this.night = on
+    ;(this.scene.background as THREE.Color).set(on ? NIGHT_SKY : DAY_SKY)
+    this.scene.fog = on ? new THREE.FogExp2(NIGHT_SKY, 0.0016) : null
+    if (on && !this.stars) this.buildStars()
+    if (this.stars) this.stars.visible = on
+    this.applyLighting()
+    this.setNivaLights(this.nivaLights)
+  }
+
+  private applyLighting() {
+    this.hemiLight.intensity = this.night ? 0.07 : 1.1
+    this.hemiLight.color.set(this.night ? '#8fa6d6' : '#f4f7fb')
+    this.sunLight.intensity = this.night ? 0.14 : this.sunIntensity
+    this.sunLight.color.set(this.night ? '#9db4ff' : '#fffaf0')
+  }
+
+  private buildStars() {
+    const count = 1500
+    const radius = Math.max(this.size.width, this.size.depth) * 3
+    const positions = new Float32Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      const azimuth = Math.random() * Math.PI * 2
+      const height = 0.08 + Math.random() * 0.92
+      const ring = Math.sqrt(1 - height * height)
+      positions.set([Math.cos(azimuth) * ring * radius, height * radius, Math.sin(azimuth) * ring * radius], i * 3)
+    }
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    this.stars = new THREE.Points(geometry, new THREE.PointsMaterial({
+      color: '#dbe4ff', size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0.85, fog: false,
+    }))
+    this.stars.frustumCulled = false
+    this.scene.add(this.stars)
+  }
+
+  // ---- The Niva ----------------------------------------------------------------
+  //
+  // The car lives outside the exaggerated group: it keeps its real size, set
+  // at the height of the exaggerated relief and tilted on its exaggerated
+  // slope, to stick to the terrain one sees. The camera follows it ("chase")
+  // or turns around it with the mouse ("orbit").
+
+  showNiva(on: boolean) {
+    if (on) {
+      this.niva ||= buildNivaModel()
+      this.scene.add(this.niva)
+      this.setNivaLights(this.nivaLights)
+      this.camera.near = 0.3
+      this.controls.minDistance = 4
+      this.setCameraMode(this.cameraMode)
+      if (!this.onWheel) {
+        this.onWheel = (event: WheelEvent) => {
+          if (this.cameraMode !== 'chase' || !this.niva?.parent) return
+          event.preventDefault()
+          this.chaseDistance = Math.min(80, Math.max(6, this.chaseDistance * (event.deltaY > 0 ? 1.12 : 0.89)))
+        }
+        this.renderer.domElement.addEventListener('wheel', this.onWheel, { passive: false })
+      }
+    } else if (this.niva) {
+      this.scene.remove(this.niva)
+      this.camera.near = this.orbitLimits.near
+      this.controls.minDistance = this.orbitLimits.minDistance
+      this.controls.enabled = true
+    }
+    this.camera.updateProjectionMatrix()
+  }
+
+  setCameraMode(mode: CameraMode) {
+    this.cameraMode = mode
+    this.controls.enabled = mode !== 'chase' || !this.niva?.parent
+    this.lastNivaTarget = null
+  }
+
+  setNivaLights(lights: NivaLights) {
+    this.nivaLights = lights
+    if (this.niva) setNivaLights(this.niva, { ...lights, night: this.night, braking: this.nivaBraking })
+  }
+
+  /** `state`: the driving state (niva.ts), in metres from the north-west corner and real heights. */
+  updateNiva(state: NivaState, dt: number) {
+    const model = this.niva
+    if (!model?.parent || !state.wheels) return
+    const g = this.grid
+    const x0 = ((g.cols - 1) * g.cellSize) / 2
+    const z0 = ((g.rows - 1) * g.cellSize) / 2
+    const ex = this.exaggeration
+    const [fl, fr, rl, rr] = state.wheels
+    const forward = new THREE.Vector3(Math.sin(state.heading), 0, -Math.cos(state.heading))
+    const along = forward.clone().multiplyScalar(NIVA.wheelbase).setY((((fl + fr) - (rl + rr)) / 2) * ex).normalize()
+    const left = new THREE.Vector3(-Math.cos(state.heading), 0, -Math.sin(state.heading))
+      .multiplyScalar(NIVA.track).setY((((fl + rl) - (fr + rr)) / 2) * ex).normalize()
+    const up = new THREE.Vector3().crossVectors(along, left).normalize()
+    left.crossVectors(up, along).normalize()
+    model.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(left, up, along))
+    // In blocks, the Niva drives on the real relief but stands on the
+    // highest of the blocks under its wheels: never sunk into a step.
+    let base = (state.ground - g.zBase) * ex
+    if (this.blockData) {
+      const a = NIVA.wheelbase / 2
+      const b = NIVA.track / 2
+      base = -Infinity
+      for (const [f, l] of [[a, b], [a, -b], [-a, b], [-a, -b]]) {
+        const x = state.x + Math.sin(state.heading) * f - Math.cos(state.heading) * l
+        const z = state.z - Math.cos(state.heading) * f - Math.sin(state.heading) * l
+        base = Math.max(base, (this.blockTop(x, z) ?? 0) * ex)
+      }
+    }
+    model.position.set(state.x - x0, base, state.z - z0)
+
+    const { wheels, steering } = nivaParts(model)
+    for (const wheel of wheels) wheel.rotation.x = state.wheelSpin
+    for (const pivot of steering) pivot.rotation.y = -state.steer
+    if (state.braking !== this.nivaBraking) {
+      this.nivaBraking = state.braking
+      this.setNivaLights(this.nivaLights)
+    }
+
+    const target = model.position.clone().add(new THREE.Vector3(0, 1.4, 0))
+    if (this.cameraMode === 'chase') {
+      const desired = target.clone().addScaledVector(forward, -this.chaseDistance)
+      desired.y += this.chaseDistance * 0.38
+      // Never under the terrain, even behind a mound.
+      const ground = (this.heightAt(desired.x + x0, desired.z + z0) - g.zBase) * ex + 1.5
+      if (desired.y < ground) desired.y = ground
+      const k = this.lastNivaTarget ? 1 - Math.exp(-dt * 4) : 1
+      this.camera.position.lerp(desired, k)
+      this.controls.target.lerp(target.clone().addScaledVector(forward, 4), Math.min(1, k * 2))
+    } else if (this.lastNivaTarget) {
+      const delta = target.clone().sub(this.lastNivaTarget)
+      this.camera.position.add(delta)
+      this.controls.target.add(delta)
+    } else {
+      this.controls.target.copy(target)
+    }
+    this.lastNivaTarget = target
+  }
+
   /** Height (m) under a point of the local frame (x east, z south, origin north-west), nearest vertex. */
   heightAt(x: number, z: number): number {
     const g = this.grid
@@ -486,6 +777,9 @@ export class ReliefScene {
     this.renderer.setAnimationLoop(null)
     this.resizeObserver.disconnect()
     this.controls.dispose()
+    if (this.onWheel) this.renderer.domElement.removeEventListener('wheel', this.onWheel)
+    this.blocks?.geometry.dispose()
+    this.stars?.geometry.dispose()
     this.terrain.geometry.dispose()
     this.material.map?.dispose()
     this.material.dispose()

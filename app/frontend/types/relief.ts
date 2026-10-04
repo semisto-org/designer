@@ -84,7 +84,8 @@ export type TerrainGridData = {
   fetchedAt: string | null
 }
 
-export type LandcoverClassData = { label: string; rate: number; storage: number; color: string }
+/** `kind` tells the blocks view and the Niva what the class is (see relief/roles.ts). */
+export type LandcoverClassData = { label: string; rate: number; storage: number; color: string; kind?: 'road' | 'building' | 'water' | 'forest' }
 
 /** The soil model of the rain simulation (map settings over region defaults). */
 export type SoilModel = {

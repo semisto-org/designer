@@ -27,9 +27,15 @@ Sous **Sur la carte**, choisis **Écoulement** pour voir en bleu les axes où l'
 
 **Ouvrir la vue 3D** affiche le terrain en relief, en trois onglets :
 
-- **Vue** : le fond (photo, altitudes, végétation, exposition, humidité, gel, occupation du sol), l'exagération du relief, les **Courbes de niveau** tous les 1, 2,5 ou 5 m, les **Axes d'écoulement**, les **Cuvettes** et tes éléments dessinés. Un clic sur le terrain le sonde : altitude, pente, orientation.
+- **Vue** : le fond (photo, altitudes, végétation, exposition, humidité, gel, occupation du sol, blocs), l'exagération du relief, les **Courbes de niveau** tous les 1, 2,5 ou 5 m, les **Axes d'écoulement**, les **Cuvettes** et tes éléments dessinés. Un clic sur le terrain le sonde : altitude, pente, orientation.
 - **Pluie** : choisis l'intensité (**Pluie**, **Forte** ou **Orage**), la durée de l'averse et l'état du sol au départ, puis **Faire pleuvoir**. Active **Creuser les mares et baissières de la carte** pour voir ce que tes ouvrages retiennent, comparé au terrain actuel.
 - **Soleil** : les ombres à une heure donnée, ou les **Heures de soleil** en hiver, à l'équinoxe, en été ou aujourd'hui.
+
+### Les blocs et la Niva
+
+Le fond **Blocs** montre le terrain en cubes d'environ 2 m, comme un jeu de construction : herbe, chemins, eau et sous-bois d'après l'occupation du sol, arbres et bâtiments à leur vraie hauteur. La pluie, le soleil et tes éléments s'y posent comme sur le relief.
+
+En bas de l'onglet **Vue**, **Prendre la Niva** te donne une Lada Niva à poser d'un clic sur le terrain. Conduis-la aux flèches (ou Z Q S D), freine avec la barre d'espace ; sur téléphone, des boutons apparaissent à l'écran. Elle grimpe jusqu'à 55 % de pente, refuse les dévers trop forts, s'arrête devant l'eau et les bâtiments et ralentit en sous-bois : une bonne façon de sentir les pentes de ton terrain. Allume ses **Phares** et sa **Rampe de toit**, passe en **Nuit** pour ne plus voir le terrain que dans ses faisceaux, et choisis une caméra **Derrière** la voiture ou **Libre**.
 
 ## L'eau de pluie des toits
 

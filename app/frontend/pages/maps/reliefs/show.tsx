@@ -12,9 +12,10 @@ import { t } from '@/lib/i18n'
 import { LAYER_COLORS } from '@/map/layers/features'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP } from '@/relief/colors'
 import {
-  ReliefController, type BaseLayer, type DesignSummary, type LoadingStep, type ProbeInfo, type RainSettings,
-  type RainStats, type SunDate, type SunInfo, type SunMode,
+  ReliefController, type BaseLayer, type DesignSummary, type LoadingStep, type NivaInfo, type NivaKey, type ProbeInfo,
+  type RainSettings, type RainStats, type SunDate, type SunInfo, type SunMode,
 } from '@/relief/controller'
+import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import {
   formatClock, formatDepth, formatDuration, formatHours, formatMinutes, formatNumber, formatSurface, formatVolume,
 } from '@/relief/format'
@@ -173,6 +174,8 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
   const [dayRunning, setDayRunning] = useState(false)
   const [probe, setProbe] = useState<ProbeInfo | null>(null)
   const [zRange, setZRange] = useState<[number, number]>([terrain.zMin, terrain.zMax])
+  const [niva, setNiva] = useState<NivaInfo>({ mode: 'off' })
+  const [nivaSettings, setNivaSettings] = useState<NivaSettings>({ lights: { low: false, bar: false }, night: false, camera: 'chase' })
   const pointer = useRef<[number, number] | null>(null)
   const touch = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches, [])
 
@@ -193,6 +196,11 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
       onStats: setStats,
       onSun: setSunInfo,
       onDesigns: setDesigns,
+      onNiva: (info) => {
+        setNiva(info)
+        // The headlights switch on by themselves at night.
+        setNivaSettings((current) => ({ ...current, lights: { ...instance.nivaLights } }))
+      },
     })
     controller.current = instance
     instance.load().then(() => {
@@ -311,11 +319,70 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     setDayRunning(true)
   }
 
-  // ---- Probe: a click (not a drag) on the terrain.
+  // ---- The Niva: arrows (or W A S D) drive, space brakes; H headlights,
+  // L light bar, N night, C camera, Escape cancels placing.
+  const nivaActive = niva.mode !== 'off'
+  useEffect(() => {
+    if (!nivaActive) return
+    const keys: Record<string, NivaKey> = {
+      ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down',
+      ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'brake',
+    }
+    const onKey = (event: KeyboardEvent) => {
+      const c = controller.current
+      if (!c) return
+      if ((event.target as HTMLElement | null)?.closest?.('input, textarea, select, [contenteditable]')) return
+      const down = event.type === 'keydown'
+      if (down && event.code === 'Escape' && c.nivaPlacing) return c.cancelPlacing()
+      if (!c.niva) return
+      const key = keys[event.code]
+      if (key) {
+        event.preventDefault()
+        c.setNivaKey(key, down)
+        return
+      }
+      if (!down || event.repeat || event.metaKey || event.ctrlKey || event.altKey) return
+      if (event.code === 'KeyH') updateNiva({ lights: { ...c.nivaLights, low: !c.nivaLights.low } })
+      else if (event.code === 'KeyL') updateNiva({ lights: { ...c.nivaLights, bar: !c.nivaLights.bar } })
+      else if (event.code === 'KeyN') updateNiva({ night: !c.scene?.night })
+      else if (event.code === 'KeyC') updateNiva({ camera: c.scene?.cameraMode === 'chase' ? 'orbit' : 'chase' })
+    }
+    // A window losing focus must not leave the throttle pressed.
+    const onBlur = () => controller.current?.resetNivaInput()
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('keyup', onKey)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keyup', onKey)
+      window.removeEventListener('blur', onBlur)
+    }
+    // updateNiva only reads the controller and the setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nivaActive])
+
+  function updateNiva(patch: Partial<NivaSettings>) {
+    const c = controller.current
+    if (!c) return
+    if (patch.night !== undefined) c.setNight(patch.night)
+    if (patch.lights) {
+      c.setNivaLight('low', patch.lights.low)
+      c.setNivaLight('bar', patch.lights.bar)
+    }
+    if (patch.camera) c.setCameraMode(patch.camera)
+    setNivaSettings((current) => ({ ...current, ...patch, lights: { ...c.nivaLights } }))
+  }
+
+  // ---- Probe: a click (not a drag) on the terrain; while placing the Niva, sets it down.
   async function onPointerUp(event: React.PointerEvent) {
     const start = pointer.current
     pointer.current = null
     if (!start || Math.hypot(event.clientX - start[0], event.clientY - start[1]) > 5) return
+    if (controller.current?.nivaPlacing) {
+      controller.current.placeNiva(event)
+      setProbe(null)
+      return
+    }
     const info = await controller.current?.probe(event)
     setProbe(info ?? null)
   }
@@ -329,7 +396,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     <div className="relative h-dvh w-full overflow-hidden bg-[#dfe9ee]">
       <div
         ref={container}
-        className="absolute inset-0"
+        className={clsx('absolute inset-0', niva.mode === 'placing' && 'cursor-crosshair')}
         onPointerDown={(event) => { pointer.current = [event.clientX, event.clientY] }}
         onPointerUp={onPointerUp}
       />
@@ -412,6 +479,17 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
                   landcoverClasses={landcoverClasses}
                   onReset={() => controller.current?.resetView()}
                   onTop={() => controller.current?.topView()}
+                  niva={(
+                    <NivaSection
+                      info={niva}
+                      settings={nivaSettings}
+                      onToggle={() => controller.current?.toggleNiva()}
+                      onMove={() => controller.current?.moveNiva()}
+                      onLight={(which, on) => updateNiva({ lights: { ...nivaSettings.lights, [which]: on } })}
+                      onNight={(night) => updateNiva({ night })}
+                      onCamera={(camera) => updateNiva({ camera })}
+                    />
+                  )}
                 />
               ) : tab === 'rain' ? (
                 <RainTab
@@ -465,7 +543,16 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
           {terrain.attribution}
         </p>
       )}
-      {ready && !probe && (
+      {niva.mode === 'driving' && <NivaDashboard info={niva} />}
+      {niva.mode === 'driving' && touch && (
+        <NivaPad raised={panelOpen} onKey={(key, down) => controller.current?.setNivaKey(key, down)} />
+      )}
+      {niva.mode === 'placing' && (
+        <p className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-full bg-prune-600 px-3 py-1 text-xs font-medium text-white shadow sm:top-auto sm:bottom-3">
+          {t('relief.page.niva.placing')}
+        </p>
+      )}
+      {ready && !probe && !nivaActive && (
         <p className="pointer-events-none absolute bottom-3 left-1/2 z-10 hidden -translate-x-1/2 rounded-full bg-white/80 px-3 py-1 text-[0.7rem] text-loam-500 md:block">
           {touch ? t('relief.page.hint_touch') : t('relief.page.hint')}
         </p>
@@ -476,7 +563,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
 
 // ---- View tab -------------------------------------------------------------------
 
-function ViewTab({ view, update, terrain, zRange, landcoverClasses, onReset, onTop }: {
+function ViewTab({ view, update, terrain, zRange, landcoverClasses, onReset, onTop, niva }: {
   view: ViewState
   update: (patch: Partial<ViewState>) => void
   terrain: TerrainGridData
@@ -484,6 +571,7 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, onReset, onT
   landcoverClasses: Record<string, LandcoverClassData>
   onReset: () => void
   onTop: () => void
+  niva: ReactNode
 }) {
   const bases: BaseLayer[] = [
     ...(terrain.files.texture ? ['ortho' as const] : []),
@@ -491,6 +579,7 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, onReset, onT
     ...(terrain.surface ? ['canopy' as const] : []),
     'aspect', 'wetness', 'frost',
     ...(terrain.landcover ? ['landcover' as const] : []),
+    'blocks',
   ]
   return (
     <>
@@ -548,6 +637,8 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, onReset, onT
           {t('relief.page.view.top')}
         </Button>
       </div>
+
+      {niva}
     </>
   )
 }
@@ -569,6 +660,8 @@ function BaseLegend({ base, zRange, landcoverClasses }: {
       return <GradientLegend stops={FROST_RAMP} left={t('relief.page.frost.low')} right={t('relief.page.frost.high')}>{legend('frost')}</GradientLegend>
     case 'aspect':
       return <p className="mt-2 text-xs text-loam-500">{legend('aspect')}</p>
+    case 'blocks':
+      return <p className="mt-2 text-xs text-loam-500">{legend('blocks')}</p>
     case 'landcover':
       return (
         <div className="mt-2">
