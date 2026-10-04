@@ -21,8 +21,9 @@ export function Section({ children, tone = 'plain', className, id }: {
   )
 }
 
-export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={clsx('text-sm font-semibold uppercase tracking-wider text-leaf-600', className)}>{children}</p>
+/** `tone="dark"` on a dark background: a light green that stays readable. */
+export function Eyebrow({ children, className, tone = 'plain' }: { children: ReactNode; className?: string; tone?: 'plain' | 'dark' }) {
+  return <p className={clsx('text-sm font-semibold uppercase tracking-wider', tone === 'dark' ? 'text-leaf-300' : 'text-leaf-600', className)}>{children}</p>
 }
 
 export function SectionHeading({ eyebrow, title, intro, center, className, tone = 'plain' }: {
@@ -35,7 +36,7 @@ export function SectionHeading({ eyebrow, title, intro, center, className, tone 
 }) {
   return (
     <div className={clsx('max-w-2xl', center && 'mx-auto text-center', className)}>
-      {eyebrow && <Eyebrow className={tone === 'dark' ? 'text-leaf-300' : undefined}>{eyebrow}</Eyebrow>}
+      {eyebrow && <Eyebrow tone={tone}>{eyebrow}</Eyebrow>}
       <h2 className={clsx('mt-2 text-balance text-2xl leading-tight sm:text-3xl', tone === 'dark' && 'text-white')}>{title}</h2>
       {intro && <p className={clsx('mt-3 text-pretty text-base leading-relaxed sm:text-lg', tone === 'dark' ? 'text-prune-200' : 'text-loam-500')}>{intro}</p>}
     </div>

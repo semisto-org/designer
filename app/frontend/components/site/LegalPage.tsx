@@ -25,7 +25,7 @@ export function LegalPage({ namespace, vars }: { namespace: 'privacy' | 'terms';
             {sections.map((section, index) => (
               <li key={section.title}>
                 <a href={`#section-${index + 1}`} className="flex gap-2 text-loam-500 hover:text-prune-700">
-                  <span className="w-5 shrink-0 text-loam-300">{index + 1}.</span>
+                  <span className="w-5 shrink-0 text-loam-400">{index + 1}.</span>
                   <span>{section.title}</span>
                 </a>
               </li>
@@ -36,7 +36,7 @@ export function LegalPage({ namespace, vars }: { namespace: 'privacy' | 'terms';
           {sections.map((section, index) => (
             <section key={section.title} id={`section-${index + 1}`} className="scroll-mt-6">
               <h2 className="text-xl">
-                <span className="mr-2 text-loam-300">{index + 1}.</span>
+                <span className="mr-2 text-loam-400">{index + 1}.</span>
                 {section.title}
               </h2>
               <div className="mt-3 space-y-3 text-pretty leading-relaxed text-loam-700">

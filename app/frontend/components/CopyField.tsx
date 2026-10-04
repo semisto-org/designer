@@ -16,7 +16,7 @@ export function CopyField({ value, className, mono }: { value: string; className
   }
   return (
     <div className={'flex min-w-0 items-stretch overflow-hidden rounded-lg ring-1 ring-loam-200 ' + (className ?? '')}>
-      <code className={'min-w-0 flex-1 overflow-x-auto whitespace-nowrap bg-loam-50 px-3 py-2 text-sm text-loam-800 ' + (mono ? 'font-mono' : '')}>{value}</code>
+      <code tabIndex={0} className={'min-w-0 flex-1 overflow-x-auto whitespace-nowrap bg-loam-50 px-3 py-2 text-sm text-loam-800 ' + (mono ? 'font-mono' : '')}>{value}</code>
       <button
         type="button"
         onClick={copy}

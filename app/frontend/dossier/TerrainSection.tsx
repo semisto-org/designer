@@ -121,7 +121,7 @@ function Relief({ relief, isOwner }: { relief: Dossier['terrain']['relief']; isO
         !relief.available && <Muted>{t(`dossier.terrain.relief_reason.${relief.reason}`)}</Muted>
       )}
       <div className="rounded-lg bg-sky-50 px-3 py-2 print:border print:border-sky-200 print:bg-white">
-        <p className="text-[11px] text-sky-900/70">{t('dossier.terrain.rainwater')}</p>
+        <p className="text-[11px] text-sky-900/80">{t('dossier.terrain.rainwater')}</p>
         {rain.roofAreaM2 <= 0 ? (
           <p className="text-loam-600">{t('dossier.terrain.rainwater_none')}</p>
         ) : rain.volumeM3 == null ? (

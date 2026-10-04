@@ -73,7 +73,7 @@ export default function CompareTab() {
                   </th>
                   {columns.map((sample) => {
                     const value = sample.results[key]
-                    if (value == null) return <td key={sample.id} className="px-3 py-2 text-right text-loam-300">{t('soil.compare.missing')}</td>
+                    if (value == null) return <td key={sample.id} className="px-3 py-2 text-right text-loam-400">{t('soil.compare.missing')}</td>
                     const parameter = reading(sample, key)
                     const selected = selection?.sampleId === sample.id && selection.key === key
                     if (!parameter) return <td key={sample.id} className="px-3 py-2 text-right tabular-nums text-loam-800">{formatValue(value)}</td>
@@ -99,7 +99,7 @@ export default function CompareTab() {
                 {columns.map((sample) => {
                   const texture = sample.interpretation?.texture
                   const selected = selection?.sampleId === sample.id && selection.key === 'texture'
-                  if (!texture) return <td key={sample.id} className="px-3 py-2 text-right text-loam-300">{t('soil.compare.missing')}</td>
+                  if (!texture) return <td key={sample.id} className="px-3 py-2 text-right text-loam-400">{t('soil.compare.missing')}</td>
                   return (
                     <td key={sample.id} className="p-0 text-right">
                       <button

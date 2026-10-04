@@ -179,7 +179,7 @@ function Row({ label, value, provenance, tone }: { label: string; value: ReactNo
     <div className="grid grid-cols-[minmax(7rem,40%)_1fr] items-baseline gap-3 py-1.5 text-sm">
       <dt className="text-loam-500">{label}</dt>
       <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className={empty ? 'text-loam-300' : tone === 'warning' ? 'text-clay-700' : 'text-loam-800'}>{empty ? t('plants.show.no_value') : value}</span>
+        <span className={empty ? 'text-loam-400' : tone === 'warning' ? 'text-clay-700' : 'text-loam-800'}>{empty ? t('plants.show.no_value') : value}</span>
         {!empty && <ProvenanceBadge provenance={provenance} />}
       </dd>
     </div>

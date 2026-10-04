@@ -59,7 +59,7 @@ export default function McpDocs({ tools, endpoints, scopes, limits }: Props) {
           <Step title={t('docs_mcp.connect.claude_ai_title')}>{t('docs_mcp.connect.claude_ai')}</Step>
           <Step title={t('docs_mcp.connect.claude_code_title')}>
             {t('docs_mcp.connect.claude_code')}
-            <code className="mt-2 block overflow-x-auto whitespace-nowrap rounded bg-loam-900 px-2 py-1.5 font-mono text-xs text-loam-50">
+            <code tabIndex={0} className="mt-2 block overflow-x-auto whitespace-nowrap rounded bg-loam-900 px-2 py-1.5 font-mono text-xs text-loam-50">
               claude mcp add --transport http semisto-designer {endpoints.mcp}
             </code>
           </Step>
@@ -98,7 +98,7 @@ export default function McpDocs({ tools, endpoints, scopes, limits }: Props) {
           ))}
         </ul>
         <p className="mt-4 text-sm text-loam-600">{t('docs_mcp.auth.tokens')}</p>
-        <pre className="mt-3 overflow-x-auto rounded-xl bg-loam-900 p-4 font-mono text-xs leading-relaxed text-loam-50">{curl}</pre>
+        <pre tabIndex={0} className="mt-3 overflow-x-auto rounded-xl bg-loam-900 p-4 font-mono text-xs leading-relaxed text-loam-50">{curl}</pre>
       </Section>
 
       <Section id="guardrails" icon={ShieldCheck}>

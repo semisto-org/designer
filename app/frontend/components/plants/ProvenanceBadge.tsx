@@ -34,7 +34,7 @@ export function ProvenanceBadge({ provenance }: { provenance: Provenance | undef
         className={clsx('inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[11px] leading-4 ring-1 ring-inset', TONES[status])}
       >
         <span>{sourceLabel(provenance.source)}</span>
-        {status !== 'sourced' && <span className="opacity-75">· {t(`plants.provenance.statuses.${status}`)}</span>}
+        {status !== 'sourced' && <span className="opacity-90">· {t(`plants.provenance.statuses.${status}`)}</span>}
       </button>
       {open && (
         <span className="absolute left-0 top-full z-20 mt-1 w-64 rounded-lg bg-white p-3 text-left text-xs text-loam-600 shadow-lg ring-1 ring-loam-200">
