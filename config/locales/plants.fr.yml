@@ -576,7 +576,7 @@ fr:
               in_future: "ne peut pas être dans le futur"
             photo:
               content_type: "doit être une image JPEG, PNG ou WebP"
-              too_large: "est trop lourde (15 Mo au plus)"
+              too_large: "est trop lourde (25 Mo au plus)"
   # Generic validation messages (no rails-i18n in the bundle yet).
   errors:
     format: "%{attribute} %{message}"
