@@ -46,12 +46,17 @@ class OrganizationMembershipTest < ActiveSupport::TestCase
     team_map = maps(:ahinvaux)
     team_map.update!(organization: @team)
     CommentSubscription.subscribe(@member, team_map)
+    feature = with_feature(team_map)
+    CommentSubscription.subscribe(@member, feature)
+    CommentSubscription.subscribe(@admin, feature)
 
     assert_equal "editor", team_map.role_for(@member)
     assert @member_membership.destroy
 
     assert_nil team_map.role_for(@member)
     assert_not CommentSubscription.subscribed?(@member, team_map), "subscriptions on maps they cannot open go"
+    assert_not CommentSubscription.subscribed?(@member, feature), "element threads too"
+    assert CommentSubscription.subscribed?(@admin, feature)
     assert_equal @team.id, own_map.reload.organization_id, "their own map stays in the team"
     assert_equal "owner", own_map.role_for(@member)
     assert_equal "editor", own_map.role_for(@admin), "the team keeps working on it"

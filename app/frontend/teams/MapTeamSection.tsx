@@ -78,7 +78,7 @@ export function MapTeamSection({ data, busy, base, run }: Props) {
               {teams.length > 1 || !selected ? t('teams.map.add') : t('teams.map.add_to', { name: selected.name })}
             </Button>
           </form>
-          <p className="text-xs text-loam-500">{t('teams.map.hint')}</p>
+          <p className="text-xs text-loam-500">{t('teams.map.hint')} {t('teams.map.plan')}</p>
         </>
       ) : (
         <p className="text-xs text-loam-500">
@@ -86,7 +86,7 @@ export function MapTeamSection({ data, busy, base, run }: Props) {
           <Link href="/teams" className="font-medium text-prune-700 underline underline-offset-2 hover:text-prune-800">{t('teams.map.no_team_link')}</Link>
         </p>
       )}
-      {(current || teams.length > 0) && <p className="text-xs text-loam-500">{t('teams.map.plan')}</p>}
+      {current && <p className="text-xs text-loam-500">{t('teams.map.plan')}</p>}
     </section>
   )
 }

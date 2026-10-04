@@ -38,12 +38,19 @@ class Organization < ApplicationRecord
 
   def admins_count = memberships.where(role: "admin").count
 
-  # Removes everyone's access gained through the team on these maps (thread
-  # subscriptions of people who can no longer open a map are dropped).
+  # After people lost the access a team gave them on these maps: drops their
+  # thread subscriptions on the maps they can no longer open (direct members
+  # keep theirs). One query per map when nobody followed anything there.
   def self.purge_lost_access(users:, maps:)
+    user_ids = users.map(&:id)
+    return if user_ids.empty?
     maps.each do |map|
+      subscribed = CommentSubscription.where(user_id: user_ids, commentable_type: "Map", commentable_id: map.id)
+        .or(CommentSubscription.where(user_id: user_ids, commentable_type: "MapFeature", commentable_id: map.features.select(:id)))
+        .distinct.pluck(:user_id)
+      next if subscribed.empty?
       map.reload
-      users.each { |user| CommentSubscription.purge(user, map) unless map.viewable_by?(user) }
+      users.each { |user| CommentSubscription.purge(user, map) if subscribed.include?(user.id) && !map.viewable_by?(user) }
     end
   end
 

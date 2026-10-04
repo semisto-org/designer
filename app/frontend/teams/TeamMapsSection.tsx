@@ -26,7 +26,7 @@ export function TeamMapsSection({ team, empty, children }: { team: Team; empty: 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-loam-200 pb-2">
         <h2 id={headingId} className="flex min-w-0 items-center gap-2 text-lg">
           <UsersRound className="h-5 w-5 shrink-0 text-prune-500" aria-hidden="true" />
-          <span className="truncate">{t('teams.maps_index.section', { name: team.name })}</span>
+          <span className="min-w-0 break-words">{t('teams.maps_index.section', { name: team.name })}</span>
         </h2>
         <Link href={`/teams/${team.id}`} className="text-sm font-medium text-prune-700 hover:text-prune-800">
           {t('teams.maps_index.open_team')}

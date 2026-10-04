@@ -12,10 +12,10 @@ module Teams
     before_action :set_invitation, only: %i[destroy resend]
 
     def create
-      attrs = params.fetch(:invitation, {}).permit(:email_address, :role)
-      email = attrs[:email_address].to_s.strip.downcase
-      # An unknown role falls back to the model default (member), never to an arbitrary string.
-      role = attrs[:role].to_s.presence_in(OrganizationInvitation::ROLES)
+      email = params.dig(:invitation, :email_address).to_s.strip.downcase
+      # The role is read on its own and checked against an allowlist: an unknown
+      # value falls back to the model default (member), never to an arbitrary string.
+      role = params.dig(:invitation, :role).to_s.presence_in(OrganizationInvitation::ROLES)
 
       # Same address invited again: update the role and send it again.
       invitation = @team.invitations.pending.find_by(email_address: email) ||

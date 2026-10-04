@@ -57,7 +57,7 @@ fr:
       empty_body: "Créez une équipe, invitez vos collègues, puis confiez-lui vos cartes depuis le bouton « Partager » de chaque carte."
       create_title: "Créer une équipe"
       name: "Nom de l'équipe"
-      name_placeholder: "Bureau d'études du Bocage"
+      name_placeholder: "Les Jardiniers du Condroz"
       create_hint: "Vous en serez l'administrateur. Créer une équipe est gratuit."
       create: "Créer l'équipe"
     show:
@@ -150,7 +150,6 @@ fr:
       plan: "La carte reste à vous et suit votre forfait."
       no_team: "Vous concevez à plusieurs ? Une équipe donne à tous ses membres l'accès aux cartes que vous lui confiez."
       no_team_link: "Créer une équipe"
-      via_team: "Vous avez accès à cette carte par l'équipe « %{name} »."
       errors:
         not_member: "Vous ne faites pas partie de cette équipe."
     # The card on the account page.
