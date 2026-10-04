@@ -1,4 +1,4 @@
-import { Download, FileJson, FileText, Network } from 'lucide-react'
+import { BookOpen, Download, FileJson, FileText, Network } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -65,6 +65,7 @@ export default function ExportMenu() {
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-1rem)] rounded-xl bg-white p-1.5 shadow-xl ring-1 ring-loam-200">
+          <MenuItem icon={BookOpen} label={t('dossier.open')} hint={t('dossier.open_hint')} onClick={() => { setOpen(false); window.open(`/maps/${editor.map.id}/dossier`, '_blank', 'noopener') }} />
           <MenuItem
             icon={FileText}
             label={t('drawing.export.pdf')}

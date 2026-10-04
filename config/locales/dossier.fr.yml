@@ -1,0 +1,262 @@
+# « Dossier du projet »: the printable document a designer hands to a client,
+# a municipality or a funder. Keys in English, values in French. Owned by the
+# dossier area. Other areas' labels (layers, kinds, strata, soil fields,
+# climate, finances) are reused from their own files.
+#
+# Careful with YAML 1.1: never use yes/no/on/off/y/n as keys.
+fr:
+  dossier:
+    title: "Dossier du projet"
+    page_title: "Dossier du projet · %{map}"
+    back: "Retour à la carte"
+    print: "Imprimer ou enregistrer en PDF"
+    print_short: "Imprimer"
+    loading: "Préparation du dossier…"
+    error: "Le dossier n'a pas pu être préparé. Réessayez dans un instant."
+    retry: "Réessayer"
+    open: "Dossier du projet"
+    open_hint: "Le document à remettre : plan, fiche projet, terrain, plantes, alertes, photos et sources, prêt à imprimer en PDF."
+    indicative: "Indicatif"
+    footer: "%{map} · Dossier du projet · %{date}"
+    made_with: "Établi avec Semisto Designer · designer.semisto.org"
+    none: "—"
+
+    # ----- Choosing what to print (screen only) -----
+    picker:
+      title: "Contenu du dossier"
+      intro: "Cochez ce que vous voulez remettre. Votre choix est retenu pour cette carte, sur cet appareil."
+      toggle: "Choisir le contenu"
+      all: "Tout cocher"
+      reset: "Revenir au choix par défaut"
+      locked: "Formule payante"
+      empty_section: "Rien à montrer pour l'instant"
+      nothing: "Cochez au moins une partie pour composer le dossier."
+      read_only: "Vous consultez ce dossier en lecture seule : vous pouvez l'imprimer, pas modifier la carte."
+      print_tip: "Dans la fenêtre d'impression, choisissez « Enregistrer au format PDF », le format A4 et décochez « En-têtes et pieds de page »."
+      options: "Options"
+      cadastre: "Plan cadastral sous le plan de couverture"
+      networks: "Inclure les réseaux (eau, gaz, électricité, internet)"
+      networks_hint: "Informations sensibles, exclues par défaut. Ne les incluez que si le destinataire en a vraiment besoin."
+      networks_count:
+        one: "%{count} élément de réseau sur cette carte."
+        other: "%{count} éléments de réseau sur cette carte."
+      photos: "Photos à joindre"
+      photos_hint: "Touchez une photo pour l'ajouter ou la retirer. Les paires avant / après sont proposées d'abord."
+      photos_count:
+        zero: "Aucune photo choisie"
+        one: "1 photo choisie"
+        other: "%{count} photos choisies"
+      photo_toggle: "Joindre la photo du %{date}"
+
+    sections:
+      cover: "Couverture"
+      project: "Le projet"
+      terrain: "Le terrain"
+      climate: "Le climat, aujourd'hui et demain"
+      soil: "Le sol"
+      design: "L'aménagement"
+      plants: "La liste de plants"
+      alerts: "Points d'attention"
+      photos: "Photos du terrain"
+      finances: "Finances"
+      sources: "Sources et licences"
+
+    # ----- Locked sections (shown on screen, never printed) -----
+    locked:
+      title: "Inclus dans les formules payantes"
+      screen_only: "Cette mention n'apparaît pas à l'impression."
+      terrain: "Le relief, la pente et l'eau de pluie des toitures sont des analyses incluses dans la formule du propriétaire de la carte."
+      climate: "Le climat de 2050 et 2080 et la vérification des plantes sont des analyses incluses dans la formule du propriétaire de la carte."
+      soil: "La lecture des résultats (repères bas, correct, élevé et texture) est une analyse incluse dans la formule du propriétaire de la carte. Les mesures restent visibles."
+      cta: "Voir les formules"
+
+    # ----- Cover -----
+    cover:
+      eyebrow: "Dossier du projet"
+      plan_caption: "Plan d'ensemble au %{date}"
+      plan_rendering: "Préparation du plan…"
+      plan_failed: "Le plan n'a pas pu être dessiné sur cet appareil."
+      plan_empty: "Dessinez le contour du terrain pour voir le plan ici."
+      north: "N"
+      legend_boundary: "Limite du terrain"
+      facts:
+        area: "Surface"
+        author: "Auteur de la carte"
+        date: "Établi le"
+        parcels: "Parcelles cadastrales"
+        region: "Région"
+        stage: "Étape du projet"
+        plants: "Plantes prévues"
+      plants_value: "%{total} plants, %{species} espèces"
+      contents: "Ce dossier contient"
+
+    # ----- Project sheet -----
+    project:
+      completion: "Fiche projet complétée à %{percent} %."
+      empty: "La fiche projet n'est pas encore remplie."
+      fill: "Remplir la fiche projet"
+      notes: "Précisions"
+      yes_value: "Oui"
+      hours_per_week: "%{count} h par semaine"
+
+    # ----- Terrain -----
+    terrain:
+      area: "Surface"
+      perimeter: "Périmètre"
+      parcels: "Parcelles cadastrales"
+      point: "Point de référence"
+      point_value: "%{lat} N, %{lng} E"
+      layers_title: "Ce que disent les couches de données"
+      layers_intro: "Au point de référence du terrain, d'après les couches publiques de la région. À confirmer sur place."
+      layers_loading: "Lecture des couches…"
+      layer_unavailable: "Service momentanément indisponible"
+      layer_empty: "Rien de particulier à cet endroit"
+      layers_failed: "Les couches de données n'ont pas pu être lues pour l'instant."
+      relief_title: "Relief et eau"
+      altitude: "Altitude"
+      altitude_value: "%{min} à %{max} m"
+      drop: "Dénivelé"
+      slope_mean: "Pente moyenne"
+      slope_steep: "Pente forte"
+      slope_steep_hint: "9 points sur 10 sont moins pentus"
+      relief_reason:
+        not_imported: "Le relief n'a pas encore été importé pour ce terrain (panneau « Eau et relief » de la carte)."
+        running: "Le relief est en cours d'import."
+        failed: "L'import du relief a échoué : relancez-le depuis la carte."
+      rainwater: "Eau de pluie des toitures"
+      rainwater_value: "≈ %{volume} m³ par an"
+      rainwater_detail: "%{area} de toitures × %{rain} mm de pluie × %{coefficient} (pertes)"
+      rainwater_none: "Aucune toiture dessinée."
+      rainwater_no_rain: "Pluviométrie inconnue pour ce terrain."
+      grid: "Modèle de terrain à %{cell} m"
+
+    # ----- Climate -----
+    climate:
+      today: "Aujourd'hui"
+      zone: "Zone de rusticité %{code}"
+      coldest_night: "Nuit la plus froide : %{temp} en moyenne"
+      tomorrow: "Demain"
+      horizon: "Horizon"
+      scenario: "Scénario"
+      zone_column: "Zone"
+      coldest_column: "Nuit la plus froide"
+      mean_column: "Moyenne annuelle"
+      summer_column: "Été"
+      summer_value: "%{delta}, pluie %{precip}"
+      plants_title: "Les plantes du projet face au climat"
+      plants_intro: "Nombre d'espèces de la liste selon leur adaptation, d'après leur rusticité connue."
+      plants_today: "Aujourd'hui"
+      at_risk: "À surveiller : %{names}"
+      unavailable: "Climat indisponible : %{reason}"
+
+    # ----- Soil -----
+    soil:
+      samples_title: "Analyses de sol"
+      sample: "Échantillon"
+      depth: "Profondeur"
+      date: "Date"
+      lab: "Laboratoire"
+      texture: "Texture"
+      planned: "Prélèvement prévu"
+      no_results: "Pas encore de résultats"
+      legend: "B : bas · C : correct · É : élevé (repères généraux, %{provenance})"
+      band_short:
+        low: "B"
+        ok: "C"
+        high: "É"
+      bio_title: "Plantes bio-indicatrices observées"
+      bio_summary: "Ce qu'elles suggèrent"
+      empty: "Aucun prélèvement ni plante bio-indicatrice notés pour l'instant."
+
+    # ----- Design -----
+    design:
+      intro: "Les éléments dessinés sur la carte, mesurés sur le terrain réel. Les estimations (volumes, nombre de plants) sont des ordres de grandeur."
+      element: "Élément"
+      count: "Nombre"
+      length: "Longueur"
+      area: "Surface"
+      details: "Détails"
+      more:
+        one: "et %{count} autre"
+        other: "et %{count} autres"
+      plants_note: "Le détail des plantes est dans la liste de plants."
+      empty: "Rien n'est encore dessiné sur cette carte."
+      unnamed: "Sans nom"
+      yes_value: "oui"
+      no_value: "non"
+
+    # ----- Plant list -----
+    plants:
+      intro: "Ce qu'il faut commander et planter, par strate : plants isolés et compositions des patches."
+      totals: "%{total} plants, %{species} espèces"
+      strata_total:
+        one: "%{count} plant"
+        other: "%{count} plants"
+      name: "Plante"
+      latin: "Nom latin"
+      quantity: "Quantité"
+      spread: "Envergure adulte"
+      source_default: "défaut de la strate"
+      source_catalogue: "catalogue"
+      unlinked:
+        one: "%{count} plante dessinée sans espèce n'est pas comptée."
+        other: "%{count} plantes dessinées sans espèce ne sont pas comptées."
+      empty: "Aucune plante n'est encore prévue."
+      zone: "Terrain en zone de rusticité %{zone}."
+
+    # ----- Alerts -----
+    alerts:
+      intro: "Ces alertes sont indicatives : elles attirent l'attention, le concepteur décide. Les règles d'urbanisme sont à vérifier auprès de la commune."
+      regulatory: "Urbanisme : règles de la région"
+      planting: "Cohérence de la plantation"
+      none: "Aucun point d'attention relevé."
+      source: "Source : %{label}"
+      no_boundary: "Le contour du terrain n'est pas dessiné : les distances aux limites n'ont pas été vérifiées."
+
+    # ----- Photos -----
+    photos:
+      before_after: "Avant, après"
+      before: "Avant"
+      after: "Après"
+      later:
+        one: "%{count} jour plus tard"
+        other: "%{count} jours plus tard"
+      taken: "Prise le %{date}"
+      added: "Ajoutée le %{date}"
+      none: "Aucune photo choisie."
+      no_photos: "Aucune photo sur cette carte pour l'instant."
+
+    # ----- Finances -----
+    finances:
+      intro: "Les chiffres clés du plan financier sur 20 ans, calculés à partir des hypothèses saisies pour ce projet."
+      none: "Aucun plan financier n'est enregistré pour cette carte."
+      species: "Espèces dans le plan"
+      warnings:
+        one: "%{count} point du plan reste à compléter."
+        other: "%{count} points du plan restent à compléter."
+
+    # ----- Sources -----
+    sources:
+      intro: "Les données présentées dans ce dossier viennent des sources suivantes. Les valeurs marquées « indicatif » sont des ordres de grandeur, à confirmer sur place."
+      map: "Plan, surfaces et longueurs : Semisto Designer, d'après le dessin de la carte (mesures sur l'ellipsoïde WGS 84)."
+      cover_layer: "Fond du plan : %{detail}, %{label}."
+      cover_layer_plain: "Fond du plan : %{label}."
+      layers: "Couches de données : %{detail}, %{label}."
+      layers_plain: "Couches de données : %{label}."
+      relief: "Relief : %{label}."
+      climate: "Climat : %{label}, « %{detail} »."
+      climate_plain: "Climat : %{label}."
+      plant_catalogue: "Plantes : catalogue de Semisto Designer ; provenance indiquée pour chaque valeur."
+      plant_source: "%{source} pour %{fields}"
+      plant_license: "licence : %{license}"
+      pfaf: "Les valeurs issues de PFAF (Plants For A Future) sont citées comme telles ; aucun texte de PFAF n'est reproduit."
+      plant_fields:
+        spread: "l'envergure"
+        height: "la hauteur"
+        hardiness: "la rusticité"
+      soil: "Lecture des analyses de sol : repères généraux (%{provenance})."
+      bioindicators: "Plantes bio-indicatrices : liste établie par Semisto, à vérifier."
+      regulation: "Urbanisme : %{label}."
+      planting: "Cohérence de la plantation : règles de densité, d'exposition et d'association issues de la pratique des jardins-forêts."
+      photos: "Photos : prises par les membres du projet."
+      finances: "Finances : hypothèses saisies pour ce projet, calcul de Semisto Designer. Aucune donnée tierce."
