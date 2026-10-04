@@ -147,6 +147,24 @@ Rails.application.routes.draw do
   post "account/deletion_request", to: "accounts#deletion_request", as: :account_deletion_request
   post "webhooks/stripe", to: "webhooks/stripe#create"
   # --- end billing-site ---
+  # --- plants ---
+  resources :plants, only: %i[index show]
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :planting, only: :show
+      resources :palette_items, only: %i[index create update destroy] do
+        collection { get :suggestions }
+      end
+      resources :features, only: [] do
+        resources :patch_items, only: %i[index create update destroy]
+        resources :plant_observations, only: %i[index create destroy]
+      end
+      resource :plant_list, only: :show do
+        get :print
+      end
+    end
+  end
+  # --- end plants ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

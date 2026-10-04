@@ -157,28 +157,14 @@ class ServiceRequestPrefillTest < ActiveSupport::TestCase
     assert_nil prefill.source
   end
 
-  test "uses Map#plant_list when the plants area provides it, whatever its shape" do
-    list = [
-      { name: "Pommier", quantity: 4, species_id: 7 },
-      { "common_name" => "Poirier", "qty" => "2" },
-      Struct.new(:label, :count).new("Cerisier", 5),
-      { species: { name: "Prunier" }, total: 1 },
-      { quantity: 3 }
-    ]
-    @map.define_singleton_method(:plant_list) { list }
+  test "uses the map's plant list when it has one" do
+    2.times { |i| @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906 + i * 0.0001, lat: 50.341), properties: { "species_id" => plant_species(:apple).id }) }
     prefill = ServiceRequest::Prefill.new(@map)
     assert_equal "plant_list", prefill.source
-    assert_equal [
-      { "name" => "Pommier", "quantity" => 4, "species_id" => 7 },
-      { "name" => "Poirier", "quantity" => 2 },
-      { "name" => "Cerisier", "quantity" => 5 },
-      { "name" => "Prunier", "quantity" => 1 }
-    ], prefill.plants
-  end
-
-  test "a plant list that is a hash with items, or a relation-like object, is read too" do
-    @map.define_singleton_method(:plant_list) { { items: [ { name: "Noisetier", quantity: 10 } ] } }
-    assert_equal [ { "name" => "Noisetier", "quantity" => 10 } ], ServiceRequest::Prefill.new(@map).plants
+    line = prefill.plants.sole
+    assert_equal 2, line["quantity"]
+    assert_equal plant_species(:apple).id, line["species_id"]
+    assert_includes line["name"], "Malus domestica"
   end
 
   test "a broken or empty plant list falls back to the plan instead of failing" do
@@ -186,8 +172,7 @@ class ServiceRequestPrefillTest < ActiveSupport::TestCase
     @map.define_singleton_method(:plant_list) { raise "boom" }
     prefill = ServiceRequest::Prefill.new(@map)
     assert_equal "features", prefill.source
-    @map.define_singleton_method(:plant_list) { [] }
-    assert_equal "features", ServiceRequest::Prefill.new(@map).source
+    assert_equal "features", ServiceRequest::Prefill.new(Map.find(@map.id)).source
   end
 
   test "surface, address and commune" do

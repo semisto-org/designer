@@ -125,34 +125,22 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/pas encore disponible/, data["results"].sole["error"])
   end
 
-  test "plant tools say when the catalogue is not available, and use it when it is" do
-    text, error = call_tool(@owner, "search_plants", { query: "noyer" })
+  test "plant tools search the catalogue and give a species with its provenance" do
+    walnut = PlantSpecies.create!(latin_name: "Juglans regia", plant_type: "tree", height_max_m: 25)
+    walnut.replace_common_names!([ "Noyer commun" ])
+    walnut.record_provenance!(%w[height_max_m], source: "pfaf", status: "sourced")
+
+    data, error = call_tool(@owner, "search_plants", { query: "noyer" })
+    refute error
+    assert_equal "Juglans regia", data["results"].sole["latinName"]
+
+    data, error = call_tool(@owner, "get_plant", { plant_id: walnut.id })
+    refute error
+    assert_equal "Juglans regia", data["latinName"]
+    assert_equal "pfaf", data.dig("provenance", "heightMaxM", "source")
+
+    _text, error = call_tool(@owner, "get_plant", { plant_id: walnut.id + 1000 })
     assert error
-    assert_match(/catalogue/, text)
-
-    record = Struct.new(:id, :latin_name) { def as_mcp = { "id" => id, "latin_name" => latin_name } }
-    walnut = record.new(7, "Juglans regia")
-    relation = Struct.new(:rows) { def limit(_) = rows }
-    model = Class.new do
-      define_singleton_method(:matching) { |_q| relation.new([ walnut ]) }
-      define_singleton_method(:find_by) { |id:| id == 7 ? walnut : nil }
-    end
-    text, error = call_tool(@owner, "get_plant", { plant_id: 7 })
-    assert error
-    assert_match(/catalogue/, text)
-
-    stubbing(Mcp::PlantCatalog, :model, model) do
-      data, error = call_tool(@owner, "search_plants", { query: "noyer" })
-      refute error
-      assert_equal "Juglans regia", data["results"].sole["latin_name"]
-
-      data, error = call_tool(@owner, "get_plant", { plant_id: 7 })
-      refute error
-      assert_equal "Juglans regia", data["latin_name"]
-
-      _text, error = call_tool(@owner, "get_plant", { plant_id: 8 })
-      assert error
-    end
   end
 
   test "propose_features creates drafts with their rationale, and reports invalid ones" do

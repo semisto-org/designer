@@ -1,0 +1,178 @@
+# Climbers (vine strata).
+- latin_name: Vitis vinifera
+  common_names: [Vigne, Vigne cultivée]
+  plant_type: climber
+  strata: vine
+  foliage_type: deciduous
+  growth_rate: fast
+  root_system: deep
+  height_m: [3, 10]
+  spread_m: [2, 4]
+  hardiness_zone: 6
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 2
+  edible_rating: 5
+  edible_parts: [fruit, leaf]
+  flowering_months: [6]
+  harvest_months: [9, 10]
+  pruning_months: [12, 1, 2]
+  fertility: self-fertile
+  toxic_for: [dogs]
+  maturity_years: 5
+  production_start_year: 3
+  varieties: [Muscat bleu, Boskoop Glory]
+
+- latin_name: Actinidia deliciosa
+  common_names: [Kiwi]
+  plant_type: climber
+  strata: vine
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [5, 9]
+  spread_m: [3, 5]
+  hardiness_zone: 7
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  flowering_months: [5, 6]
+  harvest_months: [10, 11]
+  pruning_months: [1, 2, 7]
+  fertility: dioecious
+  maturity_years: 7
+  production_start_year: 4
+  varieties: [Hayward, Tomuri]
+
+- latin_name: Actinidia arguta
+  common_names: [Kiwaï, Kiwi de Sibérie]
+  plant_type: climber
+  strata: vine
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [6, 10]
+  spread_m: [3, 5]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 5
+  edible_parts: [fruit]
+  flowering_months: [6]
+  harvest_months: [9, 10]
+  pruning_months: [1, 2, 7]
+  fertility: dioecious
+  maturity_years: 6
+  production_start_year: 3
+  varieties: [Issai, Weiki]
+
+- latin_name: Humulus lupulus
+  common_names: [Houblon]
+  plant_type: climber
+  strata: vine
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [4, 8]
+  spread_m: [1, 2]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_richness: rich
+  watering_need: 3
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [shoot, flower]
+  eco_services: [birds]
+  flowering_months: [7, 8]
+  harvest_months: [3, 4, 8, 9]
+  pruning_months: [11, 12]
+  fertility: dioecious
+  native_countries: [BE, FR, LU, NL]
+  toxic_for: [dogs]
+  maturity_years: 3
+
+- latin_name: Akebia quinata
+  common_names: [Akébie à cinq feuilles]
+  plant_type: climber
+  strata: vine
+  foliage_type: semi-evergreen
+  growth_rate: fast
+  height_m: [6, 10]
+  spread_m: [2, 4]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 2
+  edible_parts: [fruit]
+  eco_services: [ornamental]
+  flowering_months: [4, 5]
+  harvest_months: [9, 10]
+  fertility: self-sterile
+  maturity_years: 5
+  production_start_year: 3
+
+- latin_name: Schisandra chinensis
+  common_names: [Schisandra, Baie aux cinq saveurs]
+  plant_type: climber
+  strata: vine
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [5, 8]
+  spread_m: [1, 2]
+  hardiness_zone: 4
+  exposures: [partial-shade, sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 2
+  medicinal_rating: 4
+  edible_parts: [fruit]
+  flowering_months: [5]
+  harvest_months: [9]
+  fertility: dioecious
+  maturity_years: 6
+  production_start_year: 4
+
+- latin_name: Lonicera periclymenum
+  common_names: [Chèvrefeuille des bois]
+  plant_type: climber
+  strata: vine
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [3, 6]
+  spread_m: [1, 2]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade, shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 1
+  edible_parts: [flower]
+  eco_services: [mellifere, birds, beneficial-insects, ornamental]
+  flowering_months: [6, 7, 8, 9]
+  native_countries: [BE, FR, LU, NL]
+  toxic_for: [humans]
+  maturity_years: 3
+
+- latin_name: Hedera helix
+  common_names: [Lierre grimpant]
+  plant_type: climber
+  strata: vine
+  foliage_type: evergreen
+  growth_rate: medium
+  height_m: [10, 20]
+  spread_m: [3, 5]
+  hardiness_zone: 5
+  exposures: [partial-shade, shade, sun]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  eco_services: [mellifere, birds, ground-cover, erosion-control]
+  flowering_months: [9, 10, 11]
+  native_countries: [BE, FR, LU, NL]
+  toxic_for: [humans, dogs, cats]
+  maturity_years: 10

@@ -1,0 +1,427 @@
+# Small trees and fruit trees (4 to 10 m).
+- latin_name: Malus domestica
+  common_names: [Pommier, Pommier cultivé]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [4, 10]
+  spread_m: [4, 8]
+  hardiness_zone: 4
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 5
+  edible_parts: [fruit]
+  eco_services: [mellifere, beneficial-insects]
+  flowering_months: [4, 5]
+  harvest_months: [8, 9, 10, 11]
+  pruning_months: [12, 1, 2, 3]
+  fertility: self-sterile
+  maturity_years: 12
+  production_start_year: 4
+  varieties: [Belle de Boskoop, Cwastresse Double, Jacques Lebel, Reinette Hernaut]
+
+- latin_name: Malus sylvestris
+  common_names: [Pommier sauvage]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [6, 10]
+  spread_m: [4, 7]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 2
+  edible_parts: [fruit]
+  eco_services: [mellifere, birds, cross-pollination]
+  flowering_months: [4, 5]
+  harvest_months: [9, 10]
+  fertility: self-sterile
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 15
+  production_start_year: 5
+
+- latin_name: Pyrus communis
+  common_names: [Poirier, Poirier commun]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  root_system: taproot
+  height_m: [6, 12]
+  spread_m: [4, 8]
+  hardiness_zone: 4
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 5
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [4]
+  harvest_months: [8, 9, 10]
+  pruning_months: [12, 1, 2]
+  fertility: self-sterile
+  maturity_years: 15
+  production_start_year: 5
+  varieties: [Conférence, Durondeau, Beurré Hardy]
+
+- latin_name: Prunus domestica
+  common_names: [Prunier, Prunier domestique]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [4, 8]
+  spread_m: [3, 6]
+  hardiness_zone: 4
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [4]
+  harvest_months: [7, 8, 9]
+  pruning_months: [6, 7, 8]
+  fertility: partially-self-fertile
+  maturity_years: 10
+  production_start_year: 4
+  varieties: [Reine-Claude d'Oullins, Mirabelle de Nancy]
+
+- latin_name: Prunus cerasus
+  common_names: [Griottier, Cerisier acide]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [3, 6]
+  spread_m: [3, 5]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere, birds]
+  flowering_months: [4, 5]
+  harvest_months: [7]
+  pruning_months: [7, 8]
+  fertility: self-fertile
+  maturity_years: 8
+  production_start_year: 3
+
+- latin_name: Prunus persica
+  common_names: [Pêcher]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [3, 6]
+  spread_m: [3, 5]
+  hardiness_zone: 6
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [neutral]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [3, 4]
+  harvest_months: [7, 8, 9]
+  pruning_months: [3, 4]
+  fertility: self-fertile
+  maturity_years: 6
+  production_start_year: 3
+  varieties: [Pêche de vigne]
+
+- latin_name: Prunus armeniaca
+  common_names: [Abricotier]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [4, 8]
+  spread_m: [4, 6]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 2
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [3, 4]
+  harvest_months: [7, 8]
+  pruning_months: [8, 9]
+  fertility: self-fertile
+  toxic_for: [humans]
+  maturity_years: 8
+  production_start_year: 4
+
+- latin_name: Cydonia oblonga
+  common_names: [Cognassier]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [4, 6]
+  spread_m: [3, 5]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [5]
+  harvest_months: [10, 11]
+  pruning_months: [12, 1, 2]
+  fertility: self-fertile
+  maturity_years: 10
+  production_start_year: 4
+
+- latin_name: Mespilus germanica
+  common_names: [Néflier, Néflier commun]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: slow
+  height_m: [3, 6]
+  spread_m: [3, 6]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 3
+  edible_parts: [fruit]
+  eco_services: [mellifere]
+  flowering_months: [5, 6]
+  harvest_months: [10, 11]
+  fertility: self-fertile
+  maturity_years: 10
+  production_start_year: 4
+
+- latin_name: Ficus carica
+  common_names: [Figuier]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [3, 8]
+  spread_m: [3, 6]
+  hardiness_zone: 7
+  min_temperature_c: -15
+  exposures: [sun]
+  soil_moisture: [dry, moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 2
+  edible_rating: 4
+  edible_parts: [fruit]
+  harvest_months: [8, 9, 10]
+  pruning_months: [3, 4]
+  fertility: self-fertile
+  maturity_years: 8
+  production_start_year: 3
+
+- latin_name: Morus nigra
+  common_names: [Mûrier noir]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: slow
+  height_m: [6, 10]
+  spread_m: [6, 10]
+  hardiness_zone: 5
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit, leaf]
+  eco_services: [birds]
+  flowering_months: [5]
+  harvest_months: [7, 8, 9]
+  fertility: self-fertile
+  maturity_years: 15
+  production_start_year: 6
+
+- latin_name: Sorbus aucuparia
+  common_names: [Sorbier des oiseleurs]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [6, 15]
+  spread_m: [4, 7]
+  hardiness_zone: 3
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 2
+  edible_parts: [fruit]
+  eco_services: [birds, mellifere, pioneer]
+  flowering_months: [5, 6]
+  harvest_months: [8, 9, 10]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 12
+  production_start_year: 5
+
+- latin_name: Amelanchier lamarckii
+  common_names: [Amélanchier de Lamarck]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [4, 8]
+  spread_m: [3, 6]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  eco_services: [mellifere, birds, ornamental]
+  flowering_months: [4]
+  harvest_months: [6, 7]
+  fertility: self-fertile
+  maturity_years: 8
+  production_start_year: 3
+
+- latin_name: Cornus mas
+  common_names: [Cornouiller mâle, Cornouiller sauvage]
+  plant_type: shrub
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: slow
+  height_m: [3, 8]
+  spread_m: [3, 6]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 2
+  edible_rating: 3
+  edible_parts: [fruit]
+  eco_services: [mellifere, birds]
+  flowering_months: [2, 3]
+  harvest_months: [8, 9]
+  fertility: partially-self-fertile
+  native_countries: [BE, FR, LU]
+  maturity_years: 10
+  production_start_year: 5
+
+- latin_name: Asimina triloba
+  common_names: [Asiminier, Paw-paw]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: slow
+  height_m: [4, 8]
+  spread_m: [3, 5]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  flowering_months: [4, 5]
+  harvest_months: [9, 10]
+  fertility: self-sterile
+  maturity_years: 10
+  production_start_year: 5
+
+- latin_name: Diospyros kaki
+  common_names: [Plaqueminier kaki, Kaki]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: slow
+  height_m: [5, 8]
+  spread_m: [4, 6]
+  hardiness_zone: 7
+  exposures: [sun]
+  soil_moisture: [moist]
+  soil_ph: [acidic, neutral]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [fruit]
+  flowering_months: [5, 6]
+  harvest_months: [10, 11]
+  fertility: partially-self-fertile
+  maturity_years: 10
+  production_start_year: 4
+
+- latin_name: Crataegus monogyna
+  common_names: [Aubépine monogyne, Aubépine à un style]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [4, 10]
+  spread_m: [3, 6]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 2
+  edible_rating: 2
+  medicinal_rating: 4
+  edible_parts: [leaf, flower, fruit]
+  eco_services: [mellifere, birds, windbreak, beneficial-insects]
+  flowering_months: [5]
+  harvest_months: [4, 5, 9, 10]
+  pruning_months: [7, 8, 9]
+  fertility: self-fertile
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 15
+
+- latin_name: Salix caprea
+  common_names: [Saule marsault]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: fast
+  height_m: [6, 10]
+  spread_m: [4, 8]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  soil_ph: [acidic, neutral, alkaline]
+  watering_need: 4
+  eco_services: [mellifere, pioneer, beneficial-insects]
+  flowering_months: [2, 3, 4]
+  fertility: dioecious
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 10
+
+- latin_name: Acer campestre
+  common_names: [Érable champêtre]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+  growth_rate: medium
+  height_m: [8, 15]
+  spread_m: [5, 10]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [dry, moist]
+  soil_ph: [neutral, alkaline]
+  watering_need: 2
+  eco_services: [mellifere, windbreak, birds, organic-matter]
+  flowering_months: [4, 5]
+  pruning_months: [7, 8]
+  native_countries: [BE, FR, LU, NL]
+  maturity_years: 20

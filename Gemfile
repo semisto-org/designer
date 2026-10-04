@@ -34,6 +34,9 @@ gem "commonmarker", "~> 2.0"
 # HTTP client for external providers (Géoportail, cadastre, climate)
 gem "faraday", "~> 2.12"
 
+# CSV exports (plant list); leaves Ruby's default gems in 3.4
+gem "csv"
+
 # Error tracking
 gem "sentry-ruby"
 gem "sentry-rails"

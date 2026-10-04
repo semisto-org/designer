@@ -1,0 +1,8 @@
+reinette:
+  species: apple
+  name: Reinette grise
+  fertility: self-sterile
+  taste_rating: 4
+boskoop:
+  species: apple
+  name: Belle de Boskoop

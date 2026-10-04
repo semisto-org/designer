@@ -103,18 +103,19 @@ class JourneyTest < ActiveSupport::TestCase
     assert item(Journey.new(@map), "take_action").done
   end
 
-  test "palette and plant list items exist only when those areas are present" do
+  test "palette and plant list items follow the plants area" do
     journey = Journey.new(@map)
-    assert_nil item(journey, "plant_list")
-    assert_nil item(journey, "palette") unless defined?(PaletteItem)
+    refute item(journey, "palette").done
+    refute item(journey, "plant_list").done
 
-    @map.define_singleton_method(:palette_items) { Struct.new(:any) { def exists? = any }.new(true) }
-    @map.define_singleton_method(:plant_list) { [ { name: "Noyer", quantity: 2 } ] }
+    @map.palette_items.create!(species: plant_species(:apple))
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point, properties: { "species_id" => plant_species(:apple).id })
     journey = Journey.new(@map)
     assert item(journey, "palette").done
     assert_equal "design", item(journey, "palette").step
     assert_equal 1, item(journey, "plant_list").count
     assert item(journey, "plant_list").done
+    assert_equal "plant-list", item(journey, "plant_list").panel
   end
 
   test "a broken palette never breaks the journey" do
@@ -125,8 +126,8 @@ class JourneyTest < ActiveSupport::TestCase
   test "step summaries only count items the server can evaluate" do
     add_feature("plants")
     plant = Journey.new(@map).steps.find { _1[:key] == "plant" }
-    assert_equal 1, plant[:completed]
-    assert_equal 2, plant[:total]
+    assert_equal 2, plant[:completed]
+    assert_equal 3, plant[:total]
     assert_equal false, plant[:done]
   end
 

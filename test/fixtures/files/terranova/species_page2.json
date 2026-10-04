@@ -1,0 +1,18 @@
+{"species": [
+  {"id": 102, "genus_id": 12, "latin_name": "Elaeagnus umbellata", "common_names_fr": "Chalef d'automne",
+   "plant_type": "shrub", "strate": "shrub", "height_min_cm": null, "height_max_cm": 400, "spread_min_cm": null, "spread_max_cm": 400,
+   "foliage_type": "deciduous", "life_cycle": "perennial", "growth_rate": "fast", "root_system": "fibrous",
+   "hardiness": "zone-3", "native_countries": [], "is_native_belgium": false, "is_invasive": false,
+   "edible_rating": 4, "edible_parts": ["fruit"], "exposures": ["sun"], "soil_types": [], "soil_moisture": "dry",
+   "soil_richness": "poor", "soil_ph": [], "watering_need": "2", "fertility": "partially-self-fertile",
+   "eco_services_provided": ["nitrogen-fixer"], "flowering_months": [5], "fruiting_months": [], "harvest_months": [9, 10],
+   "pruning_months": [], "toxicity": {}, "audited_at": null},
+  {"id": 103, "genus_id": 12, "latin_name": "Elaeagnus multiflora", "common_names_fr": "",
+   "plant_type": "tree", "strate": null, "height_min_cm": null, "height_max_cm": null, "spread_min_cm": null, "spread_max_cm": null,
+   "foliage_type": "deciduous", "life_cycle": "perennial", "growth_rate": "medium", "root_system": "fibrous",
+   "hardiness": "", "native_countries": [], "is_native_belgium": false, "is_invasive": false,
+   "edible_rating": null, "edible_parts": [], "exposures": [], "soil_types": [], "soil_moisture": "moist",
+   "soil_richness": "moderate", "soil_ph": [], "watering_need": "3", "fertility": "self-fertile",
+   "eco_services_provided": [], "flowering_months": [], "fruiting_months": [], "harvest_months": [],
+   "pruning_months": [], "toxicity": {}, "audited_at": null}
+], "meta": {"page": 2, "per_page": 200, "total": 3, "pages": 2}}

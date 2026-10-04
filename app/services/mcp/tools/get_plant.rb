@@ -8,10 +8,7 @@ module Mcp
       hints
 
       def perform(plant_id:)
-        raise ToolError, t("errors.plants_unavailable") unless PlantCatalog.available?
         PlantCatalog.find(plant_id) || raise(ToolError, t("errors.plant_not_found", id: plant_id))
-      rescue PlantCatalog::Unavailable
-        raise ToolError, t("errors.plants_unavailable")
       end
 
       private

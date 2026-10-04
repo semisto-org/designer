@@ -1,0 +1,15 @@
+{"species": [
+  {"id": 101, "genus_id": 11, "latin_name": "Sambucus nigra", "common_names_fr": "Sureau noir, Grand sureau",
+   "plant_type": "shrub", "strate": "shrub", "description": "Texte libre à ne jamais importer.",
+   "height_min_cm": 300, "height_max_cm": 700, "spread_min_cm": 200, "spread_max_cm": 400,
+   "foliage_type": "deciduous", "life_cycle": "perennial", "growth_rate": "fast", "root_system": "fibrous",
+   "maturity_years": 8, "production_start_year": 3, "hardiness": "-25/-30°C (USDA 4)",
+   "native_countries": ["BE", "France"], "is_native_belgium": true, "is_invasive": false,
+   "edible_rating": 3, "medicinal_rating": 0, "edible_parts": ["fleur", "fruits"],
+   "exposures": ["S", "mi-ombre"], "soil_types": ["limoneux"], "soil_moisture": "moist", "soil_richness": "rich",
+   "soil_ph": ["neutre"], "watering_need": "3", "fertility": "self-fertile",
+   "eco_services_provided": ["mellifere", "bird-habitat"],
+   "flowering_months": ["mai", "juin"], "fruiting_months": [], "harvest_months": ["août", "Septembre"], "pruning_months": ["2"],
+   "toxicity": {"humans": true, "dogs": false}, "toxic_elements": "Texte libre à ne jamais importer.",
+   "additional_notes": "Texte libre à ne jamais importer.", "audited_at": "2026-05-01T10:00:00Z"}
+], "meta": {"page": 1, "per_page": 200, "total": 3, "pages": 2}}

@@ -11,10 +11,7 @@ module Mcp
       hints
 
       def perform(query:, limit: 20)
-        raise ToolError, t("errors.plants_unavailable") unless PlantCatalog.available?
         { query:, results: PlantCatalog.search(query.strip, limit:) }
-      rescue PlantCatalog::Unavailable
-        raise ToolError, t("errors.plants_unavailable")
       end
 
       private

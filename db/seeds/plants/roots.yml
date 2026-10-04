@@ -1,0 +1,62 @@
+# Plants grown for their roots, tubers or bulbs (root strata).
+- latin_name: Apios americana
+  common_names: [Glycine tubéreuse, Apios]
+  plant_type: climber
+  strata: root
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [2, 4]
+  spread_m: [0.5, 1]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist, wet]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [root, seed]
+  eco_services: [nitrogen]
+  flowering_months: [7, 8, 9]
+  harvest_months: [10, 11, 12, 1, 2, 3]
+  maturity_years: 2
+  production_start_year: 2
+
+- latin_name: Stachys affinis
+  common_names: [Crosne du Japon, Crosne]
+  plant_type: herbaceous
+  strata: root
+  life_cycle: perennial
+  growth_rate: fast
+  height_m: [0.3, 0.5]
+  spread_m: [0.3, 0.5]
+  hardiness_zone: 5
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 4
+  edible_parts: [root]
+  eco_services: [mellifere]
+  flowering_months: [7, 8]
+  harvest_months: [11, 12, 1, 2, 3]
+  maturity_years: 1
+  production_start_year: 1
+
+- latin_name: Armoracia rusticana
+  common_names: [Raifort]
+  plant_type: herbaceous
+  strata: root
+  life_cycle: perennial
+  growth_rate: fast
+  root_system: deep
+  height_m: [0.6, 1]
+  spread_m: [0.4, 0.6]
+  hardiness_zone: 4
+  exposures: [sun, partial-shade]
+  soil_moisture: [moist]
+  watering_need: 3
+  edible_rating: 3
+  medicinal_rating: 3
+  edible_parts: [root, leaf]
+  eco_services: [minerals]
+  flowering_months: [5, 6]
+  harvest_months: [10, 11, 12, 1, 2, 3]
+  maturity_years: 2
+  production_start_year: 2

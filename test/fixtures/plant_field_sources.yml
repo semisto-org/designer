@@ -1,0 +1,12 @@
+apple_height:
+  record: apple (PlantSpecies)
+  field: height_max_m
+  source: trefle
+  upstream_source: usda
+  license: domaine public US
+  status: sourced
+apple_zone:
+  record: apple (PlantSpecies)
+  field: hardiness_zone
+  source: pfaf
+  status: to_verify

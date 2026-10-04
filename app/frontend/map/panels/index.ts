@@ -1,4 +1,4 @@
-import { Bot, ClipboardList, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Mountain, Route } from 'lucide-react'
+import { Bot, ClipboardList, Globe, Handshake, Layers3, Map as MapIcon, MapPinned, Mountain, Route, Sprout } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -21,6 +21,13 @@ import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
+import PalettePanel from '@/map/plants/PalettePanel'
+import PlantListPanel from '@/map/plants/PlantListPanel'
+import PlantSection from '@/map/plants/PlantSection'
+import ObservationsSection from '@/map/plants/ObservationsSection'
+import PatchSection from '@/map/plants/PatchSection'
+import PlantsOverlay from '@/map/plants/PlantsOverlay'
+import { isPatch, isPlant } from '@/map/plants/properties'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -29,6 +36,8 @@ export const PANELS: EditorPanel[] = [
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'map', component: LayersPanel, order: 20 },
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'understand', component: ReliefPanel, order: 30 },
+  { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
+  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ClipboardList, group: 'design', component: PlantListPanel, order: 30 },
   { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 90 },
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
@@ -40,6 +49,9 @@ export const PANELS: EditorPanel[] = [
 export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'discussion', applies: () => true, component: DiscussionSection, order: 90 },
   { id: 'draft-review', applies: (f) => f.properties.status === 'draft', component: DraftReviewSection, order: 5 },
+  { id: 'plant', applies: isPlant, component: PlantSection, order: 20 },
+  { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
+  { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
@@ -56,4 +68,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
   { id: 'drafts-bar', component: DraftsBar, order: 40 },
+  { id: 'plants', component: PlantsOverlay, order: 20 },
 ]

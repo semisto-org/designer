@@ -1,0 +1,24 @@
+apple_fr:
+  nameable: apple (PlantSpecies)
+  name: Pommier
+  position: 0
+alder_fr:
+  nameable: alder (PlantSpecies)
+  name: Aulne glutineux
+  position: 0
+comfrey_fr:
+  nameable: comfrey (PlantSpecies)
+  name: Consoude officinale
+  position: 0
+rosemary_fr:
+  nameable: rosemary (PlantSpecies)
+  name: Romarin
+  position: 0
+robinia_fr:
+  nameable: robinia (PlantSpecies)
+  name: Robinier faux-acacia
+  position: 0
+strawberry_fr:
+  nameable: strawberry (PlantSpecies)
+  name: Fraisier des bois
+  position: 0

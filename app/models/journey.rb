@@ -99,13 +99,13 @@ class Journey
 
     def plant_plan_item
       count = features.where(layer: "plants").count
-      Item.new(key: "plant_plan", step: "plant", done: count.positive?, panel: "elements", count:, target: 1)
+      Item.new(key: "plant_plan", step: "plant", done: count.positive?, panel: "palette", count:, target: 1)
     end
 
     def plant_list_item
       return unless map.respond_to?(:plant_list)
       count = ServiceRequest::Prefill.new(map).plants.size
-      Item.new(key: "plant_list", step: "plant", done: count.positive?, panel: "palette", count:, target: 1)
+      Item.new(key: "plant_list", step: "plant", done: count.positive?, panel: "plant-list", count:, target: 1)
     end
 
     def action_item

@@ -1,0 +1,7 @@
+{"varieties": [
+  {"id": 501, "species_id": 101, "latin_name": "Sambucus nigra 'Haschberg'", "common_names_fr": "",
+   "description": "Texte libre à ne jamais importer.", "taste_rating": 4, "productivity": "élevée", "fruit_size": "",
+   "storage_life": "", "maturity": "fin août", "maturity_years": null, "production_start_year": 2,
+   "disease_resistance": "", "fertility": "autofertile", "audited_at": null},
+  {"id": 502, "species_id": 999, "latin_name": "Orphan", "common_names_fr": "", "taste_rating": null}
+], "meta": {"page": 1, "per_page": 200, "total": 2, "pages": 1}}
