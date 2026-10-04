@@ -85,6 +85,16 @@ Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la car
 
 Utilisées seulement par la commande ponctuelle `bin/rails catalog:import_terranova` (genres, espèces et variétés, valeurs seulement, jamais de texte libre ni de donnée personnelle).
 
+### Import de Claudy (Les 4 Sources)
+
+| Variable | Rôle |
+|---|---|
+| `CLAUDY_API_URL` | Défaut `https://app.les4sources.be/api/v1` (`/api/v1` est ajouté s'il manque). |
+| `CLAUDY_API_KEY` | Un des jetons `AGENT_API_TOKEN` de Claudy (lecture seule). |
+| `CLAUDY_NETWORK_LAYERS` | Facultatif : réseau d'une couche que l'API ne permet pas de reconnaître, par exemple `7=ethernet`. |
+
+Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=…`, qui verse le plan de la carte de Claudy dans une carte de Designer. Sans clé, on lui donne un export de Claudy (`FILE=…`). Elle peut être relancée sans risque de doublon. Mode d'emploi : `docs/import-claudy.md`.
+
 ### Climat et météo
 
 | Variable | Rôle |
