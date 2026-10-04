@@ -158,7 +158,7 @@ export function NextAction({ next, onOpen, onAdvance, canEdit, isOwner = false }
     const openable = resolvePanel(next.panel, canEdit, isOwner) != null
     return (
       <div className="rounded-xl bg-prune-600 p-3.5 text-white">
-        <p className="text-xs font-medium uppercase tracking-wide text-prune-200">{t('journey.panel.next_label')}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-prune-100">{t('journey.panel.next_label')}</p>
         <p className="mt-1 text-sm font-semibold">{itemLabel(next.item)}</p>
         {openable && (
           <button
