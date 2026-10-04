@@ -3,7 +3,7 @@ fr:
   help:
     not_found: "Cet article d'aide n'existe pas."
     title: "Centre d'aide"
-    lead: "Des guides concrets, pas à pas, pour avancer sur votre carte."
+    lead: "Des guides concrets, pas à pas, pour avancer sur ta carte."
     search_label: "Rechercher dans l'aide"
     search_placeholder: "Ex. : parcelle, palette, partager…"
     search_button: "Rechercher"
@@ -13,7 +13,7 @@ fr:
       one: "%{count} résultat pour « %{query} »"
       other: "%{count} résultats pour « %{query} »"
     no_results_title: "Rien trouvé pour « %{query} »"
-    no_results_body: "Essayez un mot plus court ou un autre mot, ou parcourez tous les guides ci-dessous."
+    no_results_body: "Essaie un mot plus court ou un autre mot, ou parcours tous les guides ci-dessous."
     all_guides: "Tous les guides"
     guides_count:
       one: "%{count} guide"
@@ -23,7 +23,7 @@ fr:
     on_this_page: "Sur cette page"
     same_category: "Dans la même catégorie"
     contact_title: "Une question restée sans réponse ?"
-    contact_body: "Écrivez-nous à %{email} : nous répondons volontiers, et chaque question nous aide à améliorer ces guides."
+    contact_body: "Écris-nous à %{email} : nous répondons volontiers, et chaque question nous aide à améliorer ces guides."
     drawer:
       open: "Aide"
       title: "Aide"

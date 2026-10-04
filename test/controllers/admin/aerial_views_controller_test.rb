@@ -116,7 +116,7 @@ class Admin::AerialViewsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_aerial_views_url
     follow_redirect!(headers: inertia_headers)
     errors = props["errors"]
-    assert_equal [ "Indiquez la date de la prise de vue." ], Array(errors["captured_on"])
+    assert_equal [ "Indique la date de la prise de vue." ], Array(errors["captured_on"])
     assert_match "https://", Array(errors["url"]).first
   end
 

@@ -53,7 +53,7 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
       end
     end
     assert_redirected_to account_path
-    assert_match "Votre demande a été envoyée", flash[:notice]
+    assert_match "Ta demande a été envoyée", flash[:notice]
     perform_enqueued_jobs
     to_semisto, to_user = ActionMailer::Base.deliveries.last(2)
     assert_equal [ Billing.contact_email ], to_semisto.to

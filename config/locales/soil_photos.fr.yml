@@ -13,15 +13,15 @@ fr:
       w: "Ouest"
       nw: "Nord-ouest"
     panel:
-      intro: "Photographiez le terrain et ses détails : le lieu et la date sont lus dans la photo. Sans position, placez-la d'un clic sur la carte. Les visages ne sont jamais analysés."
+      intro: "Photographie le terrain et ses détails : le lieu et la date sont lus dans la photo. Sans position, place-la d'un clic sur la carte. Les visages ne sont jamais analysés."
       add: "Ajouter des photos"
       camera: "Prendre une photo"
-      drop_hint: "Plusieurs à la fois, ou déposez-les ici. JPEG, PNG ou WebP, %{max} au maximum chacune."
-      read_only: "Vous voyez les photos de cette carte. Seuls les éditeurs peuvent en ajouter."
+      drop_hint: "Plusieurs à la fois, ou dépose-les ici. JPEG, PNG ou WebP, %{max} au maximum chacune."
+      read_only: "Tu vois les photos de cette carte. Seuls les éditeurs peuvent en ajouter."
       unplaced:
         one: "1 photo à placer sur la carte"
         other: "%{count} photos à placer sur la carte"
-      unplaced_hint: "Elles n'ont pas de position GPS. Touchez-en une, puis cliquez sur la carte."
+      unplaced_hint: "Elles n'ont pas de position GPS. Touches-en une, puis clique sur la carte."
       place_this: "Placer sur la carte"
       not_placed: "Pas encore placée"
       view: "Affichage"
@@ -38,9 +38,9 @@ fr:
       show_on_map: "Sur la carte"
       compare: "Avant / après"
       compare_cancel: "Annuler"
-      compare_pick_first: "Choisissez la première photo du même endroit."
-      compare_pick_second: "Choisissez la seconde : la plus ancienne sera « avant »."
-      empty: "Aucune photo pour l'instant. Ajoutez celles de votre téléphone : elles se placent toutes seules sur la carte quand elles ont une position."
+      compare_pick_first: "Choisis la première photo du même endroit."
+      compare_pick_second: "Choisis la seconde : la plus ancienne sera « avant »."
+      empty: "Aucune photo pour l'instant. Ajoute celles de ton téléphone : elles se placent toutes seules sur la carte quand elles ont une position."
     upload:
       pending: "En attente"
       uploading: "Envoi… %{percent} %"
@@ -56,7 +56,7 @@ fr:
       create: "Créer"
       confirm_delete: "Supprimer cet album ? Les photos restent dans la carte."
     placing:
-      banner: "Cliquez sur la carte pour placer la photo « %{name} »."
+      banner: "Clique sur la carte pour placer la photo « %{name} »."
       done: "Photo placée."
     lightbox:
       previous: "Photo précédente"
@@ -82,7 +82,7 @@ fr:
       place: "Placer sur la carte"
       move: "Déplacer"
       compare: "Avant / après"
-      compare_needs_position: "Placez d'abord la photo sur la carte."
+      compare_needs_position: "Place d'abord la photo sur la carte."
       same_spot: "Même endroit"
       same_spot_none: "Aucune autre prise de vue de cet endroit. Dans le panneau Photos, « Avant / après » permet de choisir deux photos librement."
       download: "Original"
@@ -95,7 +95,7 @@ fr:
       after_photo: "Comparer avec"
       swap: "Inverser"
       slider: "Curseur de comparaison avant / après"
-      hint: "Glissez le curseur, ou utilisez les flèches du clavier, pour passer de l'avant à l'après."
+      hint: "Glisse le curseur, ou utilise les flèches du clavier, pour passer de l'avant à l'après."
     inspector:
       title: "Photos"
       add: "Ajouter"
@@ -105,13 +105,13 @@ fr:
       more: "et %{count} autres dans le panneau Photos"
     errors:
       image_missing: "Aucune photo n'a été reçue."
-      not_an_image: "« %{name} » n'est pas une image acceptée. Formats possibles : %{types}. Sur iPhone, choisissez « Le plus compatible » dans Réglages > Appareil photo > Formats, ou exportez la photo en JPEG."
+      not_an_image: "« %{name} » n'est pas une image acceptée. Formats possibles : %{types}. Sur iPhone, choisis « Le plus compatible » dans Réglages > Appareil photo > Formats, ou exporte la photo en JPEG."
       types_label: "JPEG, PNG ou WebP"
       too_large: "« %{name} » pèse %{size} : la limite est de %{max} par photo."
       already_imported: "« %{name} » est déjà dans cette carte."
       album_elsewhere: "Cet album appartient à une autre carte."
       feature_elsewhere: "Cet élément appartient à une autre carte."
-      upload_failed: "L'envoi a échoué. Vérifiez votre connexion et réessayez."
+      upload_failed: "L'envoi a échoué. Vérifie ta connexion et réessaie."
       not_found: "Cette photo n'existe plus."
   soil:
     panel_label: "Sol"
@@ -119,16 +119,16 @@ fr:
       unreadable_result: "« %{field} » n'est pas un nombre."
       out_of_range: "« %{field} » doit être compris entre %{min} et %{max}."
       texture_sum: "Sable, limon et argile doivent faire 100 % ensemble (à 3 points près), ou deux valeurs seulement : la troisième est déduite."
-      report_not_pdf: "« %{name} » n'est pas un PDF : joignez le rapport du laboratoire au format PDF."
+      report_not_pdf: "« %{name} » n'est pas un PDF : joins le rapport du laboratoire au format PDF."
       report_too_large: "« %{name} » est trop lourd : la limite est de %{max} par rapport."
-      analyses_locked: "L'interprétation des résultats fait partie du forfait. Vos mesures restent enregistrées et visibles."
-      no_boundary: "Dessinez d'abord le contour du terrain : les suggestions s'appuient dessus."
+      analyses_locked: "L'interprétation des résultats fait partie du forfait. Tes mesures restent enregistrées et visibles."
+      no_boundary: "Dessine d'abord le contour du terrain : les suggestions s'appuient dessus."
       report_missing: "Aucun rapport n'est joint à cet échantillon."
       not_found: "Cet échantillon n'existe plus."
     fields:
       ph_water: { name: "pH eau", short: "pH eau", hint: "Acidité du sol : en dessous de 7, acide ; au-dessus, basique." }
       ph_kcl: { name: "pH KCl", short: "pH KCl", hint: "Acidité de réserve, mesurée avec du chlorure de potassium. Un peu plus bas que le pH eau." }
-      organic_matter_pct: { name: "Matière organique", short: "M.O.", hint: "Part d'humus et de débris en décomposition, en % de la terre sèche. Si le laboratoire donne du carbone organique (C), multipliez par 1,72." }
+      organic_matter_pct: { name: "Matière organique", short: "M.O.", hint: "Part d'humus et de débris en décomposition, en % de la terre sèche. Si le laboratoire donne du carbone organique (C), multiplie par 1,72." }
       c_n_ratio: { name: "Rapport C/N", short: "C/N", hint: "Carbone sur azote de la matière organique : dit si elle se décompose vite ou lentement." }
       p_mg_100g: { name: "Phosphore (P)", short: "P", hint: "En mg pour 100 g de terre sèche (méthode usuelle des laboratoires wallons)." }
       k_mg_100g: { name: "Potassium (K)", short: "K", hint: "En mg pour 100 g de terre sèche." }
@@ -144,21 +144,21 @@ fr:
       high: "Élevé"
     interpretation:
       ph_water:
-        low: "Sol acide. Les éléments nutritifs sont moins disponibles et la vie du sol ralentit ; la plupart des arbres fruitiers et des légumes préfèrent un pH plus élevé. Un chaulage peut aider, selon l'avis de votre laboratoire. Les myrtilliers et les plantes de terre de bruyère s'y plaisent."
+        low: "Sol acide. Les éléments nutritifs sont moins disponibles et la vie du sol ralentit ; la plupart des arbres fruitiers et des légumes préfèrent un pH plus élevé. Un chaulage peut aider, selon l'avis de ton laboratoire. Les myrtilliers et les plantes de terre de bruyère s'y plaisent."
         ok: "Plage qui convient à la plupart des arbres fruitiers, des arbustes et des légumes. Les plantes de terre de bruyère (myrtilliers, rhododendrons) préfèrent plus acide."
-        high: "Sol basique, souvent calcaire. Le fer et certains oligo-éléments deviennent moins disponibles : les feuilles jaunissent chez les plantes sensibles (myrtilliers, par exemple). Choisissez des espèces tolérantes au calcaire."
+        high: "Sol basique, souvent calcaire. Le fer et certains oligo-éléments deviennent moins disponibles : les feuilles jaunissent chez les plantes sensibles (myrtilliers, par exemple). Choisis des espèces tolérantes au calcaire."
       ph_kcl:
-        low: "pH KCl bas : l'acidité de réserve est forte et le sol s'acidifiera facilement. Comparez avec le pH eau."
+        low: "pH KCl bas : l'acidité de réserve est forte et le sol s'acidifiera facilement. Compare avec le pH eau."
         ok: "Acidité de réserve moyenne : un sol plutôt stable."
         high: "pH KCl élevé : sol riche en calcaire actif ou fortement chaulé."
       organic_matter_pct:
         low: "Matière organique faible : un sol peu structuré, qui retient mal l'eau et les nutriments. Paillage, compost et couverts végétaux la font remonter lentement."
         ok: "Matière organique correcte pour un sol de jardin ou de verger. Les paillages et les arbres l'entretiennent et la font progresser."
-        high: "Matière organique élevée : un sol riche et vivant, fréquent sous prairie permanente ou sous forêt. Rien à ajouter ; surveillez seulement l'excès d'humidité."
+        high: "Matière organique élevée : un sol riche et vivant, fréquent sous prairie permanente ou sous forêt. Rien à ajouter ; surveille seulement l'excès d'humidité."
       c_n_ratio:
-        low: "Rapport C/N bas : la matière organique se décompose vite et libère beaucoup d'azote, mais l'humus se renouvelle peu. Apportez de la matière carbonée (paille, broyat)."
+        low: "Rapport C/N bas : la matière organique se décompose vite et libère beaucoup d'azote, mais l'humus se renouvelle peu. Apporte de la matière carbonée (paille, broyat)."
         ok: "Rapport C/N équilibré : la matière organique se décompose à bon rythme et nourrit les plantes."
-        high: "Rapport C/N élevé : la décomposition est lente et les micro-organismes peuvent « emprunter » l'azote aux plantes. Typique des sols de forêt. Apportez de l'azote : compost mûr, engrais verts, légumineuses."
+        high: "Rapport C/N élevé : la décomposition est lente et les micro-organismes peuvent « emprunter » l'azote aux plantes. Typique des sols de forêt. Apporte de l'azote : compost mûr, engrais verts, légumineuses."
       p_mg_100g:
         low: "Phosphore bas : il peut freiner l'enracinement et la floraison des jeunes plants. Compost, fumier mûr ou apport adapté selon le laboratoire ; les mycorhizes aident."
         ok: "Phosphore suffisant pour la plupart des cultures et des arbres."
@@ -172,11 +172,11 @@ fr:
         ok: "Magnésium suffisant."
         high: "Magnésium élevé : un sol argileux peut devenir lourd et collant. Rien à ajouter."
       ca_mg_100g:
-        low: "Calcium bas, souvent avec un pH bas : le sol manque de structure. Regardez le pH avant d'agir ; un chaulage peut être utile."
+        low: "Calcium bas, souvent avec un pH bas : le sol manque de structure. Regarde le pH avant d'agir ; un chaulage peut être utile."
         ok: "Calcium suffisant."
         high: "Calcium élevé : un sol calcaire. À lire avec le pH."
       cec_meq_100g:
-        low: "Capacité d'échange faible : le sol retient mal les nutriments (sol sableux ou pauvre en humus). Apportez peu et souvent, et augmentez la matière organique."
+        low: "Capacité d'échange faible : le sol retient mal les nutriments (sol sableux ou pauvre en humus). Apporte peu et souvent, et augmente la matière organique."
         ok: "Capacité d'échange moyenne : bonne rétention des nutriments."
         high: "Capacité d'échange élevée : sol riche en argile ou en humus, qui retient bien les nutriments et l'eau."
     texture:
@@ -185,21 +185,21 @@ fr:
         loamy_sand: { name: "Sable limoneux", description: "Léger et facile à travailler, mais il sèche vite. La matière organique améliore sa rétention." }
         sandy_loam: { name: "Limon sableux", description: "Souple, bien drainé, il se réchauffe vite. Un bon sol de verger et de potager." }
         loam: { name: "Terre franche (loam)", description: "L'équilibre entre sable, limon et argile : drainant et retenant à la fois. L'idéal du jardinier." }
-        silt_loam: { name: "Limon", description: "Fertile et retient bien l'eau, mais sensible à la battance (croûte en surface) et au tassement. Gardez-le couvert." }
+        silt_loam: { name: "Limon", description: "Fertile et retient bien l'eau, mais sensible à la battance (croûte en surface) et au tassement. Garde-le couvert." }
         silt: { name: "Limon fin (silt)", description: "Très fin, fertile mais fragile : battance et érosion si le sol reste nu." }
         sandy_clay_loam: { name: "Limon argilo-sableux", description: "Assez lourd mais drainant grâce au sable. Il se travaille bien en bonne saison." }
         clay_loam: { name: "Limon argileux", description: "Fertile, il retient l'eau et les nutriments ; lourd quand il est humide, dur quand il sèche." }
-        silty_clay_loam: { name: "Limon argilo-limoneux", description: "Fertile, lourd et lent à se réchauffer. Ne le travaillez pas détrempé." }
+        silty_clay_loam: { name: "Limon argilo-limoneux", description: "Fertile, lourd et lent à se réchauffer. Ne le travaille pas détrempé." }
         sandy_clay: { name: "Argile sableuse", description: "Lourde malgré le sable : collante humide, dure sèche." }
-        silty_clay: { name: "Argile limoneuse", description: "Très lourde, retient l'eau, mal aérée. Préférez des plantes tolérantes aux pieds humides." }
-        clay: { name: "Argile", description: "Retient l'eau et les nutriments mais se compacte, s'engorge l'hiver et durcit l'été. Ne la travaillez pas humide ; buttes et matière organique l'améliorent." }
+        silty_clay: { name: "Argile limoneuse", description: "Très lourde, retient l'eau, mal aérée. Préfère des plantes tolérantes aux pieds humides." }
+        clay: { name: "Argile", description: "Retient l'eau et les nutriments mais se compacte, s'engorge l'hiver et durcit l'été. Ne la travaille pas humide ; buttes et matière organique l'améliorent." }
     points:
       default_label: "Point %{number}"
-      intro: "Un point, c'est un endroit où vous prélevez (ou avez prélevé) de la terre, avec les résultats du laboratoire."
+      intro: "Un point, c'est un endroit où tu prélèves (ou as prélevé) de la terre, avec les résultats du laboratoire."
       suggest: "Suggérer des emplacements"
       add: "Ajouter un point"
-      read_only: "Vous voyez les points de prélèvement de cette carte. Seuls les éditeurs peuvent en ajouter."
-      empty: "Aucun point pour l'instant. Laissez Designer suggérer où prélever, ou posez les points vous-même sur la carte."
+      read_only: "Tu vois les points de prélèvement de cette carte. Seuls les éditeurs peuvent en ajouter."
+      empty: "Aucun point pour l'instant. Laisse Designer suggérer où prélever, ou pose les points toi-même sur la carte."
       count:
         zero: "Aucun point"
         one: "1 point"
@@ -217,8 +217,8 @@ fr:
         one: "1 résultat"
         other: "%{count} résultats"
       not_placed: "Pas placé sur la carte"
-      placing_new: "Cliquez sur la carte pour poser le point de prélèvement."
-      placing_banner: "Cliquez sur la carte pour placer « %{name} »."
+      placing_new: "Clique sur la carte pour poser le point de prélèvement."
+      placing_banner: "Clique sur la carte pour placer « %{name} »."
       placed: "Point posé."
       moved: "Point déplacé."
     abundances:
@@ -227,18 +227,18 @@ fr:
       frequent: "Fréquente"
       dominant: "Dominante"
     indicators:
-      compaction: { label: "Sol tassé", hint: "Sol compact : l'eau et l'air circulent mal, les racines peinent à descendre. Aérez (grelinette, plantes à racines profondes) et évitez de marcher dessus quand il est humide." }
-      waterlogging: { label: "Sol engorgé", hint: "L'eau stagne et l'oxygène manque aux racines. Drainez, plantez sur butte ou choisissez des espèces de sols humides." }
+      compaction: { label: "Sol tassé", hint: "Sol compact : l'eau et l'air circulent mal, les racines peinent à descendre. Aère (grelinette, plantes à racines profondes) et évite de marcher dessus quand il est humide." }
+      waterlogging: { label: "Sol engorgé", hint: "L'eau stagne et l'oxygène manque aux racines. Draine, plante sur butte ou choisis des espèces de sols humides." }
       acidic: { label: "Sol acide", hint: "pH bas : certains nutriments sont moins disponibles. À confirmer par une analyse (pH)." }
-      calcareous: { label: "Sol calcaire", hint: "pH élevé, riche en calcium : choisissez des espèces tolérantes au calcaire." }
+      calcareous: { label: "Sol calcaire", hint: "pH élevé, riche en calcium : choisis des espèces tolérantes au calcaire." }
       nitrogen_rich: { label: "Riche en azote", hint: "Beaucoup d'azote disponible (fumier, ancien dépôt, sol travaillé). Peu besoin d'apports." }
       nitrogen_poor: { label: "Pauvre en azote", hint: "Peu d'azote disponible : légumineuses, engrais verts et compost aident." }
-      disturbed: { label: "Sol remué", hint: "Sol travaillé ou remanié : les plantes pionnières recolonisent la terre nue. Couvrez-le (paillage, engrais verts)." }
+      disturbed: { label: "Sol remué", hint: "Sol travaillé ou remanié : les plantes pionnières recolonisent la terre nue. Couvre-le (paillage, engrais verts)." }
       dry: { label: "Sol sec", hint: "Sol léger ou filtrant, qui sèche vite. Paillage épais et plantes tolérantes à la sécheresse." }
       fertile: { label: "Sol fertile", hint: "Sol riche et vivant, avec une bonne activité biologique." }
       trampled: { label: "Piétinement", hint: "Passages fréquents (pas, animaux, engins) : le sol est tassé en surface." }
     panel:
-      intro: "Comprenez votre sol avant de planter : où prélever, quoi demander au laboratoire, ce que disent les résultats et les plantes qui poussent déjà."
+      intro: "Comprends ton sol avant de planter : où prélever, quoi demander au laboratoire, ce que disent les résultats et les plantes qui poussent déjà."
       tabs:
         guide: "Guide"
         points: "Points"
@@ -246,7 +246,7 @@ fr:
         plants: "Plantes"
       show_on_map: "Sur la carte"
       loading: "Chargement…"
-      load_failed: "Impossible de charger les données du sol. Réessayez."
+      load_failed: "Impossible de charger les données du sol. Réessaie."
       retry: "Réessayer"
     guide:
       lead: "Le geste de prélèvement compte plus que l'analyse : un mauvais échantillon donne un résultat faux. Ce guide est libre d'accès."
@@ -259,27 +259,27 @@ fr:
           title: "Quand prélever ?"
           steps:
             s1: "De préférence à l'automne ou en fin d'hiver, quand le sol est ressuyé : ni gelé, ni détrempé, ni desséché."
-            s2: "Attendez au moins trois mois après un chaulage, un apport de compost ou de fumier, ou un engrais."
+            s2: "Attends au moins trois mois après un chaulage, un apport de compost ou de fumier, ou un engrais."
             s3: "Refaites une analyse tous les trois à cinq ans, à la même saison, pour suivre l'évolution."
         where:
           title: "Où prélever ?"
           intro: "Un échantillon représente une zone homogène : même sol, même végétation, même histoire. Un potager, un verger et une prairie font trois échantillons."
           steps:
-            s1: "Dans l'onglet « Points », laissez Designer suggérer des emplacements : il répartit les points sur le terrain, loin du bord, des bâtiments, de l'eau et des chemins."
-            s2: "Évitez les pieds de haies et d'arbres isolés, les anciens feux, les tas de compost, les abreuvoirs, les passages d'animaux, les pieds de gouttière et les remblais."
-            s3: "Au-delà d'un hectare, ou si le terrain varie beaucoup (pente, creux, ancien bras d'eau), multipliez les échantillons."
+            s1: "Dans l'onglet « Points », laisse Designer suggérer des emplacements : il répartit les points sur le terrain, loin du bord, des bâtiments, de l'eau et des chemins."
+            s2: "Évite les pieds de haies et d'arbres isolés, les anciens feux, les tas de compost, les abreuvoirs, les passages d'animaux, les pieds de gouttière et les remblais."
+            s3: "Au-delà d'un hectare, ou si le terrain varie beaucoup (pente, creux, ancien bras d'eau), multiplie les échantillons."
         how:
           title: "Comment prélever ?"
           intro: "Chaque échantillon est un mélange : plusieurs prises dans la zone, réunies dans un seau propre."
           steps:
             s1: "Matériel : une bêche ou une tarière en inox, un seau en plastique propre (pas de métal galvanisé), un sac ou une boîte propre, un marqueur."
-            s2: "Dans la zone, marchez en zigzag et faites 10 à 15 prises, chacune à plus de 5 m d'un obstacle."
-            s3: "À chaque prise, écartez les feuilles et l'herbe, puis découpez une tranche de terre en V : sur 20 cm de profondeur dans un potager, un jardin ou un verger, sur 10 cm sous une prairie permanente."
-            s4: "Réunissez toutes les prises dans le seau, enlevez cailloux et grosses racines, mélangez, puis remplissez le sac avec environ 500 g de ce mélange."
-            s5: "Étiquetez : zone, profondeur, date. Notez-le aussi dans Designer, sur le point correspondant."
+            s2: "Dans la zone, marche en zigzag et fais 10 à 15 prises, chacune à plus de 5 m d'un obstacle."
+            s3: "À chaque prise, écarte les feuilles et l'herbe, puis découpe une tranche de terre en V : sur 20 cm de profondeur dans un potager, un jardin ou un verger, sur 10 cm sous une prairie permanente."
+            s4: "Réunis toutes les prises dans le seau, enlève cailloux et grosses racines, mélange, puis remplis le sac avec environ 500 g de ce mélange."
+            s5: "Étiquette : zone, profondeur, date. Note-le aussi dans Designer, sur le point correspondant."
         ask:
           title: "Que demander au laboratoire ?"
-          intro: "Choisissez un laboratoire de sol agréé (en Wallonie, le réseau Requasud en regroupe plusieurs) et sa formule « jardin » ou « verger ». Demandez au minimum :"
+          intro: "Choisis un laboratoire de sol agréé (en Wallonie, le réseau Requasud en regroupe plusieurs) et sa formule « jardin » ou « verger ». Demande au minimum :"
           steps:
             s1: "le pH eau et le pH KCl ;"
             s2: "la matière organique (ou le carbone organique) et le rapport C/N ;"
@@ -287,28 +287,28 @@ fr:
             s4: "la capacité d'échange (CEC) ;"
             s5: "la texture (granulométrie : sable, limon, argile) ;"
             s6: "si le terrain a un passé (ancien jardin ouvrier, bord de route, industrie, remblai, peintures au plomb) : les métaux lourds (plomb, cadmium, zinc, arsenic…), avant de planter à manger."
-          note: "En Wallonie, la Banque de données de l'état des sols (BDES) indique si une parcelle est connue comme suspectée ou polluée : consultez-la avant d'investir."
+          note: "En Wallonie, la Banque de données de l'état des sols (BDES) indique si une parcelle est connue comme suspectée ou polluée : consulte-la avant d'investir."
         jar:
           title: "Pas d'analyse ? Le test du bocal"
           intro: "Une estimation gratuite de la texture avec un bocal transparent :"
           steps:
-            s1: "Remplissez le bocal au tiers de terre émiettée, sans cailloux, puis d'eau jusqu'aux trois quarts. Ajoutez une cuillère de liquide vaisselle."
-            s2: "Fermez, secouez énergiquement trois minutes, puis posez le bocal sur une table sans y toucher."
-            s3: "Après 1 minute, marquez la hauteur du dépôt : c'est le sable. Après 2 heures, marquez le suivant : le limon. Après 24 heures, la dernière couche est l'argile."
-            s4: "Divisez chaque couche par la hauteur totale pour obtenir des pourcentages, puis saisissez-les dans un point : Designer en déduit la classe de texture."
+            s1: "Remplis le bocal au tiers de terre émiettée, sans cailloux, puis d'eau jusqu'aux trois quarts. Ajoute une cuillère de liquide vaisselle."
+            s2: "Ferme, secoue énergiquement trois minutes, puis pose le bocal sur une table sans y toucher."
+            s3: "Après 1 minute, marque la hauteur du dépôt : c'est le sable. Après 2 heures, marque le suivant : le limon. Après 24 heures, la dernière couche est l'argile."
+            s4: "Divise chaque couche par la hauteur totale pour obtenir des pourcentages, puis saisis-les dans un point : Designer en déduit la classe de texture."
         after:
           title: "Après le prélèvement"
           steps:
-            s1: "Envoyez l'échantillon au laboratoire dans les deux jours, au frais et à l'abri de la lumière, avec le formulaire de demande."
-            s2: "À la réception du rapport, ouvrez le point dans l'onglet « Points » : saisissez les valeurs et joignez le PDF."
-            s3: "L'onglet « Comparer » met vos points côte à côte et situe chaque valeur (bas, correct, élevé)."
+            s1: "Envoie l'échantillon au laboratoire dans les deux jours, au frais et à l'abri de la lumière, avec le formulaire de demande."
+            s2: "À la réception du rapport, ouvre le point dans l'onglet « Points » : saisis les valeurs et joins le PDF."
+            s3: "L'onglet « Comparer » met tes points côte à côte et situe chaque valeur (bas, correct, élevé)."
     suggestions:
       title: "Où prélever ?"
-      hint: "Designer répartit les points sur votre terrain, loin du bord, des bâtiments, de l'eau et des chemins."
+      hint: "Designer répartit les points sur ton terrain, loin du bord, des bâtiments, de l'eau et des chemins."
       count: "Nombre de points"
       run: "Calculer"
       running: "Calcul…"
-      needs_boundary: "Dessinez d'abord le contour du terrain (panneau Terrain) : les suggestions s'appuient dessus."
+      needs_boundary: "Dessine d'abord le contour du terrain (panneau Terrain) : les suggestions s'appuient dessus."
       result:
         one: "1 emplacement proposé sur %{area} utilisables, à plus de %{edge} m du bord et de %{obstacle} m des bâtiments, de l'eau et des chemins."
         other: "%{count} emplacements proposés sur %{area} utilisables, à plus de %{edge} m du bord et de %{obstacle} m des bâtiments, de l'eau et des chemins."
@@ -330,9 +330,9 @@ fr:
       lab_placeholder: "Nom du laboratoire"
       lab_reference: "Référence du rapport"
       notes: "Notes"
-      notes_placeholder: "Zone, végétation, pente, ce que vous avez vu en creusant…"
+      notes_placeholder: "Zone, végétation, pente, ce que tu as vu en creusant…"
       results: "Résultats du laboratoire"
-      results_hint: "Recopiez ce que le rapport indique et laissez vide ce qui manque. La virgule ou le point conviennent."
+      results_hint: "Recopie ce que le rapport indique et laisse vide ce qui manque. La virgule ou le point conviennent."
       groups:
         acidity: "Acidité"
         organic: "Matière organique"
@@ -359,30 +359,30 @@ fr:
       confirm_delete: "Supprimer ce point et ses résultats ?"
       deleted: "Point supprimé."
       reading: "Lecture des résultats"
-      reading_empty: "Saisissez des résultats pour en lire la signification."
+      reading_empty: "Saisis des résultats pour en lire la signification."
       reading_locked: "La lecture des résultats fait partie du forfait : voir l'onglet « Comparer »."
       close: "Fermer"
       open: "Ouvrir ce point"
     compare:
-      intro: "Vos points côte à côte, chaque valeur située par rapport à des repères indicatifs pour un sol de jardin ou de verger en Belgique."
-      intro_plain: "Les résultats de vos points côte à côte."
-      empty: "Saisissez les résultats d'au moins un point (onglet « Points ») pour les comparer ici."
+      intro: "Tes points côte à côte, chaque valeur située par rapport à des repères indicatifs pour un sol de jardin ou de verger en Belgique."
+      intro_plain: "Les résultats de tes points côte à côte."
+      empty: "Saisis les résultats d'au moins un point (onglet « Points ») pour les comparer ici."
       measure: "Mesure"
       texture: "Classe de texture"
       limits: "bas < %{low} · élevé > %{high}"
-      explain_hint: "Touchez une valeur pour lire ce qu'elle signifie."
+      explain_hint: "Touche une valeur pour lire ce qu'elle signifie."
       explain_title: "%{measure} · %{point}"
-      caveat: "Repères indicatifs, à confirmer avec l'avis de votre laboratoire : « bas » ou « élevé » ne pose problème que selon ce que vous voulez planter. Source des repères : %{provenance}."
+      caveat: "Repères indicatifs, à confirmer avec l'avis de ton laboratoire : « bas » ou « élevé » ne pose problème que selon ce que tu veux planter. Source des repères : %{provenance}."
       texture_title: "Texture de %{point}"
       texture_parts: "%{sand} % de sable, %{silt} % de limon, %{clay} % d'argile"
       missing: "—"
     upsell:
-      title: "Comprendre vos résultats"
-      body: "Vos mesures sont enregistrées et restent visibles. Le forfait ajoute leur lecture : repères bas, correct et élevé pour chaque valeur, classe de texture du sol, explications avec des pistes concrètes, et la comparaison de vos points côte à côte."
+      title: "Comprendre tes résultats"
+      body: "Tes mesures sont enregistrées et restent visibles. Le forfait ajoute leur lecture : repères bas, correct et élevé pour chaque valeur, classe de texture du sol, explications avec des pistes concrètes, et la comparaison de tes points côte à côte."
       cta: "Voir les formules"
       owner_only: "Seul le propriétaire de la carte peut changer de forfait."
     plants:
-      intro: "Les plantes qui s'installent seules racontent le sol : le rumex et le plantain parlent de tassement, l'ortie d'azote, la prêle d'eau qui stagne. Notez celles que vous voyez."
+      intro: "Les plantes qui s'installent seules racontent le sol : le rumex et le plantain parlent de tassement, l'ortie d'azote, la prêle d'eau qui stagne. Note celles que tu vois."
       form_title: "Noter une plante"
       species: "Plante observée"
       species_placeholder: "Pissenlit, rumex, prêle…"
@@ -390,25 +390,25 @@ fr:
       notes: "Note (facultatif)"
       add: "Noter"
       add_placed: "Noter à un endroit précis"
-      placing_banner: "Cliquez sur la carte pour placer « %{name} »."
+      placing_banner: "Clique sur la carte pour placer « %{name} »."
       added: "Plante notée."
       deleted: "Observation supprimée."
       suggestion_catalog: "Bio-indicatrice"
       suggestion_plant: "Catalogue de plantes"
-      no_match: "Pas dans la liste : vous pouvez la noter quand même, sous le nom que vous lui donnez."
-      summary_title: "Ce que disent vos plantes"
-      summary_empty: "Notez quelques plantes pour voir ce qu'elles suggèrent du sol."
+      no_match: "Pas dans la liste : tu peux la noter quand même, sous le nom que tu lui donnes."
+      summary_title: "Ce que disent tes plantes"
+      summary_empty: "Note quelques plantes pour voir ce qu'elles suggèrent du sol."
       summary_from: "d'après : %{plants}"
       caveat: "Ce sont des indices, pas des preuves : une plante isolée ne dit presque rien, un tapis de la même plante en dit beaucoup. À confirmer par une analyse."
-      observed_title: "Vos observations"
+      observed_title: "Tes observations"
       observed_empty: "Aucune plante notée pour l'instant."
       not_placed: "Sans position"
       place: "Placer sur la carte"
       locate: "Voir sur la carte"
       confirm_delete: "Supprimer cette observation ?"
       catalog_title: "Plantes bio-indicatrices courantes"
-      catalog_hint: "Touchez une indication pour filtrer. Source : %{provenance}."
+      catalog_hint: "Touche une indication pour filtrer. Source : %{provenance}."
       filter_all: "Toutes"
       seen: "Je l'ai vue"
       provenance: "Source : %{provenance}"
-      read_only: "Vous voyez les observations de cette carte. Seuls les éditeurs peuvent en ajouter."
+      read_only: "Tu vois les observations de cette carte. Seuls les éditeurs peuvent en ajouter."

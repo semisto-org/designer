@@ -148,7 +148,7 @@ class Maps::SoilSamplesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:michael)
     post suggestions_map_soil_samples_path(map), as: :json
     assert_response :unprocessable_entity
-    assert_match(/Dessinez d'abord le contour/, response.parsed_body["message"])
+    assert_match(/Dessine d'abord le contour/, response.parsed_body["message"])
   end
 
   test "suggestions stay free on a free plan" do

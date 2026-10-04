@@ -7,7 +7,7 @@ class TeamInvitationMailerTest < ActionMailer::TestCase
     invitation = team.invitations.create!(email_address: "new@example.org", role: "member", invited_by: users(:michael))
     mail = TeamInvitationMailer.invite(invitation)
     assert_equal [ "new@example.org" ], mail.to
-    assert_equal "Michael vous invite dans l'équipe « Semisto »", mail.subject
+    assert_equal "Michael t'invite dans l'équipe « Semisto »", mail.subject
     assert_includes mail.html_part.body.to_s, "http://example.com/teams/invitations/#{invitation.token}"
     text = mail.text_part.body.to_s
     assert_includes text, "/teams/invitations/#{invitation.token}"

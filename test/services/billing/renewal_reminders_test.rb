@@ -73,7 +73,7 @@ class Billing::RenewalRemindersTest < ActiveSupport::TestCase
     purchase = pass(Time.zone.local(2027, 10, 12, 12, 0))
     mail = BillingMailer.renewal_reminder(purchase, "d30")
     assert_equal [ @user.email_address ], mail.to
-    assert_equal "Votre forfait Semisto Designer se termine le 12 octobre 2027", mail.subject
+    assert_equal "Ton forfait Semisto Designer se termine le 12 octobre 2027", mail.subject
     text = mail.text_part.body.to_s
     assert_includes text, "12 octobre 2027"
     assert_includes text, "Rien n'est prélevé automatiquement"
@@ -89,8 +89,8 @@ class Billing::RenewalRemindersTest < ActiveSupport::TestCase
       Map.create!(name: "B", owner: @user, region: regions(:wallonia), created_at: 2.months.ago)
       travel_to Time.zone.local(2027, 10, 13) do
         mail = BillingMailer.renewal_reminder(purchase, "expired")
-        assert_equal "Votre forfait Semisto Designer est arrivé à échéance", mail.subject
-        assert_includes mail.text_part.body.to_s, "1 de vos cartes est désormais en lecture seule"
+        assert_equal "Ton forfait Semisto Designer est arrivé à échéance", mail.subject
+        assert_includes mail.text_part.body.to_s, "1 de tes cartes est désormais en lecture seule"
         assert_includes mail.text_part.body.to_s, "rien n'est jamais supprimé"
       end
     end

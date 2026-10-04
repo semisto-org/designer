@@ -37,7 +37,7 @@ class CommentNotificationJobTest < ActiveJob::TestCase
   test "people who never subscribed hear nothing, mentioned people always do" do
     mails = notifications { Comment.create!(commentable: @feature, author: @owner, body: "Pour @Alice") }
     assert_equal [ @alice.email_address ], mails.map { |m| m.to.first }
-    assert_match(/vous a mentionné/, mails.first.subject)
+    assert_match(/t'a mentionné/, mails.first.subject)
   end
 
   test "a mentioned subscriber gets one mail (the mention), not two" do

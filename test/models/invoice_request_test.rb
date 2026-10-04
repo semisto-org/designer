@@ -29,17 +29,17 @@ class InvoiceRequestTest < ActiveSupport::TestCase
   test "requires the organisation, its address and a valid billing e-mail" do
     request = build(organization_name: " ", billing_address: "\n \n", billing_email: "nope")
     assert_not request.valid?
-    assert_equal [ "Indiquez le nom de l'organisation à facturer." ], request.errors[:organization_name]
-    assert_equal [ "Indiquez l'adresse qui doit figurer sur la facture." ], request.errors[:billing_address]
+    assert_equal [ "Indique le nom de l'organisation à facturer." ], request.errors[:organization_name]
+    assert_equal [ "Indique l'adresse qui doit figurer sur la facture." ], request.errors[:billing_address]
     assert_equal [ "Cette adresse e-mail ne semble pas valide." ], request.errors[:billing_email]
-    assert_equal [ "Indiquez l'adresse e-mail qui recevra la facture." ], build(billing_email: "").tap(&:valid?).errors[:billing_email]
+    assert_equal [ "Indique l'adresse e-mail qui recevra la facture." ], build(billing_email: "").tap(&:valid?).errors[:billing_email]
   end
 
   test "only the plans sold for a year can be asked for" do
     %w[free drone nope].each do |plan_key|
       request = build(plan_key:)
       assert_not request.valid?, plan_key
-      assert_equal [ "Choisissez une formule." ], request.errors[:plan_key]
+      assert_equal [ "Choisis une formule." ], request.errors[:plan_key]
     end
   end
 

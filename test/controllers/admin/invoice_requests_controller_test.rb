@@ -108,7 +108,7 @@ class Admin::InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
   test "creating the Stripe invoice needs Stripe" do
     sign_in_as @admin
     post invoice_admin_invoice_request_path(@pending)
-    assert_equal "Stripe n'est pas configuré : faites la facture à la main.", flash[:alert]
+    assert_equal "Stripe n'est pas configuré : fais la facture à la main.", flash[:alert]
     assert @pending.reload.requested?
   end
 

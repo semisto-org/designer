@@ -1,11 +1,11 @@
 ---
 title: "Relire les brouillons de Claude"
-summary: "Accepter, ajuster ou refuser un par un les éléments que votre assistant IA propose sur la carte, et suivre ce qu'il a fait."
+summary: "Accepter, ajuster ou refuser un par un les éléments que ton assistant IA propose sur la carte, et suivre ce qu'il a fait."
 category: Claude et l'IA
 order: 72
 ---
 
-Quand vous [connectez Claude](/help/connecter-claude) avec l'accès « Lecture et brouillons », il peut **proposer** des éléments sur votre carte : une haie, une mare, un patch de plantes. Ces propositions arrivent en **brouillon** : rien ne fait partie de la carte tant qu'un humain ne l'a pas accepté.
+Quand tu [connectes Claude](/help/connecter-claude) avec l'accès « Lecture et brouillons », il peut **proposer** des éléments sur ta carte : une haie, une mare, un patch de plantes. Ces propositions arrivent en **brouillon** : rien ne fait partie de la carte tant qu'un humain ne l'a pas accepté.
 
 ## Ce qu'il faut pour recevoir des brouillons
 
@@ -18,7 +18,7 @@ Quand vous [connectez Claude](/help/connecter-claude) avec l'accès « Lecture e
 
 Dès qu'il y a des brouillons, une barre apparaît en haut de la carte, par exemple « Claude propose 12 éléments », avec le résumé de sa proposition. Si la carte est ouverte pendant que Claude travaille, les nouveaux brouillons s'y ajoutent dans la demi-minute.
 
-Touchez la barre pour la déplier : les brouillons sont rangés par couche. Pour chacun, trois boutons :
+Touche la barre pour la déplier : les brouillons sont rangés par couche. Pour chacun, trois boutons :
 
 - la cible **Voir sur la carte** cadre la carte sur l'élément et ouvre sa fiche ;
 - la coche l'**accepte** ;
@@ -28,14 +28,14 @@ Touchez la barre pour la déplier : les brouillons sont rangés par couche. Pour
 
 ## Relire un brouillon de près
 
-Ouvrez la fiche d'un brouillon, depuis la barre ou en le touchant sur la carte. Vous y trouvez :
+Ouvre la fiche d'un brouillon, depuis la barre ou en le touchant sur la carte. Tu y trouves :
 
 - la mention « Proposé par une IA : à accepter ou refuser » ;
 - **Pourquoi cette proposition** : la justification écrite par Claude, avec les données sur lesquelles il s'appuie (fiche projet, relief, couches, existant) ;
-- le nom et les notes, que vous pouvez **ajuster** avant de décider ;
+- le nom et les notes, que tu peux **ajuster** avant de décider ;
 - les boutons **Accepter** et **Refuser**.
 
-Un brouillon accepté devient un élément comme les autres, à vous. Un brouillon refusé disparaît de la carte. Claude peut retirer ses propres brouillons pas encore revus, jamais un élément que vous avez accepté.
+Un brouillon accepté devient un élément comme les autres, à toi. Un brouillon refusé disparaît de la carte. Claude peut retirer ses propres brouillons pas encore revus, jamais un élément que tu as accepté.
 
 ## Où apparaissent les brouillons
 
@@ -49,10 +49,10 @@ Les lecteurs voient la barre, mais seul un éditeur ou le propriétaire peut dé
 
 Le panneau **Journal IA**, réservé au propriétaire, liste chaque action d'une IA sur la carte : avec quel client, pour quel compte, ce qu'elle a lu ou proposé, et le sort de ses propositions (acceptées, refusées, en attente, retirées). Les tentatives qui ont échoué y figurent aussi. **Voir les actions plus anciennes** remonte le temps.
 
-Vous savez ainsi toujours ce que l'IA a fait sur votre terrain. Pour couper son accès, révoquez l'application depuis la page **Connecter Claude** de votre compte.
+Tu sais ainsi toujours ce que l'IA a fait sur ton terrain. Pour couper son accès, révoque l'application depuis la page **Connecter Claude** de ton compte.
 
 ## Bien travailler avec les brouillons
 
-- Demandez des propositions **petites et ciblées** : une haie le long de la limite nord, plutôt que « tout le jardin ».
-- Lisez toujours la justification : si elle repose sur une donnée fausse, corrigez la donnée (fiche projet, existant) et redemandez.
+- Demande des propositions **petites et ciblées** : une haie le long de la limite nord, plutôt que « tout le jardin ».
+- Lis toujours la justification : si elle repose sur une donnée fausse, corrige la donnée (fiche projet, existant) et redemande.
 - Refuser n'est pas un échec : c'est une information pour la proposition suivante.

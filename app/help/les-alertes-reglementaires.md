@@ -1,15 +1,15 @@
 ---
 title: "Les alertes réglementaires"
-summary: "Mare, serre, abri : repérer ce qui, dans votre dessin, pourrait demander un permis, avec la source de chaque règle."
+summary: "Mare, serre, abri : repérer ce qui, dans ton dessin, pourrait demander un permis, avec la source de chaque règle."
 category: Concevoir
 order: 56
 ---
 
-Une mare de 120 m², un abri de jardin collé à la limite du voisin : certains aménagements demandent un permis. Le panneau **Alertes** vérifie votre dessin au fil de l'eau et signale ce qui mérite une vérification, **avant** de creuser ou de construire.
+Une mare de 120 m², un abri de jardin collé à la limite du voisin : certains aménagements demandent un permis. Le panneau **Alertes** vérifie ton dessin au fil de l'eau et signale ce qui mérite une vérification, **avant** de creuser ou de construire.
 
 ## Comment ça marche
 
-Les alertes viennent de **règles fixes et sourcées**, propres à la région de votre carte. Elles sont vérifiées sur vos éléments, y compris les brouillons proposés par une IA, chaque fois que le dessin change. Personne ne donne son avis ici, ni humain ni IA : chaque alerte nomme sa règle et sa source.
+Les alertes viennent de **règles fixes et sourcées**, propres à la région de ta carte. Elles sont vérifiées sur tes éléments, y compris les brouillons proposés par une IA, chaque fois que le dessin change. Personne ne donne son avis ici, ni humain ni IA : chaque alerte nomme sa règle et sa source.
 
 Pour vérifier les distances aux limites, il faut avoir dessiné le **contour du terrain**.
 
@@ -23,7 +23,7 @@ Chaque alerte indique :
 - **Voir sur la carte**, qui cadre la carte sur l'élément et le sélectionne ;
 - la **Source**, avec un lien vers le document officiel.
 
-Quand rien dans votre dessin ne touche ces règles, le panneau le dit simplement.
+Quand rien dans ton dessin ne touche ces règles, le panneau le dit simplement.
 
 ## Les règles vérifiées en Wallonie
 
@@ -37,7 +37,7 @@ Pour la Wallonie, les règles viennent aujourd'hui du document du SPW Territoire
 | Serre, abri, cabane ou remise | Plus de 20 m² | Permis probable |
 | Serre, abri, cabane ou remise, poulailler | À moins de 3 m des limites | À vérifier |
 
-Pour les constructions proches des limites, les distances exactes dépendent de la construction : l'alerte vous invite à vous renseigner, sans plus.
+Pour les constructions proches des limites, les distances exactes dépendent de la construction : l'alerte t'invite à te renseigner, sans plus.
 
 ## Les règles vérifiées en France
 
@@ -56,11 +56,11 @@ Au Luxembourg et ailleurs en Europe, aucune règle n'est encore définie : le pa
 
 Le panneau le rappelle en tête : **indicatif, à vérifier auprès de la commune**. Les alertes ne couvrent pas tout :
 
-- les **milieux protégés** (Natura 2000, forêts anciennes) et le **plan de secteur** ont leurs propres règles : consultez ces couches dans [Lire les couches du Géoportail](/help/lire-les-couches-du-geoportail) ;
+- les **milieux protégés** (Natura 2000, forêts anciennes) et le **plan de secteur** ont leurs propres règles : consulte ces couches dans [Lire les couches du Géoportail](/help/lire-les-couches-du-geoportail) ;
 - les règlements communaux peuvent ajouter des contraintes ;
 - abattre un arbre, arracher une haie ou toucher un cours d'eau relèvent d'autres règles.
 
-Avant un aménagement important, parlez-en au service urbanisme de votre commune : un simple échange évite bien des soucis.
+Avant un aménagement important, parles-en au service urbanisme de ta commune : un simple échange évite bien des soucis.
 
 ## À ne pas confondre avec la cohérence du plan
 

@@ -26,13 +26,13 @@ fr:
         invoice_request:
           attributes:
             organization_name:
-              blank: "Indiquez le nom de l'organisation à facturer."
+              blank: "Indique le nom de l'organisation à facturer."
               too_long: "Ce nom est trop long (%{count} caractères au maximum)."
             billing_address:
-              blank: "Indiquez l'adresse qui doit figurer sur la facture."
+              blank: "Indique l'adresse qui doit figurer sur la facture."
               too_long: "Cette adresse est trop longue (%{count} caractères au maximum)."
             billing_email:
-              blank: "Indiquez l'adresse e-mail qui recevra la facture."
+              blank: "Indique l'adresse e-mail qui recevra la facture."
               invalid: "Cette adresse e-mail ne semble pas valide."
               too_long: "Cette adresse e-mail est trop longue."
             company_number:
@@ -42,7 +42,7 @@ fr:
             message:
               too_long: "Ce message est trop long (%{count} caractères au maximum)."
             plan_key:
-              inclusion: "Choisissez une formule."
+              inclusion: "Choisis une formule."
             status:
               inclusion: "Ce statut n'existe pas."
             duration_months:
@@ -58,9 +58,9 @@ fr:
             plan_key:
               inclusion: "Cette formule n'existe pas."
             starts_at:
-              blank: "Indiquez la date de début."
+              blank: "Indique la date de début."
             ends_at:
-              blank: "Indiquez la date de fin."
+              blank: "Indique la date de fin."
               before_start: "doit venir après la date de début."
             invoice_request_id:
               taken: "Cette demande a déjà sa formule."
@@ -78,11 +78,11 @@ fr:
       cancelled: "Annulée"
     entry:
       title: "Payer sur facture"
-      body: "Commune, école, association ou entreprise : recevez une facture payable par virement."
+      body: "Commune, école, association ou entreprise : reçois une facture payable par virement."
       cta: "Demander une facture"
     new:
       title: "Payer sur facture"
-      intro: "Semisto vous envoie une facture au nom de votre organisation, payable par virement sous 30 jours. Votre numéro de bon de commande y figure si vous en avez un."
+      intro: "Semisto t'envoie une facture au nom de ton organisation, payable par virement sous 30 jours. Ton numéro de bon de commande y figure si tu en as un."
       who_title: "Qui facturer"
       organization_name: "Nom de l'organisation"
       organization_name_placeholder: "Administration communale de Yvoir"
@@ -92,10 +92,10 @@ fr:
       company_number: "Numéro de TVA ou d'entreprise (BCE)"
       company_number_hint: "Facultatif, par exemple BE0123456789."
       billing_email: "E-mail de facturation"
-      billing_email_hint: "La facture est envoyée à cette adresse : la vôtre, ou celle de votre service comptable."
+      billing_email_hint: "La facture est envoyée à cette adresse : la tienne, ou celle de ton service comptable."
       purchase_order: "Numéro de bon de commande"
       purchase_order_hint: "Facultatif : il est repris sur la facture."
-      plan_title: "Votre formule"
+      plan_title: "Ta formule"
       plan: "Formule"
       plan_option: "%{plan} — %{amount}"
       duration: "Durée"
@@ -110,22 +110,22 @@ fr:
       next_title: "Et ensuite ?"
       next_steps:
         - "Semisto prépare la facture et l'envoie à l'e-mail de facturation."
-        - "Votre formule peut être activée dès l'envoi de la facture, sans attendre le paiement."
-        - "Vous réglez par virement, sous 30 jours."
+        - "Ta formule peut être activée dès l'envoi de la facture, sans attendre le paiement."
+        - "Tu règles par virement, sous 30 jours."
       back: "Formule et facturation"
     show:
       title: "Demande envoyée"
-      heading: "Votre demande de facture"
-      lead: "Merci ! Semisto a bien reçu votre demande de facture pour « %{organization} »."
-      recap_title: "Votre demande"
-      email_note: "Un e-mail de confirmation vous a été envoyé à %{email}."
+      heading: "Ta demande de facture"
+      lead: "Merci ! Semisto a bien reçu ta demande de facture pour « %{organization} »."
+      recap_title: "Ta demande"
+      email_note: "Un e-mail de confirmation t'a été envoyé à %{email}."
       status: "Statut : %{status}"
       open_invoice: "Voir la facture"
       back: "Retour à Formule et facturation"
-    created: "Votre demande de facture est envoyée."
-    rate_limited: "Vous avez déjà envoyé plusieurs demandes. Semisto vous répond rapidement ; réessayez dans une heure si besoin."
+    created: "Ta demande de facture est envoyée."
+    rate_limited: "Tu as déjà envoyé plusieurs demandes. Semisto te répond rapidement ; réessaie dans une heure si besoin."
     billing:
-      requests_title: "Vos demandes de facture"
+      requests_title: "Tes demandes de facture"
       request_line: "%{plan} · %{organization}"
       requested_on: "Demandée le %{date}"
       open_invoice: "Voir la facture"
@@ -136,19 +136,19 @@ fr:
       grant_days:
         one: "Il reste %{count} jour."
         other: "Il reste %{count} jours."
-      grant_renew_note: "Rien n'est prélevé automatiquement : pour une nouvelle année, demandez une nouvelle facture."
+      grant_renew_note: "Rien n'est prélevé automatiquement : pour une nouvelle année, demande une nouvelle facture."
     pricing:
       title: "Payer sur facture"
-      body: "Commune, école, association ou entreprise : recevez une facture payable par virement."
-      detail: "Atelier, Bureau d'études ou Forfait particulier, pour un an, avec votre numéro de bon de commande sur la facture."
+      body: "Commune, école, association ou entreprise : reçois une facture payable par virement."
+      detail: "Atelier, Bureau d'études ou Forfait particulier, pour un an, avec ton numéro de bon de commande sur la facture."
       cta: "Demander une facture"
     admin:
       title: "Demandes de facture"
-      intro: "Communes, écoles, associations et entreprises qui paient par virement. Activez la formule dès que la facture part : le paiement suit sous 30 jours."
+      intro: "Communes, écoles, associations et entreprises qui paient par virement. Active la formule dès que la facture part : le paiement suit sous 30 jours."
       link: "Demandes de facture"
       back: "Demandes envoyées depuis les cartes"
       stripe_note: "« Créer la facture dans Stripe » envoie la facture à l'e-mail de facturation, payable sous 30 jours, avec le numéro de bon de commande. Le paiement est enregistré tout seul à son arrivée."
-      manual_note: "Stripe n'est pas configuré : faites la facture à la main (montant TVA comprise, numéro de bon de commande), activez la formule, puis marquez la demande payée à l'arrivée du virement."
+      manual_note: "Stripe n'est pas configuré : fais la facture à la main (montant TVA comprise, numéro de bon de commande), active la formule, puis marque la demande payée à l'arrivée du virement."
       filters:
         open: "À traiter"
         paid: "Payées"
@@ -195,7 +195,7 @@ fr:
         cancelled: "Demande annulée."
         activated: "Formule %{plan} activée du %{start} au %{end}."
       errors:
-        not_configured: "Stripe n'est pas configuré : faites la facture à la main."
+        not_configured: "Stripe n'est pas configuré : fais la facture à la main."
         not_requested: "Cette demande a déjà une facture, ou elle est close."
         closed: "Cette demande est close."
         invalid_date: "Cette date n'est pas valide."
@@ -222,31 +222,31 @@ fr:
       next: "À faire : créer la facture (depuis la page d'administration, dans Stripe ou à la main), puis activer la formule. Répondre à cet e-mail pour lui écrire."
       open_admin: "Ouvrir les demandes de facture"
     request_confirmation:
-      subject: "Votre demande de facture pour Semisto Designer"
-      body: "Nous avons bien reçu votre demande de facture au nom de « %{organization} ». En voici le récapitulatif :"
+      subject: "Ta demande de facture pour Semisto Designer"
+      body: "Nous avons bien reçu ta demande de facture au nom de « %{organization} ». En voici le récapitulatif :"
       invoice: "La facture sera envoyée à %{email}, payable par virement sous 30 jours."
-      purchase_order: " Elle mentionnera votre bon de commande n° %{number}."
-      activation: "En général, nous activons votre formule dès l'envoi de la facture, sans attendre le paiement : nous vous prévenons par e-mail."
+      purchase_order: " Elle mentionnera ton bon de commande n° %{number}."
+      activation: "En général, nous activons ta formule dès l'envoi de la facture, sans attendre le paiement : nous te prévenons par e-mail."
       follow: "Suivre ma demande"
     plan_activated:
-      subject: "Votre formule %{plan} est activée"
-      body: "Bonne nouvelle : votre formule %{plan} est activée du %{start} au %{end}, réglée sur facture."
-      payment: "Vous pouvez travailler dès maintenant, le paiement suit par virement."
+      subject: "Ta formule %{plan} est activée"
+      body: "Bonne nouvelle : ta formule %{plan} est activée du %{start} au %{end}, réglée sur facture."
+      payment: "Tu peux travailler dès maintenant, le paiement suit par virement."
       cta: "Ouvrir mes cartes"
     grant_reminder:
       cta: "Demander une nouvelle facture"
-      renew: "Pour continuer une année de plus, demandez une nouvelle facture : il ne faut que quelques minutes, et votre numéro de bon de commande peut y figurer."
-      no_auto: "Rien n'est facturé automatiquement : vous gardez la main."
+      renew: "Pour continuer une année de plus, demande une nouvelle facture : il ne faut que quelques minutes, et ton numéro de bon de commande peut y figurer."
+      no_auto: "Rien n'est facturé automatiquement : tu gardes la main."
       d30:
-        subject: "Votre formule Semisto Designer se termine le %{date}"
-        body: "Votre formule %{plan}, réglée sur facture, est valable jusqu'au %{date}, soit dans un mois."
+        subject: "Ta formule Semisto Designer se termine le %{date}"
+        body: "Ta formule %{plan}, réglée sur facture, est valable jusqu'au %{date}, soit dans un mois."
       d7:
-        subject: "Plus que 7 jours : votre formule Semisto Designer se termine le %{date}"
-        body: "Votre formule %{plan}, réglée sur facture, se termine le %{date}, dans une semaine."
+        subject: "Plus que 7 jours : ta formule Semisto Designer se termine le %{date}"
+        body: "Ta formule %{plan}, réglée sur facture, se termine le %{date}, dans une semaine."
       expired:
-        subject: "Votre formule Semisto Designer est arrivée à échéance"
-        body: "Votre formule %{plan}, réglée sur facture, a pris fin le %{date}."
+        subject: "Ta formule Semisto Designer est arrivée à échéance"
+        body: "Ta formule %{plan}, réglée sur facture, a pris fin le %{date}."
         read_only:
-          one: "%{count} de vos cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Demandez une nouvelle facture pour la modifier à nouveau."
-          other: "%{count} de vos cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Demandez une nouvelle facture pour les modifier à nouveau."
-        free_ok: "Votre première carte reste entièrement modifiable, comme avant."
+          one: "%{count} de tes cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Demande une nouvelle facture pour la modifier à nouveau."
+          other: "%{count} de tes cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Demande une nouvelle facture pour les modifier à nouveau."
+        free_ok: "Ta première carte reste entièrement modifiable, comme avant."

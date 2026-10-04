@@ -51,7 +51,7 @@ catalogue = [
   tile.("sols", "Carte des sols", "terrain", "INRA.CARTE.SOLS", style: "CARTE DES SOLS",
         opacity: 0.7, position: 80, order: 5, min_zoom: 6, max_zoom: 16,
         attribution: "#{ign}, INRAE – Gis Sol",
-        description: "Les grands types de sol (INRAE, Gis Sol) : une carte à petite échelle, à confirmer sur votre terrain."),
+        description: "Les grands types de sol (INRAE, Gis Sol) : une carte à petite échelle, à confirmer sur ton terrain."),
   tile.("foret", "Forêts", "terrain", "LANDCOVER.FORESTINVENTORY.V2",
         opacity: 0.6, position: 90, order: 6, min_zoom: 6, max_zoom: 16,
         description: "Les forêts et leurs essences dominantes (BD Forêt v2 de l'IGN)."),

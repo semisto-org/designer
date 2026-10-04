@@ -90,7 +90,7 @@ class Maps::ServiceRequestsControllerTest < ActionDispatch::IntegrationTest
       end
     end
     assert_response :unprocessable_entity
-    assert_includes response.parsed_body["message"], "acceptez que Semisto consulte votre carte"
+    assert_includes response.parsed_body["message"], "accepte que Semisto consulte ta carte"
   end
 
   test "an unknown kind or a payload that does not fit is refused" do
