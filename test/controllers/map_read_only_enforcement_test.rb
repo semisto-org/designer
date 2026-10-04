@@ -20,7 +20,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
       assert_equal "read_only_by_plan", body["code"]
       assert_equal "/billing", body["upsellUrl"]
       assert_includes body["message"], "lecture seule"
-      assert_includes body["message"], "renouvelez votre forfait"
+      assert_includes body["message"], "Rien n'est supprimé"
       assert_equal 0, @locked.features.count
     end
   end
