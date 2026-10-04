@@ -6,18 +6,19 @@
 #
 # A rule is a hash:
 #   key        stable id, also the i18n key (drawing.alerts.rules.<key>)
-#   check      max_area | min_boundary_distance | max_count
+#   check      max_area | max_total_area | min_boundary_distance | max_count
 #   kinds      element kinds the rule applies to
-#   max_m2     (max_area) area above which the alert is raised
+#   max_m2     (max_area, max_total_area) area above which the alert is
+#              raised, per element or summed over all of them
 #   until_m2   (max_area, optional) area above which a stricter rule takes over
 #   min_m      (min_boundary_distance) distance to the terrain limits
 #   max        (max_count) number of elements above which the alert is raised
 #   severity   info | warning
-#   source     { label, url }
+#   source     { label, url } (label names the article or rubric)
 # Checks this version does not know are skipped, so a region can list rules
 # ahead of the code (e.g. flood-prone areas once the hazard layer is wired).
 class RegulatoryAlerts
-  CHECKS = %w[max_area min_boundary_distance max_count].freeze
+  CHECKS = %w[max_area max_total_area min_boundary_distance max_count].freeze
   SEVERITIES = %w[info warning].freeze
   STATUSES = %w[active draft].freeze
 
@@ -50,6 +51,7 @@ class RegulatoryAlerts
     def evaluate(rule)
       case rule["check"]
       when "max_area" then max_area(rule)
+      when "max_total_area" then max_total_area(rule)
       when "min_boundary_distance" then min_boundary_distance(rule)
       when "max_count" then max_count(rule)
       end
@@ -69,6 +71,16 @@ class RegulatoryAlerts
         .map do |id, kind, value|
           build(rule, [ id ], kind, area: square_meters(value), max: square_meters(max))
         end
+    end
+
+    # All the elements together (e.g. greenhouses that « totalisent » 20 m²).
+    def max_total_area(rule)
+      max = rule["max_m2"].to_f
+      rows = features(rule).where("ST_Dimension(map_features.geometry) = 2").order(:id)
+        .pluck(:id, :kind, Arel.sql("ST_Area(map_features.geometry::geography)"))
+      total = rows.sum(&:last)
+      return [] if total <= max
+      [ build(rule, rows.map(&:first), rows.first[1], count: rows.size, area: square_meters(total), max: square_meters(max)) ]
     end
 
     def min_boundary_distance(rule)

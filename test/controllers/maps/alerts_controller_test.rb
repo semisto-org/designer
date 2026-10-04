@@ -8,10 +8,10 @@ class Maps::AlertsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     body = response.parsed_body
-    assert_equal 5, body["rulesCount"]
+    assert_equal 10, body["rulesCount"]
     assert body["boundary"]
     alert = body["alerts"].sole # the fixture pond is about 310 m²
-    assert_equal "pond_max_area", alert["rule"]
+    assert_equal "pond_max_area_absolute", alert["rule"]
     assert_equal [ map_features(:pond).id ], alert["featureIds"]
     assert_equal "warning", alert["severity"]
     assert_match(/\AMare de 3\d\d m²\z/, alert["title"])

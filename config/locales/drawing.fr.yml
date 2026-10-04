@@ -295,25 +295,46 @@ fr:
       rules:
         pond_max_area:
           title: "Mare de %{area}"
-          explanation: "Une mare n'est dispensée de permis d'urbanisme que si elle ne dépasse pas %{max}. Au-delà, un permis d'impact limité est en général requis."
+          explanation: "Une mare n'est dispensée de permis que jusqu'à %{max} dans un jardin. Jusqu'à 300 m², la dispense vaut seulement hors zone d'habitat du plan de secteur et hors site naturel protégé."
+        pond_max_area_absolute:
+          title: "Mare de %{area}"
+          explanation: "Au-delà de %{max}, une mare ou un étang demande toujours un permis (d'impact limité)."
         pond_boundary_distance:
           title: "Mare à %{distance} de la limite"
           explanation: "Pour être dispensée de permis, une mare doit se trouver à %{min} au moins des limites de la propriété."
         pond_single:
           title: "%{count} mares sur le terrain"
-          explanation: "La dispense de permis ne vaut que pour une seule mare par propriété."
-        small_building_max_area:
+          explanation: "Dans un jardin, la dispense ne vaut que pour une seule mare par propriété. Hors zone d'habitat du plan de secteur, jusqu'à 10 mares (2 par hectare en moyenne) peuvent en être dispensées."
+        pond_max_count:
+          title: "%{count} mares sur le terrain"
+          explanation: "Au-delà de %{max} mares par propriété, un permis est toujours demandé."
+        shed_max_area:
           title: "%{kind_name} de %{area}"
-          explanation: "Une serre ou un abri de jardin n'est dispensé de permis que jusqu'à %{max}."
-        construction_boundary_distance:
+          explanation: "Un abri de jardin ou une remise n'est dispensé de permis que jusqu'à %{max}, avec 2,50 m sous la gouttière et 3,50 m au faîte au plus."
+        shed_boundary_distance:
           title: "%{kind_name} à %{distance} de la limite"
-          explanation: "Près des limites, une construction peut demander un permis ou l'accord du voisin. Les distances exactes dépendent de la construction."
+          explanation: "Pour être dispensé de permis, un abri de jardin doit se trouver à %{min} au moins des limites mitoyennes."
+        shed_single:
+          title: "%{count} abris de jardin"
+          explanation: "La dispense de permis ne vaut que pour un seul abri ou une seule remise par propriété."
+        greenhouse_total_area:
+          title: "%{count} serre(s), %{area} au total"
+          explanation: "Les serres de jardin sont dispensées de permis tant qu'elles totalisent %{max} au plus."
+        animal_shelter_boundary_distance:
+          title: "%{kind_name} à %{distance} de la limite"
+          explanation: "Un abri pour animaux est dispensé de permis à %{min} au moins des limites, à 20 m au moins de toute habitation voisine, et pour 20 m² d'abris au total."
         fr_shed_declaration:
           title: "%{kind_name} de %{area}"
-          explanation: "Au-delà de %{max}, un abri de jardin demande une déclaration préalable de travaux en mairie."
+          explanation: "Au-delà de %{max}, un abri de jardin demande une déclaration préalable de travaux en mairie (dès le premier m² dans un site protégé)."
         fr_shed_permit:
           title: "%{kind_name} de %{area}"
-          explanation: "Au-delà de %{max}, un permis de construire est en général demandé (40 m² en zone urbaine d'un PLU : renseigne-toi en mairie)."
+          explanation: "Au-delà de %{max}, un abri de jardin isolé demande un permis de construire. Le PLU de ta commune peut ajouter ses propres règles."
+        fr_greenhouse_permit:
+          title: "%{kind_name} de %{area}"
+          explanation: "Au-delà de %{max}, une serre demande un permis de construire. En dessous, tout dépend de sa hauteur : libre jusqu'à 1,80 m, déclaration préalable jusqu'à 4 m."
+        fr_pond_water_law:
+          title: "Plan d'eau de %{area}"
+          explanation: "Au-delà de %{max} (0,1 ha), un plan d'eau doit être déclaré au titre de la loi sur l'eau, auprès de la préfecture."
 
     export:
       button: "Exporter"
