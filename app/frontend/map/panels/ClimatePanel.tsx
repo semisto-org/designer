@@ -10,7 +10,7 @@ import { Upsell } from '@/components/climate/Upsell'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import type { ClimateReport, ForecastReport, Scenario } from '@/types/climate_finance'
+import type { ClimateReport, ForecastReport, ProjectionData, Scenario } from '@/types/climate_finance'
 
 /**
  * "Climat": today's hardiness zone and normals, the projected climate in
@@ -81,6 +81,10 @@ export default function ClimatePanel() {
   const projections = report.projections
   const plants = report.plants
   const locked = 'locked' in projections || 'locked' in plants
+  // The references of the scenario on screen, for both horizons.
+  const shownProjections = 'available' in projections && projections.available
+    ? Object.values(projections.horizons).map((byScenario) => byScenario[scenario]).filter((p): p is ProjectionData => p?.available === true)
+    : []
 
   return (
     <div className="space-y-6">
@@ -94,7 +98,7 @@ export default function ClimatePanel() {
       )}
       {'available' in plants && plants.available && <PlantChecks block={plants} scenario={scenario} />}
       <Forecast report={report.capabilities.forecast ? forecast : null} loading={forecastLoading} />
-      <Sources sources={report.sources} note={current.note} />
+      <Sources sources={report.sources} note={current.note} current={current} projections={shownProjections} />
     </div>
   )
 }

@@ -15,7 +15,7 @@ Le climat dépend de l'endroit : dessine d'abord le contour du terrain. Sans con
 - La **Région climatique** : touche-la pour lire sa description (l'Ardenne, par exemple, est plus froide et plus arrosée).
 - Les normales : **Température moyenne**, **Pluie par an**, moyennes en été et en hiver, **Jours de gel**, **Saison sans gel**, et les dates habituelles des **Dernières gelées** et des **Premières gelées**.
 
-Ce sont les normales 1991-2020, arrondies par grande région naturelle : un ordre de grandeur, pas une mesure de ta parcelle. Un fond de vallée gèle souvent plus tard qu'un coteau voisin ; la vue 3D du [relief](/help/lire-le-relief-et-l-eau) montre où l'air froid stagne.
+Ce sont les normales 1991-2020, arrondies par grande région climatique : un ordre de grandeur, pas une mesure de ta parcelle. Un fond de vallée gèle souvent plus tard qu'un coteau voisin ; la vue 3D du [relief](/help/lire-le-relief-et-l-eau) montre où l'air froid stagne.
 
 ## Le climat qui vient
 
@@ -37,7 +37,9 @@ La section **Prévisions météo** est prévue pour afficher les sept prochains 
 
 ## D'où viennent ces chiffres
 
-Ouvre **Sources et méthode** au bas du panneau. Les normales viennent du service météo de ton pays : l'Institut royal météorologique (IRM) en Wallonie, Météo-France en France, MeteoLux au Luxembourg. Les projections ajoutent aux normales les écarts publiés pour chaque pays (CORDEX.be, DRIAS, le LIST), par EURO-CORDEX et par le GIEC. Hors de ces trois régions, le panneau Climat n'a pas encore de données. Ce sont des tendances, pas une prévision pour ta parcelle.
+Ouvre **Sources et méthode** au bas du panneau. Les normales sont calculées à partir de quelques stations météo de ta région climatique : celles de l'Institut royal météorologique (IRM) en Wallonie, de Météo-France en France, de MeteoLux et des administrations luxembourgeoises au Luxembourg. Le panneau liste ces stations et, pour chaque valeur, d'où elle vient : les chiffres des stations et la façon dont ils ont été arrondis.
+
+Les projections ajoutent aux normales les écarts calculés par l'ensemble des modèles climatiques CMIP6 pour le pays (données de la Banque mondiale), recoupés avec les projections nationales : CORDEX.be et le KNMI en Belgique, DRIAS et la trajectoire de référence (TRACC) en France, le LIST au Luxembourg. Là aussi, chaque écart a sa référence. Hors de ces trois régions, le panneau Climat n'a pas encore de données. Ce sont des tendances, pas une prévision pour ta parcelle.
 
 ## Pour aller plus loin
 

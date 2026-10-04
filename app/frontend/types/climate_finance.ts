@@ -25,7 +25,24 @@ export type ClimateSource = {
   publisher: string
   year: number | null
   url: string | null
+  licence?: string | null
 }
+
+/** Where one value comes from: its sources and the station values with the method. */
+export type ValueReference = {
+  sources: { key: string; publisher: string; url: string | null }[]
+  detail: string | null
+}
+
+export type ClimateStation = {
+  name: string
+  id: string | null
+  altitudeM: number | null
+  source: string
+}
+
+export type NormalsField = Exclude<keyof Normals, 'frostFreeDays'>
+export type DeltaField = keyof ProjectionData['deltas']
 
 export type Normals = {
   meanTempC: number | null
@@ -47,6 +64,8 @@ export type CurrentClimate = {
   referencePeriod: string | null
   status: string
   note: string | null
+  stations: ClimateStation[]
+  references: Partial<Record<NormalsField, ValueReference>>
   sources: ClimateSource[]
 }
 
@@ -71,6 +90,7 @@ export type ProjectionData = {
     winterPrecipPct: Range3
   }
   status: string
+  references: Partial<Record<DeltaField, string>>
   sources: ClimateSource[]
 }
 

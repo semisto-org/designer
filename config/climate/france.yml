@@ -2,16 +2,22 @@
 # regions.settings["climate"] by db/seeds/40_climate.rb and read by
 # Providers::Climate::Static.
 #
-# Everything here is INDICATIVE: values are rounded by Semisto from the
-# published syntheses listed under `sources`, to give a coarse order of
-# magnitude per broad climate area, for low and middle altitudes. They are
-# not station data and not a forecast for a given parcel. Outlines are
-# deliberately coarse (a few vertices); the first sub-area containing the
-# point wins (mountains first), the `default: true` one covers the rest.
+# Everything here is INDICATIVE: one rounded value per broad climate area
+# (low and middle altitudes), not a measurement for a given parcel. Each
+# value is computed from the stations listed under `stations` and
+# documented under `references` (sources, station values, method), so that
+# anyone can check it. Outlines are deliberately coarse (a few vertices);
+# the first sub-area containing the point wins, the `default: true` one
+# covers the rest.
 #
-# Units: °C, mm, days; dates as "MM-DD" (median date, indicative).
-# extreme_min_c = average annual extreme minimum temperature (coldest
-# night of the year, averaged), the basis of the USDA hardiness zone.
+# Units: °C, mm, days. Rounding: temperatures to 0.5 °C, rainfall to 50
+# mm, frost days to 5. frost_days = days whose minimum is below 0 °C
+# (Météo-France counts "at or below", about 2 days more a year).
+# last_spring_frost / first_autumn_frost = "MM-DD": median dates where we
+# computed them from daily data, mean dates where the publisher gives
+# means (IRM), 0 to 4 days apart. extreme_min_c = average annual extreme
+# minimum temperature (coldest night of the year, averaged), the basis of
+# the USDA hardiness zone.
 version: 1
 status: indicative
 reference_period: "1991-2020"
@@ -20,41 +26,57 @@ providers:
   projections: static
   forecast: open_meteo
 note: >-
-  Valeurs arrondies par Semisto à partir des synthèses citées : un ordre de
-  grandeur par grande zone climatique, pour les altitudes basses et moyennes,
-  pas une mesure pour votre parcelle. Les limites des zones sont
-  approximatives, et en montagne l'altitude compte plus que la zone.
+  Valeurs arrondies par Semisto à partir des stations de Météo-France (le
+  détail est dans les sources) : un ordre de grandeur par grande zone
+  climatique, pour les altitudes basses et moyennes, pas une mesure pour ta
+  parcelle. Les limites des zones sont approximatives. En montagne,
+  l'altitude compte plus que la zone.
 
 sources:
-  - key: meteofrance_normals
-    title: "Normales climatologiques 1991-2020 (fiches par station et cartes de France)"
+  - key: meteofrance_fiches
+    title: "Fiches climatologiques par station : statistiques 1991-2020"
     publisher: "Météo-France"
-    year: 2021
-    url: "https://meteofrance.com"
+    year: 2025
+    url: "https://donneespubliques.meteofrance.fr/?fond=produit&id_produit=117&id_rubrique=39"
+    licence: "Licence Ouverte 2.0 pour les données ; fiches citées, non redistribuées"
     used_for: normals
+  - key: meteofrance_daily
+    title: "Données climatologiques de base quotidiennes (températures minimales et maximales, précipitations), 1950-2024"
+    publisher: "Météo-France (meteo.data.gouv.fr)"
+    year: 2024
+    url: "https://www.data.gouv.fr/fr/datasets/donnees-climatologiques-de-base-quotidiennes/"
+    licence: "Licence Ouverte 2.0"
+    used_for: normals
+  - key: cckp_cmip6
+    title: "Climate Change Knowledge Portal : projections CMIP6 0,25° corrigées, agrégats par pays, ensemble de tous les modèles (percentiles 10, 50 et 90)"
+    publisher: "Banque mondiale"
+    year: 2024
+    url: "https://climateknowledgeportal.worldbank.org"
+    licence: "CC BY 4.0"
+    used_for: projections
   - key: drias_2020
-    title: "DRIAS 2020 : projections climatiques régionalisées pour la France (EURO-CORDEX corrigées)"
-    publisher: "Météo-France, IPSL, CERFACS (portail DRIAS)"
+    title: "Les nouvelles projections climatiques de référence DRIAS 2020 pour la métropole"
+    publisher: "Météo-France, IPSL, CERFACS"
     year: 2020
-    url: "https://www.drias-climat.fr"
+    url: "https://www.drias-climat.fr/document/rapport-DRIAS-2020-red3-2.pdf"
     used_for: projections
   - key: tracc
-    title: "Trajectoire de réchauffement de référence pour l'adaptation au changement climatique (TRACC) : +2 °C en 2030, +2,7 °C en 2050, +4 °C en 2100 en France métropolitaine, par rapport à l'ère préindustrielle"
+    title: "Trajectoire de réchauffement de référence pour l'adaptation au changement climatique (TRACC) : +2 °C en 2030, +2,7 °C en 2050, +4 °C en 2100 en France hexagonale, par rapport au début du XXe siècle"
     publisher: "Ministère de la Transition écologique"
-    year: 2024
-    url: null
+    year: 2026
+    url: "https://www.ecologie.gouv.fr/trajectoire-rechauffement-reference-ladaptation-au-changement-climatique-tracc-0"
     used_for: projections
-  - key: euro_cordex
-    title: "EURO-CORDEX: new high-resolution climate change projections for European impact research (Jacob et al., Regional Environmental Change 14, p. 563-578)"
-    publisher: "EURO-CORDEX"
-    year: 2014
-    url: "https://doi.org/10.1007/s10113-013-0499-2"
+  - key: tracc_meteofrance
+    title: "Les futurs du climat en France : simulations du jeu TRACC 2023 (présentation à l'AFGC, 10 avril 2025)"
+    publisher: "Météo-France"
+    year: 2025
+    url: "https://www.afgc.asso.fr/app/uploads/2025/07/Meteo-France_presentation_AFGC_20250410_v3.pdf"
     used_for: projections
   - key: ipcc_ar6
-    title: "Sixième rapport d'évaluation, groupe I : Atlas interactif (régions Europe de l'Ouest et centrale, Méditerranée) et chapitre 11 (extrêmes)"
+    title: "Sixième rapport d'évaluation, groupe I : résumé pour décideurs (tableau SPM.1) et chapitre 11, § 11.3.5 (les nuits les plus froides se réchauffent plus vite que la moyenne)"
     publisher: "GIEC (IPCC)"
     year: 2021
-    url: "https://interactive-atlas.ipcc.ch"
+    url: "https://www.ipcc.ch/report/ar6/wg1/"
     used_for: projections
   - key: usda_zones
     title: "Plant Hardiness Zone Map : définition des zones de rusticité (minimum annuel moyen, par tranches de 10 °F)"
@@ -74,14 +96,46 @@ sub_areas:
     name: "Alpes et Jura"
     description: "Massifs alpins et jurassiens : un climat de montagne, froid et enneigé. Les valeurs valent pour les vallées et versants vers 800-1 200 m ; on perd environ 0,6 °C tous les 100 m de montée."
     normals:
-      mean_temp_c: 7.0
-      summer_mean_temp_c: 15.0
-      winter_mean_temp_c: -0.5
-      annual_precip_mm: 1300
-      frost_days: 120
-      extreme_min_c: -18.0
-      last_spring_frost: "05-20"
-      first_autumn_frost: "10-01"
+      mean_temp_c: 9.0
+      summer_mean_temp_c: 17.0
+      winter_mean_temp_c: 0.5
+      annual_precip_mm: 1150
+      frost_days: 130
+      extreme_min_c: -15.5
+      last_spring_frost: "05-05"
+      first_autumn_frost: "10-05"
+    stations:
+      - { name: "Bourg-Saint-Maurice", id: "73054001", altitude_m: 865, source: meteofrance_fiches }
+      - { name: "Embrun", id: "05046001", altitude_m: 873, source: meteofrance_fiches }
+      - { name: "Barcelonnette", id: "04019001", altitude_m: 1155, source: meteofrance_fiches }
+      - { name: "Chamonix", id: "74056001", altitude_m: 1042, source: meteofrance_daily }
+      - { name: "Pontarlier", id: "25462001", altitude_m: 808, source: meteofrance_fiches }
+      - { name: "Les Rousses", id: "39470001", altitude_m: 1110, source: meteofrance_daily }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Moyenne de 6 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Bourg-Saint-Maurice 10,5 ; Embrun 11,1 ; Barcelonnette 8,2 ; Chamonix 7,8 ; Pontarlier 8,8 ; Les Rousses 7,1 (pour Chamonix, Les Rousses, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Moyenne de juin, juillet et août, 6 stations, arrondie au 0,5 °C : Bourg-Saint-Maurice 19,0 ; Embrun 19,7 ; Barcelonnette 16,5 ; Chamonix 16,2 ; Pontarlier 16,7 ; Les Rousses 15,0 (pour Chamonix, Les Rousses, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Moyenne de décembre, janvier et février, 6 stations, arrondie au 0,5 °C : Bourg-Saint-Maurice 1,8 ; Embrun 2,9 ; Barcelonnette -0,2 ; Chamonix -1,0 ; Pontarlier 0,9 ; Les Rousses -0,6 (pour Chamonix, Les Rousses, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      annual_precip_mm:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Cumul annuel moyen 1991-2020, 6 stations, arrondi à 50 mm : Bourg-Saint-Maurice 976 mm ; Embrun 733 mm ; Barcelonnette 694 mm ; Chamonix 1268 mm ; Pontarlier 1464 mm ; Les Rousses 1887 mm (pour Chamonix, Les Rousses, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      frost_days:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 6 stations, arrondi à 5 : Bourg-Saint-Maurice 98,7 ; Embrun 92,7 ; Barcelonnette 169,9 ; Chamonix 150,0 ; Pontarlier 110,1 ; Les Rousses 147,4 (pour Chamonix, Les Rousses, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 6 stations arrondie au 0,5 °C : Bourg-Saint-Maurice -12,5 ; Embrun -11,1 ; Barcelonnette -18,5 ; Chamonix -17,3 ; Pontarlier -17,3 ; Les Rousses -16,6."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Bourg-Saint-Maurice 15/04 ; Embrun 19/04 ; Barcelonnette 24/05 ; Chamonix 17/05 ; Pontarlier 10/05 ; Les Rousses 16/05."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Bourg-Saint-Maurice 25/10 ; Embrun 18/10 ; Barcelonnette 16/09 ; Chamonix 03/10 ; Pontarlier 08/10 ; Les Rousses 03/10."
     geometry:
       type: MultiPolygon
       coordinates:
@@ -111,14 +165,45 @@ sub_areas:
     name: "Pyrénées"
     description: "La chaîne des Pyrénées : un climat de montagne, plus doux et plus ensoleillé à l'est. Les valeurs valent pour les vallées et versants vers 800-1 000 m."
     normals:
-      mean_temp_c: 8.0
-      summer_mean_temp_c: 15.5
-      winter_mean_temp_c: 1.5
-      annual_precip_mm: 1200
-      frost_days: 100
-      extreme_min_c: -15.0
-      last_spring_frost: "05-15"
-      first_autumn_frost: "10-05"
+      mean_temp_c: 10.0
+      summer_mean_temp_c: 17.0
+      winter_mean_temp_c: 3.0
+      annual_precip_mm: 1350
+      frost_days: 95
+      extreme_min_c: -11.0
+      last_spring_frost: "05-01"
+      first_autumn_frost: "10-25"
+    stations:
+      - { name: "Lescun", id: "64336004", altitude_m: 907, source: meteofrance_daily }
+      - { name: "Génos", id: "65195001", altitude_m: 1250, source: meteofrance_fiches }
+      - { name: "Aulus-les-Bains", id: "09029001", altitude_m: 733, source: meteofrance_daily }
+      - { name: "Vicdessos", id: "09334004", altitude_m: 750, source: meteofrance_fiches }
+      - { name: "Sainte-Léocadie", id: "66181001", altitude_m: 1320, source: meteofrance_daily }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Moyenne de 5 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Lescun 10,4 ; Génos 7,9 ; Aulus-les-Bains 10,3 ; Vicdessos 11,1 ; Sainte-Léocadie 10,1 (pour Lescun, Aulus-les-Bains, Sainte-Léocadie, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Moyenne de juin, juillet et août, 5 stations, arrondie au 0,5 °C : Lescun 16,9 ; Génos 15,3 ; Aulus-les-Bains 17,6 ; Vicdessos 18,4 ; Sainte-Léocadie 17,8 (pour Lescun, Aulus-les-Bains, Sainte-Léocadie, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Moyenne de décembre, janvier et février, 5 stations, arrondie au 0,5 °C : Lescun 4,2 ; Génos 0,9 ; Aulus-les-Bains 3,1 ; Vicdessos 4,1 ; Sainte-Léocadie 3,2 (pour Lescun, Aulus-les-Bains, Sainte-Léocadie, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      annual_precip_mm:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Cumul annuel moyen 1991-2020, 5 stations, arrondi à 50 mm : Lescun 1789 mm ; Génos 1520 mm ; Aulus-les-Bains 1679 mm ; Vicdessos 1176 mm ; Sainte-Léocadie 559 mm (pour Lescun, Aulus-les-Bains, Sainte-Léocadie, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      frost_days:
+        sources: [meteofrance_fiches, meteofrance_daily]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 5 stations, arrondi à 5 : Lescun 68,9 ; Génos 118,0 ; Aulus-les-Bains 112,9 ; Vicdessos 87,0 ; Sainte-Léocadie 91,3 (pour Lescun, Aulus-les-Bains, Sainte-Léocadie, calculé sur les données quotidiennes 1991-2020 : leur fiche est encore 1981-2010)."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 5 stations arrondie au 0,5 °C : Lescun -10,2 ; Génos -12,2 ; Aulus-les-Bains -12,6 ; Vicdessos -9,5 ; Sainte-Léocadie -9,8."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Lescun 19/04 ; Génos 16/05 ; Aulus-les-Bains 02/05 ; Vicdessos 23/04 ; Sainte-Léocadie 30/04."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Lescun 02/11 ; Génos 13/10 ; Aulus-les-Bains 15/10 ; Vicdessos 29/10 ; Sainte-Léocadie 29/10."
     geometry:
       type: Polygon
       coordinates:
@@ -135,14 +220,45 @@ sub_areas:
     name: "Massif central"
     description: "Auvergne, Limousin oriental, Cévennes et Aubrac : plateaux et volcans souvent au-dessus de 600 m, aux hivers longs. La Limagne de Clermont et les vallées basses sont nettement plus douces."
     normals:
-      mean_temp_c: 9.0
-      summer_mean_temp_c: 16.0
-      winter_mean_temp_c: 2.0
-      annual_precip_mm: 1000
-      frost_days: 85
-      extreme_min_c: -14.0
-      last_spring_frost: "05-05"
-      first_autumn_frost: "10-10"
+      mean_temp_c: 10.0
+      summer_mean_temp_c: 18.0
+      winter_mean_temp_c: 3.0
+      annual_precip_mm: 850
+      frost_days: 80
+      extreme_min_c: -11.5
+      last_spring_frost: "04-25"
+      first_autumn_frost: "10-20"
+    stations:
+      - { name: "Le Puy-Loudes", id: "43062001", altitude_m: 833, source: meteofrance_fiches }
+      - { name: "Aurillac", id: "15014004", altitude_m: 632, source: meteofrance_fiches }
+      - { name: "Mende", id: "48095004", altitude_m: 710, source: meteofrance_fiches }
+      - { name: "Saint-Flour", id: "15187006", altitude_m: 909, source: meteofrance_fiches }
+      - { name: "Millau", id: "12145001", altitude_m: 712, source: meteofrance_fiches }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de 5 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Le Puy-Loudes 9,1 ; Aurillac 10,5 ; Mende 10,7 ; Saint-Flour 8,8 ; Millau 11,2."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de juin, juillet et août, 5 stations, arrondie au 0,5 °C : Le Puy-Loudes 16,9 ; Aurillac 17,8 ; Mende 18,5 ; Saint-Flour 16,6 ; Millau 19,2."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de décembre, janvier et février, 5 stations, arrondie au 0,5 °C : Le Puy-Loudes 1,8 ; Aurillac 3,6 ; Mende 3,2 ; Saint-Flour 1,6 ; Millau 3,9."
+      annual_precip_mm:
+        sources: [meteofrance_fiches]
+        detail: "Cumul annuel moyen 1991-2020, 5 stations, arrondi à 50 mm : Le Puy-Loudes 682 mm ; Aurillac 1135 mm ; Mende 846 mm ; Saint-Flour 800 mm ; Millau 713 mm."
+      frost_days:
+        sources: [meteofrance_fiches]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 5 stations, arrondi à 5 : Le Puy-Loudes 104,1 ; Aurillac 70,6 ; Mende 82,5 ; Saint-Flour 98,3 ; Millau 48,1."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 5 stations arrondie au 0,5 °C : Le Puy-Loudes -14,2 ; Aurillac -11,7 ; Mende -11,2 ; Saint-Flour -12,6 ; Millau -8,5."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Le Puy-Loudes 13/05 ; Aurillac 28/04 ; Mende 21/04 ; Saint-Flour 01/05 ; Millau 06/04."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Le Puy-Loudes 13/10 ; Aurillac 19/10 ; Mende 20/10 ; Saint-Flour 15/10 ; Millau 07/11."
     geometry:
       type: Polygon
       coordinates:
@@ -164,14 +280,45 @@ sub_areas:
     name: "Pourtour méditerranéen et Corse"
     description: "Provence, Languedoc, Roussillon, Côte d'Azur et littoral corse : étés chauds et secs, hivers doux, pluies d'automne parfois violentes. L'arrière-pays et la montagne corse sont plus froids."
     normals:
-      mean_temp_c: 15.5
+      mean_temp_c: 16.0
       summer_mean_temp_c: 23.5
-      winter_mean_temp_c: 8.5
+      winter_mean_temp_c: 9.0
       annual_precip_mm: 650
       frost_days: 10
-      extreme_min_c: -3.5
+      extreme_min_c: -3.0
       last_spring_frost: "02-20"
-      first_autumn_frost: "12-15"
+      first_autumn_frost: "12-10"
+    stations:
+      - { name: "Marseille-Marignane", id: "13054001", altitude_m: 9, source: meteofrance_fiches }
+      - { name: "Montpellier-Aéroport", id: "34154001", altitude_m: 1, source: meteofrance_fiches }
+      - { name: "Perpignan", id: "66136001", altitude_m: 42, source: meteofrance_fiches }
+      - { name: "Nice", id: "06088001", altitude_m: 2, source: meteofrance_fiches }
+      - { name: "Ajaccio", id: "20004002", altitude_m: 5, source: meteofrance_fiches }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de 5 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Marseille-Marignane 15,9 ; Montpellier-Aéroport 15,5 ; Perpignan 16,0 ; Nice 16,3 ; Ajaccio 15,8."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de juin, juillet et août, 5 stations, arrondie au 0,5 °C : Marseille-Marignane 24,2 ; Montpellier-Aéroport 23,4 ; Perpignan 23,7 ; Nice 23,3 ; Ajaccio 22,5."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de décembre, janvier et février, 5 stations, arrondie au 0,5 °C : Marseille-Marignane 8,1 ; Montpellier-Aéroport 8,1 ; Perpignan 9,1 ; Nice 9,9 ; Ajaccio 9,7."
+      annual_precip_mm:
+        sources: [meteofrance_fiches]
+        detail: "Cumul annuel moyen 1991-2020, 5 stations, arrondi à 50 mm : Marseille-Marignane 532 mm ; Montpellier-Aéroport 639 mm ; Perpignan 578 mm ; Nice 791 mm ; Ajaccio 635 mm."
+      frost_days:
+        sources: [meteofrance_fiches]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 5 stations, arrondi à 5 : Marseille-Marignane 20,3 ; Montpellier-Aéroport 21,4 ; Perpignan 9,1 ; Nice 1,1 ; Ajaccio 7,2."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 5 stations arrondie au 0,5 °C : Marseille-Marignane -4,4 ; Montpellier-Aéroport -5,1 ; Perpignan -3,4 ; Nice 0,4 ; Ajaccio -2,3."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Marseille-Marignane 21/02 ; Montpellier-Aéroport 19/02 ; Perpignan 15/02 ; Nice aucune gelée la plupart des années ; Ajaccio 21/02 ; date retenue sur les 4 stations où il gèle presque chaque année (Nice exclue)."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Marseille-Marignane 04/12 ; Montpellier-Aéroport 29/11 ; Perpignan 10/12 ; Nice aucune gelée la plupart des années ; Ajaccio 26/12 ; date retenue sur les 4 stations où il gèle presque chaque année (Nice exclue)."
     geometry:
       type: MultiPolygon
       coordinates:
@@ -205,13 +352,43 @@ sub_areas:
     description: "Bretagne, Basse-Normandie, Pays de la Loire et littoral charentais : hivers très doux, étés frais, pluies bien réparties. Le plus doux de tous près des côtes."
     normals:
       mean_temp_c: 12.0
-      summer_mean_temp_c: 17.5
-      winter_mean_temp_c: 6.0
+      summer_mean_temp_c: 18.0
+      winter_mean_temp_c: 6.5
       annual_precip_mm: 850
-      frost_days: 20
-      extreme_min_c: -6.5
+      frost_days: 25
+      extreme_min_c: -6.0
       last_spring_frost: "03-25"
       first_autumn_frost: "11-20"
+    stations:
+      - { name: "Rennes-Saint-Jacques", id: "35281001", altitude_m: 36, source: meteofrance_fiches }
+      - { name: "Nantes-Bouguenais", id: "44020001", altitude_m: 26, source: meteofrance_fiches }
+      - { name: "Brest-Guipavas", id: "29075001", altitude_m: 92, source: meteofrance_fiches }
+      - { name: "Caen-Carpiquet", id: "14137001", altitude_m: 67, source: meteofrance_fiches }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de 4 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Rennes-Saint-Jacques 12,4 ; Nantes-Bouguenais 12,7 ; Brest-Guipavas 11,7 ; Caen-Carpiquet 11,5."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de juin, juillet et août, 4 stations, arrondie au 0,5 °C : Rennes-Saint-Jacques 18,6 ; Nantes-Bouguenais 19,1 ; Brest-Guipavas 16,5 ; Caen-Carpiquet 17,4."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de décembre, janvier et février, 4 stations, arrondie au 0,5 °C : Rennes-Saint-Jacques 6,5 ; Nantes-Bouguenais 6,6 ; Brest-Guipavas 7,3 ; Caen-Carpiquet 5,9."
+      annual_precip_mm:
+        sources: [meteofrance_fiches]
+        detail: "Cumul annuel moyen 1991-2020, 4 stations, arrondi à 50 mm : Rennes-Saint-Jacques 691 mm ; Nantes-Bouguenais 820 mm ; Brest-Guipavas 1230 mm ; Caen-Carpiquet 740 mm."
+      frost_days:
+        sources: [meteofrance_fiches]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 4 stations, arrondi à 5 : Rennes-Saint-Jacques 30,1 ; Nantes-Bouguenais 29,1 ; Brest-Guipavas 14,4 ; Caen-Carpiquet 28,7."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 4 stations arrondie au 0,5 °C : Rennes-Saint-Jacques -6,3 ; Nantes-Bouguenais -6,0 ; Brest-Guipavas -4,1 ; Caen-Carpiquet -6,7."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Rennes-Saint-Jacques 02/04 ; Nantes-Bouguenais 02/04 ; Brest-Guipavas 07/03 ; Caen-Carpiquet 04/04."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Rennes-Saint-Jacques 15/11 ; Nantes-Bouguenais 18/11 ; Brest-Guipavas 04/12 ; Caen-Carpiquet 23/11."
     geometry:
       type: Polygon
       coordinates:
@@ -231,14 +408,44 @@ sub_areas:
     name: "Sud-Ouest aquitain"
     description: "Aquitaine, Charentes intérieures, Gers et plaine toulousaine : un climat océanique chaud, aux étés longs et parfois secs, aux hivers doux."
     normals:
-      mean_temp_c: 13.5
+      mean_temp_c: 14.0
       summer_mean_temp_c: 21.0
-      winter_mean_temp_c: 6.5
-      annual_precip_mm: 850
+      winter_mean_temp_c: 7.0
+      annual_precip_mm: 750
       frost_days: 30
-      extreme_min_c: -7.5
-      last_spring_frost: "04-01"
-      first_autumn_frost: "11-10"
+      extreme_min_c: -6.5
+      last_spring_frost: "03-15"
+      first_autumn_frost: "11-15"
+    stations:
+      - { name: "Bordeaux-Mérignac", id: "33281001", altitude_m: 47, source: meteofrance_fiches }
+      - { name: "Toulouse-Blagnac", id: "31069001", altitude_m: 151, source: meteofrance_fiches }
+      - { name: "Agen-La Garenne", id: "47091001", altitude_m: 58, source: meteofrance_fiches }
+      - { name: "Cognac", id: "16089001", altitude_m: 30, source: meteofrance_fiches }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de 4 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Bordeaux-Mérignac 14,2 ; Toulouse-Blagnac 14,2 ; Agen-La Garenne 13,8 ; Cognac 13,7."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de juin, juillet et août, 4 stations, arrondie au 0,5 °C : Bordeaux-Mérignac 21,1 ; Toulouse-Blagnac 21,9 ; Agen-La Garenne 21,2 ; Cognac 20,7."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de décembre, janvier et février, 4 stations, arrondie au 0,5 °C : Bordeaux-Mérignac 7,5 ; Toulouse-Blagnac 6,8 ; Agen-La Garenne 6,5 ; Cognac 6,9."
+      annual_precip_mm:
+        sources: [meteofrance_fiches]
+        detail: "Cumul annuel moyen 1991-2020, 4 stations, arrondi à 50 mm : Bordeaux-Mérignac 925 mm ; Toulouse-Blagnac 627 mm ; Agen-La Garenne 708 mm ; Cognac 772 mm."
+      frost_days:
+        sources: [meteofrance_fiches]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 4 stations, arrondi à 5 : Bordeaux-Mérignac 23,3 ; Toulouse-Blagnac 26,6 ; Agen-La Garenne 35,0 ; Cognac 29,3."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 4 stations arrondie au 0,5 °C : Bordeaux-Mérignac -5,7 ; Toulouse-Blagnac -5,9 ; Agen-La Garenne -7,0 ; Cognac -6,8."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Bordeaux-Mérignac 07/03 ; Toulouse-Blagnac 07/03 ; Agen-La Garenne 27/03 ; Cognac 17/03."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Bordeaux-Mérignac 24/11 ; Toulouse-Blagnac 20/11 ; Agen-La Garenne 11/11 ; Cognac 11/11."
     geometry:
       type: Polygon
       coordinates:
@@ -260,14 +467,44 @@ sub_areas:
     name: "Vallées du Rhône et de la Saône"
     description: "Lyonnais, Bresse, Saône chalonnaise, moyenne vallée du Rhône et cuvette grenobloise : étés chauds, hivers frais, vent du nord fréquent."
     normals:
-      mean_temp_c: 12.5
-      summer_mean_temp_c: 21.0
-      winter_mean_temp_c: 4.0
-      annual_precip_mm: 800
+      mean_temp_c: 13.0
+      summer_mean_temp_c: 21.5
+      winter_mean_temp_c: 4.5
+      annual_precip_mm: 850
       frost_days: 45
-      extreme_min_c: -9.5
-      last_spring_frost: "04-10"
-      first_autumn_frost: "11-01"
+      extreme_min_c: -8.0
+      last_spring_frost: "03-25"
+      first_autumn_frost: "11-15"
+    stations:
+      - { name: "Lyon-Bron", id: "69029001", altitude_m: 202, source: meteofrance_fiches }
+      - { name: "Mâcon", id: "71105001", altitude_m: 219, source: meteofrance_fiches }
+      - { name: "Montélimar", id: "26198001", altitude_m: 73, source: meteofrance_fiches }
+      - { name: "Grenoble-Saint-Geoirs", id: "38384001", altitude_m: 384, source: meteofrance_fiches }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de 4 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Lyon-Bron 13,0 ; Mâcon 12,3 ; Montélimar 14,2 ; Grenoble-Saint-Geoirs 11,5."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de juin, juillet et août, 4 stations, arrondie au 0,5 °C : Lyon-Bron 21,7 ; Mâcon 20,7 ; Montélimar 22,8 ; Grenoble-Saint-Geoirs 19,8."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de décembre, janvier et février, 4 stations, arrondie au 0,5 °C : Lyon-Bron 4,7 ; Mâcon 4,1 ; Montélimar 6,2 ; Grenoble-Saint-Geoirs 3,4."
+      annual_precip_mm:
+        sources: [meteofrance_fiches]
+        detail: "Cumul annuel moyen 1991-2020, 4 stations, arrondi à 50 mm : Lyon-Bron 821 mm ; Mâcon 834 mm ; Montélimar 920 mm ; Grenoble-Saint-Geoirs 915 mm."
+      frost_days:
+        sources: [meteofrance_fiches]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 4 stations, arrondi à 5 : Lyon-Bron 42,4 ; Mâcon 46,6 ; Montélimar 24,1 ; Grenoble-Saint-Geoirs 66,3."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 4 stations arrondie au 0,5 °C : Lyon-Bron -7,9 ; Mâcon -8,7 ; Montélimar -4,8 ; Grenoble-Saint-Geoirs -11,0."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Lyon-Bron 25/03 ; Mâcon 30/03 ; Montélimar 12/03 ; Grenoble-Saint-Geoirs 15/04."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Lyon-Bron 16/11 ; Mâcon 04/11 ; Montélimar 28/11 ; Grenoble-Saint-Geoirs 03/11."
     geometry:
       type: Polygon
       coordinates:
@@ -287,14 +524,44 @@ sub_areas:
     name: "Nord-Est continental"
     description: "Lorraine, Alsace, Champagne orientale, Bourgogne et Franche-Comté : hivers froids, étés chauds, gelées tardives au printemps. Les Vosges et les plateaux élevés sont plus froids encore."
     normals:
-      mean_temp_c: 10.5
-      summer_mean_temp_c: 18.5
-      winter_mean_temp_c: 2.5
-      annual_precip_mm: 750
-      frost_days: 70
-      extreme_min_c: -13.0
-      last_spring_frost: "04-25"
-      first_autumn_frost: "10-20"
+      mean_temp_c: 11.5
+      summer_mean_temp_c: 19.5
+      winter_mean_temp_c: 3.5
+      annual_precip_mm: 800
+      frost_days: 60
+      extreme_min_c: -11.0
+      last_spring_frost: "04-10"
+      first_autumn_frost: "11-01"
+    stations:
+      - { name: "Strasbourg-Entzheim", id: "67124001", altitude_m: 150, source: meteofrance_fiches }
+      - { name: "Nancy-Essey", id: "54526001", altitude_m: 212, source: meteofrance_fiches }
+      - { name: "Dijon-Longvic", id: "21473001", altitude_m: 219, source: meteofrance_fiches }
+      - { name: "Besançon", id: "25056001", altitude_m: 307, source: meteofrance_fiches }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de 4 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Strasbourg-Entzheim 11,4 ; Nancy-Essey 11,0 ; Dijon-Longvic 11,4 ; Besançon 11,4."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de juin, juillet et août, 4 stations, arrondie au 0,5 °C : Strasbourg-Entzheim 19,9 ; Nancy-Essey 19,2 ; Dijon-Longvic 19,9 ; Besançon 19,5."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de décembre, janvier et février, 4 stations, arrondie au 0,5 °C : Strasbourg-Entzheim 3,1 ; Nancy-Essey 3,2 ; Dijon-Longvic 3,3 ; Besançon 3,5."
+      annual_precip_mm:
+        sources: [meteofrance_fiches]
+        detail: "Cumul annuel moyen 1991-2020, 4 stations, arrondi à 50 mm : Strasbourg-Entzheim 636 mm ; Nancy-Essey 746 mm ; Dijon-Longvic 743 mm ; Besançon 1157 mm."
+      frost_days:
+        sources: [meteofrance_fiches]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 4 stations, arrondi à 5 : Strasbourg-Entzheim 59,5 ; Nancy-Essey 63,0 ; Dijon-Longvic 61,5 ; Besançon 57,8."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 4 stations arrondie au 0,5 °C : Strasbourg-Entzheim -11,3 ; Nancy-Essey -11,6 ; Dijon-Longvic -10,4 ; Besançon -10,3."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Strasbourg-Entzheim 08/04 ; Nancy-Essey 16/04 ; Dijon-Longvic 12/04 ; Besançon 08/04."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Strasbourg-Entzheim 29/10 ; Nancy-Essey 29/10 ; Dijon-Longvic 04/11 ; Besançon 07/11."
     geometry:
       type: Polygon
       coordinates:
@@ -318,23 +585,59 @@ sub_areas:
     default: true
     normals:
       mean_temp_c: 11.5
-      summer_mean_temp_c: 18.5
-      winter_mean_temp_c: 4.5
-      annual_precip_mm: 700
+      summer_mean_temp_c: 19.0
+      winter_mean_temp_c: 5.0
+      annual_precip_mm: 750
       frost_days: 40
-      extreme_min_c: -10.0
-      last_spring_frost: "04-15"
-      first_autumn_frost: "10-30"
+      extreme_min_c: -8.0
+      last_spring_frost: "04-05"
+      first_autumn_frost: "11-10"
+    stations:
+      - { name: "Lille-Lesquin", id: "59343001", altitude_m: 47, source: meteofrance_fiches }
+      - { name: "Rouen-Boos", id: "76116001", altitude_m: 156, source: meteofrance_fiches }
+      - { name: "Orly", id: "91027002", altitude_m: 86, source: meteofrance_fiches }
+      - { name: "Orléans", id: "45055001", altitude_m: 123, source: meteofrance_fiches }
+      - { name: "Tours", id: "37179001", altitude_m: 108, source: meteofrance_fiches }
+      - { name: "Poitiers-Biard", id: "86027001", altitude_m: 125, source: meteofrance_fiches }
+      - { name: "Limoges-Bellegarde", id: "87085006", altitude_m: 402, source: meteofrance_fiches }
+    references:
+      mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de 7 stations, arrondie au 0,5 °C. Température moyenne annuelle 1991-2020 : Lille-Lesquin 11,3 ; Rouen-Boos 10,9 ; Orly 12,1 ; Orléans 11,7 ; Tours 12,2 ; Poitiers-Biard 12,2 ; Limoges-Bellegarde 11,8."
+      summer_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de juin, juillet et août, 7 stations, arrondie au 0,5 °C : Lille-Lesquin 18,1 ; Rouen-Boos 17,5 ; Orly 19,6 ; Orléans 19,0 ; Tours 19,5 ; Poitiers-Biard 19,3 ; Limoges-Bellegarde 18,9."
+      winter_mean_temp_c:
+        sources: [meteofrance_fiches]
+        detail: "Moyenne de décembre, janvier et février, 7 stations, arrondie au 0,5 °C : Lille-Lesquin 4,5 ; Rouen-Boos 4,6 ; Orly 5,0 ; Orléans 4,7 ; Tours 5,4 ; Poitiers-Biard 5,5 ; Limoges-Bellegarde 5,0."
+      annual_precip_mm:
+        sources: [meteofrance_fiches]
+        detail: "Cumul annuel moyen 1991-2020, 7 stations, arrondi à 50 mm : Lille-Lesquin 740 mm ; Rouen-Boos 848 mm ; Orly 622 mm ; Orléans 636 mm ; Tours 678 mm ; Poitiers-Biard 695 mm ; Limoges-Bellegarde 1018 mm."
+      frost_days:
+        sources: [meteofrance_fiches]
+        detail: "Nombre moyen de jours avec une minimale ≤ 0 °C, 7 stations, arrondi à 5 : Lille-Lesquin 37,1 ; Rouen-Boos 41,6 ; Orly 36,2 ; Orléans 48,6 ; Tours 36,3 ; Poitiers-Biard 45,5 ; Limoges-Bellegarde 34,9."
+      extreme_min_c:
+        sources: [meteofrance_daily]
+        detail: "Par station, moyenne sur 1991-2020 de la nuit la plus froide de chaque année, calculée sur les données quotidiennes ; moyenne de 7 stations arrondie au 0,5 °C : Lille-Lesquin -7,8 ; Rouen-Boos -7,9 ; Orly -7,6 ; Orléans -9,0 ; Tours -6,8 ; Poitiers-Biard -8,2 ; Limoges-Bellegarde -7,4."
+      last_spring_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la dernière minimale ≤ 0 °C avant juillet, calculée sur les données quotidiennes : Lille-Lesquin 06/04 ; Rouen-Boos 08/04 ; Orly 02/04 ; Orléans 14/04 ; Tours 07/04 ; Poitiers-Biard 12/04 ; Limoges-Bellegarde 31/03."
+      first_autumn_frost:
+        sources: [meteofrance_daily]
+        detail: "Par station, date médiane 1991-2020 de la première minimale ≤ 0 °C après juillet, calculée sur les données quotidiennes : Lille-Lesquin 14/11 ; Rouen-Boos 12/11 ; Orly 11/11 ; Orléans 06/11 ; Tours 08/11 ; Poitiers-Biard 04/11 ; Limoges-Bellegarde 16/11."
 
 # Changes against the reference period, as [low, central, high]. Same
 # deltas for the whole country: the spread between models is larger than
 # the spread between areas, except for summer rainfall, which drops more in
-# the south (the central value here is a national middle). Rounded
-# syntheses, see `sources`; consistent with the TRACC (about +1 °C in 2050
-# and +2.3 °C in 2100 over 1991-2020 under the reference trajectory).
+# the south (the central value here is a national middle). Each value is
+# checked against the CMIP6 country aggregate of the World Bank Climate
+# Change Knowledge Portal (CC BY 4.0) and DRIAS 2020 brought back to
+# 1991-2020; see `references` under each scenario. Consistent with the
+# TRACC: +1.3 °C in 2050 and +2.6 °C in 2100 over 1991-2020 (Météo-France
+# puts 1991-2020 at +1.4 °C over the early 20th century).
 projections:
   reference_period: "1991-2020"
-  sources: [drias_2020, tracc, euro_cordex, ipcc_ar6]
+  sources: [cckp_cmip6, drias_2020, tracc, tracc_meteofrance, ipcc_ar6]
   scenarios:
     moderate:
       ipcc: "RCP4.5 / SSP2-4.5"
@@ -344,28 +647,52 @@ projections:
     "2050":
       period: "2041-2060"
       moderate:
-        mean_temp_delta_c: [0.8, 1.4, 2.0]
-        extreme_min_delta_c: [1.0, 2.0, 3.0]
-        summer_temp_delta_c: [0.9, 1.7, 2.7]
+        mean_temp_delta_c: [0.8, 1.4, 2.2]
+        extreme_min_delta_c: [1.0, 2.5, 4.0]
+        summer_temp_delta_c: [1.0, 1.8, 2.7]
         summer_precip_change_pct: [-20, -8, 5]
-        winter_precip_change_pct: [-5, 5, 12]
+        winter_precip_change_pct: [-5, 6, 15]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : [0,9 ; 1,4 ; 2,4] °C. DRIAS 2020, ramené à 1991-2020 (-0,6 °C) : [0,3 ; 1,0 ; 1,5] °C. TRACC mise à l'échelle : [0,7 ; 1,3 ; 2,0] °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 2,8 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,1 ; 1,9 ; 2,7] °C. DRIAS 2020 ramené à 1991-2020 : [0,3 ; 1,3 ; 2,2] °C (les projections EURO-CORDEX réchauffent moins l'été que CMIP6 ; la fourchette couvre les deux)."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-24 % ; -8 % ; +5 %]. DRIAS 2020 : [-24 % ; -5 % ; +8 %]. La baisse est plus forte dans le sud."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-10 % ; +3 % ; +9 %]. DRIAS 2020 : [+5 % ; +11 % ; +21 %] (les deux familles de modèles divergent ; la fourchette couvre les deux)."
       high:
         mean_temp_delta_c: [1.2, 1.9, 2.7]
-        extreme_min_delta_c: [1.5, 2.5, 4.0]
-        summer_temp_delta_c: [1.3, 2.3, 3.5]
-        summer_precip_change_pct: [-25, -12, 0]
-        winter_precip_change_pct: [-5, 7, 15]
+        extreme_min_delta_c: [1.5, 3.0, 4.5]
+        summer_temp_delta_c: [1.4, 2.4, 3.6]
+        summer_precip_change_pct: [-28, -13, 5]
+        winter_precip_change_pct: [-5, 8, 20]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : [1,1 ; 1,9 ; 2,6] °C. DRIAS 2020, ramené à 1991-2020 (-0,6 °C) : [1,0 ; 1,4 ; 2,1] °C. TRACC mise à l'échelle : [1,1 ; 1,8 ; 2,6] °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 3,3 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,7 ; 2,5 ; 3,6] °C. DRIAS 2020 ramené à 1991-2020 : [0,7 ; 1,7 ; 2,6] °C (les projections EURO-CORDEX réchauffent moins l'été que CMIP6 ; la fourchette couvre les deux)."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-29 % ; -16 % ; -2 %]. DRIAS 2020 : [-25 % ; -9 % ; +8 %]. La baisse est plus forte dans le sud."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-15 % ; +4 % ; +14 %]. DRIAS 2020 : [+8 % ; +14 % ; +30 %] (les deux familles de modèles divergent ; la fourchette couvre les deux)."
     "2080":
       period: "2071-2100"
       moderate:
-        mean_temp_delta_c: [1.3, 2.1, 3.0]
-        extreme_min_delta_c: [1.5, 3.0, 4.5]
-        summer_temp_delta_c: [1.5, 2.7, 3.8]
-        summer_precip_change_pct: [-25, -12, 0]
-        winter_precip_change_pct: [-5, 7, 15]
+        mean_temp_delta_c: [1.4, 2.1, 3.2]
+        extreme_min_delta_c: [2.0, 4.0, 5.5]
+        summer_temp_delta_c: [1.6, 2.8, 4.0]
+        summer_precip_change_pct: [-30, -15, 5]
+        winter_precip_change_pct: [0, 10, 20]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : [1,5 ; 2,1 ; 3,3] °C. DRIAS 2020, ramené à 1991-2020 (-0,6 °C) : [1,0 ; 1,5 ; 2,1] °C. TRACC mise à l'échelle : [1,4 ; 2,2 ; 3,3] °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 4,1 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [2,2 ; 3,0 ; 4,1] °C. DRIAS 2020 ramené à 1991-2020 : [0,5 ; 1,6 ; 2,7] °C (les projections EURO-CORDEX réchauffent moins l'été que CMIP6 ; la fourchette couvre les deux)."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-31 % ; -18 % ; -1 %]. DRIAS 2020 : [-27 % ; -11 % ; +11 %]. La baisse est plus forte dans le sud."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-3 % ; +8 % ; +16 %]. DRIAS 2020 : [+10 % ; +15 % ; +29 %] (les deux familles de modèles divergent ; la fourchette couvre les deux)."
       high:
-        mean_temp_delta_c: [2.6, 3.7, 5.2]
-        extreme_min_delta_c: [3.0, 5.0, 7.5]
-        summer_temp_delta_c: [2.8, 4.5, 6.5]
-        summer_precip_change_pct: [-40, -25, -10]
-        winter_precip_change_pct: [0, 10, 25]
+        mean_temp_delta_c: [2.7, 4.0, 5.5]
+        extreme_min_delta_c: [4.0, 6.5, 9.5]
+        summer_temp_delta_c: [2.8, 4.8, 7.0]
+        summer_precip_change_pct: [-45, -25, 0]
+        winter_precip_change_pct: [0, 15, 30]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : [3,0 ; 4,1 ; 5,5] °C. DRIAS 2020, ramené à 1991-2020 (-0,6 °C) : [2,6 ; 3,3 ; 4,3] °C. TRACC mise à l'échelle : [2,7 ; 4,2 ; 5,8] °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 6,6 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [4,5 ; 5,6 ; 7,3] °C. DRIAS 2020 ramené à 1991-2020 : [1,9 ; 3,9 ; 5,4] °C (les projections EURO-CORDEX réchauffent moins l'été que CMIP6 ; la fourchette couvre les deux)."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-49 % ; -34 % ; -21 %]. DRIAS 2020 : [-47 % ; -22 % ; +16 %]. TRACC à +4 °C : -20 %. La baisse est plus forte dans le sud."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (France, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-2 % ; +10 % ; +20 %]. DRIAS 2020 : [+14 % ; +20 % ; +40 %] (les deux familles de modèles divergent ; la fourchette couvre les deux). TRACC à +4 °C : +15 %."
