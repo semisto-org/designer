@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
 import { acceptDraft, acceptDrafts, rejectDraft, rejectDrafts } from '@/map/drafts/actions'
 import { LAYER_COLORS } from '@/map/layers/features'
@@ -236,18 +237,6 @@ export default function DraftsBar() {
       </section>
     </div>
   )
-}
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
-  useEffect(() => {
-    const list = window.matchMedia(query)
-    const update = () => setMatches(list.matches)
-    update()
-    list.addEventListener('change', update)
-    return () => list.removeEventListener('change', update)
-  }, [query])
-  return matches
 }
 
 function IconAction({ label, tone, disabled, onClick, children }: {

@@ -21,7 +21,16 @@ export type EditorPanel = {
   requires?: 'editor' | 'owner'
   /** Sort order inside its group. */
   order?: number
+  /**
+   * Opens in a centered modal on wide screens (MODAL_PANEL_QUERY) instead of
+   * the side panel, for panels meant to be read with care. The component
+   * checks the same query to lay itself out for the modal.
+   */
+  modal?: boolean
 }
+
+/** Screens wide enough for modal panels (Tailwind's `lg`). */
+export const MODAL_PANEL_QUERY = '(min-width: 1024px)'
 
 /**
  * Extra sections shown in the inspector of a selected feature (comments,
