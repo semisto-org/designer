@@ -50,8 +50,8 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Semisto Designer montre où vous êtes sur le plan de votre terrain et place vos photos, relevés et plantations.",
-          "locationAlwaysAndWhenInUsePermission": "Semisto Designer continue d'enregistrer votre trace quand l'écran est éteint, pendant que vous marchez le long d'une haie ou d'une limite.",
+          "locationWhenInUsePermission": "Semisto Designer montre où tu es sur le plan de ton terrain et place tes photos, relevés et plantations.",
+          "locationAlwaysAndWhenInUsePermission": "Semisto Designer continue d'enregistrer ta trace quand l'écran est éteint, pendant que tu marches le long d'une haie ou d'une limite.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
@@ -60,8 +60,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Semisto Designer photographie votre terrain et vos plantes pour les rattacher à la carte.",
-          "photosPermission": "Semisto Designer importe des photos de votre terrain déjà prises."
+          "cameraPermission": "Semisto Designer photographie ton terrain et tes plantes pour les rattacher à la carte.",
+          "photosPermission": "Semisto Designer importe des photos de ton terrain déjà prises."
         }
       ],
       "expo-font"
