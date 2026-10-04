@@ -16,7 +16,8 @@ class Entitlements
     new(user&.respond_to?(:current_plan_key) ? user.current_plan_key : "free", user)
   end
 
-  # Entitlements that apply on a map: the owner's.
+  # Entitlements that apply on a map: the owner's. Team maps too: a map in a
+  # team stays its owner's and follows the owner's plan (no team billing yet).
   def self.for_map(map)
     self.for(map.owner)
   end

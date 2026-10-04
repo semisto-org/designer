@@ -68,9 +68,11 @@ export type SharingData = {
   maxEditors: number
   editorsCount: number
   members: SharingMember[]
-  organization: { name: string; members: number } | null
+  organization: { id: number; name: string; members: number } | null
   invitations?: SharingInvitation[]
   link?: { enabled: boolean; role: 'editor' | 'viewer'; url: string | null }
+  /** Owner only: their teams, where the map can be moved (teams area). */
+  teams?: { id: number; name: string }[]
 }
 
 export type PublicationOptions = {

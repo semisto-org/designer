@@ -41,6 +41,7 @@ class User < ApplicationRecord
   end
 
   def as_inertia
-    { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin: }
+    # teamsCount: the "Équipes" link shows in the main nav once you are in a team.
+    { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count }
   end
 end
