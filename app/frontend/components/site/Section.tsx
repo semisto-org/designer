@@ -23,7 +23,7 @@ export function Section({ children, tone = 'plain', className, id }: {
 
 /** `tone="dark"` on a dark background: a light green that stays readable. */
 export function Eyebrow({ children, className, tone = 'plain' }: { children: ReactNode; className?: string; tone?: 'plain' | 'dark' }) {
-  return <p className={clsx('text-sm font-semibold uppercase tracking-wider', tone === 'dark' ? 'text-leaf-300' : 'text-leaf-600', className)}>{children}</p>
+  return <p className={clsx('text-sm font-semibold lowercase tracking-[0.12em]', tone === 'dark' ? 'text-leaf-300' : 'text-prune-600', className)}>{children}</p>
 }
 
 export function SectionHeading({ eyebrow, title, intro, center, className, tone = 'plain' }: {

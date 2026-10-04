@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react'
 import { LogOut } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Flash } from '@/components/ui/Flash'
-import { Logo } from '@/components/Logo'
+import { Wordmark } from '@/components/Logo'
 import { t } from '@/lib/i18n'
 import type { SharedProps } from '@/types'
 import type { TeamAwareUser } from '@/types/teams'
@@ -20,12 +20,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh">
       <Flash />
-      <header className="border-b border-loam-200 bg-white/80 backdrop-blur">
+      <header className="border-b border-loam-900/10 bg-white/90 backdrop-blur">
         {/* On a phone the menu takes its own row under the logo and the account. */}
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 px-4 pt-2 sm:h-14 sm:flex-nowrap sm:gap-6 sm:pt-0">
-          <Link href="/maps" className="flex h-10 items-center gap-2 font-semibold text-loam-900 sm:h-auto">
-            <Logo />
-            <span className="hidden sm:inline">Designer</span>
+          <Link href="/maps" className="flex h-10 items-center sm:h-auto" aria-label="Semisto Designer">
+            <Wordmark className="hidden sm:inline-flex" />
+            <Wordmark className="sm:hidden" compact />
           </Link>
           <nav className="order-last -mx-1 flex w-full min-w-0 items-center gap-1 overflow-x-auto px-1 pb-2 text-sm sm:order-none sm:w-auto sm:pb-0">
             {nav.map((item) => (
@@ -33,8 +33,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={
-                  'shrink-0 whitespace-nowrap rounded-md px-2 py-1.5 sm:px-2.5 ' +
-                  (url.startsWith(item.href) ? 'bg-prune-50 text-prune-700' : 'text-loam-600 hover:bg-loam-100')
+                  'shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 font-medium sm:px-3 ' +
+                  (url.startsWith(item.href) ? 'bg-prune-50 text-prune-700' : 'text-loam-600 hover:bg-prune-50 hover:text-prune-700')
                 }
               >
                 {item.label}

@@ -6,21 +6,22 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'leaf'
 type Size = 'sm' | 'md' | 'lg'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-prune-600 text-white hover:bg-prune-700 focus-visible:outline-prune-600',
-  leaf: 'bg-leaf-600 text-white hover:bg-leaf-700 focus-visible:outline-leaf-600',
-  secondary: 'bg-white text-loam-800 ring-1 ring-inset ring-loam-200 hover:bg-loam-100',
-  ghost: 'text-loam-700 hover:bg-loam-100',
-  danger: 'bg-clay-500 text-white hover:bg-clay-700',
+  primary: 'bg-prune-600 text-white hover:bg-prune-800 focus-visible:outline-prune-600',
+  leaf: 'bg-leaf-600 text-white hover:bg-leaf-700 focus-visible:outline-prune-600',
+  secondary: 'bg-white text-prune-700 ring-[1.5px] ring-inset ring-prune-600 hover:bg-prune-600 hover:text-white',
+  ghost: 'text-prune-700 hover:bg-prune-50',
+  danger: 'bg-clay-500 text-white hover:bg-clay-700 focus-visible:outline-clay-500',
 }
 const sizes: Record<Size, string> = {
-  sm: 'px-2.5 py-1.5 text-sm gap-1.5',
-  md: 'px-3.5 py-2 text-sm gap-2',
-  lg: 'px-5 py-3 text-base gap-2',
+  sm: 'px-3 py-1.5 text-sm gap-1.5',
+  md: 'px-4 py-2 text-sm gap-2',
+  lg: 'min-h-12 px-6 py-3 text-base gap-2',
 }
 
 export function buttonClass(variant: Variant = 'primary', size: Size = 'md', extra?: string) {
   return clsx(
-    'inline-flex items-center justify-center rounded-lg font-medium transition-colors',
+    // Pills, as in the Semisto Design System.
+    'inline-flex items-center justify-center rounded-full font-semibold transition-colors duration-200 active:scale-[0.98]',
     'focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none',
     variants[variant],
     sizes[size],

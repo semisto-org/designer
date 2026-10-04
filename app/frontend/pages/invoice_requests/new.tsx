@@ -121,7 +121,7 @@ export default function NewInvoiceRequest({ plans, defaults }: Props) {
             </Button>
           </Card>
           <div className="px-1">
-            <h2 className="text-sm font-semibold text-loam-800">{t('invoicing.new.next_title')}</h2>
+            <h2 className="font-sans text-sm font-semibold text-loam-800">{t('invoicing.new.next_title')}</h2>
             <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-loam-600">
               {steps.map((step) => <li key={step}>{step}</li>)}
             </ol>

@@ -364,7 +364,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-sm font-semibold text-loam-900">{t('relief.page.title')}</h1>
+            <h1 className="truncate font-sans text-sm font-semibold text-loam-900">{t('relief.page.title')}</h1>
             <p className="truncate text-xs text-loam-500">{map.name}</p>
           </div>
           <HelpButton iconOnly slug="lire-le-relief-et-l-eau" className="px-2" />

@@ -326,8 +326,8 @@ function PrintStyles({ dossier }: { dossier: Dossier }) {
 @page {
   size: A4;
   margin: 14mm 14mm 16mm;
-  @bottom-left { content: ${cssString(footer)}; font: 8pt 'Instrument Sans', system-ui, sans-serif; color: #6e6355; }
-  @bottom-right { content: counter(page) " / " counter(pages); font: 8pt 'Instrument Sans', system-ui, sans-serif; color: #6e6355; }
+  @bottom-left { content: ${cssString(footer)}; font: 8pt 'Inter Variable', system-ui, sans-serif; color: #6b665c; }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 8pt 'Inter Variable', system-ui, sans-serif; color: #6b665c; }
 }
 @page :first {
   @bottom-left { content: none; }

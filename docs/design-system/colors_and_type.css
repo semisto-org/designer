@@ -1,0 +1,282 @@
+/* ============================================================
+   Semisto — Colors & Type
+   Derived from: charte graphique PDF (nov. 2024) + square logo PNGs.
+   The "Prune" / main plum (#5b5781) was sampled directly from the
+   square logo. Pole hex codes are taken from the brand voice notes
+   and confirmed by sampling the pole logos.
+   Fruit-&-veg palette hexes below are BEST-GUESS — the official
+   charte lists names only ("Artichaud, Vert lime, Croque-poux,
+   Poire, Citron vif, Mangue, Abricot, Pêche, Orange, Grenade,
+   Framboise, Aubergine, Prune, Myrtille, Mûre") with RGB values
+   left blank in our text extraction. Please audit against the
+   source PDF (assets/charte-graphique-2024.pdf, p.8).
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Fonts
+   Print standard: Allotrope Variable (sans) + Sole Serif Small
+   Web standard:   Inter (sans) + Cera (stencil/branding)
+                   + Cormorant Garamond (serif fallback)
+   ------------------------------------------------------------
+   The web stack is INTENTIONAL (pragmatic for performance) and
+   diverges from print. Fallbacks used below:
+     Allotrope Variable  →  Inter (closest geometric humanist sans)
+     Sole Serif Small    →  Cormorant Garamond (warm humanist serif)
+     Cera stencil        →  NO exact free equivalent — Major Mono
+                           Display is the closest monospaced/
+                           architectural substitute; flag if the
+                           real Cera file can be supplied.
+   ------------------------------------------------------------ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;475;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Major+Mono+Display&display=swap');
+
+/* ============================================================
+   COLORS
+   ============================================================ */
+
+:root {
+  /* --- Brand core (plum / prune) ------------------------- */
+  --semisto-plum:            #5b5781;   /* sampled from main logo bg */
+  --semisto-plum-ink:        #3c3956;   /* darker, for body text on light */
+  --semisto-plum-soft:       #8d89ad;   /* lighter for secondary */
+
+  /* --- Neutrals ------------------------------------------ */
+  --white:                   #ffffff;
+  --beige-clair:             #f7f3ea;   /* per charte: "beige clair" */
+  --vert-pale:               #eef0dc;   /* per charte: "vert pâle" */
+  --ink:                     #1a1a1a;   /* "noir 100%" */
+  --ink-70:                  #4d4d4d;   /* "noir 70%" floor for semisto type */
+
+  /* --- Pôles (produits) ---------------------------------- */
+  --pole-design:             #afbd00;   /* Vert artichaud */
+  --pole-academy:            #b01a19;   /* Rouge grenade profond */
+  --pole-nursery:            #ef9b0d;   /* Orange mangue / abricot */
+  --pole-heroes:             #234766;   /* Bleu myrtille marine */
+  --pole-kids:               #e86a8e;   /* Rose (indicative) */
+  --pole-edition:            #6f7661;   /* Gris-vert (indicative) */
+  --pole-tools:              #7a7a2a;   /* Olive (indicative) */
+
+  /* --- Fruit & veg palette (names from charte; hex values
+          are best-guess pending RGB audit from the PDF) --- */
+  --artichaud:               #afbd00;   /* also pôle Design */
+  --vert-lime:               #c9d84a;
+  --croque-poux:             #dfe387;
+  --poire:                   #e8e79a;
+  --citron-vif:              #f5d400;
+  --mangue:                  #f2a900;
+  --abricot:                 #f08a3e;
+  --peche:                   #f3b58a;
+  --orange:                  #ef7d14;
+  --grenade:                 #b01a19;   /* also pôle Academy */
+  --framboise:               #c8305e;
+  --aubergine:               #5a2a4a;
+  --prune:                   #5b5781;   /* also the main brand plum */
+  --myrtille:                #234766;   /* also pôle Heroes */
+  --mure:                    #2b1a2b;
+
+  /* --- Semantic FG / BG ---------------------------------- */
+  --fg-1:                    var(--ink);          /* primary body · AAA on white */
+  --fg-2:                    var(--plum-ink, var(--semisto-plum-ink));
+  --fg-3:                    #595959;             /* muted · 7.0:1 on white (AAA) */
+  --fg-inverse:              var(--white);
+
+  --bg-page:                 var(--white);
+  --bg-soft:                 var(--beige-clair);
+  --bg-nature:               var(--vert-pale);
+  --bg-brand:                var(--semisto-plum);
+
+  --accent:                  var(--semisto-plum);
+  --accent-warm:             var(--mangue);
+  --accent-leaf:             var(--artichaud);
+
+  --border-soft:             rgba(26, 26, 26, 0.10);
+  --border-strong:           rgba(26, 26, 26, 0.22);
+
+  /* --- Link & state -------------------------------------- */
+  --link:                    var(--semisto-plum);
+  --link-hover:              var(--semisto-plum-ink);
+
+  /* ============================================================
+     TYPE — families
+     ============================================================ */
+  --font-sans:               "Inter", "Allotrope Variable",
+                             system-ui, -apple-system, "Segoe UI",
+                             Helvetica, Arial, sans-serif;
+  --font-serif:              "EB Garamond", "Sole Serif Small",
+                             "Cormorant Garamond", Georgia,
+                             "Times New Roman", serif;
+  --font-display-stencil:    "Major Mono Display", "Cera",
+                             "Courier New", monospace;
+
+  /* Logo wordmark "semisto" is set in Sole Serif Small-style serif. */
+  --font-logo:               var(--font-serif);
+
+  /* --- Type scale (16px base, modest ratio) -------------- */
+  --fs-xs:    0.75rem;       /* 12 — ONLY for decorative stencil / hex codes */
+  --fs-sm:    0.875rem;      /* 14 — absolute minimum for readable UI text */
+  --fs-base:  1rem;          /* 16 — body default (WCAG recommended floor) */
+  --fs-md:    1.125rem;      /* 18 */
+  --fs-lg:    1.375rem;      /* 22 */
+  --fs-xl:    1.75rem;       /* 28 */
+  --fs-2xl:   2.25rem;       /* 36 */
+  --fs-3xl:   3rem;          /* 48 */
+  --fs-4xl:   4rem;          /* 64 */
+  --fs-5xl:   5.25rem;       /* 84 */
+
+  /* --- Weights (Allotrope native 475, "weight 473" per charte) - */
+  --fw-light:      300; /* @kind font */
+  --fw-regular:    400; /* @kind font */
+  --fw-charte:     475; /* @kind font */ /* the "weight 473" of Allotrope & Sole */
+  --fw-medium:     500; /* @kind font */
+  --fw-semibold:   600; /* @kind font */
+  --fw-bold:       700; /* @kind font */
+
+  /* --- Line heights & tracking --------------------------- */
+  --lh-tight:   1.1; /* @kind other */
+  --lh-snug:    1.25; /* @kind other */
+  --lh-normal:  1.5; /* @kind other */
+  --lh-loose:   1.7; /* @kind other */
+
+  --tr-tight:   -0.02em; /* @kind other */
+  --tr-normal:  0; /* @kind other */
+  --tr-wide:    0.04em; /* @kind other */
+  --tr-wider:   0.12em; /* @kind other */      /* eyebrows / all-caps small labels */
+
+  /* ============================================================
+     SPACING / RADII / SHADOWS
+     ============================================================ */
+  --s-0:   0; /* @kind spacing */
+  --s-1:   4px;
+  --s-2:   8px;
+  --s-3:   12px;
+  --s-4:   16px;
+  --s-5:   24px;
+  --s-6:   32px;
+  --s-7:   48px;
+  --s-8:   64px;
+  --s-9:   96px;
+  --s-10:  128px;
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   16px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  /* Shadows are low-key; brand is organic / print-first.
+     Prefer soft, warm shadows over hard drop-shadows. */
+  --shadow-xs:  0 1px 2px rgba(26, 26, 26, 0.06);
+  --shadow-sm:  0 2px 6px rgba(26, 26, 26, 0.08);
+  --shadow-md:  0 6px 16px rgba(26, 26, 26, 0.10);
+  --shadow-lg:  0 14px 40px rgba(26, 26, 26, 0.14);
+}
+
+/* ============================================================
+   SEMANTIC ELEMENTS
+   Drop-in defaults so bare HTML already looks on-brand.
+   ============================================================ */
+
+html { color-scheme: light; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: var(--fw-regular);
+  font-size:   var(--fs-base);
+  line-height: var(--lh-normal);
+  color:       var(--fg-1);
+  background:  var(--bg-page);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Display / headings — serif, warm, low tracking. */
+h1, h2, h3, .display {
+  font-family: var(--font-serif);
+  font-weight: var(--fw-charte);
+  color:       var(--semisto-plum);
+  letter-spacing: var(--tr-tight);
+  line-height: var(--lh-tight);
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+h1 { font-size: var(--fs-4xl); }
+h2 { font-size: var(--fs-3xl); }
+h3 { font-size: var(--fs-2xl); }
+
+/* h4–h6 pivot to sans for hierarchy without competing with display */
+h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  color: var(--fg-1);
+  margin: 0 0 0.4em;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-normal);
+}
+h4 { font-size: var(--fs-xl); }
+h5 { font-size: var(--fs-lg); }
+h6 { font-size: var(--fs-md); text-transform: uppercase; letter-spacing: var(--tr-wider); color: var(--fg-3); }
+
+/* Eyebrow / small label utility */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tr-wider);
+  text-transform: lowercase; /* charte prefers lowercase */
+  color: var(--semisto-plum);
+}
+
+p {
+  margin: 0 0 1em;
+  max-width: 65ch;
+  text-wrap: pretty;
+}
+
+/* Lead paragraph (used for intros on marketing pages) */
+.lead {
+  font-family: var(--font-serif);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-regular);
+  color: var(--fg-2);
+  line-height: var(--lh-snug);
+}
+
+/* Links */
+a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--link-hover); }
+
+/* Inline code — rarely used; stencil-display as quiet nod to Cera */
+code, kbd, samp {
+  font-family: var(--font-display-stencil);
+  font-size: 0.9em;
+  background: var(--bg-soft);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+}
+
+/* Rules / dividers are often vertical in Semisto prints */
+hr {
+  border: 0;
+  border-top: 1px solid var(--border-soft);
+  margin: var(--s-6) 0;
+}
+
+/* Quotes — poetic, sensoriel; serif roman (pas d'italique) */
+blockquote {
+  font-family: var(--font-serif);
+  font-size: var(--fs-lg);
+  color: var(--fg-2);
+  border-left: 2px solid var(--accent-leaf);
+  padding-left: var(--s-5);
+  margin: var(--s-6) 0;
+  line-height: var(--lh-snug);
+}
+
+/* Selection nods to the brand plum */
+::selection { background: var(--semisto-plum); color: var(--white); }
+
+/* Focus ring — warm, never neon */
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--semisto-plum);
+  outline-offset: 2px;
+}

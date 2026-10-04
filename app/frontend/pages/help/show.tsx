@@ -26,7 +26,7 @@ export default function HelpShow({ article, related, contactEmail }: { article: 
         <aside className="space-y-8 lg:sticky lg:top-6 lg:self-start">
           {article.headings.length > 1 && (
             <nav aria-label={t('help.on_this_page')}>
-              <h2 className="text-sm font-semibold text-loam-900">{t('help.on_this_page')}</h2>
+              <h2 className="font-sans text-sm font-semibold text-loam-900">{t('help.on_this_page')}</h2>
               <ul className="mt-3 space-y-2 border-l border-loam-200 text-sm">
                 {article.headings.map((heading) => (
                   <li key={heading.id}>
@@ -40,7 +40,7 @@ export default function HelpShow({ article, related, contactEmail }: { article: 
           )}
           {related.length > 0 && (
             <nav aria-label={t('help.same_category')}>
-              <h2 className="text-sm font-semibold text-loam-900">{t('help.same_category')}</h2>
+              <h2 className="font-sans text-sm font-semibold text-loam-900">{t('help.same_category')}</h2>
               <ul className="mt-3 space-y-2 text-sm">
                 {related.map((item) => (
                   <li key={item.slug}>

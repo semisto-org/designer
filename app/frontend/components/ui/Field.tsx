@@ -2,8 +2,8 @@ import clsx from 'clsx'
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 
 export const inputClass =
-  'block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-loam-900 ring-1 ring-inset ring-loam-200 ' +
-  'placeholder:text-loam-400 focus:ring-2 focus:ring-inset focus:ring-prune-500'
+  'block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-loam-900 ring-1 ring-inset ring-loam-900/20 ' +
+  'placeholder:text-loam-400 focus:ring-2 focus:ring-inset focus:ring-prune-600'
 
 export function Field({ label, error, hint, children, className }: {
   label?: ReactNode; error?: string | string[]; hint?: ReactNode; children: ReactNode; className?: string
