@@ -38,12 +38,12 @@ export default function MapShow(props: Props) {
         </Link>
         <h1 className="truncate text-base">{map.name}</h1>
         <span className="hidden text-sm text-loam-400 sm:inline">{formatArea(map.areaM2)}</span>
-        <span className="ml-auto rounded-full bg-loam-100 px-2 py-0.5 text-xs text-loam-600">{t(`maps.roles.${map.role}`)}</span>
-        <div id="editor-header-actions" className="flex items-center gap-2" />
+        <span className="ml-auto hidden rounded-full bg-loam-100 px-2 py-0.5 text-xs text-loam-600 sm:inline">{t(`maps.roles.${map.role}`)}</span>
+        <div id="editor-header-actions" className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-2" />
       </header>
       <div className="relative min-h-0 flex-1">
         <MapView
-          className="absolute inset-0"
+          className="editor-map absolute inset-0"
           center={map.center ?? map.region.center}
           zoom={map.zoom ?? (map.center ? 17 : map.region.defaultZoom)}
           bbox={map.bbox}
@@ -180,17 +180,28 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
     }
   }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, activePanel, notify, upsertFeatures, removeFeatures])
 
+  // Keep the open panel's button in view in the scrolling bar on a phone.
+  const nav = useRef<HTMLElement>(null)
+  useEffect(() => {
+    nav.current?.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [activePanel])
+
   const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
 
   return (
     <EditorContext.Provider value={editor}>
-      <nav className="absolute left-2 top-2 z-20 flex flex-col gap-1 rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-200" aria-label={t('editor.panels_nav')}>
+      {/* Panel rail: a scrolling bar along the bottom on phones, a column on the left from md up. */}
+      <nav
+        ref={nav}
+        className="absolute inset-x-2 bottom-2 z-20 flex gap-1 overflow-x-auto rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:flex-col md:overflow-y-auto md:overflow-x-visible"
+        aria-label={t('editor.panels_nav')}
+      >
         {GROUPS.map((group, gi) => {
           const items = visiblePanels.filter((p) => p.group === group).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
           if (items.length === 0) return null
           return (
-            <div key={group} className={gi > 0 ? 'border-t border-loam-100 pt-1' : ''}>
+            <div key={group} className={'flex shrink-0 md:flex-col ' + (gi > 0 ? 'border-l border-loam-100 pl-1 md:border-l-0 md:border-t md:pl-0 md:pt-1' : '')}>
               {items.map((p) => (
                 <button
                   key={p.id}
@@ -200,7 +211,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
                   aria-pressed={activePanel === p.id}
                   onClick={() => setActivePanel(activePanel === p.id ? null : p.id)}
                   className={
-                    'grid h-9 w-9 place-items-center rounded-lg ' +
+                    'grid h-9 w-9 shrink-0 place-items-center rounded-lg ' +
                     (activePanel === p.id ? 'bg-prune-600 text-white' : 'text-loam-600 hover:bg-loam-100')
                   }
                 >
@@ -212,7 +223,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
         })}
       </nav>
       {panel && (
-        <section className="absolute inset-x-2 bottom-2 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-14 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
+        <section className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-14 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
           <h2 className="mb-3 text-base">{t(panel.label)}</h2>
           <panel.component />
         </section>
@@ -221,7 +232,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
       {[...OVERLAYS].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)).map((o) => <o.component key={o.id} />)}
       <HeaderActions />
       {toast && (
-        <div className={'absolute bottom-10 left-1/2 z-30 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
+        <div className={'absolute bottom-16 left-1/2 z-30 md:bottom-10 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
           {toast.message}
         </div>
       )}

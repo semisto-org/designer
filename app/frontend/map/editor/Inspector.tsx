@@ -28,7 +28,7 @@ export function Inspector({ feature }: { feature: MapFeature }) {
   }
 
   return (
-    <aside className="absolute inset-x-2 bottom-2 z-20 max-h-[60%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:right-3 md:top-3 md:bottom-auto md:w-80 md:max-h-[calc(100%-1.5rem)]">
+    <aside className="absolute inset-x-2 bottom-14 z-20 max-h-[60%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs uppercase tracking-wide text-loam-400">

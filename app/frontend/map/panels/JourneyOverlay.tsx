@@ -57,12 +57,16 @@ export default function JourneyOverlay() {
   const step = data.steps[index]
   const next = data.next
   const panelId = next.type === 'item' ? resolvePanel(next.panel, editor.canEdit) : null
+  // On a phone the drafts bar takes the same spot under the drawing toolbar.
+  const hasDrafts = editor.features.some((f) => f.properties.status === 'draft')
 
   return (
     <div
       className={clsx(
-        'pointer-events-none absolute left-14 right-14 top-2 z-10 md:right-auto md:max-w-md',
+        // Under the drawing toolbar on a phone, bottom left (above the scale) from md up.
+        'pointer-events-none absolute left-2 right-14 top-14 z-10 md:bottom-9 md:right-auto md:top-auto md:max-w-md',
         editor.activePanel ? 'md:left-[24.5rem]' : 'md:left-14',
+        hasDrafts && 'hidden md:block',
       )}
     >
       <div className="pointer-events-auto flex items-center gap-2.5 rounded-xl bg-white/95 py-1.5 pl-2 pr-1.5 shadow-lg ring-1 ring-loam-200 backdrop-blur">

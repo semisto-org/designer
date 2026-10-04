@@ -79,3 +79,10 @@
   h1, h2, h3 { @apply font-semibold text-loam-900; }
   .latin { font-style: italic; }
 }
+
+/* Map editor on a phone: the panel bar runs along the bottom, so the
+   scale and attribution move above it. */
+@media (max-width: 47.99rem) {
+  .editor-map .maplibregl-ctrl-bottom-left,
+  .editor-map .maplibregl-ctrl-bottom-right { bottom: 3.25rem; }
+}

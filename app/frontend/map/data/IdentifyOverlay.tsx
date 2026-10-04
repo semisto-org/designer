@@ -134,7 +134,7 @@ function MobileSheet({ query, children }: { query: Query; children: ReactNode })
     }
   }, [instance, query.lngLat])
   return (
-    <div className="absolute inset-x-2 bottom-2 z-30 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-loam-200">
+    <div className="absolute inset-x-2 bottom-14 z-30 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-loam-200">
       {children}
     </div>
   )

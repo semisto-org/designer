@@ -10,5 +10,5 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
 /** "Aide" in the editor header: opens the help drawer on the article of the open panel. */
 export default function HelpAction() {
   const { activePanel } = useEditor()
-  return <HelpButton slug={(activePanel && ARTICLE_BY_PANEL[activePanel]) || undefined} />
+  return <HelpButton compact slug={(activePanel && ARTICLE_BY_PANEL[activePanel]) || undefined} />
 }
