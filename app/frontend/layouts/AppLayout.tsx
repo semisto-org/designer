@@ -24,8 +24,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* On a phone the menu takes its own row under the logo and the account. */}
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 px-4 pt-2 sm:h-14 sm:flex-nowrap sm:gap-6 sm:pt-0">
           <Link href="/maps" className="flex h-10 items-center sm:h-auto" aria-label="Semisto Designer">
-            <Wordmark className="hidden sm:inline-flex" />
-            <Wordmark className="sm:hidden" compact />
+            {/* One lockup: a `hidden` class on it would fight its own inline-flex. */}
+            <Wordmark compact="mobile" />
           </Link>
           <nav className="order-last -mx-1 flex w-full min-w-0 items-center gap-1 overflow-x-auto px-1 pb-2 text-sm sm:order-none sm:w-auto sm:pb-0">
             {nav.map((item) => (
