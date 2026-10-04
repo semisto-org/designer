@@ -15,6 +15,13 @@ class HelpArticleTest < ActiveSupport::TestCase
     end
   end
 
+  test "the plant identification article is in the design category" do
+    article = HelpArticle.find("identifier-une-plante")
+    assert_equal "Concevoir", article.category
+    assert_includes article.html, "Pl@ntNet"
+    assert_equal "identifier-une-plante", HelpArticle.search("photographier feuille fleur").first.slug
+  end
+
   test "renders Markdown to HTML with heading ids and no English anchors" do
     article = HelpArticle.find("formules-et-forfait")
     assert_includes article.html, "<h2 id=\"la-carte-gratuite\">La carte gratuite</h2>"

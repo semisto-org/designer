@@ -26,6 +26,7 @@ import PlantListPanel from '@/map/plants/PlantListPanel'
 import PlantSection from '@/map/plants/PlantSection'
 import ObservationsSection from '@/map/plants/ObservationsSection'
 import PatchSection from '@/map/plants/PatchSection'
+import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
 import { isPatch, isPlant } from '@/map/plants/properties'
 import ClimatePanel from '@/map/panels/ClimatePanel'
@@ -71,6 +72,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'draft-review', applies: (f) => f.properties.status === 'draft', component: DraftReviewSection, order: 5 },
   { id: 'plant', applies: isPlant, component: PlantSection, order: 20 },
   { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
+  { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: () => true, component: PhotosInspector, order: 70 },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },

@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
     {
       currentUser: authenticated? ? Current.user.as_inertia : nil,
       entitlements: authenticated? ? Current.user.entitlements.as_json : nil,
-      env: { googleSignIn: GoogleSignIn.enabled?, billing: Billing.enabled? }
+      env: { googleSignIn: GoogleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
     }
   end
 

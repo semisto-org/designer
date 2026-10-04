@@ -206,6 +206,14 @@ Rails.application.routes.draw do
     get "export.geojson", to: "exports#show", as: :geojson_export, format: false
   end
   # --- end map-drawing ---
+  # --- plantnet ---
+  # Species identification from photos (Pl@ntNet), from a plant's inspector.
+  resources :maps, only: [] do
+    scope module: :maps do
+      resources :plant_identifications, only: :create
+    end
+  end
+  # --- end plantnet ---
 
   # --- teams ---
   # Teams ("équipes"): members edit every map of the team. The invitation
