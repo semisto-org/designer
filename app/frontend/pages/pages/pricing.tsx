@@ -1,4 +1,4 @@
-import { Check, Minus } from 'lucide-react'
+import { Check, Landmark, Minus } from 'lucide-react'
 import { CheckoutButton } from '@/components/billing/CheckoutButton'
 import { PlanCard } from '@/components/billing/PlanCard'
 import { Faq, type FaqItem } from '@/components/site/Faq'
@@ -117,6 +117,18 @@ export default function Pricing({ catalog, memberPriceCents, contactEmail }: { c
             <p className="mt-2 text-pretty text-loam-500">{tf('site.pricing.drone.body')}</p>
           </div>
           <ButtonLink href="/mission-drone" variant="secondary" className="shrink-0">{tf('site.pricing.drone.cta')}</ButtonLink>
+        </div>
+        <div id="facture" className="mt-6 flex flex-col items-start gap-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-loam-200/70 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="flex max-w-2xl gap-4">
+            <Landmark className="mt-1 hidden h-6 w-6 shrink-0 text-leaf-600 sm:block" aria-hidden="true" />
+            <div>
+              <h2 className="text-balance text-xl sm:text-2xl">{tf('invoicing.pricing.title')}</h2>
+              <p className="mt-2 text-pretty text-loam-600">{tf('invoicing.pricing.body')}</p>
+              <p className="mt-1 text-pretty text-sm text-loam-500">{tf('invoicing.pricing.detail')}</p>
+            </div>
+          </div>
+          {/* Signed out, /billing/invoice sends the visitor through sign-in and back. */}
+          <ButtonLink href="/billing/invoice" variant="secondary" className="shrink-0">{tf('invoicing.pricing.cta')}</ButtonLink>
         </div>
       </Section>
 

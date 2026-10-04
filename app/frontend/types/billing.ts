@@ -37,6 +37,35 @@ export type PaymentData = {
   invoiceUrl: string | null
 }
 
+/** A plan paid on invoice (or granted by Semisto) for a period. */
+export type GrantData = {
+  id: number
+  planKey: InvoicePlanKey
+  startsAt: string
+  endsAt: string
+  active: boolean
+  revokedAt: string | null
+  onInvoice: boolean
+  daysLeft: number
+}
+
+export type InvoicePlanKey = 'atelier' | 'bureau' | 'yearly'
+export type InvoiceRequestStatus = 'requested' | 'invoiced' | 'paid' | 'cancelled'
+
+/** « Payer sur facture »: a request as its author sees it. */
+export type InvoiceRequestSummary = {
+  id: number
+  planKey: InvoicePlanKey
+  organizationName: string
+  purchaseOrder: string | null
+  status: InvoiceRequestStatus
+  amountCents: number
+  currency: string
+  createdAt: string
+  invoiceUrl: string | null
+  invoiceNumber: string | null
+}
+
 export type BillingData = {
   enabled: boolean
   plan: PlanKey
@@ -49,6 +78,8 @@ export type BillingData = {
   drone: { paidAt: string }[]
   canManage: boolean
   payments: PaymentData[]
+  grants: GrantData[]
+  invoiceRequests: InvoiceRequestSummary[]
   catalog: CatalogPlan[]
   memberPriceCents: number
   checkout: 'success' | 'cancelled' | null

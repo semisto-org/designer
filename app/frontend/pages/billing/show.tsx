@@ -1,15 +1,15 @@
-import { Head, router } from '@inertiajs/react'
-import { CircleCheck, FlaskConical, Info, Receipt } from 'lucide-react'
+import { Head, Link, router } from '@inertiajs/react'
+import { CircleCheck, FlaskConical, Info, Landmark, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { CheckoutButton } from '@/components/billing/CheckoutButton'
 import { PlanCard } from '@/components/billing/PlanCard'
 import { HelpButton } from '@/components/help/HelpButton'
-import { Button } from '@/components/ui/Button'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
 import { formatDate, formatMoney, formatPrice } from '@/lib/money'
-import type { BillingData, CatalogKey, CatalogPlan } from '@/types/billing'
+import type { BillingData, CatalogKey, CatalogPlan, GrantData, InvoiceRequestStatus, InvoiceRequestSummary } from '@/types/billing'
 
 const PLAN_ORDER: CatalogKey[] = ['free', 'yearly', 'atelier', 'bureau']
 const POLL_MS = 3000
@@ -71,6 +71,12 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
         </div>
       )}
       {billing.enabled && <StatusCard billing={billing} />}
+      {!billing.enabled && billing.grants.length > 0 && (
+        <Card className="mt-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">{t('invoicing.billing.grant_title')}</p>
+          <div className="mt-2 space-y-1.5 text-sm text-loam-600"><GrantLines grants={billing.grants} /></div>
+        </Card>
+      )}
 
       <h2 className="mt-12 text-lg">{t('billing.plans_title')}</h2>
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -107,6 +113,8 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
           </p>
         </Card>
       </div>
+
+      <InvoiceCard requests={billing.invoiceRequests} />
 
       <p className="mt-4 text-sm text-loam-400">{t('billing.actions.pay_securely')}</p>
 
@@ -235,6 +243,7 @@ function StatusCard({ billing }: { billing: BillingData }) {
                 <p className="text-loam-500">{t('billing.status.yearly_renew_note')}</p>
               </>
             )}
+            <GrantLines grants={billing.grants} />
             {subscription && (
               <>
                 {subscription.active && subscription.currentPeriodEnd && !subscription.cancelAtPeriodEnd && (
@@ -254,6 +263,78 @@ function StatusCard({ billing }: { billing: BillingData }) {
           <PortalButton label={subscription.pastDue ? t('billing.actions.invoices') : t('billing.actions.manage')} />
         )}
       </div>
+    </Card>
+  )
+}
+
+/** Plans paid on invoice: the running one (until when) and the next one. */
+function GrantLines({ grants }: { grants: GrantData[] }) {
+  return (
+    <>
+      {grants.map((grant) => {
+        const plan = t(`billing.plans.${grant.planKey}.name`)
+        if (!grant.active) {
+          return <p key={grant.id}>{t('invoicing.billing.grant_upcoming', { plan, start: formatDate(grant.startsAt), end: formatDate(grant.endsAt) })}</p>
+        }
+        return (
+          <div key={grant.id} className="space-y-1.5">
+            <p className="font-medium text-loam-800">
+              {t(grant.onInvoice ? 'invoicing.billing.grant_until' : 'invoicing.billing.grant_until_manual', { plan, date: formatDate(grant.endsAt) })}
+            </p>
+            <p>{t('invoicing.billing.grant_days', { count: grant.daysLeft })} {t('invoicing.billing.grant_renew_note')}</p>
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+const REQUEST_STATUS_STYLES: Record<InvoiceRequestStatus, string> = {
+  requested: 'bg-prune-50 text-prune-700',
+  invoiced: 'bg-humus-50 text-humus-700',
+  paid: 'bg-leaf-50 text-leaf-700',
+  cancelled: 'bg-loam-100 text-loam-600',
+}
+
+/** « Payer sur facture »: the way in for communes, schools and companies, and their requests. */
+function InvoiceCard({ requests }: { requests: InvoiceRequestSummary[] }) {
+  return (
+    <Card className="mt-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 gap-3">
+          <Landmark className="mt-0.5 h-5 w-5 shrink-0 text-leaf-600" aria-hidden="true" />
+          <div>
+            <h3 className="text-base">{t('invoicing.entry.title')}</h3>
+            <p className="mt-1 text-sm text-loam-500">{tf('invoicing.entry.body')}</p>
+          </div>
+        </div>
+        <ButtonLink href="/billing/invoice" variant="secondary" className="shrink-0">{t('invoicing.entry.cta')}</ButtonLink>
+      </div>
+      {requests.length > 0 && (
+        <div className="mt-4 border-t border-loam-100 pt-4">
+          <h4 className="text-sm font-semibold text-loam-800">{t('invoicing.billing.requests_title')}</h4>
+          <ul className="mt-1 divide-y divide-loam-100 text-sm">
+            {requests.map((request) => (
+              <li key={request.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
+                <div className="min-w-0">
+                  <Link href={`/billing/invoice/${request.id}`} className="break-words font-medium text-loam-900 hover:text-prune-700">
+                    {t('invoicing.billing.request_line', { plan: t(`billing.plans.${request.planKey}.name`), organization: request.organizationName })}
+                  </Link>
+                  <p className="text-xs text-loam-500">{t('invoicing.billing.requested_on', { date: formatDate(request.createdAt) })} · {formatMoney(request.amountCents, request.currency)}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {request.invoiceUrl && (
+                    <a href={request.invoiceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-prune-600 hover:text-prune-800">
+                      <Receipt className="h-3.5 w-3.5" aria-hidden="true" />{t('invoicing.billing.open_invoice')}
+                    </a>
+                  )}
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${REQUEST_STATUS_STYLES[request.status]}`}>{t(`invoicing.statuses.${request.status}`)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </Card>
   )
 }
