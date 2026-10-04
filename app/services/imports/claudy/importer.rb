@@ -63,7 +63,7 @@ module Imports
           features.each { |row| guard("map_feature", row) { import_feature(row) } }
           source.plants.each { |row| guard("plant", row) { import_plant(row) } }
           if source.sketches.nil?
-            report.sketches_available = false
+            report.sketches_missing = source.sketches_missing
           else
             source.sketches.each { |row| guard("sketch", row) { import_sketch(row) } }
           end

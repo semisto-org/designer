@@ -20,6 +20,7 @@ module Imports
 
       # nil: this source cannot list sketches (an empty list would say « none »).
       def sketches = nil
+      def sketches_missing = :api
 
       def feature_detail(row) = client.map_feature(row["id"]) || {}
       def plant_detail(row) = client.plant(row["id"]) || {}

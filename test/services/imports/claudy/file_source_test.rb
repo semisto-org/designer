@@ -26,7 +26,7 @@ class Imports::Claudy::FileSourceTest < ActiveSupport::TestCase
     assert_equal file_fixture("terrain.jpg").binread.b, photo.image.download.b
     assert_not_requested :get, %r{app\.example}
     assert_match "Source : fichier #{CLAUDY_FIXTURES.join('export/claudy-map.json')}", report.to_s
-    assert_no_match "notes manuscrites : l'API", report.to_s
+    assert_no_match "Les notes manuscrites", report.to_s
 
     second = claudy_import(@map, source: source("export/claudy-map.json"))
     assert_equal 0, second.total(:created) + second.total(:updated)
@@ -43,6 +43,8 @@ class Imports::Claudy::FileSourceTest < ActiveSupport::TestCase
     assert_match "« Mare double » (Claudy map_feature n° 175) ne convient pas à « #{MapElements.label('pond')} »", report.warnings.sole
     assert_equal({ "name" => "Pommier" }, imported(@map, "plant", 7).properties["unmatched_species"])
     assert_equal 1, report.skipped[:welcome_map]
+    assert_match "Les notes manuscrites : ce fichier ne les contient pas", report.to_s
+    assert_match "Photos : aucune.", report.to_s
   end
 
   test "reads a saved API response" do

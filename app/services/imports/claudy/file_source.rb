@@ -31,6 +31,9 @@ module Imports
 
       def label = I18n.t("claudy_import.report.source_file", path: path.to_s)
 
+      # Only the export carries sketches; the other shapes cannot list them.
+      def sketches_missing = (:file if sketches.nil?)
+
       # Details travel with each row in a file.
       def feature_detail(row) = row
       def plant_detail(row) = row

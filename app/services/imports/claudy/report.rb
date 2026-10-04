@@ -10,7 +10,8 @@ module Imports
 
       attr_reader :map, :source_label, :counts, :photos, :skipped, :kept, :unmatched_species,
                   :unmatched_varieties, :warnings, :errors, :unknown_networks
-      attr_accessor :palette_created, :sketches_available, :aborted
+      # sketches_missing: why the source could not list sketches (:api, :file), or nil.
+      attr_accessor :palette_created, :sketches_missing, :aborted
 
       def initialize(map:, source_label:, dry_run: false, photos_enabled: true)
         @map = map
@@ -27,7 +28,6 @@ module Imports
         @warnings = []
         @errors = []
         @palette_created = 0
-        @sketches_available = true
       end
 
       def dry_run? = @dry_run
@@ -87,7 +87,7 @@ module Imports
           text = PHOTO_OUTCOMES.filter_map do |outcome|
             I18n.t("claudy_import.report.photo_counts.#{outcome}", count: photos[outcome]) if photos[outcome].positive?
           end
-          I18n.t("claudy_import.report.photos", counts: text.presence&.join(", ") || I18n.t("claudy_import.report.photo_counts.created", count: 0))
+          text.any? ? I18n.t("claudy_import.report.photos", counts: text.join(", ")) : I18n.t("claudy_import.report.photos_none")
         end
 
         def unmatched_lines(list)
@@ -98,7 +98,7 @@ module Imports
 
         def skipped_lines
           lines = skipped.map { |reason, count| I18n.t("claudy_import.report.skipped_reasons.#{reason}", count:) }
-          lines << I18n.t("claudy_import.report.sketches_api") unless sketches_available
+          lines << I18n.t("claudy_import.report.sketches_missing.#{sketches_missing}") if sketches_missing
           lines
         end
 

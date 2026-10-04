@@ -173,6 +173,7 @@ fr:
         failed:
           one: "%{count} en échec"
           other: "%{count} en échec"
+      photos_none: "Photos : aucune."
       photos_off: "Photos : non importées (PHOTOS=0)."
       palette:
         one: "Palette : %{count} espèce ou variété ajoutée."
@@ -212,7 +213,9 @@ fr:
         tasks:
           one: "  - %{count} tâche du carnet : Designer n'a pas encore de carnet de tâches."
           other: "  - %{count} tâches du carnet : Designer n'a pas encore de carnet de tâches."
-      sketches_api: "  - Les notes manuscrites : l'API de Claudy ne les expose pas (utilisez l'export, FILE=…)."
+      sketches_missing:
+        api: "  - Les notes manuscrites : l'API de Claudy ne les expose pas (utilisez l'export, FILE=…)."
+        file: "  - Les notes manuscrites : ce fichier ne les contient pas (utilisez l'export de Claudy, voir docs/import-claudy.md)."
       kept: "Laissé tel quel dans Designer :"
       kept_reasons:
         edited:
