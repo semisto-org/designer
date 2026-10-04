@@ -12,7 +12,7 @@ module Admin
 
     def index
       filter = FILTERS.include?(params[:status]) ? params[:status] : "todo"
-      orders = PlanPurchase.drone.paid.newest_first
+      orders = PlanPurchase.drone.paid.order(starts_at: :desc, id: :desc)
         .includes(:billing_payments, user: :owned_maps, aerial_views: [ :created_by, { map: :owner } ])
       orders = case filter
       when "todo" then orders.where.not(id: delivered_order_ids)

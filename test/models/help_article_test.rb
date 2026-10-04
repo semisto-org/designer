@@ -3,7 +3,7 @@ require "test_helper"
 class HelpArticleTest < ActiveSupport::TestCase
   EXPECTED_SLUGS = %w[
     creer-sa-premiere-carte le-parcours-en-quatre-etapes remplir-la-fiche-projet
-    choisir-ses-parcelles lire-les-couches-du-geoportail dessiner-l-existant calques-mesures-et-croquis
+    choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone dessiner-l-existant calques-mesures-et-croquis
     lire-le-relief-et-l-eau le-climat-d-aujourd-hui-et-de-demain analyser-son-sol photos-et-suivi-dans-le-temps
     construire-sa-palette-et-ses-patches la-liste-de-plants-et-la-commande planter-puis-observer
     les-alertes-reglementaires le-tableau-financier
@@ -92,7 +92,7 @@ class HelpArticleTest < ActiveSupport::TestCase
     names = HelpArticle.categories.map { |c| c[:name] }
     assert_equal CATEGORIES, names
     cartographier = HelpArticle.categories.find { |c| c[:name] == "Cartographier" }[:articles]
-    assert_equal %w[choisir-ses-parcelles lire-les-couches-du-geoportail dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
+    assert_equal %w[choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
   end
 
   test "search finds articles by words in the body, ignoring case and accents" do

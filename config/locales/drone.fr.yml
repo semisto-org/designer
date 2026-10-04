@@ -98,6 +98,7 @@ fr:
       other_empty: "Aucune vue posée hors commande pour l'instant."
       form:
         title_order: "Poser la vue sur une carte"
+        add_another: "Ajouter une autre vue pour cette commande"
         title_any: "Poser une vue sur une carte, par son numéro"
         map: "Carte"
         map_id: "Numéro de la carte"
