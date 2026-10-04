@@ -1,0 +1,77 @@
+{
+  "expo": {
+    "name": "Semisto Designer",
+    "slug": "semisto-designer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "org.semisto.designer",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "org.semisto.designer",
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "org.semisto.designer",
+      "adaptiveIcon": {
+        "backgroundColor": "#5B5781",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "CAMERA"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F7F5F2",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Semisto Designer montre où vous êtes sur le plan de votre terrain et place vos photos, relevés et plantations.",
+          "locationAlwaysAndWhenInUsePermission": "Semisto Designer continue d'enregistrer votre trace quand l'écran est éteint, pendant que vous marchez le long d'une haie ou d'une limite.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Semisto Designer photographie votre terrain et vos plantes pour les rattacher à la carte.",
+          "photosPermission": "Semisto Designer importe des photos de votre terrain déjà prises."
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "apiUrl": "https://designer.semisto.org"
+    }
+  }
+}

@@ -6,3 +6,11 @@ inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 # # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
 # Layout/SpaceInsideArrayLiteralBrackets:
 #   Enabled: false
+
+# The phone app (mobile/) has no Ruby of its own; its node_modules ship some.
+inherit_mode:
+  merge:
+    - Exclude
+AllCops:
+  Exclude:
+    - "mobile/**/*"
