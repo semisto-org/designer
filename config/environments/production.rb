@@ -69,9 +69,10 @@ Rails.application.configure do
     port: ENV.fetch("SMTP_PORT", 587).to_i,
     user_name: ENV["SMTP_USERNAME"],
     password: ENV["SMTP_PASSWORD"],
-    authentication: :plain,
+    # No login (a relay that trusts the server): no authentication either.
+    authentication: (:plain if ENV["SMTP_USERNAME"].present?),
     enable_starttls_auto: true
-  }
+  }.compact
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
