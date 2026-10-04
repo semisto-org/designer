@@ -57,6 +57,13 @@ fr:
       Point: "un point"
       LineString: "une ligne"
       Polygon: "une surface"
+      MultiLineString: "un ou plusieurs traits"
+
+    geometry_short:
+      Point: "Point"
+      LineString: "Ligne"
+      Polygon: "Surface"
+      MultiLineString: "Traits"
 
     errors:
       kind_format: "Le type d'élément n'est pas valide."
@@ -211,6 +218,7 @@ fr:
       hint_polygon: "Cliquez point par point le contour de « %{kind} ». Revenez au premier point ou touchez « Terminer »."
       finish: "Terminer"
       cancel: "Annuler"
+      close: "Fermer"
       created: "Ajouté à la carte : %{kind}."
       viewer: "Vous consultez cette carte en lecture seule."
 
@@ -228,8 +236,6 @@ fr:
       again: "Nouvelle mesure"
       close: "Fermer la mesure"
       not_saved: "Une mesure ne s'enregistre que si vous le demandez."
-      name_distance: "Mesure de %{value}"
-      name_area: "Mesure de %{value}"
 
     sketch:
       hint: "Dessinez à main levée : cliquez (ou touchez) pour commencer, tracez, puis cliquez pour finir."
@@ -269,7 +275,7 @@ fr:
       no_boundary: "Dessinez le contour du terrain pour vérifier les distances aux limites."
       error: "Les alertes n'ont pas pu être vérifiées. Réessayez dans un instant."
       show: "Voir sur la carte"
-      source: "Source"
+      source: "Source : %{label}"
       severity:
         info: "À vérifier"
         warning: "Permis probable"
@@ -329,10 +335,11 @@ fr:
       extent: "Emprise imprimée : %{width} × %{height}"
       fit_scale: "Échelle retenue : 1:%{scale}"
       generate: "Créer le PDF"
-      generating: "Préparation du plan…"
+      move_hint: "Déplacez la carte pour cadrer le plan : le cadre orange montre ce qui sera imprimé."
+      rendering: "Rendu de la carte…"
+      writing: "Mise en page du PDF…"
       done: "Plan téléchargé."
       error: "Le plan n'a pas pu être créé. Réessayez dans un instant."
-      too_large: "À cette échelle, l'image serait trop lourde : choisissez une échelle plus petite ou un format plus petit."
       scale_label: "Échelle 1:%{scale}"
       date: "Date"
       author: "Auteur"

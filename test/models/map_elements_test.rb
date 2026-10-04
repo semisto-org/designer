@@ -31,7 +31,7 @@ class MapElementsTest < ActiveSupport::TestCase
       config["elements"].each do |kind, spec|
         assert spec["icon"].present?, kind
         assert_match(/\A#\h{6}\z/, spec["color"], kind)
-        Array(spec["geometry"]).each { |g| assert_includes %w[Point LineString Polygon], g }
+        Array(spec["geometry"]).each { |g| assert_includes %w[Point LineString Polygon MultiLineString], g }
         geometry = { "Point" => point, "LineString" => { "type" => "LineString", "coordinates" => [ [ 4.9, 50.34 ], [ 4.9001, 50.3401 ] ] }, "Polygon" => square(size: 0.0001) }[Array(spec["geometry"]).first]
         record = maps(:ahinvaux).features.new(layer:, kind:, geometry:)
         assert record.valid?, "#{kind}: #{record.errors.full_messages.to_sentence}"
@@ -75,6 +75,12 @@ class MapElementsTest < ActiveSupport::TestCase
 
     tree = maps(:ahinvaux).features.new(layer: "existing", kind: "existing_tree", geometry: point, properties: { "keep" => "yes" })
     assert_not tree.valid?
+  end
+
+  test "a sketch is one or several strokes" do
+    strokes = { "type" => "MultiLineString", "coordinates" => [ [ [ 4.9, 50.34 ], [ 4.901, 50.34 ] ], [ [ 4.9, 50.341 ], [ 4.901, 50.341 ] ] ] }
+    assert maps(:ahinvaux).features.new(layer: "notes", kind: "sketch", geometry: strokes).valid?
+    assert_not maps(:ahinvaux).features.new(layer: "notes", kind: "sketch", geometry: square).valid?
   end
 
   test "measures accept lines and areas" do

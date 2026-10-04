@@ -6,7 +6,7 @@
 #
 # For each design layer: its colour and the kinds of elements one can draw.
 # A kind has:
-#   geometry  Point | LineString | Polygon (or a list when several are allowed)
+#   geometry  Point | LineString | Polygon | MultiLineString (or a list when several are allowed)
 #   icon      lucide icon name (frontend registry: map/drawing/icons.ts)
 #   color     default colour; a feature's `style.color` overrides it
 #   line      line styling: width (px), dash ([dash, gap] in line widths), casing (halo colour)
@@ -404,7 +404,7 @@ layers:
         icon: sticky-note
         color: "#726b9f"
       sketch:
-        geometry: LineString
+        geometry: [LineString, MultiLineString]
         icon: signature
         color: "#ffffff"
         line: { width: 3, casing: "#1b1712" }
