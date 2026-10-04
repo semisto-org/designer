@@ -33,6 +33,9 @@ class Map < ApplicationRecord
   # Dated aerial views (« Vues drone ») set up by Semisto, newest first.
   has_many :aerial_views, -> { newest_first }, dependent: :destroy, inverse_of: :map
 
+  # Ownership transfer proposals (« Transférer la carte »), kept as history.
+  has_many :transfers, class_name: "MapTransfer", dependent: :delete_all
+
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }
   validate :project_matches_schema, if: :will_save_change_to_project?

@@ -44,6 +44,7 @@ import ExportMenu from '@/map/drawing/ExportMenu'
 import DrawingLayersPanel from '@/map/drawing/LayersPanel'
 import LiveSync from '@/map/drawing/LiveSync'
 import AerialViewsOverlay from '@/drone/AerialViewsOverlay'
+import TransferNotice from '@/transfer/TransferNotice'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -85,6 +86,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
+  { id: 'transfer-notice', component: TransferNotice, order: 4 },
 ]
 
 // Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.

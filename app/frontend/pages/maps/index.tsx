@@ -4,16 +4,20 @@ import { ButtonLink } from '@/components/ui/Button'
 import { WelcomeCard } from '@/components/journey/WelcomeCard'
 import { formatArea, t } from '@/lib/i18n'
 import { TeamMapsSection, groupMapsByTeam } from '@/teams/TeamMapsSection'
+import { IncomingTransfers } from '@/transfer/IncomingTransfers'
 import type { ListedMap } from '@/types/teams'
+import type { IncomingTransfer } from '@/types/transfer'
 
 type Props = {
   maps: ListedMap[]
   canCreate: boolean
   /** The teams I belong to: their maps get a section each. */
   teams?: { id: number; name: string }[]
+  /** Maps someone proposes me to take over (transfer area). */
+  incomingTransfers?: IncomingTransfer[]
 }
 
-export default function MapsIndex({ maps, canCreate, teams = [] }: Props) {
+export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfers = [] }: Props) {
   const { own, byTeam } = groupMapsByTeam(maps, teams)
   return (
     <div>
@@ -27,6 +31,7 @@ export default function MapsIndex({ maps, canCreate, teams = [] }: Props) {
           <ButtonLink href="/billing" variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
         )}
       </div>
+      <IncomingTransfers transfers={incomingTransfers} />
       {maps.length === 0 ? (
         <div className="mt-8">
           <WelcomeCard canCreate={canCreate} />
