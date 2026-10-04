@@ -4,6 +4,7 @@
 # redirected to an unverified URI); the others go back to the client.
 module Oauth
   class AuthorizationsController < ApplicationController
+    forbid_while_impersonating only: :create
     before_action :load_client
     before_action :validate_request
 

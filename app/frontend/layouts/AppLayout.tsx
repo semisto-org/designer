@@ -15,7 +15,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
     { href: '/plants', label: t('nav.plants') },
     { href: '/help', label: t('nav.help') },
-    ...(currentUser?.admin ? [{ href: '/admin/requests', label: t('journey.nav.requests') }] : []),
+    ...(currentUser?.admin ? [{ href: '/admin', label: t('admin.nav.link') }] : []),
   ]
   return (
     <div className="min-h-dvh">

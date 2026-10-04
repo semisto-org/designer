@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include Authentication
+  include Impersonation
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   # The phone app (MobileApp) is not a browser: no check for it.
@@ -12,6 +13,7 @@ class ApplicationController < ActionController::Base
     {
       currentUser: authenticated? ? Current.user.as_inertia : nil,
       entitlements: authenticated? ? Current.user.entitlements.as_json : nil,
+      impersonation: impersonation_props,
       env: { googleSignIn: GoogleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
     }
   end

@@ -43,7 +43,8 @@ module Authentication
     end
 
     def find_session_by_cookie
-      Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
+      found = Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
+      found&.impersonation_expired? ? end_impersonation(found, reason: "expired") : found
     end
 
     def request_authentication
@@ -63,7 +64,9 @@ module Authentication
     end
 
     def terminate_session
-      Current.session.destroy
+      # Signing out while impersonating signs the admin out too.
+      Current.session = end_impersonation(Current.session, reason: "sign_out") if Current.session.impersonation?
+      Current.session&.destroy
       cookies.delete(:session_id)
     end
 end

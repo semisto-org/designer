@@ -24,6 +24,8 @@ export type EntitlementsData = {
 export type SharedProps = {
   currentUser: CurrentUser | null
   entitlements: EntitlementsData | null
+  /** An admin is signed in as this user (« Se connecter en tant que »). */
+  impersonation: import('./admin').ImpersonationData | null
   env: { googleSignIn: boolean; billing: boolean; plantnet: boolean }
 }
 
