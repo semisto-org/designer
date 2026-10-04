@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_140100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -425,10 +425,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
     t.index ["user_id"], name: "index_oauth_grants_on_user_id"
   end
 
+  create_table "organization_invitations", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.citext "email_address", null: false
+    t.string "role", default: "member", null: false
+    t.string "token", null: false
+    t.bigint "invited_by_id", null: false
+    t.datetime "accepted_at"
+    t.datetime "expires_at"
+    t.datetime "last_sent_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invited_by_id"], name: "index_organization_invitations_on_invited_by_id"
+    t.index ["organization_id"], name: "index_organization_invitations_on_organization_id"
+    t.index ["token"], name: "index_organization_invitations_on_token", unique: true
+  end
+
   create_table "organization_memberships", force: :cascade do |t|
     t.bigint "organization_id", null: false
     t.bigint "user_id", null: false
-    t.string "role", default: "designer", null: false
+    t.string "role", default: "member", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["organization_id", "user_id"], name: "index_organization_memberships_on_organization_id_and_user_id", unique: true
@@ -821,6 +837,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
   add_foreign_key "oauth_access_tokens", "users", on_delete: :cascade
   add_foreign_key "oauth_grants", "oauth_clients", on_delete: :cascade
   add_foreign_key "oauth_grants", "users", on_delete: :cascade
+  add_foreign_key "organization_invitations", "organizations"
+  add_foreign_key "organization_invitations", "users", column: "invited_by_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
   add_foreign_key "palette_items", "maps", on_delete: :cascade

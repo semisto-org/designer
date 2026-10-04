@@ -5,12 +5,14 @@ import { Flash } from '@/components/ui/Flash'
 import { Logo } from '@/components/Logo'
 import { t } from '@/lib/i18n'
 import type { SharedProps } from '@/types'
+import type { TeamAwareUser } from '@/types/teams'
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { currentUser } = usePage().props as unknown as SharedProps
   const url = usePage().url
   const nav = [
     { href: '/maps', label: t('nav.maps') },
+    ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
     { href: '/plants', label: t('nav.plants') },
     { href: '/help', label: t('nav.help') },
     ...(currentUser?.admin ? [{ href: '/admin/requests', label: t('journey.nav.requests') }] : []),

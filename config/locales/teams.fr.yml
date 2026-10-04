@@ -1,0 +1,180 @@
+# Teams ("équipes"): a team's members edit every map of the team. Keys in
+# English, values in French. Backend (mailer, controllers) and the React
+# frontend read the same file.
+fr:
+  activerecord:
+    models:
+      organization: "Équipe"
+      organization_membership: "Membre de l'équipe"
+      organization_invitation: "Invitation"
+    attributes:
+      organization:
+        name: "Nom de l'équipe"
+      organization_membership:
+        role: "Rôle"
+      organization_invitation:
+        email_address: "Adresse e-mail"
+        role: "Rôle"
+    errors:
+      models:
+        organization:
+          attributes:
+            name:
+              blank: "ne peut pas être vide"
+              too_long: "est trop long (%{count} caractères au maximum)"
+        organization_membership:
+          last_admin: "L'équipe doit garder au moins un administrateur."
+          attributes:
+            role:
+              last_admin: "doit rester administrateur : l'équipe n'en a pas d'autre"
+        organization_invitation:
+          attributes:
+            email_address:
+              already_member: "fait déjà partie de l'équipe"
+  teams:
+    nav: "Équipes"
+    roles:
+      admin: "Administrateur"
+      member: "Membre"
+    role_help:
+      admin: "Un administrateur invite et retire des membres, change leurs rôles et renomme l'équipe."
+      member: "Un membre modifie toutes les cartes de l'équipe et participe à leurs discussions."
+    plan_note: "Chaque carte reste à son propriétaire et suit son forfait : l'équipe ne change rien à la facturation."
+    created: "Équipe « %{name} » créée. Invitez maintenant ses membres."
+    renamed: "Équipe renommée."
+    deleted: "Équipe « %{name} » supprimée. Ses cartes restent à leurs propriétaires."
+    members_count:
+      one: "%{count} membre"
+      other: "%{count} membres"
+    maps_count:
+      zero: "Aucune carte"
+      one: "%{count} carte"
+      other: "%{count} cartes"
+    index:
+      title: "Mes équipes"
+      intro: "Une équipe réunit les personnes qui conçoivent ensemble : bureau d'études, association, groupe en formation. Chaque membre modifie toutes les cartes de l'équipe, sans occuper l'une des 3 places d'éditeur d'une carte."
+      empty_title: "Pas encore d'équipe"
+      empty_body: "Créez une équipe, invitez vos collègues, puis confiez-lui vos cartes depuis le bouton « Partager » de chaque carte."
+      create_title: "Créer une équipe"
+      name: "Nom de l'équipe"
+      name_placeholder: "Les Jardiniers du Condroz"
+      create_hint: "Vous en serez l'administrateur. Créer une équipe est gratuit."
+      create: "Créer l'équipe"
+    show:
+      back: "Mes équipes"
+      your_role: "Vous êtes %{role}"
+      rename: "Renommer"
+      rename_title: "Renommer l'équipe"
+      members_title: "Membres"
+      you: "(vous)"
+      role_of: "Rôle de %{name}"
+      remove: "Retirer %{name}"
+      remove_confirm: "Retirer %{name} de l'équipe ? Cette personne n'aura plus accès aux cartes de l'équipe, sauf aux siennes et à celles où elle est invitée."
+      remove_confirm_maps:
+        one: "Sa carte reste dans l'équipe."
+        other: "Ses %{count} cartes restent dans l'équipe."
+      maps_owned:
+        one: "%{count} carte dans l'équipe"
+        other: "%{count} cartes dans l'équipe"
+      last_admin: "Seul administrateur"
+      invite_title: "Inviter par e-mail"
+      invite_email: "Adresse e-mail"
+      invite_placeholder: "prenom@exemple.org"
+      invite_role: "Rôle"
+      invite_send: "Inviter"
+      invite_hint: "La personne reçoit un lien valable 30 jours : elle se connecte (avec Google ou un lien par e-mail) et rejoint l'équipe."
+      pending: "Invitations en attente"
+      expires: "jusqu'au %{date}"
+      resend: "Renvoyer l'invitation à %{email}"
+      cancel_invitation: "Annuler l'invitation de %{email}"
+      maps_title: "Cartes de l'équipe"
+      maps_empty: "Aucune carte dans l'équipe pour l'instant. Pour en ajouter une, ouvrez-la puis cliquez sur « Partager » : seul le propriétaire d'une carte peut la confier à l'équipe."
+      maps_hint: "Pour ajouter une de vos cartes : ouvrez-la, puis « Partager »."
+      owner: "Carte de %{name}"
+      owner_you: "Votre carte"
+      owner_left: "%{name} n'est plus dans l'équipe"
+      leave_title: "Quitter l'équipe"
+      leave_body: "Vous n'aurez plus accès aux cartes de l'équipe, sauf aux vôtres et à celles où vous êtes invité. Vos propres cartes restent dans l'équipe : vous pouvez les en sortir depuis « Partager »."
+      leave: "Quitter l'équipe"
+      leave_confirm: "Quitter l'équipe « %{name} » ?"
+      leave_last_admin: "Vous êtes le seul administrateur : nommez d'abord un autre administrateur, ou supprimez l'équipe."
+      delete_title: "Supprimer l'équipe"
+      delete_body: "Les membres perdent l'accès que l'équipe leur donnait. Aucune carte n'est supprimée : chacune reste à son propriétaire, avec ses invités."
+      delete: "Supprimer l'équipe"
+      delete_confirm: "Supprimer définitivement l'équipe « %{name} » ? Ses cartes restent à leurs propriétaires."
+    members:
+      role_changed: "%{name} est maintenant %{role}."
+      left: "Vous avez quitté l'équipe « %{name} »."
+      removed: "%{name} ne fait plus partie de l'équipe."
+    invitations:
+      sent: "Invitation envoyée à %{email}."
+      resent: "Invitation renvoyée à %{email}."
+      cancelled: "Invitation de %{email} annulée."
+    errors:
+      admin_only: "Seul un administrateur de l'équipe peut faire cela."
+      role: "Ce rôle n'existe pas : choisissez administrateur ou membre."
+      last_admin_role: "L'équipe doit garder au moins un administrateur : nommez-en un autre avant de changer ce rôle."
+      last_admin_leave: "Vous êtes le seul administrateur : nommez d'abord un autre administrateur, ou supprimez l'équipe."
+      last_admin_remove: "L'équipe doit garder au moins un administrateur."
+      already_member: "Cette personne fait déjà partie de l'équipe."
+      invalid_email: "Cette adresse e-mail ne semble pas valide."
+      rate_limited: "Trop d'équipes créées d'un coup. Réessayez dans une heure."
+      rate_limited_invites: "Trop d'invitations envoyées. Réessayez dans une heure."
+    joining:
+      sign_in_first: "Connectez-vous pour rejoindre l'équipe « %{team} » : un lien vous sera envoyé par e-mail, sans mot de passe."
+      joined: "Bienvenue dans l'équipe « %{team} »."
+      my_maps: "Mes cartes"
+      problems:
+        invalid:
+          title: "Lien introuvable"
+          body: "Ce lien ne correspond à aucune invitation. Vérifiez qu'il est complet, ou demandez-en un nouveau à un administrateur de l'équipe."
+        used:
+          title: "Invitation déjà utilisée"
+          body: "Cette invitation à l'équipe « %{team} » a déjà été acceptée par une autre personne. Demandez-en une nouvelle à un administrateur de l'équipe."
+        expired:
+          title: "Invitation expirée"
+          body: "Cette invitation à l'équipe « %{team} » n'est plus valable (30 jours). Demandez à un administrateur de l'équipe de la renvoyer."
+    # The "Équipe" section of a map's sharing dialog (owner only).
+    map:
+      title: "Équipe"
+      in_team: "Cette carte est confiée à l'équipe « %{name} »."
+      owner_left: "Vous ne faites plus partie de cette équipe : ses membres modifient la carte tant que vous ne l'en sortez pas."
+      choose: "Choisir une équipe"
+      add: "Confier à l'équipe"
+      add_to: "Confier à l'équipe « %{name} »"
+      added: "Carte confiée à l'équipe « %{name} »."
+      remove: "Sortir de l'équipe"
+      remove_confirm: "Sortir la carte de l'équipe « %{name} » ? Ses membres n'y auront plus accès, sauf ceux que vous avez invités sur la carte."
+      removed: "La carte n'est plus dans l'équipe."
+      hint: "Tous les membres de l'équipe pourront la modifier, sans occuper l'une des 3 places d'éditeur. Le partage reste entre vos mains."
+      plan: "La carte reste à vous et suit votre forfait."
+      no_team: "Vous concevez à plusieurs ? Une équipe donne à tous ses membres l'accès aux cartes que vous lui confiez."
+      no_team_link: "Créer une équipe"
+      errors:
+        not_member: "Vous ne faites pas partie de cette équipe."
+    # The card on the account page.
+    account:
+      title: "Équipes"
+      body_none: "Vous concevez à plusieurs (bureau d'études, association, formation) ? Une équipe donne à tous ses membres l'accès aux cartes que vous lui confiez."
+      body:
+        one: "Vous faites partie d'une équipe."
+        other: "Vous faites partie de %{count} équipes."
+      link: "Mes équipes"
+      create: "Créer une équipe"
+    # Team sections of the maps list.
+    maps_index:
+      section: "Équipe « %{name} »"
+      open_team: "Voir l'équipe"
+      empty: "Aucune carte dans cette équipe pour l'instant. Ouvrez une de vos cartes puis « Partager » pour la lui confier."
+      owner: "Carte de %{name}"
+  team_invitation_mailer:
+    invite:
+      subject: "%{inviter} vous invite dans l'équipe « %{team} »"
+      greeting: "Bonjour,"
+      body_admin: "%{inviter} vous invite à rejoindre l'équipe « %{team} » sur Semisto Designer, en tant qu'administrateur."
+      body_member: "%{inviter} vous invite à rejoindre l'équipe « %{team} » sur Semisto Designer."
+      what: "Les membres d'une équipe modifient toutes ses cartes et participent à leurs discussions."
+      role_admin: "En tant qu'administrateur, vous gérerez aussi les membres de l'équipe : invitations, rôles et départs."
+      button: "Rejoindre l'équipe"
+      signin_hint: "Vous serez invité à vous connecter (avec Google ou un lien par e-mail, sans mot de passe) si ce n'est pas déjà fait."
+      expiry: "Cette invitation est valable jusqu'au %{date}."

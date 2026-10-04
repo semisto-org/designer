@@ -207,6 +207,23 @@ Rails.application.routes.draw do
   end
   # --- end map-drawing ---
 
+  # --- teams ---
+  # Teams ("équipes"): members edit every map of the team. The invitation
+  # link comes first so "invitations" is never read as a team id.
+  get "teams/invitations/:token", to: "team_invitations#show", as: :accept_team_invitation
+  resources :teams, only: %i[index create show update destroy] do
+    scope module: :teams do
+      resources :memberships, only: %i[update destroy]
+      resources :invitations, only: %i[create destroy] do
+        post :resend, on: :member
+      end
+    end
+  end
+  resources :maps, only: [] do
+    resource :team, only: :update, controller: "maps/teams"
+  end
+  # --- end teams ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

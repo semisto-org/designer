@@ -7,6 +7,7 @@ import { ApiError, api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { SharingData, SharingMember } from '@/types/collab'
+import { MapTeamSection } from '@/teams/MapTeamSection'
 import { Avatar } from './Avatar'
 import { Dialog } from './Dialog'
 
@@ -54,6 +55,7 @@ export function ShareDialog({ onClose }: { onClose: () => void }) {
           <Members data={data} owner={owner} busy={busy} base={base} run={run} onLeft={() => router.visit('/maps')} />
           {owner && <Invite data={data} busy={busy} base={base} run={run} />}
           {owner && <ShareLink data={data} busy={busy} base={base} run={run} />}
+          {owner && <MapTeamSection data={data} busy={busy} base={base} run={run} />}
         </div>
       )}
     </Dialog>
@@ -99,7 +101,8 @@ function Members({ data, owner, busy, base, run, onLeft }: SectionProps & { owne
           {t('collab.share.team', { name: data.organization.name, count: data.organization.members })}
         </p>
       )}
-      {!owner && (
+      {/* People who reach the map only through its team leave the team, not the map. */}
+      {!owner && data.members.some((m) => m.you) && (
         <div className="mt-3">
           <Button size="sm" variant="secondary" onClick={() => void leave()} disabled={leaving}>
             <LogOut className="h-4 w-4" />

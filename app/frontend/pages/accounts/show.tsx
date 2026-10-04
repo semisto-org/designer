@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Field, Input } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { formatDate } from '@/lib/money'
+import { TeamsCard } from '@/teams/TeamsCard'
 import type { AccountData } from '@/types/billing'
 
 export default function AccountShow({ account }: { account: AccountData }) {
@@ -67,6 +68,8 @@ export default function AccountShow({ account }: { account: AccountData }) {
           <ButtonLink href="/billing" variant="secondary">{t('account.manage_plan')}</ButtonLink>
         </div>
       </Card>
+
+      <TeamsCard />
 
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">

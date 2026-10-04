@@ -20,6 +20,7 @@ module Collab
       }
       data[:invitations] = invitations if owner
       data[:link] = link if owner
+      data[:teams] = teams if owner
       data
     end
 
@@ -35,7 +36,12 @@ module Collab
 
       def organization
         return nil unless @map.organization
-        { name: @map.organization.name, members: @map.organization.memberships.count }
+        { id: @map.organization.id, name: @map.organization.name, members: @map.organization.memberships.count }
+      end
+
+      # The owner's teams, where the map can be moved (Maps::TeamsController).
+      def teams
+        @user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } }
       end
 
       def invitations

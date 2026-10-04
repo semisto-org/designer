@@ -31,6 +31,7 @@ Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden 
 - Regions (`Region`, `RegionLayer`): everything territory-specific (layers, cadastre, elevation, rules, native species) hangs off the map's region. Never hardcode Wallonia in code paths; seed it.
 - Plans and paid features: `Entitlements` (`app/models/entitlements.rb`). A map's features follow its **owner's** plan (`Entitlements.for_map(map)`). While Stripe is not configured, everything is unlocked (beta).
 - Roles per map: owner (1), editors (max 3, free), viewers (unlimited, read + comment). `MapScoped` concern: `set_map`, `require_editor!`, `require_owner!`.
+- Teams (`Organization`, UI « Équipes », `/teams`): roles admin | member, always one admin. Members of a map's team are editors of it without taking a seat (`Map#role_for`, `Map#participants`); team admins manage the team only, never a map's sharing. Only the owner moves a map in or out (`Maps::TeamsController`, « Partager » dialog). A team map still follows its owner's plan; leaving a team does not take one's maps out of it.
 
 ## Databases
 

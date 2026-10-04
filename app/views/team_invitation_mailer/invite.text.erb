@@ -1,0 +1,12 @@
+<%= t(".greeting") %>
+
+<%= t(".body_#{@invitation.role}", inviter: @inviter.display_name, team: @team.name) %>
+<%= t(".what") %>
+<% if @invitation.role == "admin" %>
+<%= t(".role_admin") %>
+<% end %>
+
+<%= @url %>
+
+<%= t(".signin_hint") %>
+<%= t(".expiry", date: @invitation.expires_at.strftime("%d/%m/%Y")) %>

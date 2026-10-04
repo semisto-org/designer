@@ -10,8 +10,10 @@ class MapsController < ApplicationController
       .or(Map.active.where(organization_id: Current.user.organization_memberships.select(:organization_id)))
       .includes(:region, :owner).order(updated_at: :desc)
     render inertia: "maps/index", props: {
-      maps: maps.map { |m| m.as_inertia(Current.user) },
-      canCreate: Current.user.entitlements.can_create_map?(Current.user)
+      # teamId + teams: team maps are listed in a section per team (teams area).
+      maps: maps.map { |m| m.as_inertia(Current.user).merge(teamId: m.organization_id) },
+      canCreate: Current.user.entitlements.can_create_map?(Current.user),
+      teams: Current.user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } }
     }
   end
 
