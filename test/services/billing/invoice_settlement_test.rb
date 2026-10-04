@@ -19,8 +19,14 @@ class Billing::InvoiceSettlementTest < ActiveSupport::TestCase
     Billing::InvoiceSettlement.mark_paid(@request, by: @staff)
     assert_equal [ "paid", @staff ], [ @request.status, @request.handled_by ]
     assert @request.plan_grant.active?
-    assert_equal 0, BillingPayment.count
     assert_not_requested :post, /api\.stripe\.com/
+
+    # The revenue-share ledger counts it once, with the amount asked.
+    Billing::InvoiceSettlement.mark_paid(@request.reload, by: @staff)
+    payment = BillingPayment.sole
+    assert_equal [ @request, @user, "atelier", @request.amount_cents, 0 ],
+                 [ payment.invoice_request, payment.user, payment.plan_key, payment.amount_cents, payment.tax_cents ]
+    assert_nil payment.stripe_invoice_id
   end
 
   test "with a Stripe invoice: marked paid out of band in Stripe and recorded like the webhook" do

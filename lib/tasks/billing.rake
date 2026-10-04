@@ -14,10 +14,10 @@ namespace :billing do
   task payments: :environment do
     from = Time.zone.parse(ENV.fetch("FROM", Time.zone.now.beginning_of_month.to_s))
     to = Time.zone.parse(ENV.fetch("TO", (from + 1.month).to_s))
-    puts %w[paid_at plan promotion_code currency amount_cents tax_cents net_cents refunded_cents stripe_invoice_id].join(",")
+    puts %w[paid_at plan promotion_code currency amount_cents tax_cents net_cents refunded_cents stripe_invoice_id invoice_request_id].join(",")
     BillingPayment.live.between(from, to).order(:paid_at).each do |payment|
       puts [ payment.paid_at.iso8601, payment.plan_key, payment.promotion_code, payment.currency, payment.amount_cents,
-             payment.tax_cents, payment.net_cents, payment.refunded_cents, payment.stripe_invoice_id ].join(",")
+             payment.tax_cents, payment.net_cents, payment.refunded_cents, payment.stripe_invoice_id, payment.invoice_request_id ].join(",")
     end
   end
 end

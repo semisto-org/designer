@@ -3,7 +3,8 @@ module Billing
   # invoice was sent through Stripe:
   # - marking it paid (the transfer arrived outside Stripe): the Stripe
   #   invoice is marked « paid out of band » and the payment is recorded as
-  #   the webhook would; by hand, the request is just marked paid;
+  #   the webhook would; by hand, the request is marked paid and the
+  #   payment recorded in the ledger with the amount asked;
   # - cancelling it: the open Stripe invoice is voided (no more reminders),
   #   and a plan already started on it stops.
   # Either way the plan starts when the request is marked paid.
@@ -15,8 +16,21 @@ module Billing
         gateway ||= Providers::StripeGateway.new
         InvoiceRequestPayment.call(pay_out_of_band(gateway, request.stripe_invoice_id), invoice_request: request, by:)
       else
-        request.mark_paid!(by:)
-        request.activate!(by:)
+        request.transaction do
+          request.mark_paid!(by:)
+          record_payment_by_hand(request)
+          request.activate!(by:)
+        end
+      end
+    end
+
+    # The revenue-share ledger counts every payment, Stripe or not. Designer
+    # does not know the VAT of an invoice made by hand: tax stays 0 and the
+    # amount is the one asked, tax included.
+    def record_payment_by_hand(request)
+      BillingPayment.find_or_create_by!(invoice_request: request) do |payment|
+        payment.assign_attributes(user: request.user, plan_key: request.plan_key, amount_cents: request.amount_cents,
+                                  currency: request.currency, paid_at: request.paid_at || Time.current)
       end
     end
 
