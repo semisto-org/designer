@@ -14,7 +14,9 @@ function answer(field: SchemaField, texts: Texts, value: unknown): string | null
   switch (field.type) {
     case 'enum': return option(texts, value)
     case 'multi': return (value as unknown[]).map((v) => option(texts, v)).join(', ')
-    case 'integer': return texts.unit ? `${formatNumber(Number(value))} ${texts.unit}` : formatNumber(Number(value))
+    case 'integer':
+      if (field.key.endsWith('year')) return String(value)
+      return texts.unit ? `${formatNumber(Number(value))} ${texts.unit}` : formatNumber(Number(value))
     case 'boolean': return value === true ? t('dossier.project.yes_value') : null
     case 'text': return String(value)
     case 'list': {

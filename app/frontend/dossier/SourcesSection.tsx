@@ -26,7 +26,7 @@ function line(source: DossierSource): ReactNode {
     case 'layers':
       return detail ? t('dossier.sources.layers', { label: source.label, detail }) : t('dossier.sources.layers_plain', { label: source.label })
     case 'relief':
-      return t('dossier.sources.relief', { label: [source.label, detail].filter(Boolean).join(' · ') })
+      return t('dossier.sources.relief', { label: source.label })
     case 'climate':
       return detail ? t('dossier.sources.climate', { label: source.label, detail }) : t('dossier.sources.climate_plain', { label: source.label })
     case 'plant_source': {
@@ -77,8 +77,7 @@ export function SourcesSection({ dossier, number, enabled, photoCount }: {
   if (on('finances') && dossier.finances.exists) push('finances', t('dossier.sources.finances'))
 
   return (
-    <Section id="sources" number={number} title={t('dossier.sections.sources')}>
-      <p className="text-xs text-loam-500">{t('dossier.sources.intro')}</p>
+    <Section id="sources" number={number} title={t('dossier.sections.sources')} intro={t('dossier.sources.intro')}>
       <ul className="list-disc space-y-1 pl-5 text-xs text-loam-700 marker:text-loam-400">
         {lines.map(({ key, body }) => <li key={key}>{body}</li>)}
       </ul>

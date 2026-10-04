@@ -23,7 +23,7 @@ function FinanceFigures({ summary: s }: { summary: Extract<Dossier['finances'], 
   const [breakEven, breakEvenHint] = year(s.breakEvenYear)
   const [payback, paybackHint] = year(s.paybackYear)
   return (
-    <>
+    <div className="dossier-keep space-y-4">
       <p className="text-xs text-loam-500">{t('dossier.finances.intro')}</p>
       <SubTitle>{t('finances.page.disclaimer_title')}<Indicative /></SubTitle>
       <Facts
@@ -40,6 +40,6 @@ function FinanceFigures({ summary: s }: { summary: Extract<Dossier['finances'], 
       />
       {s.warningsCount > 0 && <p className="text-sm text-humus-800">{t('dossier.finances.warnings', { count: s.warningsCount })}</p>}
       <p className="text-xs text-loam-500">{t('finances.export.disclaimer')}</p>
-    </>
+    </div>
   )
 }

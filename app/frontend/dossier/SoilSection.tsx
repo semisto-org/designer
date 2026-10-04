@@ -30,7 +30,7 @@ export function SoilSection({ dossier, number, isOwner }: { dossier: Dossier; nu
               <Th>{t('dossier.soil.depth')}</Th>
               {columns.map((key) => {
                 const unit = fields.find((f) => f.key === key)?.unit
-                return <Th key={key} className="text-right">{t(`soil.fields.${key}.short`)}{unit && <span className="block normal-case tracking-normal text-loam-400">{unit}</span>}</Th>
+                return <Th key={key} className="text-right">{t(`soil.fields.${key}.short`)}{unit && <span className="block whitespace-nowrap normal-case tracking-normal text-loam-400">{unit}</span>}</Th>
               })}
               {hasTexture && <Th>{t('dossier.soil.texture')}</Th>}
             </>}
@@ -83,13 +83,13 @@ export function SoilSection({ dossier, number, isOwner }: { dossier: Dossier; nu
               <li key={o.id}>
                 <span className="font-medium text-loam-900">{o.speciesName}</span>
                 {o.latinName && <span className="italic text-loam-500"> {o.latinName}</span>}
-                <span className="text-loam-500"> · {t(`soil.abundances.${o.abundance}`)}</span>
+                <span className="text-loam-500"> · {t(`soil.abundances.${o.abundance}`).toLowerCase()}</span>
               </li>
             ))}
           </ul>
           {bioindicators.summary.length > 0 && (
             <p>
-              <span className="text-loam-500">{t('dossier.soil.bio_summary')} : </span>
+              <span className="text-loam-500">{t('dossier.soil.bio_summary')}{'\u00a0: '}</span>
               {bioindicators.summary.slice(0, 5).map((s) => t(`soil.indicators.${s.key}.label`).toLowerCase()).join(', ')}
             </p>
           )}

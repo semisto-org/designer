@@ -18,15 +18,16 @@ export function PlantsSection({ dossier, number }: { dossier: Dossier; number: n
   const list = dossier.plants
   const groups = STRATA.map((strata) => ({ strata, rows: list.rows.filter((r) => r.strata === strata) })).filter((g) => g.rows.length)
   return (
-    <Section id="plants" number={number} title={t('dossier.sections.plants')}>
+    <Section
+      id="plants"
+      number={number}
+      title={t('dossier.sections.plants')}
+      intro={list.rows.length > 0 && <>{t('dossier.plants.intro')}{list.hardinessZone != null && <> {t('dossier.plants.zone', { zone: list.hardinessZone })}</>}</>}
+    >
       {list.rows.length === 0 ? (
         <Muted>{t('dossier.plants.empty')}</Muted>
       ) : (
         <>
-          <p className="text-xs text-loam-500">
-            {t('dossier.plants.intro')}
-            {list.hardinessZone != null && <> {t('dossier.plants.zone', { zone: list.hardinessZone })}</>}
-          </p>
           <p className="text-base font-semibold text-loam-900">{t('dossier.plants.totals', { total: formatNumber(list.total), species: list.speciesCount })}</p>
           <Table
             head={<>

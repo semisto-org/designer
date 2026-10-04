@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
@@ -19,7 +20,7 @@ export function TerrainSection({ dossier, number, isOwner }: { dossier: Dossier;
         ]}
       />
       {terrain.parcels.length > 0 && (
-        <p><span className="text-loam-500">{t('dossier.terrain.parcels')} : </span>{terrain.parcels.join(' · ')}</p>
+        <p><span className="text-loam-500">{t('dossier.terrain.parcels')}{'\u00a0: '}</span>{terrain.parcels.join(' · ')}</p>
       )}
       {terrain.identify && point && <LayerReadings mapId={dossier.map.id} point={point} identify={terrain.identify} />}
       <Relief relief={terrain.relief} isOwner={isOwner} />
@@ -43,8 +44,15 @@ function LayerReadings({ mapId, point, identify }: {
     return () => controller.abort()
   }, [mapId, point.lng, point.lat, identify])
 
+  // A layer that could not be read says nothing useful on paper: such rows
+  // (and the whole block when none answered) are shown on screen only.
+  const unreadable = (key: string) => {
+    const result = results?.find((r) => r.key === key)
+    return !result || result.status === 'unavailable'
+  }
+  const nothingToPrint = failed || !results || identify.layers.every((layer) => unreadable(layer.key))
   return (
-    <div className="space-y-2">
+    <div className={clsx('space-y-2', nothingToPrint && 'print:hidden')}>
       <SubTitle>{t('dossier.terrain.layers_title')}</SubTitle>
       <p className="text-xs text-loam-500">{t('dossier.terrain.layers_intro')}</p>
       {failed ? (
@@ -54,7 +62,7 @@ function LayerReadings({ mapId, point, identify }: {
           {identify.layers.map((layer) => {
             const result = results?.find((r) => r.key === layer.key)
             return (
-              <div key={layer.key} className="dossier-keep grid gap-1 px-3 py-2 sm:grid-cols-[12rem_minmax(0,1fr)] print:grid-cols-[12rem_minmax(0,1fr)]">
+              <div key={layer.key} className={clsx('dossier-keep grid gap-1 px-3 py-2 sm:grid-cols-[12rem_minmax(0,1fr)] print:grid-cols-[12rem_minmax(0,1fr)]', results && unreadable(layer.key) && 'print:hidden')}>
                 <dt className="font-medium text-loam-800">{layer.name}</dt>
                 <dd className="text-loam-700">
                   {!results ? (

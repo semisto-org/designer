@@ -24,11 +24,11 @@ function details(feature: MapFeature | undefined): string[] {
       case 'integer':
         return typeof value === 'number' ? [`${label} ${fr(value)}${field.unit ? ` ${field.unit}` : ''}`] : []
       case 'select':
-        return [`${label} : ${t(`drawing.options.${field.key}.${value}`).toLowerCase()}`]
+        return [`${label}\u00a0: ${t(`drawing.options.${field.key}.${value}`).toLowerCase()}`]
       case 'boolean':
-        return value === true ? [`${label.toLowerCase()} : ${t('dossier.design.yes_value')}`] : []
+        return value === true ? [`${label.toLowerCase()}\u00a0: ${t('dossier.design.yes_value')}`] : []
       case 'text':
-        return [`${label} : ${String(value)}`]
+        return [`${label}\u00a0: ${String(value)}`]
       default:
         return []
     }
@@ -42,12 +42,11 @@ export function DesignSection({ dossier, number }: { dossier: Dossier; number: n
   const byId = new Map(dossier.cover.features.features.map((f) => [f.properties.id, f]))
   const { layers } = dossier.design
   return (
-    <Section id="design" number={number} title={t('dossier.sections.design')}>
+    <Section id="design" number={number} title={t('dossier.sections.design')} intro={layers.length > 0 ? t('dossier.design.intro') : undefined}>
       {layers.length === 0 ? (
         <Muted>{t('dossier.design.empty')}</Muted>
       ) : (
         <>
-          <p className="text-xs text-loam-500">{t('dossier.design.intro')}</p>
           <Table
             head={<>
               <Th>{t('dossier.design.element')}</Th>
@@ -64,36 +63,46 @@ export function DesignSection({ dossier, number }: { dossier: Dossier; number: n
                     {t(`editor.layers.${layer.layer}`)}
                   </td>
                 </tr>
-                {layer.kinds.map((kind) => (
-                  <Fragment key={kind.kind}>
-                    <tr className="border-b border-loam-100">
-                      <Td className="font-medium text-loam-900">
-                        {t(`editor.kinds.${kind.kind}`)}
-                        {layer.layer === 'plants' && kind.items.length === 0 && <span className="block text-xs font-normal text-loam-500">{t('dossier.design.plants_note')}</span>}
-                      </Td>
-                      <Td className="text-right tabular-nums">{formatNumber(kind.count)}</Td>
-                      <Td className="text-right tabular-nums">{kind.lengthM != null ? formatLength(kind.lengthM) : '—'}</Td>
-                      <Td className="text-right tabular-nums">{kind.areaM2 != null ? formatArea(kind.areaM2) : '—'}</Td>
-                    </tr>
-                    {(kind.items.length > 1 || kind.items.some((i) => i.name || details(byId.get(i.id)).length)) && kind.items.map((item) => {
-                      const lines = details(byId.get(item.id))
-                      return (
-                        <tr key={item.id} className="border-b border-loam-100 text-loam-600">
-                          <Td className="pl-4">
-                            <span className="text-loam-800">{item.name ?? t('dossier.design.unnamed')}</span>
-                            {lines.length > 0 && <span className="block text-xs text-loam-500">{lines.join(' · ')}</span>}
-                          </Td>
-                          <Td />
-                          <Td className="text-right tabular-nums">{item.lengthM != null ? formatLength(item.lengthM) : ''}</Td>
-                          <Td className="text-right tabular-nums">{item.areaM2 != null ? formatArea(item.areaM2) : ''}</Td>
-                        </tr>
-                      )
-                    })}
-                    {kind.more > 0 && (
-                      <tr className="border-b border-loam-100"><Td className="pl-4 text-xs text-loam-500">{t('dossier.design.more', { count: kind.more })}</Td><Td /><Td /><Td /></tr>
-                    )}
-                  </Fragment>
-                ))}
+                {layer.kinds.map((kind) => {
+                  // One element of a kind: a single row, its name and details inline.
+                  const single = kind.items.length === 1 && kind.more === 0 ? kind.items[0] : null
+                  const kindLabel = t(`editor.kinds.${kind.kind}`)
+                  const singleName = single?.name && single.name.toLowerCase() !== kindLabel.toLowerCase() ? single.name : null
+                  const singleLines = single ? details(byId.get(single.id)) : []
+                  const itemised = !single && (kind.items.length > 1 || kind.items.some((i) => i.name || details(byId.get(i.id)).length))
+                  return (
+                    <Fragment key={kind.kind}>
+                      <tr className="border-b border-loam-100">
+                        <Td className="font-medium text-loam-900">
+                          {kindLabel}
+                          {singleName && <span className="font-normal text-loam-700"> · {singleName}</span>}
+                          {singleLines.length > 0 && <span className="block text-xs font-normal text-loam-500">{singleLines.join(' · ')}</span>}
+                          {layer.layer === 'plants' && kind.items.length === 0 && <span className="block text-xs font-normal text-loam-500">{t('dossier.design.plants_note')}</span>}
+                        </Td>
+                        <Td className="text-right tabular-nums">{formatNumber(kind.count)}</Td>
+                        <Td className="text-right tabular-nums">{kind.lengthM != null ? formatLength(kind.lengthM) : '—'}</Td>
+                        <Td className="text-right tabular-nums">{kind.areaM2 != null ? formatArea(kind.areaM2) : '—'}</Td>
+                      </tr>
+                      {itemised && kind.items.map((item) => {
+                        const lines = details(byId.get(item.id))
+                        return (
+                          <tr key={item.id} className="border-b border-loam-100 text-loam-600">
+                            <Td className="pl-4">
+                              <span className="text-loam-800">{item.name ?? t('dossier.design.unnamed')}</span>
+                              {lines.length > 0 && <span className="block text-xs text-loam-500">{lines.join(' · ')}</span>}
+                            </Td>
+                            <Td />
+                            <Td className="text-right tabular-nums">{item.lengthM != null ? formatLength(item.lengthM) : ''}</Td>
+                            <Td className="text-right tabular-nums">{item.areaM2 != null ? formatArea(item.areaM2) : ''}</Td>
+                          </tr>
+                        )
+                      })}
+                      {kind.more > 0 && (
+                        <tr className="border-b border-loam-100"><Td className="pl-4 text-xs text-loam-500">{t('dossier.design.more', { count: kind.more })}</Td><Td /><Td /><Td /></tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             ))}
           </Table>

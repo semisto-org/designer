@@ -4,16 +4,22 @@ import type { ReactNode } from 'react'
 import { buttonClass } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 
-/** One numbered section of the document. */
-export function Section({ id, number, title, children, className }: {
-  id: string; number: number; title: string; children: ReactNode; className?: string
+/**
+ * One numbered section of the document. The title and its short intro stay
+ * together, and with what follows, on paper.
+ */
+export function Section({ id, number, title, intro, children, className }: {
+  id: string; number: number; title: string; intro?: ReactNode; children: ReactNode; className?: string
 }) {
   return (
     <section id={`dossier-${id}`} aria-labelledby={`dossier-${id}-title`} className={clsx('dossier-section mt-10 first:mt-0 print:mt-8', className)}>
-      <h2 id={`dossier-${id}-title`} className="dossier-heading flex items-baseline gap-3 border-b-2 border-prune-600 pb-1.5 text-xl text-loam-900">
-        <span className="text-base font-semibold tabular-nums text-prune-600">{number}.</span>
-        {title}
-      </h2>
+      <div className="dossier-heading">
+        <h2 id={`dossier-${id}-title`} className="flex items-baseline gap-3 border-b-2 border-prune-600 pb-1.5 text-xl text-loam-900">
+          <span className="text-base font-semibold tabular-nums text-prune-600">{number}.</span>
+          {title}
+        </h2>
+        {intro && <p className="mt-4 text-xs leading-relaxed text-loam-500">{intro}</p>}
+      </div>
       <div className="mt-4 space-y-4 text-sm leading-relaxed text-loam-700">{children}</div>
     </section>
   )

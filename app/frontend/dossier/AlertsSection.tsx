@@ -14,8 +14,7 @@ export function AlertsSection({ dossier, number }: { dossier: Dossier; number: n
   const { regulatory, planting } = dossier.alerts
   const none = regulatory.alerts.length === 0 && planting.alerts.length === 0
   return (
-    <Section id="alerts" number={number} title={t('dossier.sections.alerts')}>
-      <p className="text-xs text-loam-500">{t('dossier.alerts.intro')}</p>
+    <Section id="alerts" number={number} title={t('dossier.sections.alerts')} intro={t('dossier.alerts.intro')}>
       {none && <Muted>{t('dossier.alerts.none')}</Muted>}
       {regulatory.alerts.length > 0 && (
         <div className="space-y-2">

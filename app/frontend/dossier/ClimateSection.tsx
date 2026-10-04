@@ -38,7 +38,7 @@ export function ClimateSection({ dossier, number, isOwner }: { dossier: Dossier;
               ]}
             />
             <p className="text-xs text-loam-500">
-              {t('climate.current.sub_area')} : {current.subArea.name}
+              {t('climate.current.sub_area')}{'\u00a0: '}{current.subArea.name}
               {current.referencePeriod && <> · {t('climate.current.reference', { period: current.referencePeriod })}</>}
             </p>
           </>
@@ -71,7 +71,7 @@ export function ClimateSection({ dossier, number, isOwner }: { dossier: Dossier;
                   if (!data || !data.available) return null
                   return (
                     <tr key={`${horizon}-${scenario}`} className="border-b border-loam-100">
-                      <Td className="font-medium text-loam-900">{data.period ?? horizon}</Td>
+                      <Td className="whitespace-nowrap font-medium text-loam-900">{data.period ?? horizon}</Td>
                       <Td>{t(`climate.future.scenarios.${scenario}`)}{data.ipcc && <span className="text-loam-500"> ({data.ipcc})</span>}</Td>
                       <Td className="font-semibold text-loam-900">{data.zone.code}</Td>
                       <Td className="tabular-nums">{formatTemp(data.extremeMinC)}</Td>

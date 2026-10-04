@@ -83,8 +83,8 @@ export default function DossierShow({ map, canEdit }: DossierPageProps) {
             <p className="truncate text-sm font-semibold text-loam-900">{t('dossier.title')}</p>
             <p className="truncate text-xs text-loam-500">{map.name}</p>
           </div>
-          <Button variant="secondary" size="sm" className="lg:hidden" aria-expanded={pickerOpen} aria-controls="dossier-picker" onClick={() => setPickerOpen((open) => !open)}>
-            <SlidersHorizontal className="h-4 w-4" aria-hidden />{t('dossier.picker.toggle')}
+          <Button variant="secondary" size="sm" className="lg:hidden" aria-label={t('dossier.picker.toggle')} title={t('dossier.picker.toggle')} aria-expanded={pickerOpen} aria-controls="dossier-picker" onClick={() => setPickerOpen((open) => !open)}>
+            <SlidersHorizontal className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">{t('dossier.picker.toggle')}</span>
           </Button>
           <Button size="sm" onClick={() => window.print()} disabled={!dossier}>
             <Printer className="h-4 w-4" aria-hidden />
@@ -230,7 +230,7 @@ function Picker({ dossier, prefs, update, reset, canEdit, networks, setNetworks 
             <label key={section} className={clsx('flex items-start gap-2 rounded-md px-1.5 py-1', empty ? 'text-loam-400' : 'cursor-pointer hover:bg-loam-50')}>
               <input
                 type="checkbox"
-                className="mt-0.5 h-4 w-4 accent-prune-600"
+                className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600"
                 checked={prefs.sections[section] && !empty}
                 disabled={empty}
                 onChange={(e) => toggleSection(section, e.target.checked)}
@@ -255,13 +255,13 @@ function Picker({ dossier, prefs, update, reset, canEdit, networks, setNetworks 
         <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('dossier.picker.options')}</h3>
         {dossier.cover.cadastre && (
           <label className="flex cursor-pointer items-start gap-2">
-            <input type="checkbox" className="mt-0.5 h-4 w-4 accent-prune-600" checked={prefs.cadastre} onChange={(e) => update({ cadastre: e.target.checked })} />
+            <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600" checked={prefs.cadastre} onChange={(e) => update({ cadastre: e.target.checked })} />
             <span className="text-loam-800">{t('dossier.picker.cadastre')}</span>
           </label>
         )}
         {canEdit && dossier.networks.count > 0 && (
           <label className="flex cursor-pointer items-start gap-2">
-            <input type="checkbox" className="mt-0.5 h-4 w-4 accent-prune-600" checked={networks} onChange={(e) => setNetworks(e.target.checked)} />
+            <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600" checked={networks} onChange={(e) => setNetworks(e.target.checked)} />
             <span>
               <span className="text-loam-800">{t('dossier.picker.networks')}</span>
               <span className="block text-[11px] text-loam-500">
@@ -336,10 +336,10 @@ function PrintStyles({ dossier }: { dossier: Dossier }) {
 @media print {
   html, body { background: #fff !important; }
   .dossier-paper { font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .dossier-cover { min-height: 262mm; break-after: page; }
+  .dossier-cover { min-height: 255mm; break-after: page; }
   .dossier-section { break-before: auto; }
   .dossier-keep, figure, tr { break-inside: avoid; }
-  .dossier-heading { break-after: avoid; }
+  .dossier-heading { break-inside: avoid; break-after: avoid; }
   .dossier-keep-next { break-after: avoid; }
   thead { display: table-header-group; }
   a { color: inherit; text-decoration: none; }

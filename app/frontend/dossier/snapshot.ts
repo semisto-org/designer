@@ -23,7 +23,9 @@ maplibregl.setWorkerUrl(workerUrl)
 export type PlanImage = { url: string; widthPx: number; metersPerPx: number }
 
 const EARTH_CIRCUMFERENCE = 40075016.686
+// The plan never waits longer than this for slow tiles.
 const RENDER_TIMEOUT_MS = 20_000
+const POLL_MS = 150
 const GLYPHS = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf'
 const CROWNS = 'dossier-crowns'
 
@@ -78,13 +80,31 @@ function installCrowns(map: MapLibreMap, data: FeatureCollection<Polygon, { colo
   map.addLayer({ id: `${CROWNS}-line`, type: 'line', source: CROWNS, paint: { 'line-color': ['get', 'color'], 'line-width': 1.2 } }, before)
 }
 
-function waitFor(map: MapLibreMap, event: 'load' | 'idle', timeout = RENDER_TIMEOUT_MS): Promise<void> {
+/**
+ * Resolves once `ready()` holds, or at `deadline` (whatever is drawn by then
+ * is kept). MapLibre only re-checks its state when it repaints, and a tile
+ * that fails (a slow or unreachable WMS) does not ask for one: nudge it.
+ */
+function until(map: MapLibreMap, ready: () => boolean, deadline: number): Promise<void> {
   return new Promise((resolve) => {
-    const timer = window.setTimeout(resolve, timeout)
-    map.once(event, () => {
+    const tick = () => {
+      if (ready() || performance.now() >= deadline) return resolve()
+      map.triggerRepaint()
+      window.setTimeout(tick, POLL_MS)
+    }
+    tick()
+  })
+}
+
+/** Waits for the next frame to be drawn. */
+function nextRender(map: MapLibreMap): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(resolve, 1000)
+    map.once('render', () => {
       window.clearTimeout(timer)
       resolve()
     })
+    map.triggerRepaint()
   })
 }
 
@@ -107,14 +127,20 @@ export async function renderPlan(cover: Dossier['cover'], { width, height, cadas
     maxZoom: 22,
     canvasContextAttributes: { preserveDrawingBuffer: true },
   })
+  const deadline = performance.now() + RENDER_TIMEOUT_MS
   try {
-    await waitFor(map, 'load')
+    await new Promise<void>((resolve) => {
+      if (map.style?._loaded) return resolve()
+      map.once('style.load', () => resolve())
+      window.setTimeout(resolve, RENDER_TIMEOUT_MS)
+    })
     installBoundary(map, cover.boundary)
     installFeatureLayers(map, cover.features)
     installDrawingLayers(map)
     applyLayerVisibility(map, [], { activeOnly: true })
     installCrowns(map, crowns(cover))
-    await waitFor(map, 'idle')
+    await until(map, () => map.loaded(), deadline)
+    await nextRender(map)
     const latitude = map.getCenter().lat
     const metersPerPx = (EARTH_CIRCUMFERENCE * Math.cos((latitude * Math.PI) / 180)) / (512 * 2 ** map.getZoom())
     return { url: map.getCanvas().toDataURL('image/jpeg', 0.9), widthPx: width, metersPerPx }

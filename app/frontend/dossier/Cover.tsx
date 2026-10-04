@@ -6,9 +6,9 @@ import { LAYER_COLORS } from '@/map/layers/features'
 import { renderPlan, scaleBar, type PlanImage } from '@/dossier/snapshot'
 import type { Dossier, DossierSection } from '@/types/dossier'
 
-// The plan's box on paper: 182 × 118 mm (A4 minus margins), at 96 px/inch.
+// The plan's box on paper: 182 × 111 mm (A4 minus margins), at 96 px/inch.
 const PLAN_WIDTH = 688
-const PLAN_HEIGHT = 446
+const PLAN_HEIGHT = 420
 
 type PlanState = { status: 'rendering' } | { status: 'ready'; image: PlanImage } | { status: 'failed' } | { status: 'empty' }
 
@@ -32,11 +32,11 @@ export function Cover({ dossier, cadastre, contents }: { dossier: Dossier; cadas
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-prune-600">{t('dossier.cover.eyebrow')}</p>
         <Logo className="h-8 w-8" />
       </div>
-      <h1 className="mt-4 text-3xl leading-tight text-loam-900 sm:text-4xl print:text-4xl">{map.name}</h1>
+      <h1 className="mt-4 print:mt-3 text-3xl leading-tight text-loam-900 sm:text-4xl print:text-4xl">{map.name}</h1>
       {map.address && <p className="mt-1 text-base text-loam-600">{map.address}</p>}
       {map.description && <p className="mt-3 max-w-prose whitespace-pre-line text-sm text-loam-700">{map.description}</p>}
 
-      <figure className="dossier-keep mt-6">
+      <figure className="dossier-keep mt-6 print:mt-4">
         <div className="relative overflow-hidden rounded-lg bg-loam-100 ring-1 ring-loam-200 print:rounded-none" style={{ aspectRatio: `${PLAN_WIDTH} / ${PLAN_HEIGHT}` }}>
           {plan.status === 'ready' ? (
             <>
@@ -66,7 +66,7 @@ export function Cover({ dossier, cadastre, contents }: { dossier: Dossier; cadas
         </figcaption>
       </figure>
 
-      <dl className="dossier-keep mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-loam-200 pt-4 sm:grid-cols-3 print:grid-cols-3">
+      <dl className="dossier-keep mt-6 print:mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-loam-200 pt-4 sm:grid-cols-3 print:grid-cols-3">
         {facts.filter(([, value]) => value).map(([label, value]) => (
           <div key={label}>
             <dt className="text-[11px] uppercase tracking-wide text-loam-500">{label}</dt>
@@ -82,7 +82,7 @@ export function Cover({ dossier, cadastre, contents }: { dossier: Dossier; cadas
       </dl>
 
       {contents.length > 0 && (
-        <div className="dossier-keep mt-6">
+        <div className="dossier-keep mt-6 print:mt-4">
           <p className="text-[11px] uppercase tracking-wide text-loam-500">{t('dossier.cover.contents')}</p>
           <ol className="mt-1.5 grid grid-cols-1 gap-x-6 gap-y-0.5 text-sm text-loam-700 sm:grid-cols-2 print:grid-cols-2">
             {contents.map((section, i) => (
@@ -92,7 +92,7 @@ export function Cover({ dossier, cadastre, contents }: { dossier: Dossier; cadas
         </div>
       )}
 
-      <p className="mt-auto pt-8 text-xs text-loam-500">{t('dossier.made_with')}</p>
+      <p className="mt-auto pt-8 text-xs text-loam-500 print:pt-3">{t('dossier.made_with')}</p>
     </section>
   )
 }
