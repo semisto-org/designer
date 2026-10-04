@@ -3,10 +3,10 @@ fr:
   billing:
     title: "Formule et facturation"
     intro: "Votre formule, sa date d'échéance, et de quoi la renouveler ou en changer."
-    read_only_by_plan: "Cette carte est en lecture seule : votre forfait a pris fin et elle dépasse le nombre de cartes de la formule gratuite. Vous pouvez toujours la consulter, l'exporter et la commenter ; renouvelez votre forfait pour la modifier à nouveau."
+    read_only_by_plan: "Cette carte est en lecture seule : elle dépasse le nombre de cartes que permet la formule de son propriétaire. Rien n'est supprimé : vous pouvez toujours la consulter, l'exporter et la commenter. Un forfait (ou son renouvellement) permet de la modifier à nouveau."
     read_only_badge: "Lecture seule · renouveler"
     read_only_short: "Lecture seule"
-    read_only_editor_hint: "Le forfait du propriétaire de cette carte a pris fin : elle est temporairement en lecture seule."
+    read_only_editor_hint: "Cette carte dépasse le nombre de cartes que permet la formule de son propriétaire : elle reste en lecture seule tant qu'un forfait ne la couvre pas."
     read_only_hint: "Votre forfait a pris fin : cette carte reste lisible, exportable et commentable, mais ne peut plus être modifiée."
     errors:
       not_configured: "Les paiements ne sont pas encore ouverts : tout est débloqué pendant la bêta."

@@ -2,7 +2,9 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { PublicLayer } from '@/types/collab'
 
 const id = (layer: PublicLayer) => `region-${layer.key}`
-const absolute = (path: string) => new URL(path, window.location.origin).href
+// Plain concatenation: `new URL()` would percent-encode the {z}/{x}/{y}
+// placeholders and MapLibre would never fill them in.
+const absolute = (path: string) => (path.startsWith('/') ? `${window.location.origin}${path}` : path)
 
 /**
  * Region layers of a public view: raster tiles fetched through the

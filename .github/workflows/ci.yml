@@ -60,7 +60,7 @@ jobs:
         run: npx tsc -p tsconfig.app.json
 
       - name: Unit tests (TypeScript)
-        run: npm run test:relief
+        run: npm run test:frontend
 
   test:
     runs-on: ubuntu-latest
