@@ -4,9 +4,11 @@ import { ArrowLeft } from 'lucide-react'
 import type { MapGeoJSONFeature, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Dialog } from '@/components/ui/Dialog'
 import { Flash } from '@/components/ui/Flash'
 import { api } from '@/lib/api'
 import { formatArea, t } from '@/lib/i18n'
+import { useMediaQuery } from '@/lib/useMediaQuery'
 import { MapView } from '@/map/MapView'
 import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
@@ -15,7 +17,7 @@ import { Inspector } from '@/map/editor/Inspector'
 import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
 import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
-import type { PanelGroup } from '@/map/panels/registry'
+import { MODAL_PANEL_QUERY, type PanelGroup } from '@/map/panels/registry'
 import type { EntitlementsData, MapData, MapFeature, RegionLayerData } from '@/types'
 
 type Props = {
@@ -190,6 +192,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
 
   const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
+  const wideScreen = useMediaQuery(MODAL_PANEL_QUERY)
 
   return (
     <EditorContext.Provider value={editor}>
@@ -224,7 +227,11 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
           )
         })}
       </nav>
-      {panel && (
+      {panel && panel.modal && wideScreen ? (
+        <Dialog open size="wide" title={t(panel.label)} onClose={() => setActivePanel(null)}>
+          <panel.component />
+        </Dialog>
+      ) : panel && (
         <section className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-14 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
           <h2 className="mb-3 text-base">{t(panel.label)}</h2>
           <panel.component />
