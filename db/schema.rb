@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -207,6 +207,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_financial_plans_on_map_id", unique: true
     t.index ["updated_by_id"], name: "index_financial_plans_on_updated_by_id"
+  end
+
+  create_table "import_records", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "source", null: false
+    t.string "external_type", null: false
+    t.string "external_id", null: false
+    t.string "record_type"
+    t.bigint "record_id"
+    t.string "digest"
+    t.datetime "imported_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "source", "external_type", "external_id"], name: "index_import_records_on_upstream", unique: true
+    t.index ["record_type", "record_id"], name: "index_import_records_on_record"
   end
 
   create_table "map_features", force: :cascade do |t|
@@ -796,6 +811,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_100000) do
   add_foreign_key "comments", "users", column: "author_id"
   add_foreign_key "financial_plans", "maps"
   add_foreign_key "financial_plans", "users", column: "updated_by_id"
+  add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
