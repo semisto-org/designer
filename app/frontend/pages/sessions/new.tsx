@@ -5,7 +5,7 @@ import { Field, Input } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import type { SharedProps } from '@/types'
 
-export default function SignIn() {
+export default function SignIn({ reviewAccess = false }: { reviewAccess?: boolean }) {
   const { env } = usePage().props as unknown as SharedProps
   const sent = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('sent')
   const form = useForm({ email_address: sent ?? '' })
@@ -64,7 +64,28 @@ export default function SignIn() {
           </form>
         )}
       </Card>
+      {reviewAccess && <ReviewAccess csrf={csrf ?? ''} />}
     </div>
+  )
+}
+
+// For the app stores' reviewers only (AppReview on the server).
+function ReviewAccess({ csrf }: { csrf: string }) {
+  return (
+    <details className="mt-8 text-sm text-loam-500">
+      <summary className="cursor-pointer">{t('app_review.toggle')}</summary>
+      <form method="post" action="/session/review" className="mt-4 space-y-4">
+        <input type="hidden" name="authenticity_token" value={csrf} />
+        <p>{t('app_review.intro')}</p>
+        <Field label={t('app_review.email')}>
+          <Input type="email" name="email_address" required autoComplete="username" />
+        </Field>
+        <Field label={t('app_review.code')}>
+          <Input type="password" name="code" required autoComplete="current-password" />
+        </Field>
+        <Button type="submit" variant="secondary" className="w-full">{t('app_review.submit')}</Button>
+      </form>
+    </details>
   )
 }
 

@@ -108,6 +108,15 @@ Utilisées seulement par la commande ponctuelle `bin/rails catalog:import_terran
 
 Une à cinq photos d'une même plante partent chez Pl@ntNet, qui répond des espèces probables ; l'éditeur choisit, rien n'est enregistré sans son choix et Designer ne conserve pas les photos. L'interface affiche « Identification : Pl@ntNet ». **Avant d'activer la fonction sur un service payant, vérifiez les conditions d'utilisation de Pl@ntNet** (usage commercial, quota d'identifications, mention de la source) : l'offre gratuite est limitée.
 
+### Relecture de l'app mobile par les stores
+
+| Variable | Rôle |
+|---|---|
+| `APP_REVIEW_EMAIL` | Facultatif. Adresse du compte que les relecteurs d'Apple et de Google utilisent. |
+| `APP_REVIEW_CODE` | Facultatif, 16 caractères au moins. Avec `APP_REVIEW_EMAIL`, la page de connexion affiche « Accès pour la relecture des stores » (adresse + code, sans lien magique). Sans les deux, l'accès n'existe pas. |
+
+Après les avoir définies, `bin/rails app_review:prepare` donne à ce compte une carte de démonstration (ou `MAP_ID=… bin/rails app_review:prepare` pour le faire éditeur d'une carte existante). Retirez les variables une fois la relecture terminée si vous voulez fermer l'accès.
+
 ### Import de Claudy (Les 4 Sources)
 
 | Variable | Rôle |

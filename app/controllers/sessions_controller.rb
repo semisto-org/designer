@@ -1,11 +1,12 @@
 # Passwordless sign-in: Google, or a magic link sent by e-mail.
 class SessionsController < ApplicationController
-  allow_unauthenticated_access only: %i[ new create ]
+  allow_unauthenticated_access only: %i[ new create review ]
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_path, alert: t("sessions.rate_limited") }
+  rate_limit to: 5, within: 10.minutes, only: :review, with: -> { redirect_to new_session_path, alert: t("sessions.rate_limited") }
 
   def new
     return redirect_to maps_path if authenticated?
-    render inertia: "sessions/new"
+    render inertia: "sessions/new", props: { reviewAccess: AppReview.enabled? }
   end
 
   # Sends a magic link. Unknown addresses get an account on first sign-in.
@@ -17,6 +18,19 @@ class SessionsController < ApplicationController
       redirect_to new_session_path(sent: email), notice: t("sessions.link_sent", email:)
     else
       redirect_to new_session_path, alert: t("sessions.invalid_email")
+    end
+  end
+
+  # The app stores' reviewers: one account, signed in with the code given
+  # to them in the review notes (AppReview).
+  def review
+    if AppReview.match?(params[:email_address], params[:code])
+      user = AppReview.user
+      user.update!(last_signed_in_at: Time.current)
+      start_new_session_for user
+      redirect_to after_authentication_url, notice: t("sessions.signed_in")
+    else
+      redirect_to new_session_path, alert: t("app_review.invalid")
     end
   end
 

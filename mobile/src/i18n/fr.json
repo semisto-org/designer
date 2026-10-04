@@ -39,7 +39,12 @@
         "one": "%{count} modification attend encore d'être envoyée : si tu te déconnectes maintenant, elle sera perdue.",
         "other": "%{count} modifications attendent encore d'être envoyées : si tu te déconnectes maintenant, elles seront perdues."
       },
-      "sign_out": "Se déconnecter"
+      "sign_out": "Se déconnecter",
+      "delete": "Supprimer mon compte",
+      "delete_title": "Supprimer ton compte ?",
+      "delete_body": "Tu recevras un e-mail de confirmation, puis Semisto supprimera ton compte et tes cartes. Cela ne peut pas être annulé.",
+      "delete_confirm": "Demander la suppression",
+      "delete_failed": "La demande n'est pas partie. Vérifie ta connexion et réessaie."
     },
     "terrain": {
       "loading": "Chargement de la carte…",
