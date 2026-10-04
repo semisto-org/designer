@@ -48,7 +48,7 @@ module Maps
           publication: publication && publication.as_inertia.merge(url: public_map_url(publication.token)),
           defaults: { title: map.name, options: MapPublication.normalize_options(nil, map) },
           featureLayers: MapFeature::LAYERS.map { |key| { key:, count: map.features.active.where(layer: key).count } },
-          regionLayers: map.region.layers.enabled.map do |layer|
+          regionLayers: map.region.catalogue.enabled.map do |layer|
             { key: layer.key, name: layer.name, category: layer.category, group: layer.group_name,
               sensitive: Collab::PublicSnapshot.sensitive_region_layer?(layer) }
           end,

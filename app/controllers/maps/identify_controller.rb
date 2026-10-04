@@ -20,7 +20,7 @@ module Maps
       return render json: { message: t("map_data.identify.invalid") }, status: :unprocessable_entity unless valid?(lng, lat, zoom)
 
       keys = Array(params[:layers]).map(&:to_s).uniq.first(MAX_LAYERS)
-      layers = @map.region.layers.enabled.where(key: keys).select(&:identifiable?)
+      layers = @map.region.catalogue.enabled.where(key: keys).select(&:identifiable?)
       results = if inside_region?(lng, lat)
         Providers::ArcgisIdentify.new(layers).call(lng:, lat:, zoom:)
       else

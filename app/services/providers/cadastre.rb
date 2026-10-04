@@ -1,8 +1,13 @@
-# Cadastral parcels of a region, through the region layer whose
-# `options.role` is "cadastre" (Wallonia: the SPW CADMAP_PARCELLES identify).
+# Cadastral parcels of a region. By default through the region layer whose
+# `options.role` is "cadastre" (Wallonia: the SPW CADMAP_PARCELLES
+# identify); a region may name another provider in `settings.cadastre`
+# (France: "apicarto", Luxembourg: "inspire_wfs").
 #
 #   cadastre = Providers::Cadastre.for(region)   # nil when the region has none
 #   cadastre.parcel_at(lng, lat)                 # => Parcel or nil
+#
+# `capakey` is the parcel's national reference, whatever its name upstream
+# (CAPAKEY in Belgium, IDU in France, numéro cadastral in Luxembourg).
 #
 # Parcels are cached by CAPAKEY, so validating a selection does not ask the
 # upstream again; on a cache miss we identify again at the clicked point
@@ -18,8 +23,15 @@ module Providers
     # tolerance, the point must fall inside the polygon.
     ZOOM = 18
 
+    ADAPTERS = { "apicarto" => "Providers::Cadastre::Apicarto", "inspire_wfs" => "Providers::Cadastre::InspireWfs" }.freeze
+
     def self.for(region)
-      layer = region.layers.enabled.detect { |l| l.role == "cadastre" && l.identifiable? }
+      config = region.setting(:cadastre)
+      if config.is_a?(Hash) && (adapter = ADAPTERS[config["provider"]])
+        return adapter.constantize.new(region, config)
+      end
+
+      layer = region.catalogue.enabled.detect { |l| l.role == "cadastre" && l.identifiable? }
       layer && new(layer)
     end
 

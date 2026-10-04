@@ -13,7 +13,13 @@ module Providers
     # Hosts the relay may contact (URLs read from region_layers). Extend
     # with MAP_RELAY_EXTRA_HOSTS (comma separated) when a region adds a
     # provider; never make this an open proxy.
-    RELAY_HOSTS = %w[geoservices.wallonie.be].freeze
+    RELAY_HOSTS = %w[
+      geoservices.wallonie.be
+      data.geopf.fr apicarto.ign.fr
+      wmts1.geoportail.lu wms.geoportail.lu wms.inspire.geoportail.lu
+      bio.discomap.eea.europa.eu image.discomap.eea.europa.eu
+      maps.isric.org
+    ].freeze
 
     OPEN_TIMEOUT = 3
     TIMEOUT = 8
@@ -32,7 +38,8 @@ module Providers
     end
 
     def allowed?(url)
-      uri = URI.parse(url.to_s)
+      # Tile templates carry {z}/{x}/{y} placeholders, not valid in a URI.
+      uri = URI.parse(url.to_s.gsub(/\{[a-z0-9-]+\}/i, "0"))
       uri.is_a?(URI::HTTPS) && relay_hosts.include?(uri.host)
     rescue URI::InvalidURIError
       false

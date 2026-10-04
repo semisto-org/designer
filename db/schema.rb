@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -806,7 +806,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_180000) do
     t.jsonb "settings", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.geometry "outline", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.bigint "parent_id"
     t.index ["key"], name: "index_regions_on_key", unique: true
+    t.index ["outline"], name: "index_regions_on_outline", using: :gist
+    t.index ["parent_id"], name: "index_regions_on_parent_id"
   end
 
   create_table "service_requests", force: :cascade do |t|
@@ -975,6 +979,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_180000) do
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "region_layers", "regions"
+  add_foreign_key "regions", "regions", column: "parent_id"
   add_foreign_key "service_requests", "maps"
   add_foreign_key "service_requests", "users"
   add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify

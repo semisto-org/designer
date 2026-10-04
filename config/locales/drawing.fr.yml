@@ -308,6 +308,12 @@ fr:
         construction_boundary_distance:
           title: "%{kind_name} à %{distance} de la limite"
           explanation: "Près des limites, une construction peut demander un permis ou l'accord du voisin. Les distances exactes dépendent de la construction."
+        fr_shed_declaration:
+          title: "%{kind_name} de %{area}"
+          explanation: "Au-delà de %{max}, un abri de jardin demande une déclaration préalable de travaux en mairie."
+        fr_shed_permit:
+          title: "%{kind_name} de %{area}"
+          explanation: "Au-delà de %{max}, un permis de construire est en général demandé (40 m² en zone urbaine d'un PLU : renseignez-vous en mairie)."
 
     export:
       button: "Exporter"

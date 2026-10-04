@@ -20,8 +20,8 @@ class MapsController < ApplicationController
   end
 
   def new
-    region = Region.default
-    render inertia: "maps/new", props: { region: region.as_inertia, layers: region.layers.enabled.bases.map(&:as_inertia) }
+    region = Region.europe || Region.default
+    render inertia: "maps/new", props: { region: region.as_inertia, layers: region.catalogue.enabled.bases.map(&:as_inertia) }
   end
 
   def create
@@ -29,7 +29,6 @@ class MapsController < ApplicationController
       return redirect_to maps_path, alert: t("maps.errors.plan_limit")
     end
     map = Current.user.owned_maps.new(map_params)
-    map.region ||= Region.default
     if map.save
       # `next`: what the editor starts with (pick parcels, draw, import).
       redirect_to map_path(map, terrain: params[:next].presence_in(%w[parcels draw import])), notice: t("maps.created")
@@ -41,7 +40,7 @@ class MapsController < ApplicationController
   def show
     render inertia: "maps/show", props: {
       map: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?),
-      layers: @map.region.layers.enabled.map(&:as_inertia),
+      layers: @map.region.catalogue.enabled.map(&:as_inertia),
       features: @map.features.where.not(status: "rejected").map(&:as_geojson),
       mapEntitlements: map_entitlements.as_json,
       # Dated drone views, newest first (« Couches », with the base maps).

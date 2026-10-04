@@ -23,3 +23,18 @@ wallonia_rules = [
 if (wallonia = Region.find_by(key: "wallonia"))
   wallonia.update!(settings: wallonia.settings.merge("regulatory_rules" => wallonia_rules))
 end
+
+# France: Code de l'urbanisme. A garden shed or shelter is exempt below
+# 5 m² (art. R*421-2), needs a prior declaration from 5 to 20 m²
+# (art. R*421-9) and a building permit beyond 20 m² (art. R*421-14; 40 m²
+# in an urban zone of a PLU, which the alert mentions). Greenhouses follow
+# their height instead (1.80 m, 4 m) and are not checked here.
+urbanisme = { "label" => "Code de l'urbanisme, art. R*421-2, R*421-9 et R*421-14" }
+france_rules = [
+  { "key" => "fr_shed_declaration", "check" => "max_area", "kinds" => %w[shelter shed], "max_m2" => 5, "until_m2" => 20, "severity" => "info", "source" => urbanisme },
+  { "key" => "fr_shed_permit", "check" => "max_area", "kinds" => %w[shelter shed], "max_m2" => 20, "severity" => "warning", "source" => urbanisme }
+]
+
+if (france = Region.find_by(key: "france"))
+  france.update!(settings: france.settings.merge("regulatory_rules" => france_rules))
+end

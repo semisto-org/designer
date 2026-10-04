@@ -9,6 +9,7 @@
 #   check      max_area | min_boundary_distance | max_count
 #   kinds      element kinds the rule applies to
 #   max_m2     (max_area) area above which the alert is raised
+#   until_m2   (max_area, optional) area above which a stricter rule takes over
 #   min_m      (min_boundary_distance) distance to the terrain limits
 #   max        (max_count) number of elements above which the alert is raised
 #   severity   info | warning
@@ -61,8 +62,10 @@ class RegulatoryAlerts
     def max_area(rule)
       max = rule["max_m2"].to_f
       area = "ST_Area(map_features.geometry::geography)"
-      features(rule).where("ST_Dimension(map_features.geometry) = 2").where("#{area} > ?", max)
-        .order(:id).pluck(:id, :kind, Arel.sql(area))
+      scope = features(rule).where("ST_Dimension(map_features.geometry) = 2").where("#{area} > ?", max)
+      # `until_m2`: a step below a stricter rule (no double alert).
+      scope = scope.where("#{area} <= ?", rule["until_m2"].to_f) if rule["until_m2"].present?
+      scope.order(:id).pluck(:id, :kind, Arel.sql(area))
         .map do |id, kind, value|
           build(rule, [ id ], kind, area: square_meters(value), max: square_meters(max))
         end

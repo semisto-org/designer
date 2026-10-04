@@ -94,4 +94,17 @@ class RegulatoryAlertsTest < ActiveSupport::TestCase
     assert_equal "Cabane ou remise de 30 m²", alerts.second.title
     assert alerts.all? { |a| a.source["url"].start_with?("https://territoire.wallonie.be/") }
   end
+
+  test "until_m2: a step below a stricter rule does not alert twice" do
+    map = @map
+    rules = [
+      { "key" => "fr_shed_declaration", "check" => "max_area", "kinds" => %w[shed], "max_m2" => 5, "until_m2" => 20, "severity" => "info" },
+      { "key" => "fr_shed_permit", "check" => "max_area", "kinds" => %w[shed], "max_m2" => 20, "severity" => "warning" }
+    ]
+    square = ->(side, lng) { d = side / 2.0 / 111_320; c = 50.33; e = d / Math.cos(c * Math::PI / 180); { "type" => "Polygon", "coordinates" => [ [ [ lng - e, c - d ], [ lng + e, c - d ], [ lng + e, c + d ], [ lng - e, c + d ], [ lng - e, c - d ] ] ] } }
+    small = map.features.create!(layer: "structures", kind: "shed", geometry: square.(3, 4.9))
+    large = map.features.create!(layer: "structures", kind: "shed", geometry: square.(5, 4.91))
+    alerts = RegulatoryAlerts.new(map, rules:).alerts
+    assert_equal [ [ "fr_shed_declaration", [ small.id ] ], [ "fr_shed_permit", [ large.id ] ] ], alerts.map { [ _1.rule, _1.feature_ids ] }
+  end
 end

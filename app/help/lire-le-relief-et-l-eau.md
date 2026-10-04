@@ -15,6 +15,8 @@ Où l'eau descend-elle quand il pleut fort ? Où stagne-t-elle ? Quel coin reste
 
 En Wallonie, le relief vient du Géoportail (relevés LiDAR 2021-2022 du SPW). La maille est d'**un mètre** tant que le terrain et sa marge tiennent dans environ un kilomètre carré, plus grossière au-delà ; un terrain trop étendu est refusé, avec la surface maximale. Seuls les éditeurs peuvent lancer le téléchargement. **Mettre à jour le relief** le recharge, par exemple après un changement de contour.
 
+En France, le relief vient de l'IGN (RGE ALTI, au mètre, sol nu), avec la photo aérienne de l'IGN dessus. Au Luxembourg et ailleurs en Europe, il vient du **Copernicus DEM**, à 30 m : c'est un modèle de **surface**, arbres et toits compris, lissé pour la 3D. Il donne l'allure générale du terrain, pas ses détails : une butte, un fossé ou une petite mare n'y apparaissent pas.
+
 ## Le terrain en chiffres
 
 Une fois le relief prêt, le panneau affiche l'**Altitude** (du point le plus bas au plus haut), le **Dénivelé**, la **Pente moyenne** et les **Pentes les plus fortes** : un dixième du terrain est plus pentu que cette valeur.
@@ -33,7 +35,7 @@ Sous **Sur la carte**, choisissez **Écoulement** pour voir en bleu les axes où
 
 Dessinez vos bâtiments, serres, abris et cabanes comme des surfaces : le panneau calcule l'eau récupérable chaque année (surface des toits × pluie annuelle × part récupérée), et son équivalent en litres par semaine. De quoi dimensionner une citerne.
 
-Les **Réglages de l'eau**, marqués « indicatif », ajustent la pluie annuelle de votre coin (850 mm par défaut en Wallonie), la part récupérée sur les toits (0,8 par défaut), le type de sol et sa capacité à boire l'eau.
+Les **Réglages de l'eau**, marqués « indicatif », ajustent la pluie annuelle de votre coin (850 mm par défaut en Wallonie ; ailleurs, indiquez-la vous-même), la part récupérée sur les toits (0,8 par défaut), le type de sol et sa capacité à boire l'eau.
 
 ## Ce que ces calculs ne savent pas
 

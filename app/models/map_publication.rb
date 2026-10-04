@@ -26,7 +26,7 @@ class MapPublication < ApplicationRecord
     flag = ->(key, default) { raw.key?(key) ? ActiveModel::Type::Boolean.new.cast(raw[key]) == true : default }
     {
       "feature_layers" => raw.key?("feature_layers") ? Array(raw["feature_layers"]).map(&:to_s) & MapFeature::LAYERS : MapFeature::LAYERS - %w[networks],
-      "region_layers" => Array(raw["region_layers"]).map(&:to_s) & map.region.layers.enabled.pluck(:key),
+      "region_layers" => Array(raw["region_layers"]).map(&:to_s) & map.region.catalogue.enabled.pluck(:key),
       "hide_networks" => flag.call("hide_networks", true),
       "hide_address" => flag.call("hide_address", true),
       "show_notes" => flag.call("show_notes", false),
@@ -71,7 +71,7 @@ class MapPublication < ApplicationRecord
   # Region layers to draw: those chosen at publication, still enabled, and
   # (defense in depth) never a sensitive one while networks are hidden.
   def region_layers
-    layers = map.region.layers.enabled.where(key: snapshot.fetch("region_layer_keys", [])).to_a
+    layers = map.region.catalogue.enabled.where(key: snapshot.fetch("region_layer_keys", [])).to_a
     layers = layers.reject { |layer| Collab::PublicSnapshot.sensitive_region_layer?(layer) } if options["hide_networks"]
     layers
   end

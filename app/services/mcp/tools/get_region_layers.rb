@@ -9,7 +9,7 @@ module Mcp
 
       def perform(map_id:)
         map = find_map!(map_id)
-        layers = map.region.layers.enabled.to_a
+        layers = map.region.catalogue.enabled.to_a
         {
           region: { key: map.region.key, name: map.region.name, country_code: map.region.country_code },
           identify_available: layers.any?(&:identifiable?),
