@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import { ArrowLeft, ArrowRight, ChevronLeft } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useMemo, useState } from 'react'
+import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
@@ -40,7 +41,10 @@ export default function MapProject({ map, project, progress: initialProgress, sc
       </Link>
       <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div>
-          <h1 className="text-2xl">{t('journey.project.title')}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl">{t('journey.project.title')}</h1>
+            <HelpButton compact slug="remplir-la-fiche-projet" />
+          </div>
           <p className="text-loam-500">{map.name}</p>
         </div>
         <div className="w-full max-w-xs sm:w-64">

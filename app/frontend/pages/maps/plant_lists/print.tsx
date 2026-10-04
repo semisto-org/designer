@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import { ArrowLeft, Printer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Logo } from '@/components/Logo'
+import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { formatDate, formatDecimal, strataLabel } from '@/components/plants/format'
 import { formatArea, t } from '@/lib/i18n'
@@ -26,7 +27,10 @@ export default function PlantListPrint({ map, list, alerts, generatedOn }: Props
           <Link href={`/maps/${map.id}`} className="inline-flex items-center gap-1 text-sm text-loam-500 hover:text-loam-800">
             <ArrowLeft className="h-4 w-4" />{t('plant_list.print_page.back')}
           </Link>
-          <Button onClick={() => window.print()}><Printer className="h-4 w-4" />{t('plant_list.print_page.print')}</Button>
+          <div className="flex items-center gap-2">
+            <HelpButton compact slug="la-liste-de-plants-et-la-commande" />
+            <Button onClick={() => window.print()}><Printer className="h-4 w-4" />{t('plant_list.print_page.print')}</Button>
+          </div>
         </div>
 
         <header className="flex items-start justify-between gap-4 border-b border-loam-200 pb-4">

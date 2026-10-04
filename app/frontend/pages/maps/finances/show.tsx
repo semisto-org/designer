@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import clsx from 'clsx'
 import { ArrowLeft, Download, Info, Plus, Printer, RefreshCw, TriangleAlert, X } from 'lucide-react'
 import { useState } from 'react'
+import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input } from '@/components/ui/Field'
@@ -94,6 +95,7 @@ export default function FinancesShow({ map, plan, result: initialResult, mapPlan
           <Button variant="secondary" size="sm" onClick={() => void exportFile('csv')}><Download className="h-4 w-4" />{t('finances.page.export_csv')}</Button>
           <Button variant="secondary" size="sm" onClick={() => void exportFile('xlsx')}><Download className="h-4 w-4" />{t('finances.page.export_xlsx')}</Button>
           <Button variant="ghost" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" />{t('finances.page.print')}</Button>
+          <HelpButton compact slug="le-tableau-financier" />
         </div>
       </header>
 

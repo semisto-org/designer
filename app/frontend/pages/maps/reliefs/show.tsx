@@ -4,6 +4,7 @@ import {
   ArrowLeft, CloudRain, Crosshair, Download, Eye, Loader2, Menu, Pause, Play, RotateCcw, Sun, SunMedium, X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Flash } from '@/components/ui/Flash'
 import { api } from '@/lib/api'
@@ -366,6 +367,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
             <h1 className="truncate text-sm font-semibold text-loam-900">{t('relief.page.title')}</h1>
             <p className="truncate text-xs text-loam-500">{map.name}</p>
           </div>
+          <HelpButton iconOnly slug="lire-le-relief-et-l-eau" className="px-2" />
           <button
             type="button"
             onClick={() => setPanelOpen((open) => !open)}
