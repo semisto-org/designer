@@ -1,0 +1,319 @@
+{
+ "data": [
+  {
+   "id": 101,
+   "type": "map_feature",
+   "feature_kind": "lodging",
+   "layer_id": 1,
+   "layer_kind": "venues",
+   "name": "Gîte des Fauvettes",
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.904,
+       50.34
+      ],
+      [
+       4.9044,
+       50.34
+      ],
+      [
+       4.9044,
+       50.3404
+      ],
+      [
+       4.904,
+       50.3404
+      ],
+      [
+       4.904,
+       50.34
+      ]
+     ]
+    ]
+   },
+   "geometry_type": "Polygon",
+   "properties": {},
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 102,
+   "type": "map_feature",
+   "feature_kind": "zone",
+   "layer_id": 3,
+   "layer_kind": "welcome",
+   "name": "Espace pique-nique",
+   "name_i18n": {
+    "fr": "Espace pique-nique"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.905,
+       50.34
+      ],
+      [
+       4.9054,
+       50.34
+      ],
+      [
+       4.9054,
+       50.3404
+      ],
+      [
+       4.905,
+       50.3404
+      ],
+      [
+       4.905,
+       50.34
+      ]
+     ]
+    ]
+   },
+   "geometry_type": "Polygon",
+   "properties": {
+    "access": "public"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 110,
+   "type": "map_feature",
+   "feature_kind": "zone",
+   "layer_id": 2,
+   "layer_kind": "management",
+   "name": "Verger du haut",
+   "name_i18n": {
+    "fr": "Verger du haut"
+   },
+   "description_i18n": {
+    "fr": "Vieux pommiers haute tige sur prairie."
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.906,
+       50.3405
+      ],
+      [
+       4.9068,
+       50.3405
+      ],
+      [
+       4.9068,
+       50.3413
+      ],
+      [
+       4.906,
+       50.3413
+      ],
+      [
+       4.906,
+       50.3405
+      ]
+     ]
+    ]
+   },
+   "geometry_type": "Polygon",
+   "properties": {
+    "management_notes": "Fauche tardive après le 15 juillet."
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 111,
+   "type": "map_feature",
+   "feature_kind": "path",
+   "layer_id": 2,
+   "layer_kind": "management",
+   "name": "Chemin des chèvres",
+   "name_i18n": {
+    "fr": "Chemin des chèvres"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.9055,
+      50.3401
+     ],
+     [
+      4.9062,
+      50.3404
+     ],
+     [
+      4.9071,
+      50.3409
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {},
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 112,
+   "type": "map_feature",
+   "feature_kind": "point",
+   "layer_id": 2,
+   "layer_kind": "management",
+   "name": "Tas de bois",
+   "name_i18n": {
+    "fr": "Tas de bois"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9066,
+     50.3403
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {},
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 120,
+   "type": "map_feature",
+   "feature_kind": "line",
+   "layer_id": 5,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      4.9058,
+      50.3402
+     ],
+     [
+      4.9064,
+      50.3406
+     ]
+    ]
+   },
+   "geometry_type": "LineString",
+   "properties": {
+    "gauge": "thick"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 121,
+   "type": "map_feature",
+   "feature_kind": "node",
+   "layer_id": 5,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9058,
+     50.3402
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "node_type": "cistern"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 122,
+   "type": "map_feature",
+   "feature_kind": "node",
+   "layer_id": 5,
+   "layer_kind": "network",
+   "name": "Robinet du potager",
+   "name_i18n": {
+    "fr": "Robinet du potager"
+   },
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9064,
+     50.3406
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "node_type": "tap",
+    "water_source": "rain",
+    "instructions": "Purger avant les gelées."
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  },
+  {
+   "id": 123,
+   "type": "map_feature",
+   "feature_kind": "node",
+   "layer_id": 5,
+   "layer_kind": "network",
+   "name": null,
+   "name_i18n": {},
+   "description_i18n": {},
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.9061,
+     50.3404
+    ]
+   },
+   "geometry_type": "Point",
+   "properties": {
+    "node_type": "valve"
+   },
+   "position": 0,
+   "plant_id": null,
+   "created_at": "2026-06-02T09:15:00.000+02:00",
+   "updated_at": "2026-06-02T09:15:00.000+02:00"
+  }
+ ],
+ "meta": {
+  "page": 1,
+  "per_page": 200,
+  "total": 22,
+  "pages": 2
+ }
+}
