@@ -17,7 +17,7 @@ Une carte à laquelle on est invité **ne compte jamais** dans la formule de l'i
 
 ## Inviter quelqu'un
 
-Depuis la carte, invitez par adresse e-mail en choisissant le rôle. La personne reçoit un lien ; si elle n'a pas de compte, elle en crée un en quelques secondes avec Google ou un lien magique.
+Depuis la carte, touchez **Partager** en haut de l'écran, puis invitez par adresse e-mail en choisissant le rôle. La personne reçoit un lien ; si elle n'a pas de compte, elle en crée un en quelques secondes avec Google ou un lien magique.
 
 ## Commenter sur la carte
 
@@ -25,7 +25,7 @@ Les commentaires sont attachés à ce dont on parle : un élément, une plante, 
 
 ## Publier une vue
 
-Pour présenter un design (à un client, à une commune, à des voisins), vous pouvez **publier une vue** de la carte à une adresse partageable, lisible sans compte. Vous choisissez les couches visibles et masquez ce qui est privé (les réseaux, l'adresse exacte). Vous pouvez dépublier à tout moment.
+Pour présenter un design (à un client, à une commune, à des voisins), vous pouvez **publier une vue** de la carte à une adresse partageable, lisible sans compte. Vous choisissez les couches visibles et masquez ce qui est privé (les réseaux, l'adresse exacte). Vous pouvez dépublier à tout moment. Pas à pas : [Publier sa carte](/help/publier-sa-carte).
 
 ## Vie privée
 
@@ -35,4 +35,5 @@ Pour présenter un design (à un client, à une commune, à des voisins), vous p
 
 ## Et ensuite ?
 
-[Formules et forfait](/help/formules-et-forfait) explique ce qui change quand un forfait prend fin : vos cartes partagées restent lisibles par tous ceux qui y ont accès.
+- [Imprimer un plan à l'échelle](/help/imprimer-un-plan-a-l-echelle) : un plan papier pour une réunion sur le terrain.
+- [Formules et forfait](/help/formules-et-forfait) explique ce qui change quand un forfait prend fin : vos cartes partagées restent lisibles par tous ceux qui y ont accès.

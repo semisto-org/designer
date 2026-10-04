@@ -9,33 +9,47 @@ Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes q
 
 ## La palette : les plantes de votre projet
 
-La **palette** réunit les espèces que vous envisagez. Pour la construire :
+La **palette** réunit les espèces choisies pour ce terrain. Dans le panneau **Palette** :
 
-- **Filtrez le catalogue** : strate (arbre, arbuste, herbacée, grimpante…), rusticité, sol, exposition, usages (fruits, bois, fourrage), fixation de l'azote, plantes mellifères.
-- **Partez d'une palette modèle** : haie fourragère, verger-maraîcher, forêt-jardin d'un hectare. Vous la retouchez ensuite.
-- **Demandez à Claude** de proposer des espèces selon vos objectifs et le climat à venir (avec le forfait particulier, il les pose en brouillon sur la carte ; vous gardez le dernier mot).
+- cherchez une espèce dans « Ajouter une espèce : pommier, sureau… », puis touchez **Ajouter à la palette** ;
+- **Rustiques ici**, coché d'office, ne garde que les espèces qui supportent le froid de la zone de votre terrain ;
+- parcourez les **Suggestions pour ce terrain** : fixateurs d'azote, strates manquantes, plantes mellifères, avec la raison de chaque suggestion.
 
-Chaque fiche indique **d'où vient chaque information** (source, statut : sourcée ou à vérifier). Quand une valeur vient de PFAF, la fiche le cite ; les textes et images de PFAF ne sont jamais recopiés.
+Pour chercher plus largement, le catalogue **Plantes** se filtre par strate, port, rusticité, exposition, humidité du sol, usages, plantes comestibles, fixatrices d'azote, mellifères ou indigènes, et peut écarter les invasives.
+
+Pour chaque espèce de la palette, **Modifier** permet de préciser sa strate sur ce terrain, son rôle (nourricière, fertilité, pionnière, haie…), un objectif de nombre de plants et vos notes. L'**Équilibre des strates** montre combien de plants sont prévus à chaque étage.
+
+Vous pouvez aussi [connecter Claude](/help/connecter-claude) : il cherche dans le même catalogue et vous suggère des espèces selon vos objectifs.
+
+## D'où viennent les informations
+
+Chaque fiche d'espèce dit **d'où vient chaque valeur** : sa source, et un statut **vérifiée**, **à vérifier** ou **non renseignée**. « À vérifier » veut dire que la valeur a été reprise d'un catalogue sans être contrôlée par une personne : jetez-y un œil avant de planter. Quand une valeur vient de PFAF, la fiche cite PFAF comme source.
+
+## Placer des plants isolés
+
+Pour un arbre ou un arbuste seul, touchez **Placer** à côté de l'espèce, puis cliquez sur la carte, autant de fois que de plants. Touchez **Terminer** (ou Échap) quand c'est fait.
 
 ## Les patches : où va quoi
 
-Un **patch** est une zone de la carte où l'on plante un mélange d'espèces. Dessinez-le comme n'importe quel élément (zone ou ligne), puis associez-lui des plantes de la palette :
+Un **patch** est une zone où l'on plante un mélange d'espèces : un îlot, une lisière, un massif.
 
-1. **Dessinez le patch** sur la carte (une haie, un îlot, une lisière).
-2. **Choisissez les espèces** et leur strate.
-3. **Réglez la densité** : selon la surface ou la longueur du patch, Designer calcule les quantités.
+1. Dans la palette, touchez **Dessiner un patch** et tracez son contour sur la carte.
+2. Sa fiche s'ouvre sur **Composition du patch**. Touchez **Ajouter une plante** et choisissez une espèce de la palette.
+3. Pour chaque plante, choisissez le calcul : **Densité** (en plants par m², avec une valeur par défaut selon la strate) ou **Nombre** de plants.
+
+Designer calcule les quantités d'après la surface mesurée du patch. Indiquez aussi l'**Exposition du patch** : elle sert à la cohérence du plan.
 
 Penser en strates évite les mauvaises surprises : on met la canopée là où l'ombre ne gêne pas, les arbustes en lisière, les herbacées et couvre-sols dans les interstices.
 
 ## La liste de plants
 
-Quand vos patches sont dessinés, les quantités s'additionnent : vous obtenez la **liste de plants** de votre projet, espèce par espèce. Elle sert à commander à la pépinière, à demander un devis de mise en œuvre, ou à planifier une plantation entre voisins.
+Les plants isolés et ceux des patches s'additionnent dans le panneau **Liste de plants**, espèce par espèce, avec la **Cohérence du plan** (densité, rusticité, pollinisation…). Voir [La liste de plants et la commande](/help/la-liste-de-plants-et-la-commande).
 
 ## Penser au climat qui vient
 
-Une plante choisie aujourd'hui vivra trente ans ou plus. Regardez toujours si ses seuils de froid, de chaleur et de sécheresse tiennent dans le climat futur de votre région : c'est l'un des apports des analyses du forfait particulier.
+Une plante choisie aujourd'hui vivra trente ans ou plus. Regardez si ses seuils de froid, de chaleur et de sécheresse tiennent dans le climat futur de votre région : voir [Le climat d'aujourd'hui et de demain](/help/le-climat-d-aujourd-hui-et-de-demain).
 
 ## Pour aller plus loin
 
+- [Planter puis observer](/help/planter-puis-observer) : marquer vos plants plantés et suivre leur reprise.
 - [Partager et commenter](/help/partager-et-commenter) : montrer son plan et récolter des avis.
-- [Connecter Claude](/help/connecter-claude) : un regard extérieur sur votre palette.

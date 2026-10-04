@@ -5,16 +5,17 @@ category: Cartographier
 order: 30
 ---
 
-Le **Géoportail de la Wallonie** publie des dizaines de données ouvertes sur le territoire. Designer en affiche les plus utiles pour concevoir un jardin-forêt, regroupées en trois familles. Activez-les une par une : trop de couches superposées, et on s'y perd.
+Le **Géoportail de la Wallonie** publie des dizaines de données ouvertes sur le territoire. Designer en affiche les plus utiles pour concevoir un jardin-forêt, dans le panneau **Couches** : un **Fond de carte** (plan ou photo aérienne), puis des couches à superposer, rangées en deux familles : **Relief, sol et eau** et **Milieux et règles**. Activez-les une par une : trop de couches superposées, et on s'y perd.
 
 ## Cliquer pour lire la donnée
 
 Une couche est un dessin ; **la donnée se lit en cliquant**. Quand une couche est active, un clic sur la carte interroge le Géoportail et affiche l'information à cet endroit (type de sol, altitude, zone du plan de secteur…). Si le service est momentanément injoignable, Designer le dit et vous pouvez réessayer.
 
-## Photos aériennes
+## Fond de carte : plan et photos aériennes
 
-- **Ortho printemps 2026** : la vue la plus récente, pour repérer arbres, haies, bâtiments et chemins.
-- **Ortho 1994-2000** et **Ortho 1971** : pour comprendre l'histoire du lieu. Une haie arrachée, un verger disparu, une mare comblée : le passé explique souvent le sol d'aujourd'hui.
+- **Plan** : un fond neutre, avec routes, bâtiments, cours d'eau et noms de lieux. Il s'imprime bien.
+- **Photo 2026** : la photo aérienne du printemps 2026, la plus récente, pour repérer arbres, haies, bâtiments et chemins.
+- **Photo 1994-2000** et **Photo 1971** : pour comprendre l'histoire du lieu. Une haie arrachée, un verger disparu, une mare comblée : le passé explique souvent le sol d'aujourd'hui.
 
 ## Relief, sol et eau
 

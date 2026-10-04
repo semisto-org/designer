@@ -15,7 +15,7 @@ Semisto Designer est fait pour travailler **avec une IA qui connaît le lieu**. 
 
 ## Ce que Claude ne fait jamais seul
 
-**Rien n'est modifié sans votre accord.** Un brouillon reste un brouillon : vous l'acceptez, l'ajustez ou le refusez, élément par élément. Chaque action de l'IA est consignée.
+**Rien n'est modifié sans votre accord.** Un brouillon reste un brouillon : vous l'acceptez, l'ajustez ou le refusez, élément par élément. Chaque action de l'IA est consignée. Voir [Relire les brouillons de Claude](/help/relire-les-brouillons-de-claude).
 
 ## Comment connecter
 
@@ -35,4 +35,4 @@ Voir la [politique de confidentialité](/confidentialite) pour le détail.
 
 ## Bien demander
 
-Plus vous donnez de contexte (objectifs, temps disponible, budget, contraintes), meilleures sont les propositions. Complétez la fiche projet de votre carte : Claude la lit.
+Plus vous donnez de contexte (objectifs, temps disponible, budget, contraintes), meilleures sont les propositions. Complétez la [fiche projet](/help/remplir-la-fiche-projet) de votre carte : Claude la lit.

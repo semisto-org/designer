@@ -5,16 +5,26 @@ category: Cartographier
 order: 20
 ---
 
-Le plus sûr moyen d'obtenir un contour juste est de partir du **plan cadastral** : chaque parcelle y a sa forme officielle et son numéro. Dans le panneau *Terrain*, la liste « Parcelles » garde la trace de celles qui composent votre terrain.
+Le plus sûr moyen d'obtenir un contour juste est de partir du **plan cadastral** : chaque parcelle y a sa forme officielle et son numéro. Designer assemble pour vous le contour des parcelles que vous choisissez.
 
-## Trouver sa parcelle
+## Choisir ses parcelles sur la carte
 
-1. Centrez la carte sur votre terrain (par l'adresse de la carte, ou en la déplaçant).
-2. Activez la couche **Plan cadastral** dans les couches du Géoportail.
-3. Cliquez sur la parcelle : la carte affiche son identifiant (la division, la section et le numéro, ou le code CAPAKEY).
-4. Ajoutez-la à la liste des parcelles de la carte.
+1. Ouvrez le panneau **Terrain**.
+2. Si la carte n'est pas encore sur votre terrain, utilisez **Aller à une adresse**.
+3. Touchez **Choisir mes parcelles**. Si les limites n'apparaissent pas, zoomez sur votre terrain.
+4. Touchez sur la carte chaque parcelle de votre terrain. Touchez-la de nouveau pour la retirer. Le panneau affiche votre sélection, par exemple « 2 parcelles · 1 850 m² ».
+5. Touchez **Valider le contour**.
 
-Votre terrain compte plusieurs parcelles voisines ? Ajoutez-les toutes : le contour de la carte les rassemble.
+Le contour du terrain est alors celui des parcelles réunies, et le panneau **Terrain** garde le nombre de **Parcelles** qui le composent. Attention : si la carte avait déjà un contour, il est remplacé.
+
+Vous partez d'une nouvelle carte ? Le formulaire de création propose directement **Choisir mes parcelles** comme étape suivante.
+
+## Sans cadastre : dessiner ou importer
+
+- **Dessiner le contour** (ou **Redessiner le contour**) : cliquez point par point sur la photo aérienne.
+- **Importer un fichier** : un contour GeoJSON ou KML, par exemple exporté de Google Earth, de QGIS ou envoyé par un géomètre (5 Mo au plus).
+
+Si le cadastre n'est pas disponible pour la région de votre carte, ce sont les deux seules possibilités, et le panneau vous le signale.
 
 ## Parcelle, propriété, terrain : ce n'est pas toujours pareil
 
@@ -24,7 +34,7 @@ Le cadastre décrit des **parcelles**, pas forcément l'espace que vous allez r�
 - un terrain à cheval sur plusieurs parcelles ;
 - un terrain en location ou en prêt, dont les limites sont celles du bail.
 
-Dans tous les cas, **le contour de votre carte est celui du projet**. Partez de la parcelle, puis retouchez le contour avec « Redessiner le contour » pour ne garder que la zone qui vous intéresse.
+Dans tous les cas, **le contour de votre carte est celui du projet**. Pour ne garder qu'une partie d'une parcelle, affichez le **Plan cadastral** dans le panneau **Couches**, puis tracez la zone qui vous intéresse avec **Redessiner le contour** : le nouveau tracé remplace l'ancien.
 
 ## Bon à savoir
 
