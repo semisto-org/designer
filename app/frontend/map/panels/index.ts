@@ -1,4 +1,4 @@
-import { Bot, Camera, ClipboardList, CloudSun, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout } from 'lucide-react'
+import { Bot, Camera, ClipboardList, CloudSun, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -35,6 +35,13 @@ import PhotosInspector from '@/map/photos/PhotosInspector'
 import PhotosOverlay from '@/map/photos/PhotosOverlay'
 import SoilPanel from '@/map/soil/SoilPanel'
 import SoilOverlay from '@/map/soil/SoilOverlay'
+import AlertsPanel from '@/map/drawing/AlertsPanel'
+import DrawingLayers from '@/map/drawing/DrawingLayers'
+import DrawingToolbar from '@/map/drawing/DrawingToolbar'
+import ElementSection, { appliesToElement } from '@/map/drawing/ElementSection'
+import ExportMenu from '@/map/drawing/ExportMenu'
+import DrawingLayersPanel from '@/map/drawing/LayersPanel'
+import LiveSync from '@/map/drawing/LiveSync'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -44,12 +51,14 @@ export const PANELS: EditorPanel[] = [
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'map', component: LayersPanel, order: 20 },
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'understand', component: ReliefPanel, order: 30 },
   { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'understand', component: ClimatePanel, order: 40 },
-  { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
-  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'design', component: PlantListPanel, order: 30 },
-  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'design', component: FinancesPanel, order: 80 },
   { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'understand', component: SoilPanel, order: 60 },
   { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'understand', component: PhotosPanel, order: 70 },
-  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 90 },
+  { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
+  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'design', component: PlantListPanel, order: 30 },
+  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 40 },
+  { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'design', component: DrawingLayersPanel, order: 45 },
+  { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
+  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'design', component: FinancesPanel, order: 80 },
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
   { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'share', component: ActionsPanel, order: 20 },
@@ -64,6 +73,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: () => true, component: PhotosInspector, order: 70 },
+  { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
@@ -71,6 +81,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'share', component: ShareButton, order: 80 },
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
+  { id: 'drawing-export', component: ExportMenu, order: 60 },
 ]
 
 // Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.
@@ -83,4 +94,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'plants', component: PlantsOverlay, order: 20 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },
+  { id: 'drawing-layers', component: DrawingLayers, order: 10 },
+  { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
+  { id: 'drawing-live', component: LiveSync, order: 90 },
 ]

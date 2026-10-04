@@ -1,0 +1,356 @@
+# Map drawing (map-drawing): element library, drawing toolbar, measures,
+# sketches, shape editing, layers, regulatory alerts, exports.
+# Kind labels live under editor.kinds so the shared inspector and element
+# list name every element the same way.
+fr:
+  editor:
+    kinds:
+      building: "Bâtiment"
+      existing_tree: "Arbre existant"
+      existing_hedge: "Haie existante"
+      wall: "Mur ou muret"
+      slope_break: "Rupture de pente"
+      wet_area: "Zone humide"
+      path_existing: "Chemin existant"
+      land_cover: "Occupation du sol"
+      pond: "Mare"
+      swale: "Baissière"
+      ditch: "Fossé"
+      water_tank: "Citerne"
+      well: "Puits"
+      spring: "Source"
+      rain_garden: "Jardin de pluie"
+      path: "Cheminement"
+      track: "Chemin carrossable"
+      gate: "Portail ou barrière"
+      parking: "Stationnement"
+      greenhouse: "Serre"
+      shelter: "Abri"
+      shed: "Cabane ou remise"
+      compost: "Compost"
+      raised_bed: "Bac surélevé"
+      terrace: "Terrasse"
+      playground: "Aire de jeux"
+      fence: "Clôture"
+      hedge: "Haie à planter"
+      windbreak: "Brise-vent"
+      paddock: "Parc à animaux"
+      poultry_house: "Poulailler"
+      beehive: "Ruche"
+      water_pipe: "Conduite d'eau"
+      electric_line: "Câble électrique"
+      gas_line: "Conduite de gaz"
+      ethernet_line: "Câble réseau"
+      valve: "Vanne"
+      meter: "Compteur"
+      socket: "Prise"
+      tap: "Robinet"
+      note_point: "Note"
+      sketch: "Croquis"
+
+  drawing:
+    panels:
+      layers: "Calques"
+      alerts: "Alertes"
+
+    geometries:
+      Point: "un point"
+      LineString: "une ligne"
+      Polygon: "une surface"
+      MultiLineString: "un ou plusieurs traits"
+
+    geometry_short:
+      Point: "Point"
+      LineString: "Ligne"
+      Polygon: "Surface"
+      MultiLineString: "Traits"
+
+    errors:
+      kind_format: "Le type d'élément n'est pas valide."
+      wrong_layer: "« %{kind} » appartient à la couche « %{layer} »."
+      wrong_geometry: "« %{kind} » se dessine comme %{expected}."
+      out_of_range: "%{field} de « %{kind} » doit être compris entre %{min} et %{max} %{unit}."
+      invalid_value: "%{field} de « %{kind} » n'est pas valide."
+
+    fields:
+      height_m: "Hauteur"
+      floors: "Niveaux"
+      roof: "Toiture"
+      species: "Espèce"
+      crown_diameter_m: "Diamètre de la couronne"
+      trunk_circumference_cm: "Circonférence du tronc"
+      health: "État"
+      keep: "À conserver"
+      width_m: "Largeur"
+      material: "Matériau"
+      seasonality: "En eau"
+      surface: "Revêtement"
+      cover: "Occupation"
+      depth_m: "Profondeur"
+      liner: "Étanchéité"
+      purpose: "Usage"
+      capacity_l: "Capacité"
+      tank_type: "Type de citerne"
+      potable: "Eau potable"
+      flow_l_min: "Débit"
+      permanent: "Coule toute l'année"
+      catchment_m2: "Surface drainée"
+      gate_type: "Passage"
+      spaces: "Places"
+      covering: "Couverture"
+      heated: "Chauffée"
+      compost_type: "Type de compost"
+      bins: "Bacs"
+      fence_type: "Type de clôture"
+      rows: "Rangs"
+      spacing_m: "Espacement sur le rang"
+      headcount: "Effectif"
+      capacity: "Capacité (animaux)"
+      hives: "Ruches"
+      diameter_mm: "Diamètre"
+      depth_cm: "Profondeur d'enfouissement"
+      voltage: "Tension"
+      section_mm2: "Section"
+      buried: "Enterré"
+      cable: "Câble"
+      network: "Réseau"
+      outdoor: "Étanche (extérieur)"
+      length_m: "Longueur"
+      area_m2: "Surface"
+
+    options:
+      roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }
+      health: { good: "Bon", fair: "Moyen", poor: "Mauvais", dead: "Mort" }
+      material:
+        dry_stone: "Pierres sèches"
+        stone: "Pierre maçonnée"
+        brick: "Brique"
+        concrete: "Béton"
+        wood: "Bois"
+        pe: "Polyéthylène (PE)"
+        pvc: "PVC"
+        copper: "Cuivre"
+        steel: "Acier"
+      seasonality: { permanent: "Toute l'année", winter: "En hiver", after_rain: "Après la pluie" }
+      surface:
+        earth: "Terre"
+        grass: "Herbe"
+        gravel: "Gravier"
+        wood_chips: "Copeaux, BRF"
+        stepping_stones: "Pas japonais"
+        paved: "Pavés ou dalles"
+        stone: "Pierre"
+        wood: "Bois"
+      cover:
+        lawn: "Pelouse"
+        meadow: "Prairie"
+        woodland: "Bois"
+        crop: "Culture"
+        orchard: "Verger"
+        vegetable_garden: "Potager"
+        fallow: "Friche"
+        bare: "Sol nu"
+      liner: { natural: "Sol en place", clay: "Argile", epdm: "Bâche EPDM" }
+      purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade" }
+      tank_type: { buried: "Enterrée", above_ground: "Hors sol", ibc: "Cuve IBC" }
+      gate_type: { pedestrian: "Piétons", vehicle: "Véhicules" }
+      covering: { glass: "Verre", polycarbonate: "Polycarbonate", plastic: "Bâche plastique" }
+      compost_type: { heap: "En tas", bins: "En bacs", worm: "Lombricompost" }
+      fence_type:
+        wire_mesh: "Treillis"
+        electric: "Électrique"
+        wood: "Bois"
+        chestnut_paling: "Ganivelle"
+        wire: "Fils tendus"
+      species:
+        sheep: "Moutons"
+        goats: "Chèvres"
+        donkeys: "Ânes"
+        horses: "Chevaux"
+        cattle: "Bovins"
+        pigs: "Cochons"
+        chickens: "Poules"
+        ducks: "Canards"
+        geese: "Oies"
+        quails: "Cailles"
+        alpacas: "Alpagas"
+        llamas: "Lamas"
+        rabbits: "Lapins"
+        other: "Autres"
+      voltage: { v230: "230 V", v400: "400 V", low_voltage: "Très basse tension" }
+      cable: { cat5e: "Cat. 5e", cat6: "Cat. 6", cat6a: "Cat. 6a", fiber: "Fibre optique" }
+      network: { water: "Eau", gas: "Gaz", electricity: "Électricité", ethernet: "Ethernet" }
+
+    computed:
+      title: "Estimations"
+      pond_volume:
+        label: "Volume d'eau"
+        hint: "Surface × profondeur × 0,5, pour des berges en pente douce."
+      swale_volume:
+        label: "Eau retenue quand elle est pleine"
+        hint: "Longueur × largeur × profondeur × 0,5, pour un profil en V."
+      rain_garden_volume:
+        label: "Volume de rétention"
+        hint: "Surface × profondeur."
+      raised_bed_soil:
+        label: "Terre à apporter"
+        hint: "Surface × hauteur."
+      hedge_plants:
+        label: "Plants à prévoir"
+        hint: "Longueur ÷ espacement, × nombre de rangs."
+      paddock_density:
+        label: "Surface par animal"
+        hint: "Surface du parc ÷ effectif."
+      liters: "%{value} L"
+      cubic_meters: "%{value} m³"
+      plants: { one: "%{count} plant", other: "%{count} plants" }
+      per_head: "%{value} par animal"
+
+    toolbar:
+      label: "Outils de dessin"
+      draw: "Dessiner"
+      measure: "Mesurer"
+      sketch: "Croquis"
+      choose: "Que voulez-vous dessiner ?"
+      recent: "Récents"
+      hint_point: "Touchez la carte pour placer « %{kind} ». Échap pour annuler."
+      hint_line: "Cliquez point par point pour tracer « %{kind} ». Double-cliquez ou touchez « Terminer » pour finir."
+      hint_polygon: "Cliquez point par point le contour de « %{kind} ». Revenez au premier point ou touchez « Terminer »."
+      finish: "Terminer"
+      cancel: "Annuler"
+      close: "Fermer"
+      created: "Ajouté à la carte : %{kind}."
+      viewer: "Vous consultez cette carte en lecture seule."
+
+    measure:
+      distance: "Distance"
+      area: "Surface"
+      hint_distance: "Cliquez pour poser des points, double-cliquez pour terminer."
+      hint_area: "Cliquez le contour, revenez au premier point pour fermer."
+      length: "Longueur"
+      perimeter: "Périmètre"
+      surface: "Surface"
+      start: "Cliquez sur la carte pour commencer."
+      save: "Enregistrer la mesure"
+      saved: "Mesure enregistrée dans les notes."
+      again: "Nouvelle mesure"
+      close: "Fermer la mesure"
+      not_saved: "Une mesure ne s'enregistre que si vous le demandez."
+
+    sketch:
+      hint: "Dessinez à main levée : cliquez (ou touchez) pour commencer, tracez, puis cliquez pour finir."
+      saved: "Croquis enregistré dans les notes."
+      ink: "Encre"
+
+    edit:
+      start: "Modifier la forme"
+      hint: "Faites glisser les sommets ou la forme entière ; un point au milieu d'un côté ajoute un sommet."
+      save: "Enregistrer la forme"
+      cancel: "Annuler"
+      saved: "Forme enregistrée."
+      unchanged: "La forme n'a pas changé."
+      unsupported: "Cette forme ne peut pas être modifiée ici."
+
+    element:
+      properties: "Caractéristiques"
+      color: "Couleur"
+      color_reset: "Couleur par défaut"
+      none: "—"
+
+    layers_panel:
+      intro: "Affichez ou masquez chaque couche. Ce choix ne vaut que pour votre écran."
+      show_all: "Tout afficher"
+      toggle: "Afficher ou masquer « %{layer} »"
+      count:
+        zero: "vide"
+        one: "%{count} élément"
+        other: "%{count} éléments"
+      sensitive: "Réseaux : jamais exportés ni publiés sans votre accord."
+
+    alerts:
+      intro: "Des règles fixes et sourcées de votre région, vérifiées sur votre dessin."
+      disclaimer: "Indicatif, à vérifier auprès de la commune."
+      empty: "Aucune alerte pour l'instant : rien dans votre dessin ne touche ces règles."
+      no_rules: "Aucune règle n'est encore définie pour cette région."
+      no_boundary: "Dessinez le contour du terrain pour vérifier les distances aux limites."
+      error: "Les alertes n'ont pas pu être vérifiées. Réessayez dans un instant."
+      show: "Voir sur la carte"
+      source: "Source : %{label}"
+      severity:
+        info: "À vérifier"
+        warning: "Permis probable"
+      checks:
+        max_area:
+          title: "%{kind_name} de %{area}"
+          explanation: "Au-delà de %{max}, cet élément peut demander un permis."
+        min_boundary_distance:
+          title: "%{kind_name} à %{distance} de la limite"
+          explanation: "À moins de %{min} des limites du terrain, cet élément peut demander un permis."
+        max_count:
+          title: "%{count} éléments « %{kind} »"
+          explanation: "Au-delà de %{max}, ces éléments peuvent demander un permis."
+      rules:
+        pond_max_area:
+          title: "Mare de %{area}"
+          explanation: "Une mare n'est dispensée de permis d'urbanisme que si elle ne dépasse pas %{max}. Au-delà, un permis d'impact limité est en général requis."
+        pond_boundary_distance:
+          title: "Mare à %{distance} de la limite"
+          explanation: "Pour être dispensée de permis, une mare doit se trouver à %{min} au moins des limites de la propriété."
+        pond_single:
+          title: "%{count} mares sur le terrain"
+          explanation: "La dispense de permis ne vaut que pour une seule mare par propriété."
+        small_building_max_area:
+          title: "%{kind_name} de %{area}"
+          explanation: "Une serre ou un abri de jardin n'est dispensé de permis que jusqu'à %{max}."
+        construction_boundary_distance:
+          title: "%{kind_name} à %{distance} de la limite"
+          explanation: "Près des limites, une construction peut demander un permis ou l'accord du voisin. Les distances exactes dépendent de la construction."
+
+    export:
+      button: "Exporter"
+      pdf: "Plan PDF à l'échelle"
+      pdf_hint: "A4 ou A3, avec cartouche, légende et nord."
+      geojson: "GeoJSON"
+      geojson_hint: "Pour QGIS et les autres SIG, sans les réseaux."
+      geojson_networks: "GeoJSON avec les réseaux"
+      geojson_networks_hint: "Eau, gaz, électricité et Ethernet compris : à ne partager qu'en confiance."
+      boundary: "Contour du terrain"
+      paid: "Forfait"
+
+    pdf:
+      title: "Plan PDF à l'échelle"
+      intro: "Le plan reprend la vue de la carte et les couches affichées, à l'échelle exacte."
+      upsell_title: "Le plan à l'échelle fait partie du forfait"
+      upsell: "Imprimez votre design en A4 ou A3, à l'échelle exacte, avec cartouche, légende et flèche du nord, pour le terrain, le pépiniériste ou un dossier de subside."
+      upsell_editor: "Cette carte suit la formule de son propriétaire : c'est lui qui peut débloquer le plan à l'échelle."
+      upgrade: "Découvrir le forfait"
+      paper: "Format"
+      orientation: "Orientation"
+      portrait: "Portrait"
+      landscape: "Paysage"
+      scale: "Échelle"
+      fit: "Ajuster au terrain"
+      plan_title: "Titre du plan"
+      include_networks: "Inclure les réseaux (eau, gaz, électricité, Ethernet)"
+      extent: "Emprise imprimée : %{width} × %{height}"
+      fit_scale: "Échelle retenue : 1:%{scale}"
+      generate: "Créer le PDF"
+      move_hint: "Déplacez la carte pour cadrer le plan : le cadre orange montre ce qui sera imprimé."
+      rendering: "Rendu de la carte…"
+      writing: "Mise en page du PDF…"
+      done: "Plan téléchargé."
+      error: "Le plan n'a pas pu être créé. Réessayez dans un instant."
+      scale_label: "Échelle 1:%{scale}"
+      date: "Date"
+      author: "Auteur"
+      area: "Surface du terrain"
+      legend: "Légende"
+      north: "N"
+      sources: "Sources"
+      made_with: "Semisto Designer · designer.semisto.org"
+      boundary: "Limite du terrain"
+      more: "+ %{count} autres"
+
+    live:
+      changed_selected: "Cet élément vient d'être modifié par quelqu'un d'autre."
+      removed_selected: "Cet élément vient d'être supprimé par quelqu'un d'autre."

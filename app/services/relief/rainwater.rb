@@ -1,10 +1,10 @@
 module Relief
   # Rainwater that the map's roofs can collect in a year: roof area (the
-  # footprints of the features of kind "building") × annual rainfall × a
+  # footprints of buildings, greenhouses, shelters and sheds) × annual rainfall × a
   # runoff coefficient (losses to evaporation, first flush, overflow).
   # An order of magnitude to size a tank, not a measurement.
   class Rainwater
-    ROOF_KINDS = %w[building].freeze
+    ROOF_KINDS = %w[building greenhouse shelter shed].freeze
 
     def initialize(map, settings: map.effective_water_settings)
       @map = map

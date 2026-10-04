@@ -14,7 +14,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
 
   test "the owner cannot draw on a read-only map: 403 with a French message and the upsell link" do
     with_billing do
-      post map_features_path(@locked), params: { feature: { layer: "water", kind: "pond", geometry: point } }, as: :json
+      post map_features_path(@locked), params: { feature: { layer: "water", kind: "water_tank", geometry: point } }, as: :json
       assert_response :forbidden
       body = response.parsed_body
       assert_equal "read_only_by_plan", body["code"]
@@ -26,7 +26,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
   end
 
   test "update and delete of existing features are blocked too" do
-    feature = @locked.features.create!(layer: "water", kind: "pond", geometry: point, created_by: @owner, updated_by: @owner)
+    feature = @locked.features.create!(layer: "water", kind: "water_tank", geometry: point, created_by: @owner, updated_by: @owner)
     with_billing do
       patch map_feature_path(@locked, feature), params: { feature: { name: "X", lock_version: 0 } }, as: :json
       assert_response :forbidden
@@ -46,7 +46,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
   end
 
   test "the owner can still view, read the features and archive a read-only map" do
-    @locked.features.create!(layer: "water", kind: "pond", geometry: point, created_by: @owner, updated_by: @owner)
+    @locked.features.create!(layer: "water", kind: "water_tank", geometry: point, created_by: @owner, updated_by: @owner)
     with_billing do
       get map_path(@locked), headers: inertia_headers
       assert_response :success
@@ -61,7 +61,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
 
   test "the free map stays fully editable" do
     with_billing do
-      post map_features_path(@editable), params: { feature: { layer: "water", kind: "pond", geometry: point } }, as: :json
+      post map_features_path(@editable), params: { feature: { layer: "water", kind: "water_tank", geometry: point } }, as: :json
       assert_response :created
       get map_path(@editable), headers: inertia_headers
       assert_equal false, response.parsed_body.dig("props", "map", "readOnlyByPlan")
@@ -73,7 +73,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
     sign_out
     sign_in_as users(:alice)
     with_billing do
-      post map_features_path(@locked), params: { feature: { layer: "water", kind: "pond", geometry: point } }, as: :json
+      post map_features_path(@locked), params: { feature: { layer: "water", kind: "water_tank", geometry: point } }, as: :json
       assert_response :forbidden
       assert_equal "read_only_by_plan", response.parsed_body["code"]
     end
@@ -82,13 +82,13 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
   test "a valid yearly pass makes every map editable again" do
     @owner.plan_purchases.create!(plan_key: "yearly", starts_at: 1.day.ago, expires_at: 1.year.from_now, stripe_checkout_session_id: "cs_1")
     with_billing do
-      post map_features_path(@locked), params: { feature: { layer: "water", kind: "pond", geometry: point } }, as: :json
+      post map_features_path(@locked), params: { feature: { layer: "water", kind: "water_tank", geometry: point } }, as: :json
       assert_response :created
     end
   end
 
   test "nothing is locked while billing is not configured (closed beta)" do
-    post map_features_path(@locked), params: { feature: { layer: "water", kind: "pond", geometry: point } }, as: :json
+    post map_features_path(@locked), params: { feature: { layer: "water", kind: "water_tank", geometry: point } }, as: :json
     assert_response :created
   end
 
@@ -97,7 +97,7 @@ class MapReadOnlyEnforcementTest < ActionDispatch::IntegrationTest
     sign_in_as users(:alice)
     maps(:ahinvaux)   # alice is a viewer of michael's map
     with_billing do
-      post map_features_path(maps(:ahinvaux)), params: { feature: { layer: "water", kind: "pond", geometry: point } }, as: :json
+      post map_features_path(maps(:ahinvaux)), params: { feature: { layer: "water", kind: "water_tank", geometry: point } }, as: :json
       assert_response :forbidden
       assert_equal "Vous avez accès à cette carte en lecture seule.", response.parsed_body["message"]
     end

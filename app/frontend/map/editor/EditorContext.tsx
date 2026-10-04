@@ -1,7 +1,7 @@
 import type { Geometry } from 'geojson'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import { createContext, useContext } from 'react'
-import type { DrawShape } from '@/map/editor/draw'
+import type { DrawOptions, DrawShape } from '@/map/editor/draw'
 import type {
   EntitlementsData, FeatureLayer, MapData, MapFeature, MapFeatureProperties, RegionLayerData,
 } from '@/types'
@@ -46,7 +46,11 @@ export type Editor = {
   reloadFeatures: () => Promise<void>
 
   /** Let the user draw one shape; resolves null if cancelled. */
-  draw: (shape: DrawShape) => Promise<Geometry | null>
+  draw: (shape: DrawShape, options?: DrawOptions) => Promise<Geometry | null>
+  /** Let the user reshape a geometry (drag vertices or the shape); resolves on finishDraw(), null on cancelDraw(). */
+  editGeometry: (geometry: Geometry, options?: DrawOptions) => Promise<Geometry | null>
+  /** Finish the current drawing now (closes a line or polygon, keeps an edit). */
+  finishDraw: () => void
   cancelDraw: () => void
   drawing: boolean
 

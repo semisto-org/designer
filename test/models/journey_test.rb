@@ -7,8 +7,8 @@ class JourneyTest < ActiveSupport::TestCase
 
   def item(journey, key) = journey.items.find { _1.key == key }
 
-  def add_feature(layer, kind = "tree", status: "active")
-    @map.features.create!(layer:, kind:, geometry: point, status:)
+  def add_feature(layer, kind = "tree", status: "active", geometry: point)
+    @map.features.create!(layer:, kind:, geometry:, status:)
   end
 
   test "a new map starts at observe: nothing done, next action is the project sheet" do
@@ -63,11 +63,11 @@ class JourneyTest < ActiveSupport::TestCase
     assert item(journey, "boundary").done
     assert_equal "existing", journey.next_action[:item]
 
-    add_feature("existing", "building")
+    add_feature("existing", "building", geometry: square)
     add_feature("existing", "tree")
     assert_equal 2, item(Journey.new(@map), "existing").count
     assert_equal false, item(Journey.new(@map), "existing").done
-    add_feature("existing", "pond")
+    add_feature("existing", "wet_area", geometry: square)
     assert item(Journey.new(@map), "existing").done
     assert_equal({ type: "advance", stage: "design" }, Journey.new(@map.reload).next_action)
   end
@@ -86,7 +86,7 @@ class JourneyTest < ActiveSupport::TestCase
     add_feature("existing")
     add_feature("plants")
     assert_equal false, item(Journey.new(@map), "design_elements").done
-    add_feature("water", "pond")
+    add_feature("water", "pond", geometry: square)
     assert item(Journey.new(@map), "design_elements").done
   end
 

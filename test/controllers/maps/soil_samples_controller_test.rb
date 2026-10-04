@@ -125,7 +125,7 @@ class Maps::SoilSamplesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "suggestions: points spread over the boundary, away from buildings, nothing saved" do
-    @map.features.create!(layer: "structures", kind: "building", name: "Ferme", geometry: GeoJsonGeometry::FACTORY.parse_wkt("POLYGON((4.9045 50.3405, 4.9055 50.3405, 4.9055 50.3415, 4.9045 50.3415, 4.9045 50.3405))"))
+    @map.features.create!(layer: "existing", kind: "building", name: "Ferme", geometry: GeoJsonGeometry::FACTORY.parse_wkt("POLYGON((4.9045 50.3405, 4.9055 50.3405, 4.9055 50.3415, 4.9045 50.3415, 4.9045 50.3405))"))
     sign_in_as users(:michael)
     assert_no_difference -> { SoilSample.count } do
       post suggestions_map_soil_samples_path(@map), params: { count: 6 }, as: :json

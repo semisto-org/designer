@@ -5,6 +5,8 @@ class MapFeature < ApplicationRecord
   include GeoJsonGeometry
   include Commentable
   include PlantableFeature
+  include MapFeature::Elements
+  include MapFeature::Broadcasts
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze

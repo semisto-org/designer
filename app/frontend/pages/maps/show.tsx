@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
+import type { Geometry } from 'geojson'
 import { ArrowLeft } from 'lucide-react'
 import type { MapGeoJSONFeature, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -8,7 +9,7 @@ import { api } from '@/lib/api'
 import { formatArea, t } from '@/lib/i18n'
 import { MapView } from '@/map/MapView'
 import { useMapInstance } from '@/map/MapContext'
-import { Drawer, type DrawShape } from '@/map/editor/draw'
+import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature } from '@/map/editor/EditorContext'
 import { Inspector } from '@/map/editor/Inspector'
 import { installBoundary } from '@/map/layers/boundary'
@@ -62,6 +63,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [activePanel, setActivePanel] = useState<string | null>(map.boundary ? null : 'terrain')
   const [drawing, setDrawing] = useState(false)
+  const drawEndedAt = useRef(0)
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(null)
   const drawer = useRef<Drawer | null>(null)
   const canEdit = (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan
@@ -86,7 +88,8 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
   useEffect(() => {
     const layerIds = ['features-point', 'features-line', 'features-fill']
     const onClick = (e: { features?: MapGeoJSONFeature[] }) => {
-      if (drawer.current?.active) return
+      // The click that ends a drawing (double-click) must not select what lies under it.
+      if (drawer.current?.active || performance.now() - drawEndedAt.current < 400) return
       const hit = e.features?.[0]
       if (hit?.id != null) setSelectedId(Number(hit.id))
     }
@@ -150,14 +153,25 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
         const data = await api<{ features: MapFeature[] }>(base)
         setFeatures(data.features)
       },
-      async draw(shape: DrawShape) {
+      async draw(shape: DrawShape, options?: DrawOptions) {
         setDrawing(true)
         try {
-          return (await drawer.current?.draw(shape)) ?? null
+          return (await drawer.current?.draw(shape, options)) ?? null
         } finally {
+          drawEndedAt.current = performance.now()
           setDrawing(false)
         }
       },
+      async editGeometry(geometry: Geometry, options?: DrawOptions) {
+        setDrawing(true)
+        try {
+          return (await drawer.current?.edit(geometry, options)) ?? null
+        } finally {
+          drawEndedAt.current = performance.now()
+          setDrawing(false)
+        }
+      },
+      finishDraw: () => drawer.current?.commit(),
       cancelDraw: () => drawer.current?.cancel(),
       drawing,
       activePanel,

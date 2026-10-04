@@ -14,7 +14,7 @@ import type { MapFeature } from '@/types'
 import type { ReliefOverview, WaterSettings } from '@/types/relief'
 
 const POLL_MS = 3000
-const ROOF_KINDS = new Set(['building'])
+const ROOF_KINDS = new Set(['building', 'greenhouse', 'shelter', 'shed'])
 
 // The overlay chosen per map survives closing the panel (it stays on the map).
 const overlayModes = new Map<number, MapOverlayMode>()
