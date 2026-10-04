@@ -1,14 +1,55 @@
 import { HelpButton } from '@/components/help/HelpButton'
 import { useEditor } from '@/map/editor/EditorContext'
+import { isPatch, isPlant } from '@/map/plants/properties'
+import type { MapFeature } from '@/types'
 
-// Help articles for the panels that have one; the others open the list of guides.
+// The guide of each editor panel (slug = file name in app/help/, without .md).
+// test/models/help_article_test.rb checks that every panel of PANELS has one
+// and that every slug named in this file is an existing article.
 const ARTICLE_BY_PANEL: Record<string, string> = {
+  journey: 'le-parcours-en-quatre-etapes',
+  project: 'remplir-la-fiche-projet',
   terrain: 'choisir-ses-parcelles',
+  layers: 'lire-les-couches-du-geoportail',
+  relief: 'lire-le-relief-et-l-eau',
+  climate: 'le-climat-d-aujourd-hui-et-de-demain',
+  soil: 'analyser-son-sol',
+  photos: 'photos-et-suivi-dans-le-temps',
+  palette: 'construire-sa-palette-et-ses-patches',
+  'plant-list': 'la-liste-de-plants-et-la-commande',
   elements: 'dessiner-l-existant',
+  'drawing-layers': 'calques-mesures-et-croquis',
+  'drawing-alerts': 'les-alertes-reglementaires',
+  finances: 'le-tableau-financier',
+  discussions: 'partager-et-commenter',
+  publish: 'publier-sa-carte',
+  actions: 'la-liste-de-plants-et-la-commande',
+  'ai-journal': 'relire-les-brouillons-de-claude',
 }
 
-/** "Aide" in the editor header: opens the help drawer on the article of the open panel. */
+// With no panel open, the selected element says which guide fits.
+const ARTICLE_FOR_DRAFT = 'relire-les-brouillons-de-claude'
+const ARTICLE_FOR_PLANT = 'planter-puis-observer'
+const ARTICLE_FOR_PATCH = 'construire-sa-palette-et-ses-patches'
+const ARTICLE_FOR_NOTE = 'calques-mesures-et-croquis'
+const ARTICLE_FOR_ELEMENT = 'dessiner-l-existant'
+const NOTE_KINDS = ['measure', 'sketch']
+
+function articleForSelection(feature: MapFeature | null): string | undefined {
+  if (!feature) return undefined
+  if (feature.properties.status === 'draft') return ARTICLE_FOR_DRAFT
+  if (isPlant(feature)) return ARTICLE_FOR_PLANT
+  if (isPatch(feature)) return ARTICLE_FOR_PATCH
+  if (NOTE_KINDS.includes(feature.properties.kind)) return ARTICLE_FOR_NOTE
+  return ARTICLE_FOR_ELEMENT
+}
+
+/**
+ * "Aide" in the editor header: opens the help drawer on the guide of the
+ * open panel, else of the selected element, else on the list of guides.
+ */
 export default function HelpAction() {
-  const { activePanel } = useEditor()
-  return <HelpButton compact slug={(activePanel && ARTICLE_BY_PANEL[activePanel]) || undefined} />
+  const { activePanel, selected } = useEditor()
+  const slug = (activePanel && ARTICLE_BY_PANEL[activePanel]) || articleForSelection(selected)
+  return <HelpButton compact slug={slug || undefined} />
 }

@@ -6,7 +6,7 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     page = response.parsed_body
     assert_equal "help/index", page["component"]
-    assert_equal 6, page["props"]["categories"].size
+    assert_equal 7, page["props"]["categories"].size
     assert_equal "Démarrer", page["props"]["categories"].first["name"]
     assert_empty page["props"]["results"]
   end
@@ -40,6 +40,17 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     json = response.parsed_body
     assert_equal %w[category headings html slug summary title url], json.keys.sort
     assert_equal "/help/connecter-claude", json["url"]
+  end
+
+  test "every article renders, with its sections, for the page and the help drawer" do
+    HelpArticle.all.each do |article|
+      get "/help/#{article.slug}.json"
+      assert_response :success, article.slug
+      json = response.parsed_body
+      assert_equal article.title, json["title"]
+      assert_not_empty json["headings"], "#{article.slug} has no ## section"
+      assert_includes json["html"], "<h2", article.slug
+    end
   end
 
   test "the JSON endpoint is public and answers 404 for an unknown article" do

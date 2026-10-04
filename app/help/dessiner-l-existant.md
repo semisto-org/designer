@@ -9,38 +9,53 @@ Avant d'imaginer, on **relève**. Dessiner l'existant vous oblige à regarder le
 
 ## Que dessiner ?
 
-Chaque chose que vous dessinez est un **élément** rangé dans une couche :
+Chaque chose que vous dessinez est un **élément**, rangé dans une couche :
 
-| Couche | Pour quoi faire |
+| Couche | Exemples d'éléments |
 | --- | --- |
-| Existant | Bâtiments, clôtures, limites, zones (prairie, bois, potager) |
-| Eau | Mares, sources, fossés, puits |
-| Accès | Chemins, entrées, passages |
-| Structures | Abris, serres, composts |
-| Plantes | Arbres et plantes déjà en place |
-| Animaux | Parcs, abris, points d'eau des animaux |
-| Réseaux | Eau, électricité, gaz, internet (masqués par défaut dans les vues publiques) |
-| Notes | Tout ce qui mérite d'être dit : une observation, une question |
+| Existant | Bâtiments, arbres et haies existants, murs, ruptures de pente, zones humides, chemins existants, occupation du sol (prairie, bois, potager…) |
+| Eau | Mares, baissières, fossés, citernes, puits, sources, jardins de pluie |
+| Accès | Cheminements, chemins carrossables, portails, stationnement |
+| Structures | Serres, abris, cabanes, composts, bacs surélevés, terrasses, aires de jeux, clôtures, haies à planter, brise-vent |
+| Plantes | Les plants et les patches de votre design, posés depuis la [palette](/help/construire-sa-palette-et-ses-patches) |
+| Animaux | Parcs à animaux, poulaillers, ruches |
+| Réseaux | Conduites d'eau et de gaz, câbles électriques et réseau, vannes, compteurs, prises, robinets |
+| Notes | Notes, croquis et mesures enregistrées |
 
-## Trois formes pour tout dessiner
+Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Existant : la couche Plantes est réservée à ce que vous allez planter.
 
-- **Une zone** (polygone) : un verger, un bâtiment, une mare.
-- **Une ligne** : une haie, un chemin, un fossé.
-- **Un point** : un arbre, un puits, un compteur.
+## Dessiner un élément
 
-Choisissez la forme dans le panneau *Éléments*, cliquez sur la carte pour placer chaque sommet, **double-cliquez pour terminer**, **Échap pour annuler**. L'élément apparaît dans la liste ; cliquez dessus pour lui donner un nom et des notes.
+1. En haut de la carte, touchez **Dessiner**.
+2. Dans « Que voulez-vous dessiner ? », choisissez la couche, puis l'élément. Vos éléments **Récents** sont proposés en premier.
+3. Suivez l'indication affichée, selon la forme de l'élément :
+   - **un point** (arbre, puits, compteur) : touchez la carte à l'endroit voulu ;
+   - **une ligne** (haie, fossé, chemin) : cliquez point par point, puis double-cliquez ou touchez **Terminer** ;
+   - **une surface** (bâtiment, mare, potager) : cliquez le contour point par point, puis revenez au premier point ou touchez **Terminer**.
+4. **Annuler**, ou la touche Échap, abandonne le tracé.
 
-## Mesurer
+L'élément est ajouté à la carte et sa fiche s'ouvre.
 
-Pendant que vous dessinez, la carte affiche la **surface**, la **longueur** ou le **périmètre**. Utile pour estimer une longueur de haie, la surface d'un potager ou le volume d'une toiture.
+## La fiche d'un élément
+
+Touchez un élément sur la carte, ou dans le panneau **Éléments** qui les liste par couche. Sa fiche montre :
+
+- son **Nom** et ses **Notes** ;
+- sa **Surface**, sa **Longueur** ou son **Périmètre** ;
+- ses **Caractéristiques**, propres à chaque type : hauteur d'un bâtiment, état d'un arbre et s'il est à conserver, profondeur d'une mare, capacité d'une citerne… ;
+- des **Estimations** pour certains éléments : volume d'eau d'une mare, terre à apporter dans un bac surélevé, plants à prévoir pour une haie ;
+- sa **Couleur**, si vous voulez la distinguer des autres.
+
+Pour corriger un tracé, touchez **Modifier la forme**, faites glisser les sommets (un point au milieu d'un côté ajoute un sommet), puis **Enregistrer la forme**.
 
 ## Conseils de relevé
 
 - **Partez des photos aériennes** pour les grandes formes, puis affinez sur place.
 - **Nommez vos éléments** : « Pommier du fond », « Fossé nord ». Dans six mois, vous vous en féliciterez.
 - **Utilisez les notes** pour ce que le dessin ne dit pas : un sol qui reste mouillé, un vent dominant, un voisin à ménager.
-- **Les réseaux** (eau, gaz, électricité) sont sensibles : ils restent masqués dans les vues publiques et pour Claude, sauf si vous décidez autrement.
+- **Les réseaux** (eau, gaz, électricité) sont sensibles : ils restent masqués dans les vues publiques, les exports et pour Claude, sauf si vous décidez autrement.
 
 ## Et ensuite ?
 
-Quand l'existant est posé, passez à la conception : [Construire sa palette et ses patches](/help/construire-sa-palette-et-ses-patches).
+- [Calques, mesures et croquis](/help/calques-mesures-et-croquis) : masquer des couches, mesurer, griffonner.
+- [Construire sa palette et ses patches](/help/construire-sa-palette-et-ses-patches) : passer à la conception.
