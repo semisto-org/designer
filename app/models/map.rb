@@ -30,6 +30,8 @@ class Map < ApplicationRecord
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
   has_many :service_requests, dependent: :destroy
   has_one :financial_plan, dependent: :destroy
+  # Ownership transfer proposals (« Transférer la carte »), kept as history.
+  has_many :transfers, class_name: "MapTransfer", dependent: :delete_all
 
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }

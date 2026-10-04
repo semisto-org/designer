@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_160201) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -396,6 +396,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_160201) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_map_terrains_on_map_id", unique: true
+  end
+
+  create_table "map_transfers", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "from_user_id", null: false
+    t.bigint "to_user_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["from_user_id"], name: "index_map_transfers_on_from_user_id"
+    t.index ["map_id"], name: "index_map_transfers_on_map_id"
+    t.index ["map_id"], name: "index_map_transfers_one_pending_per_map", unique: true, where: "((status)::text = 'pending'::text)"
+    t.index ["to_user_id", "status"], name: "index_map_transfers_on_to_user_id_and_status"
   end
 
   create_table "maps", force: :cascade do |t|
@@ -902,6 +917,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_160201) do
   add_foreign_key "map_share_links", "maps"
   add_foreign_key "map_share_links", "users", column: "created_by_id"
   add_foreign_key "map_terrains", "maps"
+  add_foreign_key "map_transfers", "maps", on_delete: :cascade
+  add_foreign_key "map_transfers", "users", column: "from_user_id", on_delete: :cascade
+  add_foreign_key "map_transfers", "users", column: "to_user_id", on_delete: :cascade
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "owner_id"

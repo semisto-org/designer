@@ -1,0 +1,153 @@
+# Map ownership transfer (« Transférer la carte »): the owner proposes the
+# map to one of its editors, who accepts or declines. Keys in English, values
+# in French. Backend (model, mailers, controller) and the React frontend read
+# the same file.
+fr:
+  activerecord:
+    models:
+      map_transfer: "Transfert de carte"
+    errors:
+      models:
+        map_transfer:
+          archived: "Cette carte est archivée : elle ne peut pas être transférée."
+          not_owner: "Seul le propriétaire de la carte peut la transférer."
+          self: "Vous êtes déjà propriétaire de cette carte."
+          not_editor: "%{name} doit d'abord être éditeur de la carte : invitez cette personne comme éditeur, puis proposez-lui la carte."
+          already_pending: "Une proposition de transfert attend déjà une réponse pour cette carte."
+          no_seat: "Les %{count} places d'éditeur sont prises : libérez-en une pour pouvoir rester éditeur une fois la carte confiée à %{name}."
+  transfer:
+    section:
+      title: "Transférer la propriété"
+      intro: "Confiez la carte à quelqu'un qui y travaille déjà : si cette personne accepte, elle en devient propriétaire."
+      open: "Choisir le nouveau propriétaire"
+      choose: "Nouveau propriétaire"
+      editors_group: "Éditeurs"
+      team_group: "Équipe « %{team} »"
+      changes_title: "Si %{name} accepte :"
+      changes:
+        plan: "la carte suit la formule de %{name} (nombre de cartes, fonctions payantes) et ne compte plus dans la vôtre ;"
+        you_stay: "vous restez éditeur de la carte, vous pouvez continuer à la modifier ;"
+        kept: "tout est conservé : équipe, vue publique, discussions, photos, brouillons et historique ;"
+        consent: "%{name} reçoit un e-mail et peut accepter ou décliner pendant %{days} jours."
+      team_seat:
+        one: "%{name} modifie la carte grâce à l'équipe, sans place d'éditeur : vous prendrez la dernière place libre."
+        other: "%{name} modifie la carte grâce à l'équipe, sans place d'éditeur : vous prendrez l'une des %{count} places libres."
+      team_no_seat: "%{name} modifie la carte grâce à l'équipe, sans place d'éditeur, et les %{max} places sont prises : libérez-en une pour pouvoir rester éditeur après le transfert."
+      propose: "Proposer à %{name}"
+      back: "Annuler"
+      proposed: "Proposition envoyée à %{name}."
+      pending: "Proposition envoyée à %{name} le %{date}."
+      pending_until: "Réponse attendue d'ici le %{date}. D'ici là, la carte reste la vôtre."
+      cancel: "Annuler la proposition"
+      cancel_confirm: "Annuler la proposition faite à %{name} ?"
+      canceled: "Proposition annulée."
+      no_editor: "Pour transférer la carte, la personne doit d'abord en être éditeur : invitez-la comme éditeur ci-dessus."
+      viewers_hint: "Un lecteur doit d'abord passer éditeur, dans la liste ci-dessus, pour pouvoir recevoir la carte."
+      archived: "Cette carte est archivée : elle ne peut pas être transférée."
+      load_error: "Impossible de charger le transfert de propriété. Réessayez dans un instant."
+    notice:
+      banner: "%{from} vous propose de devenir propriétaire de la carte « %{map} »."
+      banner_until: "Vous avez jusqu'au %{date} pour répondre."
+      see: "Voir la proposition"
+      header: "Devenir propriétaire ?"
+      header_title: "%{from} vous propose de devenir propriétaire de cette carte"
+    page:
+      title: "Devenir propriétaire de « %{map} »"
+      eyebrow: "Proposition de transfert"
+      intro: "%{from} vous propose de reprendre la carte « %{map} » : vous en deviendriez propriétaire."
+      what_title: "Ce qui change si vous acceptez"
+      what:
+        owner: "Vous gérez le partage de la carte, sa vue publique et son archivage."
+        plan: "La carte suit votre formule : elle compte parmi vos cartes, et ses fonctions payantes sont celles de votre formule."
+        former: "%{from} reste éditeur de la carte et peut continuer à la modifier."
+        kept: "Tout est conservé : discussions, photos, brouillons, vue publique et historique."
+        team: "La carte reste dans l'équipe « %{team} »."
+      plan_title: "Pour votre formule"
+      accept: "Accepter et devenir propriétaire"
+      decline: "Décliner"
+      decline_confirm: "Décliner la proposition de %{from} ? La carte restera la sienne."
+      expires: "Proposition valable jusqu'au %{date}. Sans réponse, la carte reste à %{from}."
+      open_map: "Ouvrir la carte"
+      my_maps: "Mes cartes"
+      states:
+        accepted: "Vous avez accepté cette proposition le %{date} : la carte est à vous."
+        declined: "Vous avez décliné cette proposition le %{date}. La carte reste à %{from}."
+        canceled: "%{from} a annulé cette proposition."
+        expired: "Cette proposition a expiré le %{date}. Si vous souhaitez toujours reprendre la carte, demandez à %{from} de vous la proposer à nouveau."
+        invalidated: "Cette proposition n'est plus valable : la carte ou vos accès ont changé entre-temps."
+    impact:
+      beta: "Pendant la bêta, toutes les fonctions sont ouvertes : la carte restera entièrement modifiable chez vous."
+      fine:
+        one: "Avec votre formule actuelle (%{plan}, %{count} carte modifiable), cette carte et toutes vos cartes resteront modifiables."
+        other: "Avec votre formule actuelle (%{plan}, %{count} cartes modifiables), cette carte et toutes vos cartes resteront modifiables."
+      map_read_only:
+        one: "Avec votre formule actuelle (%{plan}, %{count} carte modifiable), cette carte serait en lecture seule chez vous : vos cartes plus anciennes gardent leur place."
+        other: "Avec votre formule actuelle (%{plan}, %{count} cartes modifiables), cette carte serait en lecture seule chez vous : vos cartes plus anciennes gardent leur place."
+      maps_read_only:
+        one: "Votre carte %{names} passerait en lecture seule : la carte reprise, plus ancienne, prendrait sa place dans votre formule."
+        other: "Vos cartes %{names} passeraient en lecture seule : la carte reprise, plus ancienne, prendrait leur place dans votre formule."
+      lost_features: "Avec votre formule, ces fonctions ne seraient plus disponibles sur la carte : %{features}."
+      features:
+        pdf_export: "le PDF à l'échelle"
+        analyses: "les analyses (eau et relief, climat futur, sol)"
+        ai_drafts: "les brouillons de Claude"
+      nothing_deleted: "Rien n'est supprimé : une carte en lecture seule reste consultable, exportable et commentable, et redevient modifiable avec une formule qui la couvre."
+      see_plans: "Voir les formules"
+      plan_names:
+        free: "carte gratuite"
+        yearly: "forfait particulier"
+        atelier: "Atelier"
+        bureau: "Bureau d'études"
+    problems:
+      # Shown to the recipient (accept, decline, their screen).
+      recipient:
+        not_recipient: "Cette proposition s'adresse à quelqu'un d'autre."
+        accepted: "Vous avez déjà accepté cette proposition."
+        declined: "Vous avez déjà décliné cette proposition."
+        canceled: "%{from} a annulé cette proposition."
+        expired: "Cette proposition a expiré le %{date}."
+        invalidated: "Cette proposition n'est plus valable."
+        archived: "La carte a été archivée : elle ne peut plus être transférée."
+        owner_changed: "%{from} n'est plus propriétaire de la carte : la proposition n'est plus valable."
+        not_editor: "Vous n'êtes plus éditeur de la carte : la proposition n'est plus valable."
+        no_seat: "Les %{count} places d'éditeur de la carte sont prises : %{from} ne pourrait pas y rester éditeur. Demandez-lui d'en libérer une, puis réessayez."
+      # Shown to the owner (sharing dialog, cancel).
+      owner:
+        not_owner: "Seul le propriétaire de la carte peut annuler la proposition."
+        accepted: "%{to} a déjà accepté cette proposition."
+        declined: "%{to} a déjà décliné cette proposition."
+        canceled: "Cette proposition a déjà été annulée."
+        expired: "Cette proposition a expiré le %{date}."
+        invalidated: "Cette proposition n'est plus valable."
+        archived: "La carte est archivée : la proposition ne peut plus être acceptée."
+        owner_changed: "Vous n'êtes plus propriétaire de la carte."
+        not_editor: "%{to} n'est plus éditeur de la carte : la proposition ne pourra pas être acceptée. Annulez-la pour en faire une autre."
+        no_seat: "Les %{count} places d'éditeur sont prises : libérez-en une, sans quoi vous ne pourriez pas rester éditeur et %{to} ne pourra pas accepter."
+    flash:
+      accepted: "Vous êtes maintenant propriétaire de « %{map} »."
+      declined: "Proposition déclinée : la carte reste à %{from}."
+    errors:
+      recipient_only: "Seule la personne à qui la carte est proposée peut y répondre."
+      recipient_missing: "Choisissez un éditeur de la carte."
+      rate_limited: "Trop de propositions en peu de temps : réessayez dans une heure."
+  map_transfer_mailer:
+    open_map: "Ouvrir la carte"
+    proposed:
+      subject: "%{from} vous propose de devenir propriétaire de « %{map} »"
+      greeting: "Bonjour,"
+      body: "%{from} vous propose de reprendre la carte « %{map} » sur Semisto Designer : vous en deviendriez propriétaire."
+      what: "La carte suivrait alors votre formule. %{from} resterait éditeur, et tout est conservé : discussions, photos, brouillons et historique."
+      button: "Voir la proposition"
+      decide: "Avant d'accepter, vous verrez ce que cela change pour votre formule. Vous pouvez aussi décliner : la carte restera alors à son propriétaire actuel."
+      signin_hint: "Vous serez invité à vous connecter (avec Google ou un lien par e-mail, sans mot de passe) si ce n'est pas déjà fait."
+      expiry: "Cette proposition est valable jusqu'au %{date}."
+    accepted:
+      subject: "%{to} est maintenant propriétaire de « %{map} »"
+      greeting: "Bonjour %{name},"
+      body: "%{to} a accepté votre proposition : la carte « %{map} » est maintenant la sienne et suit sa formule."
+      next: "Vous restez éditeur de la carte et pouvez continuer à la modifier. Elle ne compte plus parmi vos cartes."
+    declined:
+      subject: "%{to} a décliné votre proposition pour « %{map} »"
+      greeting: "Bonjour %{name},"
+      body: "%{to} a décliné votre proposition de reprendre la carte « %{map} ». Rien ne change : la carte reste la vôtre."
+      next: "Vous pouvez la proposer à un autre éditeur depuis « Partager »."

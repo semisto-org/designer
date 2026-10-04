@@ -1,0 +1,4 @@
+<p><%= t(".greeting", name: @from.display_name) %></p>
+<p><%= t(".body", to: @to.display_name, map: @map.name) %></p>
+<p style="color:#6b6257"><%= t(".next") %></p>
+<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t("map_transfer_mailer.open_map") %></a></p>

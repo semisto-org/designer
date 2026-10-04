@@ -1,0 +1,10 @@
+<%= t(".greeting") %>
+
+<%= t(".body", from: @from.display_name, map: @map.name) %>
+<%= t(".what", from: @from.display_name) %>
+
+<%= t(".button") %> : <%= @url %>
+
+<%= t(".decide") %>
+<%= t(".signin_hint") %>
+<%= t(".expiry", date: @transfer.expires_at.strftime("%d/%m/%Y")) %>

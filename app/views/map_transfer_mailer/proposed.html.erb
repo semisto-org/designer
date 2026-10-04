@@ -1,0 +1,7 @@
+<p><%= t(".greeting") %></p>
+<p><%= t(".body", from: @from.display_name, map: @map.name) %></p>
+<p style="color:#6b6257"><%= t(".what", from: @from.display_name) %></p>
+<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".button") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".decide") %></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".signin_hint") %></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".expiry", date: @transfer.expires_at.strftime("%d/%m/%Y")) %></p>

@@ -259,6 +259,19 @@ Rails.application.routes.draw do
   end
   # --- end invoicing ---
 
+  # --- transfer ---
+  # « Transférer la carte »: the owner proposes the map to an editor, who
+  # accepts or declines (/maps/:map_id/transfers/:id is the recipient's screen).
+  resources :maps, only: [] do
+    resources :transfers, only: %i[index create show destroy], controller: "maps/transfers" do
+      member do
+        post :accept
+        post :decline
+      end
+    end
+  end
+  # --- end transfer ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

@@ -13,7 +13,9 @@ class MapsController < ApplicationController
       # teamId + teams: team maps are listed in a section per team (teams area).
       maps: maps.map { |m| m.as_inertia(Current.user).merge(teamId: m.organization_id) },
       canCreate: Current.user.entitlements.can_create_map?(Current.user),
-      teams: Current.user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } }
+      teams: Current.user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } },
+      # Ownership transfers waiting for my answer (transfer area).
+      incomingTransfers: MapTransfer.incoming_for(Current.user).map(&:as_incoming_json)
     }
   end
 

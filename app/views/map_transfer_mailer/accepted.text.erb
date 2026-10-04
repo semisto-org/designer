@@ -1,0 +1,6 @@
+<%= t(".greeting", name: @from.display_name) %>
+
+<%= t(".body", to: @to.display_name, map: @map.name) %>
+<%= t(".next") %>
+
+<%= t("map_transfer_mailer.open_map") %> : <%= @url %>
