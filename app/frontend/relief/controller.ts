@@ -12,6 +12,7 @@
 // instant (~30 ms) or the sun hours of a day (~1-3 s).
 
 import type { Geometry } from 'geojson'
+import { buildingLayer, type BuildingData, type BuildingLayer, type BuildingsResponse } from './buildings.ts'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
 import { applyDesigns, downsampleDesigned, type Design, type Footprint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
@@ -102,6 +103,8 @@ export type ControllerOptions = {
   location: [number, number] | null
   timezone: string
   layerColors: Record<string, string>
+  /** The building footprints (GET /maps/:id/relief/buildings), or null without a provider. */
+  buildingsUrl: string | null
   /** Narrow screens get a coarser mesh. */
   compact: boolean
   onLoading?: (step: LoadingStep, progress?: number) => void
@@ -109,7 +112,10 @@ export type ControllerOptions = {
   onSun?: (info: SunInfo) => void
   onDesigns?: (designs: DesignSummary[]) => void
   onNiva?: (info: NivaInfo) => void
+  onBuildings?: (info: BuildingsInfo) => void
 }
+
+export type BuildingsInfo = { count: number; measured: number; attribution: string | null }
 
 const AXIS_FRAME_BUDGET_MS = 11
 const POND_KINDS = new Set(['pond'])
@@ -133,6 +139,8 @@ export class ReliefController {
   scene: ReliefScene | null = null
   full: { heights: Float32Array; cols: number; rows: number } | null = null
   surface: Float32Array | null = null
+  private buildingsData: BuildingData[] | null = null
+  private buildings: BuildingLayer | null = null
   landcover: Uint8Array | null = null
   roles: Uint8Array | null = null
   ground: Float32Array | null = null
@@ -144,8 +152,8 @@ export class ReliefController {
   zRange: [number, number] = [0, 0]
   disposed = false
 
-  view: OverlayOptions & { base: BaseLayer; exaggeration: number; contour: number; surfaceOn: boolean; particles: boolean } = {
-    base: 'ortho', exaggeration: 2.5, contour: 5, axes: true, hollows: true, features: true, surfaceOn: false, particles: true,
+  view: OverlayOptions & { base: BaseLayer; exaggeration: number; contour: number; surfaceOn: boolean; buildingsOn: boolean; particles: boolean } = {
+    base: 'ortho', exaggeration: 2.5, contour: 5, axes: true, hollows: true, features: true, surfaceOn: false, buildingsOn: true, particles: true,
   }
   rain: RainSettings = { intensity: 30, duration: 60, soilState: 'normal', speed: 4, dig: true }
   sun: { mode: SunMode; date: SunDate; minutes: number } = { mode: 'off', date: 'summer', minutes: 14 * 60 }
@@ -230,6 +238,49 @@ export class ReliefController {
     await this.applyBase()
     this.drawOverlay()
     this.options.onLoading?.(null)
+    void this.loadBuildings()
+  }
+
+  /**
+   * The buildings arrive after the relief (the footprints come from
+   * OpenStreetMap, a few seconds away): the relief is usable meanwhile, and
+   * stays so if they never come.
+   */
+  private async loadBuildings() {
+    const url = this.options.buildingsUrl
+    if (!url) return
+    const response = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then((r) => (r.ok ? (r.json() as Promise<BuildingsResponse>) : null))
+      .catch(() => null)
+    if (this.disposed || !response?.available || !response.buildings.length) return
+    this.buildingsData = response.buildings
+    this.layoutBuildings()
+    const volumes = this.buildings?.volumes ?? []
+    this.options.onBuildings?.({
+      count: volumes.length, measured: volumes.filter((v) => v.source === 'surface').length, attribution: response.attribution,
+    })
+    if (this.view.surfaceOn) this.applySurfaceHeights()
+    // Without a surface model, the shadows now fall from the buildings too.
+    if (!this.surface) {
+      this.dayHours = null
+      if (this.sun.mode !== 'off') void this.renderSun()
+    }
+  }
+
+  /** Volumes on the shown relief (redone when ponds and swales are dug). */
+  private layoutBuildings() {
+    if (!this.buildingsData || !this.full) return
+    this.buildings = buildingLayer(this.meta, this.buildingsData, {
+      original: this.full.heights, ground: this.ground ?? this.full.heights, surface: this.surface,
+    })
+    this.scene?.setBuildings(this.buildings.volumes)
+    this.scene?.showBuildings(this.view.buildingsOn)
+  }
+
+  setBuildings(on: boolean) {
+    this.view.buildingsOn = on
+    this.scene?.showBuildings(on)
+    if (this.view.surfaceOn) this.applySurfaceHeights()
   }
 
   /** Vertical relief ≈ 8 % of the horizontal span: flat gardens get more. */
@@ -288,6 +339,7 @@ export class ReliefController {
       this.ground = heights
       this.footprints = []
     }
+    if (this.buildingsData) this.layoutBuildings()
     if (!keepMesh) this.applySurfaceHeights()
     if (this.view.base === 'blocks') void this.renderBlocks()
     this.drainage = analyzeDrainage(this.ground, cols, rows, this.cell)
@@ -433,8 +485,13 @@ export class ReliefController {
     if (this.surface && this.view.surfaceOn) {
       const original = this.full.heights
       const ex = this.view.exaggeration || 1
+      // Where a building stands as a volume, the mesh stays on the ground:
+      // only trees rise from the surface model.
+      const covered = this.view.buildingsOn ? this.buildings?.covered : null
       heights = new Float32Array(ground.length)
-      for (let i = 0; i < ground.length; i++) heights[i] = ground[i] + Math.max(0, this.surface[i] - original[i]) / ex
+      for (let i = 0; i < ground.length; i++) {
+        heights[i] = covered?.[i] ? ground[i] : ground[i] + Math.max(0, this.surface[i] - original[i]) / ex
+      }
     }
     this.scene.setHeights(downsample(heights, this.full.cols, this.full.rows, this.meshFactor).heights)
   }
@@ -780,7 +837,7 @@ export class ReliefController {
     const scene = this.scene
     if (!scene || !this.full) return
     const { cols, rows } = this.meta
-    const surface = this.surface ?? this.full.heights
+    const surface = this.surface ?? this.buildings?.roofs ?? this.full.heights
     const [lng, lat] = this.location
     const mode = this.sun.mode
     if (mode !== 'day') this.sunAbort?.abort()

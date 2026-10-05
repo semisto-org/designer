@@ -14,6 +14,7 @@ import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP
 import {
   ReliefController, type BaseLayer, type DesignSummary, type LoadingStep, type NivaInfo, type NivaKey, type ProbeInfo,
   type RainSettings, type RainStats, type SunDate, type SunInfo, type SunMode,
+  type BuildingsInfo,
 } from '@/relief/controller'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import {
@@ -33,6 +34,7 @@ type Props = {
   location: [number, number] | null
   landcoverClasses: Record<string, LandcoverClassData>
   soilModel: SoilModel
+  buildingsUrl: string | null
   canEdit: boolean
 }
 
@@ -143,6 +145,7 @@ type ViewState = {
   features: boolean
   particles: boolean
   surfaceOn: boolean
+  buildingsOn: boolean
 }
 
 const INTENSITIES = [
@@ -156,7 +159,7 @@ function isCompact() {
   return typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches
 }
 
-function ReliefViewer({ map, terrain, features, timezone, location, landcoverClasses, soilModel }: Props & { terrain: TerrainGridData }) {
+function ReliefViewer({ map, terrain, features, timezone, location, landcoverClasses, soilModel, buildingsUrl }: Props & { terrain: TerrainGridData }) {
   const container = useRef<HTMLDivElement>(null)
   const controller = useRef<ReliefController | null>(null)
   const [loading, setLoading] = useState<LoadingStep | 'failed' | 'webgl'>('download')
@@ -175,6 +178,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
   const [probe, setProbe] = useState<ProbeInfo | null>(null)
   const [zRange, setZRange] = useState<[number, number]>([terrain.zMin, terrain.zMax])
   const [niva, setNiva] = useState<NivaInfo>({ mode: 'off' })
+  const [buildings, setBuildings] = useState<BuildingsInfo | null>(null)
   const [nivaSettings, setNivaSettings] = useState<NivaSettings>({ lights: { low: false, bar: false }, night: false, camera: 'chase' })
   const pointer = useRef<[number, number] | null>(null)
   const touch = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches, [])
@@ -191,7 +195,9 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
       location,
       timezone,
       layerColors: LAYER_COLORS,
+      buildingsUrl,
       compact: isCompact(),
+      onBuildings: setBuildings,
       onLoading: (step) => setLoading(step),
       onStats: setStats,
       onSun: setSunInfo,
@@ -236,6 +242,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     if (Object.keys(overlay).length) c.setOverlay(overlay)
     if (patch.particles !== undefined) c.setParticles(patch.particles)
     if (patch.surfaceOn !== undefined) c.setSurface(patch.surfaceOn)
+    if (patch.buildingsOn !== undefined) c.setBuildings(patch.buildingsOn)
   }, [])
 
   const updateRain = useCallback((patch: Partial<RainSettings>) => {
@@ -477,6 +484,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
                   terrain={terrain}
                   zRange={zRange}
                   landcoverClasses={landcoverClasses}
+                  buildings={buildings}
                   onReset={() => controller.current?.resetView()}
                   onTop={() => controller.current?.topView()}
                   niva={(
@@ -538,9 +546,9 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
         />
       )}
 
-      {terrain.attribution && (
+      {(terrain.attribution || buildings?.attribution) && (
         <p className="pointer-events-none absolute right-2 top-2 z-10 rounded bg-white/70 px-1.5 py-0.5 text-[0.65rem] text-loam-600 sm:top-auto sm:bottom-1">
-          {terrain.attribution}
+          {[terrain.attribution, view?.buildingsOn !== false ? buildings?.attribution : null].filter(Boolean).join(' · ')}
         </p>
       )}
       {niva.mode === 'driving' && <NivaDashboard info={niva} />}
@@ -563,12 +571,13 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
 
 // ---- View tab -------------------------------------------------------------------
 
-function ViewTab({ view, update, terrain, zRange, landcoverClasses, onReset, onTop, niva }: {
+function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, onReset, onTop, niva }: {
   view: ViewState
   update: (patch: Partial<ViewState>) => void
   terrain: TerrainGridData
   zRange: [number, number]
   landcoverClasses: Record<string, LandcoverClassData>
+  buildings: BuildingsInfo | null
   onReset: () => void
   onTop: () => void
   niva: ReactNode
@@ -622,8 +631,23 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, onReset, onT
         <Toggle checked={view.hollows} onChange={(hollows) => update({ hollows })} label={t('relief.page.view.hollows')} hint={t('relief.page.view.hollows_hint')} />
         <Toggle checked={view.features} onChange={(on) => update({ features: on })} label={t('relief.page.view.features')} hint={t('relief.page.view.features_hint')} />
         <Toggle checked={view.particles} onChange={(particles) => update({ particles })} label={t('relief.page.view.particles')} hint={t('relief.page.view.particles_hint')} />
+        {buildings && (
+          <Toggle
+            checked={view.buildingsOn}
+            onChange={(buildingsOn) => update({ buildingsOn })}
+            label={t('relief.page.view.buildings')}
+            hint={buildings.measured
+              ? t('relief.page.view.buildings_measured', { count: buildings.count, measured: buildings.measured })
+              : t('relief.page.view.buildings_hint', { count: buildings.count })}
+          />
+        )}
         {terrain.surface && (
-          <Toggle checked={view.surfaceOn} onChange={(surfaceOn) => update({ surfaceOn })} label={t('relief.page.view.surface')} hint={t('relief.page.view.surface_hint')} />
+          <Toggle
+            checked={view.surfaceOn}
+            onChange={(surfaceOn) => update({ surfaceOn })}
+            label={t(buildings ? 'relief.page.view.trees' : 'relief.page.view.surface')}
+            hint={t(buildings ? 'relief.page.view.trees_hint' : 'relief.page.view.surface_hint')}
+          />
         )}
       </div>
 

@@ -26,6 +26,7 @@ module Maps
         location: location,
         landcoverClasses: @map.region.setting(:relief, :landcover_classes) || {},
         soilModel: soil_model,
+        buildingsUrl: terrain&.ready? && Providers::Buildings.build.available? ? buildings_map_relief_path(@map, v: terrain.version) : nil,
         canEdit: @map.editable_by?(Current.user)
       }
     end
@@ -37,6 +38,21 @@ module Maps
       response.set_header("Cache-Control", CACHE_CONTROL)
       send_data attachment.download, type: CONTENT_TYPES.fetch(params[:kind]), disposition: "inline",
                                      filename: attachment.filename.to_s
+    end
+
+    # The building footprints over the terrain's extent (OpenStreetMap), for
+    # extruded volumes in 3D. A provider that fails answers an empty list:
+    # the relief stays usable without them.
+    def buildings
+      bounds = @map.terrain&.ready? && @map.terrain.bounds
+      return head :not_found unless bounds
+
+      provider = Providers::Buildings.build
+      buildings = provider.within(**bounds)
+      response.set_header("Cache-Control", "private, max-age=86400")
+      render json: { available: true, attribution: provider.attribution, buildings: buildings.map(&:as_json) }
+    rescue Providers::Buildings::Unavailable
+      render json: { available: false, attribution: nil, buildings: [] }
     end
 
     private
