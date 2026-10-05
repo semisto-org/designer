@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react'
 import { useEditor } from '@/map/editor/EditorContext'
 import { useDrawingState } from '@/map/drawing/store'
 import { gpsAccuracy, gpsToCheck } from '@/map/gps/accuracy'
+import { inScenario, useScenario } from '@/map/scenario'
 import type { Feature, FeatureCollection, Polygon } from 'geojson'
 
 const SOURCE = 'gps-accuracy'
@@ -32,14 +33,15 @@ function install(map: MapLibreMap, data: FeatureCollection) {
 export default function GpsAccuracyOverlay() {
   const { instance, features } = useEditor()
   const hidden = useDrawingState((s) => s.hiddenLayers)
+  const scenario = useScenario()
 
   const data = useMemo<FeatureCollection<Polygon>>(() => ({
     type: 'FeatureCollection',
     features: features.flatMap((f): Feature<Polygon>[] => {
-      if (f.geometry.type !== 'Point' || hidden.includes(f.properties.layer) || !gpsToCheck(f.properties)) return []
+      if (f.geometry.type !== 'Point' || hidden.includes(f.properties.layer) || !inScenario(f.properties, scenario) || !gpsToCheck(f.properties)) return []
       return [circle(f.geometry.coordinates, gpsAccuracy(f.properties)!, { units: 'meters', steps: 48, properties: { id: f.properties.id } })]
     }),
-  }), [features, hidden])
+  }), [features, hidden, scenario])
 
   useEffect(() => {
     const ensure = () => install(instance, data)

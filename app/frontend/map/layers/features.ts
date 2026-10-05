@@ -1,4 +1,5 @@
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
+import { PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
 import type { MapFeatureCollection } from '@/types'
 
 export const FEATURES_SOURCE = 'features'
@@ -33,6 +34,8 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
   }
   map.addSource(FEATURES_SOURCE, { type: 'geojson', data, promoteId: 'id' })
   const draft = ['==', ['get', 'status'], 'draft']
+  // A planned plant (not planted yet) is a hollow ring at 75 % opacity; a planted one is solid.
+  const planned = PLANNED_PLANT_EXPR as never
   map.addLayer({
     id: 'features-fill',
     type: 'fill',
@@ -57,11 +60,12 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     source: FEATURES_SOURCE,
     filter: ['==', ['geometry-type'], 'Point'],
     paint: {
-      'circle-color': color,
+      'circle-color': ['case', planned, '#ffffff', color] as never,
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 20, 9],
-      'circle-stroke-color': '#ffffff',
-      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 3, 1.5],
-      'circle-opacity': ['case', draft as never, 0.6, 1],
+      'circle-stroke-color': ['case', planned, color, '#ffffff'] as never,
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 3, planned, 3, 1.5],
+      'circle-opacity': ['case', draft as never, 0.6, planned, PLANNED_OPACITY, 1],
+      'circle-stroke-opacity': ['case', planned, PLANNED_OPACITY, 1] as never,
     },
   })
   map.addLayer({

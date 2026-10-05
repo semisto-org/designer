@@ -21,6 +21,7 @@ import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
+import ScenarioToggle from '@/map/panels/ScenarioToggle'
 import PalettePanel from '@/map/plants/PalettePanel'
 import PlantListPanel from '@/map/plants/PlantListPanel'
 import PlantSection from '@/map/plants/PlantSection'
@@ -90,6 +91,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
+  { id: 'scenario', component: ScenarioToggle, order: 10 },
 ]
 
 // Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.
