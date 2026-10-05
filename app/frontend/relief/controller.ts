@@ -171,7 +171,7 @@ export class ReliefController {
   lastMask: Uint8Array | null = null
   dayHours: { key: string; hours: Float32Array; daylight: number } | null = null
   private sunAbort: AbortController | null = null
-  private blocksBuilt: { ground: Float32Array; exaggeration: number; input: BlocksInput } | null = null
+  private blocksBuilt: { ground: Float32Array; exaggeration: number; buildings: BuildingLayer | null; input: BlocksInput } | null = null
   private blocksTimer: ReturnType<typeof setTimeout> | null = null
   niva: NivaState | null = null
   nivaPlacing = false
@@ -275,12 +275,14 @@ export class ReliefController {
     })
     this.scene?.setBuildings(this.buildings.volumes)
     this.scene?.showBuildings(this.view.buildingsOn)
+    if (this.view.base === 'blocks') void this.renderBlocks()
   }
 
   setBuildings(on: boolean) {
     this.view.buildingsOn = on
     this.scene?.showBuildings(on)
     if (this.view.surfaceOn) this.applySurfaceHeights()
+    if (this.view.base === 'blocks') void this.renderBlocks()
   }
 
   /** Vertical relief ≈ 8 % of the horizontal span: flat gardens get more. */
@@ -424,8 +426,11 @@ export class ReliefController {
     if (!scene || !this.full) return
     const exaggeration = this.view.exaggeration || 1
     const ground = this.ground ?? this.full.heights
-    if (this.blocksBuilt?.ground === ground && this.blocksBuilt.exaggeration === exaggeration) {
-      scene.showBlocks(this.blocksBuilt.input)
+    // The footprints shape the buildings in blocks too, when they are shown.
+    const buildings = this.view.buildingsOn ? this.buildings : null
+    const built = this.blocksBuilt
+    if (built?.ground === ground && built.exaggeration === exaggeration && built.buildings === buildings) {
+      scene.showBlocks(built.input)
       return
     }
     this.options.onLoading?.('blocks')
@@ -434,10 +439,10 @@ export class ReliefController {
     const { cols, rows, heights } = this.full
     const input: BlocksInput = {
       ground, original: heights, surface: this.surface, roles: this.roles,
-      cols, rows, cell: this.cell, block: this.blockSize(), exaggeration,
+      cols, rows, cell: this.cell, block: this.blockSize(), exaggeration, buildings,
     }
     scene.showBlocks(input)
-    this.blocksBuilt = { ground, exaggeration, input }
+    this.blocksBuilt = { ground, exaggeration, buildings, input }
     this.options.onLoading?.(null)
   }
 

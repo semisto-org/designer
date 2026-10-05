@@ -46,6 +46,9 @@ export type BuildingLayer = {
   covered: Uint8Array
   /** The relief with the volumes on it, for the shadows when there is no surface model. */
   roofs: Float32Array
+  /** Per cell under a building: height of its roof, and of its eaves, above that cell's ground (0 elsewhere). */
+  tops: Float32Array
+  eaves: Float32Array
 }
 
 const STOREY = 3
@@ -140,6 +143,8 @@ export function buildingLayer(
   const { cols, rows } = meta
   const inside = new Uint8Array(cols * rows)
   const roofs = Float32Array.from(ground)
+  const tops = new Float32Array(cols * rows)
+  const eaves = new Float32Array(cols * rows)
   const volumes: BuildingVolume[] = []
   for (const building of buildings) {
     const rings = building.rings.map((ring) => ring.map((p) => toGrid(meta, p)))
@@ -167,12 +172,15 @@ export function buildingLayer(
     height = Math.max(...shells.flatMap((s) => s.ring.map((p) => p.top)))
     const bottom = building.minHeight && building.minHeight < height ? building.minHeight : 0
     volumes.push({ id: building.id, rings, base, height, roof, shells, bottom, source })
+    const eave = Math.min(...shells.flatMap((s) => s.ring.map((p) => p.top)))
     for (const i of cells) {
       inside[i] = 1
       if (bottom) continue
       const p = { x: (i % cols) * meta.cellSizeM, y: Math.floor(i / cols) * meta.cellSizeM }
       const top = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, roofHeight(roof, p)))
       roofs[i] = Math.max(roofs[i], base + top)
+      tops[i] = Math.max(tops[i], base + top - ground[i])
+      eaves[i] = Math.max(eaves[i], base + eave - ground[i])
     }
   }
 
@@ -192,5 +200,5 @@ export function buildingLayer(
       }
     }
   }
-  return { volumes, covered, roofs }
+  return { volumes, covered, roofs, tops, eaves }
 }
