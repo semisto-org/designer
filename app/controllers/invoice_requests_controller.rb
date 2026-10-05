@@ -3,6 +3,7 @@
 # (InvoiceRequest). Signed-out visitors coming from the pricing page sign in
 # first and come back here.
 class InvoiceRequestsController < ApplicationController
+  forbid_while_impersonating only: :create
   rate_limit to: 5, within: 1.hour, only: :create, by: -> { Current.user&.id || request.remote_ip },
     with: -> { redirect_to new_invoice_request_path, alert: t("invoicing.rate_limited"), status: :see_other }
 

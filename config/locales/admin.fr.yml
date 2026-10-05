@@ -1,0 +1,119 @@
+# Super admin: the staff dashboard, the accounts list and « Se connecter en
+# tant que » (impersonation, with its banner). Keys in English, values in
+# French; the backend and the React frontend read the same file.
+fr:
+  admin:
+    nav:
+      link: "Administration"
+      dashboard: "Tableau de bord"
+      users: "Comptes"
+      requests: "Demandes"
+      invoices: "Factures"
+      drone: "Vues drone"
+    dashboard:
+      title: "Administration"
+      intro: "Les chiffres de Semisto Designer et ce qui attend l'équipe."
+      inbox:
+        title: "À traiter"
+        service_requests:
+          zero: "Aucune demande ouverte"
+          one: "1 demande ouverte"
+          other: "%{count} demandes ouvertes"
+        invoice_requests:
+          zero: "Aucune facture en attente"
+          one: "1 facture en attente"
+          other: "%{count} factures en attente"
+      users:
+        title: "Comptes"
+        new: "+%{week} cette semaine, +%{month} en 30 jours"
+        active: "%{count} actifs en 30 jours"
+        teams: "%{count} en équipe"
+      maps:
+        title: "Cartes"
+        new: "+%{count} en 30 jours"
+        details: "%{area} ha dessinés · %{published} publiées · %{archived} archivées"
+      activity:
+        title: "Activité sur 30 jours"
+        features: "%{count} éléments dessinés (%{total} en tout)"
+        ai: "%{count} appels de Claude, par %{users} personnes"
+        drafts: "%{count} brouillons de Claude en attente"
+        comments: "%{count} commentaires"
+      plans:
+        title: "Formules"
+        paying: "comptes sur une formule payante"
+        none: "Personne n'est encore sur une formule payante."
+        beta: "Paiements désactivés (bêta) : tout est débloqué."
+      revenue:
+        title: "Encaissé"
+        year: "cette année"
+        last30d: "%{amount} sur 30 jours · %{count} paiements en tout"
+      signups:
+        title: "Inscriptions par semaine"
+        week: "Semaine du %{date} : %{count}"
+      regions:
+        title: "Cartes par région"
+      recent_users: "Derniers inscrits"
+      recent_maps: "Dernières cartes"
+      no_maps: "Aucune carte pour l'instant."
+      all_users: "Tous les comptes"
+      map_owner: "par %{name}"
+      archived: "archivée"
+      events:
+        title: "Journal d'administration"
+        empty: "Rien pour l'instant. Chaque connexion en tant que quelqu'un et chaque changement de rôle s'inscrit ici."
+        actions:
+          impersonation_started: "s'est connecté en tant que"
+          impersonation_ended: "a quitté le compte de"
+          admin_granted: "a donné le rôle d'admin à"
+          admin_revoked: "a retiré le rôle d'admin à"
+        reasons:
+          stopped: "depuis le bandeau"
+          expired: "au bout d'une heure"
+          sign_out: "en se déconnectant"
+    users:
+      title: "Comptes"
+      intro: "Tous les comptes de Designer. Connecte-toi en tant que quelqu'un pour voir ce qu'il voit et l'aider."
+      search: "Chercher un nom ou une adresse e-mail"
+      search_button: "Chercher"
+      count:
+        zero: "Aucun compte"
+        one: "1 compte"
+        other: "%{count} comptes"
+      empty: "Aucun compte ne correspond à cette recherche."
+      columns:
+        person: "Personne"
+        plan: "Formule"
+        maps: "Cartes"
+        signed_up: "Inscription"
+        last_seen: "Dernière connexion"
+      never: "jamais"
+      admin_badge: "admin"
+      google: "Google"
+      maps_count:
+        zero: "aucune carte"
+        one: "1 carte"
+        other: "%{count} cartes"
+      impersonate: "Se connecter en tant que"
+      grant_admin: "Donner le rôle d'admin"
+      revoke_admin: "Retirer le rôle d'admin"
+      confirm_grant: "Donner le rôle d'admin à %{name} ? Cette personne verra tous les comptes et pourra se connecter à leur place."
+      confirm_revoke: "Retirer le rôle d'admin à %{name} ?"
+      previous: "Précédents"
+      next: "Suivants"
+      page: "Page %{page} sur %{pages}"
+      flash:
+        granted: "%{name} est maintenant admin."
+        revoked: "%{name} n'est plus admin."
+      errors:
+        self: "Tu ne peux pas changer ton propre rôle."
+        invalid: "Ce changement de rôle n'est pas valide."
+    impersonation:
+      banner: "Tu es connecté en tant que %{name}"
+      banner_detail: "%{email} · retour automatique à ton compte %{time}"
+      stop: "Revenir à mon compte"
+      started: "Tu es connecté en tant que %{name}. Tout ce que tu fais est fait en son nom."
+      stopped: "Tu es revenu sur ton compte (tu étais connecté en tant que %{name})."
+      forbidden: "Pas pendant une connexion en tant que quelqu'un d'autre : les paiements, les accès donnés à Claude et le compte restent à la personne elle-même."
+      errors:
+        self: "C'est déjà ton compte."
+        admin: "On ne se connecte pas en tant qu'un autre admin."

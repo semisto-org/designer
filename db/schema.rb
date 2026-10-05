@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -44,6 +44,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_190000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "admin_events", force: :cascade do |t|
+    t.bigint "admin_id"
+    t.bigint "target_user_id"
+    t.string "action", null: false
+    t.jsonb "details", default: {}, null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.index ["admin_id"], name: "index_admin_events_on_admin_id"
+    t.index ["created_at"], name: "index_admin_events_on_created_at"
+    t.index ["target_user_id"], name: "index_admin_events_on_target_user_id"
   end
 
   create_table "aerial_views", force: :cascade do |t|
@@ -841,6 +854,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_190000) do
     t.string "user_agent"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "impersonator_id"
+    t.index ["impersonator_id"], name: "index_sessions_on_impersonator_id"
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
@@ -899,6 +914,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_190000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "admin_events", "users", column: "admin_id", on_delete: :nullify
+  add_foreign_key "admin_events", "users", column: "target_user_id", on_delete: :nullify
   add_foreign_key "aerial_views", "maps"
   add_foreign_key "aerial_views", "plan_purchases", on_delete: :nullify
   add_foreign_key "aerial_views", "users", column: "created_by_id", on_delete: :nullify
@@ -984,6 +1001,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_190000) do
   add_foreign_key "service_requests", "users"
   add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify
   add_foreign_key "sessions", "users"
+  add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
   add_foreign_key "soil_samples", "maps"
   add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
 end

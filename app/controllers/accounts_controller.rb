@@ -1,5 +1,6 @@
 # /account — who I am, my plan, and the request to delete my account.
 class AccountsController < ApplicationController
+  forbid_while_impersonating only: %i[update deletion_request]
   rate_limit to: 3, within: 1.hour, only: :deletion_request, with: -> { redirect_to account_path, alert: t("account.rate_limited") }
 
   def show

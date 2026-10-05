@@ -1,6 +1,8 @@
 # POST /billing/portal — Stripe customer portal (invoices, payment method,
 # cancel or change a subscription).
 class BillingPortalsController < ApplicationController
+  forbid_while_impersonating
+
   def create
     url = Billing::Portal.url(user: Current.user, return_url: billing_url)
     request.inertia? ? inertia_location(url) : redirect_to(url, allow_other_host: true, status: :see_other)

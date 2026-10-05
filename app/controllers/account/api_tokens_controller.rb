@@ -2,6 +2,8 @@
 # response that shows it once, revoked with a regular Inertia visit.
 module Account
   class ApiTokensController < ApplicationController
+    forbid_while_impersonating only: :create
+
     def create
       token = ApiToken.new(user: Current.user)
       token.assign_attributes(params.require(:api_token).permit(:name, :access, :expires_in))

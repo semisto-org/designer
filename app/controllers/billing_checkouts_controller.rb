@@ -1,6 +1,8 @@
 # POST /billing/checkout — creates the Stripe Checkout Session and sends the
 # customer there.
 class BillingCheckoutsController < ApplicationController
+  forbid_while_impersonating
+
   def create
     url = Billing::Checkout.call(
       user: Current.user, plan_key: params[:plan].to_s,
