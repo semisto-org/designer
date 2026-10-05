@@ -4,10 +4,13 @@ import { MapPin, X } from 'lucide-react'
 import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
+import { drawingStore, useDrawingState } from '@/map/drawing/store'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
+import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS } from '@/map/plants/strata'
+import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
 import type { PlantingState } from '@/types/plants'
 
@@ -60,7 +63,15 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
   }
 }
 
+// Names of planned plants fade with their crowns.
+const plantLabel = (() => {
+  const { layout, paint } = markerLabel(['get', 'label'])
+  const opacity = ['case', PLANTED, 1, PLANNED_OPACITY] as never
+  return { layout, paint: { ...paint, 'text-opacity': opacity, 'icon-opacity': opacity } }
+})()
+
 function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
+  ensureLabelBackground(map)
   const crowns = map.getSource(CROWNS) as GeoJSONSource | undefined
   if (crowns) {
     crowns.setData(data.crowns)
@@ -95,11 +106,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     type: 'symbol',
     source: LABELS,
     minzoom: 18,
-    layout: {
-      'text-field': ['get', 'label'], 'text-size': 11, 'text-offset': [0, 1.1], 'text-anchor': 'top',
-      'text-font': ['Noto Sans Regular'], 'text-optional': true,
-    },
-    paint: { 'text-color': '#264f2b', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2, 'text-opacity': ['case', PLANTED, 1, PLANNED_OPACITY] },
+    ...plantLabel,
   })
 }
 
@@ -108,6 +115,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
 function safeInstall(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   try {
     install(map, data)
+    applyPlantsVisibility(map, drawingStore.get().hiddenLayers)
   } catch {
     /* style not ready yet */
   }
@@ -123,6 +131,7 @@ export default function PlantsOverlay() {
   const mapId = editor.map.id
   const { data, placing } = usePlanting(mapId)
   const scenario = useScenario()
+  const hidden = useDrawingState((s) => s.hiddenLayers)
   const editorRef = useRef(editor)
   editorRef.current = editor
   const map = editor.instance
@@ -139,6 +148,8 @@ export default function PlantsOverlay() {
     return () => { map.off('styledata', apply) }
   }, [map])
   useEffect(() => safeInstall(map, layers), [map, layers])
+  // « Calques »: hiding the plants layer hides the crowns and their names too.
+  useEffect(() => applyPlantsVisibility(map, hidden), [map, hidden])
 
   // A click on a crown selects its plant, unless drawing or a feature is under the cursor.
   useEffect(() => {

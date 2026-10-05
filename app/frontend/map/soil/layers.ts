@@ -1,5 +1,6 @@
 import type { Feature, FeatureCollection, Point } from 'geojson'
-import type { GeoJSONSource, Map as MapLibreMap, SymbolLayerSpecification } from 'maplibre-gl'
+import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
+import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import type { BioObservation, SoilSampleData, SuggestedPoint } from '@/types/soil_photos'
 
 export const SAMPLES_SOURCE = 'soil-samples'
@@ -15,7 +16,6 @@ export const SOIL_LAYER_IDS = [
 ] as const
 
 const LEAF = '#3d7d42'
-const LEAF_DARK = '#264f2b'
 const PRUNE = '#5b5781'
 const HUMUS = '#d9a527'
 const FONT = ['Noto Sans Regular']
@@ -58,10 +58,7 @@ function raise(map: MapLibreMap) {
   SOIL_LAYER_IDS.forEach((id) => map.getLayer(id) && map.moveLayer(id))
 }
 
-const labelLayout: NonNullable<SymbolLayerSpecification['layout']> = {
-  'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 11, 'text-offset': [0, 1.3], 'text-anchor': 'top', 'text-optional': true,
-}
-const labelPaint: NonNullable<SymbolLayerSpecification['paint']> = { 'text-color': LEAF_DARK, 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 }
+const sampleLabel = markerLabel(['get', 'label'], { 'text-font': FONT, 'text-offset': [0, 1.3] })
 
 /**
  * Installs (once) the layers of the « Sol » module, then only updates their
@@ -69,6 +66,7 @@ const labelPaint: NonNullable<SymbolLayerSpecification['paint']> = { 'text-color
  * positions (numbered, not saved) and the plants noted on the terrain.
  */
 export function installSoilLayers(map: MapLibreMap, data: { samples: Collection; observations: Collection; suggestions: Collection }) {
+  ensureLabelBackground(map)
   const created = [
     setData(map, SAMPLES_SOURCE, data.samples),
     setData(map, OBSERVATIONS_SOURCE, data.observations),
@@ -90,7 +88,7 @@ export function installSoilLayers(map: MapLibreMap, data: { samples: Collection;
       'circle-stroke-color': LEAF, 'circle-stroke-width': 3,
     },
   })
-  map.addLayer({ id: 'soil-samples-label', type: 'symbol', source: SAMPLES_SOURCE, minzoom: 15, layout: labelLayout, paint: labelPaint })
+  map.addLayer({ id: 'soil-samples-label', type: 'symbol', source: SAMPLES_SOURCE, minzoom: 15, ...sampleLabel })
   map.addLayer({
     id: OBSERVATION_LAYER, type: 'circle', source: OBSERVATIONS_SOURCE,
     paint: {
@@ -100,7 +98,7 @@ export function installSoilLayers(map: MapLibreMap, data: { samples: Collection;
   })
   map.addLayer({
     id: 'soil-observations-label', type: 'symbol', source: OBSERVATIONS_SOURCE, minzoom: 17,
-    layout: { ...labelLayout, 'text-offset': [0, 1] }, paint: { ...labelPaint, 'text-color': '#724f10' },
+    ...markerLabel(['get', 'label'], { 'text-font': FONT, 'text-offset': [0, 1] }),
   })
   map.addLayer({
     id: SUGGESTION_LAYER, type: 'circle', source: SUGGESTIONS_SOURCE,

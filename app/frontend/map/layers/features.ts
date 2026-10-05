@@ -1,5 +1,6 @@
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
+import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import type { MapFeatureCollection } from '@/types'
 
 export const FEATURES_SOURCE = 'features'
@@ -28,6 +29,7 @@ const color = ['let', 'style', ['get', 'style'], ['case',
 
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
 export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollection) {
+  ensureLabelBackground(map)
   if (map.getSource(FEATURES_SOURCE)) {
     ;(map.getSource(FEATURES_SOURCE) as GeoJSONSource).setData(data)
     return
@@ -74,7 +76,6 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     source: FEATURES_SOURCE,
     minzoom: 17,
     filter: ['has', 'name'],
-    layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-offset': [0, 1.2], 'text-font': ['Noto Sans Regular'] },
-    paint: { 'text-color': '#262119', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
+    ...markerLabel(['get', 'name']),
   })
 }

@@ -307,7 +307,12 @@ export function installDrawingImages(map: MapLibreMap, copyFrom?: MapLibreMap) {
   if (copyFrom) {
     map.setMissingStyleImageResolver((id) => {
       const source = copyFrom.hasImage(id) ? copyFrom.getImage(id) : null
-      if (source && !map.hasImage(id)) map.addImage(id, source.data, { pixelRatio: source.pixelRatio, sdf: source.sdf })
+      // Stretch and content keep stretchable images (label backgrounds) fitting their text.
+      if (source && !map.hasImage(id)) {
+        map.addImage(id, source.data, {
+          pixelRatio: source.pixelRatio, sdf: source.sdf, stretchX: source.stretchX, stretchY: source.stretchY, content: source.content,
+        })
+      }
     })
   }
 }
