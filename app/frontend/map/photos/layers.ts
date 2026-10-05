@@ -3,7 +3,9 @@ import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import type { MapPhotoData } from '@/types/soil_photos'
 
 export const PHOTOS_SOURCE = 'photos'
-export const PHOTO_LAYER_IDS = ['photos-cluster', 'photos-cluster-count', 'photos-halo', 'photos-heading', 'photos-point'] as const
+export const PHOTO_LAYER_IDS = [
+  'photos-cluster', 'photos-cluster-icon', 'photos-cluster-badge', 'photos-cluster-count', 'photos-halo', 'photos-heading', 'photos-point',
+] as const
 export const PHOTO_POINT_LAYER = 'photos-point'
 export const PHOTO_CLUSTER_LAYER = 'photos-cluster'
 
@@ -121,18 +123,32 @@ export function installPhotoLayers(map: MapLibreMap, data: PhotoFeatureCollectio
   addImages(map)
   map.addSource(PHOTOS_SOURCE, { type: 'geojson', data, cluster: true, clusterRadius: 44, clusterMaxZoom: 18 })
   const single = ['!', ['has', 'point_count']] as never
+  // A group of nearby photos reads as a camera with a count badge (a bare
+  // numbered disc said nothing about what it counted). The white disc under
+  // the icon is the click target that zooms in.
+  const badge = [12, -12] as [number, number]
   map.addLayer({
     id: 'photos-cluster', type: 'circle', source: PHOTOS_SOURCE, filter: ['has', 'point_count'],
+    paint: { 'circle-color': '#ffffff', 'circle-radius': 13 },
+  })
+  map.addLayer({
+    id: 'photos-cluster-icon', type: 'symbol', source: PHOTOS_SOURCE, filter: ['has', 'point_count'],
+    layout: { 'icon-image': 'photo-camera', 'icon-size': 1.1, 'icon-allow-overlap': true, 'icon-ignore-placement': true },
+  })
+  map.addLayer({
+    id: 'photos-cluster-badge', type: 'circle', source: PHOTOS_SOURCE, filter: ['has', 'point_count'],
     paint: {
-      'circle-color': PRUNE,
-      'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26],
-      'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2,
+      'circle-color': PRUNE, 'circle-radius': ['step', ['get', 'point_count'], 8, 10, 10, 100, 12],
+      'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1.5, 'circle-translate': badge,
     },
   })
   map.addLayer({
     id: 'photos-cluster-count', type: 'symbol', source: PHOTOS_SOURCE, filter: ['has', 'point_count'],
-    layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 12, 'text-font': ['Noto Sans Regular'], 'text-allow-overlap': true },
-    paint: { 'text-color': '#ffffff' },
+    layout: {
+      'text-field': ['get', 'point_count_abbreviated'], 'text-size': 10, 'text-font': ['Noto Sans Regular'],
+      'text-allow-overlap': true, 'text-ignore-placement': true,
+    },
+    paint: { 'text-color': '#ffffff', 'text-translate': badge },
   })
   map.addLayer({
     id: 'photos-halo', type: 'circle', source: PHOTOS_SOURCE, filter: ['==', ['get', 'id'], -1],

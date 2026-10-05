@@ -2,11 +2,13 @@ import type { MapGeoJSONFeature, MapMouseEvent } from 'maplibre-gl'
 import { X } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
+import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
   highlightSample, installSoilLayers, OBSERVATION_LAYER, observationsToGeoJSON, removeSoilLayers, SAMPLE_LAYER,
   samplesToGeoJSON, setSoilLayersVisible, suggestionsToGeoJSON,
 } from '@/map/soil/layers'
+import { soilVisibility } from '@/map/soil/visibility'
 import { getSoilState, soilActions, useSoil, type SoilPlacing } from '@/map/soil/store'
 
 /**
@@ -20,6 +22,7 @@ export default function SoilOverlay() {
   const map = editor.instance
   const state = useSoil()
   const { samples, observations, suggestions, showOnMap, openId, placing } = state
+  const hiddenLayers = useDrawingState((s) => s.hiddenLayers)
 
   useEffect(() => {
     soilActions.load(editor.map.id)
@@ -34,10 +37,10 @@ export default function SoilOverlay() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       installSoilLayers(map, { samples: sampleData, observations: observationData, suggestions: suggestionData })
-      setSoilLayersVisible(map, showOnMap || suggestions != null)
+      setSoilLayersVisible(map, soilVisibility({ showOnMap, suggesting: suggestions != null, hiddenLayers }))
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [map, sampleData, observationData, suggestionData, showOnMap, suggestions])
+  }, [map, sampleData, observationData, suggestionData, showOnMap, suggestions, hiddenLayers])
   useEffect(() => () => removeSoilLayers(map), [map])
   useEffect(() => { highlightSample(map, openId) }, [map, openId, sampleData])
 
