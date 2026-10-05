@@ -79,6 +79,12 @@ npx eas build --profile preview --platform android    # APK link
 npx eas build --profile production && npx eas submit  # stores
 ```
 
+From GitHub: Actions, « Mobile build », « Run workflow » (profile and
+platform), with the repository secret `EXPO_TOKEN` (robot token of the Expo
+organisation `semisto`). The build runs on Expo; its page on expo.dev has the
+APK link or the TestFlight status. The first iOS build is made once from a
+computer, where Apple asks for its account to create the certificate.
+
 Store reviewers sign in on the server's sign-in page with « Accès pour la
 relecture des stores », enabled by `APP_REVIEW_EMAIL` and `APP_REVIEW_CODE`
 (16+ characters) on the server; `bin/rails app_review:prepare` gives that
