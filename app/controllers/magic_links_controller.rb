@@ -13,8 +13,15 @@ class MagicLinksController < ApplicationController
   end
 
   private
+    # A path, or a full URL on this host (what sign-in stores, e.g. the phone
+    # app's /oauth/authorize request), reduced to its path. Nothing else.
     def safe_return_to
-      path = params[:return_to].to_s
-      path if path.start_with?("/") && !path.start_with?("//")
+      value = params[:return_to].to_s
+      return value if value.start_with?("/") && !value.start_with?("//")
+
+      uri = URI.parse(value)
+      uri.request_uri if uri.is_a?(URI::HTTP) && uri.host == request.host
+    rescue URI::InvalidURIError
+      nil
     end
 end
