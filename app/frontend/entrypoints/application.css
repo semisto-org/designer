@@ -3,6 +3,7 @@
 @import "@fontsource-variable/inter/wght.css";
 @import "@fontsource-variable/inter/wght-italic.css";
 @import "@fontsource-variable/eb-garamond/wght.css";
+@import "@fontsource-variable/caveat/wght.css";
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
 
@@ -16,6 +17,8 @@
 @theme {
   --font-sans: "Inter Variable", "Allotrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: "EB Garamond Variable", "Sole Serif Small", "Cormorant Garamond", Georgia, serif;
+  /* Handwriting, for the field-notebook notes of the home page only. */
+  --font-hand: "Caveat Variable", "Bradley Hand", "Segoe Print", cursive;
 
   --color-prune-50: #f4f3f8;
   --color-prune-100: #e8e6f0;
@@ -131,6 +134,9 @@
    purpose, to win over the text-* utilities. */
 h1.text-base, h2.text-base { font-size: 1.2rem; line-height: 1.5rem; letter-spacing: 0; }
 h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
+
+/* Home page time-lapse: text set straight on the watercolour keeps a paper halo. */
+.timelapse-halo { text-shadow: 0 0 22px var(--color-loam-50), 0 0 8px var(--color-loam-50), 0 0 3px var(--color-loam-50); }
 
 /* Map editor on a phone: the panel bar runs along the bottom, so the
    scale and attribution move above it. */
