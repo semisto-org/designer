@@ -5,6 +5,7 @@ class MapFeature < ApplicationRecord
   include GeoJsonGeometry
   include Commentable
   include PlantableFeature
+  include GpsFix
   include MapFeature::Elements
   include MapFeature::Broadcasts
 

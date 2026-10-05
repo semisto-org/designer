@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { kindLabel, kindsFor, layerLabel } from '@/lib/elements'
-import { cleanTrace, lineLength, ringArea } from '@/lib/geo'
+import { cleanTrace, gpsProperties, lineLength, ringArea } from '@/lib/geo'
 import { formatDistance, t } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
 import { outbox } from '@/lib/outbox'
@@ -74,7 +74,7 @@ export default function RecordScreen() {
 
   const save = () => {
     if (!geometry || !kind) return
-    outbox.addFeature(mapId, { layer: kind.layer, kind: kind.kind, name: name.trim() || null, notes: notes.trim() || null, properties: {}, geometry })
+    outbox.addFeature(mapId, { layer: kind.layer, kind: kind.kind, name: name.trim() || null, notes: notes.trim() || null, properties: mode === 'point' ? gpsProperties(point?.accuracy ?? null) : {}, geometry })
     router.back()
   }
 

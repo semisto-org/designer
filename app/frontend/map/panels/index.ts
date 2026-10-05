@@ -37,6 +37,8 @@ import PhotosOverlay from '@/map/photos/PhotosOverlay'
 import SoilPanel from '@/map/soil/SoilPanel'
 import SoilOverlay from '@/map/soil/SoilOverlay'
 import AlertsPanel from '@/map/drawing/AlertsPanel'
+import GpsAccuracyOverlay from '@/map/gps/GpsAccuracyOverlay'
+import GpsAccuracySection, { appliesToGpsPoint } from '@/map/gps/GpsAccuracySection'
 import DrawingLayers from '@/map/drawing/DrawingLayers'
 import DrawingToolbar from '@/map/drawing/DrawingToolbar'
 import ElementSection, { appliesToElement } from '@/map/drawing/ElementSection'
@@ -78,6 +80,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: () => true, component: PhotosInspector, order: 70 },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
+  { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
@@ -103,4 +106,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },
   { id: 'aerial-views', component: AerialViewsOverlay, order: 1 },
+  { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
 ]
