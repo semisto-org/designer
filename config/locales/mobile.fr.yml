@@ -1,6 +1,14 @@
 # Semisto's phone app (mobile/). Copied into mobile/src/i18n/fr.json by
 # `npm run locales` in mobile/ (CI checks the copy is up to date).
 fr:
+  # Sign-in for the app stores' reviewers (AppReview), on the sign-in page.
+  app_review:
+    toggle: "Accès pour la relecture des stores"
+    intro: "Réservé aux équipes de relecture d'Apple et de Google, avec le code fourni dans les notes de relecture."
+    email: "Adresse e-mail"
+    code: "Code d'accès"
+    submit: "Se connecter"
+    invalid: "Adresse ou code d'accès incorrect."
   mobile:
     common:
       back: "Retour"
@@ -37,6 +45,11 @@ fr:
         one: "%{count} modification attend encore d'être envoyée : si tu te déconnectes maintenant, elle sera perdue."
         other: "%{count} modifications attendent encore d'être envoyées : si tu te déconnectes maintenant, elles seront perdues."
       sign_out: "Se déconnecter"
+      delete: "Supprimer mon compte"
+      delete_title: "Supprimer ton compte ?"
+      delete_body: "Tu recevras un e-mail de confirmation, puis Semisto supprimera ton compte et tes cartes. Cela ne peut pas être annulé."
+      delete_confirm: "Demander la suppression"
+      delete_failed: "La demande n'est pas partie. Vérifie ta connexion et réessaie."
     terrain:
       loading: "Chargement de la carte…"
       not_found: "Cette carte n'existe plus, ou tu n'y as plus accès."

@@ -16,7 +16,9 @@ What it does, for the maps one belongs to:
 - survey: a GPS point, or a walked trace saved as a line or a closed
   surface (keeps recording with the screen off);
 - species identification with Pl@ntNet (through the server);
-- comments on elements.
+- comments on elements;
+- « Supprimer mon compte » (account screen): sends the deletion request to
+  Semisto (`POST /api/v1/me/deletion_request`), as the stores require.
 
 No purchase happens in the app: plans are managed on the website.
 
@@ -58,7 +60,26 @@ use a local server, set it to the computer's address on the local network
 
 ## Release
 
-`eas.json` has three profiles: `development` (dev client, internal),
-`preview` (internal, Android APK) and `production` (store builds, build
-number managed by EAS). `npx eas build --profile production` then
-`npx eas submit`.
+`eas.json` profiles:
+
+- `development`: dev client, internal.
+- `preview`: internal; Android APK to install directly.
+- `testflight`: store build of the test app, sent to TestFlight.
+- `production`: store builds of « Semisto Designer ».
+
+`development`, `preview` and `testflight` set `APP_VARIANT=preview`:
+`app.config.ts` then builds « Designer (test) » with the identifier
+`org.semisto.designer.preview`, which installs next to the store app and
+can live in any Apple developer account. The URL scheme stays
+`org.semisto.designer`, so the OAuth redirect is unchanged.
+
+```bash
+npx eas build --profile testflight --platform ios --auto-submit
+npx eas build --profile preview --platform android    # APK link
+npx eas build --profile production && npx eas submit  # stores
+```
+
+Store reviewers sign in on the server's sign-in page with « Accès pour la
+relecture des stores », enabled by `APP_REVIEW_EMAIL` and `APP_REVIEW_CODE`
+(16+ characters) on the server; `bin/rails app_review:prepare` gives that
+account a demo map (or `MAP_ID=…` to share an existing one with it).

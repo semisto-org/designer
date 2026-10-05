@@ -138,7 +138,60 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  test "the app sends an account deletion request to Semisto" do
+    token = app_token(users(:alice))
+    assert_enqueued_emails 2 do
+      post "/api/v1/me/deletion_request", headers: bearer(token)
+    end
+    assert_response :accepted
+
+    post "/api/v1/me/deletion_request"
+    assert_response :unauthorized
+  end
+
+  test "stores' reviewers sign in with their code, only when it is configured" do
+    get "/session/new", headers: inertia_headers
+    assert_equal false, response.parsed_body.dig("props", "reviewAccess")
+    post "/session/review", params: { email_address: "review@example.org", code: "anything-at-all-here" }
+    assert_redirected_to new_session_path
+
+    with_review_access do
+      get "/session/new", headers: inertia_headers
+      assert_equal true, response.parsed_body.dig("props", "reviewAccess")
+
+      post "/session/review", params: { email_address: "review@example.org", code: "not-the-right-code" }
+      assert_redirected_to new_session_path
+      get "/api/v1/maps"
+      assert_response :unauthorized
+
+      post "/session/review", params: { email_address: "review@example.org", code: "a-long-review-code-1234" }
+      get "/api/v1/maps"
+      assert_response :success
+      assert_equal "review@example.org", User.find_by(email_address: "review@example.org").email_address
+    end
+  end
+
+  test "app_review:prepare gives the reviewers a demo map" do
+    Rails.application.load_tasks unless Rake::Task.task_defined?("app_review:prepare")
+    with_review_access do
+      assert_output(/Jardin-forêt de démonstration/) { Rake::Task["app_review:prepare"].execute }
+      map = User.find_by!(email_address: "review@example.org").owned_maps.sole
+      assert_equal 4, map.features.count
+      assert_output(/Jardin-forêt/) { Rake::Task["app_review:prepare"].execute }
+      assert_equal 4, map.features.count
+    end
+  end
+
   private
+    def with_review_access
+      previous = ENV.values_at("APP_REVIEW_EMAIL", "APP_REVIEW_CODE")
+      ENV["APP_REVIEW_EMAIL"] = "review@example.org"
+      ENV["APP_REVIEW_CODE"] = "a-long-review-code-1234"
+      yield
+    ensure
+      ENV["APP_REVIEW_EMAIL"], ENV["APP_REVIEW_CODE"] = previous
+    end
+
     def authorize_params
       {
         response_type: "code", client_id: MobileApp::CLIENT_ID, redirect_uri: MobileApp::REDIRECT_URI, state: "s1",

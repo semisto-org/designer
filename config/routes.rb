@@ -78,9 +78,12 @@ Rails.application.routes.draw do
   # --- mobile ---
   # Semisto's phone app (mobile/, MobileApp): its own endpoints; it also
   # calls the editor's JSON endpoints with the same bearer token.
+  post "session/review", to: "sessions#review", as: :session_review
   namespace :api do
     namespace :v1 do
-      resource :me, only: :show, controller: "me"
+      resource :me, only: :show, controller: "me" do
+        post :deletion_request
+      end
       resources :maps, only: %i[index show] do
         get :style, on: :member, defaults: { format: :json }
       end

@@ -151,7 +151,7 @@ class Map < ApplicationRecord
 
   private
     def locate_region
-      point = (boundary.centroid if boundary && !boundary.is_empty?) || center
+      point = (boundary.centroid if boundary && !boundary.empty?) || center
       self.region = point ? Region.for_point(point.x, point.y) : (region || Region.europe || Region.default)
     end
 
