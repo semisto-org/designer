@@ -54,6 +54,7 @@ Pour corriger un tracé, touche **Modifier la forme**, fais glisser les sommets 
 - **Nomme tes éléments** : « Pommier du fond », « Fossé nord ». Dans six mois, tu t'en féliciteras.
 - **Utilise les notes** pour ce que le dessin ne dit pas : un sol qui reste mouillé, un vent dominant, un voisin à ménager.
 - **Les points relevés au téléphone** gardent la précision de leur GPS. Sous les arbres, elle dépasse souvent 10 m : ces points s'entourent d'un cercle pointillé et sont marqués « Position à vérifier ». Fais-les glisser à leur vraie place, par exemple sur la vue drone, ou touche **Il est bien placé**.
+- **D'où vient l'eau de chaque robinet ?** Dans le panneau **Sources d'eau**, ajoute tes sources (puits, pluie, captage, réseau public…) et dis si chacune est potable. Sélectionne ensuite un robinet et choisis sa source : il en prend la potabilité.
 - **Les réseaux** (eau, gaz, électricité) sont sensibles : ils restent masqués dans les vues publiques, les exports et pour Claude, sauf si tu décides autrement.
 
 ## Et ensuite ?

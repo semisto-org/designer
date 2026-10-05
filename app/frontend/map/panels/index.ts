@@ -1,4 +1,4 @@
-import { Bot, Camera, ClipboardList, CloudSun, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -48,6 +48,8 @@ import DrawingLayersPanel from '@/map/drawing/LayersPanel'
 import LiveSync from '@/map/drawing/LiveSync'
 import AerialViewsOverlay from '@/drone/AerialViewsOverlay'
 import TransferNotice from '@/transfer/TransferNotice'
+import WaterSourcesPanel from '@/map/water/WaterSourcesPanel'
+import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -63,6 +65,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'design', component: PlantListPanel, order: 30 },
   { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 40 },
   { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'design', component: DrawingLayersPanel, order: 45 },
+  { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
   { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'design', component: FinancesPanel, order: 80 },
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
@@ -81,6 +84,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: () => true, component: PhotosInspector, order: 70 },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
+  { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
 ]
 

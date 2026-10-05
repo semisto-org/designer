@@ -38,6 +38,12 @@ module Imports
       }.freeze
       # Rain and forest catchment water is not drinkable; the well is.
       WATER_POTABILITY = { "rain" => false, "forest_catchment" => false, "well" => true }.freeze
+      # The map's WaterSource each Claudy source becomes (taps are linked to it).
+      WATER_SOURCES = {
+        "well" => { name: "Eau de puits", potable: true },
+        "rain" => { name: "Eau de pluie", potable: false },
+        "forest_catchment" => { name: "Eau de captage forestier", potable: false }
+      }.freeze
       PLANNED_STATUSES = %w[on_plan awaiting_planting to_place].freeze
       # Claudy strata → the strata a species plays in a Designer palette.
       STRATA = {

@@ -8,6 +8,7 @@ class MapFeature < ApplicationRecord
   include GpsFix
   include MapFeature::Elements
   include MapFeature::Broadcasts
+  include MapFeature::WaterSourceLink
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze
