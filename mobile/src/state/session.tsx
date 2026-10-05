@@ -1,6 +1,7 @@
 // Signed in or not, for the whole app. Also finishes a sign-in that comes
 // back through the redirect link (magic link opened in another browser).
 import * as Linking from 'expo-linking'
+import * as WebBrowser from 'expo-web-browser'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { completeSignIn, loadTokens, onAuthChange } from '@/lib/auth'
 import { authorizeMapRequests } from '@/lib/maps'
@@ -17,9 +18,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setStatus(signedIn ? 'signed_in' : 'signed_out')
       void authorizeMapRequests()
     })
-    const sub = Linking.addEventListener('url', ({ url }) => {
-      if (url.startsWith('org.semisto.designer://oauth')) void completeSignIn(url)
-    })
+    // The magic link opened in Safari ends on the redirect link, which opens
+    // the app (running or not); the sign-in sheet left open is closed.
+    const finish = (url: string | null) => {
+      if (!url?.startsWith('org.semisto.designer://oauth')) return
+      void completeSignIn(url).then((result) => { if (result === 'signed_in') WebBrowser.dismissAuthSession() })
+    }
+    void Linking.getInitialURL().then(finish)
+    const sub = Linking.addEventListener('url', ({ url }) => finish(url))
     return () => { off(); sub.remove() }
   }, [])
 

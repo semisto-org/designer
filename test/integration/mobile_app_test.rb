@@ -46,6 +46,27 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "magic link opened in another browser goes back to the app's authorization" do
+    get "/oauth/authorize", params: authorize_params
+    perform_enqueued_jobs { post session_path, params: { email_address: users(:michael).email_address } }
+    link = ActionMailer::Base.deliveries.last.text_part.body.to_s[%r{https?://\S*/magic\S*}]
+    assert link, "the e-mail carries the magic link"
+
+    reset! # Safari: no cookie from the app's sign-in sheet
+    get URI.parse(link).request_uri
+    location = URI.parse(response.location)
+    assert_equal "/oauth/authorize", location.path
+    assert_equal MobileApp::REDIRECT_URI, Rack::Utils.parse_query(location.query)["redirect_uri"]
+  end
+
+  test "a magic link never sends anyone to another site" do
+    user = users(:michael)
+    get magic_link_path(user.generate_token_for(:magic_link), return_to: "https://evil.example/oauth/authorize")
+    assert_redirected_to root_url
+    get magic_link_path(user.reload.generate_token_for(:magic_link), return_to: "//evil.example/x")
+    assert_redirected_to root_url
+  end
+
   test "denying sends the app an error, without a code" do
     sign_in_as users(:michael)
     post "/oauth/authorize", params: authorize_params.merge(decision: "deny")
