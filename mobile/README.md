@@ -64,10 +64,12 @@ use a local server, set it to the computer's address on the local network
 
 - `development`: dev client, internal.
 - `preview`: internal; Android APK to install directly.
+- `simulator`: the test app for the iOS Simulator on a Mac (no Apple
+  account needed).
 - `testflight`: store build of the test app, sent to TestFlight.
 - `production`: store builds of « Semisto Designer ».
 
-`development`, `preview` and `testflight` set `APP_VARIANT=preview`:
+`development`, `preview`, `simulator` and `testflight` set `APP_VARIANT=preview`:
 `app.config.ts` then builds « Designer (test) » with the identifier
 `org.semisto.designer.preview`, which installs next to the store app and
 can live in any Apple developer account. The URL scheme stays
@@ -78,6 +80,12 @@ npx eas build --profile testflight --platform ios --auto-submit
 npx eas build --profile preview --platform android    # APK link
 npx eas build --profile production && npx eas submit  # stores
 ```
+
+From GitHub: Actions, « Mobile build », « Run workflow » (profile and
+platform), with the repository secret `EXPO_TOKEN` (robot token of the Expo
+organisation `semisto`). The build runs on Expo; its page on expo.dev has the
+APK link or the TestFlight status. The first iOS build is made once from a
+computer, where Apple asks for its account to create the certificate.
 
 Store reviewers sign in on the server's sign-in page with « Accès pour la
 relecture des stores », enabled by `APP_REVIEW_EMAIL` and `APP_REVIEW_CODE`

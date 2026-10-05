@@ -72,6 +72,7 @@
     },
     "extra": {
       "apiUrl": "https://designer.semisto.org"
-    }
+    },
+    "owner": "semisto"
   }
 }

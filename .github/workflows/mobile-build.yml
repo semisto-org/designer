@@ -1,0 +1,64 @@
+# Builds the phone app on Expo (EAS), started by hand from the Actions tab.
+# Needs the repository secret EXPO_TOKEN (a robot token of the Expo
+# organisation « semisto »). The first iOS build is made once from a computer
+# (`eas build`), because Apple asks for its account and a two-factor code to
+# create the signing certificate; later iOS builds reuse it from here.
+name: Mobile build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS profile"
+        type: choice
+        options: [preview, simulator, testflight, production]
+        default: preview
+      platform:
+        description: "Platform"
+        type: choice
+        options: [android, ios, all]
+        default: android
+
+concurrency:
+  group: mobile-build-${{ inputs.profile }}-${{ inputs.platform }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Expo token is set
+        run: test -n "$EXPO_TOKEN" || { echo "::error::Add the EXPO_TOKEN repository secret first."; exit 1; }
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Link the Expo project
+        run: |
+          if [ "$(jq -r '.expo.extra.eas.projectId // empty' app.json)" = "" ]; then
+            npx --yes eas-cli@latest init --non-interactive --force
+          fi
+
+      - name: Start the build
+        env:
+          PROFILE: ${{ inputs.profile }}
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          submit=""
+          if [ "$PROFILE" = "testflight" ] || [ "$PROFILE" = "production" ]; then submit="--auto-submit"; fi
+          npx --yes eas-cli@latest build --profile "$PROFILE" --platform "$PLATFORM" \
+            --non-interactive --no-wait $submit
