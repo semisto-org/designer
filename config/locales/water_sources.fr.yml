@@ -1,0 +1,54 @@
+# Water sources of a map (well, rain, forest catchment…) and the taps they feed.
+fr:
+  activerecord:
+    models:
+      water_source: "Source d'eau"
+    attributes:
+      water_source:
+        name: "Nom de la source"
+        potable: "Potabilité"
+        notes: "Note"
+    errors:
+      models:
+        water_source:
+          attributes:
+            name:
+              taken: "est déjà utilisé par une autre source de cette carte"
+
+  water_sources:
+    panel_title: "Sources d'eau"
+    intro: "D'où vient l'eau de ton terrain ? Ajoute chaque source (puits, pluie, captage, réseau public…), dis si elle est potable, puis relie chaque robinet à la sienne."
+    empty: "Aucune source d'eau pour l'instant."
+    empty_readonly: "Aucune source d'eau n'a été renseignée sur cette carte."
+    name: "Nom de la source"
+    name_placeholder: "Ex. : Eau de puits"
+    potable: "Eau potable"
+    potable_short: "Potable"
+    not_potable_short: "Non potable"
+    notes: "Note"
+    notes_placeholder: "Analyse, traitement, saison…"
+    add: "Ajouter une source"
+    add_submit: "Ajouter"
+    cancel: "Annuler"
+    rename: "Renommer"
+    save: "Enregistrer"
+    delete: "Supprimer"
+    delete_confirm: "Supprimer la source « %{name} » ? Les robinets qui y sont reliés restent sur la carte, sans source."
+    tap_count:
+      zero: "Aucun robinet relié"
+      one: "1 robinet relié"
+      other: "%{count} robinets reliés"
+    saved: "Source enregistrée."
+    deleted: "Source supprimée."
+    load_error: "Impossible de charger les sources d'eau."
+    errors:
+      unknown_source: "Cette source d'eau n'existe pas sur cette carte."
+    tap:
+      title: "Origine de l'eau"
+      source: "Source d'eau"
+      none: "Non précisée"
+      potable: "Eau potable, d'après la source « %{name} »."
+      not_potable: "Eau non potable, d'après la source « %{name} »."
+      no_sources: "Aucune source d'eau n'est encore définie sur cette carte."
+      manage: "Gérer les sources d'eau"
+      add_first: "Ajouter une source d'eau"

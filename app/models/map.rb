@@ -24,6 +24,7 @@ class Map < ApplicationRecord
   has_many :members, through: :memberships, source: :user
   has_many :invitations, class_name: "MapInvitation", dependent: :destroy
   has_many :features, class_name: "MapFeature", dependent: :destroy
+  has_many :water_sources, -> { ordered }, dependent: :delete_all, inverse_of: :map
   has_one :share_link, class_name: "MapShareLink", dependent: :destroy
   has_one :publication, class_name: "MapPublication", dependent: :destroy
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).

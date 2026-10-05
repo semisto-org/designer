@@ -37,7 +37,10 @@ class Imports::Claudy::ImporterTest < ActiveSupport::TestCase
     report = claudy_import(@map)
     assert_equal "water", imported(@map, "map_feature", 120).properties["network"]
     assert_equal "electricity", imported(@map, "map_feature", 130).properties["network"]
-    assert_equal false, imported(@map, "map_feature", 122).properties["potable"]
+    tap = imported(@map, "map_feature", 122)
+    assert_equal false, tap.properties["potable"]
+    assert_equal [ "Eau de pluie", false ], [ tap.water_source.name, tap.water_source.potable ]
+    assert_equal [ "Eau de pluie" ], @map.water_sources.pluck(:name)
     ethernet = imported(@map, "map_feature", 140)
     assert_equal [ "networks", "line", nil ], [ ethernet.layer, ethernet.kind, ethernet.properties["network"] ]
     assert_equal({ "7" => 1 }, report.unknown_networks)

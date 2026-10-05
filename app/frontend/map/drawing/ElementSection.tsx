@@ -9,6 +9,7 @@ import { COLOR_SWATCHES, elementFor, featureColor, GENERIC_KINDS, storedProperti
 import { computedValues } from '@/map/drawing/computed'
 import { saveFeature } from '@/map/drawing/save'
 import { startShapeEdit } from '@/map/drawing/store'
+import { linkedSourceId } from '@/map/water/store'
 import type { MapFeature } from '@/types'
 import type { ElementField } from '@/types/drawing'
 
@@ -109,6 +110,8 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
   const color = featureColor(feature)
   const ownColor = typeof feature.properties.style?.color === 'string'
   const computed = spec ? computedValues(feature, spec) : []
+  // A tap fed by a water source takes its potability (WaterSourceSection).
+  const fields = (spec?.fields ?? []).filter((field) => !(field.key === 'potable' && linkedSourceId(feature) != null))
   const canReshape = editor.canEdit && EDITABLE_GEOMETRIES.includes(feature.geometry.type)
 
   function saveProperty(key: string, value: unknown) {
@@ -127,10 +130,10 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
 
   return (
     <div className="space-y-4 border-t border-loam-100 pt-3">
-      {spec && spec.fields.length > 0 && (
+      {fields.length > 0 && (
         <section className="space-y-2.5">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('drawing.element.properties')}</h3>
-          {spec.fields.map((field) => (
+          {fields.map((field) => (
             <PropertyField key={field.key} field={field} value={stored[field.key]} disabled={!editor.canEdit} onSave={(v) => saveProperty(field.key, v)} />
           ))}
         </section>

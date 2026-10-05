@@ -152,8 +152,18 @@ module Imports
           feature.assign_attributes(
             layer: target.layer, kind: target.kind, name: target.name, notes: target.notes,
             status: "active", source: "human", geometry: target.geometry,
-            properties: target.properties.merge("import" => { "source" => SOURCE, "type" => type, "id" => row["id"] })
+            properties: target.properties.merge(water_source_link(target), "import" => { "source" => SOURCE, "type" => type, "id" => row["id"] })
           )
+        end
+
+        # A tap fed by a Claudy water source is linked to the map's source of
+        # the same name, created on first use with Claudy's potability.
+        def water_source_link(target)
+          key = target.properties["water_source"]
+          return {} unless WaterSource::LINKABLE_KINDS.include?(target.kind) && Mapping::WATER_SOURCES.key?(key)
+          name, potable = Mapping::WATER_SOURCES.fetch(key).values_at(:name, :potable)
+          source = WaterSource.where(map:).find_by("lower(name) = lower(?)", name) || WaterSource.create!(map:, name:, potable:)
+          { "water_source_id" => source.id }
         end
 
         # A geometry or a value the element library refuses: the generic

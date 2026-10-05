@@ -19,6 +19,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   'plant-list': 'la-liste-de-plants-et-la-commande',
   elements: 'dessiner-l-existant',
   'drawing-layers': 'calques-mesures-et-croquis',
+  'water-sources': 'dessiner-l-existant',
   'drawing-alerts': 'les-alertes-reglementaires',
   finances: 'le-tableau-financier',
   discussions: 'partager-et-commenter',

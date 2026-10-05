@@ -140,6 +140,7 @@ Rails.application.routes.draw do
       end
       resource :terrain, only: %i[show create]
       resource :water_settings, only: :update
+      resources :water_sources, only: %i[index create update destroy]
     end
   end
   # --- end relief-water ---
