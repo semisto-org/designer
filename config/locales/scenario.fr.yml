@@ -1,0 +1,7 @@
+fr:
+  scenario:
+    label: "Situation affichée"
+    current: "Actuelle"
+    projected: "Projetée"
+    current_hint: "Ce qui est sur le terrain aujourd’hui : les plantes déjà plantées, sans les projets ni les brouillons."
+    projected_hint: "Tout le design : ce qui est planté, et ce qui est en projet en pointillés."

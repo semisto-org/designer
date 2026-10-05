@@ -9,6 +9,7 @@ import type {
 import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
+import { scenarioFilter, type Scenario } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 
 /**
@@ -389,12 +390,14 @@ const visibilityState = new WeakMap<MapLibreMap, Map<string, { original: unknown
 /**
  * Hides the given design layers (`existing`, `water`…) on every map layer
  * drawn from the features source, whoever added it, by combining its own
- * filter with a test on the feature's `layer`.
+ * filter with a test on the feature's `layer`. With `scenario: 'current'`,
+ * what is still a project (planned plants, drafts) is hidden too.
  */
-export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options: { activeOnly?: boolean } = {}) {
+export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options: { activeOnly?: boolean; scenario?: Scenario } = {}) {
   const store = visibilityState.get(map) ?? new Map<string, { original: unknown; applied: string }>()
   visibilityState.set(map, store)
-  const key = `${options.activeOnly ? 'active:' : ''}${[...hidden].sort().join(',')}`
+  const scenario = options.scenario ? scenarioFilter(options.scenario) : null
+  const key = `${options.activeOnly ? 'active:' : ''}${scenario ? 'current:' : ''}${[...hidden].sort().join(',')}`
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
@@ -407,6 +410,7 @@ export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options
     if (hidden.length) tests.push(['!', ['in', ['get', 'layer'], ['literal', hidden]]])
     // Printed plans leave out drafts (AI proposals) and rejected features.
     if (options.activeOnly) tests.push(['==', ['coalesce', ['get', 'status'], 'active'], 'active'])
+    if (scenario) tests.push(scenario)
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
     const filter = test ? (entry.original ? ['all', entry.original, test] : test) : entry.original
     map.setFilter(id, (filter ?? null) as FilterSpecification | null)

@@ -15,6 +15,17 @@ Le design ne s'arrête pas à la plantation : c'est là que le jardin commence �
 
 La fiche affiche alors « Planté le … ». Une erreur ? **Annuler** retire la date. Dans la [liste de plants](/help/la-liste-de-plants-et-la-commande), le nombre de plants plantés se met à jour.
 
+## Situation actuelle ou projetée
+
+Sur la carte, un plant planté a une couronne pleine ; un plant encore **en projet** a une couronne en pointillés, à peine teintée, et un point creux en son centre.
+
+En haut de l'éditeur, le sélecteur **Actuelle | Projetée** change ce que tu vois :
+
+- **Projetée** montre tout le design : ce qui est planté et ce qui est en projet ;
+- **Actuelle** montre le terrain tel qu'il est aujourd'hui : les plants en projet et les brouillons de Claude disparaissent.
+
+Le choix est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse en situation projetée, pour que tu les voies apparaître.
+
 ## Noter une observation
 
 Une fois le plant marqué, la section **Suivi de reprise** apparaît dans sa fiche.

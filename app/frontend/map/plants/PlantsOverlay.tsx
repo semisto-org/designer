@@ -8,6 +8,7 @@ import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS } from '@/map/plants/strata'
+import { inScenario, isPlannedPlant, setScenario, useScenario, type Scenario } from '@/map/scenario'
 import type { PlantingState } from '@/types/plants'
 
 const CROWNS = 'plant-crowns'
@@ -16,12 +17,18 @@ const FEATURE_LAYERS = ['features-fill', 'features-line', 'features-point']
 
 type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean }
 
-/** Adult crowns as real-size circles (metres), from each plant's species. */
-function crownsOf(editor: Editor, data: PlantingState | null) {
+const PLANTED = ['get', 'planted'] as unknown as boolean
+
+/**
+ * Adult crowns as real-size circles (metres), from each plant's species.
+ * Planned plants (not planted yet) are left out of the current situation.
+ */
+function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario) {
   const crowns: Feature<Polygon, CrownProps>[] = []
   const labels: Feature<Point, { label: string }>[] = []
   for (const feature of editor.features) {
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
+    if (!inScenario(feature.properties, scenario)) continue
     const speciesId = numberProperty(feature, 'species_id')
     const species = speciesId != null ? data?.species[String(speciesId)] : undefined
     if (!species) continue
@@ -36,7 +43,7 @@ function crownsOf(editor: Editor, data: PlantingState | null) {
       properties: {
         featureId: feature.properties.id,
         color: STRATA_COLORS[strata],
-        planted: typeof feature.properties.planted_on === 'string',
+        planted: !isPlannedPlant(feature.properties),
         selected: editor.selectedId === feature.properties.id,
       },
     })
@@ -64,20 +71,23 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   const before = map.getLayer('features-line') ? 'features-line' : undefined
   map.addSource(CROWNS, { type: 'geojson', data: data.crowns })
   map.addSource(LABELS, { type: 'geojson', data: data.labels })
+  // Planted: solid crown. Planned: faint fill and a white dashed outline,
+  // readable on aerial photos as on plans.
   map.addLayer({
     id: `${CROWNS}-fill`,
     type: 'fill',
     source: CROWNS,
-    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', ['get', 'planted'], 0.42, 0.24] },
+    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, 0.45, 0.1] },
   }, before)
   map.addLayer({
     id: `${CROWNS}-line`,
     type: 'line',
     source: CROWNS,
     paint: {
-      'line-color': ['get', 'color'],
-      'line-width': ['case', ['get', 'selected'], 3, ['get', 'planted'], 1.6, 1],
-      'line-opacity': ['case', ['get', 'planted'], 0.95, 0.6],
+      'line-color': ['case', PLANTED, ['get', 'color'], '#ffffff'],
+      'line-width': ['case', ['get', 'selected'], 3, 2],
+      'line-opacity': 0.95,
+      'line-dasharray': ['case', PLANTED, ['literal', [1, 0]], ['literal', [2, 1.5]]] as never,
     },
   }, before)
   map.addLayer({
@@ -112,11 +122,12 @@ export default function PlantsOverlay() {
   const editor = useEditor()
   const mapId = editor.map.id
   const { data, placing } = usePlanting(mapId)
+  const scenario = useScenario()
   const editorRef = useRef(editor)
   editorRef.current = editor
   const map = editor.instance
 
-  const layers = useMemo(() => crownsOf(editor, data), [editor.features, editor.selectedId, data]) // eslint-disable-line react-hooks/exhaustive-deps
+  const layers = useMemo(() => crownsOf(editor, data, scenario), [editor.features, editor.selectedId, data, scenario]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Install the crowns, and again after a basemap style change.
   const latest = useRef(layers)
@@ -156,8 +167,10 @@ export default function PlantsOverlay() {
   }, [signature, mapId])
 
   // Click-to-place loop: one plant per click until Escape or « Terminer ».
+  // New plants are planned ones: show the projected situation to see them.
   useEffect(() => {
     if (!placing || !editorRef.current.canEdit) return
+    setScenario('projected')
     let stopped = false
     void (async () => {
       while (!stopped) {
