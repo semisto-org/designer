@@ -26,19 +26,21 @@ if (wallonia = Region.find_by(key: "wallonia"))
       },
       # WalOUS 2023 codes (deduced in Claudy by crossing 2,500 points with
       # vegetation height; the service legend omits them). rate: what the
-      # soil drinks (mm/h), storage: what it holds before saturating (mm).
+      # soil drinks (mm/h), storage: what it holds before saturating (mm),
+      # kind: what the 3D view's blocks and Niva read it as (road, building,
+      # water, forest; none = grass).
       "landcover_classes" => {
-        "1" => { "label" => "Revêtement artificiel", "rate" => 1, "storage" => 1, "color" => "#787878" },
-        "2" => { "label" => "Bâti", "rate" => 0, "storage" => 0, "color" => "#be463c" },
+        "1" => { "label" => "Revêtement artificiel", "rate" => 1, "storage" => 1, "color" => "#787878", "kind" => "road" },
+        "2" => { "label" => "Bâti", "rate" => 0, "storage" => 0, "color" => "#be463c", "kind" => "building" },
         "3" => { "label" => "Rail", "rate" => 10, "storage" => 30, "color" => "#5a505a" },
         "4" => { "label" => "Sol nu", "rate" => 5, "storage" => 25, "color" => "#c4a06e" },
-        "5" => { "label" => "Eau", "rate" => 0, "storage" => 0, "color" => "#286ec8" },
+        "5" => { "label" => "Eau", "rate" => 0, "storage" => 0, "color" => "#286ec8", "kind" => "water" },
         "6" => { "label" => "Culture annuelle", "rate" => 8, "storage" => 40, "color" => "#e6c85a" },
         "7" => { "label" => "Prairie permanente", "rate" => 15, "storage" => 50, "color" => "#96c864" },
-        "8" => { "label" => "Résineux (> 3 m)", "rate" => 30, "storage" => 70, "color" => "#1e5a3c" },
-        "9" => { "label" => "Feuillus (> 3 m)", "rate" => 50, "storage" => 80, "color" => "#3c823c" },
-        "80" => { "label" => "Résineux (≤ 3 m)", "rate" => 20, "storage" => 60, "color" => "#5a8c64" },
-        "90" => { "label" => "Feuillus (≤ 3 m)", "rate" => 30, "storage" => 60, "color" => "#78aa5a" }
+        "8" => { "label" => "Résineux (> 3 m)", "rate" => 30, "storage" => 70, "color" => "#1e5a3c", "kind" => "forest" },
+        "9" => { "label" => "Feuillus (> 3 m)", "rate" => 50, "storage" => 80, "color" => "#3c823c", "kind" => "forest" },
+        "80" => { "label" => "Résineux (≤ 3 m)", "rate" => 20, "storage" => 60, "color" => "#5a8c64", "kind" => "forest" },
+        "90" => { "label" => "Feuillus (≤ 3 m)", "rate" => 30, "storage" => 60, "color" => "#78aa5a", "kind" => "forest" }
       }
     },
     "hydrology" => {

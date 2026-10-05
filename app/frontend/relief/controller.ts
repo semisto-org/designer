@@ -1,9 +1,9 @@
 // Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources) — the
 // orchestration of Claudy's `map_relief_controller.js` (Stimulus), rewritten
-// as a framework-free class the React page drives. The Niva easter egg, the
-// "blocks" view, real measured rain (Open-Meteo, non-commercial) and the
-// designs traced in 3D are left out: in Designer the designs are the map's
-// own features.
+// as a framework-free class the React page drives, with the "blocks" view
+// and the Niva to drive on the relief. Real measured rain (Open-Meteo,
+// non-commercial) and the designs traced in 3D are left out: in Designer the
+// designs are the map's own features.
 //
 // The terrain arrives as binary rasters, the three.js scene loads with a
 // dynamic `import()`, then everything is computed in the browser: flow axes
@@ -16,8 +16,12 @@ import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP
 import { applyDesigns, downsampleDesigned, type Design, type Footprint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
 import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage } from './hydro.ts'
+import type { BlocksInput } from './blocks.ts'
+import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaTerrain } from './niva.ts'
+import type { NivaLights } from './nivaModel.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
-import type { ReliefScene } from './scene.ts'
+import { landcoverRoles } from './roles.ts'
+import type { CameraMode, ReliefScene } from './scene.ts'
 import { buildSoilMaps, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
 import {
   boxBlur, compassPoint, frostClass, frostRisk, slopeAspect, spreadAccumulation, wetnessClass, wetnessIndex,
@@ -26,11 +30,18 @@ import {
 import { daylightWindow, shadowMask, sunHours, sunPosition, zonedTime, type SunPosition } from './sun.ts'
 import type { LandcoverClassData, SoilModel, TerrainGridData } from '@/types/relief'
 
-export type BaseLayer = 'ortho' | 'altitude' | 'canopy' | 'aspect' | 'wetness' | 'frost' | 'landcover'
+export type BaseLayer = 'ortho' | 'altitude' | 'canopy' | 'aspect' | 'wetness' | 'frost' | 'landcover' | 'blocks'
 export type SunMode = 'off' | 'instant' | 'day'
 export type SunDate = 'winter' | 'equinox' | 'summer' | 'today'
 
-export type LoadingStep = 'download' | 'drainage' | 'station' | 'designs' | null
+export type LoadingStep = 'download' | 'drainage' | 'station' | 'designs' | 'blocks' | null
+
+export type NivaKey = 'up' | 'down' | 'left' | 'right' | 'brake'
+
+/** What the page shows of the Niva: idle, waiting for a click to set it down, or driving. */
+export type NivaInfo =
+  | { mode: 'off' | 'placing' }
+  | { mode: 'driving'; speedKmh: number; pitchPct: number; rollPct: number; altitude: number; status: NivaMessage | null; warning: NivaMessage | null }
 
 export type RainSettings = {
   intensity: number
@@ -97,6 +108,7 @@ export type ControllerOptions = {
   onStats?: (stats: RainStats) => void
   onSun?: (info: SunInfo) => void
   onDesigns?: (designs: DesignSummary[]) => void
+  onNiva?: (info: NivaInfo) => void
 }
 
 const AXIS_FRAME_BUDGET_MS = 11
@@ -122,6 +134,7 @@ export class ReliefController {
   full: { heights: Float32Array; cols: number; rows: number } | null = null
   surface: Float32Array | null = null
   landcover: Uint8Array | null = null
+  roles: Uint8Array | null = null
   ground: Float32Array | null = null
   drainage: Drainage | null = null
   station: Station | null = null
@@ -150,6 +163,15 @@ export class ReliefController {
   lastMask: Uint8Array | null = null
   dayHours: { key: string; hours: Float32Array; daylight: number } | null = null
   private sunAbort: AbortController | null = null
+  private blocksBuilt: { ground: Float32Array; exaggeration: number; input: BlocksInput } | null = null
+  private blocksTimer: ReturnType<typeof setTimeout> | null = null
+  niva: NivaState | null = null
+  nivaPlacing = false
+  nivaLights: NivaLights = { low: false, bar: false }
+  private nivaInput: Record<NivaKey, boolean> = { up: false, down: false, left: false, right: false, brake: false }
+  private nivaTerrainCache: (NivaTerrain & { ground: Float32Array }) | null = null
+  private lastNivaTick: number | null = null
+  private lastNivaInfo = 0
 
   constructor(options: ControllerOptions) {
     this.options = options
@@ -180,6 +202,7 @@ export class ReliefController {
     // Without a surface model, the shadows fall from the relief alone.
     this.surface = surface && terrain.surface ? decodeGrid(surface, { ...encoding, zMin: terrain.surface.zMin, zUnit: terrain.surface.zUnit }) : null
     this.landcover = landcover && landcover.byteLength === terrain.cols * terrain.rows ? new Uint8Array(landcover) : null
+    this.roles = landcoverRoles(this.landcover, this.options.landcoverClasses)
     if (this.disposed) return
 
     let zMin = Infinity
@@ -219,6 +242,7 @@ export class ReliefController {
   dispose() {
     this.disposed = true
     this.sunAbort?.abort()
+    if (this.blocksTimer) clearTimeout(this.blocksTimer)
     this.scene?.dispose()
     this.scene = null
   }
@@ -265,6 +289,7 @@ export class ReliefController {
       this.footprints = []
     }
     if (!keepMesh) this.applySurfaceHeights()
+    if (this.view.base === 'blocks') void this.renderBlocks()
     this.drainage = analyzeDrainage(this.ground, cols, rows, this.cell)
     this.station = null
     for (const key of ['aspect', 'wetness', 'frost'] as BaseLayer[]) delete this.textures[key]
@@ -308,6 +333,8 @@ export class ReliefController {
     const scene = this.scene
     if (!scene || !this.full) return
     const base = this.view.base
+    if (base === 'blocks') return this.renderBlocks()
+    scene.hideBlocks()
     if (base === 'aspect' || base === 'wetness' || base === 'frost') {
       await this.ensureStation()
       this.textures[base] ||= scene.canvasTexture(this.stationCanvas(base))
@@ -328,6 +355,49 @@ export class ReliefController {
     this.view.exaggeration = value
     this.scene?.setExaggeration(value)
     if (this.view.surfaceOn) this.applySurfaceHeights()
+    // Cubic blocks at any exaggeration: rebuilt once the slider rests.
+    if (this.view.base === 'blocks') {
+      if (this.blocksTimer) clearTimeout(this.blocksTimer)
+      this.blocksTimer = setTimeout(() => void this.renderBlocks(), 250)
+    }
+  }
+
+  /**
+   * The relief in blocks of about 2 m (larger on a big terrain or a phone):
+   * a fraction of a second to build, redone when the dug terrain or the
+   * exaggeration change.
+   */
+  private async renderBlocks() {
+    const scene = this.scene
+    if (!scene || !this.full) return
+    const exaggeration = this.view.exaggeration || 1
+    const ground = this.ground ?? this.full.heights
+    if (this.blocksBuilt?.ground === ground && this.blocksBuilt.exaggeration === exaggeration) {
+      scene.showBlocks(this.blocksBuilt.input)
+      return
+    }
+    this.options.onLoading?.('blocks')
+    await nextPaint()
+    if (this.disposed || this.view.base !== 'blocks') return this.options.onLoading?.(null)
+    const { cols, rows, heights } = this.full
+    const input: BlocksInput = {
+      ground, original: heights, surface: this.surface, roles: this.roles,
+      cols, rows, cell: this.cell, block: this.blockSize(), exaggeration,
+    }
+    scene.showBlocks(input)
+    this.blocksBuilt = { ground, exaggeration, input }
+    this.options.onLoading?.(null)
+  }
+
+  /** 2 m blocks, more when the terrain would make too many of them. */
+  private blockSize(): number {
+    const { cols, rows } = this.meta
+    const cell = this.cell
+    const budget = this.options.compact ? 60_000 : 250_000
+    let block = Math.max(2, cell)
+    const fit = cell * Math.sqrt((cols * rows) / budget)
+    if (fit > block) block = fit
+    return Math.max(1, Math.round(block / cell)) * cell
   }
 
   setContour(meters: number) {
@@ -553,6 +623,7 @@ export class ReliefController {
 
   /** Called on every frame by the scene: as many steps as the budget allows. */
   private tick() {
+    this.tickNiva()
     const sim = this.simulation
     if (!sim || !this.playing || !this.scene) return
     const start = performance.now()
@@ -778,6 +849,157 @@ export class ReliefController {
     }
     scene.setSunTint(tint, cols, rows)
     this.options.onSun?.({ mode: 'day', computing: null, daylight })
+  }
+
+  // ---- The Niva: driven with the arrow keys ----------------------------------
+  //
+  // Take it, click where to set it down, drive. It drives on the real relief
+  // (slope, side slope, buildings, water, undergrowth) and the scene sets it
+  // on the exaggerated relief one sees. At night its headlights and roof bar
+  // light the terrain.
+
+  /** Take the Niva (then click to set it down), or put it away. */
+  toggleNiva() {
+    if (!this.scene) return
+    if (this.niva || this.nivaPlacing) return this.parkNiva()
+    this.nivaPlacing = true
+    this.emitNiva()
+  }
+
+  /** Set it down elsewhere, without putting it away. */
+  moveNiva() {
+    if (!this.niva) return
+    this.nivaPlacing = true
+    this.emitNiva()
+  }
+
+  cancelPlacing() {
+    if (!this.nivaPlacing) return
+    if (this.niva) {
+      this.nivaPlacing = false
+      this.emitNiva()
+    } else {
+      this.parkNiva()
+    }
+  }
+
+  /** A click while placing: sets the Niva down there, looking where the camera looks. */
+  placeNiva(event: { clientX: number; clientY: number }): boolean {
+    const scene = this.scene
+    if (!scene || !this.nivaPlacing) return false
+    const hit = scene.pick(event)
+    if (!hit) return false
+    const cell = this.cell * this.meshFactor
+    const camera = scene.camera.position
+    const target = scene.controls.target
+    const heading = Math.atan2(target.x - camera.x, -(target.z - camera.z))
+    this.niva = createNivaState(hit.col * cell, hit.row * cell, heading)
+    this.nivaPlacing = false
+    this.lastNivaTick = null
+    if (scene.night) this.nivaLights = { ...this.nivaLights, low: true }
+    scene.showNiva(true)
+    scene.setNivaLights(this.nivaLights)
+    this.emitNiva()
+    return true
+  }
+
+  parkNiva() {
+    this.niva = null
+    this.nivaPlacing = false
+    this.scene?.showNiva(false)
+    this.resetNivaInput()
+    this.emitNiva()
+  }
+
+  setNivaKey(key: NivaKey, down: boolean) {
+    this.nivaInput[key] = down
+  }
+
+  resetNivaInput() {
+    this.nivaInput = { up: false, down: false, left: false, right: false, brake: false }
+  }
+
+  setNivaLight(which: keyof NivaLights, on: boolean) {
+    this.nivaLights = { ...this.nivaLights, [which]: on }
+    this.scene?.setNivaLights(this.nivaLights)
+  }
+
+  /** Night: a dark sky, the headlights switch on by themselves. */
+  setNight(on: boolean) {
+    if (!this.scene) return
+    this.scene.setNight(on)
+    if (on && this.niva) this.setNivaLight('low', true)
+  }
+
+  setCameraMode(mode: CameraMode) {
+    this.scene?.setCameraMode(mode)
+  }
+
+  private tickNiva() {
+    if (!this.niva || this.nivaPlacing || !this.scene) return
+    const now = performance.now()
+    const dt = this.lastNivaTick ? (now - this.lastNivaTick) / 1000 : 0
+    this.lastNivaTick = now
+    const keys = this.nivaInput
+    stepNiva(this.niva, {
+      throttle: (keys.up ? 1 : 0) - (keys.down ? 1 : 0),
+      steer: (keys.right ? 1 : 0) - (keys.left ? 1 : 0),
+      brake: keys.brake,
+    }, this.nivaTerrain(), dt)
+    this.scene.updateNiva(this.niva, dt)
+    if (now - this.lastNivaInfo > 120) {
+      this.lastNivaInfo = now
+      this.emitNiva()
+    }
+  }
+
+  private emitNiva() {
+    const state = this.niva
+    if (this.nivaPlacing || !state) return this.options.onNiva?.({ mode: this.nivaPlacing ? 'placing' : 'off' })
+    this.options.onNiva?.({
+      mode: 'driving',
+      speedKmh: Math.abs(state.speed) * 3.6,
+      pitchPct: Math.round(state.pitch * 100),
+      rollPct: Math.round(Math.abs(state.roll) * 100),
+      altitude: state.ground,
+      status: state.status,
+      warning: state.warning,
+    })
+  }
+
+  /** The relief the Niva reads: the bare terrain with the designs dug in, the land cover and what stands above the ground. */
+  private nivaTerrain(): NivaTerrain {
+    const full = this.full as NonNullable<typeof this.full>
+    const ground = this.ground ?? full.heights
+    if (this.nivaTerrainCache?.ground === ground) return this.nivaTerrainCache
+    const { cols, rows, heights: original } = full
+    const cell = this.cell
+    const { surface, roles } = this
+    this.nivaTerrainCache = {
+      ground,
+      width: (cols - 1) * cell,
+      depth: (rows - 1) * cell,
+      height(x, z) {
+        const fx = Math.min(cols - 1.001, Math.max(0, x / cell))
+        const fz = Math.min(rows - 1.001, Math.max(0, z / cell))
+        const c = Math.floor(fx)
+        const r = Math.floor(fz)
+        const tx = fx - c
+        const tz = fz - r
+        const i = r * cols + c
+        const north = ground[i] * (1 - tx) + ground[i + 1] * tx
+        const south = ground[i + cols] * (1 - tx) + ground[i + cols + 1] * tx
+        return north * (1 - tz) + south * tz
+      },
+      cell(x, z) {
+        const c = Math.round(x / cell)
+        const r = Math.round(z / cell)
+        if (c < 0 || r < 0 || c >= cols || r >= rows) return null
+        const i = r * cols + c
+        return { role: roles ? roles[i] : 0, above: surface ? surface[i] - original[i] : 0, dug: original[i] - ground[i] }
+      },
+    }
+    return this.nivaTerrainCache
   }
 
   // ---- The probe: what we know of the point touched ------------------------
