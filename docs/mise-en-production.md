@@ -23,6 +23,7 @@ Référence des réglages de Semisto Designer en production (https://designer.se
 | `APP_HOST` | `designer.semisto.org` (liens des e-mails, OAuth, plan du site). C'est aussi le seul nom d'hôte accepté : tout autre domaine reçoit une erreur 403, sauf `/up`. |
 | `MAIL_FROM` | Expéditeur, par ex. `Semisto Designer <designer@semisto.org>`. |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Envoi des e-mails : connexion par lien magique, invitations, commentaires, demandes. Sans eux, l'écran annonce « lien envoyé » mais la tâche d'envoi échoue (visible dans les journaux et Sentry) : personne ne peut se connecter par e-mail. |
+| `MAIL_BCC_ADDRESS` | Facultative. Copie cachée de **tous** les e-mails envoyés (connexion, invitations, commentaires, factures…) vers cette adresse, par ex. `hello@semisto.org` pendant la bêta ; plusieurs adresses séparées par des virgules. Vide ou absente : aucune copie. Lue à chaque envoi : la retirer suffit (après redéploiement) pour arrêter les copies. |
 | `SOLID_QUEUE_IN_PUMA` | Facultative. Par défaut en production, les tâches de fond (e-mails, import de relief, rappels de renouvellement) tournent dans le serveur web, sur une seule machine. `false` les coupe, pour les confier à un processus `bin/jobs` séparé. |
 
 ### Connexion Google

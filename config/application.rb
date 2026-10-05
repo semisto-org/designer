@@ -43,5 +43,8 @@ module Designer
     config.i18n.default_locale = :fr
     config.i18n.available_locales = %i[fr]
     config.time_zone = "Brussels"
+
+    # Blind copy of every outgoing e-mail to MAIL_BCC_ADDRESS when set (beta follow-up).
+    config.action_mailer.interceptors = %w[MailBccInterceptor]
   end
 end
