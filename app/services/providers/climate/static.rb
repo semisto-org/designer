@@ -4,7 +4,8 @@ module Providers
     # region's settings (regions.settings["climate"], see
     # config/climate/<region>.yml). Coarse by design: one set of normals per
     # natural sub-area, one set of deltas per horizon and scenario, every
-    # value flagged "indicative" with its sources. No network call.
+    # value flagged "indicative" with its sources, stations and per-value
+    # references. No network call.
     class Static < Provider
       CACHE_TTL = 12.hours
 
@@ -35,6 +36,8 @@ module Providers
             reference_period: climate["reference_period"],
             status: climate["status"] || "indicative",
             note: climate["note"],
+            stations: stations_of(area),
+            references: references_of(area),
             sources: sources_for(%w[normals zones])
           )
         end
@@ -131,8 +134,39 @@ module Providers
               winter_precip_pct: triple(deltas["winter_precip_change_pct"])
             },
             status: climate["status"] || "indicative",
+            references: projection_references(deltas["references"]),
             sources: sources_for(%w[projections zones])
           }
+        end
+
+        # Where each normal comes from: the sources (resolved to their
+        # publisher) and the station values with the method.
+        def references_of(area)
+          by_key = Array(climate["sources"]).index_by { _1["key"] }
+          (area["references"] || {}).filter_map do |field, reference|
+            next unless area.fetch("normals").key?(field)
+            sources = Array(reference["sources"]).filter_map { by_key[_1]&.slice("key", "publisher", "url")&.symbolize_keys }
+            [ field.to_sym, { sources:, detail: reference["detail"] } ]
+          end.to_h
+        end
+
+        def stations_of(area)
+          Array(area["stations"]).map do |station|
+            { name: station["name"], id: station["id"], altitude_m: station["altitude_m"], source: station["source"] }
+          end
+        end
+
+        PROJECTION_FIELDS = {
+          "mean_temp_delta_c" => :mean_temp_c,
+          "extreme_min_delta_c" => :extreme_min_c,
+          "summer_temp_delta_c" => :summer_temp_c,
+          "summer_precip_change_pct" => :summer_precip_pct,
+          "winter_precip_change_pct" => :winter_precip_pct
+        }.freeze
+
+        # Same keys as `deltas` in the projection data.
+        def projection_references(references)
+          (references || {}).filter_map { |field, detail| PROJECTION_FIELDS[field] && [ PROJECTION_FIELDS[field], detail ] }.to_h
         end
 
         def triple(values)
@@ -147,7 +181,7 @@ module Providers
 
         def sources_for(uses)
           Array(climate["sources"]).select { |source| uses.include?(source["used_for"]) }.map do |source|
-            source.slice("key", "title", "publisher", "year", "url").symbolize_keys
+            source.slice("key", "title", "publisher", "year", "url", "licence").symbolize_keys
           end
         end
     end

@@ -23,7 +23,7 @@ class Maps::ClimatesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = response.parsed_body
     assert json["entitled"]
-    assert_equal "7b", json["current"]["zone"]["code"]
+    assert_equal "8a", json["current"]["zone"]["code"]
     assert json["projections"]["available"]
     assert_equal({ "normals" => true, "projections" => true, "forecast" => false }, json["capabilities"])
   end
@@ -33,7 +33,7 @@ class Maps::ClimatesControllerTest < ActionDispatch::IntegrationTest
     with_billing { get map_climate_path(@map), as: :json }
     json = response.parsed_body
     assert_not json["entitled"]
-    assert_equal "7b", json["current"]["zone"]["code"]
+    assert_equal "8a", json["current"]["zone"]["code"]
     assert json["projections"]["locked"]
     assert json["plants"]["locked"]
   end

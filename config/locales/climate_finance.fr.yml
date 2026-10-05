@@ -121,7 +121,24 @@ fr:
         storm: "Orage"
     sources:
       title: "Sources et méthode"
-      method: "Les normales viennent d'une synthèse par grande région naturelle ; les projections ajoutent aux normales les écarts publiés pour la Belgique. Ce sont des ordres de grandeur, pas une prévision pour ta parcelle."
+      method: "Les normales 1991-2020 sont calculées à partir de quelques stations météo de ta grande région climatique ; les projections ajoutent aux normales les écarts calculés par les modèles climatiques (CMIP6) pour le pays, recoupés avec les projections nationales. Ce sont des ordres de grandeur, pas une prévision pour ta parcelle."
+      stations_title: "Stations utilisées pour « %{area} »"
+      altitude: "%{altitude} m"
+      normals_title: "D'où vient chaque valeur d'aujourd'hui"
+      projection_title: "D'où viennent les écarts de %{horizon} (%{scenario})"
+      licence: "Licence : %{licence}"
+      fields:
+        mean_temp_c: "Température moyenne"
+        summer_mean_temp_c: "Moyenne en été"
+        winter_mean_temp_c: "Moyenne en hiver"
+        annual_precip_mm: "Pluie par an"
+        frost_days: "Jours de gel"
+        extreme_min_c: "Nuit la plus froide (moyenne annuelle)"
+        last_spring_frost: "Dernières gelées"
+        first_autumn_frost: "Premières gelées"
+        summer_temp_c: "Température en été"
+        summer_precip_pct: "Pluie en été"
+        winter_precip_pct: "Pluie en hiver"
 
   finances:
     panel_title: "Finances"

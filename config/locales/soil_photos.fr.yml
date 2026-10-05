@@ -148,17 +148,17 @@ fr:
         ok: "Plage qui convient à la plupart des arbres fruitiers, des arbustes et des légumes. Les plantes de terre de bruyère (myrtilliers, rhododendrons) préfèrent plus acide."
         high: "Sol basique, souvent calcaire. Le fer et certains oligo-éléments deviennent moins disponibles : les feuilles jaunissent chez les plantes sensibles (myrtilliers, par exemple). Choisis des espèces tolérantes au calcaire."
       ph_kcl:
-        low: "pH KCl bas : l'acidité de réserve est forte et le sol s'acidifiera facilement. Compare avec le pH eau."
-        ok: "Acidité de réserve moyenne : un sol plutôt stable."
+        low: "pH KCl bas : l'acidité de réserve est forte et le sol s'acidifiera facilement. Sous 5, l'aluminium peut devenir toxique pour les racines. Les prairies et les arbres se contentent de 5,5 à 6 ; un potager vise plutôt 6,3 à 6,9."
+        ok: "Acidité de réserve modérée : un sol plutôt stable. L'optimum va de 5,5 à 6 sous prairie et sous les arbres à 6,5 environ pour un potager."
         high: "pH KCl élevé : sol riche en calcaire actif ou fortement chaulé."
       organic_matter_pct:
-        low: "Matière organique faible : un sol peu structuré, qui retient mal l'eau et les nutriments. Paillage, compost et couverts végétaux la font remonter lentement."
+        low: "Matière organique faible : sous 2 % de carbone organique (environ 3,4 % de matière organique), la structure du sol devient fragile et il retient mal l'eau et les nutriments. Paillage, compost et couverts végétaux la font remonter lentement."
         ok: "Matière organique correcte pour un sol de jardin ou de verger. Les paillages et les arbres l'entretiennent et la font progresser."
-        high: "Matière organique élevée : un sol riche et vivant, fréquent sous prairie permanente ou sous forêt. Rien à ajouter ; surveille seulement l'excès d'humidité."
+        high: "Matière organique abondante, typique des vieux jardins, des prairies permanentes et des sous-bois. Rien à ajouter. Si le sol est froid ou acide, elle se décompose lentement."
       c_n_ratio:
         low: "Rapport C/N bas : la matière organique se décompose vite et libère beaucoup d'azote, mais l'humus se renouvelle peu. Apporte de la matière carbonée (paille, broyat)."
         ok: "Rapport C/N équilibré : la matière organique se décompose à bon rythme et nourrit les plantes."
-        high: "Rapport C/N élevé : la décomposition est lente et les micro-organismes peuvent « emprunter » l'azote aux plantes. Typique des sols de forêt. Apporte de l'azote : compost mûr, engrais verts, légumineuses."
+        high: "Rapport C/N élevé : la décomposition est plus lente et, au potager, les micro-organismes peuvent « emprunter » l'azote aux légumes ; compost mûr, engrais verts et légumineuses rééquilibrent. Sous les arbres et un paillage de bois, un C/N jusqu'à 20 environ est normal et ne demande rien."
       p_mg_100g:
         low: "Phosphore bas : il peut freiner l'enracinement et la floraison des jeunes plants. Compost, fumier mûr ou apport adapté selon le laboratoire ; les mycorhizes aident."
         ok: "Phosphore suffisant pour la plupart des cultures et des arbres."
@@ -170,11 +170,11 @@ fr:
       mg_mg_100g:
         low: "Magnésium bas : les feuilles jaunissent entre les nervures. Un amendement magnésien peut aider, surtout si le pH est bas."
         ok: "Magnésium suffisant."
-        high: "Magnésium élevé : un sol argileux peut devenir lourd et collant. Rien à ajouter."
+        high: "Magnésium élevé : rien à ajouter. Vérifie le rapport potassium sur magnésium (idéal entre 1 et 2) : trop de magnésium peut gêner l'absorption du potassium."
       ca_mg_100g:
         low: "Calcium bas, souvent avec un pH bas : le sol manque de structure. Regarde le pH avant d'agir ; un chaulage peut être utile."
         ok: "Calcium suffisant."
-        high: "Calcium élevé : un sol calcaire. À lire avec le pH."
+        high: "Calcium élevé : souvent un sol calcaire. À lire avec le pH."
       cec_meq_100g:
         low: "Capacité d'échange faible : le sol retient mal les nutriments (sol sableux ou pauvre en humus). Apporte peu et souvent, et augmente la matière organique."
         ok: "Capacité d'échange moyenne : bonne rétention des nutriments."
@@ -370,6 +370,8 @@ fr:
       measure: "Mesure"
       texture: "Classe de texture"
       limits: "bas < %{low} · élevé > %{high}"
+      limits_low: "bas < %{low}"
+      sources: "Repères :"
       explain_hint: "Touche une valeur pour lire ce qu'elle signifie."
       explain_title: "%{measure} · %{point}"
       caveat: "Repères indicatifs, à confirmer avec l'avis de ton laboratoire : « bas » ou « élevé » ne pose problème que selon ce que tu veux planter. Source des repères : %{provenance}."
@@ -407,6 +409,10 @@ fr:
       locate: "Voir sur la carte"
       confirm_delete: "Supprimer cette observation ?"
       catalog_title: "Plantes bio-indicatrices courantes"
+      unverified: "?"
+      unverified_short: "à vérifier"
+      unverified_hint: "À vérifier : aucune base de données ouverte ne confirme cette indication, elle vient de la littérature de permaculture."
+      evidence_title: "D'où viennent ces indications"
       catalog_hint: "Touche une indication pour filtrer. Source : %{provenance}."
       filter_all: "Toutes"
       seen: "Je l'ai vue"

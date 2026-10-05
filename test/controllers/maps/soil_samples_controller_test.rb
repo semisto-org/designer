@@ -8,7 +8,7 @@ class Maps::SoilSamplesControllerTest < ActionDispatch::IntegrationTest
 
   def create_sample(**attrs) = @map.soil_samples.create!({ label: "Verger", created_by: users(:michael) }.merge(attrs))
 
-  RESULTS = { ph_water: "5,2", organic_matter_pct: 3.1, c_n_ratio: 14, sand_pct: 20, silt_pct: 65, clay_pct: 15 }.freeze
+  RESULTS = { ph_water: "5,2", organic_matter_pct: 4.1, c_n_ratio: 14, sand_pct: 20, silt_pct: 65, clay_pct: 15 }.freeze
 
   test "a signed-out visitor is sent to sign in, someone outside the map gets nothing" do
     get map_soil_samples_path(@map), as: :json
@@ -87,8 +87,8 @@ class Maps::SoilSamplesControllerTest < ActionDispatch::IntegrationTest
     reading = body["samples"].first["interpretation"]
     assert_equal %w[low ok high], reading["parameters"].map { |p| p["band"] }
     assert_equal "silt_loam", reading["texture"]["key"]
-    assert_equal({ "low_below" => 5.5, "high_above" => 7.5 }, body["bands"]["ph_water"])
-    assert_equal "semisto, à vérifier", body["provenance"]
+    assert_equal({ "low_below" => 6.0, "high_above" => 7.5 }, body["bands"]["ph_water"])
+    assert_includes body["provenance"], "REQUASUD"
   end
 
   test "without analyses in the plan, the measures stay but the reading is withheld" do

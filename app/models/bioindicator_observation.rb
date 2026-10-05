@@ -23,6 +23,7 @@ class BioindicatorObservation < ApplicationRecord
 
   def catalog_entry = catalog_key.present? ? SoilAnalysis::BioindicatorCatalog.find(catalog_key) : nil
   def indicators = catalog_entry&.fetch("indicates", []) || []
+  def unverified_indicators = catalog_entry&.fetch("unverified", []) || []
 
   # The plant of the plant catalogue, when that catalogue exists.
   def plant_species
@@ -36,7 +37,7 @@ class BioindicatorObservation < ApplicationRecord
     {
       id:, speciesName: species_name, latinName: latin_name, catalogKey: catalog_key,
       plantSpeciesId: plant_species_id, abundance:, observedOn: observed_on&.iso8601,
-      lng:, lat:, notes:, indicators:, note: catalog_entry&.fetch("note", nil),
+      lng:, lat:, notes:, indicators:, unverified: unverified_indicators, note: catalog_entry&.fetch("note", nil),
       provenance: catalog_entry&.fetch("provenance", nil),
       observedBy: observed_by&.display_name
     }

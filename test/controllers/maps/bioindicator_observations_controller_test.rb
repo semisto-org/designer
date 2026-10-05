@@ -15,8 +15,9 @@ class Maps::BioindicatorObservationsControllerTest < ActionDispatch::Integration
     body = response.parsed_body
     assert_equal 2, body["observations"].size
     plantain = body["observations"].find { |o| o["catalogKey"] == "plantain_majeur" }
-    assert_equal %w[compaction trampled], plantain["indicators"]
-    assert_equal "semisto, à vérifier", plantain["provenance"]
+    assert_equal %w[trampled disturbed compaction], plantain["indicators"]
+    assert_equal %w[compaction], plantain["unverified"]
+    assert_includes plantain["provenance"], "EIVE"
     assert_equal "compaction", body["summary"].first["key"]
     assert_operator body["catalog"].size, :>=, 30
     assert_equal true, body["plantCatalog"]

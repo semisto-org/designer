@@ -89,10 +89,33 @@ class RegulatoryAlertsTest < ActiveSupport::TestCase
     pond(rectangle(*middle, 11, 11))
 
     alerts = RegulatoryAlerts.new(@map).alerts
-    assert_equal %w[pond_max_area small_building_max_area construction_boundary_distance], alerts.map(&:rule)
+    assert_equal %w[pond_max_area shed_max_area shed_boundary_distance], alerts.map(&:rule)
     assert_equal [ shed.id ], alerts.last.feature_ids
     assert_equal "Cabane ou remise de 30 m²", alerts.second.title
     assert alerts.all? { |a| a.source["url"].start_with?("https://territoire.wallonie.be/") }
+    assert_includes alerts.second.source["label"], "rubrique G1"
+  end
+
+  test "the seeded Wallonia rules: a 200 m² pond is a step, beyond 300 m² a permit" do
+    load Rails.root.join("db/seeds/50_regulatory_rules.rb")
+    @map.region.reload
+    pond(rectangle(4.9045, 50.3405, 20, 10))
+    pond(rectangle(4.9075, 50.3405, 20, 16))
+
+    alerts = RegulatoryAlerts.new(@map).alerts
+    assert_equal %w[pond_max_area pond_max_area_absolute pond_single], alerts.map(&:rule)
+  end
+
+  test "max_total_area sums every element of the kinds" do
+    rule = { "key" => "greenhouse_total_area", "check" => "max_total_area", "kinds" => %w[greenhouse], "max_m2" => 20, "severity" => "warning" }
+    a = @map.features.create!(layer: "structures", kind: "greenhouse", geometry: rectangle(4.905, 50.341, 4, 3))
+    assert_empty RegulatoryAlerts.new(@map, rules: [ rule ]).alerts
+    b = @map.features.create!(layer: "structures", kind: "greenhouse", geometry: rectangle(4.909, 50.341, 4, 3))
+
+    alert = RegulatoryAlerts.new(@map, rules: [ rule ]).alerts.sole
+    assert_equal [ a.id, b.id ], alert.feature_ids
+    assert_equal "2 serre(s), 24 m² au total", alert.title
+    assert_includes alert.explanation, "20 m²"
   end
 
   test "until_m2: a step below a stricter rule does not alert twice" do

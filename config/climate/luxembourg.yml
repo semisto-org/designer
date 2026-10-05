@@ -2,16 +2,22 @@
 # regions.settings["climate"] by db/seeds/40_climate.rb and read by
 # Providers::Climate::Static.
 #
-# Everything here is INDICATIVE: values are rounded by Semisto from the
-# published syntheses listed under `sources`, to give a coarse order of
-# magnitude per natural region (Oesling in the north, Gutland in the
-# south). They are not station data and not a forecast for a given parcel.
-# The outline is deliberately coarse; the first sub-area containing the
-# point wins, the `default: true` one covers the rest of the country.
+# Everything here is INDICATIVE: one rounded value per natural region
+# (Oesling in the north, Gutland in the south), not a measurement for a
+# given parcel. Each value is computed from the stations listed under
+# `stations` and documented under `references` (sources, station values,
+# method), so that anyone can check it. Outlines are deliberately coarse
+# (a few vertices); the first sub-area containing the point wins, the
+# `default: true` one covers the rest.
 #
-# Units: °C, mm, days; dates as "MM-DD" (median date, indicative).
-# extreme_min_c = average annual extreme minimum temperature (coldest
-# night of the year, averaged), the basis of the USDA hardiness zone.
+# Units: °C, mm, days. Rounding: temperatures to 0.5 °C, rainfall to 50
+# mm, frost days to 5. frost_days = days whose minimum is below 0 °C
+# (Météo-France counts "at or below", about 2 days more a year).
+# last_spring_frost / first_autumn_frost = "MM-DD": median dates where we
+# computed them from daily data, mean dates where the publisher gives
+# means (IRM), 0 to 4 days apart. extreme_min_c = average annual extreme
+# minimum temperature (coldest night of the year, averaged), the basis of
+# the USDA hardiness zone.
 version: 1
 status: indicative
 reference_period: "1991-2020"
@@ -20,34 +26,65 @@ providers:
   projections: static
   forecast: open_meteo
 note: >-
-  Valeurs arrondies par Semisto à partir des synthèses citées : un ordre de
-  grandeur par grande région naturelle, pas une mesure pour votre parcelle.
-  Les limites des zones sont approximatives.
+  Valeurs arrondies par Semisto à partir des stations de MeteoLux, de l'ASTA
+  et de l'AGE (le détail est dans les sources) : un ordre de grandeur par
+  grande région naturelle, pas une mesure pour ta parcelle. Les limites des
+  zones sont approximatives.
 
 sources:
   - key: meteolux_normals
-    title: "Normales climatologiques 1991-2020 (Luxembourg-Findel) et climat du Luxembourg"
+    title: "Monthly climate normal parameters, Luxembourg-Findel (WMO 06590), 1991-2020"
     publisher: "MeteoLux, Administration de la navigation aérienne"
-    year: 2021
-    url: "https://www.meteolux.lu"
+    year: 2024
+    url: "https://data.public.lu/fr/datasets/monthly-climate-normal-parameters-luxembourg-findel-airport-wmo-id-06590/"
+    licence: "CC0"
     used_for: normals
-  - key: list_climate
-    title: "Projections climatiques régionales pour le Luxembourg (EURO-CORDEX, modélisation régionale)"
-    publisher: "Luxembourg Institute of Science and Technology (LIST)"
+  - key: meteolux_daily
+    title: "Daily meteorological parameters, Luxembourg-Findel (WMO 06590), depuis 1947"
+    publisher: "MeteoLux, Administration de la navigation aérienne"
+    year: 2026
+    url: "https://data.public.lu/fr/datasets/daily-meteorological-parameters-luxembourg-findel-airport-wmo-id-06590/"
+    licence: "CC0"
+    used_for: normals
+  - key: asta_monthly
+    title: "Mesures météorologiques mensuelles des stations ASTA (INSPIRE, depuis 2001)"
+    publisher: "Administration des services techniques de l'agriculture (ASTA), Géoportail Luxembourg"
+    year: 2026
+    url: "https://data.public.lu/fr/datasets/inspire-annex-iii-meteorological-geographical-features-pointtimeseriesobservation-monthly-weather-measurements-of-asta/"
+    licence: "CC0"
+    used_for: normals
+  - key: age_monthly
+    title: "Précipitations mensuelles des stations de l'AGE (INSPIRE, depuis 2001)"
+    publisher: "Administration de la gestion de l'eau (AGE), Géoportail Luxembourg"
+    year: 2026
+    url: "https://data.public.lu/fr/datasets/?q=PointTimeSeriesObservation%20AGE"
+    licence: "CC0"
+    used_for: normals
+  - key: irm_climate_city
+    title: "Statistiques climatiques des communes belges, période de référence 1991-2020 (une fiche par commune)"
+    publisher: "Institut royal météorologique de Belgique (IRM)"
     year: 2021
-    url: "https://www.list.lu"
+    url: "https://www.meteo.be/fr/climat/climat-de-la-belgique/climat-dans-votre-commune"
+    licence: "Données de l'IRM, citées comme source ; valeurs régionales arrondies uniquement"
+    used_for: normals
+  - key: cckp_cmip6
+    title: "Climate Change Knowledge Portal : projections CMIP6 0,25° corrigées, agrégats par pays, ensemble de tous les modèles (percentiles 10, 50 et 90)"
+    publisher: "Banque mondiale"
+    year: 2024
+    url: "https://climateknowledgeportal.worldbank.org"
+    licence: "CC BY 4.0"
     used_for: projections
-  - key: euro_cordex
-    title: "EURO-CORDEX: new high-resolution climate change projections for European impact research (Jacob et al., Regional Environmental Change 14, p. 563-578)"
-    publisher: "EURO-CORDEX"
-    year: 2014
-    url: "https://doi.org/10.1007/s10113-013-0499-2"
+  - key: lu_strategy_2024
+    title: "Stratégie et plan national d'adaptation au changement climatique, projet du 3 décembre 2024 (§ 2.1.2, projections du LIST)"
+    publisher: "Ministère de l'Environnement, du Climat et de la Biodiversité (Luxembourg)"
+    year: 2024
+    url: "https://environnement.public.lu/content/dam/environnement/documents/klima_an_energie/stratgie-et-plan-national-dadaptation-v32-projet-congo.pdf"
     used_for: projections
   - key: ipcc_ar6
-    title: "Sixième rapport d'évaluation, groupe I : Atlas interactif (région Europe de l'Ouest et centrale) et chapitre 11 (extrêmes : les nuits les plus froides se réchauffent plus vite que la moyenne)"
+    title: "Sixième rapport d'évaluation, groupe I : résumé pour décideurs (tableau SPM.1) et chapitre 11, § 11.3.5 (les nuits les plus froides se réchauffent plus vite que la moyenne)"
     publisher: "GIEC (IPCC)"
     year: 2021
-    url: "https://interactive-atlas.ipcc.ch"
+    url: "https://www.ipcc.ch/report/ar6/wg1/"
     used_for: projections
   - key: usda_zones
     title: "Plant Hardiness Zone Map : définition des zones de rusticité (minimum annuel moyen, par tranches de 10 °F)"
@@ -68,13 +105,49 @@ sub_areas:
     description: "Le nord du pays, prolongement de l'Ardenne : plateaux vers 450-550 m entaillés de vallées profondes, plus froids et plus arrosés que le Gutland."
     normals:
       mean_temp_c: 8.5
-      summer_mean_temp_c: 16.0
+      summer_mean_temp_c: 16.5
       winter_mean_temp_c: 1.0
-      annual_precip_mm: 950
-      frost_days: 85
-      extreme_min_c: -14.5
-      last_spring_frost: "05-05"
-      first_autumn_frost: "10-10"
+      annual_precip_mm: 850
+      frost_days: 75
+      extreme_min_c: -12.0
+      last_spring_frost: "05-07"
+      first_autumn_frost: "10-17"
+    stations:
+      - { name: "Reuler (Clervaux)", altitude_m: 492, source: asta_monthly }
+      - { name: "Wincrange", altitude_m: 496, source: asta_monthly }
+      - { name: "Dahl", altitude_m: 474, source: asta_monthly }
+      - { name: "Eschdorf", altitude_m: 514, source: asta_monthly }
+      - { name: "Heinerscheid", source: age_monthly }
+      - { name: "Wincrange (AGE)", source: age_monthly }
+      - { name: "Gouvy (commune)", id: "INS 82037", source: irm_climate_city }
+      - { name: "Bastogne (commune)", id: "INS 82003", source: irm_climate_city }
+      - { name: "Vaux-sur-Sûre (commune)", id: "INS 82036", source: irm_climate_city }
+      - { name: "Houffalize (commune)", id: "INS 82014", source: irm_climate_city }
+    references:
+      mean_temp_c:
+        sources: [asta_monthly, meteolux_normals]
+        detail: "Moyennes mensuelles ASTA 2001-2020 (seules années disponibles), corrigées de l'écart de période mesuré à Findel (-0,23 °C) : Reuler 8,8 ; Wincrange 9,0 ; Dahl 9,0 ; Eschdorf 8,7 °C, soit 8,65 °C. Arrondi au 0,5 °C."
+      summer_mean_temp_c:
+        sources: [asta_monthly, meteolux_normals]
+        detail: "Moyennes mensuelles ASTA 2001-2020 (seules années disponibles), corrigées de l'écart de période mesuré à Findel (-0,26 °C) : moyenne de juin à août Reuler 16,6 ; Wincrange 16,4 ; Dahl 16,7 ; Eschdorf 16,4 °C, soit 16,3 °C. Arrondi au 0,5 °C."
+      winter_mean_temp_c:
+        sources: [asta_monthly, meteolux_normals]
+        detail: "Moyennes mensuelles ASTA 2001-2020 (seules années disponibles), corrigées de l'écart de période mesuré à Findel (-0,08 °C) : moyenne de décembre à février Reuler 1,3 ; Wincrange 1,6 ; Dahl 1,2 ; Eschdorf 1,1 °C, soit 1,2 °C. Arrondi au 0,5 °C."
+      annual_precip_mm:
+        sources: [asta_monthly, age_monthly]
+        detail: "Cumuls annuels 2001-2020 : ASTA Reuler 792 ; Wincrange 820 ; Dahl 779 ; Eschdorf 861 mm ; AGE Heinerscheid 828 ; Wincrange 849 mm. Arrondi vers le haut à 850 mm : les pluviomètres agricoles captent mal la neige."
+      frost_days:
+        sources: [asta_monthly, meteolux_normals]
+        detail: "Moyennes mensuelles ASTA 2001-2020 (seules années disponibles), corrigées de l'écart de période mesuré à Findel (+2,1 jours) : jours de gel Reuler 75,4 ; Wincrange 74,1 ; Dahl 74,5 ; Eschdorf 74,0, soit 76,6. Arrondi à 5."
+      extreme_min_c:
+        sources: [asta_monthly, meteolux_daily]
+        detail: "Moyennes mensuelles ASTA 2001-2020 (seules années disponibles), corrigées de l'écart de période mesuré à Findel (-0,39 °C) : moyenne de la température la plus basse de chaque année Reuler -13,2 ; Wincrange -11,4 ; Dahl -11,4 ; Eschdorf -10,4 °C, soit -12,0 °C. Les fonds de vallée gèlent bien plus fort (Schimpach : -15,5 °C)."
+      last_spring_frost:
+        sources: [irm_climate_city]
+        detail: "Aucune série quotidienne ouverte sur 1991-2020 dans l'Oesling : dates moyennes du dernier jour de gel dans les communes belges voisines du même plateau (fiches climatiques de l'IRM) Gouvy 08/05 ; Bastogne 07/05 ; Vaux-sur-Sûre 05/05 ; Houffalize 08/05. Ces communes gèlent plus souvent que les stations de l'Oesling : la date réelle est sans doute un peu plus précoce."
+      first_autumn_frost:
+        sources: [irm_climate_city]
+        detail: "Même approche : date moyenne du premier jour de gel Gouvy 19/10 ; Bastogne 16/10 ; Vaux-sur-Sûre 19/10 ; Houffalize 15/10. La date réelle dans l'Oesling est sans doute un peu plus tardive."
     geometry:
       type: Polygon
       coordinates:
@@ -89,20 +162,60 @@ sub_areas:
     default: true
     normals:
       mean_temp_c: 9.8
-      summer_mean_temp_c: 17.5
-      winter_mean_temp_c: 1.8
-      annual_precip_mm: 850
+      summer_mean_temp_c: 18.0
+      winter_mean_temp_c: 2.0
+      annual_precip_mm: 800
       frost_days: 70
-      extreme_min_c: -12.5
-      last_spring_frost: "04-25"
-      first_autumn_frost: "10-20"
+      extreme_min_c: -11.0
+      last_spring_frost: "04-11"
+      first_autumn_frost: "11-06"
+    stations:
+      - { name: "Luxembourg-Findel", id: "WMO 06590", altitude_m: 368, source: meteolux_normals }
+      - { name: "Useldange", altitude_m: 280, source: asta_monthly }
+      - { name: "Merl (Luxembourg)", altitude_m: 307, source: asta_monthly }
+      - { name: "Echternach", altitude_m: 243, source: asta_monthly }
+      - { name: "Remich", altitude_m: 207, source: asta_monthly }
+      - { name: "Ettelbruck", altitude_m: 202, source: asta_monthly }
+      - { name: "Mersch", source: age_monthly }
+      - { name: "Livange", source: age_monthly }
+      - { name: "Walferdange", source: age_monthly }
+      - { name: "Koerich", source: age_monthly }
+      - { name: "Reichlange", source: age_monthly }
+    references:
+      mean_temp_c:
+        sources: [meteolux_normals, asta_monthly]
+        detail: "MeteoLux, normales 1991-2020 de Luxembourg-Findel : 9,8 °C. Les stations ASTA (2001-2020 corrigé) donnent 9,9 °C : Useldange 9,8 ; Merl 10,3 ; Echternach 10,0 ; Remich 10,8 ; Ettelbruck 9,7 (brut)."
+      summer_mean_temp_c:
+        sources: [meteolux_normals, asta_monthly]
+        detail: "MeteoLux, normales 1991-2020 de Luxembourg-Findel : juin 16,7 ; juillet 18,7 ; août 18,4 °C, soit 17,9 °C. ASTA corrigé : 17,8 °C. Arrondi au 0,5 °C."
+      winter_mean_temp_c:
+        sources: [meteolux_normals]
+        detail: "MeteoLux, normales 1991-2020 de Luxembourg-Findel : décembre 2,3 ; janvier 1,4 ; février 2,2 °C, soit 2,0 °C. Les stations ASTA sont un peu plus douces (2,4 °C corrigé)."
+      annual_precip_mm:
+        sources: [meteolux_normals, age_monthly]
+        detail: "MeteoLux, normales 1991-2020 de Luxembourg-Findel : 831 mm ; AGE 2001-2020 : Mersch 720 ; Livange 730 ; Walferdange 717 ; Koerich 872 ; Reichlange 820 mm. Moyenne 782 mm, arrondie à 50 mm (environ 700 mm vers la Moselle, 870 mm à l'ouest)."
+      frost_days:
+        sources: [meteolux_normals, asta_monthly]
+        detail: "MeteoLux, normales 1991-2020 de Luxembourg-Findel : 64,4 jours où la minimale est inférieure à 0 °C (plateau venté de l'aéroport). Stations agricoles ASTA, corrigé : 76,9 (Useldange 81,9 ; Merl 68,2 ; Echternach 84,0 ; Remich 60,6 ; Ettelbruck 79,1 brut). Valeur intermédiaire retenue : 70."
+      extreme_min_c:
+        sources: [meteolux_daily, asta_monthly]
+        detail: "MeteoLux, données quotidiennes de Findel 1991-2020 : moyenne de la température la plus basse de chaque année -10,8 °C. Moyennes mensuelles ASTA 2001-2020 (seules années disponibles), corrigées de l'écart de période mesuré à Findel (+0,39 °C) : -11,2 °C (Useldange -12,4 ; Merl -11,6 ; Echternach -12,7 ; Remich -9,9 ; Ettelbruck -11,4 brut). Moyenne des deux : -11,0 °C."
+      last_spring_frost:
+        sources: [meteolux_daily]
+        detail: "MeteoLux, données quotidiennes de Findel 1991-2020 : date médiane de la dernière minimale ≤ 0 °C avant juillet, 11/04 (moyenne 09/04). Seule série quotidienne ouverte sur la période ; les vallées gèlent plus tard, d'une à deux semaines."
+      first_autumn_frost:
+        sources: [meteolux_daily]
+        detail: "MeteoLux, données quotidiennes de Findel 1991-2020 : date médiane de la première minimale ≤ 0 °C après juillet, 06/11 (moyenne 04/11). Les vallées gèlent plus tôt."
 
 # Changes against the reference period, as [low, central, high]. Same
 # deltas for the whole country (the spread between models is larger than
-# the spread between Oesling and Gutland). Rounded syntheses, see `sources`.
+# the spread between Oesling and Gutland). Each value is checked against
+# the CMIP6 country aggregate of the World Bank Climate Change Knowledge
+# Portal (CC BY 4.0) and the LIST projections of the national adaptation
+# strategy; see `references` under each scenario.
 projections:
   reference_period: "1991-2020"
-  sources: [list_climate, euro_cordex, ipcc_ar6]
+  sources: [cckp_cmip6, lu_strategy_2024, ipcc_ar6]
   scenarios:
     moderate:
       ipcc: "RCP4.5 / SSP2-4.5"
@@ -112,28 +225,52 @@ projections:
     "2050":
       period: "2041-2060"
       moderate:
-        mean_temp_delta_c: [0.8, 1.3, 2.0]
-        extreme_min_delta_c: [1.0, 2.0, 3.0]
-        summer_temp_delta_c: [0.8, 1.5, 2.5]
-        summer_precip_change_pct: [-15, -5, 5]
-        winter_precip_change_pct: [0, 5, 10]
+        mean_temp_delta_c: [0.8, 1.4, 2.2]
+        extreme_min_delta_c: [1.0, 2.5, 4.0]
+        summer_temp_delta_c: [1.0, 1.7, 2.6]
+        summer_precip_change_pct: [-20, -6, 7]
+        winter_precip_change_pct: [-8, 5, 15]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : [0,8 ; 1,4 ; 2,3] °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 2,9 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,0 ; 1,8 ; 2,6] °C."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-19 % ; -6 % ; +7 %]."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-9 % ; +4 % ; +17 %]."
       high:
-        mean_temp_delta_c: [1.2, 1.8, 2.6]
-        extreme_min_delta_c: [1.5, 2.5, 4.0]
-        summer_temp_delta_c: [1.2, 2.0, 3.2]
-        summer_precip_change_pct: [-20, -10, 0]
-        winter_precip_change_pct: [0, 7, 15]
+        mean_temp_delta_c: [1.1, 1.9, 2.6]
+        extreme_min_delta_c: [1.5, 3.0, 4.5]
+        summer_temp_delta_c: [1.2, 2.4, 3.4]
+        summer_precip_change_pct: [-25, -12, 5]
+        winter_precip_change_pct: [-8, 8, 17]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : [1,0 ; 1,9 ; 2,5] °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 3,0 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,2 ; 2,5 ; 3,4] °C."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-26 % ; -12 % ; +5 %]."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-10 % ; +8 % ; +17 %]."
     "2080":
       period: "2071-2100"
       moderate:
-        mean_temp_delta_c: [1.3, 2.0, 3.0]
-        extreme_min_delta_c: [1.5, 3.0, 4.5]
-        summer_temp_delta_c: [1.5, 2.5, 3.5]
-        summer_precip_change_pct: [-20, -10, 0]
-        winter_precip_change_pct: [0, 8, 15]
+        mean_temp_delta_c: [1.3, 2.0, 3.2]
+        extreme_min_delta_c: [2.0, 4.0, 5.5]
+        summer_temp_delta_c: [1.6, 2.6, 4.0]
+        summer_precip_change_pct: [-25, -12, 2]
+        winter_precip_change_pct: [0, 10, 20]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : [1,4 ; 2,0 ; 3,2] °C. LIST (EURO-CORDEX, stratégie nationale d'adaptation 2024), ramené à 1991-2020 : +1,6 °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 4,2 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,8 ; 2,7 ; 4,0] °C."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-27 % ; -13 % ; +2 %]."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-1 % ; +12 % ; +22 %]."
       high:
-        mean_temp_delta_c: [2.5, 3.5, 5.0]
-        extreme_min_delta_c: [3.0, 5.0, 7.5]
-        summer_temp_delta_c: [2.5, 4.0, 6.0]
-        summer_precip_change_pct: [-35, -20, -5]
-        winter_precip_change_pct: [5, 12, 25]
+        mean_temp_delta_c: [2.7, 3.9, 5.5]
+        extreme_min_delta_c: [4.0, 6.5, 9.5]
+        summer_temp_delta_c: [3.0, 4.6, 7.0]
+        summer_precip_change_pct: [-45, -25, -5]
+        winter_precip_change_pct: [3, 15, 30]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : [2,9 ; 4,2 ; 5,7] °C. LIST (EURO-CORDEX, stratégie nationale d'adaptation 2024), ramené à 1991-2020 : +3,1 °C, d'où la borne basse."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 7,2 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [3,8 ; 5,2 ; 7,4] °C. Borne basse abaissée vers LIST (EURO-CORDEX), qui réchauffe moins que CMIP6."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-45 % ; -32 % ; -8 %]."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Luxembourg, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [+1 % ; +17 % ; +34 %]."

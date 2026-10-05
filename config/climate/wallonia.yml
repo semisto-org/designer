@@ -2,16 +2,21 @@
 # regions.settings["climate"] by db/seeds/40_climate.rb and read by
 # Providers::Climate::Static.
 #
-# Everything here is INDICATIVE: values are rounded by Semisto from the
-# published syntheses listed under `sources`, to give a coarse order of
-# magnitude per natural region. They are not station data and not a
-# forecast for a given parcel. Sub-area outlines are deliberately coarse
-# (a few vertices); the first sub-area containing the point wins, the
-# `default: true` one covers the rest of the region.
+# Everything here is INDICATIVE: one rounded value per natural region, not
+# a measurement for a given parcel. Each value is computed from the
+# stations listed under `stations` and documented under `references`
+# (sources, station values, method), so that anyone can check it. Outlines
+# are deliberately coarse (a few vertices); the first sub-area containing
+# the point wins, the `default: true` one covers the rest.
 #
-# Units: °C, mm, days; dates as "MM-DD" (median date, indicative).
-# extreme_min_c = average annual extreme minimum temperature (coldest
-# night of the year, averaged), the basis of the USDA hardiness zone.
+# Units: °C, mm, days. Rounding: temperatures to 0.5 °C, rainfall to 50
+# mm, frost days to 5. frost_days = days whose minimum is below 0 °C
+# (Météo-France counts "at or below", about 2 days more a year).
+# last_spring_frost / first_autumn_frost = "MM-DD": median dates where we
+# computed them from daily data, mean dates where the publisher gives
+# means (IRM), 0 to 4 days apart. extreme_min_c = average annual extreme
+# minimum temperature (coldest night of the year, averaged), the basis of
+# the USDA hardiness zone.
 version: 1
 status: indicative
 reference_period: "1991-2020"
@@ -20,40 +25,56 @@ providers:
   projections: static
   forecast: open_meteo
 note: >-
-  Valeurs arrondies par Semisto à partir des synthèses citées : un ordre de
-  grandeur par grande région naturelle, pas une mesure pour votre parcelle.
-  Les limites des zones sont approximatives.
+  Valeurs arrondies par Semisto à partir des stations de l'IRM (le détail
+  est dans les sources) : un ordre de grandeur par grande région naturelle,
+  pas une mesure pour ta parcelle. Les limites des zones sont
+  approximatives.
 
 sources:
-  - key: irm_normals
-    title: "Normales climatologiques 1991-2020 et Atlas climatique de Belgique"
+  - key: irm_climate_city
+    title: "Statistiques climatiques des communes belges, période de référence 1991-2020 (une fiche par commune)"
     publisher: "Institut royal météorologique de Belgique (IRM)"
     year: 2021
-    url: "https://www.meteo.be/fr/climat"
+    url: "https://www.meteo.be/fr/climat/climat-de-la-belgique/climat-dans-votre-commune"
+    licence: "Données de l'IRM, citées comme source ; valeurs régionales arrondies uniquement"
     used_for: normals
+  - key: irm_opendata_synop
+    title: "Observations SYNOP horaires des stations belges, 1991-2020 (plateforme de données ouvertes de l'IRM)"
+    publisher: "Institut royal météorologique de Belgique (IRM)"
+    year: 2026
+    url: "https://opendata.meteo.be/"
+    licence: "CC BY 4.0"
+    used_for: normals
+  - key: cckp_cmip6
+    title: "Climate Change Knowledge Portal : projections CMIP6 0,25° corrigées, agrégats par pays, ensemble de tous les modèles (percentiles 10, 50 et 90)"
+    publisher: "Banque mondiale"
+    year: 2024
+    url: "https://climateknowledgeportal.worldbank.org"
+    licence: "CC BY 4.0"
+    used_for: projections
+  - key: knmi23
+    title: "KNMI'23 climate scenarios for the Netherlands, user report (tableau 1, référence 1991-2020)"
+    publisher: "KNMI"
+    year: 2023
+    url: "https://cdn.knmi.nl/system/ckeditor/attachment_files/data/000/000/358/original/KNMI23_climate_scenarios_user_report.pdf"
+    used_for: projections
+  - key: cordex_be
+    title: "CORDEX.be : combining regional downscaling expertise in Belgium, rapport final (Termonia et al., BR/143/A2)"
+    publisher: "BELSPO, IRM, UCLouvain, KU Leuven, ULiège, VITO, UGent"
+    year: 2018
+    url: "https://www.vliz.be/imisdocs/publications/369817.pdf"
+    used_for: projections
   - key: irm_report_2020
     title: "Rapport climatique 2020 : de l'information climatique aux services climatiques"
     publisher: "Institut royal météorologique de Belgique (IRM)"
     year: 2020
-    url: "https://www.meteo.be/fr/climat"
-    used_for: projections
-  - key: cordex_be
-    title: "The CORDEX.be initiative as a foundation for climate services in Belgium (Termonia et al., Climate Services 11, p. 49-61)"
-    publisher: "Projet CORDEX.be (IRM, UCLouvain, KU Leuven, ULiège, VITO, Ghent University)"
-    year: 2018
-    url: "https://doi.org/10.1016/j.cliser.2018.05.001"
-    used_for: projections
-  - key: euro_cordex
-    title: "EURO-CORDEX: new high-resolution climate change projections for European impact research (Jacob et al., Regional Environmental Change 14, p. 563-578)"
-    publisher: "EURO-CORDEX"
-    year: 2014
-    url: "https://doi.org/10.1007/s10113-013-0499-2"
+    url: "https://www.meteo.be/resources/misc/climate_report/RapportClimatique-2020.pdf"
     used_for: projections
   - key: ipcc_ar6
-    title: "Sixième rapport d'évaluation, groupe I : Atlas interactif (région Europe de l'Ouest et centrale) et chapitre 11 (extrêmes : les nuits les plus froides se réchauffent plus vite que la moyenne)"
+    title: "Sixième rapport d'évaluation, groupe I : résumé pour décideurs (tableau SPM.1) et chapitre 11, § 11.3.5 (les nuits les plus froides se réchauffent plus vite que la moyenne)"
     publisher: "GIEC (IPCC)"
     year: 2021
-    url: "https://interactive-atlas.ipcc.ch"
+    url: "https://www.ipcc.ch/report/ar6/wg1/"
     used_for: projections
   - key: usda_zones
     title: "Plant Hardiness Zone Map : définition des zones de rusticité (minimum annuel moyen, par tranches de 10 °F)"
@@ -71,16 +92,49 @@ sources:
 sub_areas:
   - key: ardenne
     name: "Ardenne"
-    description: "Plateaux ardennais et Hautes Fagnes, en général au-dessus de 400 m : le climat le plus froid et le plus arrosé de Wallonie."
+    description: "Plateaux ardennais et Hautes Fagnes, en général au-dessus de 400 m : le climat le plus froid et le plus arrosé de Wallonie. Les vallées encaissées (Semois, Ourthe) sont nettement plus douces, les cuvettes (Elsenborn) plus froides."
     normals:
-      mean_temp_c: 7.5
-      summer_mean_temp_c: 15.0
-      winter_mean_temp_c: 0.5
-      annual_precip_mm: 1150
-      frost_days: 90
-      extreme_min_c: -15.5
-      last_spring_frost: "05-10"
-      first_autumn_frost: "10-05"
+      mean_temp_c: 8.0
+      summer_mean_temp_c: 15.5
+      winter_mean_temp_c: 1.0
+      annual_precip_mm: 1100
+      frost_days: 95
+      extreme_min_c: -13.0
+      last_spring_frost: "05-05"
+      first_autumn_frost: "10-20"
+    stations:
+      - { name: "Saint-Hubert (commune)", id: "INS 84059", source: irm_climate_city }
+      - { name: "Bastogne (commune)", id: "INS 82003", source: irm_climate_city }
+      - { name: "Bütgenbach (commune)", id: "INS 63013", source: irm_climate_city }
+      - { name: "Libramont-Chevigny (commune)", id: "INS 84077", source: irm_climate_city }
+      - { name: "Saint-Hubert", id: "WMO 06476", altitude_m: 557, source: irm_opendata_synop }
+      - { name: "Elsenborn", id: "WMO 06496", altitude_m: 565, source: irm_opendata_synop }
+      - { name: "Spa (aérodrome)", id: "WMO 06490", altitude_m: 482, source: irm_opendata_synop }
+    references:
+      mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : température moyenne annuelle Saint-Hubert 8,7 °C ; Bastogne 8,0 °C ; Bütgenbach 7,6 °C ; Libramont-Chevigny 8,4 °C. Moyenne arrondie au 0,5 °C."
+      summer_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de juin, juillet et août Saint-Hubert 15,9 °C ; Bastogne 15,4 °C ; Bütgenbach 14,9 °C ; Libramont-Chevigny 15,7 °C. Moyenne arrondie au 0,5 °C."
+      winter_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de décembre, janvier et février Saint-Hubert 1,5 °C ; Bastogne 1,0 °C ; Bütgenbach 0,6 °C ; Libramont-Chevigny 1,3 °C. Moyenne arrondie au 0,5 °C."
+      annual_precip_mm:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : cumul annuel Saint-Hubert 1071 mm ; Bastogne 1006 mm ; Bütgenbach 1247 mm ; Libramont-Chevigny 1158 mm. Moyenne arrondie à 50 mm."
+      frost_days:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : jours où la minimale est inférieure à 0 °C Saint-Hubert 84,3 ; Bastogne 100,0 ; Bütgenbach 101,7 ; Libramont-Chevigny 87,2. Moyenne arrondie à 5."
+      extreme_min_c:
+        sources: [irm_opendata_synop]
+        detail: "Calculé par Semisto sur les observations horaires SYNOP de l'IRM (données ouvertes, CC BY 4.0) : par station, moyenne sur 1991-2020 de la température la plus basse de chaque année. Saint-Hubert -11,6 °C ; Elsenborn -16,4 °C ; Spa (aérodrome) -11,0 °C. Moyenne arrondie au 0,5 °C. Elsenborn est une cuvette froide ; les plateaux tournent plutôt autour de -11 à -12 °C."
+      last_spring_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du dernier jour de gel Saint-Hubert 28/04 ; Bastogne 07/05 ; Bütgenbach 10/05 ; Libramont-Chevigny 03/05. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
+      first_autumn_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du premier jour de gel Saint-Hubert 31/10 ; Bastogne 16/10 ; Bütgenbach 11/10 ; Libramont-Chevigny 22/10. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
     geometry:
       type: Polygon
       coordinates:
@@ -107,53 +161,130 @@ sub_areas:
           - [4.80, 49.85]
           - [4.30, 49.95]
   - key: condroz_famenne
-    name: "Condroz, Famenne, Fagne, Pays de Herve et Lorraine"
-    description: "Plateaux et dépressions entre le sillon Sambre-et-Meuse et l'Ardenne, plus la Lorraine belge au sud : un climat intermédiaire, souvent entre 200 et 350 m."
+    name: "Condroz, Famenne, Fagne et Pays de Herve"
+    description: "Plateaux et dépressions entre le sillon Sambre-et-Meuse et l'Ardenne, souvent entre 200 et 350 m : un climat intermédiaire. Les dépressions de la Famenne et de la Fagne sont des poches de gel, où les gelées de printemps durent plus longtemps."
+    normals:
+      mean_temp_c: 10.0
+      summer_mean_temp_c: 17.0
+      winter_mean_temp_c: 3.0
+      annual_precip_mm: 900
+      frost_days: 75
+      extreme_min_c: -10.0
+      last_spring_frost: "04-25"
+      first_autumn_frost: "10-28"
+    stations:
+      - { name: "Ciney (commune)", id: "INS 91030", source: irm_climate_city }
+      - { name: "Rochefort (commune)", id: "INS 91114", source: irm_climate_city }
+      - { name: "Yvoir (commune)", id: "INS 91141", source: irm_climate_city }
+      - { name: "Florennes (commune)", id: "INS 93022", source: irm_climate_city }
+      - { name: "Florennes", id: "WMO 06456", altitude_m: 288, source: irm_opendata_synop }
+      - { name: "Dourbes", id: "WMO 06455", altitude_m: 235, source: irm_opendata_synop }
+      - { name: "Humain", id: "WMO 06472", altitude_m: 295, source: irm_opendata_synop }
+    references:
+      mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : température moyenne annuelle Ciney 9,7 °C ; Rochefort 10,0 °C ; Yvoir 9,6 °C ; Florennes 9,9 °C. Moyenne arrondie au 0,5 °C."
+      summer_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de juin, juillet et août Ciney 17,0 °C ; Rochefort 17,4 °C ; Yvoir 16,7 °C ; Florennes 17,0 °C. Moyenne arrondie au 0,5 °C."
+      winter_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de décembre, janvier et février Ciney 2,7 °C ; Rochefort 3,0 °C ; Yvoir 2,8 °C ; Florennes 2,9 °C. Moyenne arrondie au 0,5 °C."
+      annual_precip_mm:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : cumul annuel Ciney 904 mm ; Rochefort 855 mm ; Yvoir 902 mm ; Florennes 852 mm. Moyenne arrondie à 50 mm."
+      frost_days:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : jours où la minimale est inférieure à 0 °C Ciney 72,0 ; Rochefort 81,5 ; Yvoir 77,0 ; Florennes 60,1. Moyenne arrondie à 5."
+      extreme_min_c:
+        sources: [irm_opendata_synop]
+        detail: "Calculé par Semisto sur les observations horaires SYNOP de l'IRM (données ouvertes, CC BY 4.0) : par station, moyenne sur 1991-2020 de la température la plus basse de chaque année. Florennes -10,0 °C ; Dourbes -10,6 °C ; Humain -9,7 °C. Moyenne arrondie au 0,5 °C. Seule Florennes couvre toute la période ; Dourbes (2002-2020) et Humain (2003-2020) complètent."
+      last_spring_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du dernier jour de gel Ciney 27/04 ; Rochefort 02/05 ; Yvoir 30/04 ; Florennes 12/04. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
+      first_autumn_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du premier jour de gel Ciney 29/10 ; Rochefort 20/10 ; Yvoir 26/10 ; Florennes 06/11. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
+    geometry:
+      type: Polygon
+      coordinates:
+        - - [4.10, 50.32]
+          - [4.29, 50.36]
+          - [4.44, 50.40]
+          - [4.87, 50.45]
+          - [5.09, 50.48]
+          - [5.24, 50.51]
+          - [5.57, 50.61]
+          - [5.70, 50.75]
+          - [6.05, 50.76]
+          - [6.15, 50.62]
+          - [6.00, 50.60]
+          - [5.85, 50.53]
+          - [5.72, 50.48]
+          - [5.65, 50.40]
+          - [5.55, 50.30]
+          - [5.42, 50.20]
+          - [5.30, 50.13]
+          - [5.15, 50.07]
+          - [4.95, 50.07]
+          - [4.80, 50.05]
+          - [4.45, 50.03]
+          - [4.30, 49.95]
+          - [4.10, 49.98]
+          - [4.10, 50.32]
+  - key: lorraine
+    name: "Lorraine belge"
+    description: "Le sud de la province de Luxembourg (Arlon, Virton, Gaume), vers 300-400 m : plus arrosée que le Condroz et plus gélive la nuit, mais avec des étés aussi chauds."
     normals:
       mean_temp_c: 9.5
-      summer_mean_temp_c: 16.5
-      winter_mean_temp_c: 2.5
-      annual_precip_mm: 900
-      frost_days: 60
-      extreme_min_c: -12.5
-      last_spring_frost: "04-25"
-      first_autumn_frost: "10-20"
+      summer_mean_temp_c: 17.0
+      winter_mean_temp_c: 2.0
+      annual_precip_mm: 1150
+      frost_days: 80
+      extreme_min_c: -12.0
+      last_spring_frost: "04-28"
+      first_autumn_frost: "10-27"
+    stations:
+      - { name: "Virton (commune)", id: "INS 85045", source: irm_climate_city }
+      - { name: "Arlon (commune)", id: "INS 81001", source: irm_climate_city }
+      - { name: "Buzenol", id: "WMO 06484", altitude_m: 324, source: irm_opendata_synop }
+    references:
+      mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : température moyenne annuelle Virton 9,5 °C ; Arlon 9,3 °C. Moyenne arrondie au 0,5 °C."
+      summer_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de juin, juillet et août Virton 17,0 °C ; Arlon 17,0 °C. Moyenne arrondie au 0,5 °C."
+      winter_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de décembre, janvier et février Virton 2,2 °C ; Arlon 1,8 °C. Moyenne arrondie au 0,5 °C."
+      annual_precip_mm:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : cumul annuel Virton 1165 mm ; Arlon 1105 mm. Moyenne arrondie à 50 mm."
+      frost_days:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : jours où la minimale est inférieure à 0 °C Virton 81,6 ; Arlon 80,0. Moyenne arrondie à 5."
+      extreme_min_c:
+        sources: [irm_opendata_synop]
+        detail: "Calculé par Semisto sur les observations horaires SYNOP de l'IRM (données ouvertes, CC BY 4.0) : par station, moyenne sur 1991-2020 de la température la plus basse de chaque année. Buzenol -11,9 °C. Moyenne arrondie au 0,5 °C. Buzenol n'a de série complète que depuis 2004 ; corrigé de l'écart de période mesuré à Findel (environ -0,4 °C), on obtient -12,0 °C."
+      last_spring_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du dernier jour de gel Virton 01/05 ; Arlon 25/04. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
+      first_autumn_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du premier jour de gel Virton 26/10 ; Arlon 27/10. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
     geometry:
-      type: MultiPolygon
+      type: Polygon
       coordinates:
-        - - - [4.10, 50.32]
-            - [4.29, 50.36]
-            - [4.44, 50.40]
-            - [4.87, 50.45]
-            - [5.09, 50.48]
-            - [5.24, 50.51]
-            - [5.57, 50.61]
-            - [5.70, 50.75]
-            - [6.05, 50.76]
-            - [6.15, 50.62]
-            - [6.00, 50.60]
-            - [5.85, 50.53]
-            - [5.72, 50.48]
-            - [5.65, 50.40]
-            - [5.55, 50.30]
-            - [5.42, 50.20]
-            - [5.30, 50.13]
-            - [5.15, 50.07]
-            - [4.95, 50.07]
-            - [4.80, 50.05]
-            - [4.45, 50.03]
-            - [4.30, 49.95]
-            - [4.10, 49.98]
-            - [4.10, 50.32]
-        - - - [5.05, 49.75]
-            - [5.30, 49.72]
-            - [5.55, 49.80]
-            - [5.85, 49.78]
-            - [5.95, 49.80]
-            - [5.95, 49.45]
-            - [5.25, 49.45]
-            - [5.05, 49.62]
-            - [5.05, 49.75]
+        - - [5.05, 49.75]
+          - [5.30, 49.72]
+          - [5.55, 49.80]
+          - [5.85, 49.78]
+          - [5.95, 49.80]
+          - [5.95, 49.45]
+          - [5.25, 49.45]
+          - [5.05, 49.62]
+          - [5.05, 49.75]
   - key: limoneuse
     name: "Plateaux limoneux et grandes vallées"
     description: "Hainaut, Brabant wallon, Hesbaye et vallées de la Sambre et de la Meuse, en général sous 200 m : le climat le plus doux de Wallonie."
@@ -161,19 +292,58 @@ sub_areas:
     normals:
       mean_temp_c: 10.5
       summer_mean_temp_c: 17.5
-      winter_mean_temp_c: 3.0
+      winter_mean_temp_c: 3.5
       annual_precip_mm: 800
-      frost_days: 45
-      extreme_min_c: -10.5
-      last_spring_frost: "04-15"
-      first_autumn_frost: "10-30"
+      frost_days: 55
+      extreme_min_c: -9.0
+      last_spring_frost: "04-13"
+      first_autumn_frost: "11-06"
+    stations:
+      - { name: "Gembloux (commune)", id: "INS 92142", source: irm_climate_city }
+      - { name: "Mons (commune)", id: "INS 53053", source: irm_climate_city }
+      - { name: "Grâce-Hollogne (commune)", id: "INS 62118", source: irm_climate_city }
+      - { name: "Namur (commune)", id: "INS 92094", source: irm_climate_city }
+      - { name: "Charleroi (commune)", id: "INS 52011", source: irm_climate_city }
+      - { name: "Waremme (commune)", id: "INS 64074", source: irm_climate_city }
+      - { name: "Bierset", id: "WMO 06478", altitude_m: 178, source: irm_opendata_synop }
+      - { name: "Gosselies", id: "WMO 06449", altitude_m: 192, source: irm_opendata_synop }
+      - { name: "Beauvechain", id: "WMO 06458", altitude_m: 121, source: irm_opendata_synop }
+      - { name: "Chièvres", id: "WMO 06432", altitude_m: 61, source: irm_opendata_synop }
+    references:
+      mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : température moyenne annuelle Gembloux 10,2 °C ; Mons 10,7 °C ; Grâce-Hollogne 10,6 °C ; Namur 10,3 °C ; Charleroi 10,5 °C ; Waremme 10,6 °C. Moyenne arrondie au 0,5 °C."
+      summer_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de juin, juillet et août Gembloux 17,2 °C ; Mons 17,7 °C ; Grâce-Hollogne 17,9 °C ; Namur 17,5 °C ; Charleroi 17,7 °C ; Waremme 17,8 °C. Moyenne arrondie au 0,5 °C."
+      winter_mean_temp_c:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : moyenne de décembre, janvier et février Gembloux 3,3 °C ; Mons 3,9 °C ; Grâce-Hollogne 3,5 °C ; Namur 3,4 °C ; Charleroi 3,6 °C ; Waremme 3,6 °C. Moyenne arrondie au 0,5 °C."
+      annual_precip_mm:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : cumul annuel Gembloux 793 mm ; Mons 806 mm ; Grâce-Hollogne 798 mm ; Namur 817 mm ; Charleroi 870 mm ; Waremme 774 mm. Moyenne arrondie à 50 mm."
+      frost_days:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : jours où la minimale est inférieure à 0 °C Gembloux 56,3 ; Mons 55,9 ; Grâce-Hollogne 51,4 ; Namur 58,8 ; Charleroi 52,1 ; Waremme 51,7. Moyenne arrondie à 5."
+      extreme_min_c:
+        sources: [irm_opendata_synop]
+        detail: "Calculé par Semisto sur les observations horaires SYNOP de l'IRM (données ouvertes, CC BY 4.0) : par station, moyenne sur 1991-2020 de la température la plus basse de chaque année. Bierset -9,4 °C ; Gosselies -9,1 °C ; Beauvechain -8,5 °C ; Chièvres -8,5 °C. Moyenne arrondie au 0,5 °C. Chièvres : 23 années complètes."
+      last_spring_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du dernier jour de gel Gembloux 15/04 ; Mons 16/04 ; Grâce-Hollogne 08/04 ; Namur 17/04 ; Charleroi 07/04 ; Waremme 13/04. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
+      first_autumn_frost:
+        sources: [irm_climate_city]
+        detail: "Fiches climatiques des communes de l'IRM, 1991-2020 : date moyenne du premier jour de gel Gembloux 04/11 ; Mons 05/11 ; Grâce-Hollogne 09/11 ; Namur 03/11 ; Charleroi 11/11 ; Waremme 06/11. Moyenne des dates (l'IRM publie des dates moyennes, pas des médianes)."
 
 # Changes against the reference period, as [low, central, high]. Same
 # deltas for the whole region (the spread between models is larger than
-# the spread between Walloon sub-areas). Rounded syntheses, see `sources`.
+# the spread between Walloon sub-areas; the Ardenne warms slightly more).
+# Each value is checked against the CMIP6 country aggregate of the World
+# Bank Climate Change Knowledge Portal (CC BY 4.0) and cross-checked with
+# KNMI'23 and CORDEX.be; see `references` under each scenario.
 projections:
   reference_period: "1991-2020"
-  sources: [irm_report_2020, cordex_be, euro_cordex, ipcc_ar6]
+  sources: [cckp_cmip6, knmi23, cordex_be, irm_report_2020, ipcc_ar6]
   scenarios:
     moderate:
       ipcc: "RCP4.5 / SSP2-4.5"
@@ -183,28 +353,52 @@ projections:
     "2050":
       period: "2041-2060"
       moderate:
-        mean_temp_delta_c: [0.8, 1.3, 2.0]
-        extreme_min_delta_c: [1.0, 2.0, 3.0]
-        summer_temp_delta_c: [0.8, 1.5, 2.5]
-        summer_precip_change_pct: [-15, -5, 5]
-        winter_precip_change_pct: [0, 5, 10]
+        mean_temp_delta_c: [0.8, 1.3, 2.2]
+        extreme_min_delta_c: [1.0, 2.5, 4.0]
+        summer_temp_delta_c: [1.0, 1.7, 2.6]
+        summer_precip_change_pct: [-20, -8, 5]
+        winter_precip_change_pct: [-5, 6, 15]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : [0,7 ; 1,2 ; 2,3] °C. Recoupé avec KNMI'23 (Pays-Bas, voisin), mis à l'échelle de l'horizon : +1,2 environ °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 2,8 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,2 ; 1,7 ; 2,6] °C. KNMI'23 mis à l'échelle : +1,3 à +1,6 °C."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-20 % ; -9 % ; +5 %]. KNMI'23 mis à l'échelle : -4 à -10 %."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-7 % ; +7 % ; +15 %]. KNMI'23 mis à l'échelle : +3 à +5 %."
       high:
         mean_temp_delta_c: [1.2, 1.8, 2.6]
-        extreme_min_delta_c: [1.5, 2.5, 4.0]
-        summer_temp_delta_c: [1.2, 2.0, 3.2]
-        summer_precip_change_pct: [-20, -10, 0]
-        winter_precip_change_pct: [0, 7, 15]
+        extreme_min_delta_c: [1.5, 3.0, 4.5]
+        summer_temp_delta_c: [1.2, 2.2, 3.3]
+        summer_precip_change_pct: [-25, -12, 3]
+        winter_precip_change_pct: [-3, 7, 15]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : [1,0 ; 1,7 ; 2,5] °C. Recoupé avec KNMI'23 (Pays-Bas, voisin), mis à l'échelle de l'horizon : +1,5 à +1,6 °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 3,2 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,2 ; 2,2 ; 3,3] °C. KNMI'23 mis à l'échelle : +1,7 à +2,1 °C."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-26 % ; -15 % ; +3 %]. KNMI'23 mis à l'échelle : -5 à -13 %."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2040-2059, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-3 % ; +8 % ; +15 %]. KNMI'23 mis à l'échelle : +4 à +7 %."
     "2080":
       period: "2071-2100"
       moderate:
         mean_temp_delta_c: [1.3, 2.0, 3.0]
-        extreme_min_delta_c: [1.5, 3.0, 4.5]
-        summer_temp_delta_c: [1.5, 2.5, 3.5]
-        summer_precip_change_pct: [-20, -10, 0]
-        winter_precip_change_pct: [0, 8, 15]
+        extreme_min_delta_c: [2.0, 3.5, 5.5]
+        summer_temp_delta_c: [1.6, 2.5, 3.9]
+        summer_precip_change_pct: [-25, -13, 0]
+        winter_precip_change_pct: [0, 10, 20]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : [1,3 ; 1,9 ; 3,0] °C."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 3,7 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [1,6 ; 2,4 ; 3,9] °C."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-27 % ; -16 % ; -2 %]. KNMI'23 mis à l'échelle : -5 à -13 %."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [-1 % ; +11 % ; +22 %]. KNMI'23 mis à l'échelle : +6 à +11 %."
       high:
-        mean_temp_delta_c: [2.5, 3.5, 5.0]
-        extreme_min_delta_c: [3.0, 5.0, 7.5]
-        summer_temp_delta_c: [2.5, 4.0, 6.0]
-        summer_precip_change_pct: [-35, -20, -5]
-        winter_precip_change_pct: [5, 12, 25]
+        mean_temp_delta_c: [2.5, 3.7, 5.2]
+        extreme_min_delta_c: [4.0, 6.0, 9.0]
+        summer_temp_delta_c: [2.5, 4.3, 6.5]
+        summer_precip_change_pct: [-40, -22, 0]
+        winter_precip_change_pct: [5, 15, 30]
+        references:
+          mean_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : [2,6 ; 4,0 ; 5,2] °C. Recoupé avec KNMI'23 (Pays-Bas, voisin), mis à l'échelle de l'horizon : +3,3 à +3,6 °C. CORDEX.be (RCP8.5, ramené à 1991-2020) : +2,0 à +2,9 °C, d'où la borne basse."
+          extreme_min_delta_c: "Médiane CMIP6 de la nuit la plus froide (TNn) : 6,4 °C, arrondie ; bornes = 1,5 × la borne basse et 1,8 × la borne haute de la moyenne annuelle, faute de percentiles fiables. Le GIEC (AR6, chap. 11.3.5) établit que les nuits les plus froides se réchauffent plus vite que la moyenne."
+          summer_temp_delta_c: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : juin-juillet-août [3,4 ; 4,8 ; 6,5] °C. KNMI'23 mis à l'échelle : +3,8 à +4,1 °C. CORDEX.be (COSMO-CLM, été) : environ +2,2 °C ramené à 1991-2020."
+          summer_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de juin à août [-42 % ; -35 % ; -9 %]. KNMI'23 mis à l'échelle : -10 à -24 %. CORDEX.be (COSMO-CLM) : -13 %. L'IRM (2020) note « aucune ou seulement une légère baisse » pour certains modèles, d'où la borne haute à 0."
+          winter_precip_change_pct: "CMIP6, Banque mondiale CCKP (Belgique, 2071-2100 interpolé entre 2060-2079 et 2080-2099, écart à 1995-2014, percentiles 10 / 50 / 90) : pluie de décembre à février [+7 % ; +18 % ; +32 %]. KNMI'23 mis à l'échelle : +11 à +20 %. CORDEX.be (COSMO-CLM) : +17 %."

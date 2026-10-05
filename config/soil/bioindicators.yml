@@ -1,176 +1,1089 @@
 # Bio-indicator plants of Belgian soils: what a plant growing wild on a plot
-# says about its soil. A short curated list written from general knowledge
-# (ecological indicator values and the permaculture literature), NOT from a
-# single source: provenance "semisto, à vérifier" on every entry. One plant
-# alone proves nothing; look for groups of plants that point the same way.
+# says about its soil. One plant alone proves nothing; look for groups of
+# plants that point the same way.
 #
 # `indicates` uses the keys of fr.soil.indicators in config/locales/soil_photos.fr.yml:
 # compaction, waterlogging, acidic, calcareous, nitrogen_rich, nitrogen_poor,
 # disturbed, dry, fertile, trampled.
-provenance: "semisto, à vérifier"
+#
+# Every claim has its own `evidence`: `status` sourced (an open dataset
+# supports it) or to_verify (no open dataset covers it, e.g. compaction),
+# the `refs` (keys of `sources`) and the figures it rests on. `values` keeps
+# the raw figures read on 2026-10-04 (EIVE niche positions 0-10, Ellenberg
+# 1991 classes 1-9 with x = indifferent, Midolo soil disturbance 0-1).
+#
+# Thresholds, on EIVE's 0-10 scale, calibrated on Ellenberg's classes (the
+# median EIVE value of each Ellenberg class, cut halfway between classes):
+#   nitrogen_rich, fertile  N >= 6.6 (Ellenberg >= 7)
+#   nitrogen_poor           N <= 3.7 (Ellenberg <= 3)
+#   acidic                  R <= 3.6 (Ellenberg <= 3)
+#   calcareous              R >= 7.25 (Ellenberg >= 8), or the best habitat calcareous
+#   waterlogging            M >= 6.05 (Ellenberg >= 8), or diagnostic of wet pastures (EUNIS R36)
+#   dry                     M <= 3.3, or Ellenberg <= 3, or the best habitat dry (EUNIS R1A)
+#   disturbed               Midolo soil disturbance in the top 10 % (>= 0.39), or >= 0.25 for arable weeds
+#   trampled                diagnostic of trampled grassland (EUNIS V35/V34, phi >= 20), or of
+#                           grazed wet pastures (R36) with grazing pressure in the top quarter
+# A claim one class short of its threshold was dropped (or, when nothing else
+# supports the plant, the note says it is not specific).
+sources:
+  - key: eive
+    short: "EIVE 1.0 (2023)"
+    title: "Ecological Indicator Values for Europe (EIVE) 1.0"
+    authors: "Dengler J., Jansen F., Chusova O. et al."
+    year: 2023
+    url: "https://doi.org/10.3897/VCS.98324"
+    data: "https://doi.org/10.5281/zenodo.7534792"
+    licence: "CC BY 4.0"
+  - key: ellenberg_1991
+    short: "Ellenberg (1991)"
+    title: "Zeigerwerte von Pflanzen in Mitteleuropa (Scripta Geobotanica 18), valeurs lues dans les sources d'EIVE 1.0"
+    authors: "Ellenberg H., Weber H.E., Düll R., Wirth V., Werner W., Paulißen D."
+    year: 1991
+    url: "https://doi.org/10.5281/zenodo.7534792"
+    licence: "valeurs citées"
+  - key: midolo_2023
+    short: "Midolo et al. (2023)"
+    title: "Disturbance indicator values for European plants"
+    authors: "Midolo G., Herben T., Axmanová I. et al. (Global Ecology and Biogeography 32)"
+    year: 2023
+    url: "https://doi.org/10.1111/geb.13603"
+    data: "https://doi.org/10.5281/zenodo.7116957"
+    licence: "CC BY 4.0"
+  - key: eunis_esy
+    short: "EUNIS (Chytrý et al. 2020)"
+    title: "EUNIS Habitat Classification: expert system and characteristic species combinations (version 2025-10-03)"
+    authors: "Chytrý M., Tichý L., Hennekens S.M. et al. (Applied Vegetation Science 23)"
+    year: 2020
+    url: "https://doi.org/10.1111/avsc.12519"
+    data: "https://doi.org/10.5281/zenodo.16895007"
+    licence: "CC BY 4.0"
+  - key: floraveg
+    short: "FloraVeg.EU"
+    title: "FloraVeg.EU, habitats R36 (pâtures humides : tassement par le bétail) et V35 (pelouses piétinées)"
+    authors: "Chytrý M. et al."
+    year: 2025
+    url: "https://floraveg.eu/habitat/overview/R36"
+    licence: "consulté, non repris"
+  - key: ducerf
+    short: "Ducerf (permaculture)"
+    title: "L'encyclopédie des plantes bio-indicatrices alimentaires et médicinales (3 volumes)"
+    authors: "Ducerf G."
+    year: 2013
+    url: null
+    licence: "citée comme origine de l'indication, aucun texte repris"
 plants:
   - key: pissenlit
     name: Pissenlit
     latin: Taraxacum officinale (groupe)
-    indicates: [nitrogen_rich, compaction]
-    note: "Sol riche en azote et souvent tassé. Sa racine pivotante perce et aère les couches dures."
+    indicates:
+    - nitrogen_rich
+    - compaction
+    note: Sol riche en azote, fréquent dans les prairies pâturées et les pelouses piétinées, souvent tassées en surface. Sa racine pivotante descend profondément.
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 6,7 (seuil 6,6) ; Ellenberg N 8
+      compaction:
+        status: to_verify
+        refs:
+        - eunis_esy
+        - floraveg
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement. Indice indirect : la plante caractérise des milieux piétinés ou pâturés où le sol est tassé en surface (EUNIS V35 ou R36).'
+    values:
+      eive:
+        taxon: Taraxacum sect. Taraxacum
+        M: 4.43
+        N: 6.72
+        R: 5.98
+      ellenberg_1991:
+        M: 5
+        N: 8
+        R: x
+      soil_disturbance: 0.375
   - key: plantain_majeur
     name: Plantain majeur
     latin: Plantago major
-    indicates: [compaction, trampled]
-    note: "Sol tassé en surface, piétiné ou roulé : chemins, entrées de champ, zones de passage."
+    indicates:
+    - trampled
+    - disturbed
+    - compaction
+    note: 'Sol tassé en surface, piétiné ou roulé : chemins, entrées de champ, zones de passage.'
+    evidence:
+      trampled:
+        status: sourced
+        refs:
+        - eunis_esy
+        detail: Espèce diagnostique des pelouses piétinées (EUNIS V35, phi 42,7)
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,40 (90e centile des 6 382 espèces)
+      compaction:
+        status: to_verify
+        refs:
+        - eunis_esy
+        - floraveg
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement. Indice indirect : la plante caractérise des milieux piétinés ou pâturés où le sol est tassé en surface (EUNIS V35 ou R36).'
+    values:
+      eive:
+        taxon: Plantago major
+        M: 4.56
+        N: 6.28
+        R: 5.87
+      ellenberg_1991:
+        M: 6
+        N: 5
+        R: 5
+      soil_disturbance: 0.397
   - key: plantain_lanceole
     name: Plantain lancéolé
     latin: Plantago lanceolata
-    indicates: [compaction, nitrogen_poor]
-    note: "Fréquent sur les sols moyens à pauvres, plutôt tassés. Résiste bien à la sécheresse."
+    indicates:
+    - compaction
+    note: 'Plante des prairies fauchées ou pâturées, sur sol moyennement riche, ni très sec ni très humide. Peu spécifique : seule, elle ne dit pas grand-chose.'
+    evidence:
+      compaction:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement : l''indication vient de la littérature de permaculture.'
+    values:
+      eive:
+        taxon: Plantago lanceolata
+        M: 4.09
+        N: 4.93
+        R: 5.85
+      ellenberg_1991:
+        M: x
+        N: x
+        R: x
+      soil_disturbance: 0.329
   - key: renouee_oiseaux
     name: Renouée des oiseaux
     latin: Polygonum aviculare
-    indicates: [compaction, trampled]
-    note: "Sol très tassé et piétiné : cours, chemins, bords de passage."
+    indicates:
+    - trampled
+    - disturbed
+    - compaction
+    note: 'Sol très tassé et piétiné : cours, chemins, bords de passage.'
+    evidence:
+      trampled:
+        status: sourced
+        refs:
+        - eunis_esy
+        detail: Espèce diagnostique des pelouses piétinées (EUNIS V35, phi 44,0)
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,59 (96e centile des 6 382 espèces)
+      compaction:
+        status: to_verify
+        refs:
+        - eunis_esy
+        - floraveg
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement. Indice indirect : la plante caractérise des milieux piétinés ou pâturés où le sol est tassé en surface (EUNIS V35 ou R36).'
+    values:
+      eive:
+        taxon: Polygonum aviculare aggr.
+        M: 4.03
+        N: 6.46
+        R: 6.13
+      ellenberg_1991:
+        M: 4
+        N: 6
+        R: x
+      soil_disturbance: 0.588
   - key: chiendent
     name: Chiendent rampant
     latin: Elymus repens
-    indicates: [compaction, disturbed]
-    note: "Sol travaillé et tassé en profondeur (semelle de labour), souvent après des années de travail du sol."
+    indicates:
+    - disturbed
+    - nitrogen_rich
+    - compaction
+    note: 'Sol travaillé et riche en azote : cultures, friches, bords de champs. On le cite aussi comme signe de semelle de labour.'
+    evidence:
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,40 (91e centile des 6 382 espèces)
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,2 (seuil 6,6) ; Ellenberg N 7
+      compaction:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement : l''indication vient de la littérature de permaculture.'
+    values:
+      eive:
+        taxon: Elytrigia repens (Elymus repens)
+        M: 4.37
+        N: 7.17
+        R: 6.19
+      ellenberg_1991:
+        M: x
+        N: 7
+        R: x
+      soil_disturbance: 0.399
   - key: rumex_a_feuilles_obtuses
     name: Rumex à feuilles obtuses
     latin: Rumex obtusifolius
-    indicates: [nitrogen_rich, compaction]
-    note: "Sol riche en azote et tassé : surpâturage, zones d'apport de fumier ou de lisier."
+    indicates:
+    - nitrogen_rich
+    - compaction
+    note: 'Sol très riche en azote : zones de fumier ou de lisier, abords d''étable, prairies surpâturées. Souvent cité aussi comme signe de sol tassé.'
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 8,9 (seuil 6,6) ; Ellenberg N 9
+      compaction:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement : l''indication vient de la littérature de permaculture.'
+    values:
+      eive:
+        taxon: Rumex obtusifolius
+        M: 4.95
+        N: 8.88
+        R: 6.08
+      ellenberg_1991:
+        M: 6
+        N: 9
+        R: x
+      soil_disturbance: 0.318
   - key: rumex_crepu
     name: Rumex crépu
     latin: Rumex crispus
-    indicates: [waterlogging, compaction]
-    note: "Sol lourd, mal drainé, tassé. L'eau stagne en hiver."
+    indicates:
+    - waterlogging
+    - compaction
+    note: Sol lourd, mal drainé, tassé. L'eau stagne en hiver.
+    evidence:
+      waterlogging:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        - eunis_esy
+        detail: EIVE M 5,3 (seuil 6,05) ; Ellenberg M 7 ; espèce diagnostique des pâtures humides inondées en hiver (EUNIS R36, phi 20,3)
+      compaction:
+        status: to_verify
+        refs:
+        - eunis_esy
+        - floraveg
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement. Indice indirect : la plante caractérise des milieux piétinés ou pâturés où le sol est tassé en surface (EUNIS V35 ou R36).'
+    values:
+      eive:
+        taxon: Rumex crispus
+        M: 5.32
+        N: 6.47
+        R: 5.77
+      ellenberg_1991:
+        M: 7
+        N: 6
+        R: x
+      soil_disturbance: 0.355
   - key: chardon_des_champs
     name: Chardon des champs
     latin: Cirsium arvense
-    indicates: [disturbed, compaction]
-    note: "Sol remué puis laissé nu, souvent tassé en profondeur. Revient après les travaux du sol."
+    indicates:
+    - disturbed
+    - nitrogen_rich
+    - compaction
+    note: Sol remué puis laissé nu, plutôt riche en azote. Revient après les travaux du sol ; souvent cité aussi pour les sols tassés en profondeur.
+    evidence:
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,43 (92e centile des 6 382 espèces)
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 6,9 (seuil 6,6) ; Ellenberg N 7
+      compaction:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement : l''indication vient de la littérature de permaculture.'
+    values:
+      eive:
+        taxon: Cirsium arvense
+        M: 4.27
+        N: 6.9
+        R: 5.97
+      ellenberg_1991:
+        M: x
+        N: 7
+        R: x
+      soil_disturbance: 0.431
   - key: ortie
     name: Ortie dioïque
     latin: Urtica dioica
-    indicates: [nitrogen_rich, fertile]
-    note: "Sol riche en azote et en phosphore, humifère. Souvent d'anciens dépôts, tas de compost ou abords d'étable."
+    indicates:
+    - nitrogen_rich
+    - fertile
+    note: Sol riche en azote et en phosphore, humifère. Souvent d'anciens dépôts, tas de compost ou abords d'étable.
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 8,7 (seuil 6,6) ; Ellenberg N 9
+      fertile:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 8,7 (seuil 6,6) ; Ellenberg N 9
+    values:
+      eive:
+        taxon: Urtica dioica
+        M: 5.01
+        N: 8.74
+        R: 6.61
+      ellenberg_1991:
+        M: 6
+        N: 9
+        R: 7
+      soil_disturbance: 0.182
   - key: liseron_des_champs
     name: Liseron des champs
     latin: Convolvulus arvensis
-    indicates: [compaction, disturbed]
-    note: "Sol compact en profondeur, travaillé en surface. Sa racine profonde traverse les couches dures."
+    indicates:
+    - disturbed
+    - compaction
+    note: Sol travaillé, plutôt sec, neutre à calcaire. Sa racine très profonde est souvent citée comme signe d'un sous-sol compact.
+    evidence:
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,49 (94e centile des 6 382 espèces)
+      compaction:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement : l''indication vient de la littérature de permaculture.'
+    values:
+      eive:
+        taxon: Convolvulus arvensis
+        M: 3.59
+        N: 5.17
+        R: 6.95
+      ellenberg_1991:
+        M: 4
+        N: x
+        R: 7
+      soil_disturbance: 0.492
   - key: prele_des_champs
     name: Prêle des champs
     latin: Equisetum arvense
-    indicates: [waterlogging, acidic]
-    note: "Sol argileux, humide en profondeur, souvent un peu acide et tassé."
+    indicates:
+    - disturbed
+    note: Fréquente dans les cultures et les sols remaniés, frais à humides, indifférente à l'acidité. Souvent citée pour un sous-sol humide ou tassé, ce que les bases d'indicateurs ne confirment pas.
+    evidence:
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,38 (89e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Equisetum arvense
+        M: 5.19
+        N: 4.3
+        R: 5.58
+      ellenberg_1991:
+        M: x
+        N: 3
+        R: x
+      soil_disturbance: 0.381
   - key: jonc_epars
     name: Jonc épars
     latin: Juncus effusus
-    indicates: [waterlogging, acidic]
-    note: "Sol détrempé une grande partie de l'année, souvent acide et pauvre."
+    indicates:
+    - waterlogging
+    - acidic
+    note: Sol détrempé une grande partie de l'année, plutôt acide, moyennement pourvu en éléments nutritifs.
+    evidence:
+      waterlogging:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE M 6,2 (seuil 6,05) ; Ellenberg M 7
+      acidic:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: 'EIVE R 4,1 (seuil 3,6) ; Ellenberg R 3 : la valeur d''Ellenberg classe la plante parmi les indicatrices d''acidité'
+    values:
+      eive:
+        taxon: Juncus effusus
+        M: 6.24
+        N: 4.21
+        R: 4.09
+      ellenberg_1991:
+        M: 7
+        N: 4
+        R: 3
+      soil_disturbance: 0.16
   - key: reine_des_pres
     name: Reine-des-prés
     latin: Filipendula ulmaria
-    indicates: [waterlogging, fertile]
-    note: "Sol humide à engorgé mais riche : bords de fossés, prairies fraîches."
+    indicates:
+    - waterlogging
+    note: 'Sol humide à engorgé, moyennement riche : bords de fossés, prairies humides, mégaphorbiaies.'
+    evidence:
+      waterlogging:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE M 6,4 (seuil 6,05) ; Ellenberg M 8
+    values:
+      eive:
+        taxon: Filipendula ulmaria
+        M: 6.4
+        N: 5.7
+        R: 5.76
+      ellenberg_1991:
+        M: 8
+        N: 5
+        R: x
+      soil_disturbance: 0.148
   - key: renoncule_rampante
     name: Renoncule rampante
     latin: Ranunculus repens
-    indicates: [waterlogging, compaction]
-    note: "Sol humide et tassé, surtout au printemps. Typique des prairies piétinées et mal drainées."
+    indicates:
+    - waterlogging
+    - trampled
+    - compaction
+    note: Sol humide et tassé, surtout au printemps. Typique des prairies piétinées et mal drainées.
+    evidence:
+      waterlogging:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        - eunis_esy
+        detail: EIVE M 6,0 (seuil 6,05) ; Ellenberg M 7 ; espèce diagnostique des pâtures humides inondées en hiver (EUNIS R36, phi 28,2)
+      trampled:
+        status: sourced
+        refs:
+        - eunis_esy
+        - midolo_2023
+        detail: Espèce diagnostique des pâtures piétinées par le bétail (EUNIS R36, phi 28,2) ; pression de pâturage au 82e centile
+      compaction:
+        status: to_verify
+        refs:
+        - eunis_esy
+        - floraveg
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement. Indice indirect : la plante caractérise des milieux piétinés ou pâturés où le sol est tassé en surface (EUNIS V35 ou R36).'
+    values:
+      eive:
+        taxon: Ranunculus repens
+        M: 6.02
+        N: 6.21
+        R: 5.91
+      ellenberg_1991:
+        M: 7
+        N: 7
+        R: x
+      soil_disturbance: 0.266
   - key: tussilage
     name: Tussilage
     latin: Tussilago farfara
-    indicates: [compaction, waterlogging]
-    note: "Sol argileux, lourd et mal drainé en profondeur, souvent calcaire. Pionnier des sols remaniés."
+    indicates:
+    - calcareous
+    - compaction
+    note: 'Sol frais, souvent argileux et calcaire, mis à nu ou remanié : talus, remblais, bords de chemins. Pionnier des sols minéraux.'
+    evidence:
+      calcareous:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE R 7,3 (seuil 7,25) ; Ellenberg R 8
+      compaction:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement : l''indication vient de la littérature de permaculture.'
+    values:
+      eive:
+        taxon: Tussilago farfara
+        M: 4.97
+        N: 5.51
+        R: 7.32
+      ellenberg_1991:
+        M: 6
+        N: x
+        R: 8
+      soil_disturbance: 0.32
   - key: paturin_annuel
     name: Pâturin annuel
     latin: Poa annua
-    indicates: [compaction, trampled, disturbed]
-    note: "Sol tassé et piétiné. Colonise vite les zones nues très fréquentées."
+    indicates:
+    - trampled
+    - disturbed
+    - nitrogen_rich
+    - compaction
+    note: Sol tassé et piétiné, plutôt riche. Colonise vite les zones nues très fréquentées.
+    evidence:
+      trampled:
+        status: sourced
+        refs:
+        - eunis_esy
+        detail: Espèce diagnostique des pelouses piétinées (EUNIS V35, phi 56,1)
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,46 (93e centile des 6 382 espèces)
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,7 (seuil 6,6) ; Ellenberg N 8
+      compaction:
+        status: to_verify
+        refs:
+        - eunis_esy
+        - floraveg
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement. Indice indirect : la plante caractérise des milieux piétinés ou pâturés où le sol est tassé en surface (EUNIS V35 ou R36).'
+    values:
+      eive:
+        taxon: Ochlopoa annua (Poa annua)
+        M: 4.88
+        N: 7.71
+        R: 5.96
+      ellenberg_1991:
+        M: 6
+        N: 8
+        R: x
+      soil_disturbance: 0.457
   - key: mouron_des_oiseaux
     name: Mouron des oiseaux
     latin: Stellaria media
-    indicates: [nitrogen_rich, fertile, disturbed]
-    note: "Sol meuble, riche en humus et en azote, régulièrement travaillé : typique des potagers bien nourris."
+    indicates:
+    - nitrogen_rich
+    - fertile
+    - disturbed
+    note: 'Sol meuble, riche en humus et en azote, régulièrement travaillé : typique des potagers bien nourris.'
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,6 (seuil 6,6) ; Ellenberg N 8
+      fertile:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,6 (seuil 6,6) ; Ellenberg N 8
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,51 (95e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Stellaria media
+        M: 4.49
+        N: 7.62
+        R: 6.27
+      ellenberg_1991:
+        M: x
+        N: 8
+        R: 7
+      soil_disturbance: 0.514
   - key: capselle
     name: Capselle bourse-à-pasteur
     latin: Capsella bursa-pastoris
-    indicates: [disturbed]
-    note: "Sol remué et plutôt pauvre en matière organique. Apparaît sur sol nu."
+    indicates:
+    - disturbed
+    note: 'Sol remué et mis à nu, moyennement à bien pourvu en azote : potagers, cultures, bords de chemins.'
+    evidence:
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,66 (98e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Capsella bursa-pastoris
+        M: 3.92
+        N: 6.53
+        R: 5.91
+      ellenberg_1991:
+        M: 5
+        N: 6
+        R: x
+      soil_disturbance: 0.659
   - key: senecon_commun
     name: Séneçon commun
     latin: Senecio vulgaris
-    indicates: [nitrogen_rich, disturbed]
-    note: "Sol meuble, riche, régulièrement travaillé."
+    indicates:
+    - nitrogen_rich
+    - disturbed
+    note: Sol meuble, riche, régulièrement travaillé.
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,8 (seuil 6,6) ; Ellenberg N 8
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,61 (97e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Senecio vulgaris
+        M: 4.19
+        N: 7.83
+        R: 6.01
+      ellenberg_1991:
+        M: 5
+        N: 8
+        R: x
+      soil_disturbance: 0.607
   - key: chenopode_blanc
     name: Chénopode blanc
     latin: Chenopodium album
-    indicates: [nitrogen_rich, disturbed]
-    note: "Sol riche en azote, souvent après un apport de fumier ou un travail du sol."
+    indicates:
+    - nitrogen_rich
+    - disturbed
+    note: Sol riche en azote, souvent après un apport de fumier ou un travail du sol.
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,6 (seuil 6,6) ; Ellenberg N 7
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,71 (99e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Chenopodium album
+        M: 3.65
+        N: 7.6
+        R: 6.3
+      ellenberg_1991:
+        M: 4
+        N: 7
+        R: x
+      soil_disturbance: 0.709
   - key: mauve_sylvestre
     name: Mauve sylvestre
     latin: Malva sylvestris
-    indicates: [nitrogen_rich, disturbed]
-    note: "Sol riche et remué : bords de chemins, anciennes zones de dépôt."
+    indicates:
+    - nitrogen_rich
+    - disturbed
+    note: 'Sol riche et remué : bords de chemins, anciennes zones de dépôt.'
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,8 (seuil 6,6) ; Ellenberg N 8
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,50 (94e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Malva sylvestris
+        M: 3.59
+        N: 7.82
+        R: 6.73
+      ellenberg_1991:
+        M: 4
+        N: 8
+        R: 7
+      soil_disturbance: 0.5
   - key: gaillet_gratteron
     name: Gaillet gratteron
     latin: Galium aparine
-    indicates: [nitrogen_rich, fertile, disturbed]
-    note: "Sol riche en azote, meuble et plutôt frais."
+    indicates:
+    - nitrogen_rich
+    - fertile
+    note: 'Sol riche en azote et frais : haies, lisières, bords de fossés, tas de compost.'
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 8,5 (seuil 6,6) ; Ellenberg N 8
+      fertile:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 8,5 (seuil 6,6) ; Ellenberg N 8
+    values:
+      eive:
+        taxon: Galium aparine
+        M: 4.63
+        N: 8.5
+        R: 5.95
+      ellenberg_1991:
+        M: x
+        N: 8
+        R: 6
+      soil_disturbance: 0.279
   - key: egopode
     name: Égopode (herbe aux goutteux)
     latin: Aegopodium podagraria
-    indicates: [nitrogen_rich, fertile]
-    note: "Sol riche, frais et humifère, à mi-ombre. Difficile à éliminer, mais bon signe de fertilité."
+    indicates:
+    - nitrogen_rich
+    - fertile
+    note: Sol riche, frais et humifère, à mi-ombre. Difficile à éliminer, mais bon signe de fertilité.
+    evidence:
+      nitrogen_rich:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,9 (seuil 6,6) ; Ellenberg N 8
+      fertile:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 7,9 (seuil 6,6) ; Ellenberg N 8
+    values:
+      eive:
+        taxon: Aegopodium podagraria
+        M: 5.09
+        N: 7.92
+        R: 6.53
+      ellenberg_1991:
+        M: 6
+        N: 8
+        R: 7
+      soil_disturbance: 0.156
   - key: petite_oseille
     name: Petite oseille
     latin: Rumex acetosella
-    indicates: [acidic, nitrogen_poor, dry]
-    note: "Sol acide, pauvre, sableux ou caillouteux, qui filtre vite l'eau."
+    indicates:
+    - acidic
+    - nitrogen_poor
+    - dry
+    note: Sol acide, pauvre, sableux ou caillouteux, qui filtre vite l'eau.
+    evidence:
+      acidic:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE R 2,8 (seuil 3,6) ; Ellenberg R 2
+      nitrogen_poor:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 2,2 (seuil 3,7) ; Ellenberg N 2
+      dry:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE M 3,4 (seuil 3,3) ; Ellenberg M 3
+    values:
+      eive:
+        taxon: Rumex acetosella
+        M: 3.41
+        N: 2.24
+        R: 2.76
+      ellenberg_1991:
+        M: 3
+        N: 2
+        R: 2
+      soil_disturbance: 0.383
   - key: callune
     name: Callune
     latin: Calluna vulgaris
-    indicates: [acidic, nitrogen_poor]
-    note: "Sol très acide et pauvre : landes, sols sableux ou schisteux."
+    indicates:
+    - acidic
+    - nitrogen_poor
+    note: 'Sol très acide et pauvre : landes, sols sableux ou schisteux.'
+    evidence:
+      acidic:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE R 1,4 (seuil 3,6) ; Ellenberg R 1
+      nitrogen_poor:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 1,3 (seuil 3,7) ; Ellenberg N 1
+    values:
+      eive:
+        taxon: Calluna vulgaris
+        M: 4.56
+        N: 1.28
+        R: 1.37
+      ellenberg_1991:
+        M: x
+        N: 1
+        R: 1
+      soil_disturbance: 0.161
   - key: fougere_aigle
     name: Fougère aigle
     latin: Pteridium aquilinum
-    indicates: [acidic]
-    note: "Sol acide, profond et frais. Colonise les clairières et les sols qui s'acidifient."
+    indicates:
+    - acidic
+    - nitrogen_poor
+    note: Sol acide et pauvre, profond et frais. Colonise les clairières, les landes et les pâtures abandonnées.
+    evidence:
+      acidic:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE R 3,4 (seuil 3,6) ; Ellenberg R 3
+      nitrogen_poor:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 3,2 (seuil 3,7) ; Ellenberg N 3
+    values:
+      eive:
+        taxon: Pteridium aquilinum
+        M: 4.61
+        N: 3.17
+        R: 3.42
+      ellenberg_1991:
+        M: 5
+        N: 3
+        R: 3
+      soil_disturbance: 0.129
   - key: genet_a_balais
     name: Genêt à balais
     latin: Cytisus scoparius
-    indicates: [acidic, nitrogen_poor, dry]
-    note: "Sol acide, léger et pauvre. Légumineuse qui fixe l'azote et prépare le terrain."
+    indicates:
+    - acidic
+    - nitrogen_poor
+    note: Sol acide, pauvre, léger et bien drainé. Légumineuse qui fixe l'azote et prépare le terrain.
+    evidence:
+      acidic:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE R 3,1 (seuil 3,6) ; Ellenberg R 3
+      nitrogen_poor:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 3,3 (seuil 3,7) ; Ellenberg N 4
+    values:
+      eive:
+        taxon: Cytisus scoparius
+        M: 3.79
+        N: 3.27
+        R: 3.12
+      ellenberg_1991:
+        M: 4
+        N: 4
+        R: 3
+      soil_disturbance: 0.153
   - key: trefle_blanc
     name: Trèfle blanc
     latin: Trifolium repens
-    indicates: [nitrogen_poor, trampled]
-    note: "Sol pauvre en azote (il le fixe lui-même), souvent piétiné ou tondu court."
+    indicates:
+    - trampled
+    note: 'Prairies et pelouses pâturées, tondues ou piétinées, sur sol moyennement riche. Il fixe l''azote : sa présence ne signale pas un sol pauvre.'
+    evidence:
+      trampled:
+        status: sourced
+        refs:
+        - eunis_esy
+        - midolo_2023
+        detail: Espèce diagnostique des pâtures piétinées par le bétail (EUNIS R36, phi 20,1) ; pression de pâturage au 94e centile
+    values:
+      eive:
+        taxon: Trifolium repens
+        M: 4.52
+        N: 6.4
+        R: 5.82
+      ellenberg_1991:
+        M: 5
+        N: 6
+        R: 6
+      soil_disturbance: 0.351
   - key: lotier
     name: Lotier corniculé
     latin: Lotus corniculatus
-    indicates: [nitrogen_poor, dry, calcareous]
-    note: "Sol maigre, sec, neutre à calcaire. Légumineuse des prairies pauvres."
+    indicates:
+    - nitrogen_poor
+    - dry
+    - calcareous
+    note: Sol maigre, sec, neutre à calcaire. Légumineuse des prairies pauvres.
+    evidence:
+      nitrogen_poor:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        detail: EIVE N 3,3 (seuil 3,7) ; Ellenberg N 3
+      dry:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        - eunis_esy
+        detail: 'EIVE M 3,8 (seuil 3,3) ; Ellenberg M 4 ; habitat principal : pelouses semi-sèches (EUNIS R1A)'
+      calcareous:
+        status: sourced
+        refs:
+        - eive
+        - ellenberg_1991
+        - eunis_esy
+        detail: 'EIVE R 6,6 (seuil 7,25) ; Ellenberg R 7 ; habitat principal : pelouses calcaires semi-sèches (EUNIS R1A)'
+    values:
+      eive:
+        taxon: Lotus corniculatus
+        M: 3.78
+        N: 3.32
+        R: 6.62
+      ellenberg_1991:
+        M: 4
+        N: 3
+        R: 7
+      soil_disturbance: 0.255
   - key: carotte_sauvage
     name: Carotte sauvage
     latin: Daucus carota
-    indicates: [dry, nitrogen_poor, calcareous]
-    note: "Sol sec et pauvre, souvent calcaire ou caillouteux."
+    indicates:
+    - disturbed
+    note: Friches, talus et bords de chemins, sur sol remué, plutôt sec, moyennement pauvre, neutre à calcaire.
+    evidence:
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,32 (84e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Daucus carota
+        M: 3.64
+        N: 4.32
+        R: 6.52
+      ellenberg_1991:
+        M: 4
+        N: 4
+      soil_disturbance: 0.322
   - key: brunelle
     name: Brunelle commune
     latin: Prunella vulgaris
-    indicates: [compaction, trampled]
-    note: "Sol tassé, plutôt frais : pelouses piétinées ou tondues court."
+    indicates:
+    - compaction
+    - trampled
+    note: Pelouses et prairies tondues ou pâturées, sur sol frais. Souvent citée pour les sols tassés et piétinés, ce que les bases d'indicateurs ne confirment pas.
+    evidence:
+      compaction:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Aucune base ouverte ne mesure le tassement : l''indication vient de la littérature de permaculture.'
+      trampled:
+        status: to_verify
+        refs:
+        - ducerf
+        detail: 'Ni les valeurs indicatrices ni les habitats piétinés EUNIS ne la retiennent : l''indication vient de la littérature de permaculture.'
+    values:
+      eive:
+        taxon: Prunella vulgaris
+        M: 4.86
+        N: 4.71
+        R: 5.77
+      ellenberg_1991:
+        M: 5
+        N: x
+        R: 7
+      soil_disturbance: 0.271
   - key: achillee_millefeuille
     name: Achillée millefeuille
     latin: Achillea millefolium
-    indicates: [dry, nitrogen_poor]
-    note: "Sol sec et maigre. Se plaît aussi sur les sols appauvris."
+    indicates: []
+    note: Prairies, pelouses et talus, sur sol moyennement riche et plutôt bien drainé. Résiste à la fauche et à la sécheresse ; peu spécifique, elle n'indique rien de précis.
+    evidence: {}
+    values:
+      eive:
+        taxon: Achillea millefolium
+        M: 3.83
+        N: 5.04
+        R: 5.48
+      ellenberg_1991:
+        M: 4
+        N: 5
+        R: x
+      soil_disturbance: 0.33
   - key: coquelicot
     name: Coquelicot
     latin: Papaver rhoeas
-    indicates: [disturbed, calcareous]
-    note: "Sol travaillé : ses graines lèvent quand elles remontent à la lumière. Souvent limoneux à calcaire."
+    indicates:
+    - disturbed
+    note: 'Sol travaillé : ses graines lèvent quand elles remontent à la lumière. Plutôt sur sols limoneux, neutres à calcaires.'
+    evidence:
+      disturbed:
+        status: sourced
+        refs:
+        - midolo_2023
+        detail: Perturbation du sol 0,74 (99e centile des 6 382 espèces)
+    values:
+      eive:
+        taxon: Papaver rhoeas
+        M: 3.86
+        N: 5.87
+        R: 7.2
+      ellenberg_1991:
+        M: 5
+        N: 6
+        R: 7
+      soil_disturbance: 0.736
+  

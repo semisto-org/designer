@@ -21,14 +21,57 @@ type Option =
 const indicatorLabel = (key: SoilIndicatorKey) => t(`soil.indicators.${key}.label`)
 
 /** Indicator chips: the words, never just a colour. */
-function IndicatorChips({ keys, className }: { keys: SoilIndicatorKey[]; className?: string }) {
+function IndicatorChips({ keys, unverified = [], className }: { keys: SoilIndicatorKey[]; unverified?: SoilIndicatorKey[]; className?: string }) {
   if (keys.length === 0) return null
   return (
     <span className={clsx('flex flex-wrap gap-1', className)}>
-      {keys.map((key) => (
-        <span key={key} title={t(`soil.indicators.${key}.hint`)} className="rounded-full bg-lichen-100 px-2 py-0.5 text-[11px] font-medium text-lichen-700">{indicatorLabel(key)}</span>
-      ))}
+      {keys.map((key) => {
+        const doubtful = unverified.includes(key)
+        return (
+          <span
+            key={key}
+            title={doubtful ? `${t(`soil.indicators.${key}.hint`)} ${t('soil.plants.unverified_hint')}` : t(`soil.indicators.${key}.hint`)}
+            className={clsx('rounded-full px-2 py-0.5 text-[11px] font-medium', doubtful ? 'border border-dashed border-lichen-400 text-lichen-700' : 'bg-lichen-100 text-lichen-700')}
+          >
+            {indicatorLabel(key)}{doubtful && ` ${t('soil.plants.unverified')}`}
+          </span>
+        )
+      })}
     </span>
+  )
+}
+
+/** Why the list says what it says: each claim with its figures and references. */
+function Evidence({ plant }: { plant: CatalogPlant }) {
+  const claims = plant.indicates.flatMap((key) => {
+    const evidence = plant.evidence[key]
+    return evidence ? [{ key, evidence }] : []
+  })
+  if (claims.length === 0) return null
+  return (
+    <details className="text-[11px] text-loam-500">
+      <summary className="cursor-pointer">{t('soil.plants.evidence_title')}</summary>
+      <ul className="mt-1 space-y-1">
+        {claims.map(({ key, evidence }) => (
+          <li key={key}>
+            <span className="font-medium text-loam-700">{indicatorLabel(key)}</span>
+            {evidence.status === 'to_verify' && <span> ({t('soil.plants.unverified_short')})</span>}
+            {evidence.detail && <span>{'\u00a0: '}{evidence.detail}</span>}
+            {evidence.sources.length > 0 && (
+              <span>
+                {' — '}
+                {evidence.sources.map((source, i) => (
+                  <span key={source.label}>
+                    {i > 0 && ', '}
+                    {source.url ? <a href={source.url} target="_blank" rel="noreferrer" title={source.title} className="hover:underline">{source.label}</a> : <span title={source.title}>{source.label}</span>}
+                  </span>
+                ))}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </details>
   )
 }
 
@@ -57,6 +100,7 @@ export default function PlantsTab() {
                   <li key={entry.key} className="text-sm">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium text-loam-800">{indicatorLabel(entry.key)}</span>
+                      {entry.unverified && <span className="text-xs text-loam-500">{t('soil.plants.unverified_short')}</span>}
                     </div>
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-loam-100" aria-hidden>
                       <div className="h-full rounded-full bg-leaf-500" style={{ width: `${Math.max(8, Math.round((entry.score / max) * 100))}%` }} />
@@ -245,7 +289,7 @@ function SpeciesCombobox({ mapId, draft, onChange }: { mapId: number; draft: Obs
                 <span className="shrink-0 text-[11px] text-loam-400">{option.kind === 'catalog' ? t('soil.plants.suggestion_catalog') : t('soil.plants.suggestion_plant')}</span>
               </span>
               {option.plant.latin && <span className="block text-xs italic text-loam-500">{option.plant.latin}</span>}
-              {option.kind === 'catalog' && <IndicatorChips keys={option.plant.indicates} className="mt-1" />}
+              {option.kind === 'catalog' && <IndicatorChips keys={option.plant.indicates} unverified={option.plant.unverified} className="mt-1" />}
             </li>
           ))}
         </ul>
@@ -300,7 +344,7 @@ function ObservationRow({ observation }: { observation: BioObservation }) {
           <span className="rounded-full bg-loam-100 px-2 py-0.5 text-xs text-loam-600">{t(`soil.abundances.${observation.abundance}`)}</span>
         )}
       </div>
-      <IndicatorChips keys={observation.indicators} />
+      <IndicatorChips keys={observation.indicators} unverified={observation.unverified} />
       {observation.notes && <p className="text-xs text-loam-600">{observation.notes}</p>}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-loam-500">
         <span>{[observation.observedOn ? formatDate(observation.observedOn) : null, observation.observedBy].filter(Boolean).join(' · ')}</span>
@@ -377,8 +421,9 @@ function CatalogBrowser({ catalog }: { catalog: CatalogPlant[] }) {
                   <Button size="sm" variant="secondary" disabled={busyKey === plant.key} onClick={() => seen(plant)}>{t('soil.plants.seen')}</Button>
                 )}
               </div>
-              <IndicatorChips keys={plant.indicates} />
+              <IndicatorChips keys={plant.indicates} unverified={plant.unverified} />
               <p className="text-xs text-loam-600">{plant.note}</p>
+              <Evidence plant={plant} />
             </li>
           ))}
         </ul>

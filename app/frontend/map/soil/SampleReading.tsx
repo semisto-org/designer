@@ -39,6 +39,17 @@ export default function SampleReading({ reading }: { reading: SoilReading }) {
               <BandChip band={parameter.band} />
             </p>
             <p className="mt-0.5 text-xs text-loam-500">{parameter.explanation}</p>
+            {parameter.sources.length > 0 && (
+              <p className="mt-0.5 text-[11px] leading-tight text-loam-400">
+                {t('soil.compare.sources')}{' '}
+                {parameter.sources.map((source, i) => (
+                  <span key={source.url}>
+                    {i > 0 && ' ; '}
+                    <a href={source.url} target="_blank" rel="noreferrer" className="hover:underline">{source.label}</a>
+                  </span>
+                ))}
+              </p>
+            )}
           </li>
         ))}
       </ul>
