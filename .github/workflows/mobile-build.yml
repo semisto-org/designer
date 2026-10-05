@@ -11,7 +11,7 @@ on:
       profile:
         description: "EAS profile"
         type: choice
-        options: [preview, testflight, production]
+        options: [preview, simulator, testflight, production]
         default: preview
       platform:
         description: "Platform"
@@ -59,6 +59,6 @@ jobs:
           PLATFORM: ${{ inputs.platform }}
         run: |
           submit=""
-          if [ "$PROFILE" != "preview" ]; then submit="--auto-submit"; fi
+          if [ "$PROFILE" = "testflight" ] || [ "$PROFILE" = "production" ]; then submit="--auto-submit"; fi
           npx --yes eas-cli@latest build --profile "$PROFILE" --platform "$PLATFORM" \
             --non-interactive --no-wait $submit

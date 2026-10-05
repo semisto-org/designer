@@ -64,10 +64,12 @@ use a local server, set it to the computer's address on the local network
 
 - `development`: dev client, internal.
 - `preview`: internal; Android APK to install directly.
+- `simulator`: the test app for the iOS Simulator on a Mac (no Apple
+  account needed).
 - `testflight`: store build of the test app, sent to TestFlight.
 - `production`: store builds of « Semisto Designer ».
 
-`development`, `preview` and `testflight` set `APP_VARIANT=preview`:
+`development`, `preview`, `simulator` and `testflight` set `APP_VARIANT=preview`:
 `app.config.ts` then builds « Designer (test) » with the identifier
 `org.semisto.designer.preview`, which installs next to the store app and
 can live in any Apple developer account. The URL scheme stays
