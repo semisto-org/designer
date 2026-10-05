@@ -7,6 +7,7 @@ import {
   bump, crownPx, heightM, rng, seasonAt, smooth,
   type Point, type Season, type SceneState, type SpeciesKey,
 } from './model.ts'
+import { LOOKS, SPRITE, spriteRect, type Paint, type SpriteKey } from './paint.ts'
 
 type RGB = [number, number, number]
 
@@ -132,6 +133,9 @@ export class Painter {
   labels: Labels
   reduce: boolean
   private paper: HTMLCanvasElement | null = null
+  /** Painted sprites, once loaded; until then crowns are drawn as washes. */
+  private paint: Paint | null = null
+  private ground: HTMLCanvasElement | null = null
 
   constructor(ctx: CanvasRenderingContext2D, C: Palette, labels: Labels, reduce: boolean) {
     this.ctx = ctx
@@ -143,6 +147,74 @@ export class Painter {
   setPalette(C: Palette) {
     this.C = C
     this.paper = null
+  }
+
+  setPaint(paint: Paint) {
+    this.paint = paint
+    this.ground = null
+  }
+
+  /** The meadow inside the terrain, painted once in world space with a soft, irregular edge. */
+  private meadow(paint: Paint): HTMLCanvasElement {
+    const s = 1.5
+    const c = document.createElement('canvas')
+    c.width = WORLD_W * s
+    c.height = WORLD_H * s
+    const x = c.getContext('2d')!
+    x.scale(s, s)
+    // one painted sheet stretched over the whole terrain: no repeat, no seam
+    x.drawImage(paint.meadow, 0, (WORLD_H - WORLD_W) / 2, WORLD_W, WORLD_W)
+    // keep the paint inside the parcel, its edge bleeding a little like a wash
+    const r = rng(11)
+    const edge: Point[] = []
+    PARCEL.forEach(([px, py], i) => {
+      const [qx, qy] = PARCEL[(i + 1) % PARCEL.length]
+      for (let k = 0; k < 12; k++) edge.push([px + ((qx - px) * k) / 12 + (r() - 0.5) * 9, py + ((qy - py) * k) / 12 + (r() - 0.5) * 9])
+    })
+    x.globalCompositeOperation = 'destination-in'
+    x.filter = 'blur(5px)'
+    x.beginPath()
+    edge.forEach(([ex, ey], i) => (i ? x.lineTo(ex, ey) : x.moveTo(ex, ey)))
+    x.closePath()
+    x.fillStyle = '#000'
+    x.fill()
+    return c
+  }
+
+  /** The mown path as a few loose, sandy strokes rather than a ruled line. */
+  private paintedPath(snow: number) {
+    const { ctx, C } = this
+    const strokes: [RGB, number, number, number][] = [[C.humus, 0.2 * (1 - 0.7 * snow), 13, 0], [C.paper2, 0.55, 9, 1.4], [C.paper, 0.3, 4, -1.2]]
+    ctx.save()
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    for (const [col, a, w, off] of strokes) {
+      ctx.strokeStyle = rgba(col, a)
+      ctx.lineWidth = w
+      ctx.beginPath()
+      PATH.forEach(([x, y], i) => {
+        if (i === 0) return ctx.moveTo(x + off, y)
+        const [px, py] = PATH[i - 1]
+        ctx.quadraticCurveTo(px + off, py, (px + x) / 2 + off, (py + y) / 2)
+        if (i === PATH.length - 1) ctx.lineTo(x + off, y)
+      })
+      ctx.stroke()
+    }
+    ctx.restore()
+  }
+
+  /** Stamps a painted sprite of radius `r`, turned by `rot`. */
+  private sprite(key: SpriteKey, x: number, y: number, r: number, rot: number, alpha: number) {
+    if (!this.paint || alpha <= 0.01 || r <= 0) return
+    const { ctx } = this
+    const [sx, sy] = spriteRect(key)
+    const half = r * 1.06
+    ctx.save()
+    ctx.globalAlpha = Math.min(1, alpha)
+    ctx.translate(x, y)
+    ctx.rotate(rot)
+    ctx.drawImage(this.paint.atlas, sx, sy, SPRITE, SPRITE, -half, -half, half * 2, half * 2)
+    ctx.restore()
   }
 
   /** Where the terrain sits on screen: to the right of the notes on wide screens, at the top on phones. */
@@ -246,6 +318,21 @@ export class Painter {
     const sway = this.reduce ? 0 : Math.sin(wind * 1.3 + t.seed) * Math.min(2.5, r * 0.03)
     const x = t.x + sway
     const y = t.y
+
+    // painted crowns: bare branches, leaves, autumn, blossom and fruit cross-fade with the seasons
+    if (this.paint) {
+      const look = LOOKS[t.sp]
+      const rnd = rng(t.seed + 5)
+      const rot = rnd() * TAU
+      const autumn = S.autumn * (0.25 + 0.5 * rng(t.seed + 77)())
+      const leafR = r * (0.7 + 0.3 * S.leaf)
+      this.sprite(look.bare, x, y, r * 0.95, rot, 0.9 * (1 - S.leaf))
+      this.sprite(look.leaf, x, y, leafR, rot, S.leaf)
+      if (autumn > 0.01) this.sprite(look.autumn, x, y, leafR, rot + 0.4, S.leaf * autumn * 1.4)
+      if (look.fruit && S.fruit > 0.01 && age >= s.fruit) this.sprite(look.fruit, x, y, leafR, rot + 1.1, S.leaf * S.fruit * (1 - autumn))
+      if (look.blossom && S.blossom > 0.01 && age >= 0.3) this.sprite(look.blossom, x, y, r * 0.92, rot + 2.3, 0.95 * S.blossom)
+      return
+    }
 
     // bare branches, visible as the leaves go
     const bare = 1 - S.leaf
@@ -370,10 +457,18 @@ export class Painter {
     for (const l of CONTOURS) this.line(l, rgba(C.ink, 0.1), 1.1 / Math.max(k, 0.5))
     this.drawNeighbours(S, smooth(0.95, 0.6, st.zoom))
 
-    // ground: green in season, white under snow
-    this.poly(PARCEL)
-    ctx.fillStyle = rgba(C.wash, 0.04 + 0.1 * S.leaf)
-    ctx.fill()
+    // ground: a painted meadow (or a light wash until it loads), greener in season, white under snow
+    if (this.paint) {
+      if (!this.ground) this.ground = this.meadow(this.paint)
+      ctx.save()
+      ctx.globalAlpha = 0.4 + 0.45 * S.leaf
+      ctx.drawImage(this.ground, 0, 0, WORLD_W, WORLD_H)
+      ctx.restore()
+    } else {
+      this.poly(PARCEL)
+      ctx.fillStyle = rgba(C.wash, 0.04 + 0.1 * S.leaf)
+      ctx.fill()
+    }
     if (S.snow > 0.02) {
       this.poly(PARCEL)
       ctx.fillStyle = rgba(C.snow, 0.55 * S.snow)
@@ -395,7 +490,8 @@ export class Painter {
     if (pond > 0.01) {
       ctx.save()
       ctx.globalAlpha = pond
-      this.wash(POND.x, POND.y, POND.r, C.water, 33, 4, 0.24)
+      if (this.paint) this.sprite('pond', POND.x, POND.y, POND.r * 1.25, -0.3, pond)
+      else this.wash(POND.x, POND.y, POND.r, C.water, 33, 4, 0.24)
       ctx.restore()
     } else {
       ctx.beginPath()
@@ -407,24 +503,38 @@ export class Painter {
     }
 
     // path and house
-    this.line(PATH, rgba(C.ink, 0.25), 7)
-    this.line(PATH, rgba(C.paper, 0.95), 4)
+    if (this.paint) this.paintedPath(S.snow)
+    else {
+      this.line(PATH, rgba(C.ink, 0.25), 7)
+      this.line(PATH, rgba(C.paper, 0.95), 4)
+    }
     ctx.save()
     ctx.translate(HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2)
     ctx.rotate(-0.12)
-    ctx.fillStyle = rgba(C.prune, 0.22)
-    ctx.strokeStyle = rgba(C.prune, 0.8)
-    ctx.lineWidth = 1.6
-    ctx.fillRect(-HOUSE.w / 2, -HOUSE.h / 2, HOUSE.w, HOUSE.h)
-    ctx.strokeRect(-HOUSE.w / 2, -HOUSE.h / 2, HOUSE.w, HOUSE.h)
-    if (S.snow > 0.05) {
-      ctx.fillStyle = rgba(C.snow, 0.8 * S.snow)
-      ctx.fillRect(-HOUSE.w / 2, -HOUSE.h / 2, HOUSE.w, HOUSE.h / 2)
+    if (this.paint) {
+      const roof = this.paint.house
+      const w = HOUSE.w * 1.05
+      const h = (w * roof.height) / roof.width
+      ctx.drawImage(roof, -w / 2, -h / 2, w, h)
+      if (S.snow > 0.05) {
+        ctx.fillStyle = rgba(C.snow, 0.7 * S.snow)
+        ctx.fillRect(-w / 2 + 3, -h / 2 + 3, w - 6, h - 6)
+      }
+    } else {
+      ctx.fillStyle = rgba(C.prune, 0.22)
+      ctx.strokeStyle = rgba(C.prune, 0.8)
+      ctx.lineWidth = 1.6
+      ctx.fillRect(-HOUSE.w / 2, -HOUSE.h / 2, HOUSE.w, HOUSE.h)
+      ctx.strokeRect(-HOUSE.w / 2, -HOUSE.h / 2, HOUSE.w, HOUSE.h)
+      if (S.snow > 0.05) {
+        ctx.fillStyle = rgba(C.snow, 0.8 * S.snow)
+        ctx.fillRect(-HOUSE.w / 2, -HOUSE.h / 2, HOUSE.w, HOUSE.h / 2)
+      }
+      ctx.beginPath()
+      ctx.moveTo(-HOUSE.w / 2, 0)
+      ctx.lineTo(HOUSE.w / 2, 0)
+      ctx.stroke()
     }
-    ctx.beginPath()
-    ctx.moveTo(-HOUSE.w / 2, 0)
-    ctx.lineTo(HOUSE.w / 2, 0)
-    ctx.stroke()
     ctx.restore()
     // the chimney smokes in the cold months
     if (!this.reduce && (S.f < 0.2 || S.f > 0.85)) {
@@ -443,6 +553,16 @@ export class Painter {
       ctx.save()
       ctx.globalAlpha = beds
       for (const [x, y, w, h] of BEDS) {
+        if (this.paint) {
+          // the painted bed, laid end to end along the row; in winter the soil shows through
+          const bed = this.paint.bed
+          const bh = h * 1.35
+          const bw = (bh * bed.width) / bed.height
+          const n = Math.ceil(w / bw)
+          ctx.globalAlpha = beds * (0.55 + 0.45 * S.leaf)
+          for (let i = 0; i < n; i++) ctx.drawImage(bed, x + (i * (w - bw)) / Math.max(1, n - 1), y + (h - bh) / 2, bw, bh)
+          continue
+        }
         ctx.fillStyle = rgba(C.humus, 0.1 + 0.15 * S.leaf)
         ctx.fillRect(x, y, w, h)
         ctx.strokeStyle = rgba(C.humus, 0.6)

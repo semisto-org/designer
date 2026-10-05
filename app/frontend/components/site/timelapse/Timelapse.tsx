@@ -6,6 +6,11 @@ import { content, tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
 import { Painter, readPalette, type Labels, type Particle, type PlantedTree } from './draw.ts'
 import { PLANTABLE, PARCEL, calendar, insidePolygon, lerp, stateAt, type SceneState } from './model.ts'
+import { loadPaint } from './paint.ts'
+import atlas from './paint/atlas.webp'
+import bed from './paint/bed.webp'
+import house from './paint/house.webp'
+import meadow from './paint/meadow.webp'
 
 type ChapterCopy = { kicker: string; title: string; body: string; hint?: string }
 
@@ -34,6 +39,9 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const labels = content<Labels>('site.home.story.canvas')
     const painter = new Painter(ctx, readPalette(document.documentElement), labels, reduce)
+    let alive = true
+    // the painted sprites arrive after the first frame; the washes stand in until then
+    loadPaint({ atlas, meadow, house, bed }).then((paint) => alive && painter.setPaint(paint), () => {})
     const particles: Particle[] = []
     const planted: (PlantedTree & { t0: number })[] = []
     let vw = 0
@@ -107,6 +115,7 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
     void document.fonts?.ready.then(measure)
     frame = requestAnimationFrame(loop)
     return () => {
+      alive = false
       cancelAnimationFrame(frame)
       window.removeEventListener('resize', resize)
       canvas.removeEventListener('click', plant)
