@@ -8,7 +8,7 @@ import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS } from '@/map/plants/strata'
-import { inScenario, isPlannedPlant, setScenario, useScenario, type Scenario } from '@/map/scenario'
+import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
 import type { PlantingState } from '@/types/plants'
 
 const CROWNS = 'plant-crowns'
@@ -25,7 +25,7 @@ const PLANTED = ['get', 'planted'] as unknown as boolean
  */
 function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario) {
   const crowns: Feature<Polygon, CrownProps>[] = []
-  const labels: Feature<Point, { label: string }>[] = []
+  const labels: Feature<Point, { label: string; planted: boolean }>[] = []
   for (const feature of editor.features) {
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
     if (!inScenario(feature.properties, scenario)) continue
@@ -51,12 +51,12 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     labels.push({
       type: 'Feature',
       geometry: feature.geometry,
-      properties: { label: variety ? `${species.commonName ?? species.latinName} '${variety.name}'` : species.commonName ?? species.latinName },
+      properties: { planted: !isPlannedPlant(feature.properties), label: variety ? `${species.commonName ?? species.latinName} '${variety.name}'` : species.commonName ?? species.latinName },
     })
   }
   return {
     crowns: { type: 'FeatureCollection', features: crowns } as FeatureCollection<Polygon, CrownProps>,
-    labels: { type: 'FeatureCollection', features: labels } as FeatureCollection<Point, { label: string }>,
+    labels: { type: 'FeatureCollection', features: labels } as FeatureCollection<Point, { label: string; planted: boolean }>,
   }
 }
 
@@ -71,8 +71,8 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   const before = map.getLayer('features-line') ? 'features-line' : undefined
   map.addSource(CROWNS, { type: 'geojson', data: data.crowns })
   map.addSource(LABELS, { type: 'geojson', data: data.labels })
-  // Planted: solid crown. Planned: faint fill and a white dashed outline,
-  // readable on aerial photos as on plans.
+  // Planted: solid crown. Planned: faint fill and a white dashed outline at
+  // 75 % opacity, readable on aerial photos as on plans.
   map.addLayer({
     id: `${CROWNS}-fill`,
     type: 'fill',
@@ -86,7 +86,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     paint: {
       'line-color': ['case', PLANTED, ['get', 'color'], '#ffffff'],
       'line-width': ['case', ['get', 'selected'], 3, 2],
-      'line-opacity': 0.95,
+      'line-opacity': ['case', PLANTED, 0.95, PLANNED_OPACITY],
       'line-dasharray': ['case', PLANTED, ['literal', [1, 0]], ['literal', [2, 1.5]]] as never,
     },
   }, before)
@@ -99,7 +99,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
       'text-field': ['get', 'label'], 'text-size': 11, 'text-offset': [0, 1.1], 'text-anchor': 'top',
       'text-font': ['Noto Sans Regular'], 'text-optional': true,
     },
-    paint: { 'text-color': '#264f2b', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
+    paint: { 'text-color': '#264f2b', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2, 'text-opacity': ['case', PLANTED, 1, PLANNED_OPACITY] },
   })
 }
 

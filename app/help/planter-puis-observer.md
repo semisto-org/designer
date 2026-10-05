@@ -17,7 +17,7 @@ La fiche affiche alors « Planté le … ». Une erreur ? **Annuler** retire la 
 
 ## Situation actuelle ou projetée
 
-Sur la carte, un plant planté a une couronne pleine ; un plant encore **en projet** a une couronne en pointillés, à peine teintée, et un point creux en son centre.
+Sur la carte, un plant planté a une couronne pleine ; un plant encore **en projet** est un peu transparent : couronne en pointillés, à peine teintée, et point creux en son centre.
 
 En haut de l'éditeur, le sélecteur **Actuelle | Projetée** change ce que tu vois :
 

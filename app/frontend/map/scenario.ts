@@ -5,7 +5,7 @@ import { useSyncExternalStore } from 'react'
  *
  * - projected (default): everything, with what is still a project (a plant
  *   not yet marked as planted) drawn apart: dashed crown, faint fill,
- *   hollow point;
+ *   hollow point, all at 75 % opacity;
  * - current: what is on the ground today only, so planned plants and
  *   Claude's drafts are hidden.
  *
@@ -27,6 +27,9 @@ export function inScenario(properties: Properties, scenario: Scenario): boolean 
   if (scenario === 'projected') return true
   return properties?.status !== 'draft' && !isPlannedPlant(properties)
 }
+
+/** Opacity of what is still a project, so it reads as « not there yet ». */
+export const PLANNED_OPACITY = 0.75
 
 /** MapLibre expression twin of isPlannedPlant, for paint and filters. */
 export const PLANNED_PLANT_EXPR = [
