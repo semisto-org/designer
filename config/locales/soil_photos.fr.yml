@@ -58,6 +58,8 @@ fr:
     placing:
       banner: "Clique sur la carte pour placer la photo « %{name} »."
       done: "Photo placée."
+    marker:
+      open: "Voir la photo"
     lightbox:
       previous: "Photo précédente"
       next: "Photo suivante"

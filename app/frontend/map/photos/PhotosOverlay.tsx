@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { photoClickAction } from '@/map/photos/click'
 import { photoLabel, photoUrl } from '@/map/photos/format'
 import {
   highlightPhoto, installPhotoLayers, PHOTO_CLUSTER_LAYER, PHOTO_POINT_LAYER, photosToGeoJSON, PHOTOS_SOURCE,
@@ -46,10 +47,33 @@ export default function PhotosOverlay() {
   // Click a marker: open the photo; click a cluster: zoom into it. Hover: a small preview.
   useEffect(() => {
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 18, className: 'photo-preview', maxWidth: '200px' })
+    // Over a drawn element, the element gets selected and the photo waits in a small bubble.
+    const offer = new maplibregl.Popup({ closeButton: false, offset: 18, className: 'photo-preview', maxWidth: '220px' })
+    const offerPhoto = (photo: MapPhotoData, at: [number, number]) => {
+      const box = document.createElement('div')
+      const label = document.createElement('p')
+      label.textContent = photoLabel(photo)
+      label.style.cssText = 'margin:0 0 6px;font-size:12px;color:#332d25'
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.textContent = t('soil_photos.marker.open')
+      button.style.cssText = 'border-radius:9999px;background:#5b5781;color:#fff;font-size:12px;padding:4px 12px'
+      button.addEventListener('click', () => { offer.remove(); photoActions.open(photo.id) })
+      box.append(label, button)
+      offer.setLngLat(at).setDOMContent(box).addTo(map)
+    }
     const onPointClick = (event: MapMouseEvent & { features?: MapGeoJSONFeature[] }) => {
       if (editor.drawing || getPhotosState().placingId != null) return
-      const id = event.features?.[0]?.properties?.id
-      if (id != null) photoActions.open(Number(id))
+      const feature = event.features?.[0]
+      const id = feature?.properties?.id
+      if (!feature || id == null) return
+      const photo = getPhoto(Number(id))
+      if (photo && photoClickAction(map, event.point) === 'offer') {
+        popup.remove()
+        offerPhoto(photo, (feature.geometry as GeoJSON.Point).coordinates as [number, number])
+      } else {
+        photoActions.open(Number(id))
+      }
     }
     const onClusterClick = async (event: MapMouseEvent & { features?: MapGeoJSONFeature[] }) => {
       const feature = event.features?.[0]
@@ -91,6 +115,7 @@ export default function PhotosOverlay() {
       map.off('mouseenter', PHOTO_CLUSTER_LAYER, pointer)
       map.off('mouseleave', PHOTO_CLUSTER_LAYER, reset)
       popup.remove()
+      offer.remove()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, editor.map.id, editor.drawing])
