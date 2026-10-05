@@ -1,6 +1,6 @@
 # Builds the phone app on Expo (EAS), started by hand from the Actions tab.
 # Needs the repository secret EXPO_TOKEN (a robot token of the Expo
-# organisation « semisto »). The first iOS build is made once from a computer
+# organisation « semisto.org »). The first iOS build is made once from a computer
 # (`eas build`), because Apple asks for its account and a two-factor code to
 # create the signing certificate; later iOS builds reuse it from here.
 name: Mobile build
