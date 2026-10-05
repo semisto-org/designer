@@ -7,6 +7,7 @@
 // No import of three.js: the scene turns the volumes into a mesh.
 
 import { toGrid, type GridMeta } from './grid.ts'
+import { fitRoof, roofHeight, shell, type RoofSample, type RoofShape, type Shell } from './roofs.ts'
 
 /** One building as the server sends it: WGS84 rings, tagged heights. */
 export type BuildingData = {
@@ -28,8 +29,12 @@ export type BuildingVolume = {
   rings: Array<Array<{ x: number; y: number }>>
   /** Altitude of the ground at its foot (the lowest point under it). */
   base: number
-  /** Height of the roof above the base, in real metres. */
+  /** Height of the highest point of the roof above the base, in real metres. */
   height: number
+  /** The roof's shape (flat without a surface model). */
+  roof: RoofShape
+  /** Per footprint ring: its walls with the roof's height at each corner, and the roof's planar faces. */
+  shells: Shell[]
   /** Height of the bottom above the base (a roof on posts), in real metres. */
   bottom: number
   source: HeightSource
@@ -95,6 +100,26 @@ export function cellsInside(meta: GridMeta, rings: Array<Array<{ x: number; y: n
   return cells
 }
 
+/**
+ * The surface model inside a footprint, as heights above the building's
+ * base. The cells along the walls are dropped (the model blurs a wall over
+ * a cell), unless that leaves too few.
+ */
+function roofSamples(
+  meta: GridMeta, cells: number[], base: number,
+  { original, ground, surface }: { original: Float32Array; ground: Float32Array; surface: Float32Array },
+): RoofSample[] {
+  const set = new Set(cells)
+  const { cols, cellSizeM } = meta
+  const inner = cells.filter((i) => set.has(i - 1) && set.has(i + 1) && set.has(i - cols) && set.has(i + cols))
+  const kept = inner.length >= 12 ? inner : cells
+  return kept.map((i) => ({
+    x: (i % cols) * cellSizeM,
+    y: Math.floor(i / cols) * cellSizeM,
+    z: surface[i] - original[i] + ground[i] - base,
+  }))
+}
+
 function nearestCell(meta: GridMeta, p: { x: number; y: number }): number | null {
   const c = Math.round(p.x / meta.cellSizeM)
   const r = Math.round(p.y / meta.cellSizeM)
@@ -127,18 +152,27 @@ export function buildingLayer(
     for (const i of vertexCells) if (ground[i] < base) base = ground[i]
 
     let { height, source } = taggedHeight(building)
+    let roof: RoofShape = { type: 'flat', height }
     if (surface && cells.length >= 4) {
       const measured = median(cells.map((i) => surface[i] - original[i]))
       // Lower than a garden shed: the model predates the building, or the
       // footprint misses it. Keep the tags.
-      if (measured >= MIN_HEIGHT) { height = measured; source = 'surface' }
+      if (measured >= MIN_HEIGHT) {
+        source = 'surface'
+        roof = fitRoof(rings[0], roofSamples(meta, cells, base, { original, ground, surface }), measured)
+      }
     }
-    height = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, height))
+    if (roof.type === 'flat') roof = { type: 'flat', height: Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, roof.height)) }
+    const shells = rings.map((ring) => shell(ring, roof, MIN_HEIGHT, MAX_HEIGHT))
+    height = Math.max(...shells.flatMap((s) => s.ring.map((p) => p.top)))
     const bottom = building.minHeight && building.minHeight < height ? building.minHeight : 0
-    volumes.push({ id: building.id, rings, base, height, bottom, source })
+    volumes.push({ id: building.id, rings, base, height, roof, shells, bottom, source })
     for (const i of cells) {
       inside[i] = 1
-      if (!bottom) roofs[i] = Math.max(roofs[i], base + height)
+      if (bottom) continue
+      const p = { x: (i % cols) * meta.cellSizeM, y: Math.floor(i / cols) * meta.cellSizeM }
+      const top = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, roofHeight(roof, p)))
+      roofs[i] = Math.max(roofs[i], base + top)
     }
   }
 
