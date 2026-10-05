@@ -18,6 +18,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { ATLAS_COLUMNS, ATLAS_ROWS, blockAtlas, buildBlocks, type BlocksInput } from './blocks.ts'
+import type { BuildingVolume } from './buildings.ts'
 import { waterColor } from './colors.ts'
 import { NIVA, type NivaState } from './niva.ts'
 import { buildNivaModel, nivaParts, setNivaLights, type NivaLights } from './nivaModel.ts'
@@ -28,6 +29,7 @@ import type { SunPosition } from './sun.ts'
 export const OVERLAY_SCALE = 2
 const OVERLAY_MAX_PX = 4096
 const PARTICLES = 5000
+const WALL_COLOR = '#d8cfc0'
 const DAY_SKY = '#e3e9e4'
 const NIGHT_SKY = '#0a1220'
 
@@ -121,6 +123,11 @@ export class ReliefScene {
   private chaseDistance = 14
   private lastNivaTarget: THREE.Vector3 | null = null
   private onWheel: ((event: WheelEvent) => void) | null = null
+  private buildings: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial[]> | null = null
+  /** Per building vertex: the ground under it and its height above it (real metres). */
+  private buildingFoot: Float32Array | null = null
+  private buildingRise: Float32Array | null = null
+  private buildingsOn = true
 
   constructor(container: HTMLElement, grid: SceneGrid) {
     this.container = container
@@ -294,6 +301,7 @@ export class ReliefScene {
     this.blockData = this.builtBlocks
     this.blocks.visible = true
     this.terrain.visible = false
+    if (this.buildings) this.buildings.visible = false
   }
 
   hideBlocks() {
@@ -301,6 +309,7 @@ export class ReliefScene {
     this.blocks.visible = false
     this.terrain.visible = true
     this.blockData = null
+    if (this.buildings) this.buildings.visible = this.buildingsOn
   }
 
   /** The top of the block ground (exaggerated group frame) under a point in metres from the north-west corner, or null outside blocks. */
@@ -379,6 +388,10 @@ ${OVERLAY_MIX}`)
     texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
     this.material.map = texture
     this.material.needsUpdate = true
+    if (this.buildings) {
+      this.buildings.material[0].map = texture
+      this.buildings.material[0].needsUpdate = true
+    }
   }
 
   loadImageTexture(url: string): Promise<THREE.Texture> {
@@ -392,6 +405,107 @@ ${OVERLAY_MIX}`)
   setExaggeration(value: number) {
     this.exaggeration = value
     this.world.scale.y = value
+    this.placeBuildings()
+  }
+
+  // ---- Buildings ----------------------------------------------------------
+  //
+  // Clean volumes (footprint × height) standing on the exaggerated relief at
+  // their real height: the group multiplies every height by the
+  // exaggeration, so the rise is divided beforehand. Roofs are draped with
+  // the terrain's base (the ortho shows the real roof), walls are plain.
+
+  /** Build the buildings' mesh from their volumes (grid metres); null removes it. */
+  setBuildings(volumes: BuildingVolume[] | null) {
+    if (this.buildings) {
+      this.world.remove(this.buildings)
+      this.buildings.geometry.dispose()
+      for (const material of this.buildings.material) material.dispose()
+      this.buildings = null
+    }
+    if (!volumes?.length) return
+    const { width, depth } = this.size
+    const x0 = width / 2
+    const z0 = depth / 2
+    const positions: number[] = []
+    const normals: number[] = []
+    const uvs: number[] = []
+    const foot: number[] = []
+    const rise: number[] = []
+    const roofIndices: number[] = []
+    const wallIndices: number[] = []
+    const vertex = (x: number, y: number, base: number, up: number, n: [number, number, number]) => {
+      positions.push(x - x0, 0, y - z0)
+      normals.push(...n)
+      uvs.push(x / width, 1 - y / depth)
+      foot.push(base - this.grid.zBase)
+      rise.push(up)
+      return positions.length / 3 - 1
+    }
+    for (const volume of volumes) {
+      for (const raw of volume.rings) {
+        const ring = raw.slice(0, -1)
+        if (ring.length < 3) continue
+        // One winding for all rings, so the wall normals below face outwards.
+        let area = 0
+        for (let k = 0; k < ring.length; k++) {
+          const a = ring[k]
+          const b = ring[(k + 1) % ring.length]
+          area += a.x * b.y - b.x * a.y
+        }
+        const points = area > 0 ? ring : [...ring].reverse()
+        const contour = points.map((p) => new THREE.Vector2(p.x, p.y))
+        const first = positions.length / 3
+        for (const p of points) vertex(p.x, p.y, volume.base, volume.height, [0, 1, 0])
+        for (const [a, b, c] of THREE.ShapeUtils.triangulateShape(contour, [])) {
+          // Facing up: (b − a) × (c − a) points to +y.
+          const [p, q, r] = [points[a], points[b], points[c]]
+          const up = (q.y - p.y) * (r.x - p.x) - (q.x - p.x) * (r.y - p.y)
+          if (up > 0) roofIndices.push(first + a, first + b, first + c)
+          else roofIndices.push(first + a, first + c, first + b)
+        }
+        for (let k = 0; k < points.length; k++) {
+          const a = points[k]
+          const b = points[(k + 1) % points.length]
+          const len = Math.hypot(b.x - a.x, b.y - a.y) || 1
+          const n: [number, number, number] = [(b.y - a.y) / len, 0, -(b.x - a.x) / len]
+          const a0 = vertex(a.x, a.y, volume.base, volume.bottom, n)
+          const b0 = vertex(b.x, b.y, volume.base, volume.bottom, n)
+          const a1 = vertex(a.x, a.y, volume.base, volume.height, n)
+          const b1 = vertex(b.x, b.y, volume.base, volume.height, n)
+          wallIndices.push(a0, a1, b0, b0, a1, b1)
+        }
+      }
+    }
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
+    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3))
+    geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
+    geometry.setIndex([...roofIndices, ...wallIndices])
+    geometry.addGroup(0, roofIndices.length, 0)
+    geometry.addGroup(roofIndices.length, wallIndices.length, 1)
+    const roof = new THREE.MeshStandardMaterial({ map: this.material.map, roughness: 1, metalness: 0, side: THREE.DoubleSide })
+    const walls = new THREE.MeshStandardMaterial({ color: WALL_COLOR, roughness: 1, metalness: 0, side: THREE.DoubleSide })
+    this.buildings = new THREE.Mesh(geometry, [roof, walls])
+    this.buildingFoot = new Float32Array(foot)
+    this.buildingRise = new Float32Array(rise)
+    this.buildings.visible = this.buildingsOn && this.terrain.visible
+    this.world.add(this.buildings)
+    this.placeBuildings()
+  }
+
+  showBuildings(on: boolean) {
+    this.buildingsOn = on
+    if (this.buildings) this.buildings.visible = on && this.terrain.visible
+  }
+
+  private placeBuildings() {
+    if (!this.buildings || !this.buildingFoot || !this.buildingRise) return
+    const positions = this.buildings.geometry.attributes.position.array as Float32Array
+    const ex = this.exaggeration || 1
+    for (let i = 0; i < this.buildingFoot.length; i++) positions[i * 3 + 1] = this.buildingFoot[i] + this.buildingRise[i] / ex
+    this.buildings.geometry.attributes.position.needsUpdate = true
+    this.buildings.geometry.computeBoundingSphere()
   }
 
   /** Replace the mesh heights (bare terrain ↔ trees and roofs) without rebuilding. */
@@ -779,6 +893,7 @@ ${OVERLAY_MIX}`)
     this.controls.dispose()
     if (this.onWheel) this.renderer.domElement.removeEventListener('wheel', this.onWheel)
     this.blocks?.geometry.dispose()
+    this.setBuildings(null)
     this.stars?.geometry.dispose()
     this.terrain.geometry.dispose()
     this.material.map?.dispose()

@@ -36,6 +36,16 @@ class MapTerrain < ApplicationRecord
 
   def stats = metadata.fetch("stats", {})
 
+  # The grid's WGS84 bounding box (cell centres ± half a cell).
+  def bounds
+    return nil unless west && north && step && cols && rows
+
+    half = step / 2.0
+    west_lng, north_lat = Relief::Mercator.inverse(west - half, north + half)
+    east_lng, south_lat = Relief::Mercator.inverse(west + (cols - 1) * step + half, north - (rows - 1) * step - half)
+    { south: south_lat, west: west_lng, north: north_lat, east: east_lng }
+  end
+
   # What the editor panel needs: state and key numbers, no grid.
   def as_summary
     {

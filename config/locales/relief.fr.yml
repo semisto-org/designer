@@ -149,6 +149,15 @@ fr:
         particles_hint: "Pendant la pluie, des points suivent l'eau."
         surface: "Arbres et toits en relief"
         surface_hint: "La canopée et les bâtiments du modèle de surface, à leur vraie hauteur."
+        buildings: "Bâtiments en volume"
+        buildings_hint:
+          one: "Un bâtiment d'OpenStreetMap, à une hauteur estimée d'après ses étages ou son type."
+          other: "%{count} bâtiments d'OpenStreetMap, à une hauteur estimée d'après leurs étages ou leur type."
+        buildings_measured:
+          one: "Un bâtiment d'OpenStreetMap, à la hauteur mesurée sur le modèle de surface."
+          other: "%{count} bâtiments d'OpenStreetMap, dont %{measured} à la hauteur mesurée sur le modèle de surface."
+        trees: "Arbres en relief"
+        trees_hint: "La canopée du modèle de surface, à sa vraie hauteur."
         reset: "Recentrer la vue"
         top: "Vue de dessus"
       niva:

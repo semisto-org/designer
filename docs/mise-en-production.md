@@ -89,6 +89,8 @@ Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la car
 | `GEOCODER_USER_AGENT_EMAIL` | Adresse de contact exigée par la règle d'usage de Nominatim. |
 | `GEOCODER_FALLBACK` | `photon` (défaut avec Nominatim) ou `none` : interrogé quand Nominatim ne trouve rien ou ne répond pas (Photon tolère les fautes, « Fonds » pour « Fond »). |
 | `GEOCODER_FALLBACK_URL` | Facultatif : autre serveur Photon. |
+| `BUILDINGS_PROVIDER` | `overpass` (défaut) ou `none` : emprises des bâtiments d'OpenStreetMap, en volume dans la vue 3D. |
+| `OVERPASS_URL` | Facultatif : autre serveur Overpass (défaut : l'instance publique, réponses mises en cache un mois). |
 | `MAP_RELAY_EXTRA_HOSTS` | Facultatif : autres serveurs de couches que `geoservices.wallonie.be`. |
 
 ### Catalogue de plantes

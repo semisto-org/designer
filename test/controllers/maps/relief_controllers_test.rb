@@ -145,6 +145,41 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "the building footprints over the terrain, from OpenStreetMap" do
+    stub_spw
+    Relief::TerrainImport.new(@map.create_terrain!, provider: instant_provider).call
+    overpass = stub_request(:get, %r{\Ahttps://overpass-api\.de/api/interpreter}).to_return(status: 200, body: {
+      elements: [ { type: "way", id: 7, tags: { building: "house", "building:levels": "2" },
+                    geometry: [ [ 4.9, 50.34 ], [ 4.9001, 50.34 ], [ 4.9001, 50.3401 ], [ 4.9, 50.34 ] ].map { |x, y| { lon: x, lat: y } } } ]
+    }.to_json)
+    sign_in_as users(:alice)
+
+    get map_relief_path(@map), headers: inertia_headers
+    url = response.parsed_body.dig("props", "buildingsUrl")
+    assert_match %r{/maps/#{@map.id}/relief/buildings\?v=}, url
+
+    get url
+    assert_response :success
+    assert_requested overpass
+    body = response.parsed_body
+    assert body["available"]
+    assert_match(/OpenStreetMap/, body["attribution"])
+    assert_equal [ "w7" ], body["buildings"].map { |b| b["id"] }
+    assert_equal 2, body.dig("buildings", 0, "levels")
+
+    stub_request(:get, %r{overpass}).to_return(status: 500)
+    get url
+    assert_response :success
+    assert_not response.parsed_body["available"]
+    assert_empty response.parsed_body["buildings"]
+  end
+
+  test "no building footprints before the terrain is imported" do
+    sign_in_as users(:alice)
+    get buildings_map_relief_path(@map)
+    assert_response :not_found
+  end
+
   test "files are private to the map's members" do
     sign_in_as users(:bob)
     get file_map_relief_path(@map, "grid")
