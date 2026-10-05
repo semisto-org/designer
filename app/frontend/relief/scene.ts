@@ -410,7 +410,8 @@ ${OVERLAY_MIX}`)
 
   // ---- Buildings ----------------------------------------------------------
   //
-  // Clean volumes (footprint × height) standing on the exaggerated relief at
+  // Clean volumes (footprint, walls and a roof read from the surface model:
+  // flat, gable or single slope) standing on the exaggerated relief at
   // their real height: the group multiplies every height by the
   // exaggeration, so the rise is divided beforehand. Roofs are draped with
   // the terrain's base (the ortho shows the real roof), walls are plain.
@@ -428,58 +429,60 @@ ${OVERLAY_MIX}`)
     const x0 = width / 2
     const z0 = depth / 2
     const positions: number[] = []
-    const normals: number[] = []
     const uvs: number[] = []
     const foot: number[] = []
     const rise: number[] = []
     const roofIndices: number[] = []
     const wallIndices: number[] = []
-    const vertex = (x: number, y: number, base: number, up: number, n: [number, number, number]) => {
+    const vertex = (x: number, y: number, base: number, up: number) => {
       positions.push(x - x0, 0, y - z0)
-      normals.push(...n)
       uvs.push(x / width, 1 - y / depth)
       foot.push(base - this.grid.zBase)
       rise.push(up)
       return positions.length / 3 - 1
     }
+    const signedArea = (ring: Array<{ x: number; y: number }>) => {
+      let area = 0
+      for (let k = 0; k < ring.length; k++) {
+        const a = ring[k]
+        const b = ring[(k + 1) % ring.length]
+        area += a.x * b.y - b.x * a.y
+      }
+      return area
+    }
     for (const volume of volumes) {
-      for (const raw of volume.rings) {
-        const ring = raw.slice(0, -1)
-        if (ring.length < 3) continue
-        // One winding for all rings, so the wall normals below face outwards.
-        let area = 0
-        for (let k = 0; k < ring.length; k++) {
-          const a = ring[k]
-          const b = ring[(k + 1) % ring.length]
-          area += a.x * b.y - b.x * a.y
+      for (const shell of volume.shells) {
+        if (shell.ring.length < 3) continue
+        // Roof: planar faces (one, or two along a ridge), facing up.
+        for (const face of shell.faces) {
+          const contour = face.map((p) => new THREE.Vector2(p.x, p.y))
+          if (Math.abs(signedArea(face)) < 1e-6) continue
+          const first = positions.length / 3
+          for (const p of face) vertex(p.x, p.y, volume.base, p.h)
+          for (const [a, b, c] of THREE.ShapeUtils.triangulateShape(contour, [])) {
+            // Facing up: (b − a) × (c − a) points to +y.
+            const [p, q, r] = [face[a], face[b], face[c]]
+            const up = (q.y - p.y) * (r.x - p.x) - (q.x - p.x) * (r.y - p.y)
+            if (up > 0) roofIndices.push(first + a, first + b, first + c)
+            else roofIndices.push(first + a, first + c, first + b)
+          }
         }
-        const points = area > 0 ? ring : [...ring].reverse()
-        const contour = points.map((p) => new THREE.Vector2(p.x, p.y))
-        const first = positions.length / 3
-        for (const p of points) vertex(p.x, p.y, volume.base, volume.height, [0, 1, 0])
-        for (const [a, b, c] of THREE.ShapeUtils.triangulateShape(contour, [])) {
-          // Facing up: (b − a) × (c − a) points to +y.
-          const [p, q, r] = [points[a], points[b], points[c]]
-          const up = (q.y - p.y) * (r.x - p.x) - (q.x - p.x) * (r.y - p.y)
-          if (up > 0) roofIndices.push(first + a, first + b, first + c)
-          else roofIndices.push(first + a, first + c, first + b)
-        }
+        // Walls up to the roof at each corner (gable ends included), one
+        // winding for all rings so that they face outwards.
+        const points = signedArea(shell.ring) > 0 ? shell.ring : [...shell.ring].reverse()
         for (let k = 0; k < points.length; k++) {
           const a = points[k]
           const b = points[(k + 1) % points.length]
-          const len = Math.hypot(b.x - a.x, b.y - a.y) || 1
-          const n: [number, number, number] = [(b.y - a.y) / len, 0, -(b.x - a.x) / len]
-          const a0 = vertex(a.x, a.y, volume.base, volume.bottom, n)
-          const b0 = vertex(b.x, b.y, volume.base, volume.bottom, n)
-          const a1 = vertex(a.x, a.y, volume.base, volume.height, n)
-          const b1 = vertex(b.x, b.y, volume.base, volume.height, n)
+          const a0 = vertex(a.x, a.y, volume.base, Math.min(volume.bottom, a.top))
+          const b0 = vertex(b.x, b.y, volume.base, Math.min(volume.bottom, b.top))
+          const a1 = vertex(a.x, a.y, volume.base, a.top)
+          const b1 = vertex(b.x, b.y, volume.base, b.top)
           wallIndices.push(a0, a1, b0, b0, a1, b1)
         }
       }
     }
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
-    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3))
     geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
     geometry.setIndex([...roofIndices, ...wallIndices])
     geometry.addGroup(0, roofIndices.length, 0)
@@ -505,6 +508,9 @@ ${OVERLAY_MIX}`)
     const ex = this.exaggeration || 1
     for (let i = 0; i < this.buildingFoot.length; i++) positions[i * 3 + 1] = this.buildingFoot[i] + this.buildingRise[i] / ex
     this.buildings.geometry.attributes.position.needsUpdate = true
+    // No vertex is shared between two faces: flat shading, recomputed for
+    // the slopes of the exaggeration at hand.
+    this.buildings.geometry.computeVertexNormals()
     this.buildings.geometry.computeBoundingSphere()
   }
 

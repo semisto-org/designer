@@ -27,7 +27,9 @@ test('the height is measured on the surface model, and the base is the lowest gr
   const layer = buildingLayer(meta, [building({ levels: 1 })], { original: ground, ground, surface })
   const [volume] = layer.volumes
   assert.equal(volume.source, 'surface')
-  assert.ok(Math.abs(volume.height - 8.4) < 1e-3)
+  assert.equal(volume.roof.type, 'flat', 'a 6 % tilt of the ground is no roof slope')
+  // Measured from the lowest ground under it: 8.4 m + half the tilt.
+  assert.ok(Math.abs(volume.height - 8.7) < 0.05, String(volume.height))
   assert.ok(Math.abs(volume.base - 100.5) < 1e-3)
   assert.equal(layer.covered[7 * 20 + 8], 1, 'inside')
   assert.equal(layer.covered[4 * 20 + 8], 1, 'one cell around')
