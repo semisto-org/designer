@@ -67,3 +67,11 @@ export function ringArea(ring: Position[]): number {
   }
   return Math.abs((total * R * R) / 2)
 }
+
+/**
+ * What a point placed from the GPS keeps of its fix: the accuracy in meters,
+ * so the site can flag the imprecise ones (app/models/concerns/gps_fix.rb).
+ */
+export function gpsProperties(accuracy: number | null): { gps_accuracy_m?: number } {
+  return accuracy != null && Number.isFinite(accuracy) && accuracy > 0 ? { gps_accuracy_m: Math.round(accuracy * 10) / 10 } : {}
+}

@@ -1,0 +1,9 @@
+fr:
+  gps:
+    placed: "Placé au GPS du téléphone, à ± %{accuracy} près."
+    checked: "Placé au GPS du téléphone (± %{accuracy}), position vérifiée."
+    to_check_title: "Position à vérifier (GPS à ± %{accuracy})"
+    to_check_body: "Sous les arbres, le GPS du téléphone se trompe souvent de plus de 10 m : le point peut être n'importe où dans le cercle pointillé. Fais-le glisser à sa vraie place, par exemple sur la vue drone."
+    move: "Déplacer le point"
+    confirm: "Il est bien placé"
+    confirmed: "Position vérifiée."

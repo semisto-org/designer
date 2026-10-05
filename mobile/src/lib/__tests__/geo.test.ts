@@ -1,4 +1,4 @@
-import { anchor, bearing, cleanTrace, distance, expandBbox, lineLength, ringArea } from '../geo'
+import { anchor, bearing, cleanTrace, distance, expandBbox, gpsProperties, lineLength, ringArea } from '../geo'
 
 describe('geo', () => {
   const a: [number, number] = [4.95, 50.32]
@@ -36,5 +36,11 @@ describe('geo', () => {
     expect(w).toBeLessThan(4.9)
     expect(e).toBeGreaterThan(5.0)
     expect(n).toBeGreaterThan(50.4)
+  })
+
+  it('keeps the GPS accuracy of a placed point, rounded to the decimeter', () => {
+    expect(gpsProperties(14.237)).toEqual({ gps_accuracy_m: 14.2 })
+    expect(gpsProperties(null)).toEqual({})
+    expect(gpsProperties(0)).toEqual({})
   })
 })
