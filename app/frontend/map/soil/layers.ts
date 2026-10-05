@@ -112,8 +112,16 @@ export function installSoilLayers(map: MapLibreMap, data: { samples: Collection;
   raise(map)
 }
 
-export function setSoilLayersVisible(map: MapLibreMap, visible: boolean) {
-  SOIL_LAYER_IDS.forEach((id) => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none'))
+const SUGGESTION_LAYER_IDS: readonly string[] = [SUGGESTION_LAYER, 'soil-suggestions-rank']
+
+export function setSoilLayersVisible(
+  map: Pick<MapLibreMap, 'getLayer' | 'setLayoutProperty'>,
+  visible: { points: boolean; suggestions: boolean },
+) {
+  SOIL_LAYER_IDS.forEach((id) => {
+    const on = SUGGESTION_LAYER_IDS.includes(id) ? visible.suggestions : visible.points
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none')
+  })
 }
 
 export function highlightSample(map: MapLibreMap, id: number | null) {
