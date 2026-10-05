@@ -2,6 +2,10 @@
 
 Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden or permaculture plan on it, with an AI that knows the place. Hosted by Semisto at https://designer.semisto.org. Product plan: `/mnt/project-files/designer/plan.md` (when available) — the v1 scope is steps 1 to 4 of its roadmap.
 
+## Point of view (read before any design or copy work)
+
+`docs/point-de-vue.md` (French) is the product's point of view, decided with Michael: the European reference for designing one's own forest garden; a companion that teaches you to read your place; **the time of living things** runs through every detail (seasons, growth, before and after); the visual language is a **living field notebook** (paper, watercolour, handwritten notes). It ends with a five-question test for any screen. The home page time-lapse (`app/frontend/components/site/timelapse/`) is the reference for how bold a proposal should be: a design that stays in the usual SaaS template is not done.
+
 ## Stack (decided, do not change)
 
 - Rails 8.1, Ruby 3.3, PostgreSQL 16+ with **PostGIS** (`activerecord-postgis-adapter`, RGeo, SRID 4326 everywhere; measure in meters with `::geography`).
