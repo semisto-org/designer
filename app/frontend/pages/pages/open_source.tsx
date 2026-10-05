@@ -33,10 +33,6 @@ export default function OpenSource() {
               <h2 className="text-xl">{tf('site.open_source.why.title')}</h2>
               <p className="mt-2 text-pretty leading-relaxed text-loam-600">{tf('site.open_source.why.body')}</p>
             </div>
-            <div>
-              <h2 className="text-xl">{tf('site.open_source.heritage.title')}</h2>
-              <p className="mt-2 text-pretty leading-relaxed text-loam-600">{tf('site.open_source.heritage.body')}</p>
-            </div>
           </div>
         </div>
       </Section>
