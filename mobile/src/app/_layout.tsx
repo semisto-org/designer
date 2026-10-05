@@ -32,6 +32,7 @@ function Navigator() {
     >
       <Stack.Screen name="index" options={{ title: t('mobile.maps.title') }} />
       <Stack.Screen name="account" options={{ title: t('mobile.account.title') }} />
+      <Stack.Screen name="oauth" options={{ headerShown: false }} />
       <Stack.Screen name="maps/[id]/index" options={{ headerShown: false }} />
       <Stack.Screen name="maps/[id]/features/[featureId]" options={{ title: '' }} />
       <Stack.Screen name="maps/[id]/plant" options={{ title: t('mobile.plant.title'), presentation: 'modal' }} />
