@@ -1,10 +1,14 @@
-import { Head, Link } from '@inertiajs/react'
-import { MapPinned, Plus } from 'lucide-react'
+import { Head } from '@inertiajs/react'
+import { Plus } from 'lucide-react'
 import { ButtonLink } from '@/components/ui/Button'
 import { WelcomeCard } from '@/components/journey/WelcomeCard'
-import { formatArea, t } from '@/lib/i18n'
+import { t } from '@/lib/i18n'
+import { MapCardGrid } from '@/my_maps/MapCard'
+import { ResumeCard } from '@/my_maps/ResumeCard'
+import { SeasonNote } from '@/my_maps/SeasonNote'
 import { TeamMapsSection, groupMapsByTeam } from '@/teams/TeamMapsSection'
 import { IncomingTransfers } from '@/transfer/IncomingTransfers'
+import type { Resume } from '@/types/myMaps'
 import type { ListedMap } from '@/types/teams'
 import type { IncomingTransfer } from '@/types/transfer'
 
@@ -15,15 +19,24 @@ type Props = {
   teams?: { id: number; name: string }[]
   /** Maps someone proposes me to take over (transfer area). */
   incomingTransfers?: IncomingTransfer[]
+  /** The map worked on last and its next step: it opens large, first. */
+  resume?: Resume | null
 }
 
-export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfers = [] }: Props) {
-  const { own, byTeam } = groupMapsByTeam(maps, teams)
+// « Mes cartes » as a field notebook: the map worked on last opens as a full
+// page, the others are pinned sketches of their terrain below it.
+export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfers = [], resume }: Props) {
+  const resumed = resume ? maps.find((map) => map.id === resume.mapId) : undefined
+  const { own, byTeam } = groupMapsByTeam(maps.filter((map) => map !== resumed), teams)
+  const resumedIsOwn = resumed != null && !byTeam.some(({ team }) => team.id === resumed.teamId)
   return (
     <div>
       <Head title={t('maps.index.title')} />
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl">{t('maps.index.title')}</h1>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl">{t('maps.index.title')}</h1>
+          {maps.length > 0 && <SeasonNote />}
+        </div>
         {canCreate ? (
           // The welcome card carries the call to action for a first map.
           maps.length > 0 && <ButtonLink href="/maps/new"><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>
@@ -37,49 +50,25 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
           <WelcomeCard canCreate={canCreate} />
         </div>
       ) : (
-        own.length > 0 && <MapGrid maps={own} />
+        <>
+          {resumed && resume && <ResumeCard map={resumed} next={resume.next} />}
+          {own.length > 0 && (
+            <section className="mt-12">
+              {resumed && (
+                <h2 className="border-b border-loam-200 pb-2 text-2xl">
+                  {t(resumedIsOwn ? 'my_maps.other_maps' : 'my_maps.own_maps')}
+                </h2>
+              )}
+              <MapCardGrid maps={own} headingLevel={resumed ? 'h3' : 'h2'} />
+            </section>
+          )}
+        </>
       )}
       {byTeam.map(({ team, maps: teamMaps }) => (
-        <TeamMapsSection key={team.id} team={team} empty={teamMaps.length === 0}>
-          <MapGrid maps={teamMaps} showOwner />
+        <TeamMapsSection key={team.id} team={team} empty={teamMaps.length === 0 && resumed?.teamId !== team.id}>
+          <MapCardGrid maps={teamMaps} showOwner headingLevel="h3" />
         </TeamMapsSection>
       ))}
     </div>
-  )
-}
-
-// Team maps sit under the team's heading (h2), so their titles are h3.
-function MapGrid({ maps, showOwner = false }: { maps: ListedMap[]; showOwner?: boolean }) {
-  if (maps.length === 0) return null
-  const Title = showOwner ? 'h3' : 'h2'
-  return (
-    <ul className={showOwner ? 'mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3' : 'mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
-      {maps.map((map) => (
-        <li key={map.id}>
-          <Link
-            href={`/maps/${map.id}`}
-            className="block rounded-xl bg-white p-5 shadow-sm ring-1 ring-loam-200/70 transition hover:ring-prune-300"
-          >
-            <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-leaf-50 text-leaf-600">
-                <MapPinned className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <Title className="truncate text-base">{map.name}</Title>
-                <p className="truncate text-sm text-loam-500">{map.address ?? map.region.name}</p>
-              </div>
-            </div>
-            <dl className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-loam-500">
-              <div><dt className="sr-only">{t('maps.area')}</dt><dd>{formatArea(map.areaM2)}</dd></div>
-              <div><dt className="sr-only">{t('maps.stage')}</dt><dd>{t(`maps.stages.${map.stage}`)}</dd></div>
-              <div><dt className="sr-only">{t('maps.role')}</dt><dd>{t(`maps.roles.${map.role}`)}</dd></div>
-              {showOwner && map.role !== 'owner' && (
-                <div className="min-w-0"><dt className="sr-only">{t('maps.roles.owner')}</dt><dd className="truncate">{t('teams.maps_index.owner', { name: map.ownerName })}</dd></div>
-              )}
-            </dl>
-          </Link>
-        </li>
-      ))}
-    </ul>
   )
 }

@@ -9,9 +9,14 @@ class MapsController < ApplicationController
     maps = Map.active.where(id: Current.user.map_memberships.select(:map_id))
       .or(Map.active.where(organization_id: Current.user.organization_memberships.select(:organization_id)))
       .includes(:region, :owner).order(updated_at: :desc)
+    maps = maps.to_a
+    sketches = MapSketch.for(maps)
     render inertia: "maps/index", props: {
       # teamId + teams: team maps are listed in a section per team (teams area).
-      maps: maps.map { |m| m.as_inertia(Current.user).merge(teamId: m.organization_id) },
+      # sketch: what the card paints of the terrain (MapSketch).
+      maps: maps.map { |m| m.as_inertia(Current.user).merge(teamId: m.organization_id, sketch: sketches[m.id]) },
+      # The map worked on last opens large, with its next step (journey).
+      resume: maps.first && { mapId: maps.first.id, next: Journey.new(maps.first).next_action },
       canCreate: Current.user.entitlements.can_create_map?(Current.user),
       teams: Current.user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } },
       # Ownership transfers waiting for my answer (transfer area).

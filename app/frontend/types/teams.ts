@@ -1,4 +1,5 @@
 import type { CurrentUser, MapData, MapStage } from '@/types'
+import type { MapSketchData } from '@/types/myMaps'
 
 export type TeamRole = 'admin' | 'member'
 
@@ -61,5 +62,5 @@ export type TeamPageProps = {
 }
 
 /** A map of the "Mes cartes" list, with its team (maps controller). */
-export type ListedMap = MapData & { teamId?: number | null }
+export type ListedMap = MapData & { teamId?: number | null; sketch?: MapSketchData }
 
