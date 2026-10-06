@@ -21,6 +21,9 @@ class HelpController < ApplicationController
   end
 
   def show
+    if (slug = HelpArticle.renamed_to(params[:slug]))
+      return redirect_to(help_article_path(slug, format: request.format.json? ? :json : nil), status: :moved_permanently)
+    end
     article = HelpArticle.find(params[:slug])
     respond_to do |format|
       format.html do

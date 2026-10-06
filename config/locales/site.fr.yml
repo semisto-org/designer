@@ -6,10 +6,10 @@ fr:
     seo:
       home:
         title: "Cartographie ton terrain, conçois ton jardin-forêt"
-        description: "L'atelier en ligne de Semisto : cartographie ton terrain avec précision, comprends-le, puis conçois ton jardin-forêt pour le climat qui vient, avec Claude à tes côtés."
+        description: "L'atelier en ligne de Semisto : cartographie ton terrain avec précision, comprends-le, puis conçois ton jardin-forêt pour le climat qui vient, avec ton IA à tes côtés."
       features:
         title: "Fonctionnalités"
-        description: "Fond de carte et couches du Géoportail, dessin de l'existant, palette de plantes, fiche projet, partage et commentaires, et Claude qui lit ta carte."
+        description: "Fond de carte et couches du Géoportail, dessin de l'existant, palette de plantes, fiche projet, partage et commentaires, et ton IA qui lit ta carte."
       pricing:
         title: "Tarifs"
         description: "Une carte gratuite, un forfait particulier à 79 € par an payé une seule fois, des formules pour les professionnels. 30 % de réduction pour les membres de Semisto."
@@ -27,7 +27,7 @@ fr:
         description: "Les conditions d'utilisation de Semisto Designer : compte, formules, paiement, contenus et responsabilités. Projet à valider."
       help:
         title: "Centre d'aide"
-        description: "Des guides concrets pour créer sa première carte, lire les couches du Géoportail, dessiner l'existant, construire sa palette et connecter Claude."
+        description: "Des guides concrets pour créer sa première carte, lire les couches du Géoportail, dessiner l'existant, construire sa palette et connecter son IA."
     common:
       start_free: "Créer ma carte gratuite"
       see_pricing: "Voir les tarifs"
@@ -121,10 +121,10 @@ fr:
               detail: "Relief Copernicus, OpenStreetMap, climat qui vient"
           cta: "Toutes les fonctionnalités"
         claude:
-          kicker: "avec ton Claude"
+          kicker: "avec ton IA"
           title: "Un assistant qui connaît ton terrain"
-          body: "Ton propre Claude, ou tout assistant compatible MCP, se branche sur tes cartes. Il lit la pente, le sol et ta fiche projet, puis propose des brouillons que tu acceptes ou refuses, un par un. Designer n'envoie tes cartes à aucune IA de son côté."
-          cta: "Comment connecter Claude"
+          body: "Ton propre assistant (Claude, ChatGPT, Le Chat…) se branche sur tes cartes. Il lit la pente, le sol et ta fiche projet, puis propose des brouillons que tu acceptes ou refuses, un par un. Designer n'envoie tes cartes à aucune IA de son côté."
+          cta: "Comment connecter ton IA"
         pricing:
           kicker: "ce que ça coûte"
           title: "Gratuit pour commencer"
@@ -148,7 +148,7 @@ fr:
       hero:
         eyebrow: "Fonctionnalités"
         title: "Tout ce qu'il faut pour passer de la parcelle au projet"
-        lead: "Cartographier, comprendre, concevoir, partager : chaque étape s'appuie sur la précédente, et Claude peut lire le tout."
+        lead: "Cartographier, comprendre, concevoir, partager : chaque étape s'appuie sur la précédente, et ton IA peut lire le tout."
       groups:
         - id: "cartographier"
           icon: "map"
@@ -193,9 +193,9 @@ fr:
             - title: "Liste de plants"
               body: "Les quantités viennent des patches que tu dessines : la liste de plants se calcule toute seule, prête pour la commande."
             - title: "Fiche projet"
-              body: "Objectifs, contraintes, rythme de l'année : tout ce qui doit guider le design est noté au même endroit, et lu par Claude."
-            - title: "Brouillons de Claude"
-              body: "Claude propose des aménagements directement sur la carte. Chaque proposition reste un brouillon que tu acceptes ou refuses."
+              body: "Objectifs, contraintes, rythme de l'année : tout ce qui doit guider le design est noté au même endroit, et lu par ton IA."
+            - title: "Brouillons de ton IA"
+              body: "Ton IA propose des aménagements directement sur la carte. Chaque proposition reste un brouillon que tu acceptes ou refuses."
               plan: "yearly"
         - id: "partager"
           icon: "users"
@@ -209,10 +209,10 @@ fr:
             - title: "PDF à l'échelle"
               body: "Un plan imprimable à l'échelle, pour le chantier, un dossier ou l'affichage."
               plan: "yearly"
-            - title: "Claude lit ta carte"
+            - title: "Ton IA lit ta carte"
               body: "Connecte ton assistant en MCP : il lit les couches, les dessins et la fiche projet. La lecture est gratuite."
-              link: "/help/connecter-claude"
-              link_label: "Comment connecter Claude"
+              link: "/help/connecter-son-ia"
+              link_label: "Comment connecter ton IA"
       cta:
         title: "Essaie avec ton propre terrain"
         body: "La première carte est gratuite : il suffit d'une adresse ou d'un numéro de parcelle."
@@ -246,7 +246,7 @@ fr:
             values: ["yes", "yes", "yes", "yes"]
           - label: "Commentaires et partage"
             values: ["yes", "yes", "yes", "yes"]
-          - label: "Claude en lecture seule (MCP)"
+          - label: "Ton IA en lecture seule (MCP)"
             values: ["yes", "yes", "yes", "yes"]
           - label: "Autres cartes que la première"
             values: ["no", "yes", "yes", "yes"]
@@ -254,7 +254,7 @@ fr:
             values: ["no", "yes", "yes", "yes"]
           - label: "Analyses : eau et relief, climat futur, sol"
             values: ["no", "yes", "yes", "yes"]
-          - label: "Brouillons de Claude sur la carte"
+          - label: "Brouillons de ton IA sur la carte"
             values: ["no", "yes", "yes", "yes"]
           - label: "Éditeurs invités gratuits"
             values: ["no", "no", "yes", "yes"]
@@ -470,7 +470,7 @@ fr:
               - "Vous êtes responsable de ce que vous ajoutez et de ce que vous partagez. N'ajoutez pas de contenu illicite, ni de contenu qui porte atteinte aux droits d'autrui."
           - title: "Données publiques et aides à la décision"
             paragraphs:
-              - "Les couches de données viennent de sources publiques, affichées en l'état. Les analyses, suggestions et brouillons de Claude sont des aides à la réflexion : vérifiez-les sur le terrain et auprès des autorités compétentes (urbanisme, cadastre, zones protégées, règles sur les mares et les haies) avant de vous engager dans des travaux."
+              - "Les couches de données viennent de sources publiques, affichées en l'état. Les analyses, suggestions et brouillons de l'IA sont des aides à la réflexion : vérifiez-les sur le terrain et auprès des autorités compétentes (urbanisme, cadastre, zones protégées, règles sur les mares et les haies) avant de vous engager dans des travaux."
           - title: "Votre assistant IA"
             paragraphs:
               - "Si vous connectez un assistant IA à vos cartes via MCP, vous choisissez l'assistant et ce qu'il lit. Ce qu'il fait des données qu'il lit relève des conditions de son fournisseur. Vous pouvez révoquer l'accès à tout moment."
