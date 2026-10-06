@@ -35,11 +35,11 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "an article is served as JSON for the help drawer" do
-    get "/help/connecter-claude.json"
+    get "/help/connecter-son-ia.json"
     assert_response :success
     json = response.parsed_body
     assert_equal %w[category headings html slug summary title url], json.keys.sort
-    assert_equal "/help/connecter-claude", json["url"]
+    assert_equal "/help/connecter-son-ia", json["url"]
   end
 
   test "every article renders, with its sections, for the page and the help drawer" do
@@ -59,15 +59,23 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Cet article d'aide n'existe pas.", response.parsed_body["message"]
   end
 
+  test "a renamed article redirects to its new slug, page and JSON" do
+    get "/help/connecter-claude"
+    assert_redirected_to "/help/connecter-son-ia"
+    assert_response :moved_permanently
+    get "/help/relire-les-brouillons-de-claude.json"
+    assert_redirected_to "/help/relire-les-brouillons-de-l-ia.json"
+  end
+
   test "an unknown article page goes back to the help center" do
     get "/help/inconnu"
     assert_redirected_to help_center_path
   end
 
   test "article pages carry their own title and description in the meta tags" do
-    get "/help/connecter-claude", headers: inertia_headers
+    get "/help/connecter-son-ia", headers: inertia_headers
     meta = response.parsed_body.dig("props", "_inertia_meta").index_by { |tag| tag["headKey"] }
-    assert_equal "Connecter Claude · Semisto Designer", meta.dig("title", "innerContent")
+    assert_equal "Connecter ton IA · Semisto Designer", meta.dig("title", "innerContent")
     assert_includes meta.dig("description", "content"), "assistant IA"
   end
 

@@ -1,5 +1,5 @@
-# « Claude sur la carte » : serveur MCP, autorisation OAuth, brouillons de
-# l'IA, journal IA, page « Connecter Claude » et documentation publique.
+# « Ton IA sur la carte » : serveur MCP, autorisation OAuth, brouillons de
+# l'IA, journal IA, page « Connecter ton IA » et documentation publique.
 # Les descriptions des outils MCP vivent ici : le serveur les envoie aux
 # agents et la page /docs/mcp les affiche, depuis la même source.
 fr:
@@ -8,8 +8,10 @@ fr:
       instructions: |-
         Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
         Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
+        Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « methode » et le chapitre du sujet). Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
         Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
+        get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -30,7 +32,7 @@ fr:
         description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passe ensuite l'identifiant d'une carte à get_map."
       get_map:
         title: "Lire une carte"
-        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
       list_features:
         title: "Lister les éléments"
         description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
@@ -55,6 +57,11 @@ fr:
         description: "La fiche d'une espèce du catalogue : nom latin, noms communs, port, strate, exigences et usages, avec la provenance de chaque donnée."
         params:
           plant_id: "Identifiant de la plante, donné par search_plants."
+      get_design_guide:
+        title: "Guide de méthode de Semisto"
+        description: "La méthode de conception de Semisto, chapitre par chapitre : l'ordre de conception et la posture (methode), l'eau (eau), la structure (structure), la palette et les guildes (palette), le climat qui vient (climat). Sans topic : la liste des chapitres. À lire avant de proposer un design ou de conseiller sur l'eau, la structure ou les plantes."
+        params:
+          topic: "Chapitre à lire. Sans topic : la liste des chapitres, à commencer par « methode »."
       propose_features:
         title: "Proposer des brouillons"
         description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
@@ -68,6 +75,20 @@ fr:
           feature_notes: "Notes complémentaires : variétés, entretien, phasage…"
           feature_rationale: "Pourquoi cet élément, ici, et avec quelles données (fiche projet, couches, relief, existant…). Obligatoire, 10 caractères au moins."
           feature_properties: "Attributs libres, par exemple species, height_m, spacing_m."
+      propose_palette:
+        title: "Proposer des plantes pour la palette"
+        description: "Verse une liste de plantes dans la palette de la carte, en brouillons que l'humain accepte ou refuse dans le panneau Palette : par exemple la liste que l'utilisateur tient dans un tableur, un PDF ou l'export d'un autre outil, ou tes propres choix. Chaque plante est reconnue par species_id (search_plants) ou, à défaut, par son nom latin ou commun exact ; un nom introuvable ou ambigu est renvoyé avec sa raison : cherche-le avec search_plants et renvoie-le avec son species_id. Une espèce déjà dans la palette (ou déjà proposée) est ignorée. 200 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          summary: "Résumé de la proposition, par exemple d'où vient la liste."
+          plants: "Les plantes proposées, de 1 à 200."
+          species_id: "Identifiant de l'espèce, donné par search_plants. Prioritaire sur name."
+          plant_name: "Nom de la plante tel qu'il figure dans la source (latin ou commun), quand species_id manque."
+          variety_id: "Identifiant d'un cultivar de l'espèce (get_plant), facultatif."
+          strata: "Strate jouée sur ce design, si elle diffère de celle de l'espèce."
+          role: "Rôle : food (nourricier), support (soutien), pioneer (pionnier), hedge (haie), ornamental (ornement)."
+          target_count: "Nombre de plants visés, s'il est connu (par exemple une quantité du tableur)."
+          plant_notes: "Notes : variété souhaitée, fournisseur, emplacement prévu…"
+          plant_rationale: "Pourquoi cette plante, ou d'où elle vient (« ligne 12 du tableur de l'utilisateur »). Obligatoire, 10 caractères au moins."
       withdraw_draft:
         title: "Retirer des brouillons"
         description: "Retire des brouillons proposés par une IA et pas encore revus, par exemple pour les remplacer par une meilleure proposition. Les éléments acceptés appartiennent aux humains : ils ne peuvent pas être retirés."
@@ -82,6 +103,7 @@ fr:
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
       networks_on_request: "Les réseaux sont masqués par défaut : passe include_networks à true dans list_features pour les lire."
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
+      review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
     errors:
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Designer (OAuth) ou utilise un jeton personnel."
@@ -94,6 +116,7 @@ fr:
       plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite. La lecture de la carte reste possible."
       no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
       too_many_features: "Au plus %{max} éléments par appel."
+      too_many_plants: "Au plus %{max} plantes par appel."
       too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
       nothing_created: "Aucun brouillon créé. %{details}"
       bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
@@ -103,6 +126,15 @@ fr:
       no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
       plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Designer."
       plant_not_found: "Plante %{id} introuvable dans le catalogue."
+      guide_not_found: "Chapitre « %{topic} » introuvable. Chapitres : %{topics}."
+    palette_errors:
+      species_id: "espèce %{id} introuvable dans le catalogue."
+      variety: "cultivar %{id} introuvable pour cette espèce."
+      no_name: "species_id ou name est requis."
+      unknown: "« %{name} » est introuvable dans le catalogue : cherche-le avec search_plants et renvoie-le avec son species_id."
+      ambiguous: "« %{name} » correspond à plusieurs espèces : choisis avec search_plants et renvoie-le avec son species_id."
+      taken: "%{name} est déjà dans la palette ou déjà proposée."
+      pending: "la palette a déjà %{max} propositions en attente : attends que l'humain les revoie."
     draft_errors:
       not_an_object: "l'élément doit être un objet."
       layer: "couche inconnue (couches possibles : %{layers})."
@@ -159,11 +191,11 @@ fr:
     title: "Journal IA"
     intro: "Chaque action d'une IA sur cette carte, par le serveur MCP : avec quel client, pour quel compte, ce qu'elle a lu ou proposé."
     error: "Le journal n'a pas pu être chargé."
-    empty: "Aucune IA n'a encore travaillé sur cette carte. Connecte ton Claude depuis ton compte : il pourra lire la carte et, avec le forfait, y proposer des brouillons."
+    empty: "Aucune IA n'a encore travaillé sur cette carte. Connecte ton assistant (Claude, ChatGPT, Le Chat…) depuis ton compte : il pourra lire la carte et, avec le forfait, y proposer des brouillons."
     refused: "a tenté « %{tool} », sans succès"
     by: "compte de %{name}"
     more: "Voir les actions plus anciennes"
-    connect: "Connecter Claude"
+    connect: "Connecter ton IA"
     docs: "Documentation du serveur MCP"
     actions:
       list_maps: "a listé les cartes"
@@ -177,9 +209,13 @@ fr:
       identify_at_point: "a interrogé les couches en un point"
       search_plants: "a cherché dans le catalogue des plantes"
       get_plant: "a lu une fiche plante"
+      get_design_guide: "a lu le guide de méthode de Semisto"
       propose_features:
         one: "a proposé 1 brouillon"
         other: "a proposé %{count} brouillons"
+      propose_palette:
+        one: "a proposé 1 plante pour la palette"
+        other: "a proposé %{count} plantes pour la palette"
       withdraw_draft:
         one: "a retiré 1 brouillon"
         other: "a retiré %{count} brouillons"
@@ -200,12 +236,12 @@ fr:
     copy: "Copier"
     copied: "Copié"
   account_ai:
-    title: "Connecter Claude"
-    intro: "Branche ton propre Claude, ou tout agent compatible MCP, sur tes cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait et le rôle d'éditeur, il y pose des brouillons que tu acceptes ou refuses un par un."
+    title: "Connecter ton IA"
+    intro: "Branche ton propre assistant (Claude, ChatGPT, Le Chat…) sur tes cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait et le rôle d'éditeur, il y pose des brouillons que tu acceptes ou refuses un par un."
     url:
       title: "Adresse du connecteur"
       hint: "C'est la seule chose à copier : tu choisis ensuite, sur Semisto Designer, l'accès que tu donnes."
-    plan_hint: "Avec la formule gratuite, Claude lit tes cartes. Les brouillons qu'il pose sur la carte font partie du forfait."
+    plan_hint: "Avec la formule gratuite, ton IA lit tes cartes. Les brouillons qu'il pose sur la carte font partie du forfait."
     claude_ai:
       title: "Dans claude.ai ou Claude Desktop"
       step1: "Ouvre Paramètres → Connecteurs."
@@ -218,14 +254,25 @@ fr:
       title: "Dans Claude Code"
       step1: "Ajoute le serveur :"
       step2: "Tape ensuite /mcp dans Claude Code pour te connecter : la page d'autorisation s'ouvre dans ton navigateur."
+    chatgpt:
+      title: "Dans ChatGPT"
+      step1: "Il faut un abonnement payant. Ouvre Paramètres → Applications et connecteurs → Paramètres avancés, et active le mode développeur."
+      step2: "Reviens à « Applications et connecteurs » et clique sur « Créer »."
+      step3: "Nom : Semisto Designer. URL : l'adresse ci-dessus. Authentification : OAuth."
+      step4: "Valide : Semisto Designer te demande quel accès donner. Dans une conversation, choisis le connecteur depuis le menu « + »."
+    le_chat:
+      title: "Dans Le Chat de Mistral"
+      step1: "Ouvre Intelligence → Connecteurs, puis « Ajouter un connecteur » et l'onglet « Connecteur MCP personnalisé »."
+      step2: "Nom : Semisto Designer. URL : l'adresse ci-dessus. Authentification : OAuth 2.1."
+      step3: "Connecte-toi : Semisto Designer te demande quel accès donner. Active le connecteur dans une conversation."
     other:
-      title: "Autres agents"
-      body: "Un agent qui ne gère pas OAuth utilise un jeton personnel (ci-dessous), envoyé dans l'en-tête « Authorization: Bearer »."
+      title: "Autres assistants"
+      body: "Cursor, VS Code et tout client qui gère OAuth se connectent avec la seule adresse. Un outil qui ne gère pas OAuth utilise un jeton personnel (ci-dessous), envoyé dans l'en-tête « Authorization: Bearer ». Gemini (en Europe) et Euria n'acceptent pas encore de connecteur extérieur."
     apps:
       title: "Applications autorisées"
       intro: "Les connecteurs que tu as autorisés. Révoquer coupe leur accès immédiatement."
       empty_title: "Aucune application autorisée"
-      empty_body: "Quand tu connectes Claude, il apparaît ici."
+      empty_body: "Quand tu connectes ton IA, elle apparaît ici."
       meta: "Autorisée le %{authorized} · dernière utilisation : %{used}"
       confirm_revoke: "Révoquer l'accès de « %{name} » ? Il faudra l'autoriser à nouveau."
       revoked: "Accès de « %{name} » révoqué."
@@ -284,14 +331,14 @@ fr:
       approve: "Autoriser %{client}"
     error:
       title: "Cette demande de connexion n'est pas valide"
-      unknown_client: "L'application qui t'envoie ici n'est pas enregistrée chez Semisto Designer. Relance la connexion depuis l'application, par exemple claude.ai."
+      unknown_client: "L'application qui t'envoie ici n'est pas enregistrée chez Semisto Designer. Relance la connexion depuis l'application, par exemple Claude ou ChatGPT."
       bad_redirect: "L'adresse de retour demandée n'est pas celle que l'application a enregistrée. Par prudence, la connexion est bloquée."
-      help: "Comment connecter Claude"
+      help: "Comment connecter ton IA"
   docs_mcp:
     page_title: "Serveur MCP"
     eyebrow: "Documentation"
-    title: "Claude sur la carte : le serveur MCP de Semisto Designer"
-    intro: "Branche ton Claude, ou tout agent compatible MCP, sur tes cartes. Il lit le terrain, ses couches et la fiche projet, et propose des aménagements en brouillon que tu valides un par un. Cette page est générée à partir du code du serveur."
+    title: "Ton IA sur la carte : le serveur MCP de Semisto Designer"
+    intro: "Branche ton assistant IA (Claude, ChatGPT, Le Chat…) ou tout agent compatible MCP sur tes cartes. Il lit le terrain, ses couches et la fiche projet, et propose des aménagements en brouillon que tu valides un par un. Cette page est générée à partir du code du serveur."
     toc: "Sommaire"
     sections:
       connect: "Se connecter"
@@ -305,10 +352,14 @@ fr:
       claude_ai: "Paramètres → Connecteurs → « Ajouter un connecteur personnalisé ». Colle l'adresse, puis « Se connecter » : tu choisis l'accès donné, sur Semisto Designer."
       claude_code_title: "Claude Code"
       claude_code: "Ajoute le serveur, puis tape /mcp pour te connecter."
+      chatgpt_title: "ChatGPT"
+      chatgpt: "Avec un abonnement payant : Paramètres → Applications et connecteurs → Paramètres avancés → mode développeur, puis « Créer ». Colle l'adresse, authentification OAuth."
+      le_chat_title: "Le Chat de Mistral"
+      le_chat: "Intelligence → Connecteurs → « Ajouter un connecteur » → « Connecteur MCP personnalisé ». Colle l'adresse, authentification OAuth 2.1."
       other_title: "Autres agents"
       other: "Tout client MCP qui gère OAuth 2.1 se connecte seul. Sinon, crée un jeton personnel et envoie-le dans l'en-tête « Authorization: Bearer »."
       account: "Applications autorisées et jetons personnels se gèrent dans ton compte :"
-      account_link: "Connecter Claude"
+      account_link: "Connecter ton IA"
     auth:
       intro: "Le serveur suit la spécification d'autorisation MCP : OAuth 2.1 avec enregistrement dynamique des clients (RFC 7591), code d'autorisation avec PKCE S256, indicateur de ressource (RFC 8707) et jetons de rafraîchissement à usage unique. Les jetons d'accès durent %{minutes} minutes, les jetons de rafraîchissement %{days} jours."
       endpoints:

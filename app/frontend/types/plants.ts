@@ -141,7 +141,13 @@ export type PaletteItem = {
   planned: number
   placed: number
   planted: number
+  status?: 'active' | 'draft'
+  source?: 'human' | 'ai'
+  rationale?: string | null
 }
+
+/** A palette entry an AI proposed, waiting for a human (no counters yet). */
+export type PaletteDraft = Omit<PaletteItem, 'planned' | 'placed' | 'planted'>
 
 export type PatchLine = {
   id: number
@@ -210,6 +216,8 @@ export type PlantingState = {
   minTemperatureC: number | null
   country: string | null
   palette: PaletteItem[]
+  /** Proposed by an AI through the MCP, accepted or refused in « Palette ». */
+  paletteDrafts?: PaletteDraft[]
   species: Record<string, SpeciesSummary>
   varieties: Record<string, VarietySummary>
   patches: Record<string, PatchState>

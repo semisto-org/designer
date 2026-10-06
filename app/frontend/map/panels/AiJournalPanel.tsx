@@ -34,6 +34,7 @@ function describe(action: AiActionData): string {
   switch (action.tool) {
     case 'list_features': return t('ai_journal.actions.list_features', { count: n('features') })
     case 'propose_features': return t('ai_journal.actions.propose_features', { count: n('created') })
+    case 'propose_palette': return t('ai_journal.actions.propose_palette', { count: n('created') })
     case 'withdraw_draft': return t('ai_journal.actions.withdraw_draft', { count: n('withdrawn') })
     default: return t(`ai_journal.actions.${action.tool}`)
   }

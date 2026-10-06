@@ -8,13 +8,13 @@ class HelpArticleTest < ActiveSupport::TestCase
     construire-sa-palette-et-ses-patches la-liste-de-plants-et-la-commande planter-puis-observer
     les-alertes-reglementaires le-tableau-financier
     partager-et-commenter publier-sa-carte imprimer-un-plan-a-l-echelle
-    connecter-claude relire-les-brouillons-de-claude formules-et-forfait
+    connecter-son-ia relire-les-brouillons-de-l-ia formules-et-forfait
   ].freeze
 
   # The help center's categories, in display order.
   CATEGORIES = [
     "Démarrer", "Cartographier", "Comprendre son terrain", "Concevoir",
-    "Partager et collaborer", "Claude et l'IA", "Compte et formules"
+    "Partager et collaborer", "L'IA sur la carte", "Compte et formules"
   ].freeze
 
   FRONT_MATTER_KEYS = %w[category order summary title].freeze
@@ -99,13 +99,13 @@ class HelpArticleTest < ActiveSupport::TestCase
     assert_equal "lire-les-couches-du-geoportail", HelpArticle.search("RUISSELLEMENT").first.slug
     assert_equal "lire-les-couches-du-geoportail", HelpArticle.search("geoportail").first.slug
     assert_includes HelpArticle.search("Géoportail").map(&:slug), "choisir-ses-parcelles"
-    assert_equal [ "connecter-claude" ], HelpArticle.search("mcp").map(&:slug)
+    assert_equal [ "connecter-son-ia" ], HelpArticle.search("mcp").map(&:slug)
   end
 
   test "search requires every word and ranks title hits first" do
     assert_equal [ "formules-et-forfait" ], HelpArticle.search("tva reconduction").map(&:slug)
     assert_empty HelpArticle.search("tva licorne")
-    assert_equal "connecter-claude", HelpArticle.search("claude").first.slug
+    assert_equal "connecter-son-ia", HelpArticle.search("connecter ia").first.slug
   end
 
   test "search matches the start of words, not any substring" do

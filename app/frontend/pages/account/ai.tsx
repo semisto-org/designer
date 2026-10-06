@@ -20,7 +20,7 @@ type Props = {
 const dateFormat = new Intl.DateTimeFormat('fr-BE', { dateStyle: 'medium' })
 const formatDate = (iso: string | null) => (iso ? dateFormat.format(new Date(iso)) : '—')
 
-/** « Connecter Claude »: plug one's own Claude (or any MCP agent) on one's maps. */
+/** « Connecter ton IA »: plug one's own assistant (Claude, ChatGPT, Le Chat or any MCP client) on one's maps. */
 export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, expiryChoices }: Props) {
   const claudeCode = `claude mcp add --transport http semisto-designer ${endpoints.mcp}`
   return (
@@ -54,6 +54,23 @@ export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, e
             <li>{t('account_ai.claude_ai.step5')}</li>
           </ol>
           <p className="mt-3 rounded-lg bg-loam-50 p-3 text-sm italic text-loam-600">{t('account_ai.claude_ai.example')}</p>
+        </Card>
+        <Card className="min-w-0">
+          <h2 className="text-base">{t('account_ai.chatgpt.title')}</h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-loam-700">
+            <li>{t('account_ai.chatgpt.step1')}</li>
+            <li>{t('account_ai.chatgpt.step2')}</li>
+            <li>{t('account_ai.chatgpt.step3')}</li>
+            <li>{t('account_ai.chatgpt.step4')}</li>
+          </ol>
+        </Card>
+        <Card className="min-w-0">
+          <h2 className="text-base">{t('account_ai.le_chat.title')}</h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-loam-700">
+            <li>{t('account_ai.le_chat.step1')}</li>
+            <li>{t('account_ai.le_chat.step2')}</li>
+            <li>{t('account_ai.le_chat.step3')}</li>
+          </ol>
         </Card>
         <Card className="min-w-0">
           <h2 className="flex items-center gap-2 text-base"><Terminal className="h-4 w-4 text-loam-500" />{t('account_ai.claude_code.title')}</h2>

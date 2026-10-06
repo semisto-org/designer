@@ -26,7 +26,7 @@ fr:
       beta_body: "Les paiements ne sont pas encore ouverts. Pendant la bêta, tu disposes de toutes les fonctions, sans limite de cartes."
       current: "Ta formule"
       free_title: "Formule gratuite"
-      free_body: "Une carte, avec le fond de carte, le dessin, la palette, la fiche projet, les commentaires, le partage et Claude en lecture. Le forfait ajoute les autres cartes, le PDF à l'échelle, les analyses et les brouillons de Claude."
+      free_body: "Une carte, avec le fond de carte, le dessin, la palette, la fiche projet, les commentaires, le partage et ton IA en lecture. Le forfait ajoute les autres cartes, le PDF à l'échelle, les analyses et les brouillons de ton IA."
       yearly_title: "Forfait particulier"
       yearly_until: "Valable jusqu'au %{date}"
       yearly_days:
@@ -67,7 +67,7 @@ fr:
           draw: "Fond de carte, dessin et couches du Géoportail"
           palette: "Palette, liste de plants et fiche projet"
           share: "Commentaires et partage"
-          claude: "Claude en lecture seule (MCP)"
+          claude: "Ton IA en lecture seule (MCP)"
       yearly:
         name: "Forfait particulier"
         tagline: "Pour mener son projet jusqu'au bout"
@@ -77,7 +77,7 @@ fr:
           maps: "Jusqu'à 10 cartes"
           pdf: "PDF à l'échelle"
           analyses: "Analyses : eau et relief, climat futur, sol"
-          claude: "Brouillons de Claude sur la carte"
+          claude: "Brouillons de ton IA sur la carte"
           all_free: "Tout ce que contient la carte gratuite"
       atelier:
         name: "Atelier"
@@ -86,7 +86,7 @@ fr:
         renewal_note: "Abonnement mensuel, résiliable à tout moment"
         features:
           maps: "Jusqu'à 5 cartes"
-          all: "PDF, analyses et brouillons de Claude"
+          all: "PDF, analyses et brouillons de ton IA"
           invite: "Éditeurs invités gratuits"
       bureau:
         name: "Bureau d'études"
@@ -95,7 +95,7 @@ fr:
         renewal_note: "Abonnement mensuel, résiliable à tout moment"
         features:
           maps: "Jusqu'à 20 cartes"
-          all: "PDF, analyses et brouillons de Claude"
+          all: "PDF, analyses et brouillons de ton IA"
           invite: "Éditeurs invités gratuits"
       drone:
         name: "Mission drone"
@@ -144,9 +144,9 @@ fr:
     maps: "Cartes : %{used} sur %{max}"
     maps_unlimited: "Cartes : %{used}"
     manage_plan: "Formule et facturation"
-    ai_title: "Claude et tes cartes"
-    ai_body: "Branche ton Claude (ou un autre assistant compatible MCP) sur tes cartes pour qu'il les lise, et propose des brouillons."
-    ai_link: "Connecter Claude"
+    ai_title: "Ton IA et tes cartes"
+    ai_body: "Branche ton assistant IA (Claude, ChatGPT, Le Chat…) sur tes cartes pour qu'il les lise et y propose des brouillons."
+    ai_link: "Connecter ton IA"
     danger_title: "Supprimer mon compte"
     danger_body: "Ta demande est transmise à Semisto, qui te répond sous quelques jours. Tes cartes sont exportées ou archivées avant la suppression ; les pièces comptables (factures) sont conservées comme la loi l'exige."
     delete_request: "Demander la suppression de mon compte"
@@ -165,7 +165,7 @@ fr:
       readable: "Tes cartes restent toujours lisibles, exportables et commentables ; rien n'est jamais supprimé."
       d30:
         subject: "Ton forfait Semisto Designer se termine le %{date}"
-        body: "Ton forfait particulier est valable jusqu'au %{date}, soit dans un mois. Il couvre tes cartes supplémentaires, le PDF à l'échelle, les analyses et les brouillons de Claude."
+        body: "Ton forfait particulier est valable jusqu'au %{date}, soit dans un mois. Il couvre tes cartes supplémentaires, le PDF à l'échelle, les analyses et les brouillons de ton IA."
       d7:
         subject: "Plus que 7 jours : ton forfait Semisto Designer se termine le %{date}"
         body: "Ton forfait particulier se termine le %{date}, dans une semaine. Si ton projet avance encore, tu peux le renouveler dès maintenant."

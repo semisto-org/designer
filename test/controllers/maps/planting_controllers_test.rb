@@ -74,6 +74,39 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "palette drafts proposed by an AI are accepted or refused" do
+    apple = PaletteItem.create!(map: @map, species: plant_species(:apple), status: "draft", source: "ai", rationale: "Ligne 2 du tableur.")
+    comfrey = PaletteItem.create!(map: @map, species: plant_species(:comfrey), status: "draft", source: "ai", rationale: "Ligne 3 du tableur.")
+    alder = PaletteItem.create!(map: @map, species: plant_species(:alder), status: "draft", source: "ai", rationale: "Ligne 4 du tableur.")
+
+    sign_in_as users(:alice)
+    post accept_map_palette_item_path(@map, apple), as: :json
+    assert_response :forbidden
+
+    sign_in_as users(:michael)
+    get map_planting_path(@map), as: :json
+    assert_empty response.parsed_body["palette"]
+    assert_equal 3, response.parsed_body["paletteDrafts"].size
+
+    post accept_map_palette_item_path(@map, apple), as: :json
+    assert_response :success
+    assert_equal [ apple.id ], response.parsed_body["planting"]["palette"].map { |i| i["id"] }
+    post reject_map_palette_item_path(@map, comfrey), as: :json
+    refute PaletteItem.exists?(comfrey.id)
+
+    # Adding by hand a species Claude proposed accepts its draft.
+    post map_palette_items_path(@map), params: { palette_item: { species_id: plant_species(:alder).id } }, as: :json
+    assert_response :created
+    assert_equal "active", alder.reload.status
+    assert_empty response.parsed_body["planting"]["paletteDrafts"]
+
+    PaletteItem.create!(map: @map.reload, species: plant_species(:rosemary), status: "draft", source: "ai")
+    PaletteItem.create!(map: @map.reload, species: plant_species(:strawberry), status: "draft", source: "ai")
+    post accept_map_palette_item_path(@map, "all"), as: :json
+    assert_response :success
+    assert_equal 4, @map.palette_items.count
+  end
+
   test "palette suggestions" do
     regions(:wallonia).update!(settings: { "climate" => { "hardiness_zone" => 7 } })
     sign_in_as users(:alice)
