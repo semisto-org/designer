@@ -142,7 +142,7 @@ fr:
           cta: "Comparer les formules"
         open:
           kicker: "né sur un vrai terrain"
-          body: "Designer prolonge Claudy, l'outil des 4 Sources à Yvoir, éprouvé sur un lieu réel avant d'être ouvert à tous. Son code est libre (AGPL-3.0) et chaque source de données est citée."
+          body: "Designer a été éprouvé sur un lieu réel avant d'être ouvert à tous. Son code est libre (AGPL-3.0) et chaque source de données est citée."
           cta: "Un outil libre et transparent"
     features:
       hero:
@@ -343,9 +343,6 @@ fr:
       why:
         title: "Pourquoi libre ?"
         body: "Parce que le savoir sur le sol, l'eau et le vivant gagne à circuler, et parce que tu dois pouvoir vérifier ce que fait l'outil de ton terrain. Le service payant finance le temps nécessaire pour le faire vivre ; le code reste à tous."
-      heritage:
-        title: "Né de Claudy"
-        body: "Designer reprend et prolonge Claudy, l'application que la Fondation Les 4 Sources a construite pour son domaine d'Ahinvaux, à Yvoir. Claudy est publié sous licence MIT (© Fondation Les 4 Sources), et le code qui en est repris en garde la mention."
       data:
         title: "Données et licences"
         intro: "Designer n'invente pas les données du terrain : il les affiche, avec leur source. Voici d'où elles viennent."
