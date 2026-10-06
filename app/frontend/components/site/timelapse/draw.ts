@@ -4,11 +4,11 @@
 // (patchwork.ts). See model.ts.
 
 import {
-  BEDS, HOUSE, PARCEL, PATH, PLANTED, POND, PX_PER_M, RUNOFF, SPECIES, STREAM, TREES, WORLD_H, WORLD_W,
-  bump, crownPx, heightM, rng, seasonAt, smooth,
-  type Point, type Season, type SceneState, type SpeciesKey,
+  BEDS, BIRD_SIZE, HEDGE, HOUSE, PARCEL, PATH, PLANTED, POND, PX_PER_M, RUNOFF, SPECIES, STREAM, TRAILS, TREES, UNDERSTOREY, WORLD_H, WORLD_W,
+  birdsAt, bump, crownPx, fishAt, heightM, rng, seasonAt, smooth,
+  type Point, type Season, type SceneState, type SpeciesKey, type Tree,
 } from './model.ts'
-import { LOOKS, SPRITE, spriteRect, type Paint, type SpriteKey } from './paint.ts'
+import { LOOKS, spriteRect, type Paint, type SpriteKey } from './paint.ts'
 import { PIECES } from './patchwork.ts'
 
 type RGB = [number, number, number]
@@ -19,7 +19,7 @@ export type Palette = {
 }
 
 /** Canvas annotations, from site.home.story.canvas. */
-export type Labels = { wind: string; water: string; slope: string; walnut: string; hedge: string; shade: string; yours: string; north: string }
+export type Labels = { wind: string; water: string; slope: string; walnut: string; hedge: string; shade: string; yours: string }
 
 export type PlantedTree = { sp: SpeciesKey; x: number; y: number; seed: number; age: number }
 
@@ -58,6 +58,49 @@ export function readPalette(root: Element): Palette {
 const rgba = (c: RGB, a: number) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`
 const mix = (a: RGB, b: RGB, t: number): RGB => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 const TAU = Math.PI * 2
+
+const HERBS = UNDERSTOREY.filter((p) => SPECIES[p.sp].kind === 'herb')
+const WOODY = [...HEDGE, ...UNDERSTOREY.filter((p) => SPECIES[p.sp].kind !== 'herb')]
+const SUN = Math.atan2(-0.8, 0.55)
+
+/** The terrain's outline as a pencil would leave it: broken, wobbly strokes that overshoot the corners, gone over twice. */
+const OUTLINE: { pts: Point[]; a: number; w: number }[] = (() => {
+  const r = rng(1789)
+  const out: { pts: Point[]; a: number; w: number }[] = []
+  for (let pass = 0; pass < 2; pass++) {
+    PARCEL.forEach(([ax, ay], i) => {
+      const [bx, by] = PARCEL[(i + 1) % PARCEL.length]
+      const len = Math.hypot(bx - ax, by - ay)
+      const ux = (bx - ax) / len
+      const uy = (by - ay) / len
+      const shift = pass ? (r() - 0.5) * 2.4 : 0
+      const phase = r() * 9
+      let d = -4 - r() * 6
+      while (d < len + 6) {
+        const dash = pass ? 18 + r() * 40 : 26 + r() * 60
+        const end = Math.min(len + 4 + r() * 6, d + dash)
+        const pts: Point[] = []
+        for (let t = d; t <= end; t += 5) {
+          const wob = shift + Math.sin(t / 23 + phase) * 1.1 + (r() - 0.5) * 0.7
+          pts.push([ax + ux * t - uy * wob, ay + uy * t + ux * wob])
+        }
+        if (pts.length > 1) out.push({ pts, a: pass ? 0.3 + r() * 0.25 : 0.55 + r() * 0.3, w: pass ? 0.8 : 1.25 + r() * 0.4 })
+        d = end + (pass ? 6 + r() * 16 : 2 + r() * 5)
+      }
+    })
+  }
+  return out
+})()
+
+/** Where smoke leaves the chimney painted on the roof (house.webp), in world space. */
+const CHIMNEY: Point = (() => {
+  const w = HOUSE.w * 1.05
+  const h = (w * 235) / 360
+  const lx = 0.286 * w
+  const ly = -0.126 * h
+  const a = -0.12
+  return [HOUSE.x + HOUSE.w / 2 + lx * Math.cos(a) - ly * Math.sin(a), HOUSE.y + HOUSE.h / 2 + lx * Math.sin(a) + ly * Math.cos(a)]
+})()
 
 const CONTOURS: Point[][] = (() => {
   const r = rng(42)
@@ -98,7 +141,7 @@ export function makePaper(C: Palette): HTMLCanvasElement {
 }
 
 export class Painter {
-  readonly ctx: CanvasRenderingContext2D
+  ctx: CanvasRenderingContext2D
   C: Palette
   labels: Labels
   reduce: boolean
@@ -106,6 +149,11 @@ export class Painter {
   /** Painted sprites, once loaded; until then crowns are drawn as washes. */
   private paint: Paint | null = null
   private ground: HTMLCanvasElement | null = null
+  /** The small atlas in black, for the shadows birds cast on the garden. */
+  private silhouettes: HTMLCanvasElement | null = null
+  /** The ground covers, painted once while time stands still (hundreds of sprites that only change with the date). */
+  private herbs: { canvas: HTMLCanvasElement; tau: number; scale: number } | null = null
+  private lastTau = NaN
 
   constructor(ctx: CanvasRenderingContext2D, C: Palette, labels: Labels, reduce: boolean) {
     this.ctx = ctx
@@ -122,6 +170,15 @@ export class Painter {
   setPaint(paint: Paint) {
     this.paint = paint
     this.ground = null
+    const c = document.createElement('canvas')
+    c.width = paint.small.width
+    c.height = paint.small.height
+    const x = c.getContext('2d')!
+    x.drawImage(paint.small, 0, 0)
+    x.globalCompositeOperation = 'source-in'
+    x.fillStyle = '#000'
+    x.fillRect(0, 0, c.width, c.height)
+    this.silhouettes = c
   }
 
   /** The meadow inside the terrain, painted once in world space with a soft, irregular edge. */
@@ -151,10 +208,12 @@ export class Painter {
     return c
   }
 
-  /** The mown path as a few loose, sandy strokes rather than a ruled line. */
-  private paintedPath(snow: number) {
+  /** A path as a few loose strokes rather than a ruled line: the old mown path wide and sandy, the new ones narrow wood chip. */
+  private paintedPath(line: Point[], snow: number, narrow = false) {
     const { ctx, C } = this
-    const strokes: [RGB, number, number, number][] = [[C.humus, 0.2 * (1 - 0.7 * snow), 13, 0], [C.paper2, 0.55, 9, 1.4], [C.paper, 0.3, 4, -1.2]]
+    const strokes: [RGB, number, number, number][] = narrow
+      ? [[mix(C.humus, C.ink, 0.15), 0.18 * (1 - 0.6 * snow), 8, 0], [mix(C.humus, C.paper2, 0.6), 0.6, 5, 0.8], [C.paper, 0.3, 2, -0.6]]
+      : [[C.humus, 0.2 * (1 - 0.7 * snow), 13, 0], [C.paper2, 0.55, 9, 1.4], [C.paper, 0.3, 4, -1.2]]
     ctx.save()
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
@@ -162,28 +221,31 @@ export class Painter {
       ctx.strokeStyle = rgba(col, a)
       ctx.lineWidth = w
       ctx.beginPath()
-      PATH.forEach(([x, y], i) => {
+      line.forEach(([x, y], i) => {
         if (i === 0) return ctx.moveTo(x + off, y)
-        const [px, py] = PATH[i - 1]
+        const [px, py] = line[i - 1]
         ctx.quadraticCurveTo(px + off, py, (px + x) / 2 + off, (py + y) / 2)
-        if (i === PATH.length - 1) ctx.lineTo(x + off, y)
+        if (i === line.length - 1) ctx.lineTo(x + off, y)
       })
       ctx.stroke()
     }
     ctx.restore()
   }
 
-  /** Stamps a painted sprite of radius `r`, turned by `rot`. */
-  private sprite(key: SpriteKey, x: number, y: number, r: number, rot: number, alpha: number) {
+  /** Stamps a painted sprite of radius `r`, turned by `rot`, squeezed across by `squeeze` (a bird's wingbeat). */
+  private sprite(key: SpriteKey, x: number, y: number, r: number, rot: number, alpha: number, squeeze = 1, shade = false) {
     if (!this.paint || alpha <= 0.01 || r <= 0) return
     const { ctx } = this
-    const [sx, sy] = spriteRect(key)
+    const cell = spriteRect(key)
+    const img = shade ? this.silhouettes : cell.small ? this.paint.small : this.paint.atlas
+    if (!img) return
     const half = r * 1.06
     ctx.save()
     ctx.globalAlpha = Math.min(1, alpha)
     ctx.translate(x, y)
     ctx.rotate(rot)
-    ctx.drawImage(this.paint.atlas, sx, sy, SPRITE, SPRITE, -half, -half, half * 2, half * 2)
+    if (squeeze !== 1) ctx.scale(1, squeeze)
+    ctx.drawImage(img, cell.x, cell.y, cell.side, cell.side, -half, -half, half * 2, half * 2)
     ctx.restore()
   }
 
@@ -280,7 +342,47 @@ export class Painter {
 
   // ---------- the scene
 
-  private drawTree(t: { sp: SpeciesKey; x: number; y: number; seed: number }, age: number, S: Season, wind: number) {
+  /** A ground cover: its mulch and litter from planting day, the leaves once it has spread, dying back in winter. */
+  private drawHerb(t: Tree, age: number, S: Season) {
+    if (age < 0) return
+    const look = LOOKS[t.sp]
+    const rnd = rng(t.seed + 5)
+    const rot = rnd() * TAU
+    const R = SPECIES[t.sp].R * PX_PER_M
+    const grown = age - (t.delay ?? 0)
+    const r = crownPx(t.sp, grown)
+    const g = grown > 0 ? r / R : 0
+    this.sprite(look.bare, t.x, t.y, R * 1.25, rot + 1, smooth(0, 0.3, age) * (1 - S.leaf * g) * 0.3)
+    const leaf = look.variants && rnd() < 0.5 ? look.variants[Math.floor(rnd() * look.variants.length)] : look.leaf
+    if (g > 0) this.sprite(leaf, t.x, t.y, r * (0.9 + 0.3 * S.leaf), rot, S.leaf)
+  }
+
+  /** Paints the ground covers straight away while time runs, and from a cached layer while the visitor lingers. */
+  private groundCovers(tau: number, age: number, S: Season, density: number) {
+    const moving = Math.abs(tau - this.lastTau) > 1e-5
+    this.lastTau = tau
+    if (moving) {
+      this.herbs = null
+      for (const h of HERBS) this.drawHerb(h, age, S)
+      return
+    }
+    const scale = Math.min(2, Math.max(0.5, Math.round(density * 4) / 4))
+    if (!this.herbs || this.herbs.tau !== tau || this.herbs.scale !== scale) {
+      const canvas = document.createElement('canvas')
+      canvas.width = WORLD_W * scale
+      canvas.height = WORLD_H * scale
+      const layer = canvas.getContext('2d')!
+      layer.scale(scale, scale)
+      const main = this.ctx
+      this.ctx = layer
+      for (const h of HERBS) this.drawHerb(h, age, S)
+      this.ctx = main
+      this.herbs = { canvas, tau, scale }
+    }
+    this.ctx.drawImage(this.herbs.canvas, 0, 0, WORLD_W, WORLD_H)
+  }
+
+  private drawTree(t: Tree, age: number, S: Season, wind: number) {
     if (age < 0) return
     const { ctx, C } = this
     const s = SPECIES[t.sp]
@@ -294,13 +396,18 @@ export class Painter {
       const look = LOOKS[t.sp]
       const rnd = rng(t.seed + 5)
       const rot = rnd() * TAU
+      const leafKey = look.variants && rnd() < 0.5 ? look.variants[Math.floor(rnd() * look.variants.length)] : look.leaf
+      if (look.evergreen) {
+        this.sprite(leafKey, x, y, r, rot, 1)
+        return
+      }
       const autumn = S.autumn * (0.25 + 0.5 * rng(t.seed + 77)())
       const leafR = r * (0.7 + 0.3 * S.leaf)
-      this.sprite(look.bare, x, y, r * 0.95, rot, 0.9 * (1 - S.leaf))
-      this.sprite(look.leaf, x, y, leafR, rot, S.leaf)
+      this.sprite(look.bare, x, y, r * 0.95, rot, (s.kind === 'shrub' || s.kind === 'hedge' ? 0.65 : 0.9) * (1 - S.leaf))
+      this.sprite(leafKey, x, y, leafR, rot, S.leaf)
       if (autumn > 0.01) this.sprite(look.autumn, x, y, leafR, rot + 0.4, S.leaf * autumn * 1.4)
       if (look.fruit && S.fruit > 0.01 && age >= s.fruit) this.sprite(look.fruit, x, y, leafR, rot + 1.1, S.leaf * S.fruit * (1 - autumn))
-      if (look.blossom && S.blossom > 0.01 && age >= 0.3) this.sprite(look.blossom, x, y, r * 0.92, rot + 2.3, 0.95 * S.blossom)
+      if (look.blossom && S.blossom > 0.01 && age >= (s.kind === 'hedge' ? 1.3 : 0.3)) this.sprite(look.blossom, x, y, r * 0.92, rot + 2.3, (s.kind === 'hedge' ? 0.7 : 0.95) * S.blossom)
       return
     }
 
@@ -422,7 +529,7 @@ export class Painter {
     for (const l of CONTOURS) this.line(l, rgba(C.ink, 0.1), 1.1 / Math.max(k, 0.5))
     this.drawNeighbours(S, smooth(0.95, 0.6, st.zoom))
 
-    // ground: a painted meadow (or a light wash until it loads), greener in season, white under snow
+    // ground: a painted meadow (or a light wash until it loads), greener in season
     if (this.paint) {
       if (!this.ground) this.ground = this.meadow(this.paint)
       ctx.save()
@@ -432,11 +539,6 @@ export class Painter {
     } else {
       this.poly(PARCEL)
       ctx.fillStyle = rgba(C.wash, 0.04 + 0.1 * S.leaf)
-      ctx.fill()
-    }
-    if (S.snow > 0.02) {
-      this.poly(PARCEL)
-      ctx.fillStyle = rgba(C.snow, 0.55 * S.snow)
       ctx.fill()
     }
     // straw mulch around the young trees
@@ -449,7 +551,7 @@ export class Painter {
       }
     }
 
-    // water: the stream, then the pond once it is dug
+    // water: the stream, then the pond once it is dug, and later a fish now and then
     this.line(STREAM, rgba(C.water, 0.85), 2.4, [2, 8], this.reduce ? 0 : -wind * 12)
     const pond = smooth(0.4, 0.9, st.tau)
     if (pond > 0.01) {
@@ -458,6 +560,14 @@ export class Painter {
       if (this.paint) this.sprite('pond', POND.x, POND.y, POND.r * 1.25, -0.3, pond)
       else this.wash(POND.x, POND.y, POND.r, C.water, 33, 4, 0.24)
       ctx.restore()
+      if (this.paint && !this.reduce && S.snow < 0.5) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.ellipse(POND.x, POND.y, POND.r * 0.8, POND.r * 0.68, -0.3, 0, TAU)
+        ctx.clip()
+        for (const f of fishAt(wind, age)) this.sprite(f.kind, f.x, f.y, f.kind === 'gardon' ? 14 : 12, f.heading + Math.PI, f.alpha * 0.5 * pond * (1 - S.snow))
+        ctx.restore()
+      }
     } else {
       ctx.beginPath()
       ctx.ellipse(POND.x, POND.y, POND.r * 0.9, POND.r * 0.6, 0, 0, TAU)
@@ -467,11 +577,20 @@ export class Painter {
       ctx.setLineDash([])
     }
 
-    // path and house
-    if (this.paint) this.paintedPath(S.snow)
-    else {
+    // the old path, then the wood-chip walk laid at planting
+    const trails = smooth(PLANTED - 0.12, PLANTED, st.tau)
+    if (this.paint) {
+      this.paintedPath(PATH, S.snow)
+      if (trails > 0.01) {
+        ctx.save()
+        ctx.globalAlpha = trails
+        for (const t of TRAILS) this.paintedPath(t, S.snow, true)
+        ctx.restore()
+      }
+    } else {
       this.line(PATH, rgba(C.ink, 0.25), 7)
       this.line(PATH, rgba(C.paper, 0.95), 4)
+      for (const t of TRAILS) this.line(t, rgba(C.humus, 0.4 * trails), 4)
     }
     ctx.save()
     ctx.translate(HOUSE.x + HOUSE.w / 2, HOUSE.y + HOUSE.h / 2)
@@ -501,16 +620,6 @@ export class Painter {
       ctx.stroke()
     }
     ctx.restore()
-    // the chimney smokes in the cold months
-    if (!this.reduce && (S.f < 0.2 || S.f > 0.85)) {
-      for (let i = 0; i < 5; i++) {
-        const p = (wind * 0.25 + i / 5) % 1
-        ctx.beginPath()
-        ctx.arc(HOUSE.x + 58 + p * 30, HOUSE.y + 8 - p * 46, 4 + p * 9, 0, TAU)
-        ctx.fillStyle = rgba(C.ink, 0.08 * (1 - p))
-        ctx.fill()
-      }
-    }
 
     // vegetable beds, from spring 2026
     const beds = smooth(0.2, 0.3, st.tau)
@@ -537,20 +646,31 @@ export class Painter {
       ctx.restore()
     }
 
+    // the ground layer: mulch at planting, then herbaceous ground covers spreading between the shrubs
+    if (this.paint && age >= 0) this.groundCovers(st.tau, age, S, k * dpr)
+
+    // snow over the ground, under the shrubs and the trees
+    if (S.snow > 0.02) {
+      this.poly(PARCEL)
+      ctx.fillStyle = rgba(C.snow, 0.55 * S.snow)
+      ctx.fill()
+    }
+
     // shadows: late-afternoon sun in the south-west, longer in winter
-    const all: [{ sp: SpeciesKey; x: number; y: number; seed: number }, number][] = [
-      ...TREES.map((t): [typeof t, number] => [t, age]),
+    const all: [Tree, number][] = [
+      ...WOODY.map((t): [Tree, number] => [t, age]),
+      ...TREES.map((t): [Tree, number] => [t, age]),
       ...planted.map((p): [PlantedTree, number] => [p, p.age]),
     ]
-    const dir = Math.atan2(-0.8, 0.55)
     for (const [t, a] of all) {
       if (a < 0) continue
       const r = crownPx(t.sp, a)
-      const h = heightM(t.sp, a) * PX_PER_M * S.shadow * 0.55
+      const tree = SPECIES[t.sp].kind === 'canopy' || SPECIES[t.sp].kind === 'fruit'
+      const h = heightM(t.sp, a) * PX_PER_M * S.shadow * (tree ? 0.55 : 0.3)
       const leafy = 0.35 + 0.65 * S.leaf
       ctx.beginPath()
-      ctx.ellipse(t.x + Math.cos(dir) * h * 0.5, t.y + Math.sin(dir) * h * 0.5, r * leafy + h * 0.5, r * 0.9 * leafy, dir, 0, TAU)
-      ctx.fillStyle = rgba(C.shade, 0.07 * (0.5 + 0.5 * S.leaf))
+      ctx.ellipse(t.x + Math.cos(SUN) * h * 0.5, t.y + Math.sin(SUN) * h * 0.5, r * leafy + h * 0.5, r * 0.9 * leafy, SUN, 0, TAU)
+      ctx.fillStyle = rgba(C.shade, (tree ? 0.07 : 0.04) * (0.5 + 0.5 * S.leaf))
       ctx.fill()
     }
 
@@ -568,7 +688,7 @@ export class Painter {
       ctx.restore()
     }
 
-    // trees, small ones first so the big crowns sit on top
+    // hedge, shrubs and trees, small ones first so the big crowns sit on top
     all.sort((p, q) => crownPx(p[0].sp, p[1]) - crownPx(q[0].sp, q[1])).forEach(([t, a]) => this.drawTree(t, a, S, wind))
 
     // snow lying on the crowns
@@ -588,23 +708,50 @@ export class Painter {
       }
     }
 
-    // the terrain's outline
-    ctx.save()
-    this.poly(PARCEL)
-    ctx.setLineDash([10, 7])
-    ctx.strokeStyle = rgba(C.prune, 0.85)
-    ctx.lineWidth = 2 / Math.min(1, Math.max(k, 0.35))
-    ctx.stroke()
-    ctx.restore()
-    if (st.zoom > 0.6) {
-      for (const [x, y] of PARCEL) {
+    // the chimney smokes in the cold months, the smoke drifting east on the west wind
+    const cold = Math.max(1 - smooth(0.16, 0.24, S.f), smooth(0.8, 0.88, S.f))
+    if (cold > 0.01) {
+      const t = this.reduce ? 3 : wind
+      const smoke = mix(mix(C.ink, C.water, 0.35), C.paper, 0.45)
+      for (let i = 0; i < 14; i++) {
+        const p = (t * 0.07 + i / 14) % 1
+        const sx = CHIMNEY[0] + p * 110 + Math.sin(t * 0.7 + i * 1.9) * 4 * p
+        const sy = CHIMNEY[1] - p * 30 + Math.sin(t * 0.5 + i) * 7 * p
+        const sr = 5 + p * 22
+        const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr)
+        const a = Math.round(650 * cold * Math.pow(1 - p, 1.2) * smooth(0, 0.05, p)) / 1000
+        g.addColorStop(0, rgba(smoke, a))
+        g.addColorStop(0.6, rgba(smoke, a * 0.6))
+        g.addColorStop(1, rgba(smoke, 0))
+        ctx.fillStyle = g
         ctx.beginPath()
-        ctx.arc(x, y, 4, 0, TAU)
-        ctx.fillStyle = rgba(C.paper, 1)
+        ctx.arc(sx, sy, sr, 0, TAU)
         ctx.fill()
-        ctx.strokeStyle = rgba(C.prune, 1)
-        ctx.lineWidth = 1.5
-        ctx.stroke()
+      }
+    }
+
+    // the terrain's outline, in pencil
+    ctx.save()
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    const graphite = mix(C.ink, C.paper, 0.2)
+    const scale = 1 / Math.min(1, Math.max(k, 0.35))
+    for (const { pts, a, w } of OUTLINE) {
+      ctx.strokeStyle = rgba(graphite, a)
+      ctx.lineWidth = w * scale
+      ctx.beginPath()
+      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)))
+      ctx.stroke()
+    }
+    ctx.restore()
+
+    // birds passing over, their shadows on the garden below
+    if (this.paint && !this.reduce) {
+      for (const b of birdsAt(wind, age)) {
+        const { span, glide } = BIRD_SIZE[b.kind]
+        const beat = glide ? 1 - 0.05 * Math.sin(b.time * 1.4) : Math.sin(b.time * 0.8) > -0.3 ? 1 - 0.38 * Math.pow(Math.sin(b.time * 11), 2) : 0.94
+        this.sprite(b.kind, b.x + Math.cos(SUN) * 34, b.y + Math.sin(SUN) * 34, span / 2, b.heading, 0.1 * (0.6 + 0.4 * S.leaf), beat, true)
+        this.sprite(b.kind, b.x, b.y, span / 2, b.heading, 0.95, beat)
       }
     }
 
@@ -633,7 +780,6 @@ export class Painter {
       this.line([[450, 300 - crownPx('noyer', age) * 0.9], [470, 205]], rgba(C.prune, 0.6 * shade), 1.4)
       this.hand(labels.shade, 600, 135, 26, C.prune, shade, 'center')
     }
-    if (st.zoom > 0.7) this.hand(labels.north, 960, 40, 24, C.ink, 1, 'center')
     if (st.zoom < 0.6) this.hand(labels.yours, 500, -40, 70, C.prune, smooth(0.6, 0.35, st.zoom), 'center')
 
     // weather, in world space
