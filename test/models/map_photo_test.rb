@@ -41,12 +41,29 @@ class MapPhotoTest < ActiveSupport::TestCase
     photo = build_photo(file: "notes.txt", type: "text/plain")
     assert_not photo.valid?
     assert_match(/« notes\.txt » n'est pas une image acceptée/, photo.errors.full_messages.to_sentence)
-    assert_match(/JPEG, PNG ou WebP/, photo.errors.full_messages.to_sentence)
+    assert_match(/JPEG, PNG, WebP ou HEIC/, photo.errors.full_messages.to_sentence)
   end
 
   test "a file is judged by its content, not by the type the browser declared" do
     photo = build_photo(file: "notes.txt", type: "image/jpeg")
     assert_not photo.valid?
+  end
+
+  test "a HEIC photo (iPhone) is stored as a JPEG that keeps its EXIF block" do
+    photo = create_photo(file: "terrain_gps.heic", type: "image/heic")
+    blob = photo.reload.image.blob
+    assert_equal [ "image/jpeg", "terrain_gps.jpg" ], [ blob.content_type, blob.filename.to_s ]
+    assert_equal blob.checksum, photo.checksum
+    jpeg = Vips::Image.new_from_buffer(blob.download, "")
+    assert_equal [ 160, 120 ], [ jpeg.width, jpeg.height ]
+    assert_match "50", jpeg.get("exif-ifd3-GPSLatitude")
+    assert_match "2026:05:17 14:32:10", jpeg.get("exif-ifd2-DateTimeOriginal")
+  end
+
+  test "a file that only claims to be HEIC is refused" do
+    photo = build_photo(file: "notes.txt", type: "image/heic")
+    assert_not photo.valid?
+    assert_match(/« notes\.txt » n'est pas une image acceptée/, photo.errors.full_messages.to_sentence)
   end
 
   test "png is accepted" do

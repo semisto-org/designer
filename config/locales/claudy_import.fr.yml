@@ -165,8 +165,8 @@ fr:
           one: "%{count} déjà présente sur la carte"
           other: "%{count} déjà présentes sur la carte"
         unsupported:
-          one: "%{count} refusée (format non accepté, HEIC par exemple)"
-          other: "%{count} refusées (format non accepté, HEIC par exemple)"
+          one: "%{count} refusée (format non accepté)"
+          other: "%{count} refusées (format non accepté)"
         too_large:
           one: "%{count} trop lourde"
           other: "%{count} trop lourdes"

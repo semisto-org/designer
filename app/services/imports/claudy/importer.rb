@@ -301,13 +301,13 @@ module Imports
         def import_photo(photo, feature)
           return report.photo(:known) if @ledger[[ "photo", photo["id"].to_s ]]
           declared = photo["content_type"].to_s
-          return report.photo(:unsupported) if declared.present? && !MapPhoto::CONTENT_TYPES.include?(declared)
+          return report.photo(:unsupported) if declared.present? && !MapPhoto::UPLOAD_TYPES.include?(declared)
           return report.photo(:too_large) if photo["byte_size"].to_i > MapPhoto::MAX_BYTES
           return report.photo(:planned) if dry_run?
 
           file = source.photo_file(photo, max_bytes: MapPhoto::MAX_BYTES)
           type = Marcel::MimeType.for(StringIO.new(file.body), name: file.filename, declared_type: file.content_type.presence)
-          return report.photo(:unsupported) unless MapPhoto::CONTENT_TYPES.include?(type)
+          return report.photo(:unsupported) unless MapPhoto::UPLOAD_TYPES.include?(type)
 
           map_photo = new_photo(photo, feature)
           map_photo.image.attach(io: StringIO.new(file.body), filename: photo["filename"].presence || file.filename, content_type: type)

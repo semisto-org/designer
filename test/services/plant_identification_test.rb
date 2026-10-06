@@ -53,6 +53,12 @@ class PlantIdentificationTest < ActiveSupport::TestCase
     assert_requested(:post, PLANTNET_ENDPOINT) { |request| request.body.include?("Content-Type: image/png") }
   end
 
+  test "a HEIC photo goes to Pl@ntNet as a JPEG" do
+    stub_plantnet
+    identify(upload("terrain_gps.heic", "image/heic"))
+    assert_requested(:post, PLANTNET_ENDPOINT) { |request| request.body.include?("Content-Type: image/jpeg") && request.body.include?("terrain_gps.jpg") }
+  end
+
   test "nothing is stored" do
     stub_plantnet
     assert_no_difference -> { ActiveStorage::Blob.count } do

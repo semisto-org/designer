@@ -13,7 +13,7 @@ Une photo datée et placée vaut bien des notes. Le panneau **Photos** garde la 
 2. Touche **Ajouter des photos** (plusieurs à la fois, ou dépose-les dans le panneau), ou **Prendre une photo** sur un téléphone.
 3. Designer lit dans chaque photo **la date** et **la position GPS** quand elles y sont : la photo se place toute seule sur la carte.
 
-Formats acceptés : JPEG, PNG ou WebP, 25 Mo au plus par photo. Les photos HEIC de l'iPhone sont refusées : dans **Réglages > Appareil photo > Formats**, choisis « Le plus compatible », ou exporte-les en JPEG. Une photo déjà présente dans la carte n'est pas importée une seconde fois.
+Formats acceptés : JPEG, PNG, WebP ou HEIC (le format de l'iPhone), 25 Mo au plus par photo. Une photo HEIC est convertie en JPEG à l'envoi, avec sa position et sa date. Une photo déjà présente dans la carte n'est pas importée une seconde fois.
 
 ## Placer une photo sans position
 

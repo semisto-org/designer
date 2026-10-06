@@ -26,7 +26,7 @@ module Maps
       render json: {
         photos: scope.chronological.limit(2000).map(&:as_inertia),
         albums: albums_json,
-        limits: { maxBytes: MapPhoto::MAX_BYTES, contentTypes: MapPhoto::CONTENT_TYPES }
+        limits: { maxBytes: MapPhoto::MAX_BYTES, contentTypes: MapPhoto::UPLOAD_TYPES }
       }
     end
 

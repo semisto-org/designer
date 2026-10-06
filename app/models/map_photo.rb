@@ -7,11 +7,13 @@
 # has to parse the file's metadata.
 class MapPhoto < ApplicationRecord
   include PointLocation
+  include HeicAttachment
 
   MAX_BYTES = 25.megabytes
-  # Images only in v1 (video comes later). HEIC is refused on purpose: not
-  # every browser can show it and libvips needs extra codecs to convert it.
+  # Images only in v1 (video comes later). What is stored; a HEIC photo
+  # (iPhone) is accepted at upload and converted to JPEG (HeicAttachment).
   CONTENT_TYPES = %w[image/jpeg image/png image/webp].freeze
+  UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES).freeze
   SOURCES = %w[web phone import].freeze
   LOCATION_SOURCES = %w[exif device map manual].freeze
   # « Near » a thing on the map, for the inspector.
@@ -33,6 +35,7 @@ class MapPhoto < ApplicationRecord
     attachable.variant :large, resize_to_limit: [ 1800, 1800 ], format: :jpeg, saver: { strip: true, quality: 85 }
   end
 
+  converts_heic :image
   before_validation :normalize_heading, :record_checksum, :clear_location_source_without_location
 
   validates :caption, length: { maximum: 500 }
