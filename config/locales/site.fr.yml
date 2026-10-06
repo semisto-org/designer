@@ -246,7 +246,7 @@ fr:
             values: ["yes", "yes", "yes", "yes"]
           - label: "Commentaires et partage"
             values: ["yes", "yes", "yes", "yes"]
-          - label: "Claude en lecture seule (MCP)"
+          - label: "Claude en lecture (MCP)"
             values: ["yes", "yes", "yes", "yes"]
           - label: "Autres cartes que la première"
             values: ["no", "yes", "yes", "yes"]
@@ -254,7 +254,7 @@ fr:
             values: ["no", "yes", "yes", "yes"]
           - label: "Analyses : eau et relief, climat futur, sol"
             values: ["no", "yes", "yes", "yes"]
-          - label: "Brouillons de Claude sur la carte"
+          - label: "Brouillons de Claude sur la carte (14 jours d'essai offerts)"
             values: ["no", "yes", "yes", "yes"]
           - label: "Éditeurs invités gratuits"
             values: ["no", "no", "yes", "yes"]

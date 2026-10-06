@@ -26,7 +26,7 @@ fr:
       beta_body: "Les paiements ne sont pas encore ouverts. Pendant la bêta, tu disposes de toutes les fonctions, sans limite de cartes."
       current: "Ta formule"
       free_title: "Formule gratuite"
-      free_body: "Une carte, avec le fond de carte, le dessin, la palette, la fiche projet, les commentaires, le partage et Claude en lecture. Le forfait ajoute les autres cartes, le PDF à l'échelle, les analyses et les brouillons de Claude."
+      free_body: "Une carte, avec le fond de carte, le dessin, la palette, la fiche projet, les commentaires, le partage et Claude en lecture. Le forfait ajoute les autres cartes, le PDF à l'échelle, les analyses et les brouillons de Claude, que tu peux essayer 14 jours."
       yearly_title: "Forfait particulier"
       yearly_until: "Valable jusqu'au %{date}"
       yearly_days:
@@ -67,7 +67,7 @@ fr:
           draw: "Fond de carte, dessin et couches du Géoportail"
           palette: "Palette, liste de plants et fiche projet"
           share: "Commentaires et partage"
-          claude: "Claude en lecture seule (MCP)"
+          claude: "Claude en lecture (MCP), et 14 jours pour essayer ses brouillons"
       yearly:
         name: "Forfait particulier"
         tagline: "Pour mener son projet jusqu'au bout"
@@ -176,6 +176,12 @@ fr:
           one: "%{count} de tes cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Renouvelle le forfait pour la modifier à nouveau."
           other: "%{count} de tes cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Renouvelle le forfait pour les modifier à nouveau."
         free_ok: "Ta première carte reste entièrement modifiable, comme avant."
+    ai_trial_ending:
+      subject: "Ton essai des brouillons de Claude se termine le %{date}"
+      body: "Depuis bientôt deux semaines, Claude peut poser des brouillons sur tes cartes Semisto Designer. Ton essai se termine le %{date}."
+      after: "Ensuite, rien ne disparaît : Claude continue de lire tes cartes, et tout ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demanderont le forfait."
+      cta: "Voir les formules"
+      account: "Où en est ta connexion avec Claude : %{url}"
     drone_ordered:
       subject: "Mission drone commandée par %{name}"
       body: "%{name} (%{email}) vient de commander une mission drone sur Semisto Designer."

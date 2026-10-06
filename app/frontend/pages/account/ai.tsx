@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react'
-import { Bot, Check, KeyRound, ShieldCheck, Terminal } from 'lucide-react'
+import { Bot, Check, Hourglass, KeyRound, ShieldCheck, Sprout, Terminal } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { CopyField } from '@/components/CopyField'
 import { Button } from '@/components/ui/Button'
@@ -7,13 +7,14 @@ import { Card, EmptyState } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
-import type { AiAccessLevel, ApiTokenData, AuthorizedAppData } from '@/types/mcp'
+import { formatTrialDate, type AiAccessLevel, type AiTrialData, type ApiTokenData, type AuthorizedAppData } from '@/types/mcp'
 
 type Props = {
   endpoints: { mcp: string; docs: string }
   tokens: ApiTokenData[]
   apps: AuthorizedAppData[]
   planAllowsDrafts: boolean
+  aiTrial: AiTrialData
   expiryChoices: string[]
 }
 
@@ -21,7 +22,7 @@ const dateFormat = new Intl.DateTimeFormat('fr-BE', { dateStyle: 'medium' })
 const formatDate = (iso: string | null) => (iso ? dateFormat.format(new Date(iso)) : '—')
 
 /** « Connecter Claude »: plug one's own Claude (or any MCP agent) on one's maps. */
-export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, expiryChoices }: Props) {
+export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, aiTrial, expiryChoices }: Props) {
   const claudeCode = `claude mcp add --transport http semisto-designer ${endpoints.mcp}`
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -40,7 +41,11 @@ export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, e
         <h2 className="text-base">{t('account_ai.url.title')}</h2>
         <p className="mt-1 text-sm text-loam-600">{t('account_ai.url.hint')}</p>
         <CopyField value={endpoints.mcp} className="mt-3" />
-        {!planAllowsDrafts && <p className="mt-3 rounded-lg bg-humus-50 p-3 text-sm text-humus-700">{t('account_ai.plan_hint')}</p>}
+        {aiTrial ? (
+          <TrialNote trial={aiTrial} />
+        ) : (
+          !planAllowsDrafts && <p className="mt-3 rounded-lg bg-humus-50 p-3 text-sm text-humus-700">{t('account_ai.plan_hint')}</p>
+        )}
       </Card>
 
       <section className="grid gap-4 md:grid-cols-2">
@@ -112,6 +117,24 @@ export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, e
           {t('account_ai.docs_link')}
         </a>
       </Card>
+    </div>
+  )
+}
+
+/** The 14-day trial of drafts on the free plan: offered, running (until when), or over. */
+function TrialNote({ trial }: { trial: NonNullable<AiTrialData> }) {
+  const date = formatTrialDate(trial.endsAt)
+  const title = trial.state === 'active'
+    ? t('account_ai.trial.active_title', { count: trial.daysLeft ?? 0 })
+    : t(`account_ai.trial.${trial.state}_title`)
+  const Icon = trial.state === 'active' ? Hourglass : Sprout
+  return (
+    <div className={`mt-3 rounded-lg p-3 text-sm ${trial.state === 'ended' ? 'bg-humus-50 text-humus-800' : 'bg-leaf-50 text-leaf-800'}`}>
+      <p className="flex items-center gap-2 font-semibold"><Icon className="h-4 w-4 shrink-0" />{title}</p>
+      <p className="mt-1">{t(`account_ai.trial.${trial.state}`, { date })}</p>
+      {trial.state !== 'available' && (
+        <a href="/billing" className="mt-2 inline-block font-medium text-prune-600 hover:text-prune-800">{t('account_ai.trial.plans')}</a>
+      )}
     </div>
   )
 }

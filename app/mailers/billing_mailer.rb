@@ -9,6 +9,15 @@ class BillingMailer < ApplicationMailer
     mail to: @user.email_address, subject: t(".#{kind}.subject", date: @expires_on)
   end
 
+  # The trial of AI drafts on the free plan ends in a few days.
+  def ai_trial_ending(user)
+    @user = user
+    @ends_on = french_date(user.ai_trial_ends_at)
+    @billing_url = billing_url
+    @account_ai_url = account_ai_url
+    mail to: @user.email_address, subject: t(".subject", date: @ends_on)
+  end
+
   # A drone mission is a manual service: tell Semisto who ordered it.
   def drone_ordered(purchase)
     @purchase = purchase

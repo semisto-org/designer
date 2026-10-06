@@ -7,7 +7,7 @@ order: 80
 
 ## La carte gratuite
 
-Une carte à toi, pour toujours, avec tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et Claude en lecture seule. **Le design lui-même tend vers la gratuité** : le forfait ne paie pas le droit de concevoir.
+Une carte à toi, pour toujours, avec tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et Claude en lecture. Tu peux aussi **essayer ses brouillons pendant 14 jours** (voir plus bas). **Le design lui-même tend vers la gratuité** : le forfait ne paie pas le droit de concevoir.
 
 ## Le forfait particulier : 79 € par an, payé une fois
 
@@ -32,6 +32,17 @@ Sans promotion, dès l'ouverture :
 - **Bureau d'études** : 99 € par mois, jusqu'à 20 cartes.
 
 Ce sont des abonnements mensuels, résiliables à tout moment depuis le portail de facturation.
+
+## Essayer les brouillons de Claude : 14 jours offerts
+
+Avec la carte gratuite, Claude lit tes cartes. Pour voir ce qu'il apporte vraiment, tu peux essayer ses **brouillons** pendant **14 jours** :
+
+- l'essai démarre **la première fois que tu connectes Claude avec l'accès « Lecture et brouillons »**, pas à l'inscription : tu le lances quand tu es prêt ;
+- la date de fin est affichée sur la page **Connecter Claude** de ton compte et sur la page d'autorisation, et Claude la connaît aussi ;
+- trois jours avant la fin, tu reçois un e-mail de rappel ;
+- à la fin, rien ne disparaît : Claude continue de lire tes cartes, et ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demandent le forfait.
+
+L'essai n'a lieu qu'une fois par compte.
 
 ## La mission drone : 280 €
 
