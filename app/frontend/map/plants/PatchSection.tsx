@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/Field'
 import { formatDecimal, strataLabel, vocab } from '@/components/plants/format'
 import { api } from '@/lib/api'
 import { formatArea, t } from '@/lib/i18n'
+import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { useEditor } from '@/map/editor/EditorContext'
 import { AlertsList } from '@/map/plants/AlertsList'
 import { ownProperties } from '@/map/plants/properties'
@@ -113,6 +114,8 @@ export default function PatchSection({ feature }: { feature: MapFeature }) {
       )}
 
       {alerts.length > 0 && <AlertsList alerts={alerts} />}
+
+      <ShapeEditButton feature={feature} />
     </section>
   )
 }

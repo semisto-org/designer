@@ -1,19 +1,16 @@
 import clsx from 'clsx'
-import { Check, Spline } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { COLOR_SWATCHES, elementFor, featureColor, GENERIC_KINDS, storedProperties } from '@/map/drawing/catalog'
 import { computedValues } from '@/map/drawing/computed'
 import { saveFeature } from '@/map/drawing/save'
-import { startShapeEdit } from '@/map/drawing/store'
+import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { linkedSourceId } from '@/map/water/store'
 import type { MapFeature } from '@/types'
 import type { ElementField } from '@/types/drawing'
-
-const EDITABLE_GEOMETRIES = ['Point', 'LineString', 'Polygon']
 
 /** Library elements and generic shapes get this inspector section. */
 export function appliesToElement(feature: MapFeature): boolean {
@@ -112,7 +109,6 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
   const computed = spec ? computedValues(feature, spec) : []
   // A tap fed by a water source takes its potability (WaterSourceSection).
   const fields = (spec?.fields ?? []).filter((field) => !(field.key === 'potable' && linkedSourceId(feature) != null))
-  const canReshape = editor.canEdit && EDITABLE_GEOMETRIES.includes(feature.geometry.type)
 
   function saveProperty(key: string, value: unknown) {
     const next = { ...stored }
@@ -181,12 +177,7 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
         </section>
       )}
 
-      {canReshape && (
-        <Button variant="secondary" size="sm" className="w-full" disabled={editor.drawing} onClick={() => startShapeEdit(id)}>
-          <Spline className="h-4 w-4" />
-          {t('drawing.edit.start')}
-        </Button>
-      )}
+      <ShapeEditButton feature={feature} />
     </div>
   )
 }

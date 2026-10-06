@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatDate, formatDecimal, strataLabel, todayIso } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
+import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { useEditor } from '@/map/editor/EditorContext'
 import { numberProperty, ownProperties } from '@/map/plants/properties'
 import { usePlanting } from '@/map/plants/store'
@@ -61,6 +62,8 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
       ) : (
         <p className="rounded-lg bg-humus-50 p-2 text-xs text-humus-700">{t('plant_feature.no_species')}</p>
       )}
+
+      <ShapeEditButton feature={feature} />
 
       {editor.canEdit && (
         palette.length === 0 ? (
