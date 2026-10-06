@@ -71,7 +71,8 @@ use a local server, set it to the computer's address on the local network
 
 `development`, `preview`, `simulator` and `testflight` set `APP_VARIANT=preview`:
 `app.config.ts` then builds « Designer (test) » with the identifier
-`org.semisto.designer.preview`, which installs next to the store app and
+`org.semisto.designer.preview` (Android package `org.semisto.designertest`,
+as created in the Play Console), which installs next to the store app and
 can live in any Apple developer account. The URL scheme stays
 `org.semisto.designer`, so the OAuth redirect is unchanged.
 
