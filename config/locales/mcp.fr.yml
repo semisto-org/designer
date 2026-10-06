@@ -8,8 +8,10 @@ fr:
       instructions: |-
         Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
         Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
+        Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « methode » et le chapitre du sujet). Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
         Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
+        get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -30,7 +32,7 @@ fr:
         description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passe ensuite l'identifiant d'une carte à get_map."
       get_map:
         title: "Lire une carte"
-        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
       list_features:
         title: "Lister les éléments"
         description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
@@ -55,6 +57,11 @@ fr:
         description: "La fiche d'une espèce du catalogue : nom latin, noms communs, port, strate, exigences et usages, avec la provenance de chaque donnée."
         params:
           plant_id: "Identifiant de la plante, donné par search_plants."
+      get_design_guide:
+        title: "Guide de méthode de Semisto"
+        description: "La méthode de conception de Semisto, chapitre par chapitre : l'ordre de conception et la posture (methode), l'eau (eau), la structure (structure), la palette et les guildes (palette), le climat qui vient (climat). Sans topic : la liste des chapitres. À lire avant de proposer un design ou de conseiller sur l'eau, la structure ou les plantes."
+        params:
+          topic: "Chapitre à lire. Sans topic : la liste des chapitres, à commencer par « methode »."
       propose_features:
         title: "Proposer des brouillons"
         description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
@@ -68,6 +75,20 @@ fr:
           feature_notes: "Notes complémentaires : variétés, entretien, phasage…"
           feature_rationale: "Pourquoi cet élément, ici, et avec quelles données (fiche projet, couches, relief, existant…). Obligatoire, 10 caractères au moins."
           feature_properties: "Attributs libres, par exemple species, height_m, spacing_m."
+      propose_palette:
+        title: "Proposer des plantes pour la palette"
+        description: "Verse une liste de plantes dans la palette de la carte, en brouillons que l'humain accepte ou refuse dans le panneau Palette : par exemple la liste que l'utilisateur tient dans un tableur, un PDF ou l'export d'un autre outil, ou tes propres choix. Chaque plante est reconnue par species_id (search_plants) ou, à défaut, par son nom latin ou commun exact ; un nom introuvable ou ambigu est renvoyé avec sa raison : cherche-le avec search_plants et renvoie-le avec son species_id. Une espèce déjà dans la palette (ou déjà proposée) est ignorée. 200 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          summary: "Résumé de la proposition, par exemple d'où vient la liste."
+          plants: "Les plantes proposées, de 1 à 200."
+          species_id: "Identifiant de l'espèce, donné par search_plants. Prioritaire sur name."
+          plant_name: "Nom de la plante tel qu'il figure dans la source (latin ou commun), quand species_id manque."
+          variety_id: "Identifiant d'un cultivar de l'espèce (get_plant), facultatif."
+          strata: "Strate jouée sur ce design, si elle diffère de celle de l'espèce."
+          role: "Rôle : food (nourricier), support (soutien), pioneer (pionnier), hedge (haie), ornamental (ornement)."
+          target_count: "Nombre de plants visés, s'il est connu (par exemple une quantité du tableur)."
+          plant_notes: "Notes : variété souhaitée, fournisseur, emplacement prévu…"
+          plant_rationale: "Pourquoi cette plante, ou d'où elle vient (« ligne 12 du tableur de l'utilisateur »). Obligatoire, 10 caractères au moins."
       withdraw_draft:
         title: "Retirer des brouillons"
         description: "Retire des brouillons proposés par une IA et pas encore revus, par exemple pour les remplacer par une meilleure proposition. Les éléments acceptés appartiennent aux humains : ils ne peuvent pas être retirés."
@@ -82,6 +103,7 @@ fr:
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
       networks_on_request: "Les réseaux sont masqués par défaut : passe include_networks à true dans list_features pour les lire."
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
+      review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
     errors:
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Designer (OAuth) ou utilise un jeton personnel."
@@ -94,6 +116,7 @@ fr:
       plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite. La lecture de la carte reste possible."
       no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
       too_many_features: "Au plus %{max} éléments par appel."
+      too_many_plants: "Au plus %{max} plantes par appel."
       too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
       nothing_created: "Aucun brouillon créé. %{details}"
       bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
@@ -103,6 +126,15 @@ fr:
       no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
       plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Designer."
       plant_not_found: "Plante %{id} introuvable dans le catalogue."
+      guide_not_found: "Chapitre « %{topic} » introuvable. Chapitres : %{topics}."
+    palette_errors:
+      species_id: "espèce %{id} introuvable dans le catalogue."
+      variety: "cultivar %{id} introuvable pour cette espèce."
+      no_name: "species_id ou name est requis."
+      unknown: "« %{name} » est introuvable dans le catalogue : cherche-le avec search_plants et renvoie-le avec son species_id."
+      ambiguous: "« %{name} » correspond à plusieurs espèces : choisis avec search_plants et renvoie-le avec son species_id."
+      taken: "%{name} est déjà dans la palette ou déjà proposée."
+      pending: "la palette a déjà %{max} propositions en attente : attends que l'humain les revoie."
     draft_errors:
       not_an_object: "l'élément doit être un objet."
       layer: "couche inconnue (couches possibles : %{layers})."
@@ -177,9 +209,13 @@ fr:
       identify_at_point: "a interrogé les couches en un point"
       search_plants: "a cherché dans le catalogue des plantes"
       get_plant: "a lu une fiche plante"
+      get_design_guide: "a lu le guide de méthode de Semisto"
       propose_features:
         one: "a proposé 1 brouillon"
         other: "a proposé %{count} brouillons"
+      propose_palette:
+        one: "a proposé 1 plante pour la palette"
+        other: "a proposé %{count} plantes pour la palette"
       withdraw_draft:
         one: "a retiré 1 brouillon"
         other: "a retiré %{count} brouillons"

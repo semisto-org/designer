@@ -51,6 +51,30 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil AiAction.last.map, "no journal entry on a map the user cannot open"
   end
 
+  test "get_design_guide lists the chapters, then serves one" do
+    data, error = call_tool(@viewer, "get_design_guide")
+    refute error
+    assert_equal "methode", data["start_with"]
+    assert_equal DesignGuide.topics, data["chapters"].map { |c| c["topic"] }
+    assert_nil AiAction.last.map
+
+    data, error = call_tool(@viewer, "get_design_guide", { topic: "eau" })
+    refute error
+    assert_equal "eau", data["topic"]
+    assert_match(/courbe de niveau/, data["guide"])
+    refute_includes data["other_chapters"].map { |c| c["topic"] }, "eau"
+    assert_equal({ "topic" => "eau" }, AiAction.last.result)
+
+    text, error = call_tool(@viewer, "get_design_guide", { topic: "nope" })
+    assert error, "an unknown topic is refused by the schema or the tool"
+    assert text.present?
+  end
+
+  test "the server instructions send the agent to the design guide" do
+    body = mcp_request(@viewer, "initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "1" } })
+    assert_match(/get_design_guide/, body.dig("result", "instructions"))
+  end
+
   test "list_features filters and hides networks unless an editor asks" do
     data, = call_tool(@owner, "list_features", { map_id: @map.id })
     assert_equal [ "pond" ], data["features"].map { |f| f.dig("properties", "kind") }
@@ -207,6 +231,39 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     text, error = call_tool(@owner, "propose_features", { map_id: @map.id, features: [ feature ] * 201 })
     assert error
     assert_match(/Invalid arguments/, text)
+  end
+
+  test "propose_palette brings a list of plants into the palette as drafts" do
+    @map.palette_items.create!(species: plant_species(:alder))
+    plants = [
+      { name: "Pommier", target_count: 6, rationale: "Ligne 2 du tableur de l'utilisateur." },
+      { species_id: plant_species(:comfrey).id, role: "support", rationale: "Ligne 3 du tableur de l'utilisateur." },
+      { name: plant_species(:alder).latin_name, rationale: "Ligne 4 du tableur de l'utilisateur." },
+      { name: "Plante imaginaire", rationale: "Ligne 5 du tableur de l'utilisateur." },
+      { name: "Pommier", rationale: "Ligne 6, en double dans le tableur." }
+    ]
+    data, error = call_tool(@owner, "propose_palette", { map_id: @map.id, summary: "Mon tableur de plantes", plants: })
+    refute error, data
+    assert_equal [ 0, 1 ], data["created"].map { |c| c["index"] }
+    assert_equal [ 2, 3, 4 ], data["rejected"].map { |r| r["index"] }
+    assert_match(/déjà dans la palette/, data["rejected"][0]["error"])
+    assert_match(/search_plants/, data["rejected"][1]["error"])
+    assert_equal 2, data["pending_palette_drafts"]
+
+    apple = PaletteItem.find(data["created"][0]["id"])
+    assert_equal [ "draft", "ai", 6, plant_species(:apple) ], [ apple.status, apple.source, apple.target_count, apple.species ]
+    assert_equal [ plant_species(:alder) ], @map.palette_items.map(&:species), "drafts stay out of the palette"
+    assert_equal({ "created" => 2, "rejected" => 3 }, AiAction.last.result)
+
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal [ plant_species(:alder).id ], data["palette"].map { |p| p["species_id"] }
+    assert_equal 2, data["palette_drafts_pending"]
+
+    text, error = call_tool(@viewer, "propose_palette", { map_id: @map.id, plants: plants.first(1) })
+    assert error
+    assert_match(/propriétaire et les éditeurs/, text)
+    _, error = call_tool(@owner, "propose_palette", { map_id: @map.id, plants: [ { name: "Pommier" } ] })
+    assert error, "rationale is required"
   end
 
   test "withdraw_draft removes AI drafts only" do
