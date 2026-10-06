@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import { Eye, EyeOff, ImagePlus, Move, Pencil, Trash2 } from 'lucide-react'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { type FormEvent, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
@@ -7,6 +8,8 @@ import { t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
 import OpacitySlider from '@/map/plan_images/OpacitySlider'
+import PdfPagePicker from '@/map/plan_images/PdfPagePicker'
+import { isPdf, openPdf, pageAsImage } from '@/map/plan_images/pdf'
 import { PlacingDetails } from '@/map/plan_images/PlacingBar'
 import { initialPose, toLocal } from '@/map/plan_images/pose'
 import { type PlanImage, planImagesStore, usePlanImages } from '@/map/plan_images/store'
@@ -14,6 +17,10 @@ import { type PlanImage, planImagesStore, usePlanImages } from '@/map/plan_image
 // Same rules as the server (PlanImage::CONTENT_TYPES, MAX_BYTES).
 const CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_MEGABYTES = 30
+// A PDF never leaves the browser (one page is sent, as an image): it may be heavier.
+const MAX_PDF_MEGABYTES = 200
+
+type Picking = { pdf: PDFDocumentProxy; name: string; resolve: (page: number | null) => void }
 
 /** Width / height of an image file, read in the browser. */
 function aspectOf(file: File): Promise<number> {
@@ -61,6 +68,7 @@ export default function PlanImagesPanel() {
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [renamingId, setRenamingId] = useState<number | null>(null)
+  const [picking, setPicking] = useState<Picking | null>(null)
   // On a phone the panel covers the map: placing happens with the panel closed.
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const startPlacing = (id: number) => {
@@ -100,11 +108,34 @@ export default function PlanImagesPanel() {
     startPlacing(created.id)
   }
 
+  /** A PDF: the page to import is chosen (straight away when there is only one), then imported as an image. */
+  async function importPdf(file: File) {
+    if (file.size > MAX_PDF_MEGABYTES * 1024 * 1024) {
+      return editor.notify(t('plan_images.too_large', { name: file.name, max: MAX_PDF_MEGABYTES }), 'error')
+    }
+    let pdf: PDFDocumentProxy
+    try {
+      pdf = await openPdf(file)
+    } catch {
+      return editor.notify(t('plan_images.pdf_unreadable', { name: file.name }), 'error')
+    }
+    const name = file.name.replace(/\.pdf$/i, '')
+    try {
+      const page = pdf.numPages === 1 ? 1 : await new Promise<number | null>((resolve) => setPicking({ pdf, name, resolve }))
+      if (page == null) return
+      const image = await pageAsImage(pdf, page, pdf.numPages === 1 ? name : t('plan_images.pdf.name_with_page', { name, page }), MAX_MEGABYTES * 1024 * 1024)
+      await importFile(image)
+    } finally {
+      setPicking(null)
+      void pdf.destroy()
+    }
+  }
+
   async function onFiles(files: FileList | null) {
     if (!files?.length) return
     setBusy(true)
     try {
-      for (const file of Array.from(files)) await importFile(file)
+      for (const file of Array.from(files)) await (isPdf(file) ? importPdf(file) : importFile(file))
     } catch (error) {
       editor.notify((error as Error).message, 'error')
     } finally {
@@ -210,7 +241,7 @@ export default function PlanImagesPanel() {
           <input
             ref={input}
             type="file"
-            accept={CONTENT_TYPES.join(',')}
+            accept={['application/pdf', ...CONTENT_TYPES].join(',')}
             multiple
             className="hidden"
             onChange={(e) => void onFiles(e.target.files)}
@@ -220,6 +251,17 @@ export default function PlanImagesPanel() {
             {t(busy ? 'plan_images.adding' : 'plan_images.add')}
           </Button>
           <p className="mt-2 text-xs text-loam-500">{t('plan_images.formats', { max: MAX_MEGABYTES })}</p>
+          {picking && (
+            <PdfPagePicker
+              pdf={picking.pdf}
+              name={picking.name}
+              onPick={(page) => {
+                setPicking(null)
+                picking.resolve(page)
+              }}
+              onClose={() => picking.resolve(null)}
+            />
+          )}
         </div>
       )}
     </div>
