@@ -72,6 +72,6 @@ A screen that fails two of these is not ready.
 
 ## Where to read more
 
-- `docs/point-de-vue.md` (French): the full point of view, decided with Michael Hulet, Semisto's founder, and the reference level of boldness (the home page time-lapse).
+- `docs/point-of-view.md`: the full point of view, decided with Michael Hulet, Semisto's founder, and the reference level of boldness (the home page time-lapse).
 - `app/design_guides/`: Semisto's design method, served to AI agents by the MCP tool `get_design_guide`.
 - `CLAUDE.md`: the stack, conventions and rules for working in the code.
