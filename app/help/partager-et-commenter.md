@@ -45,7 +45,7 @@ Pour présenter un design (à un client, à une commune, à des voisins), tu peu
 ## Vie privée
 
 - Une carte est **privée** tant que tu ne la partages pas.
-- Les couches de **réseaux techniques** (eau, gaz, électricité, internet) sont masquées par défaut dans les vues publiques, les exports et pour Claude.
+- Les couches de **réseaux techniques** (eau, gaz, électricité, internet) sont masquées par défaut dans les vues publiques, les exports et pour l'IA.
 - Tu peux retirer un accès à tout moment.
 
 ## Et ensuite ?

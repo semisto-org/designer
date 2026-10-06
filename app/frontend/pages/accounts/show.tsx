@@ -78,7 +78,7 @@ export default function AccountShow({ account }: { account: AccountData }) {
             <p className="mt-2 text-sm text-loam-600">{t('account.ai_body')}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <HelpButton slug="connecter-claude" />
+            <HelpButton slug="connecter-son-ia" />
             <Link href="/account/ai" className="inline-flex items-center justify-center rounded-lg bg-prune-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-prune-700">
               {t('account.ai_link')}
             </Link>

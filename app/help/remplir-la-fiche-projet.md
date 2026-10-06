@@ -5,7 +5,7 @@ category: Démarrer
 order: 14
 ---
 
-Avant de dessiner, il faut savoir **pour qui** et **pour quoi**. La **fiche projet** rassemble tes objectifs, tes usages, ton budget, ton temps et tes contraintes. Elle t'aide à clarifier tes envies, et elle renseigne tes co-concepteurs, l'équipe de Semisto quand tu lui fais une demande, et Claude si tu le connectes.
+Avant de dessiner, il faut savoir **pour qui** et **pour quoi**. La **fiche projet** rassemble tes objectifs, tes usages, ton budget, ton temps et tes contraintes. Elle t'aide à clarifier tes envies, et elle renseigne tes co-concepteurs, l'équipe de Semisto quand tu lui fais une demande, et ton IA si tu la connectes.
 
 ## Où la trouver
 
@@ -46,4 +46,4 @@ Le propriétaire et les éditeurs de la carte. Les lecteurs la consultent en lec
 - **Écris le « pourquoi »** dans les champs libres : « des fruits pour les petits-enfants » en dit plus qu'une case cochée.
 - **Reviens-y** après une saison d'observation : tes contraintes (sol, eau, voisinage) seront plus précises.
 
-Plus la fiche est complète, plus les propositions de [Claude](/help/connecter-claude) et de Semisto collent à ton projet.
+Plus la fiche est complète, plus les propositions de [ton IA](/help/connecter-son-ia) et de Semisto collent à ton projet.

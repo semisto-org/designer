@@ -309,6 +309,20 @@ fr:
         nov: "N"
         dec: "D"
   palette:
+    drafts:
+      title:
+        one: "Ton IA propose 1 plante"
+        other: "Ton IA propose %{count} plantes"
+      intro: "Rien n'entre dans ta palette sans toi : accepte ou refuse chaque plante."
+      accept: "Accepter"
+      reject: "Refuser"
+      accept_all: "Tout accepter"
+      reject_all: "Tout refuser"
+      confirm_reject_all: "Refuser les %{count} plantes proposées ?"
+      accepted: "%{name} rejoint ta palette."
+      rejected: "Proposition refusée : %{name}."
+      all_accepted: "Les plantes proposées ont rejoint ta palette."
+      all_rejected: "Propositions refusées."
     intro: "Les espèces choisies pour ce terrain. Ajoute-les depuis le catalogue, place-les sur la carte ou compose des patches."
     search_placeholder: "Ajouter une espèce : pommier, sureau…"
     hardy_only: "Rustiques ici (zone %{zone})"

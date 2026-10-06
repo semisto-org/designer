@@ -19,7 +19,7 @@ Pour chercher plus largement, le catalogue **Plantes** se filtre par strate, por
 
 Pour chaque espèce de la palette, **Modifier** permet de préciser sa strate sur ce terrain, son rôle (nourricière, fertilité, pionnière, haie…), un objectif de nombre de plants et tes notes. L'**Équilibre des strates** montre combien de plants sont prévus à chaque étage.
 
-Tu peux aussi [connecter Claude](/help/connecter-claude) : il cherche dans le même catalogue et te suggère des espèces selon tes objectifs.
+Tu peux aussi [connecter ton IA](/help/connecter-son-ia) : elle cherche dans le même catalogue et te suggère des espèces selon tes objectifs.
 
 ## D'où viennent les informations
 

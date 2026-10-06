@@ -569,6 +569,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_140000) do
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "active", null: false
+    t.string "source", default: "human", null: false
+    t.text "rationale"
     t.index ["created_by_id"], name: "index_palette_items_on_created_by_id"
     t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "(variety_id IS NULL)"
     t.index ["map_id", "variety_id"], name: "index_palette_items_unique_variety", unique: true, where: "(variety_id IS NOT NULL)"

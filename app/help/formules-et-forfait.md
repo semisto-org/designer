@@ -7,7 +7,7 @@ order: 80
 
 ## La carte gratuite
 
-Une carte à toi, pour toujours, avec tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et Claude en lecture. Tu peux aussi **essayer ses brouillons pendant 14 jours** (voir plus bas). **Le design lui-même tend vers la gratuité** : le forfait ne paie pas le droit de concevoir.
+Une carte à toi, pour toujours, avec tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et ton IA en lecture. Tu peux aussi **essayer ses brouillons pendant 14 jours** (voir plus bas). **Le design lui-même tend vers la gratuité** : le forfait ne paie pas le droit de concevoir.
 
 ## Le forfait particulier : 79 € par an, payé une fois
 
@@ -16,7 +16,7 @@ Il ajoute :
 - **les autres cartes** (jusqu'à 10) ;
 - **le PDF à l'échelle** ;
 - **les analyses** : eau et relief, climat futur, sol ;
-- **les brouillons de Claude** sur la carte.
+- **les brouillons de ton IA** sur la carte.
 
 Le prix est **TVA comprise**. Il se paie **une seule fois** : rien n'est prélevé ensuite, il n'y a **aucune reconduction automatique**. Un an plus tard, Designer te propose de le renouveler ; c'est toi qui décides.
 
@@ -33,14 +33,14 @@ Sans promotion, dès l'ouverture :
 
 Ce sont des abonnements mensuels, résiliables à tout moment depuis le portail de facturation.
 
-## Essayer les brouillons de Claude : 14 jours offerts
+## Essayer les brouillons de ton IA : 14 jours offerts
 
-Avec la carte gratuite, Claude lit tes cartes. Pour voir ce qu'il apporte vraiment, tu peux essayer ses **brouillons** pendant **14 jours** :
+Avec la carte gratuite, ton IA lit tes cartes. Pour voir ce qu'elle apporte vraiment, tu peux essayer ses **brouillons** pendant **14 jours** :
 
-- l'essai démarre **la première fois que tu connectes Claude avec l'accès « Lecture et brouillons »**, pas à l'inscription : tu le lances quand tu es prêt ;
-- la date de fin est affichée sur la page **Connecter Claude** de ton compte et sur la page d'autorisation, et Claude la connaît aussi ;
+- l'essai démarre **la première fois que tu connectes ton IA avec l'accès « Lecture et brouillons »**, pas à l'inscription : tu le lances quand tu es prêt ;
+- la date de fin est affichée sur la page **Connecter ton IA** de ton compte et sur la page d'autorisation, et ton IA la connaît aussi ;
 - trois jours avant la fin, tu reçois un e-mail de rappel ;
-- à la fin, rien ne disparaît : Claude continue de lire tes cartes, et ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demandent le forfait.
+- à la fin, rien ne disparaît : ton IA continue de lire tes cartes, et ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demandent le forfait.
 
 L'essai n'a lieu qu'une fois par compte.
 

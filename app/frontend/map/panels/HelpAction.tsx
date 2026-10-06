@@ -26,11 +26,11 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   discussions: 'partager-et-commenter',
   publish: 'publier-sa-carte',
   actions: 'la-liste-de-plants-et-la-commande',
-  'ai-journal': 'relire-les-brouillons-de-claude',
+  'ai-journal': 'relire-les-brouillons-de-l-ia',
 }
 
 // With no panel open, the selected element says which guide fits.
-const ARTICLE_FOR_DRAFT = 'relire-les-brouillons-de-claude'
+const ARTICLE_FOR_DRAFT = 'relire-les-brouillons-de-l-ia'
 const ARTICLE_FOR_PLANT = 'planter-puis-observer'
 const ARTICLE_FOR_PATCH = 'construire-sa-palette-et-ses-patches'
 const ARTICLE_FOR_NOTE = 'calques-mesures-et-croquis'

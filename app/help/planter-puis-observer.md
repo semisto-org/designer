@@ -22,7 +22,7 @@ Sur la carte, un plant planté a une couronne pleine ; un plant encore **en proj
 En haut de l'éditeur, le sélecteur **Actuelle | Projetée** change ce que tu vois :
 
 - **Projetée** montre tout le design : ce qui est planté et ce qui est en projet ;
-- **Actuelle** montre le terrain tel qu'il est aujourd'hui : les plants en projet et les brouillons de Claude disparaissent.
+- **Actuelle** montre le terrain tel qu'il est aujourd'hui : les plants en projet et les brouillons de l'IA disparaissent.
 
 Le choix est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse en situation projetée, pour que tu les voies apparaître.
 

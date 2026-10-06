@@ -6,7 +6,10 @@ module MapPlanting
   extend ActiveSupport::Concern
 
   included do
-    has_many :palette_items, -> { order(:position, :id) }, inverse_of: :map, dependent: :delete_all
+    # The palette is what humans chose or accepted; an AI's proposals wait
+    # apart as drafts until someone accepts or refuses them.
+    has_many :palette_items, -> { active.order(:position, :id) }, inverse_of: :map, dependent: :delete_all
+    has_many :palette_drafts, -> { drafts.order(:position, :id) }, class_name: "PaletteItem", dependent: :delete_all
     has_many :patch_items, dependent: :delete_all
     has_many :plant_observations, dependent: :destroy
   end

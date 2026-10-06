@@ -17,6 +17,11 @@ class HelpArticle
     parse: { smart: true },
     render: { unsafe: false }
   }.freeze
+  # Old slug => new slug, for articles that changed name.
+  RENAMED = {
+    "connecter-claude" => "connecter-son-ia",
+    "relire-les-brouillons-de-claude" => "relire-les-brouillons-de-l-ia"
+  }.freeze
 
   attr_reader :slug, :title, :summary, :category, :order, :markdown
 
@@ -35,6 +40,11 @@ class HelpArticle
 
     def find(slug)
       all.find { |article| article.slug == slug.to_s }
+    end
+
+    # The new slug of a renamed article, so old links keep working.
+    def renamed_to(slug)
+      RENAMED[slug.to_s]
     end
 
     # [{ name:, articles: [HelpArticle] }] in display order.

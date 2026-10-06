@@ -92,7 +92,7 @@ fr:
       features:
         pdf_export: "le PDF à l'échelle"
         analyses: "les analyses (eau et relief, climat futur, sol)"
-        ai_drafts: "les brouillons de Claude"
+        ai_drafts: "les brouillons de l'IA"
       nothing_deleted: "Rien n'est supprimé : une carte en lecture seule reste consultable, exportable et commentable, et redevient modifiable avec une formule qui la couvre."
       see_plans: "Voir les formules"
       quoted: "« %{name} »"
