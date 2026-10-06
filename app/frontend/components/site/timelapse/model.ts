@@ -333,6 +333,8 @@ export const UNDERSTOREY: Tree[] = (() => {
     if (shrubs.some((s) => Math.hypot(s.x - x, s.y - y) < (adultPx(s.sp) + R) * 1.05)) continue
     shrubs.push({ sp, x, y, seed: 7000 + shrubs.length * 17 })
   }
+  // one shrub in four goes back to ground cover: the garden stays dense but walkable
+  shrubs.splice(0, shrubs.length, ...shrubs.filter((_, i) => i % 4 !== 3))
 
   const herbs: Tree[] = []
   const step = 21

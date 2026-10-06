@@ -65,7 +65,7 @@ test('the hedge runs all round the terrain, just inside it', () => {
 test('the understorey is dense, and keeps off the paths, the pond and the beds', () => {
   const herbs = UNDERSTOREY.filter((p) => SPECIES[p.sp].kind === 'herb')
   const shrubs = UNDERSTOREY.filter((p) => SPECIES[p.sp].kind === 'shrub')
-  assert.ok(herbs.length > 300 && shrubs.length > 80, `${herbs.length} herbs, ${shrubs.length} shrubs`)
+  assert.ok(herbs.length > 300 && shrubs.length > 60, `${herbs.length} herbs, ${shrubs.length} shrubs`)
   for (const p of UNDERSTOREY) {
     assert.ok(insidePolygon(p.x, p.y, PARCEL), `${p.sp} at ${p.x},${p.y}`)
     assert.ok(distToPaths(p.x, p.y) >= (SPECIES[p.sp].kind === 'herb' ? 9 : 24), `${p.sp} on a path at ${p.x},${p.y}`)
