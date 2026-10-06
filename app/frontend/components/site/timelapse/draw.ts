@@ -1,6 +1,7 @@
 // Paints the time-lapse scene on a canvas: paper, contour lines, the parcel,
 // watercolour crowns that grow and change with the seasons, shadows, weather
-// and the neighbouring fields when the camera pulls back. See model.ts.
+// and the neighbouring pieces of the patchwork when the camera pulls back
+// (patchwork.ts). See model.ts.
 
 import {
   BEDS, HOUSE, PARCEL, PATH, PLANTED, POND, PX_PER_M, RUNOFF, SPECIES, STREAM, TREES, WORLD_H, WORLD_W,
@@ -8,6 +9,7 @@ import {
   type Point, type Season, type SceneState, type SpeciesKey,
 } from './model.ts'
 import { LOOKS, SPRITE, spriteRect, type Paint, type SpriteKey } from './paint.ts'
+import { PIECES } from './patchwork.ts'
 
 type RGB = [number, number, number]
 
@@ -56,38 +58,6 @@ export function readPalette(root: Element): Palette {
 const rgba = (c: RGB, a: number) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`
 const mix = (a: RGB, b: RGB, t: number): RGB => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 const TAU = Math.PI * 2
-
-type Neighbour = { poly: Point[]; type: 'garden' | 'field' | 'wood'; blobs: [number, number, number, number, boolean][]; angle: number; cx: number; cy: number }
-
-/** A patchwork of fields, hedges, woods and other forest gardens around the terrain. */
-const NEIGHBOURS: Neighbour[] = (() => {
-  const r = rng(2026)
-  const out: Neighbour[] = []
-  for (let j = -3; j <= 3; j++) {
-    for (let i = -4; i <= 4; i++) {
-      if (i === 0 && j === 0) continue
-      const cx = 500 + i * 1080 + (r() - 0.5) * 160
-      const cy = 340 + j * 760 + (r() - 0.5) * 120
-      const w = 760 + r() * 240
-      const h = 520 + r() * 160
-      const corners: Point[] = [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]]
-      const rot = (r() - 0.5) * 0.3
-      const poly = corners.map(([x, y]): Point => {
-        const jx = x + (r() - 0.5) * 80
-        const jy = y + (r() - 0.5) * 60
-        return [cx + jx * Math.cos(rot) - jy * Math.sin(rot), cy + jx * Math.sin(rot) + jy * Math.cos(rot)]
-      })
-      const roll = r()
-      const type = roll < 0.42 ? 'garden' : roll < 0.85 ? 'field' : 'wood'
-      const n = type === 'garden' ? 10 + Math.floor(r() * 10) : type === 'wood' ? 26 : 0
-      const blobs: Neighbour['blobs'] = []
-      for (let k = 0; k < n; k++) blobs.push([cx + (r() - 0.5) * w * 0.8, cy + (r() - 0.5) * h * 0.8, (type === 'wood' ? 70 : 30) + r() * 70, 5000 + out.length * 50 + k, r() < 0.4])
-      if (r() < 0.12) continue
-      out.push({ poly, type, blobs, angle: r() * Math.PI, cx, cy })
-    }
-  }
-  return out
-})()
 
 const CONTOURS: Point[][] = (() => {
   const r = rng(42)
@@ -389,13 +359,7 @@ export class Painter {
     const { ctx, C } = this
     ctx.save()
     ctx.globalAlpha = alpha
-    const road: Point[] = [[-4000, 760], [-1200, 700], [0, 690], [1300, 720], [5000, 640]]
-    const lane: Point[] = [[1010, -3000], [980, -800], [1040, 0], [960, 1400], [1100, 3000]]
-    this.line(road, rgba(C.ink, 0.22), 14)
-    this.line(road, rgba(C.paper, 1), 9)
-    this.line(lane, rgba(C.ink, 0.18), 10)
-    this.line(lane, rgba(C.paper, 1), 6)
-    for (const n of NEIGHBOURS) {
+    for (const n of PIECES) {
       this.poly(n.poly)
       if (n.type === 'field') {
         ctx.fillStyle = S.leaf > 0.3 ? rgba(C.wash, 0.1) : rgba(C.paper2, 0.6)
@@ -419,8 +383,9 @@ export class Painter {
         ctx.fill()
       }
       this.poly(n.poly)
-      ctx.strokeStyle = rgba(C.leaf, 0.35)
-      ctx.lineWidth = 6
+      ctx.strokeStyle = rgba(C.leaf, 0.26)
+      ctx.lineWidth = 5
+      ctx.lineJoin = "round"
       ctx.stroke()
       for (const [x, y, r, seed, fruit] of n.blobs) {
         if (S.leaf > 0.05) this.wash(x, y, r * (0.6 + 0.4 * S.leaf), mix(n.type === 'wood' ? C.leaf : C.wash, C.humus, S.autumn * 0.6), seed, 2, 0.22 * S.leaf, 0)
