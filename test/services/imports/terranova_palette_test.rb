@@ -52,6 +52,15 @@ class Imports::TerranovaPaletteTest < ActiveSupport::TestCase
     assert_equal 5, @map.palette_items.count
   end
 
+  test "a species created by an earlier row is reused by the next ones" do
+    csv = "Nom commun,Nom latin\nMenthe verte,Mentha spicata\nMenthe 'Nanah',Mentha spicata 'Nanah'\nMenthe 'Moroccan',Mentha spicata 'Moroccan'\n"
+    assert_difference -> { PlantSpecies.count } => 1, -> { PlantVariety.count } => 2 do
+      result = import(csv, apply: true, create_missing: true)
+      assert_equal %w[species_created variety_created variety_created], result.lines.map(&:outcome)
+    end
+    assert_equal 3, @map.palette_items.count
+  end
+
   test "reads semicolon exports and the « Nom » column of the other views" do
     result = import("Nom;Prévu (plants)\nConsoude officinale;12\n", apply: true)
     assert_equal [ "added" ], result.lines.map(&:outcome)
