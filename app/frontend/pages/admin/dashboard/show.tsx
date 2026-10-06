@@ -117,7 +117,12 @@ export default function AdminDashboard({ stats, recentUsers, recentMaps, events 
         </section>
 
         <section>
-          <h2 className="text-xl">{t('admin.dashboard.recent_maps')}</h2>
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-xl">{t('admin.dashboard.recent_maps')}</h2>
+            <Link href="/admin/maps" className="inline-flex items-center gap-1 text-sm text-prune-700 hover:underline">
+              {t('admin.dashboard.all_maps')}<ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </div>
           {recentMaps.length === 0 && <p className="mt-2 text-sm text-loam-500">{t('admin.dashboard.no_maps')}</p>}
           <Card className={recentMaps.length === 0 ? 'hidden' : 'mt-3 p-0!'}>
             <ul className="divide-y divide-loam-100">
