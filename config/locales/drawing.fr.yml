@@ -255,6 +255,11 @@ fr:
       saved: "Forme enregistrée."
       unchanged: "La forme n'a pas changé."
       unsupported: "Cette forme ne peut pas être modifiée ici."
+      move: "Déplacer"
+      move_hint: "Fais glisser le point orange à la bonne place, puis enregistre."
+      save_position: "Enregistrer la position"
+      moved: "Position enregistrée."
+      unmoved: "La position n'a pas changé."
 
     element:
       properties: "Caractéristiques"

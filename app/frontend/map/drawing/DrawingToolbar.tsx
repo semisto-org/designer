@@ -106,14 +106,15 @@ export default function DrawingToolbar() {
       setShapeMeasure(null)
       const editor = latest.current
       if (!geometry) return editor.select(shapeEditId)
+      const point = geometry.type === 'Point'
       if (sameGeometry(geometry, feature.geometry)) {
-        editor.notify(t('drawing.edit.unchanged'))
+        editor.notify(t(point ? 'drawing.edit.unmoved' : 'drawing.edit.unchanged'))
       } else if (await saveFeature(editor, shapeEditId, {
         geometry,
         // A saved measure keeps its values in step with its shape.
         ...(feature.properties.kind === 'measure' ? { properties: { ...storedProperties(feature), ...measureProperties(geometry) } } : {}),
       })) {
-        editor.notify(t('drawing.edit.saved'))
+        editor.notify(t(point ? 'drawing.edit.moved' : 'drawing.edit.saved'))
       }
       editor.select(shapeEditId)
     })
@@ -126,6 +127,7 @@ export default function DrawingToolbar() {
     }
   }, [shapeEditId])
 
+  const movingPoint = shapeEditId != null && editor.features.find((f) => f.properties.id === shapeEditId)?.geometry.type === 'Point'
   const kindLabel = drawingSpec ? t(`editor.kinds.${drawingSpec.kind}`) : ''
   const geometry = drawingSpec?.geometries[0]
 
@@ -169,8 +171,8 @@ export default function DrawingToolbar() {
           {tool === 'measure' && <MeasureTool onClose={close} />}
           {tool === 'sketch' && editor.canEdit && <SketchTool onClose={close} />}
           {tool === 'shape' && (
-            <HintBar text={[t('drawing.edit.hint'), shapeMeasure].filter(Boolean).join(' · ')}>
-              <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.edit.save')}</Button>
+            <HintBar text={movingPoint ? t('drawing.edit.move_hint') : [t('drawing.edit.hint'), shapeMeasure].filter(Boolean).join(' · ')}>
+              <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t(movingPoint ? 'drawing.edit.save_position' : 'drawing.edit.save')}</Button>
               <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.edit.cancel')}</Button>
             </HintBar>
           )}
