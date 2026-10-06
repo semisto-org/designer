@@ -3,7 +3,7 @@ require "test_helper"
 class DesignGuideTest < ActiveSupport::TestCase
   test "every chapter parses, in reading order, starting with the method" do
     guides = DesignGuide.all
-    assert_equal %w[methode eau structure palette climat], guides.map(&:topic)
+    assert_equal %w[method water structure palette climate], guides.map(&:topic)
     guides.each do |guide|
       assert guide.title.present?, guide.topic
       assert guide.summary.present?, guide.topic
@@ -13,14 +13,14 @@ class DesignGuideTest < ActiveSupport::TestCase
   end
 
   test "find by topic" do
-    assert_equal "eau", DesignGuide.find("eau").topic
-    assert_equal "eau", DesignGuide.find(:eau).topic
+    assert_equal "water", DesignGuide.find("water").topic
+    assert_equal "water", DesignGuide.find(:water).topic
     assert_nil DesignGuide.find("nope")
   end
 
   test "chapters only name topics that exist" do
     DesignGuide.all.each do |guide|
-      guide.markdown.scan(/`([a-z_]+)`/).flatten.select { |word| %w[eau structure palette climat methode].include?(word) }
+      guide.markdown.scan(/`([a-z_]+)`/).flatten.select { |word| %w[method water structure palette climate].include?(word) }
         .each { |topic| assert DesignGuide.find(topic), "#{guide.topic} names #{topic}" }
     end
   end
