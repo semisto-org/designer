@@ -142,6 +142,9 @@ Rails.application.routes.draw do
       resource :terrain, only: %i[show create]
       resource :water_settings, only: :update
       resources :water_sources, only: %i[index create update destroy]
+      resources :plan_images, only: %i[index create update destroy] do
+        get :image, on: :member
+      end
     end
   end
   # --- end relief-water ---

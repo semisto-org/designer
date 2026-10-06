@@ -92,7 +92,7 @@ class HelpArticleTest < ActiveSupport::TestCase
     names = HelpArticle.categories.map { |c| c[:name] }
     assert_equal CATEGORIES, names
     cartographier = HelpArticle.categories.find { |c| c[:name] == "Cartographier" }[:articles]
-    assert_equal %w[choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
+    assert_equal %w[choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone caler-un-fond-de-plan dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
   end
 
   test "search finds articles by words in the body, ignoring case and accents" do

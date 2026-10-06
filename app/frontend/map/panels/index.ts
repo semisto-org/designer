@@ -1,4 +1,4 @@
-import { Bot, Camera, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -49,6 +49,8 @@ import LiveSync from '@/map/drawing/LiveSync'
 import AerialViewsOverlay from '@/drone/AerialViewsOverlay'
 import TransferNotice from '@/transfer/TransferNotice'
 import WaterSourcesPanel from '@/map/water/WaterSourcesPanel'
+import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
+import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 
 // Register editor panels here (one line per panel, keep groups together).
@@ -57,6 +59,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'map', component: ProjectPanel, order: 5, modal: true },
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'map', component: LayersPanel, order: 20 },
+  { id: 'plan-images', label: 'plan_images.panel_title', icon: FileImage, group: 'map', component: PlanImagesPanel, order: 25 },
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'understand', component: ReliefPanel, order: 30 },
   { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'understand', component: ClimatePanel, order: 40 },
   { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'understand', component: SoilPanel, order: 60 },
@@ -112,5 +115,6 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },
   { id: 'aerial-views', component: AerialViewsOverlay, order: 1 },
+  { id: 'plan-images', component: PlanImagesOverlay, order: 2 },
   { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
 ]
