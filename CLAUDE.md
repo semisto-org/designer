@@ -67,6 +67,7 @@ Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden 
 - A user's plan is `User#current_plan_key`. Maps beyond the plan's limit are read-only (`Map#read_only_by_plan?`, enforced in `MapScoped#require_editor!`, `readOnlyByPlan` in the map props, badge in the editor header). Nothing is ever deleted when a pass expires.
 - Public pages (`PagesController`, `app/frontend/pages/pages/*`) render server-side meta tags through `PublicMeta#render_public` and the page copy lives in `config/locales/site.fr.yml` (read with `content()` / `tf()` from `lib/content.ts`, which also applies French typography). The legal pages are drafts marked « Projet — à valider ».
 - Help center: Markdown articles in `app/help/*.md` (front matter: title, summary, category, order), served by `HelpController` (`/help`, `/help/:slug`, and `.json` for both). Put `<HelpButton slug="…" />` (components/help) next to any screen that needs contextual help.
+- Design method for AI agents: Markdown chapters in `app/design_guides/*.md` (front matter: title, summary, order, status), **written in English** like all repository content except the UI locales and help articles; served by the MCP tool `get_design_guide` (`DesignGuide`). Semisto's design knowledge goes there, not into code or a client-side skill.
 
 ## Phone app (`mobile/`)
 
