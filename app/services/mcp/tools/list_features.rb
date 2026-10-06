@@ -9,6 +9,7 @@ module Mcp
           map_id: { type: "integer", minimum: 1, description: :map_id },
           layer: { type: "string", enum: MapFeature::LAYERS, description: :layer },
           kind: { type: "string", minLength: 1, maxLength: 60, description: :kind },
+          tag: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH, description: :tag },
           bbox: {
             type: "array", items: { type: "number" }, minItems: 4, maxItems: 4, description: :bbox
           },
@@ -22,7 +23,7 @@ module Mcp
       )
       hints
 
-      def perform(map_id:, layer: nil, kind: nil, bbox: nil, status: "all", include_networks: false,
+      def perform(map_id:, layer: nil, kind: nil, tag: nil, bbox: nil, status: "all", include_networks: false,
         include_geometry: true, limit: DEFAULT_LIMIT, after_id: nil)
         map = find_map!(map_id)
         networks = networks_visible?(include_networks)
@@ -31,6 +32,7 @@ module Mcp
         scope = scope.where.not(layer: "networks") unless networks
         scope = scope.where(layer:) if layer
         scope = scope.where(kind:) if kind
+        scope = scope.tagged(tag) if tag
         scope = scope.where("ST_Intersects(map_features.geometry, ST_MakeEnvelope(?, ?, ?, ?, 4326))", *checked_bbox(bbox)) if bbox
         total = scope.count
         scope = scope.where("map_features.id > ?", after_id) if after_id

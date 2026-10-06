@@ -34,26 +34,34 @@ class PlantedQuantities
                AND i.variety_id IS NOT DISTINCT FROM
                    (CASE WHEN f.properties->>'variety_id' ~ '^[0-9]+$' THEN (f.properties->>'variety_id')::bigint END)
                AND ST_Covers(p.geometry, f.geometry)
+               AND ($2::text IS NULL OR CASE WHEN $2 = '' THEN cardinality(p.tags) = 0 ELSE EXISTS (SELECT 1 FROM unnest(p.tags) t WHERE lower(t) = lower($2)) END)
            ) AS in_patch
     FROM map_features f
     WHERE f.map_id = $1 AND f.kind = 'plant' AND f.status = 'active'
+      AND ($2::text IS NULL OR CASE WHEN $2 = '' THEN cardinality(f.tags) = 0 ELSE EXISTS (SELECT 1 FROM unnest(f.tags) t WHERE lower(t) = lower($2)) END)
     ORDER BY f.id
   SQL
 
   PATCH_AREAS_SQL = <<~SQL.squish.freeze
     SELECT id, ST_Area(geometry::geography) AS area
     FROM map_features WHERE map_id = $1 AND kind = 'patch' AND status = 'active'
+      AND ($2::text IS NULL OR CASE WHEN $2 = '' THEN cardinality(tags) = 0 ELSE EXISTS (SELECT 1 FROM unnest(tags) t WHERE lower(t) = lower($2)) END)
   SQL
 
   attr_reader :map, :patches, :plants, :palette
 
-  def self.for(map)
+  # `tag`: only the plants and patches carrying this tag (case-insensitive),
+  # or `:untagged` for those without any, for the plant list filtered or
+  # grouped by tag. A plant point only counts as a placement of a patch
+  # line when the patch passes the same filter.
+  def self.for(map, tag: nil)
     connection = MapFeature.connection
-    plants = connection.select_all(PLANTS_SQL, "plants", [ map.id ]).map do |row|
+    tag = tag == :untagged ? "" : MapFeature.normalize_tag(tag).presence
+    plants = connection.select_all(PLANTS_SQL, "plants", [ map.id, tag ]).map do |row|
       PlantPoint.new(id: row["id"], species_id: row["species_id"], variety_id: row["variety_id"],
                      planted_on: row["planted_on"].presence, in_patch: row["in_patch"])
     end
-    areas = connection.select_rows(PATCH_AREAS_SQL, "patch areas", [ map.id ]).to_h { |id, area| [ id, area.to_f.round(1) ] }
+    areas = connection.select_rows(PATCH_AREAS_SQL, "patch areas", [ map.id, tag ]).to_h { |id, area| [ id, area.to_f.round(1) ] }
     features = map.features.where(id: areas.keys).order(:id).to_a
     items = PatchItem.where(map_feature_id: areas.keys).includes(species: :common_names, variety: :common_names)
                      .order(:position, :id).group_by(&:map_feature_id)

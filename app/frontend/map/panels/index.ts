@@ -53,6 +53,7 @@ import WaterSourcesPanel from '@/map/water/WaterSourcesPanel'
 import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
+import TagsSection from '@/map/tags/TagsSection'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -90,6 +91,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
+  { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
 ]
 
 // Top bar actions (right side), e.g. share, export.

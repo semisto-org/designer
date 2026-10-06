@@ -107,6 +107,8 @@ export type MapFeatureProperties = {
   source: 'human' | 'ai'
   rationale: string | null
   style: Record<string, unknown>
+  /** Free tags shared by the map's elements (MapFeature::Tags). */
+  tags?: string[]
   lockVersion: number
   updatedAt: string
   [key: string]: unknown

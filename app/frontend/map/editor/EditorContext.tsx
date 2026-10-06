@@ -15,6 +15,7 @@ export type NewFeature = {
   properties?: Record<string, unknown>
   style?: Record<string, unknown>
   status?: 'active' | 'draft'
+  tags?: string[]
 }
 
 export type FeaturePatch = Partial<Omit<NewFeature, 'geometry'>> & { geometry?: Geometry }

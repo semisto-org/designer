@@ -128,7 +128,7 @@ module Mcp
             properties: feature.properties.except(*MapFeature.column_names).merge(
               "layer" => feature.layer, "kind" => feature.kind, "name" => feature.name, "notes" => feature.notes,
               "status" => feature.status, "source" => feature.source, "rationale" => feature.rationale,
-              "updated_at" => feature.updated_at&.iso8601
+              "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601
             ).compact
           }
         end

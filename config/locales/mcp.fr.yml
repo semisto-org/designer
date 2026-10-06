@@ -17,6 +17,7 @@ fr:
       map_id: "Identifiant de la carte, donné par list_maps."
       layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), notes."
       kind: "Type d'élément (kind), par exemple tree, pond, hedge, path, swale."
+      tag: "Étiquette posée par l'utilisateur (voir tags dans get_map), sans tenir compte des majuscules : seuls les éléments qui la portent sont renvoyés."
       bbox: "Emprise [ouest, sud, est, nord] en degrés WGS84 : seuls les éléments qui la touchent sont renvoyés."
       status: "active : éléments validés ; draft : brouillons en attente de revue ; all : les deux. Les brouillons refusés ne sont jamais renvoyés."
       include_networks: "Inclure les réseaux (eau, gaz, électricité, câbles). Réservé aux éditeurs et au propriétaire de la carte."
@@ -32,10 +33,10 @@ fr:
         description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passe ensuite l'identifiant d'une carte à get_map."
       get_map:
         title: "Lire une carte"
-        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), nombre d'éléments par couche, types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), nombre d'éléments par couche, étiquettes de la carte (tags, avec leur nombre d'éléments), types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
       list_features:
         title: "Lister les éléments"
-        description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
+        description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), étiquette (tag), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
       get_feature:
         title: "Lire un élément"
         description: "Un élément de la carte : géométrie, attributs, justification s'il a été proposé par une IA, et mesures (surface en m², longueur et périmètre en m)."
@@ -75,6 +76,7 @@ fr:
           feature_notes: "Notes complémentaires : variétés, entretien, phasage…"
           feature_rationale: "Pourquoi cet élément, ici, et avec quelles données (fiche projet, couches, relief, existant…). Obligatoire, 10 caractères au moins."
           feature_properties: "Attributs libres, par exemple species, height_m, spacing_m."
+          feature_tags: "Étiquettes de l'élément, de préférence parmi celles que la carte utilise déjà (tags dans get_map), par exemple « phase 1 » ou « zone nord ». 20 au plus, 40 caractères chacune."
       propose_palette:
         title: "Proposer des plantes pour la palette"
         description: "Verse une liste de plantes dans la palette de la carte, en brouillons que l'humain accepte ou refuse dans le panneau Palette : par exemple la liste que l'utilisateur tient dans un tableur, un PDF ou l'export d'un autre outil, ou tes propres choix. Chaque plante est reconnue par species_id (search_plants) ou, à défaut, par son nom latin ou commun exact ; un nom introuvable ou ambigu est renvoyé avec sa raison : cherche-le avec search_plants et renvoie-le avec son species_id. Une espèce déjà dans la palette (ou déjà proposée) est ignorée. 200 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
@@ -144,6 +146,7 @@ fr:
       coordinates: "coordonnées hors limites : [longitude, latitude] en degrés WGS84."
       too_complex: "géométrie trop détaillée (%{max} sommets au plus)."
       properties: "properties doit être un objet de moins de %{max} octets."
+      tags: "tags doit être une liste de %{max} étiquettes au plus, de %{length} caractères au plus chacune."
       empty: "géométrie vide."
       invalid: "géométrie invalide (%{reason})."
       outside: "hors du terrain : la géométrie doit rester à moins de %{buffer} m du contour."

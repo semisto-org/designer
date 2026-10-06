@@ -60,8 +60,15 @@ module Mcp
         return err(:coordinates) unless Geo.positions_in_range?(geometry[:coordinates])
         return err(:too_complex, max: MAX_POSITIONS) if Geo.position_count(geometry[:coordinates]) > MAX_POSITIONS
         return err(:geometry) if parse(geometry).nil?
+        return err(:tags, max: MapFeature::Tags::MAX_TAGS, length: MapFeature::Tags::MAX_LENGTH) unless valid_tags?(item[:tags])
         return err(:properties, max: MAX_PROPERTIES_BYTES) if item[:properties] && (!item[:properties].is_a?(Hash) || item[:properties].to_json.bytesize > MAX_PROPERTIES_BYTES)
         nil
+      end
+
+      def valid_tags?(tags)
+        return true if tags.nil?
+        tags.is_a?(Array) && tags.size <= MapFeature::Tags::MAX_TAGS &&
+          tags.all? { |tag| tag.is_a?(String) && MapFeature.normalize_tag(tag).length <= MapFeature::Tags::MAX_LENGTH }
       end
 
       def parse(geometry)
@@ -107,6 +114,7 @@ module Mcp
                 notes: item[:notes].to_s.strip.first(2000).presence,
                 rationale: item[:rationale].to_s.strip.first(2000),
                 properties: (item[:properties] || {}).deep_stringify_keys.except(*MapFeature.column_names),
+                tags: Array(item[:tags]),
                 geometry: parse(item[:geometry]),
                 status: "draft", source: "ai",
                 created_by: @user, updated_by: @user

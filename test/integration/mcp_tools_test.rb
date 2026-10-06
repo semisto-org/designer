@@ -196,6 +196,28 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil action.arguments["features"].try(:first), "geometries are not copied in the journal"
   end
 
+  test "tags: listed by get_map, filtered by list_features, proposed with drafts" do
+    make_editor(@map, users(:bob))
+    @pipe.update!(tags: [ "Phase 1" ])
+    shed = @map.features.create!(layer: "notes", kind: "note", geometry: point(lng: 4.906, lat: 50.341), tags: [ "phase 1", "Abri" ])
+
+    data, = call_tool(@viewer, "get_map", { map_id: @map.id })
+    assert_equal({ "Abri" => 1, "phase 1" => 1 }, data["tags"], "networks are hidden from viewers, their tags too")
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal 2, data["tags"].values_at("Phase 1", "phase 1").compact.sole
+
+    data, = call_tool(@viewer, "list_features", { map_id: @map.id, tag: "PHASE 1" })
+    assert_equal [ shed.id ], data["features"].map { |f| f["id"] }
+    assert_equal [ "phase 1", "Abri" ], data["features"].sole.dig("properties", "tags")
+
+    feature = { layer: "plants", kind: "fruit_tree", rationale: "Plein sud, sol profond.", geometry: point(lng: 4.906, lat: 50.341) }
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: [ feature.merge(tags: [ "Phase 1 ", "  " ]) ] })
+    refute error, data
+    assert_equal [ "Phase 1" ], MapFeature.find(data["created"].sole["id"]).tags
+    _text, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: [ feature.merge(tags: [ "x" * 41 ]) ] })
+    assert error, "tags longer than 40 characters are refused"
+  end
+
   test "propose_features needs the drafts scope, an editor role and the owner's plan" do
     feature = { layer: "plants", kind: "tree", rationale: "Une bonne raison d'être là.", geometry: point(lng: 4.906, lat: 50.341) }
 

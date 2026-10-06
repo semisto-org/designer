@@ -1,0 +1,27 @@
+# Étiquettes libres sur les éléments d'une carte (plantes, réseaux,
+# structures…), partagées par toute la carte ; les listes les filtrent et
+# les groupent.
+fr:
+  tags:
+    title: "Étiquettes"
+    placeholder: "Ajouter une étiquette (zone nord, phase 1…)"
+    add_another: "Ajouter une étiquette"
+    add: "Ajouter une étiquette"
+    remove: "Retirer l'étiquette « %{tag} »"
+    hint: "Les étiquettes sont communes à toute la carte : plantes, réseaux, structures… Tu peux ensuite filtrer et grouper les listes par étiquette."
+    filter_label: "Filtrer par étiquette"
+    all: "Tout"
+    untagged: "Sans étiquette"
+    group_by: "Grouper par étiquette"
+    no_match: "Rien ne porte cette étiquette."
+  activerecord:
+    attributes:
+      map_feature:
+        tags: "Les étiquettes"
+    errors:
+      models:
+        map_feature:
+          attributes:
+            tags:
+              too_many_tags: "ne peuvent pas dépasser %{count}"
+              tag_too_long: "doivent faire %{count} caractères au plus chacune"

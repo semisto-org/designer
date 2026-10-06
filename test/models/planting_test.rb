@@ -191,4 +191,19 @@ class PlantingTest < ActiveSupport::TestCase
     assert_equal(-17.6, @map.min_temperature_c)
     assert_equal "BE", @map.country_code
   end
+
+  test "the plant list narrowed to a tag, or to the untagged plants" do
+    @patch.update!(tags: [ "Phase 1" ])
+    @patch.patch_items.create!(species: plant_species(:apple), count: 2)
+    # A placement of the patch's apple line: counted once, with the patch.
+    plant!(plant_species(:apple), lng: 4.9041, lat: 50.3396).update!(tags: [ "phase 1" ])
+    plant!(plant_species(:alder)).update!(tags: [ "Haie" ])
+    plant!(plant_species(:comfrey))
+
+    phase = @map.plant_list(tag: "PHASE 1")
+    assert_equal [ [ plant_species(:apple).id, 2 ] ], phase.rows.map { |r| [ r.species_id, r.total ] }
+    assert_equal [ plant_species(:alder).id ], @map.plant_list(tag: "haie").rows.map(&:species_id)
+    assert_equal [ plant_species(:comfrey).id ], @map.plant_list(tag: :untagged).rows.map(&:species_id)
+    assert_equal 4, @map.plant_list.total
+  end
 end

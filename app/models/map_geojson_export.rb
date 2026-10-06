@@ -58,7 +58,7 @@ class MapGeojsonExport
           "layer_label" => I18n.t("editor.layers.#{feature.layer}", default: feature.layer),
           "kind_label" => MapElements.label(feature.kind),
           "name" => feature.name, "notes" => feature.notes, "source" => feature.source,
-          "style" => feature.style.presence
+          "style" => feature.style.presence, "tags" => feature.tags.presence
         ).merge(measure || {}).compact
       }
     end
