@@ -13,9 +13,15 @@ Concevoir un jardin-forêt, c'est une foule de petites tâches. Le **parcours** 
 
 Tu peux le revoir à tout moment : panneau **Parcours**, lien **Revoir le carnet de route**.
 
+## Les étapes dans l'éditeur
+
+Les quatre étapes sont en haut de l'écran, au centre de la barre. L'étape où tu en es a un rond plein, une étape terminée une coche. Touche une étape : la colonne des outils, à gauche, met en avant les siens, et la carte « À faire maintenant » te propose sa prochaine tâche.
+
+La colonne des outils est rangée dans le même ordre : **1 Observer**, **2 Cartographier**, **3 Concevoir**, **4 Planter**, puis **Échanger** (discussions, publication, journal IA). Un point orange signale l'outil de la tâche à faire maintenant. **Réduire en icônes**, en bas de la colonne, laisse plus de place à la carte ; ton appareil retient ce choix. Sur téléphone, les mêmes outils sont dans la barre du bas.
+
 ## Ouvrir le parcours
 
-Dans la barre des panneaux de la carte (à gauche sur ordinateur, en bas sur téléphone), touche l'icône **Parcours**. Tu y trouves :
+Sur la carte « À faire maintenant », touche **Voir tout le parcours**. Tu y trouves :
 
 - la **Prochaine action**, avec un bouton **Ouvrir** qui affiche directement le bon panneau ;
 - les quatre étapes, chacune avec sa liste de cases et son avancement (« 1 sur 2 », « Étape complète »). Touche une étape pour la déplier.
@@ -44,11 +50,11 @@ Quand toutes les cases de l'étape actuelle sont faites, le panneau affiche « �
 
 Seuls le propriétaire et les éditeurs de la carte peuvent changer d'étape ; les lecteurs voient le parcours sans pouvoir le modifier.
 
-## La pastille sur la carte
+## La carte « À faire maintenant »
 
-Une petite pastille flotte sur la carte (en bas à gauche sur ordinateur, en haut sur téléphone) : « Étape 2 sur 4 · Cartographier », puis la prochaine action et son bouton **Ouvrir**. Toucher la pastille ouvre le panneau **Parcours**.
+Une carte flotte sur le plan (en bas à gauche sur ordinateur, en haut sur téléphone). Elle dit ce qu'il y a de plus utile à faire maintenant, en une phrase, avec un bouton qui ouvre directement le bon outil, par exemple **Remplir la fiche projet**. La barre en haut de la carte montre où en est tout le parcours.
 
-Elle te gêne ? La croix **Masquer** la cache, pour cette carte et sur cet appareil. Pour la retrouver, ouvre le panneau **Parcours** et touche **Afficher le parcours**. La pastille n'apparaît que pour le propriétaire et les éditeurs.
+Elle te gêne ? La flèche à côté du titre la **réduit** à une ligne, « À faire : … », pour cette carte et sur cet appareil ; la flèche inverse la déplie. Elle ne disparaît jamais tout à fait, pour que tu ne perdes pas le fil. Elle n'apparaît que pour le propriétaire et les éditeurs.
 
 ## Un conseil
 

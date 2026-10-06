@@ -57,25 +57,30 @@ import TagsSection from '@/map/tags/TagsSection'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
-  { id: 'journey', label: 'journey.panel.title', icon: Route, group: 'map', component: JourneyPanel, order: 1 },
-  { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'map', component: ProjectPanel, order: 5, modal: true },
+  { id: 'journey', label: 'journey.panel.title', icon: Route, group: 'observe', component: JourneyPanel, order: 1, hiddenFromRail: true },
+  // 1. Observer
+  { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'observe', component: ProjectPanel, order: 5, modal: true },
+  { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'observe', component: LayersPanel, order: 10 },
+  { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'observe', component: ReliefPanel, order: 30 },
+  { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'observe', component: ClimatePanel, order: 40 },
+  { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: SoilPanel, order: 60 },
+  { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'observe', component: PhotosPanel, order: 70 },
+  // 2. Cartographier
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
-  { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'map', component: LayersPanel, order: 20 },
-  { id: 'plan-images', label: 'plan_images.panel_title', icon: FileImage, group: 'map', component: PlanImagesPanel, order: 25 },
-  { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'understand', component: ReliefPanel, order: 30 },
-  { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'understand', component: ClimatePanel, order: 40 },
-  { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'understand', component: SoilPanel, order: 60 },
-  { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'understand', component: PhotosPanel, order: 70 },
+  { id: 'plan-images', label: 'plan_images.panel_title', icon: FileImage, group: 'map', component: PlanImagesPanel, order: 20 },
+  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'map', component: ElementsPanel, order: 30 },
+  { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'map', component: DrawingLayersPanel, order: 40 },
+  // 3. Concevoir
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
-  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'design', component: PlantListPanel, order: 30 },
-  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'design', component: ElementsPanel, order: 40 },
-  { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'design', component: DrawingLayersPanel, order: 45 },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
-  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'design', component: FinancesPanel, order: 80 },
+  // 4. Planter
+  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: PlantListPanel, order: 10 },
+  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'plant', component: FinancesPanel, order: 20 },
+  { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: ActionsPanel, order: 30 },
+  // Échanger (no number)
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
-  { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'share', component: ActionsPanel, order: 20 },
   { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
 ]
 

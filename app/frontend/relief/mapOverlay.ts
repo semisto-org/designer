@@ -77,7 +77,7 @@ export async function showReliefOverlay(map: MapLibreMap, grid: TerrainGridData,
     map.addSource(RELIEF_OVERLAY_ID, { type: 'image', url, coordinates })
   }
   if (!map.getLayer(RELIEF_OVERLAY_ID)) {
-    const before = ['boundary-casing', 'boundary-line', 'features-fill'].find((id) => map.getLayer(id))
+    const before = ['boundary-fill', 'boundary-casing', 'boundary-line', 'features-fill'].find((id) => map.getLayer(id))
     map.addLayer({
       id: RELIEF_OVERLAY_ID,
       type: 'raster',

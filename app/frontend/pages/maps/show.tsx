@@ -14,11 +14,14 @@ import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature } from '@/map/editor/EditorContext'
 import { Inspector } from '@/map/editor/Inspector'
-import { installBoundary } from '@/map/layers/boundary'
+import { RecenterControl } from '@/map/editor/controls'
+import { EditorBar, EditorRail } from '@/map/editor/Rail'
+import { StageStepper } from '@/map/editor/StageStepper'
+import { installBoundary, installBoundaryLabel } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
 import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
-import { MODAL_PANEL_QUERY, type PanelGroup } from '@/map/panels/registry'
-import type { EntitlementsData, MapData, MapFeature, RegionLayerData } from '@/types'
+import { MODAL_PANEL_QUERY } from '@/map/panels/registry'
+import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
 
 type Props = {
   map: MapData
@@ -34,36 +37,55 @@ export default function MapShow(props: Props) {
     <div className="flex h-dvh flex-col bg-loam-100">
       <Head title={map.name} />
       <Flash />
-      <header className="flex h-12 shrink-0 items-center gap-3 border-b border-loam-200 bg-white px-3">
-        <Link href="/maps" className="rounded-md p-1.5 text-loam-500 hover:bg-loam-100" aria-label={t('maps.show.back')}>
-          <ArrowLeft className="h-4 w-4" />
+      <header className="flex h-[52px] shrink-0 items-center gap-3.5 border-b border-loam-900/10 bg-white px-3 md:px-4">
+        <Link href="/maps" className="rounded-md p-1.5 text-loam-600 hover:bg-loam-100" aria-label={t('maps.show.back')}>
+          <ArrowLeft className="h-[18px] w-[18px]" />
         </Link>
-        <h1 className="truncate text-base">{map.name}</h1>
-        <span className="hidden text-sm text-loam-400 sm:inline">{formatArea(map.areaM2)}</span>
-        <span className="ml-auto hidden rounded-full bg-loam-100 px-2 py-0.5 text-xs text-loam-600 sm:inline">{t(`maps.roles.${map.role}`)}</span>
-        <div id="editor-header-actions" className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-2" />
+        <div className="flex min-w-0 shrink items-baseline gap-2.5">
+          <h1 className="truncate text-xl leading-none text-loam-900">{map.name}</h1>
+          {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
+        </div>
+        <div className="flex-1" />
+        <div id="editor-header-steps" className="hidden shrink-0 md:block" />
+        <div className="flex-1" />
+        {map.role && (
+          <span className="hidden shrink-0 rounded-full bg-prune-100 px-2.5 py-1 text-xs text-prune-600 lg:inline">
+            {t('maps.show.your_role', { role: t(`maps.roles.${map.role}`).toLocaleLowerCase('fr') })}
+          </span>
+        )}
+        <div id="editor-header-actions" className="flex shrink-0 items-center gap-1 sm:gap-2" />
       </header>
-      <div className="relative min-h-0 flex-1">
-        <MapView
-          className="editor-map absolute inset-0"
-          center={map.center ?? map.region.center}
-          zoom={map.zoom ?? (map.center ? 17 : map.region.defaultZoom)}
-          bbox={map.bbox}
-        >
-          <EditorShell {...props} map={map} setMap={setMap} />
-        </MapView>
+      <div className="flex min-h-0 flex-1">
+        <div id="editor-rail" className="hidden md:block" />
+        <div className="relative min-w-0 flex-1">
+          <MapView
+            className="editor-map absolute inset-0"
+            center={map.center ?? map.region.center}
+            zoom={map.zoom ?? (map.center ? 17 : map.region.defaultZoom)}
+            bbox={map.bbox}
+            scalePosition="bottom-right"
+          >
+            <EditorShell {...props} map={map} setMap={setMap} />
+          </MapView>
+        </div>
       </div>
     </div>
   )
 }
 
-const GROUPS: PanelGroup[] = ['map', 'understand', 'design', 'share']
+/** The terrain's size in the header: ares, the unit of a garden (hectares beyond). */
+function headerArea(m2: number): string {
+  if (m2 < 100 || m2 >= 10_000) return formatArea(m2)
+  return t('maps.show.area_ares', { count: Math.round(m2 / 100) })
+}
 
 function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [activePanel, setActivePanel] = useState<string | null>(map.boundary ? null : 'terrain')
+  const [pickedStage, setPickedStage] = useState<MapStage | null>(null)
+  const focusStage = pickedStage ?? map.stage
   const [drawingShape, setDrawingShape] = useState<DrawShape | 'edit' | null>(null)
   const drawing = drawingShape != null
   const drawEndedAt = useRef(0)
@@ -77,6 +99,37 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
   }, [instance])
 
   useEffect(() => installBoundary(instance, map.boundary), [instance, map.boundary])
+  const areaLabel = map.areaM2 != null ? headerArea(map.areaM2) : null
+  useEffect(() => installBoundaryLabel(instance, map.boundary, map.name, areaLabel), [instance, map.boundary, map.name, areaLabel])
+
+  // A step declared on the map takes the focus back.
+  useEffect(() => setPickedStage(null), [map.stage])
+
+  // "Recentrer sur la parcelle", under the zoom (above the "locate me" button).
+  const bbox = map.bbox
+  useEffect(() => {
+    if (!bbox) return
+    const control = new RecenterControl(t('editor.controls.recenter'), () => {
+      instance.fitBounds(bbox as [number, number, number, number], { padding: 60, maxZoom: 19, duration: 600 })
+    })
+    instance.addControl(control, 'top-right')
+    const element = instance.getContainer().querySelector('.editor-recenter')
+    const locate = element?.parentElement?.querySelector('.maplibregl-ctrl-geolocate')?.closest('.maplibregl-ctrl')
+    if (element && locate) element.parentElement?.insertBefore(element, locate)
+    return () => void instance.removeControl(control)
+  }, [instance, bbox])
+
+  // The attribution folds to a « Sources de la carte » button (CSS shows data-label).
+  useEffect(() => {
+    const fold = () => {
+      const attribution = instance.getContainer().querySelector('.maplibregl-ctrl-attrib')
+      attribution?.querySelector('.maplibregl-ctrl-attrib-button')?.setAttribute('data-label', t('editor.controls.sources'))
+      if (attribution?.classList.contains('maplibregl-compact')) attribution.classList.remove('maplibregl-compact-show')
+    }
+    fold()
+    instance.once('idle', fold)
+    return () => void instance.off('idle', fold)
+  }, [instance])
   useEffect(() => installFeatureLayers(instance, { type: 'FeatureCollection', features }), [instance, features])
 
   // Selection highlight and click-to-select.
@@ -180,59 +233,27 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
       drawingShape,
       activePanel,
       openPanel: setActivePanel,
+      focusStage,
+      focusStep: setPickedStage,
       notify,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, notify, upsertFeatures, removeFeatures])
-
-  // Keep the open panel's button in view in the scrolling bar on a phone.
-  const nav = useRef<HTMLElement>(null)
-  useEffect(() => {
-    nav.current?.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  }, [activePanel])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures])
 
   const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
   const wideScreen = useMediaQuery(MODAL_PANEL_QUERY)
+  const wideRail = useMediaQuery('(min-width: 768px)')
 
   return (
     <EditorContext.Provider value={editor}>
-      {/* Panel rail: a scrolling bar along the bottom on phones, a column on the left from md up. */}
-      <nav
-        ref={nav}
-        className="absolute inset-x-2 bottom-2 z-20 flex gap-1 overflow-x-auto rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:flex-col md:overflow-y-auto md:overflow-x-visible"
-        aria-label={t('editor.panels_nav')}
-      >
-        {GROUPS.map((group, gi) => {
-          const items = visiblePanels.filter((p) => p.group === group).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
-          if (items.length === 0) return null
-          return (
-            <div key={group} className={'flex shrink-0 md:flex-col ' + (gi > 0 ? 'border-l border-loam-100 pl-1 md:border-l-0 md:border-t md:pl-0 md:pt-1' : '')}>
-              {items.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  title={t(p.label)}
-                  aria-label={t(p.label)}
-                  aria-pressed={activePanel === p.id}
-                  onClick={() => setActivePanel(activePanel === p.id ? null : p.id)}
-                  className={
-                    'grid h-9 w-9 shrink-0 place-items-center rounded-lg ' +
-                    (activePanel === p.id ? 'bg-prune-600 text-white' : 'text-loam-600 hover:bg-loam-100')
-                  }
-                >
-                  <p.icon className="h-[18px] w-[18px]" />
-                </button>
-              ))}
-            </div>
-          )
-        })}
-      </nav>
+      {/* The rail beside the map from md up; a bar along the bottom on a phone. */}
+      {wideRail ? <RailPortal panels={visiblePanels} /> : <EditorBar panels={visiblePanels} />}
       {panel && panel.modal && wideScreen ? (
         <Dialog open size="wide" title={t(panel.label)} onClose={() => setActivePanel(null)}>
           <panel.component />
         </Dialog>
       ) : panel && (
-        <section className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-14 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
+        <section className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
           <h2 className="mb-3 text-base">{t(panel.label)}</h2>
           <panel.component />
         </section>
@@ -240,6 +261,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
       {editor.selected && <Inspector feature={editor.selected} />}
       {[...OVERLAYS].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)).map((o) => <o.component key={o.id} />)}
       <HeaderActions />
+      <HeaderSteps />
       {toast && (
         <div className={'absolute bottom-16 left-1/2 z-30 md:bottom-10 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
           {toast.message}
@@ -257,4 +279,16 @@ function HeaderActions() {
     <>{[...HEADER_ACTIONS].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)).map((a) => <a.component key={a.id} />)}</>,
     target,
   )
+}
+
+function HeaderSteps() {
+  const [target, setTarget] = useState<HTMLElement | null>(null)
+  useEffect(() => setTarget(document.getElementById('editor-header-steps')), [])
+  return target ? createPortal(<StageStepper />, target) : null
+}
+
+function RailPortal({ panels }: { panels: Parameters<typeof EditorRail>[0]['panels'] }) {
+  const [target, setTarget] = useState<HTMLElement | null>(null)
+  useEffect(() => setTarget(document.getElementById('editor-rail')), [])
+  return target ? createPortal(<EditorRail panels={panels} />, target) : null
 }

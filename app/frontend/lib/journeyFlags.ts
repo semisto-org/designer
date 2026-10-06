@@ -52,39 +52,42 @@ export function requestJourneyRefresh() {
   window.dispatchEvent(new Event(JOURNEY_REFRESH))
 }
 
-// The journey chip over the map can be hidden (per map, per browser).
-const chipKey = (mapId: number) => `designer.journey.${mapId}.chip-hidden`
-const CHIP_EVENT = 'designer:journey-chip'
-const chipMemory = new Map<number, boolean>()
+// The guide card over the map can be folded to one line (per map, per
+// browser); it never goes away. null: the person never chose, the editor
+// decides (open on a desktop, folded on a phone). The key predates the
+// card: a chip hidden before stays folded.
+const guideKey = (mapId: number) => `designer.journey.${mapId}.chip-hidden`
+const GUIDE_EVENT = 'designer:journey-guide'
+const guideMemory = new Map<number, boolean>()
 
-function readChipHidden(mapId: number): boolean {
+function readGuideCollapsed(mapId: number): boolean | null {
   try {
-    return window.localStorage.getItem(chipKey(mapId)) === '1'
+    const value = window.localStorage.getItem(guideKey(mapId))
+    return value === '1' ? true : value === '0' ? false : null
   } catch {
-    return chipMemory.get(mapId) ?? false
+    return guideMemory.get(mapId) ?? null
   }
 }
 
-export function useChipHidden(mapId: number): [boolean, (hidden: boolean) => void] {
-  const [hidden, setHidden] = useState(() => readChipHidden(mapId))
+export function useGuideCollapsed(mapId: number): [boolean | null, (collapsed: boolean) => void] {
+  const [collapsed, setCollapsed] = useState(() => readGuideCollapsed(mapId))
   useEffect(() => {
-    setHidden(readChipHidden(mapId))
+    setCollapsed(readGuideCollapsed(mapId))
     const onChange = (e: Event) => {
-      const detail = (e as CustomEvent<{ mapId: number; hidden: boolean }>).detail
-      if (detail.mapId === mapId) setHidden(detail.hidden)
+      const detail = (e as CustomEvent<{ mapId: number; collapsed: boolean }>).detail
+      if (detail.mapId === mapId) setCollapsed(detail.collapsed)
     }
-    window.addEventListener(CHIP_EVENT, onChange)
-    return () => window.removeEventListener(CHIP_EVENT, onChange)
+    window.addEventListener(GUIDE_EVENT, onChange)
+    return () => window.removeEventListener(GUIDE_EVENT, onChange)
   }, [mapId])
   const update = useCallback((value: boolean) => {
-    chipMemory.set(mapId, value)
+    guideMemory.set(mapId, value)
     try {
-      if (value) window.localStorage.setItem(chipKey(mapId), '1')
-      else window.localStorage.removeItem(chipKey(mapId))
+      window.localStorage.setItem(guideKey(mapId), value ? '1' : '0')
     } catch {
       /* private window: memory only */
     }
-    window.dispatchEvent(new CustomEvent(CHIP_EVENT, { detail: { mapId, hidden: value } }))
+    window.dispatchEvent(new CustomEvent(GUIDE_EVENT, { detail: { mapId, collapsed: value } }))
   }, [mapId])
-  return [hidden, update]
+  return [collapsed, update]
 }

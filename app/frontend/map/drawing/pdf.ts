@@ -175,7 +175,7 @@ export type LegendEntry = { key: string; label: string; color: string; geometry:
 /** One entry per kind drawn on the visible layers, in design layer order. */
 export function legendEntries(features: MapFeature[], hiddenLayers: string[], withBoundary: boolean): LegendEntry[] {
   const entries: LegendEntry[] = withBoundary
-    ? [{ key: 'boundary', label: t('drawing.pdf.boundary'), color: '#5b5781', geometry: 'LineString', dash: [3, 2] }]
+    ? [{ key: 'boundary', label: t('drawing.pdf.boundary'), color: '#5b5781', geometry: 'LineString' }]
     : []
   const seen = new Set<string>()
   const visible = features.filter((f) => f.properties.status === 'active' && !hiddenLayers.includes(f.properties.layer))

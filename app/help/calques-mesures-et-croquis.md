@@ -24,7 +24,7 @@ Les fonds de carte et les couches de données du territoire (cadastre, relief, m
 
 ## Mesurer
 
-En haut de la carte, la barre d'outils propose **Dessiner**, **Mesurer** et **Croquis**. Les lecteurs n'ont que **Mesurer**.
+En haut de la carte, la barre d'outils propose **Éléments**, **Mesurer** et **Main levée**. Les lecteurs n'ont que **Mesurer**.
 
 1. Touche **Mesurer**.
 2. Choisis **Distance** ou **Surface**.
@@ -42,7 +42,7 @@ Quelques idées : la distance entre la future mare et la limite du voisin, la lo
 
 Le croquis sert à noter une idée sans choisir de type d'élément : une flèche pour le vent dominant, un cercle autour d'un coin humide, un chemin que tu hésites à tracer.
 
-1. Touche **Croquis**.
+1. Touche **Main levée**.
 2. Choisis une couleur sous **Encre**.
 3. Clique (ou touche) pour commencer, trace à main levée, puis clique pour finir le trait.
 4. Enchaîne autant de traits que tu veux, puis touche **Terminer**.

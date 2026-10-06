@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import type { Geometry } from 'geojson'
-import { PencilLine, Ruler, Signature, type LucideIcon } from 'lucide-react'
+import { Pencil, Ruler, Shapes, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { formatArea, formatLength, t } from '@/lib/i18n'
@@ -14,19 +14,21 @@ import { SketchTool } from '@/map/drawing/SketchTool'
 import { drawingStore, setHiddenLayers, useDrawingState, type DrawingTool } from '@/map/drawing/store'
 import type { ElementSpec } from '@/types/drawing'
 
-function ToolButton({ icon: Icon, label, active, onClick }: { icon: LucideIcon; label: string; active: boolean; onClick: () => void }) {
+function ToolButton({ icon: Icon, label, hint, active, onClick }: { icon: LucideIcon; label: string; hint: string; active: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      title={label}
+      aria-label={label}
+      title={hint}
       className={clsx(
-        'flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium',
-        active ? 'bg-prune-600 text-white' : 'text-loam-700 hover:bg-loam-100',
+        'flex h-9 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-colors active:scale-[0.98]',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600',
+        active ? 'bg-prune-600 text-white' : 'text-loam-800 hover:bg-[#f4f1ea]',
       )}
     >
-      <Icon className="h-[18px] w-[18px]" />
+      <Icon className="h-4 w-4" aria-hidden />
       <span className="hidden sm:inline">{label}</span>
     </button>
   )
@@ -129,14 +131,14 @@ export default function DrawingToolbar() {
 
   return (
     <>
-      <div className="pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2">
-        <div role="toolbar" aria-label={t('drawing.toolbar.label')} className="pointer-events-auto flex items-center gap-1 rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-200">
+      <div className="pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 md:top-3.5">
+        <div role="toolbar" aria-label={t('drawing.toolbar.label')} className="pointer-events-auto flex items-center gap-0.5 rounded-xl bg-white p-1 shadow-[0_6px_16px_rgb(26_26_26/0.14)]">
           {editor.canEdit && (
-            <ToolButton icon={PencilLine} label={t('drawing.toolbar.draw')} active={tool === 'draw'} onClick={() => setTool(tool === 'draw' ? null : 'draw')} />
+            <ToolButton icon={Shapes} label={t('drawing.toolbar.draw')} hint={t('drawing.toolbar.draw_hint')} active={tool === 'draw'} onClick={() => setTool(tool === 'draw' ? null : 'draw')} />
           )}
-          <ToolButton icon={Ruler} label={t('drawing.toolbar.measure')} active={tool === 'measure'} onClick={() => setTool(tool === 'measure' ? null : 'measure')} />
+          <ToolButton icon={Ruler} label={t('drawing.toolbar.measure')} hint={t('drawing.toolbar.measure_hint')} active={tool === 'measure'} onClick={() => setTool(tool === 'measure' ? null : 'measure')} />
           {editor.canEdit && (
-            <ToolButton icon={Signature} label={t('drawing.toolbar.sketch')} active={tool === 'sketch'} onClick={() => setTool(tool === 'sketch' ? null : 'sketch')} />
+            <ToolButton icon={Pencil} label={t('drawing.toolbar.sketch')} hint={t('drawing.toolbar.sketch_hint')} active={tool === 'sketch'} onClick={() => setTool(tool === 'sketch' ? null : 'sketch')} />
           )}
         </div>
       </div>

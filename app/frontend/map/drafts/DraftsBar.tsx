@@ -122,9 +122,9 @@ export default function DraftsBar() {
     <div
       className={clsx(
         'pointer-events-none absolute top-14 z-20 flex justify-center md:justify-start',
-        // Under the drawing toolbar, clear of the tool rail (left, from md up) and the zoom controls (right).
+        // Under the drawing toolbar, clear of an open panel (left, from md up) and the zoom controls (right).
         'left-2 right-12',
-        panelOpen ? 'md:left-[23.5rem]' : 'md:left-14',
+        panelOpen ? 'md:left-[21.5rem]' : 'md:left-4',
         inspectorOpen ? 'md:right-[21.5rem]' : 'md:right-14',
       )}
     >

@@ -208,9 +208,12 @@ fr:
 
     toolbar:
       label: "Outils de dessin"
-      draw: "Dessiner"
+      draw: "Éléments"
+      draw_hint: "Placer un élément de la bibliothèque : arbre, mare, haie, bâtiment…"
       measure: "Mesurer"
-      sketch: "Croquis"
+      measure_hint: "Mesurer une distance ou une surface"
+      sketch: "Main levée"
+      sketch_hint: "Tracer à main levée, comme sur un calque"
       choose: "Que veux-tu dessiner ?"
       recent: "Récents"
       hint_point: "Touche la carte pour placer « %{kind} ». Échap pour annuler."
