@@ -175,6 +175,10 @@ Rails.application.routes.draw do
       resource :planting, only: :show
       resources :palette_items, only: %i[index create update destroy] do
         collection { get :suggestions }
+        member do
+          post :accept
+          post :reject
+        end
       end
       resources :features, only: [] do
         resources :patch_items, only: %i[index create update destroy]

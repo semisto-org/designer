@@ -4,7 +4,7 @@ module Mcp
     def self.all
       [
         ListMaps, GetMap, ListFeatures, GetFeature, GetRegionLayers, IdentifyAtPoint,
-        SearchPlants, GetPlant, ProposeFeatures, WithdrawDraft
+        SearchPlants, GetPlant, ProposeFeatures, ProposePalette, WithdrawDraft
       ]
     end
   end

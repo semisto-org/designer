@@ -14,6 +14,8 @@ class PlantingState
     {
       zone: map.hardiness_zone, minTemperatureC: map.min_temperature_c, country: map.country_code,
       palette: palette_json,
+      # An AI's proposals for the palette, waiting for a human (« Palette » panel).
+      paletteDrafts: map.palette_drafts.includes(species: :common_names, variety: %i[common_names species]).map(&:as_json),
       species: quantities.species_index.transform_keys(&:to_s).transform_values(&:summary_json),
       varieties: quantities.variety_index.transform_keys(&:to_s).transform_values(&:summary_json),
       patches: patches_json,

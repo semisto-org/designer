@@ -209,6 +209,39 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/Invalid arguments/, text)
   end
 
+  test "propose_palette brings a list of plants into the palette as drafts" do
+    @map.palette_items.create!(species: plant_species(:alder))
+    plants = [
+      { name: "Pommier", target_count: 6, rationale: "Ligne 2 du tableur de l'utilisateur." },
+      { species_id: plant_species(:comfrey).id, role: "support", rationale: "Ligne 3 du tableur de l'utilisateur." },
+      { name: plant_species(:alder).latin_name, rationale: "Ligne 4 du tableur de l'utilisateur." },
+      { name: "Plante imaginaire", rationale: "Ligne 5 du tableur de l'utilisateur." },
+      { name: "Pommier", rationale: "Ligne 6, en double dans le tableur." }
+    ]
+    data, error = call_tool(@owner, "propose_palette", { map_id: @map.id, summary: "Mon tableur de plantes", plants: })
+    refute error, data
+    assert_equal [ 0, 1 ], data["created"].map { |c| c["index"] }
+    assert_equal [ 2, 3, 4 ], data["rejected"].map { |r| r["index"] }
+    assert_match(/déjà dans la palette/, data["rejected"][0]["error"])
+    assert_match(/search_plants/, data["rejected"][1]["error"])
+    assert_equal 2, data["pending_palette_drafts"]
+
+    apple = PaletteItem.find(data["created"][0]["id"])
+    assert_equal [ "draft", "ai", 6, plant_species(:apple) ], [ apple.status, apple.source, apple.target_count, apple.species ]
+    assert_equal [ plant_species(:alder) ], @map.palette_items.map(&:species), "drafts stay out of the palette"
+    assert_equal({ "created" => 2, "rejected" => 3 }, AiAction.last.result)
+
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal [ plant_species(:alder).id ], data["palette"].map { |p| p["species_id"] }
+    assert_equal 2, data["palette_drafts_pending"]
+
+    text, error = call_tool(@viewer, "propose_palette", { map_id: @map.id, plants: plants.first(1) })
+    assert error
+    assert_match(/propriétaire et les éditeurs/, text)
+    _, error = call_tool(@owner, "propose_palette", { map_id: @map.id, plants: [ { name: "Pommier" } ] })
+    assert error, "rationale is required"
+  end
+
   test "withdraw_draft removes AI drafts only" do
     draft = @map.features.create!(layer: "plants", kind: "tree", status: "draft", source: "ai", rationale: "x" * 12, geometry: point)
     accepted = @map.features.create!(layer: "plants", kind: "tree", status: "active", source: "ai", rationale: "x" * 12, geometry: point)

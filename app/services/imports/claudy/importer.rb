@@ -235,7 +235,7 @@ module Imports
         # plants agree and it differs from the species' own.
         def ensure_palette
           @palette.each do |(species_id, variety_id), strata|
-            next if map.palette_items.exists?(species_id:, variety_id:)
+            next if PaletteItem.where(map:).exists?(species_id:, variety_id:)
             species = PlantSpecies.find(species_id)
             chosen = strata.compact.uniq
             map.palette_items.create!(species:, variety_id:,

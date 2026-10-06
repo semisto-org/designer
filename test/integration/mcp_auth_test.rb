@@ -30,7 +30,7 @@ class McpAuthTest < ActionDispatch::IntegrationTest
 
     body = mcp_request(token, "tools/list")
     names = body.dig("result", "tools").map { |t| t["name"] }
-    assert_equal %w[list_maps get_map list_features get_feature get_region_layers identify_at_point search_plants get_plant propose_features withdraw_draft], names
+    assert_equal %w[list_maps get_map list_features get_feature get_region_layers identify_at_point search_plants get_plant propose_features propose_palette withdraw_draft], names
     propose = body.dig("result", "tools").find { |t| t["name"] == "propose_features" }
     assert_equal false, propose.dig("inputSchema", "additionalProperties")
     assert_equal false, propose.dig("annotations", "readOnlyHint")

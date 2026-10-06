@@ -6,6 +6,7 @@ import { strataLabel } from '@/components/plants/format'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { PaletteDrafts } from '@/map/plants/PaletteDrafts'
 import { setPlacing, setPlanting, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS, StrataDot } from '@/map/plants/strata'
 import {
@@ -114,6 +115,7 @@ export default function PalettePanel() {
     <div className="space-y-5 text-sm">
       <p className="text-xs text-loam-500">{t('palette.intro')}</p>
       {!editor.canEdit && <p className="rounded-lg bg-loam-50 p-2 text-xs text-loam-600">{t('palette.read_only')}</p>}
+      {data.paletteDrafts && data.paletteDrafts.length > 0 && <PaletteDrafts drafts={data.paletteDrafts} />}
 
       {editor.canEdit && (
         <div className="space-y-2">
