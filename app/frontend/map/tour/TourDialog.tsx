@@ -299,7 +299,7 @@ function ClaudePage({ copy, data, aiConnected, onLeave }: { copy: Copy; data: Jo
             {t('tour.pages.claude.connect')}
           </Link>
         )}
-        <a href="/help/connecter-claude" target="_blank" rel="noreferrer" className="text-sm font-medium text-prune-700 underline decoration-prune-300 underline-offset-2 hover:decoration-prune-700">
+        <a href="/help/connecter-son-ia" target="_blank" rel="noreferrer" className="text-sm font-medium text-prune-700 underline decoration-prune-300 underline-offset-2 hover:decoration-prune-700">
           {t('tour.pages.claude.how')}
         </a>
       </div>
