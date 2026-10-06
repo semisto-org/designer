@@ -35,6 +35,7 @@ module Maps
           project: sheet.to_h,
           progress: sheet.progress,
           schema: ProjectSheet.schema_json,
+          drafts: @map.project_sheet_drafts.includes(:created_by).map(&:as_json),
           canEdit: %w[owner editor].include?(@role)
         }
       end

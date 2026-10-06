@@ -11,6 +11,7 @@ fr:
         Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « method » et le chapitre du sujet). Le guide est écrit en anglais : réponds toujours dans la langue de la personne. Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
         Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
+        La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
@@ -91,6 +92,19 @@ fr:
           target_count: "Nombre de plants visés, s'il est connu (par exemple une quantité du tableur)."
           plant_notes: "Notes : variété souhaitée, fournisseur, emplacement prévu…"
           plant_rationale: "Pourquoi cette plante, ou d'où elle vient (« ligne 12 du tableur de l'utilisateur »). Obligatoire, 10 caractères au moins."
+      get_project_sheet:
+        title: "Lire la fiche projet"
+        description: "La fiche projet de la carte avec toutes ses questions : pour chaque section et chaque champ, son type, son libellé, les réponses possibles (clé et libellé français), la réponse actuelle, l'avancement de la fiche et les réponses déjà proposées par une IA qui attendent l'humain. À lire avant propose_project_sheet, pour faire correspondre ce que dit la personne aux réponses possibles."
+      propose_project_sheet:
+        title: "Proposer des réponses pour la fiche projet"
+        description: "Verse des réponses dans la fiche projet de la carte, en brouillons que l'humain accepte ou refuse sur la fiche : ce que la personne t'a dit au fil de la conversation, ou ce que dit le transcript d'un entretien qu'elle te confie. Chaque réponse vise un champ (section et field, voir get_project_sheet) et donne sa valeur complète : une clé pour un choix unique, une liste de clés pour un choix multiple, un entier, un texte, ou une liste d'objets pour les personnes. Une réponse identique à la réponse actuelle est ignorée ; une nouvelle proposition pour un champ remplace la précédente pas encore revue. Une réponse qui remplacerait une réponse déjà donnée est renvoyée avec replaces : dis-le à la personne. Pour compléter un champ libre (notes), reprends le texte actuel dans ta valeur. N'invente rien. 60 réponses au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          summary: "Résumé de la proposition, par exemple d'où viennent les réponses (« entretien du 3 octobre avec Marie »)."
+          answers: "Les réponses proposées, de 1 à 60."
+          section: "Section de la fiche : who (qui), ambitions, uses (usages), budget, time (temps), skills (compétences), constraints (contraintes), opportunities (opportunités), livestock (élevages), calendar (calendrier)."
+          field: "Clé du champ dans la section, par exemple goals, initial, hours_per_week ou notes (voir get_project_sheet)."
+          value: "Valeur complète du champ : une clé (choix unique), une liste de clés (choix multiple), un entier, un texte, ou pour who.people une liste d'objets { name, role, note }."
+          answer_rationale: "D'où vient cette réponse : ce que la personne a dit, cité si possible (« \"on a deux heures le week-end\" »), ou la ligne du transcript. Obligatoire, 10 caractères au moins."
       withdraw_draft:
         title: "Retirer des brouillons"
         description: "Retire des brouillons proposés par une IA et pas encore revus, par exemple pour les remplacer par une meilleure proposition. Les éléments acceptés appartiennent aux humains : ils ne peuvent pas être retirés."
@@ -107,6 +121,11 @@ fr:
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
       drafts_trial: "Le propriétaire de cette carte essaie les brouillons de l'IA jusqu'au %{date} (essai offert de 14 jours). Après cette date, sans forfait, tu ne pourras plus que lire la carte : dis-le à l'utilisateur quand tu poses tes premiers brouillons, pour qu'il ne soit pas surpris."
       review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
+      project_sheet: "Les clés (section, field, options) sont celles à utiliser dans propose_project_sheet ; les libellés sont ceux que voit la personne. Pose-lui les questions qui manquent, une à la fois, plutôt que de deviner."
+      review_project: "Les réponses proposées attendent sur la fiche projet de la carte, où l'humain les accepte ou les refuse."
+      review_project_replacing:
+        one: "Les réponses proposées attendent sur la fiche projet, où l'humain les accepte ou les refuse. Une d'elles remplacerait une réponse déjà donnée (voir replaces) : dis-le à la personne."
+        other: "Les réponses proposées attendent sur la fiche projet, où l'humain les accepte ou les refuse. %{count} d'entre elles remplaceraient des réponses déjà données (voir replaces) : dis-le à la personne."
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
     errors:
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Designer (OAuth) ou utilise un jeton personnel."
@@ -120,6 +139,7 @@ fr:
       no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
       too_many_features: "Au plus %{max} éléments par appel."
       too_many_plants: "Au plus %{max} plantes par appel."
+      too_many_answers: "Au plus %{max} réponses par appel."
       too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
       nothing_created: "Aucun brouillon créé. %{details}"
       bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
@@ -138,6 +158,18 @@ fr:
       ambiguous: "« %{name} » correspond à plusieurs espèces : choisis avec search_plants et renvoie-le avec son species_id."
       taken: "%{name} est déjà dans la palette ou déjà proposée."
       pending: "la palette a déjà %{max} propositions en attente : attends que l'humain les revoie."
+    sheet_errors:
+      section: "section inconnue (sections : %{sections})."
+      field: "champ inconnu dans la section %{section} (champs : %{fields})."
+      value: "valeur refusée : %{details} Voir get_project_sheet."
+      blank: "la valeur est vide : propose seulement ce que la personne a dit."
+      duplicate: "%{path} est déjà proposé plus haut dans cet appel."
+      expects:
+        enum: "une seule clé parmi %{values}."
+        multi: "une liste de clés parmi %{values}."
+        integer: "un entier de %{min} à %{max}."
+        text: "un texte de %{limit} caractères au plus."
+        list: "une liste de %{max} objets au plus, chacun avec ses champs (voir item)."
     draft_errors:
       not_an_object: "l'élément doit être un objet."
       layer: "couche inconnue (couches possibles : %{layers})."
@@ -220,6 +252,10 @@ fr:
       propose_palette:
         one: "a proposé 1 plante pour la palette"
         other: "a proposé %{count} plantes pour la palette"
+      get_project_sheet: "a lu la fiche projet"
+      propose_project_sheet:
+        one: "a proposé 1 réponse pour la fiche projet"
+        other: "a proposé %{count} réponses pour la fiche projet"
       withdraw_draft:
         one: "a retiré 1 brouillon"
         other: "a retiré %{count} brouillons"
@@ -355,7 +391,7 @@ fr:
     page_title: "Serveur MCP"
     eyebrow: "Documentation"
     title: "Ton IA sur la carte : le serveur MCP de Semisto Designer"
-    intro: "Branche ton assistant IA (Claude, ChatGPT, Le Chat…) ou tout agent compatible MCP sur tes cartes. Il lit le terrain, ses couches et la fiche projet, et propose des aménagements en brouillon que tu valides un par un. Cette page est générée à partir du code du serveur."
+    intro: "Branche ton assistant IA (Claude, ChatGPT, Le Chat…) ou tout agent compatible MCP sur tes cartes. Il lit le terrain, ses couches et la fiche projet, propose des aménagements en brouillon et des réponses pour la fiche projet, que tu valides un par un. Cette page est générée à partir du code du serveur."
     toc: "Sommaire"
     sections:
       connect: "Se connecter"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -803,6 +803,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_150000) do
     t.index ["terranova_id"], name: "index_plant_varieties_on_terranova_id", unique: true
   end
 
+  create_table "project_sheet_drafts", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "section", null: false
+    t.string "field", null: false
+    t.jsonb "value", null: false
+    t.text "rationale", null: false
+    t.bigint "created_by_id"
+    t.string "client_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_project_sheet_drafts_on_created_by_id"
+    t.index ["map_id", "section", "field"], name: "index_project_sheet_drafts_on_map_id_and_section_and_field", unique: true
+  end
+
   create_table "region_layers", force: :cascade do |t|
     t.bigint "region_id", null: false
     t.string "key", null: false
@@ -1034,6 +1048,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_150000) do
   add_foreign_key "plant_observations", "users", on_delete: :nullify
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
+  add_foreign_key "project_sheet_drafts", "maps", on_delete: :cascade
+  add_foreign_key "project_sheet_drafts", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "region_layers", "regions"
   add_foreign_key "regions", "regions", column: "parent_id"
   add_foreign_key "service_requests", "maps"

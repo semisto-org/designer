@@ -43,6 +43,8 @@ Un brouillon accepté devient un élément comme les autres, à toi. Un brouillo
 - Dans les [alertes réglementaires](/help/les-alertes-reglementaires), qui les vérifient aussi : une mare trop grande se repère avant d'être acceptée.
 - **Jamais** dans une [vue publiée](/help/publier-sa-carte).
 
+Les plantes que ton IA propose pour la palette attendent dans le panneau **Palette**, et ses réponses pour la fiche projet attendent **sur la fiche**, sous chaque question (voir [Remplir la fiche projet](/help/remplir-la-fiche-projet)).
+
 Les lecteurs voient la barre, mais seul un éditeur ou le propriétaire peut décider.
 
 ## Le journal IA

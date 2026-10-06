@@ -5,7 +5,7 @@ import { Input, Select, Textarea } from '@/components/ui/Field'
 import { translations } from '@/lib/i18n'
 import type { SchemaField } from '@/types/journey'
 
-type Texts = {
+export type Texts = {
   label?: string
   hint?: string
   placeholder?: string
@@ -22,32 +22,38 @@ type Texts = {
  * `${prefix}.${field.key}` (`label`, `hint`, `placeholder`, `unit`,
  * `options.<value>`, and `item.<key>` for lists). Adding an option on the
  * server and in the locale file is all it takes to show it here.
+ * `aside` adds something under a field's label (an AI's proposal…).
  */
-export function SchemaFields({ fields, values, onChange, prefix, disabled = false }: {
+export function SchemaFields({ fields, values, onChange, prefix, disabled = false, aside }: {
   fields: SchemaField[]
   values: Record<string, unknown>
   onChange: (key: string, value: unknown) => void
   prefix: string
   disabled?: boolean
+  aside?: (field: SchemaField, texts: Texts) => ReactNode
 }) {
   return (
     <div className="space-y-6">
-      {fields.filter((f) => !f.hidden).map((field) => (
-        <FieldBlock
-          key={field.key}
-          field={field}
-          texts={translations(`${prefix}.${field.key}`) as Texts}
-          value={values[field.key]}
-          onChange={(v) => onChange(field.key, v)}
-          disabled={disabled}
-        />
-      ))}
+      {fields.filter((f) => !f.hidden).map((field) => {
+        const texts = translations(`${prefix}.${field.key}`) as Texts
+        return (
+          <FieldBlock
+            key={field.key}
+            field={field}
+            texts={texts}
+            value={values[field.key]}
+            onChange={(v) => onChange(field.key, v)}
+            disabled={disabled}
+            aside={aside?.(field, texts)}
+          />
+        )
+      })}
     </div>
   )
 }
 
-function FieldBlock({ field, texts, value, onChange, disabled }: {
-  field: SchemaField; texts: Texts; value: unknown; onChange: (v: unknown) => void; disabled: boolean
+function FieldBlock({ field, texts, value, onChange, disabled, aside }: {
+  field: SchemaField; texts: Texts; value: unknown; onChange: (v: unknown) => void; disabled: boolean; aside?: ReactNode
 }) {
   const id = useId()
   const grouped = field.type === 'multi' || field.type === 'enum' || field.type === 'list'
@@ -64,6 +70,7 @@ function FieldBlock({ field, texts, value, onChange, disabled }: {
       <fieldset disabled={disabled} className="min-w-0" aria-describedby={texts.hint ? `${id}-hint` : undefined}>
         {label('legend')}
         {hint}
+        {aside}
         <div className="mt-2">
           {field.type === 'multi' && <MultiField field={field} texts={texts} value={value} onChange={onChange} disabled={disabled} />}
           {field.type === 'enum' && <EnumField field={field} texts={texts} value={value} onChange={onChange} disabled={disabled} />}
@@ -77,6 +84,7 @@ function FieldBlock({ field, texts, value, onChange, disabled }: {
     <div>
       {field.type !== 'boolean' && label('label')}
       {field.type !== 'boolean' && hint}
+      {aside}
       <div className={field.type === 'boolean' ? '' : 'mt-1.5'}>
         {field.type === 'text' && (field.limit ?? 2000) <= 200 && (
           <Input
@@ -275,4 +283,21 @@ function ListField({ field, texts, value, onChange, disabled }: {
       )}
     </div>
   )
+}
+
+/** A value in words, with the labels of the locale: « Moins de 500 € », « Marie (porteuse) ». */
+export function describeValue(field: SchemaField, texts: Texts, value: unknown): string {
+  if (value == null) return ''
+  switch (field.type) {
+    case 'enum': return texts.options?.[value as string] ?? String(value)
+    case 'multi': return (value as string[]).map((v) => texts.options?.[v] ?? v).join(', ')
+    case 'integer': return texts.unit ? `${value} ${texts.unit}` : String(value)
+    case 'boolean': return value === true ? (texts.label ?? '') : ''
+    case 'list': return (value as Record<string, unknown>[]).map((row) => {
+      const parts = (field.item ?? []).filter((f) => !f.hidden && f.key !== 'name' && row[f.key] != null)
+        .map((f) => describeValue(f, texts.item?.[f.key] ?? {}, row[f.key]))
+      return parts.length ? `${String(row.name ?? '')} (${parts.join(', ')})` : String(row.name ?? '')
+    }).join(' · ')
+    default: return String(value)
+  }
 }

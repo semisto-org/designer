@@ -42,11 +42,24 @@ export type ProjectProgress = {
   nextSection: string | null
 }
 
+/** An answer an AI proposed for one field (MCP propose_project_sheet). */
+export type ProjectDraft = {
+  id: number
+  section: string
+  field: string
+  value: unknown
+  rationale: string
+  author: string | null
+  clientName: string | null
+  createdAt: string
+}
+
 export type ProjectPayload = {
   map: { id: number; name: string; role: string | null; address: string | null }
   project: ProjectData
   progress: ProjectProgress
   schema: ProjectSchema
+  drafts: ProjectDraft[]
   canEdit: boolean
 }
 

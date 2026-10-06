@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '@/lib/api'
 import { requestJourneyRefresh } from '@/lib/journeyFlags'
-import type { ProjectData, ProjectProgress, SectionValues } from '@/types/journey'
+import type { ProjectData, ProjectDraft, ProjectProgress, SectionValues } from '@/types/journey'
 
 export type SaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
 
@@ -23,9 +23,12 @@ function csrfToken(): string {
  * merges at field level, so a phone and a laptop never overwrite each
  * other). Failures keep the edits and retry; leaving the page flushes.
  */
-export function useProjectSheet(mapId: number, initial: ProjectData, initialProgress: ProjectProgress, canEdit: boolean) {
+export function useProjectSheet(
+  mapId: number, initial: ProjectData, initialProgress: ProjectProgress, canEdit: boolean, initialDrafts: ProjectDraft[] = [],
+) {
   const [project, setProject] = useState<ProjectData>(initial)
   const [progress, setProgress] = useState<ProjectProgress>(initialProgress)
+  const [drafts, setDrafts] = useState<ProjectDraft[]>(initialDrafts)
   const [status, setStatus] = useState<SaveStatus>('idle')
   const pending = useRef<Patch>({})
   const timer = useRef<number | undefined>(undefined)
@@ -132,7 +135,36 @@ export function useProjectSheet(mapId: number, initial: ProjectData, initialProg
     void flush()
   }, [flush])
 
-  return { project, progress, status, setField, setDone, retry, flush }
+  /**
+   * Accepts or refuses answers an AI proposed (one draft, or « all »). The
+   * server answers with the sheet as it now stands; edits not sent yet stay
+   * on top of it.
+   */
+  const review = useCallback(async (id: number | 'all', decision: 'accept' | 'reject') => {
+    if (!canEdit) return
+    await flush()
+    const result = await api<{ project: ProjectData; progress: ProjectProgress; drafts: ProjectDraft[] }>(
+      `/maps/${mapId}/project/drafts/${id}/${decision}`, { method: 'POST' },
+    )
+    if (!alive.current) return
+    const next: ProjectData = { ...result.project }
+    for (const [section, fields] of Object.entries(pending.current)) {
+      if (section === 'meta') continue
+      const values: SectionValues = { ...(next[section] ?? {}) }
+      for (const [field, value] of Object.entries(fields)) {
+        if (isBlank(value)) delete values[field]
+        else values[field] = value
+      }
+      next[section] = values
+    }
+    if (pending.current.meta) next.meta = { ...next.meta, ...(pending.current.meta as ProjectData['meta']) }
+    setProject(next)
+    setProgress(result.progress)
+    setDrafts(result.drafts)
+    if (decision === 'accept') requestJourneyRefresh()
+  }, [canEdit, flush, mapId])
+
+  return { project, progress, drafts, status, setField, setDone, review, retry, flush }
 }
 
 export type ProjectSheetApi = ReturnType<typeof useProjectSheet>
