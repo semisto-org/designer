@@ -15,9 +15,11 @@ module MapPlanting
   end
 
   # Aggregated plants to buy and plant, by species and cultivar (PlantList).
-  def plant_list = PlantList.new(planted_quantities)
+  # `tag` narrows it to the plants and patches carrying that tag (or
+  # `:untagged`), see PlantedQuantities.for.
+  def plant_list(tag: nil) = PlantList.new(planted_quantities(tag:))
 
-  def planted_quantities = PlantedQuantities.for(self)
+  def planted_quantities(tag: nil) = PlantedQuantities.for(self, tag:)
 
   def planting_alerts = PlantingAlerts.new(planted_quantities)
 

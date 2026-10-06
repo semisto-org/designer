@@ -44,7 +44,7 @@ module Maps
 
       def feature_params
         raw = params.require(:feature)
-        permitted = raw.permit(:layer, :kind, :name, :notes, :status, :lock_version, properties: {}, style: {})
+        permitted = raw.permit(:layer, :kind, :name, :notes, :status, :lock_version, properties: {}, style: {}, tags: [])
         permitted[:geometry] = raw[:geometry].to_unsafe_h if raw[:geometry].present?
         permitted
       end

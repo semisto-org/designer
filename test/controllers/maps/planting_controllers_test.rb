@@ -137,6 +137,29 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     assert_equal 1, response.parsed_body["props"]["list"]["total"]
   end
 
+  test "plant list filtered by tag, grouped by tag, and its CSV" do
+    sign_in_as users(:alice)
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906, lat: 50.341), tags: [ "Verger" ],
+                          properties: { "species_id" => plant_species(:apple).id })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.907, lat: 50.341),
+                          properties: { "species_id" => plant_species(:alder).id })
+
+    get map_plant_list_path(@map, tag: "verger"), as: :json
+    assert_equal [ "Malus domestica" ], response.parsed_body["rows"].map { |r| r["latinName"] }
+    get map_plant_list_path(@map, untagged: "1"), as: :json
+    assert_equal 1, response.parsed_body["total"]
+
+    get map_plant_list_path(@map, group: "tag"), as: :json
+    body = response.parsed_body
+    assert_equal [ "Verger" ], body["groups"].map { |g| g["tag"] }
+    assert_equal 1, body["groups"].sole["list"]["total"]
+    assert_equal 1, body["untagged"]["total"]
+
+    get map_plant_list_path(@map, format: :csv, tag: "Verger")
+    assert_match "liste-de-plants-domaine-d-ahinvaux-verger.csv", response.headers["Content-Disposition"]
+    assert_no_match "Alnus", response.body
+  end
+
   test "observations of a planted plant, with a photo" do
     sign_in_as users(:michael)
     plant = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906, lat: 50.341),

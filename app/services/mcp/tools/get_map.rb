@@ -26,6 +26,7 @@ module Mcp
           parcels: map.parcels,
           project: map.project,
           elements: element_counts(map),
+          tags: tag_counts(map),
           palette: palette(map),
           palette_drafts_pending: map.palette_drafts.count,
           known_kinds: I18n.t("editor.kinds", default: {}),
@@ -76,6 +77,13 @@ module Mcp
             hidden_layers: [ "networks" ],
             hidden_note: t(editor? ? "notes.networks_on_request" : "notes.networks_hidden")
           }
+        end
+
+        # The map's tags (shared by all its elements) and how many elements carry each.
+        def tag_counts(map)
+          scope = map.features.where.not(status: "rejected")
+          scope = scope.where.not(layer: "networks") unless editor?
+          scope.tag_counts
         end
 
         # The owner is trying drafts on the free plan: say until when, so

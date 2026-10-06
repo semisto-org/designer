@@ -78,6 +78,20 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
   end
 
+  test "features API: tags are set, normalized and cleared" do
+    sign_in_as users(:michael)
+    map = maps(:ahinvaux)
+    feature = map.features.create!(layer: "networks", kind: "water_pipe", geometry: { "type" => "LineString", "coordinates" => [ [ 4.9, 50.34 ], [ 4.91, 50.34 ] ] })
+    patch map_feature_path(map, feature), params: { feature: { tags: [ " Phase  1", "phase 1", "Zone nord" ], lock_version: 0 } }, as: :json
+    assert_response :success
+    assert_equal [ "Phase 1", "Zone nord" ], response.parsed_body["properties"]["tags"]
+    patch map_feature_path(map, feature), params: { feature: { tags: [], lock_version: 1 } }, as: :json
+    assert_response :success
+    assert_equal [], feature.reload.tags
+    patch map_feature_path(map, feature), params: { feature: { tags: (1..21).map(&:to_s), lock_version: 2 } }, as: :json
+    assert_response :unprocessable_entity
+  end
+
   test "saves a drawn boundary sent as JSON (the editor's « Dessiner le contour »)" do
     sign_in_as users(:michael)
     map = maps(:ahinvaux)

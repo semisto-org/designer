@@ -9,6 +9,7 @@ class MapFeature < ApplicationRecord
   include MapFeature::Elements
   include MapFeature::Broadcasts
   include MapFeature::WaterSourceLink
+  include MapFeature::Tags
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze
@@ -43,7 +44,7 @@ class MapFeature < ApplicationRecord
       properties: properties.merge(
         "id" => id, "layer" => layer, "kind" => kind, "name" => name, "notes" => notes,
         "status" => status, "source" => source, "rationale" => rationale,
-        "style" => style, "lockVersion" => lock_version,
+        "style" => style, "tags" => tags, "lockVersion" => lock_version,
         "updatedAt" => updated_at&.iso8601
       )
     }

@@ -28,6 +28,10 @@ module Mcp
                 name: { type: "string", maxLength: 120, description: :feature_name },
                 notes: { type: "string", maxLength: 2000, description: :feature_notes },
                 rationale: { type: "string", minLength: 10, maxLength: 2000, description: :feature_rationale },
+                tags: {
+                  type: "array", maxItems: MapFeature::Tags::MAX_TAGS, description: :feature_tags,
+                  items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
+                },
                 properties: { type: "object", maxProperties: 30, description: :feature_properties }
               }
             }
