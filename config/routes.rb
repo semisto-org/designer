@@ -310,6 +310,7 @@ Rails.application.routes.draw do
     resources :users, only: %i[index update] do
       resource :impersonation, only: :create
     end
+    resources :maps, only: :index
   end
   resource :impersonation, only: :destroy
   # --- end super-admin ---

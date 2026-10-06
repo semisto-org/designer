@@ -53,3 +53,33 @@ export type ImpersonationData = {
   adminName: string
   endsAt: string
 }
+
+export type AdminMapCounts = {
+  palette: number
+  plants: number
+  patches: number
+  features: number
+  drafts: number
+  editors: number
+  viewers: number
+  comments: number
+  photos: number
+  planImages: number
+  aiActions: number
+}
+
+// Admin::MapStats: one map of the « Cartes » screen.
+export type AdminMapStatsRow = {
+  id: number
+  name: string
+  stage: 'observe' | 'map' | 'design' | 'plant'
+  region: string | null
+  team: string | null
+  areaM2: number | null
+  archived: boolean
+  published: boolean
+  createdAt: string
+  lastActivityAt: string | null
+  owner: { id: number; name: string; email: string; plan: PlanKey }
+  counts: AdminMapCounts
+}
