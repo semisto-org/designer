@@ -11,6 +11,8 @@ export type CurrentUser = {
   email: string
   avatarUrl: string | null
   admin: boolean
+  /** Has closed the editor's « carnet de route » once (it no longer opens by itself). */
+  tourSeen?: boolean
 }
 
 export type EntitlementsData = {

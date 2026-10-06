@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ArrowRight, Check, ChevronDown, Circle } from 'lucide-react'
+import { ArrowRight, BookOpen, Check, ChevronDown, Circle } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import {
@@ -11,6 +11,7 @@ import { useJourneyState } from '@/lib/journeyStore'
 import { useChipHidden, useSeen } from '@/lib/journeyFlags'
 import { resolvePanel } from '@/lib/journeyPanels'
 import { useEditor } from '@/map/editor/EditorContext'
+import { openTour } from '@/map/tour/TourOverlay'
 import type { MapData, MapStage } from '@/types'
 import type { JourneyItem, JourneyNext } from '@/types/journey'
 
@@ -49,6 +50,9 @@ export default function JourneyPanel() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-loam-600">{t('journey.panel.intro')}</p>
+      <button type="button" onClick={openTour} className="inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline">
+        <BookOpen className="h-4 w-4" aria-hidden />{t('tour.reopen')}
+      </button>
       <NextAction next={data.next} onOpen={openPanel} onAdvance={(stage) => setStage(stage)} canEdit={editor.canEdit} isOwner={editor.isOwner} />
       <ol className="space-y-2">
         {data.steps.map((step, index) => {
