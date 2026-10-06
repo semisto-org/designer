@@ -38,6 +38,17 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "plan" ], props["layers"].map { _1["key"] }
   end
 
+  test "the editor says whether Claude is plugged in (end of the carnet de route)" do
+    user = users(:michael)
+    sign_in_as user
+    get map_path(maps(:ahinvaux)), headers: inertia_headers
+    assert_equal false, response.parsed_body.dig("props", "aiConnected")
+
+    ApiToken.create!(user:, name: "Claude Code", access: "read")
+    get map_path(maps(:ahinvaux)), headers: inertia_headers
+    assert_equal true, response.parsed_body.dig("props", "aiConnected")
+  end
+
   test "hides maps of others" do
     sign_in_as users(:bob)
     get map_path(maps(:ahinvaux))

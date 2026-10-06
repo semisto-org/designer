@@ -7,6 +7,12 @@ order: 12
 
 Concevoir un jardin-forêt, c'est une foule de petites tâches. Le **parcours** les range en quatre étapes et t'indique, à tout moment, la prochaine chose utile à faire. Rien n'est imposé : c'est un fil conducteur, pas un examen.
 
+## Le carnet de route
+
+À ta première arrivée sur une carte, Designer ouvre le **carnet de route** : quelques pages qui racontent les quatre étapes sur un terrain d'exemple, pendant que trente ans passent sous tes yeux. Chaque page montre les panneaux qui servent l'étape et où en est ta carte. La dernière explique pourquoi brancher ton IA prend tout son sens quand ton carnet est rempli (voir [Connecter ton IA](/help/connecter-son-ia)).
+
+Tu peux le revoir à tout moment : panneau **Parcours**, lien **Revoir le carnet de route**.
+
 ## Ouvrir le parcours
 
 Dans la barre des panneaux de la carte (à gauche sur ordinateur, en bas sur téléphone), touche l'icône **Parcours**. Tu y trouves :

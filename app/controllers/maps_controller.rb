@@ -46,7 +46,9 @@ class MapsController < ApplicationController
       # Dated drone views, newest first (« Couches », with the base maps).
       aerialViews: @map.aerial_views.map(&:as_inertia),
       # Sketches and plans laid under the drawing (« Fonds de plan »).
-      planImages: @map.plan_images.with_attached_image.map(&:as_inertia)
+      planImages: @map.plan_images.with_attached_image.map(&:as_inertia),
+      # The « carnet de route » ends on Claude: already plugged in, or how to.
+      aiConnected: Current.user.ai_connected?
     }
   end
 

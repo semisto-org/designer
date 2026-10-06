@@ -1,0 +1,97 @@
+# The editor's « carnet de route »: the guided tour of the four steps, shown
+# on the first arrival on a map and reopened from « Parcours ». Keys in
+# English, values in French. The frontend imports this file too.
+#
+# Careful with YAML 1.1: never use yes/no/on/off/y/n as keys.
+fr:
+  tour:
+    label: "Carnet de route"
+    reopen: "Revoir le carnet de route"
+    close: "Fermer le carnet"
+    skip: "Je connais, passer"
+    previous: "Précédent"
+    next: "Suivant"
+    page_of: "Page %{index} sur %{total}"
+    example: "Terrain d'exemple : le tien est derrière ce carnet."
+    on_your_map: "Sur « %{map} »"
+    tools_title: "Dans Designer"
+    tool_open: "Ouvrir"
+    start: "Commencer : %{item}"
+    start_plain: "Ouvrir ma carte"
+    # One entry per page, in order. Panel ids come from app/frontend/map/panels/index.ts.
+    pages:
+      intro:
+        kicker: "ton carnet de route"
+        title: "Un jardin-forêt se conçoit dans un certain ordre."
+        body: "Il se pense sur trente ans, et les erreurs coûtent cher quand les arbres ont poussé. Designer t'accompagne en quatre étapes : observer, cartographier, concevoir, planter. L'ordre compte : chaque étape nourrit la suivante."
+        note: "et à la fin, une surprise : ton IA"
+        outline:
+          - "Observer ton lieu"
+          - "Cartographier ce qui existe"
+          - "Concevoir ton jardin-forêt"
+          - "Planter, puis suivre"
+          - "Inviter ton IA"
+      observe:
+        kicker: "étape 1 · observer"
+        title: "Avant de dessiner, on regarde."
+        body: "Ton lieu sait déjà beaucoup de choses sur lui-même : la pente, le sol, l'eau qui ruisselle, le vent dominant, le climat d'aujourd'hui et de demain. Et toi, tu sais ce que tu veux en faire. On commence par écrire les deux."
+        note: "une saison d'observation vaut mieux qu'un beau dessin"
+        tools:
+          project: "Qui tu es, tes envies, ton temps, ton budget."
+          layers: "Sols, zones protégées, plan de secteur."
+          relief: "Où l'eau descend, où elle s'arrête."
+          climate: "Gel, sécheresse, et le climat de 2050."
+          soil: "Une analyse de sol, lue avec toi."
+          photos: "Les photos de ton terrain, saison après saison."
+      map:
+        kicker: "étape 2 · cartographier"
+        title: "Ensuite, on cartographie ce qui est là."
+        body: "Le contour de ton terrain sert de cadre à tout le reste. Puis les arbres qu'on garde, la maison, la mare, les chemins, les arrivées d'eau. On ne conçoit bien qu'à partir de ce qui existe déjà."
+        note: "le contour d'abord : tout le reste s'y accroche"
+        tools:
+          terrain: "Le contour, à partir des parcelles cadastrales."
+          elements: "Arbres, bâtiments, mares, chemins…"
+          plan-images: "Un croquis ou un ancien plan, calé sous la carte."
+          water-sources: "Robinets, citernes, sources."
+      design:
+        kicker: "étape 3 · concevoir"
+        title: "Chaque cercle, c'est un arbre à trente ans."
+        body: "Tu choisis les plantes qui conviennent au lieu, tu les places, tu dessines les aménagements : haie, mare, sentiers. Les pointillés montrent la place que chacun prendra adulte. C'est ici que se jouent la plupart des erreurs, et Designer te les montre avant qu'elles ne poussent."
+        note: "l'ombre de 2041 se dessine en 2026"
+        tools:
+          palette: "Les espèces qui te plaisent et qui conviennent."
+          elements: "Haie, mare, abri, sentier, clôture."
+          drawing-alerts: "Ce que la région impose ou déconseille."
+          finances: "Ce que ça coûte, ce que ça rapportera."
+      plant:
+        kicker: "étape 4 · planter, puis suivre"
+        title: "Le jour de plantation n'est qu'un début."
+        body: "Ta liste de plants se prépare toute seule, avec les quantités. Tu peux commander chez Semisto, demander de l'aide pour la mise en œuvre, puis suivre chaque arbre : ses photos, ses récoltes, ce qu'il devient année après année."
+        note: "an 5 : les premières pommes"
+        tools:
+          plant-list: "Espèces et quantités, prêtes à commander."
+          actions: "Plants, mise en œuvre, suivi : Semisto t'aide."
+          photos: "L'avant et l'après, saison après saison."
+          discussions: "Avec tes co-concepteurs, sur la carte."
+      claude:
+        kicker: "et alors, ton IA"
+        title: "Quand ton carnet est rempli, invite ton IA."
+        body: "Ton propre assistant (Claude, ChatGPT, Le Chat…) peut lire ta carte entière : le contour, ce que tu as relevé, les couches de ta région, ta fiche projet, ta palette. Il raisonne avec toi, avec la méthode de Semisto, et pose ses idées sur la carte en brouillon, chacune avec son pourquoi. Tu acceptes, tu ajustes ou tu refuses : rien ne change sans toi."
+        why: "Elle ne connaît de ton lieu que ce que ton carnet lui dit : c'est quand tes observations et ton relevé sont complets qu'elle donne tout son potentiel."
+        early_title: "mais branche-la dès le premier jour"
+        early: "Tu as déjà des choses sur ton ordinateur ? Ta liste de plantes dans un tableur ou l'export d'un autre outil, un relevé en PDF, un ancien plan, tes notes de terrain : donne-les à ton IA. Elle les lit chez toi, verse tes plantes dans ta palette et reporte le reste sur ta carte, en propositions. Tu n'as plus rien à ressaisir, et c'est toi qui valides."
+        gauge_title: "Ce que ton IA saurait de ton lieu aujourd'hui"
+        gauge:
+          region: "Les couches de ta région"
+          boundary: "Le contour du terrain"
+          project_sheet: "Ta fiche projet (%{percent} %)"
+          existing: "Ce qui existe déjà (%{count} éléments)"
+          palette: "Ta palette de plantes"
+        verdict:
+          low: "pour l'instant, elle répondrait comme un livre"
+          mid: "elle commence à connaître ton lieu"
+          high: "elle répondra comme quelqu'un qui connaît ton lieu"
+        connected: "Ton IA est déjà branchée sur tes cartes."
+        connect: "Connecter ton IA"
+        how: "Comment ça marche"
+        plans: "Lire ta carte est compris avec la carte gratuite ; les brouillons viennent avec le forfait."
