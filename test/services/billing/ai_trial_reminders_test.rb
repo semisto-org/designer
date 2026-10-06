@@ -30,7 +30,7 @@ class Billing::AiTrialRemindersTest < ActiveSupport::TestCase
 
   test "the e-mail gives the end date and says nothing disappears" do
     mail = BillingMailer.ai_trial_ending(@user)
-    assert_equal "Ton essai des brouillons de Claude se termine le 15 juin 2027", mail.subject
+    assert_equal "Ton essai des brouillons de ton IA se termine le 15 juin 2027", mail.subject
     assert_match "rien ne disparaît", mail.text_part.body.to_s
     assert_match "/billing", mail.html_part.body.to_s
     assert_match "/account/ai", mail.text_part.body.to_s
