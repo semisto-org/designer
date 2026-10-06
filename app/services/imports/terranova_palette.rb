@@ -89,8 +89,7 @@ module Imports
 
         if line.species.nil?
           return finish(line, "species_missing") unless @create_missing && Claudy::SpeciesMatcher.binomial(latin)
-          line.species = create_species(latin, line)
-          line.outcome = "species_created"
+          line.species = existing_species(latin) || create_species(latin, line).tap { line.outcome = "species_created" }
         end
         if line.variety.nil? && line.cultivar.present?
           return finish(line, "variety_missing") unless @create_missing
@@ -112,9 +111,19 @@ module Imports
         line
       end
 
+      # The matcher indexes the catalogue once: a species created by an earlier
+      # row (« Mentha spicata », then « Mentha spicata 'Nanah' ») or one it could
+      # not pick among look-alikes is found here by its exact name.
+      def existing_species(latin)
+        PlantSpecies.where("lower(latin_name) = ?", species_name(latin).downcase).first
+      end
+
+      def species_name(latin)
+        Claudy::SpeciesMatcher.binomial(latin).sub(/\A(x )?(\p{L})/) { "#{$1 && '× '}#{$2.upcase}" }.sub(" x ", " × ")
+      end
+
       def create_species(latin, line)
-        binomial = Claudy::SpeciesMatcher.binomial(latin)
-        latin_name = binomial.sub(/\A(x )?(\p{L})/) { "#{$1 && '× '}#{$2.upcase}" }.sub(" x ", " × ")
+        latin_name = species_name(latin)
         genus = PlantGenus.where("lower(latin_name) = ?", latin_name.delete_prefix("× ").split.first.downcase).first
         species = PlantSpecies.new(latin_name:, genus:)
         common = line.name if line.name && line.name != latin && line.cultivar.nil?
@@ -123,7 +132,8 @@ module Imports
       end
 
       def create_variety(species, cultivar)
-        species.varieties.create!(name: cultivar).tap { species.varieties.reset }
+        species.varieties.reset
+        species.varieties.where("lower(name) = ?", cultivar.downcase).first || species.varieties.create!(name: cultivar)
       end
 
       def writer = @writer ||= Catalog::SpeciesWriter.new(source: SOURCE, status: "to_verify")
