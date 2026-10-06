@@ -8,7 +8,9 @@
 // The cubes stay cubic on screen whatever the exaggeration: the relief is
 // quantised in DISPLAYED (exaggerated) height, one storey is one block. What
 // stands above the ground (trees, roofs) counts in real metres, as elsewhere
-// in the view.
+// in the view. With the building footprints (buildings.ts), a building is
+// where its footprint is, at the height of its fitted roof: brick walls up
+// to the eaves, then roof tiles in steps up to the ridge.
 //
 // `buildBlocks` depends neither on three.js nor on the DOM: it returns arrays
 // (positions, normals, texture coordinates in blocks, tile number) that the
@@ -19,7 +21,7 @@ import { ROLE } from './roles.ts'
 
 export const TILES = {
   grass: 0, grassSide: 1, dirt: 2, stone: 3, gravel: 4, water: 5, podzol: 6, podzolSide: 7,
-  leaves: 8, log: 9, logTop: 10, planks: 11, roof: 12,
+  leaves: 8, log: 9, logTop: 10, planks: 11, roof: 12, brick: 13,
 } as const
 export const ATLAS_COLUMNS = 8
 export const ATLAS_ROWS = 2
@@ -53,6 +55,8 @@ export type BlocksInput = {
   /** Block size (m). */
   block: number
   exaggeration: number
+  /** The building footprints laid on the grid (see BuildingLayer), or null. */
+  buildings?: { tops: Float32Array; eaves: Float32Array; covered: Uint8Array } | null
 }
 
 export type BuiltBlocks = {
@@ -73,6 +77,7 @@ export type BuiltBlocks = {
 /** `zBase`, `x0`, `z0`: the scene's height offset and half extent. */
 export function buildBlocks(input: BlocksInput & { zBase: number; x0: number; z0: number }): BuiltBlocks {
   const { ground, original, surface, roles, cols, rows, cell, block, exaggeration, zBase, x0, z0 } = input
+  const buildings = input.buildings ?? null
   const k = Math.max(1, Math.round(block / cell))
   const bc = Math.ceil(cols / k)
   const br = Math.ceil(rows / k)
@@ -88,6 +93,9 @@ export function buildBlocks(input: BlocksInput & { zBase: number; x0: number; z0
   const cover = new Uint8Array(count)
   const roof = new Uint8Array(count)
   const built = new Uint8Array(count)      // buildings of the land cover in the block
+  const footprint = new Uint8Array(count)  // mostly under a building footprint
+  const roofTop = new Float32Array(count)  // its roof above the ground (m), mean over the block
+  const eaveLevel = new Uint8Array(count).fill(255)  // storeys of wall before the roof
   let minTop = Infinity
 
   for (let j = 0; j < br; j++) {
@@ -97,13 +105,23 @@ export function buildBlocks(input: BlocksInput & { zBase: number; x0: number; z0
       let tallest = 0
       let rough = 0
       let roughCount = 0
+      let under = 0
+      let roofSum = 0
+      let eaveSum = 0
       for (let r = j * k; r < Math.min(rows, j * k + k); r++) {
         for (let c = i * k; c < Math.min(cols, i * k + k); c++) {
           const index = r * cols + c
           sum += ground[index]
           n++
           if (roles && roles[index] === ROLE.building) built[j * bc + i] = 1
-          if (!surface) continue
+          if (buildings && buildings.tops[index] > 0) {
+            under++
+            roofSum += buildings.tops[index]
+            eaveSum += buildings.eaves[index]
+          }
+          // Around a footprint the surface model blurs the walls: neither
+          // tree nor roof there.
+          if (!surface || buildings?.covered[index]) continue
           tallest = Math.max(tallest, surface[index] - original[index])
           if (r > 0 && c > 0 && r < rows - 1 && c < cols - 1) {
             rough += Math.abs(4 * surface[index] - surface[index - 1] - surface[index + 1] - surface[index - cols] - surface[index + cols])
@@ -121,10 +139,17 @@ export function buildBlocks(input: BlocksInput & { zBase: number; x0: number; z0
       // yard as built and the roofs around it as broadleaves.
       roof[b] = tallest > 2.5 && tallest < 18 && roughCount > 0 && rough / roughCount < 3 ? 1 : 0
       cover[b] = roles ? roles[centre] : ROLE.none
+      if (under * 2 >= n) {
+        footprint[b] = 1
+        roofTop[b] = roofSum / under
+        eaveLevel[b] = Math.max(1, Math.round(eaveSum / under / block))
+      }
       if (top[b] < minTop) minTop = top[b]
     }
   }
 
+  // With the footprints, buildings are where they are (below): the guess
+  // from the surface model is only for maps without them.
   // A building has open ground a few metres away; a smooth patch in the
   // heart of a forest (dense conifers, coppice) has none: not a roof.
   const isolated = new Uint8Array(count)
@@ -143,7 +168,7 @@ export function buildBlocks(input: BlocksInput & { zBase: number; x0: number; z0
       if (open < 4) isolated[b] = 1
     }
   }
-  for (let b = 0; b < count; b++) if (isolated[b]) roof[b] = 0
+  for (let b = 0; b < count; b++) if (isolated[b] || buildings) roof[b] = 0
   // And a building is at least 24 m² in one piece (a lone tree with a smooth
   // crown is not) and touches, within 6 m, a building of the land cover (a
   // trimmed hedge, smooth as well, does not). Without land cover, the size
@@ -205,7 +230,10 @@ export function buildBlocks(input: BlocksInput & { zBase: number; x0: number; z0
   }
   for (let b = 0; b < count; b++) {
     const a = canopy[b]
-    if (a > 2.5) {
+    if (footprint[b]) {
+      kind[b] = BUILDING
+      height[b] = Math.min(60, Math.max(1, Math.round(roofTop[b] / block)))
+    } else if (a > 2.5) {
       kind[b] = roof[b] ? BUILDING : TREE
       height[b] = Math.min(40, Math.max(1, Math.round(a / block)))
     } else if (a >= 1 && cover[b] !== ROLE.road && cover[b] !== ROLE.building && cover[b] !== ROLE.water) {
@@ -249,7 +277,7 @@ export function buildBlocks(input: BlocksInput & { zBase: number; x0: number; z0
   // The tile of a face from what it covers.
   const sideTile = (b: number, level: number): number => {
     if (level >= top[b]) {
-      if (kind[b] === BUILDING) return TILES.planks
+      if (kind[b] === BUILDING) return level >= top[b] + eaveLevel[b] ? TILES.roof : TILES.brick
       if (kind[b] === TREE && level < leafStart[b]) return TILES.log
       return TILES.leaves
     }
@@ -435,7 +463,9 @@ export function blockAtlas(): { canvas: HTMLCanvasElement; averages: Float32Arra
   const LEAVES = ['#2f6c20', '#285d1b', '#3a7b27', '#21501a']
   const BARK = ['#5c4227', '#4b3521', '#6a4c2d', '#553c24']
   const PLANKS = ['#a77e4d', '#9c7446', '#b08752', '#a07849']
-  const ROOF = ['#7b3c2f', '#86443a', '#713529', '#8b4a3c']
+  const BRICK = ['#9a4a35', '#a5543c', '#8e432f', '#b05d44']
+  // Slate, the roof of most houses in Wallonia: it also stands apart from the brick.
+  const ROOF = ['#4a4f57', '#545a63', '#3f444b', '#5b6169']
 
   const tile = (index: number, draw: (x: number, y: number) => string) => {
     const ox = (index % ATLAS_COLUMNS) * size
@@ -466,7 +496,9 @@ export function blockAtlas(): { canvas: HTMLCanvasElement; averages: Float32Arra
     return Math.floor(d) % 2 ? '#a17b4b' : '#8b6739'
   })
   tile(TILES.planks, (x, y) => (y % 4 === 3 || (x === ((Math.floor(y / 4) * 5) % 16)) ? '#6f5333' : pick(PLANKS)))
-  tile(TILES.roof, (_x, y) => (y % 4 === 3 ? '#5c2b22' : pick(ROOF)))
+  tile(TILES.roof, (_x, y) => (y % 4 === 3 ? '#33373d' : pick(ROOF)))
+  // Running bond: mortar every fourth row, joints offset by half a brick.
+  tile(TILES.brick, (x, y) => (y % 4 === 3 || (x + (Math.floor(y / 4) % 2) * 4) % 8 === 0 ? '#cfc4b4' : pick(BRICK)))
 
   const averages = new Float32Array(ATLAS_COLUMNS * ATLAS_ROWS * 3)
   for (let t = 0; t < ATLAS_COLUMNS * ATLAS_ROWS; t++) {
