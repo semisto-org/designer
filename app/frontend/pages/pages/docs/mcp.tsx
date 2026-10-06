@@ -55,8 +55,10 @@ export default function McpDocs({ tools, endpoints, scopes, limits }: Props) {
       <Section id="connect" icon={Bot}>
         <p className="text-loam-700">{t('docs_mcp.connect.url')}</p>
         <CopyField value={endpoints.mcp} className="mt-2 max-w-xl" />
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Step title={t('docs_mcp.connect.claude_ai_title')}>{t('docs_mcp.connect.claude_ai')}</Step>
+          <Step title={t('docs_mcp.connect.chatgpt_title')}>{t('docs_mcp.connect.chatgpt')}</Step>
+          <Step title={t('docs_mcp.connect.le_chat_title')}>{t('docs_mcp.connect.le_chat')}</Step>
           <Step title={t('docs_mcp.connect.claude_code_title')}>
             {t('docs_mcp.connect.claude_code')}
             <code tabIndex={0} className="mt-2 block overflow-x-auto whitespace-nowrap rounded bg-loam-900 px-2 py-1.5 font-mono text-xs text-loam-50">

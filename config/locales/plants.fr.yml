@@ -311,8 +311,8 @@ fr:
   palette:
     drafts:
       title:
-        one: "Claude propose 1 plante"
-        other: "Claude propose %{count} plantes"
+        one: "Ton IA propose 1 plante"
+        other: "Ton IA propose %{count} plantes"
       intro: "Rien n'entre dans ta palette sans toi : accepte ou refuse chaque plante."
       accept: "Accepter"
       reject: "Refuser"

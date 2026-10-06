@@ -58,7 +58,7 @@ export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
               </ul>
             </Note>
 
-            <Note kicker={tf('site.home.practical.claude.kicker')} title={tf('site.home.practical.claude.title')} body={tf('site.home.practical.claude.body')} cta={{ href: '/help/connecter-claude', label: tf('site.home.practical.claude.cta') }} />
+            <Note kicker={tf('site.home.practical.claude.kicker')} title={tf('site.home.practical.claude.title')} body={tf('site.home.practical.claude.body')} cta={{ href: '/help/connecter-son-ia', label: tf('site.home.practical.claude.cta') }} />
 
             <Note kicker={tf('site.home.practical.open.kicker')} body={tf('site.home.practical.open.body')} cta={{ href: '/open-source', label: tf('site.home.practical.open.cta') }} />
           </div>

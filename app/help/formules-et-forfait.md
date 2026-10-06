@@ -7,7 +7,7 @@ order: 80
 
 ## La carte gratuite
 
-Une carte à toi, pour toujours, avec tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et Claude en lecture seule. **Le design lui-même tend vers la gratuité** : le forfait ne paie pas le droit de concevoir.
+Une carte à toi, pour toujours, avec tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et ton IA en lecture seule. **Le design lui-même tend vers la gratuité** : le forfait ne paie pas le droit de concevoir.
 
 ## Le forfait particulier : 79 € par an, payé une fois
 
@@ -16,7 +16,7 @@ Il ajoute :
 - **les autres cartes** (jusqu'à 10) ;
 - **le PDF à l'échelle** ;
 - **les analyses** : eau et relief, climat futur, sol ;
-- **les brouillons de Claude** sur la carte.
+- **les brouillons de ton IA** sur la carte.
 
 Le prix est **TVA comprise**. Il se paie **une seule fois** : rien n'est prélevé ensuite, il n'y a **aucune reconduction automatique**. Un an plus tard, Designer te propose de le renouveler ; c'est toi qui décides.
 
