@@ -14,6 +14,7 @@ class ApiToken < ApplicationRecord
   validate :active_limit, on: :create
 
   before_validation :generate_secret, on: :create
+  after_create -> { user.start_ai_trial! if scope_list.include?(AiAccess::DRAFTS) }
 
   scope :active, -> { where(revoked_at: nil).where("api_tokens.expires_at IS NULL OR api_tokens.expires_at > ?", Time.current) }
   scope :newest_first, -> { order(created_at: :desc, id: :desc) }

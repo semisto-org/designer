@@ -1,6 +1,8 @@
 require "test_helper"
+require "test_helpers/mcp_test_helper"
 
 class Account::AiControllerTest < ActionDispatch::IntegrationTest
+  include McpTestHelper
   test "requires sign in" do
     get account_ai_path
     assert_redirected_to new_session_path
@@ -22,6 +24,21 @@ class Account::AiControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ [ "Claude", "drafts" ] ], props["apps"].map { |a| a.values_at("name", "access") }
     assert_equal [ "Script" ], props["tokens"].map { |t| t["name"] }
     refute props["tokens"].first.key?("plaintext")
+  end
+
+  test "tells a free user about the drafts trial, then until when it runs" do
+    sign_in_as users(:bob)
+    with_billing do
+      get account_ai_path, headers: inertia_headers
+      assert_equal "available", response.parsed_body.dig("props", "aiTrial", "state")
+      refute response.parsed_body.dig("props", "planAllowsDrafts")
+
+      ApiToken.create!(user: users(:bob), name: "Claude Code", access: "drafts")
+      get account_ai_path, headers: inertia_headers
+      trial = response.parsed_body.dig("props", "aiTrial")
+      assert_equal [ "active", 14 ], trial.values_at("state", "daysLeft")
+      assert response.parsed_body.dig("props", "planAllowsDrafts")
+    end
   end
 
   test "creates a token shown once, then revokes it" do

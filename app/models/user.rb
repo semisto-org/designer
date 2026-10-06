@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   include Billable
+  include AiTrial
 
   has_many :sessions, dependent: :destroy
   has_many :organization_memberships, dependent: :destroy

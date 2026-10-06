@@ -24,6 +24,7 @@ class OauthAccessToken < ApplicationRecord
     token = new(user:, oauth_client: client, oauth_grant: grant, scopes: AiAccess.normalize(scopes).join(" "), resource:)
     token.send(:generate_secrets)
     token.save!
+    user.start_ai_trial! if token.scope_list.include?(AiAccess::DRAFTS) && !MobileApp.client?(client)
     token
   end
 

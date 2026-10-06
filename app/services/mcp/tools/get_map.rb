@@ -34,8 +34,10 @@ module Mcp
           permissions: {
             read: true,
             propose_drafts: blockers.empty?,
-            propose_drafts_blocked_by: blockers.map { |b| t("permissions.#{b}") }
-          },
+            propose_drafts_blocked_by: blockers.map { |b| t("permissions.#{b}") },
+            drafts_trial_ends_at: entitlements.ai_trial_ends_at&.iso8601,
+            drafts_trial_note: trial_note(entitlements)
+          }.compact,
           limits: {
             max_features_per_proposal: DraftProposal::MAX_FEATURES,
             max_pending_drafts: DraftProposal::MAX_PENDING,
@@ -82,6 +84,14 @@ module Mcp
           scope = map.features.where.not(status: "rejected")
           scope = scope.where.not(layer: "networks") unless editor?
           scope.tag_counts
+        end
+
+        # The owner is trying drafts on the free plan: say until when, so
+        # Claude can warn the user before the trial ends.
+        def trial_note(entitlements)
+          return unless entitlements.ai_trial?
+          date = I18n.l(entitlements.ai_trial_ends_at.in_time_zone.to_date, format: :long)
+          t("notes.drafts_trial", date:)
         end
 
         def summarize_result(data) = { elements: data[:elements][:total_active], drafts: data[:elements][:drafts_pending] }

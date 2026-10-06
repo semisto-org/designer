@@ -99,12 +99,13 @@ fr:
     permissions:
       scope: "Cette connexion n'a que l'accès en lecture : reconnecte le connecteur en choisissant « Lecture et brouillons »."
       role: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer des brouillons."
-      plan: "Le forfait du propriétaire de la carte ne comprend pas les brouillons de l'IA."
+      plan: "Le forfait du propriétaire de la carte ne comprend pas les brouillons de l'IA, et il n'a pas d'essai en cours."
       boundary: "La carte n'a pas encore de contour de terrain."
     notes:
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
       networks_on_request: "Les réseaux sont masqués par défaut : passe include_networks à true dans list_features pour les lire."
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
+      drafts_trial: "Le propriétaire de cette carte essaie les brouillons de l'IA jusqu'au %{date} (essai offert de 14 jours). Après cette date, sans forfait, tu ne pourras plus que lire la carte : dis-le à l'utilisateur quand tu poses tes premiers brouillons, pour qu'il ne soit pas surpris."
       review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
     errors:
@@ -115,7 +116,7 @@ fr:
       feature_not_found: "Élément %{id} introuvable sur cette carte."
       scope_drafts: "Cette connexion n'a que l'accès en lecture. Pour proposer des brouillons, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
       editor_only: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer ou retirer des brouillons. L'utilisateur est lecteur de cette carte."
-      plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite. La lecture de la carte reste possible."
+      plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite et n'a pas d'essai en cours (l'essai de 14 jours est terminé, ou il ne l'a pas encore commencé). La lecture de la carte reste possible ; les formules sont sur la page « Tarifs » de Semisto Designer."
       no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
       too_many_features: "Au plus %{max} éléments par appel."
       too_many_plants: "Au plus %{max} plantes par appel."
@@ -240,11 +241,21 @@ fr:
     copied: "Copié"
   account_ai:
     title: "Connecter ton IA"
-    intro: "Branche ton propre assistant (Claude, ChatGPT, Le Chat…) sur tes cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait et le rôle d'éditeur, il y pose des brouillons que tu acceptes ou refuses un par un."
+    intro: "Branche ton propre assistant (Claude, ChatGPT, Le Chat…) sur tes cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait (ou pendant ton essai de 14 jours) et le rôle d'éditeur, il y pose des brouillons que tu acceptes ou refuses un par un."
     url:
       title: "Adresse du connecteur"
       hint: "C'est la seule chose à copier : tu choisis ensuite, sur Semisto Designer, l'accès que tu donnes."
     plan_hint: "Avec la formule gratuite, ton IA lit tes cartes. Les brouillons qu'il pose sur la carte font partie du forfait."
+    trial:
+      available_title: "14 jours pour essayer les brouillons, offerts"
+      available: "Avec la formule gratuite, ton IA lit tes cartes. Pour essayer ses brouillons, choisis « Lecture et brouillons » quand tu la connectes : l'essai démarre à ce moment-là et dure 14 jours. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
+      active_title:
+        one: "Essai des brouillons : encore %{count} jour"
+        other: "Essai des brouillons : encore %{count} jours"
+      active: "Ton IA peut poser des brouillons sur tes cartes jusqu'au %{date}. Ensuite, elle continuera de les lire, et ses brouillons viendront avec le forfait. Rien de ce que tu as accepté ne disparaît."
+      ended_title: "Ton essai des brouillons est terminé"
+      ended: "Il a pris fin le %{date}. Ton IA lit toujours tes cartes, et tout ce que tu as accepté reste sur la carte. Pour qu'elle y pose de nouveaux brouillons, passe au forfait."
+      plans: "Voir les formules"
     claude_ai:
       title: "Dans claude.ai ou Claude Desktop"
       step1: "Ouvre Paramètres → Connecteurs."
@@ -324,6 +335,9 @@ fr:
           title: "Lecture et brouillons"
           body: "Lire, et proposer des éléments en brouillon que tu acceptes ou refuses un par un, sur les cartes dont tu es propriétaire ou éditeur."
           plan: "Les brouillons demandent le forfait du propriétaire de la carte : ta formule actuelle n'en donne pas sur tes propres cartes."
+          trial_available: "Essai offert : en choisissant cet accès, tu essaies les brouillons sur tes cartes pendant 14 jours, jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
+          trial_active: "Ton essai des brouillons court jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
+          trial_ended: "Ton essai de 14 jours est terminé : les brouillons demandent maintenant le forfait sur tes propres cartes. Ton IA peut toujours les lire."
       guardrails_title: "Garde-fous"
       mobile_app:
         title: "Connecter l'app Semisto Designer de ce téléphone"
