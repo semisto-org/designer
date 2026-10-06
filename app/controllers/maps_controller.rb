@@ -44,7 +44,9 @@ class MapsController < ApplicationController
       features: @map.features.where.not(status: "rejected").map(&:as_geojson),
       mapEntitlements: map_entitlements.as_json,
       # Dated drone views, newest first (« Couches », with the base maps).
-      aerialViews: @map.aerial_views.map(&:as_inertia)
+      aerialViews: @map.aerial_views.map(&:as_inertia),
+      # Sketches and plans laid under the drawing (« Fonds de plan »).
+      planImages: @map.plan_images.with_attached_image.map(&:as_inertia)
     }
   end
 

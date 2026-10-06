@@ -11,6 +11,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   project: 'remplir-la-fiche-projet',
   terrain: 'choisir-ses-parcelles',
   layers: 'lire-les-couches-du-geoportail',
+  'plan-images': 'caler-un-fond-de-plan',
   relief: 'lire-le-relief-et-l-eau',
   climate: 'le-climat-d-aujourd-hui-et-de-demain',
   soil: 'analyser-son-sol',

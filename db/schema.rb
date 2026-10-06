@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -623,6 +623,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_110000) do
     t.index ["user_id"], name: "index_plan_grants_on_user_id"
   end
 
+  create_table "plan_images", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "created_by_id"
+    t.string "name", null: false
+    t.float "center_lng", null: false
+    t.float "center_lat", null: false
+    t.float "width_m", null: false
+    t.float "rotation", default: 0.0, null: false
+    t.float "aspect", default: 1.0, null: false
+    t.float "opacity", default: 0.7, null: false
+    t.boolean "visible", default: true, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_plan_images_on_created_by_id"
+    t.index ["map_id"], name: "index_plan_images_on_map_id"
+  end
+
   create_table "plan_purchases", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "plan_key", null: false
@@ -998,6 +1016,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_110000) do
   add_foreign_key "plan_grants", "invoice_requests"
   add_foreign_key "plan_grants", "users"
   add_foreign_key "plan_grants", "users", column: "granted_by_id", on_delete: :nullify
+  add_foreign_key "plan_images", "maps"
+  add_foreign_key "plan_images", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plan_purchases", "users"
   add_foreign_key "plan_subscriptions", "users"
   add_foreign_key "plant_observations", "map_features", on_delete: :cascade
