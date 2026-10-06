@@ -19,6 +19,7 @@ module Oauth
         mobileApp: MobileApp.client?(@client),
         requestedAccess: AiAccess.level(params[:scope].to_s),
         planAllowsDrafts: Current.user.entitlements.ai_drafts?,
+        aiTrial: Current.user.ai_trial_as_json,
         fields: forwarded_params
       }
     end

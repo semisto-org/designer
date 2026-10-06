@@ -3,6 +3,21 @@ import type { MapFeature } from '@/types'
 /** Access an AI client is granted: read the maps, or read and post drafts. */
 export type AiAccessLevel = 'read' | 'drafts'
 
+/**
+ * The 14-day trial of AI drafts on the free plan (AiTrial). `endsAt` is the
+ * date it would end if it started now while still `available`. Null when
+ * it does not matter (paid plan, billing off).
+ */
+export type AiTrialData = {
+  state: 'available' | 'active' | 'ended'
+  days: number
+  endsAt: string
+  daysLeft: number | null
+} | null
+
+export const formatTrialDate = (iso: string) =>
+  new Intl.DateTimeFormat('fr-BE', { dateStyle: 'long' }).format(new Date(iso))
+
 export type ApiTokenData = {
   id: number
   name: string

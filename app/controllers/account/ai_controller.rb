@@ -9,6 +9,7 @@ module Account
         tokens: ApiToken.active.where(user: Current.user).newest_first.map(&:as_inertia),
         apps: authorized_apps,
         planAllowsDrafts: Current.user.entitlements.ai_drafts?,
+        aiTrial: Current.user.ai_trial_as_json,
         expiryChoices: ApiToken::EXPIRY_CHOICES.keys
       }
     end

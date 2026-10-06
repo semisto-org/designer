@@ -1,0 +1,6 @@
+<p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
+<p><%= t("billing_mailer.ai_trial_ending.body", date: @ends_on) %></p>
+<p><%= t("billing_mailer.ai_trial_ending.after") %></p>
+<p><a href="<%= @billing_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t("billing_mailer.ai_trial_ending.cta") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t("billing_mailer.ai_trial_ending.account", url: @account_ai_url) %></p>
+<p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

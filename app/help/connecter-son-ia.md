@@ -12,8 +12,8 @@ Semisto Designer est fait pour travailler **avec une IA qui connaît le lieu**. 
 - **Lire** ta carte : son contour, ce que tu as dessiné, les couches du Géoportail, la fiche projet, les plantes de la palette. Cette lecture est incluse avec la carte gratuite.
 - **Raisonner** avec toi : lire le relief et le ruissellement, repérer une cuvette, discuter d'un emplacement, d'un choix d'espèces face au climat.
 - **Concevoir comme Semisto** : le serveur donne à ton assistant la méthode de conception de Semisto (l'eau avant les plantes, la structure, les guildes, le climat qui vient), quel que soit l'assistant que tu branches.
-- **Reprendre tes documents** (avec le forfait particulier) : ta liste de plantes dans un tableur, un PDF ou l'export d'un autre outil arrive dans la **palette** sous forme de propositions, que tu acceptes ou refuses dans le panneau Palette. Plus besoin de tout ressaisir.
-- **Proposer des brouillons** (avec le forfait particulier) : une mare, une haie, un patch de plantes posés sur la carte en brouillon, chacun avec **son explication** : pourquoi ici, avec quelles données.
+- **Reprendre tes documents** (avec le forfait, ou pendant l'essai) : ta liste de plantes dans un tableur, un PDF ou l'export d'un autre outil arrive dans la **palette** sous forme de propositions, que tu acceptes ou refuses dans le panneau Palette. Plus besoin de tout ressaisir.
+- **Proposer des brouillons** (avec le forfait, ou pendant les **14 jours d'essai** offerts dès ta première connexion avec l'accès « Lecture et brouillons », voir [Formules et forfait](/help/formules-et-forfait)) : une mare, une haie, un patch de plantes posés sur la carte en brouillon, chacun avec **son explication** : pourquoi ici, avec quelles données.
 
 ## Ce que ton IA ne fait jamais seule
 

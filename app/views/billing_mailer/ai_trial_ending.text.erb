@@ -1,0 +1,12 @@
+<%= t("billing_mailer.greeting", name: @user.display_name) %>
+
+<%= t("billing_mailer.ai_trial_ending.body", date: @ends_on) %>
+
+<%= t("billing_mailer.ai_trial_ending.after") %>
+
+<%= t("billing_mailer.ai_trial_ending.cta") %> : <%= @billing_url %>
+
+<%= t("billing_mailer.ai_trial_ending.account", url: @account_ai_url) %>
+
+<%= t("billing_mailer.signature") %>
+<%= t("billing_mailer.team") %>

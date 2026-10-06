@@ -226,6 +226,23 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/contour/, text)
   end
 
+  test "a free owner on trial gets drafts, and Claude is told until when" do
+    with_billing do
+      trial = personal_token(users(:michael))   # first connection with drafts: the trial starts
+      data, error = call_tool(trial, "get_map", { map_id: @map.id })
+      refute error
+      assert data.dig("permissions", "propose_drafts")
+      assert data.dig("permissions", "drafts_trial_ends_at")
+      assert_match(/essaie les brouillons/, data.dig("permissions", "drafts_trial_note"))
+
+      travel 15.days do
+        data, = call_tool(trial, "get_map", { map_id: @map.id })
+        refute data.dig("permissions", "propose_drafts")
+        assert_nil data.dig("permissions", "drafts_trial_ends_at")
+      end
+    end
+  end
+
   test "propose_features caps the batch size" do
     feature = { layer: "plants", kind: "tree", rationale: "Une bonne raison d'être là.", geometry: point(lng: 4.906, lat: 50.341) }
     text, error = call_tool(@owner, "propose_features", { map_id: @map.id, features: [ feature ] * 201 })

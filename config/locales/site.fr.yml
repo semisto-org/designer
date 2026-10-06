@@ -254,7 +254,7 @@ fr:
             values: ["no", "yes", "yes", "yes"]
           - label: "Analyses : eau et relief, climat futur, sol"
             values: ["no", "yes", "yes", "yes"]
-          - label: "Brouillons de ton IA sur la carte"
+          - label: "Brouillons de ton IA sur la carte (14 jours d'essai offerts)"
             values: ["no", "yes", "yes", "yes"]
           - label: "Éditeurs invités gratuits"
             values: ["no", "no", "yes", "yes"]
