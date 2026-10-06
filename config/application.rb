@@ -26,7 +26,7 @@ module Designer
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib(ignore: %w[assets middleware tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -46,5 +46,9 @@ module Designer
 
     # Blind copy of every outgoing e-mail to MAIL_BCC_ADDRESS when set (beta follow-up).
     config.action_mailer.interceptors = %w[MailBccInterceptor]
+
+    # A 404 must never be cached by the browser or a proxy (see the class).
+    require_relative "../lib/middleware/no_store_not_found"
+    config.middleware.insert_before 0, NoStoreNotFound
   end
 end
