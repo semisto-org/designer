@@ -2,13 +2,14 @@
 # with a front matter (title, summary, order, status). The topic is the file
 # name. Served to AI agents by the MCP tool get_design_guide, so that any
 # client connected to Designer designs the Semisto way. Versioned with the
-# code; no database table.
+# code; no database table. Written in English (repository content); the
+# agent answers in the user's language.
 #
 #   ---
-#   title: "L'eau : ralentir, répandre, infiltrer"
-#   summary: Une phrase qui dit ce que le chapitre apporte.
+#   title: "Water: slow, spread, infiltrate"
+#   summary: One sentence on what the chapter brings.
 #   order: 20
-#   status: brouillon
+#   status: draft
 #   ---
 class DesignGuide
   DIR = Rails.root.join("app/design_guides")
@@ -41,7 +42,7 @@ class DesignGuide
         match = FRONT_MATTER.match(raw) || raise(ArgumentError, "#{File.basename(file)}: missing front matter")
         meta = YAML.safe_load(match[1]) || {}
         new(topic: File.basename(file, ".md"), title: meta.fetch("title"), summary: meta.fetch("summary"),
-            order: meta.fetch("order", 100).to_i, status: meta.fetch("status", "publie"),
+            order: meta.fetch("order", 100).to_i, status: meta.fetch("status", "published"),
             markdown: raw[match.end(0)..].strip)
       end
   end

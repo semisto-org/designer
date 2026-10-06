@@ -1,47 +1,47 @@
 ---
-title: "La palette : strates, guildes et diversité"
-summary: "Choisir les espèces dans le catalogue de Semisto, strate par strate, en guildes qui se soutiennent, adaptées au sol et au climat."
+title: "Palette: layers, guilds and diversity"
+summary: "Choose species from Semisto's catalogue, layer by layer, in mutually supporting guilds suited to the soil and climate."
 order: 40
-status: brouillon
+status: draft
 ---
 
-La palette, c'est la liste des espèces du jardin-forêt et la façon dont elles s'assemblent. On la choisit une fois l'eau et la structure posées.
+The palette is the list of species in the forest garden and how they fit together. It is chosen once water and structure are in place.
 
-## Les sept strates
+## The seven layers
 
-Un jardin-forêt occupe l'espace en hauteur comme une lisière forestière : **canopée** (grands arbres), **arbres bas** (fruitiers), **arbustes** (petits fruits), **herbacées** vivaces, **couvre-sol**, **grimpantes**, **racines**. Le champ `strata` du catalogue donne la strate de chaque espèce. Ne remplis pas toutes les strates partout : la densité vient avec le temps et la lumière disponible.
+A forest garden fills space vertically like a woodland edge: **canopy** (large trees), **low trees** (fruit trees), **shrubs** (soft fruit), perennial **herbaceous** plants, **ground cover**, **climbers**, **roots**. The catalogue's `strata` field gives each species' layer. Do not fill every layer everywhere: density comes with time and available light.
 
-## Les guildes
+## Guilds
 
-Une guilde est un petit groupe d'espèces autour d'un arbre central, qui se rendent service :
+A guild is a small group of species around a central tree that help one another:
 
-- un **fixateur d'azote** (aulne, éléagnus, argousier, caraganier, trèfle… `ecoServices` contient `nitrogen`) pour environ trois à cinq fruitiers au début ;
-- des **accumulateurs** et plantes à biomasse (consoude) pour pailler sur place (`minerals`, `organic-matter`) ;
-- des **mellifères** et des plantes pour les **auxiliaires** (`mellifere`, `beneficial-insects`), avec des floraisons de février à octobre ;
-- un **couvre-sol** pour ne jamais laisser le sol nu (`ground-cover`) ;
-- des plantes répulsives ou aromatiques au pied.
+- a **nitrogen fixer** (alder, elaeagnus, sea buckthorn, pea shrub, clover… `ecoServices` contains `nitrogen`) for about three to five fruit trees at the start;
+- **accumulators** and biomass plants (comfrey) for mulching on the spot (`minerals`, `organic-matter`);
+- **bee plants** and plants for **beneficial insects** (`mellifere`, `beneficial-insects`), flowering from February to October;
+- a **ground cover** so the soil is never bare (`ground-cover`);
+- repellent or aromatic plants at the foot.
 
-## Choisir les espèces
+## Choosing species
 
-Cherche dans le catalogue de Semisto (`search_plants`, `get_plant`) et vérifie pour chaque espèce :
+Search Semisto's catalogue (`search_plants`, `get_plant`) and check for each species:
 
-- **Rusticité** (`hardinessZone`, `minTemperatureC`) face à la zone du terrain, aujourd'hui et en 2050 (chapitre `climat`).
-- **Sol et eau** : `soilMoisture`, `wateringNeed`, `soilTypes`, `soilPh`, face au sol du terrain et à sa place par rapport à l'eau.
-- **Lumière** : `exposures`, face à l'ombre de la structure.
-- **Taille adulte** : `heightMaxM`, `spreadMaxM`, `crownM`, pour l'espacement.
-- **Ce qu'elle apporte** : `edibleParts`, `edibleRating`, `ecoServices`, et ce qui compte dans la fiche projet.
-- **Indigène ou invasive** : `nativeCountries`, `invasiveCountries`. Jamais d'espèce invasive dans le pays du terrain.
-- **Toxicité** (`toxicFor`) si des enfants ou des animaux fréquentent le lieu.
+- **Hardiness** (`hardinessZone`, `minTemperatureC`) against the site's zone, today and in 2050 (chapter `climate`).
+- **Soil and water**: `soilMoisture`, `wateringNeed`, `soilTypes`, `soilPh`, against the site's soil and its position relative to water.
+- **Light**: `exposures`, against the shade cast by the structure.
+- **Mature size**: `heightMaxM`, `spreadMaxM`, `crownM`, for spacing.
+- **What it brings**: `edibleParts`, `edibleRating`, `ecoServices`, and what matters in the project sheet.
+- **Native or invasive**: `nativeCountries`, `invasiveCountries`. Never an invasive species in the site's country.
+- **Toxicity** (`toxicFor`) if children or animals use the place.
 
-Chaque donnée du catalogue a sa source : cite-la quand elle fonde un choix. Si une donnée manque, dis-le plutôt que de l'inventer.
+Each catalogue value has a source: cite it when it grounds a choice. If a value is missing, say so rather than inventing it.
 
-## La diversité
+## Diversity
 
-- Plusieurs variétés par espèce fruitière, avec les **pollinisateurs** compatibles (pommiers, poiriers, cerisiers…).
-- Des récoltes étalées sur l'année (`harvestMonths`) plutôt que tout en septembre.
-- Plusieurs familles botaniques, pour qu'une maladie ou un ravageur ne fasse pas tout tomber.
-- Une bonne part d'**espèces indigènes** ou bien adaptées, en particulier dans les haies.
+- Several varieties per fruit species, with compatible **pollinators** (apples, pears, cherries…).
+- Harvests spread over the year (`harvestMonths`) rather than everything in September.
+- Several botanical families, so that one disease or pest cannot bring everything down.
+- A good share of **native** or well-adapted species, especially in hedges.
 
-## Les quantités
+## Quantities
 
-Espace les arbres selon leur couronne adulte, mais plante plus dense au départ avec des pionniers et des arbustes qu'on éclaircira. Propose des quantités réalistes pour le budget et le temps de la personne, et rappelle que les plants les plus jeunes reprennent souvent le mieux.
+Space trees by their mature crown, but plant denser at first with pioneers and shrubs to be thinned later. Propose quantities realistic for the person's budget and time, and remember that the youngest plants often establish best.

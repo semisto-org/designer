@@ -8,7 +8,7 @@ fr:
       instructions: |-
         Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
         Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
-        Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « methode » et le chapitre du sujet). Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
+        Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « method » et le chapitre du sujet). Le guide est écrit en anglais : réponds toujours dans la langue de la personne. Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
         Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
@@ -60,9 +60,9 @@ fr:
           plant_id: "Identifiant de la plante, donné par search_plants."
       get_design_guide:
         title: "Guide de méthode de Semisto"
-        description: "La méthode de conception de Semisto, chapitre par chapitre : l'ordre de conception et la posture (methode), l'eau (eau), la structure (structure), la palette et les guildes (palette), le climat qui vient (climat). Sans topic : la liste des chapitres. À lire avant de proposer un design ou de conseiller sur l'eau, la structure ou les plantes."
+        description: "La méthode de conception de Semisto, chapitre par chapitre : l'ordre de conception et la posture (method), l'eau (water), la structure (structure), la palette et les guildes (palette), le climat qui vient (climate). Chapitres rédigés en anglais. Sans topic : la liste des chapitres. À lire avant de proposer un design ou de conseiller sur l'eau, la structure ou les plantes."
         params:
-          topic: "Chapitre à lire. Sans topic : la liste des chapitres, à commencer par « methode »."
+          topic: "Chapitre à lire. Sans topic : la liste des chapitres, à commencer par « method »."
       propose_features:
         title: "Proposer des brouillons"
         description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."

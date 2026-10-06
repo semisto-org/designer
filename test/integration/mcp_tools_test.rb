@@ -54,16 +54,16 @@ class McpToolsTest < ActionDispatch::IntegrationTest
   test "get_design_guide lists the chapters, then serves one" do
     data, error = call_tool(@viewer, "get_design_guide")
     refute error
-    assert_equal "methode", data["start_with"]
+    assert_equal "method", data["start_with"]
     assert_equal DesignGuide.topics, data["chapters"].map { |c| c["topic"] }
     assert_nil AiAction.last.map
 
-    data, error = call_tool(@viewer, "get_design_guide", { topic: "eau" })
+    data, error = call_tool(@viewer, "get_design_guide", { topic: "water" })
     refute error
-    assert_equal "eau", data["topic"]
-    assert_match(/courbe de niveau/, data["guide"])
-    refute_includes data["other_chapters"].map { |c| c["topic"] }, "eau"
-    assert_equal({ "topic" => "eau" }, AiAction.last.result)
+    assert_equal "water", data["topic"]
+    assert_match(/contour/, data["guide"])
+    refute_includes data["other_chapters"].map { |c| c["topic"] }, "water"
+    assert_equal({ "topic" => "water" }, AiAction.last.result)
 
     text, error = call_tool(@viewer, "get_design_guide", { topic: "nope" })
     assert error, "an unknown topic is refused by the schema or the tool"
