@@ -7,6 +7,11 @@ require_relative "test_helpers/session_test_helper"
 # External providers are stubbed in tests; localhost stays reachable.
 WebMock.disable_net_connect!(allow_localhost: true)
 
+# Build the Vite assets once, before the parallel workers fork. Otherwise each
+# worker that renders the layout runs its own build into public/vite-test, and
+# one of them can read the manifest while another is rewriting it.
+ViteRuby.commands.build if ViteRuby.config.auto_build
+
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
