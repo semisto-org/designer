@@ -23,6 +23,30 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="theme-color" content="#ffffff">
     
+    <%# After a deploy, a page may still point at chunks of the previous build: reload once to get the new one. %>
+    <%= javascript_tag <<~JS
+      (function () {
+        var KEY = "designer:stale-build-reload"
+        function reload() {
+          try {
+            var last = Number(sessionStorage.getItem(KEY) || 0)
+            if (Date.now() - last < 30000) return false
+            sessionStorage.setItem(KEY, String(Date.now()))
+          } catch (e) { return false }
+          location.reload()
+          return true
+        }
+        window.addEventListener("error", function (event) {
+          var el = event.target
+          var url = el && (el.src || el.href)
+          if (url && (el.tagName === "SCRIPT" || el.tagName === "LINK") && url.indexOf("/vite/") !== -1) reload()
+        }, true)
+        window.addEventListener("vite:preloadError", function (event) {
+          if (reload()) event.preventDefault()
+        })
+      })()
+    JS
+    %>
     <%= vite_stylesheet_tag "application.css" %>
     <%= vite_react_refresh_tag %>
     <%= vite_client_tag %>
