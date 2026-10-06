@@ -1,6 +1,6 @@
 ---
 title: "Caler un fond de plan"
-summary: "Poser une esquisse ou un plan remis au client sous ton dessin, le caler sur le terrain, régler son opacité et le masquer."
+summary: "Poser une esquisse ou un plan remis au client (image ou PDF) sous ton dessin, le caler sur le terrain, régler son opacité et le masquer."
 category: Cartographier
 order: 36
 ---
@@ -9,7 +9,7 @@ Tu as dessiné ton jardin-forêt sur papier, ou remis un plan à un client ? Pos
 
 ## Importer une image
 
-**Importer une image** accepte les fichiers JPEG, PNG ou WebP jusqu'à 30 Mo. Un plan en PDF s'exporte d'abord en image (depuis ton logiciel de dessin, ou par une capture d'écran). Tu peux en importer plusieurs : une esquisse, puis chaque version remise au client. La dernière importée passe au-dessus des autres.
+**Importer un plan** accepte les plans en PDF et les images JPEG, PNG ou WebP (30 Mo au plus). Pour un PDF de plusieurs pages, tu choisis la page qui porte le plan : elle est convertie en image dans ton navigateur, le PDF lui-même n'est pas envoyé. Tu peux en importer plusieurs : une esquisse, puis chaque version remise au client. La dernière importée passe au-dessus des autres.
 
 L'image arrive au milieu de la vue, nord en haut, et le calage commence aussitôt.
 
