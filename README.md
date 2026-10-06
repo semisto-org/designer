@@ -20,7 +20,7 @@ En développement, `/dev/login?email=vous@exemple.org` vous connecte sans e-mail
 
 Tests : `bin/rails test` et `npx tsc -p tsconfig.app.json`.
 
-Les conventions du code (en anglais) sont dans [CLAUDE.md](CLAUDE.md).
+Pourquoi ce projet existe, ses principes et ce qu'il refuse : [INTENT.md](INTENT.md) (en anglais). Les conventions du code (en anglais) sont dans [CLAUDE.md](CLAUDE.md).
 
 ## Paiements (Stripe)
 
