@@ -59,6 +59,9 @@ jobs:
           PLATFORM: ${{ inputs.platform }}
         run: |
           submit=""
-          if [ "$PROFILE" = "testflight" ] || [ "$PROFILE" = "production" ]; then submit="--auto-submit"; fi
+          # Google Play takes the first upload of an app by hand, and EAS
+          # needs a Play service account key to submit after that: Android
+          # builds of these profiles are uploaded from the Play Console.
+          if { [ "$PROFILE" = "testflight" ] || [ "$PROFILE" = "production" ]; } && [ "$PLATFORM" = "ios" ]; then submit="--auto-submit"; fi
           npx --yes eas-cli@latest build --profile "$PROFILE" --platform "$PLATFORM" \
             --non-interactive --no-wait $submit

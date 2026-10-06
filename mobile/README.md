@@ -83,9 +83,15 @@ npx eas build --profile production && npx eas submit  # stores
 
 From GitHub: Actions, « Mobile build », « Run workflow » (profile and
 platform), with the repository secret `EXPO_TOKEN` (robot token of the Expo
-organisation `semisto`). The build runs on Expo; its page on expo.dev has the
+organisation `semisto.org`). The build runs on Expo; its page on expo.dev has the
 APK link or the TestFlight status. The first iOS build is made once from a
 computer, where Apple asks for its account to create the certificate.
+
+Google Play: the `testflight` profile on Android gives the same test app as an
+Android App Bundle (`.aab`), uploaded by hand to the Play Console's internal
+testing track (Google takes the first upload of an app only from the
+console). Automatic submission needs a Play service account key added to
+EAS; until then the workflow auto-submits iOS builds only.
 
 Store reviewers sign in on the server's sign-in page with « Accès pour la
 relecture des stores », enabled by `APP_REVIEW_EMAIL` and `APP_REVIEW_CODE`
