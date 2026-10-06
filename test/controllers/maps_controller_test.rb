@@ -13,6 +13,16 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "maps/index", JSON.parse(response.body)["component"]
   end
 
+  test "each listed map carries its sketch, and the map worked on last its next step" do
+    sign_in_as users(:michael)
+    get maps_path, headers: inertia_headers
+    props = JSON.parse(response.body)["props"]
+    ahinvaux = props["maps"].find { _1["id"] == maps(:ahinvaux).id }
+    assert_equal [ "Polygon" ], ahinvaux.dig("sketch", "water").map { _1["type"] }
+    assert_equal props["maps"].first["id"], props.dig("resume", "mapId")
+    assert_includes %w[item advance complete], props.dig("resume", "next", "type")
+  end
+
   test "creates a map" do
     sign_in_as users(:bob)
     assert_difference -> { Map.count } do

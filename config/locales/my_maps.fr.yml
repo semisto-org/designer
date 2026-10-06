@@ -1,0 +1,42 @@
+# « Mes cartes » as a field notebook: the map worked on last, sketches of
+# each terrain, the season's note.
+fr:
+  my_maps:
+    resume:
+      eyebrow: "Là où tu t'étais arrêté·e · %{when}"
+      open: "Reprendre la carte"
+      next: "Prochaine étape : %{step}"
+      advance: "Cette étape est faite : passe à « %{stage} » quand tu te sens prêt·e."
+      complete: "Tout le parcours est fait. Il reste à regarder ton jardin pousser."
+    other_maps: "Mes autres cartes"
+    own_maps: "Mes cartes personnelles"
+    stage: "Étape : %{stage}"
+    palette:
+      empty: "Palette vide : choisis les espèces qui te font envie."
+      species:
+        one: "%{count} espèce dans la palette"
+        other: "%{count} espèces dans la palette"
+      placed:
+        one: "%{count} plante placée"
+        other: "%{count} plantes placées"
+    sketch:
+      label: "Croquis du terrain « %{name} »"
+      no_outline: "ton terrain commence ici"
+      no_outline_hint: "trace son contour pour qu'il prenne vie"
+      today: "aujourd'hui"
+      year: "an %{year}"
+      grow_hint: "Survole une carte plantée : ses arbres poussent jusqu'à l'an 30."
+    # The season's note under the title, one per month (January = 1).
+    seasons:
+      "1": "Plein hiver : la structure du terrain se lit le mieux quand les arbres sont nus."
+      "2": "Fin d'hiver : c'est encore la saison pour planter les arbres à racines nues."
+      "3": "Début de printemps : observe où la neige et le gel tiennent le plus longtemps."
+      "4": "Printemps : note les premières floraisons, elles disent où le soleil chauffe."
+      "5": "Fin de printemps : les plantes spontanées racontent ton sol, regarde-les."
+      "6": "Début d'été : c'est le moment de voir l'ombre portée la plus courte."
+      "7": "Plein été : repère les coins qui sèchent en premier."
+      "8": "Fin d'été : récolte, et note ce qui a souffert du sec."
+      "9": "Fin d'été : les fruits mûrissent, c'est le bon moment pour goûter les variétés des voisins."
+      "10": "Début d'automne : après la pluie, regarde où l'eau s'arrête."
+      "11": "Automne : la saison de plantation commence, prépare tes trous de plantation."
+      "12": "Début d'hiver : les feuilles sont tombées, c'est le moment de voir les vues et les vents."
