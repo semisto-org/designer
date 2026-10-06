@@ -91,9 +91,11 @@ class Imports::Claudy::ImporterTest < ActiveSupport::TestCase
     assert_in_delta 4.9056, observations.first.location.x
   end
 
-  test "photos are imported once, placed on points, and HEIC is refused" do
+  test "photos are imported once, placed on points, and HEIC is converted to JPEG" do
     report = claudy_import(@map)
-    assert_equal({ created: 2, unsupported: 1 }, report.photos.symbolize_keys.slice(:created, :unsupported))
+    assert_equal({ created: 3 }, report.photos.symbolize_keys.slice(:created, :unsupported))
+    heic = @map.photos.joins(image_attachment: :blob).find_by!(active_storage_blobs: { filename: "IMG_0001.jpg" })
+    assert_equal "image/jpeg", heic.image.blob.content_type
 
     zone_photo = @map.photos.where(map_feature: imported(@map, "map_feature", 110)).sole
     assert_equal [ "import", "verger.jpg", nil ], [ zone_photo.source, zone_photo.image.filename.to_s, zone_photo.location ]
@@ -102,11 +104,10 @@ class Imports::Claudy::ImporterTest < ActiveSupport::TestCase
 
     record_photo = @map.photos.where(map_feature: imported(@map, "map_feature", 180)).sole
     assert_in_delta 50.3399, record_photo.location.y
-    assert_not_requested :get, %r{IMG_0001\.HEIC}
 
     report = claudy_import(@map)
-    assert_equal 2, report.photos[:known]
-    assert_equal 2, @map.photos.count
+    assert_equal 3, report.photos[:known]
+    assert_equal 3, @map.photos.count
   end
 
   test "leaves the welcome map, comments, third-party records, tasks and personal data out" do
@@ -190,8 +191,8 @@ class Imports::Claudy::ImporterTest < ActiveSupport::TestCase
       report = claudy_import(@map, dry_run: true)
     end
     assert_equal 22, report.total(:created) - 2
-    assert_equal 2, report.photos[:planned]
-    assert_not_requested :get, %r{storage\.claudy\.test}
+    assert_equal 3, report.photos[:planned]
+    assert_not_requested :get, %r{storage\.claudy\.test|IMG_0001\.HEIC}
     assert_match "Simulation (DRY_RUN=1)", report.to_s
   end
 
@@ -233,7 +234,7 @@ class Imports::Claudy::ImporterTest < ActiveSupport::TestCase
     assert_match "Import de Claudy dans « Domaine d'Ahinvaux »", text
     assert_match "Source : API https://claudy.test/api/v1", text
     assert_match "#{MapElements.label('plant')} · #{I18n.t('editor.layers.plants')} : 5 créés", text
-    assert_match "Photos : 2 ajoutées, 1 refusée (format non accepté, HEIC par exemple).", text
+    assert_match "Photos : 3 ajoutées.", text
     assert_match "Palette : 4 espèces ou variétés ajoutées.", text
     assert_match "  - Néflier (Mespilus germanica L.) : 1 plante", text
     assert_match "2 éléments de la carte d'accueil", text

@@ -59,6 +59,8 @@ module ClaudyImportTestHelper
       .to_return(status: 302, headers: { "Location" => "https://storage.claudy.test/blobs/verger.jpg" })
     stub_request(:get, "https://storage.claudy.test/blobs/verger.jpg")
       .to_return(status: 200, body: file_fixture("terrain.jpg").binread, headers: { "Content-Type" => "image/jpeg" })
+    stub_request(:get, "#{CLAUDY_HOST}/rails/active_storage/blobs/redirect/eyJfcmFpbHMj/IMG_0001.HEIC")
+      .to_return(status: 200, body: file_fixture("terrain_gps.heic").binread, headers: { "Content-Type" => "image/heic" })
     stub_request(:get, "https://storage.claudy.test/releve.png")
       .to_return(status: 200, body: file_fixture("terrain.png").binread, headers: { "Content-Type" => "image/png" })
   end

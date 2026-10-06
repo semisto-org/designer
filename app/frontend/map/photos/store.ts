@@ -27,7 +27,13 @@ export type PhotosState = {
   version: number
 }
 
-const DEFAULT_LIMITS: PhotoLimits = { maxBytes: 25 * 1024 * 1024, contentTypes: ['image/jpeg', 'image/png', 'image/webp'] }
+const DEFAULT_LIMITS: PhotoLimits = {
+  maxBytes: 25 * 1024 * 1024,
+  contentTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'],
+}
+
+/** For a file input: the accepted types, plus the HEIC extensions (some systems give .heic files no type). */
+export const photoAccept = (contentTypes: string[]) => [...contentTypes, '.heic', '.heif'].join(',')
 
 let state: PhotosState = {
   mapId: null, photos: [], albums: [], limits: DEFAULT_LIMITS, loaded: false, loading: false, error: null,

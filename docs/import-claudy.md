@@ -33,7 +33,7 @@ La commande imprime un résumé en français : créés, mis à jour, inchangés 
 | Plantes placées | Plantes : plante liée à l'espèce et à la variété du catalogue par le nom latin normalisé (synonymes latins du catalogue compris, par exemple *Rosmarinus officinalis* pour *Salvia rosmarinus*), ou, pour une plante sans nom latin, par son nom commun français s'il ne désigne qu'une espèce ; date de plantation connue (`planted_on`, ou le 1er janvier de l'année avec `planted_on_precision: "year"`) ; numéro, statut, santé, zone et journal dans les notes. Chaque espèce ou variété entre dans la palette de la carte. |
 | Plantes introuvables dans le catalogue | Plantes sans espèce, avec `unmatched_species` (nom, nom latin, variété), listées dans le résumé. Le catalogue n'est jamais complété par l'import. |
 | Notes manuscrites (export seulement) | Notes : croquis (MultiLineString). |
-| Photos (JPEG, PNG, WebP) | Photos de la carte, liées à leur élément, placées s'il s'agit d'un point. Les HEIC sont refusées. |
+| Photos (JPEG, PNG, WebP, HEIC) | Photos de la carte, liées à leur élément, placées s'il s'agit d'un point. Les HEIC sont converties en JPEG. |
 
 Une forme que la bibliothèque d'éléments refuse (une mare en MultiPolygon, une valeur hors bornes) entre comme forme générique de la même couche (zone, ligne ou point), signalée dans « À vérifier ». Les valeurs par défaut de la bibliothèque (diamètre, potabilité…) ne sont jamais appliquées : ce que Claudy ne disait pas reste vide.
 

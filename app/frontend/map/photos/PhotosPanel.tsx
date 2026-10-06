@@ -10,7 +10,7 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { formatDay, formatMegabytes, formatMonth, photoDate, photoLabel } from '@/map/photos/format'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
-import { photoActions, usePhotos } from '@/map/photos/store'
+import { photoAccept, photoActions, usePhotos } from '@/map/photos/store'
 import { uploadActions, useUploads, type UploadItem } from '@/map/photos/upload'
 import type { MapPhotoData, PhotoAlbumData } from '@/types/soil_photos'
 
@@ -37,7 +37,7 @@ export default function PhotosPanel() {
   }), [state.photos, filter])
   const unplaced = state.photos.filter((p) => p.lng == null)
 
-  const accept = state.limits.contentTypes.join(',')
+  const accept = photoAccept(state.limits.contentTypes)
 
   function addFiles(files: FileList | File[] | null, camera = false) {
     const list = Array.from(files ?? [])
@@ -249,7 +249,9 @@ function UploadList({ uploads, onClear }: { uploads: UploadItem[]; onClear?: () 
         {uploads.map((item) => (
           <li key={item.key} className="flex items-center gap-2 rounded-lg bg-white p-1.5 text-xs ring-1 ring-loam-200">
             <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-md bg-loam-100">
-              {item.previewUrl ? <img src={item.previewUrl} alt="" className="h-full w-full object-cover" /> : <AlertCircle className="h-4 w-4 text-clay-500" />}
+              {item.previewUrl ? <img src={item.previewUrl} alt="" className="h-full w-full object-cover"
+                // A HEIC photo has no preview outside Safari (the server converts it).
+                onError={(event) => { event.currentTarget.style.visibility = 'hidden' }} /> : <AlertCircle className="h-4 w-4 text-clay-500" />}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium text-loam-800">{item.name}</span>
