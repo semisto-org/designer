@@ -94,6 +94,23 @@ class Imports::Immich::ImporterTest < ActiveSupport::TestCase
     assert_match "1 photo(s) ajoutée(s)", I18n.with_locale(:fr) { Imports::Immich::Summary.new(result).to_s }
   end
 
+  test "refuses an album that is not a project album, unless forced" do
+    stub_immich_album(name: "Formation taille 2024")
+    stub_immich_search([ immich_asset("x1") ])
+    stub_immich_original("x1")
+    error = assert_raises(Imports::Immich::Error) { I18n.with_locale(:fr) { import } }
+    assert_match "n'est pas un album de projet", error.message
+    assert_equal 0, @map.photos.count
+    assert_equal 1, import(force: true).counts[:created]
+    assert_equal "Formation taille 2024", @map.photos.last.album.name
+  end
+
+  test "knows project albums by their pin" do
+    assert Imports::Immich::Importer.project_album?("📍 Les Griants")
+    assert_not Imports::Immich::Importer.project_album?("Formation 📍 Yvoir")
+    assert_equal "Les Griants", Imports::Immich::Importer.map_album_name("📍 Les Griants")
+  end
+
   test "suggests the maps whose outline holds the album's photos" do
     inside = immich_asset("x1")
     outside = immich_asset("x2", lat: 48.85, lng: 2.35)

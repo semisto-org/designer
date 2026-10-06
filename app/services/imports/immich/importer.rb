@@ -15,24 +15,30 @@ module Imports
     # the server generates it, else the preview): position and date still
     # come from the asset's EXIF.
     #
+    # Only project albums are imported: their name starts with PROJECT_MARK
+    # (« 📍 Les Griants »). Other albums (trainings, events…) are refused
+    # unless `force`. The mark is dropped from the map's album name.
+    #
     # `dry_run` reads Immich and counts, without downloading or writing.
     class Importer
       SOURCE = "immich".freeze
       OUTCOMES = %i[created planned known duplicate video failed].freeze
       # Located assets looked at to guess which map an album belongs to.
       SUGGESTION_SAMPLE = 50
+      PROJECT_MARK = "📍".freeze
       EXTENSIONS = { "image/jpeg" => "jpg", "image/png" => "png", "image/webp" => "webp" }.freeze
 
       Result = Data.define(:album_name, :map, :counts, :located, :warnings, :dry_run)
 
       attr_reader :map, :client, :album_id
 
-      def initialize(map:, client:, album_id:, album_name: nil, dry_run: false)
+      def initialize(map:, client:, album_id:, album_name: nil, dry_run: false, force: false)
         @map = map
         @client = client
         @album_id = album_id
         @album_name = album_name
         @dry_run = dry_run
+        @force = force
         @counts = OUTCOMES.index_with { 0 }
         @located = 0
         @warnings = []
@@ -42,11 +48,21 @@ module Imports
 
       def call
         immich_album = client.album(album_id)
-        name = (@album_name.presence || immich_album["albumName"].presence || album_id).to_s.truncate(80)
+        immich_name = immich_album["albumName"].to_s
+        unless @force || self.class.project_album?(immich_name)
+          raise Error.new(:not_a_project_album, name: immich_name, mark: PROJECT_MARK)
+        end
+        name = (@album_name.presence || self.class.map_album_name(immich_name).presence || album_id).to_s.truncate(80)
         @ledger = ImportRecord.where(map:, source: SOURCE, external_type: "asset").pluck(:external_id).to_set
         client.each_album_asset(album_id) { |asset| import(asset, name) }
         Result.new(album_name: name, map:, counts: @counts, located: @located, warnings: @warnings, dry_run: dry_run?)
       end
+
+      # A project album: its name starts with PROJECT_MARK.
+      def self.project_album?(name) = name.to_s.lstrip.start_with?(PROJECT_MARK)
+
+      # « 📍 Les Griants » → « Les Griants ».
+      def self.map_album_name(name) = name.to_s.strip.delete_prefix(PROJECT_MARK).strip
 
       # The maps whose outline holds the album's located photos, with how many
       # of the sampled photos fall in each, most first.

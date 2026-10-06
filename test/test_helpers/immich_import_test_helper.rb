@@ -19,7 +19,7 @@ module ImmichImportTestHelper
     }
   end
 
-  def stub_immich_album(name: "Ahinvaux — verger", id: IMMICH_ALBUM)
+  def stub_immich_album(name: "📍 Ahinvaux — verger", id: IMMICH_ALBUM)
     stub_request(:get, "#{IMMICH_API}/albums/#{id}").with(headers: { "x-api-key" => IMMICH_KEY })
       .to_return(status: 200, body: { id:, albumName: name, assetCount: 0 }.to_json, headers: { "Content-Type" => "application/json" })
   end
