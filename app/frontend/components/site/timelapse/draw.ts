@@ -92,6 +92,31 @@ const OUTLINE: { pts: Point[]; a: number; w: number }[] = (() => {
   return out
 })()
 
+/**
+ * The west wind as a few long brush ribbons blowing in from the left, each
+ * ending in a curl, like the wind drawn on old maps.
+ */
+const WIND: Point[][] = (() => {
+  const r = rng(77)
+  return [215, 340, 465, 585].map((y0, i) => {
+    const pts: Point[] = []
+    const x0 = -230 + r() * 50 + (i % 2) * 50
+    const len = 330 + r() * 160
+    const amp = 9 + r() * 9
+    const ph = r() * 6
+    for (let s = 0; s <= len; s += 4) pts.push([x0 + s, y0 + Math.sin(s / 75 + ph) * amp * Math.min(1, s / 100)])
+    // the curl, turning up and in on itself
+    const [ex, ey] = pts[pts.length - 1]
+    const R = 22 + r() * 12
+    const turns = 1.5 + r() * 0.35
+    for (let a = 0.1; a <= turns * Math.PI; a += 0.1) {
+      const rr = R * (1 - a / (turns * Math.PI * 1.3))
+      pts.push([ex + Math.sin(a) * rr, ey - R + Math.cos(a) * rr])
+    }
+    return pts
+  })
+})()
+
 /** Where smoke leaves the chimney painted on the roof (house.webp), in world space. */
 const CHIMNEY: Point = (() => {
   const w = HOUSE.w * 1.05
@@ -337,6 +362,128 @@ export class Painter {
     ctx.strokeText(text, x, y)
     ctx.fillStyle = rgba(col, 1)
     ctx.fillText(text, x, y)
+    ctx.restore()
+  }
+
+  /** A comment bubble, pencilled on the plan, its tail pointing at what it says. */
+  private bubble(text: string, x: number, y: number, tx: number, ty: number, size: number, col: RGB, a = 1) {
+    if (a <= 0.01) return
+    const { ctx, C } = this
+    ctx.save()
+    ctx.globalAlpha = a
+    ctx.font = `600 ${size}px "Caveat Variable", "Bradley Hand", cursive`
+    const w = ctx.measureText(text).width + 28
+    const h = size + 16
+    const dx = tx - x
+    const dy = ty - y
+    const d = Math.hypot(dx, dy) || 1
+    const ux = dx / d
+    const uy = dy / d
+    const edge = Math.min(w / 2 / Math.max(Math.abs(ux), 1e-3), h / 2 / Math.max(Math.abs(uy), 1e-3)) - 4
+    const bx = x + ux * edge
+    const by = y + uy * edge
+    const tail: Point[] = [[bx - uy * 9, by + ux * 9], [tx - ux * 5, ty - uy * 5], [bx + uy * 9, by - ux * 9]]
+    const graphite = rgba(mix(C.ink, C.paper, 0.2), 0.75)
+    ctx.fillStyle = rgba(C.paper, 0.94)
+    ctx.beginPath()
+    ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2)
+    ctx.fill()
+    this.poly(tail)
+    ctx.fill()
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    // pencil goes round twice, never quite on the same line
+    for (const [ox, oy, lw, la] of [[0, 0, 1.3, 1], [0.9, -0.7, 0.7, 0.5]]) {
+      ctx.strokeStyle = graphite
+      ctx.globalAlpha = a * la
+      ctx.lineWidth = lw
+      ctx.beginPath()
+      ctx.roundRect(x - w / 2 + ox, y - h / 2 + oy, w, h, h / 2)
+      ctx.stroke()
+    }
+    ctx.globalAlpha = a
+    ctx.fillStyle = rgba(C.paper, 1)
+    this.poly([[bx - uy * 7.5 - ux * 3, by + ux * 7.5 - uy * 3], tail[1], [bx + uy * 7.5 - ux * 3, by - ux * 7.5 - uy * 3]])
+    ctx.fill()
+    ctx.strokeStyle = graphite
+    ctx.lineWidth = 1.3
+    ctx.beginPath()
+    ctx.moveTo(...tail[0])
+    ctx.lineTo(...tail[1])
+    ctx.lineTo(...tail[2])
+    ctx.stroke()
+    ctx.fillStyle = rgba(col, 1)
+    ctx.beginPath()
+    ctx.arc(tx, ty, 3, 0, TAU)
+    ctx.fill()
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(text, x, y + 1)
+    ctx.restore()
+  }
+
+  /** The west wind: brush ribbons that blow across from the left and curl up, carrying a leaf or two. */
+  private drawWind(wind: number, alpha: number) {
+    const { ctx, C } = this
+    const col = mix(C.ink, C.water, 0.6)
+    ctx.save()
+    WIND.forEach((pts, i) => {
+      const n = pts.length
+      const trail = Math.round(n * 0.8)
+      // the head travels along the ribbon, the tail thinning to nothing behind it
+      const head = this.reduce ? n - 1 : Math.floor((wind * 30 + i * 47) % (n + trail * 0.5))
+      const from = Math.max(0, head - trail)
+      const to = Math.min(n - 1, head)
+      if (to - from < 3) return
+      const left: Point[] = []
+      const right: Point[] = []
+      for (let k = from; k <= to; k++) {
+        const [x0, y0] = pts[Math.max(0, k - 1)]
+        const [x1, y1] = pts[Math.min(n - 1, k + 1)]
+        const len = Math.hypot(x1 - x0, y1 - y0) || 1
+        const nx = -(y1 - y0) / len
+        const ny = (x1 - x0) / len
+        const u = (k - (head - trail)) / trail
+        // a brush: swelling towards the head, pinched at both ends and thinner in the curl
+        const w = 3 * Math.pow(Math.min(1, u), 1.3) * (1 - smooth(0.7, 1, (k - to + 6) / 6)) * (1 - 0.55 * smooth(0.6, 1, k / n)) + 0.25
+        left.push([pts[k][0] + nx * w, pts[k][1] + ny * w])
+        right.push([pts[k][0] - nx * w, pts[k][1] - ny * w])
+      }
+      ctx.fillStyle = rgba(col, 0.5 * alpha)
+      this.poly([...left, ...right.reverse()])
+      ctx.fill()
+      // a hairline running beside it, as a dry brush leaves
+      ctx.strokeStyle = rgba(col, 0.22 * alpha)
+      ctx.lineWidth = 0.7
+      ctx.beginPath()
+      for (let k = from; k <= Math.min(to, Math.floor(n * 0.72)); k++) {
+        const [x, y] = pts[k]
+        if (k === from) ctx.moveTo(x, y + 7)
+        else ctx.lineTo(x, y + 7)
+      }
+      ctx.stroke()
+      // a leaf rides every other ribbon
+      if (i % 2 === 0) {
+        const [lx, ly] = pts[to]
+        const [px, py] = pts[Math.max(0, to - 2)]
+        ctx.save()
+        ctx.translate(lx, ly)
+        ctx.rotate(Math.atan2(ly - py, lx - px) + Math.sin(wind * 3 + i) * 0.4)
+        ctx.fillStyle = rgba(mix(C.leaf, C.humus, 0.35), 0.85 * alpha)
+        ctx.beginPath()
+        ctx.moveTo(-7, 0)
+        ctx.quadraticCurveTo(0, -5, 7, 0)
+        ctx.quadraticCurveTo(0, 5, -7, 0)
+        ctx.fill()
+        ctx.strokeStyle = rgba(C.ink, 0.35 * alpha)
+        ctx.lineWidth = 0.6
+        ctx.beginPath()
+        ctx.moveTo(-7, 0)
+        ctx.lineTo(8, 0)
+        ctx.stroke()
+        ctx.restore()
+      }
+    })
     ctx.restore()
   }
 
@@ -760,16 +907,11 @@ export class Painter {
       ctx.save()
       ctx.globalAlpha = st.observe
       for (const p of RUNOFF) this.line(p, rgba(C.water, 0.9), 3, [2, 9], this.reduce ? 0 : -wind * 16)
-      for (let i = 0; i < 4; i++) {
-        const y = 200 + i * 110
-        const x0 = 20 + ((wind * 40 + i * 60) % 120)
-        this.line([[x0, y], [x0 + 70, y - 6]], rgba(C.ink, 0.45), 1.6)
-        this.line([[x0 + 60, y - 14], [x0 + 72, y - 6], [x0 + 62, y + 4]], rgba(C.ink, 0.45), 1.6)
-      }
       ctx.restore()
+      this.drawWind(wind, st.observe)
       this.hand(labels.wind, 30, 160, 26, C.ink, st.observe)
-      this.hand(labels.water, POND.x + 10, POND.y + POND.r + 34, 26, C.water, st.observe, 'center')
-      this.hand(labels.slope, 520, 655, 24, C.ink, st.observe, 'center')
+      this.bubble(labels.water, 830, 632, POND.x + 32, POND.y + 44, 24, C.water, st.observe)
+      this.bubble(labels.slope, 430, 657, 470, 592, 24, C.ink, st.observe)
     }
     if (st.plan > 0.01) {
       this.hand(labels.walnut, 450, 300 - SPECIES.noyer.R * PX_PER_M - 10, 26, C.prune, st.plan, 'center')
