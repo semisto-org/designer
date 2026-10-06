@@ -1,14 +1,14 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
-import type { MapFeature } from '@/types'
+import type { MapFeature, MapStage } from '@/types'
 
 /**
- * Side panels of the map editor, grouped by the design cycle:
- * map (cartographier), understand (comprendre), design (concevoir),
- * share (partager et suivre). Each feature area registers its panels in
- * `panels/index.ts`; the editor renders the rail and the open panel.
+ * Side panels of the map editor, grouped by the four steps of the journey
+ * (observe, map, design, plant), plus `share` (exchange and follow, without
+ * a number). Each feature area registers its panels in `panels/index.ts`;
+ * the editor renders the rail and the open panel.
  */
-export type PanelGroup = 'map' | 'understand' | 'design' | 'share'
+export type PanelGroup = MapStage | 'share'
 
 export type EditorPanel = {
   id: string
@@ -27,6 +27,8 @@ export type EditorPanel = {
    * checks the same query to lay itself out for the modal.
    */
   modal?: boolean
+  /** Opened from elsewhere (the guide card, the steps), not listed in the rail. */
+  hiddenFromRail?: boolean
 }
 
 /** Screens wide enough for modal panels (Tailwind's `lg`). */

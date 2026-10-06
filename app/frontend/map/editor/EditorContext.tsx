@@ -3,7 +3,7 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
 import { createContext, useContext } from 'react'
 import type { DrawOptions, DrawShape } from '@/map/editor/draw'
 import type {
-  EntitlementsData, FeatureLayer, MapData, MapFeature, MapFeatureProperties, RegionLayerData,
+  EntitlementsData, FeatureLayer, MapData, MapFeature, MapFeatureProperties, MapStage, RegionLayerData,
 } from '@/types'
 
 export type NewFeature = {
@@ -59,6 +59,9 @@ export type Editor = {
 
   activePanel: string | null
   openPanel: (id: string | null) => void
+  /** The step the rail and the guide card put forward: the map's stage unless the person picked another in the header. */
+  focusStage: MapStage
+  focusStep: (stage: MapStage | null) => void
   notify: (message: string, tone?: 'info' | 'error') => void
 }
 

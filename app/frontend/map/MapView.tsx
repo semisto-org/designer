@@ -2,6 +2,7 @@ import * as maplibregl from 'maplibre-gl'
 import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
+import { t } from '@/lib/i18n'
 import { MapContext } from '@/map/MapContext'
 
 // MapLibre locates its worker next to its own module, which a bundler moves:
@@ -36,9 +37,11 @@ type Props = {
   className?: string
   children?: ReactNode
   onReady?: (map: MapLibreMap) => void
+  /** Where the scale bar sits (the editor keeps the bottom left for its guide card). */
+  scalePosition?: 'bottom-left' | 'bottom-right'
 }
 
-export function MapView({ center, zoom, bbox, style, className, children, onReady }: Props) {
+export function MapView({ center, zoom, bbox, style, className, children, onReady, scalePosition = 'bottom-left' }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<MapLibreMap | null>(null)
 
@@ -53,9 +56,16 @@ export function MapView({ center, zoom, bbox, style, className, children, onRead
       attributionControl: { compact: true },
       // Needed to export the canvas (scaled PDF, thumbnails).
       canvasContextAttributes: { preserveDrawingBuffer: true },
+      locale: {
+        'NavigationControl.ZoomIn': t('editor.controls.zoom_in'),
+        'NavigationControl.ZoomOut': t('editor.controls.zoom_out'),
+        'NavigationControl.ResetBearing': t('editor.controls.north'),
+        'GeolocateControl.FindMyLocation': t('editor.controls.locate'),
+        'AttributionControl.ToggleAttribution': t('editor.controls.sources'),
+      },
     })
     instance.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right')
-    instance.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left')
+    instance.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), scalePosition)
     instance.addControl(
       new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }),
       'top-right',

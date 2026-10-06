@@ -74,6 +74,10 @@ fr:
       submit: "Créer la carte"
     show:
       back: "Retour à mes cartes"
+      your_role: "Ton rôle : %{role}"
+      area_ares:
+        one: "%{count} are"
+        other: "%{count} ares"
   activerecord:
     models:
       map: "Carte"
@@ -98,6 +102,36 @@ fr:
     loading: "Chargement…"
   editor:
     panels_nav: "Panneaux de la carte"
+    rail:
+      share: "Échanger"
+      collapse: "Réduire en icônes"
+      expand: "Afficher les libellés"
+      todo: "À faire maintenant"
+    steps:
+      label: "Les quatre étapes du projet"
+      done: "étape terminée"
+      current: "étape en cours"
+    guide:
+      title: "À faire maintenant"
+      collapse: "Réduire"
+      expand: "Déplier"
+      collapsed: "À faire : %{action}"
+      progress: "Parcours avancé à %{percent} %"
+      all_steps: "Voir tout le parcours"
+      step_title:
+        observe: "Observer ton terrain"
+        map: "Cartographier ce qui existe"
+        design: "Concevoir ton jardin-forêt"
+        plant: "Passer à la plantation"
+      step_done: "Cette étape est faite. Tu peux y revenir quand tu veux, ou passer à la suivante."
+      mark_stage: "J'en suis à cette étape"
+    controls:
+      recenter: "Recentrer sur la parcelle"
+      sources: "Sources de la carte"
+      zoom_in: "Zoomer"
+      zoom_out: "Dézoomer"
+      north: "Remettre le nord en haut"
+      locate: "Me localiser"
     draw_hint: "Clique point par point le contour, puis reviens au premier point ou touche « Terminer ». Échap pour annuler."
     draft: "Brouillon"
     draft_hint: "Proposé par une IA : à accepter ou refuser."

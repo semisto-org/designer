@@ -8,7 +8,7 @@ import {
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useJourneyState } from '@/lib/journeyStore'
-import { useChipHidden, useSeen } from '@/lib/journeyFlags'
+import { useSeen } from '@/lib/journeyFlags'
 import { resolvePanel } from '@/lib/journeyPanels'
 import { useEditor } from '@/map/editor/EditorContext'
 import { openTour } from '@/map/tour/TourOverlay'
@@ -34,7 +34,6 @@ export default function JourneyPanel() {
   const editor = useEditor()
   const { data, failed } = useJourneyState()
   const [, setSeen] = useSeen(editor.map.id)
-  const [chipHidden, setChipHidden] = useChipHidden(editor.map.id)
   const setStage = useStageSetter()
   const [expanded, setExpanded] = useState<string | null>(editor.map.stage)
 
@@ -106,11 +105,6 @@ export default function JourneyPanel() {
           )
         })}
       </ol>
-      {editor.canEdit && chipHidden && (
-        <button type="button" onClick={() => setChipHidden(false)} className="text-sm font-medium text-prune-700 hover:underline">
-          {t('journey.panel.chip_show')}
-        </button>
-      )}
     </div>
   )
 }

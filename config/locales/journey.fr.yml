@@ -33,30 +33,39 @@ fr:
       project_sheet:
         label: "Remplir la fiche projet"
         hint: "Qui, ambitions, budget, temps disponible… au moins %{target} %."
+        now: "Commence par la fiche projet : tes envies, qui vit sur le lieu, ce que tu sais déjà du site. Elle s'enregistre au fil de l'eau, reviens-y quand tu veux."
       layers_seen:
         label: "Parcourir les couches du terrain"
         hint: "Sols, pentes, eau, zones protégées : ce que le lieu sait déjà de lui-même."
+        now: "Sols, pentes, eau, zones protégées : parcours les couches pour voir ce que le lieu dit déjà de lui-même."
       boundary:
         label: "Dessiner le contour du terrain"
         hint: "Il sert de cadre à tout le reste."
+        now: "Trace le contour de ton terrain sur la carte, ou choisis ses parcelles cadastrales. Il sert de cadre à tout le reste."
       existing:
         label: "Relever ce qui existe déjà"
         hint: "Arbres, bâtiments, mares, chemins… au moins %{target} éléments."
+        now: "Relève ce qui est déjà là : arbres, bâtiments, mares, chemins. Au moins %{target} éléments pour bien partir."
       palette:
         label: "Commencer la palette de plantes"
         hint: "Les espèces qui te plaisent et qui conviennent au lieu."
+        now: "Choisis les espèces qui te plaisent et qui conviennent au lieu. Ta palette nourrit tout le plan de plantation."
       design_elements:
         label: "Dessiner un premier aménagement"
         hint: "Mare, haie, abri, chemin, clôture…"
+        now: "Dessine un premier aménagement : une mare, une haie, un abri, un chemin. Le plan prend forme."
       plant_plan:
         label: "Placer des plantes sur le plan"
         hint: "Chaque plante placée alimente ta liste de plants."
+        now: "Place tes plantes sur le plan. Chaque plante placée alimente ta liste de plants."
       plant_list:
         label: "Préparer la liste de plants"
         hint: "Espèces et quantités, prêtes à commander."
+        now: "Prépare ta liste de plants : espèces et quantités, prêtes à commander."
       take_action:
         label: "Passer à l'action avec Semisto"
         hint: "Commander des plants, demander la mise en œuvre ou confier le suivi."
+        now: "Quand tu es prêt·e, Semisto peut fournir les plants, t'aider à planter ou suivre le jardin avec toi."
       progress: "%{percent} %"
       count: "%{count} sur %{target}"
 
@@ -81,8 +90,6 @@ fr:
       untick: "Décocher"
       loading: "Chargement du parcours…"
       unavailable: "Le parcours est momentanément indisponible."
-      chip_hide: "Masquer"
-      chip_show: "Afficher le parcours"
       read_only: "Seuls le propriétaire et les éditeurs peuvent changer l'étape."
 
     # ----- Project sheet -----

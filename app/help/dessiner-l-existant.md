@@ -26,7 +26,7 @@ Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Exi
 
 ## Dessiner un élément
 
-1. En haut de la carte, touche **Dessiner**.
+1. En haut de la carte, touche **Éléments**.
 2. Dans « Que veux-tu dessiner ? », choisis la couche, puis l'élément. Tes éléments **Récents** sont proposés en premier.
 3. Suis l'indication affichée, selon la forme de l'élément :
    - **un point** (arbre, puits, compteur) : touche la carte à l'endroit voulu ;
