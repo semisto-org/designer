@@ -97,7 +97,7 @@ module Imports
           line.outcome ||= "variety_created"
         end
 
-        if map.palette_items.exists?(species_id: line.species.id, variety_id: line.variety&.id)
+        if PaletteItem.where(map:).exists?(species_id: line.species.id, variety_id: line.variety&.id)
           return finish(line, line.outcome || "already_in_palette")
         end
         map.palette_items.create!(species: line.species, variety: line.variety, created_by: @user,

@@ -26,6 +26,8 @@ module Mcp
           parcels: map.parcels,
           project: map.project,
           elements: element_counts(map),
+          palette: palette(map),
+          palette_drafts_pending: map.palette_drafts.count,
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -36,12 +38,24 @@ module Mcp
           limits: {
             max_features_per_proposal: DraftProposal::MAX_FEATURES,
             max_pending_drafts: DraftProposal::MAX_PENDING,
-            proposal_buffer_m: DraftProposal::BUFFER_M
+            proposal_buffer_m: DraftProposal::BUFFER_M,
+            max_plants_per_palette_proposal: PaletteProposal::MAX_PLANTS
           }
         }
       end
 
       private
+        # The species chosen for this terrain (accepted entries only).
+        def palette(map)
+          map.palette_items.includes(species: :common_names, variety: :common_names).map do |item|
+            {
+              id: item.id, species_id: item.species_id, variety_id: item.variety_id, name: item.display_name,
+              latin_name: item.variety&.full_latin_name || item.species.latin_name,
+              strata: item.effective_strata, role: item.role, target_count: item.target_count, notes: item.notes
+            }.compact
+          end
+        end
+
         def centroid(map)
           point = map.center || map.boundary&.centroid
           point && [ point.x.round(Geo::PRECISION), point.y.round(Geo::PRECISION) ]

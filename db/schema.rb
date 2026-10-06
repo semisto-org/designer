@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_080000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -569,6 +569,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_080000) do
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "active", null: false
+    t.string "source", default: "human", null: false
+    t.text "rationale"
     t.index ["created_by_id"], name: "index_palette_items_on_created_by_id"
     t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "(variety_id IS NULL)"
     t.index ["map_id", "variety_id"], name: "index_palette_items_unique_variety", unique: true, where: "(variety_id IS NOT NULL)"
