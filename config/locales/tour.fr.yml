@@ -77,7 +77,9 @@ fr:
         kicker: "et alors, Claude"
         title: "Quand ton carnet est rempli, invite Claude."
         body: "Claude, l'assistant d'Anthropic, peut lire ta carte entière : le contour, ce que tu as relevé, les couches de ta région, ta fiche projet, ta palette. Il raisonne avec toi et pose ses idées sur la carte en brouillon, chacune avec son pourquoi. Tu acceptes, tu ajustes ou tu refuses : rien ne change sans toi."
-        why: "Tu peux le brancher dès aujourd'hui, il t'aidera déjà à lire les couches. Mais il ne connaît de ton lieu que ce que ton carnet lui dit : c'est quand tes observations et ton relevé sont complets qu'il donne tout son potentiel."
+        why: "Il ne connaît de ton lieu que ce que ton carnet lui dit : c'est quand tes observations et ton relevé sont complets qu'il donne tout son potentiel."
+        early_title: "mais branche-le dès le premier jour"
+        early: "Tu as déjà des choses sur ton ordinateur : un relevé en PDF, un ancien plan, tes notes de terrain, un tableur ? Donne-les à Claude : il les lit chez toi et les reporte sur ta carte en brouillon, plutôt que de tout ressaisir. À toi de valider."
         gauge_title: "Ce que Claude saurait de ton lieu aujourd'hui"
         gauge:
           region: "Les couches de ta région"

@@ -28,7 +28,7 @@ const PAGES: Page[] = [
   { key: 'claude', moment: { tau: 30.47 } },
 ]
 
-type Copy = { kicker: string; title: string; body: string; note?: string; why?: string; tools?: Record<string, string>; outline?: string[] }
+type Copy = { kicker: string; title: string; body: string; note?: string; why?: string; early_title?: string; early?: string; tools?: Record<string, string>; outline?: string[] }
 
 /**
  * The « carnet de route »: the four steps of the design, told on the painted
@@ -267,6 +267,10 @@ function ClaudePage({ copy, data, aiConnected, onLeave }: { copy: Copy; data: Jo
   return (
     <>
       <p className="mt-2.5 text-pretty text-[15px] leading-relaxed text-loam-600">{copy.why}</p>
+      <div className="mt-3 rounded-lg bg-humus-50 px-3 py-2.5 ring-1 ring-humus-200">
+        <p className="font-hand text-[1.35rem] leading-tight text-humus-800">{copy.early_title}</p>
+        <p className="mt-1 text-pretty text-sm leading-relaxed text-loam-700">{copy.early}</p>
+      </div>
       <div className="mt-4 rounded-lg border border-dashed border-loam-300 px-3 py-2.5">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-loam-400">{t('tour.pages.claude.gauge_title')}</p>
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-loam-200" role="img" aria-label={`${Math.round(share * 100)} %`}>
