@@ -9,8 +9,9 @@ the washes stay translucent like real watercolour) and packed into one atlas.
     python3 script/timelapse_sprites.py SHEETS_DIR
 
 SHEETS_DIR holds big.png, fruit.png, shrub.png, pond.png, house.png, bed.png and
-meadow.png. Writes atlas.webp, house.webp, bed.webp and meadow.webp into
-app/frontend/components/site/timelapse/paint/.
+meadow.png for the trees, and the sheets of SMALL_GRID for the understorey, the
+hedge and the animals. Writes atlas.webp, small.webp, house.webp, bed.webp and
+meadow.webp into app/frontend/components/site/timelapse/paint/.
 Needs Pillow and numpy.
 """
 import sys
@@ -20,8 +21,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 CELL = 288
-# Sprites whose white is paint (blossom), kept opaque inside the crown.
-SOLID = {"fruit_blossom"}
+SMALL_CELL = 160
+# Sprites whose white is paint (blossom, flowers, plumage), kept opaque inside.
+SOLID = {"fruit_blossom", "fraisier", "fraisier_2", "hirondelle", "pigeon", "buse", "geai", "chardonneret", "merle"}
 OUT = Path(__file__).resolve().parent.parent / "app/frontend/components/site/timelapse/paint"
 
 # Atlas order: must match SPRITES in app/frontend/components/site/timelapse/paint.ts.
@@ -29,6 +31,21 @@ GRID = [
     ("big", ["noyer", "noyer_autumn", "tree_bare", "chataignier", "chataignier_autumn", "aulne"]),
     ("fruit", ["fruit", "fruit_blossom", "pommier_fruit", "poirier_fruit", "cerisier_fruit", "fruit_autumn"]),
     ("shrub", ["noisetier", "noisetier_autumn", "small_bare", "cassis", "cassis_fruit", "shrub_bare"]),
+]
+
+# The second, smaller atlas: (sheet, columns, rows, {cell index: sprite name}).
+# Order must match SMALL_SPRITES in paint.ts.
+SMALL_GRID = [
+    ("berry", 3, 2, {0: "groseillier", 1: "framboisier", 2: "sureau", 3: "groseillier_maq", 4: "rosier", 5: "argousier"}),
+    ("berry_fruit", 3, 2, {0: "groseillier_fruit", 1: "framboisier_fruit", 2: "sureau_fruit", 3: "groseillier_maq_fruit", 4: "rosier_fruit", 5: "argousier_fruit"}),
+    ("herbs", 3, 2, {0: "consoude", 1: "rhubarbe", 2: "fraisier", 3: "melisse", 4: "ciboulette", 5: "bugle"}),
+    ("herbs2", 3, 2, {2: "fraisier_2", 3: "melisse_2", 5: "bugle_2"}),
+    ("litter", 3, 2, {0: "litter_1", 1: "litter_2", 2: "litter_3", 3: "litter_4", 5: "litter_5"}),
+    ("litter2", 3, 2, {4: "litter_6"}),
+    ("hedge", 3, 2, {0: "aubepine", 1: "prunellier", 2: "erable", 3: "cornouiller", 4: "houx", 5: "eglantier"}),
+    ("hedge2", 3, 2, {0: "aubepine_2", 3: "cornouiller_2", 4: "houx_2"}),
+    ("fish", 3, 1, {0: "gardon", 1: "poisson_rouge"}),
+    ("birds", 3, 2, {0: "hirondelle", 1: "merle", 2: "pigeon", 3: "buse", 4: "geai", 5: "chardonneret"}),
 ]
 
 
@@ -66,7 +83,7 @@ def fill_holes(rgba: np.ndarray, rgb: np.ndarray) -> np.ndarray:
     return out
 
 
-def cut(img: Image.Image, box, solid=False) -> Image.Image:
+def cut(img: Image.Image, box, solid=False, cell=CELL) -> Image.Image:
     """A square sprite centred on the painted content of one cell."""
     rgb = np.asarray(img.crop(box).convert("RGB"), dtype=np.float64)
     rgba = to_alpha(rgb)
@@ -76,7 +93,15 @@ def cut(img: Image.Image, box, solid=False) -> Image.Image:
     side = int(max(x1 - x0, y1 - y0) * 1.04)
     cx, cy = (x0 + x1) // 2, (y0 + y1) // 2
     sprite = Image.fromarray(rgba, "RGBA").crop((cx - side // 2, cy - side // 2, cx + side // 2, cy + side // 2))
-    return sprite.resize((CELL, CELL), Image.LANCZOS)
+    return sprite.resize((cell, cell), Image.LANCZOS)
+
+
+def pack(sprites, cell: int, cols: int) -> Image.Image:
+    rows = -(-len(sprites) // cols)
+    atlas = Image.new("RGBA", (cols * cell, rows * cell), (0, 0, 0, 0))
+    for i, s in enumerate(sprites):
+        atlas.paste(s, ((i % cols) * cell, (i // cols) * cell))
+    return atlas
 
 
 def cut_rect(img: Image.Image, width: int) -> Image.Image:
@@ -99,20 +124,26 @@ def main(src: Path):
     pond = Image.open(src / "pond.png")
     sprites.append(cut(pond, (0, 0, *pond.size)))
 
-    cols = 5
-    rows = -(-len(sprites) // cols)
-    atlas = Image.new("RGBA", (cols * CELL, rows * CELL), (0, 0, 0, 0))
-    for i, s in enumerate(sprites):
-        atlas.paste(s, ((i % cols) * CELL, (i // cols) * CELL))
+    atlas = pack(sprites, CELL, 5)
     OUT.mkdir(parents=True, exist_ok=True)
     atlas.save(OUT / "atlas.webp", quality=74, alpha_quality=50, method=6)
+
+    small = []
+    for sheet, cols, rows, picks in SMALL_GRID:
+        img = Image.open(src / f"{sheet}.png")
+        w, h = img.size
+        for i, name in picks.items():
+            c, r = i % cols, i // cols
+            box = (c * w // cols, r * h // rows, (c + 1) * w // cols, (r + 1) * h // rows)
+            small.append(cut(img, box, solid=name in SOLID, cell=SMALL_CELL))
+    pack(small, SMALL_CELL, 8).save(OUT / "small.webp", quality=74, alpha_quality=50, method=6)
 
     for name, width in (("house", 360), ("bed", 480)):
         cut_rect(Image.open(src / f"{name}.png"), width).save(OUT / f"{name}.webp", quality=78, alpha_quality=60, method=6)
 
     meadow = Image.open(src / "meadow.png").convert("RGB").resize((1024, 1024), Image.LANCZOS)
     meadow.save(OUT / "meadow.webp", quality=78, method=6)
-    print(f"{len(sprites)} sprites, atlas {atlas.size}")
+    print(f"{len(sprites)} sprites, atlas {atlas.size}; {len(small)} small sprites")
 
 
 if __name__ == "__main__":

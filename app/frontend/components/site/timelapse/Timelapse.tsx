@@ -11,6 +11,7 @@ import atlas from './paint/atlas.webp'
 import bed from './paint/bed.webp'
 import house from './paint/house.webp'
 import meadow from './paint/meadow.webp'
+import small from './paint/small.webp'
 
 type ChapterCopy = { kicker: string; title: string; body: string; hint?: string }
 
@@ -41,7 +42,7 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
     const painter = new Painter(ctx, readPalette(document.documentElement), labels, reduce)
     let alive = true
     // the painted sprites arrive after the first frame; the washes stand in until then
-    loadPaint({ atlas, meadow, house, bed }).then((paint) => alive && painter.setPaint(paint), () => {})
+    loadPaint({ atlas, small, meadow, house, bed }).then((paint) => alive && painter.setPaint(paint), () => {})
     const particles: Particle[] = []
     const planted: (PlantedTree & { t0: number })[] = []
     let vw = 0

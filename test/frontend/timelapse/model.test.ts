@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { parse } from 'yaml'
 import {
-  CHAPTERS, PARCEL, PLANTED, TREES, calendar, canopyCover, crownPx, insidePolygon, seasonAt, stateAt,
+  BEDS, CHAPTERS, HEDGE, PARCEL, PLANTED, POND, SPECIES, TRAILS, TREES, UNDERSTOREY,
+  birdLanes, birdsAt, calendar, canopyCover, crownPx, distToEdge, distToLine, distToPaths, fishAt, insidePolygon, seasonAt, stateAt,
 } from '../../../app/frontend/components/site/timelapse/model.ts'
 
 test('every chapter of the copy has its moment in the model, and the other way round', () => {
@@ -50,6 +51,51 @@ test('the canopy closes over the years', () => {
 
 test('every tree is planted inside the terrain', () => {
   for (const t of TREES) assert.ok(insidePolygon(t.x, t.y, PARCEL), `${t.sp} at ${t.x},${t.y}`)
+})
+
+test('the hedge runs all round the terrain, just inside it', () => {
+  assert.ok(HEDGE.length > 80)
+  for (const h of HEDGE) {
+    assert.ok(insidePolygon(h.x, h.y, PARCEL), `${h.sp} at ${h.x},${h.y}`)
+    assert.ok(distToEdge(h.x, h.y) < 20, `${h.sp} at ${h.x},${h.y}`)
+    assert.equal(SPECIES[h.sp].kind, 'hedge')
+  }
+})
+
+test('the understorey is dense, and keeps off the paths, the pond and the beds', () => {
+  const herbs = UNDERSTOREY.filter((p) => SPECIES[p.sp].kind === 'herb')
+  const shrubs = UNDERSTOREY.filter((p) => SPECIES[p.sp].kind === 'shrub')
+  assert.ok(herbs.length > 300 && shrubs.length > 80, `${herbs.length} herbs, ${shrubs.length} shrubs`)
+  for (const p of UNDERSTOREY) {
+    assert.ok(insidePolygon(p.x, p.y, PARCEL), `${p.sp} at ${p.x},${p.y}`)
+    assert.ok(distToPaths(p.x, p.y) >= (SPECIES[p.sp].kind === 'herb' ? 9 : 24), `${p.sp} on a path at ${p.x},${p.y}`)
+    assert.ok(Math.hypot(p.x - POND.x, p.y - POND.y) > POND.r, `${p.sp} in the pond`)
+    for (const [x, y, w, h] of BEDS) assert.ok(!(p.x > x && p.x < x + w && p.y > y && p.y < y + h), `${p.sp} in a bed`)
+  }
+  for (const h of herbs) assert.ok(h.delay !== undefined && h.delay > 0 && h.delay < 2, 'ground covers spread in the first two years')
+})
+
+test('the tall trees stand to the north, the paths run between the trees', () => {
+  const y = (sp: string[]) => TREES.filter((t) => sp.includes(t.sp)).reduce((a, t, _, all) => a + t.y / all.length, 0)
+  assert.ok(y(['chataignier', 'aulne']) < y(['pommier', 'poirier', 'cerisier']), 'chestnut and alders north of the fruit trees')
+  for (const t of TREES) assert.ok(TRAILS.every((trail) => distToLine(t.x, t.y, trail) > 20), `${t.sp} at ${t.x},${t.y} stands on a path`)
+})
+
+test('birds come by more often as the garden grows, never in a crowd, and fish once the pond has aged', () => {
+  assert.equal(birdLanes(-0.5), 1)
+  assert.ok(birdLanes(5) > birdLanes(1) && birdLanes(30) > birdLanes(5))
+  let early = 0
+  let late = 0
+  for (let t = 0; t < 900; t += 0.5) {
+    early += birdsAt(t, 0.5).length
+    const now = birdsAt(t, 29)
+    late += now.length
+    assert.ok(now.length <= 3)
+  }
+  assert.ok(early > 0 && late > early * 2, `${early} early, ${late} late`)
+  assert.deepEqual(birdsAt(42.5, 12), birdsAt(42.5, 12), 'a flight is the same on every frame')
+  for (let t = 0; t < 300; t += 0.5) assert.equal(fishAt(t, 2).length, 0)
+  assert.ok(Array.from({ length: 600 }, (_, i) => fishAt(i * 0.5, 8).length).some((n) => n > 0))
 })
 
 test('the calendar names the month, the year and the garden year', () => {
