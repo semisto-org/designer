@@ -10,6 +10,7 @@ import PublishPanel from '@/collab/PublishPanel'
 import ShareButton from '@/collab/ShareButton'
 import JourneyPanel from '@/map/panels/JourneyPanel'
 import JourneyOverlay from '@/map/panels/JourneyOverlay'
+import TourOverlay from '@/map/tour/TourOverlay'
 import ProjectPanel from '@/map/panels/ProjectPanel'
 import ActionsPanel from '@/map/panels/ActionsPanel'
 import LayersPanel from '@/map/panels/LayersPanel'
@@ -105,6 +106,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
 export const OVERLAYS: EditorSlot[] = [
   { id: 'collab', component: CollabOverlay, order: 90 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
+  { id: 'tour', component: TourOverlay, order: 100 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
   { id: 'drafts-bar', component: DraftsBar, order: 40 },

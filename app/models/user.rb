@@ -40,8 +40,15 @@ class User < ApplicationRecord
     @entitlements ||= Entitlements.for(self)
   end
 
+  # Has plugged an assistant on their maps (an authorized OAuth app or a
+  # personal access token still valid).
+  def ai_connected?
+    OauthAccessToken.live.where(user: self).exists? || ApiToken.active.where(user: self).exists?
+  end
+
   def as_inertia
     # teamsCount: the "Équipes" link shows in the main nav once you are in a team.
-    { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count }
+    { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
+      tourSeen: tour_seen_at.present? }
   end
 end

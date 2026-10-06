@@ -114,6 +114,7 @@ Rails.application.routes.draw do
     get "ai", to: "ai#show"
     resources :api_tokens, path: "ai/tokens", only: %i[create destroy]
     resources :oauth_apps, path: "ai/apps", only: :destroy
+    resource :tour, only: :update
   end
   resources :maps, only: [] do
     scope module: :maps do
