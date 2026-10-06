@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
+import { DraftCount, DraftsBanner, ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
 import { t } from '@/lib/i18n'
 import { useProjectSheet } from '@/lib/projectSheet'
 import { relativeTime } from '@/lib/relativeTime'
@@ -15,8 +15,8 @@ import type { ProjectPayload } from '@/types/journey'
  * The project sheet on a full page: one section at a time, a list of
  * sections with their progress, autosave. Comfortable on desktop and phone.
  */
-export default function MapProject({ map, project, progress: initialProgress, schema, canEdit }: ProjectPayload) {
-  const sheet = useProjectSheet(map.id, project, initialProgress, canEdit)
+export default function MapProject({ map, project, progress: initialProgress, schema, drafts, canEdit }: ProjectPayload) {
+  const sheet = useProjectSheet(map.id, project, initialProgress, canEdit, drafts)
   const sections = useMemo(() => schema.sections.map((s) => s.key), [schema])
   const [active, setActive] = useState<string>(() => {
     const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) : ''
@@ -61,6 +61,7 @@ export default function MapProject({ map, project, progress: initialProgress, sc
       </div>
       <p className="mt-4 max-w-3xl text-sm text-loam-600">{t('journey.project.intro')}</p>
       {!canEdit && <p className="mt-3 rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-700">{t('journey.project.read_only')}</p>}
+      <div className="mt-4 max-w-3xl empty:hidden"><DraftsBanner sheet={sheet} canEdit={canEdit} onOpen={setActive} /></div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <nav aria-label={t('journey.project.sections_nav')} className="-mx-4 overflow-x-auto px-4 lg:sticky lg:top-4 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">
@@ -79,7 +80,8 @@ export default function MapProject({ map, project, progress: initialProgress, sc
                   >
                     <StatusMark status={p.status} className={isActive ? 'border-white' : undefined} />
                     <span className="flex-1 whitespace-nowrap">{sectionTitle(section)}</span>
-                    <span className={clsx('hidden text-xs lg:inline', isActive ? 'text-prune-100' : 'text-loam-500')}>{p.percent} %</span>
+                    <DraftCount sheet={sheet} section={section} />
+                    <span className={clsx('hidden whitespace-nowrap text-xs lg:inline', isActive ? 'text-prune-100' : 'text-loam-500')}>{p.percent} %</span>
                   </button>
                 </li>
               )

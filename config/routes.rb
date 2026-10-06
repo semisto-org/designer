@@ -53,6 +53,12 @@ Rails.application.routes.draw do
   # staff triage of those requests.
   resources :maps, only: [] do
     resource :project, only: %i[show update], controller: "maps/projects"
+    resources :project_drafts, path: "project/drafts", only: [], controller: "maps/project_drafts" do
+      member do
+        post :accept
+        post :reject
+      end
+    end
     resource :journey, only: :show, controller: "maps/journeys"
     resources :service_requests, path: "requests", only: %i[index create], controller: "maps/service_requests"
   end

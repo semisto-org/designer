@@ -305,6 +305,72 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert error, "rationale is required"
   end
 
+  test "get_project_sheet gives every question, its allowed answers in French and the current answers" do
+    @map.update!(project: { "budget" => { "initial" => "under_500" } })
+    data, error = call_tool(@viewer, "get_project_sheet", { map_id: @map.id })
+    refute error, data
+    assert_equal ProjectSheet::SECTIONS.keys, data["sections"].map { |s| s["key"] }
+    budget = data["sections"].find { |s| s["key"] == "budget" }
+    initial = budget["fields"].find { |f| f["key"] == "initial" }
+    assert_equal [ "enum", "under_500" ], initial.values_at("type", "value")
+    assert_equal I18n.t("journey.project.sections.budget.fields.initial.options.under_500"), initial.dig("options", "under_500")
+    people = data["sections"].first["fields"].find { |f| f["key"] == "people" }
+    assert_equal %w[name role note], people["item"].map { |i| i["key"] }
+    assert_equal 33, budget["percent"]
+    assert_empty data["pending_drafts"]
+    assert_equal({ "percent" => 3 }, AiAction.last.result)
+  end
+
+  test "propose_project_sheet turns what the person said into answers waiting on the sheet" do
+    @map.update!(project: { "budget" => { "initial" => "under_500" }, "time" => { "hours_per_week" => 4 } })
+    answers = [
+      { section: "ambitions", field: "goals", value: %w[food_autonomy biodiversity], rationale: "« On veut manger nos fruits et accueillir la vie »." },
+      { section: "budget", field: "initial", value: "up_to_2000", rationale: "« On peut mettre jusqu'à 2 000 € au départ »." },
+      { section: "time", field: "hours_per_week", value: 4, rationale: "« Quatre heures par semaine, le samedi »." },
+      { section: "who", field: "people", value: [ { name: "Marie", role: "lead" } ], rationale: "Marie se présente comme la porteuse du projet." },
+      { section: "budget", field: "initial", value: "under_500", rationale: "Doublon dans le même appel, à refuser." },
+      { section: "uses", field: "presence", value: "every_minute", rationale: "Valeur hors de la liste des réponses." },
+      { section: "uses", field: "size", value: "big", rationale: "Champ inconnu de la fiche projet." }
+    ]
+    data, error = call_tool(@owner, "propose_project_sheet", { map_id: @map.id, summary: "Entretien du 3 octobre", answers: })
+    refute error, data
+    assert_equal [ 0, 1, 3 ], data["created"].map { |c| c["index"] }
+    assert_equal "under_500", data["created"][1]["replaces"], "an answer already given is flagged, never replaced silently"
+    assert_equal [ 2 ], data["unchanged"].map { |u| u["index"] }
+    assert_equal [ 4, 5, 6 ], data["rejected"].map { |r| r["index"] }
+    assert_match(/déjà proposé/, data["rejected"][0]["error"])
+    assert_match(/daily/, data["rejected"][1]["error"])
+    assert_match(/champ inconnu/, data["rejected"][2]["error"])
+    assert_match(/dis-le à la personne/, data["next_step"])
+    assert_equal 3, data["pending_project_drafts"]
+    assert_equal "under_500", @map.reload.project.dig("budget", "initial"), "the sheet waits for a human"
+    assert_equal({ "created" => 3, "unchanged" => 1, "rejected" => 3 }, AiAction.last.result)
+
+    # A new proposal for the same field replaces the pending one.
+    call_tool(@owner, "propose_project_sheet", { map_id: @map.id, answers: [ { section: "budget", field: "initial", value: "up_to_5000", rationale: "« Finalement plutôt 5 000 € »." } ] })
+    assert_equal [ "up_to_5000" ], @map.project_sheet_drafts.where(section: "budget").pluck(:value)
+
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal 3, data["project_drafts_pending"]
+
+    text, error = call_tool(@viewer, "propose_project_sheet", { map_id: @map.id, answers: answers.first(1) })
+    assert error
+    assert_match(/propriétaire et les éditeurs/, text)
+    text, error = call_tool(@owner, "propose_project_sheet", { map_id: @map.id, answers: answers.last(2) })
+    assert error
+    assert_match(/Aucun brouillon/, text)
+  end
+
+  test "propose_project_sheet follows the owner's plan, like every AI draft" do
+    with_billing do
+      text, error = call_tool(@owner, "propose_project_sheet", { map_id: @map.id, answers: [
+        { section: "budget", field: "initial", value: "up_to_2000", rationale: "« Jusqu'à 2 000 € au départ »." }
+      ] })
+      assert error
+      assert_match(/forfait/, text)
+    end
+  end
+
   test "withdraw_draft removes AI drafts only" do
     draft = @map.features.create!(layer: "plants", kind: "tree", status: "draft", source: "ai", rationale: "x" * 12, geometry: point)
     accepted = @map.features.create!(layer: "plants", kind: "tree", status: "active", source: "ai", rationale: "x" * 12, geometry: point)

@@ -1,7 +1,7 @@
 import { ArrowRight, ChevronDown, ChevronLeft, ExternalLink } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
-import { ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
+import { DraftCount, DraftsBanner, ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
@@ -43,7 +43,7 @@ export default function ProjectPanel() {
 }
 
 function PanelBody({ payload }: { payload: ProjectPayload }) {
-  const sheet = useProjectSheet(payload.map.id, payload.project, payload.progress, payload.canEdit)
+  const sheet = useProjectSheet(payload.map.id, payload.project, payload.progress, payload.canEdit, payload.drafts)
   const sections = payload.schema.sections.map((s) => s.key)
   const [open, setOpen] = useState<string | null>(payload.progress.nextSection ?? sections[0])
   const { progress } = sheet
@@ -60,6 +60,8 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
           : <p className="mt-2 text-xs text-humus-700">{t('journey.project.read_only')}</p>}
       </div>
 
+      <DraftsBanner sheet={sheet} canEdit={payload.canEdit} onOpen={setOpen} />
+
       <ul className="divide-y divide-loam-100 rounded-lg ring-1 ring-loam-200">
         {sections.map((section) => {
           const p = progress.sections[section]
@@ -74,6 +76,7 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
                 >
                   <StatusMark status={p.status} />
                   <span className="flex-1 font-medium text-loam-800">{sectionTitle(section)}</span>
+                  <DraftCount sheet={sheet} section={section} />
                   <span className="text-xs text-loam-500">{p.percent} %</span>
                   <ChevronDown className={clsx('h-4 w-4 text-loam-400 transition-transform', isOpen && 'rotate-180')} aria-hidden />
                 </button>
@@ -104,7 +107,7 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
  * previous / next to walk through the sheet.
  */
 function ModalBody({ payload }: { payload: ProjectPayload }) {
-  const sheet = useProjectSheet(payload.map.id, payload.project, payload.progress, payload.canEdit)
+  const sheet = useProjectSheet(payload.map.id, payload.project, payload.progress, payload.canEdit, payload.drafts)
   const sections = payload.schema.sections.map((s) => s.key)
   const [active, setActive] = useState<string>(payload.progress.nextSection ?? sections[0])
   const content = useRef<HTMLDivElement>(null)
@@ -140,6 +143,7 @@ function ModalBody({ payload }: { payload: ProjectPayload }) {
                   >
                     <StatusMark status={p.status} className={isActive ? 'border-white' : undefined} />
                     <span className="flex-1">{sectionTitle(section)}</span>
+                    <DraftCount sheet={sheet} section={section} />
                     <span className={clsx('text-xs', isActive ? 'text-prune-100' : 'text-loam-500')}>{p.percent} %</span>
                   </button>
                 </li>
@@ -157,6 +161,7 @@ function ModalBody({ payload }: { payload: ProjectPayload }) {
 
       <div ref={content} className="min-h-0 overflow-y-auto">
         <article className="mx-auto max-w-2xl px-8 py-7 text-base leading-relaxed [&_.text-sm]:text-base [&_.text-sm]:leading-relaxed [&_.text-xs]:text-sm">
+          <div className="mb-6 empty:hidden"><DraftsBanner sheet={sheet} canEdit={payload.canEdit} onOpen={setActive} /></div>
           <p className="text-xs font-medium uppercase tracking-wide text-loam-500">{index + 1} / {sections.length}</p>
           <h2 className="text-2xl">{sectionTitle(active)}</h2>
           <p className="mt-0.5 text-xs text-loam-500">

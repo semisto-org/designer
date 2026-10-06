@@ -25,6 +25,8 @@ module Mcp
           boundary: Geo.encode(map.boundary),
           parcels: map.parcels,
           project: map.project,
+          project_percent: map.project_sheet.progress[:percent],
+          project_drafts_pending: map.project_sheet_drafts.count,
           elements: element_counts(map),
           tags: tag_counts(map),
           palette: palette(map),
@@ -42,7 +44,8 @@ module Mcp
             max_features_per_proposal: DraftProposal::MAX_FEATURES,
             max_pending_drafts: DraftProposal::MAX_PENDING,
             proposal_buffer_m: DraftProposal::BUFFER_M,
-            max_plants_per_palette_proposal: PaletteProposal::MAX_PLANTS
+            max_plants_per_palette_proposal: PaletteProposal::MAX_PLANTS,
+            max_answers_per_project_proposal: ProjectSheetProposal::MAX_ANSWERS
           }
         }
       end

@@ -36,9 +36,22 @@ Une section ne te concerne pas, ou tu en as dit assez ? Coche **Marquer cette se
 
 Dans le [parcours](/help/le-parcours-en-quatre-etapes), la case « Remplir la fiche projet » se coche à partir de **60 %**.
 
+## La remplir avec ton IA
+
+Tu préfères raconter plutôt que cocher ? Si tu as [connecté ton IA](/help/connecter-son-ia) avec l'accès « Lecture et brouillons », parle-lui de ton projet : elle te pose les questions qui manquent et propose les réponses à ta place. Tu peux aussi lui confier le **transcript d'un entretien** (avec un client, ta famille, ton collectif) : elle en tire ce qui répond à la fiche.
+
+Ses réponses n'entrent pas directement dans la fiche. Un encadré « Ton IA propose … réponses pour ta fiche » apparaît en haut, et chaque réponse attend **sous sa question**, avec ce qui l'a inspirée (souvent une phrase que tu as dite). Pour chacune :
+
+- **Accepter** la verse dans la fiche, comme si tu l'avais cochée toi-même ;
+- **Refuser** la fait disparaître.
+
+**Tout accepter** et **Tout refuser** décident d'un coup. Dans la liste des sections, un petit compteur montre où des réponses t'attendent.
+
+Ton IA ne remplace jamais une réponse que tu as déjà donnée sans te prévenir : la proposition affiche « Remplacerait ta réponse actuelle : … », et elle te le dit dans la conversation. Cette aide fait partie du forfait, comme les autres brouillons de l'IA (voir [Formules et forfait](/help/formules-et-forfait)).
+
 ## Qui peut la modifier ?
 
-Le propriétaire et les éditeurs de la carte. Les lecteurs la consultent en lecture seule.
+Le propriétaire et les éditeurs de la carte, qui sont aussi les seuls à accepter ou refuser les réponses de ton IA. Les lecteurs la consultent en lecture seule.
 
 ## Bien la remplir
 

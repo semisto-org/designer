@@ -121,6 +121,28 @@ fr:
       choose: "Choisir…"
       untouched: "Pas encore commencée"
       touched: "Modifiée %{when}"
+      drafts:
+        default_author: "Ton IA"
+        title:
+          one: "%{author} propose 1 réponse pour ta fiche"
+          other: "%{author} propose %{count} réponses pour ta fiche"
+        intro: "Chaque réponse attend sous sa question, avec ce qui l'a inspirée. Rien n'entre dans ta fiche tant que tu ne l'as pas acceptée."
+        viewer_hint: "Un éditeur de la carte doit les relire avant qu'elles n'entrent dans la fiche."
+        review: "Relire une à une"
+        accept_all: "Tout accepter"
+        reject_all: "Tout refuser"
+        confirm_reject_all:
+          one: "Refuser cette réponse ?"
+          other: "Refuser les %{count} réponses proposées ?"
+        in_section:
+          one: "1 réponse proposée par ton IA"
+          other: "%{count} réponses proposées par ton IA"
+        proposes: "%{author} propose"
+        because: "D'où ça vient : %{rationale}"
+        replaces: "Remplacerait ta réponse actuelle : %{value}"
+        accept: "Accepter"
+        reject: "Refuser"
+        error: "Ça n'a pas marché. Réessaie dans un instant."
       sections:
         who:
           title: "Qui"
