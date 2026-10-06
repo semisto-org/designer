@@ -1,10 +1,16 @@
 namespace :immich do
-  desc "List the Immich albums, with the Designer map their photos fall in: IMMICH_URL=… IMMICH_API_KEY=…"
+  desc "List the Immich project albums (name starting with 📍), with the Designer map their photos fall in: IMMICH_URL=… IMMICH_API_KEY=… [ALL=1]"
   task albums: :environment do
     I18n.with_locale(:fr) do
       client = Imports::Immich::Client.from_env
       abort I18n.t("immich_import.errors.not_configured") unless client.configured?
-      albums = client.albums.sort_by { |album| album["albumName"].to_s.downcase }
+      albums = client.albums.sort_by { |album| Imports::Immich::Importer.map_album_name(album["albumName"]).downcase }
+      unless ActiveModel::Type::Boolean.new.cast(ENV["ALL"].presence)
+        projects = albums.select { |album| Imports::Immich::Importer.project_album?(album["albumName"]) }
+        left_out = albums.size - projects.size
+        puts I18n.t("immich_import.albums.left_out", count: left_out, mark: Imports::Immich::Importer::PROJECT_MARK) if left_out.positive?
+        albums = projects
+      end
       puts I18n.t("immich_import.albums.none") if albums.empty?
       albums.each do |album|
         assets = client.each_album_asset(album["id"]).to_a
@@ -27,7 +33,7 @@ namespace :immich do
     end
   end
 
-  desc "Import the photos of one Immich album into a Designer map: ALBUM=<album id> MAP_ID=… [ALBUM_NAME=…] [DRY_RUN=1]"
+  desc "Import the photos of one Immich album into a Designer map: ALBUM=<album id> MAP_ID=… [ALBUM_NAME=…] [DRY_RUN=1] [FORCE=1 for an album without 📍]"
   task import: :environment do
     I18n.with_locale(:fr) do
       abort I18n.t("immich_import.errors.album_missing") if ENV["ALBUM"].blank?
@@ -35,8 +41,9 @@ namespace :immich do
       map = Map.find_by(id: ENV["MAP_ID"]) or abort I18n.t("claudy_import.errors.map_not_found", id: ENV["MAP_ID"])
       client = Imports::Immich::Client.from_env
       abort I18n.t("immich_import.errors.not_configured") unless client.configured?
-      dry_run = ActiveModel::Type::Boolean.new.cast(ENV["DRY_RUN"].presence) || false
-      result = Imports::Immich::Importer.new(map:, client:, album_id: ENV["ALBUM"], album_name: ENV["ALBUM_NAME"], dry_run:).call
+      flag = ->(name) { ActiveModel::Type::Boolean.new.cast(ENV[name].presence) || false }
+      result = Imports::Immich::Importer.new(map:, client:, album_id: ENV["ALBUM"], album_name: ENV["ALBUM_NAME"],
+                                             dry_run: flag.("DRY_RUN"), force: flag.("FORCE")).call
       puts Imports::Immich::Summary.new(result)
     rescue Imports::Immich::Error => error
       abort error.message

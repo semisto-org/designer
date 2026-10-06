@@ -6,6 +6,12 @@ map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
 
 ## What it does
 
+- Only **project albums** are imported: their name starts with « 📍 »
+  (« 📍 Les Griants »). Other albums (trainings, events at Les 4 Sources…)
+  are hidden from `immich:albums` (`ALL=1` shows them) and refused by
+  `immich:import` (`FORCE=1` to import one anyway). The pin is dropped from
+  the map's album name.
+
 - Each **image** of the album becomes a map photo (`source: "import"`), filed
   in a photo album of the map named after the Immich album (`ALBUM_NAME=…`
   to rename it).
@@ -32,7 +38,7 @@ map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
    IMMICH_URL=https://photos.example IMMICH_API_KEY=… bin/rails immich:albums
    ```
 
-   Lists every album with its number of photos, how many have GPS, the
+   Lists every project album with its number of photos, how many have GPS, the
    Designer maps whose outline contains them, and the command to run.
 3. For each album, try it dry, then for real:
 

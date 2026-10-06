@@ -9,10 +9,12 @@ fr:
       unauthorized: "Immich refuse la clé (HTTP %{status}) sur %{url} : vérifie IMMICH_API_KEY et ses permissions (asset.read, asset.download, album.read)."
       unavailable: "Immich ne répond pas comme prévu sur %{url} (%{detail})."
       unreadable: "Réponse illisible d'Immich sur %{url}."
+      not_a_project_album: "L'album « %{name} » n'est pas un album de projet (son nom ne commence pas par %{mark}) : rien n'est importé. FORCE=1 pour l'importer quand même."
       too_large: "Fichier trop lourd (plus de %{max} Mo) : %{url}"
 
     albums:
-      none: "Aucun album visible avec cette clé."
+      none: "Aucun album de projet visible avec cette clé."
+      left_out: "%{count} album(s) sans %{mark} en tête de leur nom laissé(s) de côté (ALL=1 pour les voir)."
       line: "« %{name} » (%{id}) : %{count} éléments, dont %{located} avec position GPS"
       line_error: "« %{name} » : %{message}"
       no_map: "    aucune carte ne contient ces positions"
