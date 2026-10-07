@@ -228,6 +228,13 @@ export const soilActions = {
     return saved
   },
 
+  /** An observation sent with its photo (multipart form built by the caller). */
+  async saveObservationWithPhoto(mapId: number, form: FormData): Promise<BioObservation> {
+    const saved = await api<BioObservation>(`/maps/${mapId}/bioindicator_observations`, { method: 'POST', body: form })
+    await soilActions.loadObservations(mapId)
+    return saved
+  },
+
   async patchObservation(mapId: number, id: number, patch: Record<string, unknown>): Promise<BioObservation> {
     const saved = await api<BioObservation>(`/maps/${mapId}/bioindicator_observations/${id}`, {
       method: 'PATCH', body: { bioindicator_observation: patch },

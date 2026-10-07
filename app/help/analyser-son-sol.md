@@ -35,6 +35,16 @@ Ces repères sont **indicatifs** : pensés pour un sol de jardin ou de verger en
 
 Les plantes qui s'installent seules racontent le sol : le rumex et le plantain parlent de tassement, l'ortie d'azote, la prêle d'eau qui stagne.
 
+### Par photo
+
+Tu ne sais pas quelle est cette plante ? Sous **Photographier une plante**, touche **Prendre une photo** (ou **Choisir des photos**, cinq au plus, toutes de la même plante), puis **Identifier**. [Pl@ntNet](/help/identifier-une-plante) propose des espèces ; celles de la liste des bio-indicatrices montrent tout de suite ce qu'elles disent du sol. Touche **C'est elle** sur la bonne, choisis son **Abondance**, puis **Noter à l'endroit de la photo**.
+
+La plante se pose là où la photo a été prise (position lue dans la photo, ou celle de ton téléphone si tu viens de la prendre). La première photo est gardée avec elle, dans le panneau **Photos** : touche sa vignette dans **Tes observations** pour la revoir. Si la photo n'a pas de position, Designer te demande de cliquer sur la carte.
+
+Sur le terrain, l'app Semisto Designer fait de même : **Relever**, puis **Une plante bio-indicatrice**. La plante notée part dès que le réseau revient.
+
+### Par son nom
+
 1. Sous **Noter une plante**, tape son nom (« Pissenlit, rumex, prêle… ») et choisis son **Abondance** : **Rare**, **Présente**, **Fréquente** ou **Dominante**.
 2. Touche **Noter**, ou **Noter à un endroit précis** pour la placer sur la carte.
 3. **Ce que disent tes plantes** résume les indications : sol tassé, engorgé, acide, riche en azote…

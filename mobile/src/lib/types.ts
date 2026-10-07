@@ -92,6 +92,8 @@ export type IdentificationCandidate = {
   commonNames: string[]
   percent: number
   species: { id: number; latinName: string; commonName: string | null } | null
+  /** The entry of the bio-indicator list; null when the list does not have it. */
+  bioindicator: { key: string; name: string; latin: string; indicates: string[]; unverified: string[] } | null
 }
 
 export const canEdit = (map: MapSummary) => (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -189,9 +189,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_160000) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "map_photo_id"
     t.index ["location"], name: "index_bioindicator_observations_on_location", using: :gist
     t.index ["map_id", "catalog_key"], name: "index_bioindicator_observations_on_map_id_and_catalog_key"
     t.index ["map_id"], name: "index_bioindicator_observations_on_map_id"
+    t.index ["map_photo_id"], name: "index_bioindicator_observations_on_map_photo_id"
     t.index ["observed_by_id"], name: "index_bioindicator_observations_on_observed_by_id"
   end
 
@@ -982,6 +984,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_160000) do
   add_foreign_key "billing_payments", "plan_purchases"
   add_foreign_key "billing_payments", "plan_subscriptions"
   add_foreign_key "billing_payments", "users"
+  add_foreign_key "bioindicator_observations", "map_photos", on_delete: :nullify
   add_foreign_key "bioindicator_observations", "maps"
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
   add_foreign_key "comment_reads", "users"

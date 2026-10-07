@@ -2,7 +2,8 @@
 # says about the soil comes from the curated list (SoilAnalysis::BioindicatorCatalog)
 # through `catalog_key`; the plant may also point to the plant catalogue
 # (`plant_species_id`, no foreign key: that table is built by another area and
-# may not exist yet).
+# may not exist yet). Noted from a photo, it keeps that photo (`photo`, one of
+# the map's photos).
 class BioindicatorObservation < ApplicationRecord
   include PointLocation
 
@@ -10,6 +11,7 @@ class BioindicatorObservation < ApplicationRecord
 
   belongs_to :map
   belongs_to :observed_by, class_name: "User", optional: true
+  belongs_to :photo, class_name: "MapPhoto", foreign_key: :map_photo_id, optional: true, inverse_of: :bioindicator_observations
 
   before_validation :fill_from_catalog
 
@@ -18,6 +20,7 @@ class BioindicatorObservation < ApplicationRecord
   validates :abundance, inclusion: { in: ABUNDANCES }
   validates :notes, length: { maximum: 2000 }
   validate :catalog_key_is_known
+  validate :photo_belongs_to_map
 
   scope :recent, -> { order(Arel.sql("COALESCE(observed_on, created_at::date) DESC"), id: :desc) }
 
@@ -36,7 +39,7 @@ class BioindicatorObservation < ApplicationRecord
   def as_inertia
     {
       id:, speciesName: species_name, latinName: latin_name, catalogKey: catalog_key,
-      plantSpeciesId: plant_species_id, abundance:, observedOn: observed_on&.iso8601,
+      plantSpeciesId: plant_species_id, photoId: map_photo_id, abundance:, observedOn: observed_on&.iso8601,
       lng:, lat:, notes:, indicators:, unverified: unverified_indicators, note: catalog_entry&.fetch("note", nil),
       provenance: catalog_entry&.fetch("provenance", nil),
       observedBy: observed_by&.display_name
@@ -48,6 +51,10 @@ class BioindicatorObservation < ApplicationRecord
       entry = catalog_entry or return
       self.species_name = entry["name"] if species_name.blank?
       self.latin_name = entry["latin"] if latin_name.blank?
+    end
+
+    def photo_belongs_to_map
+      errors.add(:base, I18n.t("soil_photos.errors.photo_elsewhere")) if photo && photo.map_id != map_id
     end
 
     def catalog_key_is_known

@@ -8,6 +8,10 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { visibleOffset } from '@/map/visiblePadding'
 import { formatDate } from '@/map/soil/format'
+import { photoUrl } from '@/map/photos/format'
+import { photoActions } from '@/map/photos/store'
+import { IndicatorChips, indicatorLabel } from '@/map/soil/IndicatorChips'
+import PhotoObservation from '@/map/soil/PhotoObservation'
 import { soilActions, useSoil, type ObservationDraft } from '@/map/soil/store'
 import type { Abundance, BioObservation, CatalogPlant, PlantSuggestion, SoilIndicatorKey } from '@/types/soil_photos'
 
@@ -17,29 +21,6 @@ const EMPTY_DRAFT: ObservationDraft = { speciesName: '', latinName: null, catalo
 type Option =
   | { kind: 'catalog'; key: string; plant: CatalogPlant }
   | { kind: 'plant'; key: string; plant: PlantSuggestion }
-
-const indicatorLabel = (key: SoilIndicatorKey) => t(`soil.indicators.${key}.label`)
-
-/** Indicator chips: the words, never just a colour. */
-function IndicatorChips({ keys, unverified = [], className }: { keys: SoilIndicatorKey[]; unverified?: SoilIndicatorKey[]; className?: string }) {
-  if (keys.length === 0) return null
-  return (
-    <span className={clsx('flex flex-wrap gap-1', className)}>
-      {keys.map((key) => {
-        const doubtful = unverified.includes(key)
-        return (
-          <span
-            key={key}
-            title={doubtful ? `${t(`soil.indicators.${key}.hint`)} ${t('soil.plants.unverified_hint')}` : t(`soil.indicators.${key}.hint`)}
-            className={clsx('rounded-full px-2 py-0.5 text-[11px] font-medium', doubtful ? 'border border-dashed border-lichen-400 text-lichen-700' : 'bg-lichen-100 text-lichen-700')}
-          >
-            {indicatorLabel(key)}{doubtful && ` ${t('soil.plants.unverified')}`}
-          </span>
-        )
-      })}
-    </span>
-  )
-}
 
 /** Why the list says what it says: each claim with its figures and references. */
 function Evidence({ plant }: { plant: CatalogPlant }) {
@@ -85,7 +66,7 @@ export default function PlantsTab() {
     <div className="space-y-5">
       <p className="text-sm text-loam-600">{t('soil.plants.intro')}</p>
 
-      {editor.canEdit ? <ObservationForm /> : <p className="rounded-lg bg-loam-50 p-3 text-xs text-loam-500">{t('soil.plants.read_only')}</p>}
+      {editor.canEdit ? <><PhotoObservation /><ObservationForm /></> : <p className="rounded-lg bg-loam-50 p-3 text-xs text-loam-500">{t('soil.plants.read_only')}</p>}
 
       <section className="space-y-2" aria-label={t('soil.plants.summary_title')}>
         <h3 className="text-sm font-semibold text-loam-800">{t('soil.plants.summary_title')}</h3>
@@ -322,6 +303,12 @@ function ObservationRow({ observation }: { observation: BioObservation }) {
     }
   }
 
+  async function openPhoto() {
+    if (!observation.photoId) return
+    await photoActions.load(mapId)
+    photoActions.open(observation.photoId)
+  }
+
   function locate() {
     if (located) editor.instance.easeTo({ center: [observation.lng as number, observation.lat as number], zoom: Math.max(editor.instance.getZoom(), 18), offset: visibleOffset(true) })
   }
@@ -329,7 +316,13 @@ function ObservationRow({ observation }: { observation: BioObservation }) {
   return (
     <li className="space-y-1.5 rounded-xl border border-loam-100 bg-white p-2.5 text-sm">
       <div className="flex items-start gap-2">
-        <Sprout className="mt-0.5 h-4 w-4 shrink-0 text-humus-500" aria-hidden />
+        {observation.photoId ? (
+          <button type="button" onClick={openPhoto} className="h-12 w-12 shrink-0 overflow-hidden rounded-lg" aria-label={t('soil.plants.photo.open', { name: observation.speciesName })}>
+            <img src={photoUrl(mapId, observation.photoId, 'thumb')} alt="" loading="lazy" className="h-full w-full object-cover" />
+          </button>
+        ) : (
+          <Sprout className="mt-0.5 h-4 w-4 shrink-0 text-humus-500" aria-hidden />
+        )}
         <div className="min-w-0 flex-1">
           <p className="font-medium text-loam-900">{observation.speciesName}</p>
           {observation.latinName && <p className="text-xs italic text-loam-500">{observation.latinName}</p>}

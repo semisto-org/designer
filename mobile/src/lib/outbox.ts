@@ -42,6 +42,7 @@ export const outbox = {
     const op = state.ops.find((o) => o.id === id)
     if (op?.type === 'uploadPhoto') deletePhoto(op.file)
     if (op?.type === 'createObservation' && op.photo) deletePhoto(op.photo)
+    if (op?.type === 'createBioindicator') deletePhoto(op.photo)
     commit({ ...state, ops: state.ops.filter((o) => o.id !== id) })
   },
 
@@ -94,6 +95,14 @@ const transport: Transport = {
     await api('POST', `/maps/${mapId}/features/${featureId}/plant_observations`, form('plant_observation', {
       observed_on: op.observedOn, survival: op.survival, vigor: op.vigor, note: op.note,
       photo: op.photo ? photoFile(op.photo) : null,
+    }))
+  },
+  async createBioindicator(mapId, { observation: o, photo }) {
+    const located = o.lng !== null && o.lat !== null
+    await api('POST', `/maps/${mapId}/bioindicator_observations`, form('bioindicator_observation', {
+      species_name: o.speciesName, latin_name: o.latinName, catalog_key: o.catalogKey, plant_species_id: o.plantSpeciesId,
+      abundance: o.abundance, notes: o.notes, lng: o.lng, lat: o.lat, location_source: located ? 'device' : null,
+      photo_taken_at: o.takenAt, photo_source: 'phone', photo: photoFile(photo),
     }))
   },
   async createComment(mapId, featureId, body) {

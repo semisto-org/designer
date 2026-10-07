@@ -74,7 +74,8 @@ export function rejectionFor(file: File): string | null {
   return null
 }
 
-function devicePosition(): Promise<{ lng: number; lat: number } | null> {
+/** The phone's position now, or null (no permission, no fix within 8 s). */
+export function devicePosition(): Promise<{ lng: number; lat: number } | null> {
   if (!('geolocation' in navigator)) return Promise.resolve(null)
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(

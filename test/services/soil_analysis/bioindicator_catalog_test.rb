@@ -78,4 +78,12 @@ class SoilAnalysis::BioindicatorCatalogTest < ActiveSupport::TestCase
     assert tally.first[:unverified], "compaction rests only on claims to verify"
     assert_not tally.find { |row| row[:key] == "trampled" }[:unverified]
   end
+
+  test "find_by_latin matches Pl@ntNet names whatever the authorship or qualifier" do
+    assert_equal "ortie", C.find_by_latin("Urtica dioica L.")["key"]
+    assert_equal "Taraxacum officinale (groupe)", C.find_by_latin("Taraxacum officinale aggr.")["latin"]
+    assert_nil C.find_by_latin("Malus domestica")
+    assert_nil C.find_by_latin("Urtica")
+    assert_nil C.find_by_latin(nil)
+  end
 end

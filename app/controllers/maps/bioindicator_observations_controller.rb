@@ -1,5 +1,10 @@
 # Bio-indicator plants seen on the terrain, and what they say about the soil.
 # Free for everyone: the list and its meaning are reference, not an analysis.
+#
+# A plant noted from a photo (identified by Pl@ntNet, then confirmed by the
+# person) sends the photo along with the observation (multipart
+# `bioindicator_observation[photo]`): it joins the map's photos with the same
+# position, and the observation keeps it.
 module Maps
   class BioindicatorObservationsController < ApplicationController
     include MapScoped
@@ -29,12 +34,20 @@ module Maps
     end
 
     def create
-      observation = @map.bioindicator_observations.new(observation_params.merge(observed_by: Current.user, observed_on: observation_params[:observed_on].presence || Date.current))
-      observation.save ? render(json: observation.as_inertia, status: :created) : render_errors(observation)
+      attributes = observation_params
+      observed_on = attributes[:observed_on].presence || photo_date || Date.current
+      observation = @map.bioindicator_observations.new(attributes.merge(observed_by: Current.user, observed_on:))
+      saved = BioindicatorObservation.transaction do
+        raise ActiveRecord::Rollback unless attach_photo(observation) && observation.save
+        true
+      end
+      saved ? render(json: observation.as_inertia, status: :created) : render_errors(observation)
     end
 
     def update
-      @observation.update(observation_params) ? render(json: @observation.as_inertia) : render_errors(@observation)
+      saved = @observation.update(observation_params)
+      locate_photo(@observation) if saved
+      saved ? render(json: @observation.as_inertia) : render_errors(@observation)
     end
 
     def destroy
@@ -48,9 +61,55 @@ module Maps
       end
 
       def observation_params
-        raw = params.require(:bioindicator_observation).permit(:species_name, :latin_name, :catalog_key, :plant_species_id, :abundance, :observed_on, :notes, :lng, :lat)
+        raw = params.require(:bioindicator_observation).permit(:species_name, :latin_name, :catalog_key, :plant_species_id, :abundance, :observed_on, :notes, :lng, :lat, :map_photo_id)
         raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat]) if raw.key?(:lng) || raw.key?(:lat)
+        raw[:map_photo_id] = @map.photos.find(raw[:map_photo_id]).id if raw[:map_photo_id].present?
         raw.except(:lng, :lat)
+      end
+
+      # What comes with the photo: the file, when and how it was taken, how
+      # its position was found (exif, device, map).
+      def photo_params
+        params.require(:bioindicator_observation).permit(:photo, :photo_taken_at, :photo_heading, :photo_source, :location_source)
+      end
+
+      def photo_date
+        Time.zone.parse(photo_params[:photo_taken_at].to_s)&.to_date
+      rescue ArgumentError
+        nil
+      end
+
+      # Stores the uploaded photo with the observation's position. The same file
+      # already in the map is reused rather than refused. False (errors copied
+      # on the observation) when the photo is not acceptable.
+      def attach_photo(observation)
+        file = photo_params[:photo]
+        return true unless file.is_a?(ActionDispatch::Http::UploadedFile)
+
+        photo = @map.photos.new(
+          image: file, uploaded_by: Current.user, caption: observation.species_name.presence || observation.catalog_entry&.dig("name"),
+          source: photo_params[:photo_source].presence_in(MapPhoto::SOURCES) || "web",
+          taken_at: photo_params[:photo_taken_at].presence, heading: photo_params[:photo_heading].presence,
+          location: observation.location,
+          location_source: observation.location && (photo_params[:location_source].presence_in(MapPhoto::LOCATION_SOURCES) || "manual")
+        )
+        if photo.save
+          observation.photo = photo
+        elsif photo.errors.of_kind?(:base, :already_imported)
+          observation.photo = @map.photos.find_by!(checksum: photo.checksum)
+        else
+          photo.errors.full_messages.each { |message| observation.errors.add(:base, message) }
+          return false
+        end
+        true
+      end
+
+      # Placed on the map after the fact: its photo, if it had no position,
+      # takes the same one.
+      def locate_photo(observation)
+        photo = observation.photo
+        return unless photo && photo.location.nil? && observation.location
+        photo.update(location: observation.location, location_source: "map")
       end
   end
 end

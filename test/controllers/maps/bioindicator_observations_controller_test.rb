@@ -84,4 +84,75 @@ class Maps::BioindicatorObservationsControllerTest < ActionDispatch::Integration
     assert_equal %w[plantain_majeur plantain_lanceole], response.parsed_body["catalog"].map { |p| p["key"] }
     assert_equal [], response.parsed_body["plants"]
   end
+
+  test "an editor notes a plant from its photo: the photo joins the map's photos at the same place" do
+    sign_in_as users(:michael)
+    assert_difference -> { @map.photos.count } => 1, -> { @map.bioindicator_observations.count } => 1 do
+      post map_bioindicator_observations_path(@map), headers: json_headers, params: { bioindicator_observation: {
+        catalog_key: "ortie", latin_name: "Urtica dioica", abundance: "frequent", lng: 4.906, lat: 50.341,
+        location_source: "exif", photo_taken_at: "2026-05-17T14:32:10", photo_source: "web", photo: upload("terrain.jpg")
+      } }
+    end
+    assert_response :created
+    body = response.parsed_body
+    photo = @map.photos.find(body["photoId"])
+    assert_equal "Ortie dioïque", body["speciesName"]
+    assert_equal "2026-05-17", body["observedOn"]
+    assert_equal [ 4.906, 50.341 ], [ photo.lng, photo.lat ]
+    assert_equal "exif", photo.location_source
+    assert_equal "Ortie dioïque", photo.caption
+    assert_equal users(:michael), photo.uploaded_by
+  end
+
+  test "a photo without a position takes the place the plant is given on the map" do
+    sign_in_as users(:michael)
+    post map_bioindicator_observations_path(@map), headers: json_headers, params: { bioindicator_observation: {
+      species_name: "Grande ortie", abundance: "present", photo: upload("terrain.jpg")
+    } }
+    assert_response :created
+    observation = @map.bioindicator_observations.find(response.parsed_body["id"])
+    assert_nil observation.location
+    assert_nil observation.photo.location
+
+    patch map_bioindicator_observation_path(@map, observation), params: { bioindicator_observation: { lng: 4.907, lat: 50.342 } }, as: :json
+    assert_response :success
+    assert_equal [ 4.907, 50.342 ], [ observation.photo.reload.lng, observation.photo.lat ]
+    assert_equal "map", observation.photo.location_source
+  end
+
+  test "the same photo sent twice is reused, not refused" do
+    sign_in_as users(:michael)
+    existing = create_photo
+    assert_no_difference -> { @map.photos.count } do
+      post map_bioindicator_observations_path(@map), headers: json_headers, params: { bioindicator_observation: {
+        catalog_key: "ortie", abundance: "present", photo: upload("terrain.jpg")
+      } }
+    end
+    assert_response :created
+    assert_equal existing.id, response.parsed_body["photoId"]
+  end
+
+  test "a file that is not a photo saves nothing" do
+    sign_in_as users(:michael)
+    assert_no_difference -> { @map.photos.count + @map.bioindicator_observations.count } do
+      post map_bioindicator_observations_path(@map), headers: json_headers, params: { bioindicator_observation: {
+        catalog_key: "ortie", abundance: "present", photo: upload("notes.txt", "text/plain")
+      } }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "a photo of another map cannot be linked" do
+    other = create_photo(map: Map.create!(name: "Jardin de Bob", owner: users(:bob), region: regions(:wallonia)))
+    sign_in_as users(:michael)
+    post map_bioindicator_observations_path(@map), params: { bioindicator_observation: { catalog_key: "ortie", map_photo_id: other.id } }, as: :json
+    assert_response :not_found
+  end
+
+  test "deleting the photo keeps the observation" do
+    photo = create_photo
+    observation = @map.bioindicator_observations.create!(catalog_key: "ortie", photo:)
+    photo.destroy!
+    assert_nil observation.reload.map_photo_id
+  end
 end

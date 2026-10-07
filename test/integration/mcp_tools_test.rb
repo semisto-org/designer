@@ -51,6 +51,18 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil AiAction.last.map, "no journal entry on a map the user cannot open"
   end
 
+  test "get_map gives the bio-indicator plants noted on the terrain and what they point to" do
+    @map.bioindicator_observations.create!(catalog_key: "ortie", abundance: "dominant", location: [ 4.906, 50.341 ])
+    data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
+    refute error
+    nettle = data.dig("bioindicators", "observations").first
+    assert_equal "Ortie dioïque", nettle["name"]
+    assert_equal [ 4.906, 50.341 ], nettle["location"]
+    assert_includes nettle["indicators"], "nitrogen_rich"
+    assert_equal false, nettle["from_photo"]
+    assert_includes data.dig("bioindicators", "summary").map { |row| row["key"] }, "nitrogen_rich"
+  end
+
   test "get_design_guide lists the chapters, then serves one" do
     data, error = call_tool(@viewer, "get_design_guide")
     refute error

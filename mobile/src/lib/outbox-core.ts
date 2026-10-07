@@ -23,7 +23,21 @@ export type Op = Base & (
   | { type: 'uploadPhoto'; file: string; lng: number | null; lat: number | null; takenAt: string; featureId: FeatureRef | null; caption?: string | null }
   | { type: 'createObservation'; featureId: FeatureRef; observedOn: string; survival: Survival; vigor: number | null; note: string | null; photo: string | null }
   | { type: 'createComment'; featureId: FeatureRef | null; body: string }
+  | { type: 'createBioindicator'; observation: NewBioindicator; photo: string }
 )
+
+/** A wild plant noted from its photo (identified by Pl@ntNet, confirmed by the person). */
+export type NewBioindicator = {
+  speciesName: string
+  latinName: string | null
+  catalogKey: string | null
+  plantSpeciesId: number | null
+  abundance: 'rare' | 'present' | 'frequent' | 'dominant'
+  notes: string | null
+  lng: number | null
+  lat: number | null
+  takenAt: string
+}
 
 export type OutboxState = {
   ops: Op[]
@@ -95,6 +109,7 @@ export type Transport = {
   uploadPhoto(mapId: number, op: Extract<Op, { type: 'uploadPhoto' }>, featureId: number | null): Promise<void>
   createObservation(mapId: number, featureId: number, op: Extract<Op, { type: 'createObservation' }>): Promise<void>
   createComment(mapId: number, featureId: number | null, body: string): Promise<void>
+  createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>): Promise<void>
 }
 
 type HttpError = { status: number; body?: Record<string, unknown> | null; message?: string }
@@ -124,6 +139,7 @@ export async function flush(initial: OutboxState, transport: Transport): Promise
       sent += 1
       if (op.type === 'uploadPhoto') sentFiles.push(op.file)
       if (op.type === 'createObservation' && op.photo) sentFiles.push(op.photo)
+      if (op.type === 'createBioindicator') sentFiles.push(op.photo)
     } catch (error) {
       const status = statusOf(error)
       if (status === 0) return { state, sent, stopped: 'offline', sentFiles }
@@ -178,6 +194,8 @@ async function send(state: OutboxState, op: Op, transport: Transport, mapTempId:
       return transport.createObservation(op.mapId, id(op.featureId)!, op)
     case 'createComment':
       return transport.createComment(op.mapId, id(op.featureId), op.body)
+    case 'createBioindicator':
+      return transport.createBioindicator(op.mapId, op)
   }
 }
 

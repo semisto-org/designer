@@ -144,6 +144,8 @@ export type BioObservation = {
   latinName: string | null
   catalogKey: string | null
   plantSpeciesId: number | null
+  /** The photo it was noted from, among the map's photos. */
+  photoId: number | null
   abundance: Abundance
   observedOn: string | null
   lng: number | null
