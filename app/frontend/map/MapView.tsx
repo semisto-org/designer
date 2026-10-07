@@ -75,12 +75,11 @@ export function MapView({ center, zoom, bbox, style, className, children, onRead
       // MapLibre throws when the browser cannot give it a WebGL2 context
       // (hardware acceleration off, GPU blocklisted, very old device). That is
       // the visitor's setup, not a bug: tell them what to do instead of
-      // leaving a blank page, and keep one grouped, low-level Sentry event.
+      // leaving a blank page, and report it to Sentry as one grouped issue.
       if (!isWebGLError(error)) throw error
-      Sentry.captureMessage('Map unavailable: WebGL2 not supported', {
-        level: 'warning',
+      Sentry.captureException(error, {
         fingerprint: ['maplibre-webgl2-unsupported'],
-        extra: { message: error instanceof Error ? error.message : String(error) },
+        tags: { map_unavailable: 'webgl2' },
       })
       setUnsupported(true)
       return
