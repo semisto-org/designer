@@ -1,0 +1,8 @@
+fr:
+  map_view:
+    unavailable:
+      title: "La carte ne peut pas s'afficher"
+      body: "Ton navigateur ne donne pas accès à WebGL2, la technologie qui dessine la carte. C'est souvent un simple réglage :"
+      acceleration: "Dans Chrome, ouvre Paramètres › Système, active « Utiliser l'accélération graphique si disponible », puis relance Chrome."
+      other_browser: "Si ça ne suffit pas, essaie un autre navigateur (Firefox, Safari, Edge) ou un autre appareil."
+      reload: "Réessayer"
