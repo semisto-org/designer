@@ -22,9 +22,11 @@ function csrfToken(): string {
  * are sent to the server a moment later, a few fields at a time (the server
  * merges at field level, so a phone and a laptop never overwrite each
  * other). Failures keep the edits and retry; leaving the page flushes.
+ * `endpoint` is the sheet's address: `/maps/:id/project` for the people
+ * working on the map, `/fiche-projet/:token` for its private link.
  */
 export function useProjectSheet(
-  mapId: number, initial: ProjectData, initialProgress: ProjectProgress, canEdit: boolean, initialDrafts: ProjectDraft[] = [],
+  endpoint: string, initial: ProjectData, initialProgress: ProjectProgress, canEdit: boolean, initialDrafts: ProjectDraft[] = [],
 ) {
   const [project, setProject] = useState<ProjectData>(initial)
   const [progress, setProgress] = useState<ProjectProgress>(initialProgress)
@@ -48,7 +50,7 @@ export function useProjectSheet(
     inflight.current = true
     if (alive.current) setStatus('saving')
     try {
-      const result = await api<{ progress: ProjectProgress }>(`/maps/${mapId}/project`, { method: 'PATCH', body: { project: patch } })
+      const result = await api<{ progress: ProjectProgress }>(endpoint, { method: 'PATCH', body: { project: patch } })
       failures.current = 0
       if (!alive.current) return
       setProgress(result.progress)
@@ -66,7 +68,7 @@ export function useProjectSheet(
       inflight.current = false
       if (alive.current && hasPending() && failures.current === 0) timer.current = window.setTimeout(() => void flush(), DEBOUNCE_MS)
     }
-  }, [mapId])
+  }, [endpoint])
 
   const schedule = useCallback(() => {
     window.clearTimeout(timer.current)
@@ -107,7 +109,7 @@ export function useProjectSheet(
         const patch = pending.current
         pending.current = {}
         // keepalive lets the request outlive the page.
-        void fetch(`/maps/${mapId}/project`, {
+        void fetch(endpoint, {
           method: 'PATCH', keepalive: true, credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrfToken() },
           body: JSON.stringify({ project: patch }),
@@ -125,10 +127,10 @@ export function useProjectSheet(
       if (hasPending() && !inflight.current) {
         const patch = pending.current
         pending.current = {}
-        void api(`/maps/${mapId}/project`, { method: 'PATCH', body: { project: patch } }).catch(() => undefined)
+        void api(endpoint, { method: 'PATCH', body: { project: patch } }).catch(() => undefined)
       }
     }
-  }, [mapId])
+  }, [endpoint])
 
   const retry = useCallback(() => {
     failures.current = 0
@@ -144,7 +146,7 @@ export function useProjectSheet(
     if (!canEdit) return
     await flush()
     const result = await api<{ project: ProjectData; progress: ProjectProgress; drafts: ProjectDraft[] }>(
-      `/maps/${mapId}/project/drafts/${id}/${decision}`, { method: 'POST' },
+      `${endpoint}/drafts/${id}/${decision}`, { method: 'POST' },
     )
     if (!alive.current) return
     const next: ProjectData = { ...result.project }
@@ -162,7 +164,7 @@ export function useProjectSheet(
     setProgress(result.progress)
     setDrafts(result.drafts)
     if (decision === 'accept') requestJourneyRefresh()
-  }, [canEdit, flush, mapId])
+  }, [canEdit, flush, endpoint])
 
   return { project, progress, drafts, status, setField, setDone, review, retry, flush }
 }

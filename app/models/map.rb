@@ -28,6 +28,8 @@ class Map < ApplicationRecord
   has_many :water_sources, -> { ordered }, dependent: :delete_all, inverse_of: :map
   has_many :plan_images, -> { ordered }, dependent: :destroy, inverse_of: :map
   has_one :share_link, class_name: "MapShareLink", dependent: :destroy
+  # The private link to the project sheet, for the people behind the project.
+  has_one :project_sheet_link, dependent: :destroy
   has_one :publication, class_name: "MapPublication", dependent: :destroy
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
