@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -817,6 +817,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_160000) do
     t.index ["map_id", "section", "field"], name: "index_project_sheet_drafts_on_map_id_and_section_and_field", unique: true
   end
 
+  create_table "project_sheet_links", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "token", null: false
+    t.bigint "created_by_id"
+    t.datetime "disabled_at"
+    t.datetime "opened_at"
+    t.datetime "submitted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_project_sheet_links_on_created_by_id"
+    t.index ["map_id"], name: "index_project_sheet_links_on_map_id", unique: true
+    t.index ["token"], name: "index_project_sheet_links_on_token", unique: true
+  end
+
   create_table "region_layers", force: :cascade do |t|
     t.bigint "region_id", null: false
     t.string "key", null: false
@@ -1050,6 +1064,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_160000) do
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "project_sheet_drafts", "maps", on_delete: :cascade
   add_foreign_key "project_sheet_drafts", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "project_sheet_links", "maps", on_delete: :cascade
+  add_foreign_key "project_sheet_links", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "region_layers", "regions"
   add_foreign_key "regions", "regions", column: "parent_id"
   add_foreign_key "service_requests", "maps"

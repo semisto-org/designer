@@ -53,6 +53,9 @@ Rails.application.routes.draw do
   # staff triage of those requests.
   resources :maps, only: [] do
     resource :project, only: %i[show update], controller: "maps/projects"
+    resource :project_link, path: "project/link", only: %i[create destroy], controller: "maps/project_links" do
+      post :reset
+    end
     resources :project_drafts, path: "project/drafts", only: [], controller: "maps/project_drafts" do
       member do
         post :accept
@@ -61,6 +64,13 @@ Rails.application.routes.draw do
     end
     resource :journey, only: :show, controller: "maps/journeys"
     resources :service_requests, path: "requests", only: %i[index create], controller: "maps/service_requests"
+  end
+  # The project sheet's form alone, for the people behind the project: no
+  # account, no map (see ProjectSheetLink).
+  constraints token: /[A-Za-z0-9]{24,64}/ do
+    get "fiche-projet/:token", to: "project_forms#show", as: :project_form
+    patch "fiche-projet/:token", to: "project_forms#update"
+    post "fiche-projet/:token/submit", to: "project_forms#submit", as: :submit_project_form
   end
   namespace :admin do
     resources :requests, only: %i[index update], controller: "service_requests"

@@ -53,6 +53,12 @@ Ton IA ne remplace jamais une réponse que tu as déjà donnée sans te préveni
 
 Le propriétaire et les éditeurs de la carte, qui sont aussi les seuls à accepter ou refuser les réponses de ton IA. Les lecteurs la consultent en lecture seule.
 
+## La faire remplir par le porteur de projet
+
+Tu conçois le lieu de quelqu'un d'autre ? Sous « Faire remplir la fiche par le porteur de projet », **Créer le lien privé** donne une adresse à lui envoyer. Elle ouvre uniquement le formulaire de la fiche, sans compte et sans accès à la carte : la personne avance à son rythme, ses réponses s'enregistrent au fil de l'eau dans la fiche de ta carte.
+
+Quand elle clique sur **J'ai terminé**, tu reçois un e-mail. Elle peut encore compléter ses réponses tant que le lien est actif. **Nouveau lien** remplace l'adresse (l'ancienne cesse de fonctionner) et **Désactiver** la ferme.
+
 ## Bien la remplir
 
 - **Sois réaliste sur le temps** : un jardin-forêt demande surtout du temps les premières années.
