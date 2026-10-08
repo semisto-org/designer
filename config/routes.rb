@@ -209,6 +209,13 @@ Rails.application.routes.draw do
     end
   end
   # --- end plants ---
+  # --- sun ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :sun, only: :show
+    end
+  end
+  # --- end sun ---
   # --- climate-finance ---
   resources :maps, only: [] do
     scope module: :maps do
