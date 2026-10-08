@@ -10,6 +10,7 @@ import { Upsell } from '@/components/climate/Upsell'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import WeatherStationsSection from '@/map/weather_stations/WeatherStationsSection'
 import type { ClimateReport, ForecastReport, ProjectionData, Scenario } from '@/types/climate_finance'
 
 /**
@@ -98,6 +99,7 @@ export default function ClimatePanel() {
       )}
       {'available' in plants && plants.available && <PlantChecks block={plants} scenario={scenario} />}
       <Forecast report={report.capabilities.forecast ? forecast : null} loading={forecastLoading} />
+      <WeatherStationsSection />
       <Sources sources={report.sources} note={current.note} current={current} projections={shownProjections} />
     </div>
   )
