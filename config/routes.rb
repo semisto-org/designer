@@ -239,6 +239,13 @@ Rails.application.routes.draw do
     end
   end
   # --- end observed_climate ---
+  # --- site_rules ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :site_rules, only: :show
+    end
+  end
+  # --- end site_rules ---
   # --- climate-finance ---
   resources :maps, only: [] do
     scope module: :maps do

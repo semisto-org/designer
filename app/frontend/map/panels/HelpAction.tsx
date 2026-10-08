@@ -15,6 +15,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   relief: 'lire-le-relief-et-l-eau',
   sun: 'le-soleil-et-l-horizon',
   climate: 'le-climat-d-aujourd-hui-et-de-demain',
+  'site-rules': 'regles-et-risques-du-terrain',
   soil: 'analyser-son-sol',
   canopy: 'les-arbres-deja-en-place',
   photos: 'photos-et-suivi-dans-le-temps',
