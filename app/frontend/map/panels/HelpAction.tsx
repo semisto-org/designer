@@ -14,6 +14,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   'plan-images': 'caler-un-fond-de-plan',
   relief: 'lire-le-relief-et-l-eau',
   climate: 'le-climat-d-aujourd-hui-et-de-demain',
+  'site-rules': 'regles-et-risques-du-terrain',
   soil: 'analyser-son-sol',
   photos: 'photos-et-suivi-dans-le-temps',
   palette: 'construire-sa-palette-et-ses-patches',

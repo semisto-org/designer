@@ -1,0 +1,114 @@
+{
+ "_comment": "Captured live from https://apicarto.ign.fr/api/gpu on 2026-10-08 (POST geom Point [6.1697, 48.1147]); geometries removed, lists cut to 3 features.",
+ "municipality": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "municipality.13489660",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 13489660,
+     "insee": "88161",
+     "name": "ESCLES",
+     "is_rnu": false,
+     "is_deleted": false,
+     "is_coastline": false
+    }
+   }
+  ],
+  "totalFeatures": 1
+ },
+ "document": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "document.12924",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 12924,
+     "id": "91455f46023d605f2061f0c394eeb2a8",
+     "grid_name": "88161",
+     "grid_title": "ESCLES",
+     "name": "88161_CC_20121212",
+     "gpu_doc_id": "91455f46023d605f2061f0c394eeb2a8",
+     "gpu_status": "production",
+     "gpu_timestamp": "2018-07-11T11:16:34Z",
+     "partition": "DU_88161",
+     "du_type": "CC"
+    }
+   }
+  ],
+  "totalFeatures": 1
+ },
+ "zone-urba": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "secteur-cc": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "secteur_cc.31965",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 31965,
+     "gpu_doc_id": "91455f46023d605f2061f0c394eeb2a8",
+     "gpu_status": "production",
+     "gpu_timestamp": "2018-07-11T11:16:34Z",
+     "partition": "DU_88161",
+     "libelle": "ZNC",
+     "libelong": null,
+     "typesect": "03",
+     "fermreco": null,
+     "destdomi": "99",
+     "nomfic": "88161_rapport_20121212.pdf",
+     "urlfic": null,
+     "insee": "88161",
+     "datappro": "20121212",
+     "datvalid": "20121212",
+     "idurba": null,
+     "lib_idzone": null,
+     "symbole": null
+    }
+   }
+  ],
+  "totalFeatures": 1
+ },
+ "prescription-surf": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "prescription-lin": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "prescription-pct": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "assiette-sup-s": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "assiette-sup-l": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "assiette-sup-p": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ }
+}

@@ -1,0 +1,28 @@
+{
+  "_comment": "Built by hand from the documented shape of GET /api/v1/resultats_rapport_risque?latlon=lng,lat (www.georisques.gouv.fr was not reachable from the development sandbox): adresse, commune, url, risquesNaturels (12 keys) and risquesTechnologiques (6 keys), each { present, libelle, libelleStatutCommune, libelleStatutAdresse }. Values are illustrative.",
+  "adresse": { "libelle": "2 Place des Terreaux 69001 Lyon", "longitude": 4.833, "latitude": 45.767 },
+  "commune": { "libelle": "Lyon 1er Arrondissement", "codePostal": "69001", "codeInsee": "69381" },
+  "url": "https://www.georisques.gouv.fr/mes-risques/connaitre-les-risques-pres-de-chez-moi/rapport2?form-adresse=true&isCadastre=false&city=Lyon&type=housenumber&typeForm=adresse&codeInsee=69381&lon=4.833&lat=45.767",
+  "risquesNaturels": {
+    "inondation": { "present": true, "libelle": "Inondation", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": "Risque Existant" },
+    "remonteeNappe": { "present": true, "libelle": "Remontée de nappe", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": "Zones potentiellement sujettes aux inondations de cave" },
+    "risqueCotier": { "present": false, "libelle": "Risques côtiers (submersion marine, tsunami)", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null },
+    "seisme": { "present": true, "libelle": "Séisme", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": "Zone 2 - Faible" },
+    "mouvementTerrain": { "present": true, "libelle": "Mouvements de terrain", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": "Risque Existant" },
+    "reculTraitCote": { "present": false, "libelle": "Recul du trait de côte", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null },
+    "retraitGonflementArgile": { "present": true, "libelle": "Retrait gonflement des argiles", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": "Exposition moyenne" },
+    "avalanche": { "present": false, "libelle": "Avalanche", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null },
+    "feuForet": { "present": false, "libelle": "Feu de forêt", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null },
+    "eruptionVolcanique": { "present": false, "libelle": "Éruption volcanique", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null },
+    "cyclone": { "present": false, "libelle": "Vent violent", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null },
+    "radon": { "present": true, "libelle": "Radon", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": "Potentiel radon de catégorie 3 (significatif)" }
+  },
+  "risquesTechnologiques": {
+    "icpe": { "present": true, "libelle": "Installations industrielles classées (ICPE)", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": null },
+    "nucleaire": { "present": false, "libelle": "Nucléaire", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null },
+    "canalisationsMatieresDangereuses": { "present": true, "libelle": "Canalisations de matières dangereuses", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": null },
+    "pollutionSols": { "present": true, "libelle": "Pollution des sols, SIS et anciens sites industriels", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": "Présence d'anciens sites industriels à proximité" },
+    "ruptureBarrage": { "present": true, "libelle": "Rupture de barrage", "libelleStatutCommune": "Risque Existant", "libelleStatutAdresse": null },
+    "risqueMinier": { "present": false, "libelle": "Risques miniers", "libelleStatutCommune": "Risque Inexistant", "libelleStatutAdresse": null }
+  }
+}

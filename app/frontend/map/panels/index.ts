@@ -1,4 +1,4 @@
-import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, TriangleAlert } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -32,6 +32,7 @@ import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
 import { isPatch, isPlant } from '@/map/plants/properties'
 import ClimatePanel from '@/map/panels/ClimatePanel'
+import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
 import FinancesPanel from '@/map/panels/FinancesPanel'
 import PhotosPanel from '@/map/photos/PhotosPanel'
 import PhotosInspector from '@/map/photos/PhotosInspector'
@@ -63,6 +64,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'observe', component: LayersPanel, order: 10 },
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'observe', component: ReliefPanel, order: 30 },
   { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'observe', component: ClimatePanel, order: 40 },
+  { id: 'site-rules', label: 'site_rules.panel_title', icon: ShieldAlert, group: 'observe', component: SiteRulesPanel, order: 50 },
   { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: SoilPanel, order: 60 },
   { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'observe', component: PhotosPanel, order: 70 },
   // 2. Cartographier
