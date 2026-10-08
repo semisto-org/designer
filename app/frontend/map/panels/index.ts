@@ -1,3 +1,6 @@
+import { Trees } from 'lucide-react'
+import CanopyPanel from '@/map/canopy/CanopyPanel'
+import CanopyOverlay from '@/map/canopy/CanopyOverlay'
 import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
@@ -64,6 +67,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'observe', component: ReliefPanel, order: 30 },
   { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'observe', component: ClimatePanel, order: 40 },
   { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: SoilPanel, order: 60 },
+  { id: 'canopy', label: 'canopy.panel_title', icon: Trees, group: 'observe', component: CanopyPanel, order: 65 },
   { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'observe', component: PhotosPanel, order: 70 },
   // 2. Cartographier
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
@@ -120,6 +124,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'plants', component: PlantsOverlay, order: 20 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },
+  { id: 'canopy', component: CanopyOverlay, order: 3 },
   { id: 'drawing-layers', component: DrawingLayers, order: 10 },
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },
