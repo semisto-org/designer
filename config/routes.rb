@@ -225,6 +225,13 @@ Rails.application.routes.draw do
     end
   end
   # --- end weather_stations ---
+  # --- canopy ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :canopy, only: :show
+    end
+  end
+  # --- end canopy ---
   # --- climate-finance ---
   resources :maps, only: [] do
     scope module: :maps do

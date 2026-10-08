@@ -16,6 +16,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   sun: 'le-soleil-et-l-horizon',
   climate: 'le-climat-d-aujourd-hui-et-de-demain',
   soil: 'analyser-son-sol',
+  canopy: 'les-arbres-deja-en-place',
   photos: 'photos-et-suivi-dans-le-temps',
   palette: 'construire-sa-palette-et-ses-patches',
   'plant-list': 'la-liste-de-plants-et-la-commande',
