@@ -1,5 +1,5 @@
 require "csv"
-require "zip" # rubyzip, bundled through caxlsx
+require "zip"
 
 class ObservedClimate
   # Folds the hourly ERA5-Land series returned by the CDS (a CSV, or a zip
