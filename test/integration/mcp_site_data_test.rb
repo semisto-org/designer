@@ -48,6 +48,20 @@ class McpSiteDataTest < ActionDispatch::IntegrationTest
     Canopy::MapReport.define_method(:as_json, original)
   end
 
+  test "site rules leave out network easements" do
+    received = nil
+    original = SiteRules::MapReport.instance_method(:initialize)
+    SiteRules::MapReport.define_method(:initialize) do |map, **options|
+      received = options
+      original.bind_call(self, map, **options)
+    end
+    data, = call_tool(@owner, "get_site_data", { map_id: @map.id, topics: %w[site_rules] })
+    assert_equal({ include_networks: false }, received)
+    assert data.key?("site_rules")
+  ensure
+    SiteRules::MapReport.define_method(:initialize, original)
+  end
+
   test "only for people with a role on the map" do
     text, error = call_tool(@stranger, "get_site_data", { map_id: @map.id })
     assert error

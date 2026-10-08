@@ -12,7 +12,9 @@ module Mcp
         "sun" => ->(map) { Sun::MapReport.new(map).as_json },
         "weather_stations" => ->(map) { WeatherStations::MapReport.new(map).as_json },
         "observed_climate" => ->(map) { ObservedClimate::MapReport.new(map).as_json },
-        "canopy" => ->(map) { Canopy::MapReport.new(map).as_json }
+        "canopy" => ->(map) { Canopy::MapReport.new(map).as_json },
+        # Network easements (gas, power lines…) stay hidden from the MCP.
+        "site_rules" => ->(map) { SiteRules::MapReport.new(map, include_networks: false).as_json }
       }.freeze
 
       arguments(
