@@ -7,6 +7,7 @@ import { FutureClimate } from '@/components/climate/FutureClimate'
 import { PlantChecks } from '@/components/climate/PlantChecks'
 import { Sources } from '@/components/climate/Sources'
 import { Upsell } from '@/components/climate/Upsell'
+import { ObservedClimate } from '@/components/observed_climate/ObservedClimate'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -90,6 +91,7 @@ export default function ClimatePanel() {
   return (
     <div className="space-y-6">
       <CurrentClimate data={current} />
+      <ObservedClimate mapId={mapId} version={report.location ? `${report.location.lat},${report.location.lng}` : null} />
       {locked && <Upsell plantsCount={plants.count} />}
       {'available' in projections && projections.available && (
         <FutureClimate block={projections} current={current.zone} scenario={scenario} onScenario={setScenario} />
