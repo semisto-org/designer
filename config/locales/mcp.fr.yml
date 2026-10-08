@@ -7,7 +7,7 @@ fr:
     server:
       instructions: |-
         Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
-        Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…).
+        Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…) ; get_site_data donne le soleil et l'horizon, la météo et le climat observés, et les arbres déjà en place.
         Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « method » et le chapitre du sujet). Le guide est écrit en anglais : réponds toujours dans la langue de la personne. Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
         Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
@@ -49,6 +49,11 @@ fr:
         description: "Ce que disent les couches de la région en un point du terrain : type de sol, aléa d'inondation, affectation au plan de secteur, parcelle cadastrale… Le point doit se trouver à moins de 1 km du terrain. Sans layers, toutes les couches interrogeables sont interrogées."
         params:
           layers: "Clés des couches à interroger (voir get_region_layers). Par défaut : toutes les couches interrogeables."
+      get_site_data:
+        title: "Données du lieu"
+        description: "Ce que les sources de données ouvertes disent du lieu de la carte : soleil et horizon (PVGIS : heures de soleil possibles chaque mois sur ce terrain et rayonnement), stations météo proches et leurs relevés récents (IRM, Belgique), climat observé sur 1995-2024 (ERA5-Land : gelées, pluie, températures ; le premier appel lance le calcul, qui prend quelques minutes, status « pending » en attendant), arbres déjà en place (hauteur de canopée Meta/WRI : part du terrain sous les arbres, hauteur maximale, date des images). Chaque sujet donne sa source et sa licence, ou la raison de son absence (non configuré, pas de contour, service indisponible)."
+        params:
+          topics: "Sujets à lire. Par défaut : tous."
       search_plants:
         title: "Chercher une plante"
         description: "Recherche dans le catalogue de plantes de Semisto, par nom latin ou nom commun français. Chaque donnée du catalogue garde sa source."
@@ -243,6 +248,7 @@ fr:
       get_feature: "a lu un élément"
       get_region_layers: "a consulté les couches de la région"
       identify_at_point: "a interrogé les couches en un point"
+      get_site_data: "a lu les données du lieu"
       search_plants: "a cherché dans le catalogue des plantes"
       get_plant: "a lu une fiche plante"
       get_design_guide: "a lu le guide de méthode de Semisto"
