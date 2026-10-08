@@ -39,6 +39,7 @@ import PhotosInspector from '@/map/photos/PhotosInspector'
 import PhotosOverlay from '@/map/photos/PhotosOverlay'
 import SoilPanel from '@/map/soil/SoilPanel'
 import SoilOverlay from '@/map/soil/SoilOverlay'
+import WeatherStationsOverlay from '@/map/weather_stations/WeatherStationsOverlay'
 import AlertsPanel from '@/map/drawing/AlertsPanel'
 import GpsAccuracyOverlay from '@/map/gps/GpsAccuracyOverlay'
 import GpsAccuracySection, { appliesToGpsPoint } from '@/map/gps/GpsAccuracySection'
@@ -122,6 +123,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'plants', component: PlantsOverlay, order: 20 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },
+  { id: 'weather-stations', component: WeatherStationsOverlay, order: 61 },
   { id: 'drawing-layers', component: DrawingLayers, order: 10 },
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },

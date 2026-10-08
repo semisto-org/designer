@@ -1,0 +1,53 @@
+fr:
+  weather_stations:
+    title: "Stations météo proches"
+    loading: "Lecture des stations…"
+    reasons:
+      upstream_error: "Les stations de l'IRM ne répondent pas pour l'instant. Réessaie un peu plus tard."
+      no_daily_station: "Aucune station proche ne publie de relevé journalier."
+    retry: "Réessayer"
+    show_on_map: "Voir les stations sur la carte"
+    intro: "Ce que les stations officielles autour de ton terrain ont mesuré ces derniers jours."
+    observed:
+      heading: "Relevés à %{name}"
+      where: "à %{distance} de ton terrain"
+      altitude: "%{altitude} d'altitude"
+      altitude_diff_higher: "%{diff} plus haut que ton terrain"
+      altitude_diff_lower: "%{diff} plus bas que ton terrain"
+      altitude_diff_same: "à la même altitude que ton terrain"
+      chosen_without_days: "%{chosen} ne publie pas de relevé journalier : les jours ci-dessous viennent de %{station}, la station la plus proche qui en publie."
+      last_date: "Dernier jour publié : %{date}"
+      no_days: "Pas encore de relevé publié pour ces jours-ci."
+    days:
+      caption: "Les sept derniers jours à %{name}"
+      min: "min."
+      max: "max."
+      rain: "pluie"
+      sun: "soleil"
+      soil: "sol"
+      day_label: "%{date} : minimum %{tmin}, maximum %{tmax}, pluie %{rain}, soleil %{sun}, sol à 10 cm %{soil}"
+    summary:
+      rain7: "Pluie sur 7 jours"
+      rain30: "Pluie sur 30 jours"
+      coldest_night: "Nuit la plus froide"
+      coldest_night_value: "%{temp}, %{date}"
+      frost: "Gel cette semaine"
+      frost_yes: "oui"
+      frost_no: "non"
+      frost_nights30:
+        zero: "Aucune nuit de gel sur 30 jours."
+        one: "Une nuit de gel sur 30 jours."
+        other: "%{count} nuits de gel sur 30 jours."
+      partial: "sur %{count} jours relevés"
+    soil_hint:
+      warm: "Sol à %{temp} à 10 cm : les racines sont actives."
+      cool: "Sol à %{temp} à 10 cm : les racines poussent lentement."
+      cold: "Sol à %{temp} à 10 cm : les racines sont au repos."
+    list:
+      title: "Les stations autour"
+      nearest: "la plus proche"
+      daily: "relevés quotidiens"
+      synop: "relevés horaires"
+      show: "Voir ses relevés"
+      shown: "Relevés affichés"
+    attribution: "Données : IRM (CC BY 4.0)"
