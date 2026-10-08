@@ -67,13 +67,23 @@ export default function ClimatePanel() {
 
   if (!report.current.available) {
     const noLocation = report.current.reason === 'no_location'
+    // Without regional normals, the observed climate (ERA5-Land, everywhere
+    // in Europe) and the nearby stations still say something about the place.
     return (
-      <div className="space-y-3">
-        <p className="text-sm text-loam-600">{t(`climate.reasons.${report.current.reason}`)}</p>
-        {noLocation && editor.canEdit && (
-          <Button variant="secondary" size="sm" onClick={() => editor.openPanel('terrain')}>
-            <PenLine className="h-4 w-4" />{t('climate.draw_outline')}
-          </Button>
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <p className="text-sm text-loam-600">{t(`climate.reasons.${report.current.reason}`)}</p>
+          {noLocation && editor.canEdit && (
+            <Button variant="secondary" size="sm" onClick={() => editor.openPanel('terrain')}>
+              <PenLine className="h-4 w-4" />{t('climate.draw_outline')}
+            </Button>
+          )}
+        </div>
+        {report.location && (
+          <>
+            <ObservedClimate mapId={mapId} version={`${report.location.lat},${report.location.lng}`} />
+            <WeatherStationsSection />
+          </>
         )}
       </div>
     )
