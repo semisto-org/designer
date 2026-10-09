@@ -86,3 +86,5 @@ end
 
 # Spreadsheet exports (financial dashboard for banks and funders)
 gem "caxlsx", "~> 4.5"
+# Unzips the ERA5-Land downloads (also pulled in by caxlsx).
+gem "rubyzip", ">= 2.4", "< 4"

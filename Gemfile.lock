@@ -494,6 +494,7 @@ DEPENDENCIES
   rails (~> 8.1.4)
   rgeo-geojson
   rubocop-rails-omakase
+  rubyzip (>= 2.4, < 4)
   sentry-rails
   sentry-ruby
   solid_cable

@@ -1,4 +1,7 @@
-import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, Sprout, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Trees } from 'lucide-react'
+import CanopyPanel from '@/map/canopy/CanopyPanel'
+import CanopyOverlay from '@/map/canopy/CanopyOverlay'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
 import TerrainPanel from '@/map/panels/TerrainPanel'
 import ElementsPanel from '@/map/panels/ElementsPanel'
@@ -32,12 +35,15 @@ import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
 import { isPatch, isPlant } from '@/map/plants/properties'
 import ClimatePanel from '@/map/panels/ClimatePanel'
+import SunPanel from '@/map/sun/SunPanel'
+import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
 import FinancesPanel from '@/map/panels/FinancesPanel'
 import PhotosPanel from '@/map/photos/PhotosPanel'
 import PhotosInspector from '@/map/photos/PhotosInspector'
 import PhotosOverlay from '@/map/photos/PhotosOverlay'
 import SoilPanel from '@/map/soil/SoilPanel'
 import SoilOverlay from '@/map/soil/SoilOverlay'
+import WeatherStationsOverlay from '@/map/weather_stations/WeatherStationsOverlay'
 import AlertsPanel from '@/map/drawing/AlertsPanel'
 import GpsAccuracyOverlay from '@/map/gps/GpsAccuracyOverlay'
 import GpsAccuracySection, { appliesToGpsPoint } from '@/map/gps/GpsAccuracySection'
@@ -62,8 +68,11 @@ export const PANELS: EditorPanel[] = [
   { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'observe', component: ProjectPanel, order: 5, modal: true },
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'observe', component: LayersPanel, order: 10 },
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'observe', component: ReliefPanel, order: 30 },
+  { id: 'sun', label: 'sun.panel_title', icon: Sun, group: 'observe', component: SunPanel, order: 35 },
   { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'observe', component: ClimatePanel, order: 40 },
+  { id: 'site-rules', label: 'site_rules.panel_title', icon: ShieldAlert, group: 'observe', component: SiteRulesPanel, order: 50 },
   { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: SoilPanel, order: 60 },
+  { id: 'canopy', label: 'canopy.panel_title', icon: Trees, group: 'observe', component: CanopyPanel, order: 65 },
   { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'observe', component: PhotosPanel, order: 70 },
   // 2. Cartographier
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
@@ -120,6 +129,8 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'plants', component: PlantsOverlay, order: 20 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },
+  { id: 'weather-stations', component: WeatherStationsOverlay, order: 61 },
+  { id: 'canopy', component: CanopyOverlay, order: 3 },
   { id: 'drawing-layers', component: DrawingLayers, order: 10 },
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },

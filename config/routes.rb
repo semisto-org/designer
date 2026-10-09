@@ -209,6 +209,43 @@ Rails.application.routes.draw do
     end
   end
   # --- end plants ---
+  # --- sun ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :sun, only: :show
+    end
+  end
+  # --- end sun ---
+  # --- weather_stations ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :weather_stations, only: :show do
+        get :stations
+      end
+    end
+  end
+  # --- end weather_stations ---
+  # --- canopy ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :canopy, only: :show
+    end
+  end
+  # --- end canopy ---
+  # --- observed_climate ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :observed_climate, only: :show
+    end
+  end
+  # --- end observed_climate ---
+  # --- site_rules ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :site_rules, only: :show
+    end
+  end
+  # --- end site_rules ---
   # --- climate-finance ---
   resources :maps, only: [] do
     scope module: :maps do

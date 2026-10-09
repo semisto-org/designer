@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -521,6 +521,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
     t.index ["code_digest"], name: "index_oauth_grants_on_code_digest", unique: true
     t.index ["oauth_client_id"], name: "index_oauth_grants_on_oauth_client_id"
     t.index ["user_id"], name: "index_oauth_grants_on_user_id"
+  end
+
+  create_table "observed_climates", force: :cascade do |t|
+    t.decimal "cell_lat", precision: 4, scale: 1, null: false
+    t.decimal "cell_lng", precision: 4, scale: 1, null: false
+    t.integer "first_year", null: false
+    t.integer "last_year", null: false
+    t.string "status", default: "pending", null: false
+    t.string "job_id"
+    t.integer "attempts", default: 0, null: false
+    t.jsonb "indicators", default: {}, null: false
+    t.string "error"
+    t.datetime "submitted_at"
+    t.datetime "computed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cell_lat", "cell_lng", "first_year", "last_year"], name: "index_observed_climates_on_cell_and_period", unique: true
   end
 
   create_table "organization_invitations", force: :cascade do |t|

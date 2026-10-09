@@ -1,0 +1,323 @@
+{
+ "_comment": "Captured live from https://apicarto.ign.fr/api/gpu on 2026-10-08 (POST geom Point [4.833, 45.767]); geometries removed, lists cut to 3 features.",
+ "municipality": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "municipality.13484416",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 13484416,
+     "insee": "69123",
+     "name": "LYON",
+     "is_rnu": false,
+     "is_deleted": false,
+     "is_coastline": false
+    }
+   },
+   {
+    "type": "Feature",
+    "id": "municipality.13502162",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 13502162,
+     "insee": "69381",
+     "name": "LYON-1ER-ARRONDISSEMENT",
+     "is_rnu": false,
+     "is_deleted": false,
+     "is_coastline": false
+    }
+   }
+  ],
+  "totalFeatures": 2
+ },
+ "document": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "document.25792",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 25792,
+     "id": "4f3ddc27a9611b4bc94fa161443b8e86",
+     "grid_name": "200046977",
+     "grid_title": "PLUI GRAND LYON LA METROPOLE",
+     "name": "200046977_PLUi_20260326",
+     "gpu_doc_id": "4f3ddc27a9611b4bc94fa161443b8e86",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-04-23T09:35:17.636Z",
+     "partition": "DU_200046977",
+     "du_type": "PLUi"
+    }
+   }
+  ],
+  "totalFeatures": 1
+ },
+ "zone-urba": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "zone_urba.4290649",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 4290649,
+     "gpu_doc_id": "4f3ddc27a9611b4bc94fa161443b8e86",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-04-23T09:35:17.636Z",
+     "partition": "DU_200046977",
+     "libelle": "UCe1b",
+     "libelong": "Tissu urbain dense a caractere patrimonial qui regroupe toutes les fonctions des centres urbains. Il est constitue d ilots profonds tres occupes par le bati avec peu d espaces vegetalises.",
+     "typezone": "U",
+     "destdomi": null,
+     "nomfic": "200046977_reglement_20260326.pdf",
+     "urlfic": "",
+     "insee": null,
+     "datappro": null,
+     "datvalid": "20260326",
+     "idurba": "200046977_PLUI_20260326",
+     "idzone": null,
+     "lib_idzone": "",
+     "formdomi": null,
+     "destoui": null,
+     "destcdt": null,
+     "destnon": null,
+     "symbole": null
+    }
+   }
+  ],
+  "totalFeatures": 1
+ },
+ "secteur-cc": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "prescription-surf": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "prescription_surf.18371496",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 18371496,
+     "gpu_doc_id": "4f3ddc27a9611b4bc94fa161443b8e86",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-04-23T09:35:17.636Z",
+     "partition": "DU_200046977",
+     "libelle": "Polarite commerciale",
+     "txt": "",
+     "typepsc": "51",
+     "nomfic": "",
+     "urlfic": "",
+     "insee": null,
+     "datappro": null,
+     "datvalid": "20260326",
+     "idurba": "200046977_PLUI_20260326",
+     "stypepsc": "00",
+     "idpsc": null,
+     "lib_idpsc": "",
+     "nature": null,
+     "symbole": null
+    }
+   },
+   {
+    "type": "Feature",
+    "id": "prescription_surf.18380479",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 18380479,
+     "gpu_doc_id": "4f3ddc27a9611b4bc94fa161443b8e86",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-04-23T09:35:17.636Z",
+     "partition": "DU_200046977",
+     "libelle": "Secteur de taille minimale des logements-1",
+     "txt": "1",
+     "typepsc": "23",
+     "nomfic": "",
+     "urlfic": "",
+     "insee": null,
+     "datappro": null,
+     "datvalid": "20260326",
+     "idurba": "200046977_PLUI_20260326",
+     "stypepsc": "00",
+     "idpsc": null,
+     "lib_idpsc": "",
+     "nature": null,
+     "symbole": null
+    }
+   },
+   {
+    "type": "Feature",
+    "id": "prescription_surf.18308665",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 18308665,
+     "gpu_doc_id": "4f3ddc27a9611b4bc94fa161443b8e86",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-04-23T09:35:17.636Z",
+     "partition": "DU_200046977",
+     "libelle": "Diversite commerciale a proteger ou a developper-TOUTACTI",
+     "txt": "",
+     "typepsc": "22",
+     "nomfic": "",
+     "urlfic": "",
+     "insee": null,
+     "datappro": null,
+     "datvalid": "20260326",
+     "idurba": "200046977_PLUI_20260326",
+     "stypepsc": "00",
+     "idpsc": null,
+     "lib_idpsc": "",
+     "nature": null,
+     "symbole": null
+    }
+   }
+  ],
+  "totalFeatures": 3
+ },
+ "prescription-lin": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "prescription-pct": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "assiette-sup-s": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "assiette_sup_s.6087152",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 6087152,
+     "gpu_doc_id": "a6f562892c86a1df5a20304022338e85",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-10-08T04:27:07.192Z",
+     "suptype": "ac1",
+     "partition": "172014607_SUP_69_AC1",
+     "fichier": "AC1_Immeuble-ISWJM9_19901012_act.pdf",
+     "idass": "AC1-172014607-1907198745-1-2",
+     "idgen": "AC1-172014607-1907198745-1",
+     "nomass": "AC1_Immeuble-ISWJM9_abor",
+     "typeass": "Périmètre des abords",
+     "modegeoass": "Zone tampon",
+     "paramcalc": 500,
+     "srcgeoass": "Cadastre",
+     "datesrcass": "20180101",
+     "angle1": null,
+     "angle2": null,
+     "rayon": null,
+     "h": null,
+     "href": null,
+     "xdebut": null,
+     "xfinal": null,
+     "ydebut": null,
+     "yfinal": null,
+     "largeur": null,
+     "nomsuplitt": "Immeuble",
+     "nomreg": "",
+     "urlreg": ""
+    }
+   },
+   {
+    "type": "Feature",
+    "id": "assiette_sup_s.6087575",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 6087575,
+     "gpu_doc_id": "a6f562892c86a1df5a20304022338e85",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-10-08T04:27:07.192Z",
+     "suptype": "ac1",
+     "partition": "172014607_SUP_69_AC1",
+     "fichier": "AC1_Immeuble-IXBTJB_19811223_act.pdf",
+     "idass": "AC1-172014607-1907198741-1-2",
+     "idgen": "AC1-172014607-1907198741-1",
+     "nomass": "AC1_Immeuble-IXBTJB_abor",
+     "typeass": "Périmètre des abords",
+     "modegeoass": "Zone tampon",
+     "paramcalc": 500,
+     "srcgeoass": "Cadastre",
+     "datesrcass": "20180101",
+     "angle1": null,
+     "angle2": null,
+     "rayon": null,
+     "h": null,
+     "href": null,
+     "xdebut": null,
+     "xfinal": null,
+     "ydebut": null,
+     "yfinal": null,
+     "largeur": null,
+     "nomsuplitt": "Immeuble",
+     "nomreg": "",
+     "urlreg": ""
+    }
+   },
+   {
+    "type": "Feature",
+    "id": "assiette_sup_s.6087815",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 6087815,
+     "gpu_doc_id": "a6f562892c86a1df5a20304022338e85",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-10-08T04:27:07.192Z",
+     "suptype": "ac1",
+     "partition": "172014607_SUP_69_AC1",
+     "fichier": "AC1_Immeuble-IWRK8B_19540915_act.pdf",
+     "idass": "AC1-172014607-1907198742-1-2",
+     "idgen": "AC1-172014607-1907198742-1",
+     "nomass": "AC1_Immeuble-IWRK8B_abor",
+     "typeass": "Périmètre des abords",
+     "modegeoass": "Zone tampon",
+     "paramcalc": 500,
+     "srcgeoass": "Cadastre",
+     "datesrcass": "20180101",
+     "angle1": null,
+     "angle2": null,
+     "rayon": null,
+     "h": null,
+     "href": null,
+     "xdebut": null,
+     "xfinal": null,
+     "ydebut": null,
+     "yfinal": null,
+     "largeur": null,
+     "nomsuplitt": "Immeuble",
+     "nomreg": "",
+     "urlreg": ""
+    }
+   }
+  ],
+  "totalFeatures": 3
+ },
+ "assiette-sup-l": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "assiette-sup-p": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ }
+}
