@@ -1,0 +1,116 @@
+# « Nouveautés »: what changed in the Designer (page, thumbs up, staff
+# screen). Keys in English, values in French; the backend and the React
+# frontend read the same file.
+fr:
+  activerecord:
+    models:
+      release_note: "Nouveauté"
+    attributes:
+      release_note:
+        title: "Titre"
+        body: "Texte"
+        published_on: "Date"
+        link_path: "Lien"
+        link_label: "Texte du lien"
+        screenshot: "Capture d'écran"
+        screenshot_alt: "Description de la capture"
+    errors:
+      models:
+        release_note:
+          attributes:
+            title:
+              blank: "Donne un titre à la nouveauté."
+              too_long: "Ce titre est trop long (%{count} caractères au maximum)."
+            body:
+              blank: "Raconte la nouveauté en quelques lignes."
+              too_long: "Ce texte est trop long (%{count} caractères au maximum)."
+            published_on:
+              blank: "Indique la date de la nouveauté."
+            link_path:
+              invalid: "Le lien doit être une adresse du Designer qui commence par « / », par exemple /help/caler-un-fond-de-plan."
+            screenshot:
+              invalid_type: "La capture doit être une image JPEG, PNG ou WebP."
+              too_large: "La capture est trop lourde (15 Mo au plus)."
+
+  release_notes:
+    nav: "Nouveautés"
+    nav_unseen:
+      one: "%{count} nouveauté pas encore vue"
+      other: "%{count} nouveautés pas encore vues"
+    title: "Nouveautés"
+    kicker: "le carnet du Designer"
+    intro: "Ce qui a poussé dans le Designer, noté au fil des saisons. Un pouce levé nous dit ce qui te plaît : c'est ce qui nous aide à choisir ce qui pousse ensuite."
+    count:
+      one: "%{count} nouveauté depuis le %{date}"
+      other: "%{count} nouveautés depuis le %{date}"
+    fresh: "nouveau"
+    fresh_since: "depuis ta dernière visite"
+    today: "aujourd'hui"
+    sown: "semé le %{date}"
+    seasons:
+      winter: "l'hiver"
+      spring: "le printemps"
+      summer: "l'été"
+      autumn: "l'automne"
+    empty:
+      title: "Rien de neuf pour l'instant"
+      body: "Les nouveautés du Designer s'écriront ici, au fil des saisons."
+    screenshot:
+      enlarge: "Agrandir la capture"
+    like:
+      action: "J'aime"
+      liked: "Tu aimes"
+      remove: "Je n'aime plus"
+      error: "Ton pouce n'a pas été enregistré. Réessaie dans un instant."
+      none: "Personne n'a encore levé le pouce : à toi ?"
+      you: "toi"
+      by: "Aimé par %{names}"
+      people:
+        one: "%{count} personne"
+        other: "%{count} personnes"
+      and: "%{first} et %{last}"
+      and_others:
+        one: "%{names} et %{count} autre"
+        other: "%{names} et %{count} autres"
+      list_title: "Qui aime « %{title} »"
+      see_all: "Voir qui aime"
+    teaser: "Du nouveau dans le Designer : « %{title} »"
+    teaser_more:
+      one: "Du nouveau dans le Designer : « %{title} », et %{count} autre nouveauté"
+      other: "Du nouveau dans le Designer : « %{title} », et %{count} autres nouveautés"
+    admin:
+      nav: "Nouveautés"
+      title: "Nouveautés"
+      intro: "Les nouveautés que voient les personnes qui utilisent le Designer, dans « Nouveautés ». Tutoie, parle de ce que la personne peut faire maintenant, et ajoute une capture quand elle montre mieux qu'une phrase."
+      new: "Nouvelle entrée"
+      edit_title: "Modifier la nouveauté"
+      new_title: "Nouvelle entrée"
+      back: "Toutes les nouveautés"
+      view_page: "Voir la page"
+      empty: "Aucune nouveauté pour l'instant."
+      draft: "Brouillon"
+      published: "Publiée"
+      likes:
+        zero: "aucun pouce"
+        one: "%{count} pouce"
+        other: "%{count} pouces"
+      edit: "Modifier"
+      delete: "Supprimer"
+      confirm_delete: "Supprimer « %{title} » et ses pouces levés ?"
+      form:
+        title_hint: "Ce que la personne peut faire maintenant, en une phrase."
+        body_hint: "Quelques lignes. Sépare les paragraphes par une ligne vide."
+        screenshot_hint: "JPEG, PNG ou WebP, 15 Mo au plus. Une capture de bureau en 1440 px de large se lit bien."
+        screenshot_current: "Capture actuelle"
+        remove_screenshot: "Retirer la capture"
+        screenshot_alt_hint: "Ce que montre la capture, pour qui ne la voit pas."
+        link_hint: "Facultatif : une adresse du Designer, par exemple /help/caler-un-fond-de-plan."
+        link_label_placeholder: "Lire l'aide"
+        published: "Publier"
+        published_hint: "Visible par tout le monde. Une nouveauté publiée garde son moment de publication si tu la modifies : elle ne repasse pas en « nouveau »."
+        save: "Enregistrer"
+        preview: "Aperçu"
+      flash:
+        created: "« %{title} » est enregistrée."
+        updated: "« %{title} » est modifiée."
+        destroyed: "« %{title} » est supprimée."

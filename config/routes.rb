@@ -360,6 +360,19 @@ Rails.application.routes.draw do
   end
   # --- end transfer ---
 
+  # --- release-notes ---
+  # « Nouveautés »: what changed in the Designer, with a thumbs up per entry;
+  # staff write them in /admin/release-notes.
+  get "nouveautes", to: "release_notes#index", as: :release_notes
+  resources :release_notes, path: "nouveautes", only: [] do
+    get :screenshot, on: :member
+    resource :like, only: %i[create destroy], controller: "release_notes/likes"
+  end
+  namespace :admin do
+    resources :release_notes, path: "release-notes", except: :show
+  end
+  # --- end release-notes ---
+
   # --- super-admin ---
   # The staff dashboard (figures, latest accounts and maps, admin log), the
   # accounts list and « Se connecter en tant que », ended from the banner.

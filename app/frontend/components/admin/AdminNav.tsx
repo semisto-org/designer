@@ -9,6 +9,7 @@ const ITEMS = [
   { href: '/admin/requests', key: 'requests' },
   { href: '/admin/invoice-requests', key: 'invoices' },
   { href: '/admin/drone-views', key: 'drone' },
+  { href: '/admin/release-notes', key: 'release_notes' },
 ] as const
 
 /** Tabs between the staff screens. */

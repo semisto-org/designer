@@ -11,6 +11,7 @@ fr:
       requests: "Demandes"
       invoices: "Factures"
       drone: "Vues drone"
+      release_notes: "Nouveautés"
     dashboard:
       title: "Administration"
       intro: "Les chiffres de Semisto Designer et ce qui attend l'équipe."
