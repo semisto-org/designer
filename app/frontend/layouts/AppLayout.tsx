@@ -8,13 +8,15 @@ import type { SharedProps } from '@/types'
 import type { TeamAwareUser } from '@/types/teams'
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const { currentUser } = usePage().props as unknown as SharedProps
+  const { currentUser, releaseNotes } = usePage().props as unknown as SharedProps
+  const unseen = releaseNotes?.unseen ?? 0
   const url = usePage().url
   const nav = [
     { href: '/maps', label: t('nav.maps') },
     ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
     { href: '/plants', label: t('nav.plants') },
     { href: '/help', label: t('nav.help') },
+    ...(currentUser ? [{ href: '/nouveautes', label: t('release_notes.nav'), dot: unseen > 0 }] : []),
     ...(currentUser?.admin ? [{ href: '/admin', label: t('admin.nav.link') }] : []),
   ]
   return (
@@ -38,6 +40,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 }
               >
                 {item.label}
+                {'dot' in item && item.dot && (
+                  <>
+                    <span aria-hidden className="ml-1 inline-block h-2 w-2 -translate-y-1.5 rounded-full bg-humus-400 ring-2 ring-white" />
+                    <span className="sr-only">{t('release_notes.nav_unseen', { count: unseen })}</span>
+                  </>
+                )}
               </Link>
             ))}
           </nav>

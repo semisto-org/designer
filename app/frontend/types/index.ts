@@ -28,6 +28,8 @@ export type SharedProps = {
   entitlements: EntitlementsData | null
   /** An admin is signed in as this user (« Se connecter en tant que »). */
   impersonation: import('./admin').ImpersonationData | null
+  /** Signed in: entries of « Nouveautés » not seen yet. */
+  releaseNotes: import('./releaseNotes').ReleaseNotesStatus | null
   env: { googleSignIn: boolean; billing: boolean; plantnet: boolean }
 }
 

@@ -14,11 +14,21 @@ class ApplicationController < ActionController::Base
       currentUser: authenticated? ? Current.user.as_inertia : nil,
       entitlements: authenticated? ? Current.user.entitlements.as_json : nil,
       impersonation: impersonation_props,
+      releaseNotes: authenticated? ? release_notes_props : nil,
       env: { googleSignIn: GoogleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
     }
   end
 
   private
+    # The dot on « Nouveautés » in the main menu, and the latest entry for
+    # the note on « Mes cartes ».
+    def release_notes_props
+      unseen = ReleaseNote.unseen_by(Current.user)
+      count = unseen.count
+      latest = count.positive? ? unseen.newest_first.first : nil
+      { unseen: count, latest: latest && { id: latest.id, title: latest.title } }
+    end
+
     # The phone app authenticates with a bearer token, never a cookie: a
     # forged cross-site request cannot carry it, so no CSRF token is needed.
     def verified_request?

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_070000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -893,6 +893,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
     t.index ["parent_id"], name: "index_regions_on_parent_id"
   end
 
+  create_table "release_note_likes", force: :cascade do |t|
+    t.bigint "release_note_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_note_id", "user_id"], name: "index_release_note_likes_on_release_note_id_and_user_id", unique: true
+    t.index ["release_note_id"], name: "index_release_note_likes_on_release_note_id"
+    t.index ["user_id"], name: "index_release_note_likes_on_user_id"
+  end
+
+  create_table "release_notes", force: :cascade do |t|
+    t.string "key"
+    t.string "title", null: false
+    t.text "body", null: false
+    t.date "published_on", null: false
+    t.datetime "published_at"
+    t.string "link_path"
+    t.string "link_label"
+    t.string "screenshot_alt"
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_release_notes_on_created_by_id"
+    t.index ["key"], name: "index_release_notes_on_key", unique: true, where: "(key IS NOT NULL)"
+    t.index ["published_at", "published_on"], name: "index_release_notes_on_published_at_and_published_on"
+  end
+
   create_table "service_requests", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "user_id", null: false
@@ -978,6 +1005,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
     t.datetime "ai_trial_started_at"
     t.datetime "ai_trial_reminded_at"
     t.datetime "tour_seen_at"
+    t.datetime "release_notes_seen_at"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
@@ -1085,6 +1113,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
   add_foreign_key "project_sheet_links", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "region_layers", "regions"
   add_foreign_key "regions", "regions", column: "parent_id"
+  add_foreign_key "release_note_likes", "release_notes", on_delete: :cascade
+  add_foreign_key "release_note_likes", "users", on_delete: :cascade
+  add_foreign_key "release_notes", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "service_requests", "maps"
   add_foreign_key "service_requests", "users"
   add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify
