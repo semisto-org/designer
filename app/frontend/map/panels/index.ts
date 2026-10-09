@@ -19,6 +19,7 @@ import ActionsPanel from '@/map/panels/ActionsPanel'
 import LayersPanel from '@/map/panels/LayersPanel'
 import RegionLayersOverlay from '@/map/data/RegionLayersOverlay'
 import IdentifyOverlay from '@/map/data/IdentifyOverlay'
+import LegendOverlay from '@/map/data/LegendOverlay'
 import AiJournalPanel from '@/map/panels/AiJournalPanel'
 import DraftsBar from '@/map/drafts/DraftsBar'
 import DraftReviewSection from '@/map/drafts/DraftReviewSection'
@@ -124,6 +125,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
   { id: 'tour', component: TourOverlay, order: 100 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
+  { id: 'layer-legend', component: LegendOverlay, order: 5 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
   { id: 'drafts-bar', component: DraftsBar, order: 40 },
   { id: 'plants', component: PlantsOverlay, order: 20 },

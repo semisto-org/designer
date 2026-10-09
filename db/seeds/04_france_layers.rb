@@ -15,13 +15,14 @@ wmts = lambda do |layer, format: "image/png", style: "normal"|
   "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=#{layer}" \
     "&STYLE=#{ERB::Util.url_encode(style)}&TILEMATRIXSET=PM&FORMAT=#{format}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"
 end
+legends = "https://data.geopf.fr/annexes/ressources/legendes"
 tile = lambda do |key, name, group, layer, position:, description:, order:, category: "overlay", format: "image/png",
-                  style: "normal", opacity: 0.7, min_zoom: nil, max_zoom: 18, attribution: ign, options: {}|
+                  style: "normal", opacity: 0.7, min_zoom: nil, max_zoom: 18, attribution: ign, legend_url: nil, options: {}|
   extra = { "order" => order, "tile_size" => 256 }
   extra["format"] = format if format != "image/png"
   {
     key:, name:, group_name: group, category:, kind: "xyz", url: wmts.(layer, format:, style:), layers: nil,
-    identify_url: nil, legend_url: nil, attribution:, opacity:, position:, min_zoom:, max_zoom:,
+    identify_url: nil, legend_url:, attribution:, opacity:, position:, min_zoom:, max_zoom:,
     proxied: true, enabled: true, description:, options: extra.merge(options)
   }
 end
@@ -42,18 +43,21 @@ catalogue = [
   tile.("courbes", "Courbes de niveau", "terrain", "ELEVATION.CONTOUR.LINE",
         opacity: 0.9, position: 55, order: 2, min_zoom: 6, max_zoom: 18,
         description: "Les lignes d'égale altitude : plus elles sont serrées, plus la pente est forte."),
-  tile.("pentes", "Pentes", "terrain", "ELEVATION.SLOPES.HIGHRES",
-        opacity: 0.6, position: 60, order: 3, min_zoom: 6, max_zoom: 16,
-        description: "L'inclinaison du terrain, en couleurs : utile pour placer baissières, terrasses et chemins."),
+  # ELEVATION.SLOPES.HIGHRES only covers a strip near Marseille: the
+  # agricultural slope map covers the whole of mainland France.
+  tile.("pentes", "Pentes", "terrain", "GEOGRAPHICALGRIDSYSTEMS.SLOPES.PAC", style: "GEOGRAPHICALGRIDSYSTEMS.SLOPES.PAC",
+        opacity: 0.5, position: 60, order: 3, min_zoom: 6, max_zoom: 15,
+        description: "Les pentes de plus de 10 % (RGE ALTI, au pas de 5 m) : utile pour placer baissières, terrasses et chemins."),
   tile.("cours_eau", "Cours d'eau et plans d'eau", "terrain", "HYDROGRAPHY.HYDROGRAPHY",
         opacity: 0.9, position: 70, order: 4, min_zoom: 6, max_zoom: 18,
         description: "Rivières, ruisseaux, fossés, mares et étangs de la BD TOPO."),
   tile.("sols", "Carte des sols", "terrain", "INRA.CARTE.SOLS", style: "CARTE DES SOLS",
         opacity: 0.7, position: 80, order: 5, min_zoom: 6, max_zoom: 16,
-        attribution: "#{ign}, INRAE – Gis Sol",
+        attribution: "#{ign}, INRAE – Gis Sol", legend_url: "#{legends}/INRA.CARTE.SOLS-legend.png",
         description: "Les grands types de sol (INRAE, Gis Sol) : une carte à petite échelle, à confirmer sur ton terrain."),
   tile.("foret", "Forêts", "terrain", "LANDCOVER.FORESTINVENTORY.V2",
         opacity: 0.6, position: 90, order: 6, min_zoom: 6, max_zoom: 16,
+        legend_url: "#{legends}/LANDCOVER.FORESTINVENTORY.V2-legend.png",
         description: "Les forêts et leurs essences dominantes (BD Forêt v2 de l'IGN)."),
 
   # -- Milieux et règles -------------------------------------------------
@@ -64,7 +68,7 @@ catalogue = [
         description: "Les limites et numéros des parcelles cadastrales (Parcellaire Express)."),
   tile.("parcellaire_agricole", "Parcellaire agricole", "milieux", "LANDUSE.AGRICULTURE.LATEST",
         opacity: 0.6, position: 150, order: 5, min_zoom: 6, max_zoom: 16,
-        attribution: "#{ign}, ASP",
+        attribution: "#{ign}, ASP", legend_url: "#{legends}/LANDUSE-AGRICULTURE-legend.png",
         description: "Les parcelles agricoles déclarées et leur culture (registre parcellaire graphique)."),
   {
     key: "natura2000", name: "Natura 2000", group_name: "milieux", category: "overlay", kind: "wms",
@@ -84,9 +88,12 @@ catalogue = [
   }
 ]
 
+legends = YAML.load_file(Rails.root.join("db/seeds/layer_legends.yml")).fetch("france", {})
 catalogue.each do |attributes|
   layer = france.layers.find_or_initialize_by(key: attributes[:key])
   next if layer.persisted? && layer.options["locked"]
+  legend = legends[attributes[:key]]
+  attributes = attributes.merge(options: attributes[:options].merge("legend" => legend)) if legend
   layer.assign_attributes(attributes.except(:key))
   layer.save!
 end

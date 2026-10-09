@@ -26,6 +26,11 @@ fr:
       group_count: "%{on} / %{total}"
       identify_hint: "Touche la carte pour lire les données des couches affichées."
       empty: "Aucune couche de données n'est disponible pour cette région."
+    legend:
+      title: "Légende"
+      show_all: "Voir les %{count} classes"
+      show_less: "Réduire"
+      image_alt: "Légende de « %{name} »"
     identify:
       title: "À cet endroit"
       loading: "Chargement…"

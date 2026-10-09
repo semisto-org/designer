@@ -10,7 +10,8 @@
 europe = Region.find_by!(key: Region::EUROPE_KEY)
 
 eea_wms = ->(service) { "https://#{service}/MapServer/WMSServer" }
-legend = ->(base, layer) { "#{base}#{base.include?("?") ? "&" : "?"}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYER=#{layer}" }
+# SLD_VERSION: MapServer (SoilGrids) refuses GetLegendGraphic without it.
+legend = ->(base, layer) { "#{base}#{base.include?("?") ? "&" : "?"}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&LAYER=#{layer}" }
 natura = eea_wms.("bio.discomap.eea.europa.eu/arcgis/services/ProtectedSites/Natura2000Sites")
 corine = eea_wms.("image.discomap.eea.europa.eu/arcgis/services/Corine/CLC2018_WM")
 soilgrids = ->(property) { "https://maps.isric.org/mapserv?map=/map/#{property}.map" }
@@ -66,9 +67,12 @@ catalogue = [
   }
 ]
 
+legends = YAML.load_file(Rails.root.join("db/seeds/layer_legends.yml")).fetch("europe", {})
 catalogue.each do |attributes|
   layer = europe.layers.find_or_initialize_by(key: attributes[:key])
   next if layer.persisted? && layer.options["locked"]
+  legend = legends[attributes[:key]]
+  attributes = attributes.merge(options: attributes[:options].merge("legend" => legend)) if legend
   layer.assign_attributes(attributes.except(:key))
   layer.save!
 end
