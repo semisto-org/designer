@@ -17,7 +17,7 @@ module Mcp
             {
               key: layer.key, name: layer.name, group: layer.group_name, category: layer.category,
               identifiable: layer.identifiable?, attribution: layer.attribution,
-              description: layer.description
+              description: layer.description, legend: layer.legend
             }.compact
           end
         }

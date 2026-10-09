@@ -1,5 +1,5 @@
 import type { FeatureCollection, Geometry, MultiPolygon } from 'geojson'
-import type { BBox, LngLat, MapFeatureProperties } from '@/types'
+import type { BBox, LayerLegendData, LngLat, MapFeatureProperties } from '@/types'
 import type { AerialView } from '@/types/drone'
 
 /** What a discussion can hang on (server whitelist: Commentable::TYPES). */
@@ -116,6 +116,7 @@ export type PublicLayer = {
   category: 'base' | 'overlay'
   attribution: string | null
   opacity: number
+  legend?: LayerLegendData | null
   legendUrl: string | null
   minZoom: number | null
   maxZoom: number | null

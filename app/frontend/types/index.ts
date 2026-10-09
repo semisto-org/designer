@@ -45,6 +45,20 @@ export type RegionData = {
   defaultZoom: number
 }
 
+/** How to read a data layer (seeded in db/seeds/layer_legends.yml). */
+export type LayerLegendData = {
+  /** A continuous scale: colours from low to high, labels evenly spaced under it. */
+  gradient?: { colors: string[]; labels: string[] }
+  /** Classes, with optional headings between them. */
+  items?: LayerLegendItem[]
+  /** One sentence on how to read the layer. */
+  note?: string
+}
+
+export type LayerLegendItem =
+  | { heading: string }
+  | { label: string; color: string; stroke?: string; shape?: 'fill' | 'line' | 'dashed' | 'outline' | 'hatch' | 'split' | 'point' }
+
 export type RegionLayerData = {
   id: number
   key: string
@@ -55,6 +69,8 @@ export type RegionLayerData = {
   layers: string | null
   attribution: string | null
   opacity: number
+  legend?: LayerLegendData | null
+  /** An upstream legend image, when the layer has no legend of its own. */
   legendUrl: string | null
   minZoom: number | null
   maxZoom: number | null
