@@ -28,3 +28,14 @@ test('light inks get a dark halo and dark inks a light one', () => {
   assert.match(haloFor('#ffffff'), /^rgba\(27/)
   assert.match(haloFor('#1b1712'), /^rgba\(255/)
 })
+
+test('the selection finds marks by box and moves them within the frame', async () => {
+  const { marksInRect, moveMark, markBounds } = await import('../../../app/frontend/map/photos/sketch/marks.ts')
+  const line = { type: 'line' as const, color: '#ffffff', width: 0.01, points: [[0.1, 0.1], [0.2, 0.2]] as [number, number][] }
+  const note = { type: 'text' as const, color: '#ffffff', size: 0.05, x: 0.6, y: 0.6, text: 'Haie' }
+  assert.deepEqual(markBounds(line, 1).map((v) => Math.round(v * 1000)), [95, 95, 205, 205])
+  assert.deepEqual(marksInRect([line, note], [0, 0], [0.15, 0.15], 1), [0])
+  assert.deepEqual(marksInRect([line, note], [0.9, 0.9], [0.5, 0.5], 1), [1])
+  assert.deepEqual(moveMark(line, 0.1, -0.15), { ...line, points: [[0.2, -0.05], [0.3, 0.05]] })
+  assert.deepEqual(moveMark(note, 0.9, 0), { ...note, x: 1.1 })
+})

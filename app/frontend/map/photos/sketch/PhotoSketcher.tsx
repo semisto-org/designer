@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Check, Download, Eraser, Pencil, Redo2, Trash2, Type, Undo2, X } from 'lucide-react'
+import { Check, Download, Eraser, MousePointer2, Pencil, Redo2, Trash2, Type, Undo2, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/Button'
@@ -7,15 +7,22 @@ import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { INKS } from '@/map/drawing/SketchTool'
 import { photoLabel, photoUrl } from '@/map/photos/format'
-import { HAND_FONT, LINE_WIDTHS, TEXT_SIZES, markAt, simplify, type WidthKey } from '@/map/photos/sketch/marks'
+import { HAND_FONT, LINE_WIDTHS, TEXT_SIZES, markAt, markBounds, marksInRect, moveMark, simplify, type WidthKey } from '@/map/photos/sketch/marks'
 import { downloadSketch } from '@/map/photos/sketch/download'
 import { FittedPhoto, Mark, SketchLayer, SURFACE } from '@/map/photos/sketch/SketchLayer'
 import type { MapPhotoData, PhotoSketchData, SketchMark } from '@/types/soil_photos'
 
-type Tool = 'pen' | 'text' | 'eraser'
+type Tool = 'pen' | 'text' | 'select' | 'eraser'
 type Status = 'idle' | 'saving' | 'saved' | 'error'
 
 const SAVE_DELAY = 700
+/** Below this distance (frame units) a press on the selection is a tap, not a move. */
+const TAP_DISTANCE = 0.006
+
+/** What a press in the select tool is doing until it is released. */
+type Gesture =
+  | { kind: 'move'; origin: [number, number]; before: SketchMark[]; moved: boolean; toggle: number | null }
+  | { kind: 'marquee'; origin: [number, number]; to: [number, number] }
 
 /**
  * Full-screen sketching over a photo: hand-drawn lines and handwritten notes,
@@ -43,6 +50,10 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
   const [draft, setDraft] = useState<{ x: number; y: number; value: string; px: number } | null>(null)
   const [status, setStatus] = useState<Status>(sketch ? 'saved' : 'idle')
   const [aspect, setAspect] = useState(4 / 3)
+  const [selected, setSelected] = useState<number[]>([])
+  const [marquee, setMarquee] = useState<[[number, number], [number, number]] | null>(null)
+  const gesture = useRef<Gesture | null>(null)
+  const drawingArea = useRef<HTMLDivElement>(null)
 
   const surface = useRef<SVGSVGElement>(null)
   const pointer = useRef<number | null>(null)
@@ -86,6 +97,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
           setName(theirs.name)
           setHistory([])
           setUndone([])
+          setSelected([])
           onSaved(theirs)
           setStatus('saved')
           notify(error.message, 'error')
@@ -112,8 +124,8 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
     }, SAVE_DELAY)
   }, [save])
 
-  function change(next: SketchMark[]) {
-    setHistory((h) => [...h.slice(-99), marks])
+  function change(next: SketchMark[], previous: SketchMark[] = latest.current.marks) {
+    setHistory((h) => [...h.slice(-99), previous])
     setUndone([])
     setMarks(next)
     latest.current = { ...latest.current, marks: next }
@@ -125,6 +137,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
     const previous = history[history.length - 1]
     setUndone((u) => [...u, marks])
     setHistory((h) => h.slice(0, -1))
+    setSelected([])
     setMarks(previous)
     latest.current = { ...latest.current, marks: previous }
     schedule()
@@ -135,6 +148,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
     const next = undone[undone.length - 1]
     setHistory((h) => [...h, marks])
     setUndone((u) => u.slice(0, -1))
+    setSelected([])
     setMarks(next)
     latest.current = { ...latest.current, marks: next }
     schedule()
@@ -201,13 +215,86 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
     event.currentTarget.setPointerCapture(event.pointerId)
     pointer.current = event.pointerId
     if (tool === 'eraser') return eraseAt(point)
+    if (tool === 'select') return startSelectGesture(point)
     points.current = [point]
     setLive([point])
+  }
+
+  /**
+   * Select tool: a press on a mark selects it (adding to the selection) and
+   * dragging moves the whole selection; a tap on a mark already selected
+   * takes it out; a drag on empty paper draws a box that selects what it meets.
+   */
+  function startSelectGesture(point: [number, number]) {
+    const index = markAt(latest.current.marks, point[0], point[1], aspect)
+    if (index < 0) {
+      gesture.current = { kind: 'marquee', origin: point, to: point }
+      setMarquee([point, point])
+      return
+    }
+    const already = selected.includes(index)
+    if (!already) setSelected((list) => [...list, index])
+    gesture.current = { kind: 'move', origin: point, before: latest.current.marks, moved: false, toggle: already ? index : null }
+  }
+
+  function moveSelectGesture(point: [number, number]) {
+    const current = gesture.current
+    if (!current) return
+    if (current.kind === 'marquee') {
+      current.to = point
+      return setMarquee([current.origin, point])
+    }
+    const dx = point[0] - current.origin[0]
+    const dy = point[1] - current.origin[1]
+    if (!current.moved && Math.hypot(dx, dy / aspect) < TAP_DISTANCE) return
+    current.moved = true
+    const moving = new Set(selected.length ? selected : [])
+    if (current.toggle == null) {
+      const index = markAt(current.before, current.origin[0], current.origin[1], aspect)
+      if (index >= 0) moving.add(index)
+    }
+    const next = current.before.map((mark, i) => (moving.has(i) ? moveMark(mark, dx, dy) : mark))
+    setMarks(next)
+    latest.current = { ...latest.current, marks: next }
+  }
+
+  function endSelectGesture() {
+    const current = gesture.current
+    gesture.current = null
+    if (!current) return
+    if (current.kind === 'marquee') {
+      const [a, b] = [current.origin, current.to]
+      setMarquee(null)
+      setSelected(Math.hypot(a[0] - b[0], a[1] - b[1]) < TAP_DISTANCE ? [] : marksInRect(latest.current.marks, a, b, aspect))
+      return
+    }
+    if (current.moved) change(latest.current.marks, current.before)
+    else if (current.toggle != null) setSelected((list) => list.filter((i) => i !== current.toggle))
+  }
+
+  /** Ink or width picked while marks are selected: they take it. */
+  function restyleSelection(patch: { color?: string; width?: WidthKey }) {
+    if (selected.length === 0) return
+    const chosen = new Set(selected)
+    change(latest.current.marks.map((mark, i) => {
+      if (!chosen.has(i)) return mark
+      const color = patch.color ?? mark.color
+      if (mark.type === 'line') return { ...mark, color, width: patch.width ? LINE_WIDTHS[patch.width] : mark.width }
+      return { ...mark, color, size: patch.width ? TEXT_SIZES[patch.width] : mark.size }
+    }))
+  }
+
+  function deleteSelection() {
+    if (selected.length === 0) return
+    const chosen = new Set(selected)
+    change(latest.current.marks.filter((_, i) => !chosen.has(i)))
+    setSelected([])
   }
 
   function onPointerMove(event: ReactPointerEvent<SVGSVGElement>) {
     if (pointer.current !== event.pointerId) return
     if (tool === 'eraser') return eraseAt(framePoint(event))
+    if (tool === 'select') return moveSelectGesture(framePoint(event))
     const native = event.nativeEvent
     const samples = typeof native.getCoalescedEvents === 'function' ? native.getCoalescedEvents() : []
     for (const sample of samples.length ? samples : [native]) points.current.push(framePoint(sample))
@@ -217,6 +304,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
   function onPointerUp(event: ReactPointerEvent<SVGSVGElement>) {
     if (pointer.current !== event.pointerId) return
     pointer.current = null
+    if (tool === 'select') return endSelectGesture()
     if (tool !== 'pen') return
     const line = simplify(points.current)
     points.current = []
@@ -237,8 +325,8 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
 
   // --- Keyboard ------------------------------------------------------
 
-  const keys = useRef({ undo, redo, finish })
-  keys.current = { undo, redo, finish }
+  const keys = useRef({ undo, redo, finish, deleteSelection, clearSelection: () => setSelected([]), hasSelection: false })
+  keys.current = { undo, redo, finish, deleteSelection, clearSelection: () => setSelected([]), hasSelection: selected.length > 0 }
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement
@@ -251,6 +339,11 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
       } else if (mod && event.key.toLowerCase() === 'y') {
         event.preventDefault()
         keys.current.redo()
+      } else if ((event.key === 'Delete' || event.key === 'Backspace') && keys.current.hasSelection) {
+        event.preventDefault()
+        keys.current.deleteSelection()
+      } else if (event.key === 'Escape' && keys.current.hasSelection) {
+        keys.current.clearSelection()
       } else if (event.key === 'Escape') {
         void keys.current.finish()
       }
@@ -263,7 +356,27 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
     if (timer.current) window.clearTimeout(timer.current)
   }, [])
 
-  const hint = tool === 'pen' ? t('photo_sketches.hint_pen') : tool === 'text' ? t('photo_sketches.hint_text') : t('photo_sketches.hint_eraser')
+  // iPad and iPhone: Safari does not always honour touch-action on an SVG and
+  // takes a finger or Pencil stroke for a pan or a text selection after a few
+  // millimetres, then cancels the pointer (the stroke stopped short). Refusing
+  // its touch gestures over the photo keeps every move for the drawing; the
+  // note's field still gets its taps.
+  useEffect(() => {
+    const area = drawingArea.current
+    if (!area) return
+    const block = (event: TouchEvent) => {
+      if ((event.target as HTMLElement).closest('form')) return
+      if (event.cancelable) event.preventDefault()
+    }
+    area.addEventListener('touchstart', block, { passive: false })
+    area.addEventListener('touchmove', block, { passive: false })
+    return () => {
+      area.removeEventListener('touchstart', block)
+      area.removeEventListener('touchmove', block)
+    }
+  }, [])
+
+  const hint = t(`photo_sketches.hint_${tool}`)
   const statusLabel = status === 'saving' ? t('photo_sketches.saving') : status === 'saved' ? t('photo_sketches.saved') : status === 'error' ? t('photo_sketches.save_failed') : ''
   const draftSize = TEXT_SIZES[widthKey]
 
@@ -290,7 +403,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
         </Button>
       </header>
 
-      <div className="relative min-h-0 flex-1 px-2 pb-2 md:px-6">
+      <div ref={drawingArea} className="relative min-h-0 flex-1 touch-none select-none px-2 pb-2 md:px-6" style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}>
         <FittedPhoto
           src={photoUrl(mapId, photo.id, 'large')}
           alt={photoLabel(photo)}
@@ -305,10 +418,12 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 onPointerCancel={onPointerUp}
-                style={{ touchAction: 'none', cursor: tool === 'text' ? 'text' : 'crosshair' }}
+                style={{ touchAction: 'none', cursor: tool === 'text' ? 'text' : tool === 'select' ? 'default' : 'crosshair' }}
                 data-testid="sketch-surface"
               >
                 {live && <Mark mark={{ type: 'line', color: ink, width: LINE_WIDTHS[widthKey], points: live }} w={SURFACE} h={SURFACE / ratio} />}
+                {selected.map((index) => marks[index] && <SelectionBox key={index} bounds={markBounds(marks[index], ratio)} h={SURFACE / ratio} />)}
+                {marquee && <SelectionBox bounds={[Math.min(marquee[0][0], marquee[1][0]), Math.min(marquee[0][1], marquee[1][1]), Math.max(marquee[0][0], marquee[1][0]), Math.max(marquee[0][1], marquee[1][1])]} h={SURFACE / ratio} />}
               </SketchLayer>
               {draft && (
                 <form
@@ -341,14 +456,15 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
 
       <footer className="bg-white px-3 py-2 text-loam-800">
         <p className="mb-1.5 text-center text-xs text-loam-500">{hint}</p>
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pb-1 md:flex-nowrap md:justify-start" role="toolbar" aria-label={t('photo_sketches.tools.label')}>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pb-1 lg:flex-nowrap lg:justify-start" role="toolbar" aria-label={t('photo_sketches.tools.label')}>
           <div className="flex shrink-0 gap-1" role="radiogroup" aria-label={t('photo_sketches.tools.label')}>
-            {([['pen', Pencil], ['text', Type], ['eraser', Eraser]] as const).map(([key, Icon]) => (
+            {([['pen', Pencil], ['text', Type], ['select', MousePointer2], ['eraser', Eraser]] as const).map(([key, Icon]) => (
               <button
                 key={key} type="button" role="radio" aria-checked={tool === key}
                 onClick={() => {
                   commitDraft()
                   setTool(key)
+                  if (key !== 'select') setSelected([])
                 }}
                 className={clsx('flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold', tool === key ? 'bg-prune-600 text-white' : 'text-prune-700 hover:bg-prune-50')}
               >
@@ -357,12 +473,15 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
               </button>
             ))}
           </div>
-          <span className="hidden h-6 w-px shrink-0 bg-loam-200 md:block" />
+          <span className="hidden h-6 w-px shrink-0 bg-loam-200 lg:block" />
           <div className="flex shrink-0 gap-1.5" role="radiogroup" aria-label={t('photo_sketches.tools.ink')}>
             {INKS.map((color) => (
               <button
                 key={color} type="button" role="radio" aria-checked={ink === color} aria-label={color}
-                onClick={() => setInk(color)}
+                onClick={() => {
+                  setInk(color)
+                  restyleSelection({ color })
+                }}
                 className={clsx('grid h-7 w-7 place-items-center rounded-full ring-1 ring-loam-300', ink === color && 'ring-2 ring-prune-600 ring-offset-1')}
                 style={{ background: color }}
               >
@@ -370,19 +489,22 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
               </button>
             ))}
           </div>
-          <span className="hidden h-6 w-px shrink-0 bg-loam-200 md:block" />
+          <span className="hidden h-6 w-px shrink-0 bg-loam-200 lg:block" />
           <div className="flex shrink-0 gap-1" role="radiogroup" aria-label={t('photo_sketches.tools.width')}>
             {(Object.keys(LINE_WIDTHS) as WidthKey[]).map((key) => (
               <button
                 key={key} type="button" role="radio" aria-checked={widthKey === key} title={t(`photo_sketches.tools.widths.${key}`)} aria-label={t(`photo_sketches.tools.widths.${key}`)}
-                onClick={() => setWidthKey(key)}
+                onClick={() => {
+                  setWidthKey(key)
+                  restyleSelection({ width: key })
+                }}
                 className={clsx('grid h-8 w-8 place-items-center rounded-full', widthKey === key ? 'bg-prune-100 ring-1 ring-prune-600' : 'hover:bg-loam-100')}
               >
                 <span className="block rounded-full bg-loam-800" style={{ width: { fine: 4, medium: 7, bold: 12 }[key], height: { fine: 4, medium: 7, bold: 12 }[key] }} />
               </button>
             ))}
           </div>
-          <span className="hidden h-6 w-px shrink-0 bg-loam-200 md:block" />
+          <span className="hidden h-6 w-px shrink-0 bg-loam-200 lg:block" />
           <div className="flex shrink-0 gap-1">
             <button type="button" onClick={undo} disabled={history.length === 0} className="rounded-full p-2 hover:bg-loam-100 disabled:opacity-40" title={t('photo_sketches.tools.undo')} aria-label={t('photo_sketches.tools.undo')}>
               <Undo2 className="h-4 w-4" />
@@ -398,14 +520,33 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
               <X className="h-4 w-4" />
             </button>
           </div>
-          <span className="hidden md:ml-auto md:block" />
-          <button type="button" onClick={destroy} className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-clay-500 hover:bg-clay-50">
-            <Trash2 className="h-4 w-4" />
-            {t('photo_sketches.delete')}
-          </button>
+          <span className="hidden lg:ml-auto lg:block" />
+          {selected.length > 0 ? (
+            <button type="button" onClick={deleteSelection} className="flex shrink-0 items-center gap-1.5 rounded-full bg-clay-50 px-3 py-1.5 text-sm font-semibold text-clay-600 hover:bg-clay-100">
+              <Trash2 className="h-4 w-4" />
+              {t('photo_sketches.selection.delete', { count: selected.length })}
+            </button>
+          ) : (
+            <button type="button" onClick={destroy} className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-clay-500 hover:bg-clay-50">
+              <Trash2 className="h-4 w-4" />
+              {t('photo_sketches.delete')}
+            </button>
+          )}
         </div>
       </footer>
     </div>,
     document.body,
+  )
+}
+
+/** Dashed frame around a selected mark (or the box being drawn), in surface units. */
+function SelectionBox({ bounds: [left, top, right, bottom], h }: { bounds: [number, number, number, number]; h: number }) {
+  const pad = 6
+  return (
+    <rect
+      x={left * SURFACE - pad} y={top * h - pad} width={(right - left) * SURFACE + pad * 2} height={(bottom - top) * h + pad * 2}
+      rx={6} fill="rgba(91, 87, 129, 0.12)" stroke="#ffffff" strokeWidth={2} strokeDasharray="8 6"
+      style={{ filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.7))' }} pointerEvents="none"
+    />
   )
 }
