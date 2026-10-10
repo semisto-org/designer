@@ -15,7 +15,8 @@ class MapPhoto < ApplicationRecord
   # (iPhone) is accepted at upload and converted to JPEG (HeicAttachment).
   CONTENT_TYPES = %w[image/jpeg image/png image/webp].freeze
   UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES).freeze
-  SOURCES = %w[web phone import].freeze
+  # « ai »: painted by « Mettre en image » (PhotoRendering) from another photo.
+  SOURCES = %w[web phone import ai].freeze
   LOCATION_SOURCES = %w[exif device map manual].freeze
   # « Near » a thing on the map, for the inspector.
   NEARBY_METERS = 15
@@ -28,6 +29,9 @@ class MapPhoto < ApplicationRecord
   belongs_to :album, class_name: "PhotoAlbum", foreign_key: :photo_album_id, inverse_of: :photos, optional: true
   belongs_to :map_feature, optional: true
   has_many :sketches, -> { ordered }, class_name: "PhotoSketch", dependent: :destroy, inverse_of: :photo
+  has_many :renderings, class_name: "PhotoRendering", dependent: :destroy, inverse_of: :photo
+  # A photo painted by « Mettre en image » keeps a link to the photo it came from.
+  belongs_to :derived_from, class_name: "MapPhoto", optional: true
 
   # Variants go through libvips: rotated from EXIF, metadata (GPS included)
   # stripped. Viewers only ever get variants; the original file, EXIF and
@@ -44,6 +48,7 @@ class MapPhoto < ApplicationRecord
   validates :caption, length: { maximum: 500 }
   validates :source, inclusion: { in: SOURCES }
   validates :location_source, inclusion: { in: LOCATION_SOURCES }, allow_nil: true
+  validates :rendering_style, inclusion: { in: PhotoRendering::STYLES }, allow_nil: true
   validates :heading, numericality: { greater_than_or_equal_to: 0, less_than: 360 }, allow_nil: true
   validate :image_is_acceptable
   validate :not_already_imported
@@ -85,6 +90,7 @@ class MapPhoto < ApplicationRecord
       id:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
       albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
+      derivedFromId: derived_from_id, renderingStyle: rendering_style,
       camera: camera.presence,
       width: meta["width"], height: meta["height"],
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,

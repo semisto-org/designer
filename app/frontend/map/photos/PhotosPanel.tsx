@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import {
-  AlertCircle, Camera, Check, CheckCircle2, Columns2, FolderPlus, ImagePlus, Loader2, MapPin, MapPinOff, Pencil, RotateCw, Trash2, X,
+  AlertCircle, Camera, Check, CheckCircle2, Columns2, FolderPlus, ImagePlus, Loader2, MapPin, MapPinOff, Paintbrush, Pencil, RotateCw, Trash2, X,
 } from 'lucide-react'
 import { useMemo, useRef, useState, type DragEvent } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -265,6 +265,11 @@ function Tile({ mapId, photo, onClick, selected }: { mapId: number; photo: MapPh
       {photo.sketchesCount > 0 && (
         <span className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-prune-600 text-white" title={t('photo_sketches.badge', { count: photo.sketchesCount })}>
           <Pencil className="h-3 w-3" />
+        </span>
+      )}
+      {photo.derivedFromId != null && (
+        <span className="absolute left-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-leaf-600 text-white" title={t('photo_renderings.badge')}>
+          <Paintbrush className="h-3 w-3" />
         </span>
       )}
       {photo.lng == null && (

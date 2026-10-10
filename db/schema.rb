@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_202248) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_213000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -362,7 +362,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_202248) do
     t.datetime "updated_at", null: false
     t.integer "sketches_count", default: 0, null: false
     t.jsonb "camera"
+    t.bigint "derived_from_id"
+    t.string "rendering_style"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
+    t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
     t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"
     t.index ["map_id", "checksum"], name: "index_map_photos_on_map_id_and_checksum", unique: true, where: "(checksum IS NOT NULL)"
@@ -627,6 +630,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_202248) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_photo_albums_on_map_id"
+  end
+
+  create_table "photo_renderings", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "map_photo_id", null: false
+    t.bigint "photo_sketch_id"
+    t.bigint "requested_by_id"
+    t.bigint "result_photo_id"
+    t.string "style", null: false
+    t.text "instructions"
+    t.string "status", default: "queued", null: false
+    t.string "task_id"
+    t.string "error_code"
+    t.datetime "submitted_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_photo_renderings_on_map_id"
+    t.index ["map_photo_id"], name: "index_photo_renderings_on_map_photo_id"
+    t.index ["photo_sketch_id"], name: "index_photo_renderings_on_photo_sketch_id"
+    t.index ["requested_by_id"], name: "index_photo_renderings_on_requested_by_id"
+    t.index ["result_photo_id"], name: "index_photo_renderings_on_result_photo_id"
   end
 
   create_table "photo_sketches", force: :cascade do |t|
@@ -1081,6 +1106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_202248) do
   add_foreign_key "map_memberships", "users"
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
   add_foreign_key "map_photos", "map_features", on_delete: :nullify
+  add_foreign_key "map_photos", "map_photos", column: "derived_from_id", on_delete: :nullify
   add_foreign_key "map_photos", "maps"
   add_foreign_key "map_photos", "photo_albums", on_delete: :nullify
   add_foreign_key "map_photos", "users", column: "uploaded_by_id", on_delete: :nullify
@@ -1113,6 +1139,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_202248) do
   add_foreign_key "patch_items", "plant_species", column: "species_id"
   add_foreign_key "patch_items", "plant_varieties", column: "variety_id"
   add_foreign_key "photo_albums", "maps"
+  add_foreign_key "photo_renderings", "map_photos", column: "result_photo_id", on_delete: :nullify
+  add_foreign_key "photo_renderings", "map_photos", on_delete: :cascade
+  add_foreign_key "photo_renderings", "maps", on_delete: :cascade
+  add_foreign_key "photo_renderings", "photo_sketches", on_delete: :nullify
+  add_foreign_key "photo_renderings", "users", column: "requested_by_id", on_delete: :nullify
   add_foreign_key "photo_sketches", "map_photos", on_delete: :cascade
   add_foreign_key "photo_sketches", "maps", on_delete: :cascade
   add_foreign_key "photo_sketches", "users", column: "created_by_id", on_delete: :nullify

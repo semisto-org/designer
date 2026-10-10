@@ -271,6 +271,7 @@ Rails.application.routes.draw do
           get :same_spot
         end
         resources :sketches, only: %i[index create update destroy], controller: "photo_sketches"
+        resources :renderings, only: %i[index create show], controller: "photo_renderings"
       end
       resources :photo_albums, only: %i[create update destroy]
       resources :soil_samples, only: %i[index create update destroy] do

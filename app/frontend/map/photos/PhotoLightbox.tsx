@@ -11,6 +11,7 @@ import { visibleOffset } from '@/map/visiblePadding'
 import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
+import { PhotoRenderings, RenderingOrigin } from '@/map/photos/rendering/PhotoRenderings'
 import { useSwipe } from '@/map/photos/useSwipe'
 import { photoActions, usePhotos } from '@/map/photos/store'
 import { downloadSketch } from '@/map/photos/sketch/download'
@@ -223,6 +224,8 @@ export function PhotoLightbox() {
           </p>
         </div>
 
+        {photo.derivedFromId != null && <RenderingOrigin mapId={mapId} photo={photo} />}
+
         <Field label={t('soil_photos.lightbox.caption')}>
           <Textarea rows={2} value={caption} disabled={!canEdit} maxLength={500} placeholder={t('soil_photos.lightbox.caption_placeholder')}
             onChange={(e) => setCaption(e.target.value)}
@@ -327,6 +330,8 @@ export function PhotoLightbox() {
           </div>
           {shownSketch?.createdBy && <p className="mt-1 text-xs text-loam-500">{t('photo_sketches.by', { name: shownSketch.createdBy })}</p>}
         </section>
+
+        <PhotoRenderings mapId={mapId} photo={photo} sketch={shownSketch} canEdit={canEdit} notify={editor.notify} />
 
         {candidates && (
           <section className="rounded-lg bg-prune-50 p-3">

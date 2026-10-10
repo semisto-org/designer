@@ -2,7 +2,7 @@
 // Maps::SoilSamplesController and Maps::BioindicatorObservationsController).
 
 export type PhotoLocationSource = 'exif' | 'device' | 'map' | 'manual'
-export type PhotoSource = 'web' | 'phone' | 'import'
+export type PhotoSource = 'web' | 'phone' | 'import' | 'ai'
 
 export type MapPhotoData = {
   id: number
@@ -19,6 +19,9 @@ export type MapPhotoData = {
   featureId: number | null
   /** Sketches drawn over the photo (PhotoSketch). */
   sketchesCount: number
+  /** Painted by « Mettre en image » from that photo (PhotoRendering). */
+  derivedFromId: number | null
+  renderingStyle: PhotoRenderingStyle | null
   /** What the file says about the camera (PhotoCamera), once read; null before or when it says nothing. */
   camera: PhotoCameraData | null
   width: number | null
@@ -215,4 +218,33 @@ export type PhotoSketchData = {
   createdBy: string | null
   createdAt: string
   updatedAt: string
+}
+
+export type PhotoRenderingStyle = 'photo' | 'watercolor' | 'pencil'
+
+/** « Mettre en image »: a photo and its sketch painted by an image model (PhotoRendering). */
+export type PhotoRenderingData = {
+  id: number
+  photoId: number
+  sketchId: number | null
+  sketchName: string | null
+  style: PhotoRenderingStyle
+  instructions: string | null
+  status: 'queued' | 'running' | 'done' | 'failed'
+  errorCode: string | null
+  resultPhotoId: number | null
+  requestedBy: string | null
+  createdAt: string
+  /** Once done. */
+  resultPhoto?: MapPhotoData
+}
+
+export type PhotoRenderingsResponse = {
+  /** The image service is configured on the server. */
+  available: boolean
+  /** The map owner's plan includes it. */
+  allowed: boolean
+  remaining: number
+  monthlyLimit: number
+  renderings: PhotoRenderingData[]
 }
