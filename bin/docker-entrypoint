@@ -2,9 +2,9 @@
 
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
-  # Idempotent: regions, layer catalogues, starter plant catalogue.
-  ./bin/rails db:seed
+  # One Rails boot for both tasks. Seeds are idempotent: regions, layer
+  # catalogues, starter plant catalogue.
+  ./bin/rails db:prepare db:seed
 fi
 
 exec "${@}"
