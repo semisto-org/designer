@@ -283,6 +283,7 @@ Rails.application.routes.draw do
       end
       resources :bioindicator_observations, only: %i[index create update destroy] do
         get :species, on: :collection
+        post :accept, on: :member
       end
     end
   end

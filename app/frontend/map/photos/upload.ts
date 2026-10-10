@@ -26,6 +26,8 @@ export type UploadOptions = {
   fallbackPosition?: { lng: number; lat: number } | null
   /** Ask the phone for its position when the photo has none (camera button). */
   useDevicePosition?: boolean
+  /** Left for the AI to read the wild plants in it (« Sol » panel). */
+  bioindicatorStatus?: 'to_analyze'
 }
 
 const CONCURRENCY = 3
@@ -74,7 +76,8 @@ export function rejectionFor(file: File): string | null {
   return null
 }
 
-function devicePosition(): Promise<{ lng: number; lat: number } | null> {
+/** The phone's position now, or null (no permission, no fix within 8 s). */
+export function devicePosition(): Promise<{ lng: number; lat: number } | null> {
   if (!('geolocation' in navigator)) return Promise.resolve(null)
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
@@ -142,9 +145,11 @@ async function process(key: string) {
     }
     if (options.albumId) form.append('photo[photo_album_id]', String(options.albumId))
     if (options.featureId) form.append('photo[map_feature_id]', String(options.featureId))
+    if (options.bioindicatorStatus) form.append('photo[bioindicator_status]', options.bioindicatorStatus)
 
     const { status, body } = await send(mapId, form, (progress) => patch(key, { progress }))
-    if (status === 201) {
+    // 200: a photo already on the map, sent again for the AI, comes back marked.
+    if (status === 201 || status === 200) {
       const photo = body as unknown as MapPhotoData
       photoActions.upsert(photo)
       patch(key, { status: 'done', progress: 100, photo })
@@ -169,8 +174,8 @@ function pump() {
 }
 
 export const uploadActions = {
-  /** Queues files for upload; files that cannot be sent are listed with their reason. */
-  add(mapId: number, files: File[], options: UploadOptions = {}) {
+  /** Queues files for upload; files that cannot be sent are listed with their reason. Returns their keys. */
+  add(mapId: number, files: File[], options: UploadOptions = {}): string[] {
     const added: UploadItem[] = files.map((file) => {
       counter += 1
       const reason = rejectionFor(file)
@@ -186,6 +191,7 @@ export const uploadActions = {
     })
     emit([...items, ...added])
     pump()
+    return added.map((item) => item.key)
   },
 
   retry(key: string) {

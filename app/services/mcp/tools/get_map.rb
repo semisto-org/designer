@@ -31,6 +31,7 @@ module Mcp
           tags: tag_counts(map),
           palette: palette(map),
           palette_drafts_pending: map.palette_drafts.count,
+          bioindicators: bioindicators(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -51,6 +52,34 @@ module Mcp
       end
 
       private
+        MAX_BIOINDICATORS = 100
+
+        # Wild plants noted on the terrain (by hand, from a photo identified by
+        # Pl@ntNet, or accepted from an AI's proposal), what the curated list
+        # says they point to, and the photos of wild plants waiting for an AI
+        # to read them (get_bioindicator_photo, then propose_bioindicators).
+        def bioindicators(map)
+          observations = map.bioindicator_observations.active.recent.to_a
+          {
+            observations: observations.first(MAX_BIOINDICATORS).map do |observation|
+              {
+                name: observation.species_name, latin_name: observation.latin_name, abundance: observation.abundance,
+                observed_on: observation.observed_on&.iso8601, location: observation.lnglat&.map { |v| v.round(Geo::PRECISION) },
+                indicators: observation.indicators, unverified: observation.unverified_indicators,
+                photo_id: observation.map_photo_id, notes: observation.notes
+              }
+            end,
+            summary: SoilAnalysis::BioindicatorCatalog.tally(observations),
+            drafts_pending: map.bioindicator_observations.drafts.count,
+            photos: map.photos.for_bioindicators.chronological.limit(MAX_BIOINDICATORS).map do |photo|
+              {
+                photo_id: photo.id, status: photo.bioindicator_status, taken_at: photo.taken_at&.iso8601,
+                location: photo.lnglat&.map { |v| v.round(Geo::PRECISION) }, caption: photo.caption
+              }
+            end
+          }
+        end
+
         # The species chosen for this terrain (accepted entries only).
         def palette(map)
           map.palette_items.includes(species: :common_names, variety: :common_names).map do |item|

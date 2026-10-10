@@ -91,6 +91,11 @@ export default function RecordScreen() {
           <Body muted>{t('mobile.record.trace_intro')}</Body>
           <Button label={t('mobile.record.trace_start')} onPress={begin} />
         </Card>
+        <Card style={{ gap: space.sm }}>
+          <Text style={s.cardTitle}>{t('mobile.record.bioindicator')}</Text>
+          <Body muted>{t('mobile.record.bioindicator_intro')}</Body>
+          <Button label={t('mobile.record.bioindicator_button')} onPress={() => router.replace({ pathname: '/maps/[id]/bioindicator', params: { id: String(mapId) } })} />
+        </Card>
         {problem && <Notice tone="error">{problem}</Notice>}
       </View>
     )

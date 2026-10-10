@@ -2,6 +2,8 @@
 // Shapes mirror the JSON of PlantSpecies#summary_json / #sheet_json,
 // PaletteItem#as_json, PlantingState, PlantList and PlantingAlerts.
 
+import type { SoilIndicatorKey } from '@/types/soil_photos'
+
 export type Strata =
   | 'canopy' | 'sub_canopy' | 'shrub' | 'herbaceous' | 'ground_cover' | 'vine' | 'root' | 'aquatic'
 
@@ -252,6 +254,8 @@ export type PlantIdentificationCandidate = {
   percent: number
   /** The matching catalogue species; null when the catalogue does not know it yet. */
   species: { id: number; latinName: string; commonName: string | null; slug: string } | null
+  /** The entry of the bio-indicator list (what the plant says about the soil); null when the list does not have it. */
+  bioindicator: { key: string; name: string; latin: string; indicates: SoilIndicatorKey[]; unverified: SoilIndicatorKey[] } | null
 }
 
 export type PlantIdentificationResponse = {

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { api } from '@/lib/api'
 import type {
-  Abundance, BioObservation, BioObservationsResponse, CatalogPlant, IndicatorTally, SoilFieldSpec, SoilResultKey,
+  Abundance, BioObservation, BioObservationsResponse, CatalogPlant, IndicatorTally, MapPhotoData, SoilFieldSpec, SoilResultKey,
   SoilSampleData, SoilSamplesResponse, SuggestedPoint, SuggestionsResponse,
 } from '@/types/soil_photos'
 
@@ -55,6 +55,8 @@ export type SoilState = {
 
   observations: BioObservation[]
   summary: IndicatorTally[]
+  /** Photos left for the AI's bio-indicator reading. */
+  aiPhotos: MapPhotoData[]
   catalog: CatalogPlant[]
   plantCatalog: boolean
   observationsLoaded: boolean
@@ -79,7 +81,7 @@ export type SoilTab = 'guide' | 'points' | 'compare' | 'plants'
 
 let state: SoilState = {
   mapId: null, samples: [], analyses: false, fields: [], bands: null, provenance: '', loaded: false, loading: false, error: null,
-  observations: [], summary: [], catalog: [], plantCatalog: false, observationsLoaded: false,
+  observations: [], summary: [], aiPhotos: [], catalog: [], plantCatalog: false, observationsLoaded: false,
   suggestions: null, suggestionMeta: null, openId: null, placing: null, showOnMap: readShowOnMap(), tab: null,
 }
 const listeners = new Set<() => void>()
@@ -113,7 +115,7 @@ export const soilActions = {
     if (state.mapId === mapId && (state.loaded || state.loading) && !force) return
     if (state.mapId !== mapId) {
       set({
-        mapId, samples: [], loaded: false, observations: [], summary: [], observationsLoaded: false,
+        mapId, samples: [], loaded: false, observations: [], summary: [], aiPhotos: [], observationsLoaded: false,
         suggestions: null, suggestionMeta: null, openId: null, placing: null,
       })
     }
@@ -135,7 +137,7 @@ export const soilActions = {
       const data = await api<BioObservationsResponse>(`/maps/${mapId}/bioindicator_observations`)
       if (state.mapId !== mapId) return
       set({
-        observations: data.observations, summary: data.summary, catalog: data.catalog, plantCatalog: data.plantCatalog,
+        observations: data.observations, summary: data.summary, aiPhotos: data.photos ?? [], catalog: data.catalog, plantCatalog: data.plantCatalog,
         observationsLoaded: true,
       })
     } catch {
@@ -228,6 +230,13 @@ export const soilActions = {
     return saved
   },
 
+  /** An observation sent with its photo (multipart form built by the caller). */
+  async saveObservationWithPhoto(mapId: number, form: FormData): Promise<BioObservation> {
+    const saved = await api<BioObservation>(`/maps/${mapId}/bioindicator_observations`, { method: 'POST', body: form })
+    await soilActions.loadObservations(mapId)
+    return saved
+  },
+
   async patchObservation(mapId: number, id: number, patch: Record<string, unknown>): Promise<BioObservation> {
     const saved = await api<BioObservation>(`/maps/${mapId}/bioindicator_observations/${id}`, {
       method: 'PATCH', body: { bioindicator_observation: patch },
@@ -239,6 +248,18 @@ export const soilActions = {
   async deleteObservation(mapId: number, id: number) {
     await api(`/maps/${mapId}/bioindicator_observations/${id}`, { method: 'DELETE' })
     set({ observations: state.observations.filter((o) => o.id !== id) })
+    await soilActions.loadObservations(mapId)
+  },
+
+  /** Keeps plants the AI proposed. */
+  async acceptObservations(mapId: number, ids: number[]) {
+    for (const id of ids) await api(`/maps/${mapId}/bioindicator_observations/${id}/accept`, { method: 'POST' })
+    await soilActions.loadObservations(mapId)
+  },
+
+  /** Refuses plants the AI proposed. */
+  async refuseObservations(mapId: number, ids: number[]) {
+    for (const id of ids) await api(`/maps/${mapId}/bioindicator_observations/${id}`, { method: 'DELETE' })
     await soilActions.loadObservations(mapId)
   },
 

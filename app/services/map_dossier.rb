@@ -236,7 +236,7 @@ class MapDossier
     # class) is an analysis, included by SoilSample#as_inertia only when
     # entitled. Bio-indicator plants are reference, free.
     def soil_json
-      observations = map.bioindicator_observations.recent.to_a
+      observations = map.bioindicator_observations.active.recent.to_a
       {
         analyses: analyses?,
         samples: map.soil_samples.ordered.with_attached_lab_report.map { |s| s.as_inertia(analyses: analyses?) },

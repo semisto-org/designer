@@ -38,6 +38,7 @@ function Navigator() {
       <Stack.Screen name="maps/[id]/plant" options={{ title: t('mobile.plant.title'), presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/identify" options={{ title: t('mobile.identify.title'), presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/record" options={{ title: t('mobile.record.title') }} />
+      <Stack.Screen name="maps/[id]/bioindicator" options={{ title: t('mobile.bioindicator.title'), presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/outbox" options={{ title: t('mobile.outbox.title') }} />
     </Stack>
   )

@@ -34,6 +34,8 @@ module Maps
       photo = @map.photos.new(photo_params.merge(uploaded_by: Current.user))
       if photo.save
         render json: photo.as_inertia, status: :created
+      elsif (twin = twin_for_bioindicators(photo))
+        render json: twin.as_inertia
       else
         render_photo_errors photo
       end
@@ -95,11 +97,20 @@ module Maps
       # Position arrives as lng/lat (read from the EXIF block by the browser, or
       # clicked on the map); empty values clear it.
       def photo_params
-        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :source, :location_source, :lng, :lat)
+        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :source, :location_source, :lng, :lat, :bioindicator_status)
         if raw.key?(:lng) || raw.key?(:lat)
           raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat])
         end
         raw.except(:lng, :lat)
+      end
+
+      # A photo sent again for the AI's bio-indicator reading, already in the
+      # map: the one there is marked to analyze instead of the upload failing.
+      def twin_for_bioindicators(photo)
+        return unless photo.bioindicator_status.present? && photo.errors.of_kind?(:base, :already_imported)
+        twin = @map.photos.find_by(checksum: photo.checksum)
+        twin.update!(bioindicator_status: photo.bioindicator_status) if twin && twin.bioindicator_status.nil?
+        twin
       end
 
       def render_photo_errors(photo)

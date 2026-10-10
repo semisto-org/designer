@@ -126,6 +126,22 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, @map.photos.count
   end
 
+  test "a photo left for the AI's bio-indicator reading waits to be analyzed" do
+    sign_in_as users(:michael)
+    post_photo bioindicator_status: "to_analyze"
+    assert_response :created
+    assert_equal "to_analyze", response.parsed_body["bioindicatorStatus"]
+  end
+
+  test "a photo already on the map, sent for the AI, is marked rather than refused" do
+    sign_in_as users(:michael)
+    post_photo
+    post_photo bioindicator_status: "to_analyze"
+    assert_response :success
+    assert_equal 1, @map.photos.count
+    assert_equal "to_analyze", @map.photos.sole.bioindicator_status
+  end
+
   test "a missing file is a clear error, not a crash" do
     sign_in_as users(:michael)
     post map_photos_path(@map), params: { photo: { caption: "rien" } }, headers: json_headers
