@@ -41,8 +41,10 @@ jobs:
             echo "::notice::COOLIFY_TOKEN or COOLIFY_APP_UUID is not set; skipping deployment."
             exit 0
           fi
+          # No "force" parameter: Coolify versions that read it as a string
+          # took "force=false" as true and built with --no-cache, rebuilding
+          # apt packages, gems and node_modules (~1m40) on every deploy.
           curl --fail-with-body --silent --show-error --max-time 60 \
             --get "${COOLIFY_URL%/}/api/v1/deploy" \
             --data-urlencode "uuid=${COOLIFY_APP_UUID}" \
-            --data-urlencode "force=false" \
             --header "Authorization: Bearer ${COOLIFY_TOKEN}"

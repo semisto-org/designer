@@ -17,7 +17,7 @@ class JoiningTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("collab.joining.sign_in_first", map: @map.name), flash[:notice]
 
     # Signing in (the magic link carries return_to) brings them back to the invitation.
-    get magic_link_path(@bob.generate_token_for(:magic_link), return_to: invitation_path(invitation.token))
+    post magic_link_path(@bob.generate_token_for(:magic_link), return_to: invitation_path(invitation.token))
     assert_redirected_to invitation_path(invitation.token)
     follow_redirect!
     assert_redirected_to map_path(@map)

@@ -6,6 +6,7 @@ import { t, translations } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { layerStore, opacityOf, useLayerState, type LayerState } from '@/map/data/store'
 import AerialViewsChoice from '@/drone/AerialViewsChoice'
+import { LayerLegend } from '@/components/legend/LayerLegend'
 import type { RegionLayerData } from '@/types'
 
 const orderOf = (layer: RegionLayerData) => Number(layer.options.order ?? layer.position ?? 0)
@@ -193,6 +194,9 @@ function OverlayRow({ layer, state, zoom }: { layer: RegionLayerData; state: Lay
                   {t('map_data.layers.zoom_in')}
                 </p>
               )}
+              <div className="pt-1">
+                <LayerLegend layer={layer} />
+              </div>
             </div>
           )}
         </div>

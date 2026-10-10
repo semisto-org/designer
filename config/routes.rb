@@ -1,7 +1,10 @@
 Rails.application.routes.draw do
-  # Sign-in: Google or magic link, no passwords.
+  # Sign-in: Google, a magic link (or the code sent with it), or a password.
   resource :session, only: %i[new create destroy]
+  post "session/code", to: "sessions#code", as: :session_code
+  post "session/password", to: "sessions#password", as: :session_password
   get "magic/:token", to: "magic_links#show", as: :magic_link
+  post "magic/:token", to: "magic_links#create"
   get "auth/google_oauth2/callback", to: "omniauth_callbacks#google"
   get "auth/failure", to: "omniauth_callbacks#failure"
   get "dev/login", to: "dev/logins#show" if Rails.env.local?
@@ -53,6 +56,9 @@ Rails.application.routes.draw do
   # staff triage of those requests.
   resources :maps, only: [] do
     resource :project, only: %i[show update], controller: "maps/projects"
+    resource :project_link, path: "project/link", only: %i[create destroy], controller: "maps/project_links" do
+      post :reset
+    end
     resources :project_drafts, path: "project/drafts", only: [], controller: "maps/project_drafts" do
       member do
         post :accept
@@ -61,6 +67,13 @@ Rails.application.routes.draw do
     end
     resource :journey, only: :show, controller: "maps/journeys"
     resources :service_requests, path: "requests", only: %i[index create], controller: "maps/service_requests"
+  end
+  # The project sheet's form alone, for the people behind the project: no
+  # account, no map (see ProjectSheetLink).
+  constraints token: /[A-Za-z0-9]{24,64}/ do
+    get "fiche-projet/:token", to: "project_forms#show", as: :project_form
+    patch "fiche-projet/:token", to: "project_forms#update"
+    post "fiche-projet/:token/submit", to: "project_forms#submit", as: :submit_project_form
   end
   namespace :admin do
     resources :requests, only: %i[index update], controller: "service_requests"
@@ -121,6 +134,7 @@ Rails.application.routes.draw do
     resources :api_tokens, path: "ai/tokens", only: %i[create destroy]
     resources :oauth_apps, path: "ai/apps", only: :destroy
     resource :tour, only: :update
+    resource :password, only: %i[update destroy]
   end
   resources :maps, only: [] do
     scope module: :maps do
@@ -199,6 +213,43 @@ Rails.application.routes.draw do
     end
   end
   # --- end plants ---
+  # --- sun ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :sun, only: :show
+    end
+  end
+  # --- end sun ---
+  # --- weather_stations ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :weather_stations, only: :show do
+        get :stations
+      end
+    end
+  end
+  # --- end weather_stations ---
+  # --- canopy ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :canopy, only: :show
+    end
+  end
+  # --- end canopy ---
+  # --- observed_climate ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :observed_climate, only: :show
+    end
+  end
+  # --- end observed_climate ---
+  # --- site_rules ---
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :site_rules, only: :show
+    end
+  end
+  # --- end site_rules ---
   # --- climate-finance ---
   resources :maps, only: [] do
     scope module: :maps do
@@ -219,6 +270,7 @@ Rails.application.routes.draw do
           get :image
           get :same_spot
         end
+        resources :sketches, only: %i[index create update destroy], controller: "photo_sketches"
       end
       resources :photo_albums, only: %i[create update destroy]
       resources :soil_samples, only: %i[index create update destroy] do
@@ -312,6 +364,19 @@ Rails.application.routes.draw do
     end
   end
   # --- end transfer ---
+
+  # --- release-notes ---
+  # « Nouveautés »: what changed in the Designer, with a thumbs up per entry;
+  # staff write them in /admin/release-notes.
+  get "nouveautes", to: "release_notes#index", as: :release_notes
+  resources :release_notes, path: "nouveautes", only: [] do
+    get :screenshot, on: :member
+    resource :like, only: %i[create destroy], controller: "release_notes/likes"
+  end
+  namespace :admin do
+    resources :release_notes, path: "release-notes", except: :show
+  end
+  # --- end release-notes ---
 
   # --- super-admin ---
   # The staff dashboard (figures, latest accounts and maps, admin log), the

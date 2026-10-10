@@ -1,6 +1,7 @@
 import { ArrowRight, ChevronDown, ChevronLeft, ExternalLink } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
+import { ProjectFormLink } from '@/components/journey/ProjectFormLink'
 import { DraftCount, DraftsBanner, ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -43,7 +44,7 @@ export default function ProjectPanel() {
 }
 
 function PanelBody({ payload }: { payload: ProjectPayload }) {
-  const sheet = useProjectSheet(payload.map.id, payload.project, payload.progress, payload.canEdit, payload.drafts)
+  const sheet = useProjectSheet(`/maps/${payload.map.id}/project`, payload.project, payload.progress, payload.canEdit, payload.drafts)
   const sections = payload.schema.sections.map((s) => s.key)
   const [open, setOpen] = useState<string | null>(payload.progress.nextSection ?? sections[0])
   const { progress } = sheet
@@ -91,6 +92,8 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
         })}
       </ul>
 
+      {payload.canEdit && <ProjectFormLink mapId={payload.map.id} initial={payload.formLink} />}
+
       <a
         href={`/maps/${payload.map.id}/project`}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline"
@@ -107,7 +110,7 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
  * previous / next to walk through the sheet.
  */
 function ModalBody({ payload }: { payload: ProjectPayload }) {
-  const sheet = useProjectSheet(payload.map.id, payload.project, payload.progress, payload.canEdit, payload.drafts)
+  const sheet = useProjectSheet(`/maps/${payload.map.id}/project`, payload.project, payload.progress, payload.canEdit, payload.drafts)
   const sections = payload.schema.sections.map((s) => s.key)
   const [active, setActive] = useState<string>(payload.progress.nextSection ?? sections[0])
   const content = useRef<HTMLDivElement>(null)
@@ -151,6 +154,7 @@ function ModalBody({ payload }: { payload: ProjectPayload }) {
             })}
           </ol>
         </nav>
+        {payload.canEdit && <ProjectFormLink mapId={payload.map.id} initial={payload.formLink} className="p-3!" />}
         <a
           href={`/maps/${payload.map.id}/project#${active}`}
           className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline"

@@ -3,6 +3,7 @@ import { ChevronDown, Drone, Eye, X } from 'lucide-react'
 import type { MapGeoJSONFeature } from 'maplibre-gl'
 import { useEffect, useMemo, useState } from 'react'
 import { Logo } from '@/components/Logo'
+import { LayerLegend } from '@/components/legend/LayerLegend'
 import { formatArea, formatLength, t } from '@/lib/i18n'
 import { installPublicLayers } from '@/collab/publicLayers'
 import { formatDate } from '@/collab/time'
@@ -154,7 +155,9 @@ function Legend({ features, layers }: Pick<PublicMapProps, 'features' | 'layers'
               {overlays.map((layer) => (
                 <li key={layer.key}>
                   <span className="text-xs text-loam-600">{layer.name}</span>
-                  {layer.legendUrl && <img src={layer.legendUrl} alt="" loading="lazy" referrerPolicy="no-referrer" className="mt-0.5 max-h-24 max-w-full" />}
+                  <div className="mt-1">
+                    <LayerLegend layer={layer} />
+                  </div>
                 </li>
               ))}
             </ul>

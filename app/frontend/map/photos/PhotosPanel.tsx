@@ -15,7 +15,7 @@ import { uploadActions, useUploads, type UploadItem } from '@/map/photos/upload'
 import type { MapPhotoData, PhotoAlbumData } from '@/types/soil_photos'
 
 type View = 'grid' | 'timeline'
-type AlbumFilter = 'all' | 'none' | number
+type AlbumFilter = 'all' | 'none' | 'sketched' | number
 
 /** The « Photos » panel: add photos (many at once, from a phone too), browse by date or album, compare. */
 export default function PhotosPanel() {
@@ -33,9 +33,12 @@ export default function PhotosPanel() {
   const visible = useMemo(() => state.photos.filter((p) => {
     if (filter === 'all') return true
     if (filter === 'none') return p.albumId == null
+    if (filter === 'sketched') return p.sketchesCount > 0
     return p.albumId === filter
   }), [state.photos, filter])
   const unplaced = state.photos.filter((p) => p.lng == null)
+  const sketchedPhotos = state.photos.filter((p) => p.sketchesCount > 0)
+  const sketched = sketchedPhotos.length
 
   const accept = photoAccept(state.limits.contentTypes)
 
@@ -129,6 +132,31 @@ export default function PhotosPanel() {
         </div>
       )}
 
+      {sketched > 0 && (
+        <div className="rounded-lg bg-prune-50 p-3 text-sm text-prune-800">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-2 font-medium">
+              <Pencil className="h-4 w-4 shrink-0" />
+              {t('photo_sketches.panel.title', { count: sketched })}
+            </p>
+            {filter !== 'sketched' && (
+              <button type="button" onClick={() => setFilter('sketched')} className="text-xs font-medium underline-offset-2 hover:underline">
+                {t('photo_sketches.panel.show_all')}
+              </button>
+            )}
+          </div>
+          <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+            {sketchedPhotos.slice(0, 12).map((photo) => (
+              <button key={photo.id} type="button" onClick={() => photoActions.open(photo.id)}
+                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md ring-1 ring-prune-200 hover:ring-2 hover:ring-prune-500"
+                title={photoLabel(photo)} aria-label={`${t('photo_sketches.panel.open')} : ${photoLabel(photo)}`}>
+                <PhotoThumb mapId={mapId} photo={photo} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
         <div role="group" aria-label={t('soil_photos.panel.view')} className="inline-flex rounded-lg bg-loam-100 p-0.5 text-xs">
           {(['grid', 'timeline'] as const).map((v) => (
@@ -141,10 +169,11 @@ export default function PhotosPanel() {
         <Select
           aria-label={t('soil_photos.panel.album')}
           value={String(filter)}
-          onChange={(e) => setFilter(e.target.value === 'all' || e.target.value === 'none' ? e.target.value : Number(e.target.value))}
+          onChange={(e) => setFilter(e.target.value === 'all' || e.target.value === 'none' || e.target.value === 'sketched' ? e.target.value : Number(e.target.value))}
           className="!w-auto flex-1 !py-1 text-xs"
         >
           <option value="all">{t('soil_photos.panel.all_photos')}</option>
+          {(sketched > 0 || filter === 'sketched') && <option value="sketched">{t('photo_sketches.filter', { count: sketched })}</option>}
           <option value="none">{t('soil_photos.panel.no_album')}</option>
           {state.albums.map((a) => <option key={a.id} value={a.id}>{a.name} ({a.photosCount})</option>)}
         </Select>
@@ -233,6 +262,11 @@ function Tile({ mapId, photo, onClick, selected }: { mapId: number; photo: MapPh
       title={photoLabel(photo)}
       className={clsx('relative block aspect-square w-full overflow-hidden rounded-md bg-loam-100 focus-visible:outline-2 focus-visible:outline-prune-500', selected && 'ring-2 ring-prune-600 ring-offset-1')}>
       <PhotoThumb mapId={mapId} photo={photo} />
+      {photo.sketchesCount > 0 && (
+        <span className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-prune-600 text-white" title={t('photo_sketches.badge', { count: photo.sketchesCount })}>
+          <Pencil className="h-3 w-3" />
+        </span>
+      )}
       {photo.lng == null && (
         <span className="absolute bottom-0.5 left-0.5 grid h-5 w-5 place-items-center rounded-full bg-humus-100 text-humus-700" title={t('soil_photos.panel.not_placed')}>
           <MapPinOff className="h-3 w-3" />

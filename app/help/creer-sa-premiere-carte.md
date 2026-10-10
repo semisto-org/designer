@@ -9,7 +9,7 @@ Une **carte**, dans Semisto Designer, c'est un terrain : son contour, ce qui s'y
 
 ## En quatre étapes
 
-1. **Connecte-toi.** Pas de mot de passe à retenir : continue avec Google, ou reçois un lien par e-mail (valable 20 minutes).
+1. **Connecte-toi.** Continue avec Google, ou reçois un e-mail (valable 20 minutes) : ouvre son lien, ou tape son code à six chiffres sur l'appareil où tu te connectes, pratique quand ta messagerie est sur un autre appareil. Si tu préfères, choisis un mot de passe dans « Mon compte ».
 2. **Crée la carte.** Dans « Mes cartes », choisis « Nouvelle carte », donne-lui un nom parlant (« Le jardin-forêt de la Ferme du Bois ») et, si tu le souhaites, une adresse : elle sert à centrer la carte au bon endroit.
 3. **Trace le contour du terrain.** Ouvre le panneau **Terrain** et choisis **Dessiner le contour**. Clique à chaque angle, puis double-clique (ou reviens au premier point) pour terminer. Tu peux aussi partir des parcelles du cadastre : voir [Choisir ses parcelles](/help/choisir-ses-parcelles).
 4. **Regarde ce que dit le terrain.** Dès que le contour existe, la surface est calculée et les couches du géoportail de ta région (relief, sols, eau…) sont prêtes à être consultées : voir [Lire les couches du Géoportail](/help/lire-les-couches-du-geoportail).

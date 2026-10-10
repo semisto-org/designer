@@ -54,6 +54,8 @@ class MobileAppTest < ActionDispatch::IntegrationTest
 
     reset! # Safari: no cookie from the app's sign-in sheet
     get URI.parse(link).request_uri
+    assert_response :success # the confirmation page; the button posts
+    post URI.parse(link).request_uri
     location = URI.parse(response.location)
     assert_equal "/oauth/authorize", location.path
     assert_equal MobileApp::REDIRECT_URI, Rack::Utils.parse_query(location.query)["redirect_uri"]
@@ -61,9 +63,9 @@ class MobileAppTest < ActionDispatch::IntegrationTest
 
   test "a magic link never sends anyone to another site" do
     user = users(:michael)
-    get magic_link_path(user.generate_token_for(:magic_link), return_to: "https://evil.example/oauth/authorize")
+    post magic_link_path(user.generate_token_for(:magic_link), return_to: "https://evil.example/oauth/authorize")
     assert_redirected_to root_url
-    get magic_link_path(user.reload.generate_token_for(:magic_link), return_to: "//evil.example/x")
+    post magic_link_path(user.reload.generate_token_for(:magic_link), return_to: "//evil.example/x")
     assert_redirected_to root_url
   end
 

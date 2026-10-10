@@ -1,0 +1,56 @@
+# Sun panel ("Soleil"): horizon of the terrain, sun paths and sun hours.
+# Keys in English, values in French. Owned by the sun area.
+fr:
+  sun:
+    panel_title: "Soleil"
+    loading: "On lit le ciel de ton terrain…"
+    load_error: "Le soleil de ce terrain n'a pas pu être chargé. Réessaie dans un instant."
+    retry: "Réessayer"
+    draw_outline: "Dessiner le contour"
+    help: "Lire le soleil et l'horizon"
+    reasons:
+      no_location: "Dessine d'abord le contour du terrain : le soleil et l'horizon dépendent de l'endroit."
+      not_configured: "L'horizon du terrain n'est pas disponible sur cette installation : les heures de soleil sont comptées sur un horizon dégagé."
+      out_of_coverage: "PVGIS ne couvre pas cet endroit (en mer ou hors de ses données) : les heures de soleil sont comptées sur un horizon dégagé."
+      upstream_error: "PVGIS ne répond pas pour l'instant : les heures de soleil sont comptées sur un horizon dégagé. Réessaie plus tard."
+    intro: "Vu depuis le centre de ton terrain : la ligne des collines et la course du soleil au fil de l'année."
+    horizon_note: "L'horizon vient d'un modèle du terrain (mailles d'environ 90 m) : collines et versants, sans les arbres ni les bâtiments."
+    solar_time: "Heures solaires : à midi, le soleil est plein sud."
+    diagram:
+      aria: "Course du soleil au-dessus de l'horizon du terrain, au solstice d'hiver, à l'équinoxe et au solstice d'été."
+      elevation: "%{degrees}°"
+      cardinals:
+        ne: "NE"
+        e: "E"
+        se: "SE"
+        s: "S"
+        sw: "SO"
+        w: "O"
+        nw: "NO"
+    seasons:
+      winter_solstice: "Solstice d'hiver"
+      equinox: "Équinoxe"
+      summer_solstice: "Solstice d'été"
+    path:
+      direct: "%{hours} de soleil direct"
+      open: "sur %{hours} de jour"
+      open_only: "%{hours} de jour"
+      window: "premier rayon vers %{first}, dernier vers %{last}"
+      none: "pas de soleil direct ce jour-là"
+      noon: "%{degrees}° à midi"
+    insight: "En %{month}, le relief te prend environ %{lost} de soleil direct par jour."
+    insight_winter: "Le 21 décembre, le premier rayon n'arrive que vers %{time} : pense aux plantes qui ont besoin du soleil d'hiver."
+    insight_open: "Ton horizon est presque dégagé : le relief ne te prend presque pas de soleil."
+    months:
+      title: "Mois par mois"
+      subtitle: "Le 21 de chaque mois"
+      terrain: "Sur ton terrain"
+      open: "Horizon dégagé"
+      irradiation: "kWh/m²"
+      row: "%{month} : %{terrain} de soleil direct sur %{open} de jour"
+      row_open: "%{month} : %{open} de jour"
+      annual: "Une surface horizontale reçoit %{value} kWh/m² par an, ombres du relief comprises (moyenne %{from}-%{to})."
+    sources:
+      title: "Sources"
+      pvgis: "Horizon et rayonnement : %{attribution}, libre d'utilisation en citant la source (%{detail})"
+      noaa: "Course du soleil et heures de jour : calcul astronomique (algorithme NOAA)"

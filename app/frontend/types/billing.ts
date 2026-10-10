@@ -92,6 +92,8 @@ export type AccountData = {
   avatarUrl: string | null
   signedUpAt: string
   googleLinked: boolean
+  /** Has chosen an (optional) password. */
+  hasPassword: boolean
   plan: PlanKey
   /** When the plan stops unless renewed (pass or plan paid on invoice); null for a subscription or the free map. */
   planEndsAt: string | null

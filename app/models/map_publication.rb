@@ -115,7 +115,7 @@ class MapPublication < ApplicationRecord
     def public_layer(layer)
       {
         key: layer.key, name: layer.name, group: layer.group_name, category: layer.category,
-        attribution: layer.attribution, opacity: layer.opacity, legendUrl: layer.legend_url,
+        attribution: layer.attribution, opacity: layer.opacity, legend: layer.legend, legendUrl: layer.legend_url,
         minZoom: layer.min_zoom, maxZoom: layer.max_zoom,
         tiles: "#{public_path}/tiles/#{layer.key}/{z}/{x}/{y}"
       }

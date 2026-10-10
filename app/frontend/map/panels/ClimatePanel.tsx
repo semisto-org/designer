@@ -7,9 +7,11 @@ import { FutureClimate } from '@/components/climate/FutureClimate'
 import { PlantChecks } from '@/components/climate/PlantChecks'
 import { Sources } from '@/components/climate/Sources'
 import { Upsell } from '@/components/climate/Upsell'
+import { ObservedClimate } from '@/components/observed_climate/ObservedClimate'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import WeatherStationsSection from '@/map/weather_stations/WeatherStationsSection'
 import type { ClimateReport, ForecastReport, ProjectionData, Scenario } from '@/types/climate_finance'
 
 /**
@@ -65,13 +67,23 @@ export default function ClimatePanel() {
 
   if (!report.current.available) {
     const noLocation = report.current.reason === 'no_location'
+    // Without regional normals, the observed climate (ERA5-Land, everywhere
+    // in Europe) and the nearby stations still say something about the place.
     return (
-      <div className="space-y-3">
-        <p className="text-sm text-loam-600">{t(`climate.reasons.${report.current.reason}`)}</p>
-        {noLocation && editor.canEdit && (
-          <Button variant="secondary" size="sm" onClick={() => editor.openPanel('terrain')}>
-            <PenLine className="h-4 w-4" />{t('climate.draw_outline')}
-          </Button>
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <p className="text-sm text-loam-600">{t(`climate.reasons.${report.current.reason}`)}</p>
+          {noLocation && editor.canEdit && (
+            <Button variant="secondary" size="sm" onClick={() => editor.openPanel('terrain')}>
+              <PenLine className="h-4 w-4" />{t('climate.draw_outline')}
+            </Button>
+          )}
+        </div>
+        {report.location && (
+          <>
+            <ObservedClimate mapId={mapId} version={`${report.location.lat},${report.location.lng}`} />
+            <WeatherStationsSection />
+          </>
         )}
       </div>
     )
@@ -89,6 +101,7 @@ export default function ClimatePanel() {
   return (
     <div className="space-y-6">
       <CurrentClimate data={current} />
+      <ObservedClimate mapId={mapId} version={report.location ? `${report.location.lat},${report.location.lng}` : null} />
       {locked && <Upsell plantsCount={plants.count} />}
       {'available' in projections && projections.available && (
         <FutureClimate block={projections} current={current.zone} scenario={scenario} onScenario={setScenario} />
@@ -98,6 +111,7 @@ export default function ClimatePanel() {
       )}
       {'available' in plants && plants.available && <PlantChecks block={plants} scenario={scenario} />}
       <Forecast report={report.capabilities.forecast ? forecast : null} loading={forecastLoading} />
+      <WeatherStationsSection />
       <Sources sources={report.sources} note={current.note} current={current} projections={shownProjections} />
     </div>
   )

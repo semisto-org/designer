@@ -134,10 +134,12 @@ class McpToolsTest < ActionDispatch::IntegrationTest
   end
 
   test "get_region_layers lists the region catalogue" do
-    regions(:wallonia).layers.create!(key: "sols", name: "Carte des sols", url: "https://geoservices.example/sols", identify_url: "https://geoservices.example/sols/identify")
+    regions(:wallonia).layers.create!(key: "sols", name: "Carte des sols", url: "https://geoservices.example/sols", identify_url: "https://geoservices.example/sols/identify",
+                                      options: { legend: { items: [ { label: "Ravin", color: "#000000", shape: "line" } ] } })
     data, error = call_tool(@viewer, "get_region_layers", { map_id: @map.id })
     refute error
     assert_equal [ [ "sols", true ] ], data["layers"].map { |l| [ l["key"], l["identifiable"] ] }
+    assert_equal "Ravin", data["layers"].sole.dig("legend", "items", 0, "label")
     assert_equal "wallonia", data.dig("region", "key")
   end
 

@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight, Columns2, Download, Locate, MapPin, Trash2, X } from 'lucide-react'
+import clsx from 'clsx'
+import { ChevronLeft, ChevronRight, Columns2, Download, Locate, MapPin, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/Button'
@@ -10,7 +11,10 @@ import { visibleOffset } from '@/map/visiblePadding'
 import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
 import { photoActions, usePhotos } from '@/map/photos/store'
-import type { MapPhotoData } from '@/types/soil_photos'
+import { downloadSketch } from '@/map/photos/sketch/download'
+import { PhotoSketcher } from '@/map/photos/sketch/PhotoSketcher'
+import { FittedPhoto, SketchLayer } from '@/map/photos/sketch/SketchLayer'
+import type { MapPhotoData, PhotoSketchData } from '@/types/soil_photos'
 
 /** "2026-05-17T14:32" for a datetime-local input, from the photo's date (shown in Brussels time). */
 function toInputValue(photo: MapPhotoData): string {
@@ -31,15 +35,38 @@ export function PhotoLightbox() {
   const [heading, setHeading] = useState('')
   const [candidates, setCandidates] = useState<MapPhotoData[] | null>(null)
   const photoId = photo?.id ?? null
+  const [sketches, setSketches] = useState<PhotoSketchData[]>([])
+  const [shownSketchId, setShownSketchId] = useState<number | null>(null)
+  /** The sketch being drawn: an id, 'new', or null when only looking. */
+  const [sketching, setSketching] = useState<number | 'new' | null>(null)
 
   useEffect(() => {
     if (!photo) return
     setCaption(photo.caption ?? '')
     setHeading(photo.heading != null ? String(Math.round(photo.heading)) : '')
     setCandidates(null)
+    setSketches([])
+    setShownSketchId(null)
+    setSketching(null)
     // Reset only when another photo opens, not on every edit of the same one.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photoId])
+
+  useEffect(() => {
+    if (photoId == null) return
+    let cancelled = false
+    api<{ sketches: PhotoSketchData[] }>(`/maps/${editor.map.id}/photos/${photoId}/sketches`)
+      .then((data) => {
+        if (cancelled) return
+        setSketches(data.sketches)
+        // The latest idea is shown over the photo; « Photo seule » hides it.
+        setShownSketchId(data.sketches.length ? data.sketches[data.sketches.length - 1].id : null)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [photoId, editor.map.id])
 
   useEffect(() => {
     if (photoId == null) return
@@ -49,7 +76,7 @@ export function PhotoLightbox() {
   }, [photoId == null])
 
   useEffect(() => {
-    if (photoId == null) return
+    if (photoId == null || sketching != null) return
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement
       const typing = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT'
@@ -59,10 +86,18 @@ export function PhotoLightbox() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [photoId, index, photos])
+  }, [photoId, index, photos, sketching])
 
   if (!photo) return null
   const mapId = editor.map.id
+  const shownSketch = sketches.find((s) => s.id === shownSketchId) ?? null
+
+  function sketchSaved(saved: PhotoSketchData) {
+    const isNew = !sketches.some((s) => s.id === saved.id)
+    setSketches((list) => (list.some((s) => s.id === saved.id) ? list.map((s) => (s.id === saved.id ? saved : s)) : [...list, saved]))
+    // The « Photos » panel marks and filters sketched photos by this count.
+    if (isNew) photoActions.upsert({ ...photo!, sketchesCount: photo!.sketchesCount + 1 })
+  }
   const base = `/maps/${mapId}/photos/${photo.id}`
 
   async function save(patch: Record<string, unknown>) {
@@ -121,10 +156,10 @@ export function PhotoLightbox() {
       className="fixed inset-0 z-[60] flex flex-col bg-loam-950 text-white outline-none md:flex-row"
     >
       <div className="relative flex min-h-0 flex-1 items-center justify-center p-2 md:p-6">
-        <img
+        <FittedPhoto
           src={photoUrl(mapId, photo.id, 'large')}
           alt={photoLabel(photo)}
-          className="max-h-full max-w-full rounded-md object-contain shadow-2xl"
+          overlay={(aspect) => shownSketch && <SketchLayer marks={shownSketch.strokes} aspect={aspect} className="pointer-events-none absolute inset-0 h-full w-full" />}
         />
         <button type="button" onClick={() => photoActions.open(null)} className="absolute right-3 top-3 rounded-full bg-black/50 p-2 hover:bg-black/70" aria-label={t('common.close')}>
           <X className="h-5 w-5" />
@@ -218,6 +253,44 @@ export function PhotoLightbox() {
           </a>
         </div>
 
+        <section aria-label={t('photo_sketches.list_label')}>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('photo_sketches.list_label')}</h3>
+          {sketches.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('photo_sketches.list_label')}>
+              {[{ id: null, name: t('photo_sketches.none') }, ...sketches].map((sketch) => (
+                <button
+                  key={sketch.id ?? 'none'} type="button" role="radio" aria-checked={shownSketchId === sketch.id}
+                  onClick={() => setShownSketchId(sketch.id)}
+                  className={clsx('rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset', shownSketchId === sketch.id ? 'bg-prune-600 text-white ring-prune-600' : 'text-prune-700 ring-prune-200 hover:bg-prune-50')}
+                >
+                  {sketch.name}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {canEdit && (
+              <Button size="sm" variant={sketches.length ? 'secondary' : 'primary'} onClick={() => setSketching('new')} title={t('photo_sketches.open_hint')}>
+                {sketches.length ? <Plus className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+                {sketches.length ? t('photo_sketches.new') : t('photo_sketches.open')}
+              </Button>
+            )}
+            {canEdit && shownSketch && (
+              <Button size="sm" variant="secondary" onClick={() => setSketching(shownSketch.id)}>
+                <Pencil className="h-4 w-4" />
+                {t('photo_sketches.edit')}
+              </Button>
+            )}
+            {shownSketch && (
+              <Button size="sm" variant="ghost" onClick={() => downloadSketch(photoUrl(mapId, photo.id, 'large'), shownSketch.strokes, shownSketch.name).catch(() => editor.notify(t('photo_sketches.save_failed'), 'error'))}>
+                <Download className="h-4 w-4" />
+                {t('photo_sketches.download')}
+              </Button>
+            )}
+          </div>
+          {shownSketch?.createdBy && <p className="mt-1 text-xs text-loam-500">{t('photo_sketches.by', { name: shownSketch.createdBy })}</p>}
+        </section>
+
         {candidates && (
           <section className="rounded-lg bg-prune-50 p-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-prune-800">{t('soil_photos.lightbox.same_spot')}</h3>
@@ -245,6 +318,26 @@ export function PhotoLightbox() {
           </Button>
         )}
       </aside>
+      {sketching != null && (
+        <PhotoSketcher
+          key={`${photo.id}-${sketching}`}
+          mapId={mapId}
+          photo={photo}
+          sketch={sketching === 'new' ? null : sketches.find((s) => s.id === sketching) ?? null}
+          notify={editor.notify}
+          onSaved={sketchSaved}
+          onDeleted={(id) => {
+            setSketches((list) => list.filter((s) => s.id !== id))
+            setShownSketchId(null)
+            photoActions.upsert({ ...photo, sketchesCount: Math.max(0, photo.sketchesCount - 1) })
+          }}
+          onClose={(saved) => {
+            setSketching(null)
+            if (saved) setShownSketchId(saved.id)
+            dialog.current?.focus()
+          }}
+        />
+      )}
     </div>,
     document.body,
   )

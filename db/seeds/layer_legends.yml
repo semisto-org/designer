@@ -1,0 +1,272 @@
+# Legends of the region data layers, by region key then layer key, stored
+# in the layer's `options.legend` by the catalogue seeds (02 to 05). Read from each
+# service's own legend on 2026-10-09 (ArcGIS REST /legend, WMS
+# GetLegendGraphic, IGN legend images), relabelled in plain French.
+#
+# A legend has any of:
+# - gradient: { colors: [low … high], labels: [evenly spaced under the bar] }
+# - items: [{ label, color, stroke?, shape? }] or [{ heading }]
+#   shape: fill (default), line, dashed, outline, hatch, split (two colours,
+#   `color` and `stroke`), point
+# - note: one sentence on how to read the layer
+# A layer without one falls back to its `legend_url` image.
+
+europe:
+  natura2000:
+    items:
+      - { label: "Site pour les habitats et les espèces", color: "#a7adf2", shape: hatch }
+      - { label: "Site pour les oiseaux", color: "#e88281", shape: hatch }
+      - { label: "Site pour les deux", color: "#a7adf2", stroke: "#e88281", shape: split }
+    note: "Des règles particulières peuvent s'y appliquer : renseigne-toi avant de planter ou de creuser."
+  corine:
+    items:
+      - heading: "Territoires artificialisés"
+      - { label: "Tissu urbain continu", color: "#e6004d" }
+      - { label: "Tissu urbain discontinu", color: "#ff0000" }
+      - { label: "Zones industrielles ou commerciales", color: "#cc4df2" }
+      - { label: "Routes, voies ferrées et abords", color: "#cc0000" }
+      - { label: "Zones portuaires", color: "#e6cccc" }
+      - { label: "Aéroports", color: "#e6cce6" }
+      - { label: "Extraction de matériaux", color: "#a600cc" }
+      - { label: "Décharges", color: "#a64d00" }
+      - { label: "Chantiers", color: "#ff4dff" }
+      - { label: "Espaces verts urbains", color: "#ffa6ff" }
+      - { label: "Équipements sportifs et de loisirs", color: "#ffe6ff" }
+      - heading: "Territoires agricoles"
+      - { label: "Terres arables", color: "#ffffa8" }
+      - { label: "Terres irriguées en permanence", color: "#ffff00" }
+      - { label: "Rizières", color: "#e6e600" }
+      - { label: "Vignobles", color: "#e68000" }
+      - { label: "Vergers et petits fruits", color: "#f2a64d" }
+      - { label: "Oliveraies", color: "#e6a600" }
+      - { label: "Prairies", color: "#e6e64d" }
+      - { label: "Cultures annuelles et permanentes mêlées", color: "#ffe6a6" }
+      - { label: "Parcellaire agricole complexe", color: "#ffe64d" }
+      - { label: "Agriculture et espaces naturels mêlés", color: "#e6cc4d" }
+      - { label: "Territoires agroforestiers", color: "#f2cca6" }
+      - heading: "Forêts et milieux semi-naturels"
+      - { label: "Forêts de feuillus", color: "#80ff00" }
+      - { label: "Forêts de conifères", color: "#00a600" }
+      - { label: "Forêts mélangées", color: "#4dff00" }
+      - { label: "Pelouses et pâturages naturels", color: "#ccf24d" }
+      - { label: "Landes et broussailles", color: "#a6ff80" }
+      - { label: "Végétation sclérophylle", color: "#a6e64d" }
+      - { label: "Forêt et broussailles en mutation", color: "#a6f200" }
+      - { label: "Plages, dunes et sable", color: "#e6e6e6" }
+      - { label: "Roches nues", color: "#cccccc" }
+      - { label: "Végétation clairsemée", color: "#ccffcc" }
+      - { label: "Zones incendiées", color: "#000000" }
+      - { label: "Glaciers et neiges éternelles", color: "#a6e6cc" }
+      - heading: "Zones humides et eau"
+      - { label: "Marais intérieurs", color: "#a6a6ff" }
+      - { label: "Tourbières", color: "#4d4dff" }
+      - { label: "Marais maritimes", color: "#ccccff" }
+      - { label: "Marais salants", color: "#e6e6ff" }
+      - { label: "Zones intertidales", color: "#a6a6e6" }
+      - { label: "Cours d'eau", color: "#00ccf2" }
+      - { label: "Plans d'eau", color: "#80f2e6" }
+      - { label: "Lagunes littorales", color: "#00ffa6" }
+      - { label: "Estuaires", color: "#a6ffe6" }
+      - { label: "Mers et océans", color: "#e6f2ff" }
+    note: "Une vue d'ensemble par unités de 25 ha au moins : ton terrain peut être plus varié que sa couleur."
+  sol_ph:
+    # SoilGrids stores pH × 10; colours of its classes at pH 4, 4.5 … 9.
+    gradient:
+      colors: ["#f0f63d", "#f0f63d", "#f1ee2d", "#c0df28", "#72c94c", "#42b532", "#35a536", "#2f993f", "#36b993", "#1bc1c7", "#0fccd9"]
+      labels: ["pH 4", "5", "6", "7", "8", "9"]
+    note: "Sous 5,5, le sol est acide ; entre 6 et 7, la plupart des fruitiers s'y plaisent ; au-dessus de 7,5, il est souvent calcaire. Rien sous les zones bâties ; seule une analyse dit le pH de ton sol."
+  sol_argile:
+    # SoilGrids stores clay in g/kg; colours at 0, 10 … 80 %.
+    gradient:
+      colors: ["#f2dac1", "#e7c4a0", "#d8a775", "#c98c50", "#b97e44", "#a87038", "#97612c", "#875320", "#764615"]
+      labels: ["0 %", "20 %", "40 %", "60 %", "80 %"]
+    note: "Peu d'argile : un sol léger qui se draine vite. Au-delà de 30 % environ : un sol lourd qui garde l'eau et colle quand il est mouillé. Rien sous les zones bâties."
+
+wallonia:
+  courbes:
+    items:
+      - { label: "Tous les 50 m", color: "#a47916", shape: line }
+      - { label: "Tous les 10 m", color: "#dda840", shape: line }
+      - { label: "Courbes intermédiaires", color: "#dda840", shape: dashed }
+    note: "Plus les lignes sont serrées, plus la pente est forte. Touche la carte pour lire l'altitude exacte."
+  pentes:
+    gradient:
+      colors: ["#70b1c4", "#98c2b5", "#b7d5a5", "#d3e793", "#effa7e", "#f6db69", "#f9b755", "#f9923e", "#f5682d", "#f02b20"]
+      labels: ["Plat", "Très pentu"]
+    note: "Touche la carte pour lire la pente exacte, en pour cent."
+  ruissellement:
+    items:
+      - heading: "Ruissellement, selon la surface qui s'écoule en amont"
+      - { label: "3 à 10 ha", color: "#ffaa00", shape: line }
+      - { label: "10 à 20 ha", color: "#c500ff", shape: line }
+      - { label: "20 à 50 ha", color: "#ff0000", shape: line }
+      - { label: "50 à 100 ha", color: "#a80000", shape: line }
+      - { label: "Plus de 100 ha", color: "#894444", shape: line }
+      - { label: "Cuvette où l'eau s'accumule", color: "#ffffff", stroke: "#17a8e8", shape: outline }
+      - heading: "Cours d'eau"
+      - { label: "Navigable", color: "#004da8", shape: line }
+      - { label: "1re catégorie", color: "#005ce6", shape: line }
+      - { label: "2e catégorie", color: "#73b2ff", shape: line }
+      - { label: "3e catégorie", color: "#73dfff", shape: line }
+      - { label: "Non classé", color: "#bed2ff", shape: line }
+      - { label: "Zone complexe", color: "#9c9c9c" }
+    note: "Un axe de ruissellement montre où l'eau de pluie se concentre : un bon endroit pour la ralentir et l'infiltrer."
+  sols:
+    items:
+      - { label: "Limite entre deux types de sol", color: "#e69800", shape: outline }
+      - { label: "Ravin", color: "#000000", shape: line }
+    note: "Chaque zone est un type de sol. Touche la carte pour lire son sigle, son drainage et sa charge caillouteuse."
+  essences:
+    items:
+      - heading: "Eau disponible pour les racines"
+      - { label: "Marécageux (−4)", color: "#002673" }
+      - { label: "Humide (−3)", color: "#0084a8" }
+      - { label: "Humide (−2)", color: "#73dfff" }
+      - { label: "Frais (−1)", color: "#bee8ff" }
+      - { label: "Frais (0)", color: "#267300" }
+      - { label: "Ni sec ni humide (1)", color: "#3aa800" }
+      - { label: "Ni sec ni humide (2)", color: "#4ce600" }
+      - { label: "Plutôt sec (3)", color: "#b0f045" }
+      - { label: "Sec (4)", color: "#ffff00" }
+      - { label: "Très sec (5)", color: "#ffaa00" }
+      - heading: "Humide en hiver, sec en été"
+      - { label: "Faiblement (−1)", color: "#ffbee8" }
+      - { label: "Moyennement (−2)", color: "#c500ff" }
+      - { label: "Fortement (−3)", color: "#4c0073" }
+    note: "Le niveau hydrique du sol, du plus humide au plus sec. Touche la carte pour lire aussi sa richesse et le climat local."
+  cadastre:
+    items:
+      - { label: "Limite de parcelle", color: "#730000", shape: outline }
+    note: "Touche une parcelle pour lire son numéro."
+  plan_secteur:
+    items:
+      - heading: "Zones destinées à l'urbanisation"
+      - { label: "Habitat", color: "#ff0000" }
+      - { label: "Habitat à caractère rural", color: "#ffffff", stroke: "#ff0000", shape: split }
+      - { label: "Habitat vert", color: "#d6ffa8", stroke: "#ff0000", shape: split }
+      - { label: "Services publics et équipements", color: "#a8ffff" }
+      - { label: "Loisirs", color: "#ffa800" }
+      - { label: "Activité économique mixte", color: "#d6a8ff" }
+      - { label: "Activité économique industrielle", color: "#d600ff" }
+      - { label: "Aménagement communal concerté", color: "#ffffff", stroke: "#686868" }
+      - { label: "Enjeu communal", color: "#ffbebe" }
+      - { label: "Enjeu régional", color: "#f296d2" }
+      - heading: "Zones non destinées à l'urbanisation"
+      - { label: "Agricole", color: "#ffff80" }
+      - { label: "Forestière", color: "#00af00" }
+      - { label: "Espaces verts", color: "#d6ffa8" }
+      - { label: "Naturelle", color: "#a8ffc0" }
+      - { label: "Parc", color: "#d6ff00" }
+      - { label: "Eau", color: "#2d73ff" }
+      - { label: "Extraction", color: "#ffffa8", stroke: "#d600ff", shape: split }
+      - { label: "Non affectée (« zone blanche »)", color: "#ffffff", stroke: "#686868" }
+      - heading: "Périmètres en surimpression"
+      - { label: "Intérêt paysager", color: "#000000", shape: hatch }
+      - { label: "Intérêt culturel, historique ou esthétique", color: "#000000", shape: outline }
+      - { label: "Point de vue remarquable", color: "#000000", shape: point }
+      - { label: "Liaison écologique", color: "#000000", shape: outline }
+    note: "L'affectation officielle du sol : elle dit ce qu'on peut y construire ou y planter. Touche la carte pour lire celle de ton terrain."
+  natura2000:
+    items:
+      - { label: "Site Natura 2000", color: "#e3ece1", stroke: "#47654a" }
+      - heading: "Unités de gestion (UG)"
+      - { label: "UG 1 : milieux aquatiques", color: "#bde8ff" }
+      - { label: "UG 2 : milieux ouverts prioritaires", color: "#e8bdff" }
+      - { label: "UG 3 : prairies, habitats d'espèces", color: "#ffec71" }
+      - { label: "UG 4 : bandes extensives", color: "#e59800" }
+      - { label: "UG 5 : prairies de liaison", color: "#ffffbd" }
+      - { label: "UG 6 : forêts prioritaires", color: "#267300" }
+      - { label: "UG 7 : forêts alluviales prioritaires", color: "#d3ffbd" }
+      - { label: "UG 8 : forêts indigènes de grand intérêt", color: "#55ff00" }
+      - { label: "UG 9 : forêts, habitats d'espèces", color: "#728944" }
+      - { label: "UG 10 : forêts non indigènes de liaison", color: "#448971" }
+      - { label: "UG 11 : cultures et éléments humains", color: "#b2b2b2" }
+      - { label: "UG temporaire : zone protégée", color: "#c773ef" }
+      - { label: "UG temporaire : gestion publique", color: "#b3471a" }
+      - { label: "UG temporaire : forêt indigène", color: "#d7c29e" }
+      - { label: "Surimpression : espèce protégée", color: "#6e6e6e", shape: hatch }
+    note: "Chaque unité de gestion a ses propres règles. Touche la carte pour lire celle de ton terrain."
+  forets_anciennes:
+    items:
+      - heading: "Forêts d'aujourd'hui"
+      - { label: "Forêt ancienne subnaturelle", color: "#267300" }
+      - { label: "Forêt ancienne passée aux résineux", color: "#0071ff" }
+      - { label: "Forêt ancienne, résineux temporaires", color: "#00a885" }
+      - { label: "Boisement récent de feuillus", color: "#a3ff73" }
+      - { label: "Boisement récent de résineux", color: "#73dfff" }
+      - { label: "Forêt ancienne déboisée", color: "#e1e1e1" }
+      - heading: "Vers 1777 (carte de Ferraris)"
+      - { label: "Forêt", color: "#73b273" }
+      - { label: "Zone non cartographiée", color: "#000000", shape: hatch }
+    note: "Une forêt ancienne garde un sol et une flore précieux, même après une coupe."
+  parcellaire_agricole:
+    items:
+      - heading: "Parcelles déclarées"
+      - { label: "Céréales", color: "#ffe280", stroke: "#730000" }
+      - { label: "Tubercules et racines", color: "#d2b376", stroke: "#730000" }
+      - { label: "Cultures permanentes alimentaires", color: "#d9d075", stroke: "#730000" }
+      - { label: "Autres cultures permanentes", color: "#d99594", stroke: "#730000" }
+      - { label: "Autres cultures arables", color: "#ffff99", stroke: "#730000" }
+      - { label: "Cultures industrielles", color: "#fefe19", stroke: "#730000" }
+      - { label: "Fourrages", color: "#d7db39", stroke: "#730000" }
+      - { label: "Cultures récoltées fraîches", color: "#e9ffbe", stroke: "#730000" }
+      - { label: "Légumes secs", color: "#e3f300", stroke: "#730000" }
+      - { label: "Maraîchage et horticulture", color: "#fe8bfe", stroke: "#730000" }
+      - { label: "Prairies permanentes", color: "#a0d171", stroke: "#730000" }
+      - { label: "Prairies en passe de devenir permanentes", color: "#b5fd70", stroke: "#730000" }
+      - { label: "Prairies à moins de 90 % d'herbe", color: "#b5ef7d", stroke: "#000000" }
+      - { label: "Jachères", color: "#fde9bd", stroke: "#730000" }
+      - { label: "Inconnue ou autre", color: "#f2f2f5", stroke: "#730000" }
+      - heading: "Éléments du paysage"
+      - { label: "Haies et arbres alignés", color: "#993300", shape: line }
+      - { label: "Arbres isolés, arbustes et buissons", color: "#993300", shape: point }
+      - { label: "Bosquets", color: "#993300", stroke: "#6e6e6e" }
+      - { label: "Mares", color: "#31849b", stroke: "#6e6e6e" }
+      - { label: "Fossés", color: "#31849b", shape: line }
+      - { label: "Talus", color: "#0ab050", shape: line }
+      - { label: "Jachères et bandes en bord de champ", color: "#00b050", stroke: "#6e6e6e" }
+
+france:
+  ombrage:
+    gradient:
+      colors: ["#3c3c3c", "#9a9a9a", "#f2f2f2"]
+      labels: ["Ombre", "Lumière"]
+    note: "Le sol nu éclairé par un soleil rasant : talus, fossés et anciennes terrasses ressortent."
+  courbes:
+    items:
+      - { label: "Courbe de niveau", color: "#d4937d", shape: line }
+      - { label: "Courbe maîtresse, avec son altitude", color: "#cc8066", shape: line }
+    note: "Plus les lignes sont serrées, plus la pente est forte."
+  pentes:
+    items:
+      - { label: "Pente de plus de 10 %", color: "#d90115" }
+    note: "Seules les pentes de plus de 10 % sont colorées ; le reste du terrain est plus doux."
+  cours_eau:
+    items:
+      - { label: "Cours d'eau, fossé, plan d'eau", color: "#8fc1dd", shape: line }
+  cadastre:
+    items:
+      - { label: "Parcelle", color: "#ffe5cc", stroke: "#ff8000" }
+      - { label: "Bâtiment", color: "#9447ff", shape: hatch }
+      - { label: "Limite de section", color: "#a9a9a9", shape: line }
+    note: "Touche une parcelle pour lire son numéro."
+  natura2000:
+    items:
+      - { label: "Site pour les habitats (ZSC, SIC)", color: "#e4dec4", stroke: "#d4b01c" }
+      - { label: "Site pour les oiseaux (ZPS)", color: "#dce2c6", stroke: "#a7c827" }
+    note: "Des règles particulières peuvent s'y appliquer : renseigne-toi avant de planter ou de creuser."
+  znieff:
+    items:
+      - { label: "ZNIEFF de type I : secteur de grand intérêt", color: "#bfd7c3", stroke: "#008714" }
+      - { label: "ZNIEFF de type II : grand ensemble naturel", color: "#d7e3d7", stroke: "#8acd87" }
+    note: "Un inventaire du patrimoine naturel : pas une protection, mais un signal à prendre en compte."
+
+luxembourg:
+  ombrage:
+    gradient:
+      colors: ["#3c3c3c", "#9a9a9a", "#f2f2f2"]
+      labels: ["Ombre", "Lumière"]
+    note: "Le sol nu éclairé par un soleil rasant : talus, fossés et anciennes terrasses ressortent."
+  cadastre:
+    items:
+      - { label: "Parcelle", color: "#e5e5e5", stroke: "#000000" }

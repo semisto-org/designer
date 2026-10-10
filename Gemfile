@@ -17,10 +17,12 @@ gem "rgeo-geojson"
 gem "inertia_rails", "~> 3.22"
 gem "vite_rails", "~> 3.11"
 
-# Sign in with Google (no passwords; magic links are built in)
+# Sign in with Google; magic links and one-time codes are built in
 gem "omniauth", "~> 2.1"
 gem "omniauth-google-oauth2", "~> 1.2"
 gem "omniauth-rails_csrf_protection", "~> 2.0"
+# Optional password (has_secure_password)
+gem "bcrypt", "~> 3.1"
 
 # Payments (Checkout, customer portal, webhooks)
 gem "stripe", "~> 20.0"
@@ -86,3 +88,5 @@ end
 
 # Spreadsheet exports (financial dashboard for banks and funders)
 gem "caxlsx", "~> 4.5"
+# Unzips the ERA5-Land downloads (also pulled in by caxlsx).
+gem "rubyzip", ">= 2.4", "< 4"

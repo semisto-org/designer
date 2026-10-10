@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -362,6 +362,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
     t.string "checksum"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "sketches_count", default: 0, null: false
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
     t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"
@@ -525,6 +526,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
     t.index ["user_id"], name: "index_oauth_grants_on_user_id"
   end
 
+  create_table "observed_climates", force: :cascade do |t|
+    t.decimal "cell_lat", precision: 4, scale: 1, null: false
+    t.decimal "cell_lng", precision: 4, scale: 1, null: false
+    t.integer "first_year", null: false
+    t.integer "last_year", null: false
+    t.string "status", default: "pending", null: false
+    t.string "job_id"
+    t.integer "attempts", default: 0, null: false
+    t.jsonb "indicators", default: {}, null: false
+    t.string "error"
+    t.datetime "submitted_at"
+    t.datetime "computed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cell_lat", "cell_lng", "first_year", "last_year"], name: "index_observed_climates_on_cell_and_period", unique: true
+  end
+
   create_table "organization_invitations", force: :cascade do |t|
     t.bigint "organization_id", null: false
     t.citext "email_address", null: false
@@ -610,6 +628,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_photo_albums_on_map_id"
+  end
+
+  create_table "photo_sketches", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "map_photo_id", null: false
+    t.bigint "created_by_id"
+    t.string "name", null: false
+    t.jsonb "strokes", default: [], null: false
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_photo_sketches_on_created_by_id"
+    t.index ["map_id"], name: "index_photo_sketches_on_map_id"
+    t.index ["map_photo_id"], name: "index_photo_sketches_on_map_photo_id"
   end
 
   create_table "plan_grants", force: :cascade do |t|
@@ -819,6 +851,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
     t.index ["map_id", "section", "field"], name: "index_project_sheet_drafts_on_map_id_and_section_and_field", unique: true
   end
 
+  create_table "project_sheet_links", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "token", null: false
+    t.bigint "created_by_id"
+    t.datetime "disabled_at"
+    t.datetime "opened_at"
+    t.datetime "submitted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_project_sheet_links_on_created_by_id"
+    t.index ["map_id"], name: "index_project_sheet_links_on_map_id", unique: true
+    t.index ["token"], name: "index_project_sheet_links_on_token", unique: true
+  end
+
   create_table "region_layers", force: :cascade do |t|
     t.bigint "region_id", null: false
     t.string "key", null: false
@@ -862,6 +908,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
     t.index ["key"], name: "index_regions_on_key", unique: true
     t.index ["outline"], name: "index_regions_on_outline", using: :gist
     t.index ["parent_id"], name: "index_regions_on_parent_id"
+  end
+
+  create_table "release_note_likes", force: :cascade do |t|
+    t.bigint "release_note_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_note_id", "user_id"], name: "index_release_note_likes_on_release_note_id_and_user_id", unique: true
+    t.index ["release_note_id"], name: "index_release_note_likes_on_release_note_id"
+    t.index ["user_id"], name: "index_release_note_likes_on_user_id"
+  end
+
+  create_table "release_notes", force: :cascade do |t|
+    t.string "key"
+    t.string "title", null: false
+    t.text "body", null: false
+    t.date "published_on", null: false
+    t.datetime "published_at"
+    t.string "link_path"
+    t.string "link_label"
+    t.string "screenshot_alt"
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_release_notes_on_created_by_id"
+    t.index ["key"], name: "index_release_notes_on_key", unique: true, where: "(key IS NOT NULL)"
+    t.index ["published_at", "published_on"], name: "index_release_notes_on_published_at_and_published_on"
   end
 
   create_table "service_requests", force: :cascade do |t|
@@ -949,6 +1022,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
     t.datetime "ai_trial_started_at"
     t.datetime "ai_trial_reminded_at"
     t.datetime "tour_seen_at"
+    t.datetime "release_notes_seen_at"
+    t.string "password_digest"
+    t.string "sign_in_code_digest"
+    t.datetime "sign_in_code_sent_at"
+    t.integer "sign_in_code_attempts", default: 0, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
@@ -1037,6 +1115,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
   add_foreign_key "patch_items", "plant_species", column: "species_id"
   add_foreign_key "patch_items", "plant_varieties", column: "variety_id"
   add_foreign_key "photo_albums", "maps"
+  add_foreign_key "photo_sketches", "map_photos", on_delete: :cascade
+  add_foreign_key "photo_sketches", "maps", on_delete: :cascade
+  add_foreign_key "photo_sketches", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plan_grants", "invoice_requests"
   add_foreign_key "plan_grants", "users"
   add_foreign_key "plan_grants", "users", column: "granted_by_id", on_delete: :nullify
@@ -1053,8 +1134,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_070000) do
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "project_sheet_drafts", "maps", on_delete: :cascade
   add_foreign_key "project_sheet_drafts", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "project_sheet_links", "maps", on_delete: :cascade
+  add_foreign_key "project_sheet_links", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "region_layers", "regions"
   add_foreign_key "regions", "regions", column: "parent_id"
+  add_foreign_key "release_note_likes", "release_notes", on_delete: :cascade
+  add_foreign_key "release_note_likes", "users", on_delete: :cascade
+  add_foreign_key "release_notes", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "service_requests", "maps"
   add_foreign_key "service_requests", "users"
   add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify

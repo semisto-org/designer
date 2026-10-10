@@ -25,6 +25,10 @@
 # - tile_size: 512 (default for wms/arcgis_rest) or 256;
 # - default: true on the base shown first;
 # - fallback: { url:, attribution: } raster used when a style fails;
+# - legend: { gradient: { colors:, labels: }, items: [{ label:, color:,
+#   stroke:, shape: } | { heading: }], note: } — how to read the layer,
+#   seeded from db/seeds/layer_legends.yml (`legend_url`, an upstream
+#   image, is the fallback);
 # - locked: true keeps manual database edits from being overwritten by seeds.
 class RegionLayer < ApplicationRecord
   KINDS = %w[wms xyz arcgis_rest style].freeze
@@ -57,6 +61,7 @@ class RegionLayer < ApplicationRecord
   end
 
   def role = option(:role)
+  def legend = option(:legend).presence
   def default? = option(:default) == true
 
   def identify_layers = option(:identify, :layers).presence || "all"
@@ -100,7 +105,7 @@ class RegionLayer < ApplicationRecord
   def as_inertia
     {
       id:, key:, name:, group: group_name, category:, kind:,
-      layers:, attribution:, opacity:, legendUrl: legend_url,
+      layers:, attribution:, opacity:, legend:, legendUrl: legend_url,
       minZoom: min_zoom, maxZoom: max_zoom, identifiable: identifiable?,
       proxied:, url: proxied ? nil : url, options:,
       description:, tileUrl: tile_url, tileSize: tile_size, version: cache_version, position:

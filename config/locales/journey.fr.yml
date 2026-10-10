@@ -471,6 +471,44 @@ fr:
               label: "Étapes et échéances"
 
     # ----- Passer à l'action (requests to Semisto) -----
+    # The private link to the project sheet (editors), and the form it opens
+    # for the people behind the project (no account, no map).
+    link:
+      title: "Faire remplir la fiche par le porteur de projet"
+      intro: "Un lien privé ouvre uniquement ce formulaire, sans compte et sans accès à la carte. Tu reçois un e-mail quand la personne a terminé."
+      create: "Créer le lien privé"
+      reset: "Nouveau lien"
+      confirm_reset: "Créer un nouveau lien ? L'ancien cessera de fonctionner."
+      disable: "Désactiver"
+      confirm_disable: "Désactiver le lien ? La personne ne pourra plus ouvrir la fiche."
+      enable: "Réactiver le lien"
+      disabled: "Le lien est désactivé."
+      not_opened: "Pas encore ouvert"
+      opened: "Ouvert %{when}"
+      submitted: "Terminé %{when}"
+      error: "Le lien n'a pas pu être modifié. Réessaie."
+    form:
+      page_title: "Fiche projet · %{map}"
+      eyebrow: "Fiche projet"
+      invited_by: "%{name} t'invite à décrire ton projet."
+      intro: "Prends le temps qu'il faut : tes réponses s'enregistrent au fil de l'eau et tu peux revenir plus tard avec ce même lien. Elles nous aident à concevoir un lieu qui te ressemble. Laisse vide ce que tu ne sais pas encore."
+      private_note: "Ce lien est personnel : garde-le pour toi et les personnes qui portent le projet avec toi."
+      finish: "J'ai terminé"
+      finish_hint: "Tu peux encore modifier tes réponses ensuite, avec le même lien."
+      finishing: "Envoi…"
+      thanks_title: "Merci !"
+      thanks_body: "Ta fiche est bien arrivée. Nous la lisons avant de poursuivre la conception de ton lieu."
+      thanks_back: "Revoir mes réponses"
+      submitted_on: "Fiche envoyée %{when}. Tu peux encore la compléter."
+      read_only: "Cette fiche ne peut plus être modifiée pour le moment."
+      errors:
+        rate_limited: "Trop d'enregistrements d'un coup. Patiente une minute."
+        read_only: "Cette fiche ne peut plus être modifiée pour le moment."
+        submit: "L'envoi a échoué. Réessaie dans un instant."
+      gone:
+        page_title: "Lien expiré"
+        title: "Ce lien ne fonctionne plus"
+        body: "Il a peut-être été remplacé par un nouveau lien. Demande à la personne qui te l'a envoyé de t'en transmettre un autre."
     requests:
       panel_title: "Passer à l'action"
       intro: "Passe du plan à la réalité : Semisto t'accompagne là où cela compte le plus."
@@ -641,6 +679,13 @@ fr:
         closed: "Clôturée"
 
   # ----- E-mails -----
+  project_sheet_link_mailer:
+    submitted:
+      subject: "Fiche projet remplie · %{map}"
+      greeting: "Bonjour %{name},"
+      body: "La fiche projet de « %{map} » vient d'être remplie depuis le lien privé (complétée à %{percent} %)."
+      button: "Lire la fiche"
+      hint: "La personne peut encore la modifier tant que le lien est actif. Tu peux le désactiver depuis la fiche projet."
   service_request_mailer:
     received:
       subject: "Nouvelle demande : %{kind} · %{map}"

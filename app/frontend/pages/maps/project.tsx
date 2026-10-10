@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { ProjectFormLink } from '@/components/journey/ProjectFormLink'
 import { DraftCount, DraftsBanner, ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
 import { t } from '@/lib/i18n'
 import { useProjectSheet } from '@/lib/projectSheet'
@@ -15,8 +16,8 @@ import type { ProjectPayload } from '@/types/journey'
  * The project sheet on a full page: one section at a time, a list of
  * sections with their progress, autosave. Comfortable on desktop and phone.
  */
-export default function MapProject({ map, project, progress: initialProgress, schema, drafts, canEdit }: ProjectPayload) {
-  const sheet = useProjectSheet(map.id, project, initialProgress, canEdit, drafts)
+export default function MapProject({ map, project, progress: initialProgress, schema, drafts, canEdit, formLink }: ProjectPayload) {
+  const sheet = useProjectSheet(`/maps/${map.id}/project`, project, initialProgress, canEdit, drafts)
   const sections = useMemo(() => schema.sections.map((s) => s.key), [schema])
   const [active, setActive] = useState<string>(() => {
     const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) : ''
@@ -62,6 +63,7 @@ export default function MapProject({ map, project, progress: initialProgress, sc
       <p className="mt-4 max-w-3xl text-sm text-loam-600">{t('journey.project.intro')}</p>
       {!canEdit && <p className="mt-3 rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-700">{t('journey.project.read_only')}</p>}
       <div className="mt-4 max-w-3xl empty:hidden"><DraftsBanner sheet={sheet} canEdit={canEdit} onOpen={setActive} /></div>
+      {canEdit && <ProjectFormLink mapId={map.id} initial={formLink} className="mt-4 max-w-3xl" />}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <nav aria-label={t('journey.project.sections_nav')} className="-mx-4 overflow-x-auto px-4 lg:sticky lg:top-4 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">

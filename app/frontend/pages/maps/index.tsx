@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n'
 import { MapCardGrid } from '@/my_maps/MapCard'
 import { ResumeCard } from '@/my_maps/ResumeCard'
 import { SeasonNote } from '@/my_maps/SeasonNote'
+import { WhatsNewNote } from '@/release_notes/WhatsNewNote'
 import { TeamMapsSection, groupMapsByTeam } from '@/teams/TeamMapsSection'
 import { IncomingTransfers } from '@/transfer/IncomingTransfers'
 import type { Resume } from '@/types/myMaps'
@@ -44,6 +45,7 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
           <ButtonLink href="/billing" variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
         )}
       </div>
+      <WhatsNewNote />
       <IncomingTransfers transfers={incomingTransfers} />
       {maps.length === 0 ? (
         <div className="mt-8">

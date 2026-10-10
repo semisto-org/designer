@@ -1,0 +1,105 @@
+{
+ "_comment": "Captured live from https://apicarto.ign.fr/api/gpu on 2026-10-08 (POST geom Point [2.05, 46.05]); geometries removed, lists cut to 3 features.",
+ "municipality": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "municipality.13483904",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 13483904,
+     "insee": "23043",
+     "name": "CHAMBERAUD",
+     "is_rnu": true,
+     "is_deleted": false,
+     "is_coastline": false
+    }
+   }
+  ],
+  "totalFeatures": 1
+ },
+ "document": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "zone-urba": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "secteur-cc": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "prescription-surf": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "prescription-lin": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "prescription-pct": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "assiette-sup-s": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "id": "assiette_sup_s.6059825",
+    "geometry": null,
+    "geometry_name": "the_geom",
+    "properties": {
+     "gid": 6059825,
+     "gpu_doc_id": "48b4a9600154950a4547edf249a7e1d4",
+     "gpu_status": "production",
+     "gpu_timestamp": "2026-10-06T00:32:24.256Z",
+     "suptype": "ac1",
+     "partition": "172014607_SUP_23_AC1",
+     "fichier": "AC1_Eglise-Saint-Blaise-IIDF4U_19910226_act.pdf",
+     "idass": "AC1-172014607-1907191428-1-2",
+     "idgen": "AC1-172014607-1907191428-1",
+     "nomass": "AC1_Eglise-Saint-Blaise-IIDF4U_abor",
+     "typeass": "Périmètre des abords",
+     "modegeoass": "Zone tampon",
+     "paramcalc": 500,
+     "srcgeoass": "RGE",
+     "datesrcass": "20180101",
+     "angle1": null,
+     "angle2": null,
+     "rayon": null,
+     "h": null,
+     "href": null,
+     "xdebut": null,
+     "xfinal": null,
+     "ydebut": null,
+     "yfinal": null,
+     "largeur": null,
+     "nomsuplitt": "Eglise Saint-Blaise",
+     "nomreg": "",
+     "urlreg": ""
+    }
+   }
+  ],
+  "totalFeatures": 1
+ },
+ "assiette-sup-l": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ },
+ "assiette-sup-p": {
+  "type": "FeatureCollection",
+  "features": [],
+  "totalFeatures": 0
+ }
+}
