@@ -1,0 +1,6 @@
+fr:
+  app_update:
+    title: "Une nouvelle version du Designer a poussé."
+    detail: "Recharge quand tu as fini ce que tu fais pour en profiter."
+    reload: "Recharger"
+    later: "Plus tard"
