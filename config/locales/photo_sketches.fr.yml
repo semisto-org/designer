@@ -19,6 +19,7 @@ fr:
       pen: "Crayon"
       text: "Note"
       eraser: "Gomme"
+      select: "Sélection"
       ink: "Encre"
       width: "Épaisseur"
       widths:
@@ -33,6 +34,11 @@ fr:
     hint_pen: "Dessine du doigt, du stylet ou de la souris sur la photo."
     hint_text: "Touche la photo là où tu veux écrire."
     hint_eraser: "Touche un trait pour l'effacer."
+    hint_select: "Touche un trait ou une note pour le choisir, ou entoure-en plusieurs d'un cadre. Glisse pour déplacer ; l'encre et l'épaisseur s'appliquent à la sélection."
+    selection:
+      delete:
+        one: "Supprimer l'élément"
+        other: "Supprimer les %{count} éléments"
     saving: "Enregistrement…"
     saved: "Enregistrée"
     save_failed: "L'esquisse n'a pas pu être enregistrée."
