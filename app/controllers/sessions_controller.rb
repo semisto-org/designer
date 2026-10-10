@@ -17,7 +17,7 @@ class SessionsController < ApplicationController
     user = User.find_or_initialize_by(email_address: email)
     if user.save
       code = user.issue_sign_in_code!
-      MagicLinkMailer.sign_in(user, code:, return_to: session[:return_to_after_authenticating]).deliver_later
+      MagicLinkMailer.sign_in(user, code:, sent_at: user.sign_in_code_sent_at, return_to: session[:return_to_after_authenticating]).deliver_later
       redirect_to new_session_path(sent: email), notice: t("sessions.link_sent", email:)
     else
       redirect_to new_session_path, alert: t("sessions.invalid_email")

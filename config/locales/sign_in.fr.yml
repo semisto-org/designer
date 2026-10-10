@@ -1,4 +1,7 @@
 fr:
+  time:
+    formats:
+      sign_in_time: "%-H h %M"
   sessions:
     rate_limited: "Trop de tentatives. Réessaie dans quelques minutes."
     link_sent: "Un lien et un code de connexion ont été envoyés à %{email}."
@@ -38,7 +41,9 @@ fr:
       greeting: "Bonjour,"
       body: "Clique sur le bouton ci-dessous pour te connecter à Semisto Designer."
       button: "Me connecter"
-      code_intro: "Tu te connectes sur un autre appareil ? Tape-y plutôt ce code :"
+      code_intro: "Tu te connectes sur un autre appareil ? Repique-y plutôt ce code :"
+      code_label: "Code de connexion"
+      code_times: "Semé à %{sown} · à repiquer avant %{wilts}"
       expiry: "Ce lien et ce code sont valables 20 minutes et ne servent qu'une fois. Si tu n'as rien demandé, ignore cet e-mail."
   account:
     password:

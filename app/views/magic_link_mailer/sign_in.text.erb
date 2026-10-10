@@ -8,6 +8,7 @@
 <%= t(".code_intro") %>
 
 <%= @code %>
+<%= t(".code_times", sown: l(@sown_at, format: :sign_in_time), wilts: l(@wilts_at, format: :sign_in_time)) %>
 <% end %>
 
 <%= t(".expiry") %>
