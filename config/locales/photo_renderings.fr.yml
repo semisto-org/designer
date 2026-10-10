@@ -23,7 +23,7 @@ fr:
     remaining:
       one: "Encore %{count} image ce mois-ci."
       other: "Encore %{count} images ce mois-ci."
-    running: "Ton idée prend forme… (environ une demi-minute)"
+    running: "Ton idée prend forme… (une à deux minutes)"
     running_title: "Mise en image : %{style}"
     ready: "Ton idée est en image"
     compare_result: "Comparer avec aujourd'hui"

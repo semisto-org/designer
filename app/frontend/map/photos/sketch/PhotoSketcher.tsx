@@ -471,7 +471,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
         <p className="mb-1.5 text-center text-xs text-loam-500">{hint}</p>
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pb-1 lg:flex-nowrap lg:justify-start" role="toolbar" aria-label={t('photo_sketches.tools.label')}>
           <div className="flex shrink-0 gap-1" role="radiogroup" aria-label={t('photo_sketches.tools.label')}>
-            {([['pen', Pencil], ['text', Type], ['select', MousePointer2], ['eraser', Eraser]] as const).map(([key, Icon]) => (
+            {([['select', MousePointer2], ['pen', Pencil], ['text', Type], ['eraser', Eraser]] as const).map(([key, Icon]) => (
               <button
                 key={key} type="button" role="radio" aria-checked={tool === key}
                 onClick={() => {

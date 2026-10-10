@@ -34,6 +34,15 @@ class PhotoRenderingJobTest < ActiveJob::TestCase
     assert_equal @photo, @rendering.result_photo.derived_from
   end
 
+  test "follows the CDN's redirect and reads an image sent as octet-stream" do
+    @rendering.update!(task_id: "task-1", status: "running", submitted_at: Time.current)
+    stub_request(:get, "#{URL}/task-1").to_return(status: 200, body: task_body("COMPLETED", [ "https://cdn.test/out" ]))
+    stub_request(:get, "https://cdn.test/out").to_return(status: 302, headers: { "Location" => "https://files.test/abc" })
+    stub_request(:get, "https://files.test/abc").to_return(status: 200, body: file_fixture("terrain_later.jpg").binread, headers: { "Content-Type" => "application/octet-stream" })
+    assert_difference(-> { MapPhoto.count }) { PhotoRenderingJob.perform_now(@rendering) }
+    assert_equal "image/jpeg", @rendering.reload.result_photo.image.content_type
+  end
+
   test "a task still running is checked again, until the deadline" do
     @rendering.update!(task_id: "task-1", status: "running", submitted_at: Time.current)
     stub_request(:get, "#{URL}/task-1").to_return(status: 200, body: task_body("IN_PROGRESS"))
