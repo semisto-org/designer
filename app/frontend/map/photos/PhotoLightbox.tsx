@@ -11,7 +11,7 @@ import { visibleOffset } from '@/map/visiblePadding'
 import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
-import { PhotoRenderings, RenderingOrigin } from '@/map/photos/rendering/PhotoRenderings'
+import { MagicWandButton, RenderDialog, RenderingOrigin, RenderingResults, RenderingStatus, usePhotoRenderings } from '@/map/photos/rendering/PhotoRenderings'
 import { useSwipe } from '@/map/photos/useSwipe'
 import { photoActions, usePhotos } from '@/map/photos/store'
 import { downloadSketch } from '@/map/photos/sketch/download'
@@ -42,6 +42,9 @@ export function PhotoLightbox() {
   const [shownSketchId, setShownSketchId] = useState<number | null>(null)
   /** The sketch being drawn: an id, 'new', or null when only looking. */
   const [sketching, setSketching] = useState<number | 'new' | null>(null)
+  /** « Mettre en image » open over the photo. */
+  const [rendering, setRendering] = useState(false)
+  const renderings = usePhotoRenderings(editor.map.id, photo, editor.notify)
 
   useEffect(() => {
     if (!photo) return
@@ -51,6 +54,7 @@ export function PhotoLightbox() {
     setSketches([])
     setShownSketchId(null)
     setSketching(null)
+    setRendering(false)
     // Reset only when another photo opens, not on every edit of the same one.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photoId])
@@ -92,7 +96,7 @@ export function PhotoLightbox() {
   }, [photoId, index, photos, editor.map.id])
 
   useEffect(() => {
-    if (photoId == null || sketching != null) return
+    if (photoId == null || sketching != null || rendering) return
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement
       const typing = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT'
@@ -102,10 +106,10 @@ export function PhotoLightbox() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [photoId, index, photos, sketching])
+  }, [photoId, index, photos, sketching, rendering])
 
   const swipe = useSwipe({
-    enabled: photoId != null && sketching == null,
+    enabled: photoId != null && sketching == null && !rendering,
     onPrevious: index > 0 ? () => photoActions.open(photos[index - 1].id) : undefined,
     onNext: index >= 0 && index < photos.length - 1 ? () => photoActions.open(photos[index + 1].id) : undefined,
   })
@@ -210,9 +214,16 @@ export function PhotoLightbox() {
             <ChevronRight className="h-6 w-6" />
           </button>
         )}
-        <p className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs">
+        <p className="absolute bottom-3 left-3 rounded-full bg-black/50 px-3 py-1 text-xs md:left-1/2 md:-translate-x-1/2">
           {t('soil_photos.lightbox.counter', { index: index + 1, total: photos.length })}
         </p>
+        {canEdit && (
+          <div className="absolute bottom-3 right-3 md:bottom-6 md:right-6">
+            <MagicWandButton renderings={renderings} hasSketch={shownSketch != null} onClick={() => setRendering(true)} />
+          </div>
+        )}
+        <RenderingStatus mapId={mapId} photo={photo} renderings={renderings} />
+        {rendering && <RenderDialog renderings={renderings} sketch={shownSketch} onClose={() => { setRendering(false); dialog.current?.focus() }} />}
       </div>
 
       <aside className="max-h-[45%] shrink-0 space-y-3 overflow-y-auto bg-white p-4 text-loam-800 md:max-h-none md:w-80">
@@ -331,7 +342,7 @@ export function PhotoLightbox() {
           {shownSketch?.createdBy && <p className="mt-1 text-xs text-loam-500">{t('photo_sketches.by', { name: shownSketch.createdBy })}</p>}
         </section>
 
-        <PhotoRenderings mapId={mapId} photo={photo} sketch={shownSketch} canEdit={canEdit} notify={editor.notify} />
+        <RenderingResults mapId={mapId} renderings={renderings} />
 
         {candidates && (
           <section className="rounded-lg bg-prune-50 p-3">
@@ -373,9 +384,11 @@ export function PhotoLightbox() {
             setShownSketchId(null)
             photoActions.upsert({ ...photo, sketchesCount: Math.max(0, photo.sketchesCount - 1) })
           }}
-          onClose={(saved) => {
+          canRender={canEdit && !!renderings.info?.available && renderings.blocked == null && renderings.waiting.length === 0}
+          onClose={(saved, render) => {
             setSketching(null)
             if (saved) setShownSketchId(saved.id)
+            if (render) setRendering(true)
             dialog.current?.focus()
           }}
         />
