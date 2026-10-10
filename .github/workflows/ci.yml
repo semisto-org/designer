@@ -90,20 +90,26 @@ jobs:
       - name: Unit tests
         run: npm test -- --ci
 
-  test:
+  test_shard:
+    name: test (shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgis/postgis:16-3.4
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+    # Two runners share the Ruby test files, so the suite (the longest job,
+    # which production deploys wait for) takes about half the time.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [ 0, 1 ]
 
     steps:
+      # PostGIS is pulled and started in the background while the next steps
+      # install packages, Ruby and Node. As a service container, its pull ran
+      # before every other step and added ~20 s to the job.
+      - name: Start PostGIS
+        run: |
+          nohup docker run --detach --name postgis --publish 5432:5432 \
+            --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD=postgres \
+            postgis/postgis:16-3.4 > "$RUNNER_TEMP/postgis.log" 2>&1 &
+
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev
 
@@ -133,10 +139,36 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
+      # The image's init script starts a temporary server on the Unix socket
+      # only, then the real one on TCP: waiting on TCP waits for the latter.
+      - name: Wait for PostGIS
+        run: |
+          for i in $(seq 1 90); do
+            docker exec postgis pg_isready --host 127.0.0.1 --username postgres > /dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/postgis.log"; docker logs postgis || true
+          exit 1
+
       - name: Run tests
         env:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
           PGPASSWORD: postgres
-        run: bin/rails db:test:prepare test
+          SHARD: ${{ matrix.shard }}
+          SHARDS: 2
+        run: |
+          files=$(find test -name '*_test.rb' -not -path 'test/frontend/*' | sort | awk -v shard="$SHARD" -v shards="$SHARDS" '(NR - 1) % shards == shard')
+          bin/rails db:test:prepare
+          bin/rails test $files
+
+  # Keeps a single « test » check (the one branch rules and readers know),
+  # green only when every shard is.
+  test:
+    if: always()
+    needs: test_shard
+    runs-on: ubuntu-latest
+    steps:
+      - name: All test shards passed
+        run: test "${{ needs.test_shard.result }}" = "success"
