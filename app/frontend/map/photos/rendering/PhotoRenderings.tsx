@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { Columns2, Loader2, WandSparkles, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Field, Textarea } from '@/components/ui/Field'
 import { api, ApiError } from '@/lib/api'
@@ -20,6 +21,8 @@ const STYLES: { key: PhotoRenderingStyle; sample: string }[] = [
   { key: 'watercolor', sample: watercolorSample },
   { key: 'pencil', sample: pencilSample },
 ]
+/** How to sketch so the image follows the idea (app/help/esquisser-et-mettre-en-image.md says more). */
+const TIPS = ['colours', 'strokes', 'shapes', 'legend'] as const
 const POLL_MS = 3000
 const INSTRUCTIONS_MAX = 500
 
@@ -151,11 +154,16 @@ export function RenderDialog({ renderings, sketch, onClose }: {
 }) {
   const [style, setStyle] = useState<PhotoRenderingStyle>('watercolor')
   const [instructions, setInstructions] = useState('')
+  const panel = useRef<HTMLDivElement>(null)
   const info = renderings.info
+
+  useEffect(() => panel.current?.focus(), [])
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.key !== 'Escape') return
+      // Escape in the help drawer opened from here closes the drawer only.
+      if (event.target instanceof Node && !panel.current?.contains(event.target) && event.target !== document.body) return
       event.stopPropagation()
       onClose()
     }
@@ -171,8 +179,8 @@ export function RenderDialog({ renderings, sketch, onClose }: {
     // On a phone the photo only has the top of the screen: the dialog takes all of it.
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-loam-950/60 p-2 md:absolute md:z-10 md:items-center md:p-6" onClick={onClose}>
       <div
-        role="dialog" aria-modal="true" aria-labelledby="render-dialog-title"
-        className="max-h-full w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl bg-loam-50 p-4 text-loam-800 shadow-2xl md:p-5"
+        ref={panel} role="dialog" aria-modal="true" aria-labelledby="render-dialog-title" tabIndex={-1}
+        className="outline-none max-h-full w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl bg-loam-50 p-4 text-loam-800 shadow-2xl md:p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start gap-3">
@@ -203,6 +211,14 @@ export function RenderDialog({ renderings, sketch, onClose }: {
             </button>
           ))}
         </div>
+
+        <details className="group rounded-xl bg-humus-50 px-3 py-2 text-sm text-loam-800 ring-1 ring-inset ring-humus-100">
+          <summary className="cursor-pointer font-semibold text-loam-900">{t('photo_renderings.tips_title')}</summary>
+          <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-xs leading-relaxed">
+            {TIPS.map((tip) => <li key={tip}>{t(`photo_renderings.tips.${tip}`)}</li>)}
+          </ul>
+          <HelpButton slug="esquisser-et-mettre-en-image" label={t('photo_renderings.tips_more')} className="-ml-2.5 mt-1 text-xs" />
+        </details>
 
         {sketch && (
           <Field label={t('photo_renderings.instructions')} hint={t('photo_renderings.instructions_hint')}>

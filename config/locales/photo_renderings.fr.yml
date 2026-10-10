@@ -17,6 +17,13 @@ fr:
     instructions: "Ce que montre ton esquisse"
     instructions_hint: "Facultatif. Aide l'image à lire tes traits."
     instructions_placeholder: "Ex. : trait orange = sentier, cercles blancs = fruitiers, touffes = roseaux"
+    tips_title: "Pour une belle image"
+    tips:
+      colours: "Une couleur par sorte d'élément : orange pour le sentier, blanc pour les arbres…"
+      strokes: "Des traits épais, dans une couleur qui tranche avec la photo."
+      shapes: "Des formes simples : cercle = couronne d'arbre, touffes = roseaux, ligne = sentier."
+      legend: "Pas de texte sur la photo : écris la légende ci-dessous, avec les espèces et la saison."
+    tips_more: "Tous les conseils"
     no_notes: "L'image n'ajoute aucune note : tu pourras esquisser dessus ensuite."
     start: "Lancer"
     cancel: "Annuler"

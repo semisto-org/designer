@@ -52,3 +52,4 @@ Toutes les personnes qui ont accès à la carte les voient ; seuls le propriéta
 
 - [Analyser son sol](/help/analyser-son-sol) : les autres observations du terrain.
 - [Dessiner l'existant](/help/dessiner-l-existant) : relever ce que montrent tes photos.
+- [Esquisser sur une photo et la mettre en image](/help/esquisser-et-mettre-en-image) : montrer ton idée sur le terrain lui-même.
