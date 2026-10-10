@@ -10,31 +10,8 @@ fr:
     help: "Aide"
     account: "Mon compte"
     sign_out: "Se déconnecter"
-  sessions:
-    rate_limited: "Trop de tentatives. Réessaie dans quelques minutes."
-    link_sent: "Un lien de connexion a été envoyé à %{email}."
-    invalid_email: "Cette adresse e-mail ne semble pas valide."
-    signed_in: "Tu es connecté."
-    link_expired: "Ce lien a expiré ou a déjà servi. Demandes-en un nouveau."
-    google_failed: "La connexion avec Google n'a pas abouti."
-    new:
-      title: "Se connecter"
-      intro: "Pas de mot de passe à retenir : connecte-toi avec Google ou reçois un lien par e-mail."
-      google: "Continuer avec Google"
-      or: "ou"
-      email: "Adresse e-mail"
-      send_link: "Recevoir un lien de connexion"
-      no_password: "Le lien est valable 20 minutes et ne sert qu'une fois."
-      check_inbox: "Un lien vient d'être envoyé à %{email}. Ouvre-le depuis cet appareil pour te connecter."
   mailer:
     footer: "Semisto Designer, l'atelier en ligne de Semisto pour cartographier son terrain et concevoir son jardin-forêt."
-  magic_link_mailer:
-    sign_in:
-      subject: "Ton lien de connexion à Semisto Designer"
-      greeting: "Bonjour,"
-      body: "Clique sur le bouton ci-dessous pour te connecter à Semisto Designer."
-      button: "Me connecter"
-      expiry: "Ce lien est valable 20 minutes et ne sert qu'une fois. Si tu n'as rien demandé, ignore cet e-mail."
   maps:
     created: "Carte créée. Délimitons maintenant ton terrain."
     updated: "Carte enregistrée."

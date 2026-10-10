@@ -3,7 +3,7 @@ class OmniauthCallbacksController < ApplicationController
 
   def google
     user = User.from_google(request.env["omniauth.auth"])
-    user.update!(last_signed_in_at: Time.current)
+    user.signed_in!
     start_new_session_for user
     redirect_to after_authentication_url, notice: t("sessions.signed_in")
   end

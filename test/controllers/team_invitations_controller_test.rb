@@ -21,7 +21,7 @@ class TeamInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("teams.joining.sign_in_first", team: "Semisto"), flash[:notice]
     assert_not @team.member?(@bob)
 
-    get magic_link_path(@bob.generate_token_for(:magic_link), return_to: accept_team_invitation_path(invitation.token))
+    post magic_link_path(@bob.generate_token_for(:magic_link), return_to: accept_team_invitation_path(invitation.token))
     assert_redirected_to accept_team_invitation_path(invitation.token)
     follow_redirect!
     assert_redirected_to team_path(@team)

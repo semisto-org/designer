@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react'
-import { CreditCard, Sparkles, Trash2 } from 'lucide-react'
+import { CreditCard, KeyRound, Sparkles, Trash2 } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -55,6 +55,8 @@ export default function AccountShow({ account }: { account: AccountData }) {
         </form>
       </Card>
 
+      <PasswordCard hasPassword={account.hasPassword} />
+
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -106,5 +108,57 @@ export default function AccountShow({ account }: { account: AccountData }) {
         </Button>
       </Card>
     </div>
+  )
+}
+
+// The optional password: chosen freely the first time, the current one is
+// asked to change or remove it.
+function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
+  const form = useForm({ current_password: '', password: '', password_confirmation: '' })
+  const submit = (method: 'patch' | 'delete') => {
+    form.transform((data) => ({ user: data }))
+    form.submit(method, '/account/password', { preserveScroll: true, onSuccess: () => form.reset() })
+  }
+
+  return (
+    <Card>
+      <h2 className="flex items-center gap-2 text-base"><KeyRound className="h-4 w-4 text-prune-500" aria-hidden="true" />{t('account.password.title')}</h2>
+      <p className="mt-2 text-sm text-loam-600">{hasPassword ? t('account.password.set') : t('account.password.none')}</p>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          submit('patch')
+        }}
+        className="mt-4 max-w-sm space-y-4"
+      >
+        {/* For password managers: the account this password belongs to. */}
+        <input type="hidden" autoComplete="username" />
+        {hasPassword && (
+          <Field label={t('account.password.current')} error={form.errors.current_password}>
+            <Input type="password" autoComplete="current-password" required value={form.data.current_password} onChange={(event) => form.setData('current_password', event.target.value)} />
+          </Field>
+        )}
+        <Field label={t('account.password.new')} hint={t('account.password.new_hint')} error={form.errors.password}>
+          <Input type="password" autoComplete="new-password" required minLength={10} maxLength={72} value={form.data.password} onChange={(event) => form.setData('password', event.target.value)} />
+        </Field>
+        <Field label={t('account.password.confirmation')} error={form.errors.password_confirmation}>
+          <Input type="password" autoComplete="new-password" required value={form.data.password_confirmation} onChange={(event) => form.setData('password_confirmation', event.target.value)} />
+        </Field>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" disabled={form.processing}>{hasPassword ? t('account.password.change') : t('account.password.choose')}</Button>
+          {hasPassword && (
+            <Button
+              variant="secondary"
+              disabled={form.processing || !form.data.current_password}
+              onClick={() => {
+                if (window.confirm(t('account.password.remove_confirm'))) submit('delete')
+              }}
+            >
+              {t('account.password.remove')}
+            </Button>
+          )}
+        </div>
+      </form>
+    </Card>
   )
 }

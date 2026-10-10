@@ -10,6 +10,7 @@ class AccountsController < ApplicationController
       account: {
         name: user.name, email: user.email_address, avatarUrl: user.avatar_url, signedUpAt: user.created_at.iso8601,
         googleLinked: user.google_uid.present?,
+        hasPassword: user.password?,
         plan:,
         planEndsAt: plan_ends_at(user, plan)&.iso8601,
         ownedMaps: user.owned_maps.active.count,

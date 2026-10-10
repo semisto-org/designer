@@ -20,7 +20,7 @@ void createInertiaApp({
   layout: (name) => {
     if (FULL_SCREEN.includes(name)) return ImpersonationFrame
     if (name === 'pages/home') return [ImpersonationFrame, HomeLayout]
-    if (name.startsWith('pages/') || name.startsWith('sessions/') || name.startsWith('help/')) return [ImpersonationFrame, PublicLayout]
+    if (name.startsWith('pages/') || name.startsWith('sessions/') || name.startsWith('magic_links/') || name.startsWith('help/')) return [ImpersonationFrame, PublicLayout]
     return [ImpersonationFrame, AppLayout]
   },
   progress: { color: '#5b5781' },
