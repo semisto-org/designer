@@ -17,7 +17,7 @@ class InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
     get new_invoice_request_path(plan: "bureau")
     assert_redirected_to new_session_path
     assert_equal new_invoice_request_url(plan: "bureau"), session[:return_to_after_authenticating]
-    get magic_link_path(@user.generate_token_for(:magic_link))
+    post magic_link_path(@user.generate_token_for(:magic_link))
     assert_redirected_to new_invoice_request_url(plan: "bureau")
   end
 

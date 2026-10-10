@@ -1,4 +1,8 @@
 <p><%= t(".greeting") %></p>
 <p><%= t(".body") %></p>
 <p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".button") %></a></p>
+<% if @code %>
+<p><%= t(".code_intro") %></p>
+<p style="font-size:28px;font-weight:600;letter-spacing:6px;font-family:Menlo,Consolas,monospace;color:#2b2622"><%= @code %></p>
+<% end %>
 <p style="color:#6b6257;font-size:13px"><%= t(".expiry") %></p>

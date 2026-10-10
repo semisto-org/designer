@@ -1,7 +1,10 @@
 Rails.application.routes.draw do
-  # Sign-in: Google or magic link, no passwords.
+  # Sign-in: Google, a magic link (or the code sent with it), or a password.
   resource :session, only: %i[new create destroy]
+  post "session/code", to: "sessions#code", as: :session_code
+  post "session/password", to: "sessions#password", as: :session_password
   get "magic/:token", to: "magic_links#show", as: :magic_link
+  post "magic/:token", to: "magic_links#create"
   get "auth/google_oauth2/callback", to: "omniauth_callbacks#google"
   get "auth/failure", to: "omniauth_callbacks#failure"
   get "dev/login", to: "dev/logins#show" if Rails.env.local?
@@ -131,6 +134,7 @@ Rails.application.routes.draw do
     resources :api_tokens, path: "ai/tokens", only: %i[create destroy]
     resources :oauth_apps, path: "ai/apps", only: :destroy
     resource :tour, only: :update
+    resource :password, only: %i[update destroy]
   end
   resources :maps, only: [] do
     scope module: :maps do

@@ -3,5 +3,11 @@
 <%= t(".body") %>
 
 <%= @url %>
+<% if @code %>
+
+<%= t(".code_intro") %>
+
+<%= @code %>
+<% end %>
 
 <%= t(".expiry") %>

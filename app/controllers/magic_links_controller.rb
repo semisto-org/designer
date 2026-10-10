@@ -1,10 +1,24 @@
+# The link in the sign-in e-mail. Opening it (GET) only shows a button:
+# mail apps and scanners open links to preview them, and that must not spend
+# the link. Pressing the button (POST) signs in.
 class MagicLinksController < ApplicationController
   allow_unauthenticated_access
+  rate_limit to: 20, within: 3.minutes, only: :create, with: -> { redirect_to new_session_path, alert: t("sessions.rate_limited") }
 
   def show
     user = User.find_by_token_for(:magic_link, params[:token])
+    return redirect_to new_session_path, alert: t("sessions.link_expired") unless user
+
+    render inertia: "magic_links/show", props: {
+      email: user.email_address,
+      action: magic_link_path(params[:token], return_to: safe_return_to)
+    }
+  end
+
+  def create
+    user = User.find_by_token_for(:magic_link, params[:token])
     if user
-      user.update!(last_signed_in_at: Time.current)
+      user.signed_in!
       start_new_session_for user
       redirect_to safe_return_to || after_authentication_url, notice: t("sessions.signed_in")
     else

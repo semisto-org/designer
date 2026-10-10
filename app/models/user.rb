@@ -18,11 +18,48 @@ class User < ApplicationRecord
   normalizes :email_address, with: ->(e) { e.strip.downcase }
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-  # Passwordless sign-in: a signed token, valid 20 minutes, invalidated as
-  # soon as the user signs in (last_signed_in_at changes).
-  generates_token_for :magic_link, expires_in: 20.minutes do
+  # Optional: most people sign in with a link, a code or Google.
+  has_secure_password validations: false
+  validates :password, length: { minimum: 10, maximum: 72 }, confirmation: true, allow_nil: true
+
+  SIGN_IN_TTL = 20.minutes
+  SIGN_IN_CODE_MAX_ATTEMPTS = 5
+
+  # The magic link: a signed token, valid 20 minutes, invalidated as soon as
+  # the user signs in (last_signed_in_at changes).
+  generates_token_for :magic_link, expires_in: SIGN_IN_TTL do
     last_signed_in_at
   end
+
+  # The six-digit code sent with the magic link, to sign in on a device that
+  # cannot open the e-mail. Only its digest is kept; a new one replaces the
+  # previous one. Returns the code, to put in the e-mail.
+  def issue_sign_in_code!
+    code = format("%06d", SecureRandom.random_number(1_000_000))
+    update!(sign_in_code_digest: sign_in_code_digest_for(code), sign_in_code_sent_at: Time.current, sign_in_code_attempts: 0)
+    code
+  end
+
+  # True once for the right code within 20 minutes. Each wrong guess counts;
+  # after five, the code is dropped and a new one must be asked for.
+  def sign_in_code_matches?(code)
+    return false if sign_in_code_digest.blank? || sign_in_code_sent_at.nil? || sign_in_code_sent_at < SIGN_IN_TTL.ago
+
+    if ActiveSupport::SecurityUtils.secure_compare(sign_in_code_digest, sign_in_code_digest_for(code.to_s.gsub(/\D/, "")))
+      true
+    else
+      attempts = sign_in_code_attempts + 1
+      update_columns(sign_in_code_attempts: attempts, **(attempts >= SIGN_IN_CODE_MAX_ATTEMPTS ? { sign_in_code_digest: nil } : {}))
+      false
+    end
+  end
+
+  # Every way in ends here: the link and the code stop working.
+  def signed_in!
+    update!(last_signed_in_at: Time.current, sign_in_code_digest: nil, sign_in_code_sent_at: nil, sign_in_code_attempts: 0)
+  end
+
+  def password? = password_digest.present?
 
   def self.from_google(auth)
     info = auth.info
@@ -53,4 +90,10 @@ class User < ApplicationRecord
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
       tourSeen: tour_seen_at.present? }
   end
+
+  private
+    def sign_in_code_digest_for(code)
+      key = Rails.application.key_generator.generate_key("sign_in_code")
+      OpenSSL::HMAC.hexdigest("SHA256", key, "#{id}:#{code}")
+    end
 end
