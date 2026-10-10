@@ -166,3 +166,22 @@ export type BioObservationsResponse = {
 }
 
 export type PlantSuggestion = { id: number; name: string; latin: string | null }
+
+// --- Photo sketches ---------------------------------------------------
+
+/** A hand-drawn line over a photo: points in the photo's frame (0..1), width as a fraction of its width. */
+export type SketchLine = { type: 'line'; color: string; width: number; points: [number, number][] }
+/** A handwritten note: its baseline starts at x, y; size is a fraction of the photo's width. */
+export type SketchText = { type: 'text'; color: string; size: number; x: number; y: number; text: string }
+export type SketchMark = SketchLine | SketchText
+
+export type PhotoSketchData = {
+  id: number
+  photoId: number
+  name: string
+  strokes: SketchMark[]
+  lockVersion: number
+  createdBy: string | null
+  createdAt: string
+  updatedAt: string
+}
