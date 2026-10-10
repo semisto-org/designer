@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { photoLabel } from '@/map/photos/format'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
-import { photoActions, usePhotos } from '@/map/photos/store'
+import { photoAccept, photoActions, usePhotos } from '@/map/photos/store'
 import { uploadActions } from '@/map/photos/upload'
 import type { MapFeature } from '@/types'
 import type { MapPhotoData } from '@/types/soil_photos'
@@ -32,7 +32,7 @@ function anchor(geometry: Geometry): { lng: number; lat: number } | null {
 /** Inspector section « Photos »: photos linked to the selected feature or taken within 15 m of it. */
 export default function PhotosInspector({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
-  const { version, mapId } = usePhotos()
+  const { version, mapId, limits } = usePhotos()
   const [photos, setPhotos] = useState<MapPhotoData[] | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
   const featureId = feature.properties.id
@@ -67,7 +67,7 @@ export default function PhotosInspector({ feature }: { feature: MapFeature }) {
               <ImagePlus className="h-3.5 w-3.5" />
               {t('soil_photos.inspector.add')}
             </button>
-            <input ref={fileInput} type="file" multiple accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label={t('soil_photos.inspector.add')}
+            <input ref={fileInput} type="file" multiple accept={photoAccept(limits.contentTypes)} className="sr-only" aria-label={t('soil_photos.inspector.add')}
               onChange={(e) => { add(e.target.files); e.target.value = '' }} />
           </>
         )}

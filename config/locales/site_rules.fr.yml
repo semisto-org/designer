@@ -1,0 +1,221 @@
+fr:
+  site_rules:
+    panel_title: "Règles et risques"
+    intro: "Ce que la loi et la nature disent déjà de ton terrain : les risques connus et les règles d'urbanisme, avec ce que ça change pour ton jardin-forêt."
+    loading: "Lecture des règles et des risques…"
+    load_error: "Les règles et les risques n'ont pas pu être chargés."
+    retry: "Réessayer"
+    indicative: "Indicatif"
+    disclaimer: "Ces lignes t'aident à lire ton lieu, elles ne sont pas un avis juridique. Le règlement et la mairie font foi : avant un abri, une mare ou une clôture, demande un certificat d'urbanisme."
+    draw_outline: "Dessiner le contour"
+    open_layers: "Ouvrir les couches"
+    not_configured: "Les risques et les règles d'urbanisme ne sont pas encore disponibles pour la région « %{region} »."
+    not_configured_layers: "En attendant, ces couches de la région en parlent :"
+    reasons:
+      no_location: "Dessine le contour de ton terrain pour lire ce qui s'y applique."
+      unavailable: "Le service ne répond pas pour le moment. Réessaie un peu plus tard."
+      not_configured: "Pas encore disponible pour cette région."
+    risks:
+      title: "Risques"
+      note: "ce que la nature dit"
+      present_title: "Ce qui concerne ton terrain"
+      absent_title: "Non concerné"
+      none_present: "Aucun risque signalé à cet endroit."
+      scope:
+        address: "à l'adresse"
+        commune: "dans la commune"
+      commune_only: "Ce niveau vaut pour toute la commune, pas forcément pour ta parcelle."
+      report_link: "Voir le rapport Géorisques"
+      groups:
+        natural: "Risque naturel"
+        technological: "Risque technologique"
+      items:
+        inondation:
+          label: "Inondation"
+          advice: "Préfère les buttes et les planches surélevées, des espèces qui supportent l'eau stagnante (saules, aulnes, sureau, cassis), et laisse l'eau passer : pas de remblai ni de clôture pleine sans lire le plan de prévention."
+        remontee_nappe:
+          label: "Remontée de nappe"
+          advice: "Sol gorgé d'eau en hiver : plante sur buttes, choisis des racines qui tolèrent l'eau (aulne, saule, cognassier) et évite de creuser profond."
+        risque_cotier:
+          label: "Risques côtiers"
+          advice: "Vent salé et submersion possibles : commence par des brise-vent tolérants au sel (argousier, tamaris, chêne vert)."
+        seisme:
+          label: "Séisme"
+          advice: "Sans effet sur les plantations ; une construction neuve peut devoir suivre des règles parasismiques."
+        mouvement_terrain:
+          label: "Mouvement de terrain"
+          advice: "Garde le couvert végétal et les racines qui tiennent la pente (haies, arbres à enracinement profond), ne terrasse pas sans avis et ne concentre pas l'eau en haut de talus."
+        recul_trait_cote:
+          label: "Recul du trait de côte"
+          advice: "La côte recule : pense à trente ans et n'installe rien de durable près du rivage."
+        retrait_gonflement_argile:
+          label: "Retrait et gonflement des argiles"
+          advice: "Garde les grands arbres gourmands en eau (chênes, peupliers, saules) à au moins une fois et demie leur hauteur adulte des fondations, et paille le sol pour garder son humidité stable."
+        avalanche:
+          label: "Avalanche"
+          advice: "Les arbres protègent ; aucun abri ni aménagement dans le couloir sans avis."
+        feu_foret:
+          label: "Feu de forêt"
+          advice: "Respecte les obligations de débroussaillement autour des bâtiments, préfère des feuillus et des fruitiers près de la maison, éloigne les résineux et le bois mort."
+        eruption_volcanique:
+          label: "Éruption volcanique"
+          advice: "Pas de conséquence directe sur le dessin : suis le plan de secours de la commune."
+        cyclone:
+          label: "Vents violents"
+          advice: "Installe des haies brise-vent, choisis des arbres au bois souple et tuteure solidement les jeunes plants."
+        radon:
+          label: "Radon"
+          advice: "Sans effet sur les plantes : il concerne l'air des pièces fermées. Aère un abri où tu passes du temps."
+        icpe:
+          label: "Installation industrielle classée"
+          advice: "Renseigne-toi sur ses rejets avant de cultiver pour manger, et plante une haie diversifiée en écran."
+        nucleaire:
+          label: "Installation nucléaire"
+          advice: "Pas de conséquence directe sur le dessin : suis le plan d'intervention de la commune."
+        canalisations_matieres_dangereuses:
+          label: "Canalisation de matières dangereuses"
+          advice: "Ni arbre ni terrassement au-dessus de son tracé : repère-le avant de planter."
+        pollution_sols:
+          label: "Pollution des sols"
+          advice: "Fais analyser la terre avant de cultiver des légumes ; en attendant, privilégie les fruits d'arbres et les bacs."
+        rupture_barrage:
+          label: "Rupture de barrage"
+          advice: "Pas de conséquence directe sur le dessin : suis le plan d'alerte de la commune."
+        risque_minier:
+          label: "Ancien site minier"
+          advice: "Affaissements possibles : évite les mares et les gros terrassements sans étude, et fais analyser le sol."
+    urbanism:
+      title: "Urbanisme"
+      note: "ce que la loi dit"
+      queried_with:
+        outline: "Lu sur le contour du terrain."
+        center: "Lu au centre de la carte : dessine le contour pour une lecture précise."
+      commune: "Commune"
+      document: "Document en vigueur"
+      document_date: "approuvé le %{date}"
+      document_types:
+        PLU: "Plan local d'urbanisme"
+        PLUi: "Plan local d'urbanisme intercommunal"
+        POS: "Plan d'occupation des sols"
+        CC: "Carte communale"
+        PSMV: "Plan de sauvegarde et de mise en valeur"
+      document_link: "Voir sur le Géoportail de l'urbanisme"
+      regulation_link: "Lire le règlement"
+      act_link: "Lire l'acte"
+      rnu: "La commune n'a pas de document d'urbanisme : le règlement national d'urbanisme (RNU) s'applique. Hors des parties déjà bâties, construire est en principe interdit ; planter reste libre. La mairie peut te délivrer un certificat d'urbanisme."
+      document_missing: "Aucun document d'urbanisme n'est publié en ligne pour cette commune. Il en existe peut-être un en mairie : demande-le avant de construire."
+      partial: "Une partie des informations n'a pas pu être lue : réessaie plus tard pour la liste complète."
+      zones_title: "Zonage"
+      sectors_title: "Secteur de la carte communale"
+      prescriptions_title: "Prescriptions"
+      other_prescriptions: "Autres prescriptions (%{count})"
+      easements_title: "Servitudes d'utilité publique"
+      count: "%{count} périmètres"
+      networks_note: "Réseaux : visibles par les membres de la carte, masqués dans les vues publiques."
+      zones:
+        u:
+          label: "Zone urbaine"
+          advice: "Jardin, verger et potager y ont leur place ; un abri, une serre ou une clôture suivent le règlement de la zone (hauteur, surface, distance aux limites)."
+        au:
+          label: "Zone à urbaniser"
+          advice: "Destinée à être bâtie : un jardin y est possible, mais une plantation durable peut croiser un futur aménagement. Lis l'orientation d'aménagement du secteur."
+        a:
+          label: "Zone agricole"
+          advice: "Planter des arbres et cultiver y est l'usage normal ; les constructions y sont en général réservées à l'activité agricole, et un abri de loisir y est souvent refusé."
+        n:
+          label: "Zone naturelle"
+          advice: "Les plantations y sont bienvenues ; les constructions, même petites, y sont très limitées et les arbres existants parfois protégés."
+        other:
+          label: "Zone particulière"
+          advice: "Lis le règlement de cette zone pour savoir ce qu'il permet."
+      sectors:
+        constructible:
+          label: "Secteur constructible"
+          advice: "Les constructions y suivent les règles nationales d'urbanisme ; jardin et plantations y sont libres."
+        activities:
+          label: "Secteur réservé aux activités"
+          advice: "Réservé aux bâtiments d'activité ; plantations libres, autres constructions limitées."
+        not_constructible:
+          label: "Secteur non constructible"
+          advice: "Plantations et cultures y sont libres ; les constructions y sont en principe interdites, sauf l'extension de l'existant et les équipements agricoles."
+        other:
+          label: "Autre secteur"
+          advice: "Lis le rapport de la carte communale pour savoir ce qu'il permet."
+      prescriptions:
+        "01": "Espace boisé classé : les arbres y sont protégés et le défrichement interdit. Un jardin-forêt y est cohérent, mais abattre un arbre demande une déclaration."
+        "02": "Constructibilité limitée par un risque ou une nuisance : lis la règle avant d'installer un abri."
+        "05": "Emplacement réservé : la commune prévoit ici un équipement (voie, bassin…). N'y plante rien de durable sans te renseigner."
+        "07": "Élément de paysage ou de patrimoine protégé (haie, arbre, mur…) : le garder est la règle, le supprimer demande une déclaration."
+        "25": "Continuité écologique à préserver : haies et arbres y sont précieux, et un jardin-forêt y contribue."
+      easements:
+        default_advice: "Lis l'acte pour savoir ce que cette servitude impose à tes plantations et aménagements."
+        ac1:
+          label: "Abords d'un monument historique"
+          advice: "Les travaux visibles (abri, serre, clôture, mur) passent par l'avis de l'Architecte des bâtiments de France ; planter reste libre."
+        ac2:
+          label: "Site inscrit ou classé"
+          advice: "Dans un site classé, presque tout aménagement demande une autorisation ; dans un site inscrit, les travaux sont déclarés à l'avance. Planter reste en général libre."
+        ac4:
+          label: "Site patrimonial remarquable"
+          advice: "Les travaux visibles passent par l'avis de l'Architecte des bâtiments de France."
+        as1:
+          label: "Protection d'un captage d'eau potable"
+          advice: "Engrais, traitements, fumier et parfois pâturage y sont réglementés : lis l'arrêté du captage."
+        pm1:
+          label: "Plan de prévention des risques naturels"
+          advice: "Son règlement fixe ce qui est permis (remblais, clôtures, abris, parfois plantations) : lis-le avant de dessiner."
+        pm3:
+          label: "Plan de prévention des risques technologiques"
+          advice: "Son règlement fixe ce qui est permis près du site : lis-le avant de construire."
+        a1:
+          label: "Forêt de protection"
+          advice: "Le boisement est protégé : pas de défrichement, et les coupes suivent un régime spécial."
+        a4:
+          label: "Passage le long d'un cours d'eau"
+          advice: "Une bande le long de la berge reste accessible pour l'entretien : préfère une rive plantée et ouverte à une clôture."
+        a5:
+          label: "Canalisation d'eau ou d'assainissement"
+          advice: "Pas d'arbre au-dessus du tracé : le gestionnaire doit pouvoir y accéder."
+        el3:
+          label: "Halage et marchepied"
+          advice: "Un passage le long de la rivière doit rester libre."
+        el7:
+          label: "Alignement de voie publique"
+          advice: "La limite du terrain peut reculer pour élargir la voie : pas de haie durable sur la bande concernée sans te renseigner."
+        i1:
+          label: "Canalisation d'hydrocarbures"
+          advice: "Ni arbre ni terrassement profond au-dessus du tracé."
+        i3:
+          label: "Canalisation de gaz"
+          advice: "Ni arbre ni terrassement profond au-dessus du tracé : la bande reste en herbe ou en petits arbustes."
+        i4:
+          label: "Ligne électrique"
+          advice: "Sous et près des lignes, la hauteur des arbres est limitée et le gestionnaire peut élaguer : garde cette bande pour les arbustes et les strates basses."
+        int1:
+          label: "Voisinage d'un cimetière"
+          advice: "Puits et certaines constructions y sont limités."
+        pt1:
+          label: "Télécommunications"
+          advice: "Protection des centres radioélectriques : lis l'acte avant de construire."
+        pt2:
+          label: "Faisceau hertzien"
+          advice: "La hauteur des arbres et des constructions peut y être limitée."
+        t1:
+          label: "Voie ferrée"
+          advice: "Plantations et clôtures près des voies suivent des distances fixées."
+        t5:
+          label: "Servitude aéronautique"
+          advice: "La hauteur des arbres et des constructions peut y être limitée."
+        t7:
+          label: "Servitude aéronautique"
+          advice: "Les grandes hauteurs y sont soumises à autorisation."
+    sources:
+      title: "Sources et licences"
+      licence: "Licence Ouverte 2.0 (Etalab)"
+      licence_line: "licence : %{licence}"
+      georisques:
+        publisher: "Géorisques (ministère de la Transition écologique, BRGM)"
+        title: "Rapport des risques à l'adresse"
+      gpu:
+        publisher: "Géoportail de l'urbanisme (IGN, API Carto)"
+        title: "Documents d'urbanisme et servitudes d'utilité publique"

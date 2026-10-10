@@ -7,11 +7,13 @@
 # has to parse the file's metadata.
 class MapPhoto < ApplicationRecord
   include PointLocation
+  include HeicAttachment
 
   MAX_BYTES = 25.megabytes
-  # Images only in v1 (video comes later). HEIC is refused on purpose: not
-  # every browser can show it and libvips needs extra codecs to convert it.
+  # Images only in v1 (video comes later). What is stored; a HEIC photo
+  # (iPhone) is accepted at upload and converted to JPEG (HeicAttachment).
   CONTENT_TYPES = %w[image/jpeg image/png image/webp].freeze
+  UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES).freeze
   SOURCES = %w[web phone import].freeze
   LOCATION_SOURCES = %w[exif device map manual].freeze
   # « Near » a thing on the map, for the inspector.
@@ -24,6 +26,7 @@ class MapPhoto < ApplicationRecord
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :album, class_name: "PhotoAlbum", foreign_key: :photo_album_id, inverse_of: :photos, optional: true
   belongs_to :map_feature, optional: true
+  has_many :sketches, -> { ordered }, class_name: "PhotoSketch", dependent: :destroy, inverse_of: :photo
 
   # Variants go through libvips: rotated from EXIF, metadata (GPS included)
   # stripped. Viewers only ever get variants; the original file, EXIF and
@@ -33,6 +36,7 @@ class MapPhoto < ApplicationRecord
     attachable.variant :large, resize_to_limit: [ 1800, 1800 ], format: :jpeg, saver: { strip: true, quality: 85 }
   end
 
+  converts_heic :image
   before_validation :normalize_heading, :record_checksum, :clear_location_source_without_location
 
   validates :caption, length: { maximum: 500 }
@@ -78,7 +82,7 @@ class MapPhoto < ApplicationRecord
     {
       id:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
-      albumId: photo_album_id, featureId: map_feature_id,
+      albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
       width: meta["width"], height: meta["height"],
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,

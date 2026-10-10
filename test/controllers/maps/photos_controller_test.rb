@@ -33,7 +33,7 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "Verger" ], body["photos"].map { |p| p["caption"] }
     assert_equal [ "Avant travaux" ], body["albums"].map { |a| a["name"] }
     assert_equal 25.megabytes, body["limits"]["maxBytes"]
-    assert_equal %w[image/jpeg image/png image/webp], body["limits"]["contentTypes"]
+    assert_equal %w[image/jpeg image/png image/webp image/heic image/heif image/heic-sequence image/heif-sequence], body["limits"]["contentTypes"]
   end
 
   test "a viewer cannot upload, edit or delete" do
@@ -77,6 +77,18 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_equal "phone", body["source"]
     assert_equal "Vue vers le sud", body["caption"]
     assert_match(/\A2026-05-17T14:32:10/, body["takenAt"])
+  end
+
+  test "an iPhone photo in HEIC is saved as a JPEG" do
+    sign_in_as users(:michael)
+    post map_photos_path(@map), params: { photo: { image: upload("terrain_gps.heic", "image/heic"), lng: 4.9075, lat: 50.341, location_source: "exif" } },
+                                headers: json_headers
+    assert_response :created
+    body = response.parsed_body
+    assert_equal "terrain_gps.jpg", body["filename"]
+    assert_equal "image/jpeg", MapPhoto.find(body["id"]).image.blob.content_type
+    get image_map_photo_path(@map, body["id"], size: "thumb")
+    assert_response :redirect
   end
 
   test "a collaborator who is only an editor can add too" do

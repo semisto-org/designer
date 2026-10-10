@@ -197,6 +197,16 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     assert_empty response.parsed_body["observations"]
   end
 
+  test "an observation photo in HEIC is stored as a JPEG" do
+    sign_in_as users(:michael)
+    plant = @map.features.create!(layer: "plants", kind: "plant", geometry: point, properties: { "species_id" => plant_species(:apple).id })
+    post map_feature_plant_observations_path(@map, plant),
+         params: { plant_observation: { observed_on: "2026-06-01", survival: "established", photo: fixture_file_upload("terrain_gps.heic", "image/heic") } }
+    assert_response :created
+    blob = PlantObservation.find(response.parsed_body["observation"]["id"]).photo.blob
+    assert_equal [ "image/jpeg", "terrain_gps.jpg" ], [ blob.content_type, blob.filename.to_s ]
+  end
+
   test "observation in the future is refused in French" do
     sign_in_as users(:michael)
     plant = @map.features.create!(layer: "plants", kind: "plant", geometry: point, properties: {})

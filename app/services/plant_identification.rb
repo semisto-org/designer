@@ -56,8 +56,17 @@ class PlantIdentification
       data = file.read.to_s.b
       name = file.original_filename.to_s
       type = Marcel::MimeType.for(StringIO.new(data), name:, declared_type: file.content_type).to_s
-      raise Invalid, I18n.t("plantnet.errors.not_a_photo", name:) unless CONTENT_TYPES.include?(type)
       raise Invalid, I18n.t("plantnet.errors.too_large", name:, max: MAX_BYTES / 1.megabyte) if data.bytesize > MAX_BYTES
+      # A HEIC photo the browser could not shrink (outside Safari): Pl@ntNet takes JPEG.
+      if HeicImage.heic?(type)
+        begin
+          data = HeicImage.to_jpeg(data)
+        rescue HeicImage::Error
+          raise Invalid, I18n.t("plantnet.errors.not_a_photo", name:)
+        end
+        name, type = HeicImage.jpeg_filename(name), "image/jpeg"
+      end
+      raise Invalid, I18n.t("plantnet.errors.not_a_photo", name:) unless CONTENT_TYPES.include?(type)
 
       { io: StringIO.new(data), filename: name, content_type: type }
     end

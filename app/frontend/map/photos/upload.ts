@@ -29,7 +29,7 @@ export type UploadOptions = {
 }
 
 const CONCURRENCY = 3
-const EXTENSIONS = /\.(jpe?g|png|webp)$/i
+const EXTENSIONS = /\.(jpe?g|png|webp|heic|heif)$/i
 
 type Job = { item: UploadItem; file: File; mapId: number; options: UploadOptions }
 

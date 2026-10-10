@@ -107,8 +107,8 @@ fr:
       more: "et %{count} autres dans le panneau Photos"
     errors:
       image_missing: "Aucune photo n'a été reçue."
-      not_an_image: "« %{name} » n'est pas une image acceptée. Formats possibles : %{types}. Sur iPhone, choisis « Le plus compatible » dans Réglages > Appareil photo > Formats, ou exporte la photo en JPEG."
-      types_label: "JPEG, PNG ou WebP"
+      not_an_image: "« %{name} » n'est pas une image acceptée. Formats possibles : %{types}."
+      types_label: "JPEG, PNG, WebP ou HEIC"
       too_large: "« %{name} » pèse %{size} : la limite est de %{max} par photo."
       already_imported: "« %{name} » est déjà dans cette carte."
       album_elsewhere: "Cet album appartient à une autre carte."

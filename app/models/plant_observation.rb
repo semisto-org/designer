@@ -2,8 +2,10 @@
 # (établie, en difficulté, morte), how vigorous (1 to 5), a note and a photo.
 # Observations of every garden feed the species sheet, as anonymous counts.
 class PlantObservation < ApplicationRecord
+  include HeicAttachment
+
   SURVIVALS = %w[established struggling dead].freeze
-  # Same rules as the map's photos (MapPhoto): HEIC is refused.
+  # Same rules as the map's photos (MapPhoto): HEIC is converted to JPEG.
   PHOTO_TYPES = MapPhoto::CONTENT_TYPES
   MAX_PHOTO_BYTES = MapPhoto::MAX_BYTES
 
@@ -19,6 +21,8 @@ class PlantObservation < ApplicationRecord
     attachable.variant :thumb, resize_to_limit: [ 480, 480 ], format: :jpeg, saver: { strip: true, quality: 80 }
     attachable.variant :large, resize_to_limit: [ 1800, 1800 ], format: :jpeg, saver: { strip: true, quality: 85 }
   end
+
+  converts_heic :photo
 
   validates :observed_on, presence: true
   validates :survival, inclusion: { in: SURVIVALS }

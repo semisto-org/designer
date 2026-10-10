@@ -119,6 +119,17 @@ class ProjectSheet
     new({ **merged, "meta" => meta.compact }, strict: false)
   end
 
+  # Merges a (strict, valid) patch into the map's sheet and saves it, under a
+  # row lock so two autosaves never lose each other's fields.
+  def self.save!(map, patch)
+    sheet = nil
+    map.with_lock do
+      sheet = merge(map.project, patch)
+      map.update!(project: sheet.to_h)
+    end
+    sheet
+  end
+
   def self.fields_for(section) = SECTIONS.fetch(section)
 
   # For the frontend: the whole declaration, in display order.

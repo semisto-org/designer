@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libgeos-dev
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev
 
       - name: Checkout code
         uses: actions/checkout@v6

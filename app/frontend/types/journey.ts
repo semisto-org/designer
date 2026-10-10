@@ -61,6 +61,28 @@ export type ProjectPayload = {
   schema: ProjectSchema
   drafts: ProjectDraft[]
   canEdit: boolean
+  /** The private link for the people behind the project (editors only). */
+  formLink: ProjectFormLink | null
+}
+
+export type ProjectFormLink = {
+  url: string
+  enabled: boolean
+  openedAt: string | null
+  submittedAt: string | null
+  createdAt: string | null
+}
+
+/** The form opened from the private link (/fiche-projet/:token). */
+export type ProjectFormPayload = {
+  token: string
+  mapName: string
+  invitedBy: string
+  project: ProjectData
+  progress: ProjectProgress
+  schema: ProjectSchema
+  canEdit: boolean
+  submittedAt: string | null
 }
 
 // ----- Journey -----

@@ -118,9 +118,12 @@ catalogue = [
            description: "Parcelles agricoles déclarées (culture, surface) et éléments du paysage : haies, arbres isolés, mares.")
 ]
 
+legends = YAML.load_file(Rails.root.join("db/seeds/layer_legends.yml")).fetch("wallonia", {})
 catalogue.each do |attributes|
   layer = wallonia.layers.find_or_initialize_by(key: attributes[:key])
   next if layer.persisted? && layer.options["locked"]
+  legend = legends[attributes[:key]]
+  attributes = attributes.merge(options: attributes[:options].merge("legend" => legend)) if legend
   layer.assign_attributes(attributes.except(:key))
   layer.save!
 end

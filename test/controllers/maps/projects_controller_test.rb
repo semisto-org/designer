@@ -36,7 +36,7 @@ class Maps::ProjectsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:michael)
     get map_project_path(@map), as: :json
     assert_response :success
-    assert_equal %w[canEdit drafts map progress project schema], response.parsed_body.keys.sort
+    assert_equal %w[canEdit drafts formLink map progress project schema], response.parsed_body.keys.sort
   end
 
   test "autosave merges fields and answers with the new progress" do

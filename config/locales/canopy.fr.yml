@@ -1,0 +1,39 @@
+# « Arbres en place » panel: height of the trees standing on and around the
+# terrain (global canopy height map). Keys in English, values in French.
+# Owned by the canopy area.
+fr:
+  canopy:
+    panel_title: "Arbres en place"
+    intro: "Les arbres déjà là sont ton premier capital : ombre, abri du vent, humus. Voici ce qu'on en voit depuis le ciel."
+    loading: "On mesure les arbres…"
+    load_error: "La hauteur des arbres n'a pas pu être chargée."
+    retry: "Réessayer"
+    draw_outline: "Dessiner le contour"
+    reasons:
+      not_configured: "La hauteur des arbres n'est pas disponible sur ce serveur."
+      no_outline: "Dessine d'abord le contour du terrain : on mesurera les arbres dedans et autour."
+      too_large: "Le terrain est trop grand pour cette lecture (plus de 2 km de côté)."
+      no_coverage: "La carte de hauteur des arbres ne couvre pas cet endroit."
+      upstream_error: "La source des hauteurs d'arbres ne répond pas pour le moment. Réessaie plus tard."
+    sentences:
+      tallest: "Le plus grand arbre du terrain mesure environ %{height} m."
+      cover: "Les arbres couvrent environ %{share} % du terrain, soit %{area}."
+      tall: "Les grands arbres, de %{height} m et plus, en occupent %{area}."
+      no_tall: "Aucun arbre n'y dépasse %{height} m."
+      mean: "Sous la canopée, les arbres font en moyenne %{height} m."
+      open_ground: "Aucun arbre de plus de %{height} m n'a été repéré sur le terrain : un terrain ouvert, à toi de le peupler."
+    imagery:
+      dated: "Vu du ciel en %{when}, il y a environ %{years} ans : les arbres coupés ou plantés depuis n'y figurent pas, et ceux qui restent ont grandi."
+      undated: "Images satellite d'environ 2016 à 2020 selon l'endroit : les arbres coupés ou plantés depuis n'y figurent pas."
+      between: "entre %{from} et %{to}"
+    show_on_map: "Voir la hauteur des arbres sur la carte"
+    legend:
+      title: "Hauteur des arbres"
+      short_title: "Arbres"
+      metres: "%{value} m"
+      range: "%{from} à %{to} m"
+      above: "%{from} m et plus"
+      source: "Meta et WRI (2026), CC BY 4.0, images © Vantor"
+    attribution: "Hauteur de canopée : Meta et World Resources Institute (2026), CC BY 4.0, images © Vantor (ex-Maxar)."
+    source_link: "Voir la source des données"
+    precision: "Estimation par satellite, case de %{cell} m environ : un ordre de grandeur, pas un relevé arbre par arbre."
