@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { visibleOffset } from '@/map/visiblePadding'
 import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
+import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
 import { photoActions, usePhotos } from '@/map/photos/store'
 import { downloadSketch } from '@/map/photos/sketch/download'
@@ -74,6 +75,19 @@ export function PhotoLightbox() {
     dialog.current?.focus()
     return () => returnFocus.current?.focus?.()
   }, [photoId == null])
+
+  // The next and previous photos load in the background, so moving through them is instant.
+  useEffect(() => {
+    if (photoId == null) return
+    const neighbours = [photos[index + 1], photos[index - 1]].filter(Boolean)
+    const images = neighbours.map((other) => {
+      const image = new Image()
+      image.decoding = 'async'
+      image.src = photoUrl(editor.map.id, other.id, 'large')
+      return image
+    })
+    return () => images.forEach((image) => { image.src = '' })
+  }, [photoId, index, photos, editor.map.id])
 
   useEffect(() => {
     if (photoId == null || sketching != null) return
@@ -159,6 +173,10 @@ export function PhotoLightbox() {
         <FittedPhoto
           src={photoUrl(mapId, photo.id, 'large')}
           alt={photoLabel(photo)}
+          placeholder={photoUrl(mapId, photo.id, 'thumb')}
+          initialAspect={photo.width && photo.height ? photo.width / photo.height : null}
+          loadingLabel={t('soil_photos.lightbox.loading')}
+          errorLabel={t('soil_photos.lightbox.load_failed')}
           overlay={(aspect) => shownSketch && <SketchLayer marks={shownSketch.strokes} aspect={aspect} className="pointer-events-none absolute inset-0 h-full w-full" />}
         />
         <button type="button" onClick={() => photoActions.open(null)} className="absolute right-3 top-3 rounded-full bg-black/50 p-2 hover:bg-black/70" aria-label={t('common.close')}>
@@ -204,6 +222,8 @@ export function PhotoLightbox() {
             </div>
           </div>
         </dl>
+
+        <PhotoCameraDetails photo={photo} />
 
         {canEdit && (
           <div className="grid grid-cols-2 gap-2">

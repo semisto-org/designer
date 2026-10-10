@@ -18,3 +18,8 @@ production:
     class: BillingDailyJob
     queue: default
     schedule: every day at 8am
+  # Camera metadata and the viewer's « large » variant for photos never read
+  # (uploaded before PhotoCameraJob existed, or whose job was lost).
+  photo_camera_backfill:
+    command: "PhotoCameraJob.backfill"
+    schedule: every 10 minutes

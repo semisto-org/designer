@@ -19,6 +19,8 @@ export type MapPhotoData = {
   featureId: number | null
   /** Sketches drawn over the photo (PhotoSketch). */
   sketchesCount: number
+  /** What the file says about the camera (PhotoCamera), once read; null before or when it says nothing. */
+  camera: PhotoCameraData | null
   width: number | null
   height: number | null
   byteSize: number | null
@@ -26,6 +28,33 @@ export type MapPhotoData = {
   uploadedBy: string | null
   /** Distance to a feature, when listed for the inspector. */
   distanceM: number | null
+}
+
+/** Camera tags of a photo file; a DJI drone adds its flight and gimbal. Only what the file had. */
+export type PhotoCameraData = {
+  make?: string
+  model?: string
+  /** Commercial name of a known DJI drone camera (« DJI Mavic Mini » for FC7203). */
+  model_name?: string
+  drone?: boolean
+  focal_length_35mm?: number
+  f_number?: number
+  /** « 1/500 » */
+  exposure_time?: string
+  iso?: number
+  gps_altitude_m?: number
+  /** Height above the take-off point. */
+  relative_altitude_m?: number
+  /** Altitude above sea level. */
+  absolute_altitude_m?: number
+  /** 0 = horizon, -90 = straight down. */
+  gimbal_pitch?: number
+  /** Compass direction, 0-360. */
+  gimbal_yaw?: number
+  gimbal_roll?: number
+  flight_yaw?: number
+  flight_pitch?: number
+  flight_roll?: number
 }
 
 export type PhotoAlbumData = {

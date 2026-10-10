@@ -3,8 +3,9 @@
 # direction the camera was facing. Faces are never analysed (GDPR).
 #
 # The file is an Active Storage attachment. The browser reads the EXIF block
-# and sends the position and date along with the upload, so the server never
-# has to parse the file's metadata.
+# and sends the position and date along with the upload. What the file says
+# about the camera (model, settings, a drone's height and gimbal) is read
+# afterwards by PhotoCameraJob into `camera`.
 class MapPhoto < ApplicationRecord
   include PointLocation
   include HeicAttachment
@@ -38,6 +39,7 @@ class MapPhoto < ApplicationRecord
 
   converts_heic :image
   before_validation :normalize_heading, :record_checksum, :clear_location_source_without_location
+  after_create_commit -> { PhotoCameraJob.perform_later(self) }, if: -> { image.attached? }
 
   validates :caption, length: { maximum: 500 }
   validates :source, inclusion: { in: SOURCES }
@@ -83,6 +85,7 @@ class MapPhoto < ApplicationRecord
       id:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
       albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
+      camera: camera.presence,
       width: meta["width"], height: meta["height"],
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,
