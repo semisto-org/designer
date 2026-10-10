@@ -25,6 +25,7 @@ function transport(overrides: Partial<Transport> = {}) {
     uploadPhoto: async (_m, _op, featureId) => { calls.push(`photo ${featureId}`) },
     createObservation: async (_m, featureId) => { calls.push(`observation ${featureId}`) },
     createComment: async (_m, featureId) => { calls.push(`comment ${featureId}`) },
+    createBioindicator: async (_m, op) => { calls.push(`bioindicator ${op.observation.speciesName}`) },
     ...overrides,
   }
   return { t, calls }
@@ -76,6 +77,17 @@ describe('flush', () => {
     expect(calls).toEqual(['create', 'observation 100', 'photo 100', 'comment null'])
     expect(result).toMatchObject({ sent: 4, stopped: 'done', state: { ops: [], ids: { '-1': 100 } } })
     expect(result.sentFiles).toEqual(['file:///obs.jpg', 'file:///p.jpg'])
+  })
+
+  it('sends a bio-indicator plant with its photo, then lets the photo go', async () => {
+    const { t, calls } = transport()
+    const observation = {
+      speciesName: 'Ortie dioïque', latinName: 'Urtica dioica', catalogKey: 'ortie', plantSpeciesId: null,
+      abundance: 'frequent' as const, notes: null, lng: 4.9, lat: 50.3, takenAt: at,
+    }
+    const result = await flush(state([{ id: 'a', mapId: 1, createdAt: at, type: 'createBioindicator', observation, photo: 'file:///ortie.jpg' }]), t)
+    expect(calls).toEqual(['bioindicator Ortie dioïque'])
+    expect(result.sentFiles).toEqual(['file:///ortie.jpg'])
   })
 
   it('stops offline and keeps the rest in order', async () => {

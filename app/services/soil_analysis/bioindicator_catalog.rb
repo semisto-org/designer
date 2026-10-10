@@ -29,6 +29,14 @@ module SoilAnalysis
 
     def keys = by_key.keys
 
+    # The entry for a Latin name from Pl@ntNet ("Urtica dioica L.",
+    # "Taraxacum officinale aggr."): genus and species epithet compared,
+    # authorship and qualifiers ignored. Nil when the list does not have it.
+    def find_by_latin(latin_name)
+      target = PlantIdentification::CatalogueMatcher.binomial(latin_name)
+      target && by_binomial[target]
+    end
+
     # Entries whose name or Latin name contains the text (accents and case ignored).
     def search(query, limit: 10)
       needle = fold(query)
@@ -70,6 +78,13 @@ module SoilAnalysis
     end
 
     def by_key = (@by_key ||= all.index_by { |plant| plant["key"] }.freeze)
+
+    def by_binomial
+      @by_binomial ||= all.each_with_object({}) do |plant, index|
+        binomial = PlantIdentification::CatalogueMatcher.binomial(plant["latin"])
+        index[binomial] ||= plant if binomial
+      end.freeze
+    end
 
     def fold(text) = I18n.transliterate(text.to_s).downcase.strip
   end

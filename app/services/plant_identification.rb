@@ -21,13 +21,19 @@ class PlantIdentification
 
   # `species`: the matching catalogue PlantSpecies, or nil when the catalogue
   # does not know the plant yet (it is shown, but cannot be chosen).
-  Candidate = Data.define(:latin_name, :authorship, :common_names, :family, :score, :species) do
+  # `bioindicator`: the entry of the bio-indicator list (what the plant says
+  # about the soil), or nil when the list does not have it.
+  Candidate = Data.define(:latin_name, :authorship, :common_names, :family, :score, :species, :bioindicator) do
     def percent = (score * 100).round
 
     def as_json(*)
       {
         latinName: latin_name, authorship:, commonNames: common_names, family:, score:, percent:,
-        species: species && { id: species.id, latinName: species.latin_name, commonName: species.common_name, slug: species.to_param }
+        species: species && { id: species.id, latinName: species.latin_name, commonName: species.common_name, slug: species.to_param },
+        bioindicator: bioindicator && {
+          key: bioindicator["key"], name: bioindicator["name"], latin: bioindicator["latin"],
+          indicates: bioindicator["indicates"], unverified: bioindicator["unverified"]
+        }
       }
     end
   end
@@ -75,7 +81,8 @@ class PlantIdentification
       Candidate.new(
         latin_name: candidate.latin_name, authorship: candidate.authorship,
         common_names: candidate.common_names.first(MAX_COMMON_NAMES), family: candidate.family,
-        score: candidate.score, species: matcher.match(candidate.latin_name)
+        score: candidate.score, species: matcher.match(candidate.latin_name),
+        bioindicator: SoilAnalysis::BioindicatorCatalog.find_by_latin(candidate.latin_name)
       )
     end
 end

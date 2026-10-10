@@ -34,7 +34,7 @@ export const samplesToGeoJSON = (samples: SoilSampleData[]): Collection => ({
 
 export const observationsToGeoJSON = (observations: BioObservation[]): Collection => ({
   type: 'FeatureCollection',
-  features: observations.filter((o) => o.lng != null && o.lat != null).map((o) => point(o.lng as number, o.lat as number, o.id, { label: o.speciesName })),
+  features: observations.filter((o) => o.status !== 'draft' && o.lng != null && o.lat != null).map((o) => point(o.lng as number, o.lat as number, o.id, { label: o.speciesName })),
 })
 
 export const suggestionsToGeoJSON = (points: SuggestedPoint[]): Collection => ({

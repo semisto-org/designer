@@ -20,6 +20,8 @@ const SHARED = [
   ['editor', 'layers'],
   ['editor', 'kinds'],
   ['plantnet'],
+  ['soil', 'abundances'],
+  ['soil', 'indicators'],
 ]
 
 function deepMerge(target, source) {

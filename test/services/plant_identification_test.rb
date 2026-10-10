@@ -35,9 +35,20 @@ class PlantIdentificationTest < ActiveSupport::TestCase
     assert_equal({
       latinName: "Malus domestica", authorship: "(Suckow) Borkh.", commonNames: [ "Pommier", "Pommier domestique" ],
       family: "Rosaceae", score: 0.83, percent: 83,
-      species: { id: plant_species(:apple).id, latinName: "Malus domestica", commonName: "Pommier", slug: plant_species(:apple).to_param }
+      species: { id: plant_species(:apple).id, latinName: "Malus domestica", commonName: "Pommier", slug: plant_species(:apple).to_param },
+      bioindicator: nil
     }, json.first)
     assert_nil json.last[:species]
+  end
+
+  test "a wild plant of the bio-indicator list says what it indicates" do
+    stub_plantnet(body: plantnet_body(plantnet_result("Urtica dioica", 0.91, common_names: [ "Grande ortie" ], authorship: "L.")))
+    candidate = identify(upload("terrain.jpg")).candidates.first
+
+    assert_equal "ortie", candidate.bioindicator["key"]
+    json = candidate.as_json[:bioindicator]
+    assert_equal "Urtica dioica", json[:latin]
+    assert_includes json[:indicates], "nitrogen_rich"
   end
 
   test "keeps three common names at most" do

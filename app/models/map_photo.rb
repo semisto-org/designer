@@ -17,6 +17,9 @@ class MapPhoto < ApplicationRecord
   UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES).freeze
   SOURCES = %w[web phone import].freeze
   LOCATION_SOURCES = %w[exif device map manual].freeze
+  # A photo of wild plants left for the user's AI to read (to_analyze), then
+  # read (analyzed, with the AI's `bioindicator_summary`).
+  BIOINDICATOR_STATUSES = %w[to_analyze analyzed].freeze
   # « Near » a thing on the map, for the inspector.
   NEARBY_METERS = 15
   # Two photos are « of the same spot » within this radius and heading gap.
@@ -27,6 +30,7 @@ class MapPhoto < ApplicationRecord
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :album, class_name: "PhotoAlbum", foreign_key: :photo_album_id, inverse_of: :photos, optional: true
   belongs_to :map_feature, optional: true
+  has_many :bioindicator_observations, foreign_key: :map_photo_id, inverse_of: :photo, dependent: :nullify
   has_many :sketches, -> { ordered }, class_name: "PhotoSketch", dependent: :destroy, inverse_of: :photo
 
   # Variants go through libvips: rotated from EXIF, metadata (GPS included)
@@ -44,11 +48,14 @@ class MapPhoto < ApplicationRecord
   validates :caption, length: { maximum: 500 }
   validates :source, inclusion: { in: SOURCES }
   validates :location_source, inclusion: { in: LOCATION_SOURCES }, allow_nil: true
+  validates :bioindicator_status, inclusion: { in: BIOINDICATOR_STATUSES }, allow_nil: true
+  validates :bioindicator_summary, length: { maximum: 6000 }
   validates :heading, numericality: { greater_than_or_equal_to: 0, less_than: 360 }, allow_nil: true
   validate :image_is_acceptable
   validate :not_already_imported
   validate :album_and_feature_belong_to_map
 
+  scope :for_bioindicators, -> { where.not(bioindicator_status: nil) }
   scope :chronological, -> { order(Arel.sql("COALESCE(map_photos.taken_at, map_photos.created_at) DESC"), id: :desc) }
 
   # Photos linked to a map feature or taken within `meters` of it, each with
@@ -89,6 +96,7 @@ class MapPhoto < ApplicationRecord
       width: meta["width"], height: meta["height"],
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,
+      bioindicatorStatus: bioindicator_status, bioindicatorSummary: bioindicator_summary,
       distanceM: has_attribute?(:distance_m) ? self[:distance_m]&.to_f&.round : nil
     }
   end
