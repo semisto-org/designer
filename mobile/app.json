@@ -17,7 +17,7 @@
     "android": {
       "package": "org.semisto.designer",
       "adaptiveIcon": {
-        "backgroundColor": "#5B5781",
+        "backgroundColor": "#F7F3EA",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
