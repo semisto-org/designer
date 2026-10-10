@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react'
 import { UserRoundCheck } from 'lucide-react'
 import type { ReactNode } from 'react'
+import UpdateBanner from '@/components/app_update/UpdateBanner'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { SharedProps } from '@/types'
@@ -39,12 +40,13 @@ export function ImpersonationBanner() {
   )
 }
 
-/** Outermost layout of every page: the page, plus the banner when needed. */
+/** Outermost layout of every page: the page, plus the banners when needed. */
 export default function ImpersonationFrame({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
       <ImpersonationBanner />
+      <UpdateBanner />
     </>
   )
 }

@@ -392,6 +392,7 @@ Rails.application.routes.draw do
   # --- end super-admin ---
 
   get "up" => "rails/health#show", as: :rails_health_check
+  get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
