@@ -4,15 +4,17 @@ Why this project exists, what it is trying to become, and what it refuses to be.
 
 ## Purpose
 
-Semisto is a Belgian non-profit whose mission is to grow a network of edible forests and multi-layered gardens across Europe. Designer is the tool that lets anyone take part in it, one place at a time.
+Semisto is a Belgian non-profit whose mission is to grow a network of edible forests and multi-layered gardens across Europe. The Semisto Designer is the tool that lets anyone take part in it, one place at a time.
 
-**Designer aims to be the European reference for designing one's own forest garden, alone or as a team.** Every map adds to the network, but the person who opens Designer comes to design their own place: the product and the website speak about designing first, the mission stays in the background.
+**The Semisto Designer aims to be the European reference for designing one's own forest garden, alone or as a team.** Every map adds to the network, but the person who opens Designer comes to design their own place: the product and the website speak about designing first, the mission stays in the background.
 
-Designer also funds Semisto: paid plans bring in revenue that supports the association's work. Both matter, and neither may be traded against the person's trust.
+The Semisto Designer also funds Semisto: paid plans bring in revenue that supports the nonprofit's work. Both matter, and neither may be traded against the person's trust.
 
 ## Who it is for
 
 The core user is a **private individual designing their own forest garden**. What they lack is know-how, not software. After them come Semisto's own designers, past trainees of its courses, teams (collectives, schools, municipalities) and professional designers on the paid plans.
+
+It is also built for the future Semisto Hubs across Europe, forks of Semisto Wallonia, the original hub. Their teams will use the Semisto Designer heavily to design more and more places across Europe.
 
 ## What Designer is to that person
 
@@ -35,28 +37,27 @@ Paper, watercolour, hand-drawn lines and notes, and a map that grows before your
 1. **This place, not a template.** Everything starts from the person's real terrain: its boundary, relief, soil, water, climate, what already grows there, and their project sheet.
 2. **Water before plants.** The design order is read the place, goals, water, access, structure, then plants, with time and the coming climate at every step. That method is Semisto's, written in `app/design_guides/` and served to any AI through the MCP.
 3. **The human decides.** AI never edits a map directly. It proposes drafts, each with its rationale, and a person accepts, adjusts or rejects them one by one.
-4. **Any AI, no lock-in.** Designer speaks of "your AI", not of one vendor. The MCP server follows the open standard so that Claude, ChatGPT, Le Chat or any compatible assistant can work on a map with the same knowledge and the same limits.
-5. **Open by default.** The code is AGPL-3.0. Data is sourced field by field with its licence; open data is preferred, and licences are respected even when it costs a feature (no PFAF texts, no Rekentool data).
+4. **Any AI, no lock-in.** The Semisto Designer speaks of "your AI", not of one vendor. The MCP server follows the open standard so that Claude, ChatGPT, Gemini, Le Chat or any compatible assistant can work on a map with the same knowledge and the same limits.
+5. **Open by default.** The code is AGPL-3.0. Data is sourced field by field with its licence; open data is preferred, and licences are respected even when it costs a feature.
 6. **Europe, region by region.** A shared European base, then regional layers. Nothing about one territory is hardcoded; it hangs off a region.
-7. **Nothing is taken hostage.** The first map is free and stays useful on its own. When a plan ends, maps stay readable and nothing is deleted.
+7. **Nothing is taken hostage.** The first map is free and stays useful on its own. When a plan ends, maps stay readable and nothing is deleted. Everything can be exported as an offline website.
 8. **Done is not the same as good.** A feature is finished when someone has lived it as a user from end to end, on a computer and on a phone.
 
-## What Designer refuses
+## What the Semisto Designer refuses
 
 - The interchangeable SaaS template: a hero, two buttons, a trust strip, "four steps", a six-feature grid. If a page could sell accounting software, it must be redone.
 - Smooth vector illustrations, blue-violet "tech" gradients, stock photos.
 - An AI that acts behind the person's back, or that only one vendor can use.
-- Precision as an identity. Accuracy and teamwork are there, but they serve the companion; they are not what Designer is.
+- Precision as an identity. Accuracy and teamwork are there, but they serve the companion; they are not what the Semisto Designer is.
 
 ## Not now
 
-The first version covers mapping a terrain, designing and planting it, AI on the map, and understanding the land (water, relief, climate, soil). Deliberately left for later: maintenance and harvest, full livestock, mother plants, a directory of land and businesses, public statistics, weather stations, and a tool for municipalities. The interface is French only for now; Dutch comes with Flanders and the Netherlands.
+The first version covers mapping a terrain, designing and planting it, AI on the map, and understanding the land (water, relief, climate, soil). Deliberately left for later: maintenance and harvest, full livestock, mother plants, a directory of land and businesses, public statistics, weather stations, and a tool for municipalities. The interface is French only for now; Dutch comes with Flanders and the Netherlands, English with UK and Ireland.
 
 ## Guardrails that are not negotiable
 
 - The name and brand belong to Semisto, which keeps the domain, the repository and the plant catalogue, and can take the service back.
 - Sensitive layers (water, gas, electricity and cable networks) are hidden by default in public views, exports and the MCP.
-- Code ported from Claudy keeps its MIT notice; nothing personal is ever ported from Terranova.
 
 ## How to judge a screen
 
