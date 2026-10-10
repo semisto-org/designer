@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Check, Download, Eraser, MousePointer2, Pencil, Redo2, Trash2, Type, Undo2, X } from 'lucide-react'
+import { Check, Download, Eraser, MousePointer2, Pencil, Redo2, Trash2, Type, Undo2, WandSparkles, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/Button'
@@ -29,7 +29,7 @@ type Gesture =
  * saved as they are drawn. The photo itself is never changed; the sketch is
  * a layer of its own (PhotoSketch), and a photo can carry several.
  */
-export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted, onClose }: {
+export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted, onClose, canRender = false }: {
   mapId: number
   photo: MapPhotoData
   /** The sketch to continue, or null for a new one (created with its first mark). */
@@ -37,7 +37,10 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
   notify: (message: string, tone?: 'info' | 'error') => void
   onSaved: (sketch: PhotoSketchData) => void
   onDeleted: (id: number) => void
-  onClose: (sketch: PhotoSketchData | null) => void
+  /** `render`: the person asked to paint the sketch (« Mettre en image ») on the way out. */
+  onClose: (sketch: PhotoSketchData | null, render?: boolean) => void
+  /** « Mettre en image » is available: the toolbar offers it. */
+  canRender?: boolean
 }) {
   const [marks, setMarks] = useState<SketchMark[]>(sketch?.strokes ?? [])
   const [undone, setUndone] = useState<SketchMark[][]>([])
@@ -154,14 +157,14 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
     schedule()
   }
 
-  async function finish() {
+  async function finish(render = false) {
     commitDraft()
     if (timer.current) {
       window.clearTimeout(timer.current)
       timer.current = null
     }
     await save()
-    onClose(record.current)
+    onClose(record.current, render && record.current != null)
   }
 
   async function destroy() {
@@ -397,7 +400,17 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
         <button type="button" onClick={download} disabled={marks.length === 0} className="rounded-full p-2 hover:bg-white/10 disabled:opacity-40" title={t('photo_sketches.download')} aria-label={t('photo_sketches.download')}>
           <Download className="h-5 w-5" />
         </button>
-        <Button size="sm" variant="leaf" onClick={finish}>
+        {canRender && (
+          <button
+            type="button" onClick={() => finish(true)} disabled={marks.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-loam-950 shadow-sm ring-1 ring-humus-200 hover:bg-humus-50 disabled:opacity-40"
+            title={t('photo_renderings.open_hint')} aria-label={t('photo_renderings.open')}
+          >
+            <WandSparkles className="h-4 w-4 text-humus-700" />
+            <span className="hidden sm:inline">{t('photo_renderings.open')}</span>
+          </button>
+        )}
+        <Button size="sm" variant="leaf" onClick={() => finish()}>
           <Check className="h-4 w-4" />
           {t('photo_sketches.done')}
         </Button>
@@ -458,7 +471,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
         <p className="mb-1.5 text-center text-xs text-loam-500">{hint}</p>
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pb-1 lg:flex-nowrap lg:justify-start" role="toolbar" aria-label={t('photo_sketches.tools.label')}>
           <div className="flex shrink-0 gap-1" role="radiogroup" aria-label={t('photo_sketches.tools.label')}>
-            {([['pen', Pencil], ['text', Type], ['select', MousePointer2], ['eraser', Eraser]] as const).map(([key, Icon]) => (
+            {([['select', MousePointer2], ['pen', Pencil], ['text', Type], ['eraser', Eraser]] as const).map(([key, Icon]) => (
               <button
                 key={key} type="button" role="radio" aria-checked={tool === key}
                 onClick={() => {
