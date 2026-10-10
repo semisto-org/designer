@@ -125,3 +125,31 @@ export function drawMarks(ctx: CanvasRenderingContext2D, marks: SketchMark[], w:
     ctx.restore()
   }
 }
+
+/** Box of a mark (left, top, right, bottom in frame units), for the selection. */
+export function markBounds(mark: SketchMark, aspect: number): [number, number, number, number] {
+  if (mark.type === 'text') return textBox(mark, aspect)
+  const xs = mark.points.map((p) => p[0])
+  const ys = mark.points.map((p) => p[1])
+  const padX = mark.width / 2
+  const padY = (mark.width * aspect) / 2
+  return [Math.min(...xs) - padX, Math.min(...ys) - padY, Math.max(...xs) + padX, Math.max(...ys) + padY]
+}
+
+/** Indices of the marks whose box meets the rectangle between two points. */
+export function marksInRect(marks: SketchMark[], a: [number, number], b: [number, number], aspect: number): number[] {
+  const [left, right] = [Math.min(a[0], b[0]), Math.max(a[0], b[0])]
+  const [top, bottom] = [Math.min(a[1], b[1]), Math.max(a[1], b[1])]
+  return marks.flatMap((mark, index) => {
+    const [l, t, r, bt] = markBounds(mark, aspect)
+    return l <= right && r >= left && t <= bottom && bt >= top ? [index] : []
+  })
+}
+
+const clampCoord = (value: number) => Math.round(Math.min(1.1, Math.max(-0.1, value)) * 10000) / 10000
+
+/** The mark moved by dx, dy (frame units), kept within what the server accepts. */
+export function moveMark(mark: SketchMark, dx: number, dy: number): SketchMark {
+  if (mark.type === 'text') return { ...mark, x: clampCoord(mark.x + dx), y: clampCoord(mark.y + dy) }
+  return { ...mark, points: mark.points.map(([x, y]) => [clampCoord(x + dx), clampCoord(y + dy)] as [number, number]) }
+}

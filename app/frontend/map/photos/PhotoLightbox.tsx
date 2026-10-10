@@ -9,7 +9,9 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { visibleOffset } from '@/map/visiblePadding'
 import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
+import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
+import { useSwipe } from '@/map/photos/useSwipe'
 import { photoActions, usePhotos } from '@/map/photos/store'
 import { downloadSketch } from '@/map/photos/sketch/download'
 import { PhotoSketcher } from '@/map/photos/sketch/PhotoSketcher'
@@ -75,6 +77,19 @@ export function PhotoLightbox() {
     return () => returnFocus.current?.focus?.()
   }, [photoId == null])
 
+  // The next and previous photos load in the background, so moving through them is instant.
+  useEffect(() => {
+    if (photoId == null) return
+    const neighbours = [photos[index + 1], photos[index - 1]].filter(Boolean)
+    const images = neighbours.map((other) => {
+      const image = new Image()
+      image.decoding = 'async'
+      image.src = photoUrl(editor.map.id, other.id, 'large')
+      return image
+    })
+    return () => images.forEach((image) => { image.src = '' })
+  }, [photoId, index, photos, editor.map.id])
+
   useEffect(() => {
     if (photoId == null || sketching != null) return
     function onKey(event: KeyboardEvent) {
@@ -87,6 +102,12 @@ export function PhotoLightbox() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [photoId, index, photos, sketching])
+
+  const swipe = useSwipe({
+    enabled: photoId != null && sketching == null,
+    onPrevious: index > 0 ? () => photoActions.open(photos[index - 1].id) : undefined,
+    onNext: index >= 0 && index < photos.length - 1 ? () => photoActions.open(photos[index + 1].id) : undefined,
+  })
 
   if (!photo) return null
   const mapId = editor.map.id
@@ -155,12 +176,26 @@ export function PhotoLightbox() {
       tabIndex={-1}
       className="fixed inset-0 z-[60] flex flex-col bg-loam-950 text-white outline-none md:flex-row"
     >
-      <div className="relative flex min-h-0 flex-1 items-center justify-center p-2 md:p-6">
-        <FittedPhoto
-          src={photoUrl(mapId, photo.id, 'large')}
-          alt={photoLabel(photo)}
-          overlay={(aspect) => shownSketch && <SketchLayer marks={shownSketch.strokes} aspect={aspect} className="pointer-events-none absolute inset-0 h-full w-full" />}
-        />
+      <div
+        className="relative flex min-h-0 flex-1 items-center justify-center p-2 md:p-6"
+        // Vertical scroll and pinch-zoom stay with the browser; a horizontal swipe turns the photo.
+        style={{ touchAction: 'pan-y pinch-zoom' }}
+        {...swipe.handlers}
+      >
+        <div
+          className={clsx('flex h-full w-full', swipe.offset === 0 && 'transition-transform duration-200')}
+          style={swipe.offset ? { transform: `translateX(${swipe.offset}px)` } : undefined}
+        >
+          <FittedPhoto
+            src={photoUrl(mapId, photo.id, 'large')}
+            alt={photoLabel(photo)}
+            placeholder={photoUrl(mapId, photo.id, 'thumb')}
+            initialAspect={photo.width && photo.height ? photo.width / photo.height : null}
+            loadingLabel={t('soil_photos.lightbox.loading')}
+            errorLabel={t('soil_photos.lightbox.load_failed')}
+            overlay={(aspect) => shownSketch && <SketchLayer marks={shownSketch.strokes} aspect={aspect} className="pointer-events-none absolute inset-0 h-full w-full" />}
+          />
+        </div>
         <button type="button" onClick={() => photoActions.open(null)} className="absolute right-3 top-3 rounded-full bg-black/50 p-2 hover:bg-black/70" aria-label={t('common.close')}>
           <X className="h-5 w-5" />
         </button>
@@ -204,6 +239,8 @@ export function PhotoLightbox() {
             </div>
           </div>
         </dl>
+
+        <PhotoCameraDetails photo={photo} />
 
         {canEdit && (
           <div className="grid grid-cols-2 gap-2">
