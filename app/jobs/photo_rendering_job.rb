@@ -54,14 +54,19 @@ class PhotoRenderingJob < ApplicationJob
       body = response.body.to_s
       content_type = image_type(response, body)
       unless response.success? && content_type && body.bytesize.between?(1, DOWNLOAD_MAX_BYTES)
-        Rails.logger.warn("[photo_renderings] #{rendering.id}: download answered HTTP #{response.status} " \
-                          "(#{response.headers["content-type"]}, #{body.bytesize} bytes)")
+        report(rendering, "download answered HTTP #{response.status} (#{response.headers["content-type"]}, #{body.bytesize} bytes) from #{URI(url).host}")
         return rendering.fail!("download")
       end
       rendering.complete!(StringIO.new(body), content_type:)
     rescue Faraday::Error => error
-      Rails.logger.warn("[photo_renderings] #{rendering.id}: download failed (#{error.class})")
+      report(rendering, "download failed (#{error.class}: #{error.message})")
       rendering.fail!("download")
+    end
+
+    # A lost image was paid for: say why in the logs and in Sentry.
+    def report(rendering, message)
+      Rails.logger.warn("[photo_renderings] #{rendering.id}: #{message}")
+      Sentry.capture_message("Photo rendering #{rendering.id}: #{message}", level: :warning) if defined?(Sentry) && Sentry.initialized?
     end
 
     # Magnific's CDN may answer with a redirect to the stored file.
