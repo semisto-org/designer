@@ -47,6 +47,15 @@ class PhotoSketchTest < ActiveSupport::TestCase
     assert_not sketch.valid?
   end
 
+  test "the photo counts its sketches, for the panel's badge and filter" do
+    first = sketch([ line ]).tap(&:save!)
+    sketch([]).save!
+    assert_equal 2, @photo.reload.sketches_count
+    assert_equal 2, @photo.as_inertia[:sketchesCount]
+    first.destroy!
+    assert_equal 1, @photo.reload.sketches_count
+  end
+
   test "deleting the photo deletes its sketches" do
     sketch([ line ]).save!
     assert_difference -> { PhotoSketch.count }, -1 do

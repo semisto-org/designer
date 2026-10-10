@@ -13,5 +13,7 @@ class CreatePhotoSketches < ActiveRecord::Migration[8.1]
       t.integer :lock_version, null: false, default: 0
       t.timestamps
     end
+    # So the « Photos » panel can mark and filter sketched photos without a query per photo.
+    add_column :map_photos, :sketches_count, :integer, null: false, default: 0
   end
 end

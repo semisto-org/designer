@@ -93,7 +93,10 @@ export function PhotoLightbox() {
   const shownSketch = sketches.find((s) => s.id === shownSketchId) ?? null
 
   function sketchSaved(saved: PhotoSketchData) {
+    const isNew = !sketches.some((s) => s.id === saved.id)
     setSketches((list) => (list.some((s) => s.id === saved.id) ? list.map((s) => (s.id === saved.id ? saved : s)) : [...list, saved]))
+    // The « Photos » panel marks and filters sketched photos by this count.
+    if (isNew) photoActions.upsert({ ...photo!, sketchesCount: photo!.sketchesCount + 1 })
   }
   const base = `/maps/${mapId}/photos/${photo.id}`
 
@@ -279,7 +282,7 @@ export function PhotoLightbox() {
               </Button>
             )}
             {shownSketch && (
-              <Button size="sm" variant="ghost" onClick={() => downloadSketch(photoUrl(mapId, photo.id, 'large'), shownSketch.strokes, `${shownSketch.name}.png`).catch(() => editor.notify(t('photo_sketches.save_failed'), 'error'))}>
+              <Button size="sm" variant="ghost" onClick={() => downloadSketch(photoUrl(mapId, photo.id, 'large'), shownSketch.strokes, shownSketch.name).catch(() => editor.notify(t('photo_sketches.save_failed'), 'error'))}>
                 <Download className="h-4 w-4" />
                 {t('photo_sketches.download')}
               </Button>
@@ -326,6 +329,7 @@ export function PhotoLightbox() {
           onDeleted={(id) => {
             setSketches((list) => list.filter((s) => s.id !== id))
             setShownSketchId(null)
+            photoActions.upsert({ ...photo, sketchesCount: Math.max(0, photo.sketchesCount - 1) })
           }}
           onClose={(saved) => {
             setSketching(null)

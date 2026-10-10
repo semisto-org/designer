@@ -360,6 +360,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_160000) do
     t.string "checksum"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "sketches_count", default: 0, null: false
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
     t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"

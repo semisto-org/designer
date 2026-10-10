@@ -170,7 +170,7 @@ export function PhotoSketcher({ mapId, photo, sketch, notify, onSaved, onDeleted
 
   async function download() {
     try {
-      await downloadSketch(photoUrl(mapId, photo.id, 'large'), marks, `${name || photoLabel(photo)}.png`)
+      await downloadSketch(photoUrl(mapId, photo.id, 'large'), marks, name || photoLabel(photo))
     } catch {
       notify(t('photo_sketches.save_failed'), 'error')
     }

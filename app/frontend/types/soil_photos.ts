@@ -17,6 +17,8 @@ export type MapPhotoData = {
   locationSource: PhotoLocationSource | null
   albumId: number | null
   featureId: number | null
+  /** Sketches drawn over the photo (PhotoSketch). */
+  sketchesCount: number
   width: number | null
   height: number | null
   byteSize: number | null

@@ -42,3 +42,13 @@ fr:
     confirm_delete: "Supprimer cette esquisse ? La photo, elle, reste intacte."
     confirm_clear: "Effacer tous les traits de cette esquisse ?"
     by: "par %{name}"
+    filter: "Avec esquisses (%{count})"
+    badge:
+      one: "%{count} esquisse"
+      other: "%{count} esquisses"
+    panel:
+      title:
+        one: "%{count} photo esquissée"
+        other: "%{count} photos esquissées"
+      show_all: "Filtrer"
+      open: "Voir l'esquisse"

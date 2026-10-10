@@ -89,10 +89,10 @@ export function textBox(mark: SketchText, aspect: number): [number, number, numb
 export const isLine = (mark: SketchMark): mark is SketchLine => mark.type === 'line'
 
 /**
- * The photo with its sketch, flattened into a PNG at the image's size, for
- * a download. The image goes through fetch so the canvas stays readable.
+ * The photo with its sketch, flattened into a JPEG at the image's size, for
+ * a download (a photo weighs several times less in JPEG than in PNG). The image goes through fetch so the canvas stays readable.
  */
-export async function renderSketchPng(imageUrl: string, marks: SketchMark[]): Promise<Blob> {
+export async function renderSketchJpeg(imageUrl: string, marks: SketchMark[]): Promise<Blob> {
   const response = await fetch(imageUrl, { credentials: 'same-origin' })
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   const bitmap = await createImageBitmap(await response.blob())
@@ -103,7 +103,7 @@ export async function renderSketchPng(imageUrl: string, marks: SketchMark[]): Pr
   const ctx = canvas.getContext('2d')!
   ctx.drawImage(bitmap, 0, 0)
   drawMarks(ctx, marks, bitmap.width, bitmap.height)
-  return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob'))), 'image/png'))
+  return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob'))), 'image/jpeg', 0.9))
 }
 
 export function drawMarks(ctx: CanvasRenderingContext2D, marks: SketchMark[], w: number, h: number) {

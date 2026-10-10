@@ -19,7 +19,7 @@ class PhotoSketch < ApplicationRecord
   COORD_RANGE = (-0.1..1.1).freeze
 
   belongs_to :map
-  belongs_to :photo, class_name: "MapPhoto", foreign_key: :map_photo_id, inverse_of: :sketches
+  belongs_to :photo, class_name: "MapPhoto", foreign_key: :map_photo_id, inverse_of: :sketches, counter_cache: :sketches_count
   belongs_to :created_by, class_name: "User", optional: true
 
   normalizes :name, with: ->(name) { name.squish }

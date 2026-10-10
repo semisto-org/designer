@@ -82,7 +82,7 @@ class MapPhoto < ApplicationRecord
     {
       id:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
-      albumId: photo_album_id, featureId: map_feature_id,
+      albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
       width: meta["width"], height: meta["height"],
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,
