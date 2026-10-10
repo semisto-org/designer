@@ -53,6 +53,7 @@ class Map < ApplicationRecord
   # Photos and soil (understand cycle)
   has_many :photos, class_name: "MapPhoto", dependent: :destroy
   has_many :photo_sketches, dependent: :destroy
+  has_many :photo_renderings, dependent: :destroy
   has_many :photo_albums, dependent: :destroy
   has_many :soil_samples, dependent: :destroy
   has_many :bioindicator_observations, dependent: :destroy

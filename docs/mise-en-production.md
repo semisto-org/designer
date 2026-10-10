@@ -111,6 +111,13 @@ Utilisées seulement par la commande ponctuelle `bin/rails catalog:import_terran
 
 Une à cinq photos d'une même plante partent chez Pl@ntNet, qui répond des espèces probables ; l'éditeur choisit, rien n'est enregistré sans son choix et Designer ne conserve pas les photos. L'interface affiche « Identification : Pl@ntNet ». **Avant d'activer la fonction sur un service payant, vérifiez les conditions d'utilisation de Pl@ntNet** (usage commercial, quota d'identifications, mention de la source) : l'offre gratuite est limitée.
 
+| Variable | Rôle |
+|---|---|
+| `MAGNIFIC_API_KEY` | Facultatif. Active « Mettre en image » dans la visionneuse de photos (une photo et son esquisse peintes en photo, en aquarelle ou au crayon). Clé d'API du compte Magnific de Semisto (https://www.magnific.com/user/organization/api-keys). Sans elle, le bouton est grisé et l'interface explique pourquoi. |
+| `MAGNIFIC_API_URL` | Facultatif : autre adresse de l'API (défaut `https://api.magnific.com`). |
+
+Chaque image est payée en crédits du compte Magnific (modèle Nano Banana Pro, environ 75 à 100 crédits). Le propriétaire d'une carte a droit à 30 images par mois, toutes cartes confondues (`PhotoRendering::MONTHLY_LIMIT`), avec un forfait payant (ou tant que Stripe n'est pas configuré). Magnific télécharge la photo esquissée par un lien signé valable une heure : `APP_HOST` doit être l'adresse publique du serveur.
+
 ### Relecture de l'app mobile par les stores
 
 | Variable | Rôle |
@@ -147,7 +154,7 @@ Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=
 
 ## Connexions sortantes
 
-Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo. L'import ponctuel de Claudy joint `app.les4sources.be`.
+Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.magnific.com` et le serveur d'images de Magnific (mise en image, si `MAGNIFIC_API_KEY` est défini), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo. L'import ponctuel de Claudy joint `app.les4sources.be`.
 
 ## Claude (MCP)
 

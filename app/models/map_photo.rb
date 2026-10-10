@@ -15,7 +15,8 @@ class MapPhoto < ApplicationRecord
   # (iPhone) is accepted at upload and converted to JPEG (HeicAttachment).
   CONTENT_TYPES = %w[image/jpeg image/png image/webp].freeze
   UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES).freeze
-  SOURCES = %w[web phone import].freeze
+  # « ai »: painted by « Mettre en image » (PhotoRendering) from another photo.
+  SOURCES = %w[web phone import ai].freeze
   LOCATION_SOURCES = %w[exif device map manual].freeze
   # A photo of wild plants left for the user's AI to read (to_analyze), then
   # read (analyzed, with the AI's `bioindicator_summary`).
@@ -32,6 +33,9 @@ class MapPhoto < ApplicationRecord
   belongs_to :map_feature, optional: true
   has_many :bioindicator_observations, foreign_key: :map_photo_id, inverse_of: :photo, dependent: :nullify
   has_many :sketches, -> { ordered }, class_name: "PhotoSketch", dependent: :destroy, inverse_of: :photo
+  has_many :renderings, class_name: "PhotoRendering", dependent: :destroy, inverse_of: :photo
+  # A photo painted by « Mettre en image » keeps a link to the photo it came from.
+  belongs_to :derived_from, class_name: "MapPhoto", optional: true
 
   # Variants go through libvips: rotated from EXIF, metadata (GPS included)
   # stripped. Viewers only ever get variants; the original file, EXIF and
@@ -50,6 +54,7 @@ class MapPhoto < ApplicationRecord
   validates :location_source, inclusion: { in: LOCATION_SOURCES }, allow_nil: true
   validates :bioindicator_status, inclusion: { in: BIOINDICATOR_STATUSES }, allow_nil: true
   validates :bioindicator_summary, length: { maximum: 6000 }
+  validates :rendering_style, inclusion: { in: PhotoRendering::STYLES }, allow_nil: true
   validates :heading, numericality: { greater_than_or_equal_to: 0, less_than: 360 }, allow_nil: true
   validate :image_is_acceptable
   validate :not_already_imported
@@ -92,6 +97,7 @@ class MapPhoto < ApplicationRecord
       id:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
       albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
+      derivedFromId: derived_from_id, renderingStyle: rendering_style,
       camera: camera.presence,
       width: meta["width"], height: meta["height"],
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
