@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react'
 import { ArrowRight } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Standouts } from '@/components/site/Standouts'
 import { Timelapse } from '@/components/site/timelapse/Timelapse'
 import { ButtonLink } from '@/components/ui/Button'
 import { content, tf } from '@/lib/content'
@@ -10,7 +11,7 @@ import type { CatalogPlan } from '@/types/billing'
 type Source = { name: string; detail: string }
 type Tier = { name: string; price: string; note: string }
 
-/** The home page: thirty years of an example terrain as you scroll, then the practical notes. */
+/** The home page: thirty years of an example terrain as you scroll, the standout features, then the practical notes. */
 export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
   const price = (key: string) => formatPrice(catalog.find((plan) => plan.key === key)?.priceCents ?? 0)
   const tiers = content<Tier[]>('site.home.practical.pricing.tiers', { yearly: price('yearly'), atelier: price('atelier') })
@@ -26,6 +27,8 @@ export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
         <p className="font-hand text-[1.4rem] leading-tight text-leaf-600">{tf('site.home.story.free')}</p>
         <p className="text-xs text-loam-400">{tf('site.home.story.example')}</p>
       </Timelapse>
+
+      <Standouts />
 
       <section className="relative z-10 border-t border-loam-200 bg-loam-50" aria-labelledby="practical-title">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
@@ -57,8 +60,6 @@ export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
                 ))}
               </ul>
             </Note>
-
-            <Note kicker={tf('site.home.practical.claude.kicker')} title={tf('site.home.practical.claude.title')} body={tf('site.home.practical.claude.body')} cta={{ href: '/help/connecter-son-ia', label: tf('site.home.practical.claude.cta') }} />
 
             <Note kicker={tf('site.home.practical.open.kicker')} body={tf('site.home.practical.open.body')} cta={{ href: '/open-source', label: tf('site.home.practical.open.cta') }} />
           </div>
