@@ -77,7 +77,7 @@ module Mcp
       def run(arguments)
         data = perform(**arguments)
         log!("ok", arguments, data)
-        MCP::Tool::Response.new([ { type: "text", text: JSON.generate(data) } ], structured_content: data)
+        MCP::Tool::Response.new(content_for(data), structured_content: data)
       rescue ToolError => e
         log!("error", arguments, nil, e.message)
         MCP::Tool::Response.new([ { type: "text", text: e.message } ], error: true)
@@ -132,6 +132,10 @@ module Mcp
             ).compact
           }
         end
+
+        # What the client reads: the data as JSON text. A tool that returns an
+        # image adds it here (override).
+        def content_for(data) = [ { type: "text", text: JSON.generate(data) } ]
 
         # What goes in the journal: override for large or sensitive arguments.
         def summarize_arguments(arguments)

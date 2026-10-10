@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -190,6 +190,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_210000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "map_photo_id"
+    t.string "status", default: "active", null: false
+    t.string "source", default: "human", null: false
+    t.string "confidence"
+    t.text "rationale"
     t.index ["location"], name: "index_bioindicator_observations_on_location", using: :gist
     t.index ["map_id", "catalog_key"], name: "index_bioindicator_observations_on_map_id_and_catalog_key"
     t.index ["map_id"], name: "index_bioindicator_observations_on_map_id"
@@ -363,9 +367,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_210000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "sketches_count", default: 0, null: false
+    t.string "bioindicator_status"
+    t.text "bioindicator_summary"
+    t.datetime "bioindicator_analyzed_at"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
     t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"
+    t.index ["map_id", "bioindicator_status"], name: "index_map_photos_on_map_id_and_bioindicator_status", where: "(bioindicator_status IS NOT NULL)"
     t.index ["map_id", "checksum"], name: "index_map_photos_on_map_id_and_checksum", unique: true, where: "(checksum IS NOT NULL)"
     t.index ["map_id", "taken_at"], name: "index_map_photos_on_map_id_and_taken_at"
     t.index ["map_id"], name: "index_map_photos_on_map_id"

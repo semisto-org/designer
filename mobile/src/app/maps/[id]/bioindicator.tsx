@@ -1,7 +1,10 @@
-// « Plante bio-indicatrice »: photos of one wild plant go to Pl@ntNet
-// through Designer; the person picks the species and its abundance, and
-// the plant is noted where the photo was taken, the first photo with it.
-// Identifying needs the network; the note itself goes through the outbox.
+// « Plante bio-indicatrice »: photos of a patch of wild plants are left for
+// the person's own AI, which reads the whole photo through the MCP and
+// proposes each plant it sees (reviewed on the website); they go through the
+// outbox, offline too. For one plant seen up close, the photos can instead go
+// to Pl@ntNet through Designer: the person picks the species and its
+// abundance, and the plant is noted where the photo was taken, the first
+// photo with it. Identifying needs the network; the note goes through the outbox.
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -55,6 +58,16 @@ export default function BioindicatorScreen() {
     }
   }
 
+  // Every photo goes to the map's photos, marked for the AI to read.
+  const leaveForAi = () => {
+    photos.forEach((p) => outbox.add({
+      type: 'uploadPhoto', mapId, file: p.file, takenAt: p.takenAt, featureId: null, bioindicatorStatus: 'to_analyze',
+      lng: p.position?.[0] ?? null, lat: p.position?.[1] ?? null,
+    }))
+    Alert.alert(t('mobile.bioindicator.title'), t('mobile.bioindicator.ai_saved', { count: photos.length }))
+    router.back()
+  }
+
   const save = async () => {
     if (!chosen || photos.length === 0) return
     const [kept, ...others] = photos
@@ -97,7 +110,7 @@ export default function BioindicatorScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]}>
       <Body muted>{t('mobile.bioindicator.intro')}</Body>
-      {!online && <Notice tone="warning">{t('mobile.bioindicator.offline')}</Notice>}
+      {!online && photos.length > 0 && <Notice tone="warning">{t('mobile.bioindicator.offline')}</Notice>}
 
       {photos.length > 0 && (
         <View style={s.photos}>
@@ -117,7 +130,12 @@ export default function BioindicatorScreen() {
           <Button style={{ flex: 1 }} variant="secondary" label={t('plantnet.section.choose')} onPress={async () => add(await pickPhotos(MAX - photos.length))} />
         </View>
       )}
-      {!result && <Button label={busy ? t('plantnet.section.identifying') : t('plantnet.section.identify')} busy={busy} disabled={!online || photos.length === 0} onPress={identify} />}
+      {!result && <Button label={t('mobile.bioindicator.ai_button')} disabled={photos.length === 0 || busy} onPress={leaveForAi} />}
+      {!result && <Body muted>{t('mobile.bioindicator.ai_hint')}</Body>}
+      {!result && (
+        <Button variant="secondary" label={busy ? t('plantnet.section.identifying') : t('mobile.bioindicator.plantnet_button')} busy={busy}
+          disabled={!online || photos.length === 0} onPress={identify} />
+      )}
       {error && <Notice tone="error">{error}</Notice>}
 
       {result && (

@@ -35,13 +35,21 @@ Ces repères sont **indicatifs** : pensés pour un sol de jardin ou de verger en
 
 Les plantes qui s'installent seules racontent le sol : le rumex et le plantain parlent de tassement, l'ortie d'azote, la prêle d'eau qui stagne.
 
-### Par photo
+### Par photo, avec ton IA
 
-Tu ne sais pas quelle est cette plante ? Sous **Photographier une plante**, touche **Prendre une photo** (ou **Choisir des photos**, cinq au plus, toutes de la même plante), puis **Identifier**. [Pl@ntNet](/help/identifier-une-plante) propose des espèces ; celles de la liste des bio-indicatrices montrent tout de suite ce qu'elles disent du sol. Touche **C'est elle** sur la bonne, choisis son **Abondance**, puis **Noter à l'endroit de la photo**.
+Photographie un coin du terrain avec toutes ses plantes sauvages : sous **Faire lire une photo par ton IA**, touche **Prendre une photo** ou **Choisir des photos**. Elles rejoignent les photos de la carte et attendent ton IA. Si une photo n'a pas de position, touche **Placer** sur sa vignette, puis clique sur la carte : les plantes se poseront là.
+
+Demande ensuite à ton IA (Claude, ChatGPT, Le Chat… [reliée à Designer](/help/connecter-son-ia)) : « Lis les photos de bio-indicatrices de ma carte et propose les plantes sauvages que tu y vois. » Le bouton **Copier** te donne la phrase. Ton IA regarde toute la photo, reconnaît chaque espèce, dit ce qu'elle raconte du sol et propose les plantes en brouillons, chacune avec son degré de certitude (**Sûre**, **Probable**, **À vérifier**) et ce qu'elle a vu.
+
+Sous **Ce que ton IA a vu**, **Garde** les plantes que tu reconnais aussi et **Refuse** les autres. Seules celles que tu gardes comptent dans **Ce que disent tes plantes**. Si tu redemandes une lecture, les propositions pas encore relues sont remplacées.
+
+Sur le terrain, l'app Semisto Designer fait de même : **Relever**, puis **Une plante bio-indicatrice**, et **Faire lire par mon IA**. Les photos partent dès que le réseau revient.
+
+### Une seule plante, avec Pl@ntNet
+
+Tu ne sais pas quelle est cette plante ? Sous **Une seule plante, de près**, touche **Prendre une photo** (ou **Choisir des photos**, cinq au plus, toutes de la même plante), puis **Identifier**. [Pl@ntNet](/help/identifier-une-plante) propose des espèces ; celles de la liste des bio-indicatrices montrent tout de suite ce qu'elles disent du sol. Touche **C'est elle** sur la bonne, choisis son **Abondance**, puis **Noter à l'endroit de la photo**.
 
 La plante se pose là où la photo a été prise (position lue dans la photo, ou celle de ton téléphone si tu viens de la prendre). La première photo est gardée avec elle, dans le panneau **Photos** : touche sa vignette dans **Tes observations** pour la revoir. Si la photo n'a pas de position, Designer te demande de cliquer sur la carte.
-
-Sur le terrain, l'app Semisto Designer fait de même : **Relever**, puis **Une plante bio-indicatrice**. La plante notée part dès que le réseau revient.
 
 ### Par son nom
 

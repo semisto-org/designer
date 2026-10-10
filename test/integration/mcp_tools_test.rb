@@ -59,7 +59,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal "Ortie dioïque", nettle["name"]
     assert_equal [ 4.906, 50.341 ], nettle["location"]
     assert_includes nettle["indicators"], "nitrogen_rich"
-    assert_equal false, nettle["from_photo"]
+    assert_nil nettle["photo_id"]
     assert_includes data.dig("bioindicators", "summary").map { |row| row["key"] }, "nitrogen_rich"
   end
 

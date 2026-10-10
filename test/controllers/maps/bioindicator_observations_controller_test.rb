@@ -155,4 +155,31 @@ class Maps::BioindicatorObservationsControllerTest < ActionDispatch::Integration
     photo.destroy!
     assert_nil observation.reload.map_photo_id
   end
+
+  test "the AI's proposals are listed as drafts, count for nothing until accepted, and the photos left for it come along" do
+    photo = create_photo
+    photo.update!(bioindicator_status: "analyzed", bioindicator_summary: "Sol riche en azote, plutôt frais.")
+    draft = @map.bioindicator_observations.create!(catalog_key: "ortie", photo:, status: "draft", source: "ai", confidence: "high", rationale: "Feuilles dentées au centre.")
+    sign_in_as users(:michael)
+    get map_bioindicator_observations_path(@map), as: :json
+    body = response.parsed_body
+    assert_equal "draft", body["observations"].sole["status"]
+    assert_equal "ai", body["observations"].sole["source"]
+    assert_equal [], body["summary"]
+    assert_equal "Sol riche en azote, plutôt frais.", body["photos"].sole["bioindicatorSummary"]
+
+    post accept_map_bioindicator_observation_path(@map, draft), as: :json
+    assert_response :success
+    assert_equal "active", draft.reload.status
+    get map_bioindicator_observations_path(@map), as: :json
+    assert_not_empty response.parsed_body["summary"]
+  end
+
+  test "a viewer cannot accept a proposal" do
+    draft = @map.bioindicator_observations.create!(catalog_key: "ortie", status: "draft", source: "ai")
+    sign_in_as users(:alice)
+    post accept_map_bioindicator_observation_path(@map, draft), as: :json
+    assert_response :forbidden
+    assert draft.reload.draft?
+  end
 end

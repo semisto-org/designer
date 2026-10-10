@@ -89,6 +89,7 @@ const transport: Transport = {
     await api('POST', `/maps/${mapId}/photos`, form('photo', {
       image: photoFile(op.file), taken_at: op.takenAt, caption: op.caption, source: 'phone',
       lng: op.lng, lat: op.lat, location_source: located ? 'device' : null, map_feature_id: featureId,
+      bioindicator_status: op.bioindicatorStatus ?? null,
     }))
   },
   async createObservation(mapId, featureId, op) {

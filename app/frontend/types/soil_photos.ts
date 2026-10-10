@@ -26,6 +26,10 @@ export type MapPhotoData = {
   uploadedBy: string | null
   /** Distance to a feature, when listed for the inspector. */
   distanceM: number | null
+  /** Left for the AI's bio-indicator reading: waiting (to_analyze) or read (analyzed). */
+  bioindicatorStatus: 'to_analyze' | 'analyzed' | null
+  /** What the AI read in the photo about the soil, when analyzed. */
+  bioindicatorSummary: string | null
 }
 
 export type PhotoAlbumData = {
@@ -158,6 +162,12 @@ export type BioObservation = {
   note: string | null
   provenance: string | null
   observedBy: string | null
+  /** A draft is a plant the AI proposed from a photo, waiting for the person. */
+  status: 'active' | 'draft'
+  source: 'human' | 'ai'
+  confidence: 'high' | 'medium' | 'low' | null
+  /** What the AI saw that made it propose the plant. */
+  rationale: string | null
 }
 
 export type IndicatorTally = { key: SoilIndicatorKey; score: number; plants: string[]; unverified: boolean }
@@ -165,6 +175,8 @@ export type IndicatorTally = { key: SoilIndicatorKey; score: number; plants: str
 export type BioObservationsResponse = {
   observations: BioObservation[]
   summary: IndicatorTally[]
+  /** Photos left for the AI's reading, waiting or read. */
+  photos: MapPhotoData[]
   catalog: CatalogPlant[]
   plantCatalog: boolean
 }

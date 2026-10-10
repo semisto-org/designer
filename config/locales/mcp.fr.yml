@@ -13,6 +13,7 @@ fr:
         Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
         La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
+        get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -97,6 +98,24 @@ fr:
           target_count: "Nombre de plants visés, s'il est connu (par exemple une quantité du tableur)."
           plant_notes: "Notes : variété souhaitée, fournisseur, emplacement prévu…"
           plant_rationale: "Pourquoi cette plante, ou d'où elle vient (« ligne 12 du tableur de l'utilisateur »). Obligatoire, 10 caractères au moins."
+      get_bioindicator_photo:
+        title: "Regarder une photo de plantes sauvages"
+        description: "Une photo de plantes sauvages prise sur le terrain (les photos « à analyser » sont dans bioindicators.photos de get_map), en image, avec où et quand elle a été prise, ce qui en a déjà été noté et la liste des plantes bio-indicatrices de Semisto (clés à utiliser dans propose_bioindicators). Regarde toute la photo : elle montre souvent plusieurs espèces. Ensuite, propose ce que tu vois avec propose_bioindicators."
+        params:
+          photo_id: "Identifiant de la photo, donné par get_map (bioindicators.photos)."
+      propose_bioindicators:
+        title: "Proposer les plantes vues sur une photo"
+        description: "Verse les plantes sauvages que tu reconnais sur une photo (get_bioindicator_photo) en brouillons, posés à l'endroit de la photo, que l'humain accepte ou refuse dans le panneau Sol (onglet Plantes), avec une courte lecture du sol gardée avec la photo. Pour chaque plante : son nom français, son nom latin, la clé de la liste des bio-indicatrices si elle y est (sinon le nom latin suffit), son abondance sur la photo et ta confiance. Ne propose que ce que tu vois vraiment ; une identification douteuse se dit avec confidence « low ». Une nouvelle proposition pour la même photo remplace ses brouillons pas encore revus. 30 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          photo_id: "Identifiant de la photo regardée avec get_bioindicator_photo."
+          soil_summary: "Ce que les plantes de la photo disent du sol, ensemble, en quelques phrases simples, avec tes réserves (une photo ne suffit pas)."
+          wild_plants: "Les plantes reconnues sur la photo, de 1 à 30."
+          catalog_key: "Clé de la plante dans la liste des bio-indicatrices (bioindicator_list de get_bioindicator_photo), si elle y est."
+          wild_plant_name: "Nom français courant de la plante."
+          latin_name: "Nom latin de la plante."
+          abundance: "Abondance sur la photo : rare, present (présente), frequent (fréquente) ou dominant (dominante)."
+          confidence: "Ta confiance dans l'identification : high (sûre), medium (probable) ou low (incertaine)."
+          wild_plant_rationale: "Ce qui te fait la reconnaître sur la photo (feuilles, fleurs, port…) et où elle est sur l'image. Obligatoire, 10 caractères au moins."
       get_project_sheet:
         title: "Lire la fiche projet"
         description: "La fiche projet de la carte avec toutes ses questions : pour chaque section et chaque champ, son type, son libellé, les réponses possibles (clé et libellé français), la réponse actuelle, l'avancement de la fiche et les réponses déjà proposées par une IA qui attendent l'humain. À lire avant propose_project_sheet, pour faire correspondre ce que dit la personne aux réponses possibles."
@@ -126,6 +145,8 @@ fr:
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
       drafts_trial: "Le propriétaire de cette carte essaie les brouillons de l'IA jusqu'au %{date} (essai offert de 14 jours). Après cette date, sans forfait, tu ne pourras plus que lire la carte : dis-le à l'utilisateur quand tu poses tes premiers brouillons, pour qu'il ne soit pas surpris."
       review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
+      read_bioindicator_photo: "Regarde toute la photo : elle montre souvent plusieurs espèces. Propose ensuite ce que tu reconnais avec propose_bioindicators, une plante par entrée, avec son abondance et ta confiance."
+      review_bioindicators: "Les plantes proposées attendent dans le panneau Sol de la carte (onglet Plantes), où l'humain les accepte ou les refuse. Dis-lui aussi ce que tu en lis pour son sol."
       project_sheet: "Les clés (section, field, options) sont celles à utiliser dans propose_project_sheet ; les libellés sont ceux que voit la personne. Pose-lui les questions qui manquent, une à la fois, plutôt que de deviner."
       review_project: "Les réponses proposées attendent sur la fiche projet de la carte, où l'humain les accepte ou les refuse."
       review_project_replacing:
@@ -154,6 +175,8 @@ fr:
       no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
       plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Designer."
       plant_not_found: "Plante %{id} introuvable dans le catalogue."
+      photo_not_found: "Photo %{id} introuvable sur cette carte. get_map donne les photos à analyser (bioindicators.photos)."
+      photo_unreadable: "La photo %{id} n'a pas pu être lue."
       guide_not_found: "Chapitre « %{topic} » introuvable. Chapitres : %{topics}."
     palette_errors:
       species_id: "espèce %{id} introuvable dans le catalogue."
@@ -252,6 +275,10 @@ fr:
       search_plants: "a cherché dans le catalogue des plantes"
       get_plant: "a lu une fiche plante"
       get_design_guide: "a lu le guide de méthode de Semisto"
+      get_bioindicator_photo: "a regardé une photo de plantes sauvages"
+      propose_bioindicators:
+        one: "a proposé 1 plante vue sur une photo"
+        other: "a proposé %{count} plantes vues sur une photo"
       propose_features:
         one: "a proposé 1 brouillon"
         other: "a proposé %{count} brouillons"

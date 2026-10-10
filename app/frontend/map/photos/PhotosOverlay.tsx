@@ -151,15 +151,17 @@ export default function PhotosOverlay() {
   }, [map, placingId, editor])
 
   // On a phone the panel is a sheet over half the map: fold it away while placing, bring it back after.
-  const foldedPanel = useRef(false)
+  // (« Sol » too: photos left for the AI are placed from there.)
+  const foldedPanel = useRef<string | null>(null)
   useEffect(() => {
     const phone = window.matchMedia('(max-width: 767px)').matches
-    if (placingId != null && phone && editor.activePanel === 'photos') {
-      foldedPanel.current = true
+    if (placingId != null && phone && (editor.activePanel === 'photos' || editor.activePanel === 'soil')) {
+      foldedPanel.current = editor.activePanel
       editor.openPanel(null)
     } else if (placingId == null && foldedPanel.current) {
-      foldedPanel.current = false
-      editor.openPanel('photos')
+      const panel = foldedPanel.current
+      foldedPanel.current = null
+      editor.openPanel(panel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placingId])

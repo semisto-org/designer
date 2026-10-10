@@ -117,8 +117,15 @@
     },
     "bioindicator": {
       "title": "Plante bio-indicatrice",
-      "intro": "Photographie une plante sauvage, de près. Pl@ntNet propose des espèces, tu choisis la bonne, puis tu dis si elle est rare ou envahissante.",
-      "offline": "L'identification a besoin du réseau. Reviens quand tu captes : la plante notée partira ensuite même hors ligne.",
+      "intro": "Photographie un coin du terrain avec ses plantes sauvages, toutes ensemble. Ton IA y reconnaîtra chaque espèce et dira ce qu'elle raconte du sol ; tu gardes ce qui est juste.",
+      "offline": "Pl@ntNet a besoin du réseau. Les photos pour ton IA partent même hors ligne, dès que tu captes.",
+      "ai_button": "Faire lire par mon IA",
+      "ai_hint": "Ensuite, demande à ton IA (Claude, ChatGPT, Le Chat…) de lire les photos de bio-indicatrices de cette carte. Tu relis ses propositions dans le panneau Sol du site.",
+      "ai_saved": {
+        "one": "La photo attend ton IA. Demande-lui de lire les photos de bio-indicatrices de cette carte.",
+        "other": "Les %{count} photos attendent ton IA. Demande-lui de lire les photos de bio-indicatrices de cette carte."
+      },
+      "plantnet_button": "Une seule plante : identifier avec Pl@ntNet",
       "in_list": "Bio-indicatrice",
       "not_in_list": "Pas dans la liste des bio-indicatrices : notée sans indication sur le sol.",
       "abundance": "Abondance",
@@ -136,8 +143,8 @@
       "point_intro": "Une source, un arbre remarquable, une zone humide, un problème à noter : enregistré là où tu es.",
       "point_button": "Relever ce point",
       "bioindicator": "Une plante bio-indicatrice",
-      "bioindicator_intro": "Photographie une plante sauvage : Pl@ntNet la reconnaît, tu confirmes, et elle se note là où tu es, avec ce qu'elle dit du sol.",
-      "bioindicator_button": "Photographier une plante",
+      "bioindicator_intro": "Photographie les plantes sauvages d'un coin du terrain : ton IA les reconnaît et dit ce qu'elles racontent du sol. Pour une seule plante, Pl@ntNet aussi.",
+      "bioindicator_button": "Photographier des plantes",
       "trace": "Une trace",
       "trace_intro": "Marche le long d'une haie, d'un chemin ou d'une limite. La trace continue écran éteint.",
       "trace_start": "Commencer la trace",

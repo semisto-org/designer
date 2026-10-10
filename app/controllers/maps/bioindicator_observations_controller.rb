@@ -5,19 +5,26 @@
 # person) sends the photo along with the observation (multipart
 # `bioindicator_observation[photo]`): it joins the map's photos with the same
 # position, and the observation keeps it.
+#
+# A photo of several wild plants is rather left for the user's AI (a map photo
+# with `bioindicator_status` to_analyze, sent through Maps::PhotosController).
+# The AI proposes what it sees through the MCP, as draft observations: `accept`
+# keeps one, `destroy` refuses it. Drafts count for nothing in the summary.
 module Maps
   class BioindicatorObservationsController < ApplicationController
     include MapScoped
 
     before_action :set_map
     before_action :require_editor!, except: %i[index species]
-    before_action :set_observation, only: %i[update destroy]
+    before_action :set_observation, only: %i[update destroy accept]
 
     def index
       observations = @map.bioindicator_observations.recent.includes(:observed_by).to_a
+      photos = @map.photos.for_bioindicators.chronological.includes(:uploaded_by, image_attachment: :blob)
       render json: {
         observations: observations.map(&:as_inertia),
-        summary: SoilAnalysis::BioindicatorCatalog.tally(observations),
+        summary: SoilAnalysis::BioindicatorCatalog.tally(observations.reject(&:draft?)),
+        photos: photos.map(&:as_inertia),
         catalog: SoilAnalysis::BioindicatorCatalog.all,
         plantCatalog: SoilAnalysis::SpeciesLookup.available?
       }
@@ -48,6 +55,12 @@ module Maps
       saved = @observation.update(observation_params)
       locate_photo(@observation) if saved
       saved ? render(json: @observation.as_inertia) : render_errors(@observation)
+    end
+
+    # Keeps a plant the AI proposed.
+    def accept
+      @observation.accept!
+      render json: @observation.as_inertia
     end
 
     def destroy

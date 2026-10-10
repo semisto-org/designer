@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { visibleOffset } from '@/map/visiblePadding'
+import AiPhotoReading from '@/map/soil/AiPhotoReading'
 import { formatDate } from '@/map/soil/format'
 import { photoUrl } from '@/map/photos/format'
 import { photoActions } from '@/map/photos/store'
@@ -60,12 +61,15 @@ function Evidence({ plant }: { plant: CatalogPlant }) {
 export default function PlantsTab() {
   const editor = useEditor()
   const state = useSoil()
-  const { observations, summary, catalog, observationsLoaded } = state
+  const { summary, catalog, observationsLoaded } = state
+  // The AI's proposals wait in « Faire lire une photo par ton IA » until the person keeps them.
+  const observations = state.observations.filter((o) => o.status !== 'draft')
 
   return (
     <div className="space-y-5">
       <p className="text-sm text-loam-600">{t('soil.plants.intro')}</p>
 
+      <AiPhotoReading />
       {editor.canEdit ? <><PhotoObservation /><ObservationForm /></> : <p className="rounded-lg bg-loam-50 p-3 text-xs text-loam-500">{t('soil.plants.read_only')}</p>}
 
       <section className="space-y-2" aria-label={t('soil.plants.summary_title')}>
@@ -326,6 +330,7 @@ function ObservationRow({ observation }: { observation: BioObservation }) {
         <div className="min-w-0 flex-1">
           <p className="font-medium text-loam-900">{observation.speciesName}</p>
           {observation.latinName && <p className="text-xs italic text-loam-500">{observation.latinName}</p>}
+          {observation.source === 'ai' && <p className="text-[11px] text-prune-700">{t('soil.plants.ai.proposed_by')}</p>}
         </div>
         {editor.canEdit ? (
           <div className="w-32 shrink-0">

@@ -315,7 +315,7 @@ export default function PhotoObservation() {
 }
 
 /** A file picker that looks like a button: `capture` opens the camera on phones. */
-function PickButton({ icon: Icon, label, capture, disabled, onPick }: {
+export function PickButton({ icon: Icon, label, capture, disabled, onPick }: {
   icon: LucideIcon; label: string; capture?: boolean; disabled: boolean; onPick: (files: FileList | null) => void
 }) {
   return (
