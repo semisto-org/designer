@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_070000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -360,6 +360,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_070000) do
     t.string "checksum"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "sketches_count", default: 0, null: false
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
     t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"
@@ -625,6 +626,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_070000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_photo_albums_on_map_id"
+  end
+
+  create_table "photo_sketches", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "map_photo_id", null: false
+    t.bigint "created_by_id"
+    t.string "name", null: false
+    t.jsonb "strokes", default: [], null: false
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_photo_sketches_on_created_by_id"
+    t.index ["map_id"], name: "index_photo_sketches_on_map_id"
+    t.index ["map_photo_id"], name: "index_photo_sketches_on_map_photo_id"
   end
 
   create_table "plan_grants", force: :cascade do |t|
@@ -1093,6 +1108,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_070000) do
   add_foreign_key "patch_items", "plant_species", column: "species_id"
   add_foreign_key "patch_items", "plant_varieties", column: "variety_id"
   add_foreign_key "photo_albums", "maps"
+  add_foreign_key "photo_sketches", "map_photos", on_delete: :cascade
+  add_foreign_key "photo_sketches", "maps", on_delete: :cascade
+  add_foreign_key "photo_sketches", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plan_grants", "invoice_requests"
   add_foreign_key "plan_grants", "users"
   add_foreign_key "plan_grants", "users", column: "granted_by_id", on_delete: :nullify

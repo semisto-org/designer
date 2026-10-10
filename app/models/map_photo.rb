@@ -26,6 +26,7 @@ class MapPhoto < ApplicationRecord
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :album, class_name: "PhotoAlbum", foreign_key: :photo_album_id, inverse_of: :photos, optional: true
   belongs_to :map_feature, optional: true
+  has_many :sketches, -> { ordered }, class_name: "PhotoSketch", dependent: :destroy, inverse_of: :photo
 
   # Variants go through libvips: rotated from EXIF, metadata (GPS included)
   # stripped. Viewers only ever get variants; the original file, EXIF and
@@ -81,7 +82,7 @@ class MapPhoto < ApplicationRecord
     {
       id:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
-      albumId: photo_album_id, featureId: map_feature_id,
+      albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
       width: meta["width"], height: meta["height"],
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,
