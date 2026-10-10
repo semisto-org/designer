@@ -26,7 +26,7 @@ gem "omniauth-rails_csrf_protection", "~> 2.0"
 gem "stripe", "~> 20.0"
 
 # Model Context Protocol server (Claude and other agents on a map)
-gem "mcp", "~> 1.6"
+gem "mcp", "~> 1.7"
 
 # Markdown help center
 gem "commonmarker", "~> 2.0"
