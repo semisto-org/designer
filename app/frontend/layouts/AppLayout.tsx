@@ -54,7 +54,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <>
                 <Link href="/account" className="flex items-center gap-2 text-loam-600 hover:text-loam-900">
                   {currentUser.avatarUrl ? (
-                    <img src={currentUser.avatarUrl} alt="" className="h-7 w-7 rounded-full" referrerPolicy="no-referrer" />
+                    <img src={currentUser.avatarUrl} alt="" className="h-7 w-7 rounded-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     <span className="grid h-7 w-7 place-items-center rounded-full bg-prune-100 text-xs font-semibold text-prune-700">
                       {currentUser.name.slice(0, 1).toUpperCase()}

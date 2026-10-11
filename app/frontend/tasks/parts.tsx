@@ -41,12 +41,12 @@ export function initials(name: string): string {
   return name.split(/[\s.@_-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join('')
 }
 
-export function AssigneeBadge({ name, withName }: { name: string; withName?: boolean }) {
+export function AssigneeBadge({ name, url, withName }: { name: string; url?: string | null; withName?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-sm text-loam-700" title={name}>
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-prune-100 text-[13px] font-semibold text-prune-700" aria-hidden>
+      {url ? <img src={url} alt="" referrerPolicy="no-referrer" className="h-6 w-6 shrink-0 rounded-full object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-prune-100 text-[13px] font-semibold text-prune-700" aria-hidden>
         {initials(name)}
-      </span>
+      </span>}
       <span className={withName ? '' : 'sr-only'}>{name}</span>
     </span>
   )

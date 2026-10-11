@@ -92,6 +92,7 @@ export type AccountData = {
   name: string | null
   email: string
   avatarUrl: string | null
+  hasOwnAvatar: boolean
   signedUpAt: string
   googleLinked: boolean
   /** Has chosen an (optional) password. */

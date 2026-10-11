@@ -45,7 +45,7 @@ export function PlanBadge({ plan }: { plan: AdminUserRow['plan'] }) {
 
 export function Avatar({ user }: { user: Pick<AdminUserRow, 'name' | 'avatarUrl'> }) {
   return user.avatarUrl ? (
-    <img src={user.avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full" referrerPolicy="no-referrer" />
+    <img src={user.avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" referrerPolicy="no-referrer" />
   ) : (
     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-prune-100 text-xs font-semibold text-prune-700">
       {user.name.slice(0, 1).toUpperCase()}

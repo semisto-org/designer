@@ -16,7 +16,7 @@ export type TaskData = {
   /** For a default task: whether the map already shows it done (Journey). */
   mapSaysDone?: boolean
   dueOn?: string
-  assignee?: { id: number; name: string }
+  assignee?: { id: number; name: string; avatarUrl?: string }
   completedAt?: string
   completedBy?: string
   createdAt?: string

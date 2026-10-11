@@ -117,7 +117,7 @@ export default function Tasks({ scope, teams, tasks: initial, today }: Props) {
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-loam-500">
                           <span>{grouping === 'map' ? task.listName : `${task.map.name} · ${task.listName}`}</span>
                           {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}
-                          {task.assignee && task.assignee.id !== currentUser.id && grouping !== 'assignee' && <AssigneeBadge name={task.assignee.name} withName />}
+                          {task.assignee && task.assignee.id !== currentUser.id && grouping !== 'assignee' && <AssigneeBadge name={task.assignee.name} url={task.assignee.avatarUrl} withName />}
                           {task.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
                         </div>
                       </div>

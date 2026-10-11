@@ -1,0 +1,15 @@
+fr:
+  account:
+    avatar:
+      label: "Photo de profil"
+      hint: "JPEG, PNG, WebP ou HEIC, jusqu’à 10 Mo. On la recadre en carré."
+      choose: "Choisir une photo"
+      change: "Changer de photo"
+      remove: "Retirer"
+      uploading: "Envoi…"
+      saved: "Ta photo de profil est enregistrée."
+      removed: "Ta photo de profil est retirée."
+      errors:
+        missing: "Choisis une image."
+        type: "Choisis une image JPEG, PNG, WebP ou HEIC."
+        size: "Cette image dépasse %{max} Mo."

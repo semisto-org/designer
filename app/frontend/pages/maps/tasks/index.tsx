@@ -398,7 +398,7 @@ function TaskRow({ task, today, open, canEdit, canTick, onToggle, onOpen, onDrag
         {(task.tags.length > 0 || task.dueOn || task.assignee) && (
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}
-            {task.assignee && <AssigneeBadge name={task.assignee.name} withName />}
+            {task.assignee && <AssigneeBadge name={task.assignee.name} url={task.assignee.avatarUrl} withName />}
             {task.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
           </div>
         )}
