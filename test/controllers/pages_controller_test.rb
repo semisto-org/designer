@@ -95,4 +95,16 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<loc>http://www.example.com/help/#{HelpArticle.all.first.slug}</loc>"
     assert_not_includes response.body, "/billing"
   end
+
+  test "the standout features point to real help articles and pictures" do
+    standouts = I18n.t("site.standouts", locale: :fr)
+    links = standouts[:entries].map { |e| e[:link] } + standouts[:margins][:notes].filter_map { |n| n[:link] }
+    links.each do |link|
+      slug = link.delete_prefix("/help/")
+      assert Rails.root.join("app/help/#{slug}.md").exist?, "#{link} has no help article"
+    end
+    standouts[:entries].each do |entry|
+      assert Rails.root.join("app/frontend/components/site/standouts/#{entry[:image]}.webp").exist?, "#{entry[:image]}.webp is missing"
+    end
+  end
 end

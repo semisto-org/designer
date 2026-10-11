@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react'
 import { ArrowRight } from 'lucide-react'
 import { CtaBand, PageHero, Section } from '@/components/site/Section'
+import { Standouts } from '@/components/site/Standouts'
 import { iconFor } from '@/components/site/icons'
 import { ButtonLink } from '@/components/ui/Button'
 import { content, tf } from '@/lib/content'
@@ -21,6 +22,8 @@ export default function Features() {
           ))}
         </nav>
       </PageHero>
+
+      <Standouts />
 
       {groups.map((group, index) => {
         const Icon = iconFor(group.icon)
