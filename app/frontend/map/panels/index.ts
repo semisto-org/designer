@@ -1,4 +1,4 @@
-import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -28,6 +28,7 @@ import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
 import ScenarioToggle from '@/map/panels/ScenarioToggle'
 import PalettePanel from '@/map/plants/PalettePanel'
+import OfferPanel from '@/map/panels/OfferPanel'
 import PlantListPanel from '@/map/plants/PlantListPanel'
 import PlantSection from '@/map/plants/PlantSection'
 import ObservationsSection from '@/map/plants/ObservationsSection'
@@ -90,6 +91,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: ActionsPanel, order: 30 },
   // Échanger (no number)
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
+  { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: OfferPanel, requires: 'editor', order: 15 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
   { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
 ]

@@ -138,6 +138,14 @@ fr:
       no_team: "Cette carte n’appartient à aucune équipe. Range-la dans une équipe (bouton « Partager » de la carte) : ses membres pourront y chiffrer une offre ensemble."
       not_member: "Cette carte appartient à l’équipe « %{team} ». Seuls ses membres chiffrent ses offres."
       back: "Revenir à la carte"
+    panel:
+      title: "Offre"
+      intro: "Chiffre l’offre de ce projet depuis ce que la carte mesure : heures, plantes, frais, puis des versions à envoyer."
+      not_started: "Pas encore d’offre pour cette carte."
+      unavailable: "Le constructeur d’offre est réservé aux membres de l’équipe de la carte."
+      total: "Total TVAC"
+      latest: "Dernière version"
+      open: "Ouvrir l’offre"
     page:
       title: "Offre"
       back: "Revenir à la carte"
@@ -150,6 +158,7 @@ fr:
       not_saved: "Brouillon pas encore enregistré"
       read_only: "Tu peux lire cette offre, pas la modifier."
       print: "Imprimer"
+      close: "Fermer"
     terrain:
       title: "Ce que dit le terrain"
       site_area: "Surface du lieu"
