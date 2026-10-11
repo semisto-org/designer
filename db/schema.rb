@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -553,6 +553,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_230000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["cell_lat", "cell_lng", "first_year", "last_year"], name: "index_observed_climates_on_cell_and_period", unique: true
+  end
+
+  create_table "offer_versions", force: :cascade do |t|
+    t.bigint "offer_id", null: false
+    t.integer "number", null: false
+    t.string "status", default: "saved", null: false
+    t.string "note"
+    t.jsonb "inputs", default: {}, null: false
+    t.jsonb "measures", default: {}, null: false
+    t.jsonb "result", default: {}, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_offer_versions_on_created_by_id"
+    t.index ["offer_id", "number"], name: "index_offer_versions_on_offer_id_and_number", unique: true
+    t.index ["offer_id"], name: "index_offer_versions_on_offer_id"
+  end
+
+  create_table "offers", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.jsonb "inputs", default: {}, null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_offers_on_map_id", unique: true
+    t.index ["updated_by_id"], name: "index_offers_on_updated_by_id"
   end
 
   create_table "organization_invitations", force: :cascade do |t|
@@ -1137,6 +1164,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_230000) do
   add_foreign_key "oauth_access_tokens", "users", on_delete: :cascade
   add_foreign_key "oauth_grants", "oauth_clients", on_delete: :cascade
   add_foreign_key "oauth_grants", "users", on_delete: :cascade
+  add_foreign_key "offer_versions", "offers"
+  add_foreign_key "offer_versions", "users", column: "created_by_id"
+  add_foreign_key "offers", "maps"
+  add_foreign_key "offers", "users", column: "updated_by_id"
   add_foreign_key "organization_invitations", "organizations"
   add_foreign_key "organization_invitations", "users", column: "invited_by_id"
   add_foreign_key "organization_memberships", "organizations"

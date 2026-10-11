@@ -327,6 +327,17 @@ Rails.application.routes.draw do
   end
   # --- end dossier ---
 
+  # --- offers ---
+  # The offer builder of a team map: the working offer and its versions.
+  resources :maps, only: [] do
+    resource :offer, only: %i[show update], controller: "maps/offers" do
+      resources :versions, only: %i[create show update], param: :number, controller: "maps/offer_versions" do
+        post :restore, on: :member
+      end
+    end
+  end
+  # --- end offers ---
+
   # --- invoicing ---
   # « Payer sur facture »: the request form (signed in; from /billing and
   # /tarifs) and its confirmation, and the staff screen.
