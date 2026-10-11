@@ -126,7 +126,7 @@ export default function AccountAi({ endpoints, tokens, apps, planAllowsDrafts, a
       <Card className="bg-leaf-50/60 ring-leaf-200">
         <h2 className="flex items-center gap-2 text-base"><ShieldCheck className="h-4 w-4 text-leaf-600" />{t('account_ai.guardrails.title')}</h2>
         <ul className="mt-3 space-y-1.5 text-sm text-loam-700">
-          {(['never', 'networks', 'journal', 'revoke'] as const).map((key) => (
+          {(['never', 'tasks', 'networks', 'journal', 'revoke'] as const).map((key) => (
             <li key={key} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" />{t(`account_ai.guardrails.${key}`)}</li>
           ))}
         </ul>

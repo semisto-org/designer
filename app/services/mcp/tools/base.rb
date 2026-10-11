@@ -12,7 +12,8 @@ module Mcp
 
       class << self
         # :read (any connection), :propose (drafts scope, editor, owner's
-        # plan) or :withdraw (drafts scope, editor).
+        # plan), :withdraw (drafts scope, editor) or :write (drafts scope,
+        # owner's plan, map not read-only; the tool checks the role).
         def requirement(value = nil)
           value ? @requirement = value : (@requirement || :read)
         end
@@ -114,6 +115,23 @@ module Mcp
 
         def require_editor!
           raise ToolError, t("errors.editor_only") unless editor?
+        end
+
+        # What keeps this connection from writing tasks and documents on the
+        # map: the scope, the owner's plan (as for drafts), the map being
+        # read-only by plan and, unless the tool checks it itself, the role.
+        def write_blockers(map, role: true)
+          blockers = []
+          blockers << "scope" unless principal.drafts?
+          blockers << "role_write" if role && !editor?
+          blockers << "plan_write" unless Entitlements.for_map(map).ai_drafts?
+          blockers << "read_only" if map.read_only_by_plan?
+          blockers
+        end
+
+        def require_write!(map, role: true)
+          blocker = write_blockers(map, role:).first
+          raise ToolError, t("errors.write_blocked.#{blocker}") if blocker
         end
 
         def require_ai_drafts_plan!(map)

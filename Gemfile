@@ -90,3 +90,5 @@ end
 gem "caxlsx", "~> 4.5"
 # Unzips the ERA5-Land downloads (also pulled in by caxlsx).
 gem "rubyzip", ">= 2.4", "< 4"
+# Text of the PDF documents a map's library holds, for the AI (MCP get_document).
+gem "pdf-reader", "~> 2.15"

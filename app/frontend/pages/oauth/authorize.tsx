@@ -129,7 +129,7 @@ function ClientConsent({ client, account, requestedAccess, planAllowsDrafts, aiT
               {t('oauth.authorize.guardrails_title')}
             </p>
             <ul className="mt-2 space-y-1 text-sm text-loam-700">
-              {(['never', 'networks', 'journal', 'revoke'] as const).map((key) => (
+              {(['never', 'tasks', 'networks', 'journal', 'revoke'] as const).map((key) => (
                 <li key={key} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" />{t(`account_ai.guardrails.${key}`)}</li>
               ))}
             </ul>

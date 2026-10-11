@@ -5,7 +5,9 @@ module Mcp
       [
         ListMaps, GetMap, ListFeatures, GetFeature, GetRegionLayers, IdentifyAtPoint, GetSiteData,
         SearchPlants, GetPlant, GetDesignGuide, GetProjectSheet, GetBioindicatorPhoto,
-        ProposeFeatures, ProposePalette, ProposeProjectSheet, ProposeBioindicators, WithdrawDraft
+        ListTasks, ListDocuments, GetDocument,
+        ProposeFeatures, ProposePalette, ProposeProjectSheet, ProposeBioindicators, WithdrawDraft,
+        CreateTasks, UpdateTasks, AddDocument, UpdateDocument
       ]
     end
   end
