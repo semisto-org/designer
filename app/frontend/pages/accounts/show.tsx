@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react'
-import { CreditCard, KeyRound, Sparkles, Trash2 } from 'lucide-react'
+import { Briefcase, CreditCard, KeyRound, Sprout, Sparkles, Trash2 } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -7,7 +7,7 @@ import { Field, Input } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { formatDate } from '@/lib/money'
 import { TeamsCard } from '@/teams/TeamsCard'
-import type { AccountData } from '@/types/billing'
+import type { AccountData, AccountKind } from '@/types/billing'
 
 export default function AccountShow({ account }: { account: AccountData }) {
   const form = useForm({ name: account.name ?? '' })
@@ -54,6 +54,8 @@ export default function AccountShow({ account }: { account: AccountData }) {
           <Button type="submit" disabled={form.processing || !form.isDirty}>{t('account.save')}</Button>
         </form>
       </Card>
+
+      <AccountKindCard kind={account.accountKind} />
 
       <PasswordCard hasPassword={account.hasPassword} />
 
@@ -108,6 +110,30 @@ export default function AccountShow({ account }: { account: AccountData }) {
         </Button>
       </Card>
     </div>
+  )
+}
+
+// Own place or clients: what the welcome page asked, changeable here.
+function AccountKindCard({ kind }: { kind: AccountKind | null }) {
+  const other: AccountKind = kind === 'professional' ? 'individual' : 'professional'
+  const Icon = kind === 'professional' ? Briefcase : Sprout
+
+  return (
+    <Card>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-base"><Icon className="h-4 w-4 text-leaf-500" aria-hidden="true" />{t('account.kind.title')}</h2>
+          <p className="mt-3 text-lg font-semibold text-loam-900">{kind ? t(`account.kind.${kind}`) : t('account.kind.none')}</p>
+          {kind && <p className="mt-1 text-sm text-loam-500">{t(`account.kind.${kind}_hint`)}</p>}
+        </div>
+        <Button
+          variant="secondary"
+          onClick={() => router.patch('/account', { user: { account_kind: other } }, { preserveScroll: true })}
+        >
+          {t(`account.kind.change_to_${other}`)}
+        </Button>
+      </div>
+    </Card>
   )
 }
 

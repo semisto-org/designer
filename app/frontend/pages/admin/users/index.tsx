@@ -57,6 +57,7 @@ export default function AdminUsers({ users, filters, pagination }: Props) {
                     <p className="flex items-center gap-2 font-medium text-loam-900">
                       <span className="truncate">{user.name}</span>
                       {user.admin && <span className="rounded-full bg-prune-100 px-2 py-0.5 text-xs text-prune-700">{t('admin.users.admin_badge')}</span>}
+                      {user.professional && <span className="rounded-full bg-leaf-100 px-2 py-0.5 text-xs text-leaf-700">{t('account.kind.professional')}</span>}
                     </p>
                     <p className="truncate text-sm text-loam-500">
                       {user.email}{user.google && <span className="text-loam-400"> · {t('admin.users.google')}</span>}

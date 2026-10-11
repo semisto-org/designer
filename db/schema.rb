@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1098,8 +1098,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_200000) do
     t.string "sign_in_code_digest"
     t.datetime "sign_in_code_sent_at"
     t.integer "sign_in_code_attempts", default: 0, null: false
+    t.string "account_kind"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
+    t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying, 'professional'::character varying]::text[])", name: "users_account_kind_check"
   end
 
   create_table "water_sources", force: :cascade do |t|

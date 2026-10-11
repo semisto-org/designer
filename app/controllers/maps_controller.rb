@@ -6,6 +6,9 @@ class MapsController < ApplicationController
   before_action :require_owner!, only: :destroy
 
   def index
+    # A new account first says who it designs for (welcome page).
+    return redirect_to welcome_path if request.format.html? && !Current.user.account_kind_chosen? && !impersonating?
+
     maps = Map.active.where(id: Current.user.map_memberships.select(:map_id))
       .or(Map.active.where(organization_id: Current.user.organization_memberships.select(:organization_id)))
       .includes(:region, :owner).order(updated_at: :desc)

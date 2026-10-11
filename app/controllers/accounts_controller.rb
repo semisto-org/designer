@@ -11,6 +11,7 @@ class AccountsController < ApplicationController
         name: user.name, email: user.email_address, avatarUrl: user.avatar_url, signedUpAt: user.created_at.iso8601,
         googleLinked: user.google_uid.present?,
         hasPassword: user.password?,
+        accountKind: user.account_kind,
         plan:,
         planEndsAt: plan_ends_at(user, plan)&.iso8601,
         ownedMaps: user.owned_maps.active.count,
@@ -21,8 +22,8 @@ class AccountsController < ApplicationController
   end
 
   def update
-    if Current.user.update(params.require(:user).permit(:name))
-      redirect_to account_path, notice: t("account.saved")
+    if Current.user.update(params.require(:user).permit(:name, :account_kind))
+      redirect_to account_path, notice: params[:user].key?(:account_kind) ? t("account.kind.saved") : t("account.saved")
     else
       redirect_to account_path, inertia: { errors: Current.user.errors }
     end

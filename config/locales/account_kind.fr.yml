@@ -1,0 +1,40 @@
+fr:
+  welcome:
+    title: "Bienvenue"
+    kicker: "Bienvenue, %{name}"
+    kicker_anonymous: "Bienvenue"
+    heading: "Pour qui vas-tu concevoir ?"
+    intro: "Une question avant d'ouvrir ton carnet. Elle choisit les outils et les forfaits qu'on te montre ; tout le reste est pareil pour tout le monde."
+    later: "Tu pourras changer d'avis à tout moment dans « Mon compte »."
+    invalid: "Choisis l'un des deux comptes pour continuer."
+    individual:
+      label: "Compte particulier"
+      title: "Je conçois mon propre lieu"
+      who: "Mon jardin, mon terrain, ou un lieu collectif dont je fais partie."
+      points:
+        - "Ta première carte est gratuite et le reste."
+        - "Un carnet de route t'accompagne étape par étape : observer, cartographier, concevoir, planter."
+        - "Le forfait particulier (%{yearly} par an) ajoute d'autres cartes, le PDF à l'échelle et les analyses du lieu."
+      note: "an 1, an 5, an 15… ton jardin grandit ici"
+      submit: "Je conçois mon lieu"
+    professional:
+      label: "Compte pro"
+      title: "Je conçois pour d'autres"
+      who: "Designer indépendant, bureau d'études, paysagiste, pépiniériste, collectif qui accompagne des projets."
+      points:
+        - "Les outils de ton activité : tâches de projet, barèmes et offres chiffrées depuis la carte."
+        - "Une équipe pour travailler à plusieurs sur les cartes de tes clients."
+        - "Les formules Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, 20 cartes)."
+      note: "un lieu par client, chacun à son rythme"
+      submit: "Je conçois pour des clients"
+  account:
+    kind:
+      title: "Type de compte"
+      individual: "Compte particulier"
+      individual_hint: "Tu conçois ton propre lieu."
+      professional: "Compte pro"
+      professional_hint: "Tu conçois pour des clients : outils et formules pros."
+      none: "Pas encore choisi"
+      change_to_professional: "Passer en compte pro"
+      change_to_individual: "Passer en compte particulier"
+      saved: "Type de compte enregistré."

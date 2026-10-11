@@ -186,6 +186,8 @@ Rails.application.routes.draw do
   post "billing/checkout", to: "billing_checkouts#create", as: :billing_checkout
   post "billing/portal", to: "billing_portals#create", as: :billing_portal
   resource :account, only: %i[show update]
+  # Asked once after the first sign-in: own place or clients (account kind).
+  resource :welcome, only: %i[show update]
   post "account/deletion_request", to: "accounts#deletion_request", as: :account_deletion_request
   post "webhooks/stripe", to: "webhooks/stripe#create"
   # --- end billing-site ---
