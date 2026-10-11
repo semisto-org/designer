@@ -49,7 +49,7 @@ export function PrecisionCard({ mapId, precision, compact = false }: Props) {
           </div>
         ))}
       </div>
-      <p className="text-xs text-loam-600">{t(`offers.precision.explain.${precision.level}`)}</p>
+      <p className="text-sm text-loam-600">{t(`offers.precision.explain.${precision.level}`)}</p>
 
       {missing.length > 0 ? (
         <div className="space-y-1.5">
@@ -72,7 +72,7 @@ export function PrecisionCard({ mapId, precision, compact = false }: Props) {
                         : <Link href={href} className="ml-1 inline-flex items-center gap-0.5 text-prune-700 underline-offset-2 hover:underline">{t(`offers.precision.where.${check.where}`)}<ArrowRight className="h-3 w-3" /></Link>
                     )}
                   </span>
-                  <span className="shrink-0 text-xs tabular-nums text-leaf-700">+{gain}</span>
+                  <span className="shrink-0 text-sm tabular-nums text-leaf-700">+{gain}</span>
                 </li>
               )
             })}

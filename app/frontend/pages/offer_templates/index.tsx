@@ -39,7 +39,7 @@ export default function OfferTemplatesIndex({ accounts }: { accounts: TemplateAc
                 <li key={template.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
                   <div className="min-w-0">
                     <p className="font-medium text-loam-900">{template.name}</p>
-                    <p className="text-xs text-loam-500">
+                    <p className="text-sm text-loam-500">
                       {template.clientTypes.length > 0
                         ? t('offer_templates.index.for', { types: template.clientTypes.map((type) => t(`offers.client_types.${type}`)).join(', ') })
                         : t('offer_templates.index.for_any')}
@@ -59,7 +59,7 @@ export default function OfferTemplatesIndex({ accounts }: { accounts: TemplateAc
               ))}
             </ul>
           )}
-          <p className="text-xs text-loam-500">{t('offer_templates.index.default_note')}</p>
+          <p className="text-sm text-loam-500">{t('offer_templates.index.default_note')}</p>
         </Card>
       ))}
     </div>
