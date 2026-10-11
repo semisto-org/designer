@@ -33,7 +33,11 @@ module Maps
           schema: ProjectSheet.schema_json,
           drafts: @map.project_sheet_drafts.includes(:created_by).map(&:as_json),
           canEdit: %w[owner editor].include?(@role),
-          formLink: form_link_props
+          formLink: form_link_props,
+          documents: @map.documents.from_project_sheet.newest_first
+            .includes(:uploaded_by, file_attachment: :blob, thumbnail_attachment: :blob)
+            .map { _1.as_inertia(url: ->(doc, size) { file_map_document_path(@map, doc, size:) }) },
+          documentLimits: { maxBytes: MapDocument::MAX_BYTES, extensions: MapDocument::EXTENSIONS }
         }
       end
 

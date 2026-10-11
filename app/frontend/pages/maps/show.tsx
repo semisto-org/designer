@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import type { MapGeoJSONFeature, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { MapViewMenu } from '@/components/map_views/MapViews'
 import { Dialog } from '@/components/ui/Dialog'
 import { Flash } from '@/components/ui/Flash'
 import { api } from '@/lib/api'
@@ -45,6 +46,7 @@ export default function MapShow(props: Props) {
           <h1 className="truncate text-xl leading-none text-loam-900">{map.name}</h1>
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
+        <MapViewMenu mapId={map.id} />
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
         <div className="flex-1" />

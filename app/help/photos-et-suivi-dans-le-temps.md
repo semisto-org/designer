@@ -27,6 +27,18 @@ Les photos sans GPS sont signalées comme « à placer sur la carte ». Touche-e
 
 Ouvre une photo pour lui donner une **Légende**, corriger la **Date de prise de vue**, la ranger dans un album ou indiquer sa **Direction** (0 = nord, 90 = est). **Original** télécharge le fichier d'origine.
 
+## La page Photos, pour trier en grand
+
+Dans le panneau, touche **Pleine page** (ou choisis **Photos** dans le menu **Carte** de l'en-tête) : toutes les photos de la carte s'ouvrent sur une page entière.
+
+- **Grouper** : **Par saison** (le printemps 2026, l'hiver 2025–2026…), **Par mois**, **Par album** ou sans groupe.
+- **Trier** : prises récemment d'abord, les plus anciennes d'abord, ou ajoutées récemment d'abord.
+- **Taille des vignettes** : petites pour tout voir d'un coup, grandes pour regarder.
+- **Sélectionner** : touche plusieurs photos (ou Cmd / Maj + clic sur un ordinateur), puis **Ranger dans…** un album, ou **Supprimer**. Tu peux aussi glisser des photos sur un album de la colonne de gauche.
+- **À placer sur la carte** et **Avec une esquisse** retrouvent ce qui demande encore un geste.
+
+Ouvrir une photo depuis cette page donne la même fiche que dans la carte ; **Voir sur la carte** et **Placer sur la carte** te ramènent à la carte, au bon endroit.
+
 ## Avant / après
 
 Rien ne motive plus qu'un avant / après. Deux façons de le faire :

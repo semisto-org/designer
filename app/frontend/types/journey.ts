@@ -1,3 +1,4 @@
+import type { DocumentLimits, MapDocumentData } from '@/types/documents'
 import type { MapStage } from '@/types'
 
 // ----- Typed schema (served by the server: ProjectSheet.schema_json) -----
@@ -63,6 +64,9 @@ export type ProjectPayload = {
   canEdit: boolean
   /** The private link for the people behind the project (editors only). */
   formLink: ProjectFormLink | null
+  /** Documents sent with the sheet (also in the map's « Documents »). */
+  documents: MapDocumentData[]
+  documentLimits: DocumentLimits
 }
 
 export type ProjectFormLink = {
@@ -83,6 +87,9 @@ export type ProjectFormPayload = {
   schema: ProjectSchema
   canEdit: boolean
   submittedAt: string | null
+  /** What was sent through this link. */
+  documents: MapDocumentData[]
+  documentLimits: DocumentLimits
 }
 
 // ----- Journey -----

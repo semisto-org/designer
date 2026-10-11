@@ -135,6 +135,7 @@ fr:
       photo_elsewhere: "Cette photo appartient à une autre carte."
       upload_failed: "L'envoi a échoué. Vérifie ta connexion et réessaie."
       not_found: "Cette photo n'existe plus."
+      none_selected: "Choisis au moins une photo."
   soil:
     panel_label: "Sol"
     errors:

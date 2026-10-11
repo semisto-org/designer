@@ -59,6 +59,10 @@ Tu conçois le lieu de quelqu'un d'autre ? Sous « Faire remplir la fiche par le
 
 Quand elle clique sur **J'ai terminé**, tu reçois un e-mail. Elle peut encore compléter ses réponses tant que le lien est actif. **Nouveau lien** remplace l'adresse (l'ancienne cesse de fonctionner) et **Désactiver** la ferme.
 
+## Joindre des documents
+
+Sous la fiche, **Documents du projet** accueille les plans d'architecte, un relevé de géomètre, une analyse de sol… Le porteur de projet a la même section dans son formulaire et peut y déposer ses fichiers lui-même. Tous ces documents se retrouvent dans la bibliothèque de la carte : voir [Rassembler ses documents](/help/rassembler-ses-documents).
+
 ## Bien la remplir
 
 - **Sois réaliste sur le temps** : un jardin-forêt demande surtout du temps les premières années.

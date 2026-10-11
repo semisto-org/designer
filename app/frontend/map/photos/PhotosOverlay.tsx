@@ -2,6 +2,7 @@ import type { MapGeoJSONFeature, MapMouseEvent } from 'maplibre-gl'
 import * as maplibregl from 'maplibre-gl'
 import { X } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
+import { visibleOffset } from '@/map/visiblePadding'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -11,6 +12,7 @@ import {
   highlightPhoto, installPhotoLayers, PHOTO_CLUSTER_LAYER, PHOTO_POINT_LAYER, photosToGeoJSON, PHOTOS_SOURCE,
   removePhotoLayers, setPhotoLayersVisible,
 } from '@/map/photos/layers'
+import { PhotoHostContext, type PhotoHost } from '@/map/photos/host'
 import { PhotoCompare } from '@/map/photos/PhotoCompare'
 import { PhotoLightbox } from '@/map/photos/PhotoLightbox'
 import { getPhotosState, photoActions, usePhotos } from '@/map/photos/store'
@@ -166,6 +168,36 @@ export default function PhotosOverlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placingId])
 
+  // Coming from the full-page « Photos »: ?photo=ID shows its spot, ?place=ID waits for a click to place it.
+  useEffect(() => {
+    if (!state.loaded) return
+    const params = new URLSearchParams(window.location.search)
+    const located = photos.find((p) => p.id === Number(params.get('photo')))
+    const toPlace = photos.find((p) => p.id === Number(params.get('place')))
+    if (!located && !toPlace) return
+    params.delete('photo')
+    params.delete('place')
+    window.history.replaceState(window.history.state, '', window.location.pathname + (params.toString() ? `?${params}` : '') + window.location.hash)
+    if (toPlace && editor.canEdit) photoActions.startPlacing(toPlace.id)
+    else if (located?.lng != null && located.lat != null) {
+      map.jumpTo({ center: [located.lng, located.lat], zoom: Math.max(map.getZoom(), 18.5) })
+      highlightPhoto(map, located.id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.loaded])
+
+  const host = useMemo<PhotoHost>(() => ({
+    mapId: editor.map.id,
+    canEdit: editor.canEdit,
+    notify: editor.notify,
+    locate: (photo) => {
+      if (photo.lng == null || photo.lat == null) return
+      map.flyTo({ center: [photo.lng, photo.lat], zoom: Math.max(map.getZoom(), 18.5), duration: 800, offset: visibleOffset(editor.activePanel != null) })
+      photoActions.open(null)
+    },
+    place: (photo) => photoActions.startPlacing(photo.id),
+  }), [editor.map.id, editor.canEdit, editor.notify, editor.activePanel, map])
+
   const placing = photos.find((p) => p.id === placingId)
   return (
     <>
@@ -178,8 +210,10 @@ export default function PhotosOverlay() {
           </button>
         </div>
       )}
-      <PhotoLightbox />
-      <PhotoCompare />
+      <PhotoHostContext.Provider value={host}>
+        <PhotoLightbox />
+        <PhotoCompare />
+      </PhotoHostContext.Provider>
     </>
   )
 }

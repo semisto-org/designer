@@ -43,3 +43,8 @@ export function headingLabel(heading: number): string {
   const index = Math.round(((heading % 360) + 360) % 360 / 45) % 8
   return `${t(`soil_photos.compass_points.${points[index]}`)} (${Math.round(heading)}°)`
 }
+
+/** « 840 Ko » under a megabyte, else as formatMegabytes. */
+export function formatBytes(bytes: number): string {
+  return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} Ko` : formatMegabytes(bytes)
+}

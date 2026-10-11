@@ -55,6 +55,7 @@ class Map < ApplicationRecord
   has_many :photo_sketches, dependent: :destroy
   has_many :photo_renderings, dependent: :destroy
   has_many :photo_albums, dependent: :destroy
+  has_many :documents, class_name: "MapDocument", dependent: :destroy
   has_many :soil_samples, dependent: :destroy
   has_many :bioindicator_observations, dependent: :destroy
 
