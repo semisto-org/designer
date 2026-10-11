@@ -86,6 +86,8 @@ export type BillingData = {
   highlight: CatalogKey | null
 }
 
+export type AccountKind = 'individual' | 'professional'
+
 export type AccountData = {
   name: string | null
   email: string
@@ -94,6 +96,8 @@ export type AccountData = {
   googleLinked: boolean
   /** Has chosen an (optional) password. */
   hasPassword: boolean
+  /** Who the person designs for (welcome page); null until chosen. */
+  accountKind: AccountKind | null
   plan: PlanKey
   /** When the plan stops unless renewed (pass or plan paid on invoice); null for a subscription or the free map. */
   planEndsAt: string | null

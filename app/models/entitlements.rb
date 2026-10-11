@@ -1,14 +1,18 @@
 # What a user's plan allows. Free: one owned map with everything except the
 # paid extras. Paid plans (yearly pass for individuals, Atelier and Bureau
-# d'études for professionals) unlock more maps, scaled PDF, analyses, AI
+# d'études for professionals, without a map limit) unlock more maps, scaled PDF, analyses, AI
 # drafts and « Mettre en image ». Editors invited on a map work with the
 # owner's entitlements. A free user also gets AI drafts while their trial runs (AiTrial).
 class Entitlements
+  # Bureau d'études has no map limit. A number rather than nil keeps every
+  # comparison and LIMIT simple; screens show « illimité » from 1 000 up.
+  UNLIMITED_MAPS = 10_000
+
   PLANS = {
     "free" => { max_maps: 1, pdf_export: false, analyses: false, ai_drafts: false, renderings: false },
     "yearly" => { max_maps: 10, pdf_export: true, analyses: true, ai_drafts: true, renderings: true },
     "atelier" => { max_maps: 5, pdf_export: true, analyses: true, ai_drafts: true, renderings: true },
-    "bureau" => { max_maps: 20, pdf_export: true, analyses: true, ai_drafts: true, renderings: true }
+    "bureau" => { max_maps: UNLIMITED_MAPS, pdf_export: true, analyses: true, ai_drafts: true, renderings: true }
   }.freeze
 
   attr_reader :plan

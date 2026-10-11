@@ -12,6 +12,8 @@ export type AdminUserRow = {
   lastSignedInAt: string | null
   mapsCount: number
   plan: PlanKey
+  /** Chose « Compte pro » on the welcome page. */
+  professional: boolean
 }
 
 export type AdminMapRow = {

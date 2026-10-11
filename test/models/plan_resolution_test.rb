@@ -77,6 +77,15 @@ class PlanResolutionTest < ActiveSupport::TestCase
     @user.plan_grants.create!(plan_key:, starts_at:, ends_at:)
   end
 
+  test "Bureau d'études has no map limit, even with billing on" do
+    subscription(plan_key: "bureau")
+    with_billing do
+      30.times { |i| @user.owned_maps.create!(name: "Client #{i}") }
+      assert Entitlements.for(@user).can_create_map?(@user)
+      assert_equal 0, @user.read_only_maps_count
+    end
+  end
+
   test "a plan granted on invoice counts while it runs" do
     grant
     assert_equal "bureau", @user.current_plan_key

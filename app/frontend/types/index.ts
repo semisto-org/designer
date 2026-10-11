@@ -13,6 +13,8 @@ export type CurrentUser = {
   admin: boolean
   /** Has closed the editor's « carnet de route » once (it no longer opens by itself). */
   tourSeen?: boolean
+  /** Designs their own place or for clients (welcome page); null until chosen. */
+  accountKind?: 'individual' | 'professional' | null
 }
 
 export type EntitlementsData = {

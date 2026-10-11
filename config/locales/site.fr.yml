@@ -343,7 +343,7 @@ fr:
           - q: "Pourquoi pas d'abonnement pour les particuliers ?"
             a: "Un projet de jardin-forêt avance par saisons, pas par mois. Tu paies une année quand tu en as besoin, sans prélèvement automatique à surveiller."
           - q: "Quelle différence avec Atelier et Bureau d'études ?"
-            a: "Le forfait particulier couvre jusqu'à 10 cartes pour ton usage personnel. Atelier (5 cartes) et Bureau d'études (20 cartes) sont des abonnements mensuels résiliables à tout moment, pensés pour mener des projets de clients, avec des éditeurs invités gratuits."
+            a: "Le forfait particulier couvre jusqu'à 10 cartes pour ton usage personnel. Atelier (5 cartes) et Bureau d'études (cartes illimitées) sont des abonnements mensuels résiliables à tout moment, pensés pour mener des projets de clients, avec des éditeurs invités gratuits."
           - q: "Les prix sont-ils TTC ?"
             a: "Oui. Le prix affiché est celui que tu paies, TVA comprise. La TVA applicable est calculée au paiement selon ton pays, et une facture détaillée t'est envoyée automatiquement par e-mail."
           - q: "Comment se passe le paiement ?"
@@ -518,7 +518,7 @@ fr:
             items:
               - "La carte gratuite comprend une carte que vous possédez, avec les fonctions décrites sur la page des tarifs."
               - "Le forfait particulier coûte %{yearly} TTC. Il se paie en une fois, vaut un an à partir du paiement et ne se renouvelle pas automatiquement. Un renouvellement fait avant l'échéance s'ajoute à la période en cours."
-              - "Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, 20 cartes) sont des abonnements mensuels, reconduits chaque mois jusqu'à résiliation. Vous pouvez résilier à tout moment depuis votre page de facturation ; l'accès continue jusqu'à la fin de la période payée."
+              - "Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, cartes illimitées) sont des abonnements mensuels, reconduits chaque mois jusqu'à résiliation. Vous pouvez résilier à tout moment depuis votre page de facturation ; l'accès continue jusqu'à la fin de la période payée."
               - "La mission drone (%{drone} TTC) est une prestation unique, réalisée par Semisto après un échange avec vous."
               - "Tous les prix sont TTC. Un prix peut changer pour l'avenir ; il ne change jamais une période déjà payée."
             outro: "Les membres de Semisto bénéficient de 30 % de réduction sur le forfait particulier, avec un code personnel."
