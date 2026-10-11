@@ -13,8 +13,8 @@ export function Field({ label, error, hint, children, className }: {
     <label className={clsx('block space-y-1', className)}>
       {label && <span className="block text-sm font-medium text-loam-700">{label}</span>}
       {children}
-      {hint && !message && <span className="block text-xs text-loam-400">{hint}</span>}
-      {message && <span className="block text-xs text-clay-500">{message}</span>}
+      {hint && !message && <span className="block text-sm text-loam-500">{hint}</span>}
+      {message && <span className="block text-sm text-clay-600">{message}</span>}
     </label>
   )
 }
