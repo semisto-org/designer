@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { AlertTriangle, Bot, Check, Eye, Layers, MapPin, Sparkles, Undo2, X } from 'lucide-react'
+import { AlertTriangle, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, Sparkles, Undo2, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -15,6 +15,18 @@ const ICONS: Record<string, typeof Bot> = {
   list_features: Layers,
   get_region_layers: Layers,
   identify_at_point: MapPin,
+  list_tasks: ListChecks,
+  create_tasks: ListChecks,
+  update_tasks: ListChecks,
+  list_documents: FileText,
+  get_document: FileText,
+  add_document: FileText,
+  update_document: FileText,
+  list_photos: Camera,
+  get_photo: Camera,
+  add_photo: Camera,
+  update_photos: Camera,
+  delete_photos: Camera,
 }
 
 const relative = new Intl.RelativeTimeFormat('fr', { numeric: 'auto' })
@@ -38,6 +50,10 @@ function describe(action: AiActionData): string {
     case 'propose_project_sheet': return t('ai_journal.actions.propose_project_sheet', { count: n('created') })
     case 'propose_bioindicators': return t('ai_journal.actions.propose_bioindicators', { count: n('created') })
     case 'withdraw_draft': return t('ai_journal.actions.withdraw_draft', { count: n('withdrawn') })
+    case 'create_tasks': return t('ai_journal.actions.create_tasks', { count: n('created') })
+    case 'update_tasks': return t('ai_journal.actions.update_tasks', { count: n('updated') })
+    case 'update_photos': return t('ai_journal.actions.update_photos', { count: n('updated') })
+    case 'delete_photos': return t('ai_journal.actions.delete_photos', { count: n('deleted') })
     default: return t(`ai_journal.actions.${action.tool}`)
   }
 }

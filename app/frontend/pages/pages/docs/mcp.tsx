@@ -105,7 +105,7 @@ export default function McpDocs({ tools, endpoints, scopes, limits }: Props) {
 
       <Section id="guardrails" icon={ShieldCheck}>
         <ul className="space-y-2 text-loam-700">
-          {(['never', 'rationale', 'networks', 'roles', 'journal', 'revoke'] as const).map((key) => (
+          {(['never', 'tasks', 'rationale', 'networks', 'roles', 'journal', 'revoke'] as const).map((key) => (
             <li key={key} className="flex gap-2"><Check className="mt-1 h-4 w-4 shrink-0 text-leaf-600" />{t(`docs_mcp.guardrails.${key}`)}</li>
           ))}
         </ul>
@@ -164,7 +164,7 @@ function ToolCard({ tool }: { tool: McpToolDoc }) {
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-mono text-base text-loam-900">{tool.name}</h3>
         <span className={clsx('rounded-full px-2 py-0.5 text-xs', tool.readOnly ? 'bg-loam-100 text-loam-600' : 'bg-humus-100 text-humus-700')}>
-          {t(tool.readOnly ? 'docs_mcp.tool.read_only' : 'docs_mcp.tool.writes_drafts')}
+          {t(tool.readOnly ? 'docs_mcp.tool.read_only' : tool.requirement === 'write' ? 'docs_mcp.tool.writes' : 'docs_mcp.tool.writes_drafts')}
         </span>
       </div>
       <p className="mt-1 text-sm font-medium text-loam-800">{tool.title}</p>

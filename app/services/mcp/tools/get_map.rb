@@ -32,12 +32,19 @@ module Mcp
           palette: palette(map),
           palette_drafts_pending: map.palette_drafts.count,
           bioindicators: bioindicators(map),
+          tasks: {
+            pending: map.tasks.pending.count, overdue: map.tasks.overdue.count, done: map.tasks.done.count,
+            mine_pending: map.tasks.pending.where(assignee: user).count
+          },
+          documents: map.documents.count,
+          photos: map.photos.count,
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
             read: true,
             propose_drafts: blockers.empty?,
             propose_drafts_blocked_by: blockers.map { |b| t("permissions.#{b}") },
+            write_tasks_documents_photos: write_blockers(map).empty?,
             drafts_trial_ends_at: entitlements.ai_trial_ends_at&.iso8601,
             drafts_trial_note: trial_note(entitlements)
           }.compact,
