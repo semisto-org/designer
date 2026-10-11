@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -496,6 +496,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_190000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "water_settings", default: {}, null: false
+    t.datetime "tasks_seeded_at"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["organization_id"], name: "index_maps_on_organization_id"
     t.index ["owner_id"], name: "index_maps_on_owner_id"
@@ -1059,6 +1060,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_190000) do
     t.index ["stripe_event_id"], name: "index_stripe_events_on_stripe_event_id", unique: true
   end
 
+  create_table "task_lists", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.string "key"
+    t.integer "position", default: 0, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_task_lists_on_created_by_id"
+    t.index ["map_id"], name: "index_task_lists_on_map_id"
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "task_list_id", null: false
+    t.string "title", null: false
+    t.text "notes"
+    t.string "key"
+    t.integer "position", default: 0, null: false
+    t.bigint "assignee_id"
+    t.date "due_on"
+    t.datetime "completed_at"
+    t.bigint "completed_by_id"
+    t.string "tags", default: [], null: false, array: true
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignee_id", "completed_at"], name: "index_tasks_on_assignee_id_and_completed_at"
+    t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
+    t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"
+    t.index ["created_by_id"], name: "index_tasks_on_created_by_id"
+    t.index ["map_id"], name: "index_tasks_on_map_id"
+    t.index ["task_list_id", "position"], name: "index_tasks_on_task_list_id_and_position"
+    t.index ["task_list_id"], name: "index_tasks_on_task_list_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.citext "email_address", null: false
     t.string "name"
@@ -1208,5 +1245,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_190000) do
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
   add_foreign_key "soil_samples", "maps"
   add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "task_lists", "maps", on_delete: :cascade
+  add_foreign_key "task_lists", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "tasks", "maps", on_delete: :cascade
+  add_foreign_key "tasks", "task_lists", on_delete: :cascade
+  add_foreign_key "tasks", "users", column: "assignee_id", on_delete: :nullify
+  add_foreign_key "tasks", "users", column: "completed_by_id", on_delete: :nullify
+  add_foreign_key "tasks", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "water_sources", "maps"
 end

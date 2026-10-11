@@ -47,7 +47,15 @@ module AiTrial
     {
       state:, days: LENGTH.in_days.to_i,
       endsAt: ends_at&.iso8601,
-      daysLeft: state == "active" ? ((ends_at - at) / 1.day).ceil : nil
+      daysLeft: state == "active" ? days_left_in_ai_trial(ends_at, at) : nil
     }
   end
+
+  private
+    # Counted in calendar days: 14.days spans a daylight saving change as
+    # 14 days and one hour, which would read « 15 days left ». The last day
+    # still counts as one.
+    def days_left_in_ai_trial(ends_at, at)
+      [ (ends_at.to_date - at.to_date).to_i, 1 ].max
+    end
 end

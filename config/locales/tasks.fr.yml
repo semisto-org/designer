@@ -1,0 +1,216 @@
+# Tasks of a design project (« Tâches »): lists per map, assignees, due
+# dates, the default lists Semisto adds, and the cross-map page « Mes
+# tâches ». Keys in English, values in French; read by Rails and React.
+fr:
+  activerecord:
+    models:
+      task: "Tâche"
+      task_list: "Liste de tâches"
+    attributes:
+      task:
+        title: "Le titre"
+        notes: "Les notes"
+        tags: "Les étiquettes"
+        assignee: "La personne assignée"
+        task_list: "La liste"
+      task_list:
+        name: "Le nom de la liste"
+    errors:
+      models:
+        task:
+          attributes:
+            assignee:
+              not_a_participant: "doit participer à la carte"
+            tags:
+              too_many_tags: "ne peuvent pas dépasser %{count}"
+              tag_too_long: "doivent faire %{count} caractères au plus chacune"
+  tasks:
+    nav: "Tâches"
+    view: "Tâches"
+    page_title: "Tâches · %{map}"
+    title: "Tâches"
+    back_to_map: "Retour à la carte"
+    progress: "%{done} sur %{total} faites"
+    intro: "Ce qu'il reste à faire pour que ce jardin pousse : qui s'en charge, et pour quand."
+    read_only: "Tu peux lire les tâches de cette carte et cocher celles qui te sont assignées."
+    # The year strip: when tasks fall due, season by season.
+    year:
+      title: "L'année du projet"
+      hint: "Les tâches à faire, mois par mois. Touche un mois pour n'afficher que ses échéances."
+      now: "Maintenant"
+      due_count:
+        zero: "Rien à rendre"
+        one: "1 tâche"
+        other: "%{count} tâches"
+      seasons:
+        winter: "Hiver"
+        spring: "Printemps"
+        summer: "Été"
+        autumn: "Automne"
+      month_filter: "Échéances de %{month}"
+      clear_month: "Tous les mois"
+      planting_window: "Saison de plantation"
+    filters:
+      label: "Filtrer les tâches"
+      everyone: "Tout le monde"
+      me: "Moi"
+      unassigned: "Personne"
+      assignee: "Assignées à"
+      show_done: "Afficher les tâches faites"
+      overdue:
+        one: "1 en retard"
+        other: "%{count} en retard"
+      no_match: "Aucune tâche ne correspond à ces filtres."
+    lists:
+      new: "Nouvelle liste"
+      new_placeholder: "Nom de la liste, par ex. « Chantier de mars »"
+      create: "Créer la liste"
+      rename: "Renommer"
+      move_up: "Monter"
+      move_down: "Descendre"
+      delete: "Supprimer la liste"
+      delete_confirm: "Supprimer la liste « %{name} » et ses %{count} tâches ?"
+      menu: "Actions de la liste"
+      count: "%{done}/%{total}"
+      empty: "Aucune tâche dans cette liste pour l'instant."
+      all_done: "Tout est fait ici. Bravo !"
+      unfold: "Revoir les %{count} tâches"
+      step: "Étape %{n}"
+      done_hidden:
+        one: "1 tâche faite, masquée"
+        other: "%{count} tâches faites, masquées"
+    empty:
+      title: "Aucune liste de tâches"
+      body: "Commence par les tâches de Semisto, une liste par étape : elles suivent l'ordre de la méthode, l'eau avant les plantes. Tu pourras les modifier ensuite."
+      add_defaults: "Ajouter les tâches de Semisto"
+      add_list: "Créer ma propre liste"
+    add_defaults_again: "Ajouter les tâches de Semisto"
+    task:
+      add: "Ajouter une tâche"
+      add_placeholder: "Une tâche, puis Entrée"
+      title_label: "Tâche"
+      notes: "Notes"
+      notes_placeholder: "Le pourquoi, le comment, un lien…"
+      assignee: "Assignée à"
+      nobody: "Personne"
+      due_on: "Échéance"
+      no_due: "Sans échéance"
+      clear_due: "Retirer l'échéance"
+      list: "Liste"
+      tags: "Étiquettes"
+      tags_placeholder: "Ajouter une étiquette"
+      delete: "Supprimer la tâche"
+      delete_confirm: "Supprimer « %{title} » ?"
+      close: "Fermer"
+      done_by: "Faite par %{name}, %{when}"
+      done: "Faite"
+      mark_done: "Marquer « %{title} » comme faite"
+      mark_pending: "Marquer « %{title} » comme à faire"
+      open_in_map: "Ouvrir dans la carte"
+      map_says_done: "La carte montre que c'est fait"
+      tick_now: "Cocher"
+      due:
+        today: "Aujourd'hui"
+        tomorrow: "Demain"
+        overdue: "En retard · %{date}"
+        on: "%{date}"
+      drag: "Glisser pour déplacer"
+      saved: "Enregistré"
+    errors:
+      generic: "Ça n'a pas fonctionné. Réessaie dans un instant."
+    # The cross-map page: my tasks, and each team's tasks.
+    mine:
+      page_title: "Tâches"
+      title: "Tâches"
+      intro: "Les tâches de toutes tes cartes, au même endroit."
+      scope_me: "À moi"
+      scope_team: "Équipe %{name}"
+      group_by: "Grouper par"
+      group_due: "Échéance"
+      group_map: "Carte"
+      group_assignee: "Personne"
+      buckets:
+        overdue: "En retard"
+        this_week: "Cette semaine"
+        later: "Plus tard"
+        no_due: "Sans échéance"
+      unassigned: "Sans personne"
+      empty_me: "Aucune tâche ne t'est assignée. Les tâches se créent dans la vue « Tâches » de chaque carte."
+      empty_team: "Les cartes de cette équipe n'ont pas encore de tâche à faire."
+      open_map_tasks: "Tâches de la carte"
+    # Default lists, one per step of the journey (TaskList::Defaults).
+    defaults:
+      observe:
+        name: "Observer le lieu"
+        tasks:
+          project_sheet:
+            title: "Remplir la fiche projet"
+            notes: "Qui porte le projet, ce qu'il en attend, le temps et le budget disponibles : tout le design en découle."
+          seasons_walk:
+            title: "Parcourir le terrain à chaque saison"
+            notes: "Une balade par saison, avec des photos aux mêmes endroits. L'ombre de décembre n'est pas celle de juin."
+          water_reading:
+            title: "Repérer d'où vient l'eau et où elle stagne"
+            notes: "Par forte pluie, observe où l'eau entre, ruisselle et s'arrête. Le relief de la carte aide à le comprendre."
+          soil_test:
+            title: "Faire un test de sol"
+            notes: "Un trou à la bêche, un test du bocal et les plantes bio-indicatrices disent déjà beaucoup de ton sol."
+          sun_and_wind:
+            title: "Noter les ombres et les vents dominants"
+            notes: "D'où vient le vent froid, où l'ombre tombe en hiver : la structure se placera en fonction."
+      map:
+        name: "Cartographier l'existant"
+        tasks:
+          boundary:
+            title: "Dessiner le contour du terrain"
+            notes: "Le contour donne la surface et permet à la carte de lire le relief, le sol et le climat du lieu."
+          existing:
+            title: "Relever les arbres, haies et bâtiments déjà là"
+            notes: "Un arbre adulte a des années d'avance : on conçoit autour de lui, jamais à sa place."
+          access_networks:
+            title: "Placer les accès et les réseaux existants"
+            notes: "Portails, chemins, conduites d'eau, câbles : mieux vaut les connaître avant de creuser."
+      design:
+        name: "Concevoir"
+        tasks:
+          water:
+            title: "Concevoir la gestion de l'eau"
+            notes: "Ralentir, infiltrer, stocker : baissières, mares, récupération des toitures. L'eau avant les plantes."
+          access:
+            title: "Tracer les chemins et les accès"
+            notes: "Les chemins suivent le relief et l'eau. Pense à la brouette et au véhicule du chantier."
+          structure:
+            title: "Placer la structure : grands arbres et haies"
+            notes: "Les grands arbres et les haies brise-vent d'abord, en pensant à leur taille dans 15 et 30 ans."
+          palette:
+            title: "Choisir la palette végétale"
+            notes: "Plusieurs espèces pour chaque fonction, des floraisons étalées, des familles variées."
+          validate:
+            title: "Valider le design avec le porteur de projet"
+            notes: "Partage la carte et recueille ses remarques dans les discussions avant de commander."
+      plant:
+        name: "Planter"
+        tasks:
+          plant_list:
+            title: "Établir la liste de plants et commander"
+            notes: "La liste de plants se calcule depuis la carte. Commande tôt : les pépinières se vident à l'automne."
+          soil_preparation:
+            title: "Préparer le sol"
+            notes: "Couvrir le sol quelques mois avant (carton, broyat, engrais verts) pour planter dans un sol vivant."
+          worksite:
+            title: "Organiser le chantier de plantation"
+            notes: "Date, outils, paillage, repas, bénévoles : un chantier participatif se prépare quelques semaines à l'avance."
+          planting:
+            title: "Planter et pailler"
+            notes: "De novembre à mars, hors gel. Un paillage épais au pied de chaque plant garde l'humidité."
+          aftercare:
+            title: "Suivre et arroser la première année"
+            notes: "La première année décide de tout : arrosages pendant les sécheresses, désherbage autour des jeunes plants."
+  task_mailer:
+    assigned:
+      subject: "%{assigner} t'a confié une tâche sur « %{map} »"
+      greeting: "Bonjour,"
+      body: "%{assigner} t'a confié une tâche sur la carte « %{map} » :"
+      due: "À faire pour le %{date}."
+      button: "Voir les tâches de la carte"
+      footer: "Tu reçois ce message parce qu'une tâche t'a été assignée dans Semisto Designer."

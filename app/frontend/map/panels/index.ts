@@ -62,6 +62,7 @@ import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 import TagsSection from '@/map/tags/TagsSection'
+import TasksLink from '@/tasks/TasksLink'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -114,6 +115,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
 // Top bar actions (right side), e.g. share, export.
 export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'share', component: ShareButton, order: 80 },
+  { id: 'tasks', component: TasksLink, order: 70 },
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },

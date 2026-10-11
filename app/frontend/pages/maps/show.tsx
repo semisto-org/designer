@@ -81,11 +81,22 @@ function headerArea(m2: number): string {
   return t('maps.show.area_ares', { count: Math.round(m2 / 100) })
 }
 
+function panelFromUrl(): string | null {
+  if (typeof window === 'undefined') return null
+  const url = new URL(window.location.href)
+  const id = url.searchParams.get('panel')
+  if (!id) return null
+  url.searchParams.delete('panel')
+  window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
+  return PANELS.some((p) => p.id === id) ? id : null
+}
+
 function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  const [activePanel, setActivePanel] = useState<string | null>(map.boundary ? null : 'terrain')
+  // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
+  const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
   const [pickedStage, setPickedStage] = useState<MapStage | null>(null)
   const focusStage = pickedStage ?? map.stage
   const [drawingShape, setDrawingShape] = useState<DrawShape | 'edit' | null>(null)

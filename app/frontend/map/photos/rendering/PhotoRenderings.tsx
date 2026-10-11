@@ -180,7 +180,7 @@ export function RenderDialog({ renderings, sketch, onClose }: {
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-loam-950/60 p-2 md:absolute md:z-10 md:items-center md:p-6" onClick={onClose}>
       <div
         ref={panel} role="dialog" aria-modal="true" aria-labelledby="render-dialog-title" tabIndex={-1}
-        className="outline-none max-h-full w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl bg-loam-50 p-4 text-loam-800 shadow-2xl md:p-5"
+        className="outline-none max-h-full w-full max-w-2xl space-y-4 overflow-y-auto rounded-2xl bg-loam-50 p-4 text-loam-800 shadow-2xl md:p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start gap-3">
@@ -199,14 +199,16 @@ export function RenderDialog({ renderings, sketch, onClose }: {
             <button
               key={key} type="button" role="radio" aria-checked={style === key} onClick={() => setStyle(key)}
               className={clsx(
-                'overflow-hidden rounded-xl bg-white text-left ring-inset transition-shadow',
-                style === key ? 'ring-[3px] ring-prune-600' : 'ring-1 ring-loam-200 hover:ring-prune-300',
+                // A button centres its content: flex-col keeps the sample at the top of every card.
+                // A border, unlike an inset ring, is never covered by the sample.
+                'flex flex-col overflow-hidden rounded-xl border-[3px] bg-white text-left transition-colors',
+                style === key ? 'border-prune-600' : 'border-loam-200 hover:border-prune-300',
               )}
             >
               <img src={sample} alt="" className="aspect-[3/2] w-full object-cover" loading="lazy" />
               <span className="block px-2 pb-2 pt-1.5">
                 <span className={clsx('block text-sm font-semibold', style === key ? 'text-prune-700' : 'text-loam-900')}>{t(`photo_renderings.styles.${key}`)}</span>
-                <span className="hidden text-xs leading-snug text-loam-500 sm:block">{t(`photo_renderings.style_hints.${key}`)}</span>
+                <span className="hidden text-sm leading-snug text-loam-500 sm:block">{t(`photo_renderings.style_hints.${key}`)}</span>
               </span>
             </button>
           ))}
@@ -214,10 +216,10 @@ export function RenderDialog({ renderings, sketch, onClose }: {
 
         <details className="group rounded-xl bg-humus-50 px-3 py-2 text-sm text-loam-800 ring-1 ring-inset ring-humus-100">
           <summary className="cursor-pointer font-semibold text-loam-900">{t('photo_renderings.tips_title')}</summary>
-          <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-xs leading-relaxed">
+          <ul className="mt-1.5 list-disc space-y-1 pl-5 leading-snug">
             {TIPS.map((tip) => <li key={tip}>{t(`photo_renderings.tips.${tip}`)}</li>)}
           </ul>
-          <HelpButton slug="esquisser-et-mettre-en-image" label={t('photo_renderings.tips_more')} className="-ml-2.5 mt-1 text-xs" />
+          <HelpButton slug="esquisser-et-mettre-en-image" label={t('photo_renderings.tips_more')} className="-ml-2.5 mt-1" />
         </details>
 
         {sketch && (
@@ -232,7 +234,7 @@ export function RenderDialog({ renderings, sketch, onClose }: {
             {renderings.starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
             {t('photo_renderings.start')}
           </Button>
-          <p className="min-w-0 flex-1 text-xs text-loam-500">
+          <p className="min-w-0 flex-1 text-sm text-loam-500">
             {t('photo_renderings.no_notes')}{info ? ` ${t('photo_renderings.remaining', { count: info.remaining })}` : ''}
           </p>
         </div>
@@ -257,7 +259,7 @@ export function RenderingStatus({ mapId, photo, renderings }: { mapId: number; p
           </span>
           <div className="min-w-0">
             <p className="font-semibold">{t('photo_renderings.running_title', { style: t(`photo_renderings.styles.${running.style}`).toLowerCase() })}</p>
-            <p className="text-xs text-loam-600">{t('photo_renderings.running')}</p>
+            <p className="text-sm text-loam-600">{t('photo_renderings.running')}</p>
             <span className="mt-1.5 block h-1 w-40 overflow-hidden rounded-full bg-loam-200">
               <span className="block h-full w-1/3 rounded-full bg-humus-400 motion-safe:animate-[wash_1.8s_ease-in-out_infinite]" />
             </span>
@@ -324,7 +326,7 @@ export function RenderingResults({ mapId, renderings }: { mapId: number; renderi
             <button type="button" onClick={() => photoActions.open(photo.id)} className="block w-full text-left" title={t('photo_renderings.open_result')}
               aria-label={`${t('photo_renderings.open_result')} (${t(`photo_renderings.styles.${rendering.style}`)})`}>
               <span className="block aspect-square overflow-hidden rounded-md ring-1 ring-loam-200"><PhotoThumb mapId={mapId} photo={photo} /></span>
-              <span className="mt-0.5 block truncate text-[11px] leading-tight text-loam-600">{t(`photo_renderings.styles.${rendering.style}`)}</span>
+              <span className="mt-0.5 block truncate text-sm leading-tight text-loam-600">{t(`photo_renderings.styles.${rendering.style}`)}</span>
             </button>
           </li>
         ))}
@@ -339,7 +341,7 @@ export function RenderingOrigin({ mapId, photo }: { mapId: number; photo: MapPho
   const source = photos.find((p) => p.id === photo.derivedFromId)
   if (!source) return null
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-leaf-50 p-2 text-xs text-leaf-900">
+    <div className="flex items-center gap-2 rounded-lg bg-leaf-50 p-2 text-sm text-leaf-900">
       <button type="button" onClick={() => photoActions.open(source.id)} className="h-12 w-12 shrink-0 overflow-hidden rounded-md ring-1 ring-leaf-200" title={t('photo_renderings.back_to_source')}>
         <PhotoThumb mapId={mapId} photo={source} />
       </button>

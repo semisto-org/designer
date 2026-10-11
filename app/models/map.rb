@@ -37,6 +37,9 @@ class Map < ApplicationRecord
   has_one :financial_plan, dependent: :destroy
   # Dated aerial views (« Vues drone ») set up by Semisto, newest first.
   has_many :aerial_views, -> { newest_first }, dependent: :destroy, inverse_of: :map
+  # The project's to-do lists (« Tâches »), see TaskList::Defaults.
+  has_many :task_lists, -> { ordered }, dependent: :delete_all, inverse_of: :map
+  has_many :tasks, dependent: :delete_all, inverse_of: :map
 
   # Ownership transfer proposals (« Transférer la carte »), kept as history.
   has_many :transfers, class_name: "MapTransfer", dependent: :delete_all

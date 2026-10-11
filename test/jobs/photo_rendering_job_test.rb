@@ -25,8 +25,8 @@ class PhotoRenderingJobTest < ActiveJob::TestCase
     assert_requested create
     assert_equal [ "running", "task-1" ], [ @rendering.reload.status, @rendering.task_id ]
 
-    stub_request(:get, "#{URL}/task-1").to_return(status: 200, body: task_body("COMPLETED", [ "https://cdn.test/out.jpg" ]))
-    stub_request(:get, "https://cdn.test/out.jpg").to_return(status: 200, body: file_fixture("terrain_later.jpg").binread, headers: { "Content-Type" => "image/jpeg" })
+    stub_request(:get, "#{URL}/task-1").to_return(status: 200, body: task_body("COMPLETED", [ "https://cdn.test/out.jpg?token=exp=1792108800~hmac=ab12" ]))
+    stub_request(:get, "https://cdn.test/out.jpg?token=exp=1792108800~hmac=ab12").to_return(status: 200, body: file_fixture("terrain_later.jpg").binread, headers: { "Content-Type" => "image/jpeg" })
     assert_difference -> { MapPhoto.count } do
       PhotoRenderingJob.perform_now(@rendering)
     end
