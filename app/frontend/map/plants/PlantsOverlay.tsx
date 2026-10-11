@@ -1,7 +1,7 @@
 import { circle } from '@turf/turf'
 import type { Feature, FeatureCollection, Point, Polygon } from 'geojson'
 import { MapPin, X } from 'lucide-react'
-import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
+import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
 import { drawingStore, useDrawingState } from '@/map/drawing/store'
@@ -16,9 +16,10 @@ import type { PlantingState } from '@/types/plants'
 
 const CROWNS = 'plant-crowns'
 const LABELS = 'plant-labels'
-const FEATURE_LAYERS = ['features-fill', 'features-line', 'features-point']
 
 type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean }
+// `featureId` makes crowns and names select their plant (see map/featurePick).
+type LabelProps = { featureId: number; label: string; planted: boolean }
 
 const PLANTED = ['get', 'planted'] as unknown as boolean
 
@@ -28,7 +29,7 @@ const PLANTED = ['get', 'planted'] as unknown as boolean
  */
 function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario) {
   const crowns: Feature<Polygon, CrownProps>[] = []
-  const labels: Feature<Point, { label: string; planted: boolean }>[] = []
+  const labels: Feature<Point, LabelProps>[] = []
   for (const feature of editor.features) {
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
     if (!inScenario(feature.properties, scenario)) continue
@@ -54,12 +55,12 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     labels.push({
       type: 'Feature',
       geometry: feature.geometry,
-      properties: { planted: !isPlannedPlant(feature.properties), label: variety ? `${species.commonName ?? species.latinName} '${variety.name}'` : species.commonName ?? species.latinName },
+      properties: { featureId: feature.properties.id, planted: !isPlannedPlant(feature.properties), label: variety ? `${species.commonName ?? species.latinName} '${variety.name}'` : species.commonName ?? species.latinName },
     })
   }
   return {
     crowns: { type: 'FeatureCollection', features: crowns } as FeatureCollection<Polygon, CrownProps>,
-    labels: { type: 'FeatureCollection', features: labels } as FeatureCollection<Point, { label: string; planted: boolean }>,
+    labels: { type: 'FeatureCollection', features: labels } as FeatureCollection<Point, LabelProps>,
   }
 }
 
@@ -123,7 +124,7 @@ function safeInstall(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
 
 /**
  * The « plants » layer on the map: crowns at adult spread with labels,
- * click-on-crown to select, the click-to-place loop from the palette, and
+ * the click-to-place loop from the palette, and
  * the planting refresh when plants or patches change.
  */
 export default function PlantsOverlay() {
@@ -150,21 +151,6 @@ export default function PlantsOverlay() {
   useEffect(() => safeInstall(map, layers), [map, layers])
   // « Calques »: hiding the plants layer hides the crowns and their names too.
   useEffect(() => applyPlantsVisibility(map, hidden), [map, hidden])
-
-  // A click on a crown selects its plant, unless drawing or a feature is under the cursor.
-  useEffect(() => {
-    const onClick = (e: MapLayerMouseEvent) => {
-      const current = editorRef.current
-      if (current.drawing) return
-      const present = FEATURE_LAYERS.filter((id) => map.getLayer(id))
-      if (present.length && map.queryRenderedFeatures(e.point, { layers: present }).length > 0) return
-      const id = e.features?.[0]?.properties?.featureId
-      if (id != null) current.select(Number(id))
-    }
-    const layer = `${CROWNS}-fill`
-    map.on('click', layer, onClick)
-    return () => { map.off('click', layer, onClick) }
-  }, [map])
 
   // Planting quantities follow plants and patches: reload when they change.
   const signature = editor.features

@@ -6,14 +6,12 @@ import { createPortal } from 'react-dom'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { featureAt } from '@/map/featurePick'
 import { onSingleClick } from '@/map/singleClick'
 import { useLayerState, visibleOverlays } from '@/map/data/store'
 import type { RegionLayerData } from '@/types'
 import type { IdentifyLayerResult, IdentifyResponse } from '@/types/map_data'
 
-// Feature layers of the editor: a click on one of them selects it, so the
-// identify popup stays out of the way (AGENT_RULES "Map clicks").
-const FEATURE_LAYERS = ['features-fill', 'features-line', 'features-point']
 const MOBILE = '(max-width: 767px)'
 
 type Query = {
@@ -50,8 +48,8 @@ export default function IdentifyOverlay() {
     const onClick = (event: MapMouseEvent) => {
       const { state: current, drawing } = latest.current
       if (drawing || current.clickOwner) return
-      const featureLayers = FEATURE_LAYERS.filter((id) => instance.getLayer(id))
-      if (featureLayers.length && instance.queryRenderedFeatures(event.point, { layers: featureLayers }).length) {
+      // A click on a drawn element selects it, so the identify popup stays out of the way.
+      if (featureAt(instance, event.point) != null) {
         close()
         return
       }

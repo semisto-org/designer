@@ -1,7 +1,8 @@
 import { Head, Link } from '@inertiajs/react'
 import type { Geometry } from 'geojson'
 import { ArrowLeft } from 'lucide-react'
-import type { MapGeoJSONFeature, Map as MapLibreMap } from 'maplibre-gl'
+import { area } from '@turf/turf'
+import type { MapMouseEvent, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { MapViewMenu } from '@/components/map_views/MapViews'
@@ -11,6 +12,7 @@ import { api } from '@/lib/api'
 import { formatArea, t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { MapView } from '@/map/MapView'
+import { featureAt, hitsAt } from '@/map/featurePick'
 import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature } from '@/map/editor/EditorContext'
@@ -154,23 +156,36 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
     }
   }, [instance, selectedId])
 
+  // One listener for the whole map: the most precise element under the
+  // cursor wins (a plant over the zone it sits in), see `featurePick`.
+  const featuresRef = useRef(features)
+  featuresRef.current = features
   useEffect(() => {
-    const layerIds = ['features-point', 'features-line', 'features-fill']
-    const onClick = (e: { features?: MapGeoJSONFeature[] }) => {
+    const areaOf = (id: number) => {
+      const feature = featuresRef.current.find((f) => f.properties.id === id)
+      return feature ? area(feature) : Infinity
+    }
+    const onClick = (e: MapMouseEvent) => {
       // The click that ends a drawing (double-click) must not select what lies under it.
       if (drawer.current?.active || performance.now() - drawEndedAt.current < 400) return
-      const hit = e.features?.[0]
-      if (hit?.id != null) setSelectedId(Number(hit.id))
+      const id = featureAt(instance, e.point, areaOf)
+      if (id != null) setSelectedId(id)
     }
-    layerIds.forEach((id) => instance.on('click', id, onClick))
-    const enter = () => { instance.getCanvas().style.cursor = 'pointer' }
-    const leave = () => { instance.getCanvas().style.cursor = '' }
-    layerIds.forEach((id) => { instance.on('mouseenter', id, enter); instance.on('mouseleave', id, leave) })
-    return () => layerIds.forEach((id) => {
-      instance.off('click', id, onClick)
-      instance.off('mouseenter', id, enter)
-      instance.off('mouseleave', id, leave)
-    })
+    // Like mouseenter/mouseleave: the cursor only changes when it crosses an
+    // element's edge, so other tools' cursors (crosshair) are left alone.
+    let over = false
+    const onMove = (e: MapMouseEvent) => {
+      const now = hitsAt(instance, e.point).some((hit) => hit.id != null)
+      if (now === over) return
+      over = now
+      instance.getCanvas().style.cursor = now ? 'pointer' : ''
+    }
+    instance.on('click', onClick)
+    instance.on('mousemove', onMove)
+    return () => {
+      instance.off('click', onClick)
+      instance.off('mousemove', onMove)
+    }
   }, [instance])
 
   const notify = useCallback((message: string, tone: 'info' | 'error' = 'info') => {
