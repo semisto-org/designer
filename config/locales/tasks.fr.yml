@@ -29,7 +29,6 @@ fr:
     view: "Tâches"
     page_title: "Tâches · %{map}"
     title: "Tâches"
-    back_to_map: "Retour à la carte"
     progress: "%{done} sur %{total} faites"
     intro: "Ce qu'il reste à faire pour que ce jardin pousse : qui s'en charge, et pour quand."
     read_only: "Tu peux lire les tâches de cette carte et cocher celles qui te sont assignées."

@@ -74,6 +74,10 @@ Rails.application.routes.draw do
     get "fiche-projet/:token", to: "project_forms#show", as: :project_form
     patch "fiche-projet/:token", to: "project_forms#update"
     post "fiche-projet/:token/submit", to: "project_forms#submit", as: :submit_project_form
+    get "fiche-projet/:token/documents", to: "project_form_documents#index", as: :project_form_documents
+    post "fiche-projet/:token/documents", to: "project_form_documents#create"
+    delete "fiche-projet/:token/documents/:id", to: "project_form_documents#destroy", as: :project_form_document
+    get "fiche-projet/:token/documents/:id/file", to: "project_form_documents#file", as: :project_form_document_file
   end
   namespace :admin do
     resources :requests, only: %i[index update], controller: "service_requests"
@@ -266,6 +270,10 @@ Rails.application.routes.draw do
   resources :maps, only: [] do
     scope module: :maps do
       resources :photos, only: %i[index create update destroy] do
+        collection do
+          patch :bulk, action: :bulk_update
+          delete :bulk, action: :bulk_destroy
+        end
         member do
           get :image
           get :same_spot
@@ -274,6 +282,9 @@ Rails.application.routes.draw do
         resources :renderings, only: %i[index create show], controller: "photo_renderings"
       end
       resources :photo_albums, only: %i[create update destroy]
+      resources :documents, only: %i[index create update destroy] do
+        get :file, on: :member
+      end
       resources :soil_samples, only: %i[index create update destroy] do
         collection do
           post :suggestions

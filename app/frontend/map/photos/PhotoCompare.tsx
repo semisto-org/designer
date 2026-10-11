@@ -3,13 +3,13 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { createPortal } from 'react-dom'
 import { Select } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
-import { useEditor } from '@/map/editor/EditorContext'
+import { usePhotoHost } from '@/map/photos/host'
 import { formatDay, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { photoActions, usePhotos } from '@/map/photos/store'
 
 /** Before / after of the same spot: the « after » photo is revealed by a slider over the « before » one. */
 export function PhotoCompare() {
-  const editor = useEditor()
+  const host = usePhotoHost()
   const { photos, compare } = usePhotos()
   const [position, setPosition] = useState(50)
   const frame = useRef<HTMLDivElement>(null)
@@ -29,7 +29,7 @@ export function PhotoCompare() {
   }, [compare])
 
   if (!compare || !before || !after) return null
-  const mapId = editor.map.id
+  const mapId = host.mapId
   // Frame ratio follows the « before » photo, the two are cropped alike.
   const ratio = before.width && before.height ? `${before.width} / ${before.height}` : '4 / 3'
 

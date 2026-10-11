@@ -1,8 +1,10 @@
 import { Head, Link } from '@inertiajs/react'
-import { ArrowLeft, ArrowRight, BookOpen, ChevronLeft } from 'lucide-react'
+import { ArrowRight, BookOpen, ChevronLeft } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useMemo, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
+import { MapViewHeader } from '@/components/map_views/MapViews'
+import { ProjectDocuments } from '@/documents/ProjectDocuments'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ProjectFormLink } from '@/components/journey/ProjectFormLink'
@@ -16,7 +18,7 @@ import type { ProjectPayload } from '@/types/journey'
  * The project sheet on a full page: one section at a time, a list of
  * sections with their progress, autosave. Comfortable on desktop and phone.
  */
-export default function MapProject({ map, project, progress: initialProgress, schema, drafts, canEdit, formLink }: ProjectPayload) {
+export default function MapProject({ map, project, progress: initialProgress, schema, drafts, canEdit, formLink, documents, documentLimits }: ProjectPayload) {
   const sheet = useProjectSheet(`/maps/${map.id}/project`, project, initialProgress, canEdit, drafts)
   const sections = useMemo(() => schema.sections.map((s) => s.key), [schema])
   const [active, setActive] = useState<string>(() => {
@@ -37,21 +39,16 @@ export default function MapProject({ map, project, progress: initialProgress, sc
   return (
     <div className="mx-auto max-w-5xl">
       <Head title={t('journey.project.page_title', { map: map.name })} />
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <Link href={`/maps/${map.id}`} className="inline-flex items-center gap-1.5 text-sm text-loam-500 hover:text-loam-800">
-          <ArrowLeft className="h-4 w-4" />{t('journey.project.back_to_map')}
-        </Link>
-        <Link href={`/maps/${map.id}/dossier`} className="inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline">
-          <BookOpen className="h-4 w-4" />{t('dossier.open')}
-        </Link>
-      </div>
-      <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <MapViewHeader map={map} current="project" />
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl">{t('journey.project.title')}</h1>
             <HelpButton compact slug="remplir-la-fiche-projet" />
           </div>
-          <p className="text-loam-500">{map.name}</p>
+          <Link href={`/maps/${map.id}/dossier`} className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline">
+            <BookOpen className="h-4 w-4" />{t('dossier.open')}
+          </Link>
         </div>
         <div className="w-full max-w-xs sm:w-64">
           <div className="flex items-baseline justify-between gap-2 text-sm">
@@ -124,6 +121,15 @@ export default function MapProject({ map, project, progress: initialProgress, sc
           </div>
         </Card>
       </div>
+
+      <ProjectDocuments
+        className="mt-8 lg:ml-[16.5rem]"
+        endpoint={`/maps/${map.id}/documents`}
+        initial={documents}
+        limits={documentLimits}
+        canEdit={canEdit}
+        libraryHref={`/maps/${map.id}/documents`}
+      />
     </div>
   )
 }

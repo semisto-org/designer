@@ -20,6 +20,13 @@ export async function openPdf(file: File): Promise<PDFDocumentProxy> {
   return pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise
 }
 
+/** A PDF the app serves (a map document), read page by page as it is needed. */
+export async function openPdfUrl(url: string): Promise<PDFDocumentProxy> {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
+  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
+  return pdfjs.getDocument({ url, withCredentials: true }).promise
+}
+
 async function renderToCanvas(pdf: PDFDocumentProxy, pageNumber: number, scaleFor: (width: number, height: number) => number) {
   const page = await pdf.getPage(pageNumber)
   const base = page.getViewport({ scale: 1 })

@@ -5,6 +5,8 @@
 class ProjectSheetLink < ApplicationRecord
   belongs_to :map
   belongs_to :created_by, class_name: "User", optional: true
+  # What the people behind the project sent with the sheet.
+  has_many :documents, class_name: "MapDocument", dependent: :nullify
 
   has_secure_token :token, length: 32
 

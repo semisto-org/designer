@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
-import { useEditor } from '@/map/editor/EditorContext'
-import { visibleOffset } from '@/map/visiblePadding'
+import { usePhotoHost } from '@/map/photos/host'
 import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
@@ -25,10 +24,14 @@ function toInputValue(photo: MapPhotoData): string {
   return photo.takenAt.slice(0, 16)
 }
 
-/** Full-screen view of one photo, with its details; arrows and keys move through the others. */
-export function PhotoLightbox() {
-  const editor = useEditor()
-  const { photos, albums, openId } = usePhotos()
+/**
+ * Full-screen view of one photo, with its details; arrows and keys move
+ * through the others, in `order` when the screen shows them in its own.
+ */
+export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
+  const host = usePhotoHost()
+  const { photos: all, albums, openId } = usePhotos()
+  const photos = order ?? all
   const index = photos.findIndex((p) => p.id === openId)
   const photo = index >= 0 ? photos[index] : null
   const dialog = useRef<HTMLDivElement>(null)
@@ -44,7 +47,7 @@ export function PhotoLightbox() {
   const [sketching, setSketching] = useState<number | 'new' | null>(null)
   /** « Mettre en image » open over the photo. */
   const [rendering, setRendering] = useState(false)
-  const renderings = usePhotoRenderings(editor.map.id, photo, editor.notify)
+  const renderings = usePhotoRenderings(host.mapId, photo, host.notify)
 
   useEffect(() => {
     if (!photo) return
@@ -62,7 +65,7 @@ export function PhotoLightbox() {
   useEffect(() => {
     if (photoId == null) return
     let cancelled = false
-    api<{ sketches: PhotoSketchData[] }>(`/maps/${editor.map.id}/photos/${photoId}/sketches`)
+    api<{ sketches: PhotoSketchData[] }>(`/maps/${host.mapId}/photos/${photoId}/sketches`)
       .then((data) => {
         if (cancelled) return
         setSketches(data.sketches)
@@ -73,7 +76,7 @@ export function PhotoLightbox() {
     return () => {
       cancelled = true
     }
-  }, [photoId, editor.map.id])
+  }, [photoId, host.mapId])
 
   useEffect(() => {
     if (photoId == null) return
@@ -89,11 +92,11 @@ export function PhotoLightbox() {
     const images = neighbours.map((other) => {
       const image = new Image()
       image.decoding = 'async'
-      image.src = photoUrl(editor.map.id, other.id, 'large')
+      image.src = photoUrl(host.mapId, other.id, 'large')
       return image
     })
     return () => images.forEach((image) => { image.src = '' })
-  }, [photoId, index, photos, editor.map.id])
+  }, [photoId, index, photos, host.mapId])
 
   useEffect(() => {
     if (photoId == null || sketching != null || rendering) return
@@ -115,7 +118,7 @@ export function PhotoLightbox() {
   })
 
   if (!photo) return null
-  const mapId = editor.map.id
+  const mapId = host.mapId
   const shownSketch = sketches.find((s) => s.id === shownSketchId) ?? null
 
   function sketchSaved(saved: PhotoSketchData) {
@@ -131,7 +134,7 @@ export function PhotoLightbox() {
       const saved = await api<MapPhotoData>(base, { method: 'PATCH', body: { photo: patch } })
       photoActions.upsert(saved)
     } catch (error) {
-      editor.notify((error as Error).message, 'error')
+      host.notify((error as Error).message, 'error')
     }
   }
 
@@ -143,14 +146,13 @@ export function PhotoLightbox() {
       photoActions.remove(photo!.id)
       if (next) photoActions.open(next.id)
     } catch (error) {
-      editor.notify((error as Error).message, 'error')
+      host.notify((error as Error).message, 'error')
     }
   }
 
   function locate() {
     if (photo!.lng == null || photo!.lat == null) return
-    editor.instance.flyTo({ center: [photo!.lng, photo!.lat], zoom: Math.max(editor.instance.getZoom(), 18.5), duration: 800, offset: visibleOffset(editor.activePanel != null) })
-    photoActions.open(null)
+    host.locate(photo!)
   }
 
   async function findSameSpot() {
@@ -158,7 +160,7 @@ export function PhotoLightbox() {
       const data = await api<{ photos: MapPhotoData[] }>(`${base}/same_spot`)
       setCandidates(data.photos)
     } catch (error) {
-      editor.notify((error as Error).message, 'error')
+      host.notify((error as Error).message, 'error')
     }
   }
 
@@ -170,7 +172,7 @@ export function PhotoLightbox() {
   const positionLabel = photo.lng == null
     ? t('soil_photos.lightbox.not_placed')
     : t(`soil_photos.lightbox.location_sources.${photo.locationSource ?? 'manual'}`)
-  const canEdit = editor.canEdit
+  const canEdit = host.canEdit
 
   return createPortal(
     <div
@@ -288,7 +290,7 @@ export function PhotoLightbox() {
             </Button>
           )}
           {canEdit && (
-            <Button size="sm" variant="secondary" onClick={() => photoActions.startPlacing(photo.id)}>
+            <Button size="sm" variant="secondary" onClick={() => host.place(photo)}>
               <MapPin className="h-4 w-4" />
               {photo.lng == null ? t('soil_photos.lightbox.place') : t('soil_photos.lightbox.move')}
             </Button>
@@ -333,7 +335,7 @@ export function PhotoLightbox() {
               </Button>
             )}
             {shownSketch && (
-              <Button size="sm" variant="ghost" onClick={() => downloadSketch(photoUrl(mapId, photo.id, 'large'), shownSketch.strokes, shownSketch.name).catch(() => editor.notify(t('photo_sketches.save_failed'), 'error'))}>
+              <Button size="sm" variant="ghost" onClick={() => downloadSketch(photoUrl(mapId, photo.id, 'large'), shownSketch.strokes, shownSketch.name).catch(() => host.notify(t('photo_sketches.save_failed'), 'error'))}>
                 <Download className="h-4 w-4" />
                 {t('photo_sketches.download')}
               </Button>
@@ -377,7 +379,7 @@ export function PhotoLightbox() {
           mapId={mapId}
           photo={photo}
           sketch={sketching === 'new' ? null : sketches.find((s) => s.id === sketching) ?? null}
-          notify={editor.notify}
+          notify={host.notify}
           onSaved={sketchSaved}
           onDeleted={(id) => {
             setSketches((list) => list.filter((s) => s.id !== id))

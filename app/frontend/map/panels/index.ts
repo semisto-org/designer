@@ -1,4 +1,4 @@
-import { Bot, Camera, FileImage, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -40,6 +40,7 @@ import SunPanel from '@/map/sun/SunPanel'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
 import FinancesPanel from '@/map/panels/FinancesPanel'
 import PhotosPanel from '@/map/photos/PhotosPanel'
+import DocumentsPanel from '@/map/documents/DocumentsPanel'
 import PhotosInspector from '@/map/photos/PhotosInspector'
 import PhotosOverlay from '@/map/photos/PhotosOverlay'
 import SoilPanel from '@/map/soil/SoilPanel'
@@ -76,6 +77,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: SoilPanel, order: 60 },
   { id: 'canopy', label: 'canopy.panel_title', icon: Trees, group: 'observe', component: CanopyPanel, order: 65 },
   { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'observe', component: PhotosPanel, order: 70 },
+  { id: 'documents', label: 'documents.title', icon: Files, group: 'observe', component: DocumentsPanel, order: 75 },
   // 2. Cartographier
   { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10 },
   { id: 'plan-images', label: 'plan_images.panel_title', icon: FileImage, group: 'map', component: PlanImagesPanel, order: 20 },

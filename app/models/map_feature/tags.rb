@@ -4,7 +4,8 @@
 # Tasks (Task) carry the same kind of tags, with the same rules.
 #
 # Tags are trimmed, single-spaced and deduplicated case-insensitively
-# (the first spelling wins); order is kept as typed.
+# (the first spelling wins); order is kept as typed. Map documents
+# (MapDocument) carry the same kind of tags, in their own `tags` column.
 module MapFeature::Tags
   extend ActiveSupport::Concern
 
