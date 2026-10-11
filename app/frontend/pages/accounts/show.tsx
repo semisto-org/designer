@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react'
-import { Briefcase, CreditCard, KeyRound, Sprout, Sparkles, Trash2 } from 'lucide-react'
+import { Briefcase, CreditCard, KeyRound, LogOut, Sprout, Sparkles, Trash2 } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -19,7 +19,13 @@ export default function AccountShow({ account }: { account: AccountData }) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <Head title={t('account.title')} />
-      <h1 className="text-2xl">{t('account.title')}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl">{t('account.title')}</h1>
+        <ButtonLink href="/session" method="delete" variant="secondary" size="sm">
+          <LogOut className="h-4 w-4" aria-hidden="true" />
+          {t('nav.sign_out')}
+        </ButtonLink>
+      </div>
 
       <Card>
         <h2 className="text-base">{t('account.profile')}</h2>
@@ -89,12 +95,6 @@ export default function AccountShow({ account }: { account: AccountData }) {
           </div>
         </div>
       </Card>
-
-      <div className="sm:hidden">
-        <Link href="/session" method="delete" as="button" className="w-full rounded-lg bg-white px-3.5 py-2.5 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
-          {t('nav.sign_out')}
-        </Link>
-      </div>
 
       <Card className="border border-clay-100">
         <h2 className="flex items-center gap-2 text-base"><Trash2 className="h-4 w-4 text-clay-500" aria-hidden="true" />{t('account.danger_title')}</h2>

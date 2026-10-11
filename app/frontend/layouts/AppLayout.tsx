@@ -1,5 +1,4 @@
 import { Link, usePage } from '@inertiajs/react'
-import { LogOut } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Flash } from '@/components/ui/Flash'
 import { Wordmark } from '@/components/Logo'
@@ -62,17 +61,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     </span>
                   )}
                   <span className="hidden sm:inline">{currentUser.name}</span>
-                </Link>
-                <Link
-                  href="/session"
-                  method="delete"
-                  as="button"
-                  className="text-loam-500 hover:text-loam-900"
-                  aria-label={t('nav.sign_out')}
-                  title={t('nav.sign_out')}
-                >
-                  <LogOut className="h-4 w-4 sm:hidden" aria-hidden />
-                  <span className="hidden sm:inline">{t('nav.sign_out')}</span>
                 </Link>
               </>
             )}
