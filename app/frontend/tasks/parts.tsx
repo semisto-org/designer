@@ -1,0 +1,175 @@
+import clsx from 'clsx'
+import { Calendar, Check, X } from 'lucide-react'
+import { useId, useState, type KeyboardEvent } from 'react'
+import { inputClass } from '@/components/ui/Field'
+import { t } from '@/lib/i18n'
+import { addTag, MAX_TAG_LENGTH, MAX_TAGS, removeTag } from '@/map/tags/tags'
+import { dueOf, formatMonth, formatMonthShort, isPlantingMonth, monthOfDay, seasonOf, yearAhead, type Day, type Season } from '@/tasks/dates'
+import type { TaskData } from '@/tasks/types'
+
+/** The round box of a task: an empty ring, a leaf when done. */
+export function CheckButton({ done, disabled, label, onToggle }: { done: boolean; disabled?: boolean; label: string; onToggle: () => void }) {
+  return (
+    <button
+      type="button" role="checkbox" aria-checked={done} aria-label={label} title={label} disabled={disabled}
+      onClick={onToggle}
+      className={clsx(
+        'flex h-6 w-6 shrink-0 items-center justify-center rounded-full ring-[1.5px] ring-inset transition-colors',
+        done ? 'bg-leaf-600 text-white ring-leaf-600' : 'bg-white text-transparent ring-loam-400 hover:text-leaf-600 hover:ring-leaf-600',
+        disabled && 'cursor-default opacity-60 hover:text-transparent hover:ring-loam-400',
+      )}
+    >
+      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+    </button>
+  )
+}
+
+export function DueBadge({ due, today, done }: { due: Day; today: Day; done?: boolean }) {
+  const { kind, date, tone } = dueOf(due, today)
+  const label = kind === 'on' ? date : t(`tasks.task.due.${kind}`, { date })
+  return (
+    <span className={clsx(
+      'inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-sm',
+      done ? 'text-loam-400' : tone === 'overdue' ? 'bg-clay-50 font-medium text-clay-700' : tone === 'soon' ? 'bg-humus-50 text-humus-800' : 'text-loam-600',
+    )}>
+      <Calendar className="h-3.5 w-3.5" aria-hidden />{label}
+    </span>
+  )
+}
+
+export function initials(name: string): string {
+  return name.split(/[\s.@_-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join('')
+}
+
+export function AssigneeBadge({ name, withName }: { name: string; withName?: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-sm text-loam-700" title={name}>
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-prune-100 text-[13px] font-semibold text-prune-700" aria-hidden>
+        {initials(name)}
+      </span>
+      <span className={withName ? '' : 'sr-only'}>{name}</span>
+    </span>
+  )
+}
+
+export function TagChip({ tag, onRemove }: { tag: string; onRemove?: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-lichen-100 px-2.5 py-0.5 text-sm text-lichen-700">
+      {tag}
+      {onRemove && (
+        <button type="button" onClick={onRemove} className="-mr-1 rounded-full p-0.5 hover:bg-lichen-200" aria-label={t('tags.remove', { tag })}>
+          <X className="h-3 w-3" />
+        </button>
+      )}
+    </span>
+  )
+}
+
+/** Free tags of a task, suggested from those of the other tasks of the map. */
+export function TagEditor({ tags, suggestions, onChange }: { tags: string[]; suggestions: string[]; onChange: (tags: string[]) => void }) {
+  const listId = useId()
+  const [draft, setDraft] = useState('')
+  const commit = () => {
+    const next = addTag(tags, draft)
+    setDraft('')
+    if (next !== tags) onChange(next)
+  }
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      commit()
+    } else if (e.key === 'Backspace' && draft === '' && tags.length > 0) {
+      onChange(tags.slice(0, -1))
+    }
+  }
+  const free = suggestions.filter((s) => !tags.some((tag) => tag.toLowerCase() === s.toLowerCase()))
+  return (
+    <div>
+      {tags.length > 0 && (
+        <div className="mb-1.5 flex flex-wrap gap-1.5">
+          {tags.map((tag) => <TagChip key={tag} tag={tag} onRemove={() => onChange(removeTag(tags, tag))} />)}
+        </div>
+      )}
+      {tags.length < MAX_TAGS && (
+        <>
+          <input
+            value={draft} list={listId} maxLength={MAX_TAG_LENGTH}
+            onChange={(e) => setDraft(e.target.value)} onKeyDown={onKeyDown} onBlur={() => draft.trim() && commit()}
+            placeholder={t('tasks.task.tags_placeholder')} aria-label={t('tasks.task.tags')}
+            className={inputClass + ' py-1.5'}
+          />
+          <datalist id={listId}>{free.map((tag) => <option key={tag} value={tag} />)}</datalist>
+        </>
+      )}
+    </div>
+  )
+}
+
+const SEASON_TINT: Record<Season, string> = {
+  winter: 'bg-loam-100/70',
+  spring: 'bg-leaf-50',
+  summer: 'bg-humus-50',
+  autumn: 'bg-clay-50/70',
+}
+
+/**
+ * « L'année du projet »: the twelve months ahead, tinted by season, with
+ * how many tasks fall due in each and the bare-root planting window. A
+ * month filters the lists to its due dates.
+ */
+export function YearStrip({ tasks, today, month, onMonth }: {
+  tasks: TaskData[]; today: Day; month: string | null; onMonth: (month: string | null) => void
+}) {
+  const months = yearAhead(today)
+  const counts = new Map<string, number>()
+  for (const task of tasks) {
+    if (task.completedAt || !task.dueOn || task.dueOn < today) continue
+    const key = monthOfDay(task.dueOn)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  return (
+    <section aria-labelledby="year-strip-title" className="rounded-2xl bg-white/70 p-4 ring-1 ring-loam-900/10">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="year-strip-title" className="font-serif text-lg font-semibold text-prune-800">{t('tasks.year.title')}</h2>
+        {month
+          ? <button type="button" onClick={() => onMonth(null)} className="text-sm font-medium text-prune-700 hover:underline">{t('tasks.year.clear_month')}</button>
+          : <p className="text-sm text-loam-500">{t('tasks.year.hint')}</p>}
+      </div>
+      <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1">
+        <ol className="grid min-w-[42rem] grid-cols-12 gap-1">
+          {months.map(({ key, year, month: m }, i) => {
+            const count = counts.get(key) ?? 0
+            const active = month === key
+            const season = seasonOf(m)
+            const newSeason = i === 0 || seasonOf(months[i - 1].month) !== season
+            return (
+              <li key={key} className="flex flex-col">
+                <span className="h-5 whitespace-nowrap text-sm text-loam-500">{newSeason ? t(`tasks.year.seasons.${season}`) : ''}</span>
+                <button
+                  type="button" onClick={() => onMonth(active ? null : key)} aria-pressed={active}
+                  aria-label={`${formatMonth(year, m)} ${year} : ${t('tasks.year.due_count', { count })}`}
+                  className={clsx(
+                    'flex h-16 flex-col items-center justify-between rounded-xl px-1 py-1.5 transition-colors',
+                    SEASON_TINT[season],
+                    active ? 'ring-2 ring-prune-600' : i === 0 ? 'ring-[1.5px] ring-prune-300' : 'hover:ring-1 hover:ring-loam-400',
+                  )}
+                >
+                  <span className={clsx('text-sm capitalize', i === 0 ? 'font-semibold text-prune-800' : 'text-loam-700')}>
+                    {formatMonthShort(year, m)}
+                  </span>
+                  {count > 0
+                    ? <span className="min-w-6 rounded-full bg-prune-600 px-1.5 text-sm font-semibold tabular-nums text-white">{count}</span>
+                    : <span className="text-sm text-loam-300" aria-hidden>·</span>}
+                </button>
+                <span className={clsx('mt-1 h-1 rounded-full', isPlantingMonth(m) ? 'bg-leaf-500' : 'bg-transparent')} aria-hidden />
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+      <p className="mt-2 flex items-center gap-2 text-sm text-loam-500">
+        <span className="inline-block h-1 w-6 rounded-full bg-leaf-500" aria-hidden />{t('tasks.year.planting_window')}
+      </p>
+    </section>
+  )
+}

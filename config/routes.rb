@@ -393,6 +393,18 @@ Rails.application.routes.draw do
   resource :impersonation, only: :destroy
   # --- end super-admin ---
 
+  # --- tasks ---
+  # A map's task lists (« Tâches »), and the tasks of all my maps and my
+  # teams' maps (/tasks).
+  resources :maps, only: [] do
+    resources :tasks, only: %i[index create update destroy], controller: "maps/tasks"
+    resources :task_lists, only: %i[create update destroy], controller: "maps/task_lists" do
+      post :defaults, on: :collection
+    end
+  end
+  get "tasks", to: "tasks#index", as: :my_tasks
+  # --- end tasks ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

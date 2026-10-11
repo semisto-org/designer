@@ -1,6 +1,7 @@
 # Free tags a person puts on anything drawn on a map (plants, networks,
 # structures…), shared by every element of the map: « zone nord »,
 # « phase 1 », « à tailler ». Lists and tables filter and group by them.
+# Tasks (Task) carry the same kind of tags, with the same rules.
 #
 # Tags are trimmed, single-spaced and deduplicated case-insensitively
 # (the first spelling wins); order is kept as typed.
@@ -13,7 +14,7 @@ module MapFeature::Tags
   included do
     # Case-insensitive: « Phase 1 » finds « phase 1 ».
     scope :tagged, lambda { |tag|
-      where("EXISTS (SELECT 1 FROM unnest(map_features.tags) AS t WHERE lower(t) = lower(?))", normalize_tag(tag))
+      where("EXISTS (SELECT 1 FROM unnest(#{quoted_table_name}.tags) AS t WHERE lower(t) = lower(?))", normalize_tag(tag))
     }
     before_validation :normalize_tags
     validate :validate_tags
@@ -28,7 +29,7 @@ module MapFeature::Tags
     #   map.features.where.not(status: "rejected").tag_counts
     #   # => { "phase 1" => 12, "Zone nord" => 4 }
     def tag_counts
-      rows = unscope(:order).pluck(Arel.sql("unnest(map_features.tags)"))
+      rows = unscope(:order).pluck(Arel.sql("unnest(#{quoted_table_name}.tags)"))
       counts = rows.group_by(&:downcase).to_h { |_, spellings| [ spellings.first, spellings.size ] }
       counts.sort_by { |tag, _| I18n.transliterate(tag).downcase }.to_h
     end

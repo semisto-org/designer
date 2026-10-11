@@ -13,6 +13,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const url = usePage().url
   const nav = [
     { href: '/maps', label: t('nav.maps') },
+    ...(currentUser ? [{ href: '/tasks', label: t('tasks.nav') }] : []),
     ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
     { href: '/plants', label: t('nav.plants') },
     { href: '/help', label: t('nav.help') },
