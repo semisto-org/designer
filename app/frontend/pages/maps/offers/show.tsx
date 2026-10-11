@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { InternalCard } from '@/components/offers/InternalCard'
 import { PhaseCard } from '@/components/offers/PhaseCard'
 import { PlantsCard } from '@/components/offers/PlantsCard'
+import { PrecisionCard } from '@/components/offers/PrecisionCard'
 import { TerrainCard } from '@/components/offers/TerrainCard'
 import { TotalsCard, Warnings } from '@/components/offers/TotalsCard'
 import { VersionsCard } from '@/components/offers/VersionsCard'
@@ -90,20 +91,25 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
         </div>
       )}
 
+      {/* On a phone the gauge comes first: it says what to fill in before the numbers mean much. */}
+      <div className="lg:hidden"><PrecisionCard mapId={map.id} precision={result.precision} /></div>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0 space-y-6">
           <TerrainCard map={map} inputs={inputs} measures={measures} pricing={autosave.pricing} readOnly={readOnly} onChange={setInputs} />
-          <InternalCard
-            inputs={inputs} measures={measures} result={result} catalog={catalog} pricing={autosave.pricing}
-            templates={templates ?? []} templateId={autosave.templateId} onTemplate={autosave.setTemplate}
-            readOnly={readOnly} onChange={setInputs}
-          />
+          <div id="internal" className="scroll-mt-6">
+            <InternalCard
+              inputs={inputs} measures={measures} result={result} catalog={catalog} pricing={autosave.pricing}
+              templates={templates ?? []} templateId={autosave.templateId} onTemplate={autosave.setTemplate}
+              readOnly={readOnly} onChange={setInputs}
+            />
+          </div>
           {result.phases.map((phase) => (
             <PhaseCard key={phase.key} phase={phase} inputs={inputs} readOnly={readOnly} onChange={setInputs} />
           ))}
           <PlantsCard inputs={inputs} result={result} readOnly={readOnly} onChange={setInputs} />
         </div>
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+          <div className="hidden lg:block"><PrecisionCard mapId={map.id} precision={result.precision} /></div>
           <Warnings warnings={result.warnings} />
           <TotalsCard result={result} />
           <VersionsCard

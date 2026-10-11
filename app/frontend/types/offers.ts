@@ -189,6 +189,10 @@ export type PlantsResult = {
 
 export type OfferWarning = { code: string; label?: string; phase?: Phase; part?: string; ceiling?: number; share?: number; target?: number }
 
+/** How precise the budget is (Offer::Precision): out of 100, with what is missing, the biggest gain first. */
+export type PrecisionCheck = { key: string; where: 'map' | 'sheet' | 'offer'; weight: number; done: number; points: number }
+export type OfferPrecision = { score: number; level: 'rough' | 'range' | 'precise'; checks: PrecisionCheck[]; missing: string[] }
+
 export type OfferResult = {
   phases: PhaseResult[]
   plants: PlantsResult
@@ -211,6 +215,7 @@ export type OfferResult = {
   }
   regie_rate_tvac: number
   warnings: OfferWarning[]
+  precision: OfferPrecision
 }
 
 export type OfferVersionSummary = {

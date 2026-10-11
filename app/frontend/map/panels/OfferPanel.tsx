@@ -1,16 +1,18 @@
 import { Link } from '@inertiajs/react'
 import { ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { PrecisionCard } from '@/components/offers/PrecisionCard'
 import { euros } from '@/components/offers/shared'
 import { buttonClass } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import type { OfferVersionSummary } from '@/types/offers'
+import type { OfferPrecision, OfferVersionSummary } from '@/types/offers'
 
 type Summary = {
   offer: { persisted: boolean; updatedAt: string | null }
   totals: { total_tvac: number; total_max_tvac: number }
+  precision?: OfferPrecision
   versions: OfferVersionSummary[]
 }
 
@@ -20,13 +22,14 @@ export default function OfferPanel() {
   const [data, setData] = useState<Summary | null>(null)
   const [unavailable, setUnavailable] = useState(false)
 
+  // Drawing on the map changes what the offer knows: read it again.
   useEffect(() => {
     const controller = new AbortController()
     api<Summary>(`/maps/${editor.map.id}/offer`, { signal: controller.signal })
       .then(setData)
-      .catch(() => setUnavailable(true))
+      .catch(() => { if (!controller.signal.aborted) setUnavailable(true) })
     return () => controller.abort()
-  }, [editor.map.id])
+  }, [editor.map.id, editor.features.length])
 
   const latest = data?.versions.reduce<OfferVersionSummary | null>((best, version) => (!best || version.number > best.number ? version : best), null)
 
@@ -47,6 +50,7 @@ export default function OfferPanel() {
           </div>
         </dl>
       )}
+      {data?.precision && <PrecisionCard mapId={editor.map.id} precision={data.precision} compact />}
       <Link href={`/maps/${editor.map.id}/offer`} className={buttonClass('primary', 'md', 'w-full')}>
         {t('offers.panel.open')}
         <ArrowRight className="h-4 w-4" />

@@ -30,12 +30,14 @@ class Offer
       plants = plants_and_supplies
       co_management = co_management_estimate
       totals = totals(phases, plants)
+      warnings = warnings(phases, totals)
       {
         "phases" => phases, "plants" => plants, "co_management" => co_management,
         "complexity" => complexity, "totals" => totals,
         "regie_rate_tvac" => (rate * (1 + vat(:services))).round(2),
         "target_design_share_pct" => pricing.target_design_share_pct,
-        "warnings" => warnings(phases, totals)
+        "warnings" => warnings,
+        "precision" => Precision.new(measures, inputs, pricing, warnings).call
       }
     end
 

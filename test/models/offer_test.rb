@@ -152,6 +152,27 @@ class OfferTest < ActiveSupport::TestCase
     assert_includes offer.result["warnings"], { "code" => "over_budget", "ceiling" => 5_000 }
   end
 
+  test "the budget gets more precise as the map, the sheet and the internal sheet fill up" do
+    @map.update!(project: {})
+    bare = Offer.new(map: @map, inputs: { "trips" => [ { "phase" => "design", "trips" => 2 } ] }).result["precision"]
+    assert_equal 15, bare["score"], "only the outline is known"
+    assert_equal "rough", bare["level"]
+    assert_equal %w[scope constraints complexity client budget trips], bare["missing"]
+
+    @map.update!(project: {
+      "who" => { "profile" => "commune" }, "budget" => { "initial" => "up_to_15000" },
+      "constraints" => { "soil" => [ "clay" ], "access" => [ "unknown" ], "slope" => "gentle" }
+    })
+    complexity = Offer::Pricing.semisto.complexity["criteria"].first(2).to_h { [ _1["key"], 2 ] }
+    offer = Offer.new(map: @map, inputs: ERPENT.merge("complexity" => complexity))
+    precision = offer.result["precision"]
+    constraints = precision["checks"].find { _1["key"] == "constraints" }
+    assert_equal [ 0.67, 10 ], constraints.values_at("done", "points"), "« unknown » access does not count"
+    assert_equal 15 + 25 + 10 + 10 + 10 + 6 + 10, precision["score"]
+    assert_equal "precise", precision["level"]
+    assert_equal %w[complexity constraints], precision["missing"]
+  end
+
   test "versions freeze the offer and the team can start again from one" do
     user = users(:michael)
     template = before_designer.tap(&:save!)

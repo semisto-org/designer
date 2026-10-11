@@ -176,6 +176,44 @@ fr:
       unscored: "Pas encore noté : honoraires inchangés."
     templates:
       semisto_name: "Barème Semisto"
+    precision:
+      title: "Précision du budget"
+      levels:
+        rough: "Ordre de grandeur"
+        range: "Fourchette"
+        precise: "Budget précis"
+      explain:
+        rough: "Le calcul s’appuie encore sur des valeurs par défaut. Chaque information ajoutée resserre le budget."
+        range: "Le budget prend forme. Les quelques réponses ci-dessous le rendent fiable pour le client."
+        precise: "La carte, la fiche projet et la fiche interne en disent assez pour un budget sur lequel le client peut compter."
+      next: "Pour le préciser"
+      complete: "Tout ce que le calcul utilise est renseigné."
+      where:
+        map: "sur la carte"
+        sheet: "dans la fiche projet"
+        offer: "dans la fiche interne"
+      checks:
+        outline:
+          label: "Contour du terrain"
+          hint: "Dessine le contour du terrain : sa surface fixe l’analyse du site."
+        scope:
+          label: "Périmètre dessiné"
+          hint: "Dessine les zones à planter et les haies, puis ajoute-les au périmètre : elles donnent le nombre de plants et les heures de plan."
+        client:
+          label: "Porteur du projet"
+          hint: "Indique qui porte le projet (particulier, commune…) : il choisit le barème."
+        budget:
+          label: "Budget du client"
+          hint: "Renseigne le budget envisagé : l’offre te dira si elle le dépasse."
+        constraints:
+          label: "Sol, accès et pente"
+          hint: "Réponds au sol, à l’accès et à la pente : ils proposent les ajustements et les analyses utiles."
+        complexity:
+          label: "Complexité"
+          hint: "Note la complexité du projet, critère par critère : elle ajuste les honoraires."
+        trips:
+          label: "Déplacements"
+          hint: "Indique la distance de chaque déplacement."
     panel:
       title: "Offre"
       intro: "Chiffre l’offre de ce projet depuis ce que la carte mesure : heures, plantes, frais, puis des versions à envoyer."

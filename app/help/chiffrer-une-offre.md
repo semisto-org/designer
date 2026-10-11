@@ -15,6 +15,10 @@ Ouvre-le depuis l'éditeur, groupe « Échanger », panneau **Offre**.
 - **Le terrain** : sa surface fait varier le temps d'analyse du site.
 - **La fiche projet** : qui est le client (particulier, commune…), sa tranche de budget, l'accès et la pente, une mare dessinée, des co-auteurs. Le constructeur propose les prestations qui en découlent.
 
+## La précision du budget
+
+Sur une carte qui n'a que son contour, l'offre donne un ordre de grandeur. La jauge « Précision du budget » montre ce que le calcul sait déjà, un segment par information : le contour, le périmètre dessiné, le porteur du projet et son budget, le sol, l'accès et la pente, la complexité et les déplacements. Sous la jauge, l'offre te dit quoi ajouter d'abord et où, ce qui la fait le plus monter en premier. Elle passe d'« Ordre de grandeur » à « Fourchette », puis à « Budget précis ». Tu la retrouves aussi dans le panneau « Offre » de la carte, pendant que tu dessines.
+
 ## Ta fiche interne
 
 Ce que le client ne lit pas : le nombre de designers, les prestations retenues, la **complexité** du projet (cinq critères notés, qui donnent un facteur sur les honoraires), des ajustements, les déplacements et les taux.

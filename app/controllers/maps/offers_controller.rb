@@ -17,7 +17,7 @@ module Maps
         format.html do
           render inertia: "maps/offers/show", props: page_props
         end
-        format.json { render json: { offer: offer_json.slice(:persisted, :updatedAt), totals: @offer.result["totals"], versions: versions_json } }
+        format.json { render json: { offer: offer_json.slice(:persisted, :updatedAt), totals: @offer.result["totals"], precision: @offer.result["precision"], versions: versions_json } }
       end
     end
 
