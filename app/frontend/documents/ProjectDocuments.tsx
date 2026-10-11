@@ -10,7 +10,8 @@ import { relativeTime } from '@/lib/relativeTime'
 import { DocumentIcon } from '@/documents/DocumentIcon'
 import { documentAccept, useDocumentUploads, type DocumentUpload } from '@/documents/upload'
 import { DocumentViewer } from '@/documents/DocumentViewer'
-import { formatBytes, formatMegabytes } from '@/map/photos/format'
+import { documentSize, useCompressionRefresh } from '@/documents/compression'
+import { formatMegabytes } from '@/map/photos/format'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
 
 /**
@@ -38,6 +39,7 @@ export function ProjectDocuments({ endpoint, initial, limits, canEdit, libraryHr
   const input = useRef<HTMLInputElement>(null)
   const onSaved = useCallback((doc: MapDocumentData) => setDocs((list) => [doc, ...list]), [])
   const { uploads, add, dismiss } = useDocumentUploads(endpoint, limits, onSaved)
+  useCompressionRefresh(endpoint, docs, setDocs)
 
   function onDrop(event: DragEvent) {
     event.preventDefault()
@@ -101,7 +103,7 @@ export function ProjectDocuments({ endpoint, initial, limits, canEdit, libraryHr
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium text-loam-900 hover:text-prune-700">{doc.title}</span>
                   <span className="block truncate text-sm text-loam-500">
-                    {doc.byteSize ? formatBytes(doc.byteSize) : ''} · {doc.fromProjectLink ? t('documents.project.sent_by_link', { when: relativeTime(doc.createdAt) }) : relativeTime(doc.createdAt)}
+                    {documentSize(doc)} · {doc.fromProjectLink ? t('documents.project.sent_by_link', { when: relativeTime(doc.createdAt) }) : relativeTime(doc.createdAt)}
                   </span>
                 </span>
               </button>

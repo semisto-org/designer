@@ -37,7 +37,7 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "maps/documents/index", body["component"]
     props = body["props"]
     assert_equal false, props["canEdit"]
-    assert_equal 50.megabytes, props["limits"]["maxBytes"]
+    assert_equal 200.megabytes, props["limits"]["maxBytes"]
     doc = props["documents"].sole
     assert_equal [ "Plans" ], doc["tags"]
     assert_equal "pdf", doc["preview"]
@@ -131,6 +131,6 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
     get map_project_path(@map), headers: inertia_headers
     props = response.parsed_body["props"]
     assert_equal [ "rapport labo" ], props["documents"].map { _1["title"] }
-    assert_equal 50.megabytes, props["documentLimits"]["maxBytes"]
+    assert_equal 200.megabytes, props["documentLimits"]["maxBytes"]
   end
 end

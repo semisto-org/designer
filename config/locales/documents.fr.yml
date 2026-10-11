@@ -69,6 +69,9 @@ fr:
       open: "Ouvrir la bibliothèque"
       recent: "Ajoutés récemment"
       empty: "Pas encore de document. Ouvre la bibliothèque pour en ajouter."
+    compression:
+      pending: "%{size} · compression en cours…"
+      done: "%{size}, compressé (%{original} envoyés)"
     errors:
       file_missing: "Choisis un fichier."
       type: "« %{name} » n'est pas un type de document accepté (PDF, images, textes, tableurs, présentations, plans DWG, DXF, KML ou GPX, archives ZIP)."

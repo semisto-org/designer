@@ -15,6 +15,10 @@ export type MapDocumentData = {
   filename: string | null
   contentType: string | null
   byteSize: number | null
+  /** A PDF over 5 Mo is compressed after upload; the lighter copy replaces it. */
+  compression: 'pending' | 'compressed' | 'unchanged' | null
+  /** The size as sent, when the compressed copy replaced it. */
+  originalByteSize: number | null
   createdAt: string
   updatedAt: string
   uploadedBy: string | null
