@@ -26,6 +26,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   'water-sources': 'dessiner-l-existant',
   'drawing-alerts': 'les-alertes-reglementaires',
   finances: 'le-tableau-financier',
+  offer: 'chiffrer-une-offre',
   discussions: 'partager-et-commenter',
   publish: 'publier-sa-carte',
   actions: 'la-liste-de-plants-et-la-commande',

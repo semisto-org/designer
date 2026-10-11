@@ -5,14 +5,14 @@ import { NumberInput } from '@/components/finances/NumberInput'
 import { Card } from '@/components/ui/Card'
 import { Input, Select } from '@/components/ui/Field'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
-import type { Candidate, OfferCatalog, OfferInputs, OfferMap, OfferMeasures, ScopeInput } from '@/types/offers'
-import { euros, newId, SectionTitle } from './shared'
+import type { Candidate, OfferInputs, OfferMap, OfferMeasures, PricingInfo, ScopeInput } from '@/types/offers'
+import { euros, newId, SectionTitle, typeLabel } from './shared'
 
 type Props = {
   map: OfferMap
   inputs: OfferInputs
   measures: OfferMeasures
-  catalog: OfferCatalog
+  pricing: PricingInfo
   readOnly: boolean
   onChange: (inputs: OfferInputs) => void
 }
@@ -24,21 +24,21 @@ const measureText = (kind: 'area' | 'length', value: number) => (kind === 'area'
  * project sheet, and the scope of the offer, element by element, with the
  * plants each becomes.
  */
-export function TerrainCard({ map, inputs, measures, catalog, readOnly, onChange }: Props) {
+export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange }: Props) {
   const inScope = new Set(inputs.scope.map((item) => item.feature_id).filter(Boolean))
   const available = (measures.candidates ?? []).filter((feature) => !inScope.has(feature.id))
-  const types = catalog.plantingTypes
+  const types = pricing.plantingTypes
+  const firstOf = (measure: 'area' | 'length') => types.find((candidate) => candidate.measure === measure && Object.keys(candidate.mix).length > 0) ?? types[0]
 
   const setItem = (id: string, patch: Partial<ScopeInput>) =>
     onChange({ ...inputs, scope: inputs.scope.map((item) => (item.id === id ? { ...item, ...patch } : item)) })
   const removeItem = (id: string) => onChange({ ...inputs, scope: inputs.scope.filter((item) => item.id !== id) })
 
   function addFeature(feature: Candidate) {
-    const type = types.find((candidate) => candidate.measure === feature.measure_kind && candidate.key !== 'no_planting')
     onChange({
       ...inputs,
       scope: [...inputs.scope, {
-        id: newId(), feature_id: feature.id, label: null, planting_type: feature.measure_kind === 'length' ? 'hedge_multirow' : type?.key ?? 'forest_garden',
+        id: newId(), feature_id: feature.id, label: null, planting_type: firstOf(feature.measure_kind)?.key ?? '',
         measure: null, plants_override: null, option: false,
       }],
     })
@@ -47,7 +47,7 @@ export function TerrainCard({ map, inputs, measures, catalog, readOnly, onChange
   function addManual() {
     onChange({
       ...inputs,
-      scope: [...inputs.scope, { id: newId(), feature_id: null, label: t('offers.scope.manual_label'), planting_type: 'forest_garden', measure: null, plants_override: null, option: false }],
+      scope: [...inputs.scope, { id: newId(), feature_id: null, label: t('offers.scope.manual_label'), planting_type: firstOf('area')?.key ?? '', measure: null, plants_override: null, option: false }],
     })
   }
 
@@ -116,7 +116,7 @@ export function TerrainCard({ map, inputs, measures, catalog, readOnly, onChange
                       <span className="sr-only">{t('offers.scope.type')}</span>
                       <Select value={item.planting_type} disabled={readOnly} onChange={(e) => setItem(item.id, { planting_type: e.target.value })}>
                         {types.filter((candidate) => !fromMap || candidate.measure === measure?.measure_kind).map((candidate) => (
-                          <option key={candidate.key} value={candidate.key}>{t(`offers.planting_types.${candidate.key}`)}</option>
+                          <option key={candidate.key} value={candidate.key}>{typeLabel(candidate)}</option>
                         ))}
                       </Select>
                     </label>
@@ -153,7 +153,7 @@ export function TerrainCard({ map, inputs, measures, catalog, readOnly, onChange
                   <p className="mt-1.5 text-xs text-loam-500">
                     {measure?.missing
                       ? <span className="text-clay-600">{t('offers.scope.missing')}</span>
-                      : <>{t(`offers.planting_type_rules.${item.planting_type}`)} · {formatNumber(measure?.plants_total ?? 0)} {t('offers.scope.plants').toLowerCase()}</>}
+                      : <>{type && !type.label && `${t(`offers.planting_type_rules.${item.planting_type}`)} · `}{formatNumber(measure?.plants_total ?? 0)} {t('offers.scope.plants').toLowerCase()}</>}
                   </p>
                 </li>
               )

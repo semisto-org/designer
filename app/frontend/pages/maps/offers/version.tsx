@@ -4,7 +4,7 @@ import { phaseLabel, PhaseMark, euros } from '@/components/offers/shared'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
-import type { OfferVersionPageProps } from '@/types/offers'
+import type { OfferTerms, OfferVersionPageProps } from '@/types/offers'
 
 const dateFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -64,6 +64,18 @@ export default function OfferVersion({ map, version }: OfferVersionPageProps) {
           <span className="font-serif text-2xl font-semibold tabular-nums text-prune-900">{euros(result.totals.total_tvac)}</span>
         </div>
 
+        {result.totals.design_share_pct != null && (
+          <section className="space-y-1.5">
+            <div className="flex h-2.5 overflow-hidden rounded-full bg-leaf-300" aria-hidden>
+              <div className="bg-prune-500" style={{ width: `${Math.min(result.totals.design_share_pct, 100)}%` }} />
+            </div>
+            <p className="text-sm text-loam-700">
+              {t('offers.version_page.share', { design: euros(result.totals.design_tvac), share: Math.round(result.totals.design_share_pct), implementation: euros(result.totals.implementation_tvac) })}
+            </p>
+            {result.totals.saved_tvac > 0 && <p className="text-xs text-loam-500">{t('offers.version_page.saved', { amount: euros(result.totals.saved_tvac) })}</p>}
+          </section>
+        )}
+
         <section className="space-y-1 text-sm text-loam-700">
           <h3 className="font-semibold text-loam-900">{t('offers.version_page.co_management')}</h3>
           <p>{t('offers.version_page.co_management_text', { rate: euros(regieHtva), half_days: result.co_management.half_days })}</p>
@@ -96,6 +108,7 @@ export default function OfferVersion({ map, version }: OfferVersionPageProps) {
           <h3 className="font-semibold text-loam-900">{t('offers.version_page.regie_title')}</h3>
           <p>{t('offers.version_page.regie', { rate: euros(result.regie_rate_tvac) })}</p>
         </section>
+        <Terms terms={version.terms} />
       </Card>
 
       <details className="rounded-2xl bg-loam-50 p-4 text-sm ring-1 ring-inset ring-loam-200 print:hidden">
@@ -122,5 +135,23 @@ function Row({ label, hint, value, strong }: { label: string; hint?: string; val
       </span>
       <span className={strong ? 'font-semibold tabular-nums' : 'tabular-nums'}>{euros(value)}</span>
     </div>
+  )
+}
+
+/** What keeps the work within its price: rounds of changes, validity, deposit, assumptions, exclusions. */
+function Terms({ terms }: { terms: OfferTerms }) {
+  const facts = [
+    terms.revisions != null && t('offers.version_page.revisions', { count: terms.revisions }),
+    terms.validity_days != null && t('offers.version_page.validity', { days: terms.validity_days }),
+    terms.deposit_pct != null && terms.deposit_pct > 0 && t('offers.version_page.deposit', { pct: terms.deposit_pct }),
+  ].filter(Boolean) as string[]
+  if (facts.length === 0 && !terms.assumptions && !terms.exclusions) return null
+  return (
+    <section className="space-y-2">
+      <h3 className="font-semibold text-loam-900">{t('offers.version_page.terms_title')}</h3>
+      {facts.length > 0 && <ul className="list-disc space-y-0.5 pl-5">{facts.map((fact) => <li key={fact}>{fact}</li>)}</ul>}
+      {terms.assumptions && <p className="whitespace-pre-line"><strong className="font-medium">{t('offers.version_page.assumptions')}</strong> {terms.assumptions}</p>}
+      {terms.exclusions && <p className="whitespace-pre-line"><strong className="font-medium">{t('offers.version_page.exclusions')}</strong> {terms.exclusions}</p>}
+    </section>
   )
 }

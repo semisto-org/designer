@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Eye, EyeOff, Plus, RotateCcw, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Plus, RotateCcw, Sparkles, Trash2 } from 'lucide-react'
 import { NumberInput } from '@/components/finances/NumberInput'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Field'
@@ -59,6 +59,12 @@ export function PhaseCard({ phase, inputs, readOnly, onChange }: Props) {
                 <p className="flex flex-wrap items-center gap-x-2 text-xs text-loam-500">
                   {line.option && <span className="rounded-full bg-loam-100 px-1.5 text-loam-600">{t('offers.budget.option')}</span>}
                   {formulaText(line)}
+                  {!!line.gain_pct && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-leaf-50 px-1.5 text-leaf-800 ring-1 ring-inset ring-leaf-200" title={t('offers.budget.gain_help')}>
+                      <Sparkles className="h-3 w-3" aria-hidden />
+                      {t('offers.budget.gain', { pct: formatNumber(line.gain_pct), hours: hoursText(line.computed_hours_without ?? 0) })}
+                    </span>
+                  )}
                   {line.overridden && <span className="text-humus-700">{t('offers.budget.computed', { value: `${formatNumber(line.computed_persons ?? 0)} × ${hoursText(line.computed_hours ?? 0)}` })}</span>}
                 </p>
               </div>
@@ -150,6 +156,12 @@ export function PhaseCard({ phase, inputs, readOnly, onChange }: Props) {
           <span className="font-medium tabular-nums">{euros(phase.fees_min)}</span>
         </div>
         <p className="text-xs text-loam-500">{t('offers.budget.min_max', { min: euros(phase.total_min), max: euros(phase.total_max) })}</p>
+        {phase.hours_saved > 0 && (
+          <p className="flex items-center gap-1 text-xs text-leaf-800">
+            <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
+            {t('offers.budget.saved', { hours: hoursText(phase.hours_saved), amount: euros(phase.saved_tvac) })}
+          </p>
+        )}
         <div className="grid gap-2 sm:grid-cols-2">
           {(['fees', 'expenses'] as const).map((part) => (
             <label key={part} className="block space-y-1">

@@ -52,6 +52,7 @@ export type AdjustmentInput = { id: string; preset: string | null; label: string
 export type OfferInputs = {
   settings: OfferSettings
   services: Record<string, boolean>
+  complexity: Record<string, number>
   scope: ScopeInput[]
   trips: TripInput[]
   lines: LineOverride[]
@@ -62,10 +63,29 @@ export type OfferInputs = {
   notes: string | null
 }
 
+export type PlantingType = { key: string; label: string | null; measure: 'area' | 'length'; mix: Record<string, number> }
+export type PlantCategory = { key: string; label: string | null; price: number; mulch_m2: number; compost_l: number; guard: number; stake: number }
+export type ComplexityCriterion = { key: string; label: string | null; max: number }
+export type ComplexityLevel = { key: string; label: string | null; up_to: number; factor: number }
+export type OfferTerms = { revisions: number | null; validity_days: number | null; deposit_pct: number | null; exclusions: string | null; assumptions: string | null }
+
+/** What the offer page needs of its pricing (Offer::Pricing). */
+export type PricingInfo = {
+  name: string | null
+  settings: OfferSettings
+  categories: PlantCategory[]
+  plantingTypes: PlantingType[]
+  complexity: { criteria: ComplexityCriterion[]; levels: ComplexityLevel[] }
+  targetDesignSharePct: number
+  terms: OfferTerms
+}
+
 export type OfferData = {
   inputs: OfferInputs
   lockVersion: number
   persisted: boolean
+  templateId: number | null
+  pricing: PricingInfo
   updatedAt: string | null
   updatedBy: string | null
 }
@@ -95,6 +115,7 @@ export type OfferMeasures = {
   adjustment_hints: Record<string, string>
   budget_ceiling: number | null
   lead_name: string | null
+  client_type?: string | null
   candidates?: Candidate[]
 }
 
@@ -108,6 +129,8 @@ export type BudgetLine = {
   label?: string | null
   persons?: number
   hours?: number
+  computed_hours_without?: number
+  gain_pct?: number
   rate?: number
   amount: number
   computed_persons?: number
@@ -144,10 +167,12 @@ export type PhaseResult = {
   prices: { fees: number; expenses: number }
   prices_set: ('fees' | 'expenses')[]
   price_tvac: number
+  hours_saved: number
+  saved_tvac: number
 }
 
 export type PlantsResult = {
-  categories: { key: string; price: number; base: number; option: number; amount_base: number; amount_option: number }[]
+  categories: { key: string; label: string | null; price: number; base: number; option: number; amount_base: number; amount_option: number }[]
   supplies: { key: string; unit_price: number; base: number; option: number; amount_base: number; amount_option: number }[]
   small_material: number
   count_base: number
@@ -162,13 +187,19 @@ export type PlantsResult = {
   supplies_max_tvac: number
 }
 
-export type OfferWarning = { code: string; label?: string; phase?: Phase; part?: string; ceiling?: number }
+export type OfferWarning = { code: string; label?: string; phase?: Phase; part?: string; ceiling?: number; share?: number; target?: number }
 
 export type OfferResult = {
   phases: PhaseResult[]
   plants: PlantsResult
   co_management: { half_days: number; hours: number; amount_htva: number; amount_tvac: number }
+  complexity: { points: number | null; max: number; level: string | null; factor: number }
+  target_design_share_pct: number
   totals: {
+    design_tvac: number
+    implementation_tvac: number
+    design_share_pct: number | null
+    saved_tvac: number
     services_min: number
     services_max: number
     services_price_tvac: number
@@ -189,6 +220,7 @@ export type OfferVersionSummary = {
   note: string | null
   createdAt: string
   createdBy: string | null
+  pricingName: string | null
   totalTvac: number | null
   totalMaxTvac: number | null
 }
@@ -196,8 +228,6 @@ export type OfferVersionSummary = {
 export type OfferCatalog = {
   phases: Phase[]
   services: string[]
-  plantingTypes: { key: string; measure: 'area' | 'length'; mix: Record<string, number> }[]
-  categories: { key: string; price: number }[]
   adjustmentPresets: { key: string; pct: number; phase: AdjustmentPhase }[]
 }
 
@@ -207,6 +237,8 @@ export type OfferPageProps = {
   map: OfferMap
   team: { name: string; member: boolean } | null
   canUseOffers: boolean
+  unavailableReason?: 'not_member' | 'no_plan' | 'not_owner' | null
+  templates?: { id: number; name: string; clientTypes: string[] }[]
   offer?: OfferData
   measures?: OfferMeasures
   result?: OfferResult
@@ -217,6 +249,6 @@ export type OfferPageProps = {
 
 export type OfferVersionPageProps = {
   map: OfferMap
-  team: { name: string }
-  version: OfferVersionSummary & { inputs: OfferInputs; measures: OfferMeasures; result: OfferResult }
+  team: { name: string } | null
+  version: OfferVersionSummary & { inputs: OfferInputs; measures: OfferMeasures; result: OfferResult; terms: OfferTerms }
 }

@@ -1,10 +1,11 @@
-# The offer builder of a team map: one full page (Inertia) where the team
-# sees what the map measures, fills its internal sheet, corrects the
-# computed lines and saves versions; its JSON for the editor panel; and the
-# autosave of the working offer (optimistic locking with lock_version).
+# The offer builder of a map: one full page (Inertia) where the team sees
+# what the map measures, picks its pricing, fills its internal sheet,
+# corrects the computed lines and saves versions; its JSON for the editor
+# panel; and the autosave of the working offer (optimistic locking with
+# lock_version).
 #
-# A map outside a team, or a visitor outside the team, gets the page with
-# what to do to use it, never the numbers.
+# Whoever may not use it (Offer.usable_by?) gets the page with what to do
+# to use it, never the numbers.
 module Maps
   class OffersController < ApplicationController
     include OfferScoped
@@ -21,6 +22,7 @@ module Maps
     end
 
     def update
+      @offer.offer_template = template_param if params[:offer]&.key?(:template_id)
       @offer.assign_attributes(offer_params)
       @offer.updated_by = Current.user
       if @offer.save
@@ -37,14 +39,30 @@ module Maps
       def page_props
         base = {
           map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2, :role),
-          team: @map.organization && { name: @map.organization.name, member: team_member? },
-          canUseOffers: team_member?
+          team: @map.organization && { name: @map.organization.name, member: @map.organization.member?(Current.user) },
+          canUseOffers: offer_access?, unavailableReason: (unavailable_reason unless offer_access?)
         }
-        return base unless team_member?
+        return base unless offer_access?
         base.merge(
           offer: offer_json, measures: measures_json, result: @offer.result, versions: versions_json,
-          catalog: catalog_json, canEdit: %w[owner editor].include?(@role) && !@map.read_only_by_plan?
+          catalog: catalog_json, templates: templates_json,
+          canEdit: %w[owner editor].include?(@role) && !@map.read_only_by_plan?
         )
+      end
+
+      def unavailable_reason
+        return "not_member" if @map.organization
+        @map.owner_id == Current.user&.id ? "no_plan" : "not_owner"
+      end
+
+      def templates_json
+        OfferTemplate.where(owner: OfferTemplate.account_for(@map)).ordered.map { { id: _1.id, name: _1.name, clientTypes: _1.client_types } }
+      end
+
+      # nil (or blank): Semisto's pricing. Else a template of the map's account.
+      def template_param
+        id = params.dig(:offer, :template_id).presence
+        id && OfferTemplate.where(owner: OfferTemplate.account_for(@map)).find(id)
       end
 
       def offer_params
@@ -55,10 +73,8 @@ module Maps
 
       def catalog_json
         {
-          phases: Offer::Catalog::PHASES,
-          services: Offer::Catalog::SERVICES,
-          plantingTypes: Offer::Catalog::PLANTING_TYPES.map { |key, type| { key:, measure: type[:measure], mix: type[:mix] } },
-          categories: Offer::Catalog::CATEGORIES.map { |key, spec| { key:, price: spec[:price] } },
+          phases: Offer::Pricing::PHASES,
+          services: Offer::Pricing::SERVICES,
           adjustmentPresets: Offer::Inputs::ADJUSTMENT_PRESETS.map { |key, (pct, phase)| { key:, pct:, phase: } }
         }
       end

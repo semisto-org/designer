@@ -1,17 +1,22 @@
 import clsx from 'clsx'
-import { Lightbulb, Lock, Plus, Trash2 } from 'lucide-react'
+import { Link } from '@inertiajs/react'
+import { Lightbulb, Lock, Plus, Settings2, Trash2 } from 'lucide-react'
 import { NumberInput } from '@/components/finances/NumberInput'
 import { Card } from '@/components/ui/Card'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
-import type { AdjustmentInput, AdjustmentPhase, OfferCatalog, OfferInputs, OfferMeasures, OfferResult, OfferSettings, Phase, TripInput } from '@/types/offers'
-import { newId, SectionTitle } from './shared'
+import type { AdjustmentInput, AdjustmentPhase, OfferCatalog, OfferInputs, OfferMeasures, OfferResult, OfferSettings, Phase, PricingInfo, TripInput } from '@/types/offers'
+import { categoryLabel, newId, SectionTitle } from './shared'
 
 type Props = {
   inputs: OfferInputs
   measures: OfferMeasures
   result: OfferResult
   catalog: OfferCatalog
+  pricing: PricingInfo
+  templates: { id: number; name: string; clientTypes: string[] }[]
+  templateId: number | null
+  onTemplate: (id: number | null) => void
   readOnly: boolean
   onChange: (inputs: OfferInputs) => void
 }
@@ -23,7 +28,7 @@ const ADJUSTMENT_PHASES: AdjustmentPhase[] = ['all', 'pre_design', 'design', 'im
  * never reads. Services bring tasks in, adjustments move the fees up or
  * down, trips and rates finish the picture.
  */
-export function InternalCard({ inputs, measures, result, catalog, readOnly, onChange }: Props) {
+export function InternalCard({ inputs, measures, result, catalog, pricing, templates, templateId, onTemplate, readOnly, onChange }: Props) {
   const patchSettings = (patch: Partial<OfferSettings>) => onChange({ ...inputs, settings: { ...inputs.settings, ...patch } })
   const setService = (key: string, on: boolean) => onChange({ ...inputs, services: { ...inputs.services, [key]: on } })
   const setAdjustment = (id: string, patch: Partial<AdjustmentInput>) =>
@@ -45,6 +50,32 @@ export function InternalCard({ inputs, measures, result, catalog, readOnly, onCh
         help={t('offers.internal.help')}
         aside={<span className="inline-flex items-center gap-1 rounded-full bg-humus-100 px-2.5 py-1 text-xs font-medium text-humus-800"><Lock className="h-3 w-3" aria-hidden />{t('offers.page.internal_badge')}</span>}
       />
+
+      <fieldset className="space-y-1">
+        <legend className="text-sm font-semibold text-loam-900">{t('offers.pricing.title')}</legend>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            className="max-w-xs"
+            aria-label={t('offers.pricing.title')}
+            value={templateId ?? ''}
+            disabled={readOnly}
+            onChange={(e) => onTemplate(e.target.value ? Number(e.target.value) : null)}
+          >
+            <option value="">{t('offers.pricing.semisto')}</option>
+            {templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
+          </Select>
+          <Link href="/offer_templates" className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
+            <Settings2 className="h-4 w-4" aria-hidden />{t('offers.pricing.manage')}
+          </Link>
+        </div>
+        <p className="text-xs text-loam-500">
+          {measures.client_type
+            ? t('offers.pricing.client_type', { type: t(`offers.client_types.${measures.client_type}`) })
+            : t('offers.pricing.client_type_missing')}
+        </p>
+      </fieldset>
+
+      <Complexity inputs={inputs} pricing={pricing} result={result} readOnly={readOnly} onChange={onChange} />
 
       <fieldset>
         <legend className="text-sm font-semibold text-loam-900">{t('offers.internal.designers')}</legend>
@@ -146,7 +177,7 @@ export function InternalCard({ inputs, measures, result, catalog, readOnly, onCh
         <Textarea rows={3} value={inputs.notes ?? ''} placeholder={t('offers.internal.notes_placeholder')} disabled={readOnly} onChange={(e) => onChange({ ...inputs, notes: e.target.value })} />
       </label>
 
-      <Rates inputs={inputs} catalog={catalog} readOnly={readOnly} onChange={onChange} />
+      <Rates inputs={inputs} pricing={pricing} readOnly={readOnly} onChange={onChange} />
     </Card>
   )
 }
@@ -199,7 +230,7 @@ const RATE_FIELDS: { key: keyof OfferSettings; unit: string }[] = [
   { key: 'half_day_hours', unit: 'h' },
 ]
 
-function Rates({ inputs, catalog, readOnly, onChange }: { inputs: OfferInputs; catalog: OfferCatalog; readOnly: boolean; onChange: (inputs: OfferInputs) => void }) {
+function Rates({ inputs, pricing, readOnly, onChange }: { inputs: OfferInputs; pricing: PricingInfo; readOnly: boolean; onChange: (inputs: OfferInputs) => void }) {
   return (
     <details className="group rounded-xl bg-white/70 ring-1 ring-loam-200">
       <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-loam-900 marker:hidden">
@@ -213,9 +244,9 @@ function Rates({ inputs, catalog, readOnly, onChange }: { inputs: OfferInputs; c
           </label>
         ))}
         <p className="pt-2 text-xs font-semibold text-loam-700 sm:col-span-2">{t('offers.rates.plant_prices')}</p>
-        {catalog.categories.map((category) => (
+        {pricing.categories.map((category) => (
           <label key={category.key} className="block space-y-1">
-            <span className="block text-xs text-loam-600">{t(`offers.categories.${category.key}`)}</span>
+            <span className="block text-xs text-loam-600">{categoryLabel(category)}</span>
             <NumberInput
               value={inputs.plant_prices[category.key] ?? category.price}
               unit="€"
@@ -231,5 +262,67 @@ function Rates({ inputs, catalog, readOnly, onChange }: { inputs: OfferInputs; c
         ))}
       </div>
     </details>
+  )
+}
+
+/**
+ * How demanding the project is, scored criterion by criterion like the
+ * German HOAI's zones: the total picks a level whose factor moves the fees.
+ */
+function Complexity({ inputs, pricing, result, readOnly, onChange }: { inputs: OfferInputs; pricing: PricingInfo; result: OfferResult; readOnly: boolean; onChange: (inputs: OfferInputs) => void }) {
+  const { criteria } = pricing.complexity
+  if (criteria.length === 0) return null
+  const score = result.complexity
+  const set = (key: string, value: number | null) => {
+    const next = { ...inputs.complexity }
+    if (value == null) delete next[key]
+    else next[key] = value
+    onChange({ ...inputs, complexity: next })
+  }
+  const levelLabel = (key: string) => {
+    const level = pricing.complexity.levels.find((candidate) => candidate.key === key)
+    return level?.label || t(`offers.complexity.levels.${key}`)
+  }
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-semibold text-loam-900">{t('offers.complexity.title')}</legend>
+      <p className="text-xs text-loam-500">{t('offers.complexity.help')}</p>
+      <ul className="space-y-2">
+        {criteria.map((criterion) => {
+          const value = inputs.complexity[criterion.key]
+          return (
+            <li key={criterion.key} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+              <span className="text-sm text-loam-800">
+                {criterion.label || t(`offers.complexity.criteria.${criterion.key}`)}
+                {!criterion.label && <span className="block text-xs text-loam-500">{t(`offers.complexity.criteria_help.${criterion.key}`)}</span>}
+              </span>
+              <span className="flex items-center gap-1" role="radiogroup" aria-label={criterion.label || t(`offers.complexity.criteria.${criterion.key}`)}>
+                {Array.from({ length: criterion.max + 1 }, (_, points) => (
+                  <button
+                    key={points}
+                    type="button"
+                    role="radio"
+                    aria-checked={value === points}
+                    disabled={readOnly}
+                    onClick={() => set(criterion.key, value === points ? null : points)}
+                    className={clsx(
+                      'h-6 w-6 rounded-full text-xs tabular-nums ring-1 ring-inset',
+                      value != null && points <= value ? 'bg-prune-600 text-white ring-prune-600' : 'bg-white text-loam-500 ring-loam-200 hover:bg-prune-50',
+                    )}
+                  >
+                    {points}
+                  </button>
+                ))}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="text-sm text-loam-700">
+        {score.level
+          ? t('offers.complexity.result', { points: score.points ?? 0, max: score.max, level: levelLabel(score.level), factor: score.factor.toLocaleString('fr-BE') })
+          : t('offers.complexity.unscored')}
+      </p>
+    </fieldset>
   )
 }

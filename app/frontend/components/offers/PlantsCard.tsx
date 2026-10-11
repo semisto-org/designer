@@ -2,7 +2,7 @@ import { NumberInput } from '@/components/finances/NumberInput'
 import { Card } from '@/components/ui/Card'
 import { formatNumber, t } from '@/lib/i18n'
 import type { OfferInputs, OfferResult } from '@/types/offers'
-import { euros, eurosCents, SectionTitle } from './shared'
+import { categoryLabel, euros, eurosCents, SectionTitle } from './shared'
 
 type Props = { inputs: OfferInputs; result: OfferResult; readOnly: boolean; onChange: (inputs: OfferInputs) => void }
 
@@ -42,12 +42,12 @@ export function PlantsCard({ inputs, result, readOnly, onChange }: Props) {
               <tbody className="divide-y divide-loam-100">
                 {plants.categories.filter((row) => row.base + row.option > 0).map((row) => (
                   <tr key={row.key}>
-                    <td className="py-1.5 text-loam-800">{t(`offers.categories.${row.key}`)}</td>
+                    <td className="py-1.5 text-loam-800">{categoryLabel(row)}</td>
                     <td className="py-1.5 text-right tabular-nums">{formatNumber(row.base)}</td>
                     {hasOptions && <td className="py-1.5 text-right tabular-nums text-loam-500">{row.option ? `+ ${formatNumber(row.option)}` : '—'}</td>}
                     <td className="py-1.5">
                       <NumberInput
-                        aria-label={`${t('offers.plants.price')} · ${t(`offers.categories.${row.key}`)}`}
+                        aria-label={`${t('offers.plants.price')} · ${categoryLabel(row)}`}
                         value={inputs.plant_prices[row.key] ?? row.price}
                         unit="€"
                         disabled={readOnly}

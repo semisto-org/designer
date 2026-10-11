@@ -555,6 +555,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.index ["cell_lat", "cell_lng", "first_year", "last_year"], name: "index_observed_climates_on_cell_and_period", unique: true
   end
 
+  create_table "offer_templates", force: :cascade do |t|
+    t.string "owner_type", null: false
+    t.bigint "owner_id", null: false
+    t.string "name", null: false
+    t.string "client_types", default: [], null: false, array: true
+    t.jsonb "data", default: {}, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_offer_templates_on_owner"
+  end
+
   create_table "offer_versions", force: :cascade do |t|
     t.bigint "offer_id", null: false
     t.integer "number", null: false
@@ -563,6 +575,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.jsonb "inputs", default: {}, null: false
     t.jsonb "measures", default: {}, null: false
     t.jsonb "result", default: {}, null: false
+    t.jsonb "pricing", default: {}, null: false
+    t.string "pricing_name"
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -573,12 +587,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
 
   create_table "offers", force: :cascade do |t|
     t.bigint "map_id", null: false
+    t.bigint "offer_template_id"
     t.jsonb "inputs", default: {}, null: false
     t.integer "lock_version", default: 0, null: false
     t.bigint "updated_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_offers_on_map_id", unique: true
+    t.index ["offer_template_id"], name: "index_offers_on_offer_template_id"
     t.index ["updated_by_id"], name: "index_offers_on_updated_by_id"
   end
 
@@ -1167,6 +1183,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   add_foreign_key "offer_versions", "offers"
   add_foreign_key "offer_versions", "users", column: "created_by_id"
   add_foreign_key "offers", "maps"
+  add_foreign_key "offers", "offer_templates", on_delete: :nullify
   add_foreign_key "offers", "users", column: "updated_by_id"
   add_foreign_key "organization_invitations", "organizations"
   add_foreign_key "organization_invitations", "users", column: "invited_by_id"

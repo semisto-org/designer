@@ -30,7 +30,9 @@ export default function OffersShow(props: OfferPageProps) {
           title={t('offers.unavailable.title')}
           action={<ButtonLink href={`/maps/${map.id}`} variant="secondary">{t('offers.unavailable.back')}</ButtonLink>}
         >
-          {team ? t('offers.unavailable.not_member', { team: team.name }) : t('offers.unavailable.no_team')}
+          {props.unavailableReason === 'not_member' && team
+            ? t('offers.unavailable.not_member', { team: team.name })
+            : t(`offers.unavailable.${props.unavailableReason ?? 'not_owner'}`)}
         </EmptyState>
       </div>
     )
@@ -38,7 +40,7 @@ export default function OffersShow(props: OfferPageProps) {
   return <Builder {...props} offer={props.offer} measures={props.measures} result={props.result} catalog={props.catalog} />
 }
 
-function Builder({ map, team, offer, measures: initialMeasures, result: initialResult, versions: initialVersions, catalog, canEdit }: OfferPageProps & Required<Pick<OfferPageProps, 'offer' | 'measures' | 'result' | 'catalog'>>) {
+function Builder({ map, team, offer, measures: initialMeasures, result: initialResult, versions: initialVersions, catalog, templates, canEdit }: OfferPageProps & Required<Pick<OfferPageProps, 'offer' | 'measures' | 'result' | 'catalog'>>) {
   const readOnly = !canEdit
   const autosave = useOfferAutosave(map.id, offer, initialMeasures, initialResult, !readOnly)
   const { inputs, setInputs, measures, result, status } = autosave
@@ -90,8 +92,12 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0 space-y-6">
-          <TerrainCard map={map} inputs={inputs} measures={measures} catalog={catalog} readOnly={readOnly} onChange={setInputs} />
-          <InternalCard inputs={inputs} measures={measures} result={result} catalog={catalog} readOnly={readOnly} onChange={setInputs} />
+          <TerrainCard map={map} inputs={inputs} measures={measures} pricing={autosave.pricing} readOnly={readOnly} onChange={setInputs} />
+          <InternalCard
+            inputs={inputs} measures={measures} result={result} catalog={catalog} pricing={autosave.pricing}
+            templates={templates ?? []} templateId={autosave.templateId} onTemplate={autosave.setTemplate}
+            readOnly={readOnly} onChange={setInputs}
+          />
           {result.phases.map((phase) => (
             <PhaseCard key={phase.key} phase={phase} inputs={inputs} readOnly={readOnly} onChange={setInputs} />
           ))}

@@ -11,8 +11,11 @@ module Maps
     def show
       render inertia: "maps/offers/version", props: {
         map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2),
-        team: { name: @map.organization.name },
-        version: version_json(@version).merge(inputs: @version.inputs, measures: @version.measures, result: @version.result)
+        team: @map.organization && { name: @map.organization.name },
+        version: version_json(@version).merge(
+          inputs: @version.inputs, measures: @version.measures, result: @version.result,
+          terms: Offer::Pricing.new(@version.pricing.presence || Offer::Pricing::SEMISTO).terms
+        )
       }
     end
 

@@ -2,7 +2,7 @@ fr:
   offers:
     panel_title: "Offre"
     errors:
-      team_only: "Le constructeur d’offre est réservé aux membres de l’équipe de cette carte."
+      no_access: "Le constructeur d’offre est réservé à qui chiffre le projet : l’équipe de la carte, ou son propriétaire avec une formule pro."
       stale: "Quelqu’un d’autre de l’équipe a modifié l’offre en même temps. Voici sa version."
       save_first: "Modifie l’offre une première fois avant d’en enregistrer une version."
     phases:
@@ -78,8 +78,6 @@ fr:
     adjustment_presets:
       difficult_access: "Accès difficile au terrain"
       steep_slope: "Pente forte"
-      complex_project: "Projet complexe (nombreux acteurs, contraintes fortes)"
-      simple_project: "Projet simple et clair"
     adjustment_hints:
       access: "la fiche projet signale un accès difficile"
       slope: "la fiche projet signale une pente forte"
@@ -133,11 +131,51 @@ fr:
       trip_without_km: "%{phase} : des déplacements sont comptés sans distance."
       price_below_computed: "%{phase} : le prix affiché est plus de 10 % sous le calcul."
       over_budget: "Le total dépasse la tranche de budget de la fiche projet (jusqu’à %{ceiling})."
+      design_share: "Le design fait %{share} % du total, au-delà des %{target} % visés par le barème : le client aura moins pour planter."
     unavailable:
-      title: "Le constructeur d’offre est réservé aux équipes"
-      no_team: "Cette carte n’appartient à aucune équipe. Range-la dans une équipe (bouton « Partager » de la carte) : ses membres pourront y chiffrer une offre ensemble."
+      title: "Le constructeur d’offre est réservé aux pros"
       not_member: "Cette carte appartient à l’équipe « %{team} ». Seuls ses membres chiffrent ses offres."
+      not_owner: "Seul le propriétaire de la carte, ou l’équipe à qui elle appartient, chiffre son offre. Une personne invitée sur la carte (souvent le client) ne la voit jamais."
+      no_plan: "Chiffrer une offre depuis la carte fait partie des formules Atelier et Bureau d’études, ou des cartes d’une équipe."
       back: "Revenir à la carte"
+    pricing:
+      title: "Barème"
+      semisto: "Barème Semisto (par défaut)"
+      manage: "Gérer les barèmes"
+      client_type: "Client selon la fiche projet : %{type}."
+      client_type_missing: "La fiche projet ne dit pas encore qui est le client (particulier, commune…)."
+    client_types:
+      individual: "particulier"
+      collective: "collectif"
+      school: "école"
+      business: "entreprise"
+      farm: "ferme"
+      commune: "commune"
+      other: "autre"
+    complexity:
+      title: "Complexité du projet"
+      help: "Note chaque critère : le total choisit un niveau, qui ajuste les honoraires. Sans note, rien ne bouge."
+      criteria:
+        slope_access: "Pente et accès"
+        water: "Eau"
+        zones: "Zones et usages"
+        ecology: "Enjeux écologiques"
+        people: "Personnes à impliquer"
+      criteria_help:
+        slope_access: "Terrain en pente, accès étroit, sans véhicule"
+        water: "Mare, drainage, récupération, zones humides"
+        zones: "Nombre de zones, de fonctions et d’usages à concilier"
+        ecology: "Arbres à préserver, milieux sensibles, existant riche"
+        people: "Co-auteurs, collectif, public, élus à faire participer"
+      levels:
+        simple: "simple"
+        standard: "standard"
+        complex: "complexe"
+        very_complex: "très complexe"
+      result: "%{points} points sur %{max} : projet %{level}, honoraires × %{factor}."
+      unscored: "Pas encore noté : honoraires inchangés."
+    templates:
+      semisto_name: "Barème Semisto"
     panel:
       title: "Offre"
       intro: "Chiffre l’offre de ce projet depuis ce que la carte mesure : heures, plantes, frais, puis des versions à envoyer."
@@ -239,6 +277,9 @@ fr:
       enable: "Remettre cette ligne"
       expenses: "Frais"
       add_line: "Ajouter une ligne"
+      gain: "Designer −%{pct} % (sans : %{hours})"
+      gain_help: "Le temps que le Designer fait gagner sur cette tâche : couches et données du lieu, esquisses sur photo, palette, ton IA."
+      saved: "Le Designer fait gagner %{hours} sur cette étape, soit %{amount} TVAC de moins pour le client."
       add_hours_line: "Des heures"
       add_amount_line: "Un montant"
       custom_label: "Nouvelle ligne"
@@ -275,6 +316,9 @@ fr:
       total: "Total TVAC"
       max: "Jusqu’à %{amount} TVAC avec toutes les extensions"
       regie: "Régie : %{rate} TVAC de l’heure"
+      share: "Design %{design} (%{share} %), plantation et mise en œuvre %{implementation}."
+      share_target: "Le barème vise au plus %{target} % pour le design."
+      saved: "Le Designer a retiré %{amount} TVAC du design : autant pour planter."
     versions:
       title: "Versions"
       empty: "Aucune version enregistrée. Enregistre la V1 quand le budget te convient : elle restera telle quelle, même si la carte change."
@@ -313,3 +357,11 @@ fr:
       scope_base: "Base"
       scope_option: "Extension possible, à valider au terme du pré-design"
       internal_title: "Détail interne (non imprimé)"
+      share: "Design %{design} (%{share} %), plantation et mise en œuvre %{implementation}."
+      saved: "Le Semisto Designer a réduit le coût du design de %{amount} TVAC."
+      terms_title: "Conditions"
+      revisions: "%{count} allers-retours de modifications compris par étape ; au-delà, en régie."
+      validity: "Offre valable %{days} jours."
+      deposit: "Acompte de %{pct} % à la commande."
+      assumptions: "Hypothèses :"
+      exclusions: "Non compris :"

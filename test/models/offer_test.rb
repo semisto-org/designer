@@ -29,8 +29,18 @@ class OfferTest < ActiveSupport::TestCase
 
   def phase(offer, key) = offer.result["phases"].find { _1["key"] == key }
 
+  # Christophe's spreadsheet was made before the Designer: Semisto's
+  # pricing without the time the Designer saves.
+  def before_designer
+    data = Offer::Pricing::SEMISTO.deep_dup
+    data["tasks"].each { _1["gain_pct"] = 0 }
+    OfferTemplate.new(owner: @map.owner, name: "Avant le Designer", data:)
+  end
+
+  def erpent(inputs = ERPENT) = Offer.new(map: @map, offer_template: before_designer, inputs:)
+
   test "the Erpent measures give back the spreadsheet for the pre-design and the design" do
-    offer = Offer.new(map: @map, inputs: ERPENT)
+    offer = erpent(ERPENT)
 
     pre = phase(offer, "pre_design")
     assert_equal 54, pre["hours_min"]
@@ -46,8 +56,8 @@ class OfferTest < ActiveSupport::TestCase
   end
 
   test "hours follow the map: more plants, a longer planting plan and more planting days" do
-    small = Offer.new(map: @map, inputs: ERPENT)
-    big = Offer.new(map: @map, inputs: ERPENT.merge("scope" => [ { "planting_type" => "forest_garden", "measure" => 8_000 } ]))
+    small = erpent(ERPENT)
+    big = erpent(ERPENT.merge("scope" => [ { "planting_type" => "forest_garden", "measure" => 8_000 } ]))
 
     plan = ->(offer) { phase(offer, "design")["lines"].find { _1["task"] == "planting_plan" } }
     assert_equal 12, plan.(small)["hours"]
@@ -60,13 +70,13 @@ class OfferTest < ActiveSupport::TestCase
   end
 
   test "options and the buffer make the maximum, adjustments move both" do
-    offer = Offer.new(map: @map, inputs: ERPENT)
+    offer = erpent(ERPENT)
     design = phase(offer, "design")
     # Optional planting plan: 0.02 h × 727 plants of the extensions.
     assert_equal 39 + 14.5 + 2 + 4 + 1, design["hours_max"]
     assert_in_delta (39 + 14.5 + 2 + 4 + 1) * 60 * 1.15 * 1.2 + 61.28, design["total_max"], 0.01
 
-    adjusted = Offer.new(map: @map, inputs: ERPENT.merge("adjustments" => [ { "preset" => "complex_project" } ]))
+    adjusted = erpent(ERPENT.merge("adjustments" => [ { "label" => "Chantier compliqué", "pct" => 10 } ]))
     assert_equal 10, phase(adjusted, "pre_design")["adjustment_pct"]
     assert_in_delta 3_726 * 1.1, phase(adjusted, "pre_design")["fees_min"], 0.01
   end
@@ -77,7 +87,7 @@ class OfferTest < ActiveSupport::TestCase
       "custom_lines" => [ { "phase" => "pre_design", "kind" => "hours", "label" => "Visite du chalet", "hours" => 2 } ],
       "prices" => { "pre_design" => { "fees" => 4_500, "expenses" => 320 } }
     )
-    pre = phase(Offer.new(map: @map, inputs:), "pre_design")
+    pre = phase(erpent(inputs), "pre_design")
     offer_line = pre["lines"].find { _1["task"] == "offer" }
     assert offer_line["overridden"]
     assert_equal 3, offer_line["computed_hours"]
@@ -87,16 +97,16 @@ class OfferTest < ActiveSupport::TestCase
   end
 
   test "computed prices are rounded TVAC, and a price far below the computation is flagged" do
-    offer = Offer.new(map: @map, inputs: ERPENT)
+    offer = erpent(ERPENT)
     assert_equal({ "fees" => 4_510.0, "expenses" => 295.0 }, phase(offer, "pre_design")["computed_prices"])
 
-    cheap = Offer.new(map: @map, inputs: ERPENT.merge("prices" => { "design" => { "fees" => 1_000 } }))
+    cheap = erpent(ERPENT.merge("prices" => { "design" => { "fees" => 1_000 } }))
     assert_includes cheap.result["warnings"], { "code" => "price_below_computed", "phase" => "design", "part" => "fees" }
   end
 
   test "services follow the map and the project sheet until the team decides" do
     @map.features.create!(layer: "water", kind: "pond", geometry: square(size: 0.0001))
-    offer = Offer.new(map: @map, inputs: {})
+    offer = erpent({})
     assert offer.measures.service?("pond")
     assert_equal "pond_drawn", offer.measures.suggestions["pond"]
     assert phase(offer, "design")["lines"].any? { _1["task"] == "pond_design" }
@@ -121,31 +131,34 @@ class OfferTest < ActiveSupport::TestCase
   end
 
   test "an element removed from the map is flagged, not silently priced at zero" do
-    offer = Offer.new(map: @map, inputs: { "scope" => [ { "feature_id" => 999_999, "label" => "Verger" } ] })
+    offer = erpent({ "scope" => [ { "feature_id" => 999_999, "label" => "Verger" } ] })
     assert offer.measures.scope.first["missing"]
     assert_includes offer.result["warnings"], { "code" => "missing_feature", "label" => "Verger" }
   end
 
   test "the plants of an element can be set by hand, in the same proportions" do
-    offer = Offer.new(map: @map, inputs: { "scope" => [ { "planting_type" => "forest_garden", "measure" => 2_000, "plants_override" => 300 } ] })
+    offer = erpent({ "scope" => [ { "planting_type" => "forest_garden", "measure" => 2_000, "plants_override" => 300 } ] })
     assert_equal 300, offer.measures.scope.first["plants_total"]
   end
 
   test "trips without a distance are flagged" do
-    offer = Offer.new(map: @map, inputs: { "trips" => [ { "phase" => "design", "trips" => 2 } ] })
+    offer = erpent({ "trips" => [ { "phase" => "design", "trips" => 2 } ] })
     assert_includes offer.result["warnings"], { "code" => "trip_without_km", "phase" => "design" }
   end
 
   test "an offer over the project sheet's budget bracket is flagged" do
     @map.update!(project: { "budget" => { "initial" => "up_to_5000" } })
-    offer = Offer.new(map: @map, inputs: ERPENT)
+    offer = erpent(ERPENT)
     assert_includes offer.result["warnings"], { "code" => "over_budget", "ceiling" => 5_000 }
   end
 
   test "versions freeze the offer and the team can start again from one" do
     user = users(:michael)
-    offer = Offer.create!(map: @map, inputs: ERPENT)
+    template = before_designer.tap(&:save!)
+    offer = Offer.create!(map: @map, offer_template: template, inputs: ERPENT)
     v1 = offer.save_version!(user:, note: "Première proposition")
+    assert_equal "Avant le Designer", v1.pricing_name
+    assert_equal 0, v1.pricing["tasks"].first["gain_pct"]
     offer.update!(inputs: ERPENT.merge("settings" => { "designers" => 1 }))
     v2 = offer.save_version!(user:)
 
@@ -159,8 +172,92 @@ class OfferTest < ActiveSupport::TestCase
     assert_equal 2, offer.reload.inputs["settings"]["designers"]
   end
 
+  test "the Designer saves hours on the tasks it speeds up, and the offer says how much" do
+    before = erpent(ERPENT)
+    with = Offer.new(map: @map, inputs: ERPENT) # Semisto's pricing, with the Designer
+    analysis = phase(with, "pre_design")["lines"].find { _1["task"] == "site_analysis" }
+    assert_equal 40, analysis["gain_pct"]
+    assert_equal 3, analysis["computed_hours_without"] # 2 h + 0.33 h × 3.09 ha, to the half hour
+    assert_equal 2, analysis["hours"] # 3.02 h × 60 %
+    assert_operator phase(with, "pre_design")["fees_min"], :<, phase(before, "pre_design")["fees_min"]
+    assert_equal 0, phase(with, "implementation")["hours_saved"], "planting is not sped up"
+    assert phase(with, "pre_design")["hours_saved"].positive?
+    assert with.result["totals"]["saved_tvac"].positive?
+    assert_operator with.result["totals"]["design_share_pct"], :<, before.result["totals"]["design_share_pct"]
+  end
+
+  test "design beyond its target share of the client's total is flagged" do
+    offer = erpent(ERPENT.merge("scope" => [ { "planting_type" => "forest_garden", "measure" => 200 } ]))
+    totals = offer.result["totals"]
+    assert_operator totals["design_share_pct"], :>, 30
+    assert_includes offer.result["warnings"].map { _1["code"] }, "design_share"
+    assert_in_delta totals["total_tvac"], totals["design_tvac"] + totals["implementation_tvac"], 0.01
+  end
+
+  test "complexity scores pick a level whose factor moves the fees" do
+    plain = phase(erpent(ERPENT), "pre_design")
+    simple = erpent(ERPENT.merge("complexity" => { "slope_access" => 1, "water" => 1, "zones" => 2 }))
+    complex = erpent(ERPENT.merge("complexity" => { "slope_access" => 6, "water" => 5, "zones" => 5, "ecology" => 4, "people" => 2 }))
+    assert_equal({ "points" => 4.0, "max" => 30, "level" => "simple", "factor" => 0.9 }, simple.result["complexity"])
+    assert_equal "complex", complex.result["complexity"]["level"]
+    assert_in_delta plain["fees_min"] * 0.9, phase(simple, "pre_design")["fees_min"], 0.01
+    assert_in_delta plain["fees_min"] * 1.15, phase(complex, "pre_design")["fees_min"], 0.01
+    assert_equal 6, erpent(ERPENT.merge("complexity" => { "water" => 40, "unknown" => 3 })).inputs["complexity"]["water"]
+  end
+
+  test "a team's own pricing: its tasks, categories and planting types" do
+    data = Offer::Pricing::SEMISTO.deep_dup
+    data["settings"]["hourly_rate"] = 80
+    data["tasks"] = [ { "key" => "visite_1", "phase" => "pre_design", "label" => "Visite", "base" => 3 } ]
+    data["categories"] = [ { "key" => "petits_fruits", "label" => "Petits fruits", "price" => 8 } ]
+    data["planting_types"] = [ { "key" => "lisiere", "label" => "Lisière", "measure" => "length", "mix" => { "petits_fruits" => 2, "inconnue" => 9 } } ]
+    template = OfferTemplate.new(owner: @map.owner, name: "Atelier", data:)
+    assert_equal({ "petits_fruits" => 2 }, template.pricing.planting_types["lisiere"]["mix"])
+
+    offer = Offer.new(map: @map, offer_template: template, inputs: { "scope" => [ { "planting_type" => "forest_garden", "measure" => 50 } ] })
+    assert_equal 80, offer.inputs["settings"]["hourly_rate"]
+    assert_equal "lisiere", offer.inputs["scope"].first["planting_type"], "an unknown type falls back to the pricing's own"
+    line = phase(offer, "pre_design")["lines"].first
+    assert_equal [ "visite_1", "Visite", 240.0 ], [ line["task"], line["label"], line["amount"] ]
+    assert_equal 100, offer.result["plants"]["count_base"]
+    assert_equal "Petits fruits", offer.result["plants"]["categories"].first["label"]
+  end
+
+  test "a template picked by the client's profile, and only one of the map's account" do
+    owner = @map.owner
+    individual = OfferTemplate.copy_for(owner, name: "Particulier").tap { _1.update!(client_types: %w[individual]) }
+    commune = OfferTemplate.copy_for(owner, name: "Commune").tap { _1.update!(client_types: %w[commune bogus]) }
+    assert_equal %w[commune], commune.client_types
+    assert_equal commune, OfferTemplate.pick(owner, "commune")
+    assert_equal individual, OfferTemplate.pick(owner, "business"), "else the first"
+    assert_nil OfferTemplate.pick(users(:alice), "commune")
+
+    @map.update!(project: { "who" => { "profile" => "commune" } })
+    assert_equal commune, Offer.build_for(@map).offer_template
+
+    stranger = OfferTemplate.copy_for(users(:alice)).tap(&:save!)
+    offer = Offer.new(map: @map, offer_template: stranger, inputs: {})
+    assert_not offer.valid?
+  end
+
+  test "switching template takes its rates and keeps the team's work" do
+    template = OfferTemplate.copy_for(@map.owner, name: "Cher").tap { _1.data = _1.data.deep_merge("settings" => { "hourly_rate" => 90 }) }.tap(&:save!)
+    offer = Offer.create!(map: @map, inputs: ERPENT)
+    offer.update!(offer_template: template)
+    assert_equal 90, offer.inputs["settings"]["hourly_rate"]
+    assert_equal 2, offer.inputs["settings"]["designers"]
+    assert_equal 4, offer.inputs["scope"].size
+  end
+
+  test "who may use the offer builder" do
+    owner = @map.owner
+    assert Offer.usable_by?(@map, owner), "billing off: every owner"
+    assert_not Offer.usable_by?(@map, users(:alice)), "a guest of the map, maybe the client, never"
+    assert_not Offer.usable_by?(@map, nil)
+  end
+
   test "inputs are normalised" do
-    offer = Offer.new(map: @map, inputs: {
+    offer = erpent({
       "settings" => { "hourlyRate" => "65,5", "designers" => 7 },
       "scope" => [ { "plantingType" => "nope", "measure" => "abc" } ],
       "unknown" => 1

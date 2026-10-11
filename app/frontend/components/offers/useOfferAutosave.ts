@@ -19,6 +19,10 @@ export function useOfferAutosave(mapId: number, initial: OfferData, initialMeasu
   const [measures, setMeasures] = useState(initialMeasures)
   const [result, setResult] = useState(initialResult)
   const [persisted, setPersisted] = useState(initial.persisted)
+  const [templateId, setTemplateId] = useState(initial.templateId)
+  const [pricing, setPricing] = useState(initial.pricing)
+  // A pricing switch waiting for the next save: { id } (null id: Semisto's).
+  const pendingTemplate = useRef<{ id: number | null } | null>(null)
   const [status, setStatus] = useState<SaveStatus>(initial.persisted ? 'saved' : 'new')
   const [conflict, setConflict] = useState<string | null>(null)
   const latest = useRef(initial.inputs)
@@ -30,6 +34,8 @@ export function useOfferAutosave(mapId: number, initial: OfferData, initialMeasu
   const adopt = useCallback((data: Response, force = false) => {
     lockVersion.current = data.offer.lockVersion
     setPersisted(data.offer.persisted)
+    setTemplateId(data.offer.templateId)
+    setPricing(data.offer.pricing)
     setMeasures((current) => ({ ...data.measures, candidates: data.measures.candidates ?? current.candidates }))
     setResult(data.result)
     if (force || !dirty.current) {
@@ -44,9 +50,13 @@ export function useOfferAutosave(mapId: number, initial: OfferData, initialMeasu
     if (!dirty.current || !canEdit) return
     dirty.current = false
     setStatus('saving')
+    const template = pendingTemplate.current
+    pendingTemplate.current = null
     const run = (async () => {
       try {
-        adopt(await api<Response>(url, { method: 'PATCH', body: { offer: { inputs: latest.current, lock_version: lockVersion.current } } }))
+        const offer = { inputs: latest.current, lock_version: lockVersion.current, ...(template ? { template_id: template.id ?? '' } : {}) }
+        // A new pricing brings its rates: take the server's inputs back.
+        adopt(await api<Response>(url, { method: 'PATCH', body: { offer } }), template != null && !dirty.current)
         setStatus(dirty.current ? 'pending' : 'saved')
       } catch (error) {
         if (error instanceof ApiError && error.status === 409 && error.data.offer) {
@@ -56,6 +66,7 @@ export function useOfferAutosave(mapId: number, initial: OfferData, initialMeasu
           setStatus('saved')
         } else {
           dirty.current = true
+          if (template) pendingTemplate.current = template
           setStatus('error')
         }
       }
@@ -76,6 +87,15 @@ export function useOfferAutosave(mapId: number, initial: OfferData, initialMeasu
     timer.current = window.setTimeout(() => void save(), DEBOUNCE_MS)
   }, [canEdit, save])
 
+  /** Prices the offer with another template (null: Semisto's), saved at once. */
+  const setTemplate = useCallback((id: number | null) => {
+    if (!canEdit) return
+    pendingTemplate.current = { id }
+    setTemplateId(id)
+    dirty.current = true
+    void save()
+  }, [canEdit, save])
+
   /** Saves now (a version is about to be taken). */
   const flush = useCallback(async () => {
     if (!persisted && !dirty.current) dirty.current = true
@@ -93,5 +113,5 @@ export function useOfferAutosave(mapId: number, initial: OfferData, initialMeasu
     }
   }, [])
 
-  return { inputs, setInputs, measures, result, status, persisted, save, flush, adopt, conflict, clearConflict: () => setConflict(null) }
+  return { inputs, setInputs, measures, result, status, persisted, templateId, pricing, setTemplate, save, flush, adopt, conflict, clearConflict: () => setConflict(null) }
 }

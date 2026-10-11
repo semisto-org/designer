@@ -303,6 +303,9 @@ Rails.application.routes.draw do
   end
   # --- end plantnet ---
 
+  # --- offer templates ---
+  resources :offer_templates, only: %i[index create edit update destroy]
+
   # --- teams ---
   # Teams ("équipes"): members edit every map of the team. The invitation
   # link comes first so "invitations" is never read as a team id.

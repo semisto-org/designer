@@ -30,16 +30,18 @@ class Offer
       def drivers = @hash.fetch("drivers", {})
       def service?(key) = @hash.dig("services", key) || false
       def budget_ceiling = @hash["budget_ceiling"]
+      def client_type = @hash["client_type"]
     end
 
-    attr_reader :map, :inputs
+    attr_reader :map, :inputs, :pricing
 
     # A plain hash (a version's frozen measures) or a map.
     def self.from_h(hash) = Frozen.new(hash)
 
-    def initialize(map, inputs)
+    def initialize(map, inputs, pricing = Pricing.semisto)
       @map = map
       @inputs = inputs
+      @pricing = pricing
     end
 
     def site_area_m2 = map.area_m2&.to_f
@@ -62,17 +64,17 @@ class Offer
         by_id = candidates.index_by { _1["id"] }
         inputs["scope"].map do |item|
           feature = by_id[item["feature_id"]]
-          type = Catalog::PLANTING_TYPES.fetch(item["planting_type"])
+          type = pricing.planting_types[item["planting_type"]] || pricing.planting_types.fetch(pricing.fallback_type)
           measure = feature ? feature["measure"] : item["measure"].to_f
-          plants = type[:mix].transform_values { (_1 * measure).round }
+          plants = type["mix"].transform_values { (_1 * measure).round }
           if (override = item["plants_override"])
             plants = scale(plants, override)
           end
           {
             "id" => item["id"], "feature_id" => feature && feature["id"], "missing" => item["feature_id"].present? && feature.nil?,
             "label" => item["label"].presence || feature&.dig("name").presence,
-            "kind" => feature&.dig("kind"), "planting_type" => item["planting_type"],
-            "measure_kind" => type[:measure], "measure" => measure.round(1),
+            "kind" => feature&.dig("kind"), "planting_type" => type["key"],
+            "measure_kind" => type["measure"], "measure" => measure.round(1),
             "plants" => plants, "plants_total" => plants.values.sum, "option" => item["option"]
           }
         end
@@ -126,6 +128,9 @@ class Offer
 
     def budget_ceiling = BUDGET_CEILINGS[map.project_sheet.section("budget")["initial"]]
 
+    # Who the client is (individual, commune…), from the project sheet.
+    def client_type = map.project_sheet.section("who")["profile"].presence
+
     def lead_name
       people = Array(map.project_sheet.section("who")["people"])
       (people.find { _1["role"] == "lead" } || people.first)&.dig("name")
@@ -134,9 +139,9 @@ class Offer
     def to_h
       {
         "site_area_m2" => site_area_m2, "scope" => scope, "drivers" => drivers,
-        "services" => Catalog::SERVICES.index_with { service?(_1) },
+        "services" => Pricing::SERVICES.index_with { service?(_1) },
         "suggestions" => suggestions, "adjustment_hints" => adjustment_hints,
-        "budget_ceiling" => budget_ceiling, "lead_name" => lead_name
+        "budget_ceiling" => budget_ceiling, "lead_name" => lead_name, "client_type" => client_type
       }
     end
 

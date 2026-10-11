@@ -18,8 +18,13 @@ export const hoursText = (value: number) => `${formatNumber(value)} h`
 export function lineLabel(line: BudgetLine): string {
   if (line.kind === 'trip') return line.label || t('offers.trips.label')
   if (line.kind === 'custom') return line.label || t('offers.budget.custom_label')
+  if (line.label) return line.label
   return t(`offers.tasks.${line.task}`)
 }
+
+/** A pricing's own label, else Semisto's for that key. */
+export const typeLabel = (type: { key: string; label?: string | null }) => type.label || t(`offers.planting_types.${type.key}`)
+export const categoryLabel = (category: { key: string; label?: string | null }) => category.label || t(`offers.categories.${category.key}`)
 
 /** « 2 h + 0,02 h × 510 plants », or « forfait ». */
 export function formulaText(line: BudgetLine): string | null {

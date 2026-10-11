@@ -14,6 +14,7 @@ class Organization < ApplicationRecord
   has_many :users, through: :memberships
   has_many :invitations, class_name: "OrganizationInvitation", dependent: :destroy
   has_many :maps, dependent: :nullify
+  has_many :offer_templates, as: :owner, dependent: :destroy
 
   normalizes :name, with: ->(n) { n.to_s.squish }
   validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }

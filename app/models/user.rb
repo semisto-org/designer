@@ -14,6 +14,7 @@ class User < ApplicationRecord
   has_many :release_note_likes, dependent: :delete_all
   has_many :service_requests, dependent: :destroy
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
+  has_many :offer_templates, as: :owner, dependent: :destroy
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }

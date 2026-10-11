@@ -1,7 +1,7 @@
 require "test_helper"
 require_relative "../../test_helpers/teams_test_helper"
 
-# The offer builder of a team map: page, autosave, versions.
+# The offer builder: who may use it, page, autosave, pricing, versions.
 class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @map = maps(:ahinvaux) # owner: michael, viewer: alice
@@ -14,19 +14,39 @@ class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
     { settings: { designers: 2 }, scope: [ { id: "a", planting_type: "forest_garden", measure: 2_000 } ] }
   end
 
-  test "a map outside a team shows what to do, never the numbers" do
-    sign_in_as @owner
+  test "a guest of a map outside a team (maybe the client) sees what to do, never the numbers" do
+    sign_in_as users(:alice)
     get map_offer_path(@map), headers: inertia_headers
     assert_response :success
     props = response.parsed_body["props"]
     assert_equal "maps/offers/show", response.parsed_body["component"]
     assert_equal false, props["canUseOffers"]
-    assert_nil props["team"]
+    assert_equal "not_owner", props["unavailableReason"]
     assert_nil props["offer"]
     assert_no_difference -> { Offer.count } do
       patch map_offer_path(@map), params: { offer: { inputs:, lock_version: 0 } }, as: :json
     end
     assert_response :forbidden
+  end
+
+  test "the owner of a map outside a team prices it with their own templates" do
+    sign_in_as @owner
+    mine = OfferTemplate.copy_for(@owner, name: "Particulier").tap(&:save!)
+    others = OfferTemplate.copy_for(@team, name: "Équipe").tap(&:save!)
+    get map_offer_path(@map), headers: inertia_headers
+    props = response.parsed_body["props"]
+    assert props["canUseOffers"]
+    assert_equal [ "Particulier" ], props["templates"].map { _1["name"] }
+    assert_equal mine.id, props["offer"]["templateId"]
+    assert_equal "Particulier", props["offer"]["pricing"]["name"]
+
+    patch map_offer_path(@map), params: { offer: { inputs:, template_id: "", lock_version: 0 } }, as: :json
+    assert_response :success
+    assert_nil @map.reload.offer.offer_template
+    assert_nil response.parsed_body["offer"]["pricing"]["name"]
+
+    patch map_offer_path(@map), params: { offer: { inputs:, template_id: others.id, lock_version: @map.offer.lock_version } }, as: :json
+    assert_response :not_found
   end
 
   test "team members get a prefilled offer, saved at the first change" do

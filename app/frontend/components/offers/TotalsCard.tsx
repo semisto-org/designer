@@ -29,6 +29,7 @@ export function TotalsCard({ result }: { result: OfferResult }) {
         <span className="font-semibold text-prune-900">{t('offers.totals.total')}</span>
         <span className="font-serif text-2xl font-semibold tabular-nums text-prune-900">{euros(totals.total_tvac)}</span>
       </div>
+      <DesignShare result={result} />
       {totals.total_max_tvac > totals.total_tvac && (
         <p className="text-xs text-loam-500">{t('offers.totals.max', { amount: euros(totals.total_max_tvac) })}</p>
       )}
@@ -41,11 +42,37 @@ export function TotalsCard({ result }: { result: OfferResult }) {
   )
 }
 
+/**
+ * Where the client's money goes: design on one side, planting on the other,
+ * against the share of design the pricing aims at; and what the Designer
+ * took off the design.
+ */
+function DesignShare({ result }: { result: OfferResult }) {
+  const { totals, target_design_share_pct: target } = result
+  if (totals.design_share_pct == null) return null
+  const share = totals.design_share_pct
+  return (
+    <div className="space-y-1.5">
+      <div className="relative flex h-3 overflow-hidden rounded-full bg-leaf-200" aria-hidden>
+        <div className={share > target ? 'bg-humus-500' : 'bg-prune-500'} style={{ width: `${Math.min(share, 100)}%` }} />
+        {target > 0 && <div className="absolute inset-y-0 w-0.5 bg-prune-900/60" style={{ left: `${target}%` }} />}
+      </div>
+      <p className="text-xs text-loam-600">
+        {t('offers.totals.share', { design: euros(totals.design_tvac), share: Math.round(share), implementation: euros(totals.implementation_tvac) })}
+        {' '}{t('offers.totals.share_target', { target })}
+      </p>
+      {totals.saved_tvac > 0 && <p className="text-xs text-leaf-800">{t('offers.totals.saved', { amount: euros(totals.saved_tvac) })}</p>}
+    </div>
+  )
+}
+
 export function warningText(warning: OfferWarning): string {
   return t(`offers.warnings.${warning.code}`, {
     label: warning.label ?? '',
     phase: warning.phase ? phaseLabel(warning.phase) : '',
     ceiling: warning.ceiling != null ? euros(warning.ceiling) : '',
+    share: warning.share != null ? Math.round(warning.share) : '',
+    target: warning.target ?? '',
   })
 }
 
