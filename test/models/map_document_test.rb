@@ -1,6 +1,10 @@
 require "test_helper"
+require_relative "../test_helpers/pdf_test_helper"
 
 class MapDocumentTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+  include PdfTestHelper
+
   setup { @map = maps(:ahinvaux) }
 
   def build(file = "rapport_labo.pdf", type = "application/pdf", **attrs)
@@ -46,7 +50,7 @@ class MapDocumentTest < ActiveSupport::TestCase
     big = build
     big.file.blob.byte_size = MapDocument::MAX_BYTES + 1
     refute big.valid?
-    assert_match "50 Mo", big.errors.full_messages.to_sentence
+    assert_match "200 Mo", big.errors.full_messages.to_sentence
   end
 
   test "requires a file" do
@@ -79,6 +83,63 @@ class MapDocumentTest < ActiveSupport::TestCase
     build.save!
     assert_difference -> { MapDocument.count }, -1 do
       @map.destroy
+    end
+  end
+
+  def heavy_document(**attrs)
+    doc = @map.documents.new(uploaded_by: users(:michael), **attrs)
+    doc.file.attach(io: StringIO.new(heavy_pdf), filename: "plan_archi.pdf", content_type: "application/pdf")
+    doc
+  end
+
+  def with_threshold(bytes)
+    before = MapDocument.compress_pdf_above
+    MapDocument.compress_pdf_above = bytes
+    yield
+  ensure
+    MapDocument.compress_pdf_above = before
+  end
+
+  test "a PDF over the threshold is compressed in the background" do
+    with_threshold(1.megabyte) do
+      doc = heavy_document
+      assert_enqueued_with(job: CompressMapDocumentJob) { doc.save! }
+      assert_equal "pending", doc.compression
+      assert_equal "pending", doc.as_inertia(url: ->(*) { "/x" })[:compression]
+    end
+  end
+
+  test "a light PDF or another file is not compressed" do
+    assert_no_enqueued_jobs(only: CompressMapDocumentJob) do
+      build.save!
+      build("terrain.jpg", "image/jpeg").save!
+    end
+    assert_nil @map.documents.last.compression
+  end
+
+  test "the job keeps the lighter copy and remembers the size as sent" do
+    with_threshold(1.megabyte) do
+      doc = heavy_document
+      perform_enqueued_jobs(only: CompressMapDocumentJob) { doc.save! }
+      doc.reload
+      assert_equal "compressed", doc.compression
+      assert_equal heavy_pdf.bytesize, doc.original_byte_size
+      assert_operator doc.file.blob.byte_size, :<, doc.original_byte_size / 4
+      assert_equal "plan_archi.pdf", doc.file.filename.to_s
+      assert_equal "application/pdf", doc.file.content_type
+    end
+  end
+
+  test "without a gain or without Ghostscript, the original stays" do
+    with_threshold(1.megabyte) do
+      without_ghostscript do
+        doc = heavy_document
+        perform_enqueued_jobs(only: CompressMapDocumentJob) { doc.save! }
+        doc.reload
+        assert_equal "unchanged", doc.compression
+        assert_nil doc.original_byte_size
+        assert_equal heavy_pdf.bytesize, doc.file.blob.byte_size
+      end
     end
   end
 end

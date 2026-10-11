@@ -14,7 +14,9 @@ Avant de dessiner, il est précieux de réunir ce qui existe déjà : le plan de
 
 ## Ajouter des documents
 
-Touche **Ajouter des documents**, ou dépose les fichiers n'importe où sur la page. Formats acceptés : PDF, images (JPEG, PNG, WebP, GIF, HEIC, TIFF), textes (Word, OpenDocument, RTF, texte), tableurs (Excel, OpenDocument, CSV), présentations, plans (DWG, DXF, KML, KMZ, GPX, GeoJSON) et archives ZIP, jusqu'à 50 Mo par fichier.
+Touche **Ajouter des documents**, ou dépose les fichiers n'importe où sur la page. Formats acceptés : PDF, images (JPEG, PNG, WebP, GIF, HEIC, TIFF), textes (Word, OpenDocument, RTF, texte), tableurs (Excel, OpenDocument, CSV), présentations, plans (DWG, DXF, KML, KMZ, GPX, GeoJSON) et archives ZIP, jusqu'à 200 Mo par fichier.
+
+Un **PDF de plus de 5 Mo** est compressé juste après l'envoi, sans perte visible : les images passent en qualité impression (300 dpi), le texte et les traits restent nets. C'est la version allégée qui est gardée, si elle est nettement plus légère. Pendant quelques instants, le document affiche « compression en cours… », puis sa nouvelle taille et celle du fichier envoyé.
 
 Le titre reprend le nom du fichier ; ouvre le document pour le changer et ajouter une **Note** (d'où il vient, ce qu'il faut en retenir).
 

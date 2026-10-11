@@ -111,7 +111,7 @@ jobs:
             postgis/postgis:16-3.4 > "$RUNNER_TEMP/postgis.log" 2>&1 &
 
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev ghostscript
 
       - name: Checkout code
         uses: actions/checkout@v6

@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef, useState, type DragEvent, type ReactNode 
 import { MapViewHeader } from '@/components/map_views/MapViews'
 import { Button } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
+import { useCompressionRefresh } from '@/documents/compression'
 import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
 import { UploadList } from '@/documents/ProjectDocuments'
@@ -50,6 +51,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
 
   const onSaved = useCallback((doc: MapDocumentData) => setDocs((list) => [doc, ...list]), [])
   const { uploads, add, dismiss } = useDocumentUploads(endpoint, limits, onSaved)
+  useCompressionRefresh(endpoint, docs, setDocs)
 
   const tags = useMemo(() => tagCounts(docs.map(asTagged)), [docs])
   const fromSheet = docs.filter((d) => d.origin === 'project_sheet').length

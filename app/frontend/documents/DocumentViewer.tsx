@@ -8,7 +8,7 @@ import { relativeTime } from '@/lib/relativeTime'
 import { DocumentIcon } from '@/documents/DocumentIcon'
 import { PdfPages } from '@/documents/PdfPages'
 import { TagEditor } from '@/documents/TagEditor'
-import { formatBytes } from '@/map/photos/format'
+import { documentSize } from '@/documents/compression'
 import type { MapDocumentData } from '@/types/documents'
 
 /**
@@ -118,7 +118,7 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
               ? t('documents.viewer.added_by', { name: doc.uploadedBy, when: relativeTime(doc.createdAt) })
               : t('documents.viewer.added', { when: relativeTime(doc.createdAt) })}
           <br />
-          {doc.filename}{doc.byteSize ? ` · ${formatBytes(doc.byteSize)}` : ''}
+          {doc.filename}{doc.byteSize ? ` · ${documentSize(doc)}` : ''}
         </p>
         {doc.origin === 'project_sheet' && (
           <p className="flex items-center gap-1.5 rounded-lg bg-prune-50 px-3 py-2 text-sm text-prune-800">
