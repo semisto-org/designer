@@ -143,9 +143,9 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     data, = call_tool(@owner, "get_map", { map_id: @map.id })
     assert_equal @map.tasks.count, data.dig("tasks", "pending")
     assert_equal 0, data["documents"]
-    assert data.dig("permissions", "write_tasks_and_documents")
+    assert data.dig("permissions", "write_tasks_documents_photos")
     data, = call_tool(@viewer, "get_map", { map_id: @map.id })
-    refute data.dig("permissions", "write_tasks_and_documents")
+    refute data.dig("permissions", "write_tasks_documents_photos")
   end
 
   test "list_documents and get_document read the text of a PDF" do

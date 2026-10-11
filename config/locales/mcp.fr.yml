@@ -14,7 +14,7 @@ fr:
         La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
-        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme ou l'étiquette. Tu ne supprimes jamais rien.
+        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme ou l'étiquette. Les photos du terrain se lisent avec list_photos et get_photo ; add_photo en ajoute une, update_photos les légende, les date, les place et les range en albums, delete_photos les supprime. Tu ne supprimes rien d'autre, et une photo seulement quand la personne te l'a demandé.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -41,13 +41,22 @@ fr:
       tags_change: "Nouvelle liste complète d'étiquettes, qui remplace l'ancienne ([] les retire toutes). Reprends les étiquettes actuelles pour en ajouter une."
       document_title: "Titre du document tel qu'il apparaît dans la bibliothèque."
       document_description: "Ce que contient le document, en une ou deux phrases. null l'efface."
+      any_photo_id: "Identifiant de la photo, donné par list_photos."
+      photo_ids: "Identifiants des photos, donnés par list_photos."
+      album_id: "Identifiant d'un album de photos de la carte (albums dans list_photos). null sort la photo de son album."
+      album_name: "Nom de l'album où ranger la photo, quand album_id manque : un album existant (sans tenir compte des majuscules) ou un nouveau, par exemple « Verger, avant travaux »."
+      photo_feature_id: "Identifiant de l'élément de la carte que montre la photo (list_features). null défait le lien."
+      photo_caption: "Légende de la photo, 500 caractères au plus. null l'efface."
+      taken_at: "Date et heure de la prise de vue, au format ISO 8601 (2026-05-17T14:32:00+02:00). null l'efface."
+      photo_location: "Endroit de la prise de vue, [longitude, latitude] en WGS84. null l'efface."
+      heading: "Direction de l'appareil, en degrés depuis le nord (0 à 360, 90 = est). null l'efface."
     tools:
       list_maps:
         title: "Lister mes cartes"
         description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passe ensuite l'identifiant d'une carte à get_map."
       get_map:
         title: "Lire une carte"
-        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), tâches du projet (à faire, en retard, faites) et nombre de documents, nombre d'éléments par couche, étiquettes de la carte (tags, avec leur nombre d'éléments), types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), tâches du projet (à faire, en retard, faites), nombre de documents et de photos, nombre d'éléments par couche, étiquettes de la carte (tags, avec leur nombre d'éléments), types d'éléments connus de l'éditeur, et ce que cette connexion a le droit de faire sur la carte."
       list_features:
         title: "Lister les éléments"
         description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), étiquette (tag), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
@@ -122,6 +131,29 @@ fr:
           document_content: "Le contenu du document, dans le format choisi."
           document_format: "md (Markdown, par défaut), txt, csv ou geojson."
           document_tags: "Étiquettes du document, de préférence parmi celles de la bibliothèque (tags dans list_documents). 20 au plus, 40 caractères chacune."
+      list_photos:
+        title: "Lister les photos du terrain"
+        description: "Les photos de la carte, des plus récentes aux plus anciennes : légende, date de prise de vue, endroit [lng, lat] et direction, album, élément lié, taille et qui l'a déposée, et si elle attend une lecture des bio-indicatrices. Donne aussi les albums. Filtres par album, élément lié et photos pas encore placées. Paginé : passe next_after_id dans after_id pour la page suivante. get_photo montre une photo."
+        params:
+          unplaced: "true : seulement les photos qui n'ont pas encore d'endroit sur la carte."
+          photo_after: "Pagination : la valeur next_after_id de la page précédente."
+      get_photo:
+        title: "Regarder une photo"
+        description: "Une photo du terrain, en image (sans ses métadonnées GPS), avec sa légende, sa date, son endroit, sa direction, son album, l'élément lié et ce que dit l'appareil (modèle, hauteur et nacelle d'un drone). Pour une photo de plantes sauvages à analyser, préfère get_bioindicator_photo."
+      add_photo:
+        title: "Ajouter une photo"
+        description: "Ajoute une photo du terrain à partir de son contenu en base64 (JPEG, PNG, WebP ou HEIC, 15 Mo au plus) : par exemple une photo que la personne t'a confiée. Tu peux la légender, la dater, la placer, donner sa direction, la ranger dans un album (existant ou nouveau, par son nom) et la lier à un élément de la carte. Une photo déjà présente sur la carte est refusée. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          image_base64: "Le fichier de l'image en base64 (une adresse data:image/…;base64, est acceptée)."
+          photo_filename: "Nom du fichier, par exemple verger-nord.jpg."
+      update_photos:
+        title: "Modifier des photos"
+        description: "Change la légende, la date, l'endroit, la direction, l'album (existant ou nouveau, par son nom) ou l'élément lié de photos du terrain. Seuls les champs passés changent ; null efface. L'image elle-même ne change pas. 50 photos au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          photo_changes: "Les modifications, une par photo, de 1 à 50."
+      delete_photos:
+        title: "Supprimer des photos"
+        description: "Supprime des photos du terrain, avec leurs esquisses et leurs mises en image, comme « Supprimer » sur la page Photos. Définitif : ne le fais que quand la personne te l'a demandé, en lui disant d'abord quelles photos partent. 50 photos au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
       update_document:
         title: "Renommer ou étiqueter un document"
         description: "Change le titre, la description ou les étiquettes d'un document de la bibliothèque, par exemple pour le ranger sous les étiquettes que l'équipe utilise déjà. Le fichier lui-même ne change pas, et rien n'est supprimé. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
@@ -216,6 +248,7 @@ fr:
       tasks_assigned: "Les tâches sont sur la page « Tâches » de la carte (url). Les personnes à qui tu les as confiées reçoivent un e-mail."
       document_added: "Le document est dans la bibliothèque « Documents » de la carte (url)."
       project_link_author: "Le porteur du projet (lien de la fiche projet)"
+      photo_added: "La photo est sur la page « Photos » de la carte (url) ; placée, elle apparaît aussi sur la carte."
     errors:
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Designer (OAuth) ou utilise un jeton personnel."
       invalid_token: "Ce jeton n'est pas valide, a expiré ou a été révoqué."
@@ -247,6 +280,8 @@ fr:
       document_not_found: "Document %{id} introuvable sur cette carte. list_documents donne sa bibliothèque."
       document_invalid: "Le document n'a pas pu être enregistré : %{details}"
       nothing_written: "Rien n'a été enregistré. %{details}"
+      photo_not_found_plain: "Photo %{id} introuvable sur cette carte. list_photos donne ses photos."
+      photo_invalid: "La photo n'a pas pu être enregistrée : %{details}"
       write_blocked:
         scope: "Cette connexion n'a que l'accès en lecture. Pour écrire des tâches ou des documents, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
         role_write: "Seuls le propriétaire et les éditeurs de la carte peuvent écrire des tâches et des documents. L'utilisateur est lecteur de cette carte."
@@ -255,6 +290,14 @@ fr:
     task_errors:
       no_list: "list_id ou list_name est requis (voir les listes dans list_tasks)."
       due_on: "échéance « %{value} » illisible : AAAA-MM-JJ attendu."
+    photo_errors:
+      location: "endroit hors limites : [longitude, latitude] en degrés WGS84."
+      album: "album %{id} introuvable sur cette carte (albums dans list_photos)."
+      taken_at: "date « %{value} » illisible : ISO 8601 attendu, par exemple 2026-05-17T14:32:00+02:00."
+      type: "Ce fichier n'est pas une image JPEG, PNG, WebP ou HEIC."
+      too_large: "L'image dépasse %{max} Mo."
+      base64: "image_base64 n'est pas du base64 valide."
+      duplicate: "cette photo est déjà sur la carte."
     document_unreadable:
       format: "Ce type de fichier ne se lit pas ici : la personne l'ouvre dans la bibliothèque « Documents » (url)."
       too_large: "Le fichier est trop lourd pour être lu ici (25 Mo au plus) : la personne l'ouvre dans la bibliothèque."
@@ -387,6 +430,15 @@ fr:
         other: "a modifié %{count} tâches"
       add_document: "a ajouté un document à la bibliothèque"
       update_document: "a renommé ou étiqueté un document"
+      list_photos: "a lu la liste des photos"
+      get_photo: "a regardé une photo"
+      add_photo: "a ajouté une photo"
+      update_photos:
+        one: "a modifié 1 photo"
+        other: "a modifié %{count} photos"
+      delete_photos:
+        one: "a supprimé 1 photo"
+        other: "a supprimé %{count} photos"
     outcome:
       active:
         one: "1 accepté"
@@ -479,7 +531,7 @@ fr:
     guardrails:
       title: "Garde-fous"
       never: "L'IA ne modifie jamais la carte sans ta validation : elle pose des brouillons."
-      tasks: "Sur les tâches et les documents, elle écrit quand tu le lui demandes, et ne supprime jamais rien."
+      tasks: "Sur les tâches, les documents et les photos, elle écrit quand tu le lui demandes ; elle ne supprime que les photos que tu lui demandes de retirer."
       networks: "Les réseaux (eau, gaz, électricité, câbles) restent masqués par défaut."
       journal: "Chaque action est inscrite au journal IA de la carte, visible par son propriétaire."
       revoke: "Tu retires l'accès quand tu veux, depuis ton compte."
@@ -498,7 +550,7 @@ fr:
           body: "Lire tes cartes, leurs couches, leurs éléments et la fiche projet."
         drafts:
           title: "Lecture et brouillons"
-          body: "Lire, proposer des éléments en brouillon que tu acceptes ou refuses un par un, et tenir avec toi les tâches et les documents du projet (sans jamais rien supprimer), sur les cartes dont tu es propriétaire ou éditeur."
+          body: "Lire, proposer des éléments en brouillon que tu acceptes ou refuses un par un, et tenir avec toi les tâches, les documents et les photos du projet (sans rien supprimer, sauf une photo que tu lui demandes de retirer), sur les cartes dont tu es propriétaire ou éditeur."
           plan: "Les brouillons demandent le forfait du propriétaire de la carte : ta formule actuelle n'en donne pas sur tes propres cartes."
           trial_available: "Essai offert : en choisissant cet accès, tu essaies les brouillons sur tes cartes pendant 14 jours, jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
           trial_active: "Ton essai des brouillons court jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
@@ -554,11 +606,11 @@ fr:
       scopes_title: "Accès (scopes)"
       scopes:
         read: "Lire les cartes de l'utilisateur, leurs couches, leurs éléments et la fiche projet. Toujours accordé."
-        drafts: "Proposer et retirer des brouillons, écrire des tâches et des documents. L'utilisateur le choisit sur la page de consentement ; il faut aussi le rôle d'éditeur ou de propriétaire sur la carte (un lecteur coche seulement ses propres tâches) et, pour proposer ou écrire, le forfait du propriétaire de la carte."
+        drafts: "Proposer et retirer des brouillons, écrire des tâches, des documents et des photos. L'utilisateur le choisit sur la page de consentement ; il faut aussi le rôle d'éditeur ou de propriétaire sur la carte (un lecteur coche seulement ses propres tâches) et, pour proposer ou écrire, le forfait du propriétaire de la carte."
       tokens: "Les jetons personnels (sdp_…) se créent dans le compte de l'utilisateur, avec les mêmes accès. Exemple d'appel :"
     guardrails:
       never: "L'IA ne modifie jamais la carte directement : elle pose des brouillons, que l'humain accepte, ajuste ou refuse un par un."
-      tasks: "Sur les tâches et la bibliothèque de documents, le carnet de l'équipe, l'IA écrit directement, comme un coéquipier, quand la personne le lui demande ; elle ne supprime jamais rien."
+      tasks: "Sur les tâches, la bibliothèque de documents et les photos, le carnet de l'équipe, l'IA écrit directement, comme un coéquipier, quand la personne le lui demande ; elle ne supprime rien, sauf les photos que la personne lui demande de retirer."
       rationale: "Chaque brouillon porte sa justification (rationale) : pourquoi, et avec quelles données."
       networks: "Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut : seuls les éditeurs peuvent les demander, et l'IA ne peut pas en proposer."
       roles: "L'IA agit avec le rôle de l'utilisateur sur chaque carte : un lecteur ne propose rien."
