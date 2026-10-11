@@ -15,6 +15,8 @@ type Props = {
   placeholder?: string
   className?: string
   initialQuery?: string
+  /** Another search endpoint (a public form has its own). */
+  endpoint?: string
 }
 
 /**
@@ -22,7 +24,7 @@ type Props = {
  * button, never as you type: the default provider (public Nominatim)
  * forbids autocomplete. Usable inside another form (it renders no <form>).
  */
-export function AddressSearch({ regionId, onSelect, label, placeholder, className, initialQuery = '' }: Props) {
+export function AddressSearch({ regionId, onSelect, label, placeholder, className, initialQuery = '', endpoint = '/geocode' }: Props) {
   const [query, setQuery] = useState(initialQuery)
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState<string | null>(null)
@@ -46,7 +48,7 @@ export function AddressSearch({ regionId, onSelect, label, placeholder, classNam
     try {
       const params = new URLSearchParams({ q })
       if (regionId) params.set('region_id', String(regionId))
-      const data = await api<GeocodeResponse>(`/geocode?${params}`, { signal: controller.signal })
+      const data = await api<GeocodeResponse>(`${endpoint}?${params}`, { signal: controller.signal })
       if (!data.available) {
         setStatus('disabled')
         setResults([])

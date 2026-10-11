@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { Copy, Pencil, Plus } from 'lucide-react'
+import { Copy, Inbox, Pencil, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, EmptyState } from '@/components/ui/Card'
 import { t } from '@/lib/i18n'
@@ -16,6 +16,15 @@ export default function OfferTemplatesIndex({ accounts }: { accounts: TemplateAc
       <Head title={t('offer_templates.index.title')} />
       <h1 className="text-2xl">{t('offer_templates.index.title')}</h1>
       <p className="max-w-2xl text-sm text-loam-600">{t('offer_templates.index.intro')}</p>
+      {accounts.length > 0 && (
+        <Link href="/request_forms" className="flex items-start gap-3 rounded-2xl bg-leaf-50 p-4 ring-1 ring-leaf-200 hover:bg-leaf-100">
+          <Inbox className="mt-0.5 h-5 w-5 shrink-0 text-leaf-700" aria-hidden />
+          <span>
+            <span className="block font-medium text-leaf-800">{t('offer_templates.index.requests_link')}</span>
+            <span className="block text-sm text-loam-600">{t('offer_templates.index.requests_hint')}</span>
+          </span>
+        </Link>
+      )}
 
       {accounts.length === 0 && <EmptyState title={t('offer_templates.index.empty_title')}>{t('offer_templates.index.empty_body')}</EmptyState>}
 

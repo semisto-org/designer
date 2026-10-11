@@ -20,6 +20,7 @@ class User < ApplicationRecord
   has_many :service_requests, dependent: :destroy
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
   has_many :offer_templates, as: :owner, dependent: :destroy
+  has_one :request_form, as: :owner, dependent: :destroy
 
   # A picture chosen in « Mon compte »; it wins over the Google one.
   has_one_attached :avatar do |attachable|
@@ -113,8 +114,17 @@ class User < ApplicationRecord
 
   def as_inertia
     # teamsCount: the "Équipes" link shows in the main nav once you are in a team.
+    # newRequests: the "Demandes" link shows once one of my accounts has a
+    # request form, with a dot while requests wait for a first call.
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
-      tourSeen: tour_seen_at.present?, accountKind: account_kind }
+      tourSeen: tour_seen_at.present?, accountKind: account_kind, newRequests: new_requests_count }
+  end
+
+  # Requests not called yet on the forms I read; nil without any form.
+  def new_requests_count
+    forms = RequestForm.where(owner: self).or(RequestForm.where(owner_type: "Organization", owner_id: organization_memberships.select(:organization_id)))
+    return nil unless forms.exists?
+    ProjectRequest.where(request_form: forms, status: "new").count
   end
 
   private

@@ -1,0 +1,15 @@
+<%= t(".greeting", name: @user.display_name) %>
+
+<%= t(".body", name: @request.name, form: @form.display_name) %>
+
+<%= t(".email") %> : <%= @request.email %>
+<% if @request.phone.present? %><%= t(".phone") %> : <%= @request.phone %>
+<% end %><% if @request.address.present? %><%= t(".address") %> : <%= @request.address %>
+<% end %><% if @request.parcels.any? %><%= t(".parcels", count: @request.parcels.size) %>
+<% end %>
+<% if @request.message.present? %>
+<%= @request.message %>
+<% end %>
+<%= t(".button") %> : <%= @url %>
+
+<%= t(".hint") %>

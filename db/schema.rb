@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -934,6 +934,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_220000) do
     t.index ["terranova_id"], name: "index_plant_varieties_on_terranova_id", unique: true
   end
 
+  create_table "project_requests", force: :cascade do |t|
+    t.bigint "request_form_id", null: false
+    t.bigint "map_id"
+    t.bigint "region_id"
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "phone"
+    t.string "address"
+    t.jsonb "parcels", default: [], null: false
+    t.geometry "boundary", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.geometry "center", limit: {:srid=>4326, :type=>"st_point"}
+    t.float "area_m2"
+    t.string "status", default: "new", null: false
+    t.jsonb "answers", default: {}, null: false
+    t.text "message"
+    t.text "team_notes"
+    t.datetime "status_changed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_project_requests_on_map_id"
+    t.index ["region_id"], name: "index_project_requests_on_region_id"
+    t.index ["request_form_id", "status"], name: "index_project_requests_on_request_form_id_and_status"
+    t.index ["request_form_id"], name: "index_project_requests_on_request_form_id"
+  end
+
   create_table "project_sheet_drafts", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.string "section", null: false
@@ -1032,6 +1057,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_220000) do
     t.index ["created_by_id"], name: "index_release_notes_on_created_by_id"
     t.index ["key"], name: "index_release_notes_on_key", unique: true, where: "(key IS NOT NULL)"
     t.index ["published_at", "published_on"], name: "index_release_notes_on_published_at_and_published_on"
+  end
+
+  create_table "request_forms", force: :cascade do |t|
+    t.string "owner_type", null: false
+    t.bigint "owner_id", null: false
+    t.string "slug", null: false
+    t.boolean "active", default: true, null: false
+    t.text "intro"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_request_forms_on_owner", unique: true
+    t.index ["slug"], name: "index_request_forms_on_slug", unique: true
   end
 
   create_table "service_requests", force: :cascade do |t|
@@ -1281,6 +1318,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_220000) do
   add_foreign_key "plant_observations", "users", on_delete: :nullify
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
+  add_foreign_key "project_requests", "maps", on_delete: :nullify
+  add_foreign_key "project_requests", "regions"
+  add_foreign_key "project_requests", "request_forms", on_delete: :cascade
   add_foreign_key "project_sheet_drafts", "maps", on_delete: :cascade
   add_foreign_key "project_sheet_drafts", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "project_sheet_links", "maps", on_delete: :cascade

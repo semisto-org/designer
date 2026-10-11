@@ -1,0 +1,11 @@
+<p><%= t(".greeting", name: @user.display_name) %></p>
+<p><%= t(".body", name: @request.name, form: @form.display_name) %></p>
+<ul>
+  <li><%= t(".email") %> : <a href="mailto:<%= @request.email %>"><%= @request.email %></a></li>
+  <% if @request.phone.present? %><li><%= t(".phone") %> : <%= @request.phone %></li><% end %>
+  <% if @request.address.present? %><li><%= t(".address") %> : <%= @request.address %></li><% end %>
+  <% if @request.parcels.any? %><li><%= t(".parcels", count: @request.parcels.size) %><% if @request.area_m2 %> · <%= number_to_human(@request.area_m2 / 10_000.0, precision: 2, strip_insignificant_zeros: true) %> ha<% end %></li><% end %>
+</ul>
+<% if @request.message.present? %><p style="white-space:pre-line;border-left:3px solid #ddd6c8;padding-left:12px;color:#4a443c"><%= @request.message %></p><% end %>
+<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:999px;text-decoration:none"><%= t(".button") %></a></p>
+<p style="color:#6b6257;font-size:14px"><%= t(".hint") %></p>
