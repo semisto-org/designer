@@ -94,7 +94,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: ActionsPanel, order: 30 },
   // Échanger (no number)
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10 },
-  { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: OfferPanel, requires: 'editor', order: 15 },
+  { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: OfferPanel, requires: 'offers', order: 15 },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20 },
   { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
 ]

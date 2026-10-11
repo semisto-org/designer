@@ -8,12 +8,22 @@ module OfferScoped
 
   included do
     before_action :set_map
+    before_action :require_offer_shown!
     before_action :require_offer_access!, unless: -> { request.format.html? && action_name == "show" && controller_name == "offers" }
     before_action :set_offer
   end
 
   private
     def offer_access? = Offer.usable_by?(@map, Current.user)
+
+    # A personal account has no offer builder to see, not even its upsell.
+    def require_offer_shown!
+      return if Offer.shown_to?(@map, Current.user)
+      respond_to do |format|
+        format.json { render json: { message: t("offers.errors.no_access") }, status: :forbidden }
+        format.any { redirect_to map_path(@map) }
+      end
+    end
 
     def require_offer_access!
       return if offer_access?

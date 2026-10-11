@@ -51,7 +51,7 @@ class OfferTemplatesController < ApplicationController
   private
     # The accounts I price for: me with a professional plan, then my teams.
     def accounts
-      @accounts ||= [ (Current.user if Entitlements.for(Current.user).offers?), *Current.user.organizations.order(:name) ].compact
+      @accounts ||= [ (Current.user if Current.user.professional? && Entitlements.for(Current.user).offers?), *Current.user.organizations.order(:name) ].compact
     end
 
     def writer?(account) = account == Current.user || (account.is_a?(Organization) && account.admin?(Current.user))

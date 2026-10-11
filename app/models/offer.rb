@@ -17,10 +17,20 @@ class Offer < ApplicationRecord
   validates :map_id, uniqueness: true
   validate :template_of_the_account
 
+  # Whether the builder shows at all: on a team map for its members, and on
+  # their own map for professional accounts (with or without the plan, which
+  # usable_by? then checks). A personal account never sees it on its own
+  # maps: the account kind decides what is shown, the plan what is allowed.
+  def self.shown_to?(map, user)
+    return false unless user
+    return map.organization.member?(user) if map.organization
+    map.owner_id == user.id && user.professional?
+  end
+
   def self.usable_by?(map, user)
     return false unless user
     return map.organization.member?(user) if map.organization
-    map.owner_id == user.id && Entitlements.for(user).offers?
+    map.owner_id == user.id && user.professional? && Entitlements.for(user).offers?
   end
 
   # A new offer, prefilled from the map: the template for the client's

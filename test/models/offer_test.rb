@@ -272,7 +272,11 @@ class OfferTest < ActiveSupport::TestCase
 
   test "who may use the offer builder" do
     owner = @map.owner
-    assert Offer.usable_by?(@map, owner), "billing off: every owner"
+    assert_not Offer.shown_to?(@map, owner), "a personal account: not even shown"
+    assert_not Offer.usable_by?(@map, owner)
+    owner.update!(account_kind: "professional")
+    assert Offer.shown_to?(@map, owner)
+    assert Offer.usable_by?(@map, owner), "billing off: every professional owner"
     assert_not Offer.usable_by?(@map, users(:alice)), "a guest of the map, maybe the client, never"
     assert_not Offer.usable_by?(@map, nil)
   end

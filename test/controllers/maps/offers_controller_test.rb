@@ -6,6 +6,7 @@ class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @map = maps(:ahinvaux) # owner: michael, viewer: alice
     @owner = users(:michael)
+    @owner.update!(account_kind: "professional")
     @colleague = users(:bob)
     @team = make_team("Semisto", admin: @owner, members: [ @colleague ])
   end
@@ -14,15 +15,10 @@ class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
     { settings: { designers: 2 }, scope: [ { id: "a", planting_type: "forest_garden", measure: 2_000 } ] }
   end
 
-  test "a guest of a map outside a team (maybe the client) sees what to do, never the numbers" do
+  test "a guest of a map outside a team (maybe the client) never sees the builder" do
     sign_in_as users(:alice)
     get map_offer_path(@map), headers: inertia_headers
-    assert_response :success
-    props = response.parsed_body["props"]
-    assert_equal "maps/offers/show", response.parsed_body["component"]
-    assert_equal false, props["canUseOffers"]
-    assert_equal "not_owner", props["unavailableReason"]
-    assert_nil props["offer"]
+    assert_redirected_to map_path(@map)
     assert_no_difference -> { Offer.count } do
       patch map_offer_path(@map), params: { offer: { inputs:, lock_version: 0 } }, as: :json
     end
@@ -74,10 +70,24 @@ class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
     @map.update!(organization: @team)
     sign_in_as users(:alice)
     get map_offer_path(@map), headers: inertia_headers
-    assert_equal false, response.parsed_body["props"]["canUseOffers"]
-    assert_equal "Semisto", response.parsed_body["props"]["team"]["name"]
+    assert_redirected_to map_path(@map)
     get map_offer_path(@map, format: :json)
     assert_response :forbidden
+  end
+
+  test "a personal account never sees the builder on its own map; a team map shows it to every member" do
+    @owner.update!(account_kind: "individual")
+    sign_in_as @owner
+    get map_offer_path(@map), headers: inertia_headers
+    assert_redirected_to map_path(@map)
+    get map_path(@map), headers: inertia_headers
+    assert_equal false, response.parsed_body["props"]["offerBuilder"]
+
+    @map.update!(organization: @team)
+    get map_path(@map), headers: inertia_headers
+    assert response.parsed_body["props"]["offerBuilder"]
+    get map_offer_path(@map), headers: inertia_headers
+    assert response.parsed_body["props"]["canUseOffers"]
   end
 
   test "stale saves are refused with the teammate's version" do

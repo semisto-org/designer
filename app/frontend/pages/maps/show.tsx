@@ -29,6 +29,8 @@ type Props = {
   layers: RegionLayerData[]
   features: MapFeature[]
   mapEntitlements: EntitlementsData
+  /** The « Offre » panel: for teams and professional accounts only. */
+  offerBuilder?: boolean
 }
 
 /** The map editor: full-screen map, panel rail, inspector of the selection. */
@@ -91,7 +93,7 @@ function panelFromUrl(): string | null {
   return PANELS.some((p) => p.id === id) ? id : null
 }
 
-function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }: Props & { setMap: (m: MapData) => void }) {
+function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, offerBuilder = false }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -252,7 +254,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }
     }
   }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures])
 
-  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : map.role === 'owner'))
+  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'offers' ? canEdit && offerBuilder : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
   const wideScreen = useMediaQuery(MODAL_PANEL_QUERY)
   const wideRail = useMediaQuery('(min-width: 768px)')

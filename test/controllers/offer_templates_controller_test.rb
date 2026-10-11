@@ -8,6 +8,7 @@ class OfferTemplatesControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     @admin = users(:michael)
+    @admin.update!(account_kind: "professional")
     @member = users(:bob)
     @team = make_team("Semisto", admin: @admin, members: [ @member ])
   end
