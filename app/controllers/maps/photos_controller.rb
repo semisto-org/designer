@@ -1,5 +1,6 @@
-# Photos of a map: JSON API of the editor's « Photos » panel. Viewers read,
-# editors upload and edit. Files never leave through a public URL: `image`
+# Photos of a map: JSON API of the editor's « Photos » panel and the full
+# page (browse, sort, file into albums). Viewers read, editors upload and
+# edit. Files never leave through a public URL: `image`
 # checks the role on the map, then redirects to a short-lived link.
 module Maps
   class PhotosController < ApplicationController
@@ -8,12 +9,19 @@ module Maps
 
     before_action :set_map
     before_action :require_editor!, except: %i[index same_spot image]
+    before_action :set_bulk_photos, only: %i[bulk_update bulk_destroy]
     before_action :set_photo, only: %i[update destroy same_spot image]
 
     IMAGE_SIZES = %w[thumb large original].freeze
     LINK_LIFETIME = 5.minutes
 
     def index
+      if request.format.html?
+        return render inertia: "maps/photos/index", props: {
+          map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role),
+          canEdit: editor?
+        }
+      end
       scope = @map.photos.includes(:uploaded_by, image_attachment: :blob)
       if params[:feature_id].present?
         feature = @map.features.find(params[:feature_id])
@@ -56,6 +64,19 @@ module Maps
       head :no_content
     end
 
+    # Files several photos at once into an album (or out of any album).
+    def bulk_update
+      album_id = params[:photo_album_id].presence
+      album = album_id && @map.photo_albums.find(album_id)
+      @photos.update_all(photo_album_id: album&.id, updated_at: Time.current)
+      render json: { photos: @map.photos.where(id: @photos.ids).includes(:uploaded_by, image_attachment: :blob).map(&:as_inertia), albums: albums_json }
+    end
+
+    def bulk_destroy
+      @photos.find_each(&:destroy!)
+      head :no_content
+    end
+
     # Other photos of the same spot, for the before/after comparison.
     def same_spot
       render json: { photos: @photo.same_spot.map(&:as_inertia) }
@@ -82,6 +103,12 @@ module Maps
 
       def set_photo
         @photo = @map.photos.find(params[:id])
+      end
+
+      def set_bulk_photos
+        ids = Array(params[:ids]).map(&:to_i).uniq.first(2000)
+        return render json: { message: t("soil_photos.errors.none_selected") }, status: :unprocessable_entity if ids.empty?
+        @photos = @map.photos.where(id: ids)
       end
 
       def storage_link(target, download:)

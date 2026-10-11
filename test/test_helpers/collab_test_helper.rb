@@ -1,7 +1,8 @@
 # Helpers for the collaboration tests: extra users and a map with a team.
 module CollabTestHelper
   def make_user(name, email: nil)
-    User.create!(name:, email_address: email || "#{name.parameterize}-#{SecureRandom.hex(3)}@example.org")
+    # Has answered the welcome page, like the fixtures.
+    User.create!(name:, email_address: email || "#{name.parameterize}-#{SecureRandom.hex(3)}@example.org", account_kind: "individual")
   end
 
   # Adds a member with a role to the map (bypasses the invitation flow).

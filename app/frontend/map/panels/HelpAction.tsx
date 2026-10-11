@@ -19,6 +19,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   soil: 'analyser-son-sol',
   canopy: 'les-arbres-deja-en-place',
   photos: 'photos-et-suivi-dans-le-temps',
+  documents: 'rassembler-ses-documents',
   palette: 'construire-sa-palette-et-ses-patches',
   'plant-list': 'la-liste-de-plants-et-la-commande',
   elements: 'dessiner-l-existant',

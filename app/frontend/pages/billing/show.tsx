@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, Link, router, usePage } from '@inertiajs/react'
 import { CircleCheck, FlaskConical, Info, Landmark, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { CheckoutButton } from '@/components/billing/CheckoutButton'
@@ -9,13 +9,18 @@ import { Card } from '@/components/ui/Card'
 import { tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
 import { formatDate, formatMoney, formatPrice } from '@/lib/money'
+import type { SharedProps } from '@/types'
 import type { BillingData, CatalogKey, CatalogPlan, GrantData, InvoiceRequestStatus, InvoiceRequestSummary } from '@/types/billing'
 
 const PLAN_ORDER: CatalogKey[] = ['free', 'yearly', 'atelier', 'bureau']
+// A pro account sees its plans first; nothing is hidden.
+const PRO_PLAN_ORDER: CatalogKey[] = ['free', 'atelier', 'bureau', 'yearly']
 const POLL_MS = 3000
 const POLL_MAX = 8
 
 export default function BillingShow({ billing }: { billing: BillingData }) {
+  const { currentUser } = usePage().props as unknown as SharedProps
+  const planOrder = currentUser?.accountKind === 'professional' ? PRO_PLAN_ORDER : PLAN_ORDER
   const catalog = (key: CatalogKey) => billing.catalog.find((plan) => plan.key === key) as CatalogPlan
   const confirmed = billing.plan !== 'free' || billing.payments.some((p) => Date.now() - Date.parse(p.paidAt) < 30 * 60_000) || billing.drone.length > 0
   const waiting = billing.checkout === 'success' && !confirmed
@@ -80,7 +85,7 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
 
       <h2 className="mt-12 text-lg">{t('billing.plans_title')}</h2>
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {PLAN_ORDER.map((key) => (
+        {planOrder.map((key) => (
           <div key={key} ref={billing.highlight === key ? highlighted : undefined} className="flex">
             <PlanCard
               plan={catalog(key)}

@@ -293,4 +293,50 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes image.get_fields, "exif-ifd3-GPSLatitude"
     assert_equal "image/jpeg", variant.image.blob.content_type
   end
+  test "the full page opens for a viewer" do
+    sign_in_as users(:alice)
+    get map_photos_path(@map), headers: inertia_headers
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "maps/photos/index", body["component"]
+    assert_equal false, body["props"]["canEdit"]
+    assert_equal @map.name, body["props"]["map"]["name"]
+  end
+
+  test "an editor files several photos into an album at once, then out of it" do
+    first = create_photo
+    second = create_photo(salt: 2)
+    album = @map.photo_albums.create!(name: "Verger")
+    sign_in_as users(:michael)
+    patch bulk_map_photos_path(@map), params: { ids: [ first.id, second.id ], photo_album_id: album.id }, as: :json
+    assert_response :success
+    assert_equal [ album.id, album.id ], [ first.reload.photo_album_id, second.reload.photo_album_id ]
+    assert_equal 2, response.parsed_body["albums"].sole["photosCount"]
+    patch bulk_map_photos_path(@map), params: { ids: [ first.id ], photo_album_id: nil }, as: :json
+    assert_nil first.reload.photo_album_id
+  end
+
+  test "bulk actions stay within the map and need editors" do
+    photo = create_photo
+    other = Map.create!(name: "Ailleurs", owner: users(:bob), region: regions(:wallonia))
+    foreign_album = other.photo_albums.create!(name: "Ailleurs")
+    sign_in_as users(:alice)
+    patch bulk_map_photos_path(@map), params: { ids: [ photo.id ] }, as: :json
+    assert_response :forbidden
+    sign_in_as users(:michael)
+    patch bulk_map_photos_path(@map), params: { ids: [ photo.id ], photo_album_id: foreign_album.id }, as: :json
+    assert_response :not_found
+    patch bulk_map_photos_path(@map), params: { ids: [] }, as: :json
+    assert_response :unprocessable_entity
+  end
+
+  test "an editor deletes several photos at once" do
+    first = create_photo
+    second = create_photo(salt: 2)
+    kept = create_photo(salt: 3)
+    sign_in_as users(:michael)
+    delete bulk_map_photos_path(@map), params: { ids: [ first.id, second.id ] }, as: :json
+    assert_response :no_content
+    assert_equal [ kept.id ], @map.photos.ids
+  end
 end

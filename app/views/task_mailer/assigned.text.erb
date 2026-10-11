@@ -1,0 +1,12 @@
+<%= t(".greeting") %>
+
+<%= t(".body", assigner: @assigner.display_name, map: @map.name) %>
+
+<%= @task.title %>
+<% if @task.notes.present? %><%= @task.notes %>
+<% end %><% if @task.due_on %>
+<%= t(".due", date: I18n.l(@task.due_on, format: :long)) %>
+<% end %>
+<%= t(".button") %> : <%= @url %>
+
+<%= t(".footer") %>

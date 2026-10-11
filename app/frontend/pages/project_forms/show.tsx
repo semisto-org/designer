@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
 import { Wordmark } from '@/components/Logo'
+import { ProjectDocuments } from '@/documents/ProjectDocuments'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { api } from '@/lib/api'
@@ -18,7 +19,7 @@ import type { ProjectFormPayload } from '@/types/journey'
  * account and without the map. Autosave, then « J'ai terminé » tells the
  * people working on the map.
  */
-export default function ProjectForm({ token, mapName, invitedBy, project, progress: initialProgress, schema, canEdit, submittedAt: initialSubmittedAt }: ProjectFormPayload) {
+export default function ProjectForm({ token, mapName, invitedBy, project, progress: initialProgress, schema, canEdit, submittedAt: initialSubmittedAt, documents, documentLimits }: ProjectFormPayload) {
   const endpoint = `/fiche-projet/${token}`
   const sheet = useProjectSheet(endpoint, project, initialProgress, canEdit)
   const sections = useMemo(() => schema.sections.map((s) => s.key), [schema])
@@ -144,6 +145,16 @@ export default function ProjectForm({ token, mapName, invitedBy, project, progre
               {sendFailed && <p className="mt-2 text-right text-sm text-clay-600">{t('journey.form.errors.submit')}</p>}
             </Card>
           </div>
+
+          <ProjectDocuments
+            className="mt-8 lg:ml-[16.5rem]"
+            endpoint={`${endpoint}/documents`}
+            initial={documents}
+            limits={documentLimits}
+            canEdit={canEdit}
+            fields={{}}
+            intro={t('documents.project.intro_form')}
+          />
         </>
       )}
     </div>

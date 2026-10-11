@@ -45,6 +45,20 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     assert_equal "bob@example.org", @user.email_address
   end
 
+  test "switches between individual and pro, and keeps the name" do
+    sign_in_as @user
+    patch "/account", params: { user: { account_kind: "professional" } }
+    assert_redirected_to account_path
+    assert_equal I18n.t("account.kind.saved"), flash[:notice]
+    assert_equal [ "professional", "Bob" ], @user.reload.values_at(:account_kind, :name)
+
+    get "/account", headers: inertia_headers
+    assert_equal "professional", response.parsed_body["props"]["account"]["accountKind"]
+
+    patch "/account", params: { user: { account_kind: "boss" } }
+    assert_equal "professional", @user.reload.account_kind
+  end
+
   test "a deletion request e-mails Semisto and confirms to the user, and deletes nothing" do
     sign_in_as @user
     assert_enqueued_emails 2 do

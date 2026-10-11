@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import type { MapGeoJSONFeature, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { MapViewMenu } from '@/components/map_views/MapViews'
 import { Dialog } from '@/components/ui/Dialog'
 import { Flash } from '@/components/ui/Flash'
 import { api } from '@/lib/api'
@@ -45,6 +46,7 @@ export default function MapShow(props: Props) {
           <h1 className="truncate text-xl leading-none text-loam-900">{map.name}</h1>
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
+        <MapViewMenu mapId={map.id} />
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
         <div className="flex-1" />
@@ -79,11 +81,22 @@ function headerArea(m2: number): string {
   return t('maps.show.area_ares', { count: Math.round(m2 / 100) })
 }
 
+function panelFromUrl(): string | null {
+  if (typeof window === 'undefined') return null
+  const url = new URL(window.location.href)
+  const id = url.searchParams.get('panel')
+  if (!id) return null
+  url.searchParams.delete('panel')
+  window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
+  return PANELS.some((p) => p.id === id) ? id : null
+}
+
 function EditorShell({ map, setMap, layers, features: initial, mapEntitlements }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  const [activePanel, setActivePanel] = useState<string | null>(map.boundary ? null : 'terrain')
+  // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
+  const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
   const [pickedStage, setPickedStage] = useState<MapStage | null>(null)
   const focusStage = pickedStage ?? map.stage
   const [drawingShape, setDrawingShape] = useState<DrawShape | 'edit' | null>(null)

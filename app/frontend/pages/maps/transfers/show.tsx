@@ -130,7 +130,7 @@ function PlanImpact({ impact }: { impact: PlanImpactData }) {
         <CircleCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
         <div>
           <p className="font-semibold">{tf('transfer.page.plan_title')}</p>
-          <p className="mt-0.5 text-sm">{tf('transfer.impact.fine', plan)}</p>
+          <p className="mt-0.5 text-sm">{impact.maxMaps >= 1000 ? tf('transfer.impact.fine_unlimited', plan) : tf('transfer.impact.fine', plan)}</p>
         </div>
       </div>
     )

@@ -29,7 +29,7 @@ Les membres de Semisto en ordre de cotisation reçoivent par e-mail un **code pr
 Sans promotion, dès l'ouverture :
 
 - **Atelier** : 49 € par mois, jusqu'à 5 cartes.
-- **Bureau d'études** : 99 € par mois, jusqu'à 20 cartes.
+- **Bureau d'études** : 99 € par mois, cartes illimitées.
 
 Ce sont des abonnements mensuels, résiliables à tout moment depuis le portail de facturation.
 

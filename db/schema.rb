@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -297,6 +297,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.index ["user_id"], name: "index_invoice_requests_on_user_id"
   end
 
+  create_table "map_documents", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "uploaded_by_id"
+    t.bigint "project_sheet_link_id"
+    t.string "title", limit: 200, null: false
+    t.text "description"
+    t.string "tags", default: [], null: false, array: true
+    t.string "origin", default: "library", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
+    t.index ["map_id"], name: "index_map_documents_on_map_id"
+    t.index ["project_sheet_link_id"], name: "index_map_documents_on_project_sheet_link_id"
+    t.index ["tags"], name: "index_map_documents_on_tags", using: :gin
+    t.index ["uploaded_by_id"], name: "index_map_documents_on_uploaded_by_id"
+  end
+
   create_table "map_features", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.string "layer", default: "existing", null: false
@@ -479,6 +496,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "water_settings", default: {}, null: false
+    t.datetime "tasks_seeded_at"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["organization_id"], name: "index_maps_on_organization_id"
     t.index ["owner_id"], name: "index_maps_on_owner_id"
@@ -1085,6 +1103,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.index ["stripe_event_id"], name: "index_stripe_events_on_stripe_event_id", unique: true
   end
 
+  create_table "task_lists", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.string "key"
+    t.integer "position", default: 0, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_task_lists_on_created_by_id"
+    t.index ["map_id"], name: "index_task_lists_on_map_id"
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "task_list_id", null: false
+    t.string "title", null: false
+    t.text "notes"
+    t.string "key"
+    t.integer "position", default: 0, null: false
+    t.bigint "assignee_id"
+    t.date "due_on"
+    t.datetime "completed_at"
+    t.bigint "completed_by_id"
+    t.string "tags", default: [], null: false, array: true
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignee_id", "completed_at"], name: "index_tasks_on_assignee_id_and_completed_at"
+    t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
+    t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"
+    t.index ["created_by_id"], name: "index_tasks_on_created_by_id"
+    t.index ["map_id"], name: "index_tasks_on_map_id"
+    t.index ["task_list_id", "position"], name: "index_tasks_on_task_list_id_and_position"
+    t.index ["task_list_id"], name: "index_tasks_on_task_list_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.citext "email_address", null: false
     t.string "name"
@@ -1104,8 +1158,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.string "sign_in_code_digest"
     t.datetime "sign_in_code_sent_at"
     t.integer "sign_in_code_attempts", default: 0, null: false
+    t.string "account_kind"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
+    t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying, 'professional'::character varying]::text[])", name: "users_account_kind_check"
   end
 
   create_table "water_sources", force: :cascade do |t|
@@ -1151,6 +1207,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "invoice_requests", "users"
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify
+  add_foreign_key "map_documents", "maps"
+  add_foreign_key "map_documents", "project_sheet_links", on_delete: :nullify
+  add_foreign_key "map_documents", "users", column: "uploaded_by_id", on_delete: :nullify
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
@@ -1236,5 +1295,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
   add_foreign_key "soil_samples", "maps"
   add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "task_lists", "maps", on_delete: :cascade
+  add_foreign_key "task_lists", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "tasks", "maps", on_delete: :cascade
+  add_foreign_key "tasks", "task_lists", on_delete: :cascade
+  add_foreign_key "tasks", "users", column: "assignee_id", on_delete: :nullify
+  add_foreign_key "tasks", "users", column: "completed_by_id", on_delete: :nullify
+  add_foreign_key "tasks", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "water_sources", "maps"
 end

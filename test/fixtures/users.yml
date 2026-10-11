@@ -1,11 +1,14 @@
 michael:
   email_address: michael@example.org
   name: Michael
+  account_kind: individual
 
 alice:
   email_address: alice@example.org
   name: Alice
+  account_kind: individual
 
 bob:
   email_address: bob@example.org
   name: Bob
+  account_kind: individual

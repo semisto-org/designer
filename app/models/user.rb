@@ -23,6 +23,10 @@ class User < ApplicationRecord
   has_secure_password validations: false
   validates :password, length: { minimum: 10, maximum: 72 }, confirmation: true, allow_nil: true
 
+  # Who the person designs for (welcome page, « Mon compte »). Null until chosen.
+  ACCOUNT_KINDS = %w[individual professional].freeze
+  validates :account_kind, inclusion: { in: ACCOUNT_KINDS }, allow_nil: true
+
   SIGN_IN_TTL = 20.minutes
   SIGN_IN_CODE_MAX_ATTEMPTS = 5
 
@@ -62,6 +66,9 @@ class User < ApplicationRecord
 
   def password? = password_digest.present?
 
+  def professional? = account_kind == "professional"
+  def account_kind_chosen? = account_kind.present?
+
   def self.from_google(auth)
     info = auth.info
     user = find_by(google_uid: auth.uid) || find_or_initialize_by(email_address: info.email.to_s.downcase)
@@ -89,7 +96,7 @@ class User < ApplicationRecord
   def as_inertia
     # teamsCount: the "Équipes" link shows in the main nav once you are in a team.
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
-      tourSeen: tour_seen_at.present? }
+      tourSeen: tour_seen_at.present?, accountKind: account_kind }
   end
 
   private

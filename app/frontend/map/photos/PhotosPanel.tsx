@@ -1,6 +1,7 @@
+import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
 import {
-  AlertCircle, Camera, Check, CheckCircle2, Columns2, FolderPlus, ImagePlus, Loader2, MapPin, MapPinOff, Paintbrush, Pencil, RotateCw, Trash2, X,
+  AlertCircle, Camera, Check, CheckCircle2, Columns2, FolderPlus, ImagePlus, Loader2, MapPin, MapPinOff, Maximize2, Paintbrush, Pencil, RotateCw, Trash2, X,
 } from 'lucide-react'
 import { useMemo, useRef, useState, type DragEvent } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -79,7 +80,12 @@ export default function PhotosPanel() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-loam-600">{t('soil_photos.panel.intro')}</p>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm text-loam-600">{t('soil_photos.panel.intro')}</p>
+        <Link href={`/maps/${mapId}/photos`} className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium text-prune-700 ring-1 ring-inset ring-prune-200 hover:bg-prune-50">
+          <Maximize2 className="h-4 w-4" aria-hidden />{t('photo_pages.open_full_page')}
+        </Link>
+      </div>
 
       {editor.canEdit ? (
         <div
@@ -281,7 +287,7 @@ function Tile({ mapId, photo, onClick, selected }: { mapId: number; photo: MapPh
   )
 }
 
-function UploadList({ uploads, onClear }: { uploads: UploadItem[]; onClear?: () => void }) {
+export function UploadList({ uploads, onClear }: { uploads: UploadItem[]; onClear?: () => void }) {
   return (
     <div className="space-y-1.5" aria-live="polite">
       <ul className="space-y-1.5">

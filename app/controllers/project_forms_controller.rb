@@ -18,7 +18,10 @@ class ProjectFormsController < ApplicationController
       progress: @map.project_sheet.progress,
       schema: ProjectSheet.schema_json,
       canEdit: !@map.read_only_by_plan?,
-      submittedAt: @link.submitted_at&.iso8601
+      submittedAt: @link.submitted_at&.iso8601,
+      documents: @link.documents.newest_first.includes(file_attachment: :blob, thumbnail_attachment: :blob)
+        .map { _1.as_inertia(url: ->(doc, size) { project_form_document_file_path(@link.token, doc, size:) }) },
+      documentLimits: { maxBytes: MapDocument::MAX_BYTES, extensions: MapDocument::EXTENSIONS }
     }
   end
 
