@@ -90,12 +90,15 @@ export type SpeciesSheet = SpeciesSummary & {
 }
 
 export type ObservationStats = {
+  /** Plants in the ground: planted, or with an observation. */
   plants: number
   gardens: number
+  /** Plants with at least one observation; the counts below are theirs. */
+  observed: number
   established: number
   struggling: number
   dead: number
-  survivalRate: number
+  survivalRate: number | null
   averageVigor: number | null
 }
 

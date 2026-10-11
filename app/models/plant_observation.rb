@@ -41,18 +41,28 @@ class PlantObservation < ApplicationRecord
     where(id: select("DISTINCT ON (map_feature_id) id").order(:map_feature_id, observed_on: :desc, id: :desc))
   }
 
-  # Anonymous counts for a species sheet, from the latest observation of each
-  # plant of every garden. Never names a map or a person.
+  # Anonymous counts for a species sheet, over every garden. A plant counts as
+  # soon as it is in the ground (« planté », with a planting date) or has an
+  # observation; survival and vigour come from the latest observation of the
+  # plants that have one. Never names a map or a person. Nil when no garden
+  # holds the species yet.
   def self.stats_for(species)
-    latest = latest_per_plant.where(species_id: species.id).where(map_id: Map.active.select(:id))
+    maps = Map.active.select(:id)
+    latest = latest_per_plant.where(species_id: species.id).where(map_id: maps)
+    in_ground = MapFeature.active.where(kind: PlantableFeature::PLANT, map_id: maps)
+                          .where("map_features.properties->>'species_id' = ?", species.id.to_s)
+                          .where("map_features.properties->>'planted_on' IS NOT NULL OR map_features.id IN (?)", latest.select(:map_feature_id))
+    plants = in_ground.count
+    return nil if plants.zero?
+
     counts = latest.group(:survival).count
-    total = counts.values.sum
-    return nil if total.zero?
+    observed = counts.values.sum
     alive = counts.fetch("established", 0) + counts.fetch("struggling", 0)
     {
-      plants: total, gardens: latest.distinct.count(:map_id),
+      plants:, gardens: in_ground.distinct.count(:map_id), observed:,
       established: counts.fetch("established", 0), struggling: counts.fetch("struggling", 0), dead: counts.fetch("dead", 0),
-      survivalRate: (alive * 100.0 / total).round, averageVigor: latest.where.not(vigor: nil).average(:vigor)&.to_f&.round(1)
+      survivalRate: observed.zero? ? nil : (alive * 100.0 / observed).round,
+      averageVigor: latest.where.not(vigor: nil).average(:vigor)&.to_f&.round(1)
     }
   end
 

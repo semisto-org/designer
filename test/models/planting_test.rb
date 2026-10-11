@@ -174,6 +174,7 @@ class PlantingTest < ActiveSupport::TestCase
 
     stats = PlantObservation.stats_for(plant_species(:apple))
     assert_equal 2, stats[:plants]
+    assert_equal 2, stats[:observed]
     assert_equal 1, stats[:gardens]
     assert_equal 1, stats[:established]
     assert_equal 1, stats[:dead]
@@ -184,6 +185,30 @@ class PlantingTest < ActiveSupport::TestCase
     assert_not plant.plant_observations.new(observed_on: Date.current + 2, survival: "dead").valid?
     assert plant.plant_observations.new(observed_on: Date.current + 1, survival: "dead").valid?, "a day ahead for time zones"
     assert_not @patch.plant_observations.new(observed_on: Date.current, survival: "dead").valid?
+  end
+
+  test "observations: a planted plant counts before any observation, a planned one does not" do
+    plant!(plant_species(:alder))
+    assert_nil PlantObservation.stats_for(plant_species(:alder)), "a plant not in the ground yet"
+
+    plant!(plant_species(:alder), planted_on: "2026-09-30")
+    stats = PlantObservation.stats_for(plant_species(:alder))
+    assert_equal 1, stats[:plants]
+    assert_equal 1, stats[:gardens]
+    assert_equal 0, stats[:observed]
+    assert_nil stats[:survivalRate]
+    assert_nil stats[:averageVigor]
+
+    observed = plant!(plant_species(:alder), lng: 4.9062)
+    observed.plant_observations.create!(observed_on: "2026-10-01", survival: "established")
+    stats = PlantObservation.stats_for(plant_species(:alder))
+    assert_equal 2, stats[:plants], "an observed plant is in the ground, planting date or not"
+    assert_equal 1, stats[:observed]
+    assert_equal 100, stats[:survivalRate]
+
+    plant!(plant_species(:alder), planted_on: "2026-09-30", lng: 4.9064).update!(status: "draft")
+    @map.update!(archived_at: Time.current)
+    assert_nil PlantObservation.stats_for(plant_species(:alder)), "archived maps are left out"
   end
 
   test "map hardiness comes from its region" do
