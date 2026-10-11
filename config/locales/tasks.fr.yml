@@ -74,6 +74,8 @@ fr:
       count: "%{done}/%{total}"
       empty: "Aucune tâche dans cette liste pour l'instant."
       all_done: "Tout est fait ici. Bravo !"
+      unfold: "Revoir les %{count} tâches"
+      step: "Étape %{n}"
       done_hidden:
         one: "1 tâche faite, masquée"
         other: "%{count} tâches faites, masquées"
@@ -106,6 +108,7 @@ fr:
       mark_pending: "Marquer « %{title} » comme à faire"
       open_in_map: "Ouvrir dans la carte"
       map_says_done: "La carte montre que c'est fait"
+      tick_now: "Cocher"
       due:
         today: "Aujourd'hui"
         tomorrow: "Demain"

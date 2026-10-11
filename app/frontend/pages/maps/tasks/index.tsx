@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, GripVertical, MapPinned, MoreHorizontal, Pencil, Plus, Sprout, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, ExternalLink, GripVertical, MapPinned, MoreHorizontal, Pencil, Plus, Sprout, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
@@ -21,6 +21,9 @@ type Props = Board & {
   today: string
 }
 
+// Semisto's default lists, in the order of the journey's steps (TaskList::Defaults).
+const STEPS = ['observe', 'map', 'design', 'plant']
+
 type AssigneeFilter = 'all' | 'me' | 'none' | number
 
 const tagged = (task: TaskData) => ({ properties: { tags: task.tags } })
@@ -39,6 +42,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
   const [tag, setTag] = useState<string | null>(null)
   const [month, setMonth] = useState<string | null>(null)
   const [showDone, setShowDone] = useState(false)
+  const [overdueOnly, setOverdueOnly] = useState(false)
   const [openId, setOpenId] = useState<number | null>(null)
   const [newList, setNewList] = useState(false)
   const [dragId, setDragId] = useState<number | null>(null)
@@ -94,9 +98,10 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
     if (typeof assignee === 'number' && task.assignee?.id !== assignee) return false
     if (tag && !hasTag(tagged(task), tag)) return false
     if (month && (!task.dueOn || monthOfDay(task.dueOn) !== month)) return false
+    if (overdueOnly && (task.completedAt || !task.dueOn || task.dueOn >= today)) return false
     return true
   }
-  const filtering = assignee !== 'all' || tag != null || month != null
+  const filtering = assignee !== 'all' || tag != null || month != null || overdueOnly
   const done = board.tasks.filter((x) => x.completedAt).length
   const overdue = board.tasks.filter((x) => !x.completedAt && x.dueOn && x.dueOn < today).length
   const visibleCount = board.tasks.filter((x) => matches(x) && (showDone || !x.completedAt)).length
@@ -172,7 +177,12 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
               {t('tasks.filters.show_done')}
             </label>
             {overdue > 0 && (
-              <span className="rounded-full bg-clay-50 px-2.5 py-1 text-sm font-medium text-clay-700">{t('tasks.filters.overdue', { count: overdue })}</span>
+              <button
+                type="button" aria-pressed={overdueOnly} onClick={() => setOverdueOnly((v) => !v)}
+                className={clsx('rounded-full px-2.5 py-1 text-sm font-medium', overdueOnly ? 'bg-clay-600 text-white' : 'bg-clay-50 text-clay-700 hover:bg-clay-100')}
+              >
+                {t('tasks.filters.overdue', { count: overdue })}
+              </button>
             )}
             {month && <span className="rounded-full bg-prune-50 px-2.5 py-1 text-sm font-medium text-prune-700">{t('tasks.year.month_filter', { month: monthLabel })}</span>}
           </div>
@@ -200,7 +210,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
               return (
                 <ListSection
                   key={list.id} list={list} all={all} shown={shown} today={today} canEdit={canEdit}
-                  first={index === 0} last={index === board.lists.length - 1} hiddenDone={showDone ? 0 : all.filter((x) => x.completedAt && matches(x)).length}
+                  filtering={filtering} first={index === 0} last={index === board.lists.length - 1} hiddenDone={showDone ? 0 : all.filter((x) => x.completedAt && matches(x)).length}
                   openId={openId} setOpenId={setOpenId} currentUserId={currentUser.id}
                   onToggle={toggle} onCreate={(title) => createTask(list, title)}
                   onRename={(name) => updateList(list, { name })} onMove={(delta) => void updateList(list, { position: index + delta })}
@@ -236,10 +246,10 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
 }
 
 function ListSection({
-  list, all, shown, today, canEdit, first, last, hiddenDone, openId, setOpenId, currentUserId,
+  list, all, shown, today, canEdit, filtering, first, last, hiddenDone, openId, setOpenId, currentUserId,
   onToggle, onCreate, onRename, onMove, onDelete, dragId, setDragId, onDrop, renderDetail,
 }: {
-  list: TaskListData; all: TaskData[]; shown: TaskData[]; today: string; canEdit: boolean; first: boolean; last: boolean; hiddenDone: number
+  list: TaskListData; all: TaskData[]; shown: TaskData[]; today: string; canEdit: boolean; filtering: boolean; first: boolean; last: boolean; hiddenDone: number
   openId: number | null; setOpenId: (id: number | null) => void; currentUserId: number
   onToggle: (task: TaskData) => void; onCreate: (title: string) => Promise<boolean>
   onRename: (name: string) => Promise<boolean>; onMove: (delta: number) => void; onDelete: () => void
@@ -250,6 +260,11 @@ function ListSection({
   const [menu, setMenu] = useState(false)
   const done = all.filter((x) => x.completedAt).length
   const percent = all.length ? Math.round((done / all.length) * 100) : 0
+  const complete = all.length > 0 && done === all.length
+  const [unfolded, setUnfolded] = useState(false)
+  // A finished list folds to its header, unless filters or « tâches faites » ask for its tasks.
+  const folded = complete && !unfolded && !filtering && hiddenDone > 0
+  const step = list.key ? STEPS.indexOf(list.key) + 1 : 0
 
   return (
     <section
@@ -259,6 +274,15 @@ function ListSection({
       onDrop={(e) => onDrop(e, all.length)}
     >
       <header className="flex items-start gap-3">
+        {step > 0 && (
+          <span
+            title={t('tasks.lists.step', { n: step })}
+            className={clsx('mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-semibold', complete ? 'bg-leaf-600 text-white' : 'bg-prune-600 text-white')}
+          >
+            {complete ? <Check className="h-4 w-4" strokeWidth={3} aria-hidden /> : step}
+            <span className="sr-only">{t('tasks.lists.step', { n: step })}</span>
+          </span>
+        )}
         <div className="min-w-0 flex-1">
           {renaming ? (
             <form onSubmit={async (e) => { e.preventDefault(); const name = new FormData(e.currentTarget).get('name') as string; if (await onRename(name)) setRenaming(false) }}>
@@ -291,6 +315,14 @@ function ListSection({
         )}
       </header>
 
+      {folded ? (
+        <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-leaf-800">
+          {t('tasks.lists.all_done')}
+          <button type="button" onClick={() => setUnfolded(true)} className="font-medium text-prune-700 hover:underline">
+            {t('tasks.lists.unfold', { count: all.length })}
+          </button>
+        </p>
+      ) : (
       <ul className="mt-3 divide-y divide-loam-900/5">
         {shown.map((task) => (
           <li
@@ -309,10 +341,10 @@ function ListSection({
           </li>
         ))}
       </ul>
+      )}
       {all.length === 0 && <p className="py-2 text-sm text-loam-500">{t('tasks.lists.empty')}</p>}
-      {all.length > 0 && done === all.length && hiddenDone > 0 && <p className="py-2 text-sm text-leaf-700">{t('tasks.lists.all_done')}</p>}
-      {hiddenDone > 0 && done !== all.length && <p className="pt-2 text-sm text-loam-400">{t('tasks.lists.done_hidden', { count: hiddenDone })}</p>}
-      {canEdit && <NewTaskInput onCreate={onCreate} />}
+      {hiddenDone > 0 && !complete && <p className="pt-2 text-sm text-loam-400">{t('tasks.lists.done_hidden', { count: hiddenDone })}</p>}
+      {canEdit && !folded && <NewTaskInput onCreate={onCreate} />}
     </section>
   )
 }
@@ -349,12 +381,22 @@ function TaskRow({ task, today, open, canEdit, canTick, onToggle, onOpen, onDrag
           <span className={clsx('text-[15px] leading-snug', done ? 'text-loam-400 line-through decoration-loam-300' : 'text-loam-900 group-hover:text-prune-800')}>
             {task.title}
           </span>
-          {!done && task.mapSaysDone && (
-            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2 py-0.5 align-middle text-sm text-leaf-800">
-              <MapPinned className="h-3.5 w-3.5" aria-hidden />{t('tasks.task.map_says_done')}
-            </span>
+          {!done && !open && task.notes && (
+            <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-loam-500">{task.notes}</span>
           )}
         </button>
+        {!done && task.mapSaysDone && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2 py-0.5 text-sm text-leaf-800">
+              <MapPinned className="h-3.5 w-3.5" aria-hidden />{t('tasks.task.map_says_done')}
+            </span>
+            {canTick && (
+              <button type="button" onClick={onToggle} className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-sm font-semibold text-leaf-700 ring-1 ring-inset ring-leaf-600 hover:bg-leaf-600 hover:text-white">
+                <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden />{t('tasks.task.tick_now')}
+              </button>
+            )}
+          </div>
+        )}
         {(task.tags.length > 0 || task.dueOn || task.assignee) && (
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}

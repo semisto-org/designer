@@ -128,14 +128,14 @@ export function YearStrip({ tasks, today, month, onMonth }: {
     counts.set(key, (counts.get(key) ?? 0) + 1)
   }
   return (
-    <section aria-labelledby="year-strip-title" className="rounded-2xl bg-white/70 p-4 ring-1 ring-loam-900/10">
+    <section aria-labelledby="year-strip-title" className="rounded-2xl bg-white/70 px-4 py-3 ring-1 ring-loam-900/10">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 id="year-strip-title" className="font-serif text-lg font-semibold text-prune-800">{t('tasks.year.title')}</h2>
         {month
           ? <button type="button" onClick={() => onMonth(null)} className="text-sm font-medium text-prune-700 hover:underline">{t('tasks.year.clear_month')}</button>
-          : <p className="text-sm text-loam-500">{t('tasks.year.hint')}</p>}
+          : <p className="hidden text-sm text-loam-500 sm:block">{t('tasks.year.hint')}</p>}
       </div>
-      <div className="-mx-1 mt-3 overflow-x-auto px-1 pb-1">
+      <div className="-mx-1 mt-2 overflow-x-auto px-1 pb-1">
         <ol className="grid min-w-[42rem] grid-cols-12 gap-1">
           {months.map(({ key, year, month: m }, i) => {
             const count = counts.get(key) ?? 0
@@ -149,7 +149,7 @@ export function YearStrip({ tasks, today, month, onMonth }: {
                   type="button" onClick={() => onMonth(active ? null : key)} aria-pressed={active}
                   aria-label={`${formatMonth(year, m)} ${year} : ${t('tasks.year.due_count', { count })}`}
                   className={clsx(
-                    'flex h-16 flex-col items-center justify-between rounded-xl px-1 py-1.5 transition-colors',
+                    'flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors',
                     SEASON_TINT[season],
                     active ? 'ring-2 ring-prune-600' : i === 0 ? 'ring-[1.5px] ring-prune-300' : 'hover:ring-1 hover:ring-loam-400',
                   )}
@@ -157,9 +157,7 @@ export function YearStrip({ tasks, today, month, onMonth }: {
                   <span className={clsx('text-sm capitalize', i === 0 ? 'font-semibold text-prune-800' : 'text-loam-700')}>
                     {formatMonthShort(year, m)}
                   </span>
-                  {count > 0
-                    ? <span className="min-w-6 rounded-full bg-prune-600 px-1.5 text-sm font-semibold tabular-nums text-white">{count}</span>
-                    : <span className="text-sm text-loam-300" aria-hidden>·</span>}
+                  {count > 0 && <span className="min-w-5 rounded-full bg-prune-600 px-1.5 text-[13px] font-semibold leading-5 tabular-nums text-white">{count}</span>}
                 </button>
                 <span className={clsx('mt-1 h-1 rounded-full', isPlantingMonth(m) ? 'bg-leaf-500' : 'bg-transparent')} aria-hidden />
               </li>
