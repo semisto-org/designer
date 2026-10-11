@@ -94,7 +94,7 @@ fr:
         price_note: "par mois"
         renewal_note: "Abonnement mensuel, résiliable à tout moment"
         features:
-          maps: "Jusqu'à 20 cartes"
+          maps: "Cartes illimitées"
           all: "PDF, analyses et brouillons de ton IA"
           invite: "Éditeurs invités gratuits"
       drone:

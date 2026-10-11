@@ -81,6 +81,7 @@ fr:
       fine:
         one: "Avec ta formule actuelle (%{plan}, %{count} carte modifiable), cette carte et toutes tes cartes resteront modifiables."
         other: "Avec ta formule actuelle (%{plan}, %{count} cartes modifiables), cette carte et toutes tes cartes resteront modifiables."
+      fine_unlimited: "Avec ta formule actuelle (%{plan}, cartes illimitées), cette carte et toutes tes cartes resteront modifiables."
       current:
         one: "Ta formule actuelle : %{plan}, %{count} carte modifiable."
         other: "Ta formule actuelle : %{plan}, %{count} cartes modifiables."

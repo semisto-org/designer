@@ -24,7 +24,7 @@ fr:
       points:
         - "Les outils de ton activité : tâches de projet, barèmes et offres chiffrées depuis la carte."
         - "Une équipe pour travailler à plusieurs sur les cartes de tes clients."
-        - "Les formules Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, 20 cartes)."
+        - "Les formules Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, cartes illimitées)."
       note: "un lieu par client, chacun à son rythme"
       submit: "Je conçois pour des clients"
   account:
