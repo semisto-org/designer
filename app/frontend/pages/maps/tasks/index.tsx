@@ -1,7 +1,8 @@
 import { Head, Link, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowDown, ArrowLeft, ArrowUp, Check, ExternalLink, GripVertical, MapPinned, MoreHorizontal, Pencil, Plus, Sprout, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, ExternalLink, GripVertical, MapPinned, MoreHorizontal, Pencil, Plus, Sprout, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
+import { MapViewHeader } from '@/components/map_views/MapViews'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
 import { inputClass } from '@/components/ui/Field'
@@ -121,13 +122,10 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
   return (
     <div className="mx-auto max-w-4xl">
       <Head title={t('tasks.page_title', { map: map.name })} />
-      <Link href={base} className="inline-flex items-center gap-1.5 text-sm text-loam-500 hover:text-loam-800">
-        <ArrowLeft className="h-4 w-4" />{t('tasks.back_to_map')}
-      </Link>
-      <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+      <MapViewHeader map={map} current="tasks" />
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div>
           <h1 className="text-2xl">{t('tasks.title')}</h1>
-          <p className="text-loam-500">{map.name}</p>
         </div>
         {board.tasks.length > 0 && (
           <p className="text-sm font-medium text-loam-700">{t('tasks.progress', { done, total: board.tasks.length })}</p>

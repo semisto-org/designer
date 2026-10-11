@@ -1,19 +1,20 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Camera, ChevronDown, ClipboardList, Files, Map as MapIcon } from 'lucide-react'
+import { Camera, ChevronDown, ClipboardList, Files, ListChecks, Map as MapIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 
 /**
  * A project is seen through several views of the same place: the map, the
- * project sheet, its photos and its documents. The full pages show them as
+ * project sheet, its tasks, its photos and its documents. The full pages show them as
  * tabs; the editor's header as a small menu next to the map's name.
  */
-export type MapViewKey = 'map' | 'project' | 'photos' | 'documents'
+export type MapViewKey = 'map' | 'project' | 'tasks' | 'photos' | 'documents'
 
 const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'map', icon: MapIcon, path: '' },
   { key: 'project', icon: ClipboardList, path: '/project' },
+  { key: 'tasks', icon: ListChecks, path: '/tasks' },
   { key: 'photos', icon: Camera, path: '/photos' },
   { key: 'documents', icon: Files, path: '/documents' },
 ]
