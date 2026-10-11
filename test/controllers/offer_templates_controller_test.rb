@@ -42,10 +42,13 @@ class OfferTemplatesControllerTest < ActionDispatch::IntegrationTest
     data = template.data.deep_dup
     data["settings"]["hourly_rate"] = "75"
     data["tasks"].first["gain_pct"] = 500
+    data["terms"]["markup_label"] = "contribution au déploiement de l’ASBL"
     patch offer_template_path(template), params: { template: { name: "Communes", client_types: %w[commune], data: } }, as: :json
     assert_response :success
     template.reload
     assert_equal [ "Communes", %w[commune], 75.0, 90 ], [ template.name, template.client_types, template.data["settings"]["hourly_rate"], template.data["tasks"].first["gain_pct"] ]
+    assert_equal "contribution au déploiement de l’ASBL", template.pricing.terms["markup_label"]
+    assert_nil Offer::Pricing.semisto.terms["markup_label"], "the shared default names no markup"
   end
 
   test "team members read the templates, only admins change them" do

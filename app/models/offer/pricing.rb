@@ -148,7 +148,10 @@ class Offer
       # Design (pre-design + design) as a share of the client's total, at most.
       "target_design_share_pct" => 30,
       # Terms the offer states, to keep the work within its price.
-      "terms" => { "revisions" => 2, "validity_days" => 60, "deposit_pct" => 30, "exclusions" => nil, "assumptions" => nil }
+      # markup_label: how the client reads the contribution_pct markup on
+      # the fees (Semisto's team writes its nonprofit contribution); none,
+      # and the fees read as the designers' pay alone.
+      "terms" => { "revisions" => 2, "validity_days" => 60, "deposit_pct" => 30, "markup_label" => nil, "exclusions" => nil, "assumptions" => nil }
     }.to_json).freeze
 
     # The planting type a drawn element starts with, by its kind.
@@ -294,6 +297,7 @@ class Offer
           "revisions" => number(raw["revisions"])&.round&.clamp(0, 20),
           "validity_days" => number(raw["validity_days"])&.round&.clamp(0, 365),
           "deposit_pct" => number(raw["deposit_pct"])&.clamp(0, 100),
+          "markup_label" => string(raw["markup_label"], 120),
           "exclusions" => string(raw["exclusions"], 2_000),
           "assumptions" => string(raw["assumptions"], 2_000)
         }

@@ -67,7 +67,7 @@ export type PlantingType = { key: string; label: string | null; measure: 'area' 
 export type PlantCategory = { key: string; label: string | null; price: number; mulch_m2: number; compost_l: number; guard: number; stake: number }
 export type ComplexityCriterion = { key: string; label: string | null; max: number }
 export type ComplexityLevel = { key: string; label: string | null; up_to: number; factor: number }
-export type OfferTerms = { revisions: number | null; validity_days: number | null; deposit_pct: number | null; exclusions: string | null; assumptions: string | null }
+export type OfferTerms = { revisions: number | null; validity_days: number | null; deposit_pct: number | null; markup_label?: string | null; exclusions: string | null; assumptions: string | null }
 
 /** What the offer page needs of its pricing (Offer::Pricing). */
 export type PricingInfo = {

@@ -22,6 +22,9 @@ export default function OfferVersion({ map, version }: OfferVersionPageProps) {
   const plants = result.plants
   const servicesTotal = result.phases.reduce((sum, phase) => sum + phase.price_tvac, 0)
   const scope = measures.scope.filter((item) => !item.missing)
+  // The markup on the fees is named by the account's price scale, or not at all.
+  const markupLabel = version.terms.markup_label?.trim()
+  const feesDetail = markupLabel ? t('offers.version_page.fees_detail_markup', { label: markupLabel }) : t('offers.version_page.fees_detail')
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -45,7 +48,7 @@ export default function OfferVersion({ map, version }: OfferVersionPageProps) {
               <span><PhaseMark phase={phase.key} /> {phaseLabel(phase.key)}</span>
               <span className="tabular-nums">{euros(phase.price_tvac)}</span>
             </h3>
-            <Row label={t('offers.version_page.fees')} hint={t('offers.version_page.fees_detail')} value={phase.prices.fees} />
+            <Row label={t('offers.version_page.fees')} hint={feesDetail} value={phase.prices.fees} />
             {phase.prices.expenses > 0 && <Row label={t('offers.version_page.expenses')} value={phase.prices.expenses} />}
           </section>
         ))}

@@ -149,6 +149,11 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
           </label>
         </div>
         <label className="block space-y-1">
+          <span className="block text-xs text-loam-600">{t('offer_templates.edit.markup_label')}</span>
+          <Input value={data.terms.markup_label ?? ''} maxLength={120} placeholder={t('offer_templates.edit.markup_label_placeholder')} onChange={(e) => change({ terms: { ...data.terms, markup_label: e.target.value } })} />
+          <span className="block text-xs text-loam-500">{t('offer_templates.edit.markup_label_help')}</span>
+        </label>
+        <label className="block space-y-1">
           <span className="block text-xs text-loam-600">{t('offer_templates.edit.assumptions')}</span>
           <Textarea rows={3} value={data.terms.assumptions ?? ''} placeholder={t('offer_templates.edit.assumptions_placeholder')} onChange={(e) => change({ terms: { ...data.terms, assumptions: e.target.value } })} />
         </label>
