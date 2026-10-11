@@ -19,7 +19,7 @@ Touche la baguette **Mettre en image**, sur la photo ou dans l'outil d'esquisse,
 
 L'image n'ajoute aucune note de son cru. Tu peux esquisser dessus à ton tour, pour pousser l'idée plus loin.
 
-## Pour une belle image
+## Pour obtenir un bon résultat
 
 L'image lit tes traits comme un plan : plus ils sont clairs, plus elle les respecte.
 

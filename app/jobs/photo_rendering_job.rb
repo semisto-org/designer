@@ -53,12 +53,12 @@ class PhotoRenderingJob < ApplicationJob
       response = download(url)
       body = response.body.to_s
       content_type = image_type(response, body)
-      unless response.success? && content_type && body.bytesize.between?(1, DOWNLOAD_MAX_BYTES)
-        report(rendering, "download answered HTTP #{response.status} (#{response.headers["content-type"]}, #{body.bytesize} bytes) from #{URI(url).host}")
+      unless response.is_a?(Net::HTTPSuccess) && content_type && body.bytesize.between?(1, DOWNLOAD_MAX_BYTES)
+        report(rendering, "download answered HTTP #{response.code} (#{response["content-type"]}, #{body.bytesize} bytes) from #{URI(url).host}: #{body.first(200)}")
         return rendering.fail!("download")
       end
       rendering.complete!(StringIO.new(body), content_type:)
-    rescue Faraday::Error => error
+    rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, SystemCallError, OpenSSL::SSL::SSLError, URI::InvalidURIError => error
       report(rendering, "download failed (#{error.class}: #{error.message})")
       rendering.fail!("download")
     end
@@ -69,18 +69,24 @@ class PhotoRenderingJob < ApplicationJob
       Sentry.capture_message("Photo rendering #{rendering.id}: #{message}", level: :warning) if defined?(Sentry) && Sentry.initialized?
     end
 
-    # Magnific's CDN may answer with a redirect to the stored file.
+    # The generated image's URL carries a signed token
+    # (`?token=exp=…~hmac=…`): it is requested exactly as given. Faraday
+    # re-encodes the query (`=` becomes `%3D`) and the CDN answers 403.
+    # The CDN may also redirect to the stored file.
     def download(url, redirects: 3)
-      response = Faraday.new(request: { open_timeout: 10, timeout: DOWNLOAD_TIMEOUT }).get(url)
-      location = response.headers["location"]
-      return response unless response.status.between?(300, 399) && location.present? && redirects.positive?
+      uri = URI(url)
+      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 10, read_timeout: DOWNLOAD_TIMEOUT) do |http|
+        http.request(Net::HTTP::Get.new(uri.request_uri, "User-Agent" => Providers::GeoHttp::USER_AGENT, "Accept" => "image/*"))
+      end
+      location = response["location"]
+      return response unless response.is_a?(Net::HTTPRedirection) && location.present? && redirects.positive?
       download(URI.join(url, location).to_s, redirects: redirects - 1)
     end
 
     # The type of the image, read from its first bytes when the CDN only
     # says « application/octet-stream ».
     def image_type(response, body)
-      declared = response.headers["content-type"].to_s.split(";").first.to_s.strip.downcase
+      declared = response["content-type"].to_s.split(";").first.to_s.strip.downcase
       return declared if MapPhoto::CONTENT_TYPES.include?(declared)
       detected = Marcel::MimeType.for(StringIO.new(body.byteslice(0, 64) || ""))
       detected if MapPhoto::CONTENT_TYPES.include?(detected)
