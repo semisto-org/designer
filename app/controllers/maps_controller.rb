@@ -56,7 +56,9 @@ class MapsController < ApplicationController
       # Sketches and plans laid under the drawing (« Fonds de plan »).
       planImages: @map.plan_images.with_attached_image.map(&:as_inertia),
       # The « carnet de route » ends on Claude: already plugged in, or how to.
-      aiConnected: Current.user.ai_connected?
+      aiConnected: Current.user.ai_connected?,
+      # The « Offre » panel: for teams and professional accounts only.
+      offerBuilder: Offer.shown_to?(@map, Current.user)
     }
   end
 

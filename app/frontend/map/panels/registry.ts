@@ -17,8 +17,8 @@ export type EditorPanel = {
   icon: LucideIcon
   group: PanelGroup
   component: ComponentType
-  /** Hidden for viewers when 'editor'. */
-  requires?: 'editor' | 'owner'
+  /** Hidden for viewers when 'editor'; 'offers': editors the offer builder is shown to (teams, pros). */
+  requires?: 'editor' | 'owner' | 'offers'
   /** Sort order inside its group. */
   order?: number
   /**

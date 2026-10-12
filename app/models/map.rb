@@ -35,6 +35,7 @@ class Map < ApplicationRecord
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
   has_many :service_requests, dependent: :destroy
   has_one :financial_plan, dependent: :destroy
+  has_one :offer, dependent: :destroy
   # Dated aerial views (« Vues drone ») set up by Semisto, newest first.
   has_many :aerial_views, -> { newest_first }, dependent: :destroy, inverse_of: :map
   # The project's to-do lists (« Tâches »), see TaskList::Defaults.

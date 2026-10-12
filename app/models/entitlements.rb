@@ -9,10 +9,10 @@ class Entitlements
   UNLIMITED_MAPS = 10_000
 
   PLANS = {
-    "free" => { max_maps: 1, pdf_export: false, analyses: false, ai_drafts: false, renderings: false },
-    "yearly" => { max_maps: 10, pdf_export: true, analyses: true, ai_drafts: true, renderings: true },
-    "atelier" => { max_maps: 5, pdf_export: true, analyses: true, ai_drafts: true, renderings: true },
-    "bureau" => { max_maps: UNLIMITED_MAPS, pdf_export: true, analyses: true, ai_drafts: true, renderings: true }
+    "free" => { max_maps: 1, pdf_export: false, analyses: false, ai_drafts: false, renderings: false, offers: false },
+    "yearly" => { max_maps: 10, pdf_export: true, analyses: true, ai_drafts: true, renderings: true, offers: false },
+    "atelier" => { max_maps: 5, pdf_export: true, analyses: true, ai_drafts: true, renderings: true, offers: true },
+    "bureau" => { max_maps: UNLIMITED_MAPS, pdf_export: true, analyses: true, ai_drafts: true, renderings: true, offers: true }
   }.freeze
 
   attr_reader :plan
@@ -38,6 +38,8 @@ class Entitlements
   def ai_drafts? = PLANS[plan][:ai_drafts] || unlimited? || ai_trial?
   # « Mettre en image » on photos (PhotoRendering), within a monthly quota.
   def renderings? = PLANS[plan][:renderings] || unlimited?
+  # The offer builder, for professionals (Offer.usable_by? adds team maps).
+  def offers? = PLANS[plan][:offers] || unlimited?
 
   # Drafts come from the trial only, not from the plan.
   def ai_trial? = !PLANS[plan][:ai_drafts] && @ai_trial_ends_at.present? && Time.current < @ai_trial_ends_at
@@ -49,7 +51,7 @@ class Entitlements
   end
 
   def as_json(*)
-    { plan:, maxMaps: max_maps, pdfExport: pdf_export?, analyses: analyses?, aiDrafts: ai_drafts?, renderings: renderings?, aiTrialEndsAt: ai_trial_ends_at&.iso8601 }
+    { plan:, maxMaps: max_maps, pdfExport: pdf_export?, analyses: analyses?, aiDrafts: ai_drafts?, renderings: renderings?, offers: offers?, aiTrialEndsAt: ai_trial_ends_at&.iso8601 }
   end
 
   private

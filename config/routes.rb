@@ -319,6 +319,9 @@ Rails.application.routes.draw do
   end
   # --- end plantnet ---
 
+  # --- offer templates ---
+  resources :offer_templates, only: %i[index create edit update destroy]
+
   # --- teams ---
   # Teams ("équipes"): members edit every map of the team. The invitation
   # link comes first so "invitations" is never read as a team id.
@@ -342,6 +345,17 @@ Rails.application.routes.draw do
     resource :dossier, only: :show, controller: "maps/dossiers"
   end
   # --- end dossier ---
+
+  # --- offers ---
+  # The offer builder of a team map: the working offer and its versions.
+  resources :maps, only: [] do
+    resource :offer, only: %i[show update], controller: "maps/offers" do
+      resources :versions, only: %i[create show update], param: :number, controller: "maps/offer_versions" do
+        post :restore, on: :member
+      end
+    end
+  end
+  # --- end offers ---
 
   # --- invoicing ---
   # « Payer sur facture »: the request form (signed in; from /billing and

@@ -25,6 +25,7 @@ export type EntitlementsData = {
   aiDrafts: boolean
   /** « Mettre en image » on photos. */
   renderings: boolean
+  offers: boolean
 }
 
 export type SharedProps = {

@@ -15,6 +15,6 @@ export function isLayersPanel(id: string): boolean {
 
 /** The panel to open for a journey step, among those this person can open (same rule as the panel rail). */
 export function resolvePanel(name: string, canEdit: boolean, isOwner = false): string | null {
-  const available = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : isOwner)).map((p) => p.id)
+  const available = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'owner' && isOwner)).map((p) => p.id)
   return (ALIASES[name] ?? [name]).find((id) => available.includes(id)) ?? null
 }
