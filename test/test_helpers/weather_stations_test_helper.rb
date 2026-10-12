@@ -19,6 +19,17 @@ module WeatherStationsTestHelper
     stub_request(:get, IRM_AWS).with(query: hash_including("typenames" => "aws:aws_1day")).to_return(irm_json("aws_1day_6455.json"))
   end
 
+  # Last readings, captured 2026-10-12 at 07:22 UTC: Florennes (6456,
+  # SYNOP) reports no humidity, Dourbes (6455, AWS) does; every other AWS
+  # station answers nothing.
+  def stub_irm_latest
+    stub_request(:get, IRM_SYNOP).with(query: hash_including("typenames" => "synop:synop_data")).to_return(irm_json("synop_data_6456.json"))
+    stub_request(:get, IRM_AWS).with(query: hash_including("typenames" => "aws:aws_10min"))
+      .to_return(status: 200, body: { type: "FeatureCollection", features: [] }.to_json, headers: { "Content-Type" => "application/json" })
+    stub_request(:get, IRM_AWS).with { |request| request.uri.query_values.slice("typenames", "cql_filter").then { _1["typenames"] == "aws:aws_10min" && _1["cql_filter"].start_with?("code=6455 ") } }
+      .to_return(irm_json("aws_10min_6455.json"))
+  end
+
   def irm_json(name)
     { status: 200, body: file_fixture("weather_stations/#{name}").read, headers: { "Content-Type" => "application/json;charset=UTF-8" } }
   end

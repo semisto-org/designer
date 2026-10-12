@@ -130,4 +130,34 @@ class WeatherStations::MapReportTest < ActiveSupport::TestCase
     assert_equal [], geojson["features"]
     assert_equal "not_configured", geojson["reason"]
   end
+
+  test "now: the nearest station that publishes temperature and humidity" do
+    stub_irm_stations
+    stub_irm_latest
+    travel_to Time.utc(2026, 10, 12, 7, 25) do
+      json = WeatherStations::MapReport.new(@map).now_json
+      assert json["available"]
+      assert_in_delta 8.7, json["tempC"]
+      assert_equal 100, json["humidityPct"]
+      assert_equal "2026-10-12T07:10:00Z", json["observedAt"]
+      assert_equal "aws", json["network"]
+      assert_equal "Dourbes", json["station"]["name"] # Florennes, nearer, reports no humidity
+      assert_not json["station"]["nearest"]
+      assert json["station"]["distanceKm"].positive?
+      assert_equal "IRM", json["attribution"]["name"]
+    end
+  end
+
+  test "now: no station near enough with a reading" do
+    stub_irm_stations
+    stub_request(:get, /opendata\.meteo\.be.*(aws_10min|synop_data)/)
+      .to_return(status: 200, body: { type: "FeatureCollection", features: [] }.to_json, headers: { "Content-Type" => "application/json" })
+    assert_equal({ "available" => false, "reason" => "no_reading" }, WeatherStations::MapReport.new(@map).now_json)
+  end
+
+  test "now: not configured or without a place, nothing is called" do
+    regions(:wallonia).update!(settings: {})
+    assert_equal "not_configured", WeatherStations::MapReport.new(@map.reload).now_json["reason"]
+    assert_not_requested :any, /meteo\.be/
+  end
 end

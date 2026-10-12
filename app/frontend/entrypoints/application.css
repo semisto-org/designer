@@ -196,12 +196,15 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
   background: none;
   padding: 2px 4px;
   font-size: 11px;
+  white-space: nowrap;
   color: #fff;
   text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
 }
 .editor-map .maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) .maplibregl-ctrl-attrib-button::before { content: attr(data-label); }
 .editor-map .maplibregl-ctrl-bottom-right { display: flex; align-items: flex-end; }
 .editor-map .maplibregl-ctrl-bottom-right .maplibregl-ctrl-scale { margin-bottom: 10px; }
+/* Temperature and humidity right now, beside « Sources de la carte ». */
+.editor-map .maplibregl-ctrl-bottom-right .editor-weather-now { margin: 0 2px 6px 10px; }
 
 /* Map editor on a phone: the panel bar runs along the bottom, so the
    scale and attribution move above it. */

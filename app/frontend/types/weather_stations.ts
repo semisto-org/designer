@@ -72,3 +72,17 @@ export type StationsGeoJSON = FeatureCollection<Point, StationProperties> & {
   reason?: string
   attribution?: WeatherAttribution
 }
+
+/** GET /maps/:id/weather_stations/now: the last reading near the map. */
+export type WeatherNow =
+  | { available: false; reason: 'not_configured' | 'no_location' | 'upstream_error' | 'no_reading' | string }
+  | {
+    available: true
+    tempC: number
+    humidityPct: number
+    /** UTC, ISO 8601. */
+    observedAt: string
+    network: 'aws' | 'synop'
+    station: WeatherStation
+    attribution: WeatherAttribution
+  }
