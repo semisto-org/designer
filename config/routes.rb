@@ -139,7 +139,10 @@ Rails.application.routes.draw do
     resources :oauth_apps, path: "ai/apps", only: :destroy
     resource :tour, only: :update
     resource :password, only: %i[update destroy]
+    resource :avatar, only: %i[update destroy]
   end
+  # A person's uploaded picture, by its blob's signed id (User#avatar_url).
+  get "avatars/:key", to: "avatars#show", as: :avatar
   resources :maps, only: [] do
     scope module: :maps do
       resources :drafts, only: :index do

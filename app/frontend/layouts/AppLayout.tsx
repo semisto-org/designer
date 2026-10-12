@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react'
-import { LogOut } from 'lucide-react'
+import { LifeBuoy, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Flash } from '@/components/ui/Flash'
 import { Wordmark } from '@/components/Logo'
@@ -16,8 +16,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     ...(currentUser ? [{ href: '/tasks', label: t('tasks.nav') }] : []),
     ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
     { href: '/plants', label: t('nav.plants') },
-    { href: '/help', label: t('nav.help') },
-    ...(currentUser ? [{ href: '/nouveautes', label: t('release_notes.nav'), dot: unseen > 0 }] : []),
     ...(currentUser?.admin ? [{ href: '/admin', label: t('admin.nav.link') }] : []),
   ]
   return (
@@ -41,38 +39,34 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 }
               >
                 {item.label}
-                {'dot' in item && item.dot && (
-                  <>
-                    <span aria-hidden className="ml-1 inline-block h-2 w-2 -translate-y-1.5 rounded-full bg-humus-400 ring-2 ring-white" />
-                    <span className="sr-only">{t('release_notes.nav_unseen', { count: unseen })}</span>
-                  </>
-                )}
               </Link>
             ))}
           </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-3 text-sm">
+          <div className="ml-auto flex shrink-0 items-center gap-1 text-sm sm:gap-2">
+            {/* Help and news are not tools: they sit with the account, apart from the features. */}
+            <AsideLink href="/help" label={t('nav.help')} active={url.startsWith('/help')} icon={<LifeBuoy className="h-4 w-4" aria-hidden />} />
+            {currentUser && (
+              <AsideLink href="/nouveautes" label={t('release_notes.nav')} active={url.startsWith('/nouveautes')} icon={<Sparkles className="h-4 w-4" aria-hidden />}>
+                {unseen > 0 && (
+                  <>
+                    <span aria-hidden className="absolute right-1 top-1 h-2 w-2 rounded-full bg-humus-400 ring-2 ring-white sm:static sm:-ml-0.5 sm:inline-block sm:-translate-y-1.5" />
+                    <span className="sr-only">{t('release_notes.nav_unseen', { count: unseen })}</span>
+                  </>
+                )}
+              </AsideLink>
+            )}
+            {currentUser && <span aria-hidden className="mx-1 h-6 w-px bg-loam-900/10 sm:mx-2" />}
             {currentUser && (
               <>
                 <Link href="/account" className="flex items-center gap-2 text-loam-600 hover:text-loam-900">
                   {currentUser.avatarUrl ? (
-                    <img src={currentUser.avatarUrl} alt="" className="h-7 w-7 rounded-full" referrerPolicy="no-referrer" />
+                    <img src={currentUser.avatarUrl} alt="" className="h-7 w-7 rounded-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     <span className="grid h-7 w-7 place-items-center rounded-full bg-prune-100 text-xs font-semibold text-prune-700">
                       {currentUser.name.slice(0, 1).toUpperCase()}
                     </span>
                   )}
                   <span className="hidden sm:inline">{currentUser.name}</span>
-                </Link>
-                <Link
-                  href="/session"
-                  method="delete"
-                  as="button"
-                  className="text-loam-500 hover:text-loam-900"
-                  aria-label={t('nav.sign_out')}
-                  title={t('nav.sign_out')}
-                >
-                  <LogOut className="h-4 w-4 sm:hidden" aria-hidden />
-                  <span className="hidden sm:inline">{t('nav.sign_out')}</span>
                 </Link>
               </>
             )}
@@ -81,5 +75,23 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
     </div>
+  )
+}
+
+// A quiet link on the account side: icon only on a phone, icon and words above.
+function AsideLink({ href, label, icon, active, children }: { href: string; label: string; icon: ReactNode; active: boolean; children?: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      title={label}
+      className={
+        'relative flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 ' +
+        (active ? 'bg-prune-50 text-prune-700' : 'text-loam-500 hover:bg-prune-50 hover:text-prune-700')
+      }
+    >
+      {icon}
+      <span className="sr-only sm:not-sr-only">{label}</span>
+      {children}
+    </Link>
   )
 }

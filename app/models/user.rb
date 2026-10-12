@@ -1,6 +1,11 @@
 class User < ApplicationRecord
   include Billable
   include AiTrial
+  include HeicAttachment
+
+  AVATAR_MAX_BYTES = 10.megabytes
+  AVATAR_TYPES = %w[image/jpeg image/png image/webp].freeze
+  AVATAR_SIZE = 256
 
   has_many :sessions, dependent: :destroy
   has_many :organization_memberships, dependent: :destroy
@@ -14,6 +19,13 @@ class User < ApplicationRecord
   has_many :release_note_likes, dependent: :delete_all
   has_many :service_requests, dependent: :destroy
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
+
+  # A picture chosen in « Mon compte »; it wins over the Google one.
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_fill: [ AVATAR_SIZE, AVATAR_SIZE ], format: :jpeg, saver: { strip: true, quality: 85 }
+  end
+  converts_heic :avatar
+  validate :avatar_is_acceptable
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
   validates :email_address, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
@@ -78,6 +90,12 @@ class User < ApplicationRecord
     user
   end
 
+  # The uploaded picture (served by AvatarsController), else Google's.
+  def avatar_url
+    return super unless avatar.attached? && avatar.blob.persisted?
+    Rails.application.routes.url_helpers.avatar_path(avatar.blob.signed_id)
+  end
+
   def display_name
     name.presence || email_address.split("@").first
   end
@@ -99,6 +117,13 @@ class User < ApplicationRecord
   end
 
   private
+    def avatar_is_acceptable
+      return unless avatar.attached?
+      blob = avatar.blob
+      errors.add(:avatar, I18n.t("account.avatar.errors.type")) unless AVATAR_TYPES.include?(blob.content_type)
+      errors.add(:avatar, I18n.t("account.avatar.errors.size", max: AVATAR_MAX_BYTES / 1.megabyte)) if blob.byte_size > AVATAR_MAX_BYTES
+    end
+
     def sign_in_code_digest_for(code)
       key = Rails.application.key_generator.generate_key("sign_in_code")
       OpenSSL::HMAC.hexdigest("SHA256", key, "#{id}:#{code}")

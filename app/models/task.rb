@@ -68,7 +68,7 @@ class Task < ApplicationRecord
       id:, listId: task_list_id, title:, notes:, key:, position:, tags:,
       panel:, mapSaysDone: journey ? journey_done.include?(journey) : nil,
       dueOn: due_on&.iso8601,
-      assignee: assignee && { id: assignee.id, name: assignee.display_name },
+      assignee: assignee && { id: assignee.id, name: assignee.display_name, avatarUrl: assignee.avatar_url }.compact,
       completedAt: completed_at&.iso8601,
       completedBy: completed_by&.display_name,
       createdAt: created_at&.iso8601

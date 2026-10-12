@@ -1,5 +1,6 @@
-import { Head, Link, router, useForm } from '@inertiajs/react'
-import { Briefcase, CreditCard, KeyRound, Sprout, Sparkles, Trash2 } from 'lucide-react'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
+import { type ReactNode, useRef, useState } from 'react'
+import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Sprout, Sparkles, Trash2 } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -19,24 +20,21 @@ export default function AccountShow({ account }: { account: AccountData }) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <Head title={t('account.title')} />
-      <h1 className="text-2xl">{t('account.title')}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl">{t('account.title')}</h1>
+        <ButtonLink href="/session" method="delete" variant="secondary" size="sm">
+          <LogOut className="h-4 w-4" aria-hidden="true" />
+          {t('nav.sign_out')}
+        </ButtonLink>
+      </div>
 
       <Card>
         <h2 className="text-base">{t('account.profile')}</h2>
-        <div className="mt-4 flex items-center gap-4">
-          {account.avatarUrl ? (
-            <img src={account.avatarUrl} alt="" className="h-14 w-14 rounded-full" referrerPolicy="no-referrer" />
-          ) : (
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-prune-100 text-xl font-semibold text-prune-700" aria-hidden="true">
-              {(account.name ?? account.email).slice(0, 1).toUpperCase()}
-            </span>
-          )}
-          <div className="min-w-0 text-sm text-loam-500">
-            <p className="truncate font-medium text-loam-900">{account.name ?? account.email}</p>
-            <p>{t('account.member_since', { date: formatDate(account.signedUpAt) })}</p>
-            {account.googleLinked && <p>{t('account.google')}</p>}
-          </div>
-        </div>
+        <AvatarPicker account={account}>
+          <p className="truncate font-medium text-loam-900">{account.name ?? account.email}</p>
+          <p>{t('account.member_since', { date: formatDate(account.signedUpAt) })}</p>
+          {account.googleLinked && <p>{t('account.google')}</p>}
+        </AvatarPicker>
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -90,12 +88,6 @@ export default function AccountShow({ account }: { account: AccountData }) {
         </div>
       </Card>
 
-      <div className="sm:hidden">
-        <Link href="/session" method="delete" as="button" className="w-full rounded-lg bg-white px-3.5 py-2.5 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
-          {t('nav.sign_out')}
-        </Link>
-      </div>
-
       <Card className="border border-clay-100">
         <h2 className="flex items-center gap-2 text-base"><Trash2 className="h-4 w-4 text-clay-500" aria-hidden="true" />{t('account.danger_title')}</h2>
         <p className="mt-2 text-sm text-loam-600">{t('account.danger_body')}</p>
@@ -109,6 +101,67 @@ export default function AccountShow({ account }: { account: AccountData }) {
           {t('account.delete_request')}
         </Button>
       </Card>
+    </div>
+  )
+}
+
+// The picture shown next to my name everywhere: tap it (or the button) to
+// choose one; HEIC from an iPhone is converted on the server.
+function AvatarPicker({ account, children }: { account: AccountData; children: ReactNode }) {
+  const input = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
+  const error = (usePage().props.errors as unknown as Record<string, string> | undefined)?.avatar
+  const upload = (file: File) => {
+    setBusy(true)
+    router.post('/account/avatar', { _method: 'patch', user: { avatar: file } }, {
+      forceFormData: true, preserveScroll: true, onFinish: () => setBusy(false),
+    })
+  }
+
+  return (
+    <div className="mt-4 flex items-start gap-4">
+      <button
+        type="button"
+        onClick={() => input.current?.click()}
+        className="group relative shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600"
+        aria-label={account.avatarUrl ? t('account.avatar.change') : t('account.avatar.choose')}
+      >
+        {account.avatarUrl ? (
+          <img src={account.avatarUrl} alt="" className="h-16 w-16 rounded-full object-cover" referrerPolicy="no-referrer" />
+        ) : (
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-prune-100 text-xl font-semibold text-prune-700" aria-hidden="true">
+            {(account.name ?? account.email).slice(0, 1).toUpperCase()}
+          </span>
+        )}
+        <span className="absolute -bottom-0.5 -right-0.5 grid h-7 w-7 place-items-center rounded-full bg-white text-prune-700 shadow ring-1 ring-loam-200 group-hover:bg-prune-50" aria-hidden="true">
+          <Camera className="h-4 w-4" />
+        </span>
+      </button>
+      <div className="min-w-0 flex-1 text-sm text-loam-500">
+        {children}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm" disabled={busy} onClick={() => input.current?.click()}>
+            {busy ? t('account.avatar.uploading') : account.avatarUrl ? t('account.avatar.change') : t('account.avatar.choose')}
+          </Button>
+          {account.hasOwnAvatar && (
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => router.delete('/account/avatar', { preserveScroll: true })}>
+              {t('account.avatar.remove')}
+            </Button>
+          )}
+        </div>
+        <p className={error ? 'mt-1.5 text-clay-700' : 'mt-1.5'}>{error ?? t('account.avatar.hint')}</p>
+      </div>
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0]
+          event.target.value = ''
+          if (file) upload(file)
+        }}
+      />
     </div>
   )
 }
