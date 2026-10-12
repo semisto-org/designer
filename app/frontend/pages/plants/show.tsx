@@ -137,17 +137,26 @@ export default function PlantShow({ species: s, observations, region }: Props) {
         </Section>
 
         <Section title={t('plants.show.sections.observations')}>
-          <p className="text-xs text-loam-500">{t('plants.show.observations_intro')}</p>
+          <p className="text-sm text-loam-500">{t('plants.show.observations_intro')}</p>
           {observations ? (
             <div className="mt-3 space-y-3">
               <p className="text-sm text-loam-700">
                 {t('plants.show.observations_counts', { count: observations.plants })} {t('plants.show.observations_gardens', { count: observations.gardens })}
               </p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <Stat label={t('plants.show.survival_rate')} value={`${observations.survivalRate} %`} />
-                <Stat label={t('plants.show.average_vigor')} value={observations.averageVigor == null ? '—' : `${formatDecimal(observations.averageVigor)}/5`} />
-              </div>
-              <SurvivalBar stats={observations} />
+              {observations.observed > 0 ? (
+                <>
+                  <p className="text-sm text-loam-600">{t('plants.show.observations_noted', { count: observations.observed })}</p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <Stat label={t('plants.show.survival_rate')} value={observations.survivalRate == null ? '—' : `${observations.survivalRate} %`} />
+                    <Stat label={t('plants.show.average_vigor')} value={observations.averageVigor == null ? '—' : `${formatDecimal(observations.averageVigor)}/5`} />
+                  </div>
+                  <SurvivalBar stats={observations} />
+                </>
+              ) : (
+                <p className="flex gap-2 rounded-lg bg-leaf-50 p-3 text-sm text-leaf-800">
+                  <Sprout className="mt-0.5 h-4 w-4 shrink-0" />{t('plants.show.observations_none_noted')}
+                </p>
+              )}
             </div>
           ) : (
             <p className="mt-3 flex gap-2 rounded-lg bg-leaf-50 p-3 text-sm text-leaf-800">
@@ -204,7 +213,7 @@ function SurvivalBar({ stats }: { stats: ObservationStats }) {
   return (
     <div>
       <div className="flex h-2.5 overflow-hidden rounded-full bg-loam-100">
-        {parts.map((part) => part.value > 0 && <span key={part.key} style={{ width: `${(part.value / stats.plants) * 100}%`, background: part.color }} />)}
+        {parts.map((part) => part.value > 0 && <span key={part.key} style={{ width: `${(part.value / stats.observed) * 100}%`, background: part.color }} />)}
       </div>
       <p className="mt-1.5 flex flex-wrap gap-x-3 text-xs text-loam-600">
         {parts.map((part) => (
