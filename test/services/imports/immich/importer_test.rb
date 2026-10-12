@@ -52,17 +52,35 @@ class Imports::Immich::ImporterTest < ActiveSupport::TestCase
     assert ImportRecord.exists?(map: @map, source: "immich", external_id: "x2", record_id: nil)
   end
 
-  test "a HEIC photo comes as Immich's JPEG rendition, the preview when there is no full size" do
+  test "a HEIC original is stored as JPEG, with its position" do
     stub_immich_search([ immich_asset("h1", mime: "image/heic", name: "IMG_0002.HEIC") ])
-    stub_immich_rendition("h1", size: "fullsize", status: 404)
-    stub_immich_rendition("h1", size: "preview")
+    stub_immich_original("h1", file: "terrain_gps.heic", type: "image/heic")
 
     assert_equal 1, import.counts[:created]
     photo = @map.photos.last
     assert_equal "IMG_0002.jpg", photo.image.filename.to_s
     assert_equal "image/jpeg", photo.image.content_type
     assert_equal "exif", photo.location_source
-    assert_not_requested :get, "#{IMMICH_API}/assets/h1/original"
+  end
+
+  test "a RAW photo comes as Immich's JPEG rendition, the preview when there is no full size" do
+    stub_immich_search([ immich_asset("r1", mime: "image/x-adobe-dng", name: "IMG_0003.DNG") ])
+    stub_immich_rendition("r1", size: "fullsize", status: 404)
+    stub_immich_rendition("r1", size: "preview")
+
+    assert_equal 1, import.counts[:created]
+    assert_equal "IMG_0003.jpg", @map.photos.last.image.filename.to_s
+    assert_not_requested :get, "#{IMMICH_API}/assets/r1/original"
+  end
+
+  test "follows Immich's redirect from a rendition" do
+    stub_immich_search([ immich_asset("r1", mime: "image/x-adobe-dng", name: "IMG_0004.DNG") ])
+    stub_request(:get, "#{IMMICH_API}/assets/r1/thumbnail").with(query: { size: "fullsize" })
+      .to_return(status: 302, headers: { "Location" => "/api/assets/r1/thumbnail?size=preview" })
+    stub_immich_rendition("r1", size: "preview")
+
+    assert_equal 1, import.counts[:created]
+    assert_requested(:get, "#{IMMICH_API}/assets/r1/thumbnail?size=preview") { |request| request.headers["X-Api-Key"] == IMMICH_KEY }
   end
 
   test "a photo without position waits to be placed" do

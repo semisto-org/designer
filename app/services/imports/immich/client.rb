@@ -15,6 +15,8 @@ module Imports
       TIMEOUT = 30
       DOWNLOAD_TIMEOUT = 120
       RETRIES = 2
+      MAX_REDIRECTS = 3
+      REDIRECTS = [ 301, 302, 303, 307, 308 ].freeze
 
       Download = Data.define(:body, :content_type)
 
@@ -91,10 +93,20 @@ module Imports
           raise Error.new(:unreadable, url:)
         end
 
+        # Immich answers some renditions with a redirect (e.g. to the original
+        # when it has no full-size JPEG): follow it, with the key only on
+        # Immich's own host.
         def download(path, params = {}, max_bytes:)
           raise Error.new(:not_configured) unless configured?
           url = url_for(path)
           response = with_retries(url) { download_connection.get(path, params) }
+          MAX_REDIRECTS.times do
+            break unless REDIRECTS.include?(response.status) && response.headers["location"].present?
+            target = URI.join("#{url}/", response.headers["location"])
+            url = target.to_s
+            headers = target.host == URI.parse(base_url).host ? {} : { "x-api-key" => nil }
+            response = with_retries(url) { download_connection.get(url, nil, headers) }
+          end
           check!(response, url)
           body = response.body.to_s.b
           raise Error.new(:too_large, url:, max: max_bytes / 1.megabyte) if body.bytesize > max_bytes
