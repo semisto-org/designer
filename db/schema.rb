@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -503,6 +503,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_220000) do
     t.index ["organization_id"], name: "index_maps_on_organization_id"
     t.index ["owner_id"], name: "index_maps_on_owner_id"
     t.index ["region_id"], name: "index_maps_on_region_id"
+  end
+
+  create_table "mcp_uploads", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.bigint "map_id", null: false
+    t.bigint "user_id", null: false
+    t.string "kind", null: false
+    t.datetime "attached_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["blob_id"], name: "index_mcp_uploads_on_blob_id", unique: true
+    t.index ["created_at"], name: "index_mcp_uploads_unattached", where: "(attached_at IS NULL)"
+    t.index ["map_id"], name: "index_mcp_uploads_on_map_id"
+    t.index ["user_id"], name: "index_mcp_uploads_on_user_id"
   end
 
   create_table "oauth_access_tokens", force: :cascade do |t|
@@ -1193,6 +1207,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_220000) do
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "owner_id"
+  add_foreign_key "mcp_uploads", "active_storage_blobs", column: "blob_id", on_delete: :cascade
+  add_foreign_key "mcp_uploads", "maps", on_delete: :cascade
+  add_foreign_key "mcp_uploads", "users", on_delete: :cascade
   add_foreign_key "oauth_access_tokens", "oauth_clients", on_delete: :cascade
   add_foreign_key "oauth_access_tokens", "oauth_grants", on_delete: :nullify
   add_foreign_key "oauth_access_tokens", "users", on_delete: :cascade

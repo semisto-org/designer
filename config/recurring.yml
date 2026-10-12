@@ -23,3 +23,8 @@ production:
   photo_camera_backfill:
     command: "PhotoCameraJob.backfill"
     schedule: every 10 minutes
+  # Files an AI sent through the MCP server (create_upload) and never attached.
+  mcp_upload_purge:
+    class: McpUploadPurgeJob
+    queue: default
+    schedule: every hour at minute 37
