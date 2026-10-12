@@ -346,6 +346,15 @@ Rails.application.routes.draw do
       resources :invitations, only: %i[create destroy] do
         post :resend, on: :member
       end
+      # The team board (« Tableau de l'équipe »): new requests, projects on
+      # one timeline, the season's steps, who carries what.
+      resource :board, only: :show do
+        resources :projects, only: %i[show update], controller: "board_projects"
+        resources :steps, only: %i[create update destroy], controller: "board_steps"
+        resources :requests, only: :update, controller: "board_requests" do
+          post :qualify, on: :member
+        end
+      end
     end
   end
   resources :maps, only: [] do

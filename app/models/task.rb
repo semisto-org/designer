@@ -8,6 +8,9 @@ class Task < ApplicationRecord
   include MapFeature::Tags
 
   TITLE_MAX_LENGTH = 200
+  # A season step drawn on the team board's timeline: it has a start date as
+  # well as its due date (« Plantation du 1er décembre au 31 janvier »).
+  STEP_KINDS = %w[design site plant].freeze
   NOTES_MAX_LENGTH = 5000
 
   belongs_to :map
@@ -21,6 +24,9 @@ class Task < ApplicationRecord
 
   validates :title, presence: true, length: { maximum: TITLE_MAX_LENGTH }
   validates :notes, length: { maximum: NOTES_MAX_LENGTH }
+  validates :step_kind, inclusion: { in: STEP_KINDS }, allow_nil: true
+  validates :starts_on, :due_on, presence: true, if: :step_kind
+  validate :starts_before_due
   validate :list_on_the_same_map
   validate :assignee_takes_part, if: -> { assignee_id && will_save_change_to_assignee_id? }
 
@@ -28,6 +34,7 @@ class Task < ApplicationRecord
   scope :pending, -> { where(completed_at: nil) }
   scope :done, -> { where.not(completed_at: nil) }
   scope :overdue, ->(today = Date.current) { pending.where(due_on: ...today) }
+  scope :steps, -> { where.not(step_kind: nil) }
 
   before_validation { self.map_id ||= task_list&.map_id }
   before_create :append_position
@@ -68,6 +75,8 @@ class Task < ApplicationRecord
       id:, listId: task_list_id, title:, notes:, key:, position:, tags:,
       panel:, mapSaysDone: journey ? journey_done.include?(journey) : nil,
       dueOn: due_on&.iso8601,
+      startsOn: starts_on&.iso8601,
+      stepKind: step_kind,
       assignee: assignee && { id: assignee.id, name: assignee.display_name, avatarUrl: assignee.avatar_url }.compact,
       completedAt: completed_at&.iso8601,
       completedBy: completed_by&.display_name,
@@ -82,6 +91,10 @@ class Task < ApplicationRecord
 
     def renumber(tasks)
       tasks.each_with_index { |task, i| task.update_column(:position, i) }
+    end
+
+    def starts_before_due
+      errors.add(:starts_on, :after_due) if starts_on && due_on && starts_on > due_on
     end
 
     def list_on_the_same_map

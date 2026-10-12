@@ -6,6 +6,7 @@ class Map < ApplicationRecord
   include Commentable
   include HasTerrain
   include MapPlanting
+  include MapBoard
 
   # Raised when a fourth editor would be added.
   class EditorLimitReached < StandardError

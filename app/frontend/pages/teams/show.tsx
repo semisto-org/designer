@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react'
-import { ArrowLeft, LogOut, Mail, MapPinned, Pencil, RefreshCw, Trash2, UserMinus, UsersRound } from 'lucide-react'
+import { ArrowLeft, ArrowRight, SquareKanban, LogOut, Mail, MapPinned, Pencil, RefreshCw, Trash2, UserMinus, UsersRound } from 'lucide-react'
 import { useState } from 'react'
 import { Avatar } from '@/collab/Avatar'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -27,6 +27,15 @@ export default function TeamShow({ team, members, maps, invitations, maxNameLeng
       </Link>
 
       <TeamHeader team={team} admin={admin} base={base} maxNameLength={maxNameLength} />
+
+      <Link href={`${base}/board`} className="group flex items-center gap-4 rounded-2xl border border-loam-200 bg-[#fffdf7] px-4 py-3.5 shadow-[0_1px_0_var(--color-loam-200)] transition hover:border-prune-300">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-leaf-50 text-leaf-700"><SquareKanban className="h-5 w-5" aria-hidden="true" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-serif text-xl text-loam-900 group-hover:text-prune-700">{t('team_board.open')}</span>
+          <span className="block text-sm text-loam-600">{t('team_board.open_hint')}</span>
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0 text-loam-400 group-hover:text-prune-600" aria-hidden="true" />
+      </Link>
 
       <Members members={members} admin={admin} base={base} />
       {admin && <Invite invitations={invitations ?? []} base={base} />}

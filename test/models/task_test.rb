@@ -75,4 +75,14 @@ class TaskTest < ActiveSupport::TestCase
     assert_equal "terrain", json[:panel]
     assert_nil @list.tasks.create!(title: "Libre").as_json[:mapSaysDone]
   end
+
+  test "a season step has a kind and a start before its due date" do
+    step = @list.tasks.create!(title: "Plantation", step_kind: "plant", starts_on: Date.new(2026, 12, 1), due_on: Date.new(2027, 1, 31))
+    assert_includes Task.steps, step
+    assert_equal [ "2026-12-01", "plant" ], step.as_json.values_at(:startsOn, :stepKind)
+
+    assert_not @list.tasks.new(title: "Chantier", step_kind: "site", starts_on: Date.new(2026, 12, 8), due_on: Date.new(2026, 12, 1)).valid?
+    assert_not @list.tasks.new(title: "Chantier", step_kind: "site", due_on: Date.new(2026, 12, 1)).valid?
+    assert_not @list.tasks.new(title: "Récolte", step_kind: "harvest", starts_on: Date.new(2026, 12, 1), due_on: Date.new(2026, 12, 2)).valid?
+  end
 end
