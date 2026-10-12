@@ -1,12 +1,12 @@
 import type { GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl'
 import { useEffect } from 'react'
 import { useEditor } from '@/map/editor/EditorContext'
+import { featureAt } from '@/map/featurePick'
 import { geometryCenter } from './geometry'
 import { requestGeneralDiscussion, useThreads } from './threadsStore'
 
 const SOURCE = 'comment-badges'
 const LAYERS = ['comment-badges-circle', 'comment-badges-count']
-const FEATURE_LAYERS = ['features-fill', 'features-line', 'features-point']
 
 /**
  * Over the map: a small count badge on every element that has comments, and
@@ -74,7 +74,7 @@ export default function CollabOverlay() {
     const onClick = (e: { point: { x: number; y: number }; features?: MapGeoJSONFeature[] }) => {
       if (editor.drawing) return
       const hit = e.features?.[0]
-      if (!hit || instance.queryRenderedFeatures([e.point.x, e.point.y] as [number, number], { layers: FEATURE_LAYERS.filter((id) => instance.getLayer(id)) }).length > 0) return
+      if (!hit || featureAt(instance, e.point) != null) return
       editor.select(Number(hit.properties?.id))
     }
     const enter = () => { instance.getCanvas().style.cursor = 'pointer' }

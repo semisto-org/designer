@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react'
 import { ChevronDown, Drone, Eye, X } from 'lucide-react'
-import type { MapGeoJSONFeature } from 'maplibre-gl'
+import { area } from '@turf/turf'
+import type { MapMouseEvent } from 'maplibre-gl'
 import { useEffect, useMemo, useState } from 'react'
 import { Logo } from '@/components/Logo'
 import { LayerLegend } from '@/components/legend/LayerLegend'
@@ -10,6 +11,7 @@ import { formatDate } from '@/collab/time'
 import { aerialViewLabel } from '@/drone/format'
 import { installPublicAerialView } from '@/drone/layers'
 import { measure } from '@/map/editor/measure'
+import { featureAt, hitsAt } from '@/map/featurePick'
 import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, LAYER_COLORS, installFeatureLayers } from '@/map/layers/features'
 import { useMapInstance } from '@/map/MapContext'
@@ -90,23 +92,26 @@ function PublicLayers({ layers, features, map, aerialView, selectedId, onSelect 
 
   useEffect(() => {
     if (!instance) return
-    const ids = ['features-point', 'features-line', 'features-fill']
-    const onClick = (e: { features?: MapGeoJSONFeature[] }) => {
-      const hit = e.features?.[0]
-      if (hit?.id != null) onSelect(Number(hit.id))
+    // The most precise element under the cursor wins (a plant over its zone), see `featurePick`.
+    const areaOf = (id: number) => {
+      const feature = (features.features as MapFeature[]).find((f) => f.properties.id === id)
+      return feature ? area(feature) : Infinity
     }
-    const onMapClick = (e: { point: { x: number; y: number } }) => {
-      if (instance.queryRenderedFeatures([e.point.x, e.point.y], { layers: ids.filter((i) => instance.getLayer(i)) }).length === 0) onSelect(null)
+    const onClick = (e: MapMouseEvent) => onSelect(featureAt(instance, e.point, areaOf))
+    let over = false
+    const onMove = (e: MapMouseEvent) => {
+      const now = hitsAt(instance, e.point).some((hit) => hit.id != null)
+      if (now === over) return
+      over = now
+      instance.getCanvas().style.cursor = now ? 'pointer' : ''
     }
-    const enter = () => { instance.getCanvas().style.cursor = 'pointer' }
-    const leave = () => { instance.getCanvas().style.cursor = '' }
-    ids.forEach((i) => { instance.on('click', i, onClick); instance.on('mouseenter', i, enter); instance.on('mouseleave', i, leave) })
-    instance.on('click', onMapClick)
+    instance.on('click', onClick)
+    instance.on('mousemove', onMove)
     return () => {
-      ids.forEach((i) => { instance.off('click', i, onClick); instance.off('mouseenter', i, enter); instance.off('mouseleave', i, leave) })
-      instance.off('click', onMapClick)
+      instance.off('click', onClick)
+      instance.off('mousemove', onMove)
     }
-  }, [instance, onSelect])
+  }, [instance, onSelect, features])
 
   return null
 }

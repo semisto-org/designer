@@ -10,11 +10,11 @@ import { formatArea, t } from '@/lib/i18n'
 import { AddressSearch } from '@/map/data/AddressSearch'
 import { layerStore } from '@/map/data/store'
 import { useEditor } from '@/map/editor/EditorContext'
+import { featureAt } from '@/map/featurePick'
 import { hideParcelSelection, showParcelSelection } from '@/map/layers/parcels'
 import type { MapData, RegionLayerData } from '@/types'
 import type { GeocodeResult, ParcelData } from '@/types/map_data'
 
-const FEATURE_LAYERS = ['features-fill', 'features-line', 'features-point']
 const IMPORT_ACCEPT = '.geojson,.json,.kml,application/geo+json,application/vnd.google-earth.kml+xml'
 type StartStep = 'parcels' | 'draw' | 'import'
 
@@ -213,8 +213,7 @@ function ParcelPicker({ cadastre, onDone, onSaved }: {
     const onClick = async (event: MapMouseEvent) => {
       const current = latest.current
       if (current.drawing || current.looking) return
-      const featureLayers = FEATURE_LAYERS.filter((id) => instance.getLayer(id))
-      if (featureLayers.length && instance.queryRenderedFeatures(event.point, { layers: featureLayers }).length) return
+      if (featureAt(instance, event.point) != null) return
       const { lng, lat } = event.lngLat
       setLooking(true)
       try {
