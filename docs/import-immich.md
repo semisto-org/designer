@@ -19,9 +19,9 @@ map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
   (`exifInfo.latitude/longitude`, `dateTimeOriginal`). Photos without GPS
   land in « À placer ». The Immich description becomes the caption.
 - **Direction** is not in Immich's API: imported photos have no heading.
-- **HEIC, RAW** and files over 25 MB come as Immich's own JPEG rendition
+- **HEIC** comes as the original, turned into JPEG with its EXIF. **RAW** and files over 25 MB come as Immich's own JPEG rendition
   (full size when the server generates it, else the ~1440 px preview).
-  JPEG, PNG and WebP come as originals.
+  JPEG, PNG and WebP come as originals. Immich redirects are followed.
 - **Videos** are left out (images only in v1).
 - **Re-runnable**: imported assets are recorded in `ImportRecord`
   (source `immich`), and a file already on the map is never added twice.

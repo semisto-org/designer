@@ -10,7 +10,8 @@ module Imports
     # (source "immich"), and a file already on the map (same checksum) is not
     # added twice. Photos deleted in Designer afterwards are not brought back.
     #
-    # Files in a type the map does not take (HEIC, RAW…) or heavier than
+    # JPEG, PNG, WebP and HEIC come as originals (MapPhoto turns HEIC into
+    # JPEG, EXIF kept). Other types (RAW…) and files heavier than
     # MapPhoto::MAX_BYTES come as Immich's own JPEG rendition (full size when
     # the server generates it, else the preview): position and date still
     # come from the asset's EXIF.
@@ -26,7 +27,9 @@ module Imports
       # Located assets looked at to guess which map an album belongs to.
       SUGGESTION_SAMPLE = 50
       PROJECT_MARK = "📍".freeze
-      EXTENSIONS = { "image/jpeg" => "jpg", "image/png" => "png", "image/webp" => "webp" }.freeze
+      EXTENSIONS = { "image/jpeg" => "jpg", "image/png" => "png", "image/webp" => "webp", "image/heic" => "heic", "image/heif" => "heif" }.freeze
+      # Originals the map takes as they are (HEIC is converted on save).
+      ORIGINAL_TYPES = (MapPhoto::CONTENT_TYPES + HeicImage::TYPES).freeze
 
       Result = Data.define(:album_name, :map, :counts, :located, :warnings, :dry_run)
 
@@ -112,9 +115,9 @@ module Imports
         def fetch(asset)
           declared = asset["originalMimeType"].to_s
           size = asset.dig("exifInfo", "fileSizeInByte").to_i
-          if MapPhoto::CONTENT_TYPES.include?(declared) && size <= MapPhoto::MAX_BYTES
+          if ORIGINAL_TYPES.include?(declared) && size <= MapPhoto::MAX_BYTES
             file = client.original(asset["id"], max_bytes: MapPhoto::MAX_BYTES)
-            return file if MapPhoto::CONTENT_TYPES.include?(sniff(file))
+            return file if ORIGINAL_TYPES.include?(sniff(file))
           end
           begin
             client.rendition(asset["id"], size: "fullsize", max_bytes: MapPhoto::MAX_BYTES)
