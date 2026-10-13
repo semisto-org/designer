@@ -43,7 +43,8 @@ namespace :immich do
       abort I18n.t("immich_import.errors.not_configured") unless client.configured?
       flag = ->(name) { ActiveModel::Type::Boolean.new.cast(ENV[name].presence) || false }
       result = Imports::Immich::Importer.new(map:, client:, album_id: ENV["ALBUM"], album_name: ENV["ALBUM_NAME"],
-                                             dry_run: flag.("DRY_RUN"), force: flag.("FORCE")).call
+                                             dry_run: flag.("DRY_RUN"), force: flag.("FORCE"),
+                                             pause: Imports::Immich::JobBacklog.new).call
       puts Imports::Immich::Summary.new(result)
     rescue Imports::Immich::Error => error
       abort error.message
