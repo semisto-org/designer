@@ -14,11 +14,17 @@ Avant de dessiner, il faut savoir **pour qui** et **pour quoi**. La **fiche proj
 
 Les deux présentations montrent la même fiche.
 
-## Dix sections, à ton rythme
+## Onze sections, à ton rythme
 
-**Qui**, **Ambitions**, **Usages**, **Budget**, **Temps disponible**, **Compétences**, **Contraintes**, **Opportunités**, **Élevages** et **Calendrier**.
+**Qui**, **Ambitions**, **Usages**, **Palette gustative**, **Budget**, **Temps disponible**, **Compétences**, **Contraintes**, **Opportunités**, **Élevages** et **Calendrier**.
 
 La plupart des questions se répondent en cochant des cases ou en choisissant une tranche (« 500 à 2 000 € », « Plusieurs fois par semaine »). Chaque section a aussi un champ libre pour le dire avec tes mots. « Je ne sais pas encore » est une réponse valable : mieux vaut l'assumer que deviner.
+
+## La palette gustative
+
+Un jardin-forêt doit donner ce qui régale. Dans **Palette gustative**, chaque personne du projet ajoute sa ligne avec **Ajouter mes goûts**, enfants compris : ce qu'elle adore (en vert), ce qu'elle n'aime pas (en rouge), ses fruits préférés et ses allergies. Viennent ensuite les saveurs, ce que tu feras des récoltes, ton envie de découvrir et l'étalement des récoltes.
+
+Deux champs, **Familles à privilégier dans la palette** et **Lecture du designer**, sont réservés à l'équipe qui conçoit : ils portent la mention « Réservé à l'équipe » et n'apparaissent pas sur le lien privé du porteur de projet.
 
 ## Tout s'enregistre tout seul
 
@@ -57,7 +63,7 @@ Le propriétaire et les éditeurs de la carte, qui sont aussi les seuls à accep
 
 Tu conçois le lieu de quelqu'un d'autre ? Sous « Faire remplir la fiche par le porteur de projet », **Créer le lien privé** donne une adresse à lui envoyer. Elle ouvre uniquement le formulaire de la fiche, sans compte et sans accès à la carte : la personne avance à son rythme, ses réponses s'enregistrent au fil de l'eau dans la fiche de ta carte.
 
-Quand elle clique sur **J'ai terminé**, tu reçois un e-mail. Elle peut encore compléter ses réponses tant que le lien est actif. **Nouveau lien** remplace l'adresse (l'ancienne cesse de fonctionner) et **Désactiver** la ferme.
+Le formulaire montre toutes les sections, sauf les champs réservés à l'équipe (dans la palette gustative). Quand elle clique sur **J'ai terminé**, tu reçois un e-mail. Elle peut encore compléter ses réponses tant que le lien est actif. **Nouveau lien** remplace l'adresse (l'ancienne cesse de fonctionner) et **Désactiver** la ferme.
 
 ## Joindre des documents
 

@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "palette-gustative", published_on: "2026-10-13",
+    title: "La palette gustative dans la fiche projet",
+    body: <<~TEXT,
+      La fiche projet a une nouvelle section : la palette gustative. Chaque personne du projet y ajoute sa ligne, enfants compris : les fruits qu'elle adore, ceux qu'elle n'aime pas, ses préférés et ses allergies. Puis vient ce que vous ferez des récoltes : croquer au jardin, confitures, cidre, tisanes…
+
+      Les porteur·euse·s de projet la remplissent aussi depuis leur lien privé. Deux champs restent réservés à l'équipe : les familles à privilégier dans la palette et la lecture du designer.
+    TEXT
+    link_path: "/help/remplir-la-fiche-projet", link_label: "Lire l'aide",
+    screenshot_alt: "La palette gustative : les fruits que Michael adore en vert, ceux qu'il n'aime pas en rouge, ses fruits préférés et ses allergies."
+  },
+  {
     key: "lieu-six-sources", published_on: "2026-10-09",
     title: "Ton terrain lu par six sources ouvertes",
     body: <<~TEXT,
