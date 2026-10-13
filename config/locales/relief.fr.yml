@@ -160,7 +160,7 @@ fr:
         trees_hint: "La canopée du modèle de surface, à sa vraie hauteur."
         reset: "Recentrer la vue"
         top: "Vue de dessus"
-      compass:
+      rose:
         title: "Tourner la vue vers le nord"
         label: "Boussole : tu regardes vers %{facing}. Clique pour tourner la vue vers le nord."
         n: "N"

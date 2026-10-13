@@ -40,8 +40,8 @@ export function Compass({ heading, onFaceNorth, className }: {
         letters.current[i]?.setAttribute('x', String(x))
         letters.current[i]?.setAttribute('y', String(y))
       })
-      const facing = t(`relief.page.compass.facing.${eighthOf(degrees)}`)
-      button.current?.setAttribute('aria-label', t('relief.page.compass.label', { facing }))
+      const facing = t(`relief.page.rose.facing.${eighthOf(degrees)}`)
+      button.current?.setAttribute('aria-label', t('relief.page.rose.label', { facing }))
     }
     tick()
     return () => cancelAnimationFrame(frame)
@@ -52,8 +52,8 @@ export function Compass({ heading, onFaceNorth, className }: {
       ref={button}
       type="button"
       onClick={onFaceNorth}
-      title={t('relief.page.compass.title')}
-      aria-label={t('relief.page.compass.title')}
+      title={t('relief.page.rose.title')}
+      aria-label={t('relief.page.rose.title')}
       className={className}
     >
       <svg viewBox="0 0 100 100" className="h-full w-full drop-shadow" aria-hidden="true">
@@ -86,7 +86,7 @@ export function Compass({ heading, onFaceNorth, className }: {
             className={key === 'n' ? 'fill-prune-700 font-sans font-bold' : 'fill-loam-700 font-sans font-semibold'}
             style={{ fontSize: key === 'n' ? 17 : 14 }}
           >
-            {t(`relief.page.compass.${key}`)}
+            {t(`relief.page.rose.${key}`)}
           </text>
         ))}
       </svg>
