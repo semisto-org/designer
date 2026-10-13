@@ -113,6 +113,7 @@ fr:
       next: "Suivant"
       mark_done: "Marquer cette section comme terminée"
       unmark_done: "Section terminée, cliquer pour rouvrir"
+      team_only: "Réservé à l'équipe : le porteur de projet ne le voit pas sur son lien."
       open_page: "Ouvrir en pleine page"
       back_to_map: "Retour à la carte"
       resume: "Reprendre avec « %{section} »"
@@ -245,6 +246,88 @@ fr:
             notes:
               label: "Précisions"
               placeholder: "Une journée idéale au jardin…"
+        taste:
+          title: "Palette gustative"
+          hint: "Ce que chacun aime manger, et ce que tu feras des récoltes. Un jardin-forêt nourrit pendant trente ans : autant qu'il donne ce qui te régale."
+          fields:
+            tasters:
+              label: "Les goûts de chacun"
+              hint: "Chaque personne du projet ajoute sa ligne, même les enfants."
+              add: "Ajouter mes goûts"
+              remove: "Retirer cette personne"
+              item:
+                name:
+                  label: "Prénom"
+                loves:
+                  label: "J'adore"
+                  options: &food_families
+                    apples: "Pommes"
+                    pears: "Poires"
+                    plums: "Prunes, mirabelles"
+                    cherries: "Cerises"
+                    peaches_apricots: "Pêches, abricots"
+                    figs: "Figues"
+                    grapes: "Raisins"
+                    kiwis: "Kiwis"
+                    persimmons: "Kakis"
+                    quinces_medlars: "Coings, nèfles"
+                    berries: "Petits fruits (framboises, groseilles, cassis…)"
+                    unusual_fruits: "Fruits insolites (asiminier, camerisier, argousier…)"
+                    nuts: "Noix, noisettes, châtaignes"
+                    herbs: "Aromatiques"
+                    perennial_vegetables: "Légumes vivaces"
+                    edible_flowers: "Fleurs comestibles"
+                    mushrooms: "Champignons"
+                dislikes:
+                  label: "Je n'aime pas"
+                  options: *food_families
+                favorites:
+                  label: "Mes fruits préférés"
+                  placeholder: "Mes fruits préférés, une variété d'enfance, un plat…"
+                allergies:
+                  label: "Allergies ou intolérances"
+            flavors:
+              label: "Les saveurs qui te plaisent"
+              options:
+                sweet: "Sucré"
+                tangy: "Acidulé"
+                bitter: "Amer"
+                aromatic: "Parfumé, aromatique"
+                nutty: "Fruits secs, noisette"
+                spicy: "Piquant, poivré"
+            kitchen:
+              label: "Ce que tu feras des récoltes"
+              hint: "Plusieurs choix possibles."
+              options:
+                fresh: "Croquer au jardin"
+                cooking: "Cuisiner"
+                jams: "Confitures, compotes"
+                juice_cider: "Jus, cidre"
+                drying: "Sécher"
+                fermenting: "Lacto-fermenter"
+                syrups_liqueurs: "Sirops, liqueurs"
+                herbal_teas: "Tisanes"
+            curiosity:
+              label: "Envie de découvrir ?"
+              options:
+                familiar: "Des goûts que je connais"
+                some_new: "Quelques découvertes"
+                adventurous: "Surprends-moi"
+            harvest_spread:
+              label: "Les récoltes"
+              options:
+                all_year: "Un peu tout au long de l'année"
+                big_harvests: "De belles récoltes à transformer"
+                no_preference: "Peu importe"
+            notes:
+              label: "Précisions"
+              placeholder: "Un souvenir de verger, un fruit à retrouver, un régime particulier…"
+            priorities:
+              label: "Familles à privilégier dans la palette"
+              options: *food_families
+            designer_notes:
+              label: "Lecture du designer"
+              placeholder: "Ce que la palette doit en retenir : variétés à faire goûter, étalement des récoltes…"
         budget:
           title: "Budget"
           hint: "Des tranches suffisent. Cela aide à proposer des aménagements réalistes, par étapes."

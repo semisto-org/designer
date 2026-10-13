@@ -1,6 +1,7 @@
 # The project sheet's form alone, opened from its private link
 # (/fiche-projet/:token): the people behind the project answer it without an
-# account and without seeing the map. Autosave and "I'm done" only.
+# account and without seeing the map. Autosave and "I'm done" only. The
+# team-only fields (the designer's reading) are neither shown nor written here.
 class ProjectFormsController < ApplicationController
   allow_unauthenticated_access
   before_action { response.set_header("X-Robots-Tag", "noindex, nofollow") }
@@ -14,9 +15,9 @@ class ProjectFormsController < ApplicationController
       token: @link.token,
       mapName: @map.name,
       invitedBy: @link.created_by&.display_name || @map.owner.display_name,
-      project: @map.project_sheet.to_h,
+      project: @map.project_sheet.for_holder.to_h,
       progress: @map.project_sheet.progress,
-      schema: ProjectSheet.schema_json,
+      schema: ProjectSheet.schema_json(holder: true),
       canEdit: !@map.read_only_by_plan?,
       submittedAt: @link.submitted_at&.iso8601,
       documents: @link.documents.newest_first.includes(file_attachment: :blob, thumbnail_attachment: :blob)
@@ -27,12 +28,12 @@ class ProjectFormsController < ApplicationController
 
   def update
     return render_read_only if @map.read_only_by_plan?
-    patch = ProjectSheet.parse(params[:project], strict: true)
+    patch = ProjectSheet.parse(params[:project], strict: true, holder: true)
     unless patch.valid?
       return render json: { errors: patch.errors, message: t("journey.project.invalid") }, status: :unprocessable_entity
     end
     sheet = ProjectSheet.save!(@map, patch)
-    render json: { project: sheet.to_h, progress: sheet.progress }
+    render json: { project: sheet.for_holder.to_h, progress: sheet.progress }
   end
 
   def submit

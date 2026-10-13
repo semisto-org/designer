@@ -19,7 +19,7 @@ class ProjectFormsControllerTest < ActionDispatch::IntegrationTest
     props = body["props"]
     assert_equal @map.name, props["mapName"]
     assert_equal({ "budget" => { "initial" => "under_500" } }, props["project"])
-    assert_equal 10, props["schema"]["sections"].size
+    assert_equal 11, props["schema"]["sections"].size
     assert_equal true, props["canEdit"]
     assert_nil props["currentUser"]
     refute_includes response.body, "Rue du Moulin"
@@ -33,6 +33,24 @@ class ProjectFormsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal({ "initial" => "under_500", "yearly" => "under_100" }, @map.reload.project["budget"])
     assert_equal 67, response.parsed_body.dig("progress", "sections", "budget", "percent")
+  end
+
+  test "the holder fills the taste palette but never sees nor writes the designer's reading" do
+    @map.update!(project: { "taste" => { "designer_notes" => "Faire goûter des camerises." } })
+    get project_form_path(@link.token), headers: inertia_headers
+    props = response.parsed_body["props"]
+    refute_includes response.body, "camerises"
+    taste = props["schema"]["sections"].find { _1["key"] == "taste" }["fields"].map { _1["key"] }
+    refute_includes taste, "designer_notes"
+
+    patch project_form_path(@link.token), as: :json, params: { project: { taste: {
+      tasters: [ { name: "Mael", loves: %w[apples nuts] } ], designer_notes: "Effacé ?"
+    } } }
+    assert_response :success
+    stored = @map.reload.project["taste"]
+    assert_equal "Faire goûter des camerises.", stored["designer_notes"]
+    assert_equal [ { "name" => "Mael", "loves" => %w[apples nuts] } ], stored["tasters"]
+    refute response.parsed_body.dig("project", "taste").key?("designer_notes")
   end
 
   test "invalid answers are refused" do

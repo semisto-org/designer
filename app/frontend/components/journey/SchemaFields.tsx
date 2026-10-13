@@ -1,8 +1,8 @@
 import clsx from 'clsx'
-import { Check, Plus, Trash2 } from 'lucide-react'
+import { Check, Lock, Plus, Trash2 } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import { Input, Select, Textarea } from '@/components/ui/Field'
-import { translations } from '@/lib/i18n'
+import { t, translations } from '@/lib/i18n'
 import type { SchemaField } from '@/types/journey'
 
 export type Texts = {
@@ -57,7 +57,16 @@ function FieldBlock({ field, texts, value, onChange, disabled, aside }: {
 }) {
   const id = useId()
   const grouped = field.type === 'multi' || field.type === 'enum' || field.type === 'list'
-  const hint = texts.hint && <p id={`${id}-hint`} className="mt-0.5 text-xs text-loam-500">{texts.hint}</p>
+  const hint = (texts.hint || field.teamOnly) && (
+    <>
+      {texts.hint && <p id={`${id}-hint`} className="mt-0.5 text-xs text-loam-500">{texts.hint}</p>}
+      {field.teamOnly && (
+        <p className="mt-0.5 flex items-center gap-1 text-sm text-loam-500">
+          <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />{t('journey.project.team_only')}
+        </p>
+      )}
+    </>
+  )
   const label = (as: 'legend' | 'label') => {
     const className = 'block text-sm font-medium text-loam-800'
     return as === 'legend'
@@ -196,15 +205,17 @@ function ListField({ field, texts, value, onChange, disabled }: {
 }) {
   const rows = Array.isArray(value) ? (value as Row[]) : []
   const itemFields = (field.item ?? []).filter((f) => !f.hidden)
-  const main = itemFields.filter((f) => f.key !== 'note')
-  const note = itemFields.find((f) => f.key === 'note')
+  // One line for the name and the short choices; free text and multiple
+  // choices go underneath, one per line.
+  const main = itemFields.filter((f) => f.key === 'name' || f.type === 'enum' || f.type === 'integer')
+  const below = itemFields.filter((f) => !main.includes(f))
   const canAdd = !disabled && rows.length < (field.max ?? 20)
 
   const update = (index: number, key: string, v: unknown) =>
     onChange(rows.map((row, i) => {
       if (i !== index) return row
       const next = { ...row }
-      if (v == null || v === '') delete next[key]
+      if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) delete next[key]
       else next[key] = v
       return next
     }))
@@ -263,13 +274,27 @@ function ListField({ field, texts, value, onChange, disabled }: {
               </button>
             )}
           </div>
-          {note && (
-            <Input
-              aria-label={texts.item?.note?.label} placeholder={texts.item?.note?.label} maxLength={note.limit}
-              disabled={disabled} className="mt-2" value={(row.note as string) ?? ''}
-              onChange={(e) => update(index, 'note', e.target.value)}
-            />
-          )}
+          {below.map((item) => {
+            const itemTexts = texts.item?.[item.key] ?? {}
+            const label = itemTexts.label ?? item.key
+            if (item.type === 'multi') {
+              return (
+                <fieldset key={item.key} disabled={disabled} className="mt-3 min-w-0">
+                  <legend className="text-sm text-loam-700">{label}</legend>
+                  <div className="mt-1.5">
+                    <MultiField field={item} texts={itemTexts} value={row[item.key]} onChange={(v) => update(index, item.key, v)} disabled={disabled} />
+                  </div>
+                </fieldset>
+              )
+            }
+            return (
+              <Input
+                key={item.key} aria-label={label} placeholder={itemTexts.placeholder ?? label} maxLength={item.limit}
+                disabled={disabled} className="mt-2" value={(row[item.key] as string) ?? ''}
+                onChange={(e) => update(index, item.key, e.target.value)}
+              />
+            )
+          })}
         </div>
       ))}
       {canAdd && (

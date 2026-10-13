@@ -17,6 +17,8 @@ export type SchemaField = {
   item?: SchemaField[]
   required?: boolean
   hidden?: boolean
+  /** Answered by the team only: never on the private link's form. */
+  teamOnly?: boolean
 }
 
 export type ProjectSchema = { sections: { key: string; fields: SchemaField[] }[] }

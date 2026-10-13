@@ -14,8 +14,10 @@ module TypedSchema
   # `item`: the fields of one entry (list). `required`: an entry without it
   # is dropped (list items). `counts`: counts toward completion (sheet only).
   # `hidden`: carried along but never shown in forms (technical ids).
-  Field = Data.define(:key, :type, :values, :range, :limit, :max, :exclusive, :item, :required, :counts, :hidden) do
-    def initialize(key:, type:, values: nil, range: nil, limit: nil, max: nil, exclusive: [], item: nil, required: false, counts: true, hidden: false)
+  # `team_only`: answered by the people working on the map, never shown to
+  # (nor written by) the people behind the project on their private link.
+  Field = Data.define(:key, :type, :values, :range, :limit, :max, :exclusive, :item, :required, :counts, :hidden, :team_only) do
+    def initialize(key:, type:, values: nil, range: nil, limit: nil, max: nil, exclusive: [], item: nil, required: false, counts: true, hidden: false, team_only: false)
       super
     end
 
@@ -29,15 +31,16 @@ module TypedSchema
         json[:item] = item.map(&:as_json) if item
         json[:required] = true if required
         json[:hidden] = true if hidden
+        json[:teamOnly] = true if team_only
       end
     end
   end
 
   module_function
 
-  def text(key, limit: 2_000, required: false, counts: false) = Field.new(key:, type: :text, limit:, required:, counts:)
+  def text(key, limit: 2_000, required: false, counts: false, team_only: false) = Field.new(key:, type: :text, limit:, required:, counts:, team_only:)
   def enum(key, *values, required: false, counts: true) = Field.new(key:, type: :enum, values: values.map(&:to_s).freeze, required:, counts:)
-  def multi(key, *values, exclusive: [], counts: true) = Field.new(key:, type: :multi, values: values.map(&:to_s).freeze, exclusive: Array(exclusive).map(&:to_s), counts:)
+  def multi(key, *values, exclusive: [], counts: true, team_only: false) = Field.new(key:, type: :multi, values: values.map(&:to_s).freeze, exclusive: Array(exclusive).map(&:to_s), counts:, team_only:)
   def integer(key, range, required: false, counts: true, hidden: false) = Field.new(key:, type: :integer, range:, required:, counts:, hidden:)
   def boolean(key, counts: false) = Field.new(key:, type: :boolean, counts:)
   def list(key, item, max: 20, counts: true) = Field.new(key:, type: :list, item: item.freeze, max:, counts:)
