@@ -48,8 +48,8 @@ class ProjectSheet
     "taste" => [
       TypedSchema.list("tasters", [
         TypedSchema.text("name", limit: 80, required: true),
-        TypedSchema.multi("loves", *FOOD_FAMILIES),
-        TypedSchema.multi("dislikes", *FOOD_FAMILIES),
+        TypedSchema.multi("loves", *FOOD_FAMILIES, tone: :positive),
+        TypedSchema.multi("dislikes", *FOOD_FAMILIES, tone: :negative),
         TypedSchema.text("favorites", limit: 200),
         TypedSchema.text("allergies", limit: 200)
       ], max: 12),

@@ -135,16 +135,24 @@ function FieldBlock({ field, texts, value, onChange, disabled, aside }: {
   )
 }
 
-function Chip({ kind, name, checked, disabled, onToggle, children }: {
-  kind: 'checkbox' | 'radio'; name?: string; checked: boolean; disabled: boolean; onToggle: () => void; children: ReactNode
+const CHECKED_TONES = {
+  default: 'bg-prune-600 text-white ring-prune-600',
+  positive: 'bg-leaf-600 text-white ring-leaf-600',
+  negative: 'bg-clay-600 text-white ring-clay-600',
+}
+const CHECKED_HOVER = { default: 'hover:bg-prune-700', positive: 'hover:bg-leaf-700', negative: 'hover:bg-clay-700' }
+
+function Chip({ kind, name, checked, disabled, onToggle, tone = 'default', children }: {
+  kind: 'checkbox' | 'radio'; name?: string; checked: boolean; disabled: boolean; onToggle: () => void
+  tone?: keyof typeof CHECKED_TONES; children: ReactNode
 }) {
   return (
     <label
       className={clsx(
         'relative inline-flex select-none items-center gap-1.5 rounded-full px-3 py-1.5 text-sm ring-1 ring-inset transition-colors',
         'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-prune-600',
-        checked ? 'bg-prune-600 text-white ring-prune-600' : 'bg-white text-loam-700 ring-loam-200',
-        disabled ? 'cursor-default opacity-70' : 'cursor-pointer ' + (checked ? 'hover:bg-prune-700' : 'hover:bg-loam-50'),
+        checked ? CHECKED_TONES[tone] : 'bg-white text-loam-700 ring-loam-200',
+        disabled ? 'cursor-default opacity-70' : 'cursor-pointer ' + (checked ? CHECKED_HOVER[tone] : 'hover:bg-loam-50'),
       )}
     >
       <input
@@ -172,7 +180,7 @@ function MultiField({ field, texts, value, onChange, disabled }: {
   return (
     <div className="flex flex-wrap gap-2">
       {(field.values ?? []).map((option) => (
-        <Chip key={option} kind="checkbox" checked={current.includes(option)} disabled={disabled} onToggle={() => toggle(option)}>
+        <Chip key={option} kind="checkbox" tone={field.tone} checked={current.includes(option)} disabled={disabled} onToggle={() => toggle(option)}>
           {texts.options?.[option] ?? option}
         </Chip>
       ))}
@@ -203,6 +211,7 @@ type Row = Record<string, unknown>
 function ListField({ field, texts, value, onChange, disabled }: {
   field: SchemaField; texts: Texts; value: unknown; onChange: (v: unknown) => void; disabled: boolean
 }) {
+  const listId = useId()
   const rows = Array.isArray(value) ? (value as Row[]) : []
   const itemFields = (field.item ?? []).filter((f) => !f.hidden)
   // One line for the name and the short choices; free text and multiple
@@ -287,12 +296,17 @@ function ListField({ field, texts, value, onChange, disabled }: {
                 </fieldset>
               )
             }
+            // A label above, not only a placeholder: once filled, the field still says what it is.
+            const inputId = `${listId}-${index}-${item.key}`
             return (
-              <Input
-                key={item.key} aria-label={label} placeholder={itemTexts.placeholder ?? label} maxLength={item.limit}
-                disabled={disabled} className="mt-2" value={(row[item.key] as string) ?? ''}
-                onChange={(e) => update(index, item.key, e.target.value)}
-              />
+              <div key={item.key} className="mt-3">
+                <label htmlFor={inputId} className="block text-sm text-loam-700">{label}</label>
+                <Input
+                  id={inputId} placeholder={itemTexts.placeholder} maxLength={item.limit}
+                  disabled={disabled} className="mt-1" value={(row[item.key] as string) ?? ''}
+                  onChange={(e) => update(index, item.key, e.target.value)}
+                />
+              </div>
             )
           })}
         </div>

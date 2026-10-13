@@ -248,7 +248,7 @@ fr:
               placeholder: "Une journée idéale au jardin…"
         taste:
           title: "Palette gustative"
-          hint: "Ce que chacun aime manger, et ce que tu feras des récoltes. Un jardin-forêt nourrit pendant trente ans : autant qu'il donne ce qui te régale."
+          hint: "Ce que chacun aime manger, et ce que tu feras des récoltes. Un jardin-forêt nourrit des générations (un châtaignier donne pendant des siècles) : autant qu'il donne ce qui régale chacun."
           fields:
             tasters:
               label: "Les goûts de chacun"
@@ -283,9 +283,10 @@ fr:
                   options: *food_families
                 favorites:
                   label: "Mes fruits préférés"
-                  placeholder: "Mes fruits préférés, une variété d'enfance, un plat…"
+                  placeholder: "Une variété d'enfance, un plat, un fruit à retrouver…"
                 allergies:
                   label: "Allergies ou intolérances"
+                  placeholder: "Aucune, ou lesquelles"
             flavors:
               label: "Les saveurs qui te plaisent"
               options:

@@ -176,6 +176,8 @@ class ProjectSheetTest < ActiveSupport::TestCase
     refute_includes fields, "designer_notes"
     team = ProjectSheet.schema_json[:sections].find { _1[:key] == "taste" }[:fields].find { _1[:key] == "designer_notes" }
     assert_equal true, team[:teamOnly]
+    tasters = ProjectSheet.schema_json[:sections].find { _1[:key] == "taste" }[:fields].find { _1[:key] == "tasters" }[:item]
+    assert_equal({ "loves" => "positive", "dislikes" => "negative" }, tasters.filter_map { [ _1[:key], _1[:tone] ] if _1[:tone] }.to_h)
 
     patch = ProjectSheet.parse({ "taste" => { "designer_notes" => "Écrit par le porteur", "curiosity" => "familiar" } }, holder: true)
     assert patch.valid?

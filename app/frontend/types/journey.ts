@@ -19,6 +19,8 @@ export type SchemaField = {
   hidden?: boolean
   /** Answered by the team only: never on the private link's form. */
   teamOnly?: boolean
+  /** Colours the chosen options of a multiple choice (« J'adore » / « Je n'aime pas »). */
+  tone?: 'positive' | 'negative'
 }
 
 export type ProjectSchema = { sections: { key: string; fields: SchemaField[] }[] }
