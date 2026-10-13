@@ -23,7 +23,7 @@ Touche la zone, ou son nom, pour ouvrir sa fiche :
 
 - **Nom** : il se réécrit aussitôt sur la carte ;
 - **Couleur** : une des huit teintes du plan, ou n'importe quelle autre avec la pipette ;
-- **Arrondir les angles** : une surface se dessine d'office avec des courbes douces, comme tracée à la main ; décoche la case pour retrouver les angles cliqués (un tracé peut aussi s'adoucir en courbe) ;
+- **Arrondir les angles** : une surface se dessine d'office avec des coins légèrement arrondis (au plus 3 m), comme tracée à la main, sans changer sa surface de plus de quelques m² ; décoche la case pour retrouver les angles vifs (un tracé peut aussi adoucir ses coudes) ;
 - **Écrire la surface sur la carte** (ou la longueur, pour un tracé) : décoche-la si seul le nom compte, pour une flèche de vue par exemple ;
 - **Modifier la forme**, pour déplacer un sommet.
 

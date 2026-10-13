@@ -40,23 +40,41 @@ test('the measure under the name follows the kind and can be hidden', () => {
   assert.equal(zoneMeasureText({ kind: 'zone' }, { area: null, length: null }), null)
 })
 
-test('a rounded zone cuts its corners, keeps its ring closed and stays inside the clicked outline', () => {
-  const square = { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] }
-  const rounded = roundedGeometry(square as never) as { coordinates: number[][][] }
-  const ring = rounded.coordinates[0] as number[][]
-  assert.equal(ring.length, 4 * 2 ** 3 + 1)
+// A 50 m square near Yvoir: 2 500 m², like a garden zone.
+const LAT = 50.32
+const DX = 50 / (111_320 * Math.cos((LAT * Math.PI) / 180))
+const DY = 50 / 111_320
+const square = { type: 'Polygon', coordinates: [[[4.9, LAT], [4.9 + DX, LAT], [4.9 + DX, LAT + DY], [4.9, LAT + DY], [4.9, LAT]]] }
+
+function areaM2(ring: number[][]): number {
+  const kx = 111_320 * Math.cos((LAT * Math.PI) / 180)
+  let sum = 0
+  for (let i = 0; i < ring.length - 1; i++) sum += ring[i][0] * kx * ring[i + 1][1] * 111_320 - ring[i + 1][0] * kx * ring[i][1] * 111_320
+  return Math.abs(sum) / 2
+}
+
+test('a rounded zone softens its corners, keeps its ring closed and stays inside the clicked outline', () => {
+  const ring = (roundedGeometry(square as never) as { coordinates: number[][][] }).coordinates[0]
   assert.deepEqual(ring[0], ring[ring.length - 1])
-  const corners = ['0,0', '10,0', '10,10', '0,10']
+  const corners = square.coordinates[0].slice(0, 4).map((p) => p.join(','))
   assert.ok(ring.every((p) => !corners.includes(p.join(','))), 'no corner left')
-  assert.ok(ring.every(([x, y]) => x >= 0 && x <= 10 && y >= 0 && y <= 10), 'inside the clicked outline')
-  assert.deepEqual(square.coordinates[0][1], [10, 0], 'the stored outline is untouched')
+  const eps = 1e-12
+  assert.ok(ring.every(([x, y]) => x >= 4.9 - eps && x <= 4.9 + DX + eps && y >= LAT - eps && y <= LAT + DY + eps), 'inside the clicked outline')
+  assert.deepEqual(square.coordinates[0][1], [4.9 + DX, LAT], 'the stored outline is untouched')
+})
+
+test('rounding barely changes the area: a few square metres per corner', () => {
+  const before = areaM2(square.coordinates[0])
+  const after = areaM2((roundedGeometry(square as never) as { coordinates: number[][][] }).coordinates[0])
+  assert.ok(Math.abs(before - 2500) < 1)
+  assert.ok(before - after > 0 && before - after < 15, `lost ${before - after} m²`)
 })
 
 test('a rounded path keeps its two ends', () => {
-  const path = { type: 'LineString', coordinates: [[0, 0], [10, 0], [10, 10]] }
+  const path = { type: 'LineString', coordinates: [[0, 0], [0.001, 0], [0.001, 0.001]] }
   const line = (roundedGeometry(path as never) as { coordinates: number[][] }).coordinates
   assert.deepEqual(line[0], [0, 0])
-  assert.deepEqual(line[line.length - 1], [10, 10])
+  assert.deepEqual(line[line.length - 1], [0.001, 0.001])
   assert.ok(line.length > 3)
 })
 

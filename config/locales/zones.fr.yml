@@ -17,6 +17,6 @@ fr:
     created_unnamed: "Zone ajoutée. Donne-lui un nom dans sa fiche : il s'écrira sur la carte."
     in_version: "Elle rejoindra la version « %{version} » affichée sur la carte."
     rounded: "Arrondir les angles, comme un tracé à la main"
-    rounded_path: "Adoucir le tracé en courbe"
+    rounded_path: "Adoucir les coudes du tracé"
     show_area: "Écrire la surface sur la carte, sous le nom"
     show_length: "Écrire la longueur sur la carte, sous le nom"
