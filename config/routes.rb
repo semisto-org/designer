@@ -322,6 +322,20 @@ Rails.application.routes.draw do
 
   # --- offer templates ---
   resources :offer_templates, only: %i[index create edit update destroy]
+  # Request forms (« Demandes »): each pro account's public form and the
+  # requests it brought in; the form itself at /demande/:slug.
+  resources :request_forms, only: %i[index create update] do
+    resources :requests, only: %i[show update], controller: "request_forms/requests" do
+      post :map, on: :member
+    end
+  end
+  constraints slug: /[a-z0-9][a-z0-9-]{1,62}/ do
+    get "demande/:slug", to: "public_request_forms#show", as: :public_request_form
+    post "demande/:slug", to: "public_request_forms#create"
+    get "demande/:slug/locate", to: "public_request_forms#locate", as: :public_request_form_locate
+    get "demande/:slug/parcel", to: "public_request_forms#parcel", as: :public_request_form_parcel
+    get "demande/:slug/geocode", to: "public_request_forms#geocode", as: :public_request_form_geocode
+  end
 
   # --- teams ---
   # Teams ("équipes"): members edit every map of the team. The invitation

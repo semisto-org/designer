@@ -11,10 +11,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { currentUser, releaseNotes } = usePage().props as unknown as SharedProps
   const unseen = releaseNotes?.unseen ?? 0
   const url = usePage().url
+  const newRequests = (currentUser as TeamAwareUser | null)?.newRequests
   const nav = [
     { href: '/maps', label: t('nav.maps') },
     ...(currentUser ? [{ href: '/tasks', label: t('tasks.nav') }] : []),
     ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
+    ...(newRequests != null ? [{ href: '/request_forms', label: t('request_forms.nav'), dot: newRequests > 0 }] : []),
     { href: '/plants', label: t('nav.plants') },
     ...(currentUser?.admin ? [{ href: '/admin', label: t('admin.nav.link') }] : []),
   ]
