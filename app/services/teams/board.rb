@@ -10,7 +10,7 @@ module Teams
   #
   # A few grouped queries for the whole team, never one per map.
   class Board
-    # « Qui porte quoi » counts the tasks due within these coming days.
+    # « La charge de chacun » counts the tasks due within these coming days.
     LOAD_DAYS = 28
     # Projects in these phases no longer count in a member's load.
     SETTLED_PHASES = %w[co_management completed].freeze
