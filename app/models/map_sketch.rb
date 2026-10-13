@@ -1,7 +1,8 @@
 # What « Mes cartes » needs to paint each map as a field-notebook sketch:
 # the palette counted per strata, and a light copy of what is drawn (plants
 # with their strata and adult spread, water, hedges, buildings, existing
-# trees). The outline itself comes with Map#as_inertia.
+# trees), and the outline (simplified) with its bounding box, read from
+# PostGIS: parsing a detailed outline with RGeo costs about 10 ms a map.
 #
 # Built for a whole list of maps at once (a few queries, never one per map),
 # simplified and capped so a large design keeps the page light.
@@ -32,13 +33,20 @@ class MapSketch
   PLANTS_SQL = <<~SQL.squish.freeze
     SELECT map_id, lng, lat, species_id, variety_id FROM (
       SELECT map_id,
-             ST_X(ST_PointOnSurface(geometry)) AS lng, ST_Y(ST_PointOnSurface(geometry)) AS lat,
+             round(ST_X(ST_PointOnSurface(geometry))::numeric, 6)::float AS lng,
+             round(ST_Y(ST_PointOnSurface(geometry))::numeric, 6)::float AS lat,
              CASE WHEN properties->>'species_id' ~ '^[0-9]+$' THEN (properties->>'species_id')::bigint END AS species_id,
              CASE WHEN properties->>'variety_id' ~ '^[0-9]+$' THEN (properties->>'variety_id')::bigint END AS variety_id,
              row_number() OVER (PARTITION BY map_id ORDER BY id) AS rank
       FROM map_features
       WHERE map_id = ANY($1::bigint[]) AND status = 'active' AND kind = 'plant'
     ) plants WHERE rank <= #{PLANT_LIMIT}
+  SQL
+
+  BOUNDARIES_SQL = <<~SQL.squish.freeze
+    SELECT id, ST_AsGeoJSON(ST_SimplifyPreserveTopology(boundary, #{SIMPLIFY}), 6),
+           ST_XMin(boundary), ST_YMin(boundary), ST_XMax(boundary), ST_YMax(boundary)
+    FROM maps WHERE id = ANY($1::bigint[]) AND boundary IS NOT NULL
   SQL
 
   # { map_id => sketch json }
@@ -64,6 +72,13 @@ class MapSketch
     end
   end
 
+  # { map_id => { boundary: GeoJSON outline (simplified), bbox: [w, s, e, n] } },
+  # for Map#as_inertia; maps without an outline are absent.
+  def outlines
+    @outlines ||= connection.select_rows(BOUNDARIES_SQL, "map sketch outlines", [ pg_array ])
+      .to_h { |id, geojson, *bbox| [ id, { boundary: JSON.parse(geojson), bbox: bbox.map(&:to_f) } ] }
+  end
+
   private
     def palette_items
       @palette_items ||= PaletteItem.active.where(map_id: @ids).includes(:species).to_a
@@ -80,13 +95,16 @@ class MapSketch
         rows = connection.select_all(PLANTS_SQL, "map sketch plants", [ pg_array ]).to_a
         species = PlantSpecies.where(id: rows.filter_map { _1["species_id"] }.uniq).index_by(&:id)
         by_key = palette_items.index_by { [ _1.map_id, _1.species_id, _1.variety_id ] }
+        # Strata and spread once per species of a map, not once per plant.
+        looks = Hash.new do |memo, key|
+          map_id, species_id, variety_id = key
+          sp = species[species_id]
+          item = by_key[key] || by_key[[ map_id, species_id, nil ]]
+          strata = item&.effective_strata || sp&.default_strata || "shrub"
+          memo[key] = [ strata, PlantGrowth.spread(strata:, species: sp).metres.round(1) ]
+        end
         rows.group_by { _1["map_id"] }.transform_values do |list|
-          list.map do |row|
-            sp = species[row["species_id"]]
-            item = by_key[[ row["map_id"], row["species_id"], row["variety_id"] ]] || by_key[[ row["map_id"], row["species_id"], nil ]]
-            strata = item&.effective_strata || sp&.default_strata || "shrub"
-            [ row["lng"].round(6), row["lat"].round(6), strata, PlantGrowth.spread(strata:, species: sp).metres.round(1) ]
-          end
+          list.map { |row| [ row["lng"], row["lat"], *looks[[ row["map_id"], row["species_id"], row["variety_id"] ]] ] }
         end
       end
     end

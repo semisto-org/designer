@@ -152,23 +152,74 @@ function niceScale(pxPerMetre: number, maxPx: number) {
 }
 
 /**
- * `growth`: 0.3 shows the plants young (today), 1 at their adult spread.
- * The canvas must already have its CSS size.
+ * What does not grow (the meadow, water, buildings), painted once per size:
+ * thirty years going by on hover then only repaint what grows.
  */
-export function drawSketch(canvas: HTMLCanvasElement, map: SketchInput, growth: number, copy: SketchCopy) {
-  const w = canvas.clientWidth
-  const h = canvas.clientHeight
-  if (!w || !h) return
-  const dpr = Math.min(2, window.devicePixelRatio || 1)
-  canvas.width = Math.round(w * dpr)
-  canvas.height = Math.round(h * dpr)
+export type SketchCache = { key?: string; layer?: HTMLCanvasElement }
+
+function context(canvas: HTMLCanvasElement, w: number, h: number, dpr: number) {
+  const [cw, ch] = [Math.round(w * dpr), Math.round(h * dpr)]
+  // Resizing a canvas reallocates it: only when its size really changed.
+  if (canvas.width !== cw) canvas.width = cw
+  if (canvas.height !== ch) canvas.height = ch
   const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  if (!ctx) return null
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.clearRect(0, 0, w, h)
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
-  const rand = seeded(map.id * 7 + 3)
+  return ctx
+}
+
+function paintGround(ctx: CanvasRenderingContext2D, outlines: Point[][], sketch: MapSketchData | undefined, project: (p: number[]) => Point, rand: () => number) {
+  outlines.forEach((o) => meadow(ctx, o, rand))
+  if (!sketch) return
+  for (const geom of sketch.water) {
+    if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
+      outerRings(geom).forEach((ring) => {
+        ctx.globalAlpha = 0.35
+        ctx.fillStyle = '#7fa7c4'
+        for (let i = 0; i < 3; i++) { wobblyPath(ctx, ring.map(project), rand, 1.5, true); ctx.fill() }
+      })
+    } else {
+      lines(geom).forEach((line) => {
+        ctx.globalAlpha = 0.45
+        ctx.strokeStyle = WATER
+        ctx.lineWidth = 1.4
+        wobblyPath(ctx, line.map(project), rand, 0.6, false)
+        ctx.stroke()
+      })
+    }
+    ctx.globalAlpha = 1
+  }
+  for (const geom of sketch.buildings) {
+    outerRings(geom).forEach((ring) => {
+      ctx.globalAlpha = 0.5
+      ctx.fillStyle = '#e2dacb'
+      wobblyPath(ctx, ring.map(project), rand, 0.8, true)
+      ctx.fill()
+      ctx.globalAlpha = 0.7
+      ctx.strokeStyle = PENCIL
+      ctx.lineWidth = 0.8
+      ctx.stroke()
+    })
+    ctx.globalAlpha = 1
+  }
+}
+
+/**
+ * `growth`: 0.3 shows the plants young (today), 1 at their adult spread.
+ * The canvas must already have its CSS size. Pass the same `cache` on every
+ * frame of an animation.
+ */
+export function drawSketch(canvas: HTMLCanvasElement, map: SketchInput, growth: number, copy: SketchCopy, cache: SketchCache = {}) {
+  const w = canvas.clientWidth
+  const h = canvas.clientHeight
+  if (!w || !h) return
+  const dpr = Math.min(2, window.devicePixelRatio || 1)
+  const ctx = context(canvas, w, h, dpr)
+  if (!ctx) return
+  const rand = seeded(map.id * 7 + 5)
   const rings = outerRings(map.boundary)
 
   if (rings.length === 0) {
@@ -192,41 +243,19 @@ export function drawSketch(canvas: HTMLCanvasElement, map: SketchInput, growth: 
 
   const { scale, project } = projector(rings, w, h, Math.max(22, Math.min(w, h) * 0.14))
   const outlines = rings.map((ring) => densify(ring.map(project), 6))
-  outlines.forEach((o) => meadow(ctx, o, rand))
-
   const sketch = map.sketch
+
+  const key = `${map.id}:${w}x${h}@${dpr}`
+  if (cache.key !== key || !cache.layer) {
+    const layer = document.createElement('canvas')
+    const ground = context(layer, w, h, dpr)
+    if (ground) paintGround(ground, outlines, sketch, project, seeded(map.id * 7 + 3))
+    cache.key = key
+    cache.layer = layer
+  }
+  ctx.drawImage(cache.layer, 0, 0, w, h)
+
   if (sketch) {
-    for (const geom of sketch.water) {
-      if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
-        outerRings(geom).forEach((ring) => {
-          ctx.globalAlpha = 0.35
-          ctx.fillStyle = '#7fa7c4'
-          for (let i = 0; i < 3; i++) { wobblyPath(ctx, ring.map(project), rand, 1.5, true); ctx.fill() }
-        })
-      } else {
-        lines(geom).forEach((line) => {
-          ctx.globalAlpha = 0.45
-          ctx.strokeStyle = WATER
-          ctx.lineWidth = 1.4
-          wobblyPath(ctx, line.map(project), rand, 0.6, false)
-          ctx.stroke()
-        })
-      }
-      ctx.globalAlpha = 1
-    }
-    for (const geom of sketch.buildings) {
-      outerRings(geom).forEach((ring) => {
-        ctx.globalAlpha = 0.5
-        ctx.fillStyle = '#e2dacb'
-        wobblyPath(ctx, ring.map(project), rand, 0.8, true)
-        ctx.fill()
-        ctx.globalAlpha = 0.7
-        ctx.strokeStyle = PENCIL
-        ctx.lineWidth = 0.8
-        ctx.stroke()
-      })
-      ctx.globalAlpha = 1
-    }
     for (const geom of sketch.hedges) {
       lines(geom).forEach((line) => {
         ctx.globalAlpha = 0.45
