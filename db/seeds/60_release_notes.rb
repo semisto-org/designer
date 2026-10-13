@@ -47,17 +47,6 @@ release_notes = [
     screenshot_alt: "Le constructeur d'offre : le périmètre mesuré sur la carte et la jauge « Précision du budget »."
   },
   {
-    key: "photo-de-profil", published_on: "2026-10-12",
-    title: "Ta photo de profil",
-    body: <<~TEXT,
-      Dans « Mon compte », ajoute ta propre photo : elle accompagne tes commentaires, tes pouces et les tâches qu'on te confie. Les photos d'iPhone passent telles quelles.
-
-      « Se déconnecter » se trouve maintenant là aussi, et le menu du haut ne garde que tes outils.
-    TEXT
-    link_path: "/account", link_label: "Ouvrir mon compte",
-    screenshot_alt: "La page « Mon compte » avec la photo de profil et le bouton « Se déconnecter »."
-  },
-  {
     key: "taches", published_on: "2026-10-11",
     title: "Les tâches de ton projet, saison après saison",
     body: <<~TEXT,
@@ -111,27 +100,6 @@ release_notes = [
     TEXT
     link_path: "/help/photos-et-suivi-dans-le-temps", link_label: "Lire l'aide",
     screenshot_alt: "Une vue du dessus prise au drone, avec la hauteur, l'angle et la surface couverte."
-  },
-  {
-    key: "connexion-code", published_on: "2026-10-10",
-    title: "Te connecter avec un code, ou un mot de passe",
-    body: <<~TEXT,
-      L'e-mail de connexion contient maintenant un code à six chiffres : pratique pour te connecter sur un autre appareil que celui qui l'a reçu. Le lien, lui, ne s'use plus quand ta messagerie l'ouvre en aperçu.
-
-      Tu préfères un mot de passe ? Choisis-en un dans « Mon compte ».
-    TEXT
-    screenshot_alt: "La page « Se connecter » avec le champ du code à six chiffres."
-  },
-  {
-    key: "legendes", published_on: "2026-10-09",
-    title: "Chaque couche a sa légende",
-    body: <<~TEXT,
-      pH du sol, pentes, zones inondables… Chaque couche de données dit maintenant ce que veulent dire ses couleurs, sous son nom dans « Couches » et dans une carte « Légende » posée sur la carte.
-
-      Plus besoin de deviner ce que signifie un rouge ou un bleu sur ton terrain.
-    TEXT
-    link_path: "/help/lire-les-couches-du-geoportail", link_label: "Lire l'aide",
-    screenshot_alt: "Une carte avec la couche des zones inondables et sa légende en bas à droite."
   },
   {
     key: "lieu-six-sources", published_on: "2026-10-09",
