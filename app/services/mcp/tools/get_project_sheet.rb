@@ -51,6 +51,7 @@ module Mcp
             range: field.range && [ field.range.begin, field.range.end ],
             max_length: field.type == :text ? field.limit : nil,
             max_entries: field.max,
+            team_only: field.team_only || nil,
             item: field.item&.reject(&:hidden)&.map { |i| field_json(i, "#{texts}.item.#{i.key}", nil).except(:value) },
             value:
           }.compact

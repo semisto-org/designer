@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import type { ComponentProps, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 
 export const inputClass =
   'block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-loam-900 ring-1 ring-inset ring-loam-900/20 ' +
@@ -19,7 +19,7 @@ export function Field({ label, error, hint, children, className }: {
   )
 }
 
-export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
+export function Input(props: ComponentProps<'input'>) {
   return <input {...props} className={clsx(inputClass, props.className)} />
 }
 

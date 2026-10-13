@@ -265,6 +265,7 @@ fr:
       properties: "Caractéristiques"
       color: "Couleur"
       color_reset: "Couleur par défaut"
+      color_custom: "Choisir une autre couleur"
       none: "—"
       "yes": "Oui"
 

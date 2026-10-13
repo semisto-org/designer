@@ -6,6 +6,7 @@ class Map < ApplicationRecord
   include Commentable
   include HasTerrain
   include MapPlanting
+  include MapBoard
 
   # Raised when a fourth editor would be added.
   class EditorLimitReached < StandardError
@@ -146,15 +147,17 @@ class Map < ApplicationRecord
     [ box.min_x, box.min_y, box.max_x, box.max_y ]
   end
 
-  def as_inertia(user = nil)
+  # A list passes what it read for all its maps at once (MapSketch#outlines):
+  # parsing a detailed outline here costs about 10 ms a map.
+  def as_inertia(user = nil, role: role_for(user), boundary: geometry_geojson(:boundary), bbox: self.bbox)
     {
       id:, name:, description:, address:, stage:, parcels:,
       areaM2: area_m2,
-      boundary: geometry_geojson(:boundary),
+      boundary:,
       center: center && [ center.x, center.y ],
       zoom:, bbox:,
       region: region.as_inertia,
-      role: role_for(user),
+      role:,
       ownerName: owner.display_name,
       updatedAt: updated_at.iso8601,
       lockVersion: lock_version

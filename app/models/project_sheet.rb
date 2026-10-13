@@ -13,6 +13,11 @@
 class ProjectSheet
   NOTES = TypedSchema.text("notes")
 
+  # Food families for the taste palette: what each person loves or avoids,
+  # and what the designer keeps for the plant palette.
+  FOOD_FAMILIES = %w[apples pears plums cherries peaches_apricots figs grapes kiwis persimmons quinces_medlars berries
+    unusual_fruits nuts herbs perennial_vegetables edible_flowers mushrooms].freeze
+
   SECTIONS = {
     # Qui : une ou plusieurs personnes.
     "who" => [
@@ -36,6 +41,25 @@ class ProjectSheet
       TypedSchema.multi("uses", *%w[eat_fresh preserve forage_walk children_play relax gatherings work_outdoors teaching guests market_sales animals_care wood_craft medicinal wildlife_watch]),
       TypedSchema.enum("presence", *%w[daily several_per_week weekends holidays remote]),
       NOTES
+    ],
+    # Palette gustative : ce que chacun aime manger, la façon de cuisiner et
+    # de conserver. Chaque personne du projet remplit sa ligne depuis le lien
+    # privé ; la lecture du designer reste à l'équipe.
+    "taste" => [
+      TypedSchema.list("tasters", [
+        TypedSchema.text("name", limit: 80, required: true),
+        TypedSchema.multi("loves", *FOOD_FAMILIES, tone: :positive),
+        TypedSchema.multi("dislikes", *FOOD_FAMILIES, tone: :negative),
+        TypedSchema.text("favorites", limit: 200),
+        TypedSchema.text("allergies", limit: 200)
+      ], max: 12),
+      TypedSchema.multi("flavors", *%w[sweet tangy bitter aromatic nutty spicy]),
+      TypedSchema.multi("kitchen", *%w[fresh cooking jams juice_cider drying fermenting syrups_liqueurs herbal_teas]),
+      TypedSchema.enum("curiosity", *%w[familiar some_new adventurous]),
+      TypedSchema.enum("harvest_spread", *%w[all_year big_harvests no_preference]),
+      NOTES,
+      TypedSchema.multi("priorities", *FOOD_FAMILIES, counts: false, team_only: true),
+      TypedSchema.text("designer_notes", team_only: true)
     ],
     # Budget, par tranches.
     "budget" => [
@@ -94,8 +118,11 @@ class ProjectSheet
   # raw: a Hash, ActionController::Parameters, nil (an empty sheet).
   # strict: record an error for every invalid value (input) instead of
   # silently dropping it (reading stored data).
-  def self.parse(raw, strict: true)
-    new(raw, strict:)
+  # holder: read as the people behind the project (private link): the
+  # team-only fields are not part of the sheet, so they are neither read
+  # nor written.
+  def self.parse(raw, strict: true, holder: false)
+    new(raw, strict:, holder:)
   end
 
   # Field-level merge of a (strict) patch into stored data. A key sent blank
@@ -130,14 +157,18 @@ class ProjectSheet
     sheet
   end
 
-  def self.fields_for(section) = SECTIONS.fetch(section)
-
-  # For the frontend: the whole declaration, in display order.
-  def self.schema_json
-    { sections: SECTIONS.map { |key, fields| { key:, fields: fields.map(&:as_json) } } }
+  def self.fields_for(section, holder: false)
+    fields = SECTIONS.fetch(section)
+    holder ? fields.reject(&:team_only) : fields
   end
 
-  def initialize(raw, strict: true)
+  # For the frontend: the whole declaration, in display order. `holder`:
+  # without the team-only fields (the private link's form).
+  def self.schema_json(holder: false)
+    { sections: SECTIONS.keys.map { |key| { key:, fields: fields_for(key, holder:).map(&:as_json) } } }
+  end
+
+  def initialize(raw, strict: true, holder: false)
     coercer = TypedSchema::Coercer.new(strict:)
     raw = raw.to_unsafe_h if raw.respond_to?(:to_unsafe_h)
     raw = {} if raw.nil?
@@ -145,9 +176,9 @@ class ProjectSheet
     @values = {}
     @meta = {}
     if raw.is_a?(Hash)
-      SECTIONS.each do |section, fields|
+      SECTIONS.each_key do |section|
         next unless raw.key?(section)
-        @values[section] = coercer.hash(fields, raw[section], section)
+        @values[section] = coercer.hash(self.class.fields_for(section, holder:), raw[section], section)
       end
       @meta = read_meta(coercer, raw["meta"])
     else
@@ -167,6 +198,9 @@ class ProjectSheet
   end
 
   def section(name) = values.fetch(name, {}).compact
+
+  # The sheet as the people behind the project see it on their private link.
+  def for_holder = self.class.parse(to_h, strict: false, holder: true)
 
   def done?(section) = Array(meta["done"]).include?(section)
 

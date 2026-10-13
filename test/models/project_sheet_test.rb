@@ -132,7 +132,7 @@ class ProjectSheetTest < ActiveSupport::TestCase
     assert_equal 33, progress[:sections]["budget"][:percent] # 1 of 3 counting fields
     assert_equal "partial", progress[:sections]["budget"][:status]
     assert_equal "ambitions", progress[:nextSection]
-    assert_equal ((100 + 33) / 10.0).round, progress[:percent]
+    assert_equal ((100 + 33) / 11.0).round, progress[:percent]
   end
 
   test "marking a section done makes it 100 percent without answers" do
@@ -145,12 +145,43 @@ class ProjectSheetTest < ActiveSupport::TestCase
 
   test "schema_json describes every section for the frontend" do
     schema = ProjectSheet.schema_json
-    assert_equal %w[who ambitions uses budget time skills constraints opportunities livestock calendar], schema[:sections].map { _1[:key] }
+    assert_equal %w[who ambitions uses taste budget time skills constraints opportunities livestock calendar], schema[:sections].map { _1[:key] }
     budget = schema[:sections].find { _1[:key] == "budget" }[:fields].find { _1[:key] == "initial" }
     assert_equal "enum", budget[:type]
     assert_includes budget[:values], "up_to_2000"
     hours = schema[:sections].find { _1[:key] == "time" }[:fields].find { _1[:key] == "hours_per_week" }
     assert_equal [ 0, 80 ], hours[:range]
+  end
+
+  test "taste palette: one line per person, the designer's reading for the team only" do
+    sheet = ProjectSheet.parse({ "taste" => {
+      "tasters" => [ { "name" => "Lily", "loves" => %w[cherries berries], "dislikes" => %w[figs], "allergies" => "Noix" }, { "loves" => %w[apples] } ],
+      "curiosity" => "adventurous", "designer_notes" => "Faire goûter des camerises.", "priorities" => %w[berries]
+    } })
+    assert sheet.valid?
+    taste = sheet.section("taste")
+    assert_equal [ { "name" => "Lily", "loves" => %w[cherries berries], "dislikes" => %w[figs], "allergies" => "Noix" } ], taste["tasters"]
+    assert_equal "Faire goûter des camerises.", taste["designer_notes"]
+
+    holder = sheet.for_holder.section("taste")
+    assert_equal "adventurous", holder["curiosity"]
+    refute holder.key?("designer_notes")
+    refute holder.key?("priorities")
+    assert_equal sheet.progress[:sections]["taste"], sheet.for_holder.progress[:sections]["taste"]
+  end
+
+  test "the holder's schema and input leave out the team-only fields" do
+    fields = ProjectSheet.schema_json(holder: true)[:sections].find { _1[:key] == "taste" }[:fields].map { _1[:key] }
+    assert_includes fields, "tasters"
+    refute_includes fields, "designer_notes"
+    team = ProjectSheet.schema_json[:sections].find { _1[:key] == "taste" }[:fields].find { _1[:key] == "designer_notes" }
+    assert_equal true, team[:teamOnly]
+    tasters = ProjectSheet.schema_json[:sections].find { _1[:key] == "taste" }[:fields].find { _1[:key] == "tasters" }[:item]
+    assert_equal({ "loves" => "positive", "dislikes" => "negative" }, tasters.filter_map { [ _1[:key], _1[:tone] ] if _1[:tone] }.to_h)
+
+    patch = ProjectSheet.parse({ "taste" => { "designer_notes" => "Écrit par le porteur", "curiosity" => "familiar" } }, holder: true)
+    assert patch.valid?
+    assert_equal({ "taste" => { "curiosity" => "familiar" } }, patch.to_h)
   end
 
   test "every declared section, field and option has a French label" do

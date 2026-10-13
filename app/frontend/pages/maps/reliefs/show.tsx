@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react'
 import clsx from 'clsx'
 import {
-  ArrowLeft, CloudRain, Crosshair, Download, Eye, Loader2, Menu, Pause, Play, RotateCcw, Sun, SunMedium, X,
+  ArrowLeft, CloudRain, Crosshair, Download, Eye, Loader2, Menu, Moon, MoonStar, Pause, Play, RotateCcw, Sun, SunMedium, X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -16,6 +16,8 @@ import {
   type RainSettings, type RainStats, type SunDate, type SunInfo, type SunMode,
   type BuildingsInfo,
 } from '@/relief/controller'
+import { NIGHT_LENGTH, nightClock } from '@/relief/coldAir'
+import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import {
   formatClock, formatDepth, formatDuration, formatHours, formatMinutes, formatNumber, formatSurface, formatVolume,
@@ -134,7 +136,10 @@ function ReliefEmpty({ map, overview, canEdit }: Props) {
 
 // ---- The 3D viewer -------------------------------------------------------------
 
-type Tab = 'view' | 'rain' | 'sun'
+type Tab = 'view' | 'rain' | 'sun' | 'night'
+
+/** The night slider moves by 10 minutes. */
+const NIGHT_STEPS = NIGHT_LENGTH / 10
 
 type ViewState = {
   base: BaseLayer
@@ -175,6 +180,9 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
   const [sun, setSunState] = useState<{ mode: SunMode; date: SunDate; minutes: number }>({ mode: 'off', date: 'summer', minutes: 14 * 60 })
   const [sunInfo, setSunInfo] = useState<SunInfo>({ mode: 'off' })
   const [dayRunning, setDayRunning] = useState(false)
+  const [coldNight, setColdNight] = useState(0.6)
+  const [coldPeak, setColdPeak] = useState(0)
+  const [nightRunning, setNightRunning] = useState(false)
   const [probe, setProbe] = useState<ProbeInfo | null>(null)
   const [zRange, setZRange] = useState<[number, number]>([terrain.zMin, terrain.zMax])
   const [niva, setNiva] = useState<NivaInfo>({ mode: 'off' })
@@ -228,6 +236,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [terrain.version])
 
+  const compassHeading = useCallback(() => controller.current?.heading() ?? null, [])
   const updateView = useCallback((patch: Partial<ViewState>) => {
     setView((current) => (current ? { ...current, ...patch } : current))
     const c = controller.current
@@ -301,6 +310,47 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     setSunState(next)
     if (patch.minutes !== undefined && !patch.mode && !patch.date) void applyMinutes(next.minutes)
     else void controller.current?.setSun(next)
+  }
+
+  // ---- Cold air: shown while the night tab is open, under a clear moonlit sky.
+  useEffect(() => {
+    const c = controller.current
+    if (!ready || !c) return
+    c.setColdAir(tab === 'night', nivaSettings.night)
+    if (tab === 'night') setColdPeak(c.coldPeak())
+    else setNightRunning(false)
+    // The Niva's night setting is only read when leaving the tab.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, ready])
+
+  const updateColdNight = useCallback((night: number) => {
+    setColdNight(night)
+    controller.current?.setColdNight(night)
+    setColdPeak(controller.current?.coldPeak() ?? 0)
+  }, [])
+
+  // "Let the night go by": 21:00 to dawn in about twenty seconds.
+  useEffect(() => {
+    if (!nightRunning) return
+    const timer = setInterval(() => {
+      setColdNight((current) => {
+        const next = Math.round(current * NIGHT_STEPS + 1) / NIGHT_STEPS
+        if (next > 1) {
+          setNightRunning(false)
+          return current
+        }
+        controller.current?.setColdNight(next)
+        setColdPeak(controller.current?.coldPeak() ?? 0)
+        return next
+      })
+    }, 330)
+    return () => clearInterval(timer)
+  }, [nightRunning])
+
+  function toggleNight() {
+    if (nightRunning) return setNightRunning(false)
+    if (coldNight >= 1) updateColdNight(0)
+    setNightRunning(true)
   }
 
   // "Let the day go by": the hour advances by 10 min steps.
@@ -456,7 +506,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
         {panelOpen && (
           <>
             <nav className="flex gap-1 border-t border-loam-100 px-3 pt-2" role="tablist">
-              {([['view', Eye], ['rain', CloudRain], ['sun', SunMedium]] as const).map(([key, Icon]) => (
+              {([['view', Eye], ['rain', CloudRain], ['sun', SunMedium], ['night', Moon]] as const).map(([key, Icon]) => (
                 <button
                   key={key}
                   type="button"
@@ -513,6 +563,15 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
                   onPlay={togglePlay}
                   onReset={resetRain}
                 />
+              ) : tab === 'night' ? (
+                <NightTab
+                  night={coldNight}
+                  peak={coldPeak}
+                  running={nightRunning}
+                  surface={!!terrain.surface}
+                  onNight={(night) => { setNightRunning(false); updateColdNight(night) }}
+                  onToggle={toggleNight}
+                />
               ) : (
                 <SunTab
                   sun={sun}
@@ -542,6 +601,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
         <ProbeCard
           probe={probe}
           sunTime={sun.mode === 'instant' ? formatClock(sun.minutes) : null}
+          coldTime={formatClock(nightClock(coldNight))}
           onClose={() => setProbe(null)}
         />
       )}
@@ -550,6 +610,13 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
         <p className="pointer-events-none absolute right-2 top-2 z-10 rounded bg-white/70 px-1.5 py-0.5 text-[0.65rem] text-loam-600 sm:top-auto sm:bottom-1">
           {[terrain.attribution, view?.buildingsOn !== false ? buildings?.attribution : null].filter(Boolean).join(' · ')}
         </p>
+      )}
+      {ready && (
+        <Compass
+          heading={compassHeading}
+          onFaceNorth={() => controller.current?.faceNorth()}
+          className="absolute right-3 top-10 z-10 h-16 w-16 rounded-full focus-visible:outline-2 focus-visible:outline-prune-600 sm:top-3 sm:h-20 sm:w-20"
+        />
       )}
       {niva.mode === 'driving' && <NivaDashboard info={niva} />}
       {niva.mode === 'driving' && touch && (
@@ -941,9 +1008,58 @@ function SunStatus({ info, marginM }: { info: SunInfo; marginM: number }) {
   return null
 }
 
+// ---- Night tab: cold air -----------------------------------------------------------
+
+function NightTab({ night, peak, running, surface, onNight, onToggle }: {
+  night: number
+  peak: number
+  running: boolean
+  surface: boolean
+  onNight: (night: number) => void
+  onToggle: () => void
+}) {
+  const time = formatClock(nightClock(night))
+  return (
+    <>
+      <p className="text-sm text-loam-600">{t('relief.page.night.intro')}</p>
+      <Slider
+        id="relief-night-hour"
+        label={t('relief.page.night.hour')}
+        display={time}
+        min={0}
+        max={NIGHT_STEPS}
+        step={1}
+        value={Math.round(night * NIGHT_STEPS)}
+        onChange={(step) => onNight(step / NIGHT_STEPS)}
+      />
+      <Button variant="secondary" size="sm" className="w-full" onClick={onToggle}>
+        {running ? <Pause className="h-3.5 w-3.5" /> : <MoonStar className="h-3.5 w-3.5" />}
+        {running ? t('relief.page.night.stop') : t('relief.page.night.play')}
+      </Button>
+      <p className="text-sm text-loam-700" aria-live="polite">
+        {peak > 0.05
+          ? t('relief.page.night.status', { time, depth: formatNumber(peak, 1) })
+          : t('relief.page.night.status_none', { time })}
+      </p>
+      <ul className="space-y-1.5 text-sm text-loam-600">
+        <li className="flex gap-2"><span className="mt-1.5 h-2 w-6 shrink-0 rounded-full bg-gradient-to-r from-transparent via-loam-200 to-white" />{t('relief.page.night.legend_mist')}</li>
+        <li className="flex gap-2"><span className="mt-1.5 h-2 w-6 shrink-0 rounded-full bg-loam-100" />{t('relief.page.night.legend_layer')}</li>
+        <li className="flex gap-2"><span className="mt-1.5 h-2 w-6 shrink-0 rounded-full bg-white ring-1 ring-loam-200" />{t('relief.page.night.legend_frost')}</li>
+      </ul>
+      <p className="text-sm text-loam-600">{t('relief.page.night.tip')}</p>
+      <p className="text-sm text-loam-400">{t(surface ? 'relief.page.night.indicative' : 'relief.page.night.indicative_no_surface')}</p>
+    </>
+  )
+}
+
 // ---- Probe ----------------------------------------------------------------------
 
-function ProbeCard({ probe, sunTime, onClose }: { probe: ProbeInfo; sunTime: string | null; onClose: () => void }) {
+function ProbeCard({ probe, sunTime, coldTime, onClose }: {
+  probe: ProbeInfo
+  sunTime: string | null
+  coldTime: string
+  onClose: () => void
+}) {
   const facing = probe.slopePct < 2
     ? t('relief.page.probe.flat')
     : t('relief.page.probe.slope', { value: formatNumber(probe.slopePct), direction: t(`relief.page.compass.towards.${probe.aspect}`) })
@@ -967,6 +1083,11 @@ function ProbeCard({ probe, sunTime, onClose }: { probe: ProbeInfo; sunTime: str
     lines.push(<p key="sun">{t('relief.page.probe.sun_hours', { hours: formatHours(probe.sun.hours), daylight: formatHours(probe.sun.daylight) })}</p>)
   } else if (probe.sun && sunTime) {
     lines.push(<p key="sun">{t(probe.sun.inSun ? 'relief.page.probe.in_sun' : 'relief.page.probe.in_shade', { time: sunTime })}</p>)
+  }
+  if (probe.cold && probe.cold.depth > 0.3) {
+    lines.push(<p key="cold">{t('relief.page.probe.cold_layer', { depth: formatNumber(probe.cold.depth, 1), time: coldTime })}</p>)
+  } else if (probe.cold?.flowing) {
+    lines.push(<p key="cold">{t('relief.page.probe.cold_flowing', { time: coldTime })}</p>)
   }
   lines.push(<p key="drained">{t('relief.page.probe.drained', { area: formatSurface(probe.drained) })}</p>)
   if (probe.hollow > 0.05) lines.push(<p key="hollow">{t('relief.page.probe.hollow', { depth: formatDepth(probe.hollow) })}</p>)

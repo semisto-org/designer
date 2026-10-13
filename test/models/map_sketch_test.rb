@@ -40,6 +40,19 @@ class MapSketchTest < ActiveSupport::TestCase
     assert_equal({}, MapSketch.for([]))
   end
 
+  test "reads each outline simplified, with its bounding box, from PostGIS" do
+    outline = MapSketch.new([ @map ]).outlines[@map.id]
+    assert_includes %w[Polygon MultiPolygon], outline[:boundary]["type"]
+    assert_equal @map.bbox.map { _1.round(6) }, outline[:bbox].map { _1.round(6) }
+    assert_nil MapSketch.new([ Map.create!(name: "Vide", owner: users(:bob)) ]).outlines.values.first
+  end
+
+  test "plants of the same species share one look (strata and spread)" do
+    3.times { |i| @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906 + i / 1000.0, lat: 50.341), properties: { "species_id" => plant_species(:alder).id }) }
+    plants = MapSketch.for([ @map ])[@map.id][:plants]
+    assert_equal 1, plants.map { _1[2..] }.uniq.size
+  end
+
   private
     def point(lng:, lat:) = { "type" => "Point", "coordinates" => [ lng, lat ] }
     def line = { "type" => "LineString", "coordinates" => [ [ 4.904, 50.340 ], [ 4.906, 50.341 ] ] }

@@ -7,6 +7,7 @@ import { ApiError, api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { SharingData, SharingMember } from '@/types/collab'
+import { MapProjectSection } from '@/team_board/MapProjectSection'
 import { MapTeamSection } from '@/teams/MapTeamSection'
 import { MapTransferSection } from '@/transfer/MapTransferSection'
 import { Avatar } from './Avatar'
@@ -54,6 +55,7 @@ export function ShareDialog({ onClose }: { onClose: () => void }) {
         <div className="space-y-6">
           {error && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm text-clay-700">{error}</p>}
           <Members data={data} owner={owner} busy={busy} base={base} run={run} onLeft={() => router.visit('/maps')} />
+          {data.organization && <MapProjectSection teamId={data.organization.id} mapId={editor.map.id} canEdit={editor.canEdit} notify={editor.notify} />}
           {owner && <Invite data={data} busy={busy} base={base} run={run} />}
           {owner && <ShareLink data={data} busy={busy} base={base} run={run} />}
           {owner && <MapTeamSection data={data} busy={busy} base={base} run={run} />}

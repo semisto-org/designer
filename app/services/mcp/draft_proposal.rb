@@ -115,6 +115,7 @@ module Mcp
                 rationale: item[:rationale].to_s.strip.first(2000),
                 properties: (item[:properties] || {}).deep_stringify_keys.except(*MapFeature.column_names),
                 tags: Array(item[:tags]),
+                style: item[:color].to_s.match?(/\A#\h{6}\z/) ? { "color" => item[:color].downcase } : {},
                 geometry: parse(item[:geometry]),
                 status: "draft", source: "ai",
                 created_by: @user, updated_by: @user

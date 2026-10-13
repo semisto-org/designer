@@ -37,7 +37,7 @@ class ProjectRequest < ApplicationRecord
   has_many_attached :photos
 
   normalizes :email, with: ->(e) { e.to_s.strip.downcase }
-  normalizes :name, :phone, :address, with: ->(v) { v.to_s.squish.presence }
+  normalizes :name, :phone, :address, :decline_note, with: ->(v) { v.to_s.squish.presence }
 
   validates :name, presence: true, length: { maximum: 120 }
   validates :email, presence: true, length: { maximum: 200 }, format: { with: URI::MailTo::EMAIL_REGEXP }
@@ -45,6 +45,7 @@ class ProjectRequest < ApplicationRecord
   validates :address, length: { maximum: 300 }
   validates :message, length: { maximum: MESSAGE_MAX_LENGTH }
   validates :team_notes, length: { maximum: 10_000 }
+  validates :decline_note, length: { maximum: 300 }
   validates :status, inclusion: { in: STATUSES }
   validate :photos_are_acceptable
 
