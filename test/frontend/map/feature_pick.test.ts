@@ -16,6 +16,11 @@ test('a line wins over the area around it', () => {
   assert.equal(pickFeature([{ layer: 'features-fill', id: 1 }, { layer: 'features-line', id: 3 }]), 3)
 })
 
+test('a zone name written on the map selects its zone, a plant still wins', () => {
+  assert.equal(pickFeature([{ layer: 'features-fill', id: 1 }, { layer: 'zone-labels', id: 4 }], () => 0), 4)
+  assert.equal(pickFeature([{ layer: 'zone-labels', id: 4 }, { layer: 'features-point', id: 2 }]), 2)
+})
+
 test('of two nested zones, the smaller one wins', () => {
   const areas: Record<number, number> = { 1: 500, 2: 40 }
   assert.equal(pickFeature([{ layer: 'features-fill', id: 1 }, { layer: 'features-fill', id: 2 }], (id) => areas[id]), 2)

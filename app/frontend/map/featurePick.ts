@@ -11,13 +11,15 @@ export const PICK_LAYERS = [
   'features-point',
   'plant-labels-text',
   'features-label',
+  'zone-labels-line',
   'features-line',
+  'zone-labels',
   'plant-crowns-fill',
   'features-fill',
 ] as const
 
 // Dots and names are small: a click a few pixels off still reaches them.
-const TOLERANT_LAYERS = new Set<string>(['features-point', 'plant-labels-text', 'features-label'])
+const TOLERANT_LAYERS = new Set<string>(['features-point', 'plant-labels-text', 'features-label', 'zone-labels-line', 'zone-labels'])
 export const TOLERANCE_PX = 6
 
 export type Hit = { layer: string; id: number | null }

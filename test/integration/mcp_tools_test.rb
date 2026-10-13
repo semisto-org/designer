@@ -210,6 +210,19 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil action.arguments["features"].try(:first), "geometries are not copied in the journal"
   end
 
+  test "propose_features drafts a named zone in its colour" do
+    make_editor(@map, users(:bob))
+    zone = { layer: "notes", kind: "zone", name: "Forêt-jardin en strates hautes", color: "#7FA650", rationale: "Plein sud, à l'abri de la haie.",
+             geometry: { type: "Polygon", coordinates: [ [ [ 4.905, 50.340 ], [ 4.906, 50.340 ], [ 4.906, 50.341 ], [ 4.905, 50.341 ], [ 4.905, 50.340 ] ] ] } }
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: [ zone ] })
+    refute error, data
+    feature = MapFeature.find(data["created"].sole["id"])
+    assert_equal [ "zone", "Forêt-jardin en strates hautes", { "color" => "#7fa650" } ], [ feature.kind, feature.name, feature.style ]
+
+    _text, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: [ zone.merge(color: "vert") ] })
+    assert error, "a colour is a hexadecimal code"
+  end
+
   test "tags: listed by get_map, filtered by list_features, proposed with drafts" do
     make_editor(@map, users(:bob))
     @pipe.update!(tags: [ "Phase 1" ])

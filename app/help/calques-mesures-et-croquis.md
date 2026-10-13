@@ -24,7 +24,7 @@ Les fonds de carte et les couches de données du territoire (cadastre, relief, m
 
 ## Mesurer
 
-En haut de la carte, la barre d'outils propose **Éléments**, **Mesurer** et **Main levée**. Les lecteurs n'ont que **Mesurer**.
+En haut de la carte, la barre d'outils propose **Éléments**, **Zone**, **Mesurer** et **Main levée**. Les lecteurs n'ont que **Mesurer**.
 
 1. Touche **Mesurer**.
 2. Choisis **Distance** ou **Surface**.
