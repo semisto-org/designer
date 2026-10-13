@@ -34,7 +34,7 @@ Clique sur les visages d'une carte, ou choisis « Le projet » dans son menu : l
 
 ## La saison qui vient
 
-Les douze mois à venir, projet par projet, avec la fenêtre de plantation à racines nues (de novembre à mars) en vert. Trois sortes d'étapes : **design**, **chantier** et **plantation**.
+Les douze mois à venir, projet par projet, avec la fenêtre de plantation à racines nues (de novembre à février) en vert. Trois sortes d'étapes : **design**, **chantier** et **plantation**.
 
 - Fais **glisser** une étape pour la déplacer, tire un de ses **bords** pour l'étendre. Le pas est la semaine.
 - Au clavier, les flèches déplacent l'étape d'une semaine ; avec Maj, elles l'allongent ou la raccourcissent.

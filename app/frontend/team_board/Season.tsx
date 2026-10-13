@@ -51,12 +51,13 @@ export function Season({ steps: initial, projects, season, onChanged }: {
     return { iso: isoDay(d), label: monthName.format(d) }
   }), [from])
 
-  // Bare-root planting windows (1 Nov to 31 Mar) that fall in the twelve months.
+  // Bare-root planting windows (1 November to the end of February) that fall in the twelve months.
   const windows = useMemo(() => {
     const opens = toDate(season.opensOn)
     return [0, 1].map((n) => ({
       from: isoDay(new Date(opens.getFullYear() + n, opens.getMonth(), opens.getDate(), 12)),
-      to: isoDay(new Date(toDate(season.closesOn).getFullYear() + n, toDate(season.closesOn).getMonth(), toDate(season.closesOn).getDate(), 12)),
+      // The last day of the closing month, leap years included.
+      to: isoDay(new Date(toDate(season.closesOn).getFullYear() + n, toDate(season.closesOn).getMonth() + 1, 0, 12)),
     })).filter((w) => w.to >= from && w.from < to)
   }, [season, from, to])
 

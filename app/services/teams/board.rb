@@ -14,9 +14,9 @@ module Teams
     LOAD_DAYS = 28
     # Projects in these phases no longer count in a member's load.
     SETTLED_PHASES = %w[co_management completed].freeze
-    # Bare-root planting: 1 November to 31 March.
+    # Bare-root planting: 1 November to the end of February.
     PLANTING_OPENS = [ 11, 1 ].freeze
-    PLANTING_CLOSES = [ 3, 31 ].freeze
+    PLANTING_CLOSES = [ 2, -1 ].freeze
 
     def initialize(team, user, today: Date.current)
       @team = team
