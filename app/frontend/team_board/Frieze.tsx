@@ -5,7 +5,6 @@ import { useEffect, useRef, useState, type DragEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Field, Input, Select } from '@/components/ui/Field'
-import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import type { BoardPhase, BoardProject } from '@/types/teamBoard'
 import { BoardSection, Faces, addDays, daysBetween, formatDay, useBoard } from './board'
@@ -25,7 +24,7 @@ const DRAG_TYPE = 'application/x-board-project'
  * without anyone knowing what comes next. Its menu does the same for touch
  * screens and keyboards.
  */
-export function Frieze({ projects, onTick }: { projects: BoardProject[]; onTick: (project: BoardProject) => void }) {
+export function Frieze({ projects }: { projects: BoardProject[] }) {
   const { phases } = useBoard()
   const [moving, setMoving] = useState<{ project: BoardProject; phase: BoardPhase } | null>(null)
   const [editing, setEditing] = useState<BoardProject | null>(null)
@@ -47,7 +46,7 @@ export function Frieze({ projects, onTick }: { projects: BoardProject[]; onTick:
   }
 
   return (
-    <BoardSection id="board-frieze" title={t('team_board.frieze.title')} hint={open.length > 0 ? t('team_board.frieze.hint') : undefined}>
+    <BoardSection id="board-frieze" title={t('team_board.frieze.title')} >
       {projects.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-loam-300 bg-[#fffdf7] px-5 py-4 font-hand text-xl leading-snug text-loam-500">{t('team_board.frieze.empty')}</p>
       ) : (
@@ -80,7 +79,6 @@ export function Frieze({ projects, onTick }: { projects: BoardProject[]; onTick:
                     onDragEnd={() => { setDragged(null); setOver(null) }}
                     onMove={(to) => setMoving({ project, phase: to })}
                     onSettings={() => setEditing(project)}
-                    onTick={() => onTick(project)}
                   />
                 ))}
                 {column.length === 0 && (
@@ -100,22 +98,19 @@ export function Frieze({ projects, onTick }: { projects: BoardProject[]; onTick:
   )
 }
 
-function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSettings, onTick }: {
+function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSettings }: {
   project: BoardProject
   dragging: boolean
   onDragStart: (e: DragEvent) => void
   onDragEnd: () => void
   onMove: (phase: BoardPhase) => void
   onSettings: () => void
-  onTick: () => void
 }) {
   const { today } = useBoard()
   const days = Math.max(0, daysBetween(project.phaseChangedAt.slice(0, 10), today))
   const settled = project.phase === 'co_management' || project.phase === 'completed'
   const stuck = !settled && !project.onHoldSince && days > STUCK_DAYS
   const promiseIn = project.promisedOn ? daysBetween(today, project.promisedOn) : null
-  const step = project.nextStep
-  const stepLate = step && step.dueOn < today
 
   return (
     <article
@@ -159,32 +154,6 @@ function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSett
               : t('team_board.frieze.promised', { date: formatDay(project.promisedOn) })}
           </span>
         </p>
-      )}
-      {project.phase !== 'completed' && (step ? (
-        <div className={clsx('flex items-start gap-2 rounded-lg px-2 py-1.5 text-sm', stepLate ? 'bg-clay-50 text-clay-800' : 'bg-leaf-50/70 text-loam-800')}>
-          <input
-            type="checkbox"
-            onChange={onTick}
-            draggable={false}
-            aria-label={t('team_board.frieze.next_step_done')}
-            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-loam-400 accent-leaf-600"
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block leading-snug">{step.title}</span>
-            <span className={clsx('block', stepLate ? 'font-semibold' : 'text-loam-500')}>
-              {formatDay(step.dueOn)}{step.assignee && ` · ${step.assignee.name.split(' ')[0]}`}
-            </span>
-          </span>
-        </div>
-      ) : (
-        <button type="button" onClick={() => onMove(project.phase)} className="w-full rounded-lg border border-dashed border-loam-300 px-2 py-1.5 text-left text-sm text-loam-500 hover:border-prune-400 hover:text-prune-700">
-          {t('team_board.frieze.no_next_step')}
-        </button>
-      ))}
-      {project.overdueTasks > (stepLate ? 1 : 0) && (
-        <Link href={`/maps/${project.id}/tasks`} draggable={false} className="block text-sm font-semibold text-clay-700 hover:underline">
-          {t('team_board.frieze.overdue_tasks', { count: project.overdueTasks })}
-        </Link>
       )}
     </article>
   )
@@ -240,8 +209,7 @@ function CardMenu({ project, onMove, onSettings }: { project: BoardProject; onMo
 
 /**
  * Where a project lands, and its next step: a task of the map with a
- * person and a date (who gets an e-mail). Also asks for the next step of a
- * project that has none (same phase).
+ * person and a date (who gets an e-mail).
  */
 function MoveDialog({ move, onClose }: { move: { project: BoardProject; phase: BoardPhase } | null; onClose: () => void }) {
   const { members, today, saveProject } = useBoard()
@@ -345,9 +313,4 @@ function ClosedProjects({ projects }: { projects: BoardProject[] }) {
       </ul>
     </details>
   )
-}
-
-/** Ticks a project's next step (the task) from the board. */
-export function tickTask(mapId: number, taskId: number) {
-  return api(`/maps/${mapId}/tasks/${taskId}`, { method: 'PATCH', body: { task: { completed: true } } })
 }

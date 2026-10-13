@@ -2,24 +2,19 @@ module Teams
   # The team board (« Tableau de l'équipe »), read at the team's operational
   # meeting, top to bottom:
   #
-  # 1. two figures: requests left unanswered for more than a week, and the
-  #    season's plantings that are ready (design done) out of those planned;
-  # 2. the new requests of the team's form, the oldest first;
-  # 3. every team map on one timeline, from request to completion, with who
-  #    leads it, who works on it, its next step (a dated task) and the date
-  #    promised to the client;
-  # 4. the season: design, work site and planting steps over twelve months;
-  # 5. who carries what.
+  # 1. the new requests of the team's form, the oldest first;
+  # 2. every team map on one timeline, from request to completion, with its
+  #    project manager, who works on it and the date promised to the client;
+  # 3. the season: design, work site and planting steps over twelve months;
+  # 4. who carries what: how many projects each member is involved in.
   #
   # A few grouped queries for the whole team, never one per map.
   class Board
-    UNANSWERED_DAYS = 7
     # « Qui porte quoi » counts the tasks due within these coming days.
     LOAD_DAYS = 28
     # Bare-root planting: 1 November to 31 March.
     PLANTING_OPENS = [ 11, 1 ].freeze
     PLANTING_CLOSES = [ 3, 31 ].freeze
-    READY_PHASES = %w[implementation co_management completed].freeze
 
     def initialize(team, user, today: Date.current)
       @team = team
@@ -32,7 +27,6 @@ module Teams
         team: { id: @team.id, name: @team.name, role: @team.role_for(@user) },
         today: @today.iso8601,
         season: season_json,
-        figures: figures,
         requestForm: form && { id: form.id, slug: form.slug, active: form.active },
         requests: requests.map { |r| request_json(r) },
         **settings,
@@ -142,15 +136,6 @@ module Teams
         }
       end
 
-      def figures
-        unanswered = requests.count { |r| r.status == "new" && (@today - r.created_at.to_date).to_i > UNANSWERED_DAYS }
-        planting = steps.select { |s| s.step_kind == "plant" && s.starts_on <= season.end && s.due_on >= season.begin }
-                        .map(&:map_id).uniq
-        live = maps.reject(&:closed?).index_by(&:id)
-        planned = planting.filter_map { |id| live[id] }
-        { unanswered:, plantingsPlanned: planned.size, plantingsReady: planned.count { |m| READY_PHASES.include?(m.board_phase) } }
-      end
-
       def request_json(r)
         {
           id: r.id, formId: r.request_form_id, name: r.name, email: r.email, phone: r.phone, address: r.address,
@@ -161,8 +146,9 @@ module Teams
         }
       end
 
-      # Who carries what: projects led (still followed) and the tasks given
-      # to each member on the team's maps for the coming four weeks.
+      # Who carries what: the projects (still followed) each member manages
+      # or works on, and their tasks on the team's maps for the coming four
+      # weeks.
       def people
         tasks = Task.pending.where(map_id: ids).where.not(assignee_id: nil)
         soon = tasks.where(due_on: ..(@today + LOAD_DAYS)).group(:assignee_id).count
@@ -171,8 +157,7 @@ module Teams
         memberships.map(&:user).sort_by { |u| u.display_name.downcase }.map do |user|
           person(user).merge(
             you: user.id == @user.id,
-            leads: followed.select { |m| m.lead_id == user.id }.map(&:id),
-            works: followed.count { |m| m.lead_id != user.id && m.crew.any? { |c| c.id == user.id } },
+            projects: followed.select { |m| m.lead_id == user.id || m.crew.any? { |c| c.id == user.id } }.map(&:id),
             tasksSoon: soon.fetch(user.id, 0),
             overdue: overdue.fetch(user.id, 0)
           )

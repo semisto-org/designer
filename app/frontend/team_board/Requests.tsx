@@ -49,7 +49,6 @@ export function Requests({ requests: initial, form }: { requests: BoardRequest[]
     <BoardSection
       id="board-requests"
       title={<>{t('team_board.requests.title')}{requests.length > 0 && <span className="ml-2 align-middle font-sans text-base font-semibold text-humus-700">{requests.length}</span>}</>}
-      hint={t('team_board.requests.hint')}
     >
       {!form ? (
         <EmptyNote>

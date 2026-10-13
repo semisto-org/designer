@@ -46,8 +46,8 @@ export type BoardStep = { id: number; mapId: number; kind: StepKind; title: stri
 
 export type BoardMemberLoad = BoardPerson & {
   you: boolean
-  leads: number[]
-  works: number
+  /** The projects (still followed) this person manages or works on. */
+  projects: number[]
   tasksSoon: number
   overdue: number
 }
@@ -56,7 +56,6 @@ export type TeamBoardProps = {
   team: { id: number; name: string; role: TeamRole }
   today: string
   season: { opensOn: string; closesOn: string; inSeason: boolean; weeks: number }
-  figures: { unanswered: number; plantingsPlanned: number; plantingsReady: number }
   requestForm: { id: number; slug: string; active: boolean } | null
   requests: BoardRequest[]
   phases: BoardPhase[]

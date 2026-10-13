@@ -66,14 +66,8 @@ export const addDays = (iso: string, days: number) => {
 export const daysBetween = (from: string, to: string) => Math.round((toDate(to).getTime() - toDate(from).getTime()) / 86_400_000)
 
 const shortDay = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'short' })
-const longDay = new Intl.DateTimeFormat('fr-BE', { weekday: 'long', day: 'numeric', month: 'long' })
 /** « 20 oct. » */
 export const formatDay = (iso: string) => shortDay.format(toDate(iso))
-/** « Lundi 12 octobre » */
-export const formatLongDay = (iso: string) => {
-  const text = longDay.format(toDate(iso))
-  return text.charAt(0).toUpperCase() + text.slice(1)
-}
 
 // --- faces ----------------------------------------------------------------
 

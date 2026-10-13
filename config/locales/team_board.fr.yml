@@ -5,7 +5,7 @@ fr:
   activerecord:
     attributes:
       map:
-        lead: "La personne qui porte le projet"
+        lead: "Le Project Manager"
       task:
         starts_on: "Le début"
     errors:
@@ -26,19 +26,6 @@ fr:
     back: "Retour à l'équipe"
     follow_up_list: "Suivi du projet"
     season_list: "Calendrier de la saison"
-    planting:
-      in_season:
-        one: "Saison de plantation en cours : encore une semaine pour planter à racines nues."
-        other: "Saison de plantation en cours : encore %{count} semaines pour planter à racines nues."
-      before:
-        one: "La saison de plantation s'ouvre la semaine prochaine."
-        other: "La saison de plantation s'ouvre dans %{count} semaines."
-    figures:
-      unanswered: "Demandes sans réponse depuis plus de 7 jours"
-      unanswered_goal: "objectif : zéro"
-      plantings: "Plantations de la saison prêtes"
-      plantings_hint: "prête = le design est fait"
-      plantings_none: "aucune plantation sur le calendrier"
     phases:
       request: "Demande"
       offer: "Offre"
@@ -48,7 +35,6 @@ fr:
       completed: "Terminé"
     requests:
       title: "Nouvelles demandes"
-      hint: "À traiter en premier, la plus ancienne en tête."
       empty: "Aucune demande en attente. Les demandes de ton formulaire arrivent ici."
       no_form: "L'équipe n'a pas encore de formulaire de demande. Ouvre-le pour que les demandes arrivent directement ici."
       open_form: "Ouvrir le formulaire"
@@ -65,7 +51,7 @@ fr:
       qualify: "Qualifier"
       qualify_title: "Qualifier la demande de %{name}"
       qualify_hint: "Une carte de l'équipe est créée avec le contour des parcelles, la fiche projet préremplie et les photos. Elle entre dans la frise en « Demande »."
-      qualify_lead: "Qui porte le projet ?"
+      qualify_lead: "Project Manager"
       qualify_submit: "Créer la carte"
       qualified: "La carte « %{name} » est dans la frise."
       reply: "Répondre"
@@ -89,7 +75,6 @@ fr:
       declined: "La demande de %{name} est refusée."
     frieze:
       title: "Les projets"
-      hint: "Glisse une carte d'une colonne à l'autre, ou passe par son menu « … »."
       empty_column: "Glisse un projet ici"
       empty: "Aucune carte dans l'équipe. Une carte confiée à l'équipe arrive ici, en « Design »."
       days:
@@ -103,11 +88,6 @@ fr:
       closed_one: "Sans suite"
       promised: "Promis le %{date}"
       promised_what: "%{what} promis le %{date}"
-      no_next_step: "Pas de prochaine étape"
-      next_step_done: "Fait"
-      overdue_tasks:
-        one: "1 tâche en retard"
-        other: "%{count} tâches en retard"
       menu: "Actions pour « %{name} »"
       move_to: "Déplacer vers"
       settings: "Le projet"
@@ -122,7 +102,6 @@ fr:
       step_title: "La prochaine étape de « %{name} »"
       add_step: "Poser l'étape"
       complete_hint: "Le projet est livré : il passe en « Terminé » et sort de la charge de chacun."
-      ticked: "« %{title} » est fait."
       in_days:
         "7": "Dans une semaine"
         "14": "Dans deux semaines"
@@ -139,10 +118,10 @@ fr:
       error: "Ça n'a pas marché. Réessaie."
     project:
       title: "Le projet « %{name} »"
-      lead: "Qui porte le projet"
+      lead: "Project Manager"
       lead_hint: "Une seule personne, qui veille à ce que le projet avance."
-      no_lead: "Personne pour l'instant"
-      leads: "porte le projet"
+      no_lead: "Pas encore de Project Manager"
+      leads: "Project Manager"
       crew: "Qui travaille dessus"
       crew_hint: "Les membres de l'équipe qui avancent sur ce projet. Leur visage apparaît sur la carte du tableau."
       promised: "Date promise au client"
@@ -188,14 +167,11 @@ fr:
       plant: "Plantation"
     people:
       title: "Qui porte quoi"
-      hint: "Les projets que chacun porte et ses tâches des quatre semaines qui viennent, pour savoir si on peut prendre une nouvelle demande."
-      leads:
-        zero: "Ne porte aucun projet"
-        one: "Porte 1 projet"
-        other: "Porte %{count} projets"
-      works:
-        one: "travaille sur 1 autre"
-        other: "travaille sur %{count} autres"
+      hint: "Les projets où chacun est impliqué et ses tâches des quatre semaines qui viennent, pour savoir si on peut prendre une nouvelle demande."
+      involved:
+        zero: "Impliqué·e dans aucun projet"
+        one: "Impliqué·e dans 1 projet"
+        other: "Impliqué·e dans %{count} projets"
       tasks_soon:
         zero: "aucune tâche d'ici 4 semaines"
         one: "1 tâche d'ici 4 semaines"
