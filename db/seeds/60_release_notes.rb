@@ -4,6 +4,136 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "formulaire-demande", published_on: "2026-10-13",
+    title: "Un formulaire pour recevoir tes demandes de projet",
+    body: <<~TEXT,
+      Tu conçois des jardins-forêts pour d'autres ? Partage le lien de ton formulaire de demande : tes futurs clients situent leur lieu, touchent leurs parcelles sur la carte et te disent ce qu'ils attendent.
+
+      La demande t'arrive dans « Demandes » avec le contour déjà tracé. Un clic sur « Créer la carte », et tu prépares l'appel, la visite et l'offre sur le vrai terrain.
+    TEXT
+    link_path: "/help/formulaire-de-demande", link_label: "Lire l'aide",
+    screenshot_alt: "Le formulaire de demande : l'adresse du lieu, puis la carte où l'on touche ses parcelles."
+  },
+  {
+    key: "meteo-maintenant", published_on: "2026-10-13",
+    title: "Le temps qu'il fait sur ton terrain, maintenant",
+    body: <<~TEXT,
+      En bas à droite de la carte, à côté de « Sources de la carte », la température et l'humidité relevées il y a quelques minutes par la station la plus proche. Survole-les pour savoir quelle station et à quelle distance ; clique pour ouvrir le climat du lieu.
+
+      Au-dessus de 30 °C ou sous 30 % d'humidité, elles passent en rouge : c'est le moment de penser à l'arrosage des jeunes plants.
+    TEXT
+    link_path: "/help/stations-meteo-proches", link_label: "Lire l'aide",
+    screenshot_alt: "La température et l'humidité du moment sur la carte, avec la station qui les a mesurées."
+  },
+  {
+    key: "ia-fichiers-taches", published_on: "2026-10-13",
+    title: "Ton IA range tes tâches, tes documents et tes photos",
+    body: <<~TEXT,
+      Ton assistant IA peut maintenant tenir le carnet de l'équipe avec toi : ajouter et cocher des tâches, lire tes documents (plans, analyses de sol, rapports), ranger un compte rendu dans la bibliothèque, légender et classer tes photos.
+
+      Il sait aussi envoyer directement des fichiers sur ta carte, ou les faire venir depuis un lien. Le dessin de la carte, lui, reste en brouillons que tu acceptes un par un.
+    TEXT
+    link_path: "/help/connecter-son-ia", link_label: "Connecter ton IA"
+  },
+  {
+    key: "constructeur-offre", published_on: "2026-10-12",
+    title: "Chiffre ton offre depuis la carte",
+    body: <<~TEXT,
+      Pour les pros et les équipes : le constructeur d'offre calcule le design et la plantation à partir de ce que la carte mesure, avec ton propre barème. Une jauge te dit si le budget est un ordre de grandeur ou déjà précis, et ce qui manque pour l'affiner.
+
+      Enregistre des versions V1, V2… et montre la part du budget qui va au jardin lui-même. Il apparaît quand tu choisis un compte pro dans « Mon compte ».
+    TEXT
+    link_path: "/help/chiffrer-une-offre", link_label: "Lire l'aide",
+    screenshot_alt: "Le constructeur d'offre : le périmètre mesuré sur la carte et la jauge « Précision du budget »."
+  },
+  {
+    key: "photo-de-profil", published_on: "2026-10-12",
+    title: "Ta photo de profil",
+    body: <<~TEXT,
+      Dans « Mon compte », ajoute ta propre photo : elle accompagne tes commentaires, tes pouces et les tâches qu'on te confie. Les photos d'iPhone passent telles quelles.
+
+      « Se déconnecter » se trouve maintenant là aussi, et le menu du haut ne garde que tes outils.
+    TEXT
+    link_path: "/account", link_label: "Ouvrir mon compte",
+    screenshot_alt: "La page « Mon compte » avec la photo de profil et le bouton « Se déconnecter »."
+  },
+  {
+    key: "taches", published_on: "2026-10-11",
+    title: "Les tâches de ton projet, saison après saison",
+    body: <<~TEXT,
+      Chaque carte a sa page « Tâches » : quatre listes pour observer, cartographier, concevoir et planter, déjà garnies de ce qu'il faut faire et pourquoi. Confie une tâche à quelqu'un, donne-lui une échéance : la personne reçoit un e-mail.
+
+      « L'année du projet » montre les tâches mois par mois, avec la saison de plantation. Et la page « Tâches » du menu rassemble celles de toutes tes cartes.
+    TEXT
+    link_path: "/tasks", link_label: "Voir mes tâches",
+    screenshot_alt: "La page « Tâches » d'une carte : l'année du projet mois par mois, puis la liste « Observer le lieu »."
+  },
+  {
+    key: "photos-documents", published_on: "2026-10-11",
+    title: "Tes photos et tes documents, en pleine page",
+    body: <<~TEXT,
+      En haut de l'éditeur, passe de la carte à la fiche projet, aux photos ou aux documents. Les photos se rangent par saison ou par album ; la bibliothèque « Documents » garde plans, relevés, analyses de sol et permis, rangés par étiquette, avec un aperçu des images et des PDF, même sur téléphone.
+
+      Un PDF lourd est allégé tout seul après l'envoi, jusqu'à 200 Mo par fichier.
+    TEXT
+    link_path: "/help/rassembler-ses-documents", link_label: "Lire l'aide",
+    screenshot_alt: "La bibliothèque « Documents » d'une carte, rangée par étiquette, avec l'aperçu d'une analyse de sol."
+  },
+  {
+    key: "mettre-en-image", published_on: "2026-10-10",
+    title: "Esquisse sur une photo, puis vois-la pousser",
+    body: <<~TEXT,
+      Ouvre une photo de ton terrain et choisis « Esquisser » : quelques traits suffisent pour montrer un sentier, des fruitiers, une mare. Ça marche aussi au doigt ou au stylet sur iPad.
+
+      Puis touche la baguette magique « Mettre en image » : ton esquisse est peinte telle qu'elle pourrait être dans quelques années, en photo, en aquarelle ou au crayon. Compare avant et après d'un glissement.
+    TEXT
+    link_path: "/help/esquisser-et-mettre-en-image", link_label: "Lire l'aide",
+    screenshot_alt: "Avant / après : une photo de drone esquissée à gauche, la même peinte à l'aquarelle à droite."
+  },
+  {
+    key: "bioindicatrices-photo", published_on: "2026-10-10",
+    title: "Les plantes sauvages lues sur une photo",
+    body: <<~TEXT,
+      Les plantes qui poussent seules racontent ton sol. Dans « Sol », onglet « Plantes », photographie un coin de terrain et fais-le lire par ton IA : elle reconnaît les plantes de toute la photo et te dit ce qu'elles révèlent. Tu gardes ou refuses chacune.
+
+      Pour une seule plante de près, Pl@ntNet propose l'espèce. Depuis l'app, ça marche aussi hors ligne.
+    TEXT
+    link_path: "/help/analyser-son-sol", link_label: "Lire l'aide",
+    screenshot_alt: "Le panneau « Sol », onglet « Plantes » : les espèces proposées pour une photo, chacune à confirmer."
+  },
+  {
+    key: "photos-drone", published_on: "2026-10-10",
+    title: "Tes photos de drone racontent leur prise de vue",
+    body: <<~TEXT,
+      Une photo prise au drone dit maintenant à quelle hauteur elle a été prise, avec quel angle, et quelle surface de terrain elle couvre vue du dessus. De quoi refaire la même photo l'an prochain, et voir ton jardin pousser.
+
+      Les grandes photos s'affichent plus vite, et l'on passe de l'une à l'autre d'un glissement du doigt.
+    TEXT
+    link_path: "/help/photos-et-suivi-dans-le-temps", link_label: "Lire l'aide",
+    screenshot_alt: "Une vue du dessus prise au drone, avec la hauteur, l'angle et la surface couverte."
+  },
+  {
+    key: "connexion-code", published_on: "2026-10-10",
+    title: "Te connecter avec un code, ou un mot de passe",
+    body: <<~TEXT,
+      L'e-mail de connexion contient maintenant un code à six chiffres : pratique pour te connecter sur un autre appareil que celui qui l'a reçu. Le lien, lui, ne s'use plus quand ta messagerie l'ouvre en aperçu.
+
+      Tu préfères un mot de passe ? Choisis-en un dans « Mon compte ».
+    TEXT
+    screenshot_alt: "La page « Se connecter » avec le champ du code à six chiffres."
+  },
+  {
+    key: "legendes", published_on: "2026-10-09",
+    title: "Chaque couche a sa légende",
+    body: <<~TEXT,
+      pH du sol, pentes, zones inondables… Chaque couche de données dit maintenant ce que veulent dire ses couleurs, sous son nom dans « Couches » et dans une carte « Légende » posée sur la carte.
+
+      Plus besoin de deviner ce que signifie un rouge ou un bleu sur ton terrain.
+    TEXT
+    link_path: "/help/lire-les-couches-du-geoportail", link_label: "Lire l'aide",
+    screenshot_alt: "Une carte avec la couche des zones inondables et sa légende en bas à droite."
+  },
+  {
     key: "lieu-six-sources", published_on: "2026-10-09",
     title: "Ton terrain lu par six sources ouvertes",
     body: <<~TEXT,
