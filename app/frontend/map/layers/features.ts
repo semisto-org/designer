@@ -1,6 +1,8 @@
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
+import { measure } from '@/map/editor/measure'
+import { isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
 
 export const FEATURES_SOURCE = 'features'
@@ -17,19 +19,72 @@ export const LAYER_COLORS: Record<string, string> = {
   notes: '#726b9f',
 }
 
-// `style` is an object, except past the source's max zoom where MapLibre
-// hands nested properties over as JSON strings: use its color only when it
-// is an object that has one, else the layer color.
+/**
+ * A feature's own colour (`style.color`), else `fallback`. The GeoJSON
+ * source keeps nested objects as objects, but past its max zoom MapLibre
+ * hands them over as JSON strings: read both, and never let a missing
+ * colour fail the expression.
+ */
+function styleColorExpr(fallback: unknown): unknown {
+  const json = ['string', ['var', 'style']]
+  const at = ['index-of', '"color":"#', json]
+  return ['let', 'style', ['get', 'style'], ['case',
+    ['all', ['==', ['typeof', ['var', 'style']], 'object'], ['has', 'color', ['object', ['var', 'style']]]],
+    ['to-color', ['get', 'color', ['object', ['var', 'style']]], fallback],
+    ['all', ['==', ['typeof', ['var', 'style']], 'string'], ['>=', at, 0]],
+    ['to-color', ['slice', json, ['+', at, 9], ['+', at, 16]], fallback],
+    fallback,
+  ]]
+}
+
 const layerColor = ['match', ['get', 'layer'], ...Object.entries(LAYER_COLORS).flat(), '#6e6355']
-const color = ['let', 'style', ['get', 'style'], ['case',
-  ['all', ['==', ['typeof', ['var', 'style']], 'object'], ['has', 'color', ['object', ['var', 'style']]]],
-  ['to-color', ['get', 'color', ['object', ['var', 'style']]], layerColor],
-  layerColor,
-]] as unknown as string
+const color = styleColorExpr(layerColor) as string
+const isZone = ['in', ['get', 'kind'], ['literal', ZONE_KINDS]]
+
+/**
+ * Adds to each named zone the measure written under its name
+ * (`zone_measure`), so every map that shows features (editor, public map,
+ * dossier, printed plan) writes the same label.
+ */
+function withZoneMeasures(data: MapFeatureCollection): MapFeatureCollection {
+  if (!data.features.some((f) => isZoneKind(f.properties?.kind))) return data
+  return {
+    ...data,
+    features: data.features.map((f) => {
+      if (!isZoneKind(f.properties?.kind)) return f
+      const text = zoneMeasureText(f.properties, measure(f.geometry))
+      return text ? { ...f, properties: { ...f.properties, zone_measure: text } } : f
+    }),
+  }
+}
+
+/**
+ * A zone's name and, on a second smaller line, its measure; written in ink
+ * with a white halo, like a note on a plan.
+ */
+function zoneLabelLayout(placement: 'point' | 'line-center') {
+  const name = ['coalesce', ['get', 'name'], '']
+  const measured = ['coalesce', ['get', 'zone_measure'], '']
+  return {
+    'text-field': ['format',
+      name, { 'font-scale': 1 },
+      ['case', ['all', ['!=', name, ''], ['!=', measured, '']], '\n', ''], {},
+      measured, { 'font-scale': 0.8 },
+    ],
+    'text-size': ['interpolate', ['linear'], ['zoom'], 15, 11, 17, 14, 20, 17],
+    'text-font': ['Noto Sans Regular'],
+    'text-max-width': 12,
+    'symbol-placement': placement,
+    'text-padding': 4,
+  }
+}
+
+const ZONE_LABEL_PAINT = { 'text-color': '#1b1712', 'text-halo-color': 'rgba(255, 255, 255, 0.9)', 'text-halo-width': 2, 'text-halo-blur': 0.5 }
 
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
 export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollection) {
   ensureLabelBackground(map)
+  data = withZoneMeasures(data)
   if (map.getSource(FEATURES_SOURCE)) {
     ;(map.getSource(FEATURES_SOURCE) as GeoJSONSource).setData(data)
     return
@@ -43,7 +98,8 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'fill',
     source: FEATURES_SOURCE,
     filter: ['==', ['geometry-type'], 'Polygon'],
-    paint: { 'fill-color': color, 'fill-opacity': ['case', draft as never, 0.15, 0.28] },
+    // A named zone is drawn bolder than other surfaces: it is what the plan says.
+    paint: { 'fill-color': color, 'fill-opacity': ['case', draft as never, 0.15, isZone as never, ZONE_FILL_OPACITY, 0.28] },
   })
   map.addLayer({
     id: 'features-line',
@@ -52,7 +108,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     filter: ['in', ['geometry-type'], ['literal', ['Polygon', 'LineString']]],
     paint: {
       'line-color': color,
-      'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, 2],
+      'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, ['==', ['get', 'kind'], 'line'], 3, 2],
       'line-dasharray': ['case', draft as never, ['literal', [2, 2]], ['literal', [1, 0]]] as never,
     },
   })
@@ -75,7 +131,33 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'symbol',
     source: FEATURES_SOURCE,
     minzoom: 17,
-    filter: ['has', 'name'],
+    filter: ['all', ['has', 'name'], ['!', isZone]] as never,
     ...markerLabel(['get', 'name']),
+  })
+  // Zones write their name (and measure) across them, from further out.
+  map.addLayer({
+    id: 'zone-labels',
+    type: 'symbol',
+    source: FEATURES_SOURCE,
+    minzoom: 15,
+    filter: ['all', ['==', ['get', 'kind'], 'zone'], ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]], ['any', ['has', 'name'], ['has', 'zone_measure']]] as never,
+    layout: zoneLabelLayout('point') as never,
+    paint: ZONE_LABEL_PAINT,
+  })
+  map.addLayer({
+    id: 'zone-labels-line',
+    type: 'symbol',
+    source: FEATURES_SOURCE,
+    minzoom: 15,
+    filter: ['all', ['==', ['get', 'kind'], 'line'], ['in', ['geometry-type'], ['literal', ['LineString', 'MultiLineString']]], ['any', ['has', 'name'], ['has', 'zone_measure']]] as never,
+    // Level, beside the middle of the path, as one writes along a hedge on a plan.
+    layout: {
+      ...zoneLabelLayout('line-center'),
+      'text-rotation-alignment': 'viewport',
+      'text-anchor': 'left',
+      'text-justify': 'left',
+      'text-offset': [0.8, 0],
+    } as never,
+    paint: ZONE_LABEL_PAINT,
   })
 }

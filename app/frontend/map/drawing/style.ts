@@ -292,6 +292,8 @@ const DRAWING_IMAGES = [
   ...patterned.flatMap((e) => [...new Set([e.color, ...COLOR_SWATCHES])].map((color) => `drawing-${e.fill!.pattern}-${color.toLowerCase()}`)),
 ]
 
+const patternWatched = new WeakSet<MapLibreMap>()
+
 /**
  * Adds the drawing images (`drawing-icon-<name>`, `drawing-hatch-<#color>`,
  * `drawing-dots-<#color>`) to a map; safe to call again after a style
@@ -303,6 +305,15 @@ export function installDrawingImages(map: MapLibreMap, copyFrom?: MapLibreMap) {
     if (map.hasImage(id)) continue
     const image = imageFor(id)
     if (image) map.addImage(id, image, { pixelRatio: PIXEL_RATIO })
+  }
+  // A colour picked freely in the inspector: draw its pattern when first asked.
+  if (!patternWatched.has(map)) {
+    patternWatched.add(map)
+    map.on('styleimagemissing', (e: { id: string }) => {
+      if (!/^drawing-(hatch|dots)-#[0-9a-f]{6}$/.test(e.id) || map.hasImage(e.id)) return
+      const image = imageFor(e.id)
+      if (image) map.addImage(e.id, image, { pixelRatio: PIXEL_RATIO })
+    })
   }
   if (copyFrom) {
     map.setMissingStyleImageResolver((id) => {

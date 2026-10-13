@@ -6,6 +6,7 @@ import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { DESIGN_LAYERS, elementFor, featureColor, layerColor } from '@/map/drawing/catalog'
 import { drawIcon } from '@/map/drawing/icons'
 import { applyLayerVisibility, installDrawingImages, TRANSIENT_PREFIX } from '@/map/drawing/style'
+import { isZoneKind } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
 /**
@@ -172,7 +173,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
 
 export type LegendEntry = { key: string; label: string; color: string; geometry: 'Point' | 'LineString' | 'Polygon'; dash?: number[]; icon?: string }
 
-/** One entry per kind drawn on the visible layers, in design layer order. */
+/** One entry per kind (and per named zone) drawn on the visible layers, in design layer order. */
 export function legendEntries(features: MapFeature[], hiddenLayers: string[], withBoundary: boolean): LegendEntry[] {
   const entries: LegendEntry[] = withBoundary
     ? [{ key: 'boundary', label: t('drawing.pdf.boundary'), color: '#5b5781', geometry: 'LineString' }]
@@ -183,14 +184,16 @@ export function legendEntries(features: MapFeature[], hiddenLayers: string[], wi
     for (const feature of visible.filter((f) => f.properties.layer === layer)) {
       const kind = feature.properties.kind
       const color = featureColor(feature)
-      const key = `${kind}:${color}`
+      // A named zone is its own entry: « Forêt-jardin » reads better than « Zone ».
+      const zoneName = isZoneKind(kind) ? feature.properties.name?.trim() : null
+      const key = zoneName ? `${kind}:${color}:${zoneName}` : `${kind}:${color}`
       if (seen.has(key)) continue
       seen.add(key)
       const spec = elementFor(kind)
       const type = feature.geometry.type.replace('Multi', '') as LegendEntry['geometry']
       entries.push({
         key,
-        label: t(`editor.kinds.${kind}`),
+        label: zoneName || t(`editor.kinds.${kind}`),
         color: spec || feature.properties.style?.color ? color : layerColor(layer),
         geometry: type,
         dash: spec?.line?.dash,

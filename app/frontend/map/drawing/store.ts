@@ -6,7 +6,7 @@ import { useSyncExternalStore } from 'react'
  * feature whose shape is being edited. Shared by the toolbar, the
  * inspector section, the layers panel and the exports.
  */
-export type DrawingTool = 'draw' | 'measure' | 'sketch' | 'shape' | null
+export type DrawingTool = 'draw' | 'zone' | 'measure' | 'sketch' | 'shape' | null
 
 export type DrawingState = {
   mapId: number | null
