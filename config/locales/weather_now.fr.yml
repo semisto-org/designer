@@ -16,4 +16,6 @@ fr:
         aws: "Station automatique, mesure toutes les 10 minutes."
         synop: "Station synoptique, relevé toutes les heures."
       when: "Mesuré %{ago}, sous abri à 1,5 m du sol."
+      hot: "Plus de %{threshold} : les jeunes plants souffrent, arrose le soir et paille le sol."
+      dry: "Air sous %{threshold} d'humidité : les feuilles perdent vite leur eau, surveille les plantations récentes."
       source: "Données : %{name} (%{licence}). Clique pour voir les derniers jours."

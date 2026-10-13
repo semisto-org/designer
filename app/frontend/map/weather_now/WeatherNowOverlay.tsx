@@ -10,6 +10,10 @@ import type { WeatherNow } from '@/types/weather_stations'
 
 const NBSP = ' '
 const REFRESH_MS = 10 * 60 * 1000
+/** Above this, the temperature shows in red (heat stress for young plants). */
+const HOT_C = 30
+/** Below this, the humidity shows in red (dry air, plants lose water fast). */
+const DRY_PCT = 30
 
 /** An empty MapLibre control the badge is portaled into. */
 class SlotControl implements IControl {
@@ -91,6 +95,8 @@ export default function WeatherNowOverlay() {
   const humidity = `${formatNumber(now.humidityPct)}${NBSP}%`
   const station = now.station
   const distance = `${formatNumber(station.distanceKm)}${NBSP}km`
+  const hot = now.tempC > HOT_C
+  const dry = now.humidityPct < DRY_PCT
 
   return createPortal(
     <div
@@ -111,8 +117,8 @@ export default function WeatherNowOverlay() {
         }}
         className="flex items-center gap-2 rounded-full bg-white/85 px-2.5 py-0.5 text-sm font-medium text-loam-800 shadow-sm ring-1 ring-loam-900/10 backdrop-blur-sm hover:bg-white! focus-visible:outline-2 focus-visible:outline-prune-600"
       >
-        <span className="flex items-center gap-0.5"><Thermometer className="h-3.5 w-3.5 text-clay-500" aria-hidden="true" />{temp}</span>
-        <span className="flex items-center gap-0.5"><Droplets className="h-3.5 w-3.5 text-lichen-600" aria-hidden="true" />{humidity}</span>
+        <span className={'flex items-center gap-0.5' + (hot ? ' text-clay-600' : '')}><Thermometer className="h-3.5 w-3.5 text-clay-500" aria-hidden="true" />{temp}</span>
+        <span className={'flex items-center gap-0.5' + (dry ? ' text-clay-600' : '')}><Droplets className={'h-3.5 w-3.5 ' + (dry ? 'text-clay-500' : 'text-lichen-600')} aria-hidden="true" />{humidity}</span>
       </button>
       <div
         id={tipId}
@@ -129,6 +135,8 @@ export default function WeatherNowOverlay() {
           {t(`weather_now.tip.network.${now.network}`)}
         </p>
         <p className="mt-1 text-loam-100">{t('weather_now.tip.when', { ago: ago(now.observedAt, clock) })}</p>
+        {hot && <p className="mt-1 text-clay-100">{t('weather_now.tip.hot', { threshold: `${HOT_C}${NBSP}°C` })}</p>}
+        {dry && <p className="mt-1 text-clay-100">{t('weather_now.tip.dry', { threshold: `${DRY_PCT}${NBSP}%` })}</p>}
         <p className="mt-2 text-loam-300">{t('weather_now.tip.source', { name: now.attribution.name, licence: now.attribution.licence })}</p>
       </div>
     </div>,
