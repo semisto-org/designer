@@ -23,6 +23,7 @@ import { waterColor } from './colors.ts'
 import { NIVA, type NivaState } from './niva.ts'
 import { headingOf } from './heading.ts'
 import { buildNivaModel, nivaParts, setNivaLights, type NivaLights } from './nivaModel.ts'
+import type { ColdAirField } from './coldAir.ts'
 import type { RainSimulation } from './hydro.ts'
 import type { SunPosition } from './sun.ts'
 
@@ -33,6 +34,13 @@ const PARTICLES = 5000
 const WALL_COLOR = '#d8cfc0'
 const DAY_SKY = '#e3e9e4'
 const NIGHT_SKY = '#0a1220'
+/** Cold-air mist: puffs, and fainter puffs trailing each one. */
+const MIST_PUFFS = 900
+const MIST_TRAIL = 5
+/** At most this many vertices per side for the cold layer's sheets. */
+const COLD_SHEET_MAX = 160
+const COLD_SHEETS = [0.35, 0.7, 1]
+const FROST_RGB = [226, 233, 240]
 
 export type CameraMode = 'chase' | 'orbit'
 
@@ -52,6 +60,7 @@ const OVERLAY_DECLARATIONS = `uniform float uContour;
 uniform sampler2D uOverlay;
 uniform sampler2D uWater;
 uniform sampler2D uSun;
+uniform sampler2D uCold;
 varying float vElevation;
 varying vec2 vGridUv;
 float contourLine(float value, float width) {
@@ -60,6 +69,8 @@ float contourLine(float value, float width) {
 }`
 const OVERLAY_MIX = `vec4 sunTint = texture2D(uSun, vGridUv);
 diffuseColor.rgb = mix(diffuseColor.rgb, sunTint.rgb, sunTint.a);
+vec4 frost = texture2D(uCold, vGridUv);
+diffuseColor.rgb = mix(diffuseColor.rgb, frost.rgb, frost.a);
 vec4 water = texture2D(uWater, vGridUv);
 diffuseColor.rgb = mix(diffuseColor.rgb, water.rgb, water.a);
 if (uContour > 0.0) {
@@ -78,6 +89,22 @@ function dataTexture(data: Uint8Array, width: number, height: number): THREE.Dat
   texture.colorSpace = THREE.SRGBColorSpace
   texture.needsUpdate = true
   return texture
+}
+
+/** A soft round puff of mist. */
+function puffTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 64
+  const context = canvas.getContext('2d')
+  if (context) {
+    const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32)
+    gradient.addColorStop(0, 'rgba(255,255,255,1)')
+    gradient.addColorStop(0.4, 'rgba(255,255,255,0.45)')
+    gradient.addColorStop(1, 'rgba(255,255,255,0)')
+    context.fillStyle = gradient
+    context.fillRect(0, 0, 64, 64)
+  }
+  return new THREE.CanvasTexture(canvas)
 }
 
 export class ReliefScene {
@@ -104,6 +131,17 @@ export class ReliefScene {
   private waterData = new Uint8Array(4)
   private waterTexture!: THREE.DataTexture
   private sunData = new Uint8Array(4)
+  private coldData = new Uint8Array(4)
+  private coldTexture!: THREE.DataTexture
+  private cold: {
+    field: ColdAirField
+    depth: Float32Array | null
+    sheets: { mesh: THREE.Mesh; colors: Float32Array; cells: Int32Array; ground: Float32Array }[]
+    mist: THREE.Points
+    puffs: { x: Float32Array; z: Float32Array; vx: Float32Array; vz: Float32Array; age: Float32Array; life: Float32Array }
+    lastFrame: number
+  } | null = null
+  private moonlit = false
   private sunTexture!: THREE.DataTexture
   private uniforms!: Record<string, THREE.IUniform>
   private particles!: THREE.Points
@@ -226,12 +264,14 @@ export class ReliefScene {
     // Water and sun: RGBA textures refreshed by `updateWater` / `setSunTint`.
     this.waterTexture = dataTexture(this.waterData, 1, 1)
     this.sunTexture = dataTexture(this.sunData, 1, 1)
+    this.coldTexture = dataTexture(this.coldData, 1, 1)
 
     this.uniforms = {
       uContour: { value: 5 },
       uOverlay: { value: this.overlayTexture },
       uWater: { value: this.waterTexture },
       uSun: { value: this.sunTexture },
+      uCold: { value: this.coldTexture },
     }
     const placeholder = new THREE.DataTexture(new Uint8Array([200, 200, 190, 255]), 1, 1)
     placeholder.needsUpdate = true
@@ -742,8 +782,10 @@ ${OVERLAY_MIX}`)
   // A starry night-blue sky, a haze swallowing the distance, a cold moon: the
   // terrain hardly shows but in the headlights.
 
-  setNight(on: boolean) {
+  /** `moonlit`: a clear night under the moon, light enough to read the terrain (cold air). */
+  setNight(on: boolean, moonlit = false) {
     this.night = on
+    this.moonlit = on && moonlit
     ;(this.scene.background as THREE.Color).set(on ? NIGHT_SKY : DAY_SKY)
     this.scene.fog = on ? new THREE.FogExp2(NIGHT_SKY, 0.0016) : null
     if (on && !this.stars) this.buildStars()
@@ -753,10 +795,225 @@ ${OVERLAY_MIX}`)
   }
 
   private applyLighting() {
-    this.hemiLight.intensity = this.night ? 0.07 : 1.1
+    this.hemiLight.intensity = this.night ? (this.moonlit ? 0.55 : 0.07) : 1.1
     this.hemiLight.color.set(this.night ? '#8fa6d6' : '#f4f7fb')
-    this.sunLight.intensity = this.night ? 0.14 : this.sunIntensity
+    this.sunLight.intensity = this.night ? (this.moonlit ? 0.6 : 0.14) : this.sunIntensity
     this.sunLight.color.set(this.night ? '#9db4ff' : '#fffaf0')
+  }
+
+  // ---- Cold air at night -----------------------------------------------------
+  //
+  // Not water: no blue and no shore. Milky puffs slide down the slopes and
+  // fray, the cold layer is a misty volume (stacked sheets fading at their
+  // edge), and frost whitens the ground under it.
+
+  /** Shows the cold air of `field` (coldAir.ts, rows north → south), or removes it. */
+  setColdAir(field: ColdAirField | null) {
+    this.disposeCold()
+    if (!field) return
+    const g = this.grid
+    const x0 = ((g.cols - 1) * g.cellSize) / 2
+    const z0 = ((g.rows - 1) * g.cellSize) / 2
+    const step = Math.max(1, Math.ceil(Math.max(field.cols, field.rows) / COLD_SHEET_MAX))
+    const sheetCols = Math.floor((field.cols - 1) / step) + 1
+    const sheetRows = Math.floor((field.rows - 1) / step) + 1
+    const cells = new Int32Array(sheetCols * sheetRows)
+    const ground = new Float32Array(sheetCols * sheetRows)
+    const positions = new Float32Array(sheetCols * sheetRows * 3)
+    for (let r = 0; r < sheetRows; r++) {
+      for (let c = 0; c < sheetCols; c++) {
+        const k = r * sheetCols + c
+        const fc = c * step
+        const fr = r * step
+        cells[k] = fr * field.cols + fc
+        const x = fc * field.cellSize
+        const z = fr * field.cellSize
+        ground[k] = this.heightAt(x, z) - g.zBase
+        positions.set([x - x0, ground[k], z - z0], k * 3)
+      }
+    }
+    const indices = new Uint32Array((sheetCols - 1) * (sheetRows - 1) * 6)
+    let n = 0
+    for (let r = 0; r < sheetRows - 1; r++) {
+      for (let c = 0; c < sheetCols - 1; c++) {
+        const a = r * sheetCols + c
+        const d = a + sheetCols
+        indices[n++] = a; indices[n++] = d; indices[n++] = a + 1
+        indices[n++] = a + 1; indices[n++] = d; indices[n++] = d + 1
+      }
+    }
+    const puff = puffTexture()
+    const sheets = COLD_SHEETS.map(() => {
+      const geometry = new THREE.BufferGeometry()
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3))
+      const colors = new Float32Array(sheetCols * sheetRows * 4)
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4))
+      geometry.setIndex(new THREE.BufferAttribute(indices, 1))
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+        vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      }))
+      mesh.frustumCulled = false
+      mesh.renderOrder = 2
+      this.world.add(mesh)
+      return { mesh, colors, cells, ground }
+    })
+
+    const count = MIST_PUFFS * MIST_TRAIL
+    const mistGeometry = new THREE.BufferGeometry()
+    mistGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3))
+    mistGeometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 4), 4))
+    const span = Math.max(this.size.width, this.size.depth)
+    const mist = new THREE.Points(mistGeometry, new THREE.PointsMaterial({
+      size: Math.min(40, Math.max(5, span * 0.06)), map: puff, vertexColors: true, transparent: true, depthWrite: false,
+    }))
+    mist.frustumCulled = false
+    mist.renderOrder = 3
+    this.world.add(mist)
+    const puffs = {
+      x: new Float32Array(MIST_PUFFS), z: new Float32Array(MIST_PUFFS), vx: new Float32Array(MIST_PUFFS),
+      vz: new Float32Array(MIST_PUFFS), age: new Float32Array(MIST_PUFFS), life: new Float32Array(MIST_PUFFS),
+    }
+    this.cold = { field, depth: null, sheets, mist, puffs, lastFrame: performance.now() }
+    for (let p = 0; p < MIST_PUFFS; p++) {
+      this.spawnPuff(p)
+      puffs.age[p] = Math.random() * puffs.life[p]
+    }
+  }
+
+  /** The cold layer's thickness per field cell (m) and the frost it leaves. */
+  setColdLayer(depth: Float32Array) {
+    const cold = this.cold
+    if (!cold) return
+    cold.depth = depth
+    const { cols, rows } = cold.field
+    if (this.coldTexture.image.width !== cols || this.coldTexture.image.height !== rows) {
+      this.coldTexture.dispose()
+      this.coldData = new Uint8Array(cols * rows * 4)
+      this.coldTexture = dataTexture(this.coldData, cols, rows)
+      this.uniforms.uCold.value = this.coldTexture
+    }
+    // A DataTexture reads bottom-up: the north row goes last.
+    for (let r = 0; r < rows; r++) {
+      const out = (rows - 1 - r) * cols
+      for (let c = 0; c < cols; c++) {
+        const d = depth[r * cols + c]
+        const o = (out + c) * 4
+        this.coldData[o] = FROST_RGB[0]
+        this.coldData[o + 1] = FROST_RGB[1]
+        this.coldData[o + 2] = FROST_RGB[2]
+        // Hoarfrost under the layer, thicker where it is deep.
+        this.coldData[o + 3] = d > 0.05 ? Math.round(255 * Math.min(0.85, 0.3 + d / 4)) : 0
+      }
+    }
+    this.coldTexture.needsUpdate = true
+    for (const sheet of cold.sheets) {
+      const index = cold.sheets.indexOf(sheet)
+      const fraction = COLD_SHEETS[index]
+      const top = index === cold.sheets.length - 1
+      const position = sheet.mesh.geometry.attributes.position as THREE.BufferAttribute
+      for (let k = 0; k < sheet.cells.length; k++) {
+        const d = depth[sheet.cells[k]]
+        position.setY(k, sheet.ground[k] + Math.max(0, d) * fraction + 0.05)
+        // Faint at the edge: a cold layer has no shore.
+        const alpha = d <= 0.05 ? 0 : Math.min(1, d / 2.5) * (top ? 0.26 : 0.11)
+        sheet.colors.set([0.9, 0.93, 0.96, alpha], k * 4)
+      }
+      position.needsUpdate = true
+      sheet.mesh.geometry.attributes.color.needsUpdate = true
+    }
+  }
+
+  private spawnPuff(p: number) {
+    const cold = this.cold
+    if (!cold) return
+    const { field, depth, puffs } = cold
+    // Born on the slopes: cold air forms everywhere, but shows where it moves.
+    for (let t = 0; t < 8; t++) {
+      const i = Math.floor(Math.random() * field.cols * field.rows)
+      puffs.x[p] = ((i % field.cols) + Math.random()) * field.cellSize
+      puffs.z[p] = (Math.floor(i / field.cols) + Math.random()) * field.cellSize
+      if (field.slope[i] > 0.03 && (!depth || depth[i] < 0.5)) break
+    }
+    puffs.vx[p] = 0
+    puffs.vz[p] = 0
+    puffs.age[p] = 0
+    puffs.life[p] = 10 + Math.random() * 10
+  }
+
+  /** One frame of mist: puffs follow the slope, slow down in the layer, fade in and out. */
+  updateColdMist() {
+    const cold = this.cold
+    if (!cold) return
+    const now = performance.now()
+    const dt = Math.min(0.05, (now - cold.lastFrame) / 1000)
+    cold.lastFrame = now
+    const { field, depth, puffs, mist } = cold
+    const g = this.grid
+    const x0 = ((g.cols - 1) * g.cellSize) / 2
+    const z0 = ((g.rows - 1) * g.cellSize) / 2
+    const width = (field.cols - 1) * field.cellSize
+    const height = (field.rows - 1) * field.cellSize
+    // The puffs cross a large terrain as fast, on screen, as a small one.
+    const pace = Math.min(4, Math.max(1, Math.max(width, height) / 250))
+    const positions = mist.geometry.attributes.position.array as Float32Array
+    const colors = mist.geometry.attributes.color.array as Float32Array
+    const lift = 1.2 / this.exaggeration
+    const time = now / 1000
+    for (let p = 0; p < MIST_PUFFS; p++) {
+      const c = Math.min(field.cols - 1, Math.max(0, Math.floor(puffs.x[p] / field.cellSize)))
+      const r = Math.min(field.rows - 1, Math.max(0, Math.floor(puffs.z[p] / field.cellSize)))
+      const i = r * field.cols + c
+      const slope = field.slope[i]
+      const pooled = depth ? depth[i] > 0.3 : false
+      const speed = (0.8 + 7 * Math.sqrt(slope)) * pace * (pooled ? 0.15 : 1)
+      // A slow sideways sway, so the mist frays instead of running in lines.
+      const sway = 0.45 * Math.sin(time * 0.5 + p)
+      const dx = field.dirX[i]
+      const dz = field.dirZ[i]
+      const vx = (dx - sway * dz) * speed
+      const vz = (dz + sway * dx) * speed
+      puffs.vx[p] = puffs.vx[p] * 0.9 + vx * 0.1
+      puffs.vz[p] = puffs.vz[p] * 0.9 + vz * 0.1
+      puffs.x[p] += vx * dt
+      puffs.z[p] += vz * dt
+      puffs.age[p] += dt
+      if (puffs.age[p] > puffs.life[p] || puffs.x[p] < 0 || puffs.z[p] < 0 || puffs.x[p] > width || puffs.z[p] > height) this.spawnPuff(p)
+      const fade = Math.sin(Math.PI * Math.min(1, puffs.age[p] / puffs.life[p]))
+      // Brightest where the air runs down a slope, faint once it lies in the layer.
+      const strength = fade * 0.2 * (pooled ? 0.35 : 0.55 + 0.45 * Math.min(1, slope * 4))
+      for (let k = 0; k < MIST_TRAIL; k++) {
+        const x = puffs.x[p] - puffs.vx[p] * k * 0.45
+        const z = puffs.z[p] - puffs.vz[p] * k * 0.45
+        const j = p * MIST_TRAIL + k
+        positions[j * 3] = x - x0
+        positions[j * 3 + 1] = this.heightAt(x, z) - g.zBase + lift
+        positions[j * 3 + 2] = z - z0
+        colors[j * 4] = 0.95
+        colors[j * 4 + 1] = 0.97
+        colors[j * 4 + 2] = 1
+        colors[j * 4 + 3] = strength * (1 - k / MIST_TRAIL)
+      }
+    }
+    mist.geometry.attributes.position.needsUpdate = true
+    mist.geometry.attributes.color.needsUpdate = true
+  }
+
+  private disposeCold() {
+    const cold = this.cold
+    this.coldData.fill(0)
+    this.coldTexture.needsUpdate = true
+    if (!cold) return
+    for (const sheet of cold.sheets) {
+      sheet.mesh.removeFromParent()
+      sheet.mesh.geometry.dispose()
+      ;(sheet.mesh.material as THREE.Material).dispose()
+    }
+    cold.mist.removeFromParent()
+    cold.mist.geometry.dispose()
+    const material = cold.mist.material as THREE.PointsMaterial
+    material.map?.dispose()
+    material.dispose()
+    this.cold = null
   }
 
   private buildStars() {
@@ -924,6 +1181,8 @@ ${OVERLAY_MIX}`)
     this.overlayTexture.dispose()
     this.waterTexture.dispose()
     this.sunTexture.dispose()
+    this.disposeCold()
+    this.coldTexture.dispose()
     this.renderer.dispose()
     this.renderer.domElement.remove()
   }

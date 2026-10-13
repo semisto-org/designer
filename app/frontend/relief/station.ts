@@ -137,7 +137,25 @@ export function frostRisk(
   heights: ArrayLike<number>, drainage: Pick<Drainage, 'receiver' | 'order' | 'accumulation' | 'depression'>,
   { channelArea = 50000, warmBelt = 10 }: { channelArea?: number; warmBelt?: number } = {},
 ): Float32Array {
-  const { receiver, order, accumulation, depression } = drainage
+  const hand = heightAboveDrain(heights, drainage, channelArea)
+  const { depression } = drainage
+  const risk = new Float32Array(heights.length)
+  for (let i = 0; i < risk.length; i++) {
+    let value = 1 - hand[i] / warmBelt
+    if (depression[i] > 0.2) value = Math.max(value, 0.8)
+    risk[i] = value < 0 ? 0 : value > 1 ? 1 : value
+  }
+  return risk
+}
+
+/**
+ * Height of each cell above the drain its water reaches (HAND, m): a cell
+ * drains into a channel once `channelArea` m² gather there, or at the border.
+ */
+export function heightAboveDrain(
+  heights: ArrayLike<number>, drainage: Pick<Drainage, 'receiver' | 'order' | 'accumulation'>, channelArea = 50000,
+): Float32Array {
+  const { receiver, order, accumulation } = drainage
   const n = heights.length
   const drainLevel = new Float32Array(n)
   // The flood order goes downstream → upstream: a receiver comes before its donors.
@@ -146,14 +164,9 @@ export function frostRisk(
     const to = receiver[i]
     drainLevel[i] = accumulation[i] >= channelArea || to < 0 ? heights[i] : drainLevel[to]
   }
-  const risk = new Float32Array(n)
-  for (let i = 0; i < n; i++) {
-    const hand = Math.max(0, heights[i] - drainLevel[i])
-    let value = 1 - hand / warmBelt
-    if (depression[i] > 0.2) value = Math.max(value, 0.8)
-    risk[i] = value < 0 ? 0 : value > 1 ? 1 : value
-  }
-  return risk
+  const hand = new Float32Array(n)
+  for (let i = 0; i < n; i++) hand[i] = Math.max(0, heights[i] - drainLevel[i])
+  return hand
 }
 
 export type WetnessClass = 'dry' | 'fresh' | 'moist' | 'wet'

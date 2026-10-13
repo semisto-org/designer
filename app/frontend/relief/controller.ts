@@ -16,6 +16,7 @@ import { buildingLayer, type BuildingData, type BuildingLayer, type BuildingsRes
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
 import { applyDesigns, downsampleDesigned, type Design, type Footprint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
+import { coldAirField, coldLayer, type ColdAirField } from './coldAir.ts'
 import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage } from './hydro.ts'
 import type { BlocksInput } from './blocks.ts'
 import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaTerrain } from './niva.ts'
@@ -87,6 +88,8 @@ export type ProbeInfo = {
   drained: number
   hollow: number
   water: { depth: number; speed: number } | null
+  /** Shown while the cold air is: the layer's thickness (m) and whether air runs down here. */
+  cold: { depth: number; flowing: boolean } | null
 }
 
 export type DesignSummary = { id: number | string; kind: string; name: string | null; capacity: number; water: number }
@@ -158,6 +161,10 @@ export class ReliefController {
   rain: RainSettings = { intensity: 30, duration: 60, soilState: 'normal', speed: 4, dig: true }
   sun: { mode: SunMode; date: SunDate; minutes: number } = { mode: 'off', date: 'summer', minutes: 14 * 60 }
 
+  /** Cold air at night: `night` from 0 (21:00) to 1 (dawn). */
+  cold = { on: false, night: 0.6 }
+  private coldField: ColdAirField | null = null
+  private coldDepth: Float32Array | null = null
   simulation: RainSimulation | null = null
   baseline: RainSimulation | null = null
   playing = false
@@ -347,6 +354,8 @@ export class ReliefController {
     this.drainage = analyzeDrainage(this.ground, cols, rows, this.cell)
     this.station = null
     for (const key of ['aspect', 'wetness', 'frost'] as BaseLayer[]) delete this.textures[key]
+    this.coldField = null
+    if (this.cold.on) this.showCold()
     if (this.simulation) {
       this.buildSimulations()
       this.scene?.clearWater()
@@ -689,6 +698,7 @@ export class ReliefController {
   /** Called on every frame by the scene: as many steps as the budget allows. */
   private tick() {
     this.tickNiva()
+    if (this.cold.on) this.scene?.updateColdMist()
     const sim = this.simulation
     if (!sim || !this.playing || !this.scene) return
     const start = performance.now()
@@ -996,6 +1006,44 @@ export class ReliefController {
     if (on && this.niva) this.setNivaLight('low', true)
   }
 
+  // ---- Cold air at night (coldAir.ts) ----------------------------------------
+
+  /** Shows (or hides) the cold air; `restoreNight`: the night setting to go back to. */
+  setColdAir(on: boolean, restoreNight = false) {
+    this.cold.on = on
+    if (!this.scene) return
+    if (on) {
+      this.scene.setNight(true, true)
+      this.showCold()
+    } else {
+      this.scene.setColdAir(null)
+      this.scene.setNight(restoreNight)
+    }
+  }
+
+  setColdNight(night: number) {
+    this.cold.night = night
+    if (!this.cold.on || !this.coldField || !this.scene) return
+    this.coldDepth = coldLayer(this.coldField, night, this.coldDepth ?? undefined)
+    this.scene.setColdLayer(this.coldDepth)
+  }
+
+  /** The thickest the cold layer gets on the terrain at the current night (m). */
+  coldPeak(): number {
+    let peak = 0
+    if (this.coldDepth) for (const d of this.coldDepth) if (d > peak) peak = d
+    return peak
+  }
+
+  private showCold() {
+    if (!this.scene || !this.full || !this.ground || !this.drainage) return
+    const { cols, rows } = this.full
+    this.coldField ||= coldAirField(this.ground, this.surface, this.drainage, cols, rows, this.cell)
+    this.scene.setColdAir(this.coldField)
+    this.coldDepth = null
+    this.setColdNight(this.cold.night)
+  }
+
   setCameraMode(mode: CameraMode) {
     this.scene?.setCameraMode(mode)
   }
@@ -1113,6 +1161,9 @@ export class ReliefController {
       drained: station?.spread[i] ?? this.drainage?.accumulation[i] ?? 0,
       hollow: this.drainage?.depression[i] ?? 0,
       water,
+      cold: this.cold.on && this.coldField && this.coldDepth
+        ? { depth: this.coldDepth[i], flowing: this.coldDepth[i] < 0.3 && this.coldField.slope[i] > 0.03 }
+        : null,
     }
   }
 }
