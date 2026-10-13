@@ -75,35 +75,63 @@ export function zoneMeasureText(
 
 type Position = number[]
 
-/** Corner-cutting passes: three turn a square into a soft, hand-drawn blob. */
-const SMOOTH_PASSES = 3
+/** How far a corner is rounded: a share of its shorter edge, never more than a few metres. */
+const CORNER_SHARE = 0.15
+const CORNER_MAX_M = 3
+/** Segments of each rounded corner: enough to read as a curve at plan zoom. */
+const CORNER_STEPS = 6
+const M_PER_DEG = 111_320
 
-function chaikin(points: Position[], closed: boolean): Position[] {
-  const cut = (p: Position, q: Position, t: number) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
-  let current = closed ? points.slice(0, -1) : points
-  for (let pass = 0; pass < SMOOTH_PASSES; pass++) {
-    const next: Position[] = closed ? [] : [current[0]]
-    const edges = closed ? current.length : current.length - 1
-    for (let i = 0; i < edges; i++) {
-      const p = current[i]
-      const q = current[(i + 1) % current.length]
-      next.push(cut(p, q, 0.25), cut(p, q, 0.75))
+/**
+ * Softens each corner with a small curve (a quadratic Bézier through the
+ * clicked vertex), the edges between them left straight. Distances are
+ * measured in local metres so the curve is round on the ground, and the
+ * radius stays small: a right-angled corner of 3 m loses about 3 m².
+ */
+function softenCorners(points: Position[], closed: boolean): Position[] {
+  const ring = closed ? points.slice(0, -1) : points
+  const n = ring.length
+  if (n < 3) return points
+  const kx = Math.cos((ring[0][1] * Math.PI) / 180) * M_PER_DEG
+  const metres = (p: Position, q: Position) => Math.hypot((q[0] - p[0]) * kx, (q[1] - p[1]) * M_PER_DEG)
+  const toward = (v: Position, p: Position, d: number, len: number) => [v[0] + ((p[0] - v[0]) * d) / len, v[1] + ((p[1] - v[1]) * d) / len]
+  const out: Position[] = []
+  for (let i = 0; i < n; i++) {
+    const v = ring[i]
+    const isEnd = !closed && (i === 0 || i === n - 1)
+    if (isEnd) {
+      out.push(v)
+      continue
     }
-    if (!closed) next.push(current[current.length - 1])
-    current = next
+    const prev = ring[(i - 1 + n) % n]
+    const next = ring[(i + 1) % n]
+    const lp = metres(v, prev)
+    const ln = metres(v, next)
+    const r = Math.min(CORNER_SHARE * Math.min(lp, ln), CORNER_MAX_M)
+    if (!(r > 0)) {
+      out.push(v)
+      continue
+    }
+    const a = toward(v, prev, r, lp)
+    const b = toward(v, next, r, ln)
+    for (let s = 0; s <= CORNER_STEPS; s++) {
+      const t = s / CORNER_STEPS
+      const u = 1 - t
+      out.push([u * u * a[0] + 2 * u * t * v[0] + t * t * b[0], u * u * a[1] + 2 * u * t * v[1] + t * t * b[1]])
+    }
   }
-  return closed ? [...current, current[0]] : current
+  return closed ? [...out, out[0]] : out
 }
 
 /**
  * The outline drawn on the map for a zone with `rounded: true`: its corners
- * cut again and again (Chaikin) into curves, the way a designer draws a
- * zone by hand. The stored geometry keeps the clicked points, which stay
- * the ones edited; the area written on the map is the rounded one's.
+ * softened by a small curve, the edges kept straight, so the area barely
+ * moves. The stored geometry keeps the clicked points, which stay the ones
+ * edited; the area written on the map is the rounded one's.
  */
 export function roundedGeometry(geometry: Geometry): Geometry {
-  const ring = (r: Position[]) => (r.length >= 4 ? chaikin(r, true) : r)
-  const line = (l: Position[]) => (l.length >= 3 ? chaikin(l, false) : l)
+  const ring = (r: Position[]) => (r.length >= 4 ? softenCorners(r, true) : r)
+  const line = (l: Position[]) => (l.length >= 3 ? softenCorners(l, false) : l)
   switch (geometry.type) {
     case 'Polygon':
       return { ...geometry, coordinates: geometry.coordinates.map(ring) }

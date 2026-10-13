@@ -28,8 +28,10 @@ class PublicMapsControllerTest < ActionDispatch::IntegrationTest
 
   test "nothing private reaches the response: networks, address, parcels, notes, e-mails" do
     get public_map_path(@publication.token), headers: inertia_headers
+    # The page's own URL carries a random token, which may spell « gaz ».
+    page = response.body.gsub(@publication.token, "")
     %w[Conduite gaz Verger Yvoir 91005A0012 privées].each do |leak|
-      assert_not_includes response.body, leak, "#{leak} leaked in the public page"
+      assert_not_includes page, leak, "#{leak} leaked in the public page"
     end
     assert_not_includes response.body, @owner.email_address
     assert_not_includes response.body, "michael@"
