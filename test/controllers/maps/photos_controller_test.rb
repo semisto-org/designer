@@ -33,7 +33,10 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "Verger" ], body["photos"].map { |p| p["caption"] }
     assert_equal [ "Avant travaux" ], body["albums"].map { |a| a["name"] }
     assert_equal 25.megabytes, body["limits"]["maxBytes"]
-    assert_equal %w[image/jpeg image/png image/webp image/heic image/heif image/heic-sequence image/heif-sequence], body["limits"]["contentTypes"]
+    assert_equal %w[image/jpeg image/png image/webp image/heic image/heif image/heic-sequence image/heif-sequence video/mp4 video/quicktime video/webm],
+                 body["limits"]["contentTypes"]
+    assert_equal 1.gigabyte, body["limits"]["videoMaxBytes"]
+    assert_equal %w[video/mp4 video/quicktime video/webm], body["limits"]["videoTypes"]
   end
 
   test "a viewer cannot upload, edit or delete" do
@@ -103,7 +106,7 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:michael)
     post_photo "notes.txt"
     assert_response :unprocessable_entity
-    assert_match(/« notes\.txt » n'est pas une image acceptée/, response.parsed_body["message"])
+    assert_match(/« notes\.txt » n'est ni une photo ni une vidéo acceptée/, response.parsed_body["message"])
     assert_equal "invalid", response.parsed_body["code"]
     assert_equal 0, @map.photos.count
   end
@@ -338,5 +341,36 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     delete bulk_map_photos_path(@map), params: { ids: [ first.id, second.id ] }, as: :json
     assert_response :no_content
     assert_equal [ kept.id ], @map.photos.ids
+  end
+
+  test "an editor uploads a video: it is filed with the photos and read for its place" do
+    sign_in_as users(:michael)
+    assert_enqueued_with(job: PhotoCameraJob) { post_photo "terrain.mp4" }
+    assert_response :created
+    assert_equal "video", response.parsed_body["kind"]
+    assert @map.photos.videos.exists?
+  end
+
+  test "image: a viewer plays a video from its file; size=video on a photo is its large still" do
+    video = create_photo(file: "terrain.mp4", type: "video/mp4")
+    photo = create_photo
+    sign_in_as users(:alice)
+    get image_map_photo_path(@map, video, size: "video")
+    assert_response :redirect
+    assert_match %r{/rails/active_storage/disk/}, response.location
+    get image_map_photo_path(@map, video, size: "thumb")
+    assert_response :redirect
+    get image_map_photo_path(@map, photo, size: "video")
+    assert_response :redirect
+    encoded = response.location[%r{/disk/([^/]+)/}, 1]
+    data = ActiveStorage.verifier.verified(encoded, purpose: :blob_key)
+    assert_not_equal photo.image.blob.key, data[:key] || data["key"], "a photo's size=video is not its original"
+  end
+
+  test "a video has no sketches nor renderings" do
+    video = create_photo(file: "terrain.mp4", type: "video/mp4")
+    sign_in_as users(:michael)
+    get map_photo_sketches_path(@map, video), headers: json_headers
+    assert_response :not_found
   end
 end

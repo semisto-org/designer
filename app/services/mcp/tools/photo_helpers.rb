@@ -26,7 +26,8 @@ module Mcp
             id: photo.id, caption: photo.caption, taken_at: photo.taken_at&.iso8601,
             location: photo.lnglat&.map { |v| v.round(Geo::PRECISION) }, heading: photo.heading,
             album: photo.album && { id: photo.album.id, name: photo.album.name },
-            feature_id: photo.map_feature_id, source: photo.source,
+            feature_id: photo.map_feature_id, source: photo.source, kind: photo.kind,
+            duration_s: blob&.metadata&.dig("duration")&.to_f&.round,
             width: blob&.metadata&.dig("width"), height: blob&.metadata&.dig("height"), filename: blob&.filename&.to_s,
             uploaded_by: photo.uploaded_by&.display_name, bioindicator_status: photo.bioindicator_status,
             created_at: photo.created_at.iso8601

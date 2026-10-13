@@ -34,7 +34,8 @@ module Mcp
 
         def image_of(photo)
           return nil unless photo.image.attached?
-          photo.image.variant(resize_to_limit: [ MAX_SIDE, MAX_SIDE ], format: :jpeg, saver: { strip: true, quality: 85 }).processed.download
+          # A video gives its still frame (Active Storage preview).
+          photo.image.representation(resize_to_limit: [ MAX_SIDE, MAX_SIDE ], format: :jpeg, saver: { strip: true, quality: 85 }).processed.download
         rescue StandardError => e
           Rails.logger.warn("[mcp] photo #{photo.id} unreadable: #{e.class}: #{e.message}")
           nil

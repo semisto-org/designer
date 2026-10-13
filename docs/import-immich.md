@@ -22,7 +22,10 @@ map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
 - **HEIC** comes as the original, turned into JPEG with its EXIF. **RAW** and files over 25 MB come as Immich's own JPEG rendition
   (full size when the server generates it, else the ~1440 px preview).
   JPEG, PNG and WebP come as originals. Immich redirects are followed.
-- **Videos** are left out (images only in v1).
+- **Videos** in MP4, MOV or WebM up to 1 GB (`MapPhoto::VIDEO_MAX_BYTES`) come as
+  their original file, streamed to a temporary file (never held in memory), and
+  become MapPhoto records of kind « video ». Other videos are counted and left out.
+  Albums imported before video support can be run again: only their videos are added.
 - **Re-runnable**: imported assets are recorded in `ImportRecord`
   (source `immich`), and a file already on the map is never added twice.
 - Nothing is written to Immich.

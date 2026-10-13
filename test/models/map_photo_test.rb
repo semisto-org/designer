@@ -40,8 +40,8 @@ class MapPhotoTest < ActiveSupport::TestCase
   test "only images are accepted, with a French error naming the file" do
     photo = build_photo(file: "notes.txt", type: "text/plain")
     assert_not photo.valid?
-    assert_match(/« notes\.txt » n'est pas une image acceptée/, photo.errors.full_messages.to_sentence)
-    assert_match(/JPEG, PNG, WebP ou HEIC/, photo.errors.full_messages.to_sentence)
+    assert_match(/« notes\.txt » n'est ni une photo ni une vidéo acceptée/, photo.errors.full_messages.to_sentence)
+    assert_match(/JPEG, PNG, WebP, HEIC, MP4, MOV ou WebM/, photo.errors.full_messages.to_sentence)
   end
 
   test "a file is judged by its content, not by the type the browser declared" do
@@ -63,7 +63,49 @@ class MapPhotoTest < ActiveSupport::TestCase
   test "a file that only claims to be HEIC is refused" do
     photo = build_photo(file: "notes.txt", type: "image/heic")
     assert_not photo.valid?
-    assert_match(/« notes\.txt » n'est pas une image acceptée/, photo.errors.full_messages.to_sentence)
+    assert_match(/« notes\.txt » n'est ni une photo ni une vidéo acceptée/, photo.errors.full_messages.to_sentence)
+  end
+
+  test "a video is filed with the photos, as a video" do
+    video = create_photo(file: "terrain.mp4", type: "video/mp4")
+    assert video.video?
+    assert_equal "video", video.kind
+    assert_equal "photo", create_photo.kind
+    assert_equal [ video ], video.map.photos.videos.to_a
+    assert_not_includes video.map.photos.images, video
+    assert_equal "video", video.as_inertia[:kind]
+  end
+
+  test "a video's still frame comes from its first images (ffmpeg)" do
+    video = create_photo(file: "terrain.mp4", type: "video/mp4")
+    still = Vips::Image.new_from_buffer(video.still(:thumb).processed.download, "")
+    assert_equal [ 64, 48 ], [ still.width, still.height ]
+  end
+
+  test "a video over its own limit is refused, in gigabytes" do
+    with_constant(MapPhoto, :VIDEO_MAX_BYTES, 1000) do
+      video = build_photo(file: "terrain.mp4", type: "video/mp4")
+      assert_not video.valid?
+      assert_match(/la limite est de .* par vidéo/, video.errors.full_messages.to_sentence)
+    end
+    assert build_photo(file: "terrain.mp4", type: "video/mp4").valid?, "1 Go is far above a 2 Ko video"
+  end
+
+  test "a file that only claims to be a video is refused" do
+    assert_not build_photo(file: "notes.txt", type: "video/mp4").valid?
+  end
+
+  test "wild plants are read on photos, not on videos" do
+    video = build_photo(file: "terrain.mp4", type: "video/mp4", bioindicator_status: "to_analyze")
+    assert_not video.valid?
+    assert_match(/pas sur une vidéo/, video.errors.full_messages.to_sentence)
+  end
+
+  test "a video is never a before / after candidate" do
+    photo = create_photo(location: [ 4.9, 50.34 ])
+    create_photo(file: "terrain.mp4", type: "video/mp4", location: [ 4.9, 50.34 ])
+    other = create_photo(file: "terrain_later.jpg", location: [ 4.9, 50.34 ])
+    assert_equal [ other ], photo.same_spot
   end
 
   test "png is accepted" do

@@ -105,7 +105,7 @@ export default function PhotosPanel() {
             </Button>
           </div>
           <p className="mt-2 text-xs text-loam-500">
-            {t('soil_photos.panel.drop_hint', { max: formatMegabytes(state.limits.maxBytes) })}
+            {t('soil_photos.panel.drop_hint', { max: formatMegabytes(state.limits.maxBytes), video_max: formatMegabytes(state.limits.videoMaxBytes) })}
           </p>
           <input ref={fileInput} type="file" multiple accept={accept} className="sr-only" aria-label={t('soil_photos.panel.add')}
             onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
@@ -294,7 +294,8 @@ export function UploadList({ uploads, onClear }: { uploads: UploadItem[]; onClea
         {uploads.map((item) => (
           <li key={item.key} className="flex items-center gap-2 rounded-lg bg-white p-1.5 text-xs ring-1 ring-loam-200">
             <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-md bg-loam-100">
-              {item.previewUrl ? <img src={item.previewUrl} alt="" className="h-full w-full object-cover"
+              {item.previewUrl && item.video ? <video src={item.previewUrl} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+                : item.previewUrl ? <img src={item.previewUrl} alt="" className="h-full w-full object-cover"
                 // A HEIC photo has no preview outside Safari (the server converts it).
                 onError={(event) => { event.currentTarget.style.visibility = 'hidden' }} /> : <AlertCircle className="h-4 w-4 text-clay-500" />}
             </span>

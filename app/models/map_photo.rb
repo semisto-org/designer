@@ -2,6 +2,11 @@
 # taken (EXIF GPS, the phone's position or a click on the map), when, and the
 # direction the camera was facing. Faces are never analysed (GDPR).
 #
+# A video of the terrain is a MapPhoto too (`kind` « video »): it is placed,
+# dated, captioned and filed the same way, shown with a still frame
+# (Active Storage preview, ffmpeg), and played from its own file. Sketches,
+# « Mettre en image » and the bio-indicator reading are for photos only.
+#
 # The file is an Active Storage attachment. The browser reads the EXIF block
 # and sends the position and date along with the upload. What the file says
 # about the camera (model, settings, a drone's height and gimbal) is read
@@ -11,10 +16,15 @@ class MapPhoto < ApplicationRecord
   include HeicAttachment
 
   MAX_BYTES = 25.megabytes
-  # Images only in v1 (video comes later). What is stored; a HEIC photo
-  # (iPhone) is accepted at upload and converted to JPEG (HeicAttachment).
+  # What is stored for a photo; a HEIC photo (iPhone) is accepted at upload
+  # and converted to JPEG (HeicAttachment).
   CONTENT_TYPES = %w[image/jpeg image/png image/webp].freeze
-  UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES).freeze
+  # Videos as phones and drones record them (MP4, iPhone MOV), stored as they are.
+  VIDEO_TYPES = %w[video/mp4 video/quicktime video/webm].freeze
+  # Decided with Michael (2026-10-13): videos stay on the server's disk.
+  VIDEO_MAX_BYTES = 1.gigabyte
+  KINDS = %w[photo video].freeze
+  UPLOAD_TYPES = (CONTENT_TYPES + HeicImage::TYPES + VIDEO_TYPES).freeze
   # « ai »: painted by « Mettre en image » (PhotoRendering) from another photo.
   SOURCES = %w[web phone import ai].freeze
   LOCATION_SOURCES = %w[exif device map manual].freeze
@@ -46,11 +56,12 @@ class MapPhoto < ApplicationRecord
   end
 
   converts_heic :image
-  before_validation :normalize_heading, :record_checksum, :clear_location_source_without_location
+  before_validation :set_kind, :normalize_heading, :record_checksum, :clear_location_source_without_location
   after_create_commit -> { PhotoCameraJob.perform_later(self) }, if: -> { image.attached? }
 
   validates :caption, length: { maximum: 500 }
   validates :source, inclusion: { in: SOURCES }
+  validates :kind, inclusion: { in: KINDS }
   validates :location_source, inclusion: { in: LOCATION_SOURCES }, allow_nil: true
   validates :bioindicator_status, inclusion: { in: BIOINDICATOR_STATUSES }, allow_nil: true
   validates :bioindicator_summary, length: { maximum: 6000 }
@@ -59,8 +70,11 @@ class MapPhoto < ApplicationRecord
   validate :image_is_acceptable
   validate :not_already_imported
   validate :album_and_feature_belong_to_map
+  validate :video_has_no_bioindicators
 
   scope :for_bioindicators, -> { where.not(bioindicator_status: nil) }
+  scope :images, -> { where(kind: "photo") }
+  scope :videos, -> { where(kind: "video") }
   scope :chronological, -> { order(Arel.sql("COALESCE(map_photos.taken_at, map_photos.created_at) DESC"), id: :desc) }
 
   # Photos linked to a map feature or taken within `meters` of it, each with
@@ -76,16 +90,21 @@ class MapPhoto < ApplicationRecord
   end
 
   # Other photos of the same spot (same place, similar direction), closest
-  # first: the candidates for a before/after comparison.
+  # first: the candidates for a before/after comparison (photos only).
   def same_spot(meters: SAME_SPOT_METERS, heading_tolerance: SAME_SPOT_HEADING_DEGREES)
     return [] unless location
     distance = self.class.sanitize_sql_array([
       "ST_Distance(map_photos.location::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance_m", lng, lat
     ])
-    map.photos.located.within_meters_of_point(lng, lat, meters).where.not(id: id)
+    map.photos.images.located.within_meters_of_point(lng, lat, meters).where.not(id: id)
       .select("map_photos.*", distance).order(Arel.sql("distance_m"))
       .select { |other| heading_close?(other.heading, heading_tolerance) }
   end
+
+  def video? = kind == "video"
+
+  # The still (photos) or still frame (videos) of a named size, ready to serve.
+  def still(size) = image.representation(size)
 
   # JSON for the editor. Image URLs go through the authenticated image route
   # (Maps::PhotosController#image): the app checks the role on the map, then
@@ -94,12 +113,12 @@ class MapPhoto < ApplicationRecord
     blob = image.attached? ? image.blob : nil
     meta = blob&.metadata || {}
     {
-      id:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
+      id:, kind:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
       albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
       derivedFromId: derived_from_id, renderingStyle: rendering_style,
       camera: camera.presence,
-      width: meta["width"], height: meta["height"],
+      width: meta["width"], height: meta["height"], durationS: meta["duration"]&.to_f&.round,
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
       uploadedBy: uploaded_by&.display_name,
       bioindicatorStatus: bioindicator_status, bioindicatorSummary: bioindicator_summary,
@@ -108,6 +127,10 @@ class MapPhoto < ApplicationRecord
   end
 
   private
+    def set_kind
+      self.kind = VIDEO_TYPES.include?(image.blob.content_type) ? "video" : "photo" if image.attached?
+    end
+
     def normalize_heading
       self.heading = heading % 360 if heading
     end
@@ -127,11 +150,14 @@ class MapPhoto < ApplicationRecord
       # Active Storage trusts the declared type when the bytes say nothing
       # specific: look at the file's first bytes ourselves.
       detected = pending_upload_type
-      unless CONTENT_TYPES.include?(blob.content_type) && (detected.nil? || CONTENT_TYPES.include?(detected))
-        errors.add(:base, I18n.t("soil_photos.errors.not_an_image", name:, types: I18n.t("soil_photos.errors.types_label")))
+      types = VIDEO_TYPES.include?(blob.content_type) ? VIDEO_TYPES : CONTENT_TYPES
+      unless types.include?(blob.content_type) && (detected.nil? || types.include?(detected))
+        errors.add(:base, I18n.t("soil_photos.errors.not_a_media", name:, types: I18n.t("soil_photos.errors.media_types_label")))
       end
-      if blob.byte_size > MAX_BYTES
-        errors.add(:base, I18n.t("soil_photos.errors.too_large", name:, size: megabytes(blob.byte_size), max: megabytes(MAX_BYTES)))
+      max = types == VIDEO_TYPES ? VIDEO_MAX_BYTES : MAX_BYTES
+      if blob.byte_size > max
+        key = types == VIDEO_TYPES ? "soil_photos.errors.video_too_large" : "soil_photos.errors.too_large"
+        errors.add(:base, I18n.t(key, name:, size: megabytes(blob.byte_size), max: megabytes(max)))
       end
     end
 
@@ -152,6 +178,10 @@ class MapPhoto < ApplicationRecord
       errors.add(:base, :already_imported, message: I18n.t("soil_photos.errors.already_imported", name: image.blob.filename.to_s)) if twin
     end
 
+    def video_has_no_bioindicators
+      errors.add(:bioindicator_status, I18n.t("soil_photos.errors.video_bioindicators")) if video? && bioindicator_status.present?
+    end
+
     def album_and_feature_belong_to_map
       errors.add(:base, I18n.t("soil_photos.errors.album_elsewhere")) if album && album.map_id != map_id
       errors.add(:base, I18n.t("soil_photos.errors.feature_elsewhere")) if map_feature && map_feature.map_id != map_id
@@ -159,6 +189,7 @@ class MapPhoto < ApplicationRecord
 
     def megabytes(bytes)
       mb = bytes / 1.megabyte.to_f
+      return format("%.1f", bytes / 1.gigabyte.to_f).tr(".", ",").delete_suffix(",0") + " Go" if bytes >= 1.gigabyte
       (mb >= 10 || mb == mb.round ? mb.round.to_s : format("%.1f", mb).tr(".", ",")) + " Mo"
     end
 

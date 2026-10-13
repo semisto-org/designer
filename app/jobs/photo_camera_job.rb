@@ -2,6 +2,9 @@
 # MapPhoto#camera, and prepares the « large » variant the photo viewer shows,
 # so the first person to open the photo does not wait for libvips.
 #
+# A video has no camera tags to read: its position and date (VideoMetadata)
+# fill the ones the upload did not give, and its still frame is prepared.
+#
 # Called once per new photo, and by the recurring backfill for photos that
 # have never been read (`PhotoCameraJob.backfill`).
 class PhotoCameraJob < ApplicationJob
@@ -18,6 +21,7 @@ class PhotoCameraJob < ApplicationJob
 
   def perform(photo)
     return unless photo.image.attached?
+    return read_video(photo) if photo.video?
     camera = photo.image.blob.open { |file| PhotoCamera.read(file.path) }
     # Recorded even when empty, so a photo is read once.
     changes = { camera: }
@@ -29,8 +33,20 @@ class PhotoCameraJob < ApplicationJob
   end
 
   private
+    def read_video(photo)
+      found = photo.image.blob.open { |file| VideoMetadata.read(file.path) }
+      changes = { camera: {} }
+      if photo.location.nil? && found[:lng]
+        changes[:location] = MapPhoto.point_from(found[:lng], found[:lat])
+        changes[:location_source] = "exif"
+      end
+      changes[:taken_at] = found[:taken_at] if photo.taken_at.nil? && found[:taken_at]
+      photo.update_columns(changes.merge(updated_at: Time.current))
+      prepare_large_variant(photo)
+    end
+
     def prepare_large_variant(photo)
-      photo.image.variant(:large).processed
+      photo.still(:large).processed
     rescue StandardError => error
       Rails.logger.warn("[photos] no large variant for photo #{photo.id}: #{error.class}: #{error.message}")
     end

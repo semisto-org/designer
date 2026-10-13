@@ -12,7 +12,7 @@ module Maps
     before_action :set_bulk_photos, only: %i[bulk_update bulk_destroy]
     before_action :set_photo, only: %i[update destroy same_spot image]
 
-    IMAGE_SIZES = %w[thumb large original].freeze
+    IMAGE_SIZES = %w[thumb large original video].freeze
     LINK_LIFETIME = 5.minutes
 
     def index
@@ -34,7 +34,8 @@ module Maps
       render json: {
         photos: scope.chronological.limit(2000).map(&:as_inertia),
         albums: albums_json,
-        limits: { maxBytes: MapPhoto::MAX_BYTES, contentTypes: MapPhoto::UPLOAD_TYPES }
+        limits: { maxBytes: MapPhoto::MAX_BYTES, videoMaxBytes: MapPhoto::VIDEO_MAX_BYTES, contentTypes: MapPhoto::UPLOAD_TYPES,
+                  videoTypes: MapPhoto::VIDEO_TYPES }
       }
     end
 
@@ -82,17 +83,21 @@ module Maps
       render json: { photos: @photo.same_spot.map(&:as_inertia) }
     end
 
-    # /maps/:map_id/photos/:id/image?size=thumb|large|original[&download=1]
+    # /maps/:map_id/photos/:id/image?size=thumb|large|original|video[&download=1]
+    #
+    # thumb and large are a photo's stripped variants, or a video's still
+    # frame. `video` is a video's own file, the one thing a player can read.
     def image
       size = params[:size].presence_in(IMAGE_SIZES) || "large"
       # The original keeps its EXIF block, GPS included: only editors get it.
       size = "large" if size == "original" && !editor?
+      size = "large" if size == "video" && !@photo.video?
       attachment = @photo.image
       return head :not_found unless attachment.attached?
-      target = size == "original" ? attachment : attachment.variant(size.to_sym).processed
+      target = %w[original video].include?(size) ? attachment : @photo.still(size.to_sym).processed
       redirect_to storage_link(target, download: params[:download].present?), allow_other_host: true
     rescue StandardError => error
-      # A file libvips cannot read still has its original.
+      # A file libvips (or ffmpeg) cannot read still has its original.
       Rails.logger.warn("[photos] no #{params[:size]} variant for photo #{@photo.id}: #{error.class}: #{error.message}")
       return head :not_found unless editor?
       redirect_to storage_link(@photo.image, download: false), allow_other_host: true

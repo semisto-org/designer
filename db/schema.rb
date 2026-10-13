@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_214205) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -401,6 +401,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_210000) do
     t.datetime "bioindicator_analyzed_at"
     t.bigint "derived_from_id"
     t.string "rendering_style"
+    t.string "kind", default: "photo", null: false
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["location"], name: "index_map_photos_on_location", using: :gist

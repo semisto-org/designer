@@ -49,7 +49,8 @@ module Maps
 
     private
       def set_photo
-        @photo = @map.photos.find(params[:photo_id])
+        # Sketches and renderings are drawn on photos, never on videos.
+        @photo = @map.photos.images.find(params[:photo_id])
       end
 
       def rendering_json(rendering)

@@ -142,4 +142,27 @@ class Imports::Immich::ImporterTest < ActiveSupport::TestCase
     outside = immich_asset("x2", lat: 48.85, lng: 2.35)
     assert_equal [ [ @map, 1 ] ], Imports::Immich::Importer.suggest_maps([ inside, outside, immich_asset("x3", lat: nil) ])
   end
+
+  test "imports a phone video as a video, placed and dated from Immich" do
+    stub_immich_search([ immich_asset("v1", type: "VIDEO", mime: "video/mp4", name: "VID_0001.MP4") ])
+    stub_immich_original("v1", file: "terrain.mp4", type: "video/mp4")
+    result = import
+    assert_equal 1, result.counts[:created]
+    assert_equal 0, result.counts[:video]
+    video = @map.photos.last
+    assert video.video?
+    assert_equal "VID_0001.mp4", video.image.filename.to_s
+    assert_in_delta 4.9075, video.lng, 1e-6
+    assert_equal Time.utc(2025, 4, 12, 9, 15), video.taken_at
+  end
+
+  test "a video over the limit or of another format is left out" do
+    stub_immich_search([
+      immich_asset("v1", type: "VIDEO", mime: "video/mp4", size: 2.gigabytes),
+      immich_asset("v2", type: "VIDEO", mime: "video/x-msvideo")
+    ])
+    result = import
+    assert_equal 2, result.counts[:video]
+    assert_equal 0, result.counts[:created]
+  end
 end
