@@ -118,13 +118,13 @@
     {
       "warning_type": "Redirect",
       "warning_code": 18,
-      "fingerprint": "e31163c12ecbaf1c9e56fc601f386ce21c00fecad445869fe5f563fbbdfa6f91",
+      "fingerprint": "34987cb017fd7c01b2676514a403a562b43aaea4888d4f2be8abfa10d58a9dd0",
       "check_name": "Redirect",
       "message": "Possible unprotected redirect",
       "file": "app/controllers/maps/photos_controller.rb",
-      "line": 70,
+      "line": 98,
       "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
-      "code": "redirect_to(storage_link((Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image or Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image.variant((:BRAKEMAN_SAFE_LITERAL or \"large\").to_sym).processed), :download => params[:download].present?), :allow_other_host => true)",
+      "code": "redirect_to(storage_link((Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).image or Map.find((params[:map_id] or params[:id])).photos.find(params[:id]).still((:BRAKEMAN_SAFE_LITERAL or \"large\").to_sym).processed), :download => params[:download].present?), :allow_other_host => true)",
       "render_path": null,
       "location": {
         "type": "method",
