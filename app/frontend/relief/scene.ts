@@ -21,6 +21,7 @@ import { ATLAS_COLUMNS, ATLAS_ROWS, blockAtlas, buildBlocks, type BlocksInput } 
 import type { BuildingVolume } from './buildings.ts'
 import { waterColor } from './colors.ts'
 import { NIVA, type NivaState } from './niva.ts'
+import { headingOf } from './heading.ts'
 import { buildNivaModel, nivaParts, setNivaLights, type NivaLights } from './nivaModel.ts'
 import type { RainSimulation } from './hydro.ts'
 import type { SunPosition } from './sun.ts'
@@ -593,6 +594,21 @@ ${OVERLAY_MIX}`)
     const span = Math.max(this.size.width, this.size.depth)
     this.controls.target.set(0, 0, 0)
     this.camera.position.set(0, span * 1.25, 0.001)
+    this.controls.update()
+  }
+
+  /** Where the camera looks, in radians clockwise from north (x east, z south). */
+  heading(): number {
+    return headingOf(this.camera.position, this.controls.target)
+  }
+
+  /** Turns the camera around its target until it faces north, keeping its height and distance. */
+  faceNorth() {
+    const { position } = this.camera
+    const { target } = this.controls
+    const flat = Math.hypot(position.x - target.x, position.z - target.z)
+    position.x = target.x
+    position.z = target.z + Math.max(flat, 0.001)
     this.controls.update()
   }
 

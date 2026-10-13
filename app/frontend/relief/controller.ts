@@ -503,6 +503,9 @@ export class ReliefController {
 
   resetView() { this.scene?.resetView() }
   topView() { this.scene?.topView() }
+  faceNorth() { this.scene?.faceNorth() }
+  /** Camera heading in radians clockwise from north, or null before the scene loads. */
+  heading(): number | null { return this.scene ? this.scene.heading() : null }
 
   drawOverlay() {
     if (!this.scene) return

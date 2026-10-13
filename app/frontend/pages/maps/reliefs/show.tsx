@@ -16,6 +16,7 @@ import {
   type RainSettings, type RainStats, type SunDate, type SunInfo, type SunMode,
   type BuildingsInfo,
 } from '@/relief/controller'
+import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import {
   formatClock, formatDepth, formatDuration, formatHours, formatMinutes, formatNumber, formatSurface, formatVolume,
@@ -228,6 +229,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [terrain.version])
 
+  const compassHeading = useCallback(() => controller.current?.heading() ?? null, [])
   const updateView = useCallback((patch: Partial<ViewState>) => {
     setView((current) => (current ? { ...current, ...patch } : current))
     const c = controller.current
@@ -550,6 +552,13 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
         <p className="pointer-events-none absolute right-2 top-2 z-10 rounded bg-white/70 px-1.5 py-0.5 text-[0.65rem] text-loam-600 sm:top-auto sm:bottom-1">
           {[terrain.attribution, view?.buildingsOn !== false ? buildings?.attribution : null].filter(Boolean).join(' · ')}
         </p>
+      )}
+      {ready && (
+        <Compass
+          heading={compassHeading}
+          onFaceNorth={() => controller.current?.faceNorth()}
+          className="absolute right-3 top-10 z-10 h-16 w-16 rounded-full focus-visible:outline-2 focus-visible:outline-prune-600 sm:top-3 sm:h-20 sm:w-20"
+        />
       )}
       {niva.mode === 'driving' && <NivaDashboard info={niva} />}
       {niva.mode === 'driving' && touch && (

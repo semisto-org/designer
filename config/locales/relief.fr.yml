@@ -160,6 +160,22 @@ fr:
         trees_hint: "La canopée du modèle de surface, à sa vraie hauteur."
         reset: "Recentrer la vue"
         top: "Vue de dessus"
+      compass:
+        title: "Tourner la vue vers le nord"
+        label: "Boussole : tu regardes vers %{facing}. Clique pour tourner la vue vers le nord."
+        n: "N"
+        e: "E"
+        s: "S"
+        w: "O"
+        facing:
+          "0": "le nord"
+          "1": "le nord-est"
+          "2": "l'est"
+          "3": "le sud-est"
+          "4": "le sud"
+          "5": "le sud-ouest"
+          "6": "l'ouest"
+          "7": "le nord-ouest"
       niva:
         title: "La Niva"
         intro: "Prends la Lada Niva et parcours ton terrain : elle grimpe les pentes jusqu'à 55 %, s'arrête devant l'eau et les bâtiments, et ralentit en sous-bois."
