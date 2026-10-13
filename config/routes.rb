@@ -234,6 +234,7 @@ Rails.application.routes.draw do
     scope module: :maps do
       resource :weather_stations, only: :show do
         get :stations
+        get :now
       end
     end
   end

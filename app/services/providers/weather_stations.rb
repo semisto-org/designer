@@ -5,6 +5,7 @@
 #   stations.configured?                 # false when the region has no provider
 #   stations.stations                    # => Result with [Station, ...]
 #   stations.daily(code, since: date)    # => Result with [DailyObservation, ...]
+#   stations.latest(station)             # => Result with a Reading, or nil
 #   stations.attribution                 # { name:, url:, licence: }
 #
 # Results are Providers::Climate::Result (reasons: not_configured,
@@ -26,6 +27,10 @@ module Providers
     # One day at one station. Temperatures in °C, rain in mm, sunshine in hours.
     DailyObservation = Data.define(:date, :tmin_c, :tmax_c, :tavg_c, :precip_mm, :soil_temp_10cm_c, :sun_hours)
 
+    # The last reading of temperature (°C) and relative humidity (%) at a
+    # station, with its time (UTC) and the network it comes from.
+    Reading = Data.define(:observed_at, :temp_c, :humidity_pct, :network)
+
     PROVIDERS = { "irm" => "Providers::WeatherStations::Irm" }.freeze
 
     def self.for(region, env: ENV)
@@ -43,6 +48,7 @@ module Providers
       def attribution = nil
       def stations = Providers::Climate::Result.unavailable(:not_configured, provider: key)
       def daily(_code, since:) = stations
+      def latest(_station) = stations
     end
   end
 end
