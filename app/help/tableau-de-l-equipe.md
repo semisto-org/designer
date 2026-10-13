@@ -25,6 +25,7 @@ Chaque carte de l'équipe est un projet, posé dans une des six colonnes : Deman
 - Le **grand visage** est le Project Manager du projet ; les petits, les membres qui y travaillent.
 - « **12 j** » dit depuis quand le projet est dans sa colonne. Au-delà d'un mois, le chiffre s'allume : le projet s'enlise peut-être.
 - La **date promise** au client passe en rouge deux semaines avant l'échéance.
+- « Terminé » montre les projets terminés depuis moins de trois mois ; les plus anciens se déplient avec « Voir les … autres ».
 - Un projet **en veille** garde sa colonne, en grisé, en fin de colonne. Un projet **sans suite** (offre refusée, pas de réponse) quitte la frise et se range sous elle, d'où on peut le reprendre.
 
 ## Les réglages d'un projet
@@ -41,6 +42,6 @@ Les douze mois à venir, projet par projet, avec la fenêtre de plantation à ra
 
 Chaque étape est aussi une tâche datée de sa carte, dans « Tâches ».
 
-## Qui porte quoi
+## La charge de chacun
 
-Pour chaque membre : le nombre de projets où il est impliqué (comme Project Manager ou dans l'équipe du projet) et ses tâches des quatre semaines à venir. Avant de qualifier une nouvelle demande, regarde ici qui a de la place.
+Pour chaque membre : le nombre de projets où il est impliqué (comme Project Manager ou dans l'équipe du projet), sans compter ceux en co-gestion ou terminés, et ses tâches des quatre semaines à venir. Avant de qualifier une nouvelle demande, regarde ici qui a de la place.

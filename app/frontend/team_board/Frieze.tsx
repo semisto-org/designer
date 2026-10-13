@@ -16,6 +16,8 @@ const STUCK_DAYS = 30
 /** A promise to the client this close (or past) is shown in red. */
 const PROMISE_SOON_DAYS = 14
 const DRAG_TYPE = 'application/x-board-project'
+/** « Terminé » shows the projects completed within these days; older ones fold. */
+const RECENT_DAYS = 90
 
 /**
  * Every team project on one timeline, from the request to completion. A
@@ -30,6 +32,8 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
   const [editing, setEditing] = useState<BoardProject | null>(null)
   const [over, setOver] = useState<BoardPhase | null>(null)
   const [dragged, setDragged] = useState<number | null>(null)
+  const [showOld, setShowOld] = useState(false)
+  const { today } = useBoard()
   const open = projects.filter((p) => !p.closedAt)
   const closed = projects.filter((p) => p.closedAt)
   const byId = new Map(projects.map((p) => [p.id, p]))
@@ -52,8 +56,13 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
       ) : (
         <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
           {phases.map((phase) => {
-            const column = open.filter((p) => p.phase === phase)
-              .sort((a, b) => Number(!!a.onHoldSince) - Number(!!b.onHoldSince) || a.phaseChangedAt.localeCompare(b.phaseChangedAt))
+            const all = open.filter((p) => p.phase === phase)
+              .sort((a, b) => phase === 'completed'
+                ? b.phaseChangedAt.localeCompare(a.phaseChangedAt)
+                : Number(!!a.onHoldSince) - Number(!!b.onHoldSince) || a.phaseChangedAt.localeCompare(b.phaseChangedAt))
+            // Finished long ago: folded at the bottom of « Terminé », so the column stays short.
+            const old = phase === 'completed' ? all.filter((p) => daysBetween(p.phaseChangedAt.slice(0, 10), today) > RECENT_DAYS) : []
+            const column = showOld ? all : all.filter((p) => !old.includes(p))
             return (
               <div
                 key={phase}
@@ -68,7 +77,7 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
                 <h3 className="flex items-center gap-1.5 px-1 pt-1 text-sm font-semibold text-loam-800">
                   <PhaseIcon phase={phase} className={clsx('h-6 w-6', column.length ? phaseTone(phase) : 'text-loam-300')} />
                   {t(`team_board.phases.${phase}`)}
-                  <span className="ml-auto rounded-full bg-white px-2 text-sm font-semibold text-loam-600 tabular-nums">{column.length}</span>
+                  <span className="ml-auto rounded-full bg-white px-2 text-sm font-semibold text-loam-600 tabular-nums">{all.length}</span>
                 </h3>
                 {column.map((project) => (
                   <ProjectCard
@@ -81,7 +90,12 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
                     onSettings={() => setEditing(project)}
                   />
                 ))}
-                {column.length === 0 && (
+                {old.length > 0 && (
+                  <button type="button" onClick={() => setShowOld((v) => !v)} className="rounded-xl px-3 py-2 text-left text-sm font-semibold text-prune-700 hover:bg-white/70">
+                    {showOld ? t('team_board.frieze.hide_old') : t('team_board.frieze.show_old', { count: old.length })}
+                  </button>
+                )}
+                {all.length === 0 && (
                   <p className={clsx('rounded-xl border border-dashed px-3 py-4 text-center font-hand text-lg leading-tight', dragged != null ? 'border-prune-300 text-prune-500' : 'border-loam-300 text-loam-400')}>
                     {t('team_board.frieze.empty_column')}
                   </p>

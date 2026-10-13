@@ -12,6 +12,8 @@ module Teams
   class Board
     # « Qui porte quoi » counts the tasks due within these coming days.
     LOAD_DAYS = 28
+    # Projects in these phases no longer count in a member's load.
+    SETTLED_PHASES = %w[co_management completed].freeze
     # Bare-root planting: 1 November to 31 March.
     PLANTING_OPENS = [ 11, 1 ].freeze
     PLANTING_CLOSES = [ 3, 31 ].freeze
@@ -146,14 +148,14 @@ module Teams
         }
       end
 
-      # Who carries what: the projects (still followed) each member manages
-      # or works on, and their tasks on the team's maps for the coming four
+      # Who carries what: the projects (still followed, not yet in
+      # co-management) each member manages or works on, and their tasks on the team's maps for the coming four
       # weeks.
       def people
         tasks = Task.pending.where(map_id: ids).where.not(assignee_id: nil)
         soon = tasks.where(due_on: ..(@today + LOAD_DAYS)).group(:assignee_id).count
         overdue = tasks.where(due_on: ...@today).group(:assignee_id).count
-        followed = maps.reject { |m| m.closed? || m.board_phase == "completed" }
+        followed = maps.reject { |m| m.closed? || SETTLED_PHASES.include?(m.board_phase) }
         memberships.map(&:user).sort_by { |u| u.display_name.downcase }.map do |user|
           person(user).merge(
             you: user.id == @user.id,

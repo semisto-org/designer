@@ -15,7 +15,8 @@ const HEAVY = 8
  * on a new request.
  */
 export function People({ people, projects }: { people: BoardMemberLoad[]; projects: BoardProject[] }) {
-  const followed = projects.filter((p) => !p.closedAt && p.phase !== 'completed')
+  // A project in co-management or completed no longer weighs on anyone.
+  const followed = projects.filter((p) => !p.closedAt && p.phase !== 'completed' && p.phase !== 'co_management')
   return (
     <BoardSection id="board-people" title={t('team_board.people.title')} hint={t('team_board.people.hint')}>
       <ul className="grid gap-2 md:grid-cols-2">

@@ -55,8 +55,10 @@ class Teams::BoardTest < ActiveSupport::TestCase
     assert_equal [ [ @map.id, other.id ].sort, 1, 1 ], [ bob[:projects].sort, bob[:tasksSoon], bob[:overdue] ]
   end
 
-  test "closed and completed projects do not weigh on anyone" do
-    @map.update_board!(lead_id: users(:bob).id, phase: "completed")
+  test "projects in co-management, completed or closed do not weigh on anyone" do
+    @map.update_board!(lead_id: users(:bob).id, phase: "co_management")
+    assert_empty board[:people].find { _1[:id] == users(:bob).id }[:projects]
+    @map.update_board!(phase: "completed")
     assert_empty board[:people].find { _1[:id] == users(:bob).id }[:projects]
   end
 end

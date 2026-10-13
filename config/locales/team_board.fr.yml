@@ -86,6 +86,10 @@ fr:
       hide_on_hold: "Cacher les projets en veille"
       closed: "Sans suite (%{count})"
       closed_one: "Sans suite"
+      show_old:
+        one: "Voir 1 projet plus ancien"
+        other: "Voir les %{count} autres"
+      hide_old: "Replier les plus anciens"
       promised: "Promis le %{date}"
       promised_what: "%{what} promis le %{date}"
       menu: "Actions pour « %{name} »"
@@ -166,7 +170,7 @@ fr:
       site: "Chantier"
       plant: "Plantation"
     people:
-      title: "Qui porte quoi"
+      title: "La charge de chacun"
       hint: "Les projets où chacun est impliqué et ses tâches des quatre semaines qui viennent, pour savoir si on peut prendre une nouvelle demande."
       involved:
         zero: "Impliqué·e dans aucun projet"
