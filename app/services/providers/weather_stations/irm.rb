@@ -15,11 +15,23 @@ module Providers
     #   extremes and rain are reported over shifting periods, so no daily
     #   record is built from them.
     #
-    # The station list is cached one day, observations one hour.
+    # The last reading of temperature and humidity comes from the AWS
+    # 10-minute layer (aws:aws_10min) when the station belongs to that
+    # network, else from the hourly SYNOP reports (synop:synop_data). Some
+    # stations publish no humidity: they have no reading.
+    #
+    # The station list is cached one day, daily observations one hour, the
+    # last reading ten minutes.
     class Irm
       DEFAULT_URL = "https://opendata.meteo.be/service".freeze
       STATIONS_TTL = 1.day
       DAILY_TTL = 1.hour
+      LATEST_TTL = 10.minutes
+      LATEST_WINDOW = 3.hours
+      LATEST_LAYERS = {
+        "aws" => { service: "aws/wfs", typename: "aws:aws_10min", temp: "temp_dry_shelter_avg", humidity: "humidity_rel_shelter_avg" },
+        "synop" => { service: "synop/wfs", typename: "synop:synop_data", temp: "temp", humidity: "humidity_relative" }
+      }.freeze
       DAILY_FIELDS = %w[code timestamp temp_min temp_max temp_avg precip_quantity temp_soil_avg_5cm temp_soil_avg_10cm sun_duration].freeze
       ATTRIBUTION = { name: "IRM", url: "https://opendata.meteo.be", licence: "CC BY 4.0" }.freeze
 
@@ -49,7 +61,41 @@ module Providers
           .then { |result| result.available? ? ok(result.data.map { |row| DailyObservation.new(**row.symbolize_keys) }) : result }
       end
 
+      # The most recent reading of a station with both a temperature and a
+      # humidity, in the last three hours; nil when there is none.
+      def latest(station)
+        code = Integer(station.code)
+        network = (%w[aws synop] & Array(station.networks)).first
+        return ok(nil) unless network
+
+        result = cached("latest", code, network, expires_in: LATEST_TTL) { fetch_latest(code, network) }
+        return result unless result.available?
+        ok(result.data.presence && Reading.new(**result.data.symbolize_keys))
+      end
+
       private
+        def fetch_latest(code, network)
+          layer = LATEST_LAYERS.fetch(network)
+          since = (Time.current - LATEST_WINDOW).utc.iso8601
+          rows = features(layer[:service], layer[:typename],
+            propertyName: [ "code", "timestamp", layer[:temp], layer[:humidity] ].join(","),
+            cql_filter: "code=#{code} AND timestamp >= '#{since}'",
+            sortBy: "timestamp D", count: 20)
+          row = rows.map { |feature| feature.fetch("properties") }
+            .find { |props| number(props[layer[:temp]]) && number(props[layer[:humidity]]) }
+          # An empty hash (not nil) so that "no reading" is cached too.
+          return ok({}) unless row
+
+          ok({
+            observed_at: Time.zone.parse(row.fetch("timestamp").to_s).utc.iso8601,
+            temp_c: number(row[layer[:temp]]).round(1),
+            humidity_pct: number(row[layer[:humidity]]).round,
+            network:
+          })
+        rescue Faraday::Error, JSON::ParserError, KeyError, TypeError, ArgumentError => error
+          upstream_error("latest #{code}", error)
+        end
+
         def fetch_stations
           aws = features("aws/wfs", "aws:aws_station")
           synop = features("synop/wfs", "synop:synop_station")

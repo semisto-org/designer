@@ -22,6 +22,8 @@ module WeatherStations
     DAYS_SHOWN = 7
     HISTORY_DAYS = 30
     FROST_C = 0.0
+    NOW_RADIUS_KM = 50
+    NOW_TRIED = 4
     EARTH_RADIUS_KM = 6371.0
 
     def initialize(map, station: nil, provider: nil, today: Date.current)
@@ -47,6 +49,39 @@ module WeatherStations
         "observed" => observed(ranked),
         "attribution" => @provider.attribution.stringify_keys
       }
+    end
+
+    # The temperature and humidity measured right now near the map, for the
+    # badge beside « Sources de la carte »: the last reading of the nearest
+    # station (within NOW_RADIUS_KM) that publishes both. Shape:
+    #   available, reason (no_location | not_configured | upstream_error | no_reading),
+    #   tempC, humidityPct, observedAt (UTC ISO 8601), network (aws | synop),
+    #   station { code, name, ..., distanceKm, nearest }, attribution
+    def now_json
+      return unavailable("not_configured") unless @provider.configured?
+      return unavailable("no_location") unless point
+
+      result = @provider.stations
+      return unavailable(result.reason.to_s) unless result.available?
+
+      ranked = rank(result.data)
+      candidates = ranked.select { |_, distance| distance <= NOW_RADIUS_KM }.first(NOW_TRIED)
+      reason = "no_reading"
+      candidates.each do |station, distance|
+        reading = @provider.latest(station)
+        reason = reading.reason.to_s unless reading.available?
+        next unless reading.available? && reading.data
+
+        data = reading.data
+        return {
+          "available" => true,
+          "tempC" => data.temp_c, "humidityPct" => data.humidity_pct,
+          "observedAt" => data.observed_at, "network" => data.network,
+          "station" => station_json(station, distance, nearest: station == ranked.first&.first),
+          "attribution" => @provider.attribution.stringify_keys
+        }
+      end
+      unavailable(reason)
     end
 
     # Every station of the provider as GeoJSON, for the map; the nearest one

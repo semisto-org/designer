@@ -14,7 +14,7 @@ fr:
         La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
-        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme ou l'étiquette. Les photos du terrain se lisent avec list_photos et get_photo ; add_photo en ajoute une, update_photos les légende, les date, les place et les range en albums, delete_photos les supprime. Tu ne supprimes rien d'autre, et une photo seulement quand la personne te l'a demandé.
+        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme ou l'étiquette. Les photos du terrain se lisent avec list_photos et get_photo. Pour envoyer des fichiers (photos, PDF, plans…), ne les mets jamais dans un appel : create_upload te donne pour chacun une adresse où l'envoyer toi-même par HTTP (curl), puis attach_photos ou attach_documents les rattache ; import_from_url fait venir un fichier depuis une adresse HTTPS. add_photo (une petite image en base64) et add_document (un texte que tu as rédigé) restent pour les cas simples. update_photos les légende, les date, les place et les range en albums, delete_photos et delete_documents suppriment photos et documents. Tu ne supprimes rien d'autre, et seulement ce que la personne t'a demandé de retirer.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -42,6 +42,10 @@ fr:
       document_title: "Titre du document tel qu'il apparaît dans la bibliothèque."
       document_description: "Ce que contient le document, en une ou deux phrases. null l'efface."
       any_photo_id: "Identifiant de la photo, donné par list_photos."
+      document_ids: "Identifiants des documents, donnés par list_documents."
+      document_tags: "Étiquettes du document, de préférence parmi celles de la bibliothèque (tags dans list_documents). 20 au plus, 40 caractères chacune."
+      upload_kind: "photo : une photo du terrain (JPEG, PNG, WebP ou HEIC, 25 Mo au plus) ; document : un document de la bibliothèque (PDF, image, Word, tableur, présentation, plan…, 200 Mo au plus)."
+      signed_id: "Le signed_id que create_upload a donné pour ce fichier, après l'envoi par PUT."
       photo_ids: "Identifiants des photos, donnés par list_photos."
       album_id: "Identifiant d'un album de photos de la carte (albums dans list_photos). null sort la photo de son album."
       album_name: "Nom de l'album où ranger la photo, quand album_id manque : un album existant (sans tenir compte des majuscules) ou un nouveau, par exemple « Verger, avant travaux »."
@@ -126,11 +130,10 @@ fr:
           assignee_change: "Personne à qui la confier (id de participants dans list_tasks), ou null pour ne la confier à personne. La personne reçoit un e-mail."
       add_document:
         title: "Ajouter un document"
-        description: "Range dans la bibliothèque « Documents » de la carte un document que tu as rédigé : compte rendu de visite, synthèse d'un entretien, calendrier de plantation en CSV, export GeoJSON… Il est déposé au nom de l'utilisateur, avec son titre, sa description et ses étiquettes. Formats : Markdown (md), texte (txt), CSV ou GeoJSON, 200 000 caractères au plus. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Pour un document que tu as rédigé toi-même (pour un fichier existant, PDF, Word, image ou plan, utilise create_upload puis attach_documents). Range dans la bibliothèque « Documents » de la carte un document que tu as rédigé : compte rendu de visite, synthèse d'un entretien, calendrier de plantation en CSV, export GeoJSON… Il est déposé au nom de l'utilisateur, avec son titre, sa description et ses étiquettes. Formats : Markdown (md), texte (txt), CSV ou GeoJSON, 200 000 caractères au plus. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
         params:
           document_content: "Le contenu du document, dans le format choisi."
           document_format: "md (Markdown, par défaut), txt, csv ou geojson."
-          document_tags: "Étiquettes du document, de préférence parmi celles de la bibliothèque (tags dans list_documents). 20 au plus, 40 caractères chacune."
       list_photos:
         title: "Lister les photos du terrain"
         description: "Les photos de la carte, des plus récentes aux plus anciennes : légende, date de prise de vue, endroit [lng, lat] et direction, album, élément lié, taille et qui l'a déposée, et si elle attend une lecture des bio-indicatrices. Donne aussi les albums. Filtres par album, élément lié et photos pas encore placées. Paginé : passe next_after_id dans after_id pour la page suivante. get_photo montre une photo."
@@ -142,7 +145,7 @@ fr:
         description: "Une photo du terrain, en image (sans ses métadonnées GPS), avec sa légende, sa date, son endroit, sa direction, son album, l'élément lié et ce que dit l'appareil (modèle, hauteur et nacelle d'un drone). Pour une photo de plantes sauvages à analyser, préfère get_bioindicator_photo."
       add_photo:
         title: "Ajouter une photo"
-        description: "Ajoute une photo du terrain à partir de son contenu en base64 (JPEG, PNG, WebP ou HEIC, 15 Mo au plus) : par exemple une photo que la personne t'a confiée. Tu peux la légender, la dater, la placer, donner sa direction, la ranger dans un album (existant ou nouveau, par son nom) et la lier à un élément de la carte. Une photo déjà présente sur la carte est refusée. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Pour une seule petite image que tu as déjà en mémoire. Pour des photos qui sont dans des fichiers, et pour tout envoi de plusieurs photos, utilise create_upload puis attach_photos : les octets ne passent pas par la conversation. Ajoute une photo du terrain à partir de son contenu en base64 (JPEG, PNG, WebP ou HEIC, 15 Mo au plus). Tu peux la légender, la dater, la placer, donner sa direction, la ranger dans un album (existant ou nouveau, par son nom) et la lier à un élément de la carte. Une photo déjà présente sur la carte est refusée. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
         params:
           image_base64: "Le fichier de l'image en base64 (une adresse data:image/…;base64, est acceptée)."
           photo_filename: "Nom du fichier, par exemple verger-nord.jpg."
@@ -154,6 +157,34 @@ fr:
       delete_photos:
         title: "Supprimer des photos"
         description: "Supprime des photos du terrain, avec leurs esquisses et leurs mises en image, comme « Supprimer » sur la page Photos. Définitif : ne le fais que quand la personne te l'a demandé, en lui disant d'abord quelles photos partent. 50 photos au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+      create_upload:
+        title: "Préparer l'envoi de fichiers"
+        description: "Première étape pour envoyer des photos ou des documents sans faire passer leurs octets par la conversation. Pour chaque fichier (50 au plus), donne son type d'usage (kind), son nom, sa taille en octets, son empreinte MD5 en base64 et son type MIME ; tu reçois un signed_id, une adresse d'envoi (upload_url, valable 15 minutes) et les en-têtes à renvoyer tels quels. Deuxième étape, envoie toi-même chaque fichier par HTTP PUT, par exemple : curl --fail -X PUT --data-binary @IMG_0042.jpg -H 'Content-Type: image/jpeg' -H 'Content-MD5: …' '<upload_url>' (la commande prête à l'emploi est dans curl). Calcule l'empreinte avec : openssl md5 -binary IMG_0042.jpg | base64 ; la taille avec : wc -c < IMG_0042.jpg. Troisième étape, rattache les fichiers envoyés avec attach_photos ou attach_documents. Un type refusé ou un fichier trop lourd est refusé dès cette étape, avec son code (unsupported_type, too_large, invalid_checksum). Un fichier jamais rattaché est effacé après 24 heures. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          upload_files: "Les fichiers à envoyer, de 1 à 50."
+          upload_filename: "Nom du fichier avec son extension, par exemple DJI_0042.JPG ou analyse-sol.pdf."
+          byte_size: "Taille exacte du fichier en octets (wc -c < fichier)."
+          checksum: "Empreinte MD5 du fichier, en base64 (openssl md5 -binary fichier | base64), 24 caractères."
+          content_type: "Type MIME du fichier, par exemple image/jpeg, application/pdf ou application/vnd.openxmlformats-officedocument.wordprocessingml.document. C'est l'en-tête Content-Type de l'envoi."
+      attach_photos:
+        title: "Rattacher des photos envoyées"
+        description: "Dernière étape après create_upload et l'envoi par PUT : fait des fichiers envoyés des photos du terrain (50 au plus par appel). Comme pour une photo déposée dans Designer, la date de prise de vue, l'endroit et la direction sont lus dans les EXIF du fichier, et l'appareil (modèle, données d'un drone DJI) juste après ; ce que tu passes (légende, date, endroit, direction, album par son id ou son nom, élément lié) l'emporte sur les EXIF. Une photo HEIC devient un JPEG. Une photo refusée revient avec son code et sa raison (other_map : préparée pour une autre carte ; already_attached : déjà rattachée ; not_received : le PUT n'a pas été fait ; duplicate : déjà sur la carte ; unsupported_type…), les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          attach_photo_lines: "Les photos à rattacher, une par fichier envoyé, de 1 à 50."
+      attach_documents:
+        title: "Rattacher des documents envoyés"
+        description: "Dernière étape après create_upload et l'envoi par PUT : range les fichiers envoyés dans la bibliothèque « Documents » de la carte (50 au plus par appel), chacun avec son titre et, si tu veux, une description et des étiquettes. Tous les types de la bibliothèque passent : PDF, images, Word et OpenDocument, tableurs, présentations, plans (DWG, DXF, KML, KMZ, GPX, GeoJSON), archives zip. Le type réel du fichier est vérifié. get_document lit ensuite le texte d'un PDF ou d'un Word. Un document refusé revient avec son code et sa raison, les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          attach_document_lines: "Les documents à rattacher, un par fichier envoyé, de 1 à 50."
+      import_from_url:
+        title: "Importer des fichiers depuis une adresse"
+        description: "Quand le fichier n'est pas sur ta machine : Semisto Designer va le chercher lui-même à son adresse HTTPS publique (fichier Drive partagé, lien de téléchargement…) et en fait une photo ou un document, comme attach_photos et attach_documents (EXIF lus pour une photo). Un lien Drive « /file/d/… » est converti en lien de téléchargement. 10 fichiers au plus par appel. Une page web (lien qui demande une connexion, page d'aperçu) est refusée avec le code not_a_file. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        params:
+          import_files: "Les fichiers à importer, de 1 à 10."
+          import_url: "Adresse HTTPS publique du fichier."
+      delete_documents:
+        title: "Supprimer des documents"
+        description: "Supprime des documents de la bibliothèque, comme « Supprimer » sur la page Documents. Définitif : ne le fais que quand la personne te l'a demandé, en lui disant d'abord quels documents partent. 50 au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
       update_document:
         title: "Renommer ou étiqueter un document"
         description: "Change le titre, la description ou les étiquettes d'un document de la bibliothèque, par exemple pour le ranger sous les étiquettes que l'équipe utilise déjà. Le fichier lui-même ne change pas, et rien n'est supprimé. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
@@ -248,6 +279,8 @@ fr:
       tasks_assigned: "Les tâches sont sur la page « Tâches » de la carte (url). Les personnes à qui tu les as confiées reçoivent un e-mail."
       document_added: "Le document est dans la bibliothèque « Documents » de la carte (url)."
       project_link_author: "Le porteur du projet (lien de la fiche projet)"
+      upload_next: "Envoie maintenant chaque fichier par HTTP PUT à son upload_url, avec exactement ses en-têtes (la commande curl est donnée), dans les %{minutes} minutes. Puis rattache-les avec attach_photos ou attach_documents en passant leur signed_id."
+      photos_attached: "Les photos sont sur la page « Photos » de la carte (url) ; celles qui ont un endroit apparaissent aussi sur la carte. L'appareil et la direction d'un drone sont lus dans la minute."
       photo_added: "La photo est sur la page « Photos » de la carte (url) ; placée, elle apparaît aussi sur la carte."
     errors:
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Designer (OAuth) ou utilise un jeton personnel."
@@ -290,6 +323,28 @@ fr:
     task_errors:
       no_list: "list_id ou list_name est requis (voir les listes dans list_tasks)."
       due_on: "échéance « %{value} » illisible : AAAA-MM-JJ attendu."
+    upload_errors:
+      checksum: "« %{name} » : checksum doit être l'empreinte MD5 du fichier en base64 (24 caractères, openssl md5 -binary fichier | base64)."
+      photo_type: "« %{name} » n'est pas une photo JPEG, PNG, WebP ou HEIC."
+      document_type: "« %{name} » : ce type de fichier n'entre pas dans la bibliothèque."
+      too_large: "« %{name} » dépasse %{max} Mo."
+      type_mismatch: "« %{name} » n'est pas ce que dit son extension (le fichier est en %{type})."
+      duplicate: "« %{name} » est déjà sur la carte."
+      unknown: "signed_id inconnu : prépare l'envoi avec create_upload."
+      other_map: "Ce fichier a été préparé pour une autre carte (n° %{map_id}) : il ne peut être rattaché qu'à elle."
+      not_yours: "Ce fichier a été préparé par un autre compte."
+      already_attached: "Ce fichier est déjà rattaché : un envoi ne sert qu'une fois."
+      not_received: "Le fichier n'est pas arrivé : fais le PUT vers upload_url (avec ses en-têtes) avant de le rattacher, ou prépare un nouvel envoi si l'adresse a expiré."
+      fetch:
+        https_only: "Seules les adresses https:// (port 443) sont acceptées."
+        invalid_url: "Adresse illisible."
+        unresolved: "Ce nom de domaine est introuvable."
+        private_address: "Cette adresse mène à un réseau privé : refusée."
+        too_large: "Le fichier est trop lourd."
+        too_many_redirects: "Trop de redirections."
+        not_a_file: "L'adresse donne une page web, pas le fichier : le lien est sans doute privé, ou c'est une page d'aperçu. Demande un lien de téléchargement direct et public."
+        unreachable: "Le serveur n'a pas répondu."
+        other: "Le fichier n'a pas pu être téléchargé (%{code})."
     photo_errors:
       location: "endroit hors limites : [longitude, latitude] en degrés WGS84."
       album: "album %{id} introuvable sur cette carte (albums dans list_photos)."
@@ -439,6 +494,21 @@ fr:
       delete_photos:
         one: "a supprimé 1 photo"
         other: "a supprimé %{count} photos"
+      create_upload:
+        one: "a préparé l'envoi d'1 fichier"
+        other: "a préparé l'envoi de %{count} fichiers"
+      attach_photos:
+        one: "a ajouté 1 photo"
+        other: "a ajouté %{count} photos"
+      attach_documents:
+        one: "a ajouté 1 document"
+        other: "a ajouté %{count} documents"
+      import_from_url:
+        one: "a importé 1 fichier depuis une adresse"
+        other: "a importé %{count} fichiers depuis une adresse"
+      delete_documents:
+        one: "a supprimé 1 document"
+        other: "a supprimé %{count} documents"
     outcome:
       active:
         one: "1 accepté"
@@ -531,7 +601,7 @@ fr:
     guardrails:
       title: "Garde-fous"
       never: "L'IA ne modifie jamais la carte sans ta validation : elle pose des brouillons."
-      tasks: "Sur les tâches, les documents et les photos, elle écrit quand tu le lui demandes ; elle ne supprime que les photos que tu lui demandes de retirer."
+      tasks: "Sur les tâches, les documents et les photos, elle écrit quand tu le lui demandes ; elle ne supprime que les photos et documents que tu lui demandes de retirer."
       networks: "Les réseaux (eau, gaz, électricité, câbles) restent masqués par défaut."
       journal: "Chaque action est inscrite au journal IA de la carte, visible par son propriétaire."
       revoke: "Tu retires l'accès quand tu veux, depuis ton compte."
@@ -550,7 +620,7 @@ fr:
           body: "Lire tes cartes, leurs couches, leurs éléments et la fiche projet."
         drafts:
           title: "Lecture et brouillons"
-          body: "Lire, proposer des éléments en brouillon que tu acceptes ou refuses un par un, et tenir avec toi les tâches, les documents et les photos du projet (sans rien supprimer, sauf une photo que tu lui demandes de retirer), sur les cartes dont tu es propriétaire ou éditeur."
+          body: "Lire, proposer des éléments en brouillon que tu acceptes ou refuses un par un, et tenir avec toi les tâches, les documents et les photos du projet (sans rien supprimer, sauf les photos et documents que tu lui demandes de retirer), sur les cartes dont tu es propriétaire ou éditeur."
           plan: "Les brouillons demandent le forfait du propriétaire de la carte : ta formule actuelle n'en donne pas sur tes propres cartes."
           trial_available: "Essai offert : en choisissant cet accès, tu essaies les brouillons sur tes cartes pendant 14 jours, jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
           trial_active: "Ton essai des brouillons court jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
@@ -610,7 +680,7 @@ fr:
       tokens: "Les jetons personnels (sdp_…) se créent dans le compte de l'utilisateur, avec les mêmes accès. Exemple d'appel :"
     guardrails:
       never: "L'IA ne modifie jamais la carte directement : elle pose des brouillons, que l'humain accepte, ajuste ou refuse un par un."
-      tasks: "Sur les tâches, la bibliothèque de documents et les photos, le carnet de l'équipe, l'IA écrit directement, comme un coéquipier, quand la personne le lui demande ; elle ne supprime rien, sauf les photos que la personne lui demande de retirer."
+      tasks: "Sur les tâches, la bibliothèque de documents et les photos, le carnet de l'équipe, l'IA écrit directement, comme un coéquipier, quand la personne le lui demande ; elle ne supprime rien, sauf les photos et documents que la personne lui demande de retirer. Les fichiers qu'elle envoie passent par une adresse signée, valable 15 minutes et liée à une seule carte."
       rationale: "Chaque brouillon porte sa justification (rationale) : pourquoi, et avec quelles données."
       networks: "Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut : seuls les éditeurs peuvent les demander, et l'IA ne peut pas en proposer."
       roles: "L'IA agit avec le rôle de l'utilisateur sur chaque carte : un lecteur ne propose rien."

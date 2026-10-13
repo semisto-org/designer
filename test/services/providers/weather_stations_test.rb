@@ -103,4 +103,40 @@ class Providers::WeatherStationsTest < ActiveSupport::TestCase
     provider = Providers::WeatherStations::Irm.from_env("IRM_OPENDATA_URL" => "https://mirror.example/irm/")
     assert provider.daily(6455, since: Date.new(2026, 9, 8)).available?
   end
+
+  test "IRM latest: the AWS 10-minute layer for an AWS station, rounded" do
+    travel_to Time.utc(2026, 10, 12, 7, 25) do
+      request = stub_request(:get, WeatherStationsTestHelper::IRM_AWS)
+        .with(query: hash_including("typenames" => "aws:aws_10min", "cql_filter" => "code=6455 AND timestamp >= '2026-10-12T04:25:00Z'", "sortBy" => "timestamp D"))
+        .to_return(irm_json("aws_10min_6455.json"))
+      station = Providers::WeatherStations::Station.new(code: 6455, name: "Dourbes", lng: 4.595, lat: 50.096, altitude_m: 234.8, networks: %w[aws synop], daily: true)
+      result = Providers::WeatherStations::Irm.new.latest(station)
+      assert_requested request
+      assert result.available?
+      reading = result.data
+      assert_equal "2026-10-12T07:10:00Z", reading.observed_at
+      assert_in_delta 8.7, reading.temp_c
+      assert_equal 100, reading.humidity_pct
+      assert_equal "aws", reading.network
+    end
+  end
+
+  test "IRM latest: a SYNOP station without humidity has no reading, and that is cached" do
+    with_memory_cache do
+      request = stub_request(:get, WeatherStationsTestHelper::IRM_SYNOP)
+        .with(query: hash_including("typenames" => "synop:synop_data")).to_return(irm_json("synop_data_6456.json"))
+      station = Providers::WeatherStations::Station.new(code: 6456, name: "Florennes", lng: 4.65, lat: 50.23, altitude_m: 288.1, networks: %w[synop], daily: false)
+      provider = Providers::WeatherStations::Irm.new
+      2.times do
+        result = provider.latest(station)
+        assert result.available?
+        assert_nil result.data
+      end
+      assert_requested request, times: 1
+    end
+  end
+
+  test "no provider: latest is not configured" do
+    assert_equal :not_configured, Providers::WeatherStations::Unavailable.new.latest(nil).reason
+  end
 end

@@ -7,7 +7,8 @@ module Mcp
         SearchPlants, GetPlant, GetDesignGuide, GetProjectSheet, GetBioindicatorPhoto,
         ListTasks, ListDocuments, GetDocument, ListPhotos, GetPhoto,
         ProposeFeatures, ProposePalette, ProposeProjectSheet, ProposeBioindicators, WithdrawDraft,
-        CreateTasks, UpdateTasks, AddDocument, UpdateDocument, AddPhoto, UpdatePhotos, DeletePhotos
+        CreateTasks, UpdateTasks, AddDocument, UpdateDocument, AddPhoto, UpdatePhotos, DeletePhotos,
+        CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments
       ]
     end
   end
