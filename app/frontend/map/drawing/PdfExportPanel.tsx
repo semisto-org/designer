@@ -51,8 +51,10 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
   const editor = useEditor()
   const { currentUser } = usePage().props as unknown as SharedProps
   const hidden = useDrawingState((s) => s.hiddenLayers)
+  const version = useDrawingState((s) => s.version)
   const instance = editor.instance
-  const [title, setTitle] = useState(editor.map.name)
+  // The version shown on the map is the one printed, and named in the title.
+  const [title, setTitle] = useState(version ? `${editor.map.name} · ${version}` : editor.map.name)
   const [paper, setPaper] = useState<Paper>('A4')
   const [orientation, setOrientation] = useState<Orientation>('landscape')
   const [scaleChoice, setScaleChoice] = useState<number | 'fit'>('fit')
@@ -130,9 +132,10 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
         scale,
         center,
         hiddenLayers,
+        version,
         author: currentUser?.name ?? null,
         areaM2: editor.map.areaM2,
-        legend: legendEntries(editor.features, hiddenLayers, editor.map.boundary != null),
+        legend: legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, version),
         sources: attributions(instance),
       }, setStep)
       editor.notify(t('drawing.pdf.done'))

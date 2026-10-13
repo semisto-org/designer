@@ -78,7 +78,9 @@ export default function DrawingToolbar() {
     if (drawingStore.get().tool === 'draw') drawingStore.set({ tool: null })
     if (!geometry) return
     try {
-      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties: { ...spec.defaults } })
+      // Drawn while a version is shown: it belongs to that version.
+      const version = drawingStore.get().version
+      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties: { ...spec.defaults }, ...(version ? { tags: [version] } : {}) })
       latest.current.select(feature.properties.id)
       latest.current.notify(t('drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }))
     } catch (error) {

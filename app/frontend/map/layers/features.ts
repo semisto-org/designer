@@ -2,7 +2,7 @@ import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
-import { isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
+import { isRoundedZone, isZoneKind, roundedGeometry, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
 
 export const FEATURES_SOURCE = 'features'
@@ -42,18 +42,20 @@ const color = styleColorExpr(layerColor) as string
 const isZone = ['in', ['get', 'kind'], ['literal', ZONE_KINDS]]
 
 /**
- * Adds to each named zone the measure written under its name
- * (`zone_measure`), so every map that shows features (editor, public map,
- * dossier, printed plan) writes the same label.
+ * Zones as the map draws them: rounded when asked (`rounded: true`), with
+ * the measure written under their name (`zone_measure`), so every map that
+ * shows features (editor, public map, dossier, printed plan) draws them the
+ * same way.
  */
-function withZoneMeasures(data: MapFeatureCollection): MapFeatureCollection {
+function withZones(data: MapFeatureCollection): MapFeatureCollection {
   if (!data.features.some((f) => isZoneKind(f.properties?.kind))) return data
   return {
     ...data,
     features: data.features.map((f) => {
       if (!isZoneKind(f.properties?.kind)) return f
-      const text = zoneMeasureText(f.properties, measure(f.geometry))
-      return text ? { ...f, properties: { ...f.properties, zone_measure: text } } : f
+      const geometry = isRoundedZone(f.properties) ? roundedGeometry(f.geometry) : f.geometry
+      const text = zoneMeasureText(f.properties, measure(geometry))
+      return { ...f, geometry, properties: text ? { ...f.properties, zone_measure: text } : f.properties }
     }),
   }
 }
@@ -84,7 +86,7 @@ const ZONE_LABEL_PAINT = { 'text-color': '#1b1712', 'text-halo-color': 'rgba(255
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
 export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollection) {
   ensureLabelBackground(map)
-  data = withZoneMeasures(data)
+  data = withZones(data)
   if (map.getSource(FEATURES_SOURCE)) {
     ;(map.getSource(FEATURES_SOURCE) as GeoJSONSource).setData(data)
     return

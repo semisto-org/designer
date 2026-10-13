@@ -6,6 +6,7 @@ import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { DESIGN_LAYERS, elementFor, featureColor, layerColor } from '@/map/drawing/catalog'
 import { drawIcon } from '@/map/drawing/icons'
 import { applyLayerVisibility, installDrawingImages, TRANSIENT_PREFIX } from '@/map/drawing/style'
+import { inVersion } from '@/map/tags/tags'
 import { isZoneKind } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
@@ -134,9 +135,9 @@ export function attributions(source: MapLibreMap): string[] {
   return [...new Set(texts.filter(Boolean))]
 }
 
-type RenderOptions = { center: [number, number]; scale: number; frame: Box; hiddenLayers: string[] }
+type RenderOptions = { center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; version?: string | null }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers }: RenderOptions): Promise<string> {
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, version }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -160,7 +161,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
   try {
     installDrawingImages(map, source)
     await waitFor(map, 'load')
-    applyLayerVisibility(map, hiddenLayers, { activeOnly: true })
+    applyLayerVisibility(map, hiddenLayers, { activeOnly: true, version })
     await waitFor(map, 'idle')
     return map.getCanvas().toDataURL('image/jpeg', 0.92)
   } finally {
@@ -174,12 +175,12 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
 export type LegendEntry = { key: string; label: string; color: string; geometry: 'Point' | 'LineString' | 'Polygon'; dash?: number[]; icon?: string }
 
 /** One entry per kind (and per named zone) drawn on the visible layers, in design layer order. */
-export function legendEntries(features: MapFeature[], hiddenLayers: string[], withBoundary: boolean): LegendEntry[] {
+export function legendEntries(features: MapFeature[], hiddenLayers: string[], withBoundary: boolean, version: string | null = null): LegendEntry[] {
   const entries: LegendEntry[] = withBoundary
     ? [{ key: 'boundary', label: t('drawing.pdf.boundary'), color: '#5b5781', geometry: 'LineString' }]
     : []
   const seen = new Set<string>()
-  const visible = features.filter((f) => f.properties.status === 'active' && !hiddenLayers.includes(f.properties.layer))
+  const visible = features.filter((f) => f.properties.status === 'active' && !hiddenLayers.includes(f.properties.layer) && inVersion(f, version))
   for (const layer of DESIGN_LAYERS) {
     for (const feature of visible.filter((f) => f.properties.layer === layer)) {
       const kind = feature.properties.kind
@@ -303,6 +304,7 @@ export type PdfInput = {
   scale: number
   center: [number, number]
   hiddenLayers: string[]
+  version?: string | null
   author: string | null
   areaM2: number | null
   legend: LegendEntry[]
@@ -314,7 +316,7 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
   const layout = pageLayout(input.paper, input.orientation)
   const { frame, cartouche: cart } = layout
   onProgress?.('map')
-  const image = await renderMap(source, { center: input.center, scale: input.scale, frame, hiddenLayers: input.hiddenLayers })
+  const image = await renderMap(source, { center: input.center, scale: input.scale, frame, hiddenLayers: input.hiddenLayers, version: input.version })
   onProgress?.('pdf')
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: input.orientation, unit: 'mm', format: input.paper.toLowerCase(), compress: true })

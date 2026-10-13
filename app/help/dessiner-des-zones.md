@@ -23,14 +23,21 @@ Touche la zone, ou son nom, pour ouvrir sa fiche :
 
 - **Nom** : il se réécrit aussitôt sur la carte ;
 - **Couleur** : une des huit teintes du plan, ou n'importe quelle autre avec la pipette ;
+- **Arrondir les angles** : une surface se dessine d'office avec des courbes douces, comme tracée à la main ; décoche la case pour retrouver les angles cliqués (un tracé peut aussi s'adoucir en courbe) ;
 - **Écrire la surface sur la carte** (ou la longueur, pour un tracé) : décoche-la si seul le nom compte, pour une flèche de vue par exemple ;
 - **Modifier la forme**, pour déplacer un sommet.
 
 Les zones se rangent dans la couche **Notes** : le panneau **Calques** les masque ou les affiche toutes d'un coup.
 
-## Plusieurs propositions
+## Plusieurs versions pour ton client
 
-Pour montrer deux ou trois propositions à ton client, donne à chaque zone une [étiquette](/help/etiqueter-ses-elements) comme « Version A » ou « Version B » : le panneau **Éléments** les filtre et les regroupe.
+Pour montrer deux ou trois propositions, donne aux zones de chacune une [étiquette](/help/etiqueter-ses-elements) comme « Version A » ou « Version B ». Dès que la carte a des étiquettes, le sélecteur **Toutes les versions** apparaît en haut à gauche de la carte (en bas sur un téléphone) :
+
+- choisis « Version A » : la carte ne montre que ses éléments, plus ceux **sans étiquette**, communs à toutes les versions (l'existant, les arbres déjà en place) ;
+- ce que tu dessines pendant ce temps rejoint d'office la version affichée ;
+- le **plan PDF** imprime la version choisie, avec son nom dans le titre.
+
+Ce choix ne vaut que pour ton écran ; **Toutes les versions** remet tout à l'écran.
 
 ## Sur le plan imprimé et pour ton IA
 

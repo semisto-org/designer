@@ -27,6 +27,7 @@ import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
 import ScenarioToggle from '@/map/panels/ScenarioToggle'
+import VersionPicker from '@/map/tags/VersionPicker'
 import PalettePanel from '@/map/plants/PalettePanel'
 import OfferPanel from '@/map/panels/OfferPanel'
 import PlantListPanel from '@/map/plants/PlantListPanel'
@@ -130,6 +131,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
 export const OVERLAYS: EditorSlot[] = [
   { id: 'collab', component: CollabOverlay, order: 90 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
+  { id: 'version', component: VersionPicker, order: 25 },
   { id: 'tour', component: TourOverlay, order: 100 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'layer-legend', component: LegendOverlay, order: 5 },

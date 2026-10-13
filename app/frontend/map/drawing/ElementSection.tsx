@@ -221,6 +221,19 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
         <label className="flex items-start gap-2.5 text-sm text-loam-700">
           <input
             type="checkbox"
+            checked={stored.rounded === true}
+            disabled={!editor.canEdit}
+            onChange={(e) => saveProperty('rounded', e.target.checked ? true : null)}
+            className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
+          />
+          <span>{t(feature.properties.kind === 'zone' ? 'zones.rounded' : 'zones.rounded_path')}</span>
+        </label>
+      )}
+
+      {zone && (
+        <label className="flex items-start gap-2.5 text-sm text-loam-700">
+          <input
+            type="checkbox"
             checked={stored.show_measure !== false}
             disabled={!editor.canEdit}
             onChange={(e) => saveProperty('show_measure', e.target.checked ? null : false)}

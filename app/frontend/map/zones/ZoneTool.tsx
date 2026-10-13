@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { featureColor } from '@/map/drawing/catalog'
-import { drawingStore, setHiddenLayers } from '@/map/drawing/store'
+import { drawingStore, setHiddenLayers, useDrawingState } from '@/map/drawing/store'
 import { isZoneKind, nextZoneColor, ZONE_COLORS, type ZoneKind } from '@/map/zones/zones'
 
 /** Zones go to the notes layer: they annotate the plan for the client. */
@@ -15,7 +15,8 @@ export const ZONE_LAYER = 'notes'
 /**
  * The « Zone » tool: a name, a colour, then a surface or a path drawn on
  * the map. The name is written across the zone with its area (or a path's
- * length), the way a designer annotates a plan for a client. The tool stays
+ * length), the way a designer annotates a plan for a client. Surfaces
+ * start with rounded corners, as drawn by hand. The tool stays
  * open for the next zone, with the next colour, until « Terminer ».
  */
 export function ZoneTool({ onClose }: { onClose: () => void }) {
@@ -26,6 +27,7 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(() => nextZoneColor(used()))
   const [drawing, setDrawing] = useState<ZoneKind | null>(null)
+  const version = useDrawingState((s) => s.version)
   const nameInput = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -43,7 +45,9 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
     const label = name.trim()
     try {
       const feature = await latest.current.createFeature({
-        layer: ZONE_LAYER, kind, geometry, properties: {}, style: { color }, ...(label ? { name: label } : {}),
+        // Drawn while a version is shown: it belongs to that version.
+        ...(version ? { tags: [version] } : {}),
+        layer: ZONE_LAYER, kind, geometry, properties: kind === 'zone' ? { rounded: true } : {}, style: { color }, ...(label ? { name: label } : {}),
       })
       latest.current.select(feature.properties.id)
       latest.current.notify(t(label ? 'zones.created' : 'zones.created_unnamed'))
@@ -70,6 +74,7 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
   return (
     <div className="pointer-events-auto rounded-xl bg-white p-3 shadow-xl ring-1 ring-loam-200" role="region" aria-label={t('zones.title')}>
       <p className="text-sm text-loam-600">{t('zones.intro')}</p>
+      {version && <p className="mt-2 rounded-lg bg-prune-50 px-2.5 py-1.5 text-sm text-prune-800">{t('zones.in_version', { version })}</p>}
       <label className="mt-3 block">
         <span className="text-sm font-medium text-loam-800">{t('zones.name')}</span>
         <Input

@@ -3,6 +3,9 @@
 # les groupent.
 fr:
   tags:
+    version: "Version"
+    version_all: "Toutes les versions"
+    version_hint: "Montrer sur la carte une seule version : les éléments de cette étiquette, et ceux sans étiquette, communs à toutes. Le plan PDF imprime la version choisie."
     title: "Étiquettes"
     placeholder: "Ajouter une étiquette (zone nord, phase 1…)"
     add_another: "Ajouter une étiquette"

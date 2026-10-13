@@ -9,6 +9,8 @@
  * Pure helpers, shared by the map layers, the toolbar and the inspector.
  */
 
+import type { Geometry } from 'geojson'
+
 export const ZONE_KINDS = ['zone', 'line'] as const
 export type ZoneKind = (typeof ZONE_KINDS)[number]
 
@@ -69,4 +71,54 @@ export function zoneMeasureText(
   if (!isZoneKind(properties.kind) || properties.show_measure === false) return null
   if (properties.kind === 'zone') return measure.area != null && measure.area > 0 ? zoneAreaText(measure.area) : null
   return measure.length != null && measure.length > 0 ? zoneLengthText(measure.length) : null
+}
+
+type Position = number[]
+
+/** Corner-cutting passes: three turn a square into a soft, hand-drawn blob. */
+const SMOOTH_PASSES = 3
+
+function chaikin(points: Position[], closed: boolean): Position[] {
+  const cut = (p: Position, q: Position, t: number) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
+  let current = closed ? points.slice(0, -1) : points
+  for (let pass = 0; pass < SMOOTH_PASSES; pass++) {
+    const next: Position[] = closed ? [] : [current[0]]
+    const edges = closed ? current.length : current.length - 1
+    for (let i = 0; i < edges; i++) {
+      const p = current[i]
+      const q = current[(i + 1) % current.length]
+      next.push(cut(p, q, 0.25), cut(p, q, 0.75))
+    }
+    if (!closed) next.push(current[current.length - 1])
+    current = next
+  }
+  return closed ? [...current, current[0]] : current
+}
+
+/**
+ * The outline drawn on the map for a zone with `rounded: true`: its corners
+ * cut again and again (Chaikin) into curves, the way a designer draws a
+ * zone by hand. The stored geometry keeps the clicked points, which stay
+ * the ones edited; the area written on the map is the rounded one's.
+ */
+export function roundedGeometry(geometry: Geometry): Geometry {
+  const ring = (r: Position[]) => (r.length >= 4 ? chaikin(r, true) : r)
+  const line = (l: Position[]) => (l.length >= 3 ? chaikin(l, false) : l)
+  switch (geometry.type) {
+    case 'Polygon':
+      return { ...geometry, coordinates: geometry.coordinates.map(ring) }
+    case 'MultiPolygon':
+      return { ...geometry, coordinates: geometry.coordinates.map((p) => p.map(ring)) }
+    case 'LineString':
+      return { ...geometry, coordinates: line(geometry.coordinates) }
+    case 'MultiLineString':
+      return { ...geometry, coordinates: geometry.coordinates.map(line) }
+    default:
+      return geometry
+  }
+}
+
+/** Whether a feature is a zone drawn with rounded corners. */
+export function isRoundedZone(properties: { kind?: unknown; rounded?: unknown } | null | undefined): boolean {
+  return isZoneKind(properties?.kind) && properties?.rounded === true
 }

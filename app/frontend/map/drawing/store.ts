@@ -13,9 +13,11 @@ export type DrawingState = {
   hiddenLayers: string[]
   tool: DrawingTool
   shapeEditId: number | null
+  /** The tag shown as « version » on the map (null: everything). */
+  version: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], tool: null, shapeEditId: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], tool: null, shapeEditId: null, version: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -37,6 +39,7 @@ export function useDrawingState<T>(select: (s: DrawingState) => T): T {
 }
 
 const storageKey = (mapId: number) => `designer:map:${mapId}:hidden-layers`
+const versionKey = (mapId: number) => `designer:map:${mapId}:version`
 
 /** Loads the hidden layers remembered for this map (if storage allows). */
 export function initDrawingState(mapId: number) {
@@ -48,7 +51,25 @@ export function initDrawingState(mapId: number) {
   } catch {
     hidden = []
   }
-  drawingStore.set({ mapId, hiddenLayers: hidden, tool: null, shapeEditId: null })
+  let version: string | null = null
+  try {
+    version = window.localStorage.getItem(versionKey(mapId)) || null
+  } catch {
+    version = null
+  }
+  drawingStore.set({ mapId, hiddenLayers: hidden, tool: null, shapeEditId: null, version })
+}
+
+/** Shows one version (a tag) on the map, or everything with null; remembered per map. */
+export function setVersion(version: string | null) {
+  drawingStore.set({ version })
+  if (state.mapId == null) return
+  try {
+    if (version) window.localStorage.setItem(versionKey(state.mapId), version)
+    else window.localStorage.removeItem(versionKey(state.mapId))
+  } catch {
+    // Private mode or blocked storage: the choice lasts for this visit only.
+  }
 }
 
 export function setHiddenLayers(hidden: string[]) {

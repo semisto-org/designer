@@ -8,7 +8,7 @@ import { initScenario, scenarioStore, useScenario } from '@/map/scenario'
 /**
  * Overlay without UI: styles the library elements on the editor map, keeps
  * the "Calques" visibility and the current / projected scenario applied to
- * every feature layer (including ones other modules add later) and hides a feature while its shape is edited.
+ * and the version shown (a tag) to every feature layer (including ones other modules add later) and hides a feature while its shape is edited.
  */
 export default function DrawingLayers() {
   const editor = useEditor()
@@ -16,6 +16,7 @@ export default function DrawingLayers() {
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const editingId = useDrawingState((s) => s.shapeEditId)
   const scenario = useScenario()
+  const version = useDrawingState((s) => s.version)
 
   useLayoutEffect(() => {
     initDrawingState(editor.map.id)
@@ -26,7 +27,7 @@ export default function DrawingLayers() {
     // The generic feature layers are installed by the editor after its
     // children mount: wait for them, then follow any later style change.
     const ensure = () => {
-      if (installDrawingLayers(map)) applyLayerVisibility(map, drawingStore.get().hiddenLayers, { scenario: scenarioStore.get() })
+      if (installDrawingLayers(map)) applyLayerVisibility(map, drawingStore.get().hiddenLayers, { scenario: scenarioStore.get(), version: drawingStore.get().version })
     }
     ensure()
     map.on('styledata', ensure)
@@ -35,7 +36,7 @@ export default function DrawingLayers() {
     }
   }, [map])
 
-  useEffect(() => applyLayerVisibility(map, hidden, { scenario }), [map, hidden, scenario])
+  useEffect(() => applyLayerVisibility(map, hidden, { scenario, version }), [map, hidden, scenario, version])
 
   useEffect(() => {
     if (editingId == null) return
