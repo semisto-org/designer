@@ -13,11 +13,18 @@ class MapsController < ApplicationController
       .or(Map.active.where(organization_id: Current.user.organization_memberships.select(:organization_id)))
       .includes(:region, :owner).order(updated_at: :desc)
     maps = maps.to_a
-    sketches = MapSketch.for(maps)
+    sketch = MapSketch.new(maps)
+    sketches = sketch.as_json
+    roles = listed_roles(maps)
     render inertia: "maps/index", props: {
       # teamId + teams: team maps are listed in a section per team (teams area).
-      # sketch: what the card paints of the terrain (MapSketch).
-      maps: maps.map { |m| m.as_inertia(Current.user).merge(teamId: m.organization_id, sketch: sketches[m.id]) },
+      # sketch: what the card paints of the terrain (MapSketch), with its
+      # outline simplified by PostGIS.
+      maps: maps.map do |m|
+        outline = sketch.outlines[m.id]
+        m.as_inertia(Current.user, role: roles[m.id], boundary: outline&.dig(:boundary), bbox: outline&.dig(:bbox))
+          .merge(teamId: m.organization_id, sketch: sketches[m.id])
+      end,
       # The map worked on last opens large, with its next step (journey).
       resume: maps.first && { mapId: maps.first.id, next: Journey.new(maps.first).next_action },
       canCreate: Current.user.entitlements.can_create_map?(Current.user),
@@ -82,6 +89,20 @@ class MapsController < ApplicationController
   end
 
   private
+    # Map#role_for for a whole list, in two queries instead of two a map.
+    def listed_roles(maps)
+      user = Current.user
+      team_ids = user.organization_memberships.pluck(:organization_id).to_set
+      member_roles = user.map_memberships.where(map_id: maps.map(&:id)).pluck(:map_id, :role).to_h
+      maps.to_h do |map|
+        role = if map.owner_id == user.id then "owner"
+        elsif map.organization_id && team_ids.include?(map.organization_id) then "editor"
+        else member_roles[map.id]
+        end
+        [ map.id, role || map.role_for(user) ]
+      end
+    end
+
     def map_params
       permitted = params.require(:map).permit(:name, :description, :address, :stage, :zoom, :lock_version, parcels: [])
       if params[:map].key?(:boundary)

@@ -23,6 +23,28 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_includes %w[item advance complete], props.dig("resume", "next", "type")
   end
 
+  test "the list gives each map the same outline, box and role as the editor, in a few queries" do
+    user = users(:michael)
+    sign_in_as user
+    get maps_path, headers: inertia_headers
+    listed = JSON.parse(response.body).dig("props", "maps")
+    assert listed.any?
+    listed.each do |map|
+      record = Map.find(map["id"])
+      assert_equal record.role_for(user), map["role"], "role of #{record.name}"
+      assert_equal record.bbox&.map { _1.round(6) }, map["bbox"]&.map { _1.round(6) }
+      assert_equal record.boundary.nil?, map["boundary"].nil?
+    end
+
+    # Twice as many maps, not twice as many queries.
+    queries = ->(&block) { count = 0; counter = ->(*, payload) { count += 1 unless payload[:name] == "SCHEMA" || payload[:cached] }; ActiveSupport::Notifications.subscribed(counter, "sql.active_record", &block); count }
+    garden = ->(i) { Map.create!(name: "Jardin #{i}", owner: user, boundary: maps(:ahinvaux).geometry_geojson(:boundary)) }
+    garden.call(0)
+    before = queries.call { get maps_path, headers: inertia_headers }
+    3.times { garden.call(_1 + 1) }
+    assert_equal before, queries.call { get maps_path, headers: inertia_headers }
+  end
+
   test "creates a map" do
     sign_in_as users(:bob)
     assert_difference -> { Map.count } do
