@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -297,6 +297,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
     t.index ["user_id"], name: "index_invoice_requests_on_user_id"
   end
 
+  create_table "map_assignments", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["map_id", "user_id"], name: "index_map_assignments_on_map_id_and_user_id", unique: true
+    t.index ["map_id"], name: "index_map_assignments_on_map_id"
+    t.index ["user_id"], name: "index_map_assignments_on_user_id"
+  end
+
   create_table "map_documents", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "uploaded_by_id"
@@ -499,7 +508,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
     t.datetime "updated_at", null: false
     t.jsonb "water_settings", default: {}, null: false
     t.datetime "tasks_seeded_at"
+    t.string "phase"
+    t.datetime "phase_changed_at"
+    t.bigint "lead_id"
+    t.date "promised_on"
+    t.string "promised_what"
+    t.datetime "on_hold_since"
+    t.datetime "closed_at"
+    t.string "closed_reason"
+    t.string "closed_note"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
+    t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
     t.index ["owner_id"], name: "index_maps_on_owner_id"
     t.index ["region_id"], name: "index_maps_on_region_id"
@@ -967,6 +986,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
     t.datetime "status_changed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "decline_note"
     t.index ["map_id"], name: "index_project_requests_on_map_id"
     t.index ["region_id"], name: "index_project_requests_on_region_id"
     t.index ["request_form_id", "status"], name: "index_project_requests_on_request_form_id_and_status"
@@ -1183,6 +1203,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "starts_on"
+    t.string "step_kind"
     t.index ["assignee_id", "completed_at"], name: "index_tasks_on_assignee_id_and_completed_at"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"
@@ -1260,6 +1282,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
   add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "invoice_requests", "users"
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify
+  add_foreign_key "map_assignments", "maps", on_delete: :cascade
+  add_foreign_key "map_assignments", "users", on_delete: :cascade
   add_foreign_key "map_documents", "maps"
   add_foreign_key "map_documents", "project_sheet_links", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "uploaded_by_id", on_delete: :nullify
@@ -1286,6 +1310,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_200000) do
   add_foreign_key "map_transfers", "users", column: "to_user_id", on_delete: :cascade
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
+  add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify
   add_foreign_key "maps", "users", column: "owner_id"
   add_foreign_key "mcp_uploads", "active_storage_blobs", column: "blob_id", on_delete: :cascade
   add_foreign_key "mcp_uploads", "maps", on_delete: :cascade
