@@ -32,6 +32,14 @@ class Imports::Immich::ImporterTest < ActiveSupport::TestCase
     assert ImportRecord.exists?(map: @map, source: "immich", external_id: "x1", record: photo)
   end
 
+  test "pauses after each photo added, not after skipped ones" do
+    stub_immich_search([ immich_asset("x1"), immich_asset("v1", type: "VIDEO") ])
+    stub_immich_original("x1")
+    pauses = 0
+    import(pause: -> { pauses += 1 })
+    assert_equal 1, pauses
+  end
+
   test "a second run adds nothing and reuses the album" do
     stub_request(:post, "#{IMMICH_API}/search/metadata")
       .to_return(status: 200, body: { assets: { items: [ immich_asset("x1") ], nextPage: nil } }.to_json)

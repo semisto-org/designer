@@ -47,3 +47,15 @@ map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
    IMMICH_URL=… IMMICH_API_KEY=… bin/rails immich:import ALBUM=<album id> MAP_ID=12
    ```
 4. Delete the API key in Immich when done.
+
+## On a small server
+
+Each photo added enqueues background jobs (thumbnail, large variant, camera metadata) that Puma's workers run. The import waits after each photo until that queue has caught up (`Imports::Immich::JobBacklog`, at most two minutes per photo), so the import and the jobs never decode many large photos at once. libvips' operation cache is off (`config/initializers/vips.rb`).
+
+If the container still kills the task for lack of memory (the log says `Killed`), run it again: it resumes where it stopped. To restart it automatically, in the background:
+
+```sh
+nohup sh -c 'until bin/rails immich:import ALBUM=… MAP_ID=…; do echo RELANCE; sleep 5; done' > /rails/storage/immich-import.log 2>&1 &
+```
+
+A deploy replaces the container and stops a task running in it: run it again afterwards.

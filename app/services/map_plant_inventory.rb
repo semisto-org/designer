@@ -168,7 +168,7 @@ class MapPlantInventory
     end
 
     def plant_features
-      @plant_features ||= @map.features.where(layer: "plants", status: "active").to_a
+      @plant_features ||= @map.features.where(layer: "plants", status: "active").order(:id).to_a
     end
 
     def placed_by_palette_item

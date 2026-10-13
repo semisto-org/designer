@@ -56,4 +56,14 @@ class Maps::WeatherStationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "FeatureCollection", json["type"]
     assert_equal 29, json["features"].size
   end
+
+  test "the reading of right now, for viewers too" do
+    use_irm!
+    stub_irm_stations
+    stub_irm_latest
+    sign_in_as users(:alice)
+    get now_map_weather_stations_path(@map), as: :json
+    assert_response :success
+    assert_equal "Dourbes", response.parsed_body["station"]["name"]
+  end
 end

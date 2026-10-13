@@ -524,6 +524,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_210000) do
     t.index ["region_id"], name: "index_maps_on_region_id"
   end
 
+  create_table "mcp_uploads", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.bigint "map_id", null: false
+    t.bigint "user_id", null: false
+    t.string "kind", null: false
+    t.datetime "attached_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["blob_id"], name: "index_mcp_uploads_on_blob_id", unique: true
+    t.index ["created_at"], name: "index_mcp_uploads_unattached", where: "(attached_at IS NULL)"
+    t.index ["map_id"], name: "index_mcp_uploads_on_map_id"
+    t.index ["user_id"], name: "index_mcp_uploads_on_user_id"
+  end
+
   create_table "oauth_access_tokens", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "oauth_client_id", null: false
@@ -1298,6 +1312,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_210000) do
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify
   add_foreign_key "maps", "users", column: "owner_id"
+  add_foreign_key "mcp_uploads", "active_storage_blobs", column: "blob_id", on_delete: :cascade
+  add_foreign_key "mcp_uploads", "maps", on_delete: :cascade
+  add_foreign_key "mcp_uploads", "users", on_delete: :cascade
   add_foreign_key "oauth_access_tokens", "oauth_clients", on_delete: :cascade
   add_foreign_key "oauth_access_tokens", "oauth_grants", on_delete: :nullify
   add_foreign_key "oauth_access_tokens", "users", on_delete: :cascade

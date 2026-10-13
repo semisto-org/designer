@@ -21,6 +21,11 @@ module Imports
     # unless `force`. The mark is dropped from the map's album name.
     #
     # `dry_run` reads Immich and counts, without downloading or writing.
+    #
+    # `pause` is called after each photo added: the rake task uses it to let
+    # the background jobs each photo enqueues (thumbnails, large variant)
+    # catch up, so the import and those jobs never hold dozens of decoded
+    # images in memory at once on a small server.
     class Importer
       SOURCE = "immich".freeze
       OUTCOMES = %i[created planned known duplicate video failed].freeze
@@ -35,8 +40,9 @@ module Imports
 
       attr_reader :map, :client, :album_id
 
-      def initialize(map:, client:, album_id:, album_name: nil, dry_run: false, force: false)
+      def initialize(map:, client:, album_id:, album_name: nil, dry_run: false, force: false, pause: nil)
         @map = map
+        @pause = pause
         @client = client
         @album_id = album_id
         @album_name = album_name
@@ -101,6 +107,7 @@ module Imports
           if photo.save
             record!(asset, photo)
             count(:created)
+            @pause&.call
           elsif photo.errors.of_kind?(:base, :already_imported)
             record!(asset, nil)
             count(:duplicate)

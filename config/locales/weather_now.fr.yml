@@ -1,0 +1,21 @@
+fr:
+  weather_now:
+    label: "Maintenant à %{station} : %{temp}, humidité %{humidity}. Ouvrir le climat."
+    ago_minutes:
+      zero: "à l'instant"
+      one: "il y a 1 min"
+      other: "il y a %{count} min"
+    ago_hours:
+      one: "il y a 1 h"
+      other: "il y a %{count} h"
+    tip:
+      title: "Relevé de la station de %{station}"
+      where_nearest: "La station officielle la plus proche, à %{distance} de ton terrain."
+      where: "La plus proche qui mesure l'humidité, à %{distance} de ton terrain."
+      network:
+        aws: "Station automatique, mesure toutes les 10 minutes."
+        synop: "Station synoptique, relevé toutes les heures."
+      when: "Mesuré %{ago}, sous abri à 1,5 m du sol."
+      hot: "Plus de %{threshold} : les jeunes plants souffrent, arrose le soir et paille le sol."
+      dry: "Air sous %{threshold} d'humidité : les feuilles perdent vite leur eau, surveille les plantations récentes."
+      source: "Données : %{name} (%{licence}). Clique pour voir les derniers jours."
