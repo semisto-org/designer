@@ -13,18 +13,26 @@ export function isPdf(file: File) {
   return file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
 }
 
+// The decoders of JPEG 2000 / JBIG2 images and ICC colours, served by the
+// build next to it (`pdfjsAssets` in vite.config.ts). Absolute, since the
+// worker fetches them too.
+function decoderUrls() {
+  const base = new URL(`${import.meta.env.BASE_URL}pdfjs/`, window.location.href).href
+  return { wasmUrl: `${base}wasm/`, iccUrl: `${base}iccs/` }
+}
+
 export async function openPdf(file: File): Promise<PDFDocumentProxy> {
   // The legacy build carries the polyfills older Safari and Firefox need.
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
-  return pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise
+  return pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), ...decoderUrls() }).promise
 }
 
 /** A PDF the app serves (a map document), read page by page as it is needed. */
 export async function openPdfUrl(url: string): Promise<PDFDocumentProxy> {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
-  return pdfjs.getDocument({ url, withCredentials: true }).promise
+  return pdfjs.getDocument({ url, withCredentials: true, ...decoderUrls() }).promise
 }
 
 async function renderToCanvas(pdf: PDFDocumentProxy, pageNumber: number, scaleFor: (width: number, height: number) => number) {
