@@ -173,44 +173,113 @@ class Maps::SoilSamplesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "lab report: attach a PDF, read it through a short-lived link, remove it" do
+  test "lab reports: attach several PDFs, read each through a short-lived link, remove one" do
     sample = create_sample
     sign_in_as users(:michael)
-    post map_soil_sample_report_path(@map, sample), params: { soil_sample: { lab_report: upload("rapport_labo.pdf", "application/pdf") } }, headers: json_headers
-    assert_response :success
-    assert response.parsed_body["hasReport"]
-    assert_equal "rapport_labo.pdf", response.parsed_body["reportFilename"]
+    post map_soil_sample_reports_path(@map, sample),
+         params: { soil_sample: { lab_reports: [ upload("rapport_labo.pdf", "application/pdf"), upload("analyse_sol.pdf", "application/pdf") ] } },
+         headers: json_headers
+    assert_response :created
+    reports = response.parsed_body["reports"]
+    assert_equal %w[rapport_labo.pdf analyse_sol.pdf], reports.map { |r| r["filename"] }
+
+    post map_soil_sample_reports_path(@map, sample), params: { soil_sample: { lab_reports: [ upload("analyse_sol.pdf", "application/pdf") ] } }, headers: json_headers
+    assert_equal 3, response.parsed_body["reports"].size
 
     sign_in_as users(:alice)
-    get map_soil_sample_report_path(@map, sample)
+    get map_soil_sample_report_path(@map, sample, reports.first["id"])
     assert_response :redirect
     assert_match %r{/rails/active_storage/disk/}, response.location
 
     sign_in_as users(:michael)
-    delete map_soil_sample_report_path(@map, sample), as: :json
+    delete map_soil_sample_report_path(@map, sample, reports.first["id"]), as: :json
     assert_response :success
-    assert_not response.parsed_body["hasReport"]
+    assert_equal 2, response.parsed_body["reports"].size
+    assert_not_includes response.parsed_body["reports"].map { |r| r["id"] }, reports.first["id"]
   end
 
-  test "lab report: only PDFs, and only editors attach" do
+  test "lab reports: only PDFs, all or nothing, and only editors attach" do
     sample = create_sample
     sign_in_as users(:michael)
-    post map_soil_sample_report_path(@map, sample), params: { soil_sample: { lab_report: upload("terrain.jpg", "image/jpeg") } }, headers: json_headers
+    post map_soil_sample_reports_path(@map, sample),
+         params: { soil_sample: { lab_reports: [ upload("rapport_labo.pdf", "application/pdf"), upload("terrain.jpg", "image/jpeg") ] } },
+         headers: json_headers
     assert_response :unprocessable_entity
     assert_match(/n'est pas un PDF/, response.parsed_body["message"])
-    assert_not sample.reload.lab_report.attached?
+    assert_not sample.reload.lab_reports.attached?
 
     sign_in_as users(:alice)
-    post map_soil_sample_report_path(@map, sample), params: { soil_sample: { lab_report: upload("rapport_labo.pdf", "application/pdf") } }, headers: json_headers
+    post map_soil_sample_reports_path(@map, sample), params: { soil_sample: { lab_reports: [ upload("rapport_labo.pdf", "application/pdf") ] } }, headers: json_headers
     assert_response :forbidden
   end
 
-  test "lab report: nothing attached is a clear 404" do
+  test "lab reports: at most ten per sample" do
+    sample = create_sample
+    10.times { |i| sample.lab_reports.attach(io: file_fixture("analyse_sol.pdf").open, filename: "analyse-#{i}.pdf", content_type: "application/pdf") }
+    sign_in_as users(:michael)
+    post map_soil_sample_reports_path(@map, sample), params: { soil_sample: { lab_reports: [ upload("rapport_labo.pdf", "application/pdf") ] } }, headers: json_headers
+    assert_response :unprocessable_entity
+    assert_match(/10 rapports au plus/, response.parsed_body["message"])
+    assert_equal 10, sample.reload.lab_reports.count
+  end
+
+  test "other lab values are saved as written, and an emptied list clears them" do
+    sample = create_sample
+    sign_in_as users(:michael)
+    patch map_soil_sample_path(@map, sample), params: { soil_sample: { other_results: [ { name: "Cadmium (Cd)", value: "< 0,2", unit: "mg/kg MS" } ] } }, as: :json
+    assert_response :success
+    assert_equal [ { "name" => "Cadmium (Cd)", "value" => "< 0,2", "unit" => "mg/kg MS" } ], response.parsed_body["otherResults"]
+    patch map_soil_sample_path(@map, sample), params: { soil_sample: { other_results: [] } }, as: :json
+    assert_equal [], sample.reload.other_results
+  end
+
+  test "lab report: one no longer attached is a clear 404" do
     sample = create_sample
     sign_in_as users(:alice)
-    get map_soil_sample_report_path(@map, sample), headers: json_headers
+    get map_soil_sample_report_path(@map, sample, 999_999), headers: json_headers
     assert_response :not_found
-    assert_equal "Aucun rapport n'est joint à cet échantillon.", response.parsed_body["message"]
+    assert_equal "Ce rapport n'est plus joint à ce point.", response.parsed_body["message"]
+  end
+
+  test "values proposed by the AI: kept one by one, refused, and only by editors" do
+    sample = create_sample(results: { ph_water: 6.0 })
+    sample.update!(results_draft: {
+      "results" => [ { "key" => "ph_water", "value" => 6.4, "note" => "page 1" }, { "key" => "organic_matter_pct", "value" => 3.1 } ],
+      "other_results" => [ { "name" => "Plomb (Pb)", "value" => "23", "unit" => "mg/kg MS" } ],
+      "lab" => "Centre de Michamps", "rationale" => "Lu dans l'analyse standard et l'analyse métaux lourds."
+    })
+    sign_in_as users(:alice)
+    patch map_soil_sample_draft_path(@map, sample), params: { keep: [ "result:ph_water" ] }, as: :json
+    assert_response :forbidden
+
+    sign_in_as users(:michael)
+    get map_soil_samples_path(@map), as: :json
+    draft = response.parsed_body["samples"].sole["draft"]
+    assert_equal [ [ "ph_water", 6.4, 6.0 ], [ "organic_matter_pct", 3.1, nil ] ], draft["results"].map { |r| r.values_at("key", "value", "current") }
+    assert_equal "Centre de Michamps", draft["lab"]
+
+    patch map_soil_sample_draft_path(@map, sample), params: { keep: [ "result:ph_water", "other:Plomb (Pb)", "lab" ], refuse: [ "result:organic_matter_pct" ] }, as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert_nil body["draft"]
+    sample.reload
+    assert_equal({ "ph_water" => 6.4 }, sample.results)
+    assert_equal [ { "name" => "Plomb (Pb)", "value" => "23", "unit" => "mg/kg MS" } ], sample.other_results
+    assert_equal [ "Centre de Michamps", "sampled" ], [ sample.lab, sample.status ]
+  end
+
+  test "values proposed by the AI: a kept value still meets the sample's rules" do
+    sample = create_sample(results: { sand_pct: 50, silt_pct: 40 })
+    sample.update!(results_draft: { "results" => [ { "key" => "clay_pct", "value" => 40 } ], "rationale" => "Texture du rapport." })
+    sign_in_as users(:michael)
+    patch map_soil_sample_draft_path(@map, sample), params: { keep: [ "result:clay_pct" ] }, as: :json
+    assert_response :unprocessable_entity
+    assert_match(/100 %/, response.parsed_body["message"])
+    assert sample.reload.draft.pending?
+
+    delete map_soil_sample_draft_path(@map, sample), as: :json
+    assert_response :success
+    assert_nil sample.reload.results_draft
   end
 
   test "samples of another map cannot be reached through this one" do

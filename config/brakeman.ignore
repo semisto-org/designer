@@ -3,20 +3,20 @@
     {
       "warning_type": "Redirect",
       "warning_code": 18,
-      "fingerprint": "0bc3977f2e234e1522d1816107cc6f18ef362394248a100a6245488017747a73",
+      "fingerprint": "3764abd5a08916053514e90dc760b9bbab5e433ca70461b9c2053941967056a6",
       "check_name": "Redirect",
       "message": "Possible unprotected redirect",
       "file": "app/controllers/maps/soil_sample_reports_controller.rb",
-      "line": 15,
+      "line": 16,
       "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
-      "code": "redirect_to(Map.find((params[:map_id] or params[:id])).soil_samples.find(params[:soil_sample_id]).lab_report.url(:expires_in => 5.minutes, :disposition => (params[:download].present? ? (:attachment) : (:inline))), :allow_other_host => true)",
+      "code": "redirect_to(Map.find((params[:map_id] or params[:id])).soil_samples.find(params[:soil_sample_id]).lab_reports.find_by(:id => params[:id]).url(:expires_in => 5.minutes, :disposition => (params[:download].present? ? (:attachment) : (:inline))), :allow_other_host => true)",
       "render_path": null,
       "location": {
         "type": "method",
         "class": "Maps::SoilSampleReportsController",
         "method": "show"
       },
-      "user_input": "Map.find((params[:map_id] or params[:id])).soil_samples.find(params[:soil_sample_id]).lab_report.url(:expires_in => 5.minutes, :disposition => (params[:download].present? ? (:attachment) : (:inline)))",
+      "user_input": "Map.find((params[:map_id] or params[:id])).soil_samples.find(params[:soil_sample_id]).lab_reports.find_by(:id => params[:id]).url(:expires_in => 5.minutes, :disposition => (params[:download].present? ? (:attachment) : (:inline)))",
       "confidence": "Weak",
       "cwe_id": [
         601

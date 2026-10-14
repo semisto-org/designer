@@ -239,7 +239,7 @@ class MapDossier
       observations = map.bioindicator_observations.active.recent.to_a
       {
         analyses: analyses?,
-        samples: map.soil_samples.ordered.with_attached_lab_report.map { |s| s.as_inertia(analyses: analyses?) },
+        samples: map.soil_samples.ordered.with_attached_lab_reports.map { |s| s.as_inertia(analyses: analyses?) },
         fields: SoilSample::RESULT_FIELDS.map { |key, spec| { key:, unit: spec[:unit] } },
         provenance: SoilAnalysis::Interpretation::PROVENANCE,
         bioindicators: {

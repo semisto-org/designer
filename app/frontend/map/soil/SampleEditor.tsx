@@ -1,14 +1,16 @@
-import { ExternalLink, FileText, Loader2, MapPin, Paperclip, Trash2, X } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { Loader2, MapPin, Plus, Trash2, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { visibleOffset } from '@/map/visiblePadding'
 import { RESULT_GROUPS, today } from '@/map/soil/format'
+import ResultsDraftReview from '@/map/soil/ResultsDraftReview'
 import SampleReading from '@/map/soil/SampleReading'
+import SampleReports from '@/map/soil/SampleReports'
 import { soilActions, useSoil, type SamplePayload } from '@/map/soil/store'
-import type { SoilResultKey, SoilSampleData } from '@/types/soil_photos'
+import type { SoilOtherResult, SoilResultKey, SoilSampleData } from '@/types/soil_photos'
 
 type Form = {
   label: string
@@ -20,6 +22,7 @@ type Form = {
   labReference: string
   notes: string
   results: Partial<Record<SoilResultKey, string>>
+  others: { name: string; value: string; unit: string }[]
 }
 
 function toForm(sample: SoilSampleData): Form {
@@ -28,6 +31,7 @@ function toForm(sample: SoilSampleData): Form {
   return {
     label: sample.label, status: sample.status, sampledOn: sample.sampledOn ?? '', depthFrom: String(sample.depthFromCm),
     depthTo: String(sample.depthToCm), lab: sample.lab ?? '', labReference: sample.labReference ?? '', notes: sample.notes ?? '', results,
+    others: sample.otherResults.map((o) => ({ name: o.name, value: o.value, unit: o.unit ?? '' })),
   }
 }
 
@@ -38,10 +42,13 @@ function toPayload(form: Form): SamplePayload {
     label: form.label.trim(), status: form.status, sampled_on: form.sampledOn || null,
     depth_from_cm: form.depthFrom, depth_to_cm: form.depthTo, lab: form.lab.trim(), lab_reference: form.labReference.trim(),
     notes: form.notes, results,
+    other_results: form.others
+      .filter((o) => o.name.trim() && o.value.trim())
+      .map((o): SoilOtherResult => ({ name: o.name.trim(), value: o.value.trim(), ...(o.unit.trim() ? { unit: o.unit.trim() } : {}) })),
   }
 }
 
-/** The form of one sampling point: where, when, the lab and its figures, the PDF report, and the reading of the figures. */
+/** The form of one sampling point: where, when, the lab and its figures, the PDF reports (and what an AI read in them), and the reading of the figures. */
 export default function SampleEditor({ sample, onClose }: { sample: SoilSampleData; onClose: () => void }) {
   const editor = useEditor()
   const { analyses, fields } = useSoil()
@@ -50,24 +57,29 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
   const [form, setForm] = useState<Form>(() => toForm(sample))
   const [initial, setInitial] = useState<string>(() => JSON.stringify(toForm(sample)))
   const [saving, setSaving] = useState(false)
-  const [reportBusy, setReportBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const reportInput = useRef<HTMLInputElement>(null)
   const dirty = JSON.stringify(form) !== initial
   const specs = useMemo(() => new Map(fields.map((f) => [f.key, f])), [fields])
   const located = sample.lng != null && sample.lat != null
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((current) => ({ ...current, [key]: value }))
   const setResult = (key: SoilResultKey, value: string) => setForm((current) => ({ ...current, results: { ...current.results, [key]: value } }))
+  const setOther = (index: number, patch: Partial<Form['others'][number]>) =>
+    setForm((current) => ({ ...current, others: current.others.map((o, i) => (i === index ? { ...o, ...patch } : o)) }))
+
+  /** The sample came back from the server (values kept from the AI): the form follows. */
+  function reset(saved: SoilSampleData) {
+    const next = toForm(saved)
+    setForm(next)
+    setInitial(JSON.stringify(next))
+  }
 
   async function save() {
     setSaving(true)
     setError(null)
     try {
       const saved = await soilActions.saveSample(mapId, sample.id, toPayload(form))
-      const next = toForm(saved)
-      setForm(next)
-      setInitial(JSON.stringify(next))
+      reset(saved)
       editor.notify(t('soil.sample.saved'))
     } catch (e) {
       setError((e as Error).message)
@@ -86,40 +98,15 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
     }
   }
 
-  async function attach(file: File | undefined) {
-    if (!file) return
-    setReportBusy(true)
-    setError(null)
-    try {
-      await soilActions.attachReport(mapId, sample.id, file)
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setReportBusy(false)
-    }
-  }
-
-  async function detach() {
-    if (!window.confirm(t('soil.sample.report_confirm_remove'))) return
-    setReportBusy(true)
-    try {
-      await soilActions.removeReport(mapId, sample.id)
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setReportBusy(false)
-    }
-  }
-
   function locate() {
     if (!located) return
     editor.instance.easeTo({ center: [sample.lng as number, sample.lat as number], zoom: Math.max(editor.instance.getZoom(), 18), offset: visibleOffset(true) })
   }
 
-  const reportUrl = `/maps/${mapId}/soil_samples/${sample.id}/report`
-
   return (
     <form className="space-y-4 border-t border-loam-100 px-3 pb-3 pt-3" onSubmit={(e) => { e.preventDefault(); if (canEdit && dirty) save() }}>
+      <ResultsDraftReview sample={sample} blocked={dirty} onSaved={reset} />
+
       <fieldset disabled={!canEdit || saving} className="space-y-3">
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <label className="block space-y-1">
@@ -200,46 +187,35 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
               })}
             </div>
           ))}
+          <div className="space-y-2">
+            <h5 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('soil.sample.groups.others')}</h5>
+            {form.others.length === 0 && <p className="text-sm text-loam-500">{t('soil.sample.others_hint')}</p>}
+            {form.others.map((other, index) => (
+              <div key={index} className="space-y-1.5 rounded-lg bg-white p-2 ring-1 ring-loam-100">
+                <div className="flex items-center gap-1.5">
+                  <Input value={other.name} maxLength={80} placeholder={t('soil.sample.other_name')} aria-label={t('soil.sample.other_name')} onChange={(e) => setOther(index, { name: e.target.value })} />
+                  {canEdit && (
+                    <button type="button" className="shrink-0 rounded p-1 text-loam-400 hover:bg-loam-50 hover:text-clay-500" aria-label={t('soil.sample.other_remove')} onClick={() => setForm((current) => ({ ...current, others: current.others.filter((_, i) => i !== index) }))}>
+                      <X className="h-4 w-4" aria-hidden />
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Input value={other.value} maxLength={40} className="text-right" placeholder={t('soil.sample.other_value')} aria-label={t('soil.sample.other_value')} onChange={(e) => setOther(index, { value: e.target.value })} />
+                  <Input value={other.unit} maxLength={30} placeholder={t('soil.sample.other_unit')} aria-label={t('soil.sample.other_unit')} onChange={(e) => setOther(index, { unit: e.target.value })} />
+                </div>
+              </div>
+            ))}
+            {canEdit && (
+              <Button size="sm" variant="ghost" onClick={() => setForm((current) => ({ ...current, others: [...current.others, { name: '', value: '', unit: '' }] }))}>
+                <Plus className="h-4 w-4" aria-hidden />{t('soil.sample.other_add')}
+              </Button>
+            )}
+          </div>
         </div>
       </fieldset>
 
-      <section className="space-y-2" aria-label={t('soil.sample.report')}>
-        <h4 className="text-sm font-semibold text-loam-800">{t('soil.sample.report')}</h4>
-        {sample.hasReport ? (
-          <div className="space-y-1.5 rounded-lg bg-loam-50 p-2.5 text-sm">
-            <p className="flex items-center gap-2">
-              <FileText className="h-4 w-4 shrink-0 text-loam-500" aria-hidden />
-              <span className="min-w-0 flex-1 truncate" title={sample.reportFilename ?? undefined}>{sample.reportFilename}</span>
-            </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <a href={reportUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-prune-700 hover:underline">
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                {t('soil.sample.report_open')}
-              </a>
-              {canEdit && (
-                <>
-                  <button type="button" onClick={() => reportInput.current?.click()} disabled={reportBusy} className="text-xs text-prune-700 hover:underline">{t('soil.sample.report_replace')}</button>
-                  <button type="button" onClick={detach} disabled={reportBusy} className="inline-flex items-center gap-1 text-xs text-clay-500 hover:underline">
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                    {t('soil.sample.report_remove')}
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-wrap items-center gap-2">
-            {canEdit && (
-              <Button size="sm" variant="secondary" onClick={() => reportInput.current?.click()} disabled={reportBusy}>
-                {reportBusy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Paperclip className="h-4 w-4" aria-hidden />}
-                {reportBusy ? t('soil.sample.report_uploading') : t('soil.sample.report_add')}
-              </Button>
-            )}
-            <p className="text-xs text-loam-500">{t('soil.sample.report_none')}</p>
-          </div>
-        )}
-        {canEdit && <input ref={reportInput} type="file" accept="application/pdf,.pdf" className="sr-only" aria-label={t('soil.sample.report_add')} onChange={(e) => { attach(e.target.files?.[0]); e.target.value = '' }} />}
-      </section>
+      <SampleReports sample={sample} onError={setError} />
 
       <section className="space-y-2" aria-label={t('soil.sample.position')}>
         <h4 className="text-sm font-semibold text-loam-800">{t('soil.sample.position')}</h4>

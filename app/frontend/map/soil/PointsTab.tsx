@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ChevronDown, FlaskConical, Loader2, MapPin, MapPinOff, Plus, Sparkles } from 'lucide-react'
+import { Bot, ChevronDown, FlaskConical, Loader2, MapPin, MapPinOff, Plus, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Field'
@@ -19,6 +19,9 @@ export default function PointsTab() {
   const state = useSoil()
   const [suggesting, setSuggesting] = useState(state.suggestions != null)
   const sampled = state.samples.filter((s) => s.status === 'sampled').length
+
+  // Values an AI read in the reports arrive on the server while the editor is open.
+  useEffect(() => { void soilActions.load(editor.map.id, true) }, [editor.map.id])
 
   return (
     <div className="space-y-4">
@@ -89,6 +92,11 @@ function SampleItem({ sample, open }: { sample: SoilSampleData; open: boolean })
               resultCount > 0 ? t('soil.points.results_count', { count: resultCount }) : null,
             ].filter(Boolean).join(' · ')}
           </span>
+          {sample.draft && (
+            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-prune-100 px-2 py-0.5 text-sm font-medium text-prune-800">
+              <Bot className="h-3.5 w-3.5" aria-hidden />{t('soil.points.ai_pending')}
+            </span>
+          )}
         </span>
         {located
           ? <MapPin className="h-4 w-4 shrink-0 text-loam-400" aria-hidden />
