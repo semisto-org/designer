@@ -23,6 +23,11 @@ production:
   photo_camera_backfill:
     command: "PhotoCameraJob.backfill"
     schedule: every 10 minutes
+  # First-page thumbnails of PDFs that arrived without one (sent through the
+  # MCP server, or uploaded before the server drew them).
+  map_document_thumbnail_backfill:
+    command: "MapDocumentThumbnailJob.backfill"
+    schedule: every 10 minutes
   # Files an AI sent through the MCP server (create_upload) and never attached.
   mcp_upload_purge:
     class: McpUploadPurgeJob

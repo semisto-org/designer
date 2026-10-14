@@ -26,11 +26,11 @@ module PdfTestHelper
   end
 
   def without_ghostscript
-    PdfCompressor.binary
-    found = PdfCompressor.instance_variable_get(:@binary)
-    PdfCompressor.instance_variable_set(:@binary, nil)
+    Ghostscript.binary
+    found = Ghostscript.instance_variable_get(:@binary)
+    Ghostscript.instance_variable_set(:@binary, nil)
     yield
   ensure
-    PdfCompressor.instance_variable_set(:@binary, found)
+    Ghostscript.instance_variable_set(:@binary, found)
   end
 end
