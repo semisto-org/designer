@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_060000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -685,6 +685,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_220000) do
     t.string "slug", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "billing_user_id"
+    t.index ["billing_user_id"], name: "index_organizations_on_billing_user_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
 
@@ -1331,6 +1333,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_220000) do
   add_foreign_key "organization_invitations", "users", column: "invited_by_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "organizations", "users", column: "billing_user_id", on_delete: :nullify
   add_foreign_key "palette_items", "maps", on_delete: :cascade
   add_foreign_key "palette_items", "plant_species", column: "species_id"
   add_foreign_key "palette_items", "plant_varieties", column: "variety_id"

@@ -13,7 +13,7 @@ module ProjectRequests
 
     def call
       return @request.map if @request.map
-      raise Refused, I18n.t("maps.errors.plan_limit") unless @user.entitlements.can_create_map?(@user)
+      raise Refused, I18n.t("maps.errors.plan_limit") unless Entitlements.for(payer).can_create_map?(payer)
 
       map = nil
       ActiveRecord::Base.transaction do
@@ -34,6 +34,12 @@ module ProjectRequests
     end
 
     private
+      # A team's map counts in the team's plan when someone pays for it.
+      def payer
+        form = @request.request_form
+        (form.team? && form.owner.billing_user) || @user
+      end
+
       # A photo the map refuses (a twin, a file it cannot read) is skipped.
       def copy_photos(map)
         @request.photos.each do |photo|

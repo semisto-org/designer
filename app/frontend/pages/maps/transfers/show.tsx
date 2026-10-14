@@ -119,7 +119,7 @@ function PlanImpact({ impact }: { impact: PlanImpactData }) {
     return (
       <div className="mt-4 flex gap-3 rounded-xl bg-lichen-50 p-4 text-lichen-700 ring-1 ring-lichen-200">
         <Sparkles className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-        <p className="text-sm">{tf('transfer.impact.beta')}</p>
+        <p className="text-sm">{impact.teamPays ? tf('transfer.impact.team_pays', { team: impact.teamPays }) : tf('transfer.impact.beta')}</p>
       </div>
     )
   }

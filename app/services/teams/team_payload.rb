@@ -13,6 +13,7 @@ module Teams
         team: { id: @team.id, name: @team.name, role: @membership.role, createdAt: @team.created_at.iso8601 },
         members: members,
         maps: maps,
+        billing: billing,
         maxNameLength: Organization::NAME_MAX_LENGTH
       }
       data[:invitations] = invitations if admin?
@@ -53,6 +54,21 @@ module Teams
             areaM2: map.area_m2, stage: map.stage, updatedAt: map.updated_at.iso8601
           }
         end
+      end
+
+      # « Forfait de l'équipe »: whose plan pays for the team's maps, if anyone's.
+      def billing
+        payer = @team.billing_user
+        return { payer: nil, billingEnabled: Billing.enabled? } unless payer
+
+        plan = payer.current_plan_key
+        {
+          billingEnabled: Billing.enabled?,
+          payer: { name: payer.display_name, you: payer.id == @user.id },
+          planName: I18n.t("account.plan_names.#{plan}"),
+          maxMaps: Entitlements::PLANS.fetch(plan)[:max_maps],
+          mapsCount: team_maps.size
+        }
       end
 
       def invitations

@@ -39,7 +39,8 @@ fr:
     role_help:
       admin: "Un administrateur invite et retire des membres, change leurs rôles et renomme l'équipe."
       member: "Un membre modifie toutes les cartes de l'équipe et participe à leurs discussions."
-    plan_note: "Chaque carte reste à son propriétaire et suit son forfait : l'équipe ne change rien à la facturation."
+    plan_note: "Chaque carte reste à son propriétaire et suit son forfait, sauf si un admin paie les cartes de l'équipe (« Forfait de l'équipe »)."
+    plan_note_paid: "Chaque carte reste à son propriétaire, mais toutes suivent le forfait de l'équipe."
     created: "Équipe « %{name} » créée. Invite maintenant ses membres."
     renamed: "Équipe renommée."
     deleted: "Équipe « %{name} » supprimée. Ses cartes restent à leurs propriétaires."

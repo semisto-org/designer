@@ -73,6 +73,8 @@ export type BillingData = {
   expiredPass: PassData | null
   subscription: SubscriptionData | null
   ownedMaps: number
+  /** Teams whose maps this plan also pays for (« Forfait de l'équipe »). */
+  paidTeams: { id: number; name: string }[]
   maxMaps: number
   readOnlyMaps: number
   drone: { paidAt: string }[]

@@ -14,7 +14,7 @@ class AccountsController < ApplicationController
         accountKind: user.account_kind,
         plan:,
         planEndsAt: plan_ends_at(user, plan)&.iso8601,
-        ownedMaps: user.owned_maps.active.count,
+        ownedMaps: user.billed_maps.count,
         maxMaps: user.entitlements.max_maps,
         readOnlyMaps: user.read_only_maps_count
       }

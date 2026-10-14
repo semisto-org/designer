@@ -77,6 +77,7 @@ fr:
         expired: "Cette proposition a expiré le %{date}. Si tu souhaites toujours reprendre la carte, demande à %{from} de te la proposer à nouveau."
         invalidated: "Cette proposition n'est plus valable : la carte ou tes accès ont changé entre-temps."
     impact:
+      team_pays: "Cette carte suit le forfait de l'équipe « %{team} » : rien ne change pour ton forfait."
       beta: "Pendant la bêta, toutes les fonctions sont ouvertes : la carte restera entièrement modifiable chez toi."
       fine:
         one: "Avec ta formule actuelle (%{plan}, %{count} carte modifiable), cette carte et toutes tes cartes resteront modifiables."
