@@ -3,7 +3,7 @@ import { t } from '@/lib/i18n'
 import { readPhotoMeta } from '@/map/photos/exif'
 import { formatMegabytes } from '@/map/photos/format'
 import { getPhotosState, photoActions } from '@/map/photos/store'
-import type { MapPhotoData, PhotoLocationSource, PhotoSource } from '@/types/soil_photos'
+import type { MapPhotoData, PhotoLocationSource, PhotoMeta, PhotoSource } from '@/types/soil_photos'
 
 export type UploadStatus = 'pending' | 'uploading' | 'done' | 'duplicate' | 'error'
 
@@ -11,6 +11,8 @@ export type UploadItem = {
   key: string
   name: string
   previewUrl: string
+  /** A video: previewed with a <video> element. */
+  video: boolean
   status: UploadStatus
   /** 0-100 while uploading. */
   progress: number
@@ -31,7 +33,9 @@ export type UploadOptions = {
 }
 
 const CONCURRENCY = 3
-const EXTENSIONS = /\.(jpe?g|png|webp|heic|heif)$/i
+const EXTENSIONS = /\.(jpe?g|png|webp|heic|heif|mp4|mov|webm)$/i
+const VIDEO_EXTENSIONS = /\.(mp4|mov|webm)$/i
+const NO_META: PhotoMeta = { lng: null, lat: null, heading: null, takenAt: null }
 
 type Job = { item: UploadItem; file: File; mapId: number; options: UploadOptions }
 
@@ -64,14 +68,22 @@ function acceptedType(file: File, types: string[]): boolean {
   return file.type ? types.includes(file.type) : EXTENSIONS.test(file.name)
 }
 
+/** A video file (by its type, or its extension when the system gives none). */
+export function isVideoFile(file: File): boolean {
+  return file.type ? file.type.startsWith('video/') : VIDEO_EXTENSIONS.test(file.name)
+}
+
 /** A French reason this file cannot be sent, or null. Same rules as the server. */
 export function rejectionFor(file: File): string | null {
   const { limits } = getPhotosState()
   if (!acceptedType(file, limits.contentTypes)) {
-    return t('soil_photos.errors.not_an_image', { name: file.name, types: t('soil_photos.errors.types_label') })
+    return t('soil_photos.errors.not_a_media', { name: file.name, types: t('soil_photos.errors.media_types_label') })
   }
-  if (file.size > limits.maxBytes) {
-    return t('soil_photos.errors.too_large', { name: file.name, size: formatMegabytes(file.size), max: formatMegabytes(limits.maxBytes) })
+  const video = isVideoFile(file)
+  const max = video ? limits.videoMaxBytes : limits.maxBytes
+  if (file.size > max) {
+    const key = video ? 'soil_photos.errors.video_too_large' : 'soil_photos.errors.too_large'
+    return t(key, { name: file.name, size: formatMegabytes(file.size), max: formatMegabytes(max) })
   }
   return null
 }
@@ -121,7 +133,8 @@ async function process(key: string) {
   const { file, mapId, options } = job
   patch(key, { status: 'uploading', progress: 0, message: null })
   try {
-    const meta = await readPhotoMeta(file)
+    // A video's position and date are read on the server (ffprobe).
+    const meta: PhotoMeta = isVideoFile(file) ? NO_META : await readPhotoMeta(file)
     let position = meta.lng != null && meta.lat != null ? { lng: meta.lng, lat: meta.lat } : null
     let locationSource: PhotoLocationSource | null = position ? 'exif' : null
     if (!position && options.useDevicePosition) {
@@ -179,8 +192,9 @@ export const uploadActions = {
     const added: UploadItem[] = files.map((file) => {
       counter += 1
       const reason = rejectionFor(file)
+        ?? (options.bioindicatorStatus && isVideoFile(file) ? t('soil_photos.errors.video_bioindicators') : null)
       const item: UploadItem = {
-        key: `upload-${counter}`, name: file.name, previewUrl: reason ? '' : URL.createObjectURL(file),
+        key: `upload-${counter}`, name: file.name, previewUrl: reason ? '' : URL.createObjectURL(file), video: isVideoFile(file),
         status: reason ? 'error' : 'pending', progress: 0, message: reason, photo: null,
       }
       if (!reason) {

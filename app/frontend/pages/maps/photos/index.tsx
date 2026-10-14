@@ -261,7 +261,7 @@ export default function MapPhotos({ map, canEdit }: Props) {
         {canEdit && (
           <div className="flex max-w-xs flex-col items-start gap-1.5 sm:items-end sm:text-right">
             <Button onClick={() => fileInput.current?.click()}><ImagePlus className="h-4 w-4" />{t('soil_photos.panel.add')}</Button>
-            <p className="text-sm text-loam-500">{t('soil_photos.panel.drop_hint', { max: formatMegabytes(state.limits.maxBytes) })}</p>
+            <p className="text-sm text-loam-500">{t('soil_photos.panel.drop_hint', { max: formatMegabytes(state.limits.maxBytes), video_max: formatMegabytes(state.limits.videoMaxBytes) })}</p>
             <input ref={fileInput} type="file" multiple accept={photoAccept(state.limits.contentTypes)} className="sr-only" aria-label={t('soil_photos.panel.add')}
               onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
           </div>

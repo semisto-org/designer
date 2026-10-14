@@ -61,4 +61,18 @@ class Imports::Immich::ClientTest < ActiveSupport::TestCase
     stub_immich_rendition("x1", size: "fullsize", status: 404)
     assert_raises(Imports::Immich::Client::NotFound) { immich_client.rendition("x1", size: "fullsize", max_bytes: 1.megabyte) }
   end
+
+  test "streams a large original to a file, and refuses one over the limit" do
+    stub_immich_original("v1", file: "terrain.mp4", type: "video/mp4")
+    download = immich_client.original_file("v1", max_bytes: 1.gigabyte)
+    assert_equal "video/mp4", download.content_type
+    assert_equal file_fixture("terrain.mp4").binread.b, download.file.read
+    download.file.close!
+    assert_raises(Imports::Immich::Error) { immich_client.original_file("v1", max_bytes: 10) }
+  end
+
+  test "a missing original file is NotFound" do
+    stub_request(:get, "#{IMMICH_API}/assets/v1/original").to_return(status: 404, body: "")
+    assert_raises(Imports::Immich::Client::NotFound) { immich_client.original_file("v1", max_bytes: 1.gigabyte) }
+  end
 end

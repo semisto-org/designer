@@ -402,6 +402,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_220000) do
     t.datetime "bioindicator_analyzed_at"
     t.bigint "derived_from_id"
     t.string "rendering_style"
+    t.string "kind", default: "photo", null: false
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["location"], name: "index_map_photos_on_location", using: :gist

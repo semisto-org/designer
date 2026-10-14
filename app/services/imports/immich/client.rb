@@ -19,6 +19,7 @@ module Imports
       REDIRECTS = [ 301, 302, 303, 307, 308 ].freeze
 
       Download = Data.define(:body, :content_type)
+      FileDownload = Data.define(:file, :content_type)
 
       # The file is not there (404), e.g. no full-size rendition generated.
       class NotFound < Error; end
@@ -75,6 +76,33 @@ module Imports
 
       # The original file, as uploaded (EXIF included).
       def original(id, max_bytes:) = download("assets/#{id}/original", max_bytes:)
+
+      # The original streamed to a Tempfile, for files too big to hold in
+      # memory (videos up to MapPhoto::VIDEO_MAX_BYTES). The caller closes it.
+      def original_file(id, max_bytes:)
+        raise Error.new(:not_configured) unless configured?
+        path = "assets/#{id}/original"
+        url = url_for(path)
+        file = Tempfile.new([ "immich-", ".bin" ], binmode: true)
+        response = with_retries(url) do
+          file.truncate(0)
+          file.rewind
+          download_connection.get(path) do |request|
+            request.options.on_data = proc do |chunk, received, env|
+              next unless env.nil? || (200..299).cover?(env.status)
+              raise Error.new(:too_large, url:, max: max_bytes / 1.megabyte) if received > max_bytes
+              file.write(chunk)
+            end
+          end
+        end
+        check!(response, url)
+        file.flush
+        file.rewind
+        FileDownload.new(file:, content_type: response.headers["content-type"].to_s.split(";").first.to_s.strip)
+      rescue StandardError
+        file&.close!
+        raise
+      end
 
       # A JPEG rendition made by Immich: `fullsize` (when the server
       # generates it) or `preview` (always there, about 1440 px).

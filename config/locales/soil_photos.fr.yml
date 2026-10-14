@@ -14,9 +14,9 @@ fr:
       nw: "Nord-ouest"
     panel:
       intro: "Photographie le terrain et ses détails : le lieu et la date sont lus dans la photo. Sans position, place-la d'un clic sur la carte. Les visages ne sont jamais analysés."
-      add: "Ajouter des photos"
+      add: "Ajouter des photos ou des vidéos"
       camera: "Prendre une photo"
-      drop_hint: "Plusieurs à la fois, ou dépose-les ici. JPEG, PNG ou WebP, %{max} au maximum chacune."
+      drop_hint: "Plusieurs à la fois, ou dépose-les ici. Photos JPEG, PNG, WebP ou HEIC (%{max} au maximum), vidéos MP4, MOV ou WebM (%{video_max} au maximum)."
       read_only: "Tu vois les photos de cette carte. Seuls les éditeurs peuvent en ajouter."
       unplaced:
         one: "1 photo à placer sur la carte"
@@ -60,6 +60,9 @@ fr:
       done: "Photo placée."
     marker:
       open: "Voir la photo"
+    video:
+      label: "Vidéo"
+      unsupported: "Ton navigateur ne lit pas cette vidéo. Télécharge-la pour la regarder."
     lightbox:
       previous: "Photo précédente"
       next: "Photo suivante"
@@ -126,9 +129,11 @@ fr:
       more: "et %{count} autres dans le panneau Photos"
     errors:
       image_missing: "Aucune photo n'a été reçue."
-      not_an_image: "« %{name} » n'est pas une image acceptée. Formats possibles : %{types}."
-      types_label: "JPEG, PNG, WebP ou HEIC"
       too_large: "« %{name} » pèse %{size} : la limite est de %{max} par photo."
+      not_a_media: "« %{name} » n'est ni une photo ni une vidéo acceptée. Formats possibles : %{types}."
+      media_types_label: "JPEG, PNG, WebP, HEIC, MP4, MOV ou WebM"
+      video_too_large: "« %{name} » pèse %{size} : la limite est de %{max} par vidéo."
+      video_bioindicators: "Les plantes sauvages se lisent sur une photo, pas sur une vidéo."
       already_imported: "« %{name} » est déjà dans cette carte."
       album_elsewhere: "Cet album appartient à une autre carte."
       feature_elsewhere: "Cet élément appartient à une autre carte."

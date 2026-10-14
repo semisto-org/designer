@@ -4,7 +4,9 @@ module Imports
     # image becomes a MapPhoto (`source: "import"`) placed from its EXIF
     # position, dated from its EXIF date, captioned with its Immich
     # description, and filed in a photo album of the map named after the
-    # Immich album. Videos are left out (images only in v1).
+    # Immich album. Videos (MP4, MOV, WebM up to MapPhoto::VIDEO_MAX_BYTES)
+    # come as their original file, streamed to disk; other videos are counted
+    # and left out.
     #
     # Re-runnable: every imported asset is noted in the ImportRecord ledger
     # (source "immich"), and a file already on the map (same checksum) is not
@@ -32,7 +34,10 @@ module Imports
       # Located assets looked at to guess which map an album belongs to.
       SUGGESTION_SAMPLE = 50
       PROJECT_MARK = "📍".freeze
-      EXTENSIONS = { "image/jpeg" => "jpg", "image/png" => "png", "image/webp" => "webp", "image/heic" => "heic", "image/heif" => "heif" }.freeze
+      EXTENSIONS = {
+        "image/jpeg" => "jpg", "image/png" => "png", "image/webp" => "webp", "image/heic" => "heic", "image/heif" => "heif",
+        "video/mp4" => "mp4", "video/quicktime" => "mov", "video/webm" => "webm"
+      }.freeze
       # Originals the map takes as they are (HEIC is converted on save).
       ORIGINAL_TYPES = (MapPhoto::CONTENT_TYPES + HeicImage::TYPES).freeze
 
@@ -97,13 +102,20 @@ module Imports
 
       private
         def import(asset, album_name)
-          return count(:video) unless asset["type"] == "IMAGE"
+          return count(:video) unless asset["type"] == "IMAGE" || video?(asset)
           return count(:known) if @ledger.include?(asset["id"].to_s)
           return count(:planned) if dry_run?
 
-          file = fetch(asset)
           photo = new_photo(asset, album_name)
-          photo.image.attach(io: StringIO.new(file.body), filename: filename(asset, file), content_type: sniff(file))
+          if video?(asset)
+            video = client.original_file(asset["id"], max_bytes: MapPhoto::VIDEO_MAX_BYTES)
+            type = Marcel::MimeType.for(video.file, declared_type: video.content_type.presence || asset["originalMimeType"])
+            video.file.rewind
+            photo.image.attach(io: video.file, filename: stored_name(asset, type), content_type: type)
+          else
+            file = fetch(asset)
+            photo.image.attach(io: StringIO.new(file.body), filename: filename(asset, file), content_type: sniff(file))
+          end
           if photo.save
             record!(asset, photo)
             count(:created)
@@ -116,6 +128,14 @@ module Imports
           end
         rescue Error => error
           failed(asset, error.message)
+        ensure
+          video&.file&.close!
+        end
+
+        # A video the map takes: a known type, not heavier than the limit.
+        def video?(asset)
+          asset["type"] == "VIDEO" && MapPhoto::VIDEO_TYPES.include?(asset["originalMimeType"].to_s) &&
+            asset.dig("exifInfo", "fileSizeInByte").to_i <= MapPhoto::VIDEO_MAX_BYTES
         end
 
         # The original when the map takes it as it is, else a JPEG rendition.
@@ -153,9 +173,11 @@ module Imports
         end
 
         # The original name, with the extension of what was actually stored.
-        def filename(asset, file)
+        def filename(asset, file) = stored_name(asset, sniff(file))
+
+        def stored_name(asset, type)
           base = File.basename(asset["originalFileName"].presence || asset["id"].to_s, ".*")
-          "#{base}.#{EXTENSIONS.fetch(sniff(file), "jpg")}"
+          "#{base}.#{EXTENSIONS.fetch(type, "jpg")}"
         end
 
         def photo_album(name)

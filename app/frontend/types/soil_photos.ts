@@ -4,8 +4,12 @@
 export type PhotoLocationSource = 'exif' | 'device' | 'map' | 'manual'
 export type PhotoSource = 'web' | 'phone' | 'import' | 'ai'
 
+export type MapPhotoKind = 'photo' | 'video'
+
 export type MapPhotoData = {
   id: number
+  /** A video of the terrain is filed with the photos, shown with a still frame. */
+  kind: MapPhotoKind
   caption: string | null
   takenAt: string | null
   createdAt: string
@@ -26,6 +30,8 @@ export type MapPhotoData = {
   camera: PhotoCameraData | null
   width: number | null
   height: number | null
+  /** Length of a video in seconds (null for a photo, or before the file is read). */
+  durationS: number | null
   byteSize: number | null
   filename: string | null
   uploadedBy: string | null
@@ -72,7 +78,7 @@ export type PhotoAlbumData = {
   photosCount: number
 }
 
-export type PhotoLimits = { maxBytes: number; contentTypes: string[] }
+export type PhotoLimits = { maxBytes: number; videoMaxBytes: number; contentTypes: string[]; videoTypes: string[] }
 
 export type PhotosResponse = { photos: MapPhotoData[]; albums: PhotoAlbumData[]; limits: PhotoLimits }
 

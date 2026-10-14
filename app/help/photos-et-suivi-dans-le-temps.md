@@ -15,6 +15,8 @@ Une photo datée et placée vaut bien des notes. Le panneau **Photos** garde la 
 
 Formats acceptés : JPEG, PNG, WebP ou HEIC (le format de l'iPhone), 25 Mo au plus par photo. Une photo HEIC est convertie en JPEG à l'envoi, avec sa position et sa date. Une photo déjà présente dans la carte n'est pas importée une seconde fois.
 
+Tu peux aussi ajouter des **vidéos** du terrain (MP4, MOV ou WebM, 1 Go au plus par vidéo) : elles se rangent avec les photos, se placent sur la carte grâce à la position enregistrée par le téléphone, et se regardent dans la visionneuse. Les esquisses, « Mettre en image », l'avant / après et la lecture des plantes sauvages restent réservés aux photos.
+
 ## Placer une photo sans position
 
 Les photos sans GPS sont signalées comme « à placer sur la carte ». Touche-en une, puis **Placer sur la carte**, et clique à l'endroit de la prise de vue. Tu pourras la **Déplacer** plus tard.
