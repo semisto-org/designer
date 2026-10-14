@@ -8,7 +8,6 @@ import { Input, Select } from '@/components/ui/Field'
 import { useCompressionRefresh } from '@/documents/compression'
 import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
-import { SendFormButton } from '@/documents/SendFormButton'
 import { UploadList } from '@/documents/ProjectDocuments'
 import { documentAccept, useDocumentUploads } from '@/documents/upload'
 import { api } from '@/lib/api'
@@ -16,15 +15,12 @@ import { t } from '@/lib/i18n'
 import { formatMegabytes } from '@/map/photos/format'
 import { groupByTag, hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
-import type { MapFormLink } from '@/types/forms'
 
 type Props = {
   map: { id: number; name: string; role: string | null; teamId?: number | null }
   documents: MapDocumentData[]
   canEdit: boolean
   limits: DocumentLimits
-  /** The team's forms (Tally), each with its link for this map. */
-  forms?: MapFormLink[]
 }
 
 type Sort = 'newest' | 'oldest' | 'title'
@@ -41,7 +37,7 @@ const asTagged = (doc: MapDocumentData) => ({ doc, properties: { tags: doc.tags 
  * by tag on the side, sheets of paper in the middle, a preview of images
  * and PDFs on a click. Everyone on the map reads; editors add and tag.
  */
-export default function MapDocuments({ map, documents, canEdit, limits, forms = [] }: Props) {
+export default function MapDocuments({ map, documents, canEdit, limits }: Props) {
   const [docs, setDocs] = useState(documents)
   const [shelf, setShelf] = useState<Shelf>(null)
   const [query, setQuery] = useState('')
@@ -146,7 +142,6 @@ export default function MapDocuments({ map, documents, canEdit, limits, forms = 
               <FilePlus2 className="h-4 w-4" />{t('documents.add')}
             </Button>
             <p className="text-sm text-loam-500">{t('documents.drop_hint', { max: formatMegabytes(limits.maxBytes) })}</p>
-            {forms.length > 0 && <div className="mt-1"><SendFormButton forms={forms} teamId={map.teamId ?? null} /></div>}
             <input ref={input} type="file" multiple accept={documentAccept(limits)} className="sr-only" aria-label={t('documents.add')}
               onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
           </div>

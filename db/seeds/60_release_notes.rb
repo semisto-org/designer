@@ -9,7 +9,7 @@ release_notes = [
     body: <<~TEXT,
       Un retour en fin de projet, un suivi à un an… Tes formulaires restent dans Tally, et Designer range chaque réponse dans les documents de la carte du client.
 
-      Branche Tally une fois pour toute l'équipe, puis envoie le formulaire depuis les documents d'une carte : le lien est déjà rempli pour ce client. Toute l'équipe lit les réponses, et ton IA aussi.
+      Branche Tally une fois pour toute l'équipe, puis envoie le formulaire depuis le nouvel onglet « Formulaires » de la carte : le lien est déjà rempli pour ce client, et ses réponses y arrivent. Toute l'équipe les lit, et ton IA aussi.
     TEXT
     link_path: "/help/brancher-ses-formulaires-tally", link_label: "Lire l'aide",
     screenshot_alt: "Une réponse au formulaire « Retour en fin de projet », ouverte dans les documents de la carte."

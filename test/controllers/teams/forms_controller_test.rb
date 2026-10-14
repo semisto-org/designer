@@ -65,11 +65,4 @@ class Teams::FormsControllerTest < ActionDispatch::IntegrationTest
     get team_forms_path(@team), headers: inertia_headers
     assert_response :not_found
   end
-
-  test "the map's documents offer the team's forms, with the link for this map" do
-    FormInbox.for(@team).forms.create!(external_id: "w77j70", name: "Retour en fin de projet")
-    sign_in_as users(:bob)
-    get map_documents_path(@map), headers: inertia_headers
-    assert_equal [ "https://tally.so/r/w77j70?carte=#{@map.id}" ], response.parsed_body.dig("props", "forms").map { _1["link"] }
-  end
 end

@@ -1,6 +1,6 @@
 ---
 title: "Recevoir les réponses de tes formulaires Tally"
-summary: "Pour les équipes : un retour en fin de projet, un suivi à un an… Tes formulaires restent dans Tally, et chaque réponse se range dans les documents de la carte du client."
+summary: "Pour les équipes : un retour en fin de projet, un suivi à un an… Tes formulaires restent dans Tally, et chaque réponse se range dans la carte du client, sous « Formulaires »."
 category: Partager et collaborer
 order: 73
 ---
@@ -23,13 +23,15 @@ Un formulaire qui répond avant d'avoir été ajouté s'ajoute tout seul, sous l
 
 ## Envoyer un formulaire à un client
 
-Ouvre les **Documents** de la carte du client et choisis **Envoyer un formulaire**. Pour chaque formulaire de l'équipe, Designer prépare un lien déjà rempli pour cette carte : copie-le et colle-le dans ton e-mail. Ton client n'a besoin d'aucun compte.
+Chaque carte de l'équipe a un onglet **Formulaires**, à côté des Documents. Sous **Envoyer un formulaire**, Designer prépare pour chaque formulaire de l'équipe un lien déjà rempli pour cette carte : copie-le et colle-le dans ton e-mail. Ton client n'a besoin d'aucun compte. **Aperçu** ouvre le formulaire tel que ton client le verra.
 
 Une carte peut recevoir autant de formulaires et de réponses que tu veux : le retour en fin de projet, un suivi à un an, une réponse par membre d'un collectif…
 
 ## Où arrivent les réponses
 
-Chaque réponse devient un **document de la carte**, étiqueté avec le nom du formulaire et daté. Dans la bibliothèque, l'étagère **Formulaires** les rassemble ; ouvre-en une pour lire chaque question et ce que la personne a répondu. Toute l'équipe la lit, et ton IA aussi, une fois [connectée](/help/connecter-son-ia), pour en faire une synthèse ou préparer la suite.
+Les réponses arrivent dans l'onglet **Formulaires** de la carte, la plus récente en haut et déjà ouverte : chaque question, puis ce que la personne a répondu. Tous ceux qui ont accès à la carte les lisent ; seuls ses éditeurs voient les liens à envoyer.
+
+Chaque réponse devient aussi un **document de la carte**, étiqueté avec le nom du formulaire et daté, que l'étagère **Formulaires** de la bibliothèque rassemble. Ton IA la lit donc aussi, une fois [connectée](/help/connecter-son-ia), pour en faire une synthèse ou préparer la suite.
 
 ## Les réponses à rattacher
 
@@ -37,6 +39,6 @@ Si le lien n'indiquait pas de carte de l'équipe (un lien partagé sans passer p
 
 ## Bon à savoir
 
-- Les réponses restent dans Designer, dans les documents de la carte : elles ne quittent pas l'outil et ne sont jamais publiées.
+- Les réponses restent dans Designer, avec la carte : elles ne quittent pas l'outil et ne sont jamais publiées. Un témoignage que ton client accepte de voir publié, c'est toi qui le reprends à la main.
 - Retirer un formulaire de la liste ne supprime pas les réponses déjà rangées dans les cartes.
 - Si la clé a circulé, **Nouvelle adresse** en crée une autre : l'ancienne cesse de fonctionner tout de suite, et il faut la remplacer dans chaque formulaire Tally.

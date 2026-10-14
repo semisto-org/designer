@@ -18,7 +18,7 @@ module Maps
       respond_to do |format|
         format.html do
           render inertia: "maps/tasks/index", props: board.as_json.merge(
-            map: { id: @map.id, name: @map.name, role: @role },
+            map: { id: @map.id, name: @map.name, role: @role, teamId: @map.organization_id },
             participants: board.participants,
             canEdit: can_edit?,
             today: Date.current.iso8601
