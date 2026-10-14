@@ -9,7 +9,7 @@ import { PaletteStrip } from './PaletteStrip'
 import { StagePath } from './StagePath'
 import { TerrainSketch } from './TerrainSketch'
 
-function nextStepText(next: ResumeStep) {
+export function nextStepText(next: ResumeStep) {
   if (next.type === 'item') return t('my_maps.resume.next', { step: t(`journey.items.${next.item}.label`) })
   if (next.type === 'advance') return t('my_maps.resume.advance', { stage: t(`maps.stages.${next.stage}`) })
   return t('my_maps.resume.complete')

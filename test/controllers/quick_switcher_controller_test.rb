@@ -37,4 +37,22 @@ class QuickSwitcherControllerTest < ActionDispatch::IntegrationTest
     assert_equal "owner", ahinvaux["role"]
     assert_equal "design", ahinvaux["stage"]
   end
+
+  test "the preview gives the terrain sketch and the next step of a map I can open" do
+    sign_in_as users(:alice)
+    get quick_switcher_map_path(maps(:ahinvaux))
+    assert_response :success
+    body = response.parsed_body
+    assert_equal maps(:ahinvaux).name, body.dig("map", "name")
+    assert body.dig("map", "boundary")
+    assert body.dig("map", "sketch").key?("plants")
+    assert_includes %w[item advance complete], body.dig("next", "type")
+  end
+
+  test "no preview of a map I cannot open" do
+    other = Map.create!(name: "Hors de portée", owner: users(:bob))
+    sign_in_as users(:alice)
+    get quick_switcher_map_path(other)
+    assert_response :not_found
+  end
 end

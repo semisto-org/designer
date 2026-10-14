@@ -7,12 +7,12 @@ release_notes = [
     key: "acces-rapide", published_on: "2026-10-14",
     title: "Saute d'une carte à l'autre avec ⌘J",
     body: <<~TEXT,
-      Où que tu sois dans le Designer, même au milieu d'une carte, tape ⌘J sur un Mac (Ctrl+J sur Windows) : un champ s'ouvre au centre. Écris quelques lettres, « wal » trouve Walhain, et Entrée t'y emmène.
+      Où que tu sois dans le Designer, même au milieu d'une carte, tape ⌘J sur un Mac (Ctrl+J sur Windows) : un champ s'ouvre au centre. Écris quelques lettres, « wal » trouve Walhain, et Entrée t'y emmène. Les cartes que tu viens d'ouvrir passent en premier, une faute de frappe ou des initiales (« jfg ») suffisent.
 
-      Plusieurs cartes répondent ? Choisis avec les flèches. Sans rien taper, tes cartes s'affichent de la plus récente. Sur téléphone, la loupe du menu fait la même chose.
+      À côté, le terrain de la carte choisie pousse sous tes yeux jusqu'à l'an 30, avec sa prochaine étape. Le même champ ouvre aussi les pages (« tâches », « plantes »…) ou crée une carte au nom que tu viens de taper. Sur téléphone, c'est la loupe du menu.
     TEXT
     link_path: "/maps", link_label: "Ouvrir mes cartes",
-    screenshot_alt: "L'accès rapide ouvert : « wal » trouve Walhain, Verger de Wallonie picarde et École des Walons."
+    screenshot_alt: "L'accès rapide ouvert : « wal » trouve Walhain, dont le terrain s'affiche à droite avec sa prochaine étape."
   },
   {
     key: "formulaires-tally", published_on: "2026-10-14",

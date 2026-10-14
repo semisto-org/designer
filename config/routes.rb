@@ -11,6 +11,7 @@ Rails.application.routes.draw do
 
   # Cmd+J / Ctrl+J: the maps to jump to (QuickSwitcher).
   get "quick_switcher", to: "quick_switcher#index", as: :quick_switcher, defaults: { format: :json }
+  get "quick_switcher/:id", to: "quick_switcher#show", as: :quick_switcher_map, defaults: { format: :json }
 
   resources :maps, except: :edit do
     scope module: :maps do
