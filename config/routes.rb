@@ -9,6 +9,9 @@ Rails.application.routes.draw do
   get "auth/failure", to: "omniauth_callbacks#failure"
   get "dev/login", to: "dev/logins#show" if Rails.env.local?
 
+  # Cmd+J / Ctrl+J: the maps to jump to (QuickSwitcher).
+  get "quick_switcher", to: "quick_switcher#index", as: :quick_switcher, defaults: { format: :json }
+
   resources :maps, except: :edit do
     scope module: :maps do
       resources :features, only: %i[index create update destroy]

@@ -1,0 +1,19 @@
+fr:
+  quick_switcher:
+    title: "Accès rapide"
+    placeholder: "Aller à une carte…"
+    open: "Aller à une carte"
+    escape: "Échap"
+    recent: "Tes cartes, de la plus récente"
+    found:
+      zero: "Aucune carte trouvée"
+      one: "1 carte trouvée"
+      other: "%{count} cartes trouvées"
+    here: "Tu y es"
+    none: "Aucune de tes cartes ne répond à « %{query} »."
+    no_maps: "Tu n'as pas encore de carte."
+    loading: "Je rassemble tes cartes…"
+    failed: "Tes cartes n'ont pas pu être chargées. Réessaie dans un instant."
+    hint_move: "pour choisir"
+    hint_open: "pour ouvrir"
+    hint_shortcut: "%{shortcut} depuis n'importe où"

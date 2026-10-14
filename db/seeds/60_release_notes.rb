@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "acces-rapide", published_on: "2026-10-14",
+    title: "Saute d'une carte à l'autre avec ⌘J",
+    body: <<~TEXT,
+      Où que tu sois dans le Designer, même au milieu d'une carte, tape ⌘J sur un Mac (Ctrl+J sur Windows) : un champ s'ouvre au centre. Écris quelques lettres, « wal » trouve Walhain, et Entrée t'y emmène.
+
+      Plusieurs cartes répondent ? Choisis avec les flèches. Sans rien taper, tes cartes s'affichent de la plus récente. Sur téléphone, la loupe du menu fait la même chose.
+    TEXT
+    link_path: "/maps", link_label: "Ouvrir mes cartes",
+    screenshot_alt: "L'accès rapide ouvert : « wal » trouve Walhain, Verger de Wallonie picarde et École des Walons."
+  },
+  {
     key: "formulaires-tally", published_on: "2026-10-14",
     title: "Les réponses de tes formulaires Tally, rangées dans la carte",
     body: <<~TEXT,
