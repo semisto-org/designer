@@ -32,7 +32,8 @@ type FormData = {
  */
 export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }: { region: RegionData; layers?: RegionLayerData[] }) {
   const form = useForm<FormData>({
-    map: { name: '', address: '', description: '', center: null, zoom: null },
+    // ?name=: the quick switcher's « Créer la carte « … » » writes it in.
+    map: { name: new URLSearchParams(window.location.search).get('name')?.slice(0, 120) ?? '', address: '', description: '', center: null, zoom: null },
     next: 'parcels',
   })
   const { map } = form.data
