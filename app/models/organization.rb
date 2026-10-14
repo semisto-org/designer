@@ -16,6 +16,7 @@ class Organization < ApplicationRecord
   has_many :maps, dependent: :nullify
   has_many :offer_templates, as: :owner, dependent: :destroy
   has_one :request_form, as: :owner, dependent: :destroy
+  has_one :form_inbox, dependent: :destroy
 
   normalizes :name, with: ->(n) { n.to_s.squish }
   validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }

@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, MessageSquareText, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/Button'
@@ -6,6 +6,7 @@ import { Field, Input, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import { DocumentIcon } from '@/documents/DocumentIcon'
+import { FormAnswers } from '@/documents/FormAnswers'
 import { PdfPages } from '@/documents/PdfPages'
 import { TagEditor } from '@/documents/TagEditor'
 import { documentSize } from '@/documents/compression'
@@ -74,7 +75,12 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <img src={doc.previewUrl} alt={doc.title} className="max-h-full max-w-full object-contain" />
         )}
         {doc.preview === 'pdf' && doc.previewUrl && <PdfPages key={doc.id} url={doc.previewUrl} title={doc.title} />}
-        {!doc.preview && (
+        {doc.form && (
+          <div className="max-h-full w-full max-w-2xl overflow-y-auto rounded-2xl">
+            <FormAnswers fields={doc.form.fields} title={doc.form.formName} className="!px-6 !py-5" />
+          </div>
+        )}
+        {!doc.preview && !doc.form && (
           <div className="max-w-sm text-center">
             <DocumentIcon kind={doc.kind} filename={doc.filename} className="mx-auto h-24 w-24" />
             <p className="mt-4 text-lg">{doc.filename}</p>
@@ -112,7 +118,9 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <h2 className="font-serif text-xl text-loam-900">{doc.title}</h2>
         )}
         <p className="text-sm text-loam-600">
-          {doc.fromProjectLink
+          {doc.form
+            ? t('forms.viewer.received', { when: relativeTime(doc.form.submittedAt) })
+            : doc.fromProjectLink
             ? t('documents.viewer.sent_by_link', { when: relativeTime(doc.createdAt) })
             : doc.uploadedBy
               ? t('documents.viewer.added_by', { name: doc.uploadedBy, when: relativeTime(doc.createdAt) })
@@ -120,6 +128,11 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <br />
           {doc.filename}{doc.byteSize ? ` · ${documentSize(doc)}` : ''}
         </p>
+        {doc.origin === 'form' && (
+          <p className="flex items-center gap-1.5 rounded-lg bg-lichen-100 px-3 py-2 text-sm text-lichen-700">
+            <MessageSquareText className="h-4 w-4 shrink-0" aria-hidden />{t('forms.viewer.badge')}
+          </p>
+        )}
         {doc.origin === 'project_sheet' && (
           <p className="flex items-center gap-1.5 rounded-lg bg-prune-50 px-3 py-2 text-sm text-prune-800">
             <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />{t('documents.from_project_sheet')}
