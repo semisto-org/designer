@@ -32,6 +32,7 @@ module Mcp
           palette: palette(map),
           palette_drafts_pending: map.palette_drafts.count,
           bioindicators: bioindicators(map),
+          soil_samples: soil_samples(map),
           tasks: {
             pending: map.tasks.pending.count, overdue: map.tasks.overdue.count, done: map.tasks.done.count,
             mine_pending: map.tasks.pending.where(assignee: user).count
@@ -84,6 +85,17 @@ module Mcp
                 location: photo.lnglat&.map { |v| v.round(Geo::PRECISION) }, caption: photo.caption
               }
             end
+          }
+        end
+
+        # How many sampling points, how many carry lab reports, and how many
+        # wait for the review of values an AI read (get_soil_samples).
+        def soil_samples(map)
+          samples = map.soil_samples.with_attached_lab_reports.to_a
+          {
+            total: samples.size, analysed: samples.count(&:analysed?),
+            with_reports: samples.count { |s| s.lab_reports.attached? },
+            drafts_pending: samples.count { |s| s.draft.pending? }
           }
         end
 

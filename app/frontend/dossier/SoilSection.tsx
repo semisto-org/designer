@@ -67,6 +67,20 @@ export function SoilSection({ dossier, number, isOwner }: { dossier: Dossier; nu
               })}
             </tbody>
           </Table>
+          {samples.some((s) => s.otherResults.length > 0) && (
+            <div className="dossier-keep space-y-1">
+              <p className="text-sm font-medium text-loam-800">{t('dossier.soil.others_title')}</p>
+              <ul className="space-y-0.5 text-sm text-loam-700">
+                {samples.filter((s) => s.otherResults.length > 0).map((sample) => (
+                  <li key={sample.id}>
+                    <span className="font-medium text-loam-900">{sample.label}</span>
+                    {' : '}
+                    {sample.otherResults.map((o) => [o.name, o.value, o.unit].filter(Boolean).join(' ')).join(' · ')}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {analyses ? (
             <p className="text-xs text-loam-500">{t('dossier.soil.legend', { provenance })}</p>
           ) : (

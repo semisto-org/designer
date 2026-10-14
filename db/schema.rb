@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_14_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1194,6 +1194,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_100000) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "other_results", default: [], null: false
+    t.jsonb "results_draft"
     t.index ["created_by_id"], name: "index_soil_samples_on_created_by_id"
     t.index ["location"], name: "index_soil_samples_on_location", using: :gist
     t.index ["map_id", "label"], name: "index_soil_samples_on_map_id_and_label"

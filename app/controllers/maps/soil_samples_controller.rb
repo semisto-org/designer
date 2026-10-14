@@ -20,7 +20,7 @@ module Maps
     def index
       analyses = map_entitlements.analyses?
       render json: {
-        samples: @map.soil_samples.ordered.with_attached_lab_report.map { |sample| sample.as_inertia(analyses:) },
+        samples: @map.soil_samples.ordered.with_attached_lab_reports.map { |sample| sample.as_inertia(analyses:) },
         analyses:,
         fields: SoilSample::RESULT_FIELDS.map { |key, spec| { key:, unit: spec[:unit], min: spec[:range].min, max: spec[:range].max } },
         # Band limits, shown above the compare table: part of the analysis.
@@ -82,7 +82,9 @@ module Maps
       end
 
       def sample_params
-        raw = params.require(:soil_sample).permit(:label, :depth_from_cm, :depth_to_cm, :status, :sampled_on, :lab, :lab_reference, :notes, :lng, :lat, results: SoilSample::RESULT_KEYS)
+        raw = params.require(:soil_sample).permit(:label, :depth_from_cm, :depth_to_cm, :status, :sampled_on, :lab, :lab_reference, :notes, :lng, :lat, results: SoilSample::RESULT_KEYS, other_results: %i[name value unit])
+        # An emptied list arrives as nothing at all in a JSON body.
+        raw[:other_results] = [] if params[:soil_sample].key?(:other_results) && raw[:other_results].nil?
         raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat]) if raw.key?(:lng) || raw.key?(:lat)
         raw.except(:lng, :lat)
       end

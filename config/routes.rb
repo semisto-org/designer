@@ -304,7 +304,8 @@ Rails.application.routes.draw do
           post :suggestions
           post :bulk
         end
-        resource :report, only: %i[show create destroy], controller: "soil_sample_reports"
+        resources :reports, only: %i[show create destroy], controller: "soil_sample_reports"
+        resource :draft, only: %i[update destroy], controller: "soil_sample_drafts"
       end
       resources :bioindicator_observations, only: %i[index create update destroy] do
         get :species, on: :collection

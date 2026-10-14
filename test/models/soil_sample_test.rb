@@ -49,15 +49,24 @@ class SoilSampleTest < ActiveSupport::TestCase
     assert_not sample(results: { "sand_pct" => 60, "silt_pct" => 60 }).valid?
   end
 
-  test "the lab report must be a PDF" do
+  test "the lab reports must be PDFs" do
     ok = sample
-    ok.lab_report.attach(io: file_fixture("rapport_labo.pdf").open, filename: "rapport.pdf", content_type: "application/pdf")
+    ok.lab_reports.attach(io: file_fixture("rapport_labo.pdf").open, filename: "rapport.pdf", content_type: "application/pdf")
+    ok.lab_reports.attach(io: file_fixture("analyse_sol.pdf").open, filename: "metaux.pdf", content_type: "application/pdf")
     assert ok.valid?
 
     wrong = sample
-    wrong.lab_report.attach(io: file_fixture("terrain.jpg").open, filename: "photo.jpg", content_type: "image/jpeg")
+    wrong.lab_reports.attach(io: file_fixture("terrain.jpg").open, filename: "photo.jpg", content_type: "image/jpeg")
     assert_not wrong.valid?
     assert_includes wrong.errors.full_messages.to_sentence, "n'est pas un PDF"
+  end
+
+  test "other results keep the lab's words, one line per parameter" do
+    s = sample(other_results: [
+      { name: "  Plomb (Pb) ", value: "< 0,5", unit: "mg/kg MS" }, { "name" => "plomb (pb)", "value" => "3" },
+      { name: "Azote total", value: "" }, { name: "", value: "1" }, "nonsense"
+    ])
+    assert_equal [ { "name" => "Plomb (Pb)", "value" => "< 0,5", "unit" => "mg/kg MS" } ], s.other_results
   end
 
   test "payload hides the reading unless the plan has analyses" do

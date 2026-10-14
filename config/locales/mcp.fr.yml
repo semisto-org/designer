@@ -14,6 +14,7 @@ fr:
         La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
+        Les points de prélèvement de sol (panneau Sol, onglet Points) portent les rapports PDF du laboratoire, un par analyse (standard, métaux lourds…). get_soil_samples les liste, get_soil_report lit un rapport (son texte, ou ses pages en image pour un scan), puis propose_soil_results propose les valeurs lues, que l'humain garde ou refuse une par une sur le point. Recopie fidèlement, convertis vers les unités de Designer en le disant, et ne devine aucune valeur.
         Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme ou l'étiquette. Les photos du terrain se lisent avec list_photos et get_photo. Pour envoyer des fichiers (photos, PDF, plans…), ne les mets jamais dans un appel : create_upload te donne pour chacun une adresse où l'envoyer toi-même par HTTP (curl), puis attach_photos ou attach_documents les rattache ; import_from_url fait venir un fichier depuis une adresse HTTPS. add_photo (une petite image en base64) et add_document (un texte que tu as rédigé) restent pour les cas simples. update_photos les légende, les date, les place et les range en albums, delete_photos et delete_documents suppriment photos et documents. Tu ne supprimes rien d'autre, et seulement ce que la personne t'a demandé de retirer.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
@@ -33,6 +34,21 @@ fr:
       list_id: "Identifiant d'une liste de tâches de la carte, donné par list_tasks."
       task_id: "Identifiant de la tâche, donné par list_tasks."
       document_id: "Identifiant du document, donné par list_documents."
+      soil_sample_id: "Identifiant du point de prélèvement, donné par get_soil_samples."
+      soil_report_id: "Identifiant du rapport PDF (report_id dans reports de get_soil_samples)."
+      soil_report_ids: "Les rapports lus pour cette proposition (report_id). Sans eux, tous les rapports du point."
+      soil_results: "Les valeurs des champs typés (result_fields), converties dans leur unité. 12 au plus, une par clé."
+      soil_result_key: "Clé du champ : ph_water, ph_kcl, organic_matter_pct, c_n_ratio, p_mg_100g, k_mg_100g, mg_mg_100g, ca_mg_100g, cec_meq_100g, sand_pct, silt_pct ou clay_pct."
+      soil_result_value: "La valeur, en nombre, dans l'unité du champ."
+      soil_result_note: "D'où vient la valeur dans le rapport (page, ligne, intitulé du laboratoire) et la conversion faite, s'il y en a une."
+      soil_other_results: "Les autres paramètres du rapport, tels que le laboratoire les écrit : métaux lourds, azote total, sodium, oligo-éléments… 60 au plus."
+      soil_other_name: "Nom du paramètre, comme dans le rapport, avec son symbole : « Plomb (Pb) », « Azote total (N) »."
+      soil_other_value: "La valeur telle qu'écrite par le laboratoire, avec un signe s'il y en a un : « 23,5 », « < 0,2 »."
+      soil_other_unit: "Unité du laboratoire : « mg/kg MS », « % »."
+      soil_lab: "Nom du laboratoire, tel qu'il figure sur le rapport."
+      soil_lab_reference: "Référence ou numéro du rapport, ou de l'échantillon chez le laboratoire."
+      soil_sampled_on: "Date du prélèvement indiquée sur le rapport, au format AAAA-MM-JJ (pas la date d'analyse)."
+      soil_rationale: "Ce que tu as lu et comment : quels rapports, ce que tu as converti, ce qui est douteux ou manquant. La personne le lit avant de garder les valeurs."
       task_title: "Ce qu'il faut faire, en une phrase courte : « Faire un test de sol », « Commander les plants »."
       task_notes: "Précisions : pourquoi, comment, avec qui. null l'efface."
       due_on: "Échéance, au format AAAA-MM-JJ."
@@ -217,6 +233,18 @@ fr:
           target_count: "Nombre de plants visés, s'il est connu (par exemple une quantité du tableur)."
           plant_notes: "Notes : variété souhaitée, fournisseur, emplacement prévu…"
           plant_rationale: "Pourquoi cette plante, ou d'où elle vient (« ligne 12 du tableur de l'utilisateur »). Obligatoire, 10 caractères au moins."
+      get_soil_samples:
+        title: "Lire les points de prélèvement de sol"
+        description: "Les points de prélèvement de sol de la carte (panneau Sol, onglet Points) : nom, état, profondeur, date, laboratoire, référence du rapport, position, résultats déjà saisis (results, dans les unités de result_fields), autres valeurs (other_results : métaux lourds, azote… telles que le laboratoire les écrit), rapports PDF joints (reports, un par analyse, à lire avec get_soil_report) et si des valeurs proposées attendent encore la revue (draft_pending). Donne aussi les champs typés des résultats, avec leurs unités et leurs bornes, pour propose_soil_results."
+      get_soil_report:
+        title: "Lire un rapport de laboratoire"
+        description: "Un rapport PDF d'un point de prélèvement (reports dans get_soil_samples) : son texte, par tranches de 40 000 caractères (offset), avec les champs typés et la note sur les unités. Un scan n'a pas de texte : ses pages arrivent alors en images, 4 à la fois (first_page). Lis tout le rapport, puis propose les valeurs avec propose_soil_results."
+        params:
+          offset: "Pour un long rapport : la valeur next_offset de l'appel précédent."
+          first_page: "Pour un scan : première page à recevoir en image (next_first_page de l'appel précédent)."
+      propose_soil_results:
+        title: "Proposer les résultats d'un laboratoire"
+        description: "Propose les valeurs lues dans les rapports d'un point de prélèvement (get_soil_report), que l'humain garde ou refuse une par une sur le point (panneau Sol, onglet Points) : rien n'entre dans les résultats sans lui. results reçoit les champs typés (clés de result_fields), convertis dans leurs unités ; other_results reçoit tout le reste, tel que le laboratoire l'écrit (métaux lourds, azote total, sodium, oligo-éléments…), une ligne par paramètre. Tu peux aussi proposer le laboratoire, la référence du rapport et la date du prélèvement. Une valeur égale à celle déjà saisie est ignorée ; une valeur hors bornes est refusée (rejected). Une nouvelle proposition pour le même point remplace celle qui n'a pas encore été revue. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
       get_bioindicator_photo:
         title: "Regarder une photo de plantes sauvages"
         description: "Une photo de plantes sauvages prise sur le terrain (les photos « à analyser » sont dans bioindicators.photos de get_map), en image, avec où et quand elle a été prise, ce qui en a déjà été noté et la liste des plantes bio-indicatrices de Semisto (clés à utiliser dans propose_bioindicators). Regarde toute la photo : elle montre souvent plusieurs espèces. Ensuite, propose ce que tu vois avec propose_bioindicators."
@@ -268,6 +296,12 @@ fr:
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
       drafts_trial: "Le propriétaire de cette carte essaie les brouillons de l'IA jusqu'au %{date} (essai offert de 14 jours). Après cette date, sans forfait, tu ne pourras plus que lire la carte : dis-le à l'utilisateur quand tu poses tes premiers brouillons, pour qu'il ne soit pas surpris."
       review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
+      soil_units: "Les champs typés suivent les unités des laboratoires wallons. P, K, Mg et Ca en mg de l'élément pour 100 g de terre sèche : divise des mg/kg par 10 ; un oxyde se convertit (P2O5 × 0,436 = P ; K2O × 0,830 = K ; MgO × 0,603 = Mg ; CaO × 0,715 = Ca). Matière organique en % : carbone organique (C) × 1,72. CEC en méq/100 g (= cmol+/kg). Texture en % de la terre fine (sable, limon, argile). Dis chaque conversion dans la note de la valeur ; une valeur que tu ne peux pas convertir sûrement va dans other_results, telle quelle."
+      read_soil_reports: "Lis chaque rapport avec get_soil_report (sample_id, report_id), puis propose ses valeurs avec propose_soil_results, un appel par point."
+      no_soil_reports: "Aucun rapport PDF n'est joint aux points : la personne les joint dans le panneau Sol (onglet Points, « Joindre un PDF »)."
+      propose_soil_results: "Recopie les valeurs fidèlement, avec propose_soil_results : les champs typés dans results (convertis, voir units_note), tout le reste dans other_results. Si le point a plusieurs rapports, lis-les tous avant de proposer, en un seul appel."
+      review_soil: "Les valeurs proposées attendent sur le point « %{label} » (panneau Sol, onglet Points), où l'humain les garde ou les refuse une par une."
+      review_soil_replacing: "Les valeurs proposées attendent sur le point « %{label} » (panneau Sol, onglet Points), où l'humain les garde ou les refuse une par une. Certaines remplaceraient une valeur déjà saisie (voir replaces) : dis-le à la personne."
       read_bioindicator_photo: "Regarde toute la photo : elle montre souvent plusieurs espèces. Propose ensuite ce que tu reconnais avec propose_bioindicators, une plante par entrée, avec son abondance et ta confiance."
       review_bioindicators: "Les plantes proposées attendent dans le panneau Sol de la carte (onglet Plantes), où l'humain les accepte ou les refuse. Dis-lui aussi ce que tu en lis pour son sol."
       project_sheet: "Les clés (section, field, options) sont celles à utiliser dans propose_project_sheet ; les libellés sont ceux que voit la personne. Pose-lui les questions qui manquent, une à la fois, plutôt que de deviner."
@@ -292,6 +326,12 @@ fr:
       scope_drafts: "Cette connexion n'a que l'accès en lecture. Pour proposer des brouillons, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
       editor_only: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer ou retirer des brouillons. L'utilisateur est lecteur de cette carte."
       plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite et n'a pas d'essai en cours (l'essai de 14 jours est terminé, ou il ne l'a pas encore commencé). La lecture de la carte reste possible ; les formules sont sur la page « Tarifs » de Semisto Designer."
+      soil_sample_not_found: "Point de prélèvement %{id} introuvable sur cette carte (get_soil_samples)."
+      soil_report_not_found: "Rapport %{id} introuvable sur ce point (reports dans get_soil_samples)."
+      soil_out_of_range: "hors bornes : entre %{min} et %{max} dans l'unité du champ (voir result_fields et units_note)."
+      soil_date: "date « %{value} » illisible : AAAA-MM-JJ attendu."
+      soil_nothing: "Rien à proposer. %{details}"
+      soil_all_known: "Toutes ces valeurs sont déjà saisies sur le point."
       no_boundary: "La carte n'a pas encore de contour de terrain : l'utilisateur doit le dessiner avant de recevoir des brouillons."
       too_many_features: "Au plus %{max} éléments par appel."
       too_many_plants: "Au plus %{max} plantes par appel."
@@ -459,6 +499,11 @@ fr:
       get_plant: "a lu une fiche plante"
       get_design_guide: "a lu le guide de méthode de Semisto"
       get_bioindicator_photo: "a regardé une photo de plantes sauvages"
+      get_soil_samples: "a lu les points de prélèvement de sol"
+      get_soil_report: "a lu un rapport de laboratoire"
+      propose_soil_results:
+        one: "a proposé 1 valeur d'analyse de sol"
+        other: "a proposé %{count} valeurs d'analyse de sol"
       propose_bioindicators:
         one: "a proposé 1 plante vue sur une photo"
         other: "a proposé %{count} plantes vues sur une photo"

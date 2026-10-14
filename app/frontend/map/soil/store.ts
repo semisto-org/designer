@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { api } from '@/lib/api'
 import type {
   Abundance, BioObservation, BioObservationsResponse, CatalogPlant, IndicatorTally, MapPhotoData, SoilFieldSpec, SoilResultKey,
-  SoilSampleData, SoilSamplesResponse, SuggestedPoint, SuggestionsResponse,
+  SoilOtherResult, SoilSampleData, SoilSamplesResponse, SuggestedPoint, SuggestionsResponse,
 } from '@/types/soil_photos'
 
 /** What the user typed for a plant before it has a position. */
@@ -32,6 +32,7 @@ export type SamplePayload = {
   lab_reference: string
   notes: string
   results: Partial<Record<SoilResultKey, string>>
+  other_results: SoilOtherResult[]
   lng?: number
   lat?: number
 }
@@ -169,16 +170,24 @@ export const soilActions = {
     set({ samples: state.samples.filter((s) => s.id !== id), openId: state.openId === id ? null : state.openId })
   },
 
-  async attachReport(mapId: number, id: number, file: File): Promise<SoilSampleData> {
+  /** Attaches one or several lab reports (PDF): all are kept, or none. */
+  async attachReports(mapId: number, id: number, files: File[]): Promise<SoilSampleData> {
     const form = new FormData()
-    form.append('soil_sample[lab_report]', file)
-    const saved = await api<SoilSampleData>(`/maps/${mapId}/soil_samples/${id}/report`, { method: 'POST', body: form })
+    files.forEach((file) => form.append('soil_sample[lab_reports][]', file))
+    const saved = await api<SoilSampleData>(`/maps/${mapId}/soil_samples/${id}/reports`, { method: 'POST', body: form })
     soilActions.upsertSample(saved)
     return saved
   },
 
-  async removeReport(mapId: number, id: number): Promise<SoilSampleData> {
-    const saved = await api<SoilSampleData>(`/maps/${mapId}/soil_samples/${id}/report`, { method: 'DELETE' })
+  async removeReport(mapId: number, id: number, reportId: number): Promise<SoilSampleData> {
+    const saved = await api<SoilSampleData>(`/maps/${mapId}/soil_samples/${id}/reports/${reportId}`, { method: 'DELETE' })
+    soilActions.upsertSample(saved)
+    return saved
+  },
+
+  /** Keeps or refuses values the AI proposed (« result:ph_water », « other:Plomb (Pb) », « lab »…). */
+  async reviewDraft(mapId: number, id: number, review: { keep?: string[]; refuse?: string[] }): Promise<SoilSampleData> {
+    const saved = await api<SoilSampleData>(`/maps/${mapId}/soil_samples/${id}/draft`, { method: 'PATCH', body: review })
     soilActions.upsertSample(saved)
     return saved
   },

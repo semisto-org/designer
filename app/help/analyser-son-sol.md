@@ -18,10 +18,16 @@ Un **point**, c'est un endroit où tu prélèves de la terre, avec ses résultat
 1. Touche **Suggérer des emplacements**, choisis le **Nombre de points**, puis **Calculer** : Designer répartit les points sur le terrain, loin du bord, des bâtiments, de l'eau et des chemins. Garde-les avec **Ajouter ces points**. Il faut pour cela avoir dessiné le contour.
 2. Ou touche **Ajouter un point**, puis clique sur la carte.
 3. Ouvre un point pour le compléter : nom, **État** (**À prélever** ou **Prélevé**), date, profondeur, laboratoire, référence du rapport, notes.
-4. À la réception du rapport, recopie les valeurs sous **Résultats du laboratoire** : pH eau et pH KCl, matière organique, rapport C/N, phosphore, potassium, magnésium, calcium, CEC et texture (sable, limon, argile). Laisse vide ce qui manque.
-5. Touche **Joindre le PDF** pour garder le rapport avec le point (15 Mo au plus).
+4. À la réception des rapports, touche **Joindre un PDF** : un point garde un PDF par analyse (analyse standard, métaux lourds…), 10 au plus, 15 Mo chacun.
+5. Recopie les valeurs sous **Résultats du laboratoire** : pH eau et pH KCl, matière organique, rapport C/N, phosphore, potassium, magnésium, calcium, CEC et texture (sable, limon, argile). Laisse vide ce qui manque. Tout le reste (métaux lourds, azote total, sodium…) va sous **Autres valeurs du laboratoire**, tel que le laboratoire l'écrit.
 
-Designer ne lit pas le PDF à ta place : les valeurs se saisissent à la main, ce qui permet de vérifier chacune. Pour la texture, deux valeurs suffisent, la troisième est déduite.
+Pour la texture, deux valeurs suffisent, la troisième est déduite.
+
+### Faire lire les rapports par ton IA
+
+Designer ne lit pas les PDF lui-même, mais ton IA peut le faire. Une fois [ton IA reliée à Designer](/help/connecter-son-ia), demande-lui par exemple : « Lis les rapports du laboratoire du point P1 de ma carte dans Semisto Designer et propose les résultats. » Elle lit chaque PDF (même un scan), convertit les unités si besoin (un phosphore donné en P2O5, un potassium en mg/kg…) et dit d'où vient chaque valeur.
+
+Ses propositions attendent en haut du point, sous **Valeurs lues par ton IA** : compare-les avec le rapport, garde celles qui sont justes et refuse les autres. Seules les valeurs gardées entrent dans les résultats ; une valeur qui en remplacerait une déjà saisie montre les deux. Proposer des valeurs demande le [forfait](/help/formules-et-forfait) du propriétaire de la carte, ou son essai.
 
 Coche **Sur la carte** pour voir tes points sur le plan.
 
