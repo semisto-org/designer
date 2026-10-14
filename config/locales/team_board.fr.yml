@@ -122,6 +122,7 @@ fr:
       error: "Ça n'a pas marché. Réessaie."
     project:
       title: "Le projet « %{name} »"
+      place_title: "Le lieu « %{name} »"
       lead: "Project Manager"
       lead_hint: "Une seule personne, qui veille à ce que le projet avance."
       no_lead: "Pas encore de Project Manager"
@@ -146,8 +147,18 @@ fr:
         no_reply: "sans réponse"
         other: "autre raison"
       save: "Enregistrer"
+      own_place: "Un lieu de l'équipe"
+      own_place_hint: "Le jardin-forêt pédagogique, la pépinière… : ni client, ni offre, ni phase. La carte quitte la frise, la saison et la charge de chacun."
+      place_open: "Le lieu de l'équipe"
+      place_summary: "Hors de la frise des projets"
       open: "Le projet d'équipe"
       edit: "Régler le projet"
+    places:
+      title: "Les lieux de l'équipe"
+      settings: "Régler « %{name} »"
+      make_place: "C'est un lieu de l'équipe"
+      became_place: "« %{name} » rejoint les lieux de l'équipe."
+      became_project: "« %{name} » revient dans la frise."
     season:
       title: "La saison qui vient"
       hint: "Fais glisser une étape pour la déplacer, tire son bord pour l'étendre."

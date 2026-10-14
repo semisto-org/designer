@@ -7,6 +7,7 @@ import { t } from '@/lib/i18n'
 import { BoardContext, patchProject, type BoardContextValue, type NextStep, type ProjectChange } from '@/team_board/board'
 import { Frieze } from '@/team_board/Frieze'
 import { People } from '@/team_board/People'
+import { Places } from '@/team_board/Places'
 import { Requests } from '@/team_board/Requests'
 import { Season } from '@/team_board/Season'
 import type { BoardProject, TeamBoardProps } from '@/types/teamBoard'
@@ -21,8 +22,11 @@ type Toast = { id: number; message: string; tone: 'info' | 'error' }
  */
 export default function TeamBoard(props: TeamBoardProps) {
   const { team, today, season } = props
-  const [projects, setProjects] = useState(props.projects)
-  useEffect(() => setProjects(props.projects), [props.projects])
+  // Projects and the team's own places in one list: a map moves from one to the other.
+  const [maps, setMaps] = useState(() => [...props.projects, ...props.places])
+  useEffect(() => setMaps([...props.projects, ...props.places]), [props.projects, props.places])
+  const projects = useMemo(() => maps.filter((m) => !m.ownPlace), [maps])
+  const places = useMemo(() => maps.filter((m) => m.ownPlace), [maps])
   const [toast, setToast] = useState<Toast | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -35,7 +39,7 @@ export default function TeamBoard(props: TeamBoardProps) {
   // The load of each person follows every change.
   const refresh = useCallback((keys: string[] = ['people']) => router.reload({ only: keys }), [])
 
-  const replace = (project: BoardProject) => setProjects((list) => list.map((p) => (p.id === project.id ? project : p)))
+  const replace = (project: BoardProject) => setMaps((list) => list.map((p) => (p.id === project.id ? project : p)))
 
   const saveProject = useCallback(async (project: BoardProject, change: ProjectChange, nextStep?: NextStep) => {
     const now = new Date().toISOString()
@@ -44,13 +48,18 @@ export default function TeamBoard(props: TeamBoardProps) {
     if (change.on_hold !== undefined) optimistic.onHoldSince = change.on_hold ? now : null
     if (change.closed_reason) Object.assign(optimistic, { closedAt: now, closedReason: change.closed_reason })
     if (change.reopen) Object.assign(optimistic, { closedAt: null, closedReason: null, closedNote: null })
+    const moved = change.own_place !== undefined && change.own_place !== project.ownPlace
+    if (moved) optimistic.ownPlace = !!change.own_place
     if (nextStep) optimistic.nextStep = { id: 0, title: nextStep.title, dueOn: nextStep.due_on, assignee: props.members.find((m) => m.id === nextStep.assignee_id) ?? null }
     replace(optimistic)
     try {
       const { project: saved } = await patchProject(team.id, project.id, change, nextStep)
       replace(saved)
-      notify(t('team_board.frieze.saved'))
-      refresh()
+      notify(moved
+        ? t(saved.ownPlace ? 'team_board.places.became_place' : 'team_board.places.became_project', { name: saved.name })
+        : t('team_board.frieze.saved'))
+      // A place leaves the season and everyone's load; a project comes back to them.
+      refresh(moved ? ['people', 'steps'] : ['people'])
       return true
     } catch (e) {
       replace(project)
@@ -92,6 +101,7 @@ export default function TeamBoard(props: TeamBoardProps) {
         </div>
         <Season steps={props.steps} projects={projects} season={season} onChanged={() => refresh()} />
         <People people={props.people} projects={projects} />
+        <Places places={places} />
       </div>
 
       <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
