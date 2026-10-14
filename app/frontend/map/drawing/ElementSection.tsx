@@ -1,6 +1,6 @@
 import clsx from 'clsx'
-import { Check } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Check, Pipette } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -9,6 +9,7 @@ import { computedValues } from '@/map/drawing/computed'
 import { saveFeature } from '@/map/drawing/save'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { linkedSourceId } from '@/map/water/store'
+import { isZoneKind, ZONE_COLORS } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 import type { ElementField } from '@/types/drawing'
 
@@ -96,6 +97,39 @@ function PropertyField({ field, value, disabled, onSave }: {
 }
 
 /**
+ * Any colour, beyond the swatches: the system colour picker, saved once
+ * the picker closes (not at every move of the cursor in it).
+ */
+function CustomColor({ color, custom, onPick }: { color: string; custom: boolean; onPick: (color: string) => void }) {
+  const input = useRef<HTMLInputElement>(null)
+  const latest = useRef({ color, onPick })
+  latest.current = { color, onPick }
+  useEffect(() => {
+    const element = input.current
+    if (!element) return
+    const commit = () => {
+      const next = element.value.toLowerCase()
+      if (/^#[0-9a-f]{6}$/.test(next) && next !== latest.current.color.toLowerCase()) latest.current.onPick(next)
+    }
+    element.addEventListener('change', commit)
+    return () => element.removeEventListener('change', commit)
+  }, [])
+  return (
+    <label
+      title={t('drawing.element.color_custom')}
+      className={clsx(
+        'relative grid h-6 w-6 cursor-pointer place-items-center rounded-full ring-1 ring-loam-300 focus-within:ring-2 focus-within:ring-prune-600',
+        custom && 'ring-2 ring-prune-600 ring-offset-1',
+      )}
+      style={custom ? { background: color } : { background: 'conic-gradient(#c48a96, #d08b3a, #c9b03a, #7fa650, #4f8f86, #5b7fa6, #9a7fb8, #c48a96)' }}
+    >
+      {custom ? <Check className="h-3 w-3 text-white" /> : <Pipette className="h-3 w-3 text-white drop-shadow" />}
+      <input ref={input} type="color" defaultValue={color} aria-label={t('drawing.element.color_custom')} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+    </label>
+  )
+}
+
+/**
  * Inspector section of a library element: its properties (generic form from
  * the library's field schema), derived estimates, colour and shape editing.
  */
@@ -107,6 +141,11 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
   const color = featureColor(feature)
   const ownColor = typeof feature.properties.style?.color === 'string'
   const computed = spec ? computedValues(feature, spec) : []
+  const zone = isZoneKind(feature.properties.kind)
+  // Zones take the soft palette of the plan; elements their own colour first.
+  const swatches = zone
+    ? ZONE_COLORS
+    : [...new Set([spec?.color ?? color, ...COLOR_SWATCHES])]
   // A tap fed by a water source takes its potability (WaterSourceSection).
   const fields = (spec?.fields ?? []).filter((field) => !(field.key === 'potable' && linkedSourceId(feature) != null))
 
@@ -154,7 +193,7 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('drawing.element.color')}</h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label={t('drawing.element.color')}>
-            {[...new Set([spec?.color ?? color, ...COLOR_SWATCHES])].map((swatch) => (
+            {swatches.map((swatch) => (
               <button
                 key={swatch}
                 type="button"
@@ -168,13 +207,40 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
                 {color === swatch && <Check className={clsx('h-3 w-3', swatch === '#ffffff' ? 'text-loam-900' : 'text-white')} />}
               </button>
             ))}
-            {ownColor && (
-              <button type="button" onClick={() => saveColor(null)} className="ml-1 text-xs text-prune-700 underline-offset-2 hover:underline">
+            <CustomColor color={color} custom={!swatches.includes(color)} onPick={saveColor} />
+            {ownColor && !zone && (
+              <button type="button" onClick={() => saveColor(null)} className="ml-1 text-sm text-prune-700 underline-offset-2 hover:underline">
                 {t('drawing.element.color_reset')}
               </button>
             )}
           </div>
         </section>
+      )}
+
+      {zone && (
+        <label className="flex items-start gap-2.5 text-sm text-loam-700">
+          <input
+            type="checkbox"
+            checked={stored.rounded === true}
+            disabled={!editor.canEdit}
+            onChange={(e) => saveProperty('rounded', e.target.checked ? true : null)}
+            className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
+          />
+          <span>{t(feature.properties.kind === 'zone' ? 'zones.rounded' : 'zones.rounded_path')}</span>
+        </label>
+      )}
+
+      {zone && (
+        <label className="flex items-start gap-2.5 text-sm text-loam-700">
+          <input
+            type="checkbox"
+            checked={stored.show_measure !== false}
+            disabled={!editor.canEdit}
+            onChange={(e) => saveProperty('show_measure', e.target.checked ? null : false)}
+            className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
+          />
+          <span>{t(feature.properties.kind === 'zone' ? 'zones.show_area' : 'zones.show_length')}</span>
+        </label>
       )}
 
       <ShapeEditButton feature={feature} />

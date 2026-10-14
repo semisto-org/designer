@@ -26,6 +26,7 @@ module Mcp
                   }
                 },
                 name: { type: "string", maxLength: 120, description: :feature_name },
+                color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", description: :feature_color },
                 notes: { type: "string", maxLength: 2000, description: :feature_notes },
                 rationale: { type: "string", minLength: 10, maxLength: 2000, description: :feature_rationale },
                 tags: {

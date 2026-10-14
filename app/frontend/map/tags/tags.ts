@@ -41,6 +41,16 @@ export function removeTag(tags: string[], tag: string): string[] {
   return tags.filter((t) => key(t) !== key(tag))
 }
 
+/**
+ * Shown when the map displays one version (a tag): elements carrying that
+ * tag, and those carrying no tag at all, which belong to every version
+ * (the boundary's surroundings, existing trees…).
+ */
+export function inVersion(item: Tagged, version: string | null): boolean {
+  if (version == null) return true
+  return tagsOf(item).length === 0 || hasTag(item, version)
+}
+
 export type TagCount = { tag: string; count: number }
 
 /** Tags used by `items`, one spelling each (the first met), sorted the French way. */

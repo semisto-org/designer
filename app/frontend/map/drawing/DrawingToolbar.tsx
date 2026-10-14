@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import type { Geometry } from 'geojson'
-import { Pencil, Ruler, Shapes, type LucideIcon } from 'lucide-react'
+import { LandPlot, Pencil, Ruler, Shapes, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { formatArea, formatLength, t } from '@/lib/i18n'
@@ -12,6 +12,7 @@ import { MeasureTool, measureProperties } from '@/map/drawing/MeasureTool'
 import { saveFeature } from '@/map/drawing/save'
 import { SketchTool } from '@/map/drawing/SketchTool'
 import { drawingStore, setHiddenLayers, useDrawingState, type DrawingTool } from '@/map/drawing/store'
+import { ZoneTool } from '@/map/zones/ZoneTool'
 import type { ElementSpec } from '@/types/drawing'
 
 function ToolButton({ icon: Icon, label, hint, active, onClick }: { icon: LucideIcon; label: string; hint: string; active: boolean; onClick: () => void }) {
@@ -47,7 +48,7 @@ const sameGeometry = (a: Geometry, b: Geometry) => JSON.stringify(a) === JSON.st
 
 /**
  * Drawing tools over the map: the element library (choose a layer, then an
- * element, then draw it), live measures and freehand sketches, plus the bar
+ * element, then draw it), named coloured zones, live measures and freehand sketches, plus the bar
  * of a shape being edited from the inspector. Viewers only get measures.
  */
 export default function DrawingToolbar() {
@@ -77,7 +78,9 @@ export default function DrawingToolbar() {
     if (drawingStore.get().tool === 'draw') drawingStore.set({ tool: null })
     if (!geometry) return
     try {
-      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties: { ...spec.defaults } })
+      // Drawn while a version is shown: it belongs to that version.
+      const version = drawingStore.get().version
+      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties: { ...spec.defaults }, ...(version ? { tags: [version] } : {}) })
       latest.current.select(feature.properties.id)
       latest.current.notify(t('drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }))
     } catch (error) {
@@ -138,6 +141,9 @@ export default function DrawingToolbar() {
           {editor.canEdit && (
             <ToolButton icon={Shapes} label={t('drawing.toolbar.draw')} hint={t('drawing.toolbar.draw_hint')} active={tool === 'draw'} onClick={() => setTool(tool === 'draw' ? null : 'draw')} />
           )}
+          {editor.canEdit && (
+            <ToolButton icon={LandPlot} label={t('zones.tool')} hint={t('zones.tool_hint')} active={tool === 'zone'} onClick={() => setTool(tool === 'zone' ? null : 'zone')} />
+          )}
           <ToolButton icon={Ruler} label={t('drawing.toolbar.measure')} hint={t('drawing.toolbar.measure_hint')} active={tool === 'measure'} onClick={() => setTool(tool === 'measure' ? null : 'measure')} />
           {editor.canEdit && (
             <ToolButton icon={Pencil} label={t('drawing.toolbar.sketch')} hint={t('drawing.toolbar.sketch_hint')} active={tool === 'sketch'} onClick={() => setTool(tool === 'sketch' ? null : 'sketch')} />
@@ -168,6 +174,7 @@ export default function DrawingToolbar() {
               <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.toolbar.cancel')}</Button>
             </HintBar>
           )}
+          {tool === 'zone' && editor.canEdit && <ZoneTool onClose={close} />}
           {tool === 'measure' && <MeasureTool onClose={close} />}
           {tool === 'sketch' && editor.canEdit && <SketchTool onClose={close} />}
           {tool === 'shape' && (

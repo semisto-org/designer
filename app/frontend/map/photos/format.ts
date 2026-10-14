@@ -3,6 +3,7 @@ import type { MapPhotoData } from '@/types/soil_photos'
 
 /** "2,6 Mo" / "31 Mo": same rule as the server, so the limits read alike. */
 export function formatMegabytes(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1).replace('.', ',').replace(/,0$/, '')} Go`
   const mb = bytes / (1024 * 1024)
   const text = mb >= 10 || mb === Math.round(mb) ? String(Math.round(mb)) : mb.toFixed(1).replace('.', ',')
   return `${text} Mo`
@@ -33,7 +34,7 @@ export function photoLabel(photo: MapPhotoData): string {
   return photo.caption?.trim() || formatDay(photoDate(photo))
 }
 
-export function photoUrl(mapId: number, photoId: number, size: 'thumb' | 'large' | 'original' = 'large', download = false): string {
+export function photoUrl(mapId: number, photoId: number, size: 'thumb' | 'large' | 'original' | 'video' = 'large', download = false): string {
   return `/maps/${mapId}/photos/${photoId}/image?size=${size}${download ? '&download=1' : ''}`
 }
 
@@ -47,4 +48,13 @@ export function headingLabel(heading: number): string {
 /** « 840 Ko » under a megabyte, else as formatMegabytes. */
 export function formatBytes(bytes: number): string {
   return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} Ko` : formatMegabytes(bytes)
+}
+
+/** « 0:42 », « 12:05 », « 1:02:30 »: a video's length. */
+export function formatDuration(seconds: number): string {
+  const total = Math.max(0, Math.round(seconds))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = String(total % 60).padStart(2, '0')
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`
 }

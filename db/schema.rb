@@ -355,6 +355,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_090000) do
     t.datetime "updated_at", null: false
     t.string "compression"
     t.bigint "original_byte_size"
+    t.datetime "thumbnail_tried_at"
     t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_map_documents_on_map_id"
     t.index ["project_sheet_link_id"], name: "index_map_documents_on_project_sheet_link_id"
@@ -438,6 +439,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_090000) do
     t.datetime "bioindicator_analyzed_at"
     t.bigint "derived_from_id"
     t.string "rendering_style"
+    t.string "kind", default: "photo", null: false
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
@@ -554,6 +556,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_090000) do
     t.datetime "closed_at"
     t.string "closed_reason"
     t.string "closed_note"
+    t.boolean "own_place", default: false, null: false
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"

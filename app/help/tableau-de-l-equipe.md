@@ -32,6 +32,10 @@ Chaque carte de l'équipe est un projet, posé dans une des six colonnes : Deman
 
 Clique sur les visages d'une carte, ou choisis « Le projet » dans son menu : le Project Manager, qui y travaille, la date promise et ce qui est promis, la phase, la mise en veille. Les mêmes réglages s'ouvrent depuis la carte elle-même, dans « Partager ».
 
+## Les lieux de l'équipe
+
+Toutes les cartes de l'équipe ne sont pas des projets de clients : le jardin-forêt pédagogique, la pépinière, un terrain que l'équipe gère elle-même n'ont ni offre ni phase. Choisis « C'est un lieu de l'équipe » dans le menu « … » de la carte, ou coche « Un lieu de l'équipe » dans ses réglages. La carte quitte la frise, la saison et la charge de chacun, et se range dans « Les lieux de l'équipe », en bas du tableau. Elle reste une carte de l'équipe, que tous ses membres modifient. Décoche la case pour en refaire un projet : il retrouve sa phase.
+
 ## La saison qui vient
 
 Les douze mois à venir, projet par projet, avec la fenêtre de plantation à racines nues (de novembre à février) en vert. Trois sortes d'étapes : **design**, **chantier** et **plantation**.

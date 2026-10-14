@@ -343,10 +343,11 @@ class MapDossier
     # (same spot, same direction, at least a month apart) and a default
     # choice: pairs first, then captioned photos, then the latest.
     def photos_json
-      photos = map.photos.with_attached_image.chronological.limit(PHOTO_CANDIDATES).to_a
+      # The dossier is printed: videos stay out of it.
+      photos = map.photos.images.with_attached_image.chronological.limit(PHOTO_CANDIDATES).to_a
       pairs = before_after_pairs(photos)
       {
-        total: map.photos.count,
+        total: map.photos.images.count,
         items: photos.map { |p| photo_json(p) },
         pairs:,
         defaults: default_photo_ids(photos, pairs)

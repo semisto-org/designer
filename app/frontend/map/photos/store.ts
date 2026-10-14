@@ -29,11 +29,14 @@ export type PhotosState = {
 
 const DEFAULT_LIMITS: PhotoLimits = {
   maxBytes: 25 * 1024 * 1024,
-  contentTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'],
+  videoMaxBytes: 1024 * 1024 * 1024,
+  contentTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence',
+    'video/mp4', 'video/quicktime', 'video/webm'],
+  videoTypes: ['video/mp4', 'video/quicktime', 'video/webm'],
 }
 
-/** For a file input: the accepted types, plus the HEIC extensions (some systems give .heic files no type). */
-export const photoAccept = (contentTypes: string[]) => [...contentTypes, '.heic', '.heif'].join(',')
+/** For a file input: the accepted types, plus the HEIC and MOV extensions (some systems give those files no type). */
+export const photoAccept = (contentTypes: string[]) => [...contentTypes, '.heic', '.heif', '.mov', '.mp4'].join(',')
 
 let state: PhotosState = {
   mapId: null, photos: [], albums: [], limits: DEFAULT_LIMITS, loaded: false, loading: false, error: null,

@@ -1,6 +1,7 @@
 # A team map on the team board: its phase (dragged from one column to
 # another), lead and crew, the date promised to the client, on hold or
-# awake, closed (« Sans suite ») or reopened. A move may carry the project's
+# awake, closed (« Sans suite ») or reopened, one of the team's own places
+# or a client project. A move may carry the project's
 # next step, which becomes a dated task of the map (and an e-mail to the
 # person it is given to). Any member of the team does it, as they all edit
 # the team's maps. Answers with the board's view of the project; `show`
@@ -42,7 +43,7 @@ module Teams
       end
 
       def project_params
-        params.fetch(:project, {}).permit(:phase, :lead_id, :promised_on, :promised_what, :on_hold, :closed_reason, :closed_note, :reopen, crew_ids: [])
+        params.fetch(:project, {}).permit(:phase, :lead_id, :promised_on, :promised_what, :on_hold, :closed_reason, :closed_note, :reopen, :own_place, crew_ids: [])
       end
 
       def create_next_step!

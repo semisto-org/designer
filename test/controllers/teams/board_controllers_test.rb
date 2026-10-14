@@ -62,6 +62,17 @@ class Teams::BoardControllersTest < ActionDispatch::IntegrationTest
     assert_not @map.reload.closed?
   end
 
+  test "a project becomes one of the team's own places" do
+    sign_in_as users(:bob)
+    patch team_board_project_path(@team, @map), params: { project: { own_place: true } }, as: :json
+    assert_response :success
+    assert response.parsed_body.dig("project", "ownPlace")
+    assert @map.reload.own_place
+    get team_board_path(@team), headers: inertia_headers
+    props = response.parsed_body["props"]
+    assert_equal [ [], [ @map.id ] ], [ props["projects"].map { _1["id"] }, props["places"].map { _1["id"] } ]
+  end
+
   test "a wrong change answers with the reason" do
     sign_in_as users(:bob)
     patch team_board_project_path(@team, @map), params: { project: { phase: "harvest" } }, as: :json

@@ -7,7 +7,7 @@ import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { usePhotoHost } from '@/map/photos/host'
-import { formatDateTime, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
+import { formatDateTime, formatDuration, headingLabel, photoDate, photoLabel, photoUrl } from '@/map/photos/format'
 import { PhotoCameraDetails } from '@/map/photos/PhotoCameraDetails'
 import { PhotoThumb } from '@/map/photos/PhotoThumb'
 import { MagicWandButton, RenderDialog, RenderingOrigin, RenderingResults, RenderingStatus, usePhotoRenderings } from '@/map/photos/rendering/PhotoRenderings'
@@ -47,7 +47,9 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
   const [sketching, setSketching] = useState<number | 'new' | null>(null)
   /** « Mettre en image » open over the photo. */
   const [rendering, setRendering] = useState(false)
-  const renderings = usePhotoRenderings(host.mapId, photo, host.notify)
+  /** A video plays in place of the photo; sketches, « Mettre en image » and before / after are for photos. */
+  const isVideo = photo?.kind === 'video'
+  const renderings = usePhotoRenderings(host.mapId, isVideo ? null : photo, host.notify)
 
   useEffect(() => {
     if (!photo) return
@@ -63,7 +65,7 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
   }, [photoId])
 
   useEffect(() => {
-    if (photoId == null) return
+    if (photoId == null || isVideo) return
     let cancelled = false
     api<{ sketches: PhotoSketchData[] }>(`/maps/${host.mapId}/photos/${photoId}/sketches`)
       .then((data) => {
@@ -76,7 +78,7 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
     return () => {
       cancelled = true
     }
-  }, [photoId, host.mapId])
+  }, [photoId, isVideo, host.mapId])
 
   useEffect(() => {
     if (photoId == null) return
@@ -193,7 +195,18 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
           className={clsx('flex h-full w-full', swipe.offset === 0 && 'transition-transform duration-200')}
           style={swipe.offset ? { transform: `translateX(${swipe.offset}px)` } : undefined}
         >
-          <FittedPhoto
+          {isVideo ? (
+            <video
+              key={photo.id}
+              src={photoUrl(mapId, photo.id, 'video')}
+              poster={photoUrl(mapId, photo.id, 'large')}
+              controls playsInline preload="metadata"
+              aria-label={photoLabel(photo)}
+              className="m-auto max-h-full max-w-full rounded-sm bg-black"
+            >
+              {t('soil_photos.video.unsupported')}
+            </video>
+          ) : <FittedPhoto
             src={photoUrl(mapId, photo.id, 'large')}
             alt={photoLabel(photo)}
             placeholder={photoUrl(mapId, photo.id, 'thumb')}
@@ -201,7 +214,7 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
             loadingLabel={t('soil_photos.lightbox.loading')}
             errorLabel={t('soil_photos.lightbox.load_failed')}
             overlay={(aspect) => shownSketch && <SketchLayer marks={shownSketch.strokes} aspect={aspect} className="pointer-events-none absolute inset-0 h-full w-full" />}
-          />
+          />}
         </div>
         <button type="button" onClick={() => photoActions.open(null)} className="absolute right-3 top-3 rounded-full bg-black/50 p-2 hover:bg-black/70" aria-label={t('common.close')}>
           <X className="h-5 w-5" />
@@ -219,12 +232,12 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
         <p className="absolute bottom-3 left-3 rounded-full bg-black/50 px-3 py-1 text-xs md:left-1/2 md:-translate-x-1/2">
           {t('soil_photos.lightbox.counter', { index: index + 1, total: photos.length })}
         </p>
-        {canEdit && (
+        {canEdit && !isVideo && (
           <div className="absolute bottom-3 right-3 md:bottom-6 md:right-6">
             <MagicWandButton renderings={renderings} hasSketch={shownSketch != null} onClick={() => setRendering(true)} />
           </div>
         )}
-        <RenderingStatus mapId={mapId} photo={photo} renderings={renderings} />
+        {!isVideo && <RenderingStatus mapId={mapId} photo={photo} renderings={renderings} />}
         {rendering && <RenderDialog renderings={renderings} sketch={shownSketch} onClose={() => { setRendering(false); dialog.current?.focus() }} />}
       </div>
 
@@ -234,6 +247,7 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
           <p className="mt-0.5 text-xs text-loam-500">
             {photo.uploadedBy ? t('soil_photos.lightbox.uploaded_by', { name: photo.uploadedBy }) : null}
             {photo.width && photo.height ? ` · ${photo.width} × ${photo.height}` : null}
+            {isVideo && photo.durationS != null ? ` · ${formatDuration(photo.durationS)}` : null}
           </p>
         </div>
 
@@ -295,18 +309,18 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
               {photo.lng == null ? t('soil_photos.lightbox.place') : t('soil_photos.lightbox.move')}
             </Button>
           )}
-          <Button size="sm" variant="secondary" onClick={findSameSpot} disabled={photo.lng == null} title={photo.lng == null ? t('soil_photos.lightbox.compare_needs_position') : undefined}>
+          {!isVideo && <Button size="sm" variant="secondary" onClick={findSameSpot} disabled={photo.lng == null} title={photo.lng == null ? t('soil_photos.lightbox.compare_needs_position') : undefined}>
             <Columns2 className="h-4 w-4" />
             {t('soil_photos.lightbox.compare')}
-          </Button>
-          {/* Viewers get the large variant, stripped of its metadata (GPS included). */}
-          <a href={photoUrl(mapId, photo.id, canEdit ? 'original' : 'large', true)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
+          </Button>}
+          {/* Viewers get the large variant, stripped of its metadata (GPS included); a video comes as its file. */}
+          <a href={photoUrl(mapId, photo.id, isVideo ? 'video' : canEdit ? 'original' : 'large', true)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
             <Download className="h-4 w-4" />
-            {canEdit ? t('soil_photos.lightbox.download') : t('soil_photos.lightbox.download_variant')}
+            {canEdit || isVideo ? t('soil_photos.lightbox.download') : t('soil_photos.lightbox.download_variant')}
           </a>
         </div>
 
-        <section aria-label={t('photo_sketches.list_label')}>
+        {!isVideo && <section aria-label={t('photo_sketches.list_label')}>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('photo_sketches.list_label')}</h3>
           {sketches.length > 0 && (
             <div className="mt-1.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('photo_sketches.list_label')}>
@@ -342,9 +356,9 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
             )}
           </div>
           {shownSketch?.createdBy && <p className="mt-1 text-xs text-loam-500">{t('photo_sketches.by', { name: shownSketch.createdBy })}</p>}
-        </section>
+        </section>}
 
-        <RenderingResults mapId={mapId} renderings={renderings} />
+        {!isVideo && <RenderingResults mapId={mapId} renderings={renderings} />}
 
         {candidates && (
           <section className="rounded-lg bg-prune-50 p-3">

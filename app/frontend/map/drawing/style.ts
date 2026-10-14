@@ -292,6 +292,8 @@ const DRAWING_IMAGES = [
   ...patterned.flatMap((e) => [...new Set([e.color, ...COLOR_SWATCHES])].map((color) => `drawing-${e.fill!.pattern}-${color.toLowerCase()}`)),
 ]
 
+const patternWatched = new WeakSet<MapLibreMap>()
+
 /**
  * Adds the drawing images (`drawing-icon-<name>`, `drawing-hatch-<#color>`,
  * `drawing-dots-<#color>`) to a map; safe to call again after a style
@@ -303,6 +305,15 @@ export function installDrawingImages(map: MapLibreMap, copyFrom?: MapLibreMap) {
     if (map.hasImage(id)) continue
     const image = imageFor(id)
     if (image) map.addImage(id, image, { pixelRatio: PIXEL_RATIO })
+  }
+  // A colour picked freely in the inspector: draw its pattern when first asked.
+  if (!patternWatched.has(map)) {
+    patternWatched.add(map)
+    map.on('styleimagemissing', (e: { id: string }) => {
+      if (!/^drawing-(hatch|dots)-#[0-9a-f]{6}$/.test(e.id) || map.hasImage(e.id)) return
+      const image = imageFor(e.id)
+      if (image) map.addImage(e.id, image, { pixelRatio: PIXEL_RATIO })
+    })
   }
   if (copyFrom) {
     map.setMissingStyleImageResolver((id) => {
@@ -390,19 +401,31 @@ export function installDrawingLayers(map: MapLibreMap): boolean {
 
 // --- Visibility of the design layers ("Calques") -----------------------------
 
+/**
+ * MapLibre twin of `inVersion`: no tag, or the version's tag (any case).
+ * Tags arrive as an array, or as its JSON text past the source's max zoom:
+ * both read the same once written out and lowercased.
+ */
+function versionFilter(version: string): unknown {
+  const tags = ['downcase', ['to-string', ['coalesce', ['get', 'tags'], ['literal', []]]]]
+  return ['any', ['==', tags, '[]'], ['in', JSON.stringify(version.toLocaleLowerCase('fr')), tags]]
+}
+
 const visibilityState = new WeakMap<MapLibreMap, Map<string, { original: unknown; applied: string }>>()
 
 /**
  * Hides the given design layers (`existing`, `water`…) on every map layer
  * drawn from the features source, whoever added it, by combining its own
  * filter with a test on the feature's `layer`. With `scenario: 'current'`,
- * what is still a project (planned plants, drafts) is hidden too.
+ * what is still a project (planned plants, drafts) is hidden too. With a
+ * `version` (a tag), only elements carrying it, or no tag at all, show.
  */
-export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options: { activeOnly?: boolean; scenario?: Scenario } = {}) {
+export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options: { activeOnly?: boolean; scenario?: Scenario; version?: string | null } = {}) {
   const store = visibilityState.get(map) ?? new Map<string, { original: unknown; applied: string }>()
   visibilityState.set(map, store)
   const scenario = options.scenario ? scenarioFilter(options.scenario) : null
-  const key = `${options.activeOnly ? 'active:' : ''}${scenario ? 'current:' : ''}${[...hidden].sort().join(',')}`
+  const version = options.version ? versionFilter(options.version) : null
+  const key = `${options.activeOnly ? 'active:' : ''}${scenario ? 'current:' : ''}${options.version ? `v=${options.version}:` : ''}${[...hidden].sort().join(',')}`
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
@@ -416,6 +439,7 @@ export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options
     // Printed plans leave out drafts (AI proposals) and rejected features.
     if (options.activeOnly) tests.push(['==', ['coalesce', ['get', 'status'], 'active'], 'active'])
     if (scenario) tests.push(scenario)
+    if (version) tests.push(version)
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
     const filter = test ? (entry.original ? ['all', entry.original, test] : test) : entry.original
     map.setFilter(id, (filter ?? null) as FilterSpecification | null)

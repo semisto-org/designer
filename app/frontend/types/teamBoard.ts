@@ -11,6 +11,8 @@ export type BoardPerson = { id: number; name: string; avatarUrl: string | null }
 export type BoardProject = ListedMap & {
   phase: BoardPhase
   phaseChangedAt: string
+  /** One of the team's own places (its food forest, its nursery…): off the timeline. */
+  ownPlace: boolean
   lead: BoardPerson | null
   crew: BoardPerson[]
   promisedOn: string | null
@@ -63,6 +65,7 @@ export type TeamBoardProps = {
   stepKinds: StepKind[]
   members: (BoardPerson & { you: boolean })[]
   projects: BoardProject[]
+  places: BoardProject[]
   steps: BoardStep[]
   people: BoardMemberLoad[]
 }

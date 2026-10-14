@@ -142,4 +142,50 @@ class MapDocumentTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test "a PDF sent without a thumbnail gets one from the server" do
+    doc = build
+    assert_enqueued_with(job: MapDocumentThumbnailJob) { doc.save! }
+    perform_enqueued_jobs(only: MapDocumentThumbnailJob)
+    doc.reload
+    assert doc.thumbnail.attached?
+    assert_equal "image/jpeg", doc.thumbnail.content_type
+    assert doc.thumbnail_tried_at
+    assert doc.as_inertia(url: ->(*) { "/x" })[:thumbUrl]
+  end
+
+  test "the server redraws a thumbnail the browser drew, and leaves other files alone" do
+    doc = build
+    doc.thumbnail.attach(io: file_fixture("terrain.jpg").open, filename: "apercu.jpg", content_type: "image/jpeg")
+    assert_enqueued_with(job: MapDocumentThumbnailJob) { doc.save! }
+    browser_blob = doc.thumbnail.blob
+    perform_enqueued_jobs(only: MapDocumentThumbnailJob)
+    assert_not_equal browser_blob, doc.reload.thumbnail.blob
+    assert_no_enqueued_jobs(only: MapDocumentThumbnailJob) { build("terrain.jpg", "image/jpeg").save! }
+  end
+
+  test "an unreadable PDF keeps the browser's thumbnail" do
+    doc = @map.documents.new(uploaded_by: users(:michael))
+    doc.file.attach(io: StringIO.new("%PDF-1.4 pas vraiment un PDF"), filename: "casse.pdf", content_type: "application/pdf")
+    doc.thumbnail.attach(io: file_fixture("terrain.jpg").open, filename: "apercu.jpg", content_type: "image/jpeg")
+    doc.save!
+    browser_blob = doc.thumbnail.blob
+    perform_enqueued_jobs(only: MapDocumentThumbnailJob)
+    assert_equal browser_blob, doc.reload.thumbnail.blob
+    assert doc.thumbnail_tried_at
+  end
+
+  test "the backfill draws the missing thumbnails and tries an unreadable PDF once" do
+    good = build.tap { _1.save! }
+    broken = @map.documents.new(uploaded_by: users(:michael))
+    broken.file.attach(io: StringIO.new("%PDF-1.4 pas vraiment un PDF"), filename: "casse.pdf", content_type: "application/pdf")
+    broken.save!
+    assert_equal [ good, broken ].sort_by(&:id), MapDocumentThumbnailJob.pending.order(:id).to_a
+
+    MapDocumentThumbnailJob.backfill
+    assert good.reload.thumbnail.attached?
+    assert_not broken.reload.thumbnail.attached?
+    assert broken.thumbnail_tried_at
+    assert_empty MapDocumentThumbnailJob.pending
+  end
 end

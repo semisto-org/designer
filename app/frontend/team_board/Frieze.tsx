@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowRight, CalendarCheck, ExternalLink, Moon, MoreHorizontal, RotateCcw, Settings2 } from 'lucide-react'
+import { ArrowRight, CalendarCheck, ExternalLink, Moon, MoreHorizontal, RotateCcw, Settings2, Trees } from 'lucide-react'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -175,7 +175,7 @@ function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSett
 
 /** « … »: move to a column (touch, keyboard), the project's settings, its map. */
 function CardMenu({ project, onMove, onSettings }: { project: BoardProject; onMove: (phase: BoardPhase) => void; onSettings: () => void }) {
-  const { phases } = useBoard()
+  const { phases, saveProject } = useBoard()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -211,6 +211,9 @@ function CardMenu({ project, onMove, onSettings }: { project: BoardProject; onMo
           <div className="my-1.5 border-t border-loam-100" />
           <button role="menuitem" type="button" onClick={pick(onSettings)} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-loam-800 hover:bg-loam-100">
             <Settings2 className="h-4 w-4 text-loam-500" />{t('team_board.frieze.settings')}
+          </button>
+          <button role="menuitem" type="button" onClick={pick(() => void saveProject(project, { own_place: true }))} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-loam-800 hover:bg-loam-100">
+            <Trees className="h-4 w-4 text-loam-500" />{t('team_board.places.make_place')}
           </button>
           <Link role="menuitem" href={`/maps/${project.id}`} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-loam-800 hover:bg-loam-100">
             <ExternalLink className="h-4 w-4 text-loam-500" />{t('team_board.frieze.open_map')}
