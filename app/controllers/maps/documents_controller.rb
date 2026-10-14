@@ -15,11 +15,10 @@ module Maps
       respond_to do |format|
         format.html do
           render inertia: "maps/documents/index", props: {
-            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role).merge(teamId: @map.organization_id),
+            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :teamId),
             documents: documents_json,
             canEdit: editor?,
-            limits: document_limits,
-            forms: forms_json
+            limits: document_limits
           }
         end
         format.json { render json: { documents: documents_json, limits: document_limits } }
@@ -58,13 +57,6 @@ module Maps
 
       def documents_json
         @map.documents.newest_first.includes(:uploaded_by, { form_response: :form }, file_attachment: :blob, thumbnail_attachment: :blob).map { as_json(_1) }
-      end
-
-      # The team's forms, with the link that files the answer here (editors only).
-      def forms_json
-        inbox = @map.organization&.form_inbox
-        return [] unless editor? && inbox
-        inbox.forms.by_name.map { |form| { id: form.id, name: form.name, link: form.link_for(@map) } }
       end
 
       def as_json(document)

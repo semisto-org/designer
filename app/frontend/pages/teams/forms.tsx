@@ -205,7 +205,7 @@ function ResponseRow({ response, maps, admin, base }: { response: TeamFormRespon
             <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-sm text-loam-600">
               <MapPinned className="h-4 w-4 text-leaf-600" aria-hidden="true" />
               {t('forms.responses.filed_in')}
-              <Link href={`/maps/${response.mapId}/documents${response.documentId ? `?open=${response.documentId}` : ''}`} className="font-medium text-prune-700 hover:underline">
+              <Link href={`/maps/${response.mapId}/forms?open=${response.id}`} className="font-medium text-prune-700 hover:underline">
                 {response.mapName}
               </Link>
               {!moving && (

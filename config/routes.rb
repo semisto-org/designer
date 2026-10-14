@@ -199,6 +199,8 @@ Rails.application.routes.draw do
   post "webhooks/stripe", to: "webhooks/stripe#create"
   # Answers to a team's Tally forms (FormInbox), filed in the map's documents.
   post "webhooks/tally/:token", to: "webhooks/tally#create", as: :tally_webhook, constraints: { token: /[A-Za-z0-9]{20,64}/ }
+  # A team map's « Formulaires » view: the links to send, the answers received.
+  get "maps/:map_id/forms", to: "maps/forms#index", as: :map_forms
   # --- end billing-site ---
   # --- plants ---
   resources :plants, only: %i[index show]

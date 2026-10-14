@@ -10,7 +10,7 @@ fr:
     flash:
       connected: "Tally peut maintenant t'envoyer les réponses : colle l'adresse et la clé dans ton formulaire."
       reset: "Nouvelle adresse et nouvelle clé : remplace-les dans chacun de tes formulaires Tally."
-      added: "« %{name} » est prêt à partir depuis les documents de vos cartes."
+      added: "« %{name} » est prêt à partir depuis l'onglet « Formulaires » de vos cartes."
       removed: "« %{name} » est retiré. Ses réponses déjà rangées restent dans les cartes."
       filed: "Réponse rangée dans « %{map} »."
       deleted: "Réponse supprimée."
@@ -24,7 +24,7 @@ fr:
       title: "Formulaires"
       page_title: "Formulaires · %{team}"
       back: "%{team}"
-      intro: "Vos formulaires restent dans Tally. Designer reçoit chaque réponse et la range dans les documents de la carte concernée, où toute l'équipe et ton IA la retrouvent."
+      intro: "Vos formulaires restent dans Tally. Designer reçoit chaque réponse et la range dans la carte concernée, sous « Formulaires » et dans ses documents, où toute l'équipe et ton IA la retrouvent."
     connect:
       title: "Brancher Tally"
       body: "Un retour en fin de projet, un suivi à un an, une inscription à une visite… Chaque formulaire Tally peut envoyer ses réponses ici. Il suffit d'une adresse de réception, une fois pour toute l'équipe."
@@ -37,7 +37,7 @@ fr:
       show_secret: "Afficher la clé"
       step_1: "Dans Tally, ouvre le formulaire, puis « Integrations » › « Webhooks » : colle l'adresse ci-dessus et active « Signing secret » avec la clé."
       step_2: "Ajoute au formulaire un champ caché nommé « %{field} » : c'est lui qui dit à quelle carte appartient la réponse."
-      step_3: "Ajoute le formulaire ci-dessous. Depuis les documents d'une carte, « Envoyer un formulaire » copie le lien déjà rempli pour ce client."
+      step_3: "Ajoute le formulaire ci-dessous. Dans l'onglet « Formulaires » d'une carte, tu trouveras son lien déjà rempli pour ce client."
       reset: "Nouvelle adresse"
       reset_confirm: "L'adresse et la clé actuelles cesseront de fonctionner tout de suite. Il faudra les remplacer dans chaque formulaire Tally. Continuer ?"
     list:
@@ -59,7 +59,7 @@ fr:
       add: "Ajouter"
     responses:
       title: "Réponses reçues"
-      empty: "Aucune réponse pour l'instant. Envoie un formulaire depuis les documents d'une carte : la première réponse arrivera ici."
+      empty: "Aucune réponse pour l'instant. Envoie un formulaire depuis l'onglet « Formulaires » d'une carte : la première réponse arrivera ici."
       to_file:
         one: "1 à rattacher"
         other: "%{count} à rattacher"
@@ -75,10 +75,28 @@ fr:
       delete: "Supprimer la réponse"
       delete_confirm: "Supprimer cette réponse ? Si elle est rangée dans une carte, son document y reste."
     send:
-      button: "Envoyer un formulaire"
-      title: "Le lien pour ce client"
-      hint: "Copie le lien et envoie-le. Chaque réponse arrivera ici, dans les documents de cette carte."
       manage: "Gérer les formulaires de l'équipe"
+    map:
+      title: "Formulaires"
+      page_title: "Formulaires · %{map}"
+      intro: "Un retour en fin de projet, un suivi à un an… Envoie à ton client le formulaire de l'équipe %{team} : ses réponses arrivent ici, datées, et restent avec ce lieu."
+      no_team: "Les formulaires appartiennent à une équipe. Range cette carte dans une équipe pour en envoyer depuis ici."
+      send_title: "Envoyer un formulaire"
+      send_hint: "Le lien est déjà rempli pour ce lieu : copie-le dans ton e-mail. Ton client n'a besoin d'aucun compte."
+      preview: "Aperçu"
+      received_here:
+        zero: "Pas encore de réponse pour ce lieu"
+        one: "1 réponse pour ce lieu"
+        other: "%{count} réponses pour ce lieu"
+      not_connected: "Tally n'est pas encore branché pour l'équipe. Un administrateur de l'équipe peut le faire en quelques minutes."
+      not_connected_admin: "Tally n'est pas encore branché pour l'équipe. Une adresse de réception suffit, une fois pour toutes les cartes."
+      no_forms: "L'équipe n'a pas encore de formulaire. Ajoute ton premier formulaire Tally par son lien."
+      answers: "Réponses reçues"
+      received_on: "Le %{date}, %{when}"
+      in_documents: "Voir aussi dans les documents"
+      empty_title: "Pas encore de réponse"
+      empty_editor: "Envoie un formulaire à ton client : sa réponse arrivera ici, avec la date, à côté de tout ce que tu sais déjà de ce lieu."
+      empty_viewer: "Quand le client répondra à un formulaire de l'équipe, sa réponse arrivera ici."
     viewer:
       received: "Réponse reçue %{when}, par Tally"
       badge: "Réponse à un formulaire"

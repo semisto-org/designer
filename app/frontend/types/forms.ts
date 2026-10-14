@@ -32,5 +32,18 @@ export type TeamFormsPageProps = {
   mapField: string
 }
 
-/** A form to send from a map's Documents page, its link already filled for the map. */
-export type MapFormLink = { id: number; name: string; link: string }
+/** A form to send from a map's « Formulaires », its link already filled for the map. */
+export type MapFormLink = { id: number; name: string; url: string; link: string; responsesCount: number }
+
+export type MapFormResponse = FormResponseData & { documentId: number | null }
+
+export type MapFormsPageProps = {
+  map: { id: number; name: string; role: string | null; teamId: number | null }
+  team: { id: number; name: string; admin: boolean } | null
+  /** Tally is connected for the team (an admin created the inbox). */
+  connected: boolean
+  canEdit: boolean
+  /** Editors only: the forms to send. */
+  forms: MapFormLink[]
+  responses: MapFormResponse[]
+}
