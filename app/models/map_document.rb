@@ -5,8 +5,9 @@
 #
 # The file is an Active Storage attachment. Images get variants for the
 # library's tiles and preview; a PDF gets the first page as a small JPEG
-# (`thumbnail`), drawn by the browser at upload (pdf.js), since the server
-# has no PDF renderer. A PDF heavier than COMPRESS_PDF_ABOVE is compressed
+# (`thumbnail`), drawn by the browser at upload (pdf.js), or by the server
+# (MapDocumentThumbnailJob) when it arrived without one, as through the MCP
+# server. A PDF heavier than COMPRESS_PDF_ABOVE is compressed
 # in the background (CompressMapDocumentJob) and the lighter copy replaces
 # the original, to spare storage.
 class MapDocument < ApplicationRecord
@@ -52,6 +53,7 @@ class MapDocument < ApplicationRecord
   before_validation :default_title
   before_create :plan_compression
   after_create_commit :compress_later, if: -> { compression == "pending" }
+  after_create_commit :thumbnail_later, if: -> { preview == "pdf" && !thumbnail.attached? }
 
   validates :title, presence: true, length: { maximum: 200 }
   validates :description, length: { maximum: 2000 }
@@ -116,6 +118,8 @@ class MapDocument < ApplicationRecord
     end
 
     def compress_later = CompressMapDocumentJob.perform_later(self)
+
+    def thumbnail_later = MapDocumentThumbnailJob.perform_later(self)
 
     def default_title
       return if title.present? || !file.attached?
