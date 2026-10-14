@@ -154,13 +154,25 @@ class MapDocumentTest < ActiveSupport::TestCase
     assert doc.as_inertia(url: ->(*) { "/x" })[:thumbUrl]
   end
 
-  test "a PDF whose browser drew the thumbnail, or another file, is left alone" do
-    assert_no_enqueued_jobs(only: MapDocumentThumbnailJob) do
-      doc = build
-      doc.thumbnail.attach(io: file_fixture("terrain.jpg").open, filename: "apercu.jpg", content_type: "image/jpeg")
-      doc.save!
-      build("terrain.jpg", "image/jpeg").save!
-    end
+  test "the server redraws a thumbnail the browser drew, and leaves other files alone" do
+    doc = build
+    doc.thumbnail.attach(io: file_fixture("terrain.jpg").open, filename: "apercu.jpg", content_type: "image/jpeg")
+    assert_enqueued_with(job: MapDocumentThumbnailJob) { doc.save! }
+    browser_blob = doc.thumbnail.blob
+    perform_enqueued_jobs(only: MapDocumentThumbnailJob)
+    assert_not_equal browser_blob, doc.reload.thumbnail.blob
+    assert_no_enqueued_jobs(only: MapDocumentThumbnailJob) { build("terrain.jpg", "image/jpeg").save! }
+  end
+
+  test "an unreadable PDF keeps the browser's thumbnail" do
+    doc = @map.documents.new(uploaded_by: users(:michael))
+    doc.file.attach(io: StringIO.new("%PDF-1.4 pas vraiment un PDF"), filename: "casse.pdf", content_type: "application/pdf")
+    doc.thumbnail.attach(io: file_fixture("terrain.jpg").open, filename: "apercu.jpg", content_type: "image/jpeg")
+    doc.save!
+    browser_blob = doc.thumbnail.blob
+    perform_enqueued_jobs(only: MapDocumentThumbnailJob)
+    assert_equal browser_blob, doc.reload.thumbnail.blob
+    assert doc.thumbnail_tried_at
   end
 
   test "the backfill draws the missing thumbnails and tries an unreadable PDF once" do
