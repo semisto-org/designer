@@ -72,4 +72,12 @@ class MapBoardTest < ActiveSupport::TestCase
     sooner.update!(completed: true)
     assert_equal later, @map.next_step_task
   end
+
+  test "a map becomes one of the team's own places and back, keeping its phase" do
+    @map.update_board!(phase: "implementation")
+    @map.update_board!(own_place: true)
+    assert @map.reload.own_place
+    @map.update_board!(own_place: "false")
+    assert_equal [ false, "implementation" ], [ @map.reload.own_place, @map.phase ]
+  end
 end
