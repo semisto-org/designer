@@ -29,7 +29,7 @@ class MapDocument < ApplicationRecord
   ].freeze
   class_attribute :compress_pdf_above, default: 5.megabytes
   PREVIEW_IMAGE_TYPES = %w[image/jpeg image/png image/webp image/gif].freeze
-  ORIGINS = %w[library project_sheet].freeze
+  ORIGINS = %w[library project_sheet form].freeze
   KINDS = {
     "pdf" => %w[pdf],
     "image" => %w[jpg jpeg png webp gif heic heif tif tiff],
@@ -42,6 +42,8 @@ class MapDocument < ApplicationRecord
   belongs_to :map
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :project_sheet_link, optional: true
+  # An answer to one of the team's forms (Tally), filed here as Markdown.
+  has_one :form_response, dependent: :nullify
 
   has_one_attached :file do |attachable|
     attachable.variant :thumb, resize_to_limit: [ 480, 480 ], format: :jpeg, saver: { strip: true, quality: 80 }
@@ -87,6 +89,7 @@ class MapDocument < ApplicationRecord
       compression:, originalByteSize: original_byte_size,
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601,
       uploadedBy: uploaded_by&.display_name, fromProjectLink: project_sheet_link_id.present?,
+      form: (form_response&.as_inertia if origin == "form"),
       thumbUrl: thumb_available? ? url.call(self, "thumb") : nil,
       previewUrl: preview ? url.call(self, preview == "image" ? "large" : "original") : nil,
       fileUrl: url.call(self, "original"),

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, MessageSquareText } from 'lucide-react'
 import { useState } from 'react'
 import { t } from '@/lib/i18n'
 import { DocumentIcon, extensionLabel } from '@/documents/DocumentIcon'
@@ -19,7 +19,16 @@ export function DocumentTile({ doc, onOpen, selected }: { doc: MapDocumentData; 
       )}
     >
       <span className="relative block aspect-[4/3] overflow-hidden border-b border-loam-900/5 bg-[#f7f3ea]">
-        {doc.thumbUrl && !broken ? (
+        {doc.form ? (
+          <span className="block h-full space-y-1.5 overflow-hidden bg-[#fffdf7] py-3 pl-3 pr-10 text-left">
+            {doc.form.fields.slice(0, 3).map((field, i) => (
+              <span key={i} className="block border-b border-dashed border-loam-200 pb-1.5">
+                <span className="block truncate text-sm text-loam-500">{field.label}</span>
+                <span className="block truncate font-serif text-loam-800">{field.value}</span>
+              </span>
+            ))}
+          </span>
+        ) : doc.thumbUrl && !broken ? (
           <img src={doc.thumbUrl} alt="" loading="lazy" decoding="async" onError={() => setBroken(true)}
             className={clsx('h-full w-full', doc.preview === 'image' ? 'object-cover' : 'object-contain object-top p-3 drop-shadow')} />
         ) : (
@@ -27,7 +36,13 @@ export function DocumentTile({ doc, onOpen, selected }: { doc: MapDocumentData; 
             <DocumentIcon kind={doc.kind} filename={doc.filename} className="h-16 w-16" />
           </span>
         )}
-        <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-sm font-medium text-loam-600 shadow-sm">{extensionLabel(doc.filename)}</span>
+        {!doc.form && <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-sm font-medium text-loam-600 shadow-sm">{extensionLabel(doc.filename)}</span>}
+        {doc.origin === 'form' && (
+          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-lichen-700/90 px-2 py-0.5 text-sm text-white" title={t('forms.viewer.badge')}>
+            <MessageSquareText className="h-3.5 w-3.5" aria-hidden />
+            <span className="sr-only">{t('forms.viewer.badge')}</span>
+          </span>
+        )}
         {doc.origin === 'project_sheet' && (
           <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-prune-600/90 px-2 py-0.5 text-sm text-white" title={t('documents.from_project_sheet')}>
             <ClipboardList className="h-3.5 w-3.5" aria-hidden />

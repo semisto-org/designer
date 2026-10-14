@@ -197,6 +197,8 @@ Rails.application.routes.draw do
   resource :welcome, only: %i[show update]
   post "account/deletion_request", to: "accounts#deletion_request", as: :account_deletion_request
   post "webhooks/stripe", to: "webhooks/stripe#create"
+  # Answers to a team's Tally forms (FormInbox), filed in the map's documents.
+  post "webhooks/tally/:token", to: "webhooks/tally#create", as: :tally_webhook, constraints: { token: /[A-Za-z0-9]{20,64}/ }
   # --- end billing-site ---
   # --- plants ---
   resources :plants, only: %i[index show]
@@ -356,6 +358,14 @@ Rails.application.routes.draw do
           post :qualify, on: :member
         end
       end
+      # The team's own forms (Tally) and the answers they bring in.
+      resources :forms, only: %i[index create destroy] do
+        collection do
+          post :connect
+          post :reset
+        end
+      end
+      resources :form_responses, only: %i[update destroy]
     end
   end
   resources :maps, only: [] do

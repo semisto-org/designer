@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ClipboardList, FilePlus2, Search, Tag } from 'lucide-react'
+import { ClipboardList, FilePlus2, MessageSquareText, Search, Tag } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { MapViewHeader } from '@/components/map_views/MapViews'
 import { Button } from '@/components/ui/Button'
@@ -8,6 +8,7 @@ import { Input, Select } from '@/components/ui/Field'
 import { useCompressionRefresh } from '@/documents/compression'
 import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
+import { SendFormButton } from '@/documents/SendFormButton'
 import { UploadList } from '@/documents/ProjectDocuments'
 import { documentAccept, useDocumentUploads } from '@/documents/upload'
 import { api } from '@/lib/api'
@@ -15,18 +16,22 @@ import { t } from '@/lib/i18n'
 import { formatMegabytes } from '@/map/photos/format'
 import { groupByTag, hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
+import type { MapFormLink } from '@/types/forms'
 
 type Props = {
-  map: { id: number; name: string; role: string | null }
+  map: { id: number; name: string; role: string | null; teamId?: number | null }
   documents: MapDocumentData[]
   canEdit: boolean
   limits: DocumentLimits
+  /** The team's forms (Tally), each with its link for this map. */
+  forms?: MapFormLink[]
 }
 
 type Sort = 'newest' | 'oldest' | 'title'
 /** A tag, UNTAGGED, PROJECT_SHEET or null for everything. */
 type Shelf = string | null
 const PROJECT_SHEET = '\u0000project_sheet'
+const FORMS = '\u0000forms'
 
 // Shapes a document like a map element for the shared tag helpers.
 const asTagged = (doc: MapDocumentData) => ({ doc, properties: { tags: doc.tags } })
@@ -36,7 +41,7 @@ const asTagged = (doc: MapDocumentData) => ({ doc, properties: { tags: doc.tags 
  * by tag on the side, sheets of paper in the middle, a preview of images
  * and PDFs on a click. Everyone on the map reads; editors add and tag.
  */
-export default function MapDocuments({ map, documents, canEdit, limits }: Props) {
+export default function MapDocuments({ map, documents, canEdit, limits, forms = [] }: Props) {
   const [docs, setDocs] = useState(documents)
   const [shelf, setShelf] = useState<Shelf>(null)
   const [query, setQuery] = useState('')
@@ -55,13 +60,15 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
 
   const tags = useMemo(() => tagCounts(docs.map(asTagged)), [docs])
   const fromSheet = docs.filter((d) => d.origin === 'project_sheet').length
+  const fromForms = docs.filter((d) => d.origin === 'form').length
   const untagged = docs.filter((d) => d.tags.length === 0).length
 
   const visible = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('fr')
     const list = docs.filter((doc) => {
       if (shelf === PROJECT_SHEET && doc.origin !== 'project_sheet') return false
-      if (shelf && shelf !== PROJECT_SHEET && !hasTag(asTagged(doc), shelf)) return false
+      if (shelf === FORMS && doc.origin !== 'form') return false
+      if (shelf && shelf !== PROJECT_SHEET && shelf !== FORMS && !hasTag(asTagged(doc), shelf)) return false
       if (!needle) return true
       return [doc.title, doc.filename, doc.description, ...doc.tags].some((v) => v?.toLocaleLowerCase('fr').includes(needle))
     })
@@ -79,7 +86,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
   const ordered = useMemo(() => [...new Map(groups.flatMap((g) => g.docs).map((d) => [d.id, d])).values()], [groups])
 
   function addFiles(files: FileList | File[] | null) {
-    const shelfTag = shelf && shelf !== PROJECT_SHEET && shelf !== UNTAGGED ? [shelf] : []
+    const shelfTag = shelf && shelf !== PROJECT_SHEET && shelf !== FORMS && shelf !== UNTAGGED ? [shelf] : []
     add(files, shelf === PROJECT_SHEET ? { origin: 'project_sheet' } : { tags: shelfTag })
   }
 
@@ -134,11 +141,12 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
           <p className="mt-1 text-loam-600">{t('documents.intro')}</p>
         </div>
         {canEdit && (
-          <div className="flex max-w-xs flex-col items-start gap-1.5 sm:items-end sm:text-right">
+          <div className="flex max-w-xs flex-col items-start gap-1.5 sm:ml-auto sm:items-end sm:text-right">
             <Button onClick={() => input.current?.click()}>
               <FilePlus2 className="h-4 w-4" />{t('documents.add')}
             </Button>
             <p className="text-sm text-loam-500">{t('documents.drop_hint', { max: formatMegabytes(limits.maxBytes) })}</p>
+            {forms.length > 0 && <div className="mt-1"><SendFormButton forms={forms} teamId={map.teamId ?? null} /></div>}
             <input ref={input} type="file" multiple accept={documentAccept(limits)} className="sr-only" aria-label={t('documents.add')}
               onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
           </div>
@@ -158,6 +166,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
             <ul className="flex gap-2 lg:flex-col lg:gap-0.5">
               <li>{shelfButton(null, t('documents.all'), docs.length)}</li>
               {fromSheet > 0 && <li>{shelfButton(PROJECT_SHEET, t('documents.project_sheet_shelf'), fromSheet, <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />)}</li>}
+              {fromForms > 0 && <li>{shelfButton(FORMS, t('forms.shelf'), fromForms, <MessageSquareText className="h-4 w-4 shrink-0" aria-hidden />)}</li>}
               {tags.map(({ tag, count }) => <li key={tag}>{shelfButton(tag, tag, count, <Tag className="h-4 w-4 shrink-0 opacity-60" aria-hidden />)}</li>)}
               {tags.length > 0 && untagged > 0 && <li>{shelfButton(UNTAGGED, t('tags.untagged'), untagged)}</li>}
             </ul>

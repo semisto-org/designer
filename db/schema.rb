@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_14_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -239,6 +239,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_090000) do
     t.index ["map_id"], name: "index_comments_on_map_id"
   end
 
+  create_table "external_forms", force: :cascade do |t|
+    t.bigint "form_inbox_id", null: false
+    t.string "provider", default: "tally", null: false
+    t.string "external_id", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["form_inbox_id", "external_id"], name: "index_external_forms_on_form_inbox_id_and_external_id", unique: true
+    t.index ["form_inbox_id"], name: "index_external_forms_on_form_inbox_id"
+  end
+
   create_table "financial_plans", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.jsonb "inputs", default: {}, null: false
@@ -249,6 +260,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_090000) do
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_financial_plans_on_map_id", unique: true
     t.index ["updated_by_id"], name: "index_financial_plans_on_updated_by_id"
+  end
+
+  create_table "form_inboxes", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "token", null: false
+    t.string "signing_secret", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_form_inboxes_on_organization_id", unique: true
+    t.index ["token"], name: "index_form_inboxes_on_token", unique: true
+  end
+
+  create_table "form_responses", force: :cascade do |t|
+    t.bigint "external_form_id", null: false
+    t.bigint "map_id"
+    t.bigint "map_document_id"
+    t.string "external_id", null: false
+    t.string "map_reference"
+    t.jsonb "fields", default: [], null: false
+    t.datetime "submitted_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_form_id", "external_id"], name: "index_form_responses_on_external_form_id_and_external_id", unique: true
+    t.index ["external_form_id"], name: "index_form_responses_on_external_form_id"
+    t.index ["map_document_id"], name: "index_form_responses_on_map_document_id"
+    t.index ["map_id"], name: "index_form_responses_on_map_id"
   end
 
   create_table "import_records", force: :cascade do |t|
@@ -1280,8 +1317,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_090000) do
   add_foreign_key "comment_subscriptions", "users"
   add_foreign_key "comments", "maps"
   add_foreign_key "comments", "users", column: "author_id"
+  add_foreign_key "external_forms", "form_inboxes"
   add_foreign_key "financial_plans", "maps"
   add_foreign_key "financial_plans", "users", column: "updated_by_id"
+  add_foreign_key "form_inboxes", "organizations"
+  add_foreign_key "form_responses", "external_forms"
+  add_foreign_key "form_responses", "map_documents", on_delete: :nullify
+  add_foreign_key "form_responses", "maps", on_delete: :nullify
   add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "invoice_requests", "users"
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify

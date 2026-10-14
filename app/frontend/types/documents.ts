@@ -1,3 +1,5 @@
+import type { FormResponseData } from '@/types/forms'
+
 // The map's « Documents » library (Maps::DocumentsController, MapDocument#as_inertia).
 
 export type DocumentKind = 'pdf' | 'image' | 'text' | 'sheet' | 'slides' | 'plan' | 'other'
@@ -7,8 +9,8 @@ export type MapDocumentData = {
   title: string
   description: string | null
   tags: string[]
-  /** « library »: added in Documents; « project_sheet »: sent with the project sheet. */
-  origin: 'library' | 'project_sheet'
+  /** « library »: added in Documents; « project_sheet »: sent with the project sheet; « form »: an answer to a team's form. */
+  origin: 'library' | 'project_sheet' | 'form'
   kind: DocumentKind
   /** What the browser shows as is. */
   preview: 'image' | 'pdf' | null
@@ -24,6 +26,8 @@ export type MapDocumentData = {
   uploadedBy: string | null
   /** Sent by the people behind the project, through the sheet's private link. */
   fromProjectLink: boolean
+  /** The answer itself, for a document filed from a team's form. */
+  form?: FormResponseData | null
   thumbUrl: string | null
   previewUrl: string | null
   fileUrl: string

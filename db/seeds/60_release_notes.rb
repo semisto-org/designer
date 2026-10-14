@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "formulaires-tally", published_on: "2026-10-14",
+    title: "Les réponses de tes formulaires Tally, rangées dans la carte",
+    body: <<~TEXT,
+      Un retour en fin de projet, un suivi à un an… Tes formulaires restent dans Tally, et Designer range chaque réponse dans les documents de la carte du client.
+
+      Branche Tally une fois pour toute l'équipe, puis envoie le formulaire depuis les documents d'une carte : le lien est déjà rempli pour ce client. Toute l'équipe lit les réponses, et ton IA aussi.
+    TEXT
+    link_path: "/help/brancher-ses-formulaires-tally", link_label: "Lire l'aide",
+    screenshot_alt: "Une réponse au formulaire « Retour en fin de projet », ouverte dans les documents de la carte."
+  },
+  {
     key: "palette-gustative", published_on: "2026-10-13",
     title: "La palette gustative dans la fiche projet",
     body: <<~TEXT,

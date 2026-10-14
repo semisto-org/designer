@@ -11,6 +11,7 @@ module Mcp
             kind: document.kind, filename: blob&.filename&.to_s, content_type: blob&.content_type, byte_size: blob&.byte_size,
             readable: DocumentReader.readable?(document),
             from_project_sheet: document.origin == "project_sheet" || nil,
+            form_answer: document.origin == "form" || nil,
             uploaded_by: document.uploaded_by&.display_name || (document.project_sheet_link_id && t("notes.project_link_author")),
             created_at: document.created_at.iso8601, updated_at: document.updated_at.iso8601
           }.compact
