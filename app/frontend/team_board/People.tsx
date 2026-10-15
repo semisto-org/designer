@@ -38,15 +38,17 @@ export function People({ people, projects }: { people: BoardMemberLoad[]; projec
                 <p className={clsx('text-sm', heavy ? 'font-semibold text-clay-700' : 'text-loam-600')}>
                   {t('team_board.people.involved', { count: active.length })}
                 </p>
-                <p className="text-sm text-loam-500">
-                  {t('team_board.people.tasks_soon', { count: person.tasksSoon })}
-                  {person.overdue > 0 && <span className="font-semibold text-clay-700"> {t('team_board.people.overdue', { count: person.overdue })}</span>}
-                </p>
+                {person.tasksSoon > 0 && (
+                  <p className="text-sm text-loam-500">
+                    {t('team_board.people.tasks_soon', { count: person.tasksSoon })}
+                    {person.overdue > 0 && <span className="font-semibold text-clay-700"> {t('team_board.people.overdue', { count: person.overdue })}</span>}
+                  </p>
+                )}
               </div>
-              <span className="flex shrink-0" aria-label={t('team_board.people.involved', { count: active.length })}>
+              <span className="flex shrink-0 items-center" aria-label={t('team_board.people.involved', { count: active.length })}>
                 {Array.from({ length: Math.max(PIPS, pips.length) }, (_, i) => {
                   const project = pips[i]
-                  if (!project) return <span key={i} className="px-0.5"><span className="block h-5 w-2 rounded-full bg-loam-200" /></span>
+                  if (!project) return <span key={i} className="px-0.5 py-1"><span className="block h-5 w-2 rounded-full bg-loam-200" /></span>
                   const asleep = !!project.onHoldSince
                   const label = asleep ? `${project.name} (${t('team_board.people.dormant')})` : project.name
                   return (

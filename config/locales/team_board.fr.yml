@@ -188,7 +188,6 @@ fr:
         one: "Impliqué·e dans 1 projet actif"
         other: "Impliqué·e dans %{count} projets actifs"
       tasks_soon:
-        zero: "aucune tâche d'ici 4 semaines"
         one: "1 tâche d'ici 4 semaines"
         other: "%{count} tâches d'ici 4 semaines"
       overdue:
