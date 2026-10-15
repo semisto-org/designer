@@ -2,7 +2,7 @@ import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
-import { isRoundedZone, isZoneKind, roundedGeometry, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
+import { displayGeometry, isRounded, isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
 
 export const FEATURES_SOURCE = 'features'
@@ -42,18 +42,19 @@ const color = styleColorExpr(layerColor) as string
 const isZone = ['in', ['get', 'kind'], ['literal', ZONE_KINDS]]
 
 /**
- * Zones as the map draws them: rounded when asked (`rounded: true`), with
- * the measure written under their name (`zone_measure`), so every map that
- * shows features (editor, public map, dossier, printed plan) draws them the
- * same way.
+ * Features as the map draws them: rounded when asked (`rounded: true`, any
+ * surface), zones with the measure written under their name
+ * (`zone_measure`), so every map that shows features (editor, public map,
+ * dossier, printed plan) draws them the same way.
  */
 function withZones(data: MapFeatureCollection): MapFeatureCollection {
-  if (!data.features.some((f) => isZoneKind(f.properties?.kind))) return data
+  if (!data.features.some((f) => isZoneKind(f.properties?.kind) || isRounded(f.properties))) return data
   return {
     ...data,
     features: data.features.map((f) => {
-      if (!isZoneKind(f.properties?.kind)) return f
-      const geometry = isRoundedZone(f.properties) ? roundedGeometry(f.geometry) : f.geometry
+      if (!isZoneKind(f.properties?.kind) && !isRounded(f.properties)) return f
+      const geometry = displayGeometry(f)
+      if (!isZoneKind(f.properties?.kind)) return { ...f, geometry }
       const text = zoneMeasureText(f.properties, measure(geometry))
       return { ...f, geometry, properties: text ? { ...f.properties, zone_measure: text } : f.properties }
     }),

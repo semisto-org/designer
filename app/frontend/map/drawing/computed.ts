@@ -1,5 +1,6 @@
 import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { measure } from '@/map/editor/measure'
+import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 import type { ElementSpec } from '@/types/drawing'
 
@@ -36,7 +37,7 @@ const FORMULAS: Record<string, (p: Record<string, unknown>, m: { area: number | 
 
 /** Derived values of a feature (pond volume, plants for a hedge…). */
 export function computedValues(feature: MapFeature, spec: ElementSpec): ComputedValue[] {
-  const m = measure(feature.geometry)
+  const m = measure(displayGeometry(feature))
   return spec.computed.flatMap((key) => {
     const value = FORMULAS[key]?.(feature.properties, m)
     if (value == null) return []

@@ -6,7 +6,7 @@ import { formatArea, formatLength, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { measure } from '@/map/editor/measure'
 import { INSPECTOR_SECTIONS } from '@/map/panels'
-import { isRoundedZone, roundedGeometry } from '@/map/zones/zones'
+import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
 /** Details of the selected feature: name, notes, measures, extra sections. */
@@ -19,8 +19,8 @@ export function Inspector({ feature }: { feature: MapFeature }) {
     setName(p.name ?? '')
     setNotes(p.notes ?? '')
   }, [p.id, p.name, p.notes])
-  // A rounded zone is measured as drawn, like the area written on the map.
-  const m = measure(isRoundedZone(p) ? roundedGeometry(feature.geometry) : feature.geometry)
+  // A rounded surface is measured as drawn, like the area written on the map.
+  const m = measure(displayGeometry(feature))
   const sections = INSPECTOR_SECTIONS.filter((s) => s.applies(feature)).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
 
   function save(patch: { name?: string; notes?: string }) {
