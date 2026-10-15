@@ -15,7 +15,8 @@ module Maps
       respond_to do |format|
         format.html do
           render inertia: "maps/documents/index", props: {
-            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :teamId),
+            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :teamId)
+              .merge(offerBuilder: Offer.shown_to?(@map, Current.user)),
             documents: documents_json,
             canEdit: editor?,
             limits: document_limits

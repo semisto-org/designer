@@ -1,6 +1,7 @@
-import { Head, Link } from '@inertiajs/react'
-import { ArrowLeft, Lock, Printer, X } from 'lucide-react'
+import { Head } from '@inertiajs/react'
+import { Lock, Printer, X } from 'lucide-react'
 import { useState } from 'react'
+import { MapViewHeader } from '@/components/map_views/MapViews'
 import { InternalCard } from '@/components/offers/InternalCard'
 import { PhaseCard } from '@/components/offers/PhaseCard'
 import { PlantsCard } from '@/components/offers/PlantsCard'
@@ -63,13 +64,13 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
     <div className="space-y-6">
       <Head title={`${t('offers.page.title')} · ${map.name}`} />
 
+      <div className="print:hidden"><MapViewHeader map={map} current="offer" /></div>
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <Link href={`/maps/${map.id}`} className="inline-flex items-center gap-1 text-sm text-loam-500 hover:text-loam-900 print:hidden">
-            <ArrowLeft className="h-4 w-4" />{t('offers.page.back')}
-          </Link>
-          <h1 className="mt-1 text-2xl">{t('offers.page.title')}</h1>
-          <p className="truncate text-loam-500">{map.name}{team && ` · ${team.name}`}</p>
+          <h1 className="text-3xl">{t('offers.page.title')}</h1>
+          {/* The tabs above name the map on screen; on paper, the subtitle does. */}
+          {team && <p className="truncate text-loam-500 print:hidden">{team.name}</p>}
+          <p className="hidden truncate text-loam-500 print:block">{map.name}{team && ` · ${team.name}`}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <span className="inline-flex items-center gap-1 rounded-full bg-humus-50 px-2.5 py-1 text-xs font-medium text-humus-700 ring-1 ring-inset ring-humus-200">

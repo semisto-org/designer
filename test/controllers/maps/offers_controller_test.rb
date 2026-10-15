@@ -90,6 +90,18 @@ class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
     assert response.parsed_body["props"]["canUseOffers"]
   end
 
+  test "the other views of the map list « Offre » only for whoever prices the project" do
+    sign_in_as @owner
+    [ map_documents_path(@map), map_photos_path(@map), map_tasks_path(@map), map_project_path(@map), map_offer_path(@map) ].each do |path|
+      get path, headers: inertia_headers
+      assert response.parsed_body["props"]["map"]["offerBuilder"], path
+    end
+
+    @owner.update!(account_kind: "individual")
+    get map_documents_path(@map), headers: inertia_headers
+    assert_equal false, response.parsed_body["props"]["map"]["offerBuilder"]
+  end
+
   test "stale saves are refused with the teammate's version" do
     @map.update!(organization: @team)
     sign_in_as @owner

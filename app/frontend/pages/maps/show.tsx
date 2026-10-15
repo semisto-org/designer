@@ -50,7 +50,7 @@ export default function MapShow(props: Props) {
           <h1 className="truncate text-xl leading-none text-loam-900">{map.name}</h1>
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
-        <MapViewMenu mapId={map.id} teamId={map.teamId} />
+        <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} />
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
         <div className="flex-1" />

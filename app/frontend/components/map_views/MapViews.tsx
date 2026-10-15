@@ -1,16 +1,17 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Camera, ChevronDown, ClipboardList, Files, ListChecks, Map as MapIcon, MessageSquareText } from 'lucide-react'
+import { Camera, ChevronDown, ClipboardList, Files, ListChecks, Map as MapIcon, MessageSquareText, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 
 /**
  * A project is seen through several views of the same place: the map, the
  * project sheet, its tasks, its photos, its documents and, for a team's map,
- * its forms. The full pages show them as tabs; the editor's header as a
+ * its forms and, for whoever prices the project, its offer. The full pages
+ * show them as tabs; the editor's header as a
  * small menu next to the map's name.
  */
-export type MapViewKey = 'map' | 'project' | 'tasks' | 'photos' | 'documents' | 'forms'
+export type MapViewKey = 'map' | 'project' | 'tasks' | 'photos' | 'documents' | 'offer' | 'forms'
 
 const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'map', icon: MapIcon, path: '' },
@@ -18,16 +19,21 @@ const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'tasks', icon: ListChecks, path: '/tasks' },
   { key: 'photos', icon: Camera, path: '/photos' },
   { key: 'documents', icon: Files, path: '/documents' },
+  { key: 'offer', icon: Receipt, path: '/offer' },
   { key: 'forms', icon: MessageSquareText, path: '/forms' },
 ]
 
-// « Formulaires » belongs to the team's maps (the forms are the team's).
-const viewsFor = (teamId?: number | null) => VIEWS.filter((v) => v.key !== 'forms' || teamId != null)
+type ViewMap = { teamId?: number | null; offerBuilder?: boolean }
+
+// « Formulaires » belongs to the team's maps (the forms are the team's);
+// « Offre » to whoever prices the project (the team, or a pro owner).
+const viewsFor = ({ teamId, offerBuilder }: ViewMap) =>
+  VIEWS.filter((v) => (v.key !== 'forms' || teamId != null) && (v.key !== 'offer' || offerBuilder === true))
 
 export const mapViewHref = (mapId: number, key: MapViewKey) => `/maps/${mapId}${VIEWS.find((v) => v.key === key)!.path}`
 
 /** The heading of a full-page view: the map's name, then the views as tabs. */
-export function MapViewHeader({ map, current }: { map: { id: number; name: string; teamId?: number | null }; current: MapViewKey }) {
+export function MapViewHeader({ map, current }: { map: ViewMap & { id: number; name: string }; current: MapViewKey }) {
   return (
     <div className="mb-6">
       <p className="text-sm text-loam-500">
@@ -37,7 +43,7 @@ export function MapViewHeader({ map, current }: { map: { id: number; name: strin
       </p>
       <nav aria-label={t('map_views.label')} className="-mx-4 mt-3 overflow-x-auto border-b border-loam-900/10 px-4">
         <ul className="flex gap-1">
-          {viewsFor(map.teamId).map(({ key, icon: Icon }) => (
+          {viewsFor(map).map(({ key, icon: Icon }) => (
             <li key={key} className="shrink-0">
               <Link
                 href={mapViewHref(map.id, key)}
@@ -58,7 +64,7 @@ export function MapViewHeader({ map, current }: { map: { id: number; name: strin
 }
 
 /** In the editor's header: « Carte ▾ », to reach the other views of the project. */
-export function MapViewMenu({ mapId, teamId }: { mapId: number; teamId?: number | null }) {
+export function MapViewMenu({ mapId, teamId, offerBuilder }: ViewMap & { mapId: number }) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -86,7 +92,7 @@ export function MapViewMenu({ mapId, teamId }: { mapId: number; teamId?: number 
       </button>
       {open && (
         <ul role="menu" className="absolute left-0 top-full z-50 mt-1.5 w-56 rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-900/10">
-          {viewsFor(teamId).map(({ key, icon: Icon }) => (
+          {viewsFor({ teamId, offerBuilder }).map(({ key, icon: Icon }) => (
             <li key={key} role="none">
               {key === 'map' ? (
                 <span role="menuitem" aria-current="page" className="flex items-center gap-2.5 rounded-lg bg-prune-50 px-3 py-2 text-sm font-medium text-prune-700">

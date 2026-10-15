@@ -18,7 +18,8 @@ module Maps
     def index
       if request.format.html?
         return render inertia: "maps/photos/index", props: {
-          map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :teamId),
+          map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :teamId)
+            .merge(offerBuilder: Offer.shown_to?(@map, Current.user)),
           canEdit: editor?
         }
       end
