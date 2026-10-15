@@ -4,21 +4,13 @@
 // spread scaled by `growth`), and a real scale bar. North is always up.
 // Everything random is seeded by the map id, so a sketch never flickers.
 
+import { STRATA_COLORS as MAP_STRATA_COLORS } from '@/map/plants/strataColors'
 import type { MapSketchData, SketchGeometry } from '@/types/myMaps'
 
 type Point = [number, number]
 
-/** Strata colours, from the design tokens (leaf, humus, lichen, prune). */
-export const STRATA_COLORS: Record<string, string> = {
-  canopy: '#4d5500',
-  sub_canopy: '#7d8900',
-  shrub: '#afbd00',
-  herbaceous: '#ef9b0d',
-  ground_cover: '#a9ae98',
-  vine: '#726b9f',
-  root: '#a05f00',
-  aquatic: '#6f97b6',
-}
+/** The same strata colours as on the map, so a sketch reads like its plan. */
+export const STRATA_COLORS: Record<string, string> = MAP_STRATA_COLORS
 export const STRATA_ORDER = Object.keys(STRATA_COLORS)
 
 const PENCIL = '#4d4a45'

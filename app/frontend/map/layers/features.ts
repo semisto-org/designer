@@ -40,6 +40,9 @@ function styleColorExpr(fallback: unknown): unknown {
 const layerColor = ['match', ['get', 'layer'], ...Object.entries(LAYER_COLORS).flat(), '#6e6355']
 const color = styleColorExpr(layerColor) as string
 const isZone = ['in', ['get', 'kind'], ['literal', ZONE_KINDS]]
+// A plant's point takes its strata colour when the plants overlay set one
+// (feature state, see PlantsOverlay), else the colour of its layer.
+const pointColor = ['case', ['!=', ['feature-state', 'strataColor'], null], ['to-color', ['feature-state', 'strataColor']], color]
 
 /**
  * Zones as the map draws them: rounded when asked (`rounded: true`), with
@@ -120,9 +123,9 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     source: FEATURES_SOURCE,
     filter: ['==', ['geometry-type'], 'Point'],
     paint: {
-      'circle-color': ['case', planned, '#ffffff', color] as never,
+      'circle-color': ['case', planned, '#ffffff', pointColor] as never,
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 20, 9],
-      'circle-stroke-color': ['case', planned, color, '#ffffff'] as never,
+      'circle-stroke-color': ['case', planned, pointColor, '#ffffff'] as never,
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 3, planned, 3, 1.5],
       'circle-opacity': ['case', draft as never, 0.6, planned, PLANNED_OPACITY, 1],
       'circle-stroke-opacity': ['case', planned, PLANNED_OPACITY, 1] as never,
@@ -133,7 +136,9 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'symbol',
     source: FEATURES_SOURCE,
     minzoom: 17,
-    filter: ['all', ['has', 'name'], ['!', isZone]] as never,
+    // A blank name (plants carry `name: null`) would still draw an empty pill
+    // right over the point and hide its colour.
+    filter: ['all', ['to-boolean', ['coalesce', ['get', 'name'], '']], ['!', isZone]] as never,
     ...markerLabel(['get', 'name']),
   })
   // Zones write their name (and measure) across them, from further out.

@@ -164,6 +164,9 @@ fr:
       LU: "Luxembourg"
       NL: "Pays-Bas"
       DE: "Allemagne"
+    legend:
+      title: "Strates"
+      planned: "En pointillés : pas encore planté"
     strata:
       canopy: "Canopée"
       sub_canopy: "Arborée basse"
