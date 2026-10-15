@@ -25,11 +25,14 @@ Sous **Sur la carte**, choisis **Écoulement** pour voir en bleu les axes où l'
 
 ## La vue 3D
 
-**Ouvrir la vue 3D** affiche le terrain en relief, en trois onglets :
+**Ouvrir la vue 3D** affiche le terrain en relief, en quatre onglets :
 
 - **Vue** : le fond (photo, altitudes, végétation, exposition, humidité, gel, occupation du sol, blocs), l'exagération du relief, les **Courbes de niveau** tous les 1, 2,5 ou 5 m, les **Axes d'écoulement**, les **Cuvettes** et tes éléments dessinés. Un clic sur le terrain le sonde : altitude, pente, orientation.
 - **Pluie** : choisis l'intensité (**Pluie**, **Forte** ou **Orage**), la durée de l'averse et l'état du sol au départ, puis **Faire pleuvoir**. Active **Creuser les mares et baissières de la carte** pour voir ce que tes ouvrages retiennent, comparé au terrain actuel.
 - **Soleil** : les ombres à une heure donnée, ou les **Heures de soleil** en hiver, à l'équinoxe, en été ou aujourd'hui.
+- **Nuit** : où glisse et où s'accumule l'air froid par nuit claire et sans vent, de 21 h à l'aube. Fais glisser l'heure ou touche **Faire passer la nuit** : la brume descend les pentes, une nappe d'air froid s'épaissit dans les fonds et le sol blanchit là où le givre se forme en premier. Une haie ou un mur en travers de la pente retient l'air froid au-dessus de lui. Un clic sur le terrain donne l'épaisseur de la nappe à cet endroit. Garde les floraisons précoces hors de la nappe.
+
+La **rose des vents**, en haut à droite, tourne avec la caméra et montre toujours le nord ; un clic dessus remet la vue face au nord.
 
 ### Les blocs et la Niva
 
