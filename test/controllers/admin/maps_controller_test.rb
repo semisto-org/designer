@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../../test_helpers/soil_photos_helper"
 
 class Admin::MapsControllerTest < ActionDispatch::IntegrationTest
+  include SoilPhotosHelper
+
   setup do
     @admin = User.create!(email_address: "staff@example.org", name: "Staff", admin: true)
     @map = maps(:ahinvaux)
@@ -45,5 +48,27 @@ class Admin::MapsControllerTest < ActionDispatch::IntegrationTest
     bob = props["maps"].find { |map| map["id"] == other.id }
     assert bob["archived"]
     assert_equal 0, bob["counts"]["palette"]
+  end
+
+  test "adds up the space taken by the photos and the documents of each map" do
+    photo = create_photo
+    variant = photo.image.variant(:thumb).processed
+    PlantObservation.new(map_feature: @map.features.create!(layer: "plants", kind: "plant", geometry: point), user: users(:michael),
+                     observed_on: Date.current - 1, survival: PlantObservation::SURVIVALS.first)
+      .tap { |o| o.photo.attach(io: StringIO.new("x" * 300), filename: "plant.jpg", content_type: "image/jpeg") }.save!
+    document = @map.documents.new(uploaded_by: users(:michael), title: "Plan")
+    document.file.attach(io: StringIO.new("y" * 1_000), filename: "plan.txt", content_type: "text/plain")
+    document.save!
+    sample = @map.soil_samples.create!(label: "A")
+    sample.lab_reports.attach(io: StringIO.new("z" * 2_000), filename: "labo.pdf", content_type: "application/pdf")
+    other = Map.create!(name: "Jardin de Bob", owner: users(:bob), region: regions(:wallonia))
+
+    sign_in_as @admin
+    get admin_maps_path, headers: inertia_headers
+
+    photos = photo.image.blob.byte_size + variant.image.blob.byte_size + 300
+    row = props["maps"].find { |map| map["id"] == @map.id }
+    assert_equal({ "photos" => photos, "documents" => 3_000 }, row["storageBytes"])
+    assert_equal({ "photos" => 0, "documents" => 0 }, props["maps"].find { |map| map["id"] == other.id }["storageBytes"])
   end
 end
