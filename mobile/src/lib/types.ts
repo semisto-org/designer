@@ -44,6 +44,7 @@ export type MapFeature = { type: 'Feature'; id: number; geometry: Geometry; prop
 
 export type Photo = {
   id: number
+  kind?: 'photo' | 'video'
   caption: string | null
   takenAt: string | null
   lng: number | null

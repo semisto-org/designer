@@ -2,6 +2,7 @@
 // documents folder: the map list, one bundle per downloaded map, the
 // outbox of changes not yet sent, and photos waiting to be uploaded.
 import { Directory, File, Paths } from 'expo-file-system'
+import { videoExtension } from './media'
 
 const root = () => {
   const dir = new Directory(Paths.document, 'designer')
@@ -42,6 +43,15 @@ export function keepPhoto(uri: string): string {
   const source = new File(uri)
   const target = new File(dir, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`)
   source.copySync(target)
+  return target.uri
+}
+
+/** Copies a video as it was recorded (MOV, MP4), so it survives until uploaded. */
+export function keepVideo(uri: string): string {
+  const dir = new Directory(root(), 'photos')
+  if (!dir.exists) dir.create({ intermediates: true })
+  const target = new File(dir, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${videoExtension(uri)}`)
+  new File(uri).copySync(target)
   return target.uri
 }
 

@@ -16,7 +16,7 @@ export class ApiError extends Error {
 export type UploadFile = { uri: string; name: string; type: string }
 type Body = Record<string, unknown> | FormData | undefined
 
-async function send(method: string, path: string, body: Body, token: string | null): Promise<Response> {
+async function send(method: string, path: string, body: Body, token: string | null, timeoutMs?: number): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (token) headers.Authorization = `Bearer ${token}`
   let payload: BodyInit | undefined
@@ -26,7 +26,7 @@ async function send(method: string, path: string, body: Body, token: string | nu
     payload = JSON.stringify(body)
   }
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), body instanceof FormData ? 120_000 : 20_000)
+  const timer = setTimeout(() => controller.abort(), timeoutMs ?? (body instanceof FormData ? 120_000 : 20_000))
   try {
     return await fetch(`${API_URL}${path}`, { method, headers, body: payload, signal: controller.signal })
   } finally {
@@ -34,11 +34,12 @@ async function send(method: string, path: string, body: Body, token: string | nu
   }
 }
 
-export async function api<T = unknown>(method: string, path: string, body?: Body): Promise<T> {
+/** timeoutMs: how long to wait for the answer (a video upload needs far longer). */
+export async function api<T = unknown>(method: string, path: string, body?: Body, options: { timeoutMs?: number } = {}): Promise<T> {
   let response: Response
   try {
-    response = await send(method, path, body, await accessToken())
-    if (response.status === 401) response = await send(method, path, body, await accessToken({ force: true }))
+    response = await send(method, path, body, await accessToken(), options.timeoutMs)
+    if (response.status === 401) response = await send(method, path, body, await accessToken({ force: true }), options.timeoutMs)
   } catch {
     throw new ApiError(0, null, 'offline')
   }

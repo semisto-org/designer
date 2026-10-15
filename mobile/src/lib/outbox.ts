@@ -2,6 +2,7 @@
 import * as Crypto from 'expo-crypto'
 import { api, form } from './api'
 import { emptyOutbox, flush, nextTempId, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
+import { isVideo, mediaFile } from './media'
 import { deletePhoto, readJson, writeJson } from './storage'
 import type { MapFeature } from './types'
 
@@ -80,6 +81,8 @@ export const outbox = {
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 
 const photoFile = (uri: string) => ({ uri, name: 'photo.jpg', type: 'image/jpeg' })
+// A video can weigh hundreds of megabytes on a field connection.
+const VIDEO_TIMEOUT_MS = 30 * 60_000
 
 const transport: Transport = {
   createFeature: (mapId, feature) => api<MapFeature>('POST', `/maps/${mapId}/features`, { feature }),
@@ -87,10 +90,10 @@ const transport: Transport = {
   async uploadPhoto(mapId, op, featureId) {
     const located = op.lng !== null && op.lat !== null
     await api('POST', `/maps/${mapId}/photos`, form('photo', {
-      image: photoFile(op.file), taken_at: op.takenAt, caption: op.caption, source: 'phone',
+      image: mediaFile(op.file), taken_at: op.takenAt, caption: op.caption, source: 'phone',
       lng: op.lng, lat: op.lat, location_source: located ? 'device' : null, map_feature_id: featureId,
       bioindicator_status: op.bioindicatorStatus ?? null,
-    }))
+    }), isVideo(op.file) ? { timeoutMs: VIDEO_TIMEOUT_MS } : {})
   },
   async createObservation(mapId, featureId, op) {
     await api('POST', `/maps/${mapId}/features/${featureId}/plant_observations`, form('plant_observation', {
