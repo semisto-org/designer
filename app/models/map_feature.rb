@@ -10,6 +10,7 @@ class MapFeature < ApplicationRecord
   include MapFeature::Broadcasts
   include MapFeature::WaterSourceLink
   include MapFeature::Tags
+  include MapFeature::PlantNumber
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze

@@ -10,6 +10,7 @@ import { useLayerState, visibleOverlays } from '@/map/data/store'
 import { useDrawingState } from '@/map/drawing/store'
 import { isPlant } from '@/map/plants/properties'
 import { plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
+import { setPlantLabelStyle, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { usePlanting } from '@/map/plants/store'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, useScenario } from '@/map/scenario'
 import type { Strata } from '@/types/plants'
@@ -124,7 +125,10 @@ export default function LegendOverlay() {
 function StrataLegend({ counts, planned }: { counts: StrataCount[]; planned: boolean }) {
   return (
     <div data-testid="strata-legend">
-      <h3 className="mb-1.5 text-sm font-semibold text-loam-800">{t('plants.legend.title')}</h3>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-loam-800">{t('plants.legend.title')}</h3>
+        <PlantLabelSwitch />
+      </div>
       <ul className="space-y-1">
         {counts.map(({ strata, count }) => (
           <li key={strata} className="flex items-center gap-2 text-sm leading-tight text-loam-700">
@@ -140,6 +144,28 @@ function StrataLegend({ counts, planned }: { counts: StrataCount[]; planned: boo
           {t('plants.legend.planned')}
         </p>
       )}
+    </div>
+  )
+}
+
+/** « Nom » or « Code »: how plants are named on the map (« 12 · Pommier » or « 12 · Ma do »). */
+function PlantLabelSwitch() {
+  const style = usePlantLabelStyle()
+  return (
+    <div role="radiogroup" aria-label={t('plants.legend.labels')} className="flex rounded-full bg-loam-100 p-0.5 text-sm">
+      {(['name', 'code'] as const).map((value) => (
+        <button
+          key={value}
+          type="button"
+          role="radio"
+          aria-checked={style === value}
+          title={t(`plants.legend.labels_${value}_hint`)}
+          onClick={() => setPlantLabelStyle(value)}
+          className={clsx('rounded-full px-2.5 py-0.5', style === value ? 'bg-white font-medium text-loam-900 shadow-sm' : 'text-loam-600 hover:text-loam-800')}
+        >
+          {t(`plants.legend.labels_${value}`)}
+        </button>
+      ))}
     </div>
   )
 }

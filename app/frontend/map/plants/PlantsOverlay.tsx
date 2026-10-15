@@ -10,7 +10,8 @@ import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
-import { plantLabelRank, plantLabelZoom } from '@/map/plants/labelRank'
+import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
+import { usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { plantStrata, STRATA_COLORS } from '@/map/plants/strata'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
@@ -31,7 +32,7 @@ const PLANTED = ['get', 'planted'] as unknown as boolean
  * Adult crowns as real-size circles (metres), from each plant's species.
  * Planned plants (not planted yet) are left out of the current situation.
  */
-function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario) {
+function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario, labelStyle: PlantLabelStyle) {
   const crowns: Feature<Polygon, CrownProps>[] = []
   const labels: Feature<Point, LabelProps>[] = []
   const points: PointColors = new Map()
@@ -40,11 +41,16 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     if (!inScenario(feature.properties, scenario)) continue
     const strata = plantStrata(feature, data)
     const species = data?.species[String(numberProperty(feature, 'species_id'))]
-    const ownName = feature.properties.name?.trim()
     const variety = species ? data?.varieties[String(numberProperty(feature, 'variety_id'))] : undefined
-    const speciesName = species ? (species.commonName ?? species.latinName) : null
-    // The name the person gave the plant first, else its species and variety.
-    const label = ownName || (speciesName && variety ? `${speciesName} '${variety.name}'` : speciesName)
+    // Its number, then the name the person gave it (else its species and
+    // variety), or the short latin code when the viewer asked for it.
+    const label = plantLabelText({
+      number: numberProperty(feature, 'number'),
+      ownName: feature.properties.name,
+      speciesName: species ? (species.commonName ?? species.latinName) : null,
+      varietyName: variety?.name,
+      latinName: variety?.latinName ?? species?.latinName,
+    }, labelStyle)
     if (label) {
       const crownM = species?.crownM
       labels.push({
@@ -180,7 +186,8 @@ export default function PlantsOverlay() {
   editorRef.current = editor
   const map = editor.instance
 
-  const layers = useMemo(() => crownsOf(editor, data, scenario), [editor.features, editor.selectedId, data, scenario]) // eslint-disable-line react-hooks/exhaustive-deps
+  const labelStyle = usePlantLabelStyle()
+  const layers = useMemo(() => crownsOf(editor, data, scenario, labelStyle), [editor.features, editor.selectedId, data, scenario, labelStyle]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Install the crowns, and again after a basemap style change.
   const latest = useRef(layers)
