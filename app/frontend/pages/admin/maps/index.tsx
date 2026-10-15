@@ -14,7 +14,8 @@ import type { AdminMapCounts, AdminMapStatsRow } from '@/types/admin'
 type Props = { maps: AdminMapStatsRow[] }
 
 type CountKey = keyof AdminMapCounts
-type SortKey = 'map' | 'owner' | 'area' | 'people' | 'lastActivity' | CountKey
+type StorageKey = keyof AdminMapStatsRow['storageBytes']
+type SortKey = 'map' | 'owner' | 'area' | 'people' | 'lastActivity' | 'photosMb' | 'documentsMb' | CountKey
 
 // The figure columns, in the order of the table; `people` sums editors and viewers.
 const FIGURES: { key: SortKey; label: string }[] = [
@@ -30,6 +31,12 @@ const FIGURES: { key: SortKey; label: string }[] = [
   { key: 'aiActions', label: 'ai_actions' },
 ]
 
+// The disk space columns, after the figures.
+const STORAGE: { key: SortKey; storage: StorageKey }[] = [
+  { key: 'photosMb', storage: 'photos' },
+  { key: 'documentsMb', storage: 'documents' },
+]
+
 const numbers = new Intl.NumberFormat('fr-BE', { maximumFractionDigits: 1 })
 
 function sortValue(map: AdminMapStatsRow, key: SortKey): number | string {
@@ -39,8 +46,23 @@ function sortValue(map: AdminMapStatsRow, key: SortKey): number | string {
     case 'area': return map.areaM2 ?? -1
     case 'people': return map.counts.editors + map.counts.viewers
     case 'lastActivity': return map.lastActivityAt ?? ''
+    case 'photosMb': return map.storageBytes.photos
+    case 'documentsMb': return map.storageBytes.documents
     default: return map.counts[key]
   }
+}
+
+const MB = 1024 * 1024
+
+// Megabytes with one decimal; below 0.1 MB a file still shows as « < 0,1 ».
+function formatMb(bytes: number) {
+  if (bytes === 0) return '0'
+  if (bytes < MB / 10) return `< ${numbers.format(0.1)}`
+  return numbers.format(Math.round((bytes / MB) * 10) / 10)
+}
+
+function formatTotalSize(bytes: number) {
+  return bytes >= 1024 * MB ? `${numbers.format(bytes / (1024 * MB))} Go` : `${numbers.format(Math.round(bytes / MB))} Mo`
 }
 
 function formatArea(m2: number | null) {
@@ -72,7 +94,8 @@ export default function AdminMaps({ maps }: Props) {
 
   const totals = useMemo(() => {
     const sum = (key: CountKey) => rows.reduce((total, map) => total + map.counts[key], 0)
-    return { palette: sum('palette'), plants: sum('plants'), features: sum('features'), comments: sum('comments'), photos: sum('photos') }
+    const storage = rows.reduce((total, map) => total + map.storageBytes.photos + map.storageBytes.documents, 0)
+    return { palette: sum('palette'), plants: sum('plants'), features: sum('features'), comments: sum('comments'), photos: sum('photos'), storage }
   }, [rows])
 
   // Text columns start A→Z, figures and dates start with the largest.
@@ -116,7 +139,7 @@ export default function AdminMaps({ maps }: Props) {
         <p className="mt-2 text-sm text-loam-500">
           {t('admin.maps.totals', {
             palette: numbers.format(totals.palette), plants: numbers.format(totals.plants), features: numbers.format(totals.features),
-            comments: numbers.format(totals.comments), photos: numbers.format(totals.photos),
+            comments: numbers.format(totals.comments), photos: numbers.format(totals.photos), storage: formatTotalSize(totals.storage),
           })}
         </p>
       )}
@@ -132,6 +155,7 @@ export default function AdminMaps({ maps }: Props) {
                 {header('owner', t('admin.maps.columns.owner'), undefined, 'left')}
                 {header('area', t('admin.maps.columns.area'))}
                 {FIGURES.map((figure) => header(figure.key, t(`admin.maps.columns.${figure.label}`), t(`admin.maps.hints.${figure.label}`)))}
+                {STORAGE.map((column) => header(column.key, t(`admin.maps.columns.${column.storage}_mb`), t(`admin.maps.hints.${column.storage}_mb`)))}
                 {header('lastActivity', t('admin.maps.columns.last_activity'))}
               </tr>
             </thead>
@@ -165,6 +189,14 @@ export default function AdminMaps({ maps }: Props) {
                     return (
                       <td key={figure.key} className={clsx('whitespace-nowrap px-2 py-2 text-right tabular-nums', empty ? 'text-loam-300' : 'text-loam-800')}>
                         {value}
+                      </td>
+                    )
+                  })}
+                  {STORAGE.map((column) => {
+                    const bytes = map.storageBytes[column.storage]
+                    return (
+                      <td key={column.key} className={clsx('whitespace-nowrap px-2 py-2 text-right tabular-nums', bytes === 0 ? 'text-loam-300' : 'text-loam-800')}>
+                        {formatMb(bytes)}
                       </td>
                     )
                   })}
