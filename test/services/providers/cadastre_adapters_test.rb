@@ -20,6 +20,7 @@ class Providers::CadastreAdaptersTest < ActiveSupport::TestCase
     assert_kind_of Providers::Cadastre::InspireWfs, Providers::Cadastre.for(region("luxembourg"))
     assert_equal "cadastre", Providers::Cadastre.for(region("wallonia")).layer.key
     assert_equal "cadastre", Providers::Cadastre.for(region("brussels")).layer.key
+    assert_equal "cadastre", Providers::Cadastre.for(region("flanders")).layer.key
     assert_nil Providers::Cadastre.for(Region.europe)
   end
 

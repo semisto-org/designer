@@ -6,12 +6,12 @@ class RegionTest < ActiveSupport::TestCase
 
   setup { seed_regions }
 
-  test "seeds a European base and four equipped regions inheriting from it" do
+  test "seeds a European base and five equipped regions inheriting from it" do
     europe = Region.europe
     assert europe.europe?
     assert_nil europe.outline
-    assert_equal %w[brussels france luxembourg wallonia], europe.children.pluck(:key).sort
-    %w[wallonia brussels france luxembourg].each do |key|
+    assert_equal %w[brussels flanders france luxembourg wallonia], europe.children.pluck(:key).sort
+    %w[wallonia brussels flanders france luxembourg].each do |key|
       assert region(key).outline.present?, "#{key} has an outline"
       assert_equal europe, region(key).parent
     end
@@ -28,7 +28,10 @@ class RegionTest < ActiveSupport::TestCase
       [ 6.13, 49.61 ] => "luxembourg", # Luxembourg City
       [ 4.35, 50.85 ] => "brussels",   # Brussels, Grand-Place
       [ 4.40, 50.80 ] => "brussels",   # Watermael-Boitsfort
-      [ 4.24, 50.73 ] => "europe",     # Halle, in Flanders
+      [ 4.24, 50.73 ] => "flanders",   # Halle
+      [ 3.72, 51.05 ] => "flanders",   # Ghent
+      [ 5.80, 50.75 ] => "flanders",   # Voeren, between Wallonia and the Netherlands
+      [ 4.93, 51.45 ] => "flanders",   # Baarle-Hertog, an enclave in the Netherlands
       [ 13.4, 52.5 ] => "europe"       # Berlin
     }.each do |(lng, lat), key|
       assert_equal key, Region.for_point(lng, lat).key, "#{lng}, #{lat}"
@@ -83,7 +86,7 @@ class RegionTest < ActiveSupport::TestCase
   end
 
   test "every new layer goes through an allowed relay host" do
-    %w[europe brussels france luxembourg].each do |key|
+    %w[europe brussels flanders france luxembourg].each do |key|
       region(key).layers.where(proxied: true).find_each do |layer|
         assert Providers::GeoHttp.allowed?(layer.url), "#{key}/#{layer.key}: #{layer.url}"
       end
@@ -95,6 +98,13 @@ class RegionTest < ActiveSupport::TestCase
     assert_equal [ "ortho" ], brussels.select(&:default?).map(&:key)
     assert_equal "europe", brussels.find_by!(key: "plan").region.key
     assert_equal "cadastre", Providers::Cadastre.for(region("brussels")).layer.key
+  end
+
+  test "Flanders has its aerial photos, from today back to Ferraris, and the federal cadastre" do
+    flanders = region("flanders").catalogue.enabled
+    assert_equal [ "ortho" ], flanders.select(&:default?).map(&:key)
+    assert flanders.exists?(key: "ferraris")
+    assert_equal "cadastre", Providers::Cadastre.for(region("flanders")).layer.key
   end
 
   test "a region cannot be its own parent" do
