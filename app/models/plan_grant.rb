@@ -36,8 +36,10 @@ class PlanGrant < ApplicationRecord
   def revoked? = revoked_at.present?
   def on_invoice? = invoice_request_id.present?
 
+  # Counted on the wall clock, so a daylight saving change in between
+  # (a 25-hour day) does not add a day.
   def days_left(at = Time.current)
-    ((ends_at - at) / 1.day).ceil
+    ((ends_at - at + ends_at.utc_offset - at.utc_offset) / 1.day).ceil
   end
 
   def revoke!(at: Time.current)
