@@ -156,17 +156,21 @@ module Teams
       end
 
       # Who carries what: the projects (still followed, not yet in
-      # co-management) each member manages or works on, and their tasks on the team's maps for the coming four
-      # weeks.
+      # co-management) each member manages or works on, the active ones apart
+      # from those on hold (which no longer count), and their tasks on the
+      # team's maps for the coming four weeks.
       def people
         tasks = Task.pending.where(map_id: ids).where.not(assignee_id: nil)
         soon = tasks.where(due_on: ..(@today + LOAD_DAYS)).group(:assignee_id).count
         overdue = tasks.where(due_on: ...@today).group(:assignee_id).count
         followed = projects.reject { |m| m.closed? || SETTLED_PHASES.include?(m.board_phase) }
         memberships.map(&:user).sort_by { |u| u.display_name.downcase }.map do |user|
+          involved = followed.select { |m| m.lead_id == user.id || m.crew.any? { |c| c.id == user.id } }
+          dormant, active = involved.partition(&:on_hold?)
           person(user).merge(
             you: user.id == @user.id,
-            projects: followed.select { |m| m.lead_id == user.id || m.crew.any? { |c| c.id == user.id } }.map(&:id),
+            projects: active.map(&:id),
+            dormant: dormant.map(&:id),
             tasksSoon: soon.fetch(user.id, 0),
             overdue: overdue.fetch(user.id, 0)
           )
