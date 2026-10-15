@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { plantCode, plantLabelRank, plantLabelText, plantLabelZoom } from '../../../app/frontend/map/plants/labelRank.ts'
+import { numberRanges, plantCode, plantLabelRank, plantLabelText, plantLabelZoom } from '../../../app/frontend/map/plants/labelRank.ts'
 
 test('big trees are named from further out than shrubs and small plants', () => {
   assert.equal(plantLabelZoom(12), 17)
@@ -37,4 +37,11 @@ test('a plant label writes its number before its name, once', () => {
   assert.equal(plantLabelText({ number: 27, ownName: '27 · Toona sinensis' }, 'name'), '27 · Toona sinensis')
   assert.equal(plantLabelText({ number: 93, ownName: '93 ? · à identifier' }, 'name'), '93 · à identifier')
   assert.equal(plantLabelText({ number: 5 }, 'code'), '5')
+})
+
+test('plant numbers read as on a plan legend: runs of three or more become a range', () => {
+  assert.equal(numberRanges([7, 5, 6, 12, 3]), '3, 5–7, 12')
+  assert.equal(numberRanges([4, 5]), '4, 5')
+  assert.equal(numberRanges([9, 9]), '9')
+  assert.equal(numberRanges([]), '')
 })

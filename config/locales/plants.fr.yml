@@ -172,6 +172,9 @@ fr:
       labels_code: "Code"
       labels_name_hint: "« 12 · Pommier » : le numéro et le nom du plant"
       labels_code_hint: "« 12 · Ma do » : le numéro et les deux premières lettres du genre et de l'espèce"
+      labels_number: "Numéro"
+      labels_number_hint: "« 12 » dans la pastille du plant, et la liste des numéros dans la légende"
+      numbers: "Numéros"
     strata:
       canopy: "Canopée"
       sub_canopy: "Arborée basse"

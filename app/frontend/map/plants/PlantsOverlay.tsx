@@ -11,18 +11,22 @@ import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
 import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
-import { usePlantLabelStyle } from '@/map/plants/labelStyle'
+import { plantLabelStyleStore, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { plantStrata, STRATA_COLORS } from '@/map/plants/strata'
+import { inkOn } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
 import type { PlantingState } from '@/types/plants'
 
 const CROWNS = 'plant-crowns'
 const LABELS = 'plant-labels'
+const NUMBERS = 'plant-numbers'
 
 type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean }
 // `featureId` makes crowns and names select their plant (see map/featurePick).
 type LabelProps = { featureId: number; label: string; planted: boolean; minZoom: number; rank: number }
+// A plant's number written inside its point (« Numéro » mode).
+type NumberProps = { featureId: number; number: string; color: string; ink: string; planted: boolean; selected: boolean }
 /** Each plant's strata colour, for its point in the features source. */
 type PointColors = Map<number, string>
 
@@ -36,6 +40,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
   const crowns: Feature<Polygon, CrownProps>[] = []
   const labels: Feature<Point, LabelProps>[] = []
   const points: PointColors = new Map()
+  const numbers: Feature<Point, NumberProps>[] = []
   for (const feature of editor.features) {
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
     if (!inScenario(feature.properties, scenario)) continue
@@ -65,6 +70,22 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
         },
       })
     }
+    const number = numberProperty(feature, 'number')
+    if (number != null && number > 0) {
+      const color = strata ? STRATA_COLORS[strata] : '#3d7d42'
+      numbers.push({
+        type: 'Feature',
+        geometry: feature.geometry,
+        properties: {
+          featureId: feature.properties.id,
+          number: String(number),
+          color,
+          ink: inkOn(color),
+          planted: !isPlannedPlant(feature.properties),
+          selected: editor.selectedId === feature.properties.id,
+        },
+      })
+    }
     if (!strata || !species) continue
     points.set(feature.properties.id, STRATA_COLORS[strata])
     const radiusM = Math.max(species.crownM / 2, 0.15)
@@ -82,6 +103,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
   return {
     crowns: { type: 'FeatureCollection', features: crowns } as FeatureCollection<Polygon, CrownProps>,
     labels: { type: 'FeatureCollection', features: labels } as FeatureCollection<Point, LabelProps>,
+    numbers: { type: 'FeatureCollection', features: numbers } as FeatureCollection<Point, NumberProps>,
     points,
   }
 }
@@ -103,12 +125,15 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   if (crowns) {
     crowns.setData(data.crowns)
     ;(map.getSource(LABELS) as GeoJSONSource | undefined)?.setData(data.labels)
+    ;(map.getSource(NUMBERS) as GeoJSONSource | undefined)?.setData(data.numbers)
+    raiseNumbers(map)
     return
   }
   // Under the feature lines and points, so plants stay clickable.
   const before = map.getLayer('features-line') ? 'features-line' : undefined
   map.addSource(CROWNS, { type: 'geojson', data: data.crowns })
   map.addSource(LABELS, { type: 'geojson', data: data.labels })
+  map.addSource(NUMBERS, { type: 'geojson', data: data.numbers })
   // Every crown wears its strata colour over a white ring, readable on aerial
   // photos as on plans. Planted: solid crown. Planned: faint fill and a
   // dashed outline at 75 % opacity.
@@ -148,6 +173,43 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     filter: ['>=', ['zoom'], ['get', 'minZoom']],
     ...plantLabel,
   }, map.getLayer('features-label') ? 'features-label' : undefined)
+  // « Numéro »: the number inside a pastille in the strata colour, over the
+  // plant's point, as on a hand-drawn planting plan (hidden otherwise).
+  map.addLayer({
+    id: `${NUMBERS}-disc`,
+    type: 'circle',
+    source: NUMBERS,
+    minzoom: 15,
+    layout: { visibility: 'none' },
+    paint: {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 6, 17, 9, 20, 13],
+      'circle-color': ['case', PLANTED, ['get', 'color'], '#ffffff'],
+      'circle-stroke-color': ['case', PLANTED, '#ffffff', ['get', 'color']],
+      'circle-stroke-width': ['case', ['get', 'selected'], 3, PLANTED, 1.5, 2.5],
+      'circle-opacity': ['case', PLANTED, 1, 0.9],
+    },
+  })
+  map.addLayer({
+    id: `${NUMBERS}-text`,
+    type: 'symbol',
+    source: NUMBERS,
+    minzoom: 16,
+    layout: {
+      visibility: 'none',
+      'text-field': ['get', 'number'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 16, 8, 17, 10, 20, 13],
+      'text-font': ['Noto Sans Regular'],
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+    },
+    paint: { 'text-color': ['case', PLANTED, ['get', 'ink'], '#1b1712'] },
+  })
+  raiseNumbers(map)
+}
+
+/** The pastilles cover the plant's point, which the features layers may have drawn later. */
+function raiseNumbers(map: MapLibreMap) {
+  for (const id of [`${NUMBERS}-disc`, `${NUMBERS}-text`]) if (map.getLayer(id)) map.moveLayer(id)
 }
 
 /**
@@ -165,7 +227,7 @@ function colorPoints(map: MapLibreMap, colors: PointColors) {
 function safeInstall(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   try {
     install(map, data)
-    applyPlantsVisibility(map, drawingStore.get().hiddenLayers)
+    applyPlantsVisibility(map, drawingStore.get().hiddenLayers, plantLabelStyleStore.get())
   } catch {
     /* style not ready yet */
   }
@@ -208,7 +270,7 @@ export default function PlantsOverlay() {
   }, [map])
   useEffect(() => safeInstall(map, layers), [map, layers])
   // « Calques »: hiding the plants layer hides the crowns and their names too.
-  useEffect(() => applyPlantsVisibility(map, hidden), [map, hidden])
+  useEffect(() => applyPlantsVisibility(map, hidden, labelStyle), [map, hidden, labelStyle])
 
   // Planting quantities follow plants and patches: reload when they change.
   const signature = editor.features
