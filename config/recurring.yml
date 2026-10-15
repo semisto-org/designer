@@ -18,6 +18,12 @@ production:
     class: BillingDailyJob
     queue: default
     schedule: every day at 8am
+  # Copy of the day's new files to the backup bucket (BACKUP_S3_*), before the
+  # database backup of 3am.
+  file_backup:
+    class: FileBackupJob
+    queue: default
+    schedule: every day at 2am
   # Camera metadata and the viewer's « large » variant for photos never read
   # (uploaded before PhotoCameraJob existed, or whose job was lost).
   photo_camera_backfill:

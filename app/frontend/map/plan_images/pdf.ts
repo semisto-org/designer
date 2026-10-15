@@ -28,11 +28,16 @@ export async function openPdf(file: File): Promise<PDFDocumentProxy> {
   return pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), ...decoderUrls() }).promise
 }
 
-/** A PDF the app serves (a map document), read page by page as it is needed. */
+/**
+ * A PDF the app serves (a map document), read page by page as it is needed.
+ * The app answers with a redirect to the file, possibly in an object storage
+ * bucket: cookies go to the app only (`withCredentials: false` still sends
+ * them to the same origin), since a bucket refuses credentialed requests.
+ */
 export async function openPdfUrl(url: string): Promise<PDFDocumentProxy> {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
-  return pdfjs.getDocument({ url, withCredentials: true, ...decoderUrls() }).promise
+  return pdfjs.getDocument({ url, withCredentials: false, ...decoderUrls() }).promise
 }
 
 async function renderToCanvas(pdf: PDFDocumentProxy, pageNumber: number, scaleFor: (width: number, height: number) => number) {
