@@ -27,7 +27,8 @@ module Maps
     private
       def sheet_props(sheet)
         {
-          map: { id: @map.id, name: @map.name, role: @role, address: @map.address, teamId: @map.organization_id },
+          map: { id: @map.id, name: @map.name, role: @role, address: @map.address, teamId: @map.organization_id,
+                 offerBuilder: Offer.shown_to?(@map, Current.user) },
           project: sheet.to_h,
           progress: sheet.progress,
           schema: ProjectSheet.schema_json,

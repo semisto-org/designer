@@ -16,7 +16,7 @@ import type { Board, Participant, TaskData, TaskListData } from '@/tasks/types'
 import type { CurrentUser } from '@/types'
 
 type Props = Board & {
-  map: { id: number; name: string; role: string; teamId?: number | null }
+  map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean }
   participants: Participant[]
   canEdit: boolean
   today: string

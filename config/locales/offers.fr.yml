@@ -224,7 +224,6 @@ fr:
       open: "Ouvrir l’offre"
     page:
       title: "Offre"
-      back: "Revenir à la carte"
       intro: "Le budget part de ce que la carte mesure. Dessine le périmètre, coche ce que le projet demande, puis ajuste les lignes : chaque heure garde son calcul."
       internal_badge: "Interne à l’équipe"
       saved: "Enregistré"

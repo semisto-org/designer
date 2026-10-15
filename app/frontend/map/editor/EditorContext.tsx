@@ -33,8 +33,6 @@ export type Editor = {
   entitlements: EntitlementsData
   canEdit: boolean
   isOwner: boolean
-  /** The person may price this map's offer (team member, or pro owner). */
-  offerBuilder: boolean
 
   features: MapFeature[]
   selectedId: number | null

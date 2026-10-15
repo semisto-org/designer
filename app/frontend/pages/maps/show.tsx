@@ -50,7 +50,7 @@ export default function MapShow(props: Props) {
           <h1 className="truncate text-xl leading-none text-loam-900">{map.name}</h1>
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
-        <MapViewMenu mapId={map.id} teamId={map.teamId} />
+        <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} />
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
         <div className="flex-1" />
@@ -212,7 +212,6 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     return {
       map, setMap, instance, regionLayers: layers, entitlements: mapEntitlements, canEdit,
       isOwner: map.role === 'owner',
-      offerBuilder: canEdit && offerBuilder,
       features, selectedId,
       selected: features.find((f) => f.properties.id === selectedId) ?? null,
       select: setSelectedId,
@@ -268,7 +267,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       focusStep: setPickedStage,
       notify,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, offerBuilder, features, selectedId, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures])
 
   const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'offers' ? canEdit && offerBuilder : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
