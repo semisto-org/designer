@@ -11,11 +11,11 @@ import { anchor, bearing, distance } from '@/lib/geo'
 import { formatDate, formatDistance, t } from '@/lib/i18n'
 import { styleUrl } from '@/lib/maps'
 import { outbox } from '@/lib/outbox'
-import { takePhoto } from '@/lib/photos'
 import { canEdit, type MapFeature, type Position } from '@/lib/types'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
 import { useOnline, useOutbox } from '@/state/sync'
+import { chooseMedia } from '@/ui/chooseMedia'
 import { Body, Button, Notice } from '@/ui/kit'
 import { colors, fonts, radius, shadow, space } from '@/ui/theme'
 
@@ -59,13 +59,19 @@ export default function Terrain() {
   const bbox = bundle.map.bbox
 
   const addPhoto = async () => {
-    const photo = await takePhoto()
-    if (!photo) return
-    outbox.add({
-      type: 'uploadPhoto', mapId, file: photo.file, takenAt: photo.takenAt,
-      lng: photo.position?.[0] ?? null, lat: photo.position?.[1] ?? null, featureId: selected?.id ?? null,
-    })
-    Alert.alert(t('mobile.photo.saved_title'), t(selected ? 'mobile.photo.saved_feature' : 'mobile.photo.saved'))
+    const choice = await chooseMedia()
+    if (!choice) return
+    for (const item of choice.items) {
+      outbox.add({
+        type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt,
+        lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: selected?.id ?? null,
+      })
+    }
+    const count = choice.items.length
+    const title = count > 1 ? 'mobile.photo.saved_title_many' : choice.items[0].video ? 'mobile.photo.saved_title_video' : 'mobile.photo.saved_title'
+    const body = selected ? t(count > 1 ? 'mobile.photo.saved_feature_many' : 'mobile.photo.saved_feature')
+      : choice.from === 'library' ? t('mobile.photo.saved_library', { count }) : t('mobile.photo.saved')
+    Alert.alert(t(title), body)
   }
 
   return (
