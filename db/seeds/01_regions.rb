@@ -1,8 +1,8 @@
 # The regions: "europe", the pan-European base every region inherits from,
 # then the equipped regions with their outline (db/seeds/regions/*.geojson:
 # Natural Earth 1:10m, public domain, simplified to ~300 m; France is cut to
-# metropolitan France and Corsica; Brussels comes from the SPF Finances
-# administrative units, simplified to ~50 m). A map belongs to the region whose
+# metropolitan France and Corsica; Brussels and Flanders come from the SPF
+# Finances administrative units, simplified to ~50 m and ~300 m). A map belongs to the region whose
 # outline covers its place, else to "europe" (Region.for_point).
 factory = RGeo::Geos.factory(srid: 4326)
 outline = lambda do |key|
@@ -30,6 +30,11 @@ regions = {
     name: "Wallonie", country_code: "BE", default_zoom: 8, center: factory.point(4.87, 50.47),
     bounds: "POLYGON((2.84 49.49, 6.41 49.49, 6.41 50.82, 2.84 50.82, 2.84 49.49))",
     settings: { "attribution" => "Géoportail de la Wallonie, SPW", "crs" => "EPSG:31370" }
+  },
+  "flanders" => {
+    name: "Flandre", country_code: "BE", default_zoom: 8, center: factory.point(4.3, 51.0),
+    bounds: "POLYGON((2.54 50.68, 5.92 50.68, 5.92 51.51, 2.54 51.51, 2.54 50.68))",
+    settings: { "attribution" => "Digitaal Vlaanderen, DOV, SPF Finances (AGDP)", "crs" => "EPSG:31370" }
   },
   "france" => {
     name: "France", country_code: "FR", default_zoom: 6, center: factory.point(2.5, 46.6),

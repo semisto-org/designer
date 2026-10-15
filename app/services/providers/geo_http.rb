@@ -20,6 +20,7 @@ module Providers
       bio.discomap.eea.europa.eu image.discomap.eea.europa.eu
       maps.isric.org
       geoservices-urbis.irisnet.be ccff02.minfin.fgov.be
+      geo.api.vlaanderen.be www.dov.vlaanderen.be
     ].freeze
 
     OPEN_TIMEOUT = 3

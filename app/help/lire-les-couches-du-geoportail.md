@@ -5,17 +5,18 @@ category: Cartographier
 order: 30
 ---
 
-Chaque région publie ses données ouvertes sur un géoportail : le **Géoportail de la Wallonie**, la **Géoplateforme de l'IGN** en France, **geoportail.lu** au Luxembourg, **UrbIS** à Bruxelles. Designer choisit la région d'après l'adresse de ton terrain et en affiche les plus utiles pour concevoir un jardin-forêt, dans le panneau **Couches** : un **Fond de carte** (plan ou photo aérienne), puis des couches à superposer, rangées en deux familles : **Relief, sol et eau** et **Milieux et règles**. Active-les une par une : trop de couches superposées, et on s'y perd.
+Chaque région publie ses données ouvertes sur un géoportail : le **Géoportail de la Wallonie**, la **Géoplateforme de l'IGN** en France, **geoportail.lu** au Luxembourg, **UrbIS** à Bruxelles, **Digitaal Vlaanderen** en Flandre. Designer choisit la région d'après l'adresse de ton terrain et en affiche les plus utiles pour concevoir un jardin-forêt, dans le panneau **Couches** : un **Fond de carte** (plan ou photo aérienne), puis des couches à superposer, rangées en deux familles : **Relief, sol et eau** et **Milieux et règles**. Active-les une par une : trop de couches superposées, et on s'y perd.
 
-## Hors de ces quatre régions
+## Hors de ces cinq régions
 
 Ailleurs en Europe, la carte s'ouvre avec des **couches européennes**, disponibles partout mais moins précises : Natura 2000, occupation du sol (Corine Land Cover) et estimations du sol (pH et argile de SoilGrids, par mailles de 250 m). Il n'y a alors ni photo aérienne ni cadastre : dessine le contour à la main ou importe un fichier. Ces couches européennes restent aussi disponibles dans les régions équipées.
 
-## En France, au Luxembourg et à Bruxelles
+## En France, au Luxembourg, à Bruxelles et en Flandre
 
 - **France** : photo aérienne et plan IGN, relief ombré du LiDAR HD, courbes de niveau, pentes, cours d'eau, carte des sols, forêts, cadastre, parcellaire agricole, Natura 2000 et ZNIEFF.
 - **Luxembourg** : photo aérienne, carte topographique, relief ombré du LiDAR 2019 et cadastre.
 - **Bruxelles** : la photo aérienne la plus récente et celle de 2004 (UrbIS), et le cadastre fédéral du SPF Finances.
+- **Flandre** : la photo d'hiver la plus récente (arbres presque nus), celle de l'été 2024, celle de 1971 et la carte de Ferraris (vers 1777), le relief ombré du LiDAR, la carte des sols et le cadastre fédéral.
 
 Dans ces régions, les parcelles se choisissent sur la carte comme en Wallonie, mais un clic sur une couche ne lit pas encore la donnée : c'est pour l'instant propre au Géoportail wallon.
 

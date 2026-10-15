@@ -1,5 +1,5 @@
 # A territory with its own data providers: map layers, cadastre, elevation,
-# regulatory rules and native species. Wallonia, Brussels, France and Luxembourg
+# regulatory rules and native species. Wallonia, Brussels, Flanders, France and Luxembourg
 # first, then Flanders and the Netherlands, without rewriting the app.
 #
 # The "europe" region is the base every other region inherits from
