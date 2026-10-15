@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "nuit-air-froid", published_on: "2026-10-15",
+    title: "La nuit dans la vue 3D : où glisse l'air froid",
+    body: <<~TEXT,
+      Par nuit claire et sans vent, l'air se refroidit au contact du sol, devient plus lourd et glisse vers le bas, quel que soit le vent. Le nouvel onglet « Nuit » de la vue 3D le montre sur ton terrain, de 21 h à l'aube : la brume qui descend les pentes, la nappe d'air froid qui s'épaissit dans les fonds, et le sol qui blanchit là où le givre se forme en premier.
+
+      Tes haies et tes bâtiments retiennent l'air froid au-dessus d'eux. De quoi garder tes floraisons précoces hors des poches de gel. Et pour ne plus perdre le nord en tournant, une rose des vents suit la caméra : un clic remet la vue face au nord.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Un vallon vers 4 h 30 : la brume glisse sur les pentes et une nappe d'air froid de 5 m remplit le fond."
+  },
+  {
     key: "bruxelles-flandre", published_on: "2026-10-15",
     title: "Bruxelles et la Flandre, avec leurs photos aériennes et le cadastre",
     body: <<~TEXT,
