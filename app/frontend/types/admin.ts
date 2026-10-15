@@ -84,4 +84,6 @@ export type AdminMapStatsRow = {
   lastActivityAt: string | null
   owner: { id: number; name: string; email: string; plan: PlanKey }
   counts: AdminMapCounts
+  // Bytes on disk, variants included; documents include the soil lab reports.
+  storageBytes: { photos: number; documents: number }
 }
