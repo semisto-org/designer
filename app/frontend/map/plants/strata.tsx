@@ -1,17 +1,24 @@
-import type { Strata } from '@/types/plants'
+import type { MapFeature } from '@/types'
+import type { PlantingState, Strata } from '@/types/plants'
+import { numberProperty } from '@/map/plants/properties'
+import { STRATA_COLORS } from '@/map/plants/strataColors'
 
-/** One color per strata, from the design tokens (crowns, dots, balance). */
-export const STRATA_COLORS: Record<Strata, string> = {
-  canopy: '#1e3f22',
-  sub_canopy: '#3d7d42',
-  shrub: '#6e835f',
-  herbaceous: '#b8851a',
-  ground_cover: '#d9a527',
-  vine: '#726b9f',
-  root: '#946614',
-  aquatic: '#2b7bb9',
-}
+export { STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strataColors'
 
 export function StrataDot({ strata, className = '' }: { strata: Strata; className?: string }) {
   return <span className={'inline-block h-2.5 w-2.5 shrink-0 rounded-full ' + className} style={{ background: STRATA_COLORS[strata] }} aria-hidden />
+}
+
+/**
+ * The strata a plant plays on this map: its palette line's (variety first,
+ * then species), else its species'. Null while the planting data is loading.
+ */
+export function plantStrata(feature: MapFeature, data: PlantingState | null): Strata | null {
+  const speciesId = numberProperty(feature, 'species_id')
+  const species = speciesId != null ? data?.species[String(speciesId)] : undefined
+  if (!species) return null
+  const varietyId = numberProperty(feature, 'variety_id')
+  const item = data?.palette.find((i) => i.speciesId === speciesId && i.varietyId === varietyId) ??
+    data?.palette.find((i) => i.speciesId === speciesId && i.varietyId == null)
+  return item?.effectiveStrata ?? species.strata
 }

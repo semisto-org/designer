@@ -29,6 +29,8 @@ Chaque fiche d'espèce dit **d'où vient chaque valeur** : sa source, et un stat
 
 Pour un arbre ou un arbuste seul, touche **Placer** à côté de l'espèce, puis clique sur la carte, autant de fois que de plants. Touche **Terminer** (ou Échap) quand c'est fait.
 
+Chaque plant est dessiné à la taille de sa couronne adulte, dans la couleur de sa strate : vert foncé pour la canopée, vert clair pour l'arborée basse, framboise pour les arbustes, mangue pour les herbacées, et ainsi de suite. La **Légende**, en bas à droite de la carte (bouton « Légende » sur un téléphone), rappelle les strates présentes et combien de plants chacune compte. Un plant en pointillés n'est pas encore planté.
+
 ## Les patches : où va quoi
 
 Un **patch** est une zone où l'on plante un mélange d'espèces : un îlot, une lisière, un massif.

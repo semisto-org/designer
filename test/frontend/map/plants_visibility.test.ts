@@ -14,14 +14,14 @@ function fakeMap(present: string[]) {
 test('hiding the plants layer hides the crowns and their names', () => {
   const map = fakeMap(PLANT_OVERLAY_LAYERS)
   applyPlantsVisibility(map as never, ['existing', 'plants'])
-  assert.deepEqual(Object.values(map.visibility), ['none', 'none', 'none'])
+  assert.deepEqual(Object.values(map.visibility), PLANT_OVERLAY_LAYERS.map(() => 'none'))
 })
 
 test('showing it again brings them back', () => {
   const map = fakeMap(PLANT_OVERLAY_LAYERS)
   applyPlantsVisibility(map as never, ['plants'])
   applyPlantsVisibility(map as never, ['water'])
-  assert.deepEqual(Object.values(map.visibility), ['visible', 'visible', 'visible'])
+  assert.deepEqual(Object.values(map.visibility), PLANT_OVERLAY_LAYERS.map(() => 'visible'))
 })
 
 test('layers not installed yet are skipped', () => {
