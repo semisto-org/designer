@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "bruxelles-flandre", published_on: "2026-10-15",
+    title: "Bruxelles et la Flandre, avec leurs photos aériennes et le cadastre",
+    body: <<~TEXT,
+      Ton terrain est à Bruxelles ou en Flandre ? Ta carte s'ouvre maintenant sur la photo aérienne de ta région, et tu choisis tes parcelles d'un clic sur le plan cadastral, comme en Wallonie.
+
+      En Flandre, remonte le temps : la photo d'hiver la plus récente, où l'on voit le sol sous les arbres nus, celle de l'été 2024, celle de 1971, et la carte de Ferraris dessinée vers 1777. Le relief ombré du LiDAR révèle les talus et les anciens fossés, et la carte des sols dit ce qu'il y a sous tes pieds. À Bruxelles, compare la photo d'aujourd'hui à celle de 2004.
+    TEXT
+    link_path: "/help/lire-les-couches-du-geoportail", link_label: "Lire l'aide",
+    screenshot_alt: "Un jardin près de Gand : le plan cadastral sur la photo aérienne, et la parcelle 416D, section A, choisie comme terrain."
+  },
+  {
     key: "acces-rapide", published_on: "2026-10-14",
     title: "Saute d'une carte à l'autre avec ⌘J",
     body: <<~TEXT,
