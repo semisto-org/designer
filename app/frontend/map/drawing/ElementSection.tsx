@@ -9,7 +9,7 @@ import { computedValues } from '@/map/drawing/computed'
 import { saveFeature } from '@/map/drawing/save'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { linkedSourceId } from '@/map/water/store'
-import { isZoneKind, ZONE_COLORS } from '@/map/zones/zones'
+import { isZoneKind, ROUNDING_DEFAULT, ROUNDING_MAX, ROUNDING_MIN, roundingLevel, ZONE_COLORS } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 import type { ElementField } from '@/types/drawing'
 
@@ -130,6 +130,65 @@ function CustomColor({ color, custom, onPick }: { color: string; custom: boolean
 }
 
 /**
+ * « Angles arrondis » of a surface (or the bends of a path): a checkbox,
+ * then how strongly, from a hint to an oval. The slider saves (and the map
+ * redraws) once it rests.
+ */
+function RoundingControl({ feature, disabled, onSave }: {
+  feature: MapFeature; disabled: boolean; onSave: (patch: Record<string, unknown>) => void
+}) {
+  const p = feature.properties
+  const rounded = p.rounded === true
+  const saved = roundingLevel(p)
+  const [level, setLevel] = useState(saved)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => setLevel(saved), [saved])
+  useEffect(() => () => clearTimeout(timer.current), [])
+  const path = p.kind === 'line'
+
+  function slide(next: number) {
+    setLevel(next)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => onSave({ rounding: next === ROUNDING_DEFAULT ? null : next }), 250)
+  }
+
+  return (
+    <section className="space-y-2">
+      <label className="flex items-start gap-2.5 text-sm text-loam-700">
+        <input
+          type="checkbox"
+          checked={rounded}
+          disabled={disabled}
+          onChange={(e) => onSave({ rounded: e.target.checked ? true : null })}
+          className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
+        />
+        <span>{t(path ? 'zones.rounded_path' : p.kind === 'zone' ? 'zones.rounded' : 'zones.rounded_surface')}</span>
+      </label>
+      {rounded && (
+        <div className="pl-6.5">
+          <input
+            type="range"
+            min={ROUNDING_MIN}
+            max={ROUNDING_MAX}
+            step={1}
+            value={level}
+            disabled={disabled}
+            onChange={(e) => slide(Number(e.target.value))}
+            aria-label={t('zones.rounding')}
+            aria-valuetext={t('zones.rounding_value', { level, max: ROUNDING_MAX })}
+            className="w-full accent-prune-600"
+          />
+          <div className="flex justify-between text-sm text-loam-500">
+            <span>{t('zones.rounding_soft')}</span>
+            <span>{t('zones.rounding_strong')}</span>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+/**
  * Inspector section of a library element: its properties (generic form from
  * the library's field schema), derived estimates, colour and shape editing.
  */
@@ -142,6 +201,7 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
   const ownColor = typeof feature.properties.style?.color === 'string'
   const computed = spec ? computedValues(feature, spec) : []
   const zone = isZoneKind(feature.properties.kind)
+  const surface = feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon'
   // Zones take the soft palette of the plan; elements their own colour first.
   const swatches = zone
     ? ZONE_COLORS
@@ -153,6 +213,15 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
     const next = { ...stored }
     if (value == null) delete next[key]
     else next[key] = value
+    void saveFeature(editor, id, { properties: next })
+  }
+
+  function saveProperties(patch: Record<string, unknown>) {
+    const next = { ...stored }
+    for (const [key, value] of Object.entries(patch)) {
+      if (value == null) delete next[key]
+      else next[key] = value
+    }
     void saveFeature(editor, id, { properties: next })
   }
 
@@ -217,18 +286,7 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
         </section>
       )}
 
-      {zone && (
-        <label className="flex items-start gap-2.5 text-sm text-loam-700">
-          <input
-            type="checkbox"
-            checked={stored.rounded === true}
-            disabled={!editor.canEdit}
-            onChange={(e) => saveProperty('rounded', e.target.checked ? true : null)}
-            className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
-          />
-          <span>{t(feature.properties.kind === 'zone' ? 'zones.rounded' : 'zones.rounded_path')}</span>
-        </label>
-      )}
+      {(zone || surface) && <RoundingControl feature={feature} disabled={!editor.canEdit} onSave={saveProperties} />}
 
       {zone && (
         <label className="flex items-start gap-2.5 text-sm text-loam-700">
