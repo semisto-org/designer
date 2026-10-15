@@ -9,6 +9,7 @@ module Billable
     has_many :billing_payments, dependent: :restrict_with_error
     has_many :invoice_requests, dependent: :restrict_with_error
     has_many :plan_grants, dependent: :restrict_with_error
+    has_many :paid_teams, class_name: "Organization", foreign_key: :billing_user_id, inverse_of: :billing_user, dependent: :nullify
   end
 
   # "yearly" while a yearly pass is valid, "atelier" / "bureau" while the
@@ -37,10 +38,19 @@ module Billable
     plan_grants.active_at(at).max_by { |grant| [ Entitlements::PLANS.fetch(grant.plan_key)[:max_maps], grant.ends_at ] }
   end
 
-  # Owned maps that are read-only because they exceed the plan's limit.
+  # The active maps this user's plan pays for: their own maps (outside a team,
+  # or in a team nobody pays for) and every map of the teams they pay for.
+  def billed_maps
+    unpaid_teams = Organization.where(billing_user_id: nil).select(:id)
+    Map.active.where(owner_id: id, organization_id: nil)
+      .or(Map.active.where(owner_id: id, organization_id: unpaid_teams))
+      .or(Map.active.where(organization_id: Organization.where(billing_user_id: id).select(:id)))
+  end
+
+  # Billed maps that are read-only because they exceed the plan's limit.
   def read_only_maps_count
     return 0 unless Billing.enabled?
-    [ owned_maps.active.count - entitlements_for_billing.max_maps, 0 ].max
+    [ billed_maps.count - entitlements_for_billing.max_maps, 0 ].max
   end
 
   # The subscription to show on the billing page, even when it ran out.

@@ -1,0 +1,31 @@
+fr:
+  team_billing:
+    title: "Forfait de l'équipe"
+    none: "Chaque carte de l'équipe suit le forfait de la personne qui l'a créée."
+    none_hint: "Un admin peut prendre les cartes de l'équipe sur son forfait : elles ne comptent alors plus dans celui des designers, qui gardent leurs cartes perso à part."
+    take: "Payer les cartes de l'équipe avec mon forfait"
+    take_confirm: "Toutes les cartes de l'équipe compteront dans ton forfait. Continuer ?"
+    payer: "Les cartes de l'équipe suivent le forfait de %{name} (%{plan})."
+    payer_you: "Les cartes de l'équipe suivent ton forfait (%{plan})."
+    usage:
+      one: "%{count} carte de l'équipe sur %{max}"
+      other: "%{count} cartes de l'équipe sur %{max}"
+    usage_unlimited:
+      one: "%{count} carte de l'équipe, sans limite"
+      other: "%{count} cartes de l'équipe, sans limite"
+    billing_page:
+      one: "Ce forfait paie aussi les cartes de l'équipe :"
+      other: "Ce forfait paie aussi les cartes des équipes :"
+    manage: "Gérer mon forfait"
+    release: "Ne plus payer pour l'équipe"
+    release_confirm: "Chaque carte de l'équipe reviendra au forfait de la personne qui l'a créée. Continuer ?"
+    beta: "Pendant la bêta, tout est ouvert : ce choix comptera quand les forfaits seront en place."
+    taken: "Les cartes de « %{team} » suivent maintenant ton forfait."
+    released: "Chaque carte de l'équipe suit de nouveau le forfait de la personne qui l'a créée."
+  activerecord:
+    errors:
+      models:
+        organization:
+          attributes:
+            billing_user:
+              not_admin: "doit être admin de l'équipe"

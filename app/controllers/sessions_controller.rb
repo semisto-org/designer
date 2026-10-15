@@ -6,9 +6,22 @@ class SessionsController < ApplicationController
   rate_limit to: 10, within: 3.minutes, only: %i[code password], name: "sign_in_secret", with: -> { redirect_to new_session_path, alert: t("sessions.rate_limited") }
   rate_limit to: 5, within: 10.minutes, only: :review, with: -> { redirect_to new_session_path, alert: t("sessions.rate_limited") }
 
+  # `?add=1`, signed in: sign in with another account on top (« Ajouter un
+  # compte »); the current one stays one click away.
   def new
-    return redirect_to maps_path if authenticated?
-    render inertia: "sessions/new", props: { reviewAccess: AppReview.enabled? }
+    adding = params[:add].present? && authenticated? && !impersonating?
+    return redirect_to maps_path if authenticated? && !adding
+    render inertia: "sessions/new", props: { reviewAccess: AppReview.enabled?, addingTo: (Current.user.email_address if adding) }
+  end
+
+  # « Changer de compte »: another account signed in on this browser.
+  def switch
+    return redirect_to(maps_path, alert: t("admin.impersonation.forbidden"), status: :see_other) if impersonating?
+    target = other_sessions.find { |s| s.id == params[:id].to_i }
+    return redirect_to(maps_path, alert: t("account_switch.gone"), status: :see_other) unless target
+
+    switch_to_session(target)
+    redirect_to maps_path, notice: t("account_switch.switched", name: target.user.display_name), status: :see_other
   end
 
   # Sends a magic link and a code. Unknown addresses get an account on first sign-in.
@@ -55,8 +68,12 @@ class SessionsController < ApplicationController
   end
 
   def destroy
-    terminate_session
-    redirect_to root_path, status: :see_other
+    next_user = terminate_session
+    if next_user
+      redirect_to maps_path, notice: t("account_switch.signed_out_to", name: next_user.display_name), status: :see_other
+    else
+      redirect_to root_path, status: :see_other
+    end
   end
 
   private

@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   # Sign-in: Google, a magic link (or the code sent with it), or a password.
   resource :session, only: %i[new create destroy]
   post "session/code", to: "sessions#code", as: :session_code
+  # « Changer de compte »: another account signed in on this browser.
+  post "session/switch/:id", to: "sessions#switch", as: :switch_session
   post "session/password", to: "sessions#password", as: :session_password
   get "magic/:token", to: "magic_links#show", as: :magic_link
   post "magic/:token", to: "magic_links#create"
@@ -353,6 +355,8 @@ Rails.application.routes.draw do
   resources :teams, only: %i[index create show update destroy] do
     scope module: :teams do
       resources :memberships, only: %i[update destroy]
+      # « Forfait de l'équipe »: an admin's plan pays for every team map.
+      resource :billing, only: %i[update destroy]
       resources :invitations, only: %i[create destroy] do
         post :resend, on: :member
       end

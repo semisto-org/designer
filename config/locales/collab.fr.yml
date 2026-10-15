@@ -63,7 +63,7 @@ fr:
       invite_send: "Inviter"
       invited: "Invitation envoyée à %{email}."
       role_help_viewer: "Un lecteur consulte la carte et participe aux discussions."
-      role_help_editor: "Un éditeur dessine et modifie la carte, gratuitement : il travaille avec le forfait du propriétaire."
+      role_help_editor: "Un éditeur dessine et modifie la carte, gratuitement : il travaille avec le forfait qui couvre la carte."
       editors_full: "Les %{max} places d'éditeur sont prises (invitations en attente comprises). Passe un éditeur en lecteur ou annule une invitation pour en libérer une."
       pending: "Invitations en attente"
       resend: "Renvoyer l'invitation à %{email}"

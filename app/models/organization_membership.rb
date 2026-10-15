@@ -20,6 +20,9 @@ class OrganizationMembership < ApplicationRecord
 
   before_destroy :ensure_not_last_admin, unless: :destroyed_by_association
   after_destroy :purge_lost_access, unless: :destroyed_by_association
+  # Only an admin pays for the team's maps: leaving or stepping down ends it.
+  after_destroy :stop_paying_for_team, unless: :destroyed_by_association
+  after_update :stop_paying_for_team, if: -> { saved_change_to_role? && !admin? }
 
   scope :admins, -> { where(role: "admin") }
 
@@ -39,6 +42,10 @@ class OrganizationMembership < ApplicationRecord
       return unless last_admin?
       errors.add(:base, :last_admin)
       throw :abort
+    end
+
+    def stop_paying_for_team
+      Organization.where(id: organization_id, billing_user_id: user_id).update_all(billing_user_id: nil)
     end
 
     # Comment subscriptions on team maps the person can no longer open.

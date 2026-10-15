@@ -6,7 +6,7 @@ import { Field, Input } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import type { SharedProps } from '@/types'
 
-export default function SignIn({ reviewAccess = false }: { reviewAccess?: boolean }) {
+export default function SignIn({ reviewAccess = false, addingTo = null }: { reviewAccess?: boolean; addingTo?: string | null }) {
   const { env } = usePage().props as unknown as SharedProps
   const query = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
   const sent = query.get('sent')
@@ -21,6 +21,9 @@ export default function SignIn({ reviewAccess = false }: { reviewAccess?: boolea
       <Head title={t('sessions.new.title')} />
       <h1 className="text-2xl">{t('sessions.new.title')}</h1>
       <p className="mt-2 text-loam-500">{t('sessions.new.intro')}</p>
+      {addingTo && (
+        <p className="mt-4 rounded-xl bg-leaf-50 p-4 text-sm text-leaf-800 ring-1 ring-leaf-200">{t('account_switch.adding', { email: addingTo })}</p>
+      )}
       <Card className="mt-8 space-y-6">
         {env.googleSignIn && !sent && (
           <form method="post" action="/auth/google_oauth2">

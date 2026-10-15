@@ -21,10 +21,10 @@ class Entitlements
     new(user&.respond_to?(:current_plan_key) ? user.current_plan_key : "free", user)
   end
 
-  # Entitlements that apply on a map: the owner's. Team maps too: a map in a
-  # team stays its owner's and follows the owner's plan (no team billing yet).
+  # Entitlements that apply on a map: those of the user who pays for it, the
+  # team's billing user or else its owner (Map#billing_user).
   def self.for_map(map)
-    self.for(map.owner)
+    self.for(map.billing_user)
   end
 
   def initialize(plan, user = nil)
@@ -47,7 +47,7 @@ class Entitlements
   def paid? = plan != "free"
 
   def can_create_map?(user)
-    unlimited? || user.owned_maps.active.count < max_maps
+    unlimited? || user.billed_maps.count < max_maps
   end
 
   def as_json(*)

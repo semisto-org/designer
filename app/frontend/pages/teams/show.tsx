@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react'
-import { ArrowLeft, ArrowRight, MessageSquareText, SquareKanban, LogOut, Mail, MapPinned, Pencil, RefreshCw, Trash2, UserMinus, UsersRound } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CreditCard, MessageSquareText, SquareKanban, LogOut, Mail, MapPinned, Pencil, RefreshCw, Trash2, UserMinus, UsersRound } from 'lucide-react'
 import { useState } from 'react'
 import { Avatar } from '@/collab/Avatar'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatArea, t } from '@/lib/i18n'
-import type { TeamInvitation, TeamMap, TeamMember, TeamPageProps, TeamRole } from '@/types/teams'
+import type { TeamBilling, TeamInvitation, TeamMap, TeamMember, TeamPageProps, TeamRole } from '@/types/teams'
 
 const dateFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })
 const formatDate = (iso: string) => dateFormat.format(new Date(iso))
 
 /** A team's page: members and roles, invitations, the team's maps, leaving. */
-export default function TeamShow({ team, members, maps, invitations, maxNameLength }: TeamPageProps) {
+export default function TeamShow({ team, members, maps, billing, invitations, maxNameLength }: TeamPageProps) {
   const admin = team.role === 'admin'
   const base = `/teams/${team.id}`
   const me = members.find((m) => m.you)
@@ -48,7 +48,8 @@ export default function TeamShow({ team, members, maps, invitations, maxNameLeng
 
       <Members members={members} admin={admin} base={base} />
       {admin && <Invite invitations={invitations ?? []} base={base} />}
-      <Maps maps={maps} />
+      <Maps maps={maps} paid={Boolean(billing.payer)} />
+      <BillingCard billing={billing} admin={admin} base={base} />
       {me && <Leave team={team} me={me} />}
       {admin && <DeleteTeam team={team} base={base} />}
     </div>
@@ -261,7 +262,59 @@ function InvitationRow({ invitation, base }: { invitation: TeamInvitation; base:
   )
 }
 
-function Maps({ maps }: { maps: TeamMap[] }) {
+// « Forfait de l'équipe »: an admin can carry the team's maps on their own
+// plan, so the team's maps and a designer's own never share one allowance.
+function BillingCard({ billing, admin, base }: { billing: TeamBilling; admin: boolean; base: string }) {
+  const { payer } = billing
+  const usage = payer && billing.mapsCount !== undefined && billing.maxMaps !== undefined
+    ? billing.maxMaps >= 1000
+      ? t('team_billing.usage_unlimited', { count: billing.mapsCount })
+      : t('team_billing.usage', { count: billing.mapsCount, max: billing.maxMaps })
+    : null
+
+  return (
+    <Card>
+      <h2 className="flex items-center gap-2 text-base"><CreditCard className="h-4 w-4 text-leaf-500" aria-hidden="true" />{t('team_billing.title')}</h2>
+      {payer ? (
+        <>
+          <p className="mt-3 text-sm text-loam-800">
+            {payer.you ? t('team_billing.payer_you', { plan: billing.planName ?? '' }) : t('team_billing.payer', { name: payer.name, plan: billing.planName ?? '' })}
+          </p>
+          {usage && <p className="mt-1 text-sm text-loam-500">{usage}</p>}
+        </>
+      ) : (
+        <>
+          <p className="mt-3 text-sm text-loam-800">{t('team_billing.none')}</p>
+          {admin && <p className="mt-1 text-sm text-loam-500">{t('team_billing.none_hint')}</p>}
+        </>
+      )}
+      {!billing.billingEnabled && <p className="mt-3 text-sm text-humus-700">{t('team_billing.beta')}</p>}
+      {admin && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {!payer?.you && (
+            <Button
+              variant={payer ? 'secondary' : 'primary'}
+              onClick={() => { if (window.confirm(t('team_billing.take_confirm'))) router.patch(`${base}/billing`, {}, { preserveScroll: true }) }}
+            >
+              {t('team_billing.take')}
+            </Button>
+          )}
+          {payer?.you && <Link href="/billing" className="inline-flex items-center rounded-full bg-white px-3.5 py-2 text-sm font-medium text-prune-700 ring-1 ring-inset ring-prune-200 hover:bg-prune-50">{t('team_billing.manage')}</Link>}
+          {payer && (
+            <Button
+              variant="ghost"
+              onClick={() => { if (window.confirm(t('team_billing.release_confirm'))) router.delete(`${base}/billing`, { preserveScroll: true }) }}
+            >
+              {t('team_billing.release')}
+            </Button>
+          )}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function Maps({ maps, paid }: { maps: TeamMap[]; paid: boolean }) {
   return (
     <Card>
       <h2 className="flex items-center justify-between gap-2 text-base">
@@ -296,7 +349,7 @@ function Maps({ maps }: { maps: TeamMap[] }) {
           <p className="mt-3 text-xs text-loam-500">{t('teams.show.maps_hint')}</p>
         </>
       )}
-      <p className="mt-2 text-xs text-loam-500">{t('teams.plan_note')}</p>
+      <p className="mt-2 text-sm text-loam-500">{paid ? t('teams.plan_note_paid') : t('teams.plan_note')}</p>
     </Card>
   )
 }
