@@ -8,7 +8,7 @@ import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import { DocumentIcon } from '@/documents/DocumentIcon'
-import { documentAccept, useDocumentUploads, type DocumentUpload } from '@/documents/upload'
+import { useDocumentUploads, type DocumentUpload } from '@/documents/upload'
 import { DocumentViewer } from '@/documents/DocumentViewer'
 import { documentSize, useCompressionRefresh } from '@/documents/compression'
 import { formatMegabytes } from '@/map/photos/format'
@@ -80,7 +80,7 @@ export function ProjectDocuments({ endpoint, initial, limits, canEdit, libraryHr
             <FilePlus2 className="h-4 w-4" />{t('documents.add')}
           </Button>
           <p className="mt-2 text-sm text-loam-500">{t('documents.drop_hint', { max: formatMegabytes(limits.maxBytes) })}</p>
-          <input ref={input} type="file" multiple accept={documentAccept(limits)} className="sr-only" aria-label={t('documents.add')}
+          <input ref={input} type="file" multiple className="sr-only" aria-label={t('documents.add')}
             onChange={(e) => { add(e.target.files, fields); e.target.value = '' }} />
         </div>
       )}

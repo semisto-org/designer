@@ -22,7 +22,7 @@ class ProjectFormsController < ApplicationController
       submittedAt: @link.submitted_at&.iso8601,
       documents: @link.documents.newest_first.includes(file_attachment: :blob, thumbnail_attachment: :blob)
         .map { _1.as_inertia(url: ->(doc, size) { project_form_document_file_path(@link.token, doc, size:) }) },
-      documentLimits: { maxBytes: MapDocument::MAX_BYTES, extensions: MapDocument::EXTENSIONS }
+      documentLimits: { maxBytes: MapDocument::MAX_BYTES }
     }
   end
 

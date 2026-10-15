@@ -41,12 +41,19 @@ class MapDocumentTest < ActiveSupport::TestCase
     assert_equal [ nil, :inline ], doc.served("thumb")
   end
 
-  test "refuses programs, web pages and oversized files" do
-    doc = @map.documents.new
-    doc.file.attach(io: StringIO.new("<script>"), filename: "page.html", content_type: "text/html")
-    refute doc.valid?
-    assert_match "page.html", doc.errors.full_messages.to_sentence
+  test "takes any file, and never shows a web page or an SVG in the browser" do
+    [ [ "scan.e57", "application/octet-stream" ], [ "page.html", "text/html" ], [ "dessin.svg", "image/svg+xml" ] ].each do |filename, type|
+      doc = @map.documents.new
+      doc.file.attach(io: StringIO.new(filename.end_with?("e57") ? "\x00E57" : "<svg onload='alert(1)'><script>alert(1)</script></svg>"), filename:, content_type: type)
+      assert doc.save, doc.errors.full_messages.to_sentence
+      assert_equal "other", doc.kind
+      assert_nil doc.preview
+      %w[original large download].each { |size| assert_equal :attachment, doc.served(size).last, "#{filename} #{size}" }
+      assert_nil doc.served("thumb").first
+    end
+  end
 
+  test "refuses oversized files" do
     big = build
     big.file.blob.byte_size = MapDocument::MAX_BYTES + 1
     refute big.valid?

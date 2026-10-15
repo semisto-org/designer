@@ -189,7 +189,7 @@ fr:
           attach_photo_lines: "Les photos à rattacher, une par fichier envoyé, de 1 à 50."
       attach_documents:
         title: "Rattacher des documents envoyés"
-        description: "Dernière étape après create_upload et l'envoi par PUT : range les fichiers envoyés dans la bibliothèque « Documents » de la carte (50 au plus par appel), chacun avec son titre et, si tu veux, une description et des étiquettes. Tous les types de la bibliothèque passent : PDF, images, Word et OpenDocument, tableurs, présentations, plans (DWG, DXF, KML, KMZ, GPX, GeoJSON), archives zip. Le type réel du fichier est vérifié. get_document lit ensuite le texte d'un PDF ou d'un Word. Un document refusé revient avec son code et sa raison, les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Dernière étape après create_upload et l'envoi par PUT : range les fichiers envoyés dans la bibliothèque « Documents » de la carte (50 au plus par appel), chacun avec son titre et, si tu veux, une description et des étiquettes. Tous les types de fichiers passent (PDF, images, Word, tableurs, plans DWG ou KML, archives…) ; un fichier nommé PDF ou image doit l'être vraiment. get_document lit ensuite le texte d'un PDF ou d'un Word. Un document refusé revient avec son code et sa raison, les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           attach_document_lines: "Les documents à rattacher, un par fichier envoyé, de 1 à 50."
       import_from_url:
@@ -367,7 +367,6 @@ fr:
     upload_errors:
       checksum: "« %{name} » : checksum doit être l'empreinte MD5 du fichier en base64 (24 caractères, openssl md5 -binary fichier | base64)."
       photo_type: "« %{name} » n'est pas une photo JPEG, PNG, WebP ou HEIC."
-      document_type: "« %{name} » : ce type de fichier n'entre pas dans la bibliothèque."
       too_large: "« %{name} » dépasse %{max} Mo."
       type_mismatch: "« %{name} » n'est pas ce que dit son extension (le fichier est en %{type})."
       duplicate: "« %{name} » est déjà sur la carte."

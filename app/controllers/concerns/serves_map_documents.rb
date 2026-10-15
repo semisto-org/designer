@@ -27,7 +27,7 @@ module ServesMapDocuments
     end
 
     def document_limits
-      { maxBytes: MapDocument::MAX_BYTES, extensions: MapDocument::EXTENSIONS }
+      { maxBytes: MapDocument::MAX_BYTES }
     end
 
     def document_params(permitted = %i[file thumbnail title description])

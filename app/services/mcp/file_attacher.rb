@@ -75,13 +75,10 @@ module Mcp
         Marcel::MimeType.for(StringIO.new(head), name: blob.filename.to_s)
       end
 
-      # The library takes its extensions (MapDocument::EXTENSIONS); a PDF or
-      # an image must also be one by its bytes.
+      # The library takes any file; one named as a PDF or an image must also
+      # be one by its bytes.
       def check_document_type!(blob)
         ext = File.extname(blob.filename.to_s).delete(".").downcase
-        unless MapDocument::EXTENSIONS.include?(ext)
-          refuse!("unsupported_type", I18n.t("mcp.upload_errors.document_type", name: blob.filename))
-        end
         refuse!("too_large", I18n.t("mcp.upload_errors.too_large", name: blob.filename, max: MapDocument::MAX_BYTES / 1.megabyte)) if blob.byte_size > MapDocument::MAX_BYTES
         type = real_type(blob)
         expected = MapDocument::KINDS.find { |_, exts| exts.include?(ext) }&.first

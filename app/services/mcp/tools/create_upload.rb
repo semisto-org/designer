@@ -62,8 +62,6 @@ module Mcp
             return [ "unsupported_type", t("upload_errors.photo_type", name:) ] unless MapPhoto::UPLOAD_TYPES.include?(line["content_type"].downcase)
             return [ "too_large", t("upload_errors.too_large", name:, max: MapPhoto::MAX_BYTES / 1.megabyte) ] if line["byte_size"] > MapPhoto::MAX_BYTES
           else
-            ext = File.extname(name).delete(".").downcase
-            return [ "unsupported_type", t("upload_errors.document_type", name:) ] unless MapDocument::EXTENSIONS.include?(ext)
             return [ "too_large", t("upload_errors.too_large", name:, max: MapDocument::MAX_BYTES / 1.megabyte) ] if line["byte_size"] > MapDocument::MAX_BYTES
           end
           nil

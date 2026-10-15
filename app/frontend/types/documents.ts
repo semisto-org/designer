@@ -34,4 +34,4 @@ export type MapDocumentData = {
   downloadUrl: string
 }
 
-export type DocumentLimits = { maxBytes: number; extensions: string[] }
+export type DocumentLimits = { maxBytes: number }
