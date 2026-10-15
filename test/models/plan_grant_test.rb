@@ -51,7 +51,11 @@ class PlanGrantTest < ActiveSupport::TestCase
   end
 
   test "the billing page view of a grant" do
-    json = grant(ends_at: 10.days.from_now).as_json_for_billing
-    assert_equal [ "atelier", true, nil, false, 10 ], json.values_at(:planKey, :active, :revokedAt, :onInvoice, :daysLeft)
+    # Away from a daylight-saving change: 10 calendar days across one are
+    # 241 or 239 hours.
+    travel_to Time.zone.local(2026, 6, 15, 12) do
+      json = grant(ends_at: 10.days.from_now).as_json_for_billing
+      assert_equal [ "atelier", true, nil, false, 10 ], json.values_at(:planKey, :active, :revokedAt, :onInvoice, :daysLeft)
+    end
   end
 end
