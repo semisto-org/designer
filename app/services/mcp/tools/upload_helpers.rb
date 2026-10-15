@@ -15,8 +15,20 @@ module Mcp
           refuse!("other_map", t("upload_errors.other_map", map_id: upload.map_id)) if upload.map_id != map.id
           refuse!("not_yours", t("upload_errors.not_yours")) if upload.user_id != user.id
           refuse!("already_attached", t("upload_errors.already_attached")) if upload.attached?
+          assemble!(upload) if upload.multipart? && !upload.received?
           refuse!("not_received", t("upload_errors.not_received")) unless upload.received?
           upload
+        end
+
+        # The parts of a large file, put together once they are all there.
+        def assemble!(upload)
+          upload.assemble!
+        rescue McpUpload::Incomplete => e
+          if e.missing.any?
+            refuse!("parts_missing", t("upload_errors.parts_missing", parts: e.missing.first(20).join(", "), count: e.missing.size))
+          else
+            refuse!("checksum_mismatch", t("upload_errors.checksum_mismatch"))
+          end
         end
 
         def refuse!(code, message) = raise(FileAttacher::Refused.new(code, message))

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_15_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_15_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -572,6 +572,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_180000) do
     t.datetime "attached_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "part_size"
     t.index ["blob_id"], name: "index_mcp_uploads_on_blob_id", unique: true
     t.index ["created_at"], name: "index_mcp_uploads_unattached", where: "(attached_at IS NULL)"
     t.index ["map_id"], name: "index_mcp_uploads_on_map_id"
