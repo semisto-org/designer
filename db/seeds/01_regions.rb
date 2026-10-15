@@ -1,7 +1,8 @@
 # The regions: "europe", the pan-European base every region inherits from,
 # then the equipped regions with their outline (db/seeds/regions/*.geojson:
 # Natural Earth 1:10m, public domain, simplified to ~300 m; France is cut to
-# metropolitan France and Corsica). A map belongs to the region whose
+# metropolitan France and Corsica; Brussels comes from the SPF Finances
+# administrative units, simplified to ~50 m). A map belongs to the region whose
 # outline covers its place, else to "europe" (Region.for_point).
 factory = RGeo::Geos.factory(srid: 4326)
 outline = lambda do |key|
@@ -35,6 +36,11 @@ regions = {
     bounds: "POLYGON((-5.3 41.3, 9.6 41.3, 9.6 51.1, -5.3 51.1, -5.3 41.3))",
     settings: { "attribution" => "IGN, Géoplateforme", "crs" => "EPSG:2154" }
   },
+  "brussels" => {
+    name: "Bruxelles", country_code: "BE", default_zoom: 11, center: factory.point(4.36, 50.84),
+    bounds: "POLYGON((4.24 50.76, 4.49 50.76, 4.49 50.92, 4.24 50.92, 4.24 50.76))",
+    settings: { "attribution" => "UrbIS – paradigm.brussels, SPF Finances (AGDP)", "crs" => "EPSG:31370" }
+  },
   "luxembourg" => {
     name: "Luxembourg", country_code: "LU", default_zoom: 10, center: factory.point(6.13, 49.78),
     bounds: "POLYGON((5.7 49.44, 6.54 49.44, 6.54 50.19, 5.7 50.19, 5.7 49.44))",
@@ -51,4 +57,14 @@ regions.each do |key, attributes|
     settings: region.settings.merge(attributes[:settings])
   )
   region.save!
+end
+
+# A map placed before its region was equipped (it fell to "europe") moves to
+# that region on the next seed, so its editor gets the regional layers.
+Map.where(region: europe).find_each do |map|
+  point = (map.boundary.centroid if map.boundary && !map.boundary.empty?) || map.center
+  next unless point
+
+  region = Region.for_point(point.x, point.y)
+  map.update_columns(region_id: region.id) unless region == europe
 end

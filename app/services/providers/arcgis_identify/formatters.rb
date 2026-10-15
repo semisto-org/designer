@@ -14,6 +14,9 @@ module Providers
       MAX_TEXT = 300
 
       LANDSCAPE = %w[woody grassy water stony].freeze
+      # Belgian parcel reference: division, section, radical/bis, exponent,
+      # power (« 21444B0021/00S008 »; « _ » when there is no exponent).
+      CAPAKEY = %r{\A\d{5}(?<section>[A-Z])(?<radical>\d{4})/(?<bis>\d{2})(?<exposant>[A-Z_])(?<puissance>\d{3})\z}
       ESSENCES_FIELDS = %w[NT_DESC NH_DESC SS_DESC AE_DESC].freeze
 
       module_function
@@ -105,8 +108,23 @@ module Providers
       end
 
       def cadastre_entry(a)
+        a = cadastre_attributes(a)
         entry(t("cadastre.title", number: parcel_number(a), section: a["Section"]),
           detail: join(a["Nom Division"].to_s.split("/").first.to_s.strip, a["CAPAKEY"]))
+      end
+
+      # The SPW layer (Wallonia) splits the parcel number into fields; the
+      # federal CadGIS layer (SPF Finances, Brussels) only gives `CaPaKey`:
+      # derive the same fields from it.
+      def cadastre_attributes(a)
+        return a if present?(a["CAPAKEY"]) || !present?(a["CaPaKey"])
+
+        capakey = a["CaPaKey"].to_s.strip
+        match = CAPAKEY.match(capakey)
+        return a.merge("CAPAKEY" => capakey) unless match
+
+        a.merge("CAPAKEY" => capakey, "Section" => match[:section], "Radical" => match[:radical], "Bis" => match[:bis],
+                "Exposant" => (match[:exposant] unless match[:exposant] == "_"), "Puissance" => match[:puissance])
       end
 
       def format_courbes(results)

@@ -28,6 +28,13 @@ class Providers::ArcgisIdentify::FormattersTest < ActiveSupport::TestCase
     assert_equal [ { text: "Parcelle 247X9, section B", detail: "YVOIR 2 DIV · 92142B0247/00X009", href: nil, href_label: nil } ], entries
   end
 
+  test "cadastre: the federal CadGIS layer (Brussels) is numbered from its CaPaKey" do
+    entries = F.entries_for("cadastre", results("identify_cadastre_brussels.json"))
+    assert_equal [ { text: "Parcelle 21S8, section B", detail: "21444B0021/00S008", href: nil, href_label: nil } ], entries
+    plain = F.cadastre_entry("CaPaKey" => "21015A0123/00_000")
+    assert_equal "Parcelle 123, section A", plain[:text]
+  end
+
   test "parcel_number" do
     assert_equal "247X9", F.parcel_number("Radical" => "0247", "Bis" => "00", "Exposant" => "X", "Puissance" => "009")
     assert_equal "12/2A", F.parcel_number("Radical" => "0012", "Bis" => "02", "Exposant" => "A", "Puissance" => "000")

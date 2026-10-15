@@ -1,5 +1,5 @@
 # Legends of the region data layers, by region key then layer key, stored
-# in the layer's `options.legend` by the catalogue seeds (02 to 05). Read from each
+# in the layer's `options.legend` by the catalogue seeds (02 to 06). Read from each
 # service's own legend on 2026-10-09 (ArcGIS REST /legend, WMS
 # GetLegendGraphic, IGN legend images), relabelled in plain French.
 #
@@ -225,6 +225,12 @@ wallonia:
       - { label: "Fossés", color: "#31849b", shape: line }
       - { label: "Talus", color: "#0ab050", shape: line }
       - { label: "Jachères et bandes en bord de champ", color: "#00b050", stroke: "#6e6e6e" }
+
+brussels:
+  cadastre:
+    items:
+      - { label: "Limite de parcelle", color: "#f5a623", shape: outline }
+    note: "Chaque parcelle porte la lettre de sa section suivie de son numéro."
 
 france:
   ombrage:

@@ -1,0 +1,77 @@
+{
+ "results": [
+  {
+   "layerId": 11,
+   "layerName": "Cadastral_parcel",
+   "displayFieldName": "CaPaKey",
+   "value": "21444B0021/00S008",
+   "attributes": {
+    "OBJECTID": "8840688",
+    "CaPaKey": "21444B0021/00S008",
+    "CaSeKey": "21444B",
+    "SuVaCn": "236",
+    "SuVaCnType": "Graphic",
+    "Status": "Undefined",
+    "FiscSitId": "4",
+    "LastUpdDTS": "27-10-18 11:35:06",
+    "Editor": "Null",
+    "EditVersion": "Null",
+    "GlobalID": "{D089D1CF-9FEF-434C-8E35-78B98EF9ACA2}",
+    "SHAPE": "Polygon",
+    "SHAPE.STArea()": "254,093633",
+    "SHAPE.STLength()": "111,540114"
+   },
+   "geometryType": "esriGeometryPolygon",
+   "geometry": {
+    "rings": [
+     [
+      [
+       4.3696328,
+       50.827027
+      ],
+      [
+       4.3696526,
+       50.8270493
+      ],
+      [
+       4.369945,
+       50.8269521
+      ],
+      [
+       4.3699922,
+       50.8270165
+      ],
+      [
+       4.3701204,
+       50.8269733
+      ],
+      [
+       4.3702668,
+       50.8269239
+      ],
+      [
+       4.3702004,
+       50.826848
+      ],
+      [
+       4.3697039,
+       50.8270154
+      ],
+      [
+       4.3696945,
+       50.8270049
+      ],
+      [
+       4.3696328,
+       50.827027
+      ]
+     ]
+    ],
+    "spatialReference": {
+     "wkid": 4326,
+     "latestWkid": 4326
+    }
+   }
+  }
+ ]
+}
