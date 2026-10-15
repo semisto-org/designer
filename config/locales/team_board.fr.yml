@@ -182,11 +182,11 @@ fr:
       plant: "Plantation"
     people:
       title: "La charge de chacun"
-      hint: "Les projets où chacun est impliqué et ses tâches des quatre semaines qui viennent, pour savoir si on peut prendre une nouvelle demande."
+      hint: "Les projets actifs où chacun est impliqué (en vert clair, ceux en veille, qui ne comptent pas) et ses tâches des quatre semaines qui viennent, pour savoir si on peut prendre une nouvelle demande."
       involved:
-        zero: "Impliqué·e dans aucun projet"
-        one: "Impliqué·e dans 1 projet"
-        other: "Impliqué·e dans %{count} projets"
+        zero: "Impliqué·e dans aucun projet actif"
+        one: "Impliqué·e dans 1 projet actif"
+        other: "Impliqué·e dans %{count} projets actifs"
       tasks_soon:
         zero: "aucune tâche d'ici 4 semaines"
         one: "1 tâche d'ici 4 semaines"
@@ -195,3 +195,4 @@ fr:
         one: "dont 1 en retard"
         other: "dont %{count} en retard"
       you: "toi"
+      dormant: "en veille"
