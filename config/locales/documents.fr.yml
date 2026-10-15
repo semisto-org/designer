@@ -15,7 +15,7 @@ fr:
     intro: "La bibliothèque du lieu : plans, relevés, analyses, permis, vieilles photos… Tout ce qui aide à comprendre ce terrain, rangé par étiquette et ouvert d'un clic."
     read_only: "Tu peux lire et télécharger ces documents. Pour en ajouter, demande à un éditeur de la carte."
     add: "Ajouter des documents"
-    drop_hint: "Ou glisse-les ici. PDF, images, tableurs, textes, plans DWG ou KML, jusqu'à %{max} par fichier."
+    drop_hint: "Ou glisse-les ici. Tous les fichiers sont acceptés (plans, tableurs, photos, DWG, KML…), jusqu'à %{max} par fichier."
     drop_now: "Lâche les fichiers pour les ranger dans la bibliothèque"
     shelves: "Étagères"
     all: "Tous les documents"
@@ -75,7 +75,6 @@ fr:
       done: "%{size}, compressé (%{original} envoyés)"
     errors:
       file_missing: "Choisis un fichier."
-      type: "« %{name} » n'est pas un type de document accepté (PDF, images, textes, tableurs, présentations, plans DWG, DXF, KML ou GPX, archives ZIP)."
       too_large: "« %{name} » dépasse %{max} Mo."
       thumbnail: "L'aperçu du document est illisible."
       link_elsewhere: "Ce lien appartient à une autre carte."

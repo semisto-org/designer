@@ -17,16 +17,6 @@ class MapDocument < ApplicationRecord
   MAX_BYTES = 200.megabytes
   COMPRESSIONS = %w[pending compressed unchanged].freeze
   MAX_THUMBNAIL_BYTES = 2.megabytes
-  # Plans, reports, spreadsheets, drawings and maps: what a garden project
-  # gathers. Anything else (programs, web pages…) is refused.
-  EXTENSIONS = %w[
-    pdf jpg jpeg png webp gif heic heif tif tiff
-    doc docx odt rtf txt md
-    xls xlsx ods csv
-    ppt pptx odp
-    dwg dxf kml kmz gpx geojson
-    zip
-  ].freeze
   class_attribute :compress_pdf_above, default: 5.megabytes
   PREVIEW_IMAGE_TYPES = %w[image/jpeg image/png image/webp image/gif].freeze
   ORIGINS = %w[library project_sheet form].freeze
@@ -79,6 +69,10 @@ class MapDocument < ApplicationRecord
     "pdf" if file.blob.content_type == "application/pdf"
   end
 
+  # Any file is welcome (a garden project gathers all sorts: plans, CAD
+  # drawings, 3D scans, GIS layers…). Only images and PDFs, recognised by
+  # their bytes (Active Storage identifies the type), are shown in the
+  # browser; everything else, web pages and SVG included, is downloaded.
   # JSON for the library and the project sheet. `url` builds the file's
   # address (the map's authenticated route, or the private link's).
   def as_inertia(url:)
@@ -106,7 +100,8 @@ class MapDocument < ApplicationRecord
       return [ file.variant(:thumb).processed, :inline ] if preview == "image"
       [ thumbnail.attached? ? thumbnail : nil, :inline ]
     when "large"
-      [ preview == "image" ? file.variant(:large).processed : file, :inline ]
+      return [ file.variant(:large).processed, :inline ] if preview == "image"
+      [ file, preview ? :inline : :attachment ]
     when "download"
       [ file, :attachment ]
     else
@@ -132,9 +127,6 @@ class MapDocument < ApplicationRecord
     def file_is_acceptable
       return errors.add(:base, I18n.t("documents.errors.file_missing")) unless file.attached?
       name = file.blob.filename.to_s
-      unless EXTENSIONS.include?(extension)
-        errors.add(:base, I18n.t("documents.errors.type", name:))
-      end
       if file.blob.byte_size > MAX_BYTES
         errors.add(:base, I18n.t("documents.errors.too_large", name:, max: MAX_BYTES / 1.megabyte))
       end

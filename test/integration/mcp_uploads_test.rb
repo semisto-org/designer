@@ -30,17 +30,18 @@ class McpUploadsTest < ActionDispatch::IntegrationTest
     data = prepare(
       spec("terrain_gps.jpg", kind: "photo", type: "image/jpeg"),
       spec("analyse_sol.pdf", kind: "photo", type: "application/pdf"),
-      spec("analyse_sol.pdf", kind: "document", type: "application/pdf", name: "programme.exe"),
+      spec("analyse_sol.pdf", kind: "document", type: "application/pdf", name: "releve.e57"),
       spec("terrain.jpg", kind: "photo", type: "image/jpeg").merge(byte_size: 30.megabytes),
       spec("terrain.jpg", kind: "photo", type: "image/jpeg").merge(checksum: "pas une empreinte MD5...")
     )
-    upload = data["uploads"].sole
+    upload, scan = data["uploads"]
+    assert_equal "releve.e57", scan["filename"]
     assert_match %r{\Ahttp://www.example.com/rails/active_storage/disk/}, upload["upload_url"]
     assert_equal "image/jpeg", upload.dig("headers", "Content-Type")
     assert_match(/\Acurl --fail -X PUT --data-binary @terrain_gps.jpg -H Content-Type:\\ image\/jpeg/, upload["curl"])
-    assert_equal %w[unsupported_type unsupported_type too_large invalid_checksum], data["rejected"].map { _1["code"] }
-    assert_equal({ "prepared" => 1, "rejected" => 4 }, AiAction.last.result)
-    assert_equal [ @map, users(:michael), "photo", nil ], McpUpload.sole.values_at(:map_id, :user_id, :kind, :attached_at).then { [ Map.find(_1[0]), User.find(_1[1]), _1[2], _1[3] ] }
+    assert_equal %w[unsupported_type too_large invalid_checksum], data["rejected"].map { _1["code"] }
+    assert_equal({ "prepared" => 2, "rejected" => 3 }, AiAction.last.result)
+    assert_equal [ @map, users(:michael), "photo", nil ], McpUpload.order(:id).first.values_at(:map_id, :user_id, :kind, :attached_at).then { [ Map.find(_1[0]), User.find(_1[1]), _1[2], _1[3] ] }
 
     text, error = call_tool(@viewer, "create_upload", { map_id: @map.id, files: [ spec("terrain.jpg", kind: "photo", type: "image/jpeg") ] })
     assert error

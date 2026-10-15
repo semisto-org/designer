@@ -11,15 +11,8 @@ export type DocumentUpload = {
   message?: string
 }
 
-const extensionOf = (name: string) => (name.split('.').pop() ?? '').toLowerCase()
-
-export function documentAccept(limits: DocumentLimits) {
-  return limits.extensions.map((e) => `.${e}`).join(',')
-}
-
-/** Why a file is refused before sending it, or null. Same rules as MapDocument. */
+/** Why a file is refused before sending it, or null. Same rule as MapDocument: any type, up to a size. */
 export function documentRejection(file: File, limits: DocumentLimits): string | null {
-  if (!limits.extensions.includes(extensionOf(file.name))) return t('documents.errors.type', { name: file.name })
   if (file.size > limits.maxBytes) return t('documents.errors.too_large', { name: file.name, max: formatMegabytes(limits.maxBytes).replace(' Mo', '') })
   return null
 }
