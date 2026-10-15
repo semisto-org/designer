@@ -165,6 +165,8 @@ class Map < ApplicationRecord
       zoom:, bbox:,
       region: region.as_inertia,
       role:,
+      # The views show « Formulaires » for a team's maps only.
+      teamId: organization_id,
       ownerName: owner.display_name,
       updatedAt: updated_at.iso8601,
       lockVersion: lock_version

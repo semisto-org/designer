@@ -16,6 +16,7 @@ import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, LAYER_COLORS, installFeatureLayers } from '@/map/layers/features'
 import { useMapInstance } from '@/map/MapContext'
 import { MapView } from '@/map/MapView'
+import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 import type { PublicMapProps } from '@/types/collab'
 
@@ -175,7 +176,7 @@ function Legend({ features, layers }: Pick<PublicMapProps, 'features' | 'layers'
 
 function FeatureCard({ feature, onClose }: { feature: MapFeature; onClose: () => void }) {
   const p = feature.properties
-  const m = measure(feature.geometry)
+  const m = measure(displayGeometry(feature))
   return (
     <aside className="absolute inset-x-2 bottom-12 z-20 rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-14 md:right-3 md:w-72" aria-live="polite">
       <div className="flex items-start justify-between gap-2">

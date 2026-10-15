@@ -15,6 +15,16 @@ class MapRegionTest < ActiveSupport::TestCase
     assert_equal "luxembourg", map.region.key
   end
 
+  test "a map placed before its region was equipped joins it on the next seed" do
+    map = Map.create!(name: "Jardin d'Ixelles", owner: users(:michael), center: point(4.37, 50.827))
+    assert_equal "brussels", map.region.key
+    map.update_columns(region_id: Region.europe.id)
+    berlin = Map.create!(name: "Jardin berlinois", owner: users(:michael), center: point(13.4, 52.5))
+    seed_regions
+    assert_equal "brussels", map.reload.region.key
+    assert_equal "europe", berlin.reload.region.key
+  end
+
   test "without a place, a new map starts on the European base" do
     assert_equal "europe", Map.create!(name: "Quelque part", owner: users(:michael)).region.key
   end

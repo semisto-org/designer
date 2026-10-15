@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Archive, Check, Moon, RotateCcw } from 'lucide-react'
+import { Archive, Check, Moon, RotateCcw, Trees } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Avatar } from '@/collab/Avatar'
 import { Button } from '@/components/ui/Button'
@@ -12,7 +12,8 @@ import { useBoard } from './board'
 /**
  * A team project's settings: who leads it, who of the team works on it
  * (their faces show on the board), the date promised to the client, its
- * phase, on hold or awake, closed or reopened. Opened from the board and
+ * phase, on hold or awake, closed or reopened; or one of the team's own
+ * places, which has none of the client settings. Opened from the board and
  * from the map's « Partager » dialog.
  */
 export function ProjectDialog({ project, onClose }: { project: BoardProject | null; onClose: () => void }) {
@@ -23,6 +24,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
   const [promisedWhat, setPromisedWhat] = useState('')
   const [phase, setPhase] = useState<BoardPhase>('design')
   const [onHold, setOnHold] = useState(false)
+  const [ownPlace, setOwnPlace] = useState(false)
   const [closing, setClosing] = useState(false)
   const [reason, setReason] = useState<ClosedReason>('declined')
   const [note, setNote] = useState('')
@@ -37,6 +39,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
     setPromisedWhat(project.promisedWhat ?? '')
     setPhase(project.phase)
     setOnHold(!!project.onHoldSince)
+    setOwnPlace(project.ownPlace)
     setClosing(false)
     setReason('declined')
     setNote('')
@@ -56,9 +59,11 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
     if (ok) onClose()
   }
 
-  const save = () => run({
-    lead_id: leadId,
-    crew_ids: [...new Set([...crew, ...(leadId ? [leadId] : [])])],
+  const people = { lead_id: leadId, crew_ids: [...new Set([...crew, ...(leadId ? [leadId] : [])])] }
+  // A place keeps its client settings untouched, should it become a project again.
+  const save = () => run(ownPlace ? { ...people, own_place: true } : {
+    ...people,
+    ...(project.ownPlace ? { own_place: false } : {}),
     promised_on: promisedOn || null,
     promised_what: promisedWhat || null,
     phase,
@@ -70,7 +75,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
       open
       onClose={onClose}
       dismissOnBackdrop={false}
-      title={t('team_board.project.title', { name: project.name })}
+      title={t(ownPlace ? 'team_board.project.place_title' : 'team_board.project.title', { name: project.name })}
       footer={project.closedAt ? (
         <Button onClick={() => void run({ reopen: true })} disabled={busy}><RotateCcw className="h-4 w-4" aria-hidden />{t('team_board.project.reopen')}</Button>
       ) : closing ? (
@@ -80,7 +85,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
         </>
       ) : (
         <>
-          <Button variant="ghost" className="mr-auto text-loam-600" onClick={() => setClosing(true)}><Archive className="h-4 w-4" aria-hidden />{t('team_board.project.close')}</Button>
+          {!ownPlace && <Button variant="ghost" className="mr-auto text-loam-600" onClick={() => setClosing(true)}><Archive className="h-4 w-4" aria-hidden />{t('team_board.project.close')}</Button>}
           <Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={() => void save()} disabled={busy}>{t('team_board.project.save')}</Button>
         </>
@@ -109,6 +114,14 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
         </div>
       ) : (
         <div className="space-y-6">
+          <label className={clsx('flex cursor-pointer items-start gap-3 rounded-xl px-3 py-2 ring-1 ring-inset', ownPlace ? 'bg-leaf-50 ring-leaf-400' : 'ring-loam-200')}>
+            <input type="checkbox" checked={ownPlace} onChange={(e) => setOwnPlace(e.target.checked)} className="mt-1 h-4 w-4 accent-prune-600" />
+            <span className="text-sm">
+              <span className="flex items-center gap-1.5 font-medium text-loam-800"><Trees className="h-4 w-4" aria-hidden />{t('team_board.project.own_place')}</span>
+              <span className="block text-loam-500">{t('team_board.project.own_place_hint')}</span>
+            </span>
+          </label>
+
           <Field label={t('team_board.project.lead')} hint={t('team_board.project.lead_hint')}>
             <Select value={lead} onChange={(e) => setLead(e.target.value)}>
               <option value="">{t('team_board.project.no_lead')}</option>
@@ -139,6 +152,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
             </div>
           </fieldset>
 
+          {!ownPlace && <>
           <div className="grid gap-4 sm:grid-cols-[11rem_1fr]">
             <Field label={t('team_board.project.promised')}>
               <Input type="date" value={promisedOn} onChange={(e) => setPromisedOn(e.target.value)} />
@@ -162,6 +176,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
               </span>
             </label>
           </div>
+          </>}
         </div>
       )}
     </Dialog>

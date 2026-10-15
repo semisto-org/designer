@@ -1,19 +1,25 @@
 # A sampling point on a map: planned on the terrain, taken in the field, then
 # analysed by a lab. The typed lab figures live in `results` (see
-# RESULT_FIELDS), the lab report PDF is attached as `lab_report`.
+# RESULT_FIELDS), any other figure of the reports (heavy metals, nitrogen…)
+# in `other_results`, and the lab reports themselves (one PDF per analysis)
+# are attached as `lab_reports`. What the person's AI read in those reports
+# waits in `results_draft` until a human keeps or refuses it
+# (SoilAnalysis::ResultsDraft).
 class SoilSample < ApplicationRecord
   include PointLocation
 
   STATUSES = %w[planned sampled].freeze
   SOURCES = %w[human suggested].freeze
   MAX_REPORT_BYTES = 15.megabytes
+  MAX_REPORTS = 10
+  MAX_OTHER_RESULTS = 60
   MAX_DEPTH_CM = 200
   RESULT_FIELDS = SoilAnalysis::Interpretation::FIELDS
   RESULT_KEYS = RESULT_FIELDS.keys.freeze
 
   belongs_to :map
   belongs_to :created_by, class_name: "User", optional: true
-  has_one_attached :lab_report
+  has_many_attached :lab_reports
 
   validates :label, presence: true, length: { maximum: 80 }
   validates :status, inclusion: { in: STATUSES }
@@ -22,7 +28,7 @@ class SoilSample < ApplicationRecord
   validates :depth_from_cm, :depth_to_cm, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: MAX_DEPTH_CM }
   validate :depth_range_is_ordered
   validate :results_are_valid
-  validate :lab_report_is_a_pdf
+  validate :lab_reports_are_pdfs
 
   scope :ordered, -> { order(:id) }
 
@@ -42,7 +48,23 @@ class SoilSample < ApplicationRecord
     super(clean)
   end
 
+  # Figures without a typed field, as the lab wrote them: [{ name, value, unit }].
+  # The value stays text (« < 0,5 », « 12,3 »): no reading is made of it.
+  def other_results=(value)
+    clean = Array(value).filter_map do |entry|
+      entry = entry.to_unsafe_h if entry.respond_to?(:to_unsafe_h)
+      next unless entry.respond_to?(:to_h)
+      entry = entry.to_h.stringify_keys
+      name = entry["name"].to_s.squish.first(80)
+      number = entry["value"].to_s.squish.first(40)
+      next if name.empty? || number.empty?
+      { "name" => name, "value" => number, "unit" => entry["unit"].to_s.squish.first(30).presence }.compact
+    end
+    super(clean.uniq { |entry| entry["name"].downcase }.first(MAX_OTHER_RESULTS))
+  end
+
   def analysed? = results.present?
+  def draft = SoilAnalysis::ResultsDraft.new(self)
   def depth_label = "#{depth_from_cm}–#{depth_to_cm} cm"
 
   def as_inertia(analyses: false)
@@ -51,8 +73,9 @@ class SoilSample < ApplicationRecord
       depthFromCm: depth_from_cm, depthToCm: depth_to_cm,
       sampledOn: sampled_on&.iso8601, lab:, labReference: lab_reference,
       results: results.slice(*RESULT_KEYS), notes:,
-      hasReport: lab_report.attached?,
-      reportFilename: lab_report.attached? ? lab_report.blob.filename.to_s : nil,
+      otherResults: other_results,
+      reports: lab_reports.map { |report| { id: report.id, filename: report.filename.to_s, byteSize: report.byte_size } },
+      draft: draft.as_inertia,
       createdAt: created_at.iso8601,
       # The reading (bands, explanations, texture class) is an analysis: paid.
       interpretation: analyses && analysed? ? SoilAnalysis::Interpretation.for(self) : nil
@@ -80,10 +103,13 @@ class SoilSample < ApplicationRecord
       end
     end
 
-    def lab_report_is_a_pdf
-      return unless lab_report.attached?
-      blob = lab_report.blob
-      errors.add(:base, I18n.t("soil.errors.report_not_pdf", name: blob.filename.to_s)) unless blob.content_type == "application/pdf"
-      errors.add(:base, I18n.t("soil.errors.report_too_large", name: blob.filename.to_s, max: "#{MAX_REPORT_BYTES / 1.megabyte} Mo")) if blob.byte_size > MAX_REPORT_BYTES
+    def lab_reports_are_pdfs
+      reports = lab_reports.to_a
+      errors.add(:base, I18n.t("soil.errors.too_many_reports", max: MAX_REPORTS)) if reports.size > MAX_REPORTS
+      reports.each do |report|
+        blob = report.blob
+        errors.add(:base, I18n.t("soil.errors.report_not_pdf", name: blob.filename.to_s)) unless blob.content_type == "application/pdf"
+        errors.add(:base, I18n.t("soil.errors.report_too_large", name: blob.filename.to_s, max: "#{MAX_REPORT_BYTES / 1.megabyte} Mo")) if blob.byte_size > MAX_REPORT_BYTES
+      end
     end
 end

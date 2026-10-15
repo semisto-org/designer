@@ -164,6 +164,14 @@ fr:
       LU: "Luxembourg"
       NL: "Pays-Bas"
       DE: "Allemagne"
+    legend:
+      title: "Strates"
+      planned: "En pointillés : pas encore planté"
+      labels: "Noms des plants sur la carte"
+      labels_name: "Nom"
+      labels_code: "Code"
+      labels_name_hint: "« 12 · Pommier » : le numéro et le nom du plant"
+      labels_code_hint: "« 12 · Ma do » : le numéro et les deux premières lettres du genre et de l'espèce"
     strata:
       canopy: "Canopée"
       sub_canopy: "Arborée basse"
@@ -496,6 +504,9 @@ fr:
     load_error: "La composition n'a pas pu être chargée."
   plant_feature:
     title: "Plante"
+    number: "Numéro sur le plan"
+    number_hint: "Donné tout seul au numéro libre suivant. Change-le si ton plan était déjà numéroté."
+    number_taken: "Le numéro %{number} est déjà porté par un autre plant de cette carte."
     species: "Espèce"
     variety: "Variété"
     variety_none: "Espèce type (sans variété)"

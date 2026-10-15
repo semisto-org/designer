@@ -159,6 +159,7 @@ fr:
       texture: "Texture"
       planned: "Prélèvement prévu"
       no_results: "Pas encore de résultats"
+      others_title: "Autres valeurs du laboratoire"
       legend: "B : bas · C : correct · É : élevé (repères généraux, %{provenance})"
       band_short:
         low: "B"

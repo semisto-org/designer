@@ -61,4 +61,23 @@ class Teams::BoardTest < ActiveSupport::TestCase
     @map.update_board!(phase: "completed")
     assert_empty board[:people].find { _1[:id] == users(:bob).id }[:projects]
   end
+
+  test "projects on hold are set apart and no longer count" do
+    @map.update_board!(lead_id: users(:bob).id, on_hold: true)
+    bob = board[:people].find { _1[:id] == users(:bob).id }
+    assert_equal [ [], [ @map.id ] ], bob.values_at(:projects, :dormant)
+  end
+
+  test "the team's own places leave the timeline, the season and the load, and are listed apart" do
+    nursery = Map.create!(name: "Pépinière", owner: users(:michael), region: regions(:wallonia), center: "SRID=4326;POINT(4.9 50.3)", organization: @team)
+    nursery.update_board!(lead_id: users(:bob).id, own_place: true)
+    list = nursery.task_lists.create!(name: "Saison")
+    list.tasks.create!(title: "Repiquage", step_kind: "plant", starts_on: Date.new(2026, 11, 2), due_on: Date.new(2026, 11, 20))
+
+    data = board
+    assert_equal [ @map.id ], data[:projects].map { _1[:id] }
+    assert_equal [ [ nursery.id, true ] ], data[:places].map { _1.values_at(:id, :ownPlace) }
+    assert_empty data[:steps]
+    assert_empty data[:people].find { _1[:id] == users(:bob).id }[:projects]
+  end
 end

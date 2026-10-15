@@ -1,7 +1,7 @@
 import type { Map as MapLibreMap } from 'maplibre-gl'
 
 /** Layers the plants overlay draws from its own sources (crowns and names). */
-export const PLANT_OVERLAY_LAYERS = ['plant-crowns-fill', 'plant-crowns-line', 'plant-labels-text']
+export const PLANT_OVERLAY_LAYERS = ['plant-crowns-fill', 'plant-crowns-casing', 'plant-crowns-line', 'plant-labels-text']
 
 /**
  * The « Calques » panel hides design layers by filtering the features

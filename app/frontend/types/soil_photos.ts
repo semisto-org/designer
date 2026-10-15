@@ -142,11 +142,31 @@ export type SoilSampleData = {
   labReference: string | null
   results: Partial<Record<SoilResultKey, number>>
   notes: string | null
-  hasReport: boolean
-  reportFilename: string | null
+  /** Figures without a typed field (heavy metals, nitrogen…), as the lab wrote them. */
+  otherResults: SoilOtherResult[]
+  /** The lab reports, one PDF per analysis (standard, heavy metals…). */
+  reports: SoilReportFile[]
+  /** Values the person's AI read in the reports, waiting to be kept or refused. */
+  draft: SoilResultsDraft | null
   createdAt: string
   /** Null when the owner's plan has no analyses. */
   interpretation: SoilReading | null
+}
+
+export type SoilOtherResult = { name: string; value: string; unit?: string }
+
+export type SoilReportFile = { id: number; filename: string; byteSize: number }
+
+export type SoilResultsDraft = {
+  results: { key: SoilResultKey; value: number; note?: string; current: number | null }[]
+  otherResults: { name: string; value: string; unit?: string; note?: string; current: string | null }[]
+  lab: string | null
+  labReference: string | null
+  sampledOn: string | null
+  rationale: string | null
+  /** Names of the reports the values were read from. */
+  reports: string[]
+  proposedAt: string | null
 }
 
 export type SoilSamplesResponse = {

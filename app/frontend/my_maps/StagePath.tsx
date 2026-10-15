@@ -13,6 +13,11 @@ const ICONS: Record<MapStage, ReactNode> = {
   plant: <><path d="M13 24v-8" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" /><circle cx="13" cy="9" r="6.5" fill="currentColor" /><circle cx="7.5" cy="12.5" r="4.5" fill="currentColor" /><circle cx="18.5" cy="12.5" r="4.5" fill="currentColor" /></>,
 }
 
+/** The plant of one step alone (quick switcher). */
+export function StageIcon({ stage, className }: { stage: MapStage; className?: string }) {
+  return <svg viewBox="0 0 26 26" aria-hidden="true" className={className}>{ICONS[stage] ?? ICONS.observe}</svg>
+}
+
 export function StagePath({ stage, small = false }: { stage: MapStage; small?: boolean }) {
   const at = STAGES.indexOf(stage)
   return (

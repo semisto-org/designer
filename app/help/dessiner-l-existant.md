@@ -44,7 +44,8 @@ Touche un élément sur la carte, ou dans le panneau **Éléments** qui les list
 - sa **Surface**, sa **Longueur** ou son **Périmètre** ;
 - ses **Caractéristiques**, propres à chaque type : hauteur d'un bâtiment, état d'un arbre et s'il est à conserver, profondeur d'une mare, capacité d'une citerne… ;
 - des **Estimations** pour certains éléments : volume d'eau d'une mare, terre à apporter dans un bac surélevé, plants à prévoir pour une haie ;
-- sa **Couleur**, si tu veux la distinguer des autres.
+- sa **Couleur**, si tu veux la distinguer des autres ;
+- pour une surface (une mare, un massif, un bâtiment…), **Angles arrondis** : coche la case, puis glisse le curseur de **Léger** à **Fort**. Les angles s'adoucissent sur la carte, jusqu'à une forme ovale ; la surface et les estimations suivent la forme arrondie, et les points que tu as cliqués restent ceux que tu modifies.
 
 Pour corriger un tracé, touche **Modifier la forme**, fais glisser les sommets (un point au milieu d'un côté ajoute un sommet), puis **Enregistrer la forme**.
 

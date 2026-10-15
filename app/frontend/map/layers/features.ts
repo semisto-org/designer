@@ -2,7 +2,7 @@ import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
-import { isRoundedZone, isZoneKind, roundedGeometry, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
+import { displayGeometry, isRounded, isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
 
 export const FEATURES_SOURCE = 'features'
@@ -40,20 +40,24 @@ function styleColorExpr(fallback: unknown): unknown {
 const layerColor = ['match', ['get', 'layer'], ...Object.entries(LAYER_COLORS).flat(), '#6e6355']
 const color = styleColorExpr(layerColor) as string
 const isZone = ['in', ['get', 'kind'], ['literal', ZONE_KINDS]]
+// A plant's point takes its strata colour when the plants overlay set one
+// (feature state, see PlantsOverlay), else the colour of its layer.
+const pointColor = ['case', ['!=', ['feature-state', 'strataColor'], null], ['to-color', ['feature-state', 'strataColor']], color]
 
 /**
- * Zones as the map draws them: rounded when asked (`rounded: true`), with
- * the measure written under their name (`zone_measure`), so every map that
- * shows features (editor, public map, dossier, printed plan) draws them the
- * same way.
+ * Features as the map draws them: rounded when asked (`rounded: true`, any
+ * surface), zones with the measure written under their name
+ * (`zone_measure`), so every map that shows features (editor, public map,
+ * dossier, printed plan) draws them the same way.
  */
 function withZones(data: MapFeatureCollection): MapFeatureCollection {
-  if (!data.features.some((f) => isZoneKind(f.properties?.kind))) return data
+  if (!data.features.some((f) => isZoneKind(f.properties?.kind) || isRounded(f.properties))) return data
   return {
     ...data,
     features: data.features.map((f) => {
-      if (!isZoneKind(f.properties?.kind)) return f
-      const geometry = isRoundedZone(f.properties) ? roundedGeometry(f.geometry) : f.geometry
+      if (!isZoneKind(f.properties?.kind) && !isRounded(f.properties)) return f
+      const geometry = displayGeometry(f)
+      if (!isZoneKind(f.properties?.kind)) return { ...f, geometry }
       const text = zoneMeasureText(f.properties, measure(geometry))
       return { ...f, geometry, properties: text ? { ...f.properties, zone_measure: text } : f.properties }
     }),
@@ -82,6 +86,20 @@ function zoneLabelLayout(placement: 'point' | 'line-center') {
 }
 
 const ZONE_LABEL_PAINT = { 'text-color': '#1b1712', 'text-halo-color': 'rgba(255, 255, 255, 0.9)', 'text-halo-width': 2, 'text-halo-blur': 0.5 }
+
+const isPlantPoint = ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]
+
+/**
+ * Named points and surfaces that get a pill. A blank name (plants carry
+ * `name: null`) would still draw an empty pill right over the point and
+ * hide its colour. The editor's plants overlay names plants itself, by
+ * crown size (see map/plants/labelRank): there, `withPlants: false`.
+ */
+export function featureLabelFilter({ withPlants = true }: { withPlants?: boolean } = {}): unknown[] {
+  const filter: unknown[] = ['all', ['to-boolean', ['coalesce', ['get', 'name'], '']], ['!', isZone]]
+  if (!withPlants) filter.push(['!', isPlantPoint])
+  return filter
+}
 
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
 export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollection) {
@@ -120,9 +138,9 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     source: FEATURES_SOURCE,
     filter: ['==', ['geometry-type'], 'Point'],
     paint: {
-      'circle-color': ['case', planned, '#ffffff', color] as never,
+      'circle-color': ['case', planned, '#ffffff', pointColor] as never,
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 20, 9],
-      'circle-stroke-color': ['case', planned, color, '#ffffff'] as never,
+      'circle-stroke-color': ['case', planned, pointColor, '#ffffff'] as never,
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 3, planned, 3, 1.5],
       'circle-opacity': ['case', draft as never, 0.6, planned, PLANNED_OPACITY, 1],
       'circle-stroke-opacity': ['case', planned, PLANNED_OPACITY, 1] as never,
@@ -133,7 +151,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'symbol',
     source: FEATURES_SOURCE,
     minzoom: 17,
-    filter: ['all', ['has', 'name'], ['!', isZone]] as never,
+    filter: featureLabelFilter() as never,
     ...markerLabel(['get', 'name']),
   })
   // Zones write their name (and measure) across them, from further out.

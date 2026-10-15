@@ -114,6 +114,8 @@ export type MapData = {
   bbox: BBox | null
   region: RegionData
   role: MapRole | null
+  /** The team the map belongs to, if any. */
+  teamId?: number | null
   ownerName: string
   updatedAt: string
   lockVersion: number

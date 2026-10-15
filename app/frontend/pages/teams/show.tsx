@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react'
-import { ArrowLeft, ArrowRight, CreditCard, SquareKanban, LogOut, Mail, MapPinned, Pencil, RefreshCw, Trash2, UserMinus, UsersRound } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CreditCard, MessageSquareText, SquareKanban, LogOut, Mail, MapPinned, Pencil, RefreshCw, Trash2, UserMinus, UsersRound } from 'lucide-react'
 import { useState } from 'react'
 import { Avatar } from '@/collab/Avatar'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -33,6 +33,15 @@ export default function TeamShow({ team, members, maps, billing, invitations, ma
         <span className="min-w-0 flex-1">
           <span className="block font-serif text-xl text-loam-900 group-hover:text-prune-700">{t('team_board.open')}</span>
           <span className="block text-sm text-loam-600">{t('team_board.open_hint')}</span>
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0 text-loam-400 group-hover:text-prune-600" aria-hidden="true" />
+      </Link>
+
+      <Link href={`${base}/forms`} className="group flex items-center gap-4 rounded-2xl border border-loam-200 bg-[#fffdf7] px-4 py-3.5 shadow-[0_1px_0_var(--color-loam-200)] transition hover:border-prune-300">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-lichen-100 text-lichen-700"><MessageSquareText className="h-5 w-5" aria-hidden="true" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-serif text-xl text-loam-900 group-hover:text-prune-700">{t('forms.team_card.title')}</span>
+          <span className="block text-sm text-loam-600">{t('forms.team_card.hint')}</span>
         </span>
         <ArrowRight className="h-5 w-5 shrink-0 text-loam-400 group-hover:text-prune-600" aria-hidden="true" />
       </Link>

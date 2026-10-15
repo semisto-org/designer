@@ -27,6 +27,7 @@ export type ProjectChange = {
   closed_reason?: ClosedReason
   closed_note?: string | null
   reopen?: boolean
+  own_place?: boolean
 }
 export type NextStep = { title: string; assignee_id: number | null; due_on: string }
 

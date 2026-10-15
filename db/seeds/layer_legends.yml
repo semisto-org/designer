@@ -1,5 +1,5 @@
 # Legends of the region data layers, by region key then layer key, stored
-# in the layer's `options.legend` by the catalogue seeds (02 to 05). Read from each
+# in the layer's `options.legend` by the catalogue seeds (02 to 07). Read from each
 # service's own legend on 2026-10-09 (ArcGIS REST /legend, WMS
 # GetLegendGraphic, IGN legend images), relabelled in plain French.
 #
@@ -225,6 +225,27 @@ wallonia:
       - { label: "Fossés", color: "#31849b", shape: line }
       - { label: "Talus", color: "#0ab050", shape: line }
       - { label: "Jachères et bandes en bord de champ", color: "#00b050", stroke: "#6e6e6e" }
+
+brussels:
+  cadastre:
+    items:
+      - { label: "Limite de parcelle", color: "#f5a623", shape: outline }
+    note: "Chaque parcelle porte la lettre de sa section suivie de son numéro."
+
+flanders:
+  ombrage:
+    gradient:
+      colors: ["#3c3c3c", "#9a9a9a", "#f2f2f2"]
+      labels: ["Ombre", "Lumière"]
+    note: "Le sol nu éclairé par un soleil rasant : talus, fossés et anciennes terrasses ressortent."
+  sols:
+    items:
+      - { label: "Limite entre deux types de sol", color: "#000000", shape: outline }
+    note: "Le sigle se lit lettre par lettre : la texture (Z sable, S sable limoneux, P et L limon sableux, A limon, E et U argile, V tourbe), puis le drainage (de a, sec, à g, très humide)."
+  cadastre:
+    items:
+      - { label: "Limite de parcelle", color: "#f5a623", shape: outline }
+    note: "Chaque parcelle porte la lettre de sa section suivie de son numéro."
 
 france:
   ombrage:

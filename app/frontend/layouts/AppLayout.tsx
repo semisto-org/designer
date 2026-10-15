@@ -1,10 +1,11 @@
 import { Link, usePage } from '@inertiajs/react'
-import { LifeBuoy, Sparkles } from 'lucide-react'
+import { LifeBuoy, Search, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { AccountMenu } from '@/components/AccountMenu'
 import { Flash } from '@/components/ui/Flash'
 import { Wordmark } from '@/components/Logo'
 import { t } from '@/lib/i18n'
+import { openQuickSwitcher, shortcutLabel } from '@/quick_switcher/QuickSwitcher'
 import type { SharedProps } from '@/types'
 import type { TeamAwareUser } from '@/types/teams'
 
@@ -46,6 +47,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex shrink-0 items-center gap-1 text-sm sm:gap-2">
+            {currentUser && (
+              <button
+                type="button"
+                onClick={openQuickSwitcher}
+                title={`${t('quick_switcher.open')} (${shortcutLabel()})`}
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-loam-500 hover:bg-prune-50 hover:text-prune-700"
+              >
+                <Search className="h-4 w-4" aria-hidden />
+                <span className="sr-only">{t('quick_switcher.open')}</span>
+                <kbd className="hidden rounded-md border border-loam-900/15 px-1.5 font-sans text-sm leading-5 text-loam-500 lg:block">{shortcutLabel()}</kbd>
+              </button>
+            )}
             {/* Help and news are not tools: they sit with the account, apart from the features. */}
             <AsideLink href="/help" label={t('nav.help')} active={url.startsWith('/help')} icon={<LifeBuoy className="h-4 w-4" aria-hidden />} />
             {currentUser && (

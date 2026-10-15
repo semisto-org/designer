@@ -11,6 +11,8 @@ export type BoardPerson = { id: number; name: string; avatarUrl: string | null }
 export type BoardProject = ListedMap & {
   phase: BoardPhase
   phaseChangedAt: string
+  /** One of the team's own places (its food forest, its nursery…): off the timeline. */
+  ownPlace: boolean
   lead: BoardPerson | null
   crew: BoardPerson[]
   promisedOn: string | null
@@ -46,8 +48,10 @@ export type BoardStep = { id: number; mapId: number; kind: StepKind; title: stri
 
 export type BoardMemberLoad = BoardPerson & {
   you: boolean
-  /** The projects (still followed) this person manages or works on. */
+  /** The active projects (still followed, not on hold) this person manages or works on. */
   projects: number[]
+  /** The projects on hold this person manages or works on: shown, not counted. */
+  dormant: number[]
   tasksSoon: number
   overdue: number
 }
@@ -63,6 +67,7 @@ export type TeamBoardProps = {
   stepKinds: StepKind[]
   members: (BoardPerson & { you: boolean })[]
   projects: BoardProject[]
+  places: BoardProject[]
   steps: BoardStep[]
   people: BoardMemberLoad[]
 }

@@ -8,6 +8,11 @@
 # hold, the project keeps its phase) and « Sans suite » (closed: a declined
 # offer, no reply). A map without a phase reads as « design ».
 #
+# A team map can also be one of the team's own places (« Lieu de l'équipe »:
+# its teaching food forest, its nursery…): no client, no offer, no phase. It
+# leaves the timeline, the season and everyone's load, and is listed apart
+# on the board; its phase is kept should it become a project again.
+#
 # The project's next step is not stored here: it is the map's first pending
 # task with a date (Task), so it has a person, a date and an e-mail.
 module MapBoard
@@ -49,7 +54,7 @@ module MapBoard
   # Changes how the board shows this map. Attributes: phase, lead_id,
   # crew_ids (people of the team who work on it), promised_on,
   # promised_what, on_hold (bool), closed_reason + closed_note (close),
-  # reopen (bool).
+  # reopen (bool), own_place (bool).
   def update_board!(attrs)
     attrs = attrs.to_h.symbolize_keys
     transaction do
@@ -57,6 +62,7 @@ module MapBoard
       self.lead_id = attrs[:lead_id].presence if attrs.key?(:lead_id)
       self.promised_on = attrs[:promised_on].presence if attrs.key?(:promised_on)
       self.promised_what = attrs[:promised_what] if attrs.key?(:promised_what)
+      self.own_place = ActiveModel::Type::Boolean.new.cast(attrs[:own_place]) || false if attrs.key?(:own_place)
       if attrs.key?(:on_hold)
         hold = ActiveModel::Type::Boolean.new.cast(attrs[:on_hold])
         self.on_hold_since = hold ? (on_hold_since || Time.current) : nil

@@ -75,20 +75,45 @@ export function zoneMeasureText(
 
 type Position = number[]
 
-/** How far a corner is rounded: a share of its shorter edge, never more than a few metres. */
-const CORNER_SHARE = 0.15
-const CORNER_MAX_M = 3
-/** Segments of each rounded corner: enough to read as a curve at plan zoom. */
+/**
+ * How strongly corners are rounded (`rounding`), from 1 (a hint) to 10 (as
+ * round as the outline allows). Level 3 is the default: 15 % of the shorter
+ * edge, 3 m at most, the soft corner of a zone drawn by hand.
+ */
+export const ROUNDING_MIN = 1
+export const ROUNDING_MAX = 10
+export const ROUNDING_DEFAULT = 3
+/** Segments of a rounded corner: enough to read as a curve at plan zoom, more for a wide one. */
 const CORNER_STEPS = 6
+const CORNER_STEPS_MAX = 24
 const M_PER_DEG = 111_320
+
+/** The rounding level of a feature: its `rounding`, else the default, kept within bounds. */
+export function roundingLevel(properties: object | null | undefined): number {
+  const raw = (properties as { rounding?: unknown } | null | undefined)?.rounding
+  const level = Number(raw)
+  if (raw == null || !Number.isFinite(level)) return ROUNDING_DEFAULT
+  return Math.min(ROUNDING_MAX, Math.max(ROUNDING_MIN, Math.round(level)))
+}
+
+/**
+ * A level's corner: its share of the shorter edge (5 % per level, so half
+ * the edge at 10, where neighbouring curves meet) and its radius cap in
+ * metres, which grows fast so a strongly rounded pond turns oval.
+ */
+function cornerOf(level: number): { share: number; maxM: number } {
+  return { share: 0.05 * level, maxM: 3 * (level / ROUNDING_DEFAULT) ** 2 }
+}
 
 /**
  * Softens each corner with a small curve (a quadratic Bézier through the
  * clicked vertex), the edges between them left straight. Distances are
- * measured in local metres so the curve is round on the ground, and the
- * radius stays small: a right-angled corner of 3 m loses about 3 m².
+ * measured in local metres so the curve is round on the ground, and at the
+ * default level the radius stays small: a right-angled corner of 3 m loses
+ * about 3 m².
  */
-function softenCorners(points: Position[], closed: boolean): Position[] {
+function softenCorners(points: Position[], closed: boolean, level: number): Position[] {
+  const { share, maxM } = cornerOf(level)
   const ring = closed ? points.slice(0, -1) : points
   const n = ring.length
   if (n < 3) return points
@@ -107,15 +132,16 @@ function softenCorners(points: Position[], closed: boolean): Position[] {
     const next = ring[(i + 1) % n]
     const lp = metres(v, prev)
     const ln = metres(v, next)
-    const r = Math.min(CORNER_SHARE * Math.min(lp, ln), CORNER_MAX_M)
+    const r = Math.min(share * Math.min(lp, ln), maxM)
     if (!(r > 0)) {
       out.push(v)
       continue
     }
     const a = toward(v, prev, r, lp)
     const b = toward(v, next, r, ln)
-    for (let s = 0; s <= CORNER_STEPS; s++) {
-      const t = s / CORNER_STEPS
+    const steps = Math.min(CORNER_STEPS_MAX, Math.max(CORNER_STEPS, Math.ceil(r)))
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps
       const u = 1 - t
       out.push([u * u * a[0] + 2 * u * t * v[0] + t * t * b[0], u * u * a[1] + 2 * u * t * v[1] + t * t * b[1]])
     }
@@ -124,14 +150,14 @@ function softenCorners(points: Position[], closed: boolean): Position[] {
 }
 
 /**
- * The outline drawn on the map for a zone with `rounded: true`: its corners
- * softened by a small curve, the edges kept straight, so the area barely
- * moves. The stored geometry keeps the clicked points, which stay the ones
- * edited; the area written on the map is the rounded one's.
+ * The outline drawn on the map for a feature with `rounded: true`: its
+ * corners softened by a curve as strong as its level, the edges kept
+ * straight between them. The stored geometry keeps the clicked points,
+ * which stay the ones edited; the area shown is the rounded one's.
  */
-export function roundedGeometry(geometry: Geometry): Geometry {
-  const ring = (r: Position[]) => (r.length >= 4 ? softenCorners(r, true) : r)
-  const line = (l: Position[]) => (l.length >= 3 ? softenCorners(l, false) : l)
+export function roundedGeometry(geometry: Geometry, level: number = ROUNDING_DEFAULT): Geometry {
+  const ring = (r: Position[]) => (r.length >= 4 ? softenCorners(r, true, level) : r)
+  const line = (l: Position[]) => (l.length >= 3 ? softenCorners(l, false, level) : l)
   switch (geometry.type) {
     case 'Polygon':
       return { ...geometry, coordinates: geometry.coordinates.map(ring) }
@@ -146,7 +172,15 @@ export function roundedGeometry(geometry: Geometry): Geometry {
   }
 }
 
-/** Whether a feature is a zone drawn with rounded corners. */
-export function isRoundedZone(properties: { kind?: unknown; rounded?: unknown } | null | undefined): boolean {
-  return isZoneKind(properties?.kind) && properties?.rounded === true
+/**
+ * Whether a feature is drawn with rounded corners: a zone, or any surface
+ * (a pond, a bed…), that asks for it.
+ */
+export function isRounded(properties: object | null | undefined): boolean {
+  return (properties as { rounded?: unknown } | null | undefined)?.rounded === true
+}
+
+/** The geometry a feature is drawn and measured with: rounded when it asks for it. */
+export function displayGeometry(feature: { geometry: Geometry; properties: object | null }): Geometry {
+  return isRounded(feature.properties) ? roundedGeometry(feature.geometry, roundingLevel(feature.properties)) : feature.geometry
 }

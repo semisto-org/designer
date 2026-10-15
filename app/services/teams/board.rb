@@ -6,7 +6,8 @@ module Teams
   # 2. every team map on one timeline, from request to completion, with its
   #    project manager, who works on it and the date promised to the client;
   # 3. the season: design, work site and planting steps over twelve months;
-  # 4. who carries what: how many projects each member is involved in.
+  # 4. who carries what: how many projects each member is involved in;
+  # 5. the team's own places (MapBoard), which have no phase.
   #
   # A few grouped queries for the whole team, never one per map.
   class Board
@@ -32,7 +33,8 @@ module Teams
         requestForm: form && { id: form.id, slug: form.slug, active: form.active },
         requests: requests.map { |r| request_json(r) },
         **settings,
-        projects: maps.map { |map| project_json(map) },
+        projects: projects.map { |map| project_json(map) },
+        places: places.map { |map| project_json(map) },
         steps: steps.map { |task| step_json(task) },
         people: people
       }
@@ -64,7 +66,11 @@ module Teams
         @maps ||= @team.maps.active.includes(:owner, :region, :lead, :crew).order(:name, :id).to_a
       end
 
-      def ids = maps.map(&:id)
+      # Client projects follow the timeline; the team's own places do not.
+      def projects = maps.reject(&:own_place)
+      def places = maps.select(&:own_place)
+
+      def ids = projects.map(&:id)
 
       def memberships
         @memberships ||= @team.memberships.includes(:user).to_a
@@ -83,6 +89,7 @@ module Teams
         map.as_inertia(@user).merge(
           sketch: sketches[map.id],
           phase: map.board_phase,
+          ownPlace: map.own_place,
           phaseChangedAt: (map.phase_changed_at || map.created_at).iso8601,
           lead: map.lead && person(map.lead),
           crew: map.crew.reject { |u| u.id == map.lead_id }.sort_by(&:display_name).map { |u| person(u) },
@@ -149,17 +156,21 @@ module Teams
       end
 
       # Who carries what: the projects (still followed, not yet in
-      # co-management) each member manages or works on, and their tasks on the team's maps for the coming four
-      # weeks.
+      # co-management) each member manages or works on, the active ones apart
+      # from those on hold (which no longer count), and their tasks on the
+      # team's maps for the coming four weeks.
       def people
         tasks = Task.pending.where(map_id: ids).where.not(assignee_id: nil)
         soon = tasks.where(due_on: ..(@today + LOAD_DAYS)).group(:assignee_id).count
         overdue = tasks.where(due_on: ...@today).group(:assignee_id).count
-        followed = maps.reject { |m| m.closed? || SETTLED_PHASES.include?(m.board_phase) }
+        followed = projects.reject { |m| m.closed? || SETTLED_PHASES.include?(m.board_phase) }
         memberships.map(&:user).sort_by { |u| u.display_name.downcase }.map do |user|
+          involved = followed.select { |m| m.lead_id == user.id || m.crew.any? { |c| c.id == user.id } }
+          dormant, active = involved.partition(&:on_hold?)
           person(user).merge(
             you: user.id == @user.id,
-            projects: followed.select { |m| m.lead_id == user.id || m.crew.any? { |c| c.id == user.id } }.map(&:id),
+            projects: active.map(&:id),
+            dormant: dormant.map(&:id),
             tasksSoon: soon.fetch(user.id, 0),
             overdue: overdue.fetch(user.id, 0)
           )

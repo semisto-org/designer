@@ -223,3 +223,8 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
   0% { transform: translateX(-100%); }
   100% { transform: translateX(300%); }
 }
+
+/* Quick switcher (Cmd+J): it opens like a page turned, not a pop-up. */
+@keyframes quick-switcher-in { from { opacity: 0; transform: translateY(-8px) scale(0.985); } }
+.quick-switcher[open] { animation: quick-switcher-in 180ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .quick-switcher[open] { animation: none; } }

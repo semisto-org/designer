@@ -15,7 +15,7 @@ module Maps
       respond_to do |format|
         format.html do
           render inertia: "maps/documents/index", props: {
-            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role),
+            map: @map.as_inertia(Current.user).slice(:id, :name, :areaM2, :role, :teamId),
             documents: documents_json,
             canEdit: editor?,
             limits: document_limits
@@ -56,7 +56,7 @@ module Maps
       end
 
       def documents_json
-        @map.documents.newest_first.includes(:uploaded_by, file_attachment: :blob, thumbnail_attachment: :blob).map { as_json(_1) }
+        @map.documents.newest_first.includes(:uploaded_by, { form_response: :form }, file_attachment: :blob, thumbnail_attachment: :blob).map { as_json(_1) }
       end
 
       def as_json(document)

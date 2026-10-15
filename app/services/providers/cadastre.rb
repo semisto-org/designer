@@ -1,7 +1,8 @@
 # Cadastral parcels of a region. By default through the region layer whose
 # `options.role` is "cadastre" (Wallonia: the SPW CADMAP_PARCELLES
-# identify); a region may name another provider in `settings.cadastre`
-# (France: "apicarto", Luxembourg: "inspire_wfs").
+# identify; Brussels: the SPF Finances CadGIS identify); a region may name
+# another provider in `settings.cadastre` (France: "apicarto", Luxembourg:
+# "inspire_wfs").
 #
 #   cadastre = Providers::Cadastre.for(region)   # nil when the region has none
 #   cadastre.parcel_at(lng, lat)                 # => Parcel or nil
@@ -44,7 +45,7 @@ module Providers
     # Raises GeoHttp::Unavailable when the upstream cannot answer.
     def parcel_at(lng, lat)
       results = ArcgisIdentify.request(@layer, lng:, lat:, zoom: ZOOM, return_geometry: true, tolerance: 0)
-      result = results.find { |r| r.is_a?(Hash) && r.dig("attributes", "CAPAKEY").present? && r["geometry"].is_a?(Hash) }
+      result = results.find { |r| r.is_a?(Hash) && capakey_of(r).present? && r["geometry"].is_a?(Hash) }
       return nil unless result
 
       parcel = build(result, lng, lat)
@@ -64,10 +65,9 @@ module Providers
 
     private
       def build(result, lng, lat)
-        attributes = result["attributes"]
-        entry = ArcgisIdentify::Formatters.cadastre_entry(attributes)
+        entry = ArcgisIdentify::Formatters.cadastre_entry(result["attributes"])
         Parcel.new(
-          capakey: attributes["CAPAKEY"].to_s.strip,
+          capakey: capakey_of(result),
           label: ArcgisIdentify::Formatters.clean(entry[:text]),
           detail: ArcgisIdentify::Formatters.clean(entry[:detail]).presence,
           geometry: EsriGeometry.to_geojson(result["geometry"]),
@@ -75,6 +75,11 @@ module Providers
         )
       rescue EsriGeometry::Invalid
         nil
+      end
+
+      # CAPAKEY (SPW, Wallonia) or CaPaKey (SPF Finances, Brussels).
+      def capakey_of(result)
+        ArcgisIdentify::Formatters.cadastre_attributes(result["attributes"].to_h)["CAPAKEY"].to_s.strip
       end
 
       def cache_key(capakey)

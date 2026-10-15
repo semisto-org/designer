@@ -11,6 +11,10 @@ Rails.application.routes.draw do
   get "auth/failure", to: "omniauth_callbacks#failure"
   get "dev/login", to: "dev/logins#show" if Rails.env.local?
 
+  # Cmd+J / Ctrl+J: the maps to jump to (QuickSwitcher).
+  get "quick_switcher", to: "quick_switcher#index", as: :quick_switcher, defaults: { format: :json }
+  get "quick_switcher/:id", to: "quick_switcher#show", as: :quick_switcher_map, defaults: { format: :json }
+
   resources :maps, except: :edit do
     scope module: :maps do
       resources :features, only: %i[index create update destroy]
@@ -199,6 +203,10 @@ Rails.application.routes.draw do
   resource :welcome, only: %i[show update]
   post "account/deletion_request", to: "accounts#deletion_request", as: :account_deletion_request
   post "webhooks/stripe", to: "webhooks/stripe#create"
+  # Answers to a team's Tally forms (FormInbox), filed in the map's documents.
+  post "webhooks/tally/:token", to: "webhooks/tally#create", as: :tally_webhook, constraints: { token: /[A-Za-z0-9]{20,64}/ }
+  # A team map's « Formulaires » view: the links to send, the answers received.
+  get "maps/:map_id/forms", to: "maps/forms#index", as: :map_forms
   # --- end billing-site ---
   # --- plants ---
   resources :plants, only: %i[index show]
@@ -298,7 +306,8 @@ Rails.application.routes.draw do
           post :suggestions
           post :bulk
         end
-        resource :report, only: %i[show create destroy], controller: "soil_sample_reports"
+        resources :reports, only: %i[show create destroy], controller: "soil_sample_reports"
+        resource :draft, only: %i[update destroy], controller: "soil_sample_drafts"
       end
       resources :bioindicator_observations, only: %i[index create update destroy] do
         get :species, on: :collection
@@ -360,6 +369,14 @@ Rails.application.routes.draw do
           post :qualify, on: :member
         end
       end
+      # The team's own forms (Tally) and the answers they bring in.
+      resources :forms, only: %i[index create destroy] do
+        collection do
+          post :connect
+          post :reset
+        end
+      end
+      resources :form_responses, only: %i[update destroy]
     end
   end
   resources :maps, only: [] do

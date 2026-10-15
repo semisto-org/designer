@@ -1,5 +1,6 @@
-# The lab report (PDF) of a soil sample: viewers read it (through a short-lived
-# link, after the role check), editors attach or remove it.
+# The lab reports (PDFs) of a soil sample, one per analysis (standard,
+# heavy metals…): viewers read them (through a short-lived link, after the
+# role check), editors attach or remove them.
 module Maps
   class SoilSampleReportsController < ApplicationController
     include MapScoped
@@ -8,33 +9,41 @@ module Maps
     before_action :set_map
     before_action :require_editor!, except: :show
     before_action :set_sample
+    before_action :set_report, only: %i[show destroy]
 
     def show
-      return render(json: { message: t("soil.errors.report_missing") }, status: :not_found) unless @sample.lab_report.attached?
       expires_in 4.minutes, private: true
-      redirect_to @sample.lab_report.url(expires_in: 5.minutes, disposition: params[:download].present? ? :attachment : :inline), allow_other_host: true
+      redirect_to @report.url(expires_in: 5.minutes, disposition: params[:download].present? ? :attachment : :inline), allow_other_host: true
     end
 
+    # One or several PDFs (soil_sample[lab_reports][]), all kept or none.
     def create
-      file = params.dig(:soil_sample, :lab_report)
-      @sample.lab_report.attach(file) if file.respond_to?(:original_filename)
-      if @sample.valid?
-        @sample.save!
-        render json: @sample.as_inertia(analyses: map_entitlements.analyses?)
+      files = Array(params.dig(:soil_sample, :lab_reports)).select { |file| file.respond_to?(:original_filename) }
+      return render(json: { message: t("soil.errors.report_missing") }, status: :unprocessable_entity) if files.empty?
+      before = @sample.lab_reports.map(&:id)
+      if @sample.lab_reports.attach(files)
+        render json: @sample.reload.as_inertia(analyses: map_entitlements.analyses?), status: :created
       else
-        @sample.lab_report.detach
+        errors = @sample.errors.dup
+        @sample.lab_reports.reject { |report| before.include?(report.id) }.each { |report| report.blob.purge_later if report.blob.persisted? }
+        @sample.errors.merge!(errors)
         render_errors @sample
       end
     end
 
     def destroy
-      @sample.lab_report.purge_later
-      render json: @sample.reload.as_inertia(analyses: map_entitlements.analyses?).merge(hasReport: false, reportFilename: nil)
+      @report.purge_later
+      render json: @sample.reload.as_inertia(analyses: map_entitlements.analyses?)
     end
 
     private
       def set_sample
         @sample = @map.soil_samples.find(params[:soil_sample_id])
+      end
+
+      def set_report
+        @report = @sample.lab_reports.find_by(id: params[:id]) or
+          render(json: { message: t("soil.errors.report_missing") }, status: :not_found)
       end
   end
 end

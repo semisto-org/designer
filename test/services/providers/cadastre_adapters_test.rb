@@ -19,6 +19,8 @@ class Providers::CadastreAdaptersTest < ActiveSupport::TestCase
     assert_kind_of Providers::Cadastre::Apicarto, Providers::Cadastre.for(region("france"))
     assert_kind_of Providers::Cadastre::InspireWfs, Providers::Cadastre.for(region("luxembourg"))
     assert_equal "cadastre", Providers::Cadastre.for(region("wallonia")).layer.key
+    assert_equal "cadastre", Providers::Cadastre.for(region("brussels")).layer.key
+    assert_equal "cadastre", Providers::Cadastre.for(region("flanders")).layer.key
     assert_nil Providers::Cadastre.for(Region.europe)
   end
 
@@ -35,6 +37,17 @@ class Providers::CadastreAdaptersTest < ActiveSupport::TestCase
     assert_equal "Paris · 376 m²", parcel.detail
     assert_equal "MultiPolygon", parcel.geometry["type"]
     assert_requested(:get, APICARTO) { |r| JSON.parse(r.uri.query_values["geom"]) == { "type" => "Point", "coordinates" => [ 2.35, 48.85 ] } }
+  end
+
+  test "Brussels: the parcel from the federal CadGIS identify, numbered from its CaPaKey" do
+    cadgis = %r{\Ahttps://ccff02\.minfin\.fgov\.be/geoservices/arcgis/rest/services/WMS/Cadastral_Layers/MapServer/identify}
+    stub_request(:get, cadgis).to_return(json_response("identify_cadastre_brussels.json"))
+    parcel = Providers::Cadastre.for(region("brussels")).parcel_at(4.37, 50.827)
+    assert_equal "21444B0021/00S008", parcel.capakey
+    assert_equal "Parcelle 21S8, section B", parcel.label
+    assert_equal "21444B0021/00S008", parcel.detail
+    assert_equal "MultiPolygon", parcel.geometry["type"]
+    assert_requested(:get, cadgis) { |r| r.uri.query_values["layers"] == "all:11" && r.uri.query_values["returnGeometry"] == "true" }
   end
 
   test "France: nothing here" do

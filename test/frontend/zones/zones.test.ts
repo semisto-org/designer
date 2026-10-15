@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { isRoundedZone, isZoneKind, nextZoneColor, roundedGeometry, ZONE_COLORS, zoneAreaText, zoneLengthText, zoneMeasureText } from '../../../app/frontend/map/zones/zones.ts'
+import { displayGeometry, isRounded, isZoneKind, nextZoneColor, roundedGeometry, ROUNDING_DEFAULT, ROUNDING_MAX, roundingLevel, ZONE_COLORS, zoneAreaText, zoneLengthText, zoneMeasureText } from '../../../app/frontend/map/zones/zones.ts'
 
 const nbsp = (text: string) => text.replace(/ | /g, ' ')
 
@@ -78,8 +78,26 @@ test('a rounded path keeps its two ends', () => {
   assert.ok(line.length > 3)
 })
 
-test('only zones that ask for it are rounded', () => {
-  assert.equal(isRoundedZone({ kind: 'zone', rounded: true }), true)
-  assert.equal(isRoundedZone({ kind: 'zone' }), false)
-  assert.equal(isRoundedZone({ kind: 'pond', rounded: true }), false)
+test('any surface that asks for it is rounded, a pond as well as a zone', () => {
+  assert.equal(isRounded({ kind: 'zone', rounded: true }), true)
+  assert.equal(isRounded({ kind: 'zone' }), false)
+  assert.equal(isRounded({ kind: 'pond', rounded: true }), true)
+  assert.equal(displayGeometry({ geometry: square as never, properties: { kind: 'pond' } }), square)
+  assert.notEqual(displayGeometry({ geometry: square as never, properties: { kind: 'pond', rounded: true } }), square)
+})
+
+test('the rounding level defaults to 3 and stays between 1 and 10', () => {
+  assert.equal(roundingLevel({}), ROUNDING_DEFAULT)
+  assert.equal(roundingLevel({ rounding: 7 }), 7)
+  assert.equal(roundingLevel({ rounding: 42 }), ROUNDING_MAX)
+  assert.equal(roundingLevel({ rounding: 0 }), 1)
+  assert.equal(roundingLevel({ rounding: 'oval' }), ROUNDING_DEFAULT)
+})
+
+test('a stronger level rounds more, up to an oval at the strongest', () => {
+  const lost = (level: number) => 2500 - areaM2((roundedGeometry(square as never, level) as { coordinates: number[][][] }).coordinates[0])
+  assert.deepEqual(roundedGeometry(square as never), roundedGeometry(square as never, ROUNDING_DEFAULT), 'level 3 is the zone default')
+  assert.ok(lost(1) < lost(3) && lost(3) < lost(6) && lost(6) < lost(10))
+  // Fully rounded, a square loses about 1/6 of its area to its curves (quadratic Bézier corners).
+  assert.ok(lost(10) > 300 && lost(10) < 500, `lost ${lost(10)} m²`)
 })

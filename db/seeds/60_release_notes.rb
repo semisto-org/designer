@@ -4,6 +4,50 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "nuit-air-froid", published_on: "2026-10-15",
+    title: "La nuit dans la vue 3D : où glisse l'air froid",
+    body: <<~TEXT,
+      Par nuit claire et sans vent, l'air se refroidit au contact du sol, devient plus lourd et glisse vers le bas, quel que soit le vent. Le nouvel onglet « Nuit » de la vue 3D le montre sur ton terrain, de 21 h à l'aube : la brume qui descend les pentes, la nappe d'air froid qui s'épaissit dans les fonds, et le sol qui blanchit là où le givre se forme en premier.
+
+      Tes haies et tes bâtiments retiennent l'air froid au-dessus d'eux. De quoi garder tes floraisons précoces hors des poches de gel. Et pour ne plus perdre le nord en tournant, une rose des vents suit la caméra : un clic remet la vue face au nord.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Un vallon vers 4 h 30 : la brume glisse sur les pentes et une nappe d'air froid de 5 m remplit le fond."
+  },
+  {
+    key: "bruxelles-flandre", published_on: "2026-10-15",
+    title: "Bruxelles et la Flandre, avec leurs photos aériennes et le cadastre",
+    body: <<~TEXT,
+      Ton terrain est à Bruxelles ou en Flandre ? Ta carte s'ouvre maintenant sur la photo aérienne de ta région, et tu choisis tes parcelles d'un clic sur le plan cadastral, comme en Wallonie.
+
+      En Flandre, remonte le temps : la photo d'hiver la plus récente, où l'on voit le sol sous les arbres nus, celle de l'été 2024, celle de 1971, et la carte de Ferraris dessinée vers 1777. Le relief ombré du LiDAR révèle les talus et les anciens fossés, et la carte des sols dit ce qu'il y a sous tes pieds. À Bruxelles, compare la photo d'aujourd'hui à celle de 2004.
+    TEXT
+    link_path: "/help/lire-les-couches-du-geoportail", link_label: "Lire l'aide",
+    screenshot_alt: "Un jardin près de Gand : le plan cadastral sur la photo aérienne, et la parcelle 416D, section A, choisie comme terrain."
+  },
+  {
+    key: "acces-rapide", published_on: "2026-10-14",
+    title: "Saute d'une carte à l'autre avec ⌘J",
+    body: <<~TEXT,
+      Où que tu sois dans le Designer, même au milieu d'une carte, tape ⌘J sur un Mac (Ctrl+J sur Windows) : un champ s'ouvre au centre. Écris quelques lettres, « wal » trouve Walhain, et Entrée t'y emmène. Les cartes que tu viens d'ouvrir passent en premier, une faute de frappe ou des initiales (« jfg ») suffisent.
+
+      À côté, le terrain de la carte choisie pousse sous tes yeux jusqu'à l'an 30, avec sa prochaine étape. Le même champ ouvre aussi les pages (« tâches », « plantes »…) ou crée une carte au nom que tu viens de taper. Sur téléphone, c'est la loupe du menu.
+    TEXT
+    link_path: "/maps", link_label: "Ouvrir mes cartes",
+    screenshot_alt: "L'accès rapide ouvert : « wal » trouve Walhain, dont le terrain s'affiche à droite avec sa prochaine étape."
+  },
+  {
+    key: "formulaires-tally", published_on: "2026-10-14",
+    title: "Les réponses de tes formulaires Tally, rangées dans la carte",
+    body: <<~TEXT,
+      Un retour en fin de projet, un suivi à un an… Tes formulaires restent dans Tally, et Designer range chaque réponse dans les documents de la carte du client.
+
+      Branche Tally une fois pour toute l'équipe, puis envoie le formulaire depuis le nouvel onglet « Formulaires » de la carte : le lien est déjà rempli pour ce client, et ses réponses y arrivent. Toute l'équipe les lit, et ton IA aussi.
+    TEXT
+    link_path: "/help/brancher-ses-formulaires-tally", link_label: "Lire l'aide",
+    screenshot_alt: "Une réponse au formulaire « Retour en fin de projet », ouverte dans les documents de la carte."
+  },
+  {
     key: "palette-gustative", published_on: "2026-10-13",
     title: "La palette gustative dans la fiche projet",
     body: <<~TEXT,

@@ -120,7 +120,7 @@ fr:
         one: "1 carte"
         other: "%{count} cartes"
       empty: "Aucune carte ne correspond à cette recherche."
-      totals: "%{palette} espèces en palette · %{plants} plantes posées · %{features} éléments dessinés · %{comments} commentaires · %{photos} photos"
+      totals: "%{palette} espèces en palette · %{plants} plantes posées · %{features} éléments dessinés · %{comments} commentaires · %{photos} photos · %{storage} de photos et documents"
       archived: "archivée"
       published: "publiée"
       no_area: "—"
@@ -140,6 +140,8 @@ fr:
         photos: "Photos"
         plan_images: "Fonds"
         ai_actions: "IA"
+        photos_mb: "Photos (Mo)"
+        documents_mb: "Docs (Mo)"
         last_activity: "Activité"
       hints:
         palette: "Espèces et variétés dans la palette végétale"
@@ -152,6 +154,8 @@ fr:
         photos: "Photos"
         plan_images: "Fonds de plan importés (PDF, images)"
         ai_actions: "Appels d'IA via le MCP"
+        photos_mb: "Espace disque des photos du terrain et des plantes, miniatures comprises"
+        documents_mb: "Espace disque des documents du projet et des rapports d'analyse de sol"
     impersonation:
       banner: "Tu es connecté en tant que %{name}"
       banner_detail: "%{email} · retour automatique à ton compte %{time}"
