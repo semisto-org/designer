@@ -18,6 +18,7 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
   const [date, setDate] = useState(todayIso())
   const speciesId = numberProperty(feature, 'species_id')
   const varietyId = numberProperty(feature, 'variety_id')
+  const number = numberProperty(feature, 'number')
   const plantedOn = typeof feature.properties.planted_on === 'string' ? feature.properties.planted_on : null
   const species = speciesId != null ? data?.species[String(speciesId)] : undefined
   const variety = varietyId != null ? data?.varieties[String(varietyId)] : undefined
@@ -64,6 +65,27 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
       )}
 
       <ShapeEditButton feature={feature} />
+
+      {editor.canEdit ? (
+        <Field label={t('plant_feature.number')} hint={t('plant_feature.number_hint')}>
+          <Input
+            key={`${feature.properties.id}:${number ?? ''}`}
+            type="number"
+            min={1}
+            inputMode="numeric"
+            className="w-28"
+            defaultValue={number ?? ''}
+            onBlur={(e) => {
+              const value = Number(e.target.value)
+              if (Number.isInteger(value) && value > 0 && value !== number) void save({ number: value })
+              else e.target.value = number != null ? String(number) : ''
+            }}
+            onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+          />
+        </Field>
+      ) : number != null ? (
+        <p className="text-loam-600">{t('plant_feature.number')} : <span className="font-medium tabular-nums text-loam-900">{number}</span></p>
+      ) : null}
 
       {editor.canEdit && (
         palette.length === 0 ? (

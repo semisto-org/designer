@@ -87,6 +87,20 @@ function zoneLabelLayout(placement: 'point' | 'line-center') {
 
 const ZONE_LABEL_PAINT = { 'text-color': '#1b1712', 'text-halo-color': 'rgba(255, 255, 255, 0.9)', 'text-halo-width': 2, 'text-halo-blur': 0.5 }
 
+const isPlantPoint = ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]
+
+/**
+ * Named points and surfaces that get a pill. A blank name (plants carry
+ * `name: null`) would still draw an empty pill right over the point and
+ * hide its colour. The editor's plants overlay names plants itself, by
+ * crown size (see map/plants/labelRank): there, `withPlants: false`.
+ */
+export function featureLabelFilter({ withPlants = true }: { withPlants?: boolean } = {}): unknown[] {
+  const filter: unknown[] = ['all', ['to-boolean', ['coalesce', ['get', 'name'], '']], ['!', isZone]]
+  if (!withPlants) filter.push(['!', isPlantPoint])
+  return filter
+}
+
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
 export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollection) {
   ensureLabelBackground(map)
@@ -137,9 +151,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'symbol',
     source: FEATURES_SOURCE,
     minzoom: 17,
-    // A blank name (plants carry `name: null`) would still draw an empty pill
-    // right over the point and hide its colour.
-    filter: ['all', ['to-boolean', ['coalesce', ['get', 'name'], '']], ['!', isZone]] as never,
+    filter: featureLabelFilter() as never,
     ...markerLabel(['get', 'name']),
   })
   // Zones write their name (and measure) across them, from further out.

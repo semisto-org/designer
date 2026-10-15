@@ -9,7 +9,9 @@ import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
-import { FEATURES_SOURCE } from '@/map/layers/features'
+import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
+import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
+import { usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { plantStrata, STRATA_COLORS } from '@/map/plants/strata'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
@@ -20,7 +22,7 @@ const LABELS = 'plant-labels'
 
 type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean }
 // `featureId` makes crowns and names select their plant (see map/featurePick).
-type LabelProps = { featureId: number; label: string; planted: boolean }
+type LabelProps = { featureId: number; label: string; planted: boolean; minZoom: number; rank: number }
 /** Each plant's strata colour, for its point in the features source. */
 type PointColors = Map<number, string>
 
@@ -30,7 +32,7 @@ const PLANTED = ['get', 'planted'] as unknown as boolean
  * Adult crowns as real-size circles (metres), from each plant's species.
  * Planned plants (not planted yet) are left out of the current situation.
  */
-function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario) {
+function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario, labelStyle: PlantLabelStyle) {
   const crowns: Feature<Polygon, CrownProps>[] = []
   const labels: Feature<Point, LabelProps>[] = []
   const points: PointColors = new Map()
@@ -39,9 +41,32 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     if (!inScenario(feature.properties, scenario)) continue
     const strata = plantStrata(feature, data)
     const species = data?.species[String(numberProperty(feature, 'species_id'))]
+    const variety = species ? data?.varieties[String(numberProperty(feature, 'variety_id'))] : undefined
+    // Its number, then the name the person gave it (else its species and
+    // variety), or the short latin code when the viewer asked for it.
+    const label = plantLabelText({
+      number: numberProperty(feature, 'number'),
+      ownName: feature.properties.name,
+      speciesName: species ? (species.commonName ?? species.latinName) : null,
+      varietyName: variety?.name,
+      latinName: variety?.latinName ?? species?.latinName,
+    }, labelStyle)
+    if (label) {
+      const crownM = species?.crownM
+      labels.push({
+        type: 'Feature',
+        geometry: feature.geometry,
+        properties: {
+          featureId: feature.properties.id,
+          planted: !isPlannedPlant(feature.properties),
+          label,
+          minZoom: plantLabelZoom(crownM),
+          rank: plantLabelRank(crownM),
+        },
+      })
+    }
     if (!strata || !species) continue
     points.set(feature.properties.id, STRATA_COLORS[strata])
-    const varietyId = numberProperty(feature, 'variety_id')
     const radiusM = Math.max(species.crownM / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
     crowns.push({
@@ -53,12 +78,6 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
         selected: editor.selectedId === feature.properties.id,
       },
     })
-    const variety = varietyId != null ? data?.varieties[String(varietyId)] : undefined
-    labels.push({
-      type: 'Feature',
-      geometry: feature.geometry,
-      properties: { featureId: feature.properties.id, planted: !isPlannedPlant(feature.properties), label: variety ? `${species.commonName ?? species.latinName} '${variety.name}'` : species.commonName ?? species.latinName },
-    })
   }
   return {
     crowns: { type: 'FeatureCollection', features: crowns } as FeatureCollection<Polygon, CrownProps>,
@@ -67,9 +86,10 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
   }
 }
 
-// Names of planned plants fade with their crowns.
+// Names of planned plants fade with their crowns. Big crowns are named
+// first (from zoom 17) and win collisions; small plants follow as one zooms in.
 const plantLabel = (() => {
-  const { layout, paint } = markerLabel(['get', 'label'])
+  const { layout, paint } = markerLabel(['get', 'label'], { 'symbol-sort-key': ['get', 'rank'], 'text-padding': 6 })
   const opacity = ['case', PLANTED, 1, PLANNED_OPACITY] as never
   return { layout, paint: { ...paint, 'text-opacity': opacity, 'icon-opacity': opacity } }
 })()
@@ -77,6 +97,8 @@ const plantLabel = (() => {
 function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   ensureLabelBackground(map)
   colorPoints(map, data.points)
+  // Plants are named here, by crown size: not a second time by the features layer.
+  if (map.getLayer('features-label')) map.setFilter('features-label', featureLabelFilter({ withPlants: false }) as never)
   const crowns = map.getSource(CROWNS) as GeoJSONSource | undefined
   if (crowns) {
     crowns.setData(data.crowns)
@@ -117,13 +139,15 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
       'line-dasharray': ['case', PLANTED, ['literal', [1, 0]], ['literal', [2, 1.5]]] as never,
     },
   }, before)
+  // Under the other names (zones, pond, buildings), which MapLibre places first.
   map.addLayer({
     id: `${LABELS}-text`,
     type: 'symbol',
     source: LABELS,
-    minzoom: 18,
+    minzoom: 17,
+    filter: ['>=', ['zoom'], ['get', 'minZoom']],
     ...plantLabel,
-  })
+  }, map.getLayer('features-label') ? 'features-label' : undefined)
 }
 
 /**
@@ -162,7 +186,8 @@ export default function PlantsOverlay() {
   editorRef.current = editor
   const map = editor.instance
 
-  const layers = useMemo(() => crownsOf(editor, data, scenario), [editor.features, editor.selectedId, data, scenario]) // eslint-disable-line react-hooks/exhaustive-deps
+  const labelStyle = usePlantLabelStyle()
+  const layers = useMemo(() => crownsOf(editor, data, scenario, labelStyle), [editor.features, editor.selectedId, data, scenario, labelStyle]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Install the crowns, and again after a basemap style change.
   const latest = useRef(layers)

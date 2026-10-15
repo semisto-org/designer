@@ -212,6 +212,9 @@
   },
   "plant_feature": {
     "title": "Plante",
+    "number": "Numéro sur le plan",
+    "number_hint": "Donné tout seul au numéro libre suivant. Change-le si ton plan était déjà numéroté.",
+    "number_taken": "Le numéro %{number} est déjà porté par un autre plant de cette carte.",
     "species": "Espèce",
     "variety": "Variété",
     "variety_none": "Espèce type (sans variété)",
