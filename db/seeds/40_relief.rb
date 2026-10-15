@@ -122,3 +122,14 @@ if (france = Region.find_by(key: "france"))
   )
   france.save!
 end
+
+# A relief imported before its region had a photo for the 3D view (Brussels
+# and Flanders, under the Copernicus DEM) is imported again once, to lay the
+# photo under it. A photo that failed then leaves a warning: never retried.
+texture_warning = I18n.t("relief.warnings.texture", locale: :fr)
+MapTerrain.where(status: "ready").where.missing(:texture_attachment).includes(map: :region).find_each do |terrain|
+  next if Array(terrain.metadata["warnings"]).include?(texture_warning)
+  next unless terrain.map&.region && Providers::Elevation.for(terrain.map.region)&.dataset?(:texture)
+
+  ReliefImportJob.perform_later(terrain)
+end

@@ -102,6 +102,16 @@ class RegionLayer < ApplicationRecord
     end
   end
 
+  # One image of a WMS or ArcGIS layer over an EPSG:3857 box [west, south,
+  # east, north] (the photo under the 3D relief); nil for other kinds.
+  def upstream_image_url(bbox, width:, height:)
+    box = bbox.map { |value| value.round(3) }.join(",")
+    case kind
+    when "wms" then with_query(wms_query(bbox: box, width:, height:))
+    when "arcgis_rest" then with_query(export_query(bbox: box, width:, height:))
+    end
+  end
+
   def as_inertia
     {
       id:, key:, name:, group: group_name, category:, kind:,
@@ -118,18 +128,18 @@ class RegionLayer < ApplicationRecord
       "#{url}#{url.include?("?") ? "&" : "?"}#{query}"
     end
 
-    def wms_query(bbox:)
+    def wms_query(bbox:, width: tile_size, height: tile_size)
       transparent = image_format == "image/png" ? "TRUE" : "FALSE"
       # BBOX stays last and unescaped: MapLibre substitutes the placeholder.
       { SERVICE: "WMS", VERSION: "1.3.0", REQUEST: "GetMap", LAYERS: layers.to_s, STYLES: "",
         FORMAT: image_format, TRANSPARENT: transparent, CRS: "EPSG:3857",
-        WIDTH: tile_size, HEIGHT: tile_size }.to_query.then { |q| "#{q}&BBOX=#{bbox}" }
+        WIDTH: width, HEIGHT: height }.to_query.then { |q| "#{q}&BBOX=#{bbox}" }
     end
 
-    def export_query(bbox:)
+    def export_query(bbox:, width: tile_size, height: tile_size)
       format = image_format == "image/jpeg" ? "jpg" : "png32"
       params = { f: "image", format:, transparent: format == "png32", bboxSR: 3857, imageSR: 3857,
-                 size: "#{tile_size},#{tile_size}" }
+                 size: "#{width},#{height}" }
       params[:layers] = "show:#{layers}" if layers.present?
       "#{params.to_query}&bbox=#{bbox}"
     end
