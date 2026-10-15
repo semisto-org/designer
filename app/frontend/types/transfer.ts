@@ -59,6 +59,8 @@ export type PaidFeature = 'pdf_export' | 'analyses' | 'ai_drafts'
 /** What taking the map over changes for the recipient's plan (MapTransfer::PlanImpact). */
 export type PlanImpactData = {
   billing: boolean
+  /** The team that pays for this map (« Forfait de l'équipe »): its plan stays. */
+  teamPays?: string | null
   plan: string
   planName: string
   maxMaps: number

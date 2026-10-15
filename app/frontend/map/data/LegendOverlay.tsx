@@ -8,7 +8,8 @@ import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
 import { useLayerState, visibleOverlays } from '@/map/data/store'
 import { useDrawingState } from '@/map/drawing/store'
-import { isPlant } from '@/map/plants/properties'
+import { numberRanges } from '@/map/plants/labelRank'
+import { isPlant, numberProperty } from '@/map/plants/properties'
 import { plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
 import { setPlantLabelStyle, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { usePlanting } from '@/map/plants/store'
@@ -26,26 +27,46 @@ function storedOpen(): boolean | null {
   }
 }
 
+/** The plant numbers of one species (and variety) on the map, for the « Numéro » legend. */
+type NumberedGroup = { key: string; name: string; strata: Strata | null; numbers: number[] }
+
+type PlantLegend = { counts: StrataCount[]; planned: boolean; numbered: NumberedGroup[] }
+
 /**
- * The strata of the plants shown on the map, from the highest down, and
- * whether some of them are still to plant (dashed).
+ * The strata of the plants shown on the map, from the highest down,
+ * whether some of them are still to plant (dashed), and their numbers by
+ * species, first number first.
  */
-function usePlantStrata(): { counts: StrataCount[]; planned: boolean } {
+function usePlantStrata(): PlantLegend {
   const { features, map } = useEditor()
   const { data } = usePlanting(map.id)
   const scenario = useScenario()
   const hidden = useDrawingState((s) => s.hiddenLayers)
-  if (hidden.includes('plants')) return { counts: [], planned: false }
+  if (hidden.includes('plants')) return { counts: [], planned: false, numbered: [] }
   const strata: Strata[] = []
+  const groups = new Map<string, NumberedGroup>()
   let planned = false
   for (const feature of features) {
     if (!isPlant(feature) || feature.properties.status === 'rejected' || !inScenario(feature.properties, scenario)) continue
     const s = plantStrata(feature, data)
+    const number = numberProperty(feature, 'number')
+    const speciesId = numberProperty(feature, 'species_id')
+    const species = speciesId != null ? data?.species[String(speciesId)] : undefined
+    if (number != null && number > 0 && species) {
+      const varietyId = numberProperty(feature, 'variety_id')
+      const variety = varietyId != null ? data?.varieties[String(varietyId)] : undefined
+      const key = `${speciesId}:${varietyId ?? ''}`
+      const speciesName = species.commonName ?? species.latinName
+      const group = groups.get(key) ?? { key, name: variety ? `${speciesName} '${variety.name}'` : speciesName, strata: s, numbers: [] }
+      group.numbers.push(number)
+      groups.set(key, group)
+    }
     if (!s) continue
     strata.push(s)
     planned ||= isPlannedPlant(feature.properties)
   }
-  return { counts: strataCounts(strata), planned }
+  const numbered = [...groups.values()].sort((a, b) => Math.min(...a.numbers) - Math.min(...b.numbers))
+  return { counts: strataCounts(strata), planned, numbered }
 }
 
 /**
@@ -122,13 +143,16 @@ export default function LegendOverlay() {
 }
 
 /** One line per strata on the map: its colour, its name and how many plants. */
-function StrataLegend({ counts, planned }: { counts: StrataCount[]; planned: boolean }) {
+function StrataLegend({ counts, planned, numbered }: PlantLegend) {
+  const style = usePlantLabelStyle()
   return (
     <div data-testid="strata-legend">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-loam-800">{t('plants.legend.title')}</h3>
         <PlantLabelSwitch />
       </div>
+      {/* The numbers are what the map shows now: read them first. */}
+      {style === 'number' && numbered.length > 0 && <NumberLegend groups={numbered} />}
       <ul className="space-y-1">
         {counts.map(({ strata, count }) => (
           <li key={strata} className="flex items-center gap-2 text-sm leading-tight text-loam-700">
@@ -148,12 +172,34 @@ function StrataLegend({ counts, planned }: { counts: StrataCount[]; planned: boo
   )
 }
 
-/** « Nom » or « Code »: how plants are named on the map (« 12 · Pommier » or « 12 · Ma do »). */
+/** « Numéro »: which species each number on the map stands for, as on a planting plan. */
+function NumberLegend({ groups }: { groups: NumberedGroup[] }) {
+  return (
+    <div className="mb-3 border-b border-loam-100 pb-3" data-testid="number-legend">
+      <h4 className="mb-1.5 text-sm font-medium text-loam-600">{t('plants.legend.numbers')}</h4>
+      <ul className="space-y-1">
+        {groups.map((group) => (
+          <li key={group.key} className="flex items-baseline gap-2 text-sm leading-tight text-loam-700">
+            <span
+              className="mt-0.5 inline-block h-2.5 w-2.5 shrink-0 self-start rounded-full"
+              style={{ background: group.strata ? STRATA_COLORS[group.strata] : '#3d7d42' }}
+              aria-hidden="true"
+            />
+            <span className="shrink-0 font-medium tabular-nums text-loam-900">{numberRanges(group.numbers)}</span>
+            <span className="min-w-0 flex-1">{group.name}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/** « Nom », « Code » or « Numéro »: how plants are named on the map (« 12 · Pommier », « 12 · Ma do » or « 12 » in the point). */
 function PlantLabelSwitch() {
   const style = usePlantLabelStyle()
   return (
     <div role="radiogroup" aria-label={t('plants.legend.labels')} className="flex rounded-full bg-loam-100 p-0.5 text-sm">
-      {(['name', 'code'] as const).map((value) => (
+      {(['name', 'code', 'number'] as const).map((value) => (
         <button
           key={value}
           type="button"
@@ -161,7 +207,7 @@ function PlantLabelSwitch() {
           aria-checked={style === value}
           title={t(`plants.legend.labels_${value}_hint`)}
           onClick={() => setPlantLabelStyle(value)}
-          className={clsx('rounded-full px-2.5 py-0.5', style === value ? 'bg-white font-medium text-loam-900 shadow-sm' : 'text-loam-600 hover:text-loam-800')}
+          className={clsx('rounded-full px-2 py-0.5', style === value ? 'bg-white font-medium text-loam-900 shadow-sm' : 'text-loam-600 hover:text-loam-800')}
         >
           {t(`plants.legend.labels_${value}`)}
         </button>

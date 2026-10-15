@@ -27,3 +27,12 @@ export function strataCounts(strata: Iterable<Strata>): StrataCount[] {
   for (const s of strata) counts.set(s, (counts.get(s) ?? 0) + 1)
   return STRATA.filter((s) => counts.has(s)).map((s) => ({ strata: s, count: counts.get(s)! }))
 }
+
+/** Ink for a number written on a strata colour: white on dark hues, ink on light ones. */
+export function inkOn(color: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(color.slice(i, i + 2), 16) / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.3 ? '#1b1712' : '#ffffff'
+}

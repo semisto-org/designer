@@ -38,7 +38,8 @@ module Maps
     private
       def page_props
         base = {
-          map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2, :role),
+          map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2, :role, :teamId)
+            .merge(offerBuilder: Offer.shown_to?(@map, Current.user)),
           team: @map.organization && { name: @map.organization.name, member: @map.organization.member?(Current.user) },
           canUseOffers: offer_access?, unavailableReason: (unavailable_reason unless offer_access?)
         }

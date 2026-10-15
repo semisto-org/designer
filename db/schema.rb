@@ -723,6 +723,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_180000) do
     t.string "slug", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "billing_user_id"
+    t.index ["billing_user_id"], name: "index_organizations_on_billing_user_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
 
@@ -1376,6 +1378,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_180000) do
   add_foreign_key "organization_invitations", "users", column: "invited_by_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "organizations", "users", column: "billing_user_id", on_delete: :nullify
   add_foreign_key "palette_items", "maps", on_delete: :cascade
   add_foreign_key "palette_items", "plant_species", column: "species_id"
   add_foreign_key "palette_items", "plant_varieties", column: "variety_id"

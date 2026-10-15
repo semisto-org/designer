@@ -18,8 +18,11 @@ export function plantLabelRank(crownM: number | null | undefined): number {
   return crownM != null && Number.isFinite(crownM) ? -crownM : 0
 }
 
-/** How plants are named on the map: their name, or the short latin code. */
-export type PlantLabelStyle = 'name' | 'code'
+/**
+ * How plants are named on the map: their name, the short latin code, or
+ * their number alone, written in their point (the legend then lists them).
+ */
+export type PlantLabelStyle = 'name' | 'code' | 'number'
 
 /**
  * The first two letters of the genus and of the species, as designers write
@@ -54,4 +57,17 @@ export function plantLabelText(input: LabelInput, style: PlantLabelStyle): strin
   const text = style === 'code' ? plantCode(input.latinName) ?? name : name
   if (input.number != null && input.number > 0) return text ? `${input.number} · ${text}` : String(input.number)
   return text || null
+}
+
+/** Plant numbers as a plan legend writes them: « 3, 5–7, 12 ». */
+export function numberRanges(numbers: number[]): string {
+  const sorted = [...new Set(numbers)].sort((a, b) => a - b)
+  const parts: string[] = []
+  for (let i = 0; i < sorted.length; i++) {
+    let j = i
+    while (j + 1 < sorted.length && sorted[j + 1] === sorted[j] + 1) j++
+    parts.push(j - i >= 2 ? `${sorted[i]}–${sorted[j]}` : sorted.slice(i, j + 1).join(', '))
+    i = j
+  }
+  return parts.join(', ')
 }

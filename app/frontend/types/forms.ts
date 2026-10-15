@@ -38,7 +38,7 @@ export type MapFormLink = { id: number; name: string; url: string; link: string;
 export type MapFormResponse = FormResponseData & { documentId: number | null }
 
 export type MapFormsPageProps = {
-  map: { id: number; name: string; role: string | null; teamId: number | null }
+  map: { id: number; name: string; role: string | null; teamId: number | null; offerBuilder?: boolean }
   team: { id: number; name: string; admin: boolean } | null
   /** Tally is connected for the team (an admin created the inbox). */
   connected: boolean

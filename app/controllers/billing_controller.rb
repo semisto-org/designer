@@ -28,7 +28,9 @@ class BillingController < ApplicationController
         pass: pass && pass_json(pass, at),
         expiredPass: expired && pass_json(expired, at),
         subscription: subscription && subscription_json(subscription),
-        ownedMaps: user.owned_maps.active.count,
+        ownedMaps: user.billed_maps.count,
+        # Teams whose maps this plan also pays for (« Forfait de l'équipe »).
+        paidTeams: user.paid_teams.order(:name).map { |team| { id: team.id, name: team.name } },
         maxMaps: user.entitlements.max_maps,
         readOnlyMaps: user.read_only_maps_count,
         drone: user.plan_purchases.drone.paid.newest_first.limit(5).map { |p| { paidAt: p.starts_at.iso8601 } },

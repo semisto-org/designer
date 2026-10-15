@@ -17,6 +17,8 @@ export type CurrentUser = {
   accountKind?: 'individual' | 'professional' | null
 }
 
+export type OtherAccount = { sessionId: number; name: string; email: string; avatarUrl: string | null }
+
 export type EntitlementsData = {
   plan: 'free' | 'yearly' | 'atelier' | 'bureau'
   maxMaps: number
@@ -33,6 +35,8 @@ export type SharedProps = {
   entitlements: EntitlementsData | null
   /** An admin is signed in as this user (« Se connecter en tant que »). */
   impersonation: import('./admin').ImpersonationData | null
+  /** Other accounts signed in on this browser (« Changer de compte »). */
+  otherAccounts?: OtherAccount[]
   /** Signed in: entries of « Nouveautés » not seen yet. */
   releaseNotes: import('./releaseNotes').ReleaseNotesStatus | null
   env: { googleSignIn: boolean; billing: boolean; plantnet: boolean }

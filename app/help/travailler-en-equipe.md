@@ -11,7 +11,8 @@ Un bureau d'études, une association, un groupe en formation : quand plusieurs p
 
 - Chaque membre de l'équipe **modifie toutes les cartes confiées à l'équipe** et participe à leurs discussions.
 - Les membres **n'occupent pas** les 3 places d'éditeur d'une carte : celles-ci restent libres pour tes invités extérieurs (un client, un voisin, un formateur).
-- Une carte confiée à l'équipe **reste à son propriétaire** et **suit son forfait**. L'équipe ne change rien à la facturation.
+- Une carte confiée à l'équipe **reste à son propriétaire**. Elle suit son forfait, sauf si un admin a pris le **forfait de l'équipe** : toutes les cartes de l'équipe suivent alors le forfait de cet admin, et elles ne comptent plus dans celui des designers.
+- Un designer qui travaille aussi à son compte garde ainsi ses cartes perso sur son propre forfait, et celles de l'équipe sur le forfait de l'équipe.
 
 ## Créer une équipe et inviter
 
@@ -36,3 +37,13 @@ Ouvre la carte, clique sur **Partager**, puis dans la partie « Équipe », choi
 - Un membre qui **quitte l'équipe** (ou que l'on retire) perd l'accès aux cartes de l'équipe, sauf aux siennes et à celles où il est invité.
 - **Ses propres cartes restent dans l'équipe** : le travail commun n'est pas perdu. Il en reste le propriétaire et peut toujours les en sortir depuis « Partager ».
 - **Supprimer l'équipe** ne supprime aucune carte : chacune reste à son propriétaire, avec ses invités.
+
+## Le forfait de l'équipe
+
+Par défaut, chaque carte de l'équipe suit le forfait de son propriétaire. Sur la page de l'équipe, un administrateur peut choisir **Payer les cartes de l'équipe avec mon forfait** : toutes les cartes de l'équipe suivent alors son forfait (par exemple Bureau d'études, sans limite de cartes), quel que soit leur créateur. Elles ne comptent plus dans le forfait des designers.
+
+C'est le cas d'un designer de Semisto qui travaille aussi à son compte : ses cartes de free-lance restent sur son abonnement pro, celles de Semisto sur le forfait de l'équipe. Si l'administrateur qui paie quitte l'équipe ou n'est plus administrateur, chaque carte revient au forfait de son propriétaire. Rien n'est jamais supprimé.
+
+## Passer d'un compte à l'autre
+
+Tu as un compte avec ton adresse perso et un autre avec ton adresse d'équipe (par exemple @semisto.org) ? Clique sur ton avatar, en haut à droite, puis **Ajouter un compte** et connecte-toi avec l'autre adresse. Les deux restent connectés sur ce navigateur : le même menu te fait passer de l'un à l'autre d'un clic. « Déconnecter » ne ferme que le compte actif.

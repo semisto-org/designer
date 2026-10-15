@@ -8,6 +8,7 @@ fr:
       tasks: "Tâches"
       photos: "Photos"
       documents: "Documents"
+      offer: "Offre"
       forms: "Formulaires"
   documents:
     page_title: "Documents · %{map}"

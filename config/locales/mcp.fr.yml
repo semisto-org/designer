@@ -131,13 +131,13 @@ fr:
           offset: "Pour un long texte : la valeur next_offset de l'appel précédent."
       create_tasks:
         title: "Ajouter des tâches"
-        description: "Ajoute des tâches au projet, directement (ce ne sont pas des brouillons), quand la personne te le demande ou accepte ta proposition. Chaque tâche va dans une liste existante (list_id) ou dans la liste nommée list_name, créée si la carte ne l'a pas. Elle peut porter des notes, une échéance, des étiquettes, et être confiée à un participant de la carte (assignee_id), qui reçoit un e-mail : dis-le à la personne avant. 50 tâches au plus par appel ; une tâche refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Ajoute des tâches au projet, directement (ce ne sont pas des brouillons), quand la personne te le demande ou accepte ta proposition. Chaque tâche va dans une liste existante (list_id) ou dans la liste nommée list_name, créée si la carte ne l'a pas. Elle peut porter des notes, une échéance, des étiquettes, et être confiée à un participant de la carte (assignee_id), qui reçoit un e-mail : dis-le à la personne avant. 50 tâches au plus par appel ; une tâche refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           tasks: "Les tâches à ajouter, de 1 à 50."
           list_name: "Nom de la liste où ranger la tâche, quand list_id manque : une liste existante (sans tenir compte des majuscules) ou une nouvelle, par exemple « Chantier de mars »."
       update_tasks:
         title: "Modifier des tâches"
-        description: "Modifie des tâches : les cocher ou les décocher (completed), changer leur titre ou leurs notes, les déplacer dans une autre liste, les confier à quelqu'un ou à personne, poser ou effacer une échéance, changer leurs étiquettes. Seuls les champs passés changent. Un lecteur de la carte ne peut que cocher les tâches qui lui sont confiées ; le propriétaire et les éditeurs modifient tout. Rien n'est supprimé. 50 tâches au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons » et le forfait du propriétaire de la carte."
+        description: "Modifie des tâches : les cocher ou les décocher (completed), changer leur titre ou leurs notes, les déplacer dans une autre liste, les confier à quelqu'un ou à personne, poser ou effacer une échéance, changer leurs étiquettes. Seuls les champs passés changent. Un lecteur de la carte ne peut que cocher les tâches qui lui sont confiées ; le propriétaire et les éditeurs modifient tout. Rien n'est supprimé. 50 tâches au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons » et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           task_changes: "Les modifications, une par tâche, de 1 à 50."
           completed: "true : la tâche est faite ; false : elle est de nouveau à faire."
@@ -146,7 +146,7 @@ fr:
           assignee_change: "Personne à qui la confier (id de participants dans list_tasks), ou null pour ne la confier à personne. La personne reçoit un e-mail."
       add_document:
         title: "Ajouter un document"
-        description: "Pour un document que tu as rédigé toi-même (pour un fichier existant, PDF, Word, image ou plan, utilise create_upload puis attach_documents). Range dans la bibliothèque « Documents » de la carte un document que tu as rédigé : compte rendu de visite, synthèse d'un entretien, calendrier de plantation en CSV, export GeoJSON… Il est déposé au nom de l'utilisateur, avec son titre, sa description et ses étiquettes. Formats : Markdown (md), texte (txt), CSV ou GeoJSON, 200 000 caractères au plus. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Pour un document que tu as rédigé toi-même (pour un fichier existant, PDF, Word, image ou plan, utilise create_upload puis attach_documents). Range dans la bibliothèque « Documents » de la carte un document que tu as rédigé : compte rendu de visite, synthèse d'un entretien, calendrier de plantation en CSV, export GeoJSON… Il est déposé au nom de l'utilisateur, avec son titre, sa description et ses étiquettes. Formats : Markdown (md), texte (txt), CSV ou GeoJSON, 200 000 caractères au plus. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           document_content: "Le contenu du document, dans le format choisi."
           document_format: "md (Markdown, par défaut), txt, csv ou geojson."
@@ -161,21 +161,21 @@ fr:
         description: "Une photo du terrain, en image (sans ses métadonnées GPS), avec sa légende, sa date, son endroit, sa direction, son album, l'élément lié et ce que dit l'appareil (modèle, hauteur et nacelle d'un drone). Pour une photo de plantes sauvages à analyser, préfère get_bioindicator_photo."
       add_photo:
         title: "Ajouter une photo"
-        description: "Pour une seule petite image que tu as déjà en mémoire. Pour des photos qui sont dans des fichiers, et pour tout envoi de plusieurs photos, utilise create_upload puis attach_photos : les octets ne passent pas par la conversation. Ajoute une photo du terrain à partir de son contenu en base64 (JPEG, PNG, WebP ou HEIC, 15 Mo au plus). Tu peux la légender, la dater, la placer, donner sa direction, la ranger dans un album (existant ou nouveau, par son nom) et la lier à un élément de la carte. Une photo déjà présente sur la carte est refusée. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Pour une seule petite image que tu as déjà en mémoire. Pour des photos qui sont dans des fichiers, et pour tout envoi de plusieurs photos, utilise create_upload puis attach_photos : les octets ne passent pas par la conversation. Ajoute une photo du terrain à partir de son contenu en base64 (JPEG, PNG, WebP ou HEIC, 15 Mo au plus). Tu peux la légender, la dater, la placer, donner sa direction, la ranger dans un album (existant ou nouveau, par son nom) et la lier à un élément de la carte. Une photo déjà présente sur la carte est refusée. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           image_base64: "Le fichier de l'image en base64 (une adresse data:image/…;base64, est acceptée)."
           photo_filename: "Nom du fichier, par exemple verger-nord.jpg."
       update_photos:
         title: "Modifier des photos"
-        description: "Change la légende, la date, l'endroit, la direction, l'album (existant ou nouveau, par son nom) ou l'élément lié de photos du terrain. Seuls les champs passés changent ; null efface. L'image elle-même ne change pas. 50 photos au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Change la légende, la date, l'endroit, la direction, l'album (existant ou nouveau, par son nom) ou l'élément lié de photos du terrain. Seuls les champs passés changent ; null efface. L'image elle-même ne change pas. 50 photos au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           photo_changes: "Les modifications, une par photo, de 1 à 50."
       delete_photos:
         title: "Supprimer des photos"
-        description: "Supprime des photos du terrain, avec leurs esquisses et leurs mises en image, comme « Supprimer » sur la page Photos. Définitif : ne le fais que quand la personne te l'a demandé, en lui disant d'abord quelles photos partent. 50 photos au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Supprime des photos du terrain, avec leurs esquisses et leurs mises en image, comme « Supprimer » sur la page Photos. Définitif : ne le fais que quand la personne te l'a demandé, en lui disant d'abord quelles photos partent. 50 photos au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
       create_upload:
         title: "Préparer l'envoi de fichiers"
-        description: "Première étape pour envoyer des photos ou des documents sans faire passer leurs octets par la conversation. Pour chaque fichier (50 au plus), donne son type d'usage (kind), son nom, sa taille en octets, son empreinte MD5 en base64 et son type MIME ; tu reçois un signed_id, une adresse d'envoi (upload_url, valable 15 minutes) et les en-têtes à renvoyer tels quels. Deuxième étape, envoie toi-même chaque fichier par HTTP PUT, par exemple : curl --fail -X PUT --data-binary @IMG_0042.jpg -H 'Content-Type: image/jpeg' -H 'Content-MD5: …' '<upload_url>' (la commande prête à l'emploi est dans curl). Calcule l'empreinte avec : openssl md5 -binary IMG_0042.jpg | base64 ; la taille avec : wc -c < IMG_0042.jpg. Troisième étape, rattache les fichiers envoyés avec attach_photos ou attach_documents. Un type refusé ou un fichier trop lourd est refusé dès cette étape, avec son code (unsupported_type, too_large, invalid_checksum). Un fichier jamais rattaché est effacé après 24 heures. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Première étape pour envoyer des photos ou des documents sans faire passer leurs octets par la conversation. Pour chaque fichier (50 au plus), donne son type d'usage (kind), son nom, sa taille en octets, son empreinte MD5 en base64 et son type MIME ; tu reçois un signed_id, une adresse d'envoi (upload_url, valable 15 minutes) et les en-têtes à renvoyer tels quels. Deuxième étape, envoie toi-même chaque fichier par HTTP PUT, par exemple : curl --fail -X PUT --data-binary @IMG_0042.jpg -H 'Content-Type: image/jpeg' -H 'Content-MD5: …' '<upload_url>' (la commande prête à l'emploi est dans curl). Calcule l'empreinte avec : openssl md5 -binary IMG_0042.jpg | base64 ; la taille avec : wc -c < IMG_0042.jpg. Troisième étape, rattache les fichiers envoyés avec attach_photos ou attach_documents. Un type refusé ou un fichier trop lourd est refusé dès cette étape, avec son code (unsupported_type, too_large, invalid_checksum). Un fichier jamais rattaché est effacé après 24 heures. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           upload_files: "Les fichiers à envoyer, de 1 à 50."
           upload_filename: "Nom du fichier avec son extension, par exemple DJI_0042.JPG ou analyse-sol.pdf."
@@ -184,29 +184,29 @@ fr:
           content_type: "Type MIME du fichier, par exemple image/jpeg, application/pdf ou application/vnd.openxmlformats-officedocument.wordprocessingml.document. C'est l'en-tête Content-Type de l'envoi."
       attach_photos:
         title: "Rattacher des photos envoyées"
-        description: "Dernière étape après create_upload et l'envoi par PUT : fait des fichiers envoyés des photos du terrain (50 au plus par appel). Comme pour une photo déposée dans Designer, la date de prise de vue, l'endroit et la direction sont lus dans les EXIF du fichier, et l'appareil (modèle, données d'un drone DJI) juste après ; ce que tu passes (légende, date, endroit, direction, album par son id ou son nom, élément lié) l'emporte sur les EXIF. Une photo HEIC devient un JPEG. Une photo refusée revient avec son code et sa raison (other_map : préparée pour une autre carte ; already_attached : déjà rattachée ; not_received : le PUT n'a pas été fait ; duplicate : déjà sur la carte ; unsupported_type…), les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Dernière étape après create_upload et l'envoi par PUT : fait des fichiers envoyés des photos du terrain (50 au plus par appel). Comme pour une photo déposée dans Designer, la date de prise de vue, l'endroit et la direction sont lus dans les EXIF du fichier, et l'appareil (modèle, données d'un drone DJI) juste après ; ce que tu passes (légende, date, endroit, direction, album par son id ou son nom, élément lié) l'emporte sur les EXIF. Une photo HEIC devient un JPEG. Une photo refusée revient avec son code et sa raison (other_map : préparée pour une autre carte ; already_attached : déjà rattachée ; not_received : le PUT n'a pas été fait ; duplicate : déjà sur la carte ; unsupported_type…), les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           attach_photo_lines: "Les photos à rattacher, une par fichier envoyé, de 1 à 50."
       attach_documents:
         title: "Rattacher des documents envoyés"
-        description: "Dernière étape après create_upload et l'envoi par PUT : range les fichiers envoyés dans la bibliothèque « Documents » de la carte (50 au plus par appel), chacun avec son titre et, si tu veux, une description et des étiquettes. Tous les types de fichiers passent (PDF, images, Word, tableurs, plans DWG ou KML, archives…) ; un fichier nommé PDF ou image doit l'être vraiment. get_document lit ensuite le texte d'un PDF ou d'un Word. Un document refusé revient avec son code et sa raison, les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Dernière étape après create_upload et l'envoi par PUT : range les fichiers envoyés dans la bibliothèque « Documents » de la carte (50 au plus par appel), chacun avec son titre et, si tu veux, une description et des étiquettes. Tous les types de fichiers passent (PDF, images, Word, tableurs, plans DWG ou KML, archives…) ; un fichier nommé PDF ou image doit l'être vraiment. get_document lit ensuite le texte d'un PDF ou d'un Word. Un document refusé revient avec son code et sa raison, les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           attach_document_lines: "Les documents à rattacher, un par fichier envoyé, de 1 à 50."
       import_from_url:
         title: "Importer des fichiers depuis une adresse"
-        description: "Quand le fichier n'est pas sur ta machine : Semisto Designer va le chercher lui-même à son adresse HTTPS publique (fichier Drive partagé, lien de téléchargement…) et en fait une photo ou un document, comme attach_photos et attach_documents (EXIF lus pour une photo). Un lien Drive « /file/d/… » est converti en lien de téléchargement. 10 fichiers au plus par appel. Une page web (lien qui demande une connexion, page d'aperçu) est refusée avec le code not_a_file. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Quand le fichier n'est pas sur ta machine : Semisto Designer va le chercher lui-même à son adresse HTTPS publique (fichier Drive partagé, lien de téléchargement…) et en fait une photo ou un document, comme attach_photos et attach_documents (EXIF lus pour une photo). Un lien Drive « /file/d/… » est converti en lien de téléchargement. 10 fichiers au plus par appel. Une page web (lien qui demande une connexion, page d'aperçu) est refusée avec le code not_a_file. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           import_files: "Les fichiers à importer, de 1 à 10."
           import_url: "Adresse HTTPS publique du fichier."
       delete_documents:
         title: "Supprimer des documents"
-        description: "Supprime des documents de la bibliothèque, comme « Supprimer » sur la page Documents. Définitif : ne le fais que quand la personne te l'a demandé, en lui disant d'abord quels documents partent. 50 au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Supprime des documents de la bibliothèque, comme « Supprimer » sur la page Documents. Définitif : ne le fais que quand la personne te l'a demandé, en lui disant d'abord quels documents partent. 50 au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
       update_document:
         title: "Renommer ou étiqueter un document"
-        description: "Change le titre, la description ou les étiquettes d'un document de la bibliothèque, par exemple pour le ranger sous les étiquettes que l'équipe utilise déjà. Le fichier lui-même ne change pas, et rien n'est supprimé. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Change le titre, la description ou les étiquettes d'un document de la bibliothèque, par exemple pour le ranger sous les étiquettes que l'équipe utilise déjà. Le fichier lui-même ne change pas, et rien n'est supprimé. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
       propose_features:
         title: "Proposer des brouillons"
-        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           summary: "Résumé de la proposition dans son ensemble, montré à l'humain au-dessus des brouillons."
           features: "Les éléments proposés, de 1 à 200."
@@ -221,7 +221,7 @@ fr:
           feature_tags: "Étiquettes de l'élément, de préférence parmi celles que la carte utilise déjà (tags dans get_map), par exemple « phase 1 » ou « zone nord ». 20 au plus, 40 caractères chacune."
       propose_palette:
         title: "Proposer des plantes pour la palette"
-        description: "Verse une liste de plantes dans la palette de la carte, en brouillons que l'humain accepte ou refuse dans le panneau Palette : par exemple la liste que l'utilisateur tient dans un tableur, un PDF ou l'export d'un autre outil, ou tes propres choix. Chaque plante est reconnue par species_id (search_plants) ou, à défaut, par son nom latin ou commun exact ; un nom introuvable ou ambigu est renvoyé avec sa raison : cherche-le avec search_plants et renvoie-le avec son species_id. Une espèce déjà dans la palette (ou déjà proposée) est ignorée. 200 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Verse une liste de plantes dans la palette de la carte, en brouillons que l'humain accepte ou refuse dans le panneau Palette : par exemple la liste que l'utilisateur tient dans un tableur, un PDF ou l'export d'un autre outil, ou tes propres choix. Chaque plante est reconnue par species_id (search_plants) ou, à défaut, par son nom latin ou commun exact ; un nom introuvable ou ambigu est renvoyé avec sa raison : cherche-le avec search_plants et renvoie-le avec son species_id. Une espèce déjà dans la palette (ou déjà proposée) est ignorée. 200 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           summary: "Résumé de la proposition, par exemple d'où vient la liste."
           plants: "Les plantes proposées, de 1 à 200."
@@ -252,7 +252,7 @@ fr:
           photo_id: "Identifiant de la photo, donné par get_map (bioindicators.photos)."
       propose_bioindicators:
         title: "Proposer les plantes vues sur une photo"
-        description: "Verse les plantes sauvages que tu reconnais sur une photo (get_bioindicator_photo) en brouillons, posés à l'endroit de la photo, que l'humain accepte ou refuse dans le panneau Sol (onglet Plantes), avec une courte lecture du sol gardée avec la photo. Pour chaque plante : son nom français, son nom latin, la clé de la liste des bio-indicatrices si elle y est (sinon le nom latin suffit), son abondance sur la photo et ta confiance. Ne propose que ce que tu vois vraiment ; une identification douteuse se dit avec confidence « low ». Une nouvelle proposition pour la même photo remplace ses brouillons pas encore revus. 30 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Verse les plantes sauvages que tu reconnais sur une photo (get_bioindicator_photo) en brouillons, posés à l'endroit de la photo, que l'humain accepte ou refuse dans le panneau Sol (onglet Plantes), avec une courte lecture du sol gardée avec la photo. Pour chaque plante : son nom français, son nom latin, la clé de la liste des bio-indicatrices si elle y est (sinon le nom latin suffit), son abondance sur la photo et ta confiance. Ne propose que ce que tu vois vraiment ; une identification douteuse se dit avec confidence « low ». Une nouvelle proposition pour la même photo remplace ses brouillons pas encore revus. 30 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           photo_id: "Identifiant de la photo regardée avec get_bioindicator_photo."
           soil_summary: "Ce que les plantes de la photo disent du sol, ensemble, en quelques phrases simples, avec tes réserves (une photo ne suffit pas)."
@@ -268,7 +268,7 @@ fr:
         description: "La fiche projet de la carte avec toutes ses questions : pour chaque section et chaque champ, son type, son libellé, les réponses possibles (clé et libellé français), la réponse actuelle, l'avancement de la fiche et les réponses déjà proposées par une IA qui attendent l'humain. À lire avant propose_project_sheet, pour faire correspondre ce que dit la personne aux réponses possibles."
       propose_project_sheet:
         title: "Proposer des réponses pour la fiche projet"
-        description: "Verse des réponses dans la fiche projet de la carte, en brouillons que l'humain accepte ou refuse sur la fiche : ce que la personne t'a dit au fil de la conversation, ou ce que dit le transcript d'un entretien qu'elle te confie. Chaque réponse vise un champ (section et field, voir get_project_sheet) et donne sa valeur complète : une clé pour un choix unique, une liste de clés pour un choix multiple, un entier, un texte, ou une liste d'objets pour les personnes. Une réponse identique à la réponse actuelle est ignorée ; une nouvelle proposition pour un champ remplace la précédente pas encore revue. Une réponse qui remplacerait une réponse déjà donnée est renvoyée avec replaces : dis-le à la personne. Pour compléter un champ libre (notes), reprends le texte actuel dans ta valeur. N'invente rien. 60 réponses au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait du propriétaire de la carte."
+        description: "Verse des réponses dans la fiche projet de la carte, en brouillons que l'humain accepte ou refuse sur la fiche : ce que la personne t'a dit au fil de la conversation, ou ce que dit le transcript d'un entretien qu'elle te confie. Chaque réponse vise un champ (section et field, voir get_project_sheet) et donne sa valeur complète : une clé pour un choix unique, une liste de clés pour un choix multiple, un entier, un texte, ou une liste d'objets pour les personnes. Une réponse identique à la réponse actuelle est ignorée ; une nouvelle proposition pour un champ remplace la précédente pas encore revue. Une réponse qui remplacerait une réponse déjà donnée est renvoyée avec replaces : dis-le à la personne. Pour compléter un champ libre (notes), reprends le texte actuel dans ta valeur. N'invente rien. 60 réponses au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           summary: "Résumé de la proposition, par exemple d'où viennent les réponses (« entretien du 3 octobre avec Marie »)."
           answers: "Les réponses proposées, de 1 à 60."
@@ -284,11 +284,11 @@ fr:
     permissions:
       scope: "Cette connexion n'a que l'accès en lecture : reconnecte le connecteur en choisissant « Lecture et brouillons »."
       role: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer des brouillons."
-      plan: "Le forfait du propriétaire de la carte ne comprend pas les brouillons de l'IA, et il n'a pas d'essai en cours."
+      plan: "Le forfait qui couvre la carte (celui de son équipe, sinon de son propriétaire) ne comprend pas les brouillons de l'IA, et il n'a pas d'essai en cours."
       boundary: "La carte n'a pas encore de contour de terrain."
       role_write: "Seuls le propriétaire et les éditeurs de la carte peuvent écrire des tâches et des documents."
       role_tasks: "L'utilisateur est lecteur de cette carte : il ne peut que cocher les tâches qui lui sont confiées."
-      plan_write: "Le forfait du propriétaire de la carte ne comprend pas l'écriture par l'IA, et il n'a pas d'essai en cours."
+      plan_write: "Le forfait qui couvre la carte (celui de son équipe, sinon de son propriétaire) ne comprend pas l'écriture par l'IA, et il n'a pas d'essai en cours."
       read_only: "La carte dépasse le nombre de cartes du forfait de son propriétaire : elle est en lecture seule."
     notes:
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
@@ -666,7 +666,7 @@ fr:
         drafts:
           title: "Lecture et brouillons"
           body: "Lire, proposer des éléments en brouillon que tu acceptes ou refuses un par un, et tenir avec toi les tâches, les documents et les photos du projet (sans rien supprimer, sauf les photos et documents que tu lui demandes de retirer), sur les cartes dont tu es propriétaire ou éditeur."
-          plan: "Les brouillons demandent le forfait du propriétaire de la carte : ta formule actuelle n'en donne pas sur tes propres cartes."
+          plan: "Les brouillons demandent le forfait qui couvre la carte : ta formule actuelle n'en donne pas sur tes propres cartes."
           trial_available: "Essai offert : en choisissant cet accès, tu essaies les brouillons sur tes cartes pendant 14 jours, jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
           trial_active: "Ton essai des brouillons court jusqu'au %{date}. Ensuite, ton IA continue de lire tes cartes ; ses brouillons viennent avec le forfait."
           trial_ended: "Ton essai de 14 jours est terminé : les brouillons demandent maintenant le forfait sur tes propres cartes. Ton IA peut toujours les lire."
@@ -721,7 +721,7 @@ fr:
       scopes_title: "Accès (scopes)"
       scopes:
         read: "Lire les cartes de l'utilisateur, leurs couches, leurs éléments et la fiche projet. Toujours accordé."
-        drafts: "Proposer et retirer des brouillons, écrire des tâches, des documents et des photos. L'utilisateur le choisit sur la page de consentement ; il faut aussi le rôle d'éditeur ou de propriétaire sur la carte (un lecteur coche seulement ses propres tâches) et, pour proposer ou écrire, le forfait du propriétaire de la carte."
+        drafts: "Proposer et retirer des brouillons, écrire des tâches, des documents et des photos. L'utilisateur le choisit sur la page de consentement ; il faut aussi le rôle d'éditeur ou de propriétaire sur la carte (un lecteur coche seulement ses propres tâches) et, pour proposer ou écrire, le forfait qui couvre la carte."
       tokens: "Les jetons personnels (sdp_…) se créent dans le compte de l'utilisateur, avec les mêmes accès. Exemple d'appel :"
     guardrails:
       never: "L'IA ne modifie jamais la carte directement : elle pose des brouillons, que l'humain accepte, ajuste ou refuse un par un."
@@ -742,9 +742,9 @@ fr:
       required: "requis"
     requirements:
       read: "Toute connexion, quel que soit le rôle sur la carte."
-      propose: "Accès « brouillons », rôle d'éditeur ou de propriétaire, forfait du propriétaire de la carte."
+      propose: "Accès « brouillons », rôle d'éditeur ou de propriétaire, forfait qui couvre la carte."
       withdraw: "Accès « brouillons », rôle d'éditeur ou de propriétaire."
-      write: "Accès « brouillons », forfait du propriétaire de la carte, rôle d'éditeur ou de propriétaire (un lecteur coche seulement les tâches qui lui sont confiées)."
+      write: "Accès « brouillons », forfait qui couvre la carte, rôle d'éditeur ou de propriétaire (un lecteur coche seulement les tâches qui lui sont confiées)."
     constraints:
       range: "de %{min} à %{max}"
       min: "au moins %{min}"
