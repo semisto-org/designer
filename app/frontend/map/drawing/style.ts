@@ -26,6 +26,7 @@ export const DRAWING_LAYER_PREFIX = 'drawing-'
 /** Transient layers (measure, print frame), never printed. */
 export const TRANSIENT_PREFIX = 'drawing-tmp-'
 const BEFORE_LAYER = 'features-label'
+const PLANT_LABELS_LAYER = 'plant-labels-text'
 const BASE_LAYERS = ['features-fill', 'features-line', 'features-point']
 
 const LIBRARY = Object.values(ELEMENTS)
@@ -391,7 +392,8 @@ export function installDrawingLayers(map: MapLibreMap): boolean {
   installDrawingImages(map)
   wrapBaseLayers(map)
   if (DRAWING_LAYER_IDS.some((id) => !map.getLayer(id))) {
-    const before = map.getLayer(BEFORE_LAYER) ? BEFORE_LAYER : undefined
+    // Under every name: the plants' names, then the other features' names.
+    const before = [PLANT_LABELS_LAYER, BEFORE_LAYER].find((id) => map.getLayer(id))
     for (const layer of drawingLayers(map.getCenter().lat)) {
       if (!map.getLayer(layer.id)) map.addLayer(layer, before)
     }
