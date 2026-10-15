@@ -19,6 +19,7 @@ module Providers
       wmts1.geoportail.lu wms.geoportail.lu wms.inspire.geoportail.lu
       bio.discomap.eea.europa.eu image.discomap.eea.europa.eu
       maps.isric.org
+      geoservices-urbis.irisnet.be ccff02.minfin.fgov.be
     ].freeze
 
     OPEN_TIMEOUT = 3

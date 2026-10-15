@@ -13,7 +13,7 @@ Le formulaire est réservé aux comptes pros (formules Atelier ou Bureau d'étud
 
 En trois courtes étapes, et en la vouvoyant comme dans tes offres :
 
-1. **Son lieu** : l'adresse, puis un toucher sur chaque parcelle du cadastre (Wallonie, France, Luxembourg). Ailleurs, elle place simplement un repère.
+1. **Son lieu** : l'adresse, puis un toucher sur chaque parcelle du cadastre (Wallonie, Bruxelles, France, Luxembourg). Ailleurs, elle place simplement un repère.
 2. **Son projet** : qui elle est, ce qu'elle attend (conception, plantation, suivi, formation, visite conseil), son budget de départ, l'eau, l'accès, la pente, un message et jusqu'à six photos.
 3. **Elle** : son nom, son e-mail et son téléphone.
 

@@ -6,7 +6,7 @@ class RegionLayerLegendTest < ActiveSupport::TestCase
   HEX = /\A#\h{6}\z/
 
   setup do
-    %w[01_regions 02_wallonia_layers 03_europe_layers 04_france_layers 05_luxembourg_layers].each do |seed|
+    %w[01_regions 02_wallonia_layers 03_europe_layers 04_france_layers 05_luxembourg_layers 06_brussels_layers].each do |seed|
       load Rails.root.join("db/seeds/#{seed}.rb").to_s
     end
   end
