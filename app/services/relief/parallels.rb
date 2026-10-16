@@ -56,13 +56,32 @@ module Relief
       def wkt = @feature.geometry.as_text
 
       # +1 when the ground rises on the left of the line (ST_OffsetCurve's
-      # positive side), -1 on the right, nil when both sides are level.
+      # positive side), -1 on the right, nil when both sides are level. Read
+      # PROBE_M to each side of every segment's middle, along its normal.
       def upslope_sign
-        left = mean_height(curves(PROBE_M))
-        right = mean_height(curves(-PROBE_M))
-        return nil unless left && right && (left - right).abs > 0.02
+        scale = 1 / Math.cos(@feature.geometry.points.sum(&:y) / @feature.geometry.num_points * Math::PI / 180)
+        points = @feature.geometry.points.map { |pt| Mercator.forward(pt.x, pt.y) }
+        left = []
+        right = []
+        points.each_cons(2) do |(x0, y0), (x1, y1)|
+          length = Math.hypot(x1 - x0, y1 - y0)
+          next if length.zero?
 
-        left > right ? 1 : -1
+          mx = (x0 + x1) / 2
+          my = (y0 + y1) / 2
+          nx = -(y1 - y0) / length * PROBE_M * scale
+          ny = (x1 - x0) / length * PROBE_M * scale
+          left << height_at(*Mercator.inverse(mx + nx, my + ny))
+          right << height_at(*Mercator.inverse(mx - nx, my - ny))
+        end
+        left = left.compact
+        right = right.compact
+        return nil if left.empty? || right.empty?
+
+        difference = left.sum / left.size - right.sum / right.size
+        return nil if difference.abs <= 0.02
+
+        difference.positive? ? 1 : -1
       end
 
       # Pieces of the line offset by `distance` metres, clipped to the boundary.
@@ -99,11 +118,6 @@ module Relief
             length_m: curve[:length_m].round(1), fall_m: heights.size > 1 ? (heights.max - heights.min).round(2) : nil
           )
         end
-      end
-
-      def mean_height(curves)
-        heights = curves.flat_map { |c| c[:samples] }.filter_map { |lng, lat| height_at(lng, lat) }
-        heights.empty? ? nil : heights.sum / heights.size
       end
 
       # The terrain's height at the nearest node, nil off the grid or without data.
