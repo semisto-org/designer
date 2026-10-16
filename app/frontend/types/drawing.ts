@@ -15,7 +15,8 @@ export type ElementField = {
   readonly?: boolean
 }
 
-export type ElementLineStyle = { width?: number; dash?: number[]; opacity?: number; casing?: string }
+/** `arrows`: arrows along the line, in the direction it was drawn (where the water goes). */
+export type ElementLineStyle = { width?: number; dash?: number[]; opacity?: number; casing?: string; arrows?: boolean }
 export type ElementFillStyle = { opacity?: number; pattern?: 'hatch' | 'dots' }
 
 export type ElementSpec = {

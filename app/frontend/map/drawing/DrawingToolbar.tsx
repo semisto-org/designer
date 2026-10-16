@@ -3,7 +3,7 @@ import type { Geometry } from 'geojson'
 import { LandPlot, Pencil, Ruler, Shapes, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { formatArea, formatLength, t } from '@/lib/i18n'
+import { formatArea, formatLength, t, translations } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { measure } from '@/map/editor/measure'
 import { drawShapeFor, storedProperties } from '@/map/drawing/catalog'
@@ -167,7 +167,7 @@ export default function DrawingToolbar() {
             <ElementPicker onPick={(spec) => void drawElement(spec)} onClose={close} />
           )}
           {tool === 'draw' && drawingSpec && (
-            <HintBar text={t(geometry === 'Point' ? 'drawing.toolbar.hint_point' : geometry === 'Polygon' ? 'drawing.toolbar.hint_polygon' : 'drawing.toolbar.hint_line', { kind: kindLabel })}>
+            <HintBar text={[t(geometry === 'Point' ? 'drawing.toolbar.hint_point' : geometry === 'Polygon' ? 'drawing.toolbar.hint_polygon' : 'drawing.toolbar.hint_line', { kind: kindLabel }), translations('drawing.toolbar.kind_hints')[drawingSpec.kind]].filter(Boolean).join(' ')}>
               {geometry !== 'Point' && (
                 <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.toolbar.finish')}</Button>
               )}

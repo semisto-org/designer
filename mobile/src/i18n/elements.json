@@ -84,6 +84,13 @@
         "color": "#1f5f8b",
         "pickable": true
       },
+      "overflow_pipe": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#1f5f8b",
+        "pickable": true
+      },
       "water_tank": {
         "geometries": [
           "Point"

@@ -39,6 +39,14 @@ class MapElementsTest < ActiveSupport::TestCase
     end
   end
 
+  test "a pond's overflow pipe belongs to the water layer, buried by default, with arrows" do
+    pipe = maps(:ahinvaux).features.create!(layer: "water", kind: "overflow_pipe",
+      geometry: { "type" => "LineString", "coordinates" => [ [ 4.9, 50.34 ], [ 4.9003, 50.3402 ] ] })
+    assert_equal true, pipe.properties["buried"]
+    assert_equal 100, pipe.properties["diameter_mm"]
+    assert MapElements.catalog.dig("layers", "water", "elements", "overflow_pipe", "line", "arrows")
+  end
+
   test "a known kind gets its default properties on creation" do
     pond = feature
     assert pond.save
