@@ -67,6 +67,24 @@ module Maps
       render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
     end
 
+    # The catchment of a pond, swale or rain garden (`feature_id`) or of a
+    # point (`lng`, `lat`): outline, area, capacity, rain that fills it.
+    def catchment
+      catchment =
+        if params[:feature_id].present?
+          Relief::Catchment.new(@map, feature: @map.features.find(params[:feature_id]))
+        else
+          lng = Float(params[:lng], exception: false)
+          lat = Float(params[:lat], exception: false)
+          return head :bad_request unless lng && lat
+
+          Relief::Catchment.new(@map, lng:, lat:)
+        end
+      render json: catchment.call.as_json
+    rescue Relief::Catchment::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
     private
       def soil_model
         settings = @map.effective_water_settings

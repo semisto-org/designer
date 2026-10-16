@@ -48,6 +48,20 @@ Une fois le relief téléchargé, choisis **Dessiner** › **Eau** › **Baissi�
 
 La courbe se calcule sur le relief lissé sur environ 2 m : elle ignore les petites bosses du sol, pas les vraies formes du terrain. Avant de creuser, vérifie-la sur place avec un niveau à eau ou un niveau laser. Ton IA connectée trace les mêmes courbes avant de te proposer une baissière.
 
+## Le bassin versant d'une mare ou d'une baissière
+
+Une mare ne se remplit pas avec la pluie qui tombe sur elle, mais avec toute celle qui ruisselle vers elle. Sélectionne une **mare**, une **baissière** ou un **jardin de pluie** : la partie **Bassin versant** de sa fiche colorie en bleu, sur la carte, la surface dont l'eau finit là, et donne sa taille (dont la part sur ton terrain) et la pluie qui y tombe chaque année.
+
+Elle compare ensuite le volume de l'ouvrage à ce qui y arrive : combien de millimètres de pluie qui ruisselle suffisent à l'emplir, sur un sol déjà gorgé d'eau comme en hiver. Peu de millimètres, et l'ouvrage débordera à chaque grosse averse : soigne son trop-plein. Beaucoup, et il se remplira lentement. Quand le bassin versant touche le bord du relief téléchargé, il continue plus haut : regarde d'où vient l'eau, chez les voisins, sur un chemin ou une route.
+
+## Le bilan de l'eau, mois par mois
+
+Dans le panneau **Climat**, sous le climat observé, **Le bilan de l'eau** compare chaque mois la pluie à l'eau que les plantes rendent à l'air (estimée à partir des températures et du soleil à ta latitude), avec la réserve du sol entre les deux. Tu y vois les mois où le sol plein laisse partir l'eau (l'hiver, en général) et ceux où les plantes en manquent, en millimètres, c'est-à-dire en litres par mètre carré.
+
+Le bouton **En 2050** rejoue la même année avec le climat qui vient (scénario modéré : plus chaud, étés plus secs). Le panneau compte aussi ce que ta carte garde déjà : tes citernes et la pluie de tes toits en été, et la surface de jeunes plantations qu'elles peuvent abreuver ; tes mares et baissières, qui retiennent l'eau d'hiver sur place. La réserve du sol suit le type de sol choisi dans les **Réglages de l'eau**.
+
+C'est une année moyenne : une année sèche comme 2018 ou 2022 manque bien plus d'eau.
+
 ## L'eau de pluie des toits
 
 Dessine tes bâtiments, serres, abris et cabanes comme des surfaces : le panneau calcule l'eau récupérable chaque année (surface des toits × pluie annuelle × part récupérée), et son équivalent en litres par semaine. De quoi dimensionner une citerne.

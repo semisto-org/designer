@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "bassin-versant-bilan-eau", published_on: "2026-10-16",
+    title: "D'où vient l'eau de ta mare, et quand elle manque",
+    body: <<~TEXT,
+      Une mare se remplit avec toute la pluie qui ruisselle vers elle. Sélectionne une mare, une baissière ou un jardin de pluie : sa surface d'alimentation, son bassin versant, se colorie en bleu sur la carte, et sa fiche te dit combien de pluie suffit à l'emplir et s'il faut soigner son trop-plein.
+
+      Dans le panneau « Climat », le nouveau bilan de l'eau montre mois par mois la pluie, l'eau que les plantes rendent à l'air et la réserve du sol : les mois où l'eau part, ceux où elle manque, aujourd'hui et en 2050. Avec ce que tes citernes, tes toits et tes mares gardent déjà pour l'été.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Le bassin versant d'une mare colorié en bleu sur la carte, et sa fiche : au moins 1,48 ha drainés, 3 mm de pluie suffisent à l'emplir."
+  },
+  {
     key: "suivre-la-courbe", published_on: "2026-10-16",
     title: "Une baissière posée pile sur la courbe de niveau",
     body: <<~TEXT,

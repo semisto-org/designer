@@ -1,0 +1,26 @@
+# « Le bilan de l'eau, mois par mois » (Climat panel): WaterBalance::MapReport.
+fr:
+  water_balance:
+    title: "Le bilan de l'eau, mois par mois"
+    intro: "La pluie qui tombe, l'eau que les plantes rendent à l'air, et la réserve du sol entre les deux, sur une année moyenne."
+    when: "Climat d'aujourd'hui ou de demain"
+    today: "Aujourd'hui"
+    in_year: "En %{year}"
+    span: "de %{from} à %{to}"
+    span_one: "en %{month}"
+    surplus: "En hiver, le sol plein laisse partir environ %{mm} de pluie, soit %{volume} m³ sur ton terrain : c'est l'eau que baissières, mares et sol couvert peuvent garder sur place pour l'été."
+    deficit: "%{span}, les plantes manquent d'environ %{mm} d'eau, soit %{litres} litres par m², une année moyenne. Les années sèches, c'est bien plus."
+    no_deficit: "Une année moyenne, la réserve du sol suffit à passer l'été. Les années sèches comme 2018 ou 2022, ce n'est plus vrai : garde de l'eau d'hiver sur place."
+    future: "En %{year} (scénario modéré : +%{warming} °C, pluie d'été %{rain} %), ce manque passerait à environ %{mm}."
+    watering: "Tes cuves (%{tanks} m³) et la pluie de tes toits en été (%{roofs} m³) peuvent abreuver environ %{area} de jeunes plantations pendant les mois secs."
+    watering_tanks: "Tes cuves (%{tanks} m³) peuvent abreuver environ %{area} de jeunes plantations pendant les mois secs. Remplies par un toit, elles se rechargent à chaque pluie."
+    no_tank: "Aucune cuve n'est dessinée : une cuve au pied d'une gouttière est souvent la réserve la plus simple pour les premiers étés."
+    works: "Tes mares, baissières et jardins de pluie retiennent environ %{volume} m³ à chaque remplissage, qui s'infiltrent ensuite dans le sol."
+    note: "Réserve utile du sol : %{reserve} (sol %{soil}, réglable dans « Eau et relief »). Ordres de grandeur : l'évaporation est estimée à partir des températures (méthode de Hargreaves), pour un couvert végétal bien alimenté."
+    chart_label: "Graphique : pluie (barres), évaporation des plantes (ligne) et manque d'eau, de janvier à décembre."
+    tooltip: "%{month} : pluie %{rain}, évaporation %{pet}, réserve du sol %{soil}, manque %{deficit}"
+    legend:
+      rain: "pluie"
+      pet: "évaporation des plantes"
+      deficit: "manque d'eau"
+      soil: "réserve du sol"
