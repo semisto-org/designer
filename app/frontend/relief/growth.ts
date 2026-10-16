@@ -130,6 +130,91 @@ export function plantForm(strata: PlantStrata, plantType: string | null): PlantF
   return 'clump'
 }
 
+/** Height of the support a climber is drawn on (m). */
+export const CLIMBER_SUPPORT = 2.5
+
+/**
+ * The volume a plant of `height` × `spread` is drawn with, shared by the 3D
+ * models and the shade: a crown (an ellipsoid of horizontal radius `radius`
+ * and vertical half-axis `half`, centred `centre` metres above the ground),
+ * on a trunk of `trunk` metres for a tree; a dome for a clump or a mat; a
+ * column for a climber.
+ */
+export function plantShape(form: PlantForm, strata: PlantStrata, height: number, spread: number):
+  { kind: 'crown'; trunk: number; centre: number; half: number; radius: number }
+  | { kind: 'dome'; height: number; radius: number }
+  | { kind: 'column'; height: number; radius: number } {
+  switch (form) {
+    case 'tree': {
+      // A young tree is mostly stem; the crown takes over as it grows.
+      const trunk = height * (strata === 'canopy' ? 0.38 : 0.32)
+      const half = (height - trunk) / 2
+      return { kind: 'crown', trunk, centre: trunk + half, half, radius: spread / 2 }
+    }
+    case 'bush':
+      return { kind: 'crown', trunk: 0, centre: height * 0.47, half: height / 2, radius: spread / 2 }
+    case 'climber':
+      // On its support (a post, a pergola, a fence): the catalogue's height
+      // is what it reaches up a tree.
+      return { kind: 'column', height: Math.min(height, CLIMBER_SUPPORT), radius: Math.min(0.6, Math.max(0.08, spread / 3)) }
+    default:
+      return { kind: 'dome', height: Math.max(0.03, height), radius: spread / 2 }
+  }
+}
+
+/** Crowns lower than this leave the ground under them in the light (a perennial is its own sunny top). */
+const SHADING_CROWN = 0.8
+
+/**
+ * The plants of year `year` raised onto a height grid, for the sun: each
+ * cell under a plant takes the top of its volume (a crown seen from the
+ * side casts its shadow down to the ground, as a heightfield cannot hold an
+ * overhang). `cover` marks the cells under a crown of a tree or a bush: the
+ * ground there is in its shade whatever the sun does.
+ *
+ * `base` holds the heights the sun already reads (terrain, surface model,
+ * roofs), `altitudes` the ground under each plant. Cells are `cell` metres,
+ * rows from north to south like the plants' `y`.
+ */
+export function plantShade(
+  base: ArrayLike<number>, cols: number, rows: number, cell: number,
+  plants: ScenePlant[], altitudes: ArrayLike<number>, year: number,
+): { heights: Float32Array; cover: Uint8Array; count: number } {
+  const heights = base instanceof Float32Array ? base.slice() : Float32Array.from(base)
+  const cover = new Uint8Array(cols * rows)
+  let count = 0
+  plants.forEach((plant, index) => {
+    const size = sizeAt(plant, year - plant.start)
+    if (!size) return
+    const shape = plantShape(plant.form, plant.strata, size.height, size.spread)
+    const r = shape.radius
+    // Smaller than a cell: its shadow is lost in the grid.
+    if (r < cell / 2) return
+    const ground = altitudes[index]
+    const c0 = Math.max(0, Math.ceil((plant.x - r) / cell))
+    const c1 = Math.min(cols - 1, Math.floor((plant.x + r) / cell))
+    const r0 = Math.max(0, Math.ceil((plant.y - r) / cell))
+    const r1 = Math.min(rows - 1, Math.floor((plant.y + r) / cell))
+    let touched = false
+    for (let row = r0; row <= r1; row++) {
+      for (let col = c0; col <= c1; col++) {
+        const d = Math.hypot(col * cell - plant.x, row * cell - plant.y) / r
+        if (d > 1) continue
+        const rise = Math.sqrt(1 - d * d)
+        const top = shape.kind === 'crown' ? shape.centre + shape.half * rise
+          : shape.kind === 'dome' ? shape.height * rise
+          : shape.height
+        const i = row * cols + col
+        if (ground + top > heights[i]) heights[i] = ground + top
+        if (shape.kind === 'crown' && shape.centre + shape.half >= SHADING_CROWN) cover[i] = 1
+        touched = true
+      }
+    }
+    if (touched) count++
+  })
+  return { heights, cover, count }
+}
+
 /** A small seeded generator (mulberry32). */
 function random(seed: number): () => number {
   let a = seed >>> 0

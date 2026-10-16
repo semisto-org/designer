@@ -1,8 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  PLANTING_SIZE, calendarYear, growthShare, insideRing, plantForm, scatter, scenePlants, sizeAt, yearsBetween,
-  type GrowingPlantsData, type GrowthInputs,
+  PLANTING_SIZE, calendarYear, growthShare, insideRing, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, yearsBetween,
+  type GrowingPlantsData, type GrowthInputs, type ScenePlant,
 } from '../../../app/frontend/relief/growth.ts'
 import type { GridMeta } from '../../../app/frontend/relief/grid.ts'
 
@@ -101,4 +101,48 @@ test('scene plants: points where they stand, planted ones from their year, patch
   const fromPatch = plants.filter((p) => p.patch)
   assert.equal(fromPatch.length, 9)
   assert.ok(fromPatch.every((p) => p.x >= 0 && p.x <= 20 && p.y >= 0 && p.y <= 20))
+})
+
+test('a plant casts its volume onto the heights the sun reads, from the year it is planted', () => {
+  const cols = 21
+  const rows = 21
+  const base = new Float32Array(cols * rows).fill(100)
+  const oak: ScenePlant = {
+    x: 10, y: 10, form: 'tree', strata: 'canopy', heightM: 12, spreadM: 8, maturityYears: 15,
+    start: 2, plant: 0, patch: null, seed: 1,
+  }
+  const altitudes = Float32Array.of(100)
+  const before = plantShade(base, cols, rows, 1, [oak], altitudes, 1)
+  assert.equal(before.count, 0)
+  assert.deepEqual(before.heights, base)
+
+  const adult = plantShade(base, cols, rows, 1, [oak], altitudes, 40)
+  assert.equal(adult.count, 1)
+  const centre = 10 * cols + 10
+  assert.ok(Math.abs(adult.heights[centre] - 112) < 0.01, `${adult.heights[centre]}`)
+  // Lower towards the edge of the crown, untouched beyond it.
+  assert.ok(adult.heights[10 * cols + 13] > 100 && adult.heights[10 * cols + 13] < 112)
+  assert.equal(adult.heights[10 * cols + 15], 100)
+  assert.equal(adult.cover[centre], 1)
+  assert.equal(adult.cover[10 * cols + 15], 0)
+  // The base is left as it was.
+  assert.equal(base[centre], 100)
+})
+
+test('a perennial raises the heights but leaves the ground under it in the light', () => {
+  const base = new Float32Array(9).fill(0)
+  const clump: ScenePlant = {
+    x: 1, y: 1, form: 'clump', strata: 'herbaceous', heightM: 0.6, spreadM: 2, maturityYears: 2,
+    start: 0, plant: 0, patch: null, seed: 1,
+  }
+  const shade = plantShade(base, 3, 3, 1, [clump], Float32Array.of(0), 10)
+  assert.ok(Math.abs(shade.heights[4] - 0.6) < 0.01)
+  assert.equal(shade.cover[4], 0)
+})
+
+test('a crown takes the shape its 3D model has', () => {
+  const tree = plantShape('tree', 'canopy', 10, 6)
+  assert.equal(tree.kind, 'crown')
+  if (tree.kind === 'crown') assert.ok(Math.abs(tree.centre + tree.half - 10) < 1e-9 && tree.radius === 3)
+  assert.equal(plantShape('climber', 'vine', 8, 2).height, 2.5)
 })

@@ -21,7 +21,7 @@ import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage 
 import type { BlocksInput } from './blocks.ts'
 import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaTerrain } from './niva.ts'
 import type { NivaLights } from './nivaModel.ts'
-import { GROWTH_YEARS, calendarYear, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type ScenePlant } from './growth.ts'
+import { GROWTH_YEARS, calendarYear, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type ScenePlant } from './growth.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
 import { landcoverRoles } from './roles.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
@@ -224,6 +224,10 @@ export class ReliefController {
   plants: ScenePlant[] = []
   plantYear = 0
   plantsView = { on: true, strataColors: false }
+  private plantAltitudes: Float32Array | null = null
+  /** The plants raised onto the sun's heights, for the year (to a tenth) they were raised at. */
+  private plantShadeCache: { base: ArrayLike<number>; altitudes: Float32Array; year: number; heights: Float32Array; cover: Uint8Array } | null = null
+  private sunReplay: { frame: number; timer: ReturnType<typeof setTimeout> | null } = { frame: 0, timer: null }
   walkMode: WalkMode = 'off'
   private walkExaggeration: number | null = null
 
@@ -310,6 +314,7 @@ export class ReliefController {
     if (!this.scene || !this.plants.length) return
     const terrain = this.nivaTerrain()
     const altitudes = Float32Array.from(this.plants, (p) => terrain.height(p.x, p.y))
+    this.plantAltitudes = altitudes
     this.scene.setPlants(this.plants, altitudes)
     this.scene.setPlantYear(this.plantYear)
     this.scene.showPlants(this.plantsView.on)
@@ -319,11 +324,55 @@ export class ReliefController {
   setPlantYear(year: number) {
     this.plantYear = year
     this.scene?.setPlantYear(year)
+    this.replaySun()
   }
 
   setPlantsOn(on: boolean) {
     this.plantsView.on = on
     this.scene?.showPlants(on)
+    this.replaySun()
+  }
+
+  /**
+   * The heights the sun reads, with the plants of the year shown standing on
+   * them (when shown), and the cells their crowns cover.
+   */
+  private sunSurface(): { heights: ArrayLike<number>; cover: Uint8Array | null; plantYear: number | null } {
+    const full = this.full as NonNullable<typeof this.full>
+    const base = this.surface ?? this.buildings?.roofs ?? full.heights
+    const altitudes = this.plantAltitudes
+    if (!this.plantsView.on || !this.plants.length || !altitudes) return { heights: base, cover: null, plantYear: null }
+    const year = Math.round(this.plantYear * 10) / 10
+    const cached = this.plantShadeCache
+    if (cached?.base === base && cached.altitudes === altitudes && cached.year === year) {
+      return { heights: cached.heights, cover: cached.cover, plantYear: year }
+    }
+    const { cols, rows } = this.meta
+    const { heights, cover } = plantShade(base, cols, rows, this.cell, this.plants, altitudes, year)
+    this.plantShadeCache = { base, altitudes, year, heights, cover }
+    return { heights, cover, plantYear: year }
+  }
+
+  /**
+   * The plants changed (their year, shown or not): the shadows follow, at
+   * each frame for the shadows of an instant, once the years settle for the
+   * hours of a whole day.
+   */
+  private replaySun() {
+    if (this.sun.mode === 'off' || !this.scene) return
+    if (this.sun.mode === 'instant') {
+      if (this.sunReplay.frame) return
+      this.sunReplay.frame = requestAnimationFrame(() => {
+        this.sunReplay.frame = 0
+        if (!this.disposed) void this.renderSun()
+      })
+      return
+    }
+    if (this.sunReplay.timer) clearTimeout(this.sunReplay.timer)
+    this.sunReplay.timer = setTimeout(() => {
+      this.sunReplay.timer = null
+      if (!this.disposed) void this.renderSun()
+    }, 500)
   }
 
   setPlantStrataColors(on: boolean) {
@@ -472,6 +521,8 @@ export class ReliefController {
   dispose() {
     this.disposed = true
     this.sunAbort?.abort()
+    cancelAnimationFrame(this.sunReplay.frame)
+    if (this.sunReplay.timer) clearTimeout(this.sunReplay.timer)
     if (this.blocksTimer) clearTimeout(this.blocksTimer)
     this.scene?.dispose()
     this.scene = null
@@ -1033,7 +1084,6 @@ export class ReliefController {
     const scene = this.scene
     if (!scene || !this.full) return
     const { cols, rows } = this.meta
-    const surface = this.surface ?? this.buildings?.roofs ?? this.full.heights
     const [lng, lat] = this.location
     const mode = this.sun.mode
     if (mode !== 'day') this.sunAbort?.abort()
@@ -1044,6 +1094,7 @@ export class ReliefController {
       this.options.onSun?.({ mode: 'off' })
       return
     }
+    const { heights: surface, cover, plantYear } = this.sunSurface()
     if (mode === 'instant') {
       const sun: SunPosition = sunPosition(this.sunInstant(), lat, lng)
       scene.setSun(sun)
@@ -1057,7 +1108,7 @@ export class ReliefController {
       }
       this.maskBuffer ||= new Uint8Array(cols * rows)
       this.levelBuffer ||= new Float32Array(cols * rows)
-      const mask = shadowMask(surface, cols, rows, this.cell, sun, this.maskBuffer, this.levelBuffer)
+      const mask = shadowMask(surface, cols, rows, this.cell, sun, this.maskBuffer, this.levelBuffer, cover)
       this.lastMask = mask
       const tint = this.tintBuffer()
       let shaded = 0
@@ -1076,7 +1127,7 @@ export class ReliefController {
     }
     // Hours of sun of the day: computed once per date.
     scene.setSun(null)
-    const key = `${this.sun.date}:${this.sunDayStart().toISOString()}`
+    const key = `${this.sun.date}:${this.sunDayStart().toISOString()}:${plantYear ?? '-'}`
     if (this.dayHours?.key !== key) {
       this.sunAbort?.abort()
       const abort = new AbortController()
@@ -1085,6 +1136,7 @@ export class ReliefController {
       try {
         const result = await sunHours(surface, cols, rows, this.cell, lat, lng, this.sunDayStart(), {
           signal: abort.signal,
+          cover,
           onProgress: (f) => this.options.onSun?.({ mode: 'day', computing: f, daylight: null }),
         })
         this.dayHours = { key, ...result }
