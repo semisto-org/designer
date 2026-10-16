@@ -1,8 +1,8 @@
 ---
 title: "Planter puis observer"
 summary: "Marquer un plant comme planté, noter sa reprise au fil des saisons, et enrichir la fiche de l'espèce."
-category: Concevoir
-order: 54
+category: Planter
+order: 61
 ---
 
 Le design ne s'arrête pas à la plantation : c'est là que le jardin commence à te répondre. Terranova t'aide à boucler la boucle **planté, puis observé** : chaque plant mis en terre peut recevoir ses observations, saison après saison.

@@ -1,8 +1,8 @@
 ---
 title: "Connecter ton IA"
 summary: "Brancher son assistant IA sur ses cartes, pour qu'il les lise et propose des brouillons."
-category: L'IA sur la carte
-order: 70
+category: "L'IA sur la carte"
+order: 80
 ---
 
 Semisto Terranova est fait pour travailler **avec une IA qui connaît le lieu**. Tu branches ton propre assistant (Claude, ChatGPT, Le Chat de Mistral…) sur tes cartes, par un standard ouvert appelé **MCP** (*Model Context Protocol*). Pas de copier-coller : l'assistant lit directement ta carte.

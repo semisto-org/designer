@@ -2,7 +2,7 @@
 title: "Étiqueter ses éléments"
 summary: "Pose des étiquettes sur tes plantes, réseaux et structures, puis filtre et groupe tes listes par étiquette."
 category: Concevoir
-order: 54
+order: 55
 ---
 
 Une étiquette est un mot libre que tu poses sur n'importe quel élément de ta carte : une plante, un patch, une conduite d'eau, un abri, une note… Par exemple « phase 1 », « zone nord », « à tailler » ou « commande de novembre ».

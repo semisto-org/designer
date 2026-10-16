@@ -14,7 +14,7 @@ class HelpArticleTest < ActiveSupport::TestCase
 
   # The help center's categories, in display order.
   CATEGORIES = [
-    "Démarrer", "Cartographier", "Comprendre son terrain", "Concevoir",
+    "Démarrer", "Observer son terrain", "Cartographier", "Concevoir", "Planter",
     "Partager et collaborer", "L'IA sur la carte", "Compte et formules"
   ].freeze
 
@@ -33,9 +33,9 @@ class HelpArticleTest < ActiveSupport::TestCase
     end
   end
 
-  test "the plant identification article is in the design category" do
+  test "the plant identification article is in the observation category" do
     article = HelpArticle.find("identifier-une-plante")
-    assert_equal "Concevoir", article.category
+    assert_equal "Observer son terrain", article.category
     assert_includes article.html, "Pl@ntNet"
     assert_equal "identifier-une-plante", HelpArticle.search("photographier feuille fleur").first.slug
   end
@@ -101,6 +101,16 @@ class HelpArticleTest < ActiveSupport::TestCase
     assert_includes shown, %(<img loading="lazy" src="/help/captures/panneau-soleil.webp") if HelpArticle::CAPTURES_DIR.join("panneau-soleil.webp").exist?
   end
 
+  test "every month has its season card, with existing guides" do
+    (1..12).each do |month|
+      season = HelpArticle.season(Date.new(2026, month, 1))
+      assert season, "no season card for month #{month}"
+      assert season[:title].present? && season[:body].present?
+      raw = YAML.safe_load_file(HelpArticle::DIR.join("seasons.yml"))[month]["guides"]
+      assert_equal raw.size, season[:articles].size, "month #{month} names a missing guide"
+    end
+  end
+
   test "renders Markdown to HTML with heading ids and no English anchors" do
     article = HelpArticle.find("formules-et-forfait")
     assert_includes article.html, "<h2 id=\"la-carte-gratuite\">La carte gratuite</h2>"
@@ -117,11 +127,12 @@ class HelpArticleTest < ActiveSupport::TestCase
     names = HelpArticle.categories.map { |c| c[:name] }
     assert_equal CATEGORIES, names
     cartographier = HelpArticle.categories.find { |c| c[:name] == "Cartographier" }[:articles]
-    assert_equal %w[choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone caler-un-fond-de-plan dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
+    assert_equal %w[choisir-ses-parcelles la-vue-drone caler-un-fond-de-plan dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
+    assert_equal [ nil, "observe", "map", "design", "plant" ], HelpArticle.categories.first(5).map { |c| c[:stage] }
   end
 
   test "search finds articles by words in the body, ignoring case and accents" do
-    assert_equal "lire-les-couches-du-geoportail", HelpArticle.search("RUISSELLEMENT").first.slug
+    assert_includes HelpArticle.search("RUISSELLEMENT").first(2).map(&:slug), "lire-les-couches-du-geoportail"
     assert_equal "lire-les-couches-du-geoportail", HelpArticle.search("geoportail").first.slug
     assert_includes HelpArticle.search("Géoportail").map(&:slug), "choisir-ses-parcelles"
     assert_equal [ "connecter-son-ia" ], HelpArticle.search("mcp").map(&:slug)

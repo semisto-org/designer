@@ -1,8 +1,8 @@
 ---
 title: "Les règles et les risques du terrain"
 summary: "Zone inondable, argiles, zonage du PLU, servitudes : ce que la loi et la nature disent déjà de ton terrain, et ce que ça change pour ton jardin-forêt."
-category: Comprendre son terrain
-order: 49
+category: Observer son terrain
+order: 31
 ---
 
 Avant de dessiner, il vaut mieux savoir ce que ton lieu impose déjà. Une zone inondable change le choix des espèces, des argiles qui gonflent éloignent les grands arbres de la maison, une zone naturelle du PLU limite les abris. Le panneau **Règles et risques**, dans l'étape **Observer**, rassemble ces informations au même endroit.

@@ -2,7 +2,7 @@
 title: "Travailler en équipe"
 summary: "Créer une équipe, inviter ses collègues et lui confier des cartes que tous ses membres modifient."
 category: Partager et collaborer
-order: 65
+order: 73
 ---
 
 Un bureau d'études, une association, un groupe en formation : quand plusieurs personnes conçoivent ensemble, inviter chacune sur chaque carte devient vite fastidieux. Une **équipe** règle cela une fois pour toutes.

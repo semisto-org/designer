@@ -13,11 +13,11 @@ class HelpController < ApplicationController
     words = HelpArticle.tokenize(query)
     props = {
       query:,
-      categories: HelpArticle.categories.map { |c| { name: c[:name], articles: c[:articles].map(&:as_json) } },
+      categories: HelpArticle.categories.map { |c| { name: c[:name], stage: c[:stage], articles: c[:articles].map(&:as_json) } },
       results: results.map { |a| a.as_json.merge(excerpt: a.excerpt(words)) }
     }
     respond_to do |format|
-      format.html { render_public "help/index", page: :help, props: props.merge(contactEmail: Billing.contact_email) }
+      format.html { render_public "help/index", page: :help, props: props.merge(contactEmail: Billing.contact_email, season: season_json) }
       format.json { render json: props }
     end
   end
@@ -41,4 +41,10 @@ class HelpController < ApplicationController
       end
     end
   end
+
+  private
+    def season_json
+      season = HelpArticle.season
+      season && season.merge(articles: season[:articles].map(&:as_json))
+    end
 end

@@ -2,7 +2,7 @@
 title: "Dessiner l'existant"
 summary: "Bâtiments, arbres, eau, chemins : poser sur la carte ce qui est déjà là, avant de concevoir."
 category: Cartographier
-order: 40
+order: 43
 ---
 
 Avant d'imaginer, on **relève**. Dessiner l'existant t'oblige à regarder le lieu avec précision, et donne à tout le reste (le design, les analyses, ton IA) une base fiable.

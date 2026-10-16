@@ -84,6 +84,29 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert text.present?
   end
 
+  test "get_help lists the guides, searches them and serves one with absolute links" do
+    data, error = call_tool(@viewer, "get_help")
+    refute error
+    assert_includes data["guides"].map { |g| g["slug"] }, "connecter-son-ia"
+
+    data, = call_tool(@viewer, "get_help", { query: "baisière" })
+    assert_includes data["guides"].map { |g| g["slug"] }, "tracer-sur-la-courbe-et-le-keyline"
+    assert data["guides"].first["excerpt"].present?
+
+    data, error = call_tool(@viewer, "get_help", { slug: "le-soleil-et-l-horizon" })
+    refute error
+    assert_equal "le-soleil-et-l-horizon", data["slug"]
+    assert_match %r{/help/le-soleil-et-l-horizon\z}, data["url"]
+    assert_includes data["guide"], "**Ouvrir le panneau Soleil** (un bouton du guide"
+    refute_includes data["guide"], "action:panel"
+    refute_match %r{\]\(/}, data["guide"]
+    assert_equal({ "slug" => "le-soleil-et-l-horizon" }, AiAction.last.result)
+
+    text, error = call_tool(@viewer, "get_help", { slug: "nope" })
+    assert error
+    assert_match(/introuvable/, text)
+  end
+
   test "the server instructions send the agent to the design guide" do
     body = mcp_request(@viewer, "initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "1" } })
     assert_match(/get_design_guide/, body.dig("result", "instructions"))

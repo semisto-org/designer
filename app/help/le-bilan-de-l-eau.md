@@ -1,8 +1,8 @@
 ---
 title: "Le bilan de l'eau"
 summary: "Noter où l'eau court pendant l'averse, lire le bilan de l'eau mois par mois, aujourd'hui et en 2050, et compter la pluie de tes toits."
-category: Comprendre son terrain
-order: 46
+category: Observer son terrain
+order: 27
 ---
 
 L'eau d'un jardin-forêt se compte sur l'année : ce qui tombe, ce que le sol garde, ce que les plantes boivent, ce que tes toits et tes mares retiennent. Ce guide rassemble ce que tu observes sur place et ce que Terranova calcule.

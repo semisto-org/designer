@@ -2,7 +2,7 @@
 title: "Les alertes réglementaires"
 summary: "Mare, serre, abri : repérer ce qui, dans ton dessin, pourrait demander un permis, avec la source de chaque règle."
 category: Concevoir
-order: 56
+order: 57
 ---
 
 Une mare de 120 m², un abri de jardin collé à la limite du voisin : certains aménagements demandent un permis. Le panneau **Alertes** vérifie ton dessin au fil de l'eau et signale ce qui mérite une vérification, **avant** de creuser ou de construire.

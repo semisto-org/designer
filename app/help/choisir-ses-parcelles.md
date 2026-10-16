@@ -2,7 +2,7 @@
 title: "Choisir ses parcelles"
 summary: "Partir du cadastre pour obtenir un contour fiable, parcelle par parcelle."
 category: Cartographier
-order: 20
+order: 40
 ---
 
 Le plus sûr moyen d'obtenir un contour juste est de partir du **plan cadastral** : chaque parcelle y a sa forme officielle et son numéro. Terranova assemble pour toi le contour des parcelles que tu choisis.

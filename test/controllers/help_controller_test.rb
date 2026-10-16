@@ -6,8 +6,11 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     page = response.parsed_body
     assert_equal "help/index", page["component"]
-    assert_equal 7, page["props"]["categories"].size
+    assert_equal 8, page["props"]["categories"].size
     assert_equal "Démarrer", page["props"]["categories"].first["name"]
+    assert_equal "observe", page["props"]["categories"].second["stage"]
+    assert_equal Date.current.month, page["props"]["season"]["month"]
+    assert_not_empty page["props"]["season"]["articles"]
     assert_empty page["props"]["results"]
   end
 
@@ -15,8 +18,9 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     get "/help", params: { q: "ruissellement" }, headers: inertia_headers
     props = response.parsed_body["props"]
     assert_equal "ruissellement", props["query"]
-    assert_equal "lire-les-couches-du-geoportail", props["results"].first["slug"]
-    assert_match(/ruissellement/i, props["results"].first["excerpt"])
+    result = props["results"].find { |r| r["slug"] == "lire-les-couches-du-geoportail" }
+    assert_includes props["results"].first(2), result
+    assert_match(/ruissellement/i, result["excerpt"])
   end
 
   test "searching with no match returns an empty list and is counted" do

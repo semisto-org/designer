@@ -1,8 +1,8 @@
 ---
 title: "La vue 3D du terrain"
 summary: "Faire pleuvoir sur ton terrain, suivre le soleil et l'air froid de la nuit, et voir tes plantes grandir année après année."
-category: Comprendre son terrain
-order: 46
+category: Observer son terrain
+order: 22
 ---
 
 La vue 3D montre ton terrain en relief, à partir du relief téléchargé dans le panneau **Eau et relief** (voir [Lire le relief et l'eau](/help/lire-le-relief-et-l-eau)). C'est l'endroit où l'on voit le mieux le temps passer : une averse, une nuit de gel, vingt ans de croissance.

@@ -1,8 +1,8 @@
 ---
 title: "Relire les brouillons de ton IA"
 summary: "Accepter, ajuster ou refuser un par un les éléments que ton assistant IA propose sur la carte, et suivre ce qu'il a fait."
-category: L'IA sur la carte
-order: 72
+category: "L'IA sur la carte"
+order: 81
 ---
 
 Quand tu [connectes ton IA](/help/connecter-son-ia) avec l'accès « Lecture et brouillons », elle peut **proposer** des éléments sur ta carte : une haie, une mare, un patch de plantes. Ces propositions arrivent en **brouillon** : rien ne fait partie de la carte tant qu'un humain ne l'a pas accepté.

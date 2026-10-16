@@ -2,7 +2,7 @@
 title: "Caler un fond de plan"
 summary: "Poser une esquisse ou un plan remis au client (image ou PDF) sous ton dessin, le caler sur le terrain, régler son opacité et le masquer."
 category: Cartographier
-order: 36
+order: 42
 ---
 
 Tu as dessiné ton jardin-forêt sur papier, ou remis un plan à un client ? Pose-le sur la carte pour replacer chaque élément au bon endroit. Ouvre le panneau **Fonds de plan**.

@@ -3,7 +3,16 @@ fr:
   help:
     not_found: "Cet article d'aide n'existe pas."
     title: "Centre d'aide"
-    lead: "Des guides concrets, pas à pas, pour avancer sur ta carte."
+    lead: "Des guides concrets, pas à pas, pour lire ton terrain et concevoir ton jardin-forêt, au rythme des saisons."
+    notebook:
+      eyebrow: "Le carnet de terrain"
+      shortcut: "Depuis n'importe quelle page, ⌘J (ou Ctrl+J) cherche aussi dans les guides."
+      season: "Ce mois-ci au jardin"
+      start: "Pour commencer"
+      journey: "Au fil du parcours"
+      journey_lead: "Les guides suivent les quatre étapes de l'éditeur : on observe le lieu avant de le dessiner, on conçoit avant de planter."
+      step: "Étape %{number}"
+      others: "Et aussi"
     search_label: "Rechercher dans l'aide"
     search_placeholder: "Ex. : parcelle, palette, partager…"
     search_button: "Rechercher"

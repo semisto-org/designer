@@ -2,7 +2,7 @@
 title: "Gérer la terre excavée"
 summary: "Savoir combien de terre sort d'une mare, d'une baissière ou d'un chemin encaissé, garder la terre végétale à part, et décider où chaque mètre cube va avant de creuser."
 category: Concevoir
-order: 53
+order: 54
 ---
 
 Chaque trou est aussi un tas. Une mare de 40 m² et 1 m de profondeur sort environ 20 m³ de terre, 25 m³ une fois creusée : trois camions, ou plus de trois cents brouettes. Terranova t'aide à le voir dès le plan, pour que chaque mètre cube ait une place sur ton terrain avant le premier coup de pelle.

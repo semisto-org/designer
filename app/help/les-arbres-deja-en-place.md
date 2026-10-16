@@ -1,8 +1,8 @@
 ---
 title: "Les arbres déjà en place"
 summary: "La hauteur des arbres sur ton terrain et autour, vue du ciel : le plus grand, la part du terrain sous les arbres, et où ils se trouvent."
-category: Comprendre son terrain
-order: 48
+category: Observer son terrain
+order: 30
 ---
 
 Un jardin-forêt ne part presque jamais de rien. Le vieux chêne en bordure, la haie du voisin, le bosquet au fond : ils font déjà de l'ombre, coupent le vent et nourrissent le sol. Le panneau **Arbres en place** (étape **Observer**) te les montre avant que tu ne dessines quoi que ce soit.

@@ -2,7 +2,7 @@
 title: "La vue drone de ton terrain"
 summary: "Une photo aérienne récente et datée, prise par Semisto : où la trouver sur la carte, dessiner dessus et comparer d'une saison à l'autre."
 category: Cartographier
-order: 35
+order: 41
 ---
 
 Les photos aériennes publiques ont souvent quelques années, et elles montrent rarement ton terrain à la saison qui t'intéresse. Avec la **mission drone**, Semisto photographie ton terrain d'en haut, à une date convenue avec toi, puis pose cette vue sur ta carte. Tous les détails et le prix sont sur la page [Mission drone](/mission-drone).

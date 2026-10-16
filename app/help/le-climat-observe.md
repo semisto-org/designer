@@ -1,8 +1,8 @@
 ---
 title: "Le climat observé chez toi"
 summary: "Trente ans de climat reconstitué à l'endroit de ton terrain : gelées de printemps et d'automne, pluie et température mois par mois, ce qui a déjà changé."
-category: Comprendre son terrain
-order: 48
+category: Observer son terrain
+order: 25
 ---
 
 Les normales du panneau **Climat** sont des moyennes par grande région. La partie **Le climat observé ici (1995–2024)** descend d'un cran : elle reprend trente ans de climat, heure par heure, à l'endroit de ton terrain.

@@ -1,8 +1,8 @@
 ---
 title: "Lire les couches du Géoportail"
 summary: "Relief, sol, eau, photos anciennes, cadastre : ce que chaque couche raconte sur ton terrain."
-category: Cartographier
-order: 30
+category: Observer son terrain
+order: 21
 ---
 
 Chaque région publie ses données ouvertes sur un géoportail : le **Géoportail de la Wallonie**, la **Géoplateforme de l'IGN** en France, **geoportail.lu** au Luxembourg, **UrbIS** à Bruxelles, **Digitaal Vlaanderen** en Flandre. Terranova choisit la région d'après l'adresse de ton terrain et en affiche les plus utiles pour concevoir un jardin-forêt, dans le panneau **Couches** : un **Fond de carte** (plan ou photo aérienne), puis des couches à superposer, rangées en deux familles : **Relief, sol et eau** et **Milieux et règles**. Active-les une par une : trop de couches superposées, et on s'y perd.

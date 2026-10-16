@@ -2,7 +2,7 @@
 title: "Le tableau de l'équipe"
 summary: "Suivre en réunion les nouvelles demandes, les projets de l'équipe sur une frise, la saison qui vient et la charge de chacun."
 category: Partager et collaborer
-order: 66
+order: 74
 ---
 
 Le tableau de l'équipe sert à la réunion opérationnelle : on le lit de haut en bas, en une demi-heure. Tu l'ouvres depuis la page de ton équipe, « Tableau de l'équipe ». Tous les membres de l'équipe le voient et le modifient.

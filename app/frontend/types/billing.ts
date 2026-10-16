@@ -125,7 +125,8 @@ export type HelpArticleFull = HelpArticleSummary & {
   related?: HelpArticleSummary[]
 }
 
-export type HelpCategory = { name: string; articles: HelpArticleSummary[] }
+/** `stage`: the step of the journey the category follows (Observer…), else null. */
+export type HelpCategory = { name: string; stage?: string | null; articles: HelpArticleSummary[] }
 
 /** Server-rendered <head> tag (Inertia Rails meta), re-rendered on the client by MetaHead. */
 export type MetaTag = {

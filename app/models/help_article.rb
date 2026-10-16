@@ -18,6 +18,11 @@ class HelpArticle
     render: { unsafe: false }
   }.freeze
   ACTION_LINK = %r{<a href="action:panel/([a-z0-9-]+)">}
+  # The categories that follow a step of the journey, with that step: the
+  # help center draws them as the editor does.
+  STAGE_BY_CATEGORY = {
+    "Observer son terrain" => "observe", "Cartographier" => "map", "Concevoir" => "design", "Planter" => "plant"
+  }.freeze
   # Old slug => new slug, for articles that changed name.
   RENAMED = {
     "connecter-claude" => "connecter-son-ia",
@@ -49,9 +54,17 @@ class HelpArticle
       RENAMED[slug.to_s]
     end
 
-    # [{ name:, articles: [HelpArticle] }] in display order.
+    # [{ name:, stage:, articles: [HelpArticle] }] in display order.
     def categories
-      all.group_by(&:category).map { |name, articles| { name:, articles: } }
+      all.group_by(&:category).map { |name, articles| { name:, stage: STAGE_BY_CATEGORY[name], articles: } }
+    end
+
+    # What the garden asks for this month and its guides (app/help/seasons.yml).
+    def season(date = Date.current)
+      entry = (YAML.safe_load_file(DIR.join("seasons.yml")) || {})[date.month]
+      return nil unless entry
+      { month: date.month, title: entry["title"], body: entry["body"],
+        articles: Array(entry["guides"]).filter_map { |slug| find(slug) } }
     end
 
     # Full-text search: every word must be found (accents and case are

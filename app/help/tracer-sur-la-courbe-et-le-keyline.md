@@ -1,8 +1,8 @@
 ---
 title: "Tracer sur la courbe et le keyline"
 summary: "Poser une baissière, une haie ou un chemin exactement sur la courbe de niveau, et mener l'eau des vallons vers les croupes."
-category: Comprendre son terrain
-order: 46
+category: Concevoir
+order: 50
 ---
 
 Sur un terrain en pente, l'eau suit le relief. Pour la ralentir et la faire boire au sol, les ouvrages se posent **sur la courbe de niveau**, et Terranova les y place pour toi à partir du relief téléchargé (voir [Lire le relief et l'eau](/help/lire-le-relief-et-l-eau)).

@@ -8,7 +8,7 @@ fr:
       instructions: |-
         Semisto Terranova cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
         Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…) ; get_site_data donne le soleil et l'horizon, la météo et le climat observés, les arbres déjà en place et, en France, les règles d'urbanisme et les risques ; trace_contour donne la courbe de niveau exacte qui passe par un point, à suivre pour toute baissière, keyline ou haie en travers de la pente ; get_catchment donne le bassin versant d'une mare, d'une baissière ou d'un point, sur lequel dimensionner l'ouvrage et son trop-plein.
-        Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « method » et le chapitre du sujet). Le guide est écrit en anglais : réponds toujours dans la langue de la personne. Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
+        Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « method » et le chapitre du sujet). Le guide est écrit en anglais : réponds toujours dans la langue de la personne. Quand la personne demande comment faire quelque chose dans Terranova (où cliquer, à quoi sert un panneau), get_help donne le guide d'utilisation concerné : réponds d'après lui et donne-lui le lien du guide. Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
         Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur. Pour changer un élément déjà accepté (date de plantation, espèce, variété, quantité, nom, étiquettes, notes, position), propose_feature_updates propose la modification, élément par élément ou pour tout un lot choisi par un filtre (étiquette, type, couche, espèce, identifiants) ; l'humain la revoit, champ par champ, et peut tout accepter d'un clic. list_features et get_feature montrent la modification en attente (pending_update) de chaque élément.
         La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
@@ -132,6 +132,12 @@ fr:
         description: "La méthode de conception de Semisto, chapitre par chapitre : l'ordre de conception et la posture (method), l'eau (water), la terre creusée et où la mettre (earthworks), la structure (structure), la palette et les guildes (palette), le climat qui vient (climate). Chapitres rédigés en anglais. Sans topic : la liste des chapitres. À lire avant de proposer un design ou de conseiller sur l'eau, la structure ou les plantes."
         params:
           topic: "Chapitre à lire. Sans topic : la liste des chapitres, à commencer par « method »."
+      get_help:
+        title: "Aide de Terranova"
+        description: "Le centre d'aide de Semisto Terranova : comment se servir de l'application, panneau par panneau (où cliquer, ce que montre chaque écran, les étapes du parcours). Sans argument : la liste des guides. Avec query : les guides qui en parlent, avec un extrait. Avec slug : le guide complet en Markdown, ses liens et les guides voisins. Guides rédigés en français, au tutoiement. Pour la méthode de conception elle-même, lis plutôt get_design_guide."
+        params:
+          slug: "Le guide à lire, par son identifiant (slug), donné par la liste ou par une recherche."
+          query: "Des mots à chercher dans l'aide (fautes de frappe et synonymes acceptés)."
       list_tasks:
         title: "Lire les tâches du projet"
         description: "Les tâches de la carte (page « Tâches ») : ses listes (dont celles que Semisto ajoute par défaut, une par étape), chaque tâche avec ses notes, ses étiquettes, son échéance (et si elle est dépassée), la personne qui la porte, et si elle est faite (quand, par qui). Pour une tâche de Semisto, map_says_done dit si la carte montre déjà ce travail fait, et open_in_map ouvre le panneau où il se fait. Donne aussi les participants à qui une tâche peut être confiée et ce que cette connexion peut faire. Filtres par liste, statut, personne et étiquette."
@@ -331,6 +337,8 @@ fr:
       plan_write: "Le forfait qui couvre la carte (celui de son équipe, sinon de son propriétaire) ne comprend pas l'écriture par l'IA, et il n'a pas d'essai en cours."
       read_only: "La carte dépasse le nombre de cartes du forfait de son propriétaire : elle est en lecture seule."
     notes:
+      help_panel_button: "un bouton du guide qui ouvre ce panneau dans l'éditeur de la carte"
+      help_capture: "capture d'écran : %{alt}"
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
       networks_on_request: "Les réseaux sont masqués par défaut : passe include_networks à true dans list_features pour les lire."
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
@@ -400,6 +408,7 @@ fr:
       photo_not_found: "Photo %{id} introuvable sur cette carte. get_map donne les photos à analyser (bioindicators.photos)."
       photo_unreadable: "La photo %{id} n'a pas pu être lue."
       guide_not_found: "Chapitre « %{topic} » introuvable. Chapitres : %{topics}."
+      help_not_found: "Guide « %{slug} » introuvable. get_help sans argument donne la liste des guides."
       task_not_found: "Tâche %{id} introuvable sur cette carte. list_tasks donne ses tâches."
       task_list_not_found: "Liste %{id} introuvable sur cette carte. list_tasks donne ses listes."
       tick_own_only: "L'utilisateur est lecteur de cette carte : il ne peut que cocher ou décocher les tâches qui lui sont confiées."
@@ -578,6 +587,7 @@ fr:
       search_plants: "a cherché dans le catalogue des plantes"
       get_plant: "a lu une fiche plante"
       get_design_guide: "a lu le guide de méthode de Semisto"
+      get_help: "a lu l'aide de Terranova"
       get_bioindicator_photo: "a regardé une photo de plantes sauvages"
       get_soil_samples: "a lu les points de prélèvement de sol"
       get_soil_report: "a lu un rapport de laboratoire"

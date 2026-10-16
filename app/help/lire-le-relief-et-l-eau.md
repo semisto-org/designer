@@ -1,8 +1,8 @@
 ---
 title: "Lire le relief et l'eau"
 summary: "Télécharger le relief de ton terrain, lire ses pentes et voir où l'eau s'écoule et stagne."
-category: Comprendre son terrain
-order: 46
+category: Observer son terrain
+order: 20
 ---
 
 Où l'eau descend-elle quand il pleut fort ? Où stagne-t-elle ? Quel coin reste à l'ombre en hiver ? Le panneau **Eau et relief** répond à ces questions à partir du relief mesuré de ton terrain. Il fait partie des analyses du [forfait](/help/formules-et-forfait).

@@ -1,8 +1,8 @@
 ---
 title: "Le bassin versant et l'infiltration"
 summary: "Voir d'où vient l'eau d'une mare ou d'une baissière, mesurer ce que boit ton sol, et freiner l'eau qui emporte la terre."
-category: Comprendre son terrain
-order: 46
+category: Concevoir
+order: 51
 ---
 
 Un ouvrage de l'eau se dimensionne avec deux chiffres : l'eau qui arrive (son **bassin versant**) et l'eau que le sol boit (son **infiltration**). Les deux se lisent sur la carte, une fois le relief téléchargé (voir [Lire le relief et l'eau](/help/lire-le-relief-et-l-eau)).

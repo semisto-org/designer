@@ -2,7 +2,7 @@
 title: "Imprimer un plan à l'échelle"
 summary: "Créer un PDF en A4 ou A3, à l'échelle exacte, avec cartouche, légende et nord, pour le terrain, la pépinière ou un dossier."
 category: Partager et collaborer
-order: 64
+order: 72
 ---
 
 Sur le terrain, rien ne remplace une feuille où l'on peut mesurer au double-décimètre et griffonner. Terranova crée un **plan PDF à l'échelle** de ton design, prêt à imprimer.

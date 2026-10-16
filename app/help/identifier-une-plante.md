@@ -1,8 +1,8 @@
 ---
 title: "Identifier une plante par photo"
 summary: "Photographier une plante, laisser Pl@ntNet proposer des espèces, et choisir toi-même la bonne."
-category: Concevoir
-order: 55
+category: Observer son terrain
+order: 29
 ---
 
 Tu ne sais pas ce qui pousse là ? Sur la fiche d'une plante de la carte, **« Identifier l'espèce par photo »** envoie tes photos à **Pl@ntNet**, un service d'identification de plantes, qui propose les espèces les plus probables. **C'est toi qui décides** : rien n'est enregistré tant que tu n'as pas choisi.

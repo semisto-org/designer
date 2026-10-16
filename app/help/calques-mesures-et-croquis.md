@@ -2,7 +2,7 @@
 title: "Calques, mesures et croquis"
 summary: "Afficher ou masquer les couches de ton dessin, mesurer une distance ou une surface, et griffonner une idée à main levée."
 category: Cartographier
-order: 45
+order: 44
 ---
 
 Trois outils simples accompagnent le dessin : les **calques**, pour y voir clair quand la carte se remplit, la **mesure**, pour vérifier une distance avant de creuser, et le **croquis**, pour noter une idée en deux traits.

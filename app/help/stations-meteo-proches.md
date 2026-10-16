@@ -1,8 +1,8 @@
 ---
 title: "Les stations météo proches"
 summary: "Ce que les stations officielles autour de ton terrain ont mesuré ces derniers jours : gel, pluie, soleil et température du sol."
-category: Comprendre son terrain
-order: 47
+category: Observer son terrain
+order: 26
 ---
 
 Les normales climatiques disent ce qui est habituel. Les stations météo disent ce qui vient de se passer : la nuit froide de mardi, la pluie qui manque depuis un mois, le sol qui se refroidit. Le panneau **Climat** te montre, sous le climat de ton lieu, les **stations météo proches**.

@@ -1,8 +1,8 @@
 ---
 title: "Rassembler ses documents"
 summary: "Plans d'architecte, relevés, analyses, permis : la bibliothèque de la carte, rangée par étiquette, avec un aperçu des images et des PDF."
-category: Comprendre son terrain
-order: 50
+category: Observer son terrain
+order: 32
 ---
 
 Avant de dessiner, il est précieux de réunir ce qui existe déjà : le plan de la maison, le relevé du géomètre, une analyse de sol, l'acte de propriété, de vieilles photos du terrain. La page **Documents** de la carte les garde au même endroit, pour toute l'équipe.

@@ -1,8 +1,8 @@
 ---
 title: "Le climat d'aujourd'hui et de demain"
 summary: "Zone de rusticité, gelées, pluie, climat projeté en 2050 et 2080 : vérifier que tes plantes tiendront dans la durée."
-category: Comprendre son terrain
-order: 47
+category: Observer son terrain
+order: 24
 ---
 
 Un arbre planté aujourd'hui vivra le climat de 2050, et souvent celui de 2080. Le panneau **Climat** te montre le climat actuel de ton terrain, celui qui se dessine, et vérifie tes plantes face aux deux.
