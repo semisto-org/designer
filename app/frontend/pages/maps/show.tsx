@@ -307,10 +307,12 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       {[...OVERLAYS].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)).map((o) => <o.component key={o.id} />)}
       <HeaderActions />
       <HeaderSteps />
-      {toast && (
-        <div className={'absolute bottom-16 left-1/2 z-30 md:bottom-10 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
+      {/* On the body and above every overlay: a message sent from the photo viewer (z-[60]) or one of its dialogs must show over it. */}
+      {toast && createPortal(
+        <div role="status" className={'fixed bottom-16 left-1/2 z-[90] md:bottom-10 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
           {toast.message}
-        </div>
+        </div>,
+        document.body,
       )}
     </EditorContext.Provider>
   )
