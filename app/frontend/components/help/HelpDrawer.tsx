@@ -1,6 +1,8 @@
-import { ArrowLeft, ExternalLink, Search, X } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ExternalLink, Search, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
+import { followHelpAction } from '@/components/help/actions'
+import { HelpFeedback } from '@/components/help/HelpFeedback'
 import { Prose } from '@/components/help/Prose'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
@@ -96,15 +98,31 @@ export function HelpDrawer({ open, slug, onClose }: { open: boolean; slug?: stri
     }
   }, [open, onClose])
 
-  // Links to other articles stay in the drawer.
+  // Links to other articles stay in the drawer; a panel link opens the panel.
   const followInternalLink = (event: MouseEvent<HTMLDivElement>) => {
+    if (followHelpAction(event, onClose)) return
     const link = (event.target as HTMLElement).closest('a')
     const match = link?.getAttribute('href')?.match(/^\/help\/([a-z0-9-]+)(#.*)?$/)
     if (match && !event.metaKey && !event.ctrlKey) {
       event.preventDefault()
       setCurrent(match[1])
+      if (match[2]) pendingAnchor.current = match[2].slice(1)
     }
   }
+
+  // « Sur cette page »: scroll the drawer, not the page behind it.
+  const pendingAnchor = useRef<string | null>(null)
+  const scrollToHeading = (id: string) => {
+    const target = scroller.current?.querySelector<HTMLElement>(`[id="${CSS.escape(id)}"]`)
+    if (target && scroller.current) scroller.current.scrollTo({ top: target.offsetTop - 16, behavior: 'smooth' })
+  }
+  useEffect(() => {
+    if (article && pendingAnchor.current) {
+      const id = pendingAnchor.current
+      pendingAnchor.current = null
+      requestAnimationFrame(() => scrollToHeading(id))
+    }
+  }, [article])
 
   if (!open || typeof document === 'undefined') return null
   const showArticle = current !== null && article?.slug === current
@@ -146,10 +164,43 @@ export function HelpDrawer({ open, slug, onClose }: { open: boolean; slug?: stri
           )}
           {current && showArticle && article && (
             <article>
-              <p className="text-xs font-medium uppercase tracking-wide text-leaf-600">{article.category}</p>
+              <p className="text-sm font-medium text-leaf-700">{article.category}</p>
               <h2 className="mt-1 text-xl leading-snug">{article.title}</h2>
+              {article.headings.length > 2 && (
+                <details className="group mt-4 rounded-xl bg-loam-50 ring-1 ring-loam-200/70">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-medium text-loam-700 [&::-webkit-details-marker]:hidden">
+                    {t('help.on_this_page')}
+                    <span className="text-loam-400">{article.headings.length}</span>
+                    <ChevronDown className="ml-auto h-4 w-4 text-loam-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+                  </summary>
+                  <ul className="space-y-1 px-3 pb-3 text-sm">
+                    {article.headings.map((heading) => (
+                      <li key={heading.id}>
+                        <button type="button" onClick={() => scrollToHeading(heading.id)} className="text-left text-loam-600 hover:text-prune-700">
+                          {heading.text}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
               <Prose html={article.html} className="mt-4 prose-sm" onClick={followInternalLink} />
-              <a href={article.url} className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-prune-600 hover:text-prune-800">
+              <HelpFeedback slug={article.slug} compact />
+              {article.related && article.related.length > 0 && (
+                <nav aria-label={t('help.same_category')} className="mt-6">
+                  <h3 className="text-sm font-semibold text-loam-900">{t('help.same_category')}</h3>
+                  <ul className="mt-2 space-y-1">
+                    {article.related.map((item) => (
+                      <li key={item.slug}>
+                        <button type="button" onClick={() => setCurrent(item.slug)} className="text-left text-sm text-prune-700 hover:text-prune-900 hover:underline">
+                          {item.title}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
+              <a href={article.url} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-prune-600 hover:text-prune-800">
                 {t('help.drawer.full_page')}
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               </a>
@@ -174,13 +225,13 @@ export function HelpDrawer({ open, slug, onClose }: { open: boolean; slug?: stri
               <ul className="mt-4 space-y-5">
                 {(query.trim() ? [{ name: '', articles: index.results }] : index.categories).map((category) => (
                   <li key={category.name || 'results'}>
-                    {category.name && <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-400">{category.name}</h3>}
+                    {category.name && <h3 className="text-sm font-semibold text-loam-500">{category.name}</h3>}
                     <ul className="mt-2 space-y-1">
                       {category.articles.map((item) => (
                         <li key={item.slug}>
                           <button type="button" onClick={() => setCurrent(item.slug)} className="block w-full rounded-lg px-3 py-2 text-left hover:bg-loam-100">
                             <span className="block text-sm font-medium text-loam-900">{item.title}</span>
-                            <span className="mt-0.5 block text-xs text-loam-500">{item.excerpt ?? item.summary}</span>
+                            <span className="mt-0.5 block text-sm text-loam-500">{item.excerpt ?? item.summary}</span>
                           </button>
                         </li>
                       ))}

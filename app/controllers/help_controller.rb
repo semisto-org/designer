@@ -8,6 +8,8 @@ class HelpController < ApplicationController
   def index
     query = params[:q].to_s.strip.first(100)
     results = query.present? ? HelpArticle.search(query) : []
+    # The quick switcher searches maps and guides at once: its misses are not missing guides.
+    HelpSearchMiss.record(query) if query.present? && results.empty? && params[:from] != "switcher"
     words = HelpArticle.tokenize(query)
     props = {
       query:,
@@ -28,10 +30,9 @@ class HelpController < ApplicationController
     respond_to do |format|
       format.html do
         return redirect_to(help_center_path, alert: t("help.not_found")) unless article
-        siblings = HelpArticle.all.select { |a| a.category == article.category && a != article }
         render_public "help/show", page: :help, title: article.title, description: article.summary, props: {
           article: article.to_drawer_json,
-          related: siblings.map(&:as_json),
+          related: article.related.map(&:as_json),
           contactEmail: Billing.contact_email
         }
       end

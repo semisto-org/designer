@@ -52,13 +52,67 @@ class HelpArticle
       all.group_by(&:category).map { |name, articles| { name:, articles: } }
     end
 
-    # Simple full-text search: every word must appear (accents and case are
-    # ignored); title hits weigh more than summary, then body.
+    # Full-text search: every word must be found (accents and case are
+    # ignored), as typed, through a synonym (app/help/synonyms.yml) or, from
+    # four letters, with one slip (« baisière »); title hits weigh more than
+    # summary, then body, and a slip weighs less than the word itself.
     def search(query)
       words = tokenize(query)
       return [] if words.empty?
       all.filter_map { |article| (score = article.score(words)) && [ score, article ] }
         .sort_by { |score, article| [ -score, article.order ] }.map(&:last)
+    end
+
+    # The words that stand for `word`, itself first: [« mare », « etang »…].
+    def alternatives(word)
+      [ word, *synonyms.fetch(word, []) ]
+    end
+
+    def synonyms
+      file = DIR.join("synonyms.yml")
+      mtime = File.exist?(file) ? File.mtime(file).to_f : nil
+      return @synonyms[:map] if @synonyms && @synonyms[:mtime] == mtime
+      groups = mtime ? Array(YAML.safe_load_file(file)) : []
+      map = {}
+      groups.each do |group|
+        terms = group.map { |term| normalize(term).squish }.uniq
+        terms.each { |term| (map[term] ||= []).concat(terms - [ term ]).uniq! }
+      end
+      @synonyms = { mtime:, map: }
+      map
+    end
+
+    # The words of the help center one slip away from `word`, or from its
+    # beginning: « baisiere » finds « baissiere », « palete » « palettes ».
+    def slips(word)
+      articles = all
+      @slips = { articles:, vocabulary: articles.flat_map { |a| a.send(:field_words).values.flat_map(&:to_a) }.to_set, found: {} } unless @slips && @slips[:articles].equal?(articles)
+      found = @slips[:found]
+      found.clear if found.size > 500
+      found[word] ||= @slips[:vocabulary].select do |text|
+        next false if text.length < word.length - 1
+        distance(word, text) <= 1 || distance(word, text[0, word.length]) <= 1
+      end.to_set
+    end
+
+    # Optimal string alignment distance, stopped early above `max` (the
+    # same as app/frontend/quick_switcher/match.ts).
+    def distance(a, b, max = 1)
+      return max + 1 if (a.length - b.length).abs > max
+      rows = [ (0..b.length).to_a ]
+      (1..a.length).each do |i|
+        rows[i] = [ i ]
+        best = i
+        (1..b.length).each do |j|
+          cost = a[i - 1] == b[j - 1] ? 0 : 1
+          value = [ rows[i - 1][j] + 1, rows[i][j - 1] + 1, rows[i - 1][j - 1] + cost ].min
+          value = [ value, rows[i - 2][j - 2] + 1 ].min if i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1]
+          rows[i][j] = value
+          best = value if value < best
+        end
+        return max + 1 if best > max
+      end
+      rows[a.length][b.length]
     end
 
     def tokenize(text)
@@ -106,23 +160,16 @@ class HelpArticle
   end
 
   # nil when a query word is missing, otherwise a relevance score. A word
-  # matches the start of a word of the text ("plant" finds "plants").
+  # matches the start of a word of the text (« plant » finds « plants »).
   def score(words)
-    fields = { title: title, summary: summary, category: category, body: plain_text }
-      .transform_values { |text| self.class.normalize(text) }
-    patterns = words.index_with { |word| /\b#{Regexp.escape(word)}/ }
-    return nil unless patterns.all? { |_, pattern| fields.values.any? { |text| text.match?(pattern) } }
-    patterns.sum do |_, pattern|
-      (fields[:title].match?(pattern) ? 10 : 0) + (fields[:summary].match?(pattern) ? 4 : 0) +
-        (fields[:category].match?(pattern) ? 2 : 0) + [ fields[:body].scan(pattern).size, 5 ].min
-    end
+    words.sum { |word| word_score(word) || (return nil) }
   end
 
   # A short passage of the body around the first matching word.
   def excerpt(words, length: 160)
     return summary if words.blank?
     haystack = self.class.normalize(plain_text)
-    position = words.filter_map { |w| haystack.index(/\b#{Regexp.escape(w)}/) }.min
+    position = words.flat_map { |w| self.class.alternatives(w) }.filter_map { |w| haystack.index(/\b#{Regexp.escape(w)}/) }.min
     return summary if position.nil?
     start = [ position - 50, 0 ].max
     snippet = plain_text[start, length].to_s
@@ -133,7 +180,39 @@ class HelpArticle
     { slug:, title:, summary:, category:, url: "/help/#{slug}" }
   end
 
-  def to_drawer_json
-    as_json.merge(html:, headings:)
+  # The other guides of its category, in order.
+  def related
+    self.class.all.select { |article| article.category == category && article != self }
   end
+
+  def to_drawer_json
+    as_json.merge(html:, headings:, related: related.map(&:as_json))
+  end
+
+  private
+    WEIGHTS = { title: 10, summary: 4, category: 2 }.freeze
+    SLIP_MIN_LENGTH = 4
+
+    def normalized_fields
+      @normalized_fields ||= { title:, summary:, category:, body: plain_text }.transform_values { |text| self.class.normalize(text) }
+    end
+
+    def field_words
+      @field_words ||= normalized_fields.transform_values { |text| text.scan(/[a-z0-9]{2,}/).to_set }
+    end
+
+    def word_score(word)
+      exact = self.class.alternatives(word).sum do |term|
+        pattern = /\b#{Regexp.escape(term)}/
+        WEIGHTS.sum { |field, weight| normalized_fields[field].match?(pattern) ? weight : 0 } +
+          [ normalized_fields[:body].scan(pattern).size, 5 ].min
+      end
+      return exact if exact.positive?
+      return nil if word.length < SLIP_MIN_LENGTH
+      near = self.class.slips(word)
+      slip = WEIGHTS.merge(body: 1).sum do |field, weight|
+        field_words[field].intersect?(near) ? (weight / 2.0).ceil : 0
+      end
+      slip.positive? ? slip : nil
+    end
 end

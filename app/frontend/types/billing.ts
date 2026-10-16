@@ -121,6 +121,8 @@ export type HelpArticleSummary = {
 export type HelpArticleFull = HelpArticleSummary & {
   html: string
   headings: { id: string; text: string }[]
+  /** The other guides of its category (the drawer lists them). */
+  related?: HelpArticleSummary[]
 }
 
 export type HelpCategory = { name: string; articles: HelpArticleSummary[] }

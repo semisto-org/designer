@@ -212,6 +212,13 @@ Rails.application.routes.draw do
   # Help center (Markdown articles in app/help); /help/:slug.json feeds the help drawer.
   get "help", to: "help#index", as: :help_center
   get "help/:slug", to: "help#show", as: :help_article, constraints: { slug: /[a-z0-9-]+/ }
+  # « Ce guide t'a aidé ? »: the answer, then the optional comment.
+  post "help/:slug/feedback", to: "help/feedbacks#create", as: :help_article_feedback, constraints: { slug: /[a-z0-9-]+/ }
+  patch "help/feedback", to: "help/feedbacks#update", as: :help_feedback
+  namespace :admin do
+    get "help", to: "help#show", as: :help
+    delete "help/misses/:id", to: "help#destroy_miss", as: :help_miss
+  end
   # Plans and payments (Stripe) and the account page.
   get "billing", to: "billing#show", as: :billing
   post "billing/checkout", to: "billing_checkouts#create", as: :billing_checkout

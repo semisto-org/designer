@@ -12,6 +12,7 @@ fr:
       invoices: "Factures"
       drone: "Vues drone"
       release_notes: "Nouveautés"
+      help: "Aide"
     dashboard:
       title: "Administration"
       intro: "Les chiffres de Semisto Terranova et ce qui attend l'équipe."

@@ -19,9 +19,16 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     assert_match(/ruissellement/i, props["results"].first["excerpt"])
   end
 
-  test "searching with no match returns an empty list" do
+  test "searching with no match returns an empty list and is counted" do
     get "/help", params: { q: "zzzzzz" }, headers: inertia_headers
     assert_empty response.parsed_body["props"]["results"]
+    assert_equal [ "zzzzzz" ], HelpSearchMiss.pluck(:query)
+  end
+
+  test "the quick switcher's searches that find no guide are not counted" do
+    get "/help.json", params: { q: "gembloux", from: "switcher" }
+    assert_empty response.parsed_body["results"]
+    assert_equal 0, HelpSearchMiss.count
   end
 
   test "an article page renders its HTML" do
@@ -38,7 +45,7 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
     get "/help/connecter-son-ia.json"
     assert_response :success
     json = response.parsed_body
-    assert_equal %w[category headings html slug summary title url], json.keys.sort
+    assert_equal %w[category headings html related slug summary title url], json.keys.sort
     assert_equal "/help/connecter-son-ia", json["url"]
   end
 

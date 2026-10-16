@@ -3,6 +3,7 @@ import { UserRoundCheck } from 'lucide-react'
 import type { ReactNode } from 'react'
 import UpdateBanner from '@/components/app_update/UpdateBanner'
 import QuickSwitcher from '@/quick_switcher/QuickSwitcher'
+import HelpDrawerHost from '@/components/help/HelpDrawerHost'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { SharedProps } from '@/types'
@@ -41,7 +42,7 @@ export function ImpersonationBanner() {
   )
 }
 
-/** Outermost layout of every page: the page, the banners when needed, and the quick switcher (Cmd+J). */
+/** Outermost layout of every page: the page, the banners when needed, the quick switcher (Cmd+J) and the help drawer it opens. */
 export default function ImpersonationFrame({ children }: { children: ReactNode }) {
   return (
     <>
@@ -49,6 +50,7 @@ export default function ImpersonationFrame({ children }: { children: ReactNode }
       <ImpersonationBanner />
       <UpdateBanner />
       <QuickSwitcher />
+      <HelpDrawerHost />
     </>
   )
 }

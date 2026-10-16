@@ -1,5 +1,7 @@
 import { Link } from '@inertiajs/react'
 import { ChevronRight } from 'lucide-react'
+import { followHelpAction } from '@/components/help/actions'
+import { HelpFeedback } from '@/components/help/HelpFeedback'
 import { Prose } from '@/components/help/Prose'
 import { tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
@@ -17,8 +19,11 @@ export default function HelpShow({ article, related, contactEmail }: { article: 
         <article className="min-w-0 max-w-3xl">
           <h1 className="text-balance text-3xl leading-tight sm:text-4xl">{article.title}</h1>
           <p className="mt-3 text-pretty text-lg text-loam-500">{article.summary}</p>
-          <Prose html={article.html} className="mt-8" />
-          <div className="mt-12 rounded-2xl bg-white p-6 ring-1 ring-loam-200/70">
+          <Prose html={article.html} className="mt-8" onClick={(event) => { followHelpAction(event) }} />
+          <div className="mt-12">
+            <HelpFeedback slug={article.slug} />
+          </div>
+          <div className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-loam-200/70">
             <h2 className="text-base">{t('help.contact_title')}</h2>
             <p className="mt-1 text-sm text-loam-500">{tf('help.contact_body', { email: contactEmail })}</p>
           </div>

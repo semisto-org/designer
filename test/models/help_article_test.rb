@@ -113,6 +113,18 @@ class HelpArticleTest < ActiveSupport::TestCase
     assert_empty HelpArticle.search("ouvelle xyz")
   end
 
+  test "search forgives one slip in a word of four letters or more" do
+    assert_includes HelpArticle.search("baisière").map(&:slug), "lire-le-relief-et-l-eau"
+    assert_equal "construire-sa-palette-et-ses-patches", HelpArticle.search("palete").first.slug
+    assert_empty HelpArticle.search("xqzw")
+  end
+
+  test "search finds a word through its synonyms" do
+    assert_includes HelpArticle.search("étang").map(&:slug), "lire-le-relief-et-l-eau"
+    assert_includes HelpArticle.search("chatgpt").map(&:slug), "connecter-son-ia"
+    assert_includes HelpArticle.alternatives("mare"), "etang"
+  end
+
   test "an empty or too short query finds nothing" do
     assert_empty HelpArticle.search("")
     assert_empty HelpArticle.search("a")
