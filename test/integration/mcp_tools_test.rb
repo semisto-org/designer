@@ -203,6 +203,27 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/feature_id/, text)
   end
 
+  test "find_keypoints gives the keypoints of the valleys with their keylines" do
+    synthetic_terrain(@map) { |dx, dy| 200 + dx.abs * 0.15 + (dy.positive? ? dy * 0.10 : dy * 0.02) }
+    data, error = call_tool(@viewer, "find_keypoints", { map_id: @map.id })
+    refute error
+    keypoint = data["keypoints"].sole
+    assert_operator keypoint["slope_above_pct"], :>, keypoint["slope_below_pct"]
+    assert_equal "LineString", keypoint.dig("keyline", "geometry", "type")
+    assert_equal "find_keypoints", AiAction.last.tool
+  end
+
+  test "trace_parallels gives the lines above and below a keyline" do
+    centre = @map.boundary.centroid
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    keyline = @map.features.create!(layer: "water", kind: "keyline", properties: { "role" => "keyline", "use" => "trees" },
+      geometry: { "type" => "LineString", "coordinates" => [ [ centre.x - 0.0002, centre.y ], [ centre.x + 0.0002, centre.y ] ] })
+    data, error = call_tool(@viewer, "trace_parallels", { map_id: @map.id, feature_id: keyline.id, spacing_m: 5, above: 1, below: 1 })
+    refute error
+    assert_equal %w[above below], data["lines"].map { |l| l["side"] }
+    assert_equal "trace_parallels", AiAction.last.tool
+  end
+
   test "plant tools search the catalogue and give a species with its provenance" do
     walnut = PlantSpecies.create!(latin_name: "Juglans regia", plant_type: "tree", height_max_m: 25)
     walnut.replace_common_names!([ "Noyer commun" ])

@@ -74,6 +74,16 @@ Dès deux intervalles, la fiche donne la vitesse en millimètres par heure, ce q
 
 Ensuite, la carte se sert de ta mesure : la simulation de pluie en 3D fait boire le sol à la vitesse mesurée autour de chaque test, et la fiche d'une baissière ou d'un jardin de pluie dit en combien de temps il se vide. Refais le test au même endroit dans quelques années : sous un jardin-forêt, le sol s'ouvre, et les anciens résultats restent dans l'historique du test.
 
+## Le keyline : mener l'eau des vallons vers les croupes
+
+L'eau se rassemble dans les vallons et manque sur les croupes. Le **keyline**, la méthode de l'Australien P.A. Yeomans, la répartit. Dans un vallon, le **point clé** est l'endroit où le fond cesse de descendre raide pour descendre doucement. La courbe de niveau qui y passe s'appelle la **keyline**.
+
+Dans **Eau et relief**, une fois le relief téléchargé, touche **Chercher les points clés**. Terranova lit le fond de chaque vallon de ton terrain et y place des gouttes numérotées, avec la pente du fond au-dessus et en dessous et la surface qui y draine. Le fond du vallon est en pointillé et sa keyline en tirets. **Poser la keyline** l'ajoute sur ta carte, dans la couche Eau. Sa fiche dit à quoi elle sert : une baissière creusée, une ligne d'arbres ou un décompactage.
+
+Depuis la fiche d'une keyline, **Lignes parallèles** trace des lignes au-dessus et en dessous, à l'écart que tu choisis. L'écart change avec l'usage : 15 à 30 m entre des baissières, 8 à 15 m entre des lignes d'arbres, 1 à 3 m pour un décompactage. Seule la keyline suit la courbe de niveau. Ses parallèles gardent sa forme : au-dessus, elles descendent doucement vers les croupes, en dessous elles y remontent, et c'est ce qui y emmène l'eau. Les lignes s'affichent sur la carte avant que tu les ajoutes.
+
+Certains terrains n'ont pas de vallon qui casse nettement sa pente. Dans ce cas, une baissière posée avec « Suivre la courbe » fait très bien l'affaire.
+
 ## Le bilan de l'eau, mois par mois
 
 Dans le panneau **Climat**, sous le climat observé, **Le bilan de l'eau** compare chaque mois la pluie à l'eau que les plantes rendent à l'air (estimée à partir des températures et du soleil à ta latitude), avec la réserve du sol entre les deux. Tu y vois les mois où le sol plein laisse partir l'eau (l'hiver, en général) et ceux où les plantes en manquent, en millimètres, c'est-à-dire en litres par mètre carré.

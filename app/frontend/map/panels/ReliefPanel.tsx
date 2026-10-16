@@ -7,6 +7,7 @@ import { Field, Input, Select } from '@/components/ui/Field'
 import { api, ApiError } from '@/lib/api'
 import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import KeylineFinder from '@/map/water/KeylineFinder'
 import { removeReliefOverlay, showReliefOverlay, type MapOverlayMode } from '@/relief/mapOverlay'
 import { roofRainwater } from '@/relief/soil'
 import { ChoiceGroup } from '@/relief/ui'
@@ -152,6 +153,8 @@ function ReliefPanelContent() {
       </section>
 
       {ready && terrain && <KeyNumbers overview={overview} />}
+
+      {ready && terrain && <KeylineFinder />}
 
       <Rainwater features={editor.features} settings={overview.settings} />
 

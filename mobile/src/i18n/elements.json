@@ -77,6 +77,13 @@
         "color": "#2b7bb9",
         "pickable": true
       },
+      "keyline": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#2b7bb9",
+        "pickable": true
+      },
       "ditch": {
         "geometries": [
           "LineString"

@@ -104,6 +104,16 @@ fr:
         title: "Bassin versant"
         description: "Le bassin versant d'une mare, d'une baissière ou d'un jardin de pluie (feature_id), ou d'un point où l'on pourrait en creuser un (lng, lat) : la surface dont le ruissellement finit là, calculée sur le relief téléchargé par la personne. Donne sa surface (dont la part sur le terrain), son contour GeoJSON, la pluie qui y tombe par an, le volume de l'ouvrage et la pluie qui le remplit si tout ruisselle (fill_rain_mm : sous 15 mm, il déborde à chaque grosse averse ; au-delà de 50, il se remplit lentement). beyond_relief vrai : le bassin continue au-delà du relief téléchargé, la surface est un minimum ; demande alors à la personne d'où vient l'eau en amont. infiltration_mm_h : la vitesse mesurée par le test d'infiltration le plus proche (à infiltration_distance_m mètres, ou la médiane des tests de la carte si aucun n'est à moins de 50 m) ; empties_in_h : en combien d'heures une baissière ou un jardin de pluie se vide dans le sol. Utilise-le avant de proposer ou de dimensionner une mare, une baissière ou leur trop-plein."
         missing_target: "Donne feature_id (une mare, une baissière ou un jardin de pluie) ou un point (lng et lat)."
+      find_keypoints:
+        title: "Trouver les points clés"
+        description: "Les points clés (keypoints, P.A. Yeomans) des vallons du terrain, calculés sur le relief téléchargé par la personne : là où le fond d'un vallon cesse de descendre raide (slope_above_pct) pour descendre doucement (slope_below_pct). Chacun donne la surface qui y draine (catchment_m2), le fond du vallon (valley, LineString) et sa keyline : la courbe de niveau qui passe par lui, coupée au contour du terrain. Une baissière ou une ligne d'arbres posée sur la keyline recueille l'eau du vallon et la répand vers les croupes ; les lignes parallèles se tracent au-dessus et en dessous, à égale distance. Reprends la géométrie de la keyline dans propose_features (couche water, type keyline) et explique à la personne pourquoi ce point. Une liste vide : aucun vallon ne casse nettement sa pente sur ce terrain ; une baissière sur une courbe choisie avec trace_contour reste possible."
+      trace_parallels:
+        title: "Tracer les parallèles d'une keyline"
+        description: "Les lignes parallèles à une keyline de la carte (feature_id, type keyline), tous les spacing_m mètres, above lignes au-dessus et below en dessous, coupées au contour du terrain ; le côté amont se lit sur le relief téléchargé. Seule la keyline suit la courbe de niveau : ses parallèles gardent sa forme, si bien qu'au-dessus elles descendent doucement vers les croupes et en dessous elles y remontent, et l'eau du vallon part vers les croupes plus sèches (fall_m : la dénivelée le long de la ligne). Espacement courant : 15 à 30 m pour des baissières, 8 à 15 m pour des lignes d'arbres, 1 à 3 m pour un décompactage. Reprends chaque géométrie dans propose_features (couche water, type keyline, role parallel, le même use que la keyline)."
+        params:
+          spacing_m: "Écart entre deux lignes, en mètres (1 à 100)."
+          above: "Nombre de lignes au-dessus de la keyline (0 à 10)."
+          below: "Nombre de lignes en dessous de la keyline (0 à 10)."
       search_plants:
         title: "Chercher une plante"
         description: "Recherche dans le catalogue de plantes de Semisto, par nom latin ou nom commun français. Chaque donnée du catalogue garde sa source."
@@ -558,6 +568,8 @@ fr:
       get_site_data: "a lu les données du lieu"
       trace_contour: "a tracé une courbe de niveau"
       get_catchment: "a calculé un bassin versant"
+      find_keypoints: "a cherché les points clés des vallons"
+      trace_parallels: "a tracé les parallèles d'une keyline"
       search_plants: "a cherché dans le catalogue des plantes"
       get_plant: "a lu une fiche plante"
       get_design_guide: "a lu le guide de méthode de Semisto"

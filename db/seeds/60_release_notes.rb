@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "keyline", published_on: "2026-10-16",
+    title: "Le keyline : l'eau des vallons vers les croupes",
+    body: <<~TEXT,
+      Dans « Eau et relief », Terranova cherche les points clés des vallons de ton terrain : là où le fond cesse de descendre raide pour descendre doucement. Chacun vient avec sa keyline, la courbe de niveau qui y passe, à poser d'un geste sur ta carte comme baissière, ligne d'arbres ou décompactage.
+
+      Depuis la keyline, trace ses parallèles au-dessus et en dessous. Elles gardent sa forme et emmènent doucement l'eau vers les croupes, plus sèches. Une baissière agit dès le premier hiver ; une ligne d'arbres prend le relais en 5 à 10 ans.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Les points clés d'un vallon numérotés sur la carte, avec la keyline en tirets et la liste des points dans le panneau « Eau et relief »."
+  },
+  {
     key: "test-infiltration", published_on: "2026-10-16",
     title: "Combien ton sol boit-il ? Mesure-le en une heure",
     body: <<~TEXT,

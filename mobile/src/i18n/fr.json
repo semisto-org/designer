@@ -301,6 +301,7 @@
       "land_cover": "Occupation du sol",
       "pond": "Mare",
       "swale": "Baissière",
+      "keyline": "Keyline",
       "ditch": "Fossé",
       "overflow_pipe": "Tuyau de trop-plein",
       "water_tank": "Citerne",

@@ -3,11 +3,8 @@ module Relief
   # the ground whose runoff ends up there. A pond is sized on the area that
   # drains into it, not on its own surface.
   #
-  # Each cell drains to its steepest lower neighbour (D8). A cell with no
-  # lower neighbour (a pit, a flat) drains where a priority-flood (Barnes,
-  # Lehman & Mulla 2014, as the « Écoulement » layer of the editor,
-  # app/frontend/relief/hydro.ts) says its water spills. The catchment is then
-  # walked upstream from the element: every cell whose water reaches it. So a
+  # Drainage comes from Relief::FlowGrid (D8 with a priority-flood through
+  # pits and flats). The catchment is walked upstream from the element: every cell whose water reaches it. So a
   # pond at the bottom of a hollow gathers the whole hollow, and a swale on
   # the contour the slope above it.
   #
@@ -24,11 +21,7 @@ module Relief
       end
     end
 
-    KINDS = %w[pond swale rain_garden].freeze
-    # Cells the flood works on: a 1 m grid of a large map is averaged by
-    # blocks down to this budget (a catchment at 2 m is still precise).
-    MAX_CELLS = 300_000
-    EPSILON = 1e-5
+    KINDS = %w[pond swale keyline rain_garden].freeze
     # An infiltration test this close speaks for the element's soil; farther,
     # the median of the map's tests stands in.
     NEARBY_TEST_M = 50
@@ -78,7 +71,7 @@ module Relief
         targets = target_cells
         raise Error, :outside_relief if targets.empty?
 
-        inside = upstream(targets, drainage)
+        inside = upstream(targets, @grid.receivers)
         cells = (0...@n).select { |i| inside[i] }
         area = cells.size * @cell_m**2
         boundary_mask = @map.boundary ? Mask.for_geometry(@map.boundary, @extent) : nil
@@ -87,13 +80,13 @@ module Relief
         rainfall = @map.effective_water_settings["annual_rainfall_mm"]&.to_f
         infiltration, distance = measured_infiltration
         depth = @feature&.properties.to_h["depth_m"].to_f
-        empties = infiltration&.positive? && depth.positive? && %w[swale rain_garden].include?(@feature.kind) ? (depth * 1000 / infiltration).round(1) : nil
+        empties = infiltration&.positive? && depth.positive? && dug? ? (depth * 1000 / infiltration).round(1) : nil
 
         Result.new(
           geometry: outline(inside),
           area_m2: area.round,
           inside_boundary_m2: inside_boundary.round,
-          beyond_relief: cells.any? { |i| edge?(i) },
+          beyond_relief: cells.any? { |i| @grid.edge?(i) },
           cell_size_m: @cell_m.round(2),
           capacity_m3: capacity&.round(1),
           fill_rain_mm: capacity && area.positive? ? (capacity / area * 1000).round : nil,
@@ -103,6 +96,23 @@ module Relief
           infiltration_distance_m: distance,
           empties_in_h: empties
         )
+      end
+
+      # A swale or rain garden holds water in a hollow; a keyline only when it is dug as a swale.
+      def dug?
+        return %w[swale rain_garden].include?(@feature.kind) unless @feature.kind == "keyline"
+
+        [ nil, "", "swale" ].include?(@feature.properties.to_h["use"])
+      end
+
+      def load_grid
+        @grid = FlowGrid.new(@terrain, heights: @raw)
+        @heights = @grid.heights
+        @cols = @grid.cols
+        @rows = @grid.rows
+        @n = @grid.n
+        @cell_m = @grid.cell_m
+        @extent = @grid.extent
       end
 
       # The rate (mm/h) of the nearest infiltration test within
@@ -122,45 +132,6 @@ module Relief
         sorted = rates.map { |r| r[:rateMmH] }.sort
         mid = sorted.size / 2
         [ (sorted.size.odd? ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2).round(1), nil ]
-      end
-
-      # Heights averaged by blocks of `@factor` × `@factor` (nil = no data),
-      # on an extent whose cells are the blocks.
-      def load_grid
-        cols = @terrain.cols
-        rows = @terrain.rows
-        raw = @raw || @terrain.grid.download.unpack("v*")
-        nodata = @terrain.nodata || Raster::NODATA
-        z_min = @terrain.z_min.to_f
-        z_unit = (@terrain.z_unit || Raster::Z_UNIT).to_f
-        @factor = Math.sqrt(cols * rows / MAX_CELLS.to_f).ceil.clamp(1, 100)
-        @cols = cols / @factor
-        @rows = rows / @factor
-        @n = @cols * @rows
-        @cell_m = @terrain.cell_size_m.to_f * @factor
-        half = (@factor - 1) / 2.0 * @terrain.step
-        @extent = Extent.new(
-          west: @terrain.west + half, north: @terrain.north - half, step: @terrain.step * @factor,
-          cols: @cols, rows: @rows, lat0: @terrain.lat0.to_f, cell_size_m: @cell_m, margin_m: @terrain.margin_m.to_f
-        )
-        @heights = Array.new(@n)
-        @rows.times do |r|
-          @cols.times do |c|
-            sum = 0
-            count = 0
-            @factor.times do |dr|
-              base = (r * @factor + dr) * cols + c * @factor
-              @factor.times do |dc|
-                v = raw[base + dc]
-                next if v.nil? || v == nodata
-
-                sum += v
-                count += 1
-              end
-            end
-            @heights[r * @cols + c] = count.zero? ? nil : z_min + sum.to_f / count * z_unit
-          end
-        end
       end
 
       # Grid cells under the element: its surface, its line widened to its
@@ -185,14 +156,6 @@ module Relief
         GeoJsonGeometry::FACTORY.parse_wkt(wkt)
       end
 
-      def edge?(i)
-        c = i % @cols
-        r = i / @cols
-        return true if c.zero? || r.zero? || c == @cols - 1 || r == @rows - 1
-
-        [ i - 1, i + 1, i - @cols, i + @cols ].any? { |j| @heights[j].nil? }
-      end
-
       # Every cell whose water reaches one of `targets`.
       def upstream(targets, receiver)
         donors = Array.new(@n)
@@ -214,84 +177,6 @@ module Relief
           end
         end
         inside
-      end
-
-      NEIGHBOURS = [ -1, 0, 1 ].product([ -1, 0, 1 ]).reject { |d| d == [ 0, 0 ] }.map { |dc, dr| [ dc, dr, Math.hypot(dc, dr) ] }.freeze
-
-      # The downstream cell of each cell (-1 where water leaves the relief).
-      def drainage
-        receiver = flood_receivers
-        cols = @cols
-        rows = @rows
-        @n.times do |i|
-          h = @heights[i]
-          next unless h
-
-          c = i % cols
-          r = i / cols
-          best = nil
-          steepest = 0.0
-          NEIGHBOURS.each do |dc, dr, distance|
-            cc = c + dc
-            rr = r + dr
-            next if cc.negative? || rr.negative? || cc >= cols || rr >= rows
-
-            j = rr * cols + cc
-            other = @heights[j]
-            next unless other
-
-            slope = (h - other) / distance
-            if slope > steepest
-              steepest = slope
-              best = j
-            end
-          end
-          receiver[i] = best if best
-        end
-        receiver
-      end
-
-      # Where each cell spills once the depressions are filled from the
-      # borders: the cell that reached it in the flood. Borders and cells next
-      # to missing data are outlets (-1): water leaves the known relief there.
-      def flood_receivers
-        filled = Array.new(@n)
-        receiver = Array.new(@n, -1)
-        seen = Array.new(@n, false)
-        heap = MinHeap.new
-        @n.times do |i|
-          next unless @heights[i]
-          next unless edge?(i)
-
-          seen[i] = true
-          filled[i] = @heights[i]
-          heap.push(i, @heights[i])
-        end
-        cols = @cols
-        rows = @rows
-        until heap.empty?
-          i = heap.pop
-          c = i % cols
-          r = i / cols
-          level = filled[i] + EPSILON
-          NEIGHBOURS.each do |dc, dr, _|
-            cc = c + dc
-            rr = r + dr
-            next if cc.negative? || rr.negative? || cc >= cols || rr >= rows
-
-            j = rr * cols + cc
-            next if seen[j]
-
-            h = @heights[j]
-            next unless h
-
-            seen[j] = true
-            receiver[j] = i
-            filled[j] = h > level ? h : level
-            heap.push(j, filled[j])
-          end
-        end
-        receiver
       end
 
       # The catchment's outline: runs of cells row by row, stacked when they
@@ -333,56 +218,6 @@ module Relief
 
       def corner(c, r)
         Mercator.inverse(@extent.west + c * @extent.step, @extent.north - r * @extent.step).map { |v| v.round(8) }
-      end
-
-      # A binary heap of cell indices keyed by their filled height.
-      class MinHeap
-        def initialize
-          @keys = []
-          @items = []
-        end
-
-        def empty? = @items.empty?
-
-        def push(item, key)
-          i = @items.size
-          @keys << key
-          @items << item
-          while i.positive?
-            parent = (i - 1) >> 1
-            break if @keys[parent] <= key
-
-            @keys[i] = @keys[parent]
-            @items[i] = @items[parent]
-            i = parent
-          end
-          @keys[i] = key
-          @items[i] = item
-        end
-
-        def pop
-          top = @items[0]
-          key = @keys.pop
-          item = @items.pop
-          size = @items.size
-          return top if size.zero?
-
-          i = 0
-          loop do
-            child = 2 * i + 1
-            break if child >= size
-
-            child += 1 if child + 1 < size && @keys[child + 1] < @keys[child]
-            break if @keys[child] >= key
-
-            @keys[i] = @keys[child]
-            @items[i] = @items[child]
-            i = child
-          end
-          @keys[i] = key
-          @items[i] = item
-          top
-        end
       end
   end
 end

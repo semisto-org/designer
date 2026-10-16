@@ -105,6 +105,8 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
       assert_response :payment_required
       get catchment_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
       assert_response :payment_required
+      get keypoints_map_relief_path(@map), as: :json
+      assert_response :payment_required
     end
   end
 
@@ -125,6 +127,35 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_equal "outside_boundary", response.parsed_body["reason"]
     get contour_map_relief_path(@map, lng: "nord"), as: :json
     assert_response :bad_request
+  end
+
+  test "the keypoints of the valleys" do
+    sign_in_as users(:alice)
+    get keypoints_map_relief_path(@map), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "no_relief", response.parsed_body["reason"]
+
+    # Too small a terrain for a valley: an empty list, not an error.
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    get keypoints_map_relief_path(@map), as: :json
+    assert_response :success
+    assert_equal [], response.parsed_body["keypoints"]
+    assert_equal 1000, response.parsed_body["minCatchmentM2"]
+  end
+
+  test "the parallels of a keyline" do
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    centre = @map.boundary.centroid
+    keyline = @map.features.create!(layer: "water", kind: "keyline",
+      geometry: { "type" => "LineString", "coordinates" => [ [ centre.x - 0.0001, centre.y ], [ centre.x + 0.0001, centre.y ] ] })
+    sign_in_as users(:alice)
+    get parallels_map_relief_path(@map, feature_id: keyline.id, spacing_m: 3, above: 1, below: 2), as: :json
+    assert_response :success
+    assert_equal %w[above below below], response.parsed_body["lines"].map { |l| l["side"] }
+
+    get parallels_map_relief_path(@map, feature_id: keyline.id, spacing_m: 500, above: 1, below: 1), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "spacing", response.parsed_body["reason"]
   end
 
   test "the catchment of a pond or a point" do

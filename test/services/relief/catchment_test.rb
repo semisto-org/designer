@@ -70,6 +70,15 @@ class Relief::CatchmentTest < ActiveSupport::TestCase
     assert_equal 24.0, result.infiltration_mm_h
     assert_in_delta 10, result.infiltration_distance_m, 1
     assert_in_delta 400 / 24.0, result.empties_in_h, 0.1
+
+    # A keyline dug as a swale empties the same; planted with trees, it holds nothing.
+    keyline = @map.features.create!(layer: "water", kind: "keyline", geometry: line_string(line), properties: { "use" => "swale", "width_m" => 1, "depth_m" => 0.4 })
+    assert_in_delta 400 / 24.0, Relief::Catchment.new(@map, feature: keyline).call.empties_in_h, 0.1
+    keyline.update!(properties: keyline.properties.merge("use" => "trees"))
+    trees = Relief::Catchment.new(@map, feature: keyline).call
+    assert_nil trees.empties_in_h
+    assert_nil trees.capacity_m3
+    assert_operator trees.area_m2, :>, 0
   end
 
   test "a point on a summit drains only itself" do

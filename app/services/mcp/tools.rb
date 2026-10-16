@@ -3,7 +3,7 @@ module Mcp
   module Tools
     def self.all
       [
-        ListMaps, GetMap, ListFeatures, GetFeature, GetRegionLayers, IdentifyAtPoint, GetSiteData, TraceContour, GetCatchment,
+        ListMaps, GetMap, ListFeatures, GetFeature, GetRegionLayers, IdentifyAtPoint, GetSiteData, TraceContour, GetCatchment, FindKeypoints, TraceParallels,
         SearchPlants, GetPlant, GetDesignGuide, GetProjectSheet, GetBioindicatorPhoto, GetSoilSamples, GetSoilReport,
         ListTasks, ListDocuments, GetDocument, ListPhotos, GetPhoto,
         ProposeFeatures, ProposeFeatureUpdates, ProposePalette, ProposeProjectSheet, ProposeBioindicators, ProposeSoilResults, WithdrawDraft,

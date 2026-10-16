@@ -8,7 +8,7 @@ module Imports
     #   Claudy layer       Claudy kind          Designer layer / kind
     #   management         zone · path · point  existing / zone · path_existing · point
     #   network (water…)   line · node          networks / water_pipe… · valve, meter, socket, tap or point
-    #   design (3D relief) swale · keyline      water / swale · line
+    #   design (3D relief) swale · keyline      water / swale · keyline
     #                      pond · hedge         water / pond · structures / hedge
     #   biodiversity       observation          notes / note_point (own records only)
     #   bioindicators      bioindicator         notes / note_point (+ BioindicatorObservation per species)
@@ -115,7 +115,7 @@ module Imports
         layer, kind, values, extra =
           case design["type"]
           when "swale" then [ "water", "swale", numbers, nil ]
-          when "keyline" then [ "water", "line", numbers.merge("design_type" => "keyline"), I18n.t("claudy_import.notes.keyline") ]
+          when "keyline" then [ "water", "keyline", numbers.merge("role" => "keyline", "use" => "swale"), I18n.t("claudy_import.notes.keyline") ]
           when "pond" then [ "water", "pond", numbers.slice("depth_m"), nil ]
           when "hedge" then [ "structures", "hedge", numbers.slice("width_m"), nil ]
           else [ "water", generic_kind(geometry), {}, nil ]
