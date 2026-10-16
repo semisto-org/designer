@@ -15,6 +15,17 @@ release_notes = [
     screenshot_alt: "Une baissière posée sur la courbe de niveau d'un coteau, d'un bord à l'autre du terrain."
   },
   {
+    key: "terre-excavee", published_on: "2026-10-16",
+    title: "Où va la terre de ta mare ?",
+    body: <<~TEXT,
+      Chaque trou est aussi un tas. Ta mare, ta baissière, ton fossé ou ton chemin encaissé disent maintenant combien de terre ils vont sortir, en mètres cubes, en brouettes et en camions, avec la terre végétale à part du sous-sol.
+
+      Choisis où chacune va : une butte de la carte (ou dessine-la sur le moment), le bourrelet à côté du trou, étalée sur place, mise en tas ou évacuée. Une flèche couleur de terre montre le chemin sur la carte, et le nouveau panneau « Terres » fait le bilan de ce qui n'a pas encore de destination, avec nos conseils avant de creuser.
+    TEXT
+    link_path: "/help/gerer-la-terre-excavee", link_label: "Lire l'aide",
+    screenshot_alt: "Le panneau « Terres » : 74 m³ à sortir, dont 32 m³ sans destination, et sur la carte les flèches de la mare vers la butte et du chemin creux vers la prairie."
+  },
+  {
     key: "nuit-air-froid", published_on: "2026-10-15",
     title: "La nuit dans la vue 3D : où glisse l'air froid",
     body: <<~TEXT,

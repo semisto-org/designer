@@ -111,7 +111,7 @@ fr:
           plant_id: "Identifiant de la plante, donné par search_plants."
       get_design_guide:
         title: "Guide de méthode de Semisto"
-        description: "La méthode de conception de Semisto, chapitre par chapitre : l'ordre de conception et la posture (method), l'eau (water), la structure (structure), la palette et les guildes (palette), le climat qui vient (climate). Chapitres rédigés en anglais. Sans topic : la liste des chapitres. À lire avant de proposer un design ou de conseiller sur l'eau, la structure ou les plantes."
+        description: "La méthode de conception de Semisto, chapitre par chapitre : l'ordre de conception et la posture (method), l'eau (water), la terre creusée et où la mettre (earthworks), la structure (structure), la palette et les guildes (palette), le climat qui vient (climate). Chapitres rédigés en anglais. Sans topic : la liste des chapitres. À lire avant de proposer un design ou de conseiller sur l'eau, la structure ou les plantes."
         params:
           topic: "Chapitre à lire. Sans topic : la liste des chapitres, à commencer par « method »."
       list_tasks:

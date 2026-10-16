@@ -25,6 +25,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   elements: 'dessiner-l-existant',
   'drawing-layers': 'calques-mesures-et-croquis',
   'water-sources': 'dessiner-l-existant',
+  earthworks: 'gerer-la-terre-excavee',
   'drawing-alerts': 'les-alertes-reglementaires',
   finances: 'le-tableau-financier',
   offer: 'chiffrer-une-offre',

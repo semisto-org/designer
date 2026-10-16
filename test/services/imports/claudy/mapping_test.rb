@@ -58,7 +58,8 @@ class Imports::Claudy::MappingTest < ActiveSupport::TestCase
   test "trial designs of the 3D view become water and structure elements" do
     swale = Mapping.feature(row(170))
     assert_equal [ "water", "swale" ], [ swale.layer, swale.kind ]
-    assert_equal({ "width_m" => 2, "depth_m" => 0.5, "berm_m" => 0.4, "grade_pct" => 0 }, swale.properties)
+    # The soil destinations a new swale gets are blanked like every other default: undecided.
+    assert_equal({ "width_m" => 2, "depth_m" => 0.5, "topsoil_to" => nil, "subsoil_to" => nil, "berm_m" => 0.4, "grade_pct" => 0 }, swale.properties)
 
     keyline = Mapping.feature(row(171))
     assert_equal [ "water", "line", "keyline" ], [ keyline.layer, keyline.kind, keyline.properties["design_type"] ]
