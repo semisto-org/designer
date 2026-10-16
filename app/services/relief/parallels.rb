@@ -89,8 +89,10 @@ module Relief
       # two segments' normals; PostGIS then nodes the line and drops the
       # loops that sharp bends leave on their inner side (closer to the
       # keyline than `distance`). No ST_OffsetCurve: its results differ
-      # between GEOS versions; and ST_LineMerge only on several lines, as
-      # GEOS 3.9 turns a single LineString into an empty collection.
+      # between GEOS versions. No ST_Intersection with the boundary either:
+      # GEOS 3.9 (the postgis/postgis:16-3.4 image) returns an empty line for
+      # a horizontal line inside a polygon; the line is split along the
+      # boundary and the pieces inside are kept.
       def curves(distance)
         moved = offset_vertices(distance * mercator_scale)
         return [] if moved.size < 2
@@ -104,8 +106,11 @@ module Relief
             WHERE ST_Distance(noded.g::geography, source.g::geography) >= $3 * 0.9
           ),
           clipped AS (
-            SELECT CASE WHEN m.boundary IS NULL THEN kept.g ELSE ST_Intersection(kept.g, m.boundary) END AS g
-            FROM kept, maps m WHERE m.id = $4 AND kept.g IS NOT NULL
+            SELECT kept.g FROM kept, maps m WHERE m.id = $4 AND m.boundary IS NULL
+            UNION ALL
+            SELECT ST_Collect(piece.g) FROM kept, maps m,
+              LATERAL (SELECT (ST_Dump(ST_Split(kept.g, ST_Boundary(m.boundary)))).geom AS g) piece
+            WHERE m.id = $4 AND ST_Within(ST_LineInterpolatePoint(piece.g, 0.5), m.boundary)
           ),
           merged AS (SELECT CASE WHEN GeometryType(g) = 'LINESTRING' THEN g ELSE ST_LineMerge(g) END AS g FROM clipped),
           parts AS (SELECT (ST_Dump(g)).geom AS g FROM merged)
