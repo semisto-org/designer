@@ -17,6 +17,8 @@
 #             unit, min, max, step, options (select)
 #   computed  derived values shown in the inspector (formulas in map/drawing/computed.ts)
 #   pickable  false when the kind is created by a tool, not from the library
+#   contour   true when the line can follow the contour through a clicked point
+#             (« Suivre la courbe », from the map's relief)
 #
 # Labels are in config/locales/drawing.fr.yml: editor.kinds.<kind>,
 # drawing.fields.<field>, drawing.options.<field>.<option>.
@@ -114,6 +116,7 @@ layers:
         computed: [pond_volume]
       swale:
         geometry: LineString
+        contour: true
         icon: spline
         color: "#2b7bb9"
         line: { width: 5, casing: "#ffffff" }
@@ -181,6 +184,7 @@ layers:
     elements:
       path:
         geometry: LineString
+        contour: true
         icon: footprints
         color: "#b8851a"
         line: { width: 3, dash: [2, 1] }
@@ -293,6 +297,7 @@ layers:
           - { key: fence_type, type: select, options: [wire_mesh, electric, wood, chestnut_paling, wire] }
       hedge:
         geometry: LineString
+        contour: true
         icon: trees
         color: "#3d7d42"
         line: { width: 7, opacity: 0.85, dash: [1, 0.4] }
@@ -304,6 +309,7 @@ layers:
         computed: [hedge_plants]
       windbreak:
         geometry: LineString
+        contour: true
         icon: wind
         color: "#2f6334"
         line: { width: 9, opacity: 0.8 }

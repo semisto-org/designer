@@ -33,6 +33,8 @@ export type ElementSpec = {
   fields: ElementField[]
   computed: string[]
   pickable: boolean
+  /** The line can follow the contour through a clicked point (« Suivre la courbe »). */
+  contour?: boolean
 }
 
 export type ElementLayer = { layer: FeatureLayer; color: string; elements: ElementSpec[] }

@@ -175,6 +175,7 @@ Rails.application.routes.draw do
       resource :relief, only: :show do
         get "files/:kind", action: :file, as: :file, constraints: { kind: /grid|surface|landcover|texture/ }
         get :buildings
+        get :contour
       end
       resource :terrain, only: %i[show create]
       resource :water_settings, only: :update

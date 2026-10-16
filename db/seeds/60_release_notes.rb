@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "suivre-la-courbe", published_on: "2026-10-16",
+    title: "Une baissière posée pile sur la courbe de niveau",
+    body: <<~TEXT,
+      Une baissière ne fait boire l'eau au sol que si elle suit exactement la courbe de niveau : un peu de travers, elle devient un fossé. Avec le relief téléchargé, touche un point du terrain et la baissière se pose d'elle-même sur la courbe qui y passe, avec son altitude.
+
+      Le bouton « Suivre la courbe » marche aussi pour les haies, les brise-vent et les cheminements. Et ton IA connectée trace les mêmes courbes avant de te proposer une baissière ou une keyline.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Une baissière posée sur la courbe de niveau d'un coteau, d'un bord à l'autre du terrain."
+  },
+  {
     key: "terre-excavee", published_on: "2026-10-16",
     title: "Où va la terre de ta mare ?",
     body: <<~TEXT,

@@ -1,9 +1,11 @@
 require "test_helper"
 require_relative "../support/map_data_test_helper"
 require "test_helpers/mcp_test_helper"
+require "test_helpers/synthetic_terrain_helper"
 
 class McpToolsTest < ActionDispatch::IntegrationTest
   include MapDataTestHelper
+  include SyntheticTerrainHelper
 
   setup do
     @map = maps(:ahinvaux)
@@ -161,6 +163,22 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     data, error = call_tool(@owner, "identify_at_point", { map_id: @map.id, lng: 4.907, lat: 50.341, layers: %w[sols] })
     refute error
     assert_match(/pas encore disponible/, data["results"].sole["error"])
+  end
+
+  test "trace_contour gives the contour line through a point, or asks for the relief" do
+    centre = @map.boundary.centroid
+    text, error = call_tool(@viewer, "trace_contour", { map_id: @map.id, lng: centre.x, lat: centre.y })
+    assert error
+    assert_match(/Eau et relief/, text)
+
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    data, error = call_tool(@viewer, "trace_contour", { map_id: @map.id, lng: centre.x, lat: centre.y })
+    refute error
+    assert_equal "LineString", data.dig("geometry", "type")
+    assert_in_delta 200, data["elevation_m"], 0.05
+    assert data["length_m"].positive?
+    assert_equal 1.0, data["cell_size_m"]
+    assert_equal "trace_contour", AiAction.last.tool
   end
 
   test "plant tools search the catalogue and give a species with its provenance" do
