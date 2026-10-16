@@ -28,6 +28,10 @@ export type MapDocumentData = {
   fromProjectLink: boolean
   /** The answer itself, for a document filed from a team's form. */
   form?: FormResponseData | null
+  /** A Markdown file small enough to open as a page and edit in place. */
+  markdown: boolean
+  contentEditedAt: string | null
+  contentEditedBy: string | null
   thumbUrl: string | null
   previewUrl: string | null
   fileUrl: string
@@ -35,3 +39,6 @@ export type MapDocumentData = {
 }
 
 export type DocumentLimits = { maxBytes: number }
+
+/** The logo at the top of a map's documents (Map#letterhead): its team's, else its pro owner's. */
+export type Letterhead = { logoUrl: string; name: string } | null

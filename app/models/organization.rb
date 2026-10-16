@@ -9,6 +9,8 @@
 # members; members work on the team's maps. A team always keeps an admin.
 # Moving a map in or out of a team is the map owner's decision only.
 class Organization < ApplicationRecord
+  include HasLogo
+
   NAME_MAX_LENGTH = 80
 
   belongs_to :billing_user, class_name: "User", optional: true

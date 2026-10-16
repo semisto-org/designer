@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ClipboardList, FilePlus2, MessageSquareText, Search, Tag } from 'lucide-react'
+import { ClipboardList, FilePen, FilePlus2, MessageSquareText, Search, Tag } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { MapViewHeader } from '@/components/map_views/MapViews'
 import { Button } from '@/components/ui/Button'
@@ -8,6 +8,7 @@ import { Input, Select } from '@/components/ui/Field'
 import { useCompressionRefresh } from '@/documents/compression'
 import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
+import { NewDocumentDialog } from '@/documents/markdown/NewDocumentDialog'
 import { UploadList } from '@/documents/ProjectDocuments'
 import { useDocumentUploads } from '@/documents/upload'
 import { api } from '@/lib/api'
@@ -48,6 +49,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
   const [openId, setOpenId] = useState<number | null>(() => (typeof window === 'undefined' ? null : Number(new URLSearchParams(window.location.search).get('open')) || null))
   const dragging = useFileDrag(canEdit)
   const [error, setError] = useState<string | null>(null)
+  const [writing, setWriting] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   const endpoint = `/maps/${map.id}/documents`
 
@@ -137,10 +139,15 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
           <p className="mt-1 text-loam-600">{t('documents.intro')}</p>
         </div>
         {canEdit && (
-          <div className="flex max-w-xs flex-col items-start gap-1.5 sm:ml-auto sm:items-end sm:text-right">
-            <Button onClick={() => input.current?.click()}>
-              <FilePlus2 className="h-4 w-4" />{t('documents.add')}
-            </Button>
+          <div className="flex max-w-md flex-col items-start gap-1.5 sm:ml-auto sm:items-end sm:text-right">
+            <div className="flex flex-wrap gap-2 sm:justify-end">
+              <Button variant="secondary" onClick={() => setWriting(true)}>
+                <FilePen className="h-4 w-4" />{t('documents.markdown.new')}
+              </Button>
+              <Button onClick={() => input.current?.click()}>
+                <FilePlus2 className="h-4 w-4" />{t('documents.add')}
+              </Button>
+            </div>
             <p className="text-sm text-loam-500">{t('documents.drop_hint', { max: formatMegabytes(limits.maxBytes) })}</p>
             <input ref={input} type="file" multiple className="sr-only" aria-label={t('documents.add')}
               onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
@@ -153,7 +160,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
       {error && <p className="mt-3 text-sm text-clay-600" role="alert">{error}</p>}
 
       {docs.length === 0 && uploads.length === 0 ? (
-        <EmptyLibrary canEdit={canEdit} onAdd={() => input.current?.click()} />
+        <EmptyLibrary canEdit={canEdit} onAdd={() => input.current?.click()} onWrite={() => setWriting(true)} />
       ) : (
         <div className="mt-6 grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
           <nav aria-label={t('documents.shelves')} className="-mx-4 overflow-x-auto px-4 lg:sticky lg:top-4 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">
@@ -214,20 +221,30 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
         tagSuggestions={tags.map((c) => c.tag).concat(t('documents.suggested_tags').split(',').map((s) => s.trim()))
           .filter((tag, i, all) => all.findIndex((o) => o.toLowerCase() === tag.toLowerCase()) === i)}
         onSave={save} onDelete={remove}
+        pageUrl={(doc) => `${endpoint}/${doc.id}`}
       />
+      {canEdit && (
+        <NewDocumentDialog open={writing} onClose={() => setWriting(false)} endpoint={endpoint}
+          tags={shelf && shelf !== PROJECT_SHEET && shelf !== FORMS && shelf !== UNTAGGED ? [shelf] : []} />
+      )}
     </div>
   )
 }
 
 /** The library before its first document: what is worth gathering, and why. */
-function EmptyLibrary({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void }) {
+function EmptyLibrary({ canEdit, onAdd, onWrite }: { canEdit: boolean; onAdd: () => void; onWrite: () => void }) {
   const ideas = t('documents.empty.ideas').split('|')
   return (
     <div className="mt-8 grid gap-6 rounded-2xl bg-[#f7f3ea] p-6 ring-1 ring-loam-900/10 sm:p-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div>
         <h2 className="font-serif text-2xl text-loam-900">{t('documents.empty.title')}</h2>
         <p className="mt-2 text-loam-700">{t('documents.empty.body')}</p>
-        {canEdit && <Button className="mt-5" onClick={onAdd}><FilePlus2 className="h-4 w-4" />{t('documents.add')}</Button>}
+        {canEdit && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button onClick={onAdd}><FilePlus2 className="h-4 w-4" />{t('documents.add')}</Button>
+            <Button variant="secondary" onClick={onWrite}><FilePen className="h-4 w-4" />{t('documents.markdown.new')}</Button>
+          </div>
+        )}
       </div>
       <ul className="space-y-2 text-loam-700">
         {ideas.map((idea) => (

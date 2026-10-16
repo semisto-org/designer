@@ -8,7 +8,7 @@ class AccountsController < ApplicationController
     plan = user.current_plan_key
     render inertia: "accounts/show", props: {
       account: {
-        name: user.name, email: user.email_address, avatarUrl: user.avatar_url, hasOwnAvatar: user.avatar.attached?, signedUpAt: user.created_at.iso8601,
+        name: user.name, email: user.email_address, avatarUrl: user.avatar_url, hasOwnAvatar: user.avatar.attached?, logoUrl: user.logo_url, signedUpAt: user.created_at.iso8601,
         googleLinked: user.google_uid.present?,
         hasPassword: user.password?,
         accountKind: user.account_kind,

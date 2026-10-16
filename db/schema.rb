@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_213953) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -386,6 +386,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_190000) do
     t.string "compression"
     t.bigint "original_byte_size"
     t.datetime "thumbnail_tried_at"
+    t.bigint "content_edited_by_id"
+    t.datetime "content_edited_at"
+    t.index ["content_edited_by_id"], name: "index_map_documents_on_content_edited_by_id"
     t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_map_documents_on_map_id"
     t.index ["project_sheet_link_id"], name: "index_map_documents_on_project_sheet_link_id"
@@ -1402,6 +1405,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_190000) do
   add_foreign_key "map_assignments", "users", on_delete: :cascade
   add_foreign_key "map_documents", "maps"
   add_foreign_key "map_documents", "project_sheet_links", on_delete: :nullify
+  add_foreign_key "map_documents", "users", column: "content_edited_by_id", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "uploaded_by_id", on_delete: :nullify
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
