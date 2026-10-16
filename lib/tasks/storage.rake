@@ -39,7 +39,7 @@ namespace :storage do
     warn "[storage:cors] not set: #{e.class}: #{e.message}"
   end
 
-  desc "Copy to the backup bucket the files it does not hold yet (what FileBackupJob does every night)"
+  desc "Copy to the backup bucket the files it does not hold yet, erase those deleted 89 days ago (what FileBackupJob does every night)"
   task backup: :environment do
     abort "backup is not configured (BACKUP_S3_BUCKET)" unless FileStorage::Backup.configured?
     result = FileStorage::Backup.new.run

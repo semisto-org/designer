@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -117,6 +117,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_140000) do
     t.index ["comment_id", "user_id"], name: "index_applauses_on_comment_id_and_user_id", unique: true
     t.index ["comment_id"], name: "index_applauses_on_comment_id"
     t.index ["user_id"], name: "index_applauses_on_user_id"
+  end
+
+  create_table "backup_orphans", force: :cascade do |t|
+    t.string "service_name", null: false
+    t.string "key", null: false
+    t.datetime "first_seen_at", null: false
+    t.index ["service_name", "key"], name: "index_backup_orphans_on_service_name_and_key", unique: true
   end
 
   create_table "billing_accounts", force: :cascade do |t|

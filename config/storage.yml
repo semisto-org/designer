@@ -48,9 +48,10 @@ object_storage:
 
 # The nightly copy of every file (FileBackupJob, config/recurring.yml), in
 # another provider's or account's bucket: Infomaniak Swiss Backup in an S3
-# backup space. It only ever adds files, never deletes or overwrites one, so a
-# file removed from the app (or by someone holding the main keys) can still be
-# found with an older database backup.
+# backup space. It never overwrites a file, and keeps one removed from the app
+# (or by someone holding the main keys) for 89 days, so an older database
+# backup can still be restored with its files; then it erases it, as the
+# privacy policy promises (see FileStorage::Backup).
 #
 #   BACKUP_S3_ENDPOINT, BACKUP_S3_REGION, BACKUP_S3_BUCKET,
 #   BACKUP_S3_ACCESS_KEY_ID, BACKUP_S3_SECRET_ACCESS_KEY, BACKUP_S3_FORCE_PATH_STYLE
