@@ -98,6 +98,13 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
         lastStamp = key
         setStamp({ tau: shown.tau, chapter: shown.chapter, zoom: shown.zoom, past })
       }
+      // nothing to paint under the practical notes: sleep until the visitor scrolls back up
+      if (past) frame = 0
+      else frame = requestAnimationFrame(loop)
+    }
+    const wake = () => {
+      if (frame || !alive) return
+      last = performance.now()
       frame = requestAnimationFrame(loop)
     }
 
@@ -112,6 +119,7 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
     resize()
     shown = target()
     window.addEventListener('resize', resize)
+    window.addEventListener('scroll', wake, { passive: true })
     canvas.addEventListener('click', plant)
     void document.fonts?.ready.then(measure)
     frame = requestAnimationFrame(loop)
@@ -119,6 +127,7 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
       alive = false
       cancelAnimationFrame(frame)
       window.removeEventListener('resize', resize)
+      window.removeEventListener('scroll', wake)
       canvas.removeEventListener('click', plant)
     }
   }, [])
