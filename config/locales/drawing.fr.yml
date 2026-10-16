@@ -22,6 +22,12 @@ fr:
       well: "Puits"
       spring: "Source"
       rain_garden: "Jardin de pluie"
+      check_dam: "Seuil filtrant"
+      fascine: "Fascine"
+      beaver_dam_analogue: "Analogue de barrage de castor"
+      hedge_bank: "Haie sur talus"
+      half_moon: "Demi-lunes"
+      grass_strip: "Bande enherbée"
       infiltration_test: "Test d'infiltration"
       storm_observation: "Relevé d'averse"
       path: "Cheminement"
@@ -115,6 +121,7 @@ fr:
       capacity: "Capacité (animaux)"
       hives: "Ruches"
       diameter_mm: "Diamètre"
+      diameter_m: "Diamètre"
       depth_cm: "Profondeur d'enfouissement"
       voltage: "Tension"
       section_mm2: "Section"
@@ -145,6 +152,8 @@ fr:
         brick: "Brique"
         concrete: "Béton"
         wood: "Bois"
+        gabion: "Gabion"
+        brush: "Branchages"
         pe: "Polyéthylène (PE)"
         pvc: "PVC"
         copper: "Cuivre"
@@ -210,6 +219,15 @@ fr:
       rain_garden_volume:
         label: "Volume de rétention"
         hint: "Surface × profondeur."
+      bank_soil:
+        label: "Terre du talus"
+        hint: "Longueur × largeur × hauteur × 0,5, pour un talus en dos d'âne."
+      half_moon_count:
+        label: "Demi-lunes à creuser"
+        hint: "Une seule pour un point ; sur une ligne, longueur ÷ espacement + 1."
+      half_moon_volume:
+        label: "Eau retenue quand elles sont pleines"
+        hint: "Par demi-lune : demi-disque × profondeur × 0,5, pour une cuvette."
       raised_bed_soil:
         label: "Terre à apporter"
         hint: "Surface × hauteur."
@@ -222,6 +240,7 @@ fr:
       liters: "%{value} L"
       cubic_meters: "%{value} m³"
       plants: { one: "%{count} plant", other: "%{count} plants" }
+      half_moons: { one: "%{count} demi-lune", other: "%{count} demi-lunes" }
       per_head: "%{value} par animal"
 
     toolbar:

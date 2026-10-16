@@ -243,7 +243,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
       if (instance.disposed) return
       setView({ ...instance.view })
       setZRange(instance.zRange)
-      setDesignCount(instance.designs.length)
+      setDesignCount(instance.designs.length + instance.strips.length)
       setPlantCount(instance.plants.length)
       setReady(true)
     }).catch((error: unknown) => {

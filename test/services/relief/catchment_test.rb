@@ -81,6 +81,32 @@ class Relief::CatchmentTest < ActiveSupport::TestCase
     assert_operator trees.area_m2, :>, 0
   end
 
+  test "a check dam across a valley gathers the valley above it and holds no volume of its own" do
+    synthetic_terrain(@map) { |dx, dy| 200 + dx.abs * 0.1 + dy * 0.05 }
+    line = [ [ @centre.x - 8 / 71_000.0, @centre.y ], [ @centre.x + 8 / 71_000.0, @centre.y ] ]
+    dam = @map.features.create!(layer: "water", kind: "check_dam", geometry: line_string(line), properties: { "height_m" => 0.4 })
+    result = Relief::Catchment.new(@map, feature: dam).call
+
+    assert_operator result.area_m2, :>, 3000
+    assert_nil result.capacity_m3
+    assert_nil result.empties_in_h
+  end
+
+  test "half-moons hold half a bowl each, one per point or one every spacing along a line" do
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    moon = @map.features.create!(layer: "water", kind: "half_moon", geometry: { "type" => "Point", "coordinates" => [ @centre.x, @centre.y ] },
+                                 properties: { "diameter_m" => 3, "depth_m" => 0.2 })
+    one = Math::PI * 1.5**2 / 2 * 0.2 * 0.5
+    assert_in_delta one, moon.water_capacity_m3, 1e-6
+    assert_in_delta one, Relief::Catchment.new(@map, feature: moon).call.capacity_m3, 0.1
+
+    row = @map.features.create!(layer: "water", kind: "half_moon", geometry: line_string([ [ @centre.x - 10 / 71_000.0, @centre.y ], [ @centre.x + 10 / 71_000.0, @centre.y ] ]),
+                                properties: { "diameter_m" => 3, "depth_m" => 0.2, "spacing_m" => 5 })
+    # 20 m: at 0, 5, 10, 15 and 20 m.
+    assert_equal 5, row.half_moon_count
+    assert_in_delta 5 * one, row.water_capacity_m3, 1e-6
+  end
+
   test "a point on a summit drains only itself" do
     synthetic_terrain(@map) { |dx, dy| 210 - Math.hypot(dx, dy) * 0.2 }
     result = Relief::Catchment.new(@map, lng: @centre.x, lat: @centre.y).call

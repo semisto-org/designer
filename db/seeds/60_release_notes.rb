@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "freiner-l-eau", published_on: "2026-10-16",
+    title: "Freiner l'eau : seuils, fascines, talus, demi-lunes",
+    body: <<~TEXT,
+      Six nouveaux ouvrages dans la couche Eau : le seuil filtrant en travers d'une ravine, la fascine de branchages, la haie sur talus, les demi-lunes pour les jeunes arbres d'une pente sèche, la bande enherbée et l'analogue de barrage de castor.
+
+      Chacun a son bassin versant, qui dit s'il suffit ou s'il en faut plusieurs en série. Et la pluie de la vue 3D les trouve sur son chemin : regarde l'eau s'arrêter derrière un seuil, filtrer à travers, puis reprendre sa route plus lentement.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Un seuil filtrant tracé en travers d'un vallon, et sa fiche qui montre la surface qui y draine."
+  },
+  {
     key: "pendant-l-averse", published_on: "2026-10-16",
     title: "Sous l'averse, note où l'eau court",
     body: <<~TEXT,
