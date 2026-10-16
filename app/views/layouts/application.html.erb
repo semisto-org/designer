@@ -55,5 +55,6 @@
   </head>
   <body>
     <%= yield %>
+    <%= render "pages/legal_text", **@legal_text if @legal_text %>
   </body>
 </html>

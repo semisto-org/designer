@@ -31,7 +31,11 @@ void createInertiaApp({
     },
     visitOptions: () => ({ queryStringArrayFormat: 'brackets' }),
   },
-}).catch((error) => {
-  if (document.getElementById('app')) throw error
-  console.error('Missing Inertia root element.')
 })
+  // The server writes some texts into the HTML for readers without JavaScript
+  // (views/pages/_legal_text): the React page shows them from here on.
+  .then(() => document.getElementById('prerendered')?.remove())
+  .catch((error) => {
+    if (document.getElementById('app')) throw error
+    console.error('Missing Inertia root element.')
+  })
