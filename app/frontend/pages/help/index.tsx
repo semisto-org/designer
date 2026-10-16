@@ -82,7 +82,7 @@ export default function HelpIndex({ query, categories, results, contactEmail }: 
                 {results.map((article) => (
                   <li key={article.slug}>
                     <Link href={article.url} className="block rounded-xl bg-white p-5 shadow-sm ring-1 ring-loam-200/70 transition hover:ring-prune-300">
-                      <span className="text-xs font-medium uppercase tracking-wide text-leaf-600">{article.category}</span>
+                      <span className="text-sm font-medium text-leaf-700">{article.category}</span>
                       <span className="mt-1 block text-base font-semibold text-loam-900">{article.title}</span>
                       <span className="mt-1 block text-sm text-loam-500">{article.excerpt ?? article.summary}</span>
                     </Link>
@@ -100,7 +100,7 @@ export default function HelpIndex({ query, categories, results, contactEmail }: 
               <h2 id={`help-category-${index}`} className="flex items-center gap-2 text-base">
                 <BookOpen className="h-4 w-4 text-leaf-500" aria-hidden="true" />
                 {category.name}
-                <span className="text-xs font-normal text-loam-400">{t('help.guides_count', { count: category.articles.length })}</span>
+                <span className="text-sm font-normal text-loam-400">{t('help.guides_count', { count: category.articles.length })}</span>
               </h2>
               <ul className="mt-4 space-y-3">
                 {category.articles.map((article) => (
