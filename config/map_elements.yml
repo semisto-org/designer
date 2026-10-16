@@ -9,7 +9,8 @@
 #   geometry  Point | LineString | Polygon | MultiLineString (or a list when several are allowed)
 #   icon      lucide icon name (frontend registry: map/drawing/icons.ts)
 #   color     default colour; a feature's `style.color` overrides it
-#   line      line styling: width (px), dash ([dash, gap] in line widths), casing (halo colour)
+#   line      line styling: width (px), dash ([dash, gap] in line widths), casing (halo colour),
+#             arrows (true: arrows along the line, in the direction it was drawn)
 #   fill      polygon styling: opacity, pattern (hatch | dots)
 #   defaults  properties set on creation
 #   fields    editable properties: key, type (number | integer | select | boolean | text),
@@ -133,6 +134,17 @@ layers:
         fields:
           - { key: width_m, type: number, unit: m, min: 0.1, max: 10, step: 0.1 }
           - { key: depth_m, type: number, unit: m, min: 0.1, max: 5, step: 0.05 }
+      overflow_pipe:
+        geometry: LineString
+        icon: move-right
+        color: "#1f5f8b"
+        line: { width: 3, dash: [1.5, 1], casing: "#ffffff", arrows: true }
+        defaults: { buried: true, diameter_mm: 100, material: pvc }
+        fields:
+          - { key: buried, type: boolean }
+          - { key: diameter_mm, type: integer, unit: mm, min: 20, max: 1000 }
+          - { key: material, type: select, options: [pvc, pe] }
+          - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
       water_tank:
         geometry: Point
         icon: cylinder

@@ -28,6 +28,7 @@ This is the approach now called **regenerative hydrology**. Its principles are o
 - **Rain garden** (`rain_garden`): a small planted hollow that receives water from a roof or a path.
 - **Tank** (`water_tank`): at the foot of a downpipe, sized on the roof area and the watering needs of the first years.
 - **Ditch** (`ditch`): only to drain excess water that cannot be infiltrated. Where a ditch already exists, consider slowing it rather than deepening it.
+- **Overflow pipe** (`overflow_pipe`): a pipe, usually buried, that carries a pond's overflow to another pond, a swale or a rain garden. Draw it from the pond that overflows to the one that receives: the map shows arrows in that direction. Prefer an open overflow (a swale) when the slope allows: water seen is water that waters on its way.
 
 Each water element says where its water comes from, where its overflow goes, and why it sits there.
 

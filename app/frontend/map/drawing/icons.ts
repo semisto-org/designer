@@ -20,6 +20,7 @@ import { __iconData as hexagon } from 'lucide-react/dist/esm/icons/hexagon.mjs'
 import { __iconData as house } from 'lucide-react/dist/esm/icons/house.mjs'
 import { __iconData as landPlot } from 'lucide-react/dist/esm/icons/land-plot.mjs'
 import { __iconData as mountain } from 'lucide-react/dist/esm/icons/mountain.mjs'
+import { __iconData as moveRight } from 'lucide-react/dist/esm/icons/move-right.mjs'
 import { __iconData as pawPrint } from 'lucide-react/dist/esm/icons/paw-print.mjs'
 import { __iconData as plugZap } from 'lucide-react/dist/esm/icons/plug-zap.mjs'
 import { __iconData as rectangleHorizontal } from 'lucide-react/dist/esm/icons/rectangle-horizontal.mjs'
@@ -67,6 +68,7 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'house': house,
   'land-plot': landPlot,
   'mountain': mountain,
+  'move-right': moveRight,
   'paw-print': pawPrint,
   'plug-zap': plugZap,
   'rectangle-horizontal': rectangleHorizontal,

@@ -302,6 +302,7 @@
       "pond": "Mare",
       "swale": "Baissière",
       "ditch": "Fossé",
+      "overflow_pipe": "Tuyau de trop-plein",
       "water_tank": "Citerne",
       "well": "Puits",
       "spring": "Source",
