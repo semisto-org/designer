@@ -40,6 +40,14 @@ Le fond **Blocs** montre le terrain en cubes d'environ 2 m, comme un jeu de cons
 
 En bas de l'onglet **Vue**, **Prendre la Niva** te donne une Lada Niva à poser d'un clic sur le terrain. Conduis-la aux flèches (ou Z Q S D), freine avec la barre d'espace ; sur téléphone, des boutons apparaissent à l'écran. Elle grimpe jusqu'à 55 % de pente, refuse les dévers trop forts, s'arrête devant l'eau et les bâtiments et ralentit en sous-bois : une bonne façon de sentir les pentes de ton terrain. Allume ses **Phares** et sa **Rampe de toit**, passe en **Nuit** pour ne plus voir le terrain que dans ses faisceaux, et choisis une caméra **Derrière** la voiture ou **Libre**.
 
+## Tracer sur la courbe de niveau
+
+Une baissière ne retient l'eau que si elle suit **exactement** la courbe de niveau : quelques dizaines de centimètres de travers, et elle devient un fossé qui concentre l'eau au lieu de la faire boire au sol. À l'œil, sur une photo aérienne, c'est presque impossible.
+
+Une fois le relief téléchargé, choisis **Dessiner** › **Eau** › **Baissière** : l'outil démarre en **Suivre la courbe**. Touche un point du terrain, et la baissière se pose sur la courbe de niveau qui y passe, d'un bord à l'autre du terrain, avec son altitude. Le même bouton existe pour une **haie**, un **brise-vent** ou un **cheminement** : une haie en travers de la pente freine l'eau et l'air froid, un chemin qui suit le relief ne devient pas un ruisseau. **À la main** revient au tracé point par point.
+
+La courbe se calcule sur le relief lissé sur environ 2 m : elle ignore les petites bosses du sol, pas les vraies formes du terrain. Avant de creuser, vérifie-la sur place avec un niveau à eau ou un niveau laser. Ton IA connectée trace les mêmes courbes avant de te proposer une baissière.
+
 ## L'eau de pluie des toits
 
 Dessine tes bâtiments, serres, abris et cabanes comme des surfaces : le panneau calcule l'eau récupérable chaque année (surface des toits × pluie annuelle × part récupérée), et son équivalent en litres par semaine. De quoi dimensionner une citerne.

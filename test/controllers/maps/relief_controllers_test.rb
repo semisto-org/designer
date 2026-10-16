@@ -1,8 +1,10 @@
 require "test_helper"
 require_relative "../../test_helpers/relief_test_helper"
+require "test_helpers/synthetic_terrain_helper"
 
 class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
   include ReliefTestHelper
+  include SyntheticTerrainHelper
   include ActiveJob::TestHelper
 
   setup do
@@ -99,7 +101,28 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
       assert_response :payment_required
       get map_relief_path(@map)
       assert_redirected_to map_path(@map)
+      get contour_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
+      assert_response :payment_required
     end
+  end
+
+  test "the contour line through a point, for anyone who can open the map" do
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    centre = @map.boundary.centroid
+    sign_in_as users(:alice)
+    get contour_map_relief_path(@map, lng: centre.x, lat: centre.y), as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "LineString", body.dig("geometry", "type")
+    assert_in_delta 200, body["elevationM"], 0.05
+    assert_in_delta 17.8, body["lengthM"], 1
+    refute body["closed"]
+
+    get contour_map_relief_path(@map, lng: 4.95, lat: 50.34), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "outside_boundary", response.parsed_body["reason"]
+    get contour_map_relief_path(@map, lng: "nord"), as: :json
+    assert_response :bad_request
   end
 
   test "the relief page without terrain" do

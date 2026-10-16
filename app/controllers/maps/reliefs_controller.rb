@@ -55,6 +55,18 @@ module Maps
       render json: { available: false, attribution: nil, buildings: [] }
     end
 
+    # The contour line through a point (« Suivre la courbe » in the drawing
+    # toolbar): GeoJSON, altitude and length, or why none can be traced.
+    def contour
+      lng = Float(params[:lng], exception: false)
+      lat = Float(params[:lat], exception: false)
+      return head :bad_request unless lng && lat
+
+      render json: Relief::Contour.new(@map, lng:, lat:).call.as_json
+    rescue Relief::Contour::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
     private
       def soil_model
         settings = @map.effective_water_settings

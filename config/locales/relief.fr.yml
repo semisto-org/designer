@@ -353,3 +353,16 @@ fr:
       sources: "Relief : %{sources}."
       fetched: "Téléchargé le %{date}."
       grid: "Maille de %{cell} m sur le terrain et %{margin} m autour."
+    # « Suivre la courbe » in the drawing toolbar, and the MCP tool trace_contour.
+    contour:
+      follow: "Suivre la courbe"
+      follow_hint: "La ligne suit la courbe de niveau du point que tu cliques : là où le sol reste à la même hauteur."
+      hint: "Touche un point du terrain : « %{kind} » suivra la courbe de niveau qui y passe. Échap pour annuler."
+      freehand: "À la main"
+      tracing: "Tracé de la courbe de niveau…"
+      created: "Ajouté sur la courbe de niveau à %{elevation} m d'altitude : %{kind}, %{length}."
+      errors:
+        no_relief: "Télécharge d'abord le relief du terrain (panneau « Eau et relief ») : la courbe de niveau se trace sur lui."
+        outside_boundary: "Ce point est hors du contour du terrain. Clique à l'intérieur."
+        outside_relief: "Ce point est hors du relief téléchargé."
+        flat: "Le sol est plat à cet endroit : aucune courbe de niveau ne s'en dégage. Essaie un peu plus haut ou plus bas sur la pente."
