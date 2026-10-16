@@ -18,6 +18,8 @@ export type PhotosState = {
   error: string | null
   /** Photo shown in the lightbox. */
   openId: number | null
+  /** Photos of the group opened from the map: the lightbox moves through these only. */
+  group: number[] | null
   /** Photo waiting for a click on the map to be placed. */
   placingId: number | null
   /** The two photos of the before/after slider. */
@@ -40,7 +42,7 @@ export const photoAccept = (contentTypes: string[]) => [...contentTypes, '.heic'
 
 let state: PhotosState = {
   mapId: null, photos: [], albums: [], limits: DEFAULT_LIMITS, loaded: false, loading: false, error: null,
-  openId: null, placingId: null, compare: null, showOnMap: readShowOnMap(), version: 0,
+  openId: null, group: null, placingId: null, compare: null, showOnMap: readShowOnMap(), version: 0,
 }
 const listeners = new Set<() => void>()
 
@@ -78,7 +80,7 @@ export const photoActions = {
   async load(mapId: number, force = false) {
     if (state.mapId === mapId && (state.loaded || state.loading) && !force) return
     if (state.mapId !== mapId) {
-      set({ mapId, photos: [], albums: [], loaded: false, openId: null, placingId: null, compare: null })
+      set({ mapId, photos: [], albums: [], loaded: false, openId: null, group: null, placingId: null, compare: null })
     }
     set({ loading: true, error: null })
     try {
@@ -100,6 +102,7 @@ export const photoActions = {
     set({
       photos: state.photos.filter((p) => p.id !== id), version: state.version + 1,
       openId: state.openId === id ? null : state.openId,
+      group: state.group?.filter((other) => other !== id) ?? null,
       compare: state.compare && (state.compare.beforeId === id || state.compare.afterId === id) ? null : state.compare,
     })
     photoActions.refreshAlbumCounts()
@@ -116,12 +119,19 @@ export const photoActions = {
     set({ albums: state.albums.map((a) => ({ ...a, photosCount: counts.get(a.id) ?? 0 })) })
   },
 
+  /** Opens one photo; moving within the open group keeps it, anything else leaves it. */
   open(id: number | null) {
-    set({ openId: id })
+    set({ openId: id, group: id != null && state.group?.includes(id) ? state.group : null })
+  },
+
+  /** Opens the photos of a group from the map, in the order of the photo list. */
+  openGroup(ids: number[]) {
+    const group = state.photos.filter((p) => ids.includes(p.id)).map((p) => p.id)
+    if (group.length > 0) set({ openId: group[0], group })
   },
 
   startPlacing(id: number) {
-    set({ placingId: id, openId: null })
+    set({ placingId: id, openId: null, group: null })
   },
 
   cancelPlacing() {
@@ -129,7 +139,7 @@ export const photoActions = {
   },
 
   openCompare(beforeId: number, afterId: number) {
-    set({ compare: { beforeId, afterId }, openId: null })
+    set({ compare: { beforeId, afterId }, openId: null, group: null })
   },
 
   closeCompare() {
