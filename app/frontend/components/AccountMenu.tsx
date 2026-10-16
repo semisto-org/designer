@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react'
-import { Check, LogOut, Plus, UserRound } from 'lucide-react'
+import { Check, LogOut, Plus, ShieldCheck, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import type { CurrentUser, SharedProps } from '@/types'
@@ -7,7 +7,9 @@ import type { CurrentUser, SharedProps } from '@/types'
 /**
  * The avatar in the header opens the account menu: « Mon compte », the other
  * accounts signed in on this browser (« Changer de compte »: a freelance
- * designer and their @semisto.org address), adding one, signing out.
+ * designer and their @semisto.org address), adding one, signing out. Admins
+ * also find « Administration » here: it is not a feature, so it stays out of
+ * the main menu.
  */
 export function AccountMenu({ user }: { user: CurrentUser }) {
   const { otherAccounts = [], impersonation } = usePage().props as unknown as SharedProps
@@ -61,6 +63,12 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
             <UserRound className="h-4 w-4 text-loam-400" aria-hidden="true" />
             {t('account.title')}
           </Link>
+          {user.admin && (
+            <Link href="/admin" className={item} onClick={() => setOpen(false)}>
+              <ShieldCheck className="h-4 w-4 text-loam-400" aria-hidden="true" />
+              {t('admin.nav.link')}
+            </Link>
+          )}
 
           {!impersonation && (
             <div className="mt-1 border-t border-dashed border-loam-200 pt-1">
