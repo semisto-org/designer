@@ -5,6 +5,8 @@ module Maps
     include MapScoped
 
     PAGE = 50
+    # Statuses of proposed changes, in the words of the drafts' outcome.
+    UPDATE_OUTCOMES = { "pending" => "draft", "accepted" => "active", "rejected" => "rejected", "withdrawn" => "withdrawn" }.freeze
 
     before_action :set_map
     before_action :require_owner!
@@ -23,14 +25,26 @@ module Maps
     end
 
     private
-      # Current status of the drafts each proposal created.
+      # Current status of the drafts each proposal created: new elements,
+      # and changes to existing ones (pending reads as « draft », accepted as « active »).
       def draft_outcomes(actions)
         proposals = actions.select { |a| a.tool == "propose_features" && a.result["feature_ids"].present? }
         ids = proposals.flat_map { |a| a.result["feature_ids"] }
         statuses = @map.features.where(id: ids).pluck(:id, :status).to_h
-        proposals.to_h do |action|
+        outcomes = proposals.to_h do |action|
           counts = Hash.new(0)
           action.result["feature_ids"].each { |id| counts[statuses[id] || "withdrawn"] += 1 }
+          [ action.id, counts ]
+        end
+        outcomes.merge(update_outcomes(actions))
+      end
+
+      def update_outcomes(actions)
+        proposals = actions.select { |a| a.tool == "propose_feature_updates" && a.result["update_ids"].present? }
+        statuses = @map.feature_update_drafts.where(id: proposals.flat_map { |a| a.result["update_ids"] }).pluck(:id, :status).to_h
+        proposals.to_h do |action|
+          counts = Hash.new(0)
+          action.result["update_ids"].each { |id| counts[UPDATE_OUTCOMES[statuses[id]] || "withdrawn"] += 1 }
           [ action.id, counts ]
         end
       end

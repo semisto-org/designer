@@ -164,6 +164,16 @@ Rails.application.routes.draw do
           post :reject_all
         end
       end
+      resources :feature_updates, only: :index do
+        member do
+          post :accept
+          post :reject
+        end
+        collection do
+          post :accept_all
+          post :reject_all
+        end
+      end
       resources :ai_actions, only: :index
     end
   end

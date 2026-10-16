@@ -7,8 +7,7 @@ module Mcp
   class DraftProposal
     MAX_FEATURES = 200
     MAX_PENDING = 1000
-    BUFFER_M = 200
-    MAX_POSITIONS = 2000
+    BUFFER_M = GeometryCheck::BUFFER_M
     MAX_PROPERTIES_BYTES = 4000
     # Sensitive networks are never proposed by an AI.
     LAYERS = (MapFeature::LAYERS - %w[networks]).freeze
@@ -55,11 +54,8 @@ module Mcp
         return err(:layer, layers: LAYERS.join(", ")) unless LAYERS.include?(item[:layer].to_s)
         return err(:kind) unless item[:kind].to_s.match?(KIND_FORMAT)
         return err(:rationale) if item[:rationale].to_s.strip.length < 10
-        geometry = item[:geometry]
-        return err(:geometry) unless geometry.is_a?(Hash) && geometry[:coordinates].is_a?(Array)
-        return err(:coordinates) unless Geo.positions_in_range?(geometry[:coordinates])
-        return err(:too_complex, max: MAX_POSITIONS) if Geo.position_count(geometry[:coordinates]) > MAX_POSITIONS
-        return err(:geometry) if parse(geometry).nil?
+        geometry_error = GeometryCheck.static_error(item[:geometry])
+        return geometry_error if geometry_error
         return err(:tags, max: MapFeature::Tags::MAX_TAGS, length: MapFeature::Tags::MAX_LENGTH) unless valid_tags?(item[:tags])
         return err(:properties, max: MAX_PROPERTIES_BYTES) if item[:properties] && (!item[:properties].is_a?(Hash) || item[:properties].to_json.bytesize > MAX_PROPERTIES_BYTES)
         nil
@@ -71,36 +67,10 @@ module Mcp
           tags.all? { |tag| tag.is_a?(String) && MapFeature.normalize_tag(tag).length <= MapFeature::Tags::MAX_LENGTH }
       end
 
-      def parse(geometry)
-        RGeo::GeoJSON.decode(geometry.deep_stringify_keys, geo_factory: GeoJsonGeometry::FACTORY)
-      rescue StandardError
-        nil
-      end
+      def parse(geometry) = GeometryCheck.parse(geometry)
 
-      # One query for all candidates: validity and coverage by the terrain
-      # boundary widened by BUFFER_M meters. Returns { index => error }.
       def spatial_check(candidates)
-        return {} if candidates.empty?
-        payload = candidates.map { |index, item| { i: index, g: RGeo::GeoJSON.encode(parse(item[:geometry])) } }
-        sql = <<~SQL.squish
-          WITH zone AS (SELECT ST_Buffer(boundary::geography, $2)::geometry AS area FROM maps WHERE id = $1),
-          input AS (
-            SELECT (value->>'i')::int AS idx, ST_SetSRID(ST_GeomFromGeoJSON(value->>'g'), 4326) AS geom
-            FROM jsonb_array_elements($3::jsonb)
-          )
-          SELECT idx, ST_IsValid(geom) AS valid, ST_IsValidReason(geom) AS reason, ST_IsEmpty(geom) AS empty,
-                 CASE WHEN ST_IsValid(geom) THEN ST_CoveredBy(geom, zone.area) END AS inside
-          FROM input, zone
-        SQL
-        rows = ActiveRecord::Base.connection.select_all(sql, "DraftProposal", [ @map.id, BUFFER_M, payload.to_json ])
-        rows.each_with_object({}) do |row, errors|
-          error =
-            if row["empty"] then err(:empty)
-            elsif !row["valid"] then err(:invalid, reason: row["reason"])
-            elsif !row["inside"] then err(:outside, buffer: BUFFER_M)
-            end
-          errors[row["idx"]] = error if error
-        end
+        GeometryCheck.spatial_errors(@map, candidates.map { |index, item| [ index, item[:geometry] ] })
       end
 
       def create(valid)

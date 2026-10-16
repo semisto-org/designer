@@ -10,7 +10,7 @@ fr:
         Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…) ; get_site_data donne le soleil et l'horizon, la météo et le climat observés, les arbres déjà en place et, en France, les règles d'urbanisme et les risques ; trace_contour donne la courbe de niveau exacte qui passe par un point, à suivre pour toute baissière, keyline ou haie en travers de la pente ; get_catchment donne le bassin versant d'une mare, d'une baissière ou d'un point, sur lequel dimensionner l'ouvrage et son trop-plein.
         Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « method » et le chapitre du sujet). Le guide est écrit en anglais : réponds toujours dans la langue de la personne. Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
-        Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur.
+        Tu ne modifies jamais la carte directement : propose_features pose des brouillons, chacun avec sa justification (rationale) qui dit pourquoi et avec quelles données. L'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur. Pour changer un élément déjà accepté (date de plantation, espèce, variété, quantité, nom, étiquettes, notes, position), propose_feature_updates propose la modification, élément par élément ou pour tout un lot choisi par un filtre (étiquette, type, couche, espèce, identifiants) ; l'humain la revoit, champ par champ, et peut tout accepter d'un clic. list_features et get_feature montrent la modification en attente (pending_update) de chaque élément.
         La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
@@ -283,11 +283,29 @@ fr:
           field: "Clé du champ dans la section, par exemple goals, initial, hours_per_week ou notes (voir get_project_sheet)."
           value: "Valeur complète du champ : une clé (choix unique), une liste de clés (choix multiple), un entier, un texte, ou pour who.people une liste d'objets { name, role, note }."
           answer_rationale: "D'où vient cette réponse : ce que la personne a dit, cité si possible (« \"on a deux heures le week-end\" »), ou la ligne du transcript. Obligatoire, 10 caractères au moins."
+      propose_feature_updates:
+        title: "Proposer des modifications"
+        description: "Pour changer un élément déjà accepté (date de plantation, espèce, nom, étiquettes, notes, position) ; pour en créer un nouveau, utilise propose_features. Rien ne change sur la carte avant que l'humain accepte : il voit chaque modification champ par champ (avant → après) avec ta justification, et peut tout accepter ou tout refuser d'un clic pour un même appel. Deux façons d'appeler : updates, une liste de 1 à 200 modifications { feature_id, changes, rationale } ; ou filter, changes et rationale, qui appliquent les mêmes changements à tous les éléments actifs choisis par le filtre (500 au plus, le nombre ciblé est renvoyé dans targeted). Exemple de lot : { filter: { tag: \"strate basse\" }, changes: { properties: { planted_on: \"2026-05-23\" } }, rationale: \"Herbacées plantées le 23/05/2026, d'après la personne.\" }. Chaque élément est vérifié seul : un élément introuvable, d'une autre carte ou pas actif, une date pas au format AAAA-MM-JJ, une espèce ou une variété inconnue reviennent dans rejected avec leur raison ; ce qui ne change rien revient dans unchanged ; une nouvelle proposition sur un élément remplace la précédente pas encore revue. Les réseaux ne peuvent pas être modifiés. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        params:
+          summary: "Résumé de la proposition dans son ensemble, montré à l'humain au-dessus des modifications, par exemple « Dates de plantation des herbacées »."
+          updates: "Les modifications, une par élément, de 1 à 200. N'utilise pas filter avec updates."
+          changes: "Ce qui change. name, notes, tags (liste complète qui remplace l'ancienne), properties (fusionnées clé par clé : une clé à null est supprimée ; planted_on, species_id, variety_id et count passent par là) et geometry. Interdit : layer, kind, status et les champs système (id, source, updated_at…)."
+          change_name: "Nouveau nom court affiché sur la carte ; null l'efface."
+          change_notes: "Nouvelles notes, qui remplacent les anciennes ; null les efface."
+          change_tags: "Liste complète des étiquettes, qui remplace l'ancienne ([] les retire toutes). Reprends les étiquettes actuelles pour en ajouter une."
+          change_properties: "Attributs à changer, fusionnés avec ceux de l'élément ; une clé à null est supprimée. Pour une plante : planted_on (date de plantation, AAAA-MM-JJ, pas dans le futur), species_id et variety_id (search_plants, get_plant), count (nombre de plants, entier positif)."
+          change_geometry: "Nouvelle géométrie GeoJSON, du même type que l'actuelle (un Point reste un Point), en WGS84 [longitude, latitude], à moins de 200 m du contour du terrain."
+          update_rationale: "Pourquoi cette modification, et d'où vient l'information (ce que la personne a dit, une photo, un document…). Obligatoire, 10 caractères au moins."
+          filter: "Choisit les éléments actifs à modifier avec les mêmes changes : tag, kind, layer, species_id, ids, combinables. À utiliser avec changes et rationale, sans updates."
+          filter_layer: "Couche des éléments à modifier. Les réseaux ne peuvent pas être modifiés."
+          filter_species_id: "Seulement les plantes de cette espèce (species_id du catalogue)."
+          filter_ids: "Seulement ces éléments (identifiants donnés par list_features), 500 au plus."
       withdraw_draft:
         title: "Retirer des brouillons"
-        description: "Retire des brouillons proposés par une IA et pas encore revus, par exemple pour les remplacer par une meilleure proposition. Les éléments acceptés appartiennent aux humains : ils ne peuvent pas être retirés."
+        description: "Retire des brouillons proposés par une IA et pas encore revus, par exemple pour les remplacer par une meilleure proposition : des éléments (feature_ids, donnés par propose_features) ou des modifications d'éléments existants (update_ids, donnés par propose_feature_updates). Les éléments et les modifications acceptés appartiennent aux humains : ils ne peuvent pas être retirés."
         params:
-          feature_ids: "Identifiants des brouillons à retirer."
+          feature_ids: "Identifiants des éléments en brouillon à retirer."
+          update_ids: "Identifiants des modifications proposées à retirer (id dans created de propose_feature_updates, ou pending_update.id dans list_features)."
     permissions:
       scope: "Cette connexion n'a que l'accès en lecture : reconnecte le connecteur en choisissant « Lecture et brouillons »."
       role: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer des brouillons."
@@ -316,6 +334,8 @@ fr:
       review_project_replacing:
         one: "Les réponses proposées attendent sur la fiche projet, où l'humain les accepte ou les refuse. Une d'elles remplacerait une réponse déjà donnée (voir replaces) : dis-le à la personne."
         other: "Les réponses proposées attendent sur la fiche projet, où l'humain les accepte ou les refuse. %{count} d'entre elles remplaceraient des réponses déjà données (voir replaces) : dis-le à la personne."
+      review_updates: "Les modifications attendent la revue d'un humain dans l'éditeur de la carte : il les voit champ par champ, les accepte (toutes d'un clic s'il le veut), les ajuste ou les refuse. Rien n'a encore changé sur la carte."
+      nothing_new: "Rien de nouveau à revoir : ces éléments ont déjà ces valeurs, ou la même modification attend déjà (voir unchanged)."
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
       tasks_written: "Les tâches sont sur la page « Tâches » de la carte (url)."
       tasks_assigned: "Les tâches sont sur la page « Tâches » de la carte (url). Les personnes à qui tu les as confiées reçoivent un e-mail."
@@ -346,6 +366,15 @@ fr:
       too_many_answers: "Au plus %{max} réponses par appel."
       too_many_pending: "La carte a déjà %{pending} brouillons en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
       nothing_created: "Aucun brouillon créé. %{details}"
+      nothing_proposed: "Aucune modification proposée. %{details}"
+      updates_or_filter: "Passe soit updates (une modification par élément), soit filter avec changes et rationale (les mêmes changements pour tout un lot), pas les deux."
+      filter_only_arguments: "changes et rationale à la racine vont avec filter. Avec updates, mets-les dans chaque modification."
+      filter_needs_changes: "Avec filter, passe aussi changes (ce qui change) et rationale (pourquoi)."
+      invalid_changes: "Ces changements ne peuvent pas être proposés : %{error}"
+      filter_nothing: "Aucun élément actif de la carte ne correspond à ce filtre. Vérifie l'étiquette, le type ou la couche avec get_map et list_features."
+      filter_too_many: "Le filtre choisit %{count} éléments, %{max} au plus par appel : affine-le (par couche, type ou ids) et fais plusieurs appels."
+      too_many_pending_updates: "La carte a déjà %{pending} modifications en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
+      withdraw_nothing: "Passe feature_ids (éléments en brouillon) ou update_ids (modifications proposées)."
       bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
       identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Designer."
       identify_layer_failed: "Le service de cette couche n'a pas répondu."
@@ -443,6 +472,27 @@ fr:
       empty: "géométrie vide."
       invalid: "géométrie invalide (%{reason})."
       outside: "hors du terrain : la géométrie doit rester à moins de %{buffer} m du contour."
+    update_errors:
+      changes_empty: "changes doit être un objet avec au moins un champ."
+      forbidden: "champs interdits dans changes : %{fields}. Seuls %{allowed} peuvent changer."
+      text: "%{field} doit être un texte, ou null pour l'effacer."
+      name_length: "le nom fait 120 caractères au plus."
+      notes_length: "les notes font 2 000 caractères au plus."
+      properties: "properties doit être un objet non vide de moins de %{max} octets."
+      system_properties: "ces clés sont des champs système, pas des attributs : %{keys}."
+      date: "%{key} doit être une date au format AAAA-MM-JJ, par exemple 2026-05-23."
+      future_date: "%{key} ne peut pas être dans le futur."
+      integer: "%{key} doit être un nombre entier positif."
+      species: "l'espèce %{id} n'existe pas dans le catalogue (search_plants)."
+      variety: "la variété %{id} n'existe pas dans le catalogue (get_plant)."
+      not_found: "l'élément %{id} n'existe pas sur cette carte."
+      not_active: "l'élément n'est pas actif (%{status}) : un brouillon se retire avec withdraw_draft et se repropose avec propose_features."
+      networks: "les réseaux ne peuvent pas être modifiés par une IA."
+      rationale: "rationale est obligatoire (10 caractères au moins)."
+      geometry_type: "la géométrie doit rester du même type que l'actuelle (%{type})."
+      invalid: "l'élément ne serait plus valide : %{errors}."
+      same_as_current: "l'élément a déjà ces valeurs."
+      already_pending: "la même modification attend déjà la revue (proposition %{id})."
   activerecord:
     models:
       api_token: "Jeton personnel"
@@ -528,6 +578,10 @@ fr:
       propose_project_sheet:
         one: "a proposé 1 réponse pour la fiche projet"
         other: "a proposé %{count} réponses pour la fiche projet"
+      propose_feature_updates:
+        zero: "a proposé de modifier des éléments, sans rien de nouveau"
+        one: "a proposé de modifier 1 élément"
+        other: "a proposé de modifier %{count} éléments"
       withdraw_draft:
         one: "a retiré 1 brouillon"
         other: "a retiré %{count} brouillons"
@@ -770,5 +824,6 @@ fr:
       rate: "%{count} requêtes par minute et par jeton."
       proposal: "%{count} éléments au plus par appel à propose_features."
       pending: "%{count} brouillons en attente au plus par carte."
+      updates: "%{count} modifications au plus par appel à propose_feature_updates, ou %{filtered} éléments choisis par un filtre."
       buffer: "Géométries proposées à moins de %{meters} m du contour du terrain."
       transport: "Serveur sans état : une requête POST par message JSON-RPC, réponses en JSON ; ni session ni flux SSE."

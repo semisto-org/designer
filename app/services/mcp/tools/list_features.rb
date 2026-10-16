@@ -39,9 +39,10 @@ module Mcp
         page = scope.order(:id).limit(limit + 1).to_a
         more = page.size > limit
         page = page.first(limit)
+        pending = map.feature_update_drafts.pending.where(map_feature_id: page.map(&:id)).index_by(&:map_feature_id)
         {
           type: "FeatureCollection",
-          features: page.map { |f| feature_json(f, geometry: include_geometry) },
+          features: page.map { |f| feature_json(f, geometry: include_geometry, pending_update: pending[f.id] || false) },
           count: page.size,
           total:,
           next_after_id: more ? page.last.id : nil,

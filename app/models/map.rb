@@ -25,6 +25,7 @@ class Map < ApplicationRecord
   has_many :members, through: :memberships, source: :user
   has_many :invitations, class_name: "MapInvitation", dependent: :destroy
   has_many :features, class_name: "MapFeature", dependent: :destroy
+  has_many :feature_update_drafts, dependent: :delete_all
   has_many :project_sheet_drafts, -> { ordered }, dependent: :delete_all, inverse_of: :map
   has_many :water_sources, -> { ordered }, dependent: :delete_all, inverse_of: :map
   has_many :plan_images, -> { ordered }, dependent: :destroy, inverse_of: :map
