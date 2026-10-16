@@ -48,8 +48,24 @@ module Relief
       up = upslope_sign
       raise Error, :flat unless up
 
-      (1..@above).flat_map { |k| offset(up * k * @spacing, "above", k) } +
+      result = (1..@above).flat_map { |k| offset(up * k * @spacing, "above", k) } +
         (1..@below).flat_map { |k| offset(-up * k * @spacing, "below", k) }
+      debug_empty(up) if result.empty? && ENV["CI"] # TEMP
+      result
+    end
+
+    # TEMP: CI-only diagnostic.
+    def debug_empty(up)
+      d = up * @spacing
+      moved = offset_vertices(d * mercator_scale)
+      wkt2 = "LINESTRING(#{moved.map { |x, y| "#{x} #{y}" }.join(',')})"
+      warn "DBG wkt=#{wkt} scale=#{mercator_scale} pts=#{mercator_points.inspect} moved=#{moved.inspect}"
+      warn "DBG boundary=#{@map.reload.boundary&.as_text}"
+      sql = "SELECT ST_AsText(ST_Transform(ST_SetSRID(ST_GeomFromText($1), 3857), 4326)) t, ST_Distance(ST_Transform(ST_SetSRID(ST_GeomFromText($1), 3857), 4326)::geography, ST_GeomFromText($2, 4326)::geography) dist, postgis_full_version() v"
+      warn "DBG sql=#{Map.connection.select_all(sql, 'dbg', [ wkt2, wkt ]).to_a.inspect}"
+      warn "DBG curves=#{curves(d).inspect}"
+    rescue => e
+      warn "DBG error #{e.class}: #{e.message}"
     end
 
     private
