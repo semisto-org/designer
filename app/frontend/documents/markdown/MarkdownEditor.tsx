@@ -1,9 +1,11 @@
 import { EditorContent, useEditor, type Editor } from '@tiptap/react'
+import { ySyncPluginKey } from '@tiptap/y-tiptap'
 import clsx from 'clsx'
 import { useEffect, useRef } from 'react'
 import { t } from '@/lib/i18n'
 import { markdownExtensions } from '@/documents/markdown/extensions'
 import { MarkdownToolbar } from '@/documents/markdown/MarkdownToolbar'
+import type { CollabSession } from '@/documents/markdown/useCollab'
 
 /** Typography of a Markdown page, read or written (Tailwind typography, Semisto tokens). */
 export const PAGE_PROSE = clsx(
@@ -41,35 +43,44 @@ function focusFirstBlank(editor: Editor) {
  * A Markdown page. Read-only, it renders the text as a page of the notebook;
  * editable, the same page takes a toolbar and Markdown shortcuts (« # »,
  * « - », « [] », « > »…) and hands its text back as Markdown on each change.
+ * Written together (`collab`), the page holds the shared text instead of
+ * `content`, shows where the others write, and says whose change it hands
+ * back (`mine`), so that each edit is saved, and credited to its author.
  */
-export function MarkdownEditor({ content, editable, onChange, onReady, className, autofocus = false }: {
+export function MarkdownEditor({ content, editable, onChange, onReady, className, autofocus = false, collab }: {
   content: string
   editable: boolean
   /** Puts the cursor at the end of the text (a document just created). */
   autofocus?: boolean
-  onChange?: (markdown: string) => void
+  onChange?: (markdown: string, mine: boolean) => void
+  collab?: CollabSession | null
   onReady?: (editor: Editor) => void
   className?: string
 }) {
   const change = useRef(onChange)
   change.current = onChange
   const editor = useEditor({
-    extensions: markdownExtensions({ editable, placeholder: editable ? t('documents.markdown.placeholder') : undefined }),
-    content,
-    contentType: 'markdown',
+    extensions: markdownExtensions({ editable, collab: collab ?? undefined, placeholder: editable ? t('documents.markdown.placeholder') : undefined }),
+    ...(collab ? {} : { content, contentType: 'markdown' as const }),
     editable,
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
     editorProps: { attributes: { lang: 'fr', class: clsx(PAGE_PROSE, 'outline-none', editable && 'min-h-[50vh]') } },
-    onCreate: ({ editor: e }) => { if (editable && autofocus) focusFirstBlank(e) },
-    onUpdate: ({ editor: e }) => change.current?.(e.getMarkdown()),
-  }, [editable])
+    onCreate: ({ editor: e }) => { if (editable && autofocus) window.setTimeout(() => { if (!e.isDestroyed) focusFirstBlank(e) }) },
+    onUpdate: ({ editor: e, transaction }) => {
+      const sync = transaction.getMeta(ySyncPluginKey) as { isChangeOrigin?: boolean; isUndoRedoOperation?: boolean } | undefined
+      const mine = !sync?.isChangeOrigin || !!sync.isUndoRedoOperation
+      // The shared text appearing when the page opens is nobody's edit.
+      if (!mine && !collab?.touched.current) return
+      change.current?.(e.getMarkdown(), mine)
+    },
+  }, [editable, collab])
 
   useEffect(() => { if (editor) onReady?.(editor) }, [editor, onReady])
 
   // A text that comes from elsewhere (another save) replaces the page.
   useEffect(() => {
-    if (!editor || editor.isDestroyed) return
+    if (!editor || editor.isDestroyed || collab) return
     if (editor.getMarkdown() === content) return
     editor.commands.setContent(content, { contentType: 'markdown', emitUpdate: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps

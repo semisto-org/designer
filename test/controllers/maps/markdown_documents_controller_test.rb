@@ -84,4 +84,28 @@ class Maps::MarkdownDocumentsControllerTest < ActionDispatch::IntegrationTest
     get map_document_path(@map, @doc), headers: inertia_headers
     assert_equal({ "logoUrl" => team.logo_url, "name" => "Semisto" }, response.parsed_body["props"]["letterhead"])
   end
+
+  test "editors join the shared text; readers do not" do
+    @doc.add_collab_update!("edit", epoch: 0)
+    sign_in_as users(:michael)
+    get collab_map_document_path(@map, @doc), headers: json_headers
+    assert_response :success
+    assert_equal [ "# Journal\n\n- [ ] Pailler", 0, [ Base64.strict_encode64("edit") ] ], response.parsed_body.values_at("content", "epoch", "updates")
+
+    sign_in_as users(:alice)
+    get collab_map_document_path(@map, @doc), headers: json_headers
+    assert_response :forbidden
+  end
+
+  test "a live save needs no base, credits whoever wrote, and is refused once the text was rewritten" do
+    sign_in_as users(:michael)
+    patch content_map_document_path(@map, @doc), params: { content: "Ensemble", live: true, mine: false, epoch: 0 }, as: :json
+    assert_response :success
+    assert_equal [ "Ensemble", users(:michael) ], [ @doc.reload.markdown_content, @doc.content_edited_by ]
+
+    @doc.replace_markdown!("Réécrit", by: users(:michael))
+    patch content_map_document_path(@map, @doc), params: { content: "En retard", live: true, epoch: 0 }, as: :json
+    assert_response :conflict
+    assert_equal "Réécrit", @doc.reload.markdown_content
+  end
 end

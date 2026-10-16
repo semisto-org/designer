@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_213953) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -373,6 +373,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_213953) do
     t.index ["user_id"], name: "index_map_assignments_on_user_id"
   end
 
+  create_table "map_document_collab_updates", force: :cascade do |t|
+    t.bigint "map_document_id", null: false
+    t.integer "epoch", default: 0, null: false
+    t.binary "data", null: false
+    t.datetime "created_at", null: false
+    t.index ["map_document_id"], name: "index_map_document_collab_updates_on_map_document_id"
+  end
+
   create_table "map_documents", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "uploaded_by_id"
@@ -388,6 +396,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_213953) do
     t.datetime "thumbnail_tried_at"
     t.bigint "content_edited_by_id"
     t.datetime "content_edited_at"
+    t.integer "collab_epoch", default: 0, null: false
     t.index ["content_edited_by_id"], name: "index_map_documents_on_content_edited_by_id"
     t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_map_documents_on_map_id"
@@ -1403,6 +1412,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_213953) do
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify
   add_foreign_key "map_assignments", "maps", on_delete: :cascade
   add_foreign_key "map_assignments", "users", on_delete: :cascade
+  add_foreign_key "map_document_collab_updates", "map_documents", on_delete: :cascade
   add_foreign_key "map_documents", "maps"
   add_foreign_key "map_documents", "project_sheet_links", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "content_edited_by_id", on_delete: :nullify

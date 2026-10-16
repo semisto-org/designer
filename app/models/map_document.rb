@@ -42,6 +42,8 @@ class MapDocument < ApplicationRecord
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :project_sheet_link, optional: true
   belongs_to :content_edited_by, class_name: "User", optional: true
+  # The live edits of a Markdown page written together (MapDocumentChannel).
+  has_many :collab_updates, class_name: "MapDocumentCollabUpdate", dependent: :delete_all
   # An answer to one of the team's forms (Tally), filed here as Markdown.
   has_one :form_response, dependent: :nullify
 
@@ -94,15 +96,53 @@ class MapDocument < ApplicationRecord
   end
 
   # Replaces the text of a Markdown document. `base` is the checksum the
-  # editor read; nil skips the check (the MCP writes on its own).
-  def replace_markdown!(content, by:, base: nil)
+  # editor read; nil skips the check (the MCP writes on its own). `live`
+  # marks a save from the shared editor, whose edits are already shared:
+  # every browser on the page saves what it has, and the same text twice
+  # writes nothing. Any other write starts the shared editing afresh from
+  # the new text (a new epoch), and the open pages reload it; a live save
+  # still holding the text of an earlier epoch is refused (StaleContent).
+  def replace_markdown!(content, by:, base: nil, live: false, epoch: nil)
     raise ArgumentError, "document #{id} is not Markdown" unless markdown?
-    with_lock do
+    written = with_lock do
       raise StaleContent if base && base != content_checksum
+      raise StaleContent if live && epoch && epoch != collab_epoch
+      next false if live && OpenSSL::Digest::MD5.base64digest(content.to_s) == content_checksum
       self.content_edited_by = by
       self.content_edited_at = Time.current
+      self.collab_epoch += 1 unless live
       attach_markdown(content, filename: file.filename.to_s)
       save!
+      collab_updates.where.not(epoch: collab_epoch).delete_all unless live
+      true
+    end
+    MapDocumentChannel.broadcast_to(self, { type: live ? "saved" : "reset", checksum: content_checksum, epoch: collab_epoch }) if written
+    written
+  end
+
+  # The shared edits of the current epoch, for whoever joins: the Yjs
+  # updates in order, merged in the browser.
+  def collab_state
+    rows = collab_updates.where(epoch: collab_epoch).order(:id).pluck(:id, :data)
+    { epoch: collab_epoch, updates: rows.map { Base64.strict_encode64(_2) }, lastId: rows.last&.first }
+  end
+
+  # Keeps one Yjs update of the shared editing, unless the text was
+  # replaced meanwhile (another epoch): then the edit is refused.
+  def add_collab_update!(data, epoch:)
+    return false unless epoch == reload.collab_epoch
+    collab_updates.create!(data:, epoch:)
+  end
+
+  # Replaces the updates up to `last_id` with their merge (done in the
+  # browser), so that joining stays quick on a long-lived document.
+  def compact_collab!(merged, last_id:, epoch:)
+    transaction do
+      lock!
+      scope = collab_updates.where(epoch:, id: ..last_id)
+      next false unless epoch == collab_epoch && scope.exists?
+      scope.delete_all
+      collab_updates.create!(data: merged, epoch:, id: last_id)
     end
   end
 

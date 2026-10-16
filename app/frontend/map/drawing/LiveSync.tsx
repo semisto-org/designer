@@ -1,10 +1,8 @@
-import { createConsumer, type Consumer } from '@rails/actioncable'
 import { useEffect, useRef } from 'react'
+import { cable } from '@/lib/cable'
 import { t } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import type { FeatureBroadcast } from '@/types/drawing'
-
-let consumer: Consumer | null = null
 
 /**
  * Real-time co-editing: applies the feature changes other people make on
@@ -18,8 +16,7 @@ export default function LiveSync() {
   const mapId = editor.map.id
 
   useEffect(() => {
-    consumer ??= createConsumer()
-    const subscription = consumer.subscriptions.create(
+    const subscription = cable().subscriptions.create(
       { channel: 'MapFeaturesChannel', map_id: mapId },
       { received: (message: FeatureBroadcast) => apply(latest.current, message) },
     )

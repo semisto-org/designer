@@ -1,16 +1,18 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
 import { AlertTriangle, ArrowLeft, BookOpen, Check, CloudOff, Download, FileDown, Loader2, PenLine } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Contents } from '@/documents/markdown/Contents'
 import { Letterhead } from '@/documents/markdown/Letterhead'
 import { MarkdownEditor } from '@/documents/markdown/MarkdownEditor'
 import { useAutosave, type SaveStatus } from '@/documents/markdown/useAutosave'
+import { colorFor, useCollab, type External, type Peer } from '@/documents/markdown/useCollab'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { Letterhead as LetterheadData, MapDocumentData } from '@/types/documents'
+import type { SharedProps } from '@/types'
 
 type Props = {
   map: { id: number; name: string }
@@ -23,10 +25,15 @@ type Props = {
 
 type Mode = 'read' | 'edit'
 
+// Waited for the shared page before writing without it.
+const SOLO_AFTER = 8000
+
 /**
  * A Markdown document as a page of the field notebook: read calmly, with
- * its contents beside it; written in place by the map's editors, saved as
- * they go; printed or saved as PDF under the team's (or the pro's) logo.
+ * its contents beside it; written in place by the map's editors, together
+ * and live (each one sees the others' cursors and words as they come),
+ * saved as they go; printed or saved as PDF under the team's (or the
+ * pro's) logo. Readers see the page change when the writers save.
  */
 export default function MarkdownDocument({ map, document: initial, content, checksum, canEdit, letterhead }: Props) {
   const [doc, setDoc] = useState(initial)
@@ -39,25 +46,55 @@ export default function MarkdownDocument({ map, document: initial, content, chec
   // A document just created opens with the cursor at the end of its text.
   const [fresh] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('new'))
   const base = `/maps/${map.id}/documents/${doc.id}`
+  const me = usePage<SharedProps>().props.currentUser
+  const user = useMemo(() => ({ name: me?.name.split(' ')[0] || t('documents.markdown.someone'), color: colorFor(me?.id ?? 0) }), [me])
+  // Without the shared page (no live connection), the editor writes alone.
+  const [solo, setSolo] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
 
   const onStale = useCallback((serverText: string, serverDoc: MapDocumentData) => {
     latest.current = serverText
     setText(serverText)
     setDoc(serverDoc)
   }, [])
-  const { status, change, flush, conflict, dismissConflict } = useAutosave({ url: `${base}/content`, checksum, onSaved: setDoc, onStale })
+  const { status, change, flush, conflict, dismissConflict } = useAutosave({ url: `${base}/content`, checksum, live: !solo, onSaved: setDoc, onStale })
 
-  const onChange = useCallback((markdown: string) => {
+  // Readers follow the writers: the page reloads its text when they save.
+  const refresh = useRef<number | undefined>(undefined)
+  const onExternal = useCallback((event: External) => {
+    if (event.type === 'reset' && event.whileEditing) setNotice(t('documents.markdown.live.reset'))
+    window.clearTimeout(refresh.current)
+    refresh.current = window.setTimeout(async () => {
+      const fresh = await api<{ content: string; document: MapDocumentData }>(`${base}/content`).catch(() => null)
+      if (!fresh) return
+      latest.current = fresh.content
+      setText(fresh.content)
+      setDoc(fresh.document)
+    }, 600)
+  }, [base])
+  useEffect(() => () => window.clearTimeout(refresh.current), [])
+  const editing = mode === 'edit'
+  const { session, peers } = useCollab({ documentId: doc.id, url: base, editing: editing && !solo, user, onExternal: solo && editing ? () => {} : onExternal })
+
+  useEffect(() => {
+    if (!editing || solo || session) return
+    const timer = window.setTimeout(() => { setSolo(true); setNotice(t('documents.markdown.live.solo')) }, SOLO_AFTER)
+    return () => window.clearTimeout(timer)
+  }, [editing, solo, session])
+
+  const onChange = useCallback((markdown: string, mine: boolean) => {
     latest.current = markdown
-    change(markdown)
+    change(markdown, mine, session?.epoch ?? null)
     setVersion((v) => v + 1)
-  }, [change])
+  }, [change, session])
 
   async function switchTo(next: Mode) {
     if (next === mode) return
     await flush()
     setText(latest.current)
     setMode(next)
+    setSolo(false)
+    setNotice(null)
     const url = new URL(window.location.href)
     if (next === 'edit') url.searchParams.set('edit', '1')
     else url.searchParams.delete('edit')
@@ -108,7 +145,8 @@ export default function MarkdownDocument({ map, document: initial, content, chec
             <span className="truncate">{t('documents.markdown.back')} · {map.name}</span>
           </Link>
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            {canEdit && mode === 'edit' && <SaveBadge status={status} />}
+            {editing && peers.length > 0 && <Peers peers={peers} />}
+            {canEdit && editing && <SaveBadge status={status} />}
             {canEdit && (
               <div className="flex rounded-full bg-white p-0.5 ring-1 ring-loam-900/10" role="group">
                 {(['read', 'edit'] as const).map((m) => {
@@ -147,6 +185,9 @@ export default function MarkdownDocument({ map, document: initial, content, chec
           )}
           {showTitle && <h1 className={clsx('mb-6 font-serif text-4xl text-loam-900', mode === 'edit' && 'hidden print:block')}>{doc.title}</h1>}
 
+          {notice && (
+            <p role="status" className="mb-6 rounded-xl bg-loam-100 px-4 py-3 text-sm text-loam-700 print:hidden">{notice}</p>
+          )}
           {conflict && (
             <div role="alert" className="mb-6 rounded-xl bg-humus-50 px-4 py-3 text-sm text-humus-900 ring-1 ring-humus-200 print:hidden">
               <p className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />{conflict.message}</p>
@@ -157,7 +198,11 @@ export default function MarkdownDocument({ map, document: initial, content, chec
 
           {!canEdit && mode === 'read' && empty ? null : (
             <div ref={setPage}>
-              <MarkdownEditor key={mode} content={text} editable={mode === 'edit'} onChange={onChange} autofocus={fresh} />
+              {editing && !solo
+                ? session
+                  ? <MarkdownEditor key="live" content={text} editable collab={session} onChange={onChange} autofocus={fresh} />
+                  : <p className="flex items-center gap-2 text-loam-500"><Loader2 className="h-4 w-4 animate-spin" aria-hidden />{t('documents.markdown.live.connecting')}</p>
+                : <MarkdownEditor key={mode} content={text} editable={editing} onChange={onChange} autofocus={fresh} />}
             </div>
           )}
           {mode === 'read' && empty && (
@@ -168,6 +213,25 @@ export default function MarkdownDocument({ map, document: initial, content, chec
         </article>
       </div>
     </div>
+  )
+}
+
+// The others writing on the page, each in the colour of their cursor.
+function Peers({ peers }: { peers: Peer[] }) {
+  const names = peers.map((p) => p.name)
+  const label = t('documents.markdown.live.with', { names: names.length > 1 ? `${names.slice(0, -1).join(', ')}${t('documents.markdown.live.and')}${names[names.length - 1]}` : names[0] })
+  return (
+    <span className="inline-flex items-center gap-2 text-sm text-loam-600" title={t('documents.markdown.live.others')}>
+      <span className="flex -space-x-1.5" aria-hidden>
+        {peers.slice(0, 4).map((p) => (
+          <span key={p.clientId} className="grid h-7 w-7 place-items-center rounded-full text-sm font-semibold text-white ring-2 ring-[#f1ece1]" style={{ backgroundColor: p.color }}>
+            {p.name.slice(0, 1).toUpperCase()}
+          </span>
+        ))}
+      </span>
+      <span className="hidden max-w-[14rem] truncate md:inline">{label}</span>
+      <span className="sr-only md:hidden">{label}</span>
+    </span>
   )
 }
 
