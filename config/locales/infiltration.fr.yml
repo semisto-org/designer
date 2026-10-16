@@ -1,0 +1,50 @@
+# Infiltration test (water layer): guided protocol in the inspector, rate
+# classes and what they mean for ponds, swales and rain gardens.
+fr:
+  infiltration:
+    title: "Ce que boit le sol"
+    intro: "Une heure dans le jardin avec un seau et une règle, et la carte sait enfin à quelle vitesse ton sol boit l'eau, au lieu de la deviner."
+    steps:
+      dig:
+        hole: "Creuse un trou d'environ 30 cm de large et 30 cm de profond, aux parois bien droites."
+        ring: "Enfonce un anneau (une boîte de conserve sans fond, un tuyau large) de 5 à 10 cm dans le sol, sans le tasser autour."
+      soak: "Remplis-le d'eau et laisse-le se vider : le sol autour se gorge d'eau, comme après plusieurs jours de pluie. Si la terre était sèche, recommence une fois."
+      start: "Remplis à nouveau, pose une règle debout au fond et note la hauteur d'eau. Le chrono démarre."
+    depth: "Hauteur d'eau"
+    minutes: "Minutes écoulées"
+    done: "Mesure terminée : tu peux reboucher le trou. Une lecture de plus affinerait encore le résultat."
+    start: "Commencer le chrono"
+    note: "Noter la hauteur"
+    undo: "Annuler la dernière lecture"
+    restart: "Recommencer un test ici"
+    restart_confirm: "Recommencer ? Le résultat de ce test restera dans l'historique."
+    started: "Test commencé le %{date}"
+    reading: "+%{minutes} min · %{depth} cm"
+    refilled: "rempli à nouveau"
+    next_in: "Prochaine lecture dans %{minutes} min"
+    next_now: "C'est le moment : lis la hauteur d'eau."
+    refill_tip: "Si le trou s'est vidé, remplis-le : la lecture suivante repart de là."
+    waiting: "Encore une lecture et la carte te donne une première vitesse."
+    rate: "≈ %{rate} mm/h"
+    per_hour: "En une heure, ton sol avale %{cm} cm d'eau."
+    stable: "Mesure stable : le sol est saturé, cette vitesse est la sienne."
+    unstable: "La vitesse baisse encore : continue les lectures jusqu'à ce que trois d'affilée se ressemblent."
+    classes:
+      very_slow: "Très lent"
+      slow: "Lent"
+      moderate: "Moyen, idéal pour les baissières"
+      rapid: "Rapide"
+      very_rapid: "Très rapide"
+    advice:
+      very_slow: "Argile ou sol tassé. Une mare y tient presque sans étanchéité, mais une baissière y resterait en eau des jours : préfère des ouvrages peu profonds et des plantes qui aiment l'eau, et ouvre le sol avec des racines profondes (consoude, radis fourrager) et de la matière organique."
+      slow: "Une mare demande un fond d'argile bien tassée. Une baissière se vide en un à trois jours : garde-la peu profonde (20 à 30 cm) et paille sa berge."
+      moderate: "C'est l'idéal pour les baissières et les jardins de pluie : ils se vident en quelques heures et rechargent le sol en profondeur. Une mare y demande une bâche ou de l'argile apportée."
+      rapid: "L'eau file en profondeur. Les baissières se vident en une ou deux heures : tu peux les faire plus petites. Une mare demande une bâche. Un sol aussi filtrant garde peu d'eau pour les plantes : paille et nourris-le."
+      very_rapid: "Sable ou graviers : l'eau ne reste pas. Une mare demande une bâche, une baissière se vide en moins d'une heure. Ce qui manque ici, c'est la réserve : matière organique, paillage épais, sol toujours couvert."
+    time: "Sous un jardin-forêt, les racines, les champignons et les vers ouvrent le sol année après année. Refais ce test au même endroit dans trois à cinq ans pour voir ce qu'il a gagné."
+    history: "Tests précédents ici"
+    history_entry: "%{date} : %{rate} mm/h"
+    chart_label: "Hauteur d'eau dans le trou au fil des minutes"
+    feeds: "Cette vitesse cale la simulation de pluie en 3D et le temps de vidange des baissières voisines."
+    errors:
+      readings: "Les relevés du test d'infiltration sont incomplets ou dans le désordre."

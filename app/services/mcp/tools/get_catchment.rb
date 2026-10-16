@@ -35,6 +35,7 @@ module Mcp
           area_m2: result.area_m2, inside_boundary_m2: result.inside_boundary_m2, beyond_relief: result.beyond_relief,
           capacity_m3: result.capacity_m3, fill_rain_mm: result.fill_rain_mm,
           annual_rainfall_mm: result.annual_rainfall_mm, annual_rain_m3: result.annual_rain_m3,
+          infiltration_mm_h: result.infiltration_mm_h, infiltration_distance_m: result.infiltration_distance_m, empties_in_h: result.empties_in_h,
           cell_size_m: result.cell_size_m, geometry: result.geometry
         }.compact
       rescue Relief::Catchment::Error => e

@@ -95,4 +95,6 @@ export type SoilModel = {
   rateFactor: number
   storageFactor: number
   percolation: number
+  /** Rates measured by the map's infiltration tests (mm/h). */
+  measurements?: Array<{ lng: number; lat: number; rateMmH: number }>
 }

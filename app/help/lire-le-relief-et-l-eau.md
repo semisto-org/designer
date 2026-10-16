@@ -54,6 +54,16 @@ Une mare ne se remplit pas avec la pluie qui tombe sur elle, mais avec toute cel
 
 Elle compare ensuite le volume de l'ouvrage à ce qui y arrive : combien de millimètres de pluie qui ruisselle suffisent à l'emplir, sur un sol déjà gorgé d'eau comme en hiver. Peu de millimètres, et l'ouvrage débordera à chaque grosse averse : soigne son trop-plein. Beaucoup, et il se remplira lentement. Quand le bassin versant touche le bord du relief téléchargé, il continue plus haut : regarde d'où vient l'eau, chez les voisins, sur un chemin ou une route.
 
+## Mesurer ce que boit le sol
+
+Les calculs de l'eau supposent une vitesse d'infiltration d'après le type de sol et ce qui le couvre. Ton sol à toi peut boire dix fois plus, ou dix fois moins. Un **test d'infiltration** le mesure en une heure, avec un seau et une règle.
+
+Dans la couche **Eau**, pose un **Test d'infiltration** là où tu envisages une mare ou une baissière (ou, depuis la fiche d'une baissière, touche « Mesurer ce que boit le sol ici »). Sa fiche te guide pas à pas : creuser un trou d'environ 30 cm de large et de profond (ou enfoncer un anneau, comme une boîte de conserve sans fond), le remplir une première fois pour gorger le sol d'eau, puis le remplir à nouveau et noter la hauteur d'eau. Un chrono te dit quand faire la lecture suivante, et ton téléphone vibre au bon moment. Tu peux aussi noter des lectures prises sur papier, avec leurs minutes. Si le trou se vide, remplis-le : la lecture suivante repart de là.
+
+Dès deux intervalles, la fiche donne la vitesse en millimètres par heure, ce qu'elle veut dire pour une mare, une baissière ou un jardin de pluie, et te dit quand la mesure est stable (trois lectures d'affilée qui se ressemblent). Pour un trou, le calcul tient compte de l'eau qui part aussi par les parois (méthode de Porchet).
+
+Ensuite, la carte se sert de ta mesure : la simulation de pluie en 3D fait boire le sol à la vitesse mesurée autour de chaque test, et la fiche d'une baissière ou d'un jardin de pluie dit en combien de temps il se vide. Refais le test au même endroit dans quelques années : sous un jardin-forêt, le sol s'ouvre, et les anciens résultats restent dans l'historique du test.
+
 ## Le bilan de l'eau, mois par mois
 
 Dans le panneau **Climat**, sous le climat observé, **Le bilan de l'eau** compare chaque mois la pluie à l'eau que les plantes rendent à l'air (estimée à partir des températures et du soleil à ta latitude), avec la réserve du sol entre les deux. Tu y vois les mois où le sol plein laisse partir l'eau (l'hiver, en général) et ceux où les plantes en manquent, en millimètres, c'est-à-dire en litres par mètre carré.

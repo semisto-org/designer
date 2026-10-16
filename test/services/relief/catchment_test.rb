@@ -56,6 +56,22 @@ class Relief::CatchmentTest < ActiveSupport::TestCase
     assert_in_delta 57 * 1 * 0.4 * 0.5, result.capacity_m3, 0.6
   end
 
+  test "a swale empties at the rate of the nearest infiltration test" do
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    line = [ [ 4.9 + 0.0001, @centre.y ], [ 4.901 - 0.0001, @centre.y ] ]
+    swale = @map.features.create!(layer: "water", kind: "swale", geometry: line_string(line), properties: { "width_m" => 1, "depth_m" => 0.4 })
+    assert_nil Relief::Catchment.new(@map, feature: swale).call.empties_in_h
+
+    readings = [ 0, 10, 20, 30 ].each_with_index.map { |m, i| { "t_s" => m * 60, "depth_cm" => 10 - i * 0.4 } }
+    @map.features.create!(layer: "water", kind: "infiltration_test", geometry: { "type" => "Point", "coordinates" => [ 4.9005, @centre.y + 10 / 111_320.0 ] },
+                          properties: { "method" => "ring", "readings" => readings })
+    result = Relief::Catchment.new(@map, feature: swale).call
+
+    assert_equal 24.0, result.infiltration_mm_h
+    assert_in_delta 10, result.infiltration_distance_m, 1
+    assert_in_delta 400 / 24.0, result.empties_in_h, 0.1
+  end
+
   test "a point on a summit drains only itself" do
     synthetic_terrain(@map) { |dx, dy| 210 - Math.hypot(dx, dy) * 0.2 }
     result = Relief::Catchment.new(@map, lng: @centre.x, lat: @centre.y).call
