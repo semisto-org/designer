@@ -51,7 +51,6 @@ fr:
       submit: "Créer la carte"
     show:
       back: "Retour à mes cartes"
-      your_role: "Ton rôle : %{role}"
       rename: "Renommer la carte"
       rename_label: "Nom de la carte"
       rename_blank: "Donne un nom à ta carte."

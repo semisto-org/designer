@@ -1,6 +1,7 @@
 import { BookOpen, Download, FileJson, FileText, Network } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
+import { RevealLabel } from '@/components/ui/RevealLabel'
 import { useEditor } from '@/map/editor/EditorContext'
 import { PdfExportPanel } from '@/map/drawing/PdfExportPanel'
 
@@ -57,11 +58,11 @@ export default function ExportMenu() {
         onClick={() => setOpen(!open)}
         aria-haspopup="menu"
         aria-expanded={open}
-        title={t('drawing.export.button')}
-        className="flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100"
+        aria-label={t('drawing.export.button')}
+        className="group flex h-8 items-center rounded-lg px-2 text-sm font-medium text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600"
       >
         <Download className="h-4 w-4" />
-        <span className="hidden sm:inline">{t('drawing.export.button')}</span>
+        <RevealLabel>{t('drawing.export.button')}</RevealLabel>
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-1rem)] rounded-xl bg-white p-1.5 shadow-xl ring-1 ring-loam-200">
