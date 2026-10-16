@@ -1,6 +1,6 @@
 ---
 title: "Water: slow, spread, infiltrate"
-summary: "Read how water moves across the land and its catchment, and propose swales on contour, keylines, ponds, rain gardens, tanks and small check structures where they help."
+summary: "Read how water moves across the land and its catchment, and propose swales on contour, keylines, ponds, rain gardens, tanks, check dams, fascines, hedge banks, half-moons and grass strips where they help."
 order: 20
 status: draft
 ---
@@ -46,16 +46,18 @@ Time matters in a keyline design: a swale works from its first winter; a tree ro
 
 ## Small structures across the flow
 
-Where runoff is concentrated (a gully, a path that turns into a stream, a ditch), slow it with small, permeable structures rather than a big one:
+Where runoff is concentrated (a gully, a path that turns into a stream, a ditch), slow it with small, permeable structures rather than a big one. Each has its kind in the `water` layer, and the rain simulation of « Eau et relief » builds it into the relief, like swales and ponds. `get_catchment` works on each of them: size them on the water that reaches them.
 
-- **Check dams** of logs, stones or branches across a gully or a ditch: they slow the water, trap silt and let it soak in.
-- **Brush barriers (fascines)**: bundles of branches staked across a runoff path.
-- **Hedges on a bank across the slope**: the most durable structure there is; trees, roots and leaf litter infiltrate every year a little more. Trace them on the contour.
-- **Half-moons and planting basins**: small crescent-shaped hollows open uphill around young trees on dry slopes.
-- **Grass or wildflower buffer strips** along the contour, below cultivated or bare ground.
-- **Beaver dam analogues** in a small stream: only with the authorities' agreement, since watercourses are regulated everywhere.
+- **Check dam** (`check_dam`, a line drawn from bank to bank across a gully or a ditch): a low, level crest of dry stone, gabion, logs or brush (`material`), `height_m` about 0.3 to 0.5 m above the lowest ground of the line. It slows the water, holds a pool that drops its silt and soaks in, and lets the rest seep through. The crest is level and notched in the middle so the water spills over the centre, never round the ends; the banks are dug in, and stones below it stop the fall from scouring. Where more than about 2 ha drain to it (`get_catchment`), propose several low ones in series, the foot of each at the height of the next one's crest, rather than one tall dam.
+- **Fascine** (`fascine`, a line across a runoff path, on the contour): bundles of branches staked in a shallow trench, about 0.3 m high. It filters sheet runoff, keeps the soil and lets water soak in just upstream. It does not take concentrated flow: above about 0.5 ha of catchment, stagger several of them or put a check dam lower down.
+- **Hedge on a bank** (`hedge_bank`, a line on the contour, trace it with `trace_contour`): an earth bank (`height_m` about 0.5 to 1 m, `width_m` 1 to 2 m) planted with a dense hedge (`rows`, `spacing_m`). The most durable structure there is: the bank holds the water from the first winter, and roots and leaf litter open the soil a little more every year (the simulation lets its soil drink about three times more). Propose it below cultivated or bare ground, and on any slope too steep for a swale.
+- **Half-moons** (`half_moon`, a point for one, or a line on the contour for a row with `spacing_m`): crescent-shaped basins open uphill, `diameter_m` 2 to 4 m and `depth_m` 0.15 to 0.3 m, with the dug soil as a berm on the downhill half. Each gathers the runoff of the few square metres above it for a young tree planted at its downhill edge. For dry, steep or stony slopes where a swale would be too much; stagger the rows so that what one misses the next one catches.
+- **Grass strip** (`grass_strip`, a polygon along the contour, below cultivated or bare ground): at least 5 to 10 m of dense, unmown grass or meadow (`cover`). It slows sheet runoff, traps silt and lets water soak in (the simulation lets its soil drink 1.5 to 2.5 times more and slows the water running over it). A mown lawn does much less than a meadow.
+- **Beaver dam analogue** (`beaver_dam_analogue`, a line across a small stream): a row of wooden posts woven with branches and packed with mud and stones, about 0.5 to 1 m high, built in series. It raises the water table, reconnects the floodplain and lets fish through. Only with the authorities' written agreement, since watercourses are regulated everywhere: say it in the rationale, every time.
 
-The editor has no dedicated element for most of these yet: propose hedges as `hedge`, and the others as a note (`note_point`, layer `notes`) or a short line, with what to build in the rationale.
+What the simulation does with them: a check dam, a fascine or a beaver dam analogue is a weir; above its crest water passes freely, below it a share seeps through. A hedge bank and a half-moon are earthworks. These are orders of magnitude to compare designs, not hydraulic calculations.
+
+Time matters for each of them: a check dam fills with silt in a few years and becomes a step of fertile soil to plant; a fascine rots in three to five years, by which time the grass or the willows grown through it have taken over; a hedge bank gets better every year for decades. Say it.
 
 ## What follows from water
 

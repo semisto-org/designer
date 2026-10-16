@@ -191,6 +191,65 @@ layers:
           - { key: depth_m, type: number, unit: m, min: 0.05, max: 1, step: 0.05 }
           - { key: catchment_m2, type: number, unit: m², min: 0, max: 100000, step: 1 }
         computed: [rain_garden_volume]
+      check_dam:
+        geometry: LineString
+        icon: brick-wall
+        color: "#1f5f8b"
+        line: { width: 6, casing: "#ffffff" }
+        defaults: { height_m: 0.4, material: dry_stone }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.1, max: 1.5, step: 0.05 }
+          - { key: material, type: select, options: [dry_stone, gabion, wood, brush] }
+      fascine:
+        geometry: LineString
+        contour: true
+        icon: logs
+        color: "#7a5a3a"
+        line: { width: 5, dash: [1, 0.5], casing: "#ffffff" }
+        defaults: { height_m: 0.3 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.1, max: 1, step: 0.05 }
+      beaver_dam_analogue:
+        geometry: LineString
+        icon: dam
+        color: "#6b4f2f"
+        line: { width: 7, casing: "#ffffff" }
+        defaults: { height_m: 0.6 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.2, max: 1.5, step: 0.05 }
+      hedge_bank:
+        geometry: LineString
+        contour: true
+        icon: shrub
+        color: "#3d7d42"
+        line: { width: 8, opacity: 0.85, casing: "#8b5e3c" }
+        defaults: { height_m: 0.6, width_m: 1.5, rows: 2, spacing_m: 1 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.2, max: 2, step: 0.05 }
+          - { key: width_m, type: number, unit: m, min: 0.5, max: 6, step: 0.1 }
+          - { key: rows, type: integer, min: 1, max: 5 }
+          - { key: spacing_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
+        computed: [bank_soil, hedge_plants]
+      half_moon:
+        geometry: [Point, LineString]
+        contour: true
+        icon: moon
+        color: "#2b7bb9"
+        line: { width: 3, dash: [0.5, 2] }
+        defaults: { diameter_m: 3, depth_m: 0.2, spacing_m: 5 }
+        fields:
+          - { key: diameter_m, type: number, unit: m, min: 0.5, max: 10, step: 0.1 }
+          - { key: depth_m, type: number, unit: m, min: 0.05, max: 1, step: 0.05 }
+          - { key: spacing_m, type: number, unit: m, min: 1, max: 30, step: 0.5 }
+        computed: [half_moon_count, half_moon_volume]
+      grass_strip:
+        geometry: Polygon
+        icon: sprout
+        color: "#6f9a4c"
+        fill: { opacity: 0.3, pattern: dots }
+        defaults: { cover: meadow }
+        fields:
+          - { key: cover, type: select, options: [lawn, meadow] }
       infiltration_test:
         geometry: Point
         icon: gauge

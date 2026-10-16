@@ -5,6 +5,7 @@ import { __iconData as circleDot } from 'lucide-react/dist/esm/icons/circle-dot.
 import { __iconData as circleGauge } from 'lucide-react/dist/esm/icons/circle-gauge.mjs'
 import { __iconData as cloudRain } from 'lucide-react/dist/esm/icons/cloud-rain.mjs'
 import { __iconData as cylinder } from 'lucide-react/dist/esm/icons/cylinder.mjs'
+import { __iconData as dam } from 'lucide-react/dist/esm/icons/dam.mjs'
 import { __iconData as doorOpen } from 'lucide-react/dist/esm/icons/door-open.mjs'
 import { __iconData as droplet } from 'lucide-react/dist/esm/icons/droplet.mjs'
 import { __iconData as droplets } from 'lucide-react/dist/esm/icons/droplets.mjs'
@@ -19,6 +20,8 @@ import { __iconData as gitCommitHorizontal } from 'lucide-react/dist/esm/icons/g
 import { __iconData as hexagon } from 'lucide-react/dist/esm/icons/hexagon.mjs'
 import { __iconData as house } from 'lucide-react/dist/esm/icons/house.mjs'
 import { __iconData as landPlot } from 'lucide-react/dist/esm/icons/land-plot.mjs'
+import { __iconData as logs } from 'lucide-react/dist/esm/icons/logs.mjs'
+import { __iconData as moon } from 'lucide-react/dist/esm/icons/moon.mjs'
 import { __iconData as mountain } from 'lucide-react/dist/esm/icons/mountain.mjs'
 import { __iconData as moveRight } from 'lucide-react/dist/esm/icons/move-right.mjs'
 import { __iconData as pawPrint } from 'lucide-react/dist/esm/icons/paw-print.mjs'
@@ -30,6 +33,7 @@ import { __iconData as ruler } from 'lucide-react/dist/esm/icons/ruler.mjs'
 import { __iconData as shrub } from 'lucide-react/dist/esm/icons/shrub.mjs'
 import { __iconData as signature } from 'lucide-react/dist/esm/icons/signature.mjs'
 import { __iconData as spline } from 'lucide-react/dist/esm/icons/spline.mjs'
+import { __iconData as sprout } from 'lucide-react/dist/esm/icons/sprout.mjs'
 import { __iconData as squareParking } from 'lucide-react/dist/esm/icons/square-parking.mjs'
 import { __iconData as stickyNote } from 'lucide-react/dist/esm/icons/sticky-note.mjs'
 import { __iconData as tent } from 'lucide-react/dist/esm/icons/tent.mjs'
@@ -53,6 +57,7 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'circle-gauge': circleGauge,
   'cloud-rain': cloudRain,
   'cylinder': cylinder,
+  'dam': dam,
   'door-open': doorOpen,
   'droplet': droplet,
   'droplets': droplets,
@@ -67,6 +72,8 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'hexagon': hexagon,
   'house': house,
   'land-plot': landPlot,
+  'logs': logs,
+  'moon': moon,
   'mountain': mountain,
   'move-right': moveRight,
   'paw-print': pawPrint,
@@ -78,6 +85,7 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'shrub': shrub,
   'signature': signature,
   'spline': spline,
+  'sprout': sprout,
   'square-parking': squareParking,
   'sticky-note': stickyNote,
   'tent': tent,

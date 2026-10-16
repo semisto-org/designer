@@ -126,6 +126,49 @@
         "color": "#4a90c2",
         "pickable": true
       },
+      "check_dam": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#1f5f8b",
+        "pickable": true
+      },
+      "fascine": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#7a5a3a",
+        "pickable": true
+      },
+      "beaver_dam_analogue": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#6b4f2f",
+        "pickable": true
+      },
+      "hedge_bank": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#3d7d42",
+        "pickable": true
+      },
+      "half_moon": {
+        "geometries": [
+          "Point",
+          "LineString"
+        ],
+        "color": "#2b7bb9",
+        "pickable": true
+      },
+      "grass_strip": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#6f9a4c",
+        "pickable": true
+      },
       "infiltration_test": {
         "geometries": [
           "Point"
