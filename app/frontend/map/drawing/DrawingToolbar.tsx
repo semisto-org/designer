@@ -78,10 +78,10 @@ export default function DrawingToolbar() {
     revealForDrawing(spec.layer, spec.kind)
     rememberRecent(spec.kind)
     setDrawingSpec(spec)
-    // A swale belongs on the contour: it starts there whenever the relief allows it.
+    // A swale or a keyline belongs on the contour: it starts there whenever the relief allows it.
     const available = !!spec.contour && editor.entitlements.analyses && (await reliefReady(editor.map.id))
     setContourAvailable(available)
-    let follow = available && spec.kind === 'swale'
+    let follow = available && (spec.kind === 'swale' || spec.kind === 'keyline')
     let geometry: Geometry | null = null
     let created: string | null = null
     for (;;) {

@@ -62,7 +62,7 @@ class Imports::Claudy::MappingTest < ActiveSupport::TestCase
     assert_equal({ "width_m" => 2, "depth_m" => 0.5, "topsoil_to" => nil, "subsoil_to" => nil, "berm_m" => 0.4, "grade_pct" => 0 }, swale.properties)
 
     keyline = Mapping.feature(row(171))
-    assert_equal [ "water", "line", "keyline" ], [ keyline.layer, keyline.kind, keyline.properties["design_type"] ]
+    assert_equal [ "water", "keyline", "keyline" ], [ keyline.layer, keyline.kind, keyline.properties["role"] ]
     assert_match "Désactivé dans la vue 3D de Claudy.", keyline.notes
 
     pond = Mapping.feature(row(172))

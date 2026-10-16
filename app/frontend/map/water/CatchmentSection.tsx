@@ -7,7 +7,7 @@ import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { MapFeature } from '@/types'
 
-const KINDS = ['pond', 'swale', 'rain_garden']
+const KINDS = ['pond', 'swale', 'keyline', 'rain_garden']
 
 /** Ponds, swales and rain gardens: what drains into them. */
 export function appliesToCatchment(feature: MapFeature): boolean {
@@ -132,7 +132,7 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
           )}
         </p>
       )}
-      {state.status === 'ready' && <Figures result={state.result} kind={p.kind} />}
+      {state.status === 'ready' && <Figures result={state.result} kind={p.kind} dug={p.kind !== 'keyline' || !p.use || p.use === 'swale'} />}
       {state.status === 'ready' && <SoilLine result={state.result} feature={feature} />}
       {state.status === 'ready' && (
         <button
@@ -148,7 +148,7 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
   )
 }
 
-function Figures({ result, kind }: { result: CatchmentResult; kind: string }) {
+function Figures({ result, kind, dug }: { result: CatchmentResult; kind: string; dug: boolean }) {
   const area = formatArea(result.areaM2)
   return (
     <div className="space-y-2 text-sm text-loam-700">
@@ -173,7 +173,7 @@ function Figures({ result, kind }: { result: CatchmentResult; kind: string }) {
           {verdict(result.fillRainMm)}
         </p>
       )}
-      {result.capacityM3 == null && <p className="text-loam-500">{t('relief.catchment.no_size')}</p>}
+      {result.capacityM3 == null && dug && <p className="text-loam-500">{t('relief.catchment.no_size')}</p>}
       {result.beyondRelief && <p className="text-loam-500">{t('relief.catchment.beyond')}</p>}
     </div>
   )

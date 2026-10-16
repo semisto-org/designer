@@ -187,6 +187,8 @@ Rails.application.routes.draw do
         get :buildings
         get :contour
         get :catchment
+        get :keypoints
+        get :parallels
       end
       resource :terrain, only: %i[show create]
       resource :water_settings, only: :update

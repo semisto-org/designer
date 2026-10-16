@@ -320,13 +320,15 @@ export class ReliefController {
       if (POND_KINDS.has(kind) && geometry?.type === 'Polygon') {
         designs.push({
           id, type: 'pond', ring: geometry.coordinates[0].map((p) => toGrid(this.meta, p)),
-          depth: numberProp(props.depth, 1), berm: numberProp(props.berm, 0.3),
+          depth: numberProp(props.depth_m ?? props.depth, 1), berm: numberProp(props.berm, 0.3),
         })
       } else if (SWALE_KINDS.has(kind) && geometry?.type === 'LineString') {
+        // A keyline planted with trees or subsoiled is not dug.
+        if (kind === 'keyline' && props.use && props.use !== 'swale') continue
         const defaults = SWALE_DEFAULTS[kind]
         designs.push({
           id, type: 'swale', points: geometry.coordinates.map((p) => toGrid(this.meta, p)),
-          width: numberProp(props.width, defaults.width), depth: numberProp(props.depth, defaults.depth),
+          width: numberProp(props.width_m ?? props.width, defaults.width), depth: numberProp(props.depth_m ?? props.depth, defaults.depth),
           berm: props.berm === 0 ? 0 : numberProp(props.berm, defaults.berm),
         })
       }

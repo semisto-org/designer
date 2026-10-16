@@ -85,6 +85,23 @@ module Maps
       render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
     end
 
+    # The keypoints of the terrain's valleys, each with its keyline.
+    def keypoints
+      render json: Relief::Keypoints.new(@map).call.as_json
+    rescue Relief::Keypoints::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
+    # Lines parallel to a keyline (`feature_id`), every `spacing_m` metres,
+    # `above` and `below` it.
+    def parallels
+      feature = @map.features.where.not(status: "rejected").find(params[:feature_id])
+      lines = Relief::Parallels.new(@map, feature:, spacing_m: params[:spacing_m], above: params[:above], below: params[:below]).call
+      render json: { lines: lines.map(&:as_json) }
+    rescue Relief::Parallels::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
     private
       def soil_model
         settings = @map.effective_water_settings

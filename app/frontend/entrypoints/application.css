@@ -151,6 +151,17 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 }
 .boundary-label-name { font-family: var(--font-serif); font-weight: 600; font-size: 15px; color: var(--color-loam-900); }
 
+/* A keypoint found in a valley: a numbered water drop, as in the field notebook.
+   MapLibre owns the marker's transform, so only its inner span may turn. */
+.keypoint-marker { display: grid; place-items: center; width: 30px; height: 30px; cursor: pointer; background: none; border: 0; padding: 0; }
+.keypoint-marker span {
+  display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50% 50% 50% 4px; transform: rotate(-45deg);
+  background: #2b7bb9; border: 2px solid #fff; box-shadow: 0 4px 10px rgb(26 26 26 / 0.25);
+}
+.keypoint-marker span::after { content: attr(data-label); transform: rotate(45deg); font: 700 14px/1 var(--font-serif); color: #fff; }
+.keypoint-marker:focus-visible { outline: 2px solid var(--color-prune-600); outline-offset: 2px; }
+
 /* Map editor controls: white stacks with soft shadows, a "N" for the compass
    (MapLibre turns the icon with the map, so the letter turns too). */
 .editor-map .maplibregl-ctrl-top-right .maplibregl-ctrl { margin: 14px 14px 0 0; }

@@ -368,6 +368,7 @@ fr:
       holds:
         pond: "La mare retient environ %{volume} m³."
         swale: "La baissière retient environ %{volume} m³."
+        keyline: "La baissière de la keyline retient environ %{volume} m³."
         rain_garden: "Le jardin de pluie retient environ %{volume} m³."
       fills: "Il faut %{rain} mm de pluie qui ruisselle pour l'emplir, sur un sol déjà gorgé d'eau comme en hiver."
       verdict:
@@ -396,7 +397,7 @@ fr:
       open_relief: "Ouvrir « Eau et relief »"
       errors:
         no_relief: "Télécharge d'abord le relief du terrain : le bassin versant se calcule sur lui."
-        not_water: "Le bassin versant se calcule pour une mare, une baissière ou un jardin de pluie."
+        not_water: "Le bassin versant se calcule pour une mare, une baissière, une keyline ou un jardin de pluie."
         outside_relief: "Cet endroit est hors du relief téléchargé."
     contour:
       follow: "Suivre la courbe"
@@ -410,3 +411,57 @@ fr:
         outside_boundary: "Ce point est hors du contour du terrain. Clique à l'intérieur."
         outside_relief: "Ce point est hors du relief téléchargé."
         flat: "Le sol est plat à cet endroit : aucune courbe de niveau ne s'en dégage. Essaie un peu plus haut ou plus bas sur la pente."
+    keypoints:
+      errors:
+        no_relief: "Télécharge d'abord le relief du terrain : les points clés se cherchent sur lui."
+    keyline:
+      title: "Keyline"
+      intro: "Dans un vallon, le point clé est l'endroit où le fond cesse de descendre raide pour descendre doucement. La courbe de niveau qui y passe, la keyline, recueille l'eau du vallon et l'emmène vers les croupes, plus sèches."
+      find: "Chercher les points clés"
+      finding: "Lecture des vallons…"
+      none: "Aucun vallon de ton terrain ne casse nettement sa pente. Une baissière reste possible sur la courbe de ton choix : « Suivre la courbe » quand tu la dessines."
+      found:
+        one: "1 point clé sur ton terrain"
+        other: "%{count} points clés sur ton terrain"
+      point: "Point clé à %{elevation} m"
+      slopes: "Le fond du vallon descend de %{above} % au-dessus, puis de %{below} % en dessous."
+      catchment: "%{area} y drainent."
+      place: "Poser la keyline (%{length})"
+      placed: "Keyline posée à %{elevation} m, sur %{length}. Trace ses parallèles depuis sa fiche."
+      no_keyline: "La courbe de ce point sort aussitôt du terrain."
+      show: "Voir sur la carte"
+      hide: "Masquer de la carte"
+      again: "Chercher à nouveau"
+      method: "Méthode de P.A. Yeomans (« Water for every farm », 1954), calculée sur le relief téléchargé."
+    parallels:
+      title: "Lignes parallèles"
+      title_parallel: "Parallèle à une keyline"
+      intro: "Seule la keyline suit la courbe de niveau. Ses parallèles gardent sa forme : au-dessus, elles descendent doucement vers les croupes, en dessous elles y remontent, et l'eau du vallon part vers les croupes plus sèches."
+      intro_parallel: "Cette ligne garde la forme de sa keyline, pas la courbe de niveau : elle mène doucement l'eau du vallon vers les croupes."
+      time:
+        swale: "Une baissière agit dès le premier hiver ; plante sa butte à l'automne qui suit, ses racines la tiendront."
+        trees: "Une ligne d'arbres met 5 à 10 ans à freiner et infiltrer l'eau comme une haie ; entre deux lignes, la bande reste cultivable ou pâturable."
+        subsoiling: "Le décompactage se refait chaque automne, 3 à 5 ans de suite, un peu plus profond chaque fois, jusqu'à ce que les racines prennent le relais."
+      spacing: "Écart (m)"
+      above: "Au-dessus"
+      below: "En dessous"
+      loading: "Tracé des parallèles…"
+      summary:
+        one: "1 ligne, %{length}."
+        other: "%{count} lignes, %{length} au total."
+      even: "Sur ce versant régulier, elles restent presque sur la courbe."
+      fall: "Jusqu'à %{fall} m de dénivelée le long d'une ligne : l'eau y glisse doucement."
+      none: "Aucune ligne n'entre dans le terrain avec cet écart."
+      no_above: "Au-dessus, aucune ligne n'entre dans le terrain avec cet écart."
+      no_below: "En dessous, le creux du vallon est trop étroit pour cet écart : resserre-le, ou plante le fond du vallon."
+      add:
+        one: "Ajouter cette ligne"
+        other: "Ajouter ces %{count} lignes"
+      added:
+        one: "1 ligne parallèle ajoutée."
+        other: "%{count} lignes parallèles ajoutées."
+      errors:
+        not_keyline: "Les parallèles se tracent depuis une keyline."
+        spacing: "L'espacement va de 1 à 100 m."
+        no_relief: "Télécharge d'abord le relief du terrain : il dit de quel côté monte la pente."
+        flat: "Le sol est plat de part et d'autre de cette ligne : impossible de dire où est l'amont."

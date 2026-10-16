@@ -19,7 +19,7 @@ function volume(m3: number): string {
 const FORMULAS: Record<string, (p: Record<string, unknown>, m: { area: number | null; length: number | null }) => string | null> = {
   pond_volume: (p, m) => (m.area != null && num(p.depth_m) != null ? volume(m.area * num(p.depth_m)! * 0.5) : null),
   swale_volume: (p, m) =>
-    m.length != null && num(p.width_m) != null && num(p.depth_m) != null ? volume(m.length * num(p.width_m)! * num(p.depth_m)! * 0.5) : null,
+    (p.use == null || p.use === 'swale') && m.length != null && num(p.width_m) != null && num(p.depth_m) != null ? volume(m.length * num(p.width_m)! * num(p.depth_m)! * 0.5) : null,
   rain_garden_volume: (p, m) => (m.area != null && num(p.depth_m) != null ? volume(m.area * num(p.depth_m)!) : null),
   raised_bed_soil: (p, m) => (m.area != null && num(p.height_m) != null ? volume(m.area * num(p.height_m)!) : null),
   hedge_plants: (p, m) => {

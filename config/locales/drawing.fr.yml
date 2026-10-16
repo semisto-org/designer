@@ -15,6 +15,7 @@ fr:
       land_cover: "Occupation du sol"
       pond: "Mare"
       swale: "Baissière"
+      keyline: "Keyline"
       ditch: "Fossé"
       overflow_pipe: "Tuyau de trop-plein"
       water_tank: "Citerne"
@@ -92,6 +93,8 @@ fr:
       depth_m: "Profondeur"
       liner: "Étanchéité"
       purpose: "Usage"
+      role: "Ligne"
+      use: "Aménagement"
       capacity_l: "Capacité"
       tank_type: "Type de citerne"
       potable: "Eau potable"
@@ -127,6 +130,8 @@ fr:
 
     options:
       method: { hole: "Trou rempli d'eau", ring: "Anneau enfoncé" }
+      role: { keyline: "Keyline (par le point clé)", parallel: "Parallèle à la keyline" }
+      use: { swale: "Baissière", trees: "Ligne d'arbres", subsoiling: "Décompactage" }
       roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }
       health: { good: "Bon", fair: "Moyen", poor: "Mauvais", dead: "Mort" }
       material:
