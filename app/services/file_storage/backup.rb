@@ -1,26 +1,43 @@
 # The nightly copy of every uploaded file to the backup bucket (`backup` in
 # config/storage.yml, FileBackupJob). Only the files the backup does not hold
-# yet are sent; nothing is ever deleted or overwritten there, so the backup
-# keeps every file a database backup may refer to.
+# yet are sent, and nothing is ever overwritten there.
+#
+# A file the app deleted stays in the backup for RETENTION, so a database
+# backup of that period can still be restored with its files, then it is
+# erased: the privacy policy promises that deleted data leaves the backups
+# within 90 days. The clock starts the first night the file is seen without a
+# blob (BackupOrphan), one day at most after the deletion.
 module FileStorage
   class Backup
-    Result = Struct.new(:copied, :already_there, :missing, :failed, keyword_init: true) do
+    RETENTION = 89.days
+
+    # Beyond this share of the backup without a blob (and more than a handful
+    # of files), the database looks wrong (an empty or old restore): nothing is
+    # marked for erasure and the run fails.
+    MAX_ORPHAN_SHARE = 0.25
+    ORPHAN_ALARM_FLOOR = 100
+
+    Result = Struct.new(:copied, :already_there, :missing, :failed, :erased, :awaiting_erasure, keyword_init: true) do
       def to_s
-        "#{copied} copied, #{already_there} already there, #{missing.size} missing at the source, #{failed.size} failed"
+        "#{copied} copied, #{already_there} already there, #{missing.size} missing at the source, #{failed.size} failed, " \
+          "#{erased} erased after #{RETENTION.in_days.round} days, #{awaiting_erasure} deleted from the app and kept for now"
       end
     end
 
     def self.configured?(target = :backup) = FileStorage.configured?(target)
 
-    def initialize(target: :backup, logger: Rails.logger)
+    # `service` replaces the one named `target`, `alarm_floor` the floor (tests).
+    def initialize(target: :backup, service: nil, alarm_floor: ORPHAN_ALARM_FLOOR, logger: Rails.logger)
       @target = target.to_s
+      @service = service
+      @alarm_floor = alarm_floor
       @logger = logger
     end
 
-    def run
-      target = FileStorage.service(@target)
+    def run(now: Time.current)
+      target = @service || FileStorage.service(@target)
       keys = FileStorage.keys_of(target)
-      result = Result.new(copied: 0, already_there: 0, missing: [], failed: [])
+      result = Result.new(copied: 0, already_there: 0, missing: [], failed: [], erased: 0, awaiting_erasure: 0)
 
       ActiveStorage::Blob.where.not(service_name: @target).find_each do |blob|
         if FileStorage.holds?(target, keys, blob.key)
@@ -35,7 +52,33 @@ module FileStorage
         result.failed << blob.id
         @logger.error("[storage:backup] blob #{blob.id}: #{e.class}: #{e.message}")
       end
+
+      purge_orphans(target, keys, result, now) if keys
       result
+    end
+
+    private
+
+    def purge_orphans(target, keys, result, now)
+      orphans = keys - ActiveStorage::Blob.pluck(:key)
+      if orphans.size > @alarm_floor && orphans.size > keys.size * MAX_ORPHAN_SHARE
+        raise "#{orphans.size} of #{keys.size} backup files have no blob: is this the right database? Nothing erased."
+      end
+
+      known = BackupOrphan.where(service_name: @target)
+      known.where.not(key: orphans.to_a).delete_all
+      fresh = orphans - known.pluck(:key)
+      BackupOrphan.insert_all(fresh.map { |key| { service_name: @target, key:, first_seen_at: now } }) if fresh.any?
+
+      known.where(first_seen_at: ..(now - RETENTION)).find_each do |orphan|
+        target.delete(orphan.key)
+        orphan.delete
+        result.erased += 1
+      rescue StandardError => e
+        result.failed << orphan.key
+        @logger.error("[storage:backup] erasing #{orphan.key}: #{e.class}: #{e.message}")
+      end
+      result.awaiting_erasure = known.count
     end
   end
 end

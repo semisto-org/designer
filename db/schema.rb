@@ -119,6 +119,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_190000) do
     t.index ["user_id"], name: "index_applauses_on_user_id"
   end
 
+  create_table "backup_orphans", force: :cascade do |t|
+    t.string "service_name", null: false
+    t.string "key", null: false
+    t.datetime "first_seen_at", null: false
+    t.index ["service_name", "key"], name: "index_backup_orphans_on_service_name_and_key", unique: true
+  end
+
   create_table "billing_accounts", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "stripe_customer_id", null: false

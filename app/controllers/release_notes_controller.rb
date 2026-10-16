@@ -36,7 +36,7 @@ class ReleaseNotesController < ApplicationController
       attachment
     end
     expires_in LINK_LIFETIME - 1.minute, private: true
-    redirect_to target.url(expires_in: LINK_LIFETIME, disposition: :inline), allow_other_host: true
+    redirect_to stored_file_url(target, expires_in: LINK_LIFETIME), allow_other_host: true
   end
 
   private

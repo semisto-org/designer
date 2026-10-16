@@ -119,7 +119,7 @@ module Maps
 
       def storage_link(target, download:)
         expires_in LINK_LIFETIME - 1.minute, private: true
-        target.url(expires_in: LINK_LIFETIME, disposition: download ? :attachment : :inline)
+        stored_file_url(target, expires_in: LINK_LIFETIME, disposition: download ? :attachment : :inline)
       end
 
       def albums_json
