@@ -487,6 +487,7 @@ fr:
       empty: "géométrie vide."
       invalid: "géométrie invalide (%{reason})."
       outside: "hors du terrain : la géométrie doit rester à moins de %{buffer} m du contour."
+      element: "%{kind} refusé : %{errors}"
     update_errors:
       changes_empty: "changes doit être un objet avec au moins un champ."
       forbidden: "champs interdits dans changes : %{fields}. Seuls %{allowed} peuvent changer."

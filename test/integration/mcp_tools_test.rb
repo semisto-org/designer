@@ -285,6 +285,30 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil action.arguments["features"].try(:first), "geometries are not copied in the journal"
   end
 
+  test "propose_features reports an element the library refuses instead of failing" do
+    make_editor(@map, users(:bob))
+    line = { type: "LineString", coordinates: [ [ 4.905, 50.3405 ], [ 4.907, 50.3406 ] ] }
+    features = [
+      { layer: "plants", kind: "hedge", rationale: "Haie brise-vent au nord du verger.", geometry: line },
+      { layer: "structures", kind: "hedge", rationale: "Haie au polygone : se dessine en ligne.", geometry: { type: "Polygon", coordinates: [ [ [ 4.905, 50.340 ], [ 4.906, 50.340 ], [ 4.906, 50.341 ], [ 4.905, 50.341 ], [ 4.905, 50.340 ] ] ] } },
+      { layer: "structures", kind: "hedge", rationale: "Haie champêtre en deux rangs.", geometry: line, properties: { rows: "deux" } },
+      { layer: "structures", kind: "hedge", rationale: "Haie champêtre en deux rangs.", geometry: line, properties: { rows: 2 } }
+    ]
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: })
+    refute error, data
+    assert_equal [ 3 ], data["created"].map { |c| c["index"] }
+    assert_equal [ 0, 1, 2 ], data["rejected"].map { |r| r["index"] }
+    assert_match(/couche « Structures »/i, data["rejected"][0]["error"])
+    assert_match(/ligne/, data["rejected"][1]["error"])
+    assert_equal "structures", MapFeature.find(data["created"].sole["id"]).layer
+
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: features.first(1) })
+    assert error
+    assert_match(/Structures/i, data)
+    assert_equal "error", AiAction.last.status
+    refute_equal "internal_error", AiAction.last.error_message
+  end
+
   test "propose_features drafts a named zone in its colour" do
     make_editor(@map, users(:bob))
     zone = { layer: "notes", kind: "zone", name: "Forêt-jardin en strates hautes", color: "#7FA650", rationale: "Plein sud, à l'abri de la haie.",
