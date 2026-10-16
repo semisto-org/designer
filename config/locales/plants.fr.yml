@@ -48,6 +48,9 @@ fr:
       unknown_zone: "Rusticité inconnue"
       native: "Indigène"
       invasive: "Invasive ici"
+      in_ground:
+        one: "%{count} plant en terre dans les jardins"
+        other: "%{count} plants en terre dans les jardins"
     show:
       back: "Retour au catalogue"
       common_names: "Aussi appelée"
@@ -62,6 +65,7 @@ fr:
         cautions: "Précautions"
         varieties: "Variétés"
         observations: "Observations des jardins Terranova"
+        plantings: "Où elle pousse dans tes jardins"
         sources: "D'où viennent ces valeurs"
       sources_intro: "Chaque valeur porte sa source. « À vérifier » : la valeur a été reprise d'un catalogue sans être contrôlée par une personne ; « vérifiée » : elle a été contrôlée contre sa source."
       sources_summary: "%{sourced} vérifiées · %{to_verify} à vérifier · %{empty} non renseignées"
@@ -82,6 +86,19 @@ fr:
       survival_rate: "Taux de reprise"
       average_vigor: "Vigueur moyenne"
       observations_empty: "Aucun jardin Terranova n'a encore mis cette espèce en terre. Marque tes plants « plantés » sur la carte, puis note leur reprise : ils enrichiront cette fiche."
+      plantings_intro: "Les plants de cette espèce sur tes cartes, celles qu'on partage avec toi et celles de tes équipes. Les jardins des autres restent privés : ils ne comptent que dans les chiffres anonymes, plus bas."
+      plantings_in_ground:
+        one: "%{count} en terre"
+        other: "%{count} en terre"
+      plantings_planned:
+        one: "%{count} prévu"
+        other: "%{count} prévus"
+      plantings_legend_in_ground: "En terre (date de plantation ou suivi)"
+      plantings_legend_planned: "Prévu, pas encore planté"
+      plantings_empty: "Cette espèce n'est encore sur aucune de tes cartes. Ajoute-la à la palette d'une carte, puis pose ses plants : ils apparaîtront ici, et tu verras d'un coup d'œil où elle grandit."
+      plantings_open: "Ouvrir sur la carte"
+      plantings_planted_on: "Planté le %{date}"
+      plantings_truncated: "Seuls les %{count} premiers plants sont affichés."
       native_in: "Indigène en %{countries}"
       invasive_in: "Invasive en %{countries}"
       crown_hint: "Envergure utilisée sur la carte : %{value} m"

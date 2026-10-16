@@ -49,9 +49,7 @@ class PlantObservation < ApplicationRecord
   def self.stats_for(species)
     maps = Map.active.select(:id)
     latest = latest_per_plant.where(species_id: species.id).where(map_id: maps)
-    in_ground = MapFeature.active.where(kind: PlantableFeature::PLANT, map_id: maps)
-                          .where("map_features.properties->>'species_id' = ?", species.id.to_s)
-                          .where("map_features.properties->>'planted_on' IS NOT NULL OR map_features.id IN (?)", latest.select(:map_feature_id))
+    in_ground = in_ground_plants.where("map_features.properties->>'species_id' = ?", species.id.to_s)
     plants = in_ground.count
     return nil if plants.zero?
 
@@ -64,6 +62,24 @@ class PlantObservation < ApplicationRecord
       survivalRate: observed.zero? ? nil : (alive * 100.0 / observed).round,
       averageVigor: latest.where.not(vigor: nil).average(:vigor)&.to_f&.round(1)
     }
+  end
+
+  # Plant points in the ground on every active map: planted (a planting
+  # date) or observed at least once. The one definition of « en terre ».
+  def self.in_ground_plants
+    MapFeature.active.where(kind: PlantableFeature::PLANT, map_id: Map.active.select(:id))
+              .where("map_features.properties->>'planted_on' IS NOT NULL OR map_features.id IN (?)",
+                     PlantObservation.select(:map_feature_id))
+  end
+
+  # { species_id => plants in the ground } over every garden, for the
+  # catalogue cards: anonymous, like the sheet's stats. Species without any
+  # plant are absent.
+  def self.in_ground_counts(species_ids)
+    return {} if species_ids.empty?
+    in_ground_plants.where("map_features.properties->>'species_id' IN (?)", species_ids.map(&:to_s))
+                    .group(Arel.sql("map_features.properties->>'species_id'")).count
+                    .transform_keys(&:to_i)
   end
 
   def as_json(*)

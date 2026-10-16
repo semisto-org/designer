@@ -48,6 +48,26 @@ class PlantsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "PFAF, usage non commercial", sheet["provenance"]["hardinessZone"]["license"]
     assert_equal 2, sheet["varieties"].size
     assert_nil props["observations"]
+    assert_equal({ "points" => [], "maps" => [], "inGround" => 0, "planned" => 0, "truncated" => false }, props["plantings"])
+  end
+
+  test "the catalogue counts plants in the ground; a sheet maps only the viewer's maps" do
+    map = maps(:ahinvaux)
+    map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906, lat: 50.341),
+                         properties: { "species_id" => plant_species(:apple).id, "planted_on" => "2026-03-01" })
+
+    get plants_path(q: "Malus"), as: :json
+    assert_equal 1, response.parsed_body["results"].first["inGround"]
+
+    get plant_path(plant_species(:apple)), headers: inertia_headers
+    assert_empty response.parsed_body["props"]["plantings"]["points"], "bob has no access to the map"
+    assert_equal 1, response.parsed_body["props"]["observations"]["plants"], "anonymous counts stay global"
+
+    sign_in_as users(:alice)
+    get plant_path(plant_species(:apple)), headers: inertia_headers
+    plantings = response.parsed_body["props"]["plantings"]
+    assert_equal 1, plantings["inGround"]
+    assert_equal [ map.id ], plantings["maps"].map { |m| m["id"] }
   end
 
   test "show as JSON" do

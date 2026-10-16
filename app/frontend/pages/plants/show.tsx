@@ -4,18 +4,19 @@ import type { ReactNode } from 'react'
 import { Card } from '@/components/ui/Card'
 import { MonthsCalendar } from '@/components/plants/MonthsCalendar'
 import { ProvenanceBadge, sourceLabel } from '@/components/plants/ProvenanceBadge'
+import { SpeciesPlantingsMap } from '@/components/plants/SpeciesPlantingsMap'
 import { SpeciesTags } from '@/components/plants/SpeciesTags'
 import { countryNames, formatDecimal, metres, strataLabel, vocab } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { STRATA_COLORS } from '@/map/plants/strata'
-import type { CatalogueRegion, ObservationStats, Provenance, SpeciesSheet } from '@/types/plants'
+import type { CatalogueRegion, ObservationStats, Provenance, SpeciesPlantings, SpeciesSheet } from '@/types/plants'
 
-type Props = { species: SpeciesSheet; observations: ObservationStats | null; region: CatalogueRegion | null }
+type Props = { species: SpeciesSheet; observations: ObservationStats | null; plantings: SpeciesPlantings; region: CatalogueRegion | null }
 
 const camel = (field: string) => field.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())
 
 /** Species sheet: values with units and their provenance, calendar, varieties, garden observations. */
-export default function PlantShow({ species: s, observations, region }: Props) {
+export default function PlantShow({ species: s, observations, plantings, region }: Props) {
   const p = (field: string): Provenance | undefined => s.provenance[camel(field)]
   const list = (facet: string, keys: string[]) => (keys.length ? keys.map((k) => vocab(facet, k)).join(', ') : null)
   const range = (min: number | null, max: number | null) =>
@@ -60,6 +61,17 @@ export default function PlantShow({ species: s, observations, region }: Props) {
       </header>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <Section title={t('plants.show.sections.plantings')} className="lg:col-span-2">
+          <p className="mb-3 text-sm text-loam-500">{t('plants.show.plantings_intro')}</p>
+          {plantings.points.length > 0 ? (
+            <SpeciesPlantingsMap plantings={plantings} />
+          ) : (
+            <p className="flex gap-2 rounded-lg bg-leaf-50 p-3 text-sm text-leaf-800">
+              <Sprout className="mt-0.5 h-4 w-4 shrink-0" />{t('plants.show.plantings_empty')}
+            </p>
+          )}
+        </Section>
+
         <Section list title={t('plants.show.sections.habit')}>
           <Row label={t('plants.fields.plant_type')} value={s.plantType && vocab('plant_type', s.plantType)} provenance={p('plant_type')} />
           <Row label={t('plants.fields.strata')} value={strataLabel(s.strata)} provenance={p('strata')} />
