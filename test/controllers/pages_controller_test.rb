@@ -37,6 +37,22 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     PAGES.each_key { |path| inertia_page(path) }
   end
 
+  test "the legal texts are in the HTML for readers without JavaScript" do
+    get "/confidentialite"
+    assert_response :success
+    assert_select "#prerendered h1", "Politique de confidentialité"
+    assert_select "#prerendered h2", /Ce que nous recevons de Google/
+    assert_select "#prerendered", /Limited Use/
+    assert_select "#prerendered", /#{Regexp.escape(Billing.contact_email)}/
+
+    get "/conditions"
+    assert_select "#prerendered h1", "Conditions d'utilisation"
+    assert_select "#prerendered li", /79 € TTC/
+
+    get "/tarifs"
+    assert_select "#prerendered", false
+  end
+
   test "pages carry server-side meta tags: title, description, canonical and Open Graph" do
     meta = inertia_page("/tarifs").dig("props", "_inertia_meta")
     by_key = meta.index_by { |tag| tag["headKey"] }
