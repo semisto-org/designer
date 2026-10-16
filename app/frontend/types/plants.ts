@@ -44,6 +44,8 @@ export type SpeciesSummary = {
   nativeCountries: string[]
   invasiveCountries: string[]
   harvestMonths: number[]
+  /** Plants in the ground over every garden (catalogue search only, anonymous). */
+  inGround?: number
 }
 
 export type VarietySummary = {
@@ -100,6 +102,15 @@ export type ObservationStats = {
   dead: number
   survivalRate: number | null
   averageVigor: number | null
+}
+
+/** The species' plant points on the maps the viewer can open. */
+export type SpeciesPlantings = {
+  points: { id: number; mapId: number; lng: number; lat: number; inGround: boolean; plantedOn: string | null; variety: string | null }[]
+  maps: { id: number; name: string; inGround: number; planned: number }[]
+  inGround: number
+  planned: number
+  truncated: boolean
 }
 
 export type PlantSearchFilters = {

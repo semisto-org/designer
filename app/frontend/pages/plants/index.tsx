@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Snowflake } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Snowflake, Sprout } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
@@ -208,6 +208,12 @@ function SpeciesCard({ species, country }: { species: SpeciesSummary; country: s
         {species.heightMaxM != null && <span>{t('plants.card.height', { value: formatDecimal(species.heightMaxM) })}</span>}
       </p>
       <SpeciesTags species={species} country={country} />
+      {species.inGround ? (
+        <p className="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-leaf-700">
+          <Sprout className="h-4 w-4" aria-hidden />
+          {t('plants.card.in_ground', { count: species.inGround })}
+        </p>
+      ) : null}
     </Link>
   )
 }

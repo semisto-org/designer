@@ -22,6 +22,8 @@ class PlantsController < ApplicationController
     render inertia: "plants/show", props: {
       species: sheet,
       observations: PlantObservation.stats_for(species),
+      # Where it grows on the maps this person can open (never another's).
+      plantings: SpeciesPlantings.new(species, Current.user).as_json,
       region: region_json
     }
   end

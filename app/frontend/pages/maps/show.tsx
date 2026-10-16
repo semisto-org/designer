@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import type { Geometry } from 'geojson'
 import { ArrowLeft } from 'lucide-react'
-import { area } from '@turf/turf'
+import { area, bbox as turfBbox } from '@turf/turf'
 import type { MapMouseEvent, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -91,10 +91,22 @@ function panelFromUrl(): string | null {
   return PANELS.some((p) => p.id === id) ? id : null
 }
 
+/** `?feature=12` (a plant from the catalogue's map) selects that element on arrival. */
+function featureFromUrl(features: MapFeature[]): MapFeature | null {
+  if (typeof window === 'undefined') return null
+  const url = new URL(window.location.href)
+  const id = Number(url.searchParams.get('feature'))
+  if (!url.searchParams.has('feature')) return null
+  url.searchParams.delete('feature')
+  window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
+  return features.find((f) => f.properties.id === id) ?? null
+}
+
 function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, offerBuilder = false }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [arrival] = useState(() => featureFromUrl(initial))
+  const [selectedId, setSelectedId] = useState<number | null>(arrival?.properties.id ?? null)
   // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
   const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
   const [pickedStage, setPickedStage] = useState<MapStage | null>(null)
@@ -144,6 +156,13 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     return () => void instance.off('idle', fold)
   }, [instance])
   useEffect(() => installFeatureLayers(instance, { type: 'FeatureCollection', features }), [instance, features])
+
+  // Frame the element opened from a link (after the map's own framing).
+  useEffect(() => {
+    if (!arrival) return
+    const [minX, minY, maxX, maxY] = turfBbox(arrival)
+    instance.fitBounds([[minX, minY], [maxX, maxY]], { padding: 120, maxZoom: 19, duration: 0 })
+  }, [instance, arrival])
 
   // Selection highlight and click-to-select.
   useEffect(() => {

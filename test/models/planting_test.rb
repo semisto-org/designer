@@ -211,6 +211,42 @@ class PlantingTest < ActiveSupport::TestCase
     assert_nil PlantObservation.stats_for(plant_species(:alder)), "archived maps are left out"
   end
 
+  test "in-ground counts per species, for the catalogue cards" do
+    plant!(plant_species(:apple), planted_on: "2026-03-01")
+    plant!(plant_species(:apple), lng: 4.9062)
+    observed = plant!(plant_species(:alder), lng: 4.9064)
+    observed.plant_observations.create!(observed_on: "2026-10-01", survival: "established")
+    plant!(plant_species(:alder), planted_on: "2026-09-30", lng: 4.9066).update!(status: "draft")
+
+    counts = PlantObservation.in_ground_counts([ plant_species(:apple).id, plant_species(:alder).id, plant_species(:strawberry).id ])
+    assert_equal({ plant_species(:apple).id => 1, plant_species(:alder).id => 1 }, counts)
+    assert_equal({}, PlantObservation.in_ground_counts([]))
+  end
+
+  test "species plantings: only the maps the person can open, in the ground or planned" do
+    plant!(plant_species(:apple), variety: plant_varieties(:reinette), planted_on: "2026-03-01")
+    plant!(plant_species(:apple), lng: 4.9062)
+    plant!(plant_species(:alder), lng: 4.9064, planted_on: "2026-03-01")
+
+    mine = SpeciesPlantings.new(plant_species(:apple), users(:michael)).as_json
+    assert_equal 1, mine[:inGround]
+    assert_equal 1, mine[:planned]
+    assert_equal [ { id: @map.id, name: @map.name, inGround: 1, planned: 1 } ], mine[:maps]
+    planted = mine[:points].find { |p| p[:inGround] }
+    assert_equal "2026-03-01", planted[:plantedOn]
+    assert_equal plant_varieties(:reinette).name, planted[:variety]
+    assert_in_delta 4.906, planted[:lng], 1e-6
+    assert_in_delta 50.341, planted[:lat], 1e-6
+
+    assert_equal 2, SpeciesPlantings.new(plant_species(:apple), users(:alice)).as_json[:points].size, "a viewer sees the map"
+    stranger = SpeciesPlantings.new(plant_species(:apple), users(:bob)).as_json
+    assert_empty stranger[:points], "never another person's private map"
+    assert_empty stranger[:maps]
+
+    @map.update!(archived_at: Time.current)
+    assert_empty SpeciesPlantings.new(plant_species(:apple), users(:michael)).as_json[:points]
+  end
+
   test "map hardiness comes from its region" do
     assert_equal 7, @map.hardiness_zone
     assert_equal(-17.6, @map.min_temperature_c)
