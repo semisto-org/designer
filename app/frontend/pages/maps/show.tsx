@@ -17,6 +17,7 @@ import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature } from '@/map/editor/EditorContext'
 import { Inspector } from '@/map/editor/Inspector'
+import { MapName } from '@/map/editor/MapName'
 import { RecenterControl } from '@/map/editor/controls'
 import { EditorBar, EditorRail } from '@/map/editor/Rail'
 import { StageStepper } from '@/map/editor/StageStepper'
@@ -47,7 +48,7 @@ export default function MapShow(props: Props) {
           <ArrowLeft className="h-[18px] w-[18px]" />
         </Link>
         <div className="flex min-w-0 shrink items-baseline gap-2.5">
-          <h1 className="truncate text-xl leading-none text-loam-900">{map.name}</h1>
+          <MapName map={map} setMap={setMap} />
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
         <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} />

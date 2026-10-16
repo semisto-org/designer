@@ -86,8 +86,10 @@ class TeamMapsTest < ActionDispatch::IntegrationTest
     get map_path(@map), headers: inertia_headers
     assert_response :success
     assert_equal "editor", response.parsed_body.dig("props", "map", "role")
-    patch map_path(@map), params: { map: { name: "Domaine d'Ahinvaux (équipe)" } }, as: :json
+    patch map_path(@map), params: { map: { stage: "design" } }, as: :json
     assert_response :success
+    patch map_path(@map), params: { map: { name: "Domaine d'Ahinvaux (équipe)" } }, as: :json
+    assert_response :forbidden, "renaming stays with the owner"
     delete map_path(@map)
     assert_nil @map.reload.archived_at, "archiving stays with the owner"
   end
