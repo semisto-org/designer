@@ -23,6 +23,7 @@ fr:
       spring: "Source"
       rain_garden: "Jardin de pluie"
       infiltration_test: "Test d'infiltration"
+      storm_observation: "Relevé d'averse"
       path: "Cheminement"
       track: "Chemin carrossable"
       gate: "Portail ou barrière"
@@ -127,9 +128,13 @@ fr:
       method: "Méthode"
       hole_diameter_cm: "Diamètre du trou"
       hole_depth_cm: "Profondeur du trou"
+      rain: "Pluie"
+      rain_mm: "Pluviomètre"
+      muddy: "Eau boueuse"
 
     options:
       method: { hole: "Trou rempli d'eau", ring: "Anneau enfoncé" }
+      rain: { drizzle: "Bruine", steady: "Pluie continue", heavy: "Grosse averse", storm: "Orage" }
       role: { keyline: "Keyline (par le point clé)", parallel: "Parallèle à la keyline" }
       use: { swale: "Baissière", trees: "Ligne d'arbres", subsoiling: "Décompactage" }
       roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }

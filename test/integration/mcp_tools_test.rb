@@ -224,6 +224,20 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal "trace_parallels", AiAction.last.tool
   end
 
+  test "get_storm_observations says what the person saw under the rain and what the relief makes of it" do
+    centre = @map.boundary.centroid
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    flow = @map.features.create!(layer: "water", kind: "storm_observation", notes: "Ruisselle depuis le chemin",
+      properties: { "rain" => "storm", "muddy" => true, "observed_at" => "2026-02-03T14:20:00Z" },
+      geometry: { "type" => "LineString", "coordinates" => [ [ centre.x, centre.y + 0.0001 ], [ centre.x, centre.y - 0.0001 ] ] })
+    data, error = call_tool(@viewer, "get_storm_observations", { map_id: @map.id })
+    refute error
+    observation = data["observations"].sole
+    assert_equal [ flow.id, "flows", "storm", true, "2026-02-03T14:20:00Z" ], observation.values_at("id", "water", "rain", "muddy", "observed_at")
+    assert_includes %w[follows diverges], observation.dig("relief", "verdict")
+    assert_equal "get_storm_observations", AiAction.last.tool
+  end
+
   test "plant tools search the catalogue and give a species with its provenance" do
     walnut = PlantSpecies.create!(latin_name: "Juglans regia", plant_type: "tree", height_max_m: 25)
     walnut.replace_common_names!([ "Noyer commun" ])

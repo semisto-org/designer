@@ -68,6 +68,7 @@ import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import CatchmentSection, { appliesToCatchment } from '@/map/water/CatchmentSection'
 import InfiltrationSection, { appliesToInfiltration } from '@/map/water/InfiltrationSection'
 import KeylineSection, { appliesToKeyline } from '@/map/water/KeylineSection'
+import StormSection, { appliesToStorm } from '@/map/water/StormSection'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 import TagsSection from '@/map/tags/TagsSection'
 import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
@@ -127,6 +128,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
   { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
   { id: 'keyline', applies: appliesToKeyline, component: KeylineSection, order: 23 },
+  { id: 'storm', applies: appliesToStorm, component: StormSection, order: 18 },
 ]
 
 // Top bar actions (right side), e.g. share, export.

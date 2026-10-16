@@ -84,6 +84,14 @@ Depuis la fiche d'une keyline, **Lignes parallèles** trace des lignes au-dessus
 
 Certains terrains n'ont pas de vallon qui casse nettement sa pente. Dans ce cas, une baissière posée avec « Suivre la courbe » fait très bien l'affaire.
 
+## Pendant l'averse : noter où l'eau court
+
+Le relief prévoit où l'eau devrait couler. Ton terrain, lui, cache ce que le relief ne voit pas : un drain, un fossé comblé, une ornière, un sol tassé. Le meilleur moment pour le lire, c'est sous une grosse pluie.
+
+Dans l'app Terranova sur ton téléphone, touche **Relever**, puis **Pendant l'averse**. Choisis ce que tu vois et trace-le du doigt sur la carte : **L'eau coule** (suis-la de l'amont vers l'aval), **L'eau stagne** (entoure la flaque) ou **L'eau sourd** (touche l'endroit où elle sort du sol, ou « Ici, là où je suis »). Dis ensuite comment il pleut, ce que marque ton pluviomètre si tu en as un, si l'eau est boueuse, et ajoute une photo ou une vidéo. Tout marche sans réseau : les relevés partent au retour.
+
+Sur l'ordinateur, la fiche de chaque relevé le compare au relief : l'eau a-t-elle suivi un axe d'écoulement, ou est-elle allée là où le relief ne l'envoie pas ? Une flaque est-elle dans un creux, sur du plat, ou sur une pente que le sol aurait dû boire ? En Belgique, la fiche ajoute la pluie mesurée ce jour-là par la station météo la plus proche, et celle des trois jours d'avant. Plus bas, **Les averses du lieu** rassemblent tes relevés par date et par saison : l'eau ne prend pas le même chemin sur un sol gorgé d'hiver que sur un sol sec d'été.
+
 ## Le bilan de l'eau, mois par mois
 
 Dans le panneau **Climat**, sous le climat observé, **Le bilan de l'eau** compare chaque mois la pluie à l'eau que les plantes rendent à l'air (estimée à partir des températures et du soleil à ta latitude), avec la réserve du sol entre les deux. Tu y vois les mois où le sol plein laisse partir l'eau (l'hiver, en général) et ceux où les plantes en manquent, en millimètres, c'est-à-dire en litres par mètre carré.

@@ -160,4 +160,17 @@ class WeatherStations::MapReportTest < ActiveSupport::TestCase
     assert_equal "not_configured", WeatherStations::MapReport.new(@map.reload).now_json["reason"]
     assert_not_requested :any, /meteo\.be/
   end
+
+  test "the rain of the day of an observation, and of the three days before" do
+    stub_irm_stations
+    stub_irm_daily
+    rain = WeatherStations::MapReport.new(@map, today: TODAY).rain_on(Date.new(2026, 10, 7))
+    assert rain["available"]
+    assert_equal 12.6, rain["dayMm"]
+    assert_equal 0.0, rain["before3Mm"]
+    assert_equal "Humain", rain["station"]["name"]
+
+    assert_equal "not_yet", WeatherStations::MapReport.new(@map, today: TODAY).rain_on(TODAY)["reason"]
+    assert_equal "no_data", WeatherStations::MapReport.new(@map, today: TODAY).rain_on(Date.new(2025, 1, 1))["reason"]
+  end
 end

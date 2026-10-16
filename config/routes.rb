@@ -189,6 +189,7 @@ Rails.application.routes.draw do
         get :catchment
         get :keypoints
         get :parallels
+        get :storm
       end
       resource :terrain, only: %i[show create]
       resource :water_settings, only: :update

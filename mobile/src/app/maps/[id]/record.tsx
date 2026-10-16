@@ -1,4 +1,4 @@
-// « Relever »: a GPS point where one stands (a spring, a tree, a problem…)
+// « Relever »: a downpour's water (storm.tsx), a GPS point where one stands (a spring, a tree, a problem…)
 // or a trace walked along a hedge, a path, a boundary, saved as a line or a
 // closed surface. Keeps recording with the screen off.
 import { router, useLocalSearchParams } from 'expo-router'
@@ -80,7 +80,12 @@ export default function RecordScreen() {
 
   if (mode === 'choose') {
     return (
-      <View style={[styles.screen, styles.content]}>
+      <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]}>
+        <Card style={{ gap: space.sm }}>
+          <Text style={s.cardTitle}>{t('mobile.record.storm')}</Text>
+          <Body muted>{t('mobile.record.storm_intro')}</Body>
+          <Button label={t('mobile.record.storm_button')} onPress={() => router.replace({ pathname: '/maps/[id]/storm', params: { id: String(mapId) } })} />
+        </Card>
         <Card style={{ gap: space.sm }}>
           <Text style={s.cardTitle}>{t('mobile.record.point')}</Text>
           <Body muted>{t('mobile.record.point_intro')}</Body>
@@ -97,7 +102,7 @@ export default function RecordScreen() {
           <Button label={t('mobile.record.bioindicator_button')} onPress={() => router.replace({ pathname: '/maps/[id]/bioindicator', params: { id: String(mapId) } })} />
         </Card>
         {problem && <Notice tone="error">{problem}</Notice>}
-      </View>
+      </ScrollView>
     )
   }
 

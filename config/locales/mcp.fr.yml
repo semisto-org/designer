@@ -114,6 +114,9 @@ fr:
           spacing_m: "Écart entre deux lignes, en mètres (1 à 100)."
           above: "Nombre de lignes au-dessus de la keyline (0 à 10)."
           below: "Nombre de lignes en dessous de la keyline (0 à 10)."
+      get_storm_observations:
+        title: "Lire les relevés d'averse"
+        description: "Ce que la personne a vu sur son terrain pendant les averses (type storm_observation) : où l'eau coulait (water flows, LineString tracée vers l'aval), où elle stagnait (pools, Polygon), où elle sortait du sol (seeps, Point), quand (observed_at), sous quelle pluie (rain : drizzle, steady, heavy, storm ; rain_mm au pluviomètre), si l'eau était boueuse (muddy, signe d'érosion), avec ses photos (photo_ids, à lire avec get_photo). relief compare chaque relevé au relief téléchargé : verdict follows (l'eau suit un axe d'écoulement, share_on_axes), diverges (elle va où le relief ne l'envoie pas : un drain, un fossé, une ornière, un sol tassé que le modèle ignore), uphill (trait tracé de bas en haut), hollow (creux du relief, hollow_m), flat (terrain plat, slope_pct), sloped (la pente devrait l'évacuer, c'est le sol qui la retient : infiltration_mm_h du test voisin s'il existe), seep (drained_m2 : la surface qui draine jusque-là). Là où le relevé contredit le relief, c'est le relevé qui a raison : dimensionne et place les ouvrages d'après lui, et demande à la personne ce qui guide l'eau à cet endroit."
       search_plants:
         title: "Chercher une plante"
         description: "Recherche dans le catalogue de plantes de Semisto, par nom latin ou nom commun français. Chaque donnée du catalogue garde sa source."
@@ -570,6 +573,7 @@ fr:
       get_catchment: "a calculé un bassin versant"
       find_keypoints: "a cherché les points clés des vallons"
       trace_parallels: "a tracé les parallèles d'une keyline"
+      get_storm_observations: "a lu les relevés d'averse"
       search_plants: "a cherché dans le catalogue des plantes"
       get_plant: "a lu une fiche plante"
       get_design_guide: "a lu le guide de méthode de Semisto"
