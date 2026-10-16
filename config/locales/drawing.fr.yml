@@ -283,6 +283,10 @@ fr:
         zero: "vide"
         one: "%{count} élément"
         other: "%{count} éléments"
+      photos_count:
+        zero: "aucune"
+        one: "%{count} photo"
+        other: "%{count} photos"
       sensitive: "Réseaux : jamais exportés ni publiés sans ton accord."
 
     alerts:
