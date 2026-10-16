@@ -34,6 +34,11 @@ production:
   map_document_thumbnail_backfill:
     command: "MapDocumentThumbnailJob.backfill"
     schedule: every 10 minutes
+  # Main photo of each catalogue species, from Wikimedia Commons, a few
+  # species at a time (a species without a free image is retried monthly).
+  plant_photo_backfill:
+    command: "PlantPhotoJob.backfill"
+    schedule: every 15 minutes
   # Files an AI sent through the MCP server (create_upload) and never attached.
   mcp_upload_purge:
     class: McpUploadPurgeJob

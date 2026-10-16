@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -968,6 +968,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_130000) do
     t.index ["variety_id"], name: "index_plant_observations_on_variety_id"
   end
 
+  create_table "plant_photos", force: :cascade do |t|
+    t.bigint "species_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "source", default: "wikimedia_commons", null: false
+    t.string "file_title", null: false
+    t.string "author"
+    t.string "license", null: false
+    t.string "license_url"
+    t.string "page_url", null: false
+    t.integer "width"
+    t.integer "height"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["species_id", "file_title"], name: "index_plant_photos_on_species_id_and_file_title", unique: true
+    t.index ["species_id"], name: "index_plant_photos_on_species_id"
+  end
+
   create_table "plant_species", force: :cascade do |t|
     t.string "latin_name", null: false
     t.bigint "genus_id"
@@ -1006,6 +1023,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_130000) do
     t.integer "terranova_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "photo_looked_up_at"
     t.index "lower((latin_name)::text)", name: "index_plant_species_on_lower_latin_name", unique: true
     t.index ["eco_services"], name: "index_plant_species_on_eco_services", using: :gin
     t.index ["exposures"], name: "index_plant_species_on_exposures", using: :gin
@@ -1438,6 +1456,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_130000) do
   add_foreign_key "plant_observations", "plant_species", column: "species_id", on_delete: :nullify
   add_foreign_key "plant_observations", "plant_varieties", column: "variety_id", on_delete: :nullify
   add_foreign_key "plant_observations", "users", on_delete: :nullify
+  add_foreign_key "plant_photos", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "project_requests", "maps", on_delete: :nullify

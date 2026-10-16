@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
 import { Input, Select } from '@/components/ui/Field'
+import { SpeciesCardPhoto } from '@/components/plants/SpeciesPhoto'
 import { SpeciesTags } from '@/components/plants/SpeciesTags'
 import { formatDecimal, strataLabel, vocab } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
@@ -191,29 +192,32 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 
 function SpeciesCard({ species, country }: { species: SpeciesSummary; country: string | null }) {
   return (
-    <Link href={`/plants/${species.slug}`} className="flex h-full flex-col gap-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-loam-200/70 transition hover:ring-prune-300">
-      <div>
-        <p className="font-medium text-loam-900">{species.commonName ?? species.latinName}</p>
-        <p className="text-sm italic text-loam-500">{species.latinName}</p>
-      </div>
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-loam-600">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: STRATA_COLORS[species.strata] }} />
-          {strataLabel(species.strata)}
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <Snowflake className="h-3 w-3 text-loam-400" />
-          {species.hardinessZone ? t('plants.card.zone', { zone: species.hardinessZone }) : t('plants.card.unknown_zone')}
-        </span>
-        {species.heightMaxM != null && <span>{t('plants.card.height', { value: formatDecimal(species.heightMaxM) })}</span>}
-      </p>
-      <SpeciesTags species={species} country={country} />
-      {species.inGround ? (
-        <p className="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-leaf-700">
-          <Sprout className="h-4 w-4" aria-hidden />
-          {t('plants.card.in_ground', { count: species.inGround })}
+    <Link href={`/plants/${species.slug}`} className="flex h-full flex-col rounded-xl bg-white shadow-sm ring-1 ring-loam-200/70 transition hover:ring-prune-300">
+      <SpeciesCardPhoto photo={species.photo} name={species.commonName ?? species.latinName} strata={species.strata} />
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <div>
+          <p className="font-medium text-loam-900">{species.commonName ?? species.latinName}</p>
+          <p className="text-sm italic text-loam-500">{species.latinName}</p>
+        </div>
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-loam-600">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: STRATA_COLORS[species.strata] }} />
+            {strataLabel(species.strata)}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Snowflake className="h-3 w-3 text-loam-400" />
+            {species.hardinessZone ? t('plants.card.zone', { zone: species.hardinessZone }) : t('plants.card.unknown_zone')}
+          </span>
+          {species.heightMaxM != null && <span>{t('plants.card.height', { value: formatDecimal(species.heightMaxM) })}</span>}
         </p>
-      ) : null}
+        <SpeciesTags species={species} country={country} />
+        {species.inGround ? (
+          <p className="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-leaf-700">
+            <Sprout className="h-4 w-4" aria-hidden />
+            {t('plants.card.in_ground', { count: species.inGround })}
+          </p>
+        ) : null}
+      </div>
     </Link>
   )
 }

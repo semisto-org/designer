@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { MonthsCalendar } from '@/components/plants/MonthsCalendar'
 import { ProvenanceBadge, sourceLabel } from '@/components/plants/ProvenanceBadge'
 import { SpeciesPlantingsMap } from '@/components/plants/SpeciesPlantingsMap'
+import { SpeciesSheetPhoto } from '@/components/plants/SpeciesPhoto'
 import { SpeciesTags } from '@/components/plants/SpeciesTags'
 import { countryNames, formatDecimal, metres, strataLabel, vocab } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
@@ -33,31 +34,34 @@ export default function PlantShow({ species: s, observations, plantings, region 
         <ArrowLeft className="h-4 w-4" />{t('plants.show.back')}
       </Link>
 
-      <header className="mt-4">
-        <h1 className="text-2xl">{s.commonName ?? s.latinName}</h1>
-        <p className="mt-0.5 text-lg italic text-loam-600">{s.latinName}</p>
-        {s.commonNames.length > 1 && (
-          <p className="mt-1 text-sm text-loam-500">
-            {t('plants.show.common_names')} : {s.commonNames.slice(1).join(', ')} <ProvenanceBadge provenance={p('common_names')} />
+      <header className="mt-4 grid items-start gap-6 md:grid-cols-[1fr_minmax(16rem,22rem)]">
+        <div>
+          <h1 className="text-2xl">{s.commonName ?? s.latinName}</h1>
+          <p className="mt-0.5 text-lg italic text-loam-600">{s.latinName}</p>
+          {s.commonNames.length > 1 && (
+            <p className="mt-1 text-sm text-loam-500">
+              {t('plants.show.common_names')} : {s.commonNames.slice(1).join(', ')} <ProvenanceBadge provenance={p('common_names')} />
+            </p>
+          )}
+          {s.genus && <p className="mt-1 text-sm text-loam-500">{t('plants.show.genus', { genus: s.genus })}</p>}
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 ring-1 ring-loam-200">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: STRATA_COLORS[s.strata] }} />
+              {strataLabel(s.strata)}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 ring-1 ring-loam-200">
+              <Snowflake className="h-3.5 w-3.5 text-loam-400" />
+              {s.hardinessZone ? t('plants.card.zone', { zone: s.hardinessZone }) : t('plants.card.unknown_zone')}
+              {s.minTemperatureC != null && <span className="text-loam-500">· {t('plants.units.celsius', { value: formatDecimal(s.minTemperatureC) })}</span>}
+            </span>
+            <SpeciesTags species={s} country={region?.country} />
+          </div>
+          <p className="mt-2 text-xs text-loam-500">
+            {t('plants.show.crown_hint', { value: formatDecimal(s.crownM) })}
+            {s.crownIndicative && <> ({t('plants.show.crown_indicative')})</>}
           </p>
-        )}
-        {s.genus && <p className="mt-1 text-sm text-loam-500">{t('plants.show.genus', { genus: s.genus })}</p>}
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 ring-1 ring-loam-200">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: STRATA_COLORS[s.strata] }} />
-            {strataLabel(s.strata)}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 ring-1 ring-loam-200">
-            <Snowflake className="h-3.5 w-3.5 text-loam-400" />
-            {s.hardinessZone ? t('plants.card.zone', { zone: s.hardinessZone }) : t('plants.card.unknown_zone')}
-            {s.minTemperatureC != null && <span className="text-loam-500">· {t('plants.units.celsius', { value: formatDecimal(s.minTemperatureC) })}</span>}
-          </span>
-          <SpeciesTags species={s} country={region?.country} />
         </div>
-        <p className="mt-2 text-xs text-loam-500">
-          {t('plants.show.crown_hint', { value: formatDecimal(s.crownM) })}
-          {s.crownIndicative && <> ({t('plants.show.crown_indicative')})</>}
-        </p>
+        <SpeciesSheetPhoto photo={s.photo} name={s.commonName ?? s.latinName} strata={s.strata} className="md:mt-2" />
       </header>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">

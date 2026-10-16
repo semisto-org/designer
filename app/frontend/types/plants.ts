@@ -46,6 +46,21 @@ export type SpeciesSummary = {
   harvestMonths: number[]
   /** Plants in the ground over every garden (catalogue search only, anonymous). */
   inGround?: number
+  /** Main photo with its credit (catalogue search and sheet only). */
+  photo?: SpeciesPhoto | null
+}
+
+/** A free photo of a species (PlantPhoto#as_json), always shown with its credit. */
+export type SpeciesPhoto = {
+  url: string
+  cardUrl: string
+  author: string | null
+  license: string
+  licenseUrl: string | null
+  pageUrl: string
+  source: 'wikimedia_commons'
+  width: number | null
+  height: number | null
 }
 
 export type VarietySummary = {
