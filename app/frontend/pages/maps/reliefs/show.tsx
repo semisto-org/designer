@@ -578,7 +578,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
             <h1 className="truncate font-sans text-sm font-semibold text-loam-900">{t('relief.page.title')}</h1>
             <p className="truncate text-xs text-loam-500">{map.name}</p>
           </div>
-          <HelpButton iconOnly slug="lire-le-relief-et-l-eau" className="px-2" />
+          <HelpButton iconOnly slug="la-vue-3d-du-terrain" className="px-2" />
           <button
             type="button"
             onClick={() => setPanelOpen((open) => !open)}

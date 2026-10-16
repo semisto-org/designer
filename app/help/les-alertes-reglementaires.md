@@ -7,6 +7,8 @@ order: 56
 
 Une mare de 120 m², un abri de jardin collé à la limite du voisin : certains aménagements demandent un permis. Le panneau **Alertes** vérifie ton dessin au fil de l'eau et signale ce qui mérite une vérification, **avant** de creuser ou de construire.
 
+[Ouvrir le panneau Alertes](action:panel/drawing-alerts)
+
 ## Comment ça marche
 
 Les alertes viennent de **règles fixes et sourcées**, propres à la région de ta carte. Elles sont vérifiées sur tes éléments, y compris les brouillons proposés par une IA, chaque fois que le dessin change. Personne ne donne son avis ici, ni humain ni IA : chaque alerte nomme sa règle et sa source.

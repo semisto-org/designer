@@ -7,6 +7,8 @@ order: 49
 
 Avant de dessiner, il vaut mieux savoir ce que ton lieu impose déjà. Une zone inondable change le choix des espèces, des argiles qui gonflent éloignent les grands arbres de la maison, une zone naturelle du PLU limite les abris. Le panneau **Règles et risques**, dans l'étape **Observer**, rassemble ces informations au même endroit.
 
+[Ouvrir le panneau Règles et risques](action:panel/site-rules)
+
 Dessine d'abord le contour du terrain : les règles d'urbanisme sont lues sur ce contour (sinon au centre de la carte), les risques au centre du terrain.
 
 ## Les risques

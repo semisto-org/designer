@@ -7,6 +7,8 @@ order: 50
 
 Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes qui s'entraident, à plusieurs hauteurs. Terranova t'aide à passer de l'idée au **plan de plantation**, puis à la **liste de plants** à commander.
 
+[Ouvrir le panneau Palette](action:panel/palette)
+
 ## La palette : les plantes de ton projet
 
 La **palette** réunit les espèces choisies pour ce terrain. Dans le panneau **Palette** :

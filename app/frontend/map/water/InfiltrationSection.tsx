@@ -99,7 +99,7 @@ export default function InfiltrationSection({ feature }: { feature: MapFeature }
           <Gauge className="h-4 w-4" style={{ color: WATER }} />
           {t('infiltration.title')}
         </h3>
-        <HelpButton compact slug="lire-le-relief-et-l-eau" />
+        <HelpButton compact slug="le-bassin-versant-et-l-infiltration" />
       </div>
 
       {!startedAt && (

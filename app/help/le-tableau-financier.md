@@ -7,6 +7,8 @@ order: 58
 
 Ton jardin-forêt doit-il nourrir la famille, compléter un revenu, accueillir des ateliers ? Le **tableau financier** t'aide à poser les chiffres sur 20 ans : combien investir, quand le projet s'équilibre, de quelle trésorerie il a besoin au départ.
 
+[Ouvrir le panneau Finances](action:panel/finances)
+
 ## Ouvrir le tableau
 
 Le panneau **Finances** montre les chiffres clés du plan (**Investissement total**, **Année d'équilibre**, **Besoin de financement**, **Trésorerie après 20 ans**) et le nombre de points à compléter. Touche **Ouvrir le tableau financier** pour la page complète.

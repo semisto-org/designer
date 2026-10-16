@@ -7,6 +7,8 @@ order: 45
 
 Trois outils simples accompagnent le dessin : les **calques**, pour y voir clair quand la carte se remplit, la **mesure**, pour vérifier une distance avant de creuser, et le **croquis**, pour noter une idée en deux traits.
 
+[Ouvrir le panneau Calques](action:panel/drawing-layers)
+
 ## Les calques
 
 Tout ce que tu dessines se range dans une des huit couches : **Existant**, **Eau**, **Accès**, **Structures**, **Plantes**, **Animaux**, **Réseaux** et **Notes**.

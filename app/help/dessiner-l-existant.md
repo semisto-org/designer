@@ -7,6 +7,8 @@ order: 40
 
 Avant d'imaginer, on **relève**. Dessiner l'existant t'oblige à regarder le lieu avec précision, et donne à tout le reste (le design, les analyses, ton IA) une base fiable.
 
+[Ouvrir le panneau Éléments](action:panel/elements)
+
 ## Que dessiner ?
 
 Chaque chose que tu dessines est un **élément**, rangé dans une couche :

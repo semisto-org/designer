@@ -7,6 +7,8 @@ order: 70
 
 Tu conçois des jardins-forêts pour d'autres ? Le **constructeur d'offre** chiffre ton travail à partir de ce que la carte mesure, sans tableur. Il est réservé à qui chiffre : l'équipe à qui la carte appartient, ou son propriétaire avec une formule Atelier ou Bureau d'études. Une personne invitée sur la carte, souvent ton client, ne le voit jamais.
 
+[Ouvrir le panneau Offre](action:panel/offer)
+
 Ouvre-le depuis l'éditeur, groupe « Échanger », panneau **Offre**.
 
 ## Ce que lit la carte

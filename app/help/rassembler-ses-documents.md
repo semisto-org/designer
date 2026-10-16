@@ -7,6 +7,8 @@ order: 50
 
 Avant de dessiner, il est précieux de réunir ce qui existe déjà : le plan de la maison, le relevé du géomètre, une analyse de sol, l'acte de propriété, de vieilles photos du terrain. La page **Documents** de la carte les garde au même endroit, pour toute l'équipe.
 
+[Ouvrir le panneau Documents](action:panel/documents)
+
 ## Ouvrir la bibliothèque
 
 - Dans la carte, choisis **Documents** dans le menu **Carte** de l'en-tête, ou ouvre le panneau **Documents** et touche **Ouvrir la bibliothèque**.

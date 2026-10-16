@@ -248,3 +248,54 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 @keyframes quick-switcher-in { from { opacity: 0; transform: translateY(-8px) scale(0.985); } }
 .quick-switcher[open] { animation: quick-switcher-in 180ms ease-out; }
 @media (prefers-reduced-motion: reduce) { .quick-switcher[open] { animation: none; } }
+
+/* Help guides (HelpArticle / HelpGlossary): a word of the lexicon, underlined
+   in pencil, shows its definition on hover or focus; a panel button reads as
+   a pill. Both are links the server writes into the guide's HTML. */
+.prose a.help-term {
+  position: relative;
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: underline dotted var(--color-leaf-500);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.prose a.help-term::after {
+  content: attr(data-definition);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 20;
+  width: min(18rem, 70vw);
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.75rem;
+  background: #fffdf7;
+  box-shadow: 0 6px 24px rgb(38 30 20 / 0.16), 0 0 0 1px rgb(38 30 20 / 0.08);
+  color: var(--color-loam-800);
+  font: 400 0.875rem/1.45 var(--font-sans);
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+.prose a.help-term:hover::after,
+.prose a.help-term:focus-visible::after { opacity: 1; transform: none; }
+.prose a.help-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.25rem 0;
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  background: var(--color-prune-600);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.prose a.help-action::before { content: "→"; }
+.prose a.help-action:hover { background: var(--color-prune-800); text-decoration: none; }
+@media (prefers-reduced-motion: reduce) { .prose a.help-term::after { transition: none; } }

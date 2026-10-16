@@ -7,6 +7,8 @@ order: 49
 
 Une photo datée et placée vaut bien des notes. Le panneau **Photos** garde la mémoire du terrain : le lieu avant les travaux, la reprise d'une haie, la mare qui se remplit.
 
+[Ouvrir le panneau Photos](action:panel/photos)
+
 ## Ajouter des photos
 
 1. Ouvre le panneau **Photos**.

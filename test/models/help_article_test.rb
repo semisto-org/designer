@@ -4,7 +4,8 @@ class HelpArticleTest < ActiveSupport::TestCase
   EXPECTED_SLUGS = %w[
     creer-sa-premiere-carte le-parcours-en-quatre-etapes remplir-la-fiche-projet
     choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone dessiner-l-existant calques-mesures-et-croquis
-    lire-le-relief-et-l-eau le-climat-d-aujourd-hui-et-de-demain analyser-son-sol photos-et-suivi-dans-le-temps
+    lire-le-relief-et-l-eau la-vue-3d-du-terrain tracer-sur-la-courbe-et-le-keyline le-bassin-versant-et-l-infiltration le-bilan-de-l-eau
+    le-climat-d-aujourd-hui-et-de-demain analyser-son-sol photos-et-suivi-dans-le-temps
     construire-sa-palette-et-ses-patches la-liste-de-plants-et-la-commande planter-puis-observer
     les-alertes-reglementaires le-tableau-financier
     partager-et-commenter publier-sa-carte imprimer-un-plan-a-l-echelle
@@ -26,7 +27,7 @@ class HelpArticleTest < ActiveSupport::TestCase
   test "ships the expected articles and every file has a valid front matter" do
     files = Dir.glob(HelpArticle::DIR.join("*.md")).map { |f| File.basename(f, ".md") }
     assert_equal EXPECTED_SLUGS.sort, files.sort & EXPECTED_SLUGS
-    assert_equal files.sort, HelpArticle.all.map(&:slug).sort, "an article was ignored: check its front matter"
+    assert_equal (files + [ HelpGlossary::SLUG ]).sort, HelpArticle.all.map(&:slug).sort, "an article was ignored: check its front matter"
     HelpArticle.all.each do |article|
       assert article.title.present? && article.summary.present? && article.category.present?, article.slug
     end
@@ -76,6 +77,15 @@ class HelpArticleTest < ActiveSupport::TestCase
     slugs.uniq.each { |slug| assert HelpArticle.find(slug), "HelpAction.tsx names a missing article: #{slug}" }
   end
 
+  test "every panel button in a guide names a panel of the editor" do
+    panels = PANELS.read[/export const PANELS\b.*?= \[(.*?)\n\]/m, 1].scan(/\bid: '([\w-]+)'/).flatten
+    used = HelpArticle.all.flat_map(&:panel_actions)
+    assert_includes used, "relief"
+    assert_empty used - panels, "unknown panels in action:panel/ links"
+    html = HelpArticle.find("le-soleil-et-l-horizon").html
+    assert_includes html, %(<a href="/maps" class="help-action" data-help-panel="sun">Ouvrir le panneau Soleil</a>)
+  end
+
   test "renders Markdown to HTML with heading ids and no English anchors" do
     article = HelpArticle.find("formules-et-forfait")
     assert_includes article.html, "<h2 id=\"la-carte-gratuite\">La carte gratuite</h2>"
@@ -114,13 +124,13 @@ class HelpArticleTest < ActiveSupport::TestCase
   end
 
   test "search forgives one slip in a word of four letters or more" do
-    assert_includes HelpArticle.search("baisière").map(&:slug), "lire-le-relief-et-l-eau"
+    assert_includes HelpArticle.search("baisière").map(&:slug), "tracer-sur-la-courbe-et-le-keyline"
     assert_equal "construire-sa-palette-et-ses-patches", HelpArticle.search("palete").first.slug
     assert_empty HelpArticle.search("xqzw")
   end
 
   test "search finds a word through its synonyms" do
-    assert_includes HelpArticle.search("étang").map(&:slug), "lire-le-relief-et-l-eau"
+    assert_includes HelpArticle.search("étang").map(&:slug), "le-bassin-versant-et-l-infiltration"
     assert_includes HelpArticle.search("chatgpt").map(&:slug), "connecter-son-ia"
     assert_includes HelpArticle.alternatives("mare"), "etang"
   end
@@ -146,7 +156,7 @@ class HelpArticleTest < ActiveSupport::TestCase
       HelpArticle.const_set(:DIR, Pathname(dir))
       HelpArticle.instance_variable_set(:@cache, nil)
       begin
-        assert_equal [ "ok" ], HelpArticle.all.map(&:slug)
+        assert_equal [ "ok" ], HelpArticle.all.map(&:slug) - [ HelpGlossary::SLUG ]
       ensure
         HelpArticle.send(:remove_const, :DIR)
         HelpArticle.const_set(:DIR, stub_const)

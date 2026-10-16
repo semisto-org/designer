@@ -7,6 +7,8 @@ order: 72
 
 Quand tu [connectes ton IA](/help/connecter-son-ia) avec l'accès « Lecture et brouillons », elle peut **proposer** des éléments sur ta carte : une haie, une mare, un patch de plantes. Ces propositions arrivent en **brouillon** : rien ne fait partie de la carte tant qu'un humain ne l'a pas accepté.
 
+[Ouvrir le panneau Journal IA](action:panel/ai-journal)
+
 ## Ce qu'il faut pour recevoir des brouillons
 
 - le **forfait** du propriétaire de la carte (avec la formule gratuite, ton IA lit la carte mais ne pose rien) ;

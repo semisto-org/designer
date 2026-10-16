@@ -7,6 +7,8 @@ order: 48
 
 Un jardin-forêt se construit sur son sol. Le panneau **Sol** t'accompagne de la bêche au rapport du laboratoire, en quatre onglets : **Guide**, **Points**, **Comparer** et **Plantes**.
 
+[Ouvrir le panneau Sol](action:panel/soil)
+
 ## Guide : bien prélever
 
 Le **Guide** est libre d'accès. Il explique quand prélever (à l'automne ou en fin d'hiver, sur un sol ressuyé, au moins trois mois après un chaulage ou un apport), où, comment faire un échantillon mélangé de 10 à 15 prises, quoi demander au laboratoire, et comment faire le **test du bocal** pour estimer la texture sans analyse. **Préparer mes points de prélèvement** t'emmène à l'étape suivante.

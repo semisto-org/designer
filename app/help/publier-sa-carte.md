@@ -7,6 +7,8 @@ order: 62
 
 Tu veux montrer ton design à un client, à la famille ou à ta commune, sans leur créer de compte ? **Publie une vue** de la carte : elle se lit à une adresse que tu partages, sans connexion et sans modification possible.
 
+[Ouvrir le panneau Publier](action:panel/publish)
+
 ## Publier ou inviter ?
 
 - **Publier** donne une vue figée à toute personne qui a l'adresse. Elle ne voit que ce que tu as choisi, et ne peut ni modifier ni commenter.

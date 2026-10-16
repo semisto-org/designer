@@ -22,7 +22,7 @@ La première fois qu'on ouvre le panneau pour un endroit, le calcul prend enviro
 
 ## Les limites
 
-Une maille de 9 km lisse le relief : un fond de vallée gèle souvent plus tard qu'un coteau voisin, et un mur exposé au sud fait gagner quelques degrés. Croise ces chiffres avec ce que tu observes sur place et avec la vue 3D du [relief](/help/lire-le-relief-et-l-eau).
+Une maille de 9 km lisse le relief : un fond de vallée gèle souvent plus tard qu'un coteau voisin, et un mur exposé au sud fait gagner quelques degrés. Croise ces chiffres avec ce que tu observes sur place et avec la [vue 3D du terrain](/help/la-vue-3d-du-terrain).
 
 Les dates de gel sont calculées sur la température de l'air à 2 m (gel dès 0 °C) : au ras du sol, les gelées blanches arrivent un peu plus souvent.
 

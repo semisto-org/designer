@@ -1,0 +1,82 @@
+# The words of the forest garden, explained once: the « Lexique » guide
+# (/help/lexique) lists them, and the first time a guide uses one, it is
+# underlined with its definition on hover or tap. `forms` are the other
+# spellings found in the guides (plural, feminine…). French, like the guides.
+- term: Baissière
+  forms: [baissières]
+  definition: "Fossé peu profond creusé exactement sur la courbe de niveau, avec sa terre en bourrelet en aval. Il arrête l'eau qui ruisselle et la fait boire au sol, au lieu de l'emmener."
+- term: Bassin versant
+  forms: [bassins versants]
+  definition: "Toute la surface dont l'eau de pluie finit au même endroit (une mare, une baissière, un point). C'est elle, plus que la pluie tombée sur l'ouvrage, qui le remplit."
+- term: Brise-vent
+  forms: [brise-vents]
+  definition: "Haie haute et assez dense, plantée en travers du vent dominant. Elle protège, sur une distance d'environ dix fois sa hauteur, les cultures, les bêtes et le sol qui sèche moins vite."
+- term: Courbe de niveau
+  forms: [courbes de niveau]
+  definition: "Ligne qui relie les points d'un terrain à la même altitude. Une ligne tracée dessus ne monte ni ne descend : l'eau ne peut pas la suivre."
+- term: Croupe
+  forms: [croupes]
+  definition: "Bosse allongée qui descend la pente, entre deux vallons. L'eau la quitte vite : c'est souvent la partie la plus sèche du terrain."
+- term: Cuvette
+  forms: [cuvettes]
+  definition: "Creux du terrain sans sortie, où l'eau stagne après la pluie avant de s'infiltrer ou de s'évaporer."
+- term: Demi-lune
+  forms: [demi-lunes]
+  definition: "Petite cuvette en croissant, ouverte vers le haut de la pente, creusée au pied d'un jeune arbre pour lui garder l'eau de ruissellement."
+- term: Dénivelé
+  forms: []
+  definition: "Différence d'altitude entre le point le plus bas et le point le plus haut d'un terrain ou d'un tracé."
+- term: Exposition
+  forms: []
+  definition: "Direction vers laquelle une pente est tournée (nord, sud…). Une pente exposée au sud reçoit plus de soleil et se réchauffe plus tôt au printemps."
+- term: Fascine
+  forms: [fascines]
+  definition: "Fagots de branches tenus par des piquets, posés en travers d'une pente où l'eau ruisselle. Elle retient la terre et laisse filtrer l'eau."
+- term: Infiltration
+  forms: []
+  definition: "Vitesse à laquelle le sol boit l'eau, en millimètres par heure. Elle se mesure sur place avec un seau, un trou et une règle (test d'infiltration)."
+- term: Jardin-forêt
+  forms: [jardins-forêts, forêt comestible, forêts comestibles]
+  definition: "Jardin conçu comme une lisière de forêt : plusieurs étages de plantes surtout vivaces (arbres, arbustes, herbacées, couvre-sols, grimpantes) qui se nourrissent et se protègent les unes les autres, et nourrissent les humains."
+- term: Keyline
+  forms: [keylines]
+  definition: "Courbe de niveau qui passe par le point clé d'un vallon. Les lignes tracées parallèlement à elle mènent doucement l'eau des vallons vers les croupes (méthode de P.A. Yeomans)."
+- term: LiDAR
+  forms: []
+  definition: "Relevé du relief par laser, depuis un avion. Il donne l'altitude du sol tous les mètres, et même la hauteur des arbres et des toits."
+- term: Mulch
+  forms: [paillage, paillis]
+  definition: "Couche de matière organique (broyat, paille, feuilles) posée sur le sol nu. Elle garde l'humidité, freine les herbes indésirables et nourrit la vie du sol en se décomposant."
+- term: Patch
+  forms: [patches]
+  definition: "Groupe de plantes pensé pour pousser ensemble autour d'un arbre ou d'un arbuste, avec ses compagnes à chaque étage. On le dessine une fois et on le répète sur la carte."
+- term: Palette végétale
+  forms: [palette, palettes]
+  definition: "La liste des espèces choisies pour un lieu, d'après son sol, son climat et les envies de la personne. Les plantations de la carte s'y puisent."
+- term: Point clé
+  forms: [points clés]
+  definition: "Endroit d'un vallon où le fond cesse de descendre raide pour descendre doucement. La keyline part de là."
+- term: Rusticité
+  forms: [zone de rusticité]
+  definition: "Le froid qu'une plante supporte en hiver. La zone de rusticité (échelle USDA) d'un lieu vient de la température la plus basse atteinte en moyenne chaque hiver."
+- term: Ruissellement
+  forms: []
+  definition: "Eau de pluie qui coule à la surface du sol au lieu de s'y infiltrer. Elle emporte la terre et manque ensuite aux plantes."
+- term: Seuil filtrant
+  forms: [seuils filtrants]
+  definition: "Muret bas de pierres, de rondins ou de branchages en travers d'une ravine. Il retient une petite mare qui dépose sa terre et laisse passer le reste à travers lui."
+- term: Strate
+  forms: [strates]
+  definition: "Un des étages d'un jardin-forêt : canopée, arbres bas, arbustes, herbacées, couvre-sols, racines, grimpantes. Chaque strate a sa hauteur et sa part de lumière."
+- term: Trop-plein
+  forms: []
+  definition: "Sortie prévue pour l'eau quand un ouvrage (mare, baissière, citerne) est plein. Sans lui, l'eau déborde où elle veut et creuse."
+- term: Vallon
+  forms: [vallons]
+  definition: "Petit creux allongé qui descend la pente, où l'eau des alentours se rassemble quand il pleut."
+- term: Vivace
+  forms: [vivaces]
+  definition: "Plante qui vit plusieurs années : elle repart chaque printemps sans être ressemée. Un jardin-forêt en est surtout fait."
+- term: Bio-indicatrice
+  forms: [bio-indicatrices, bioindicatrice, bioindicatrices]
+  definition: "Plante sauvage dont la présence dit quelque chose du sol : son humidité, son tassement, sa richesse, son acidité."

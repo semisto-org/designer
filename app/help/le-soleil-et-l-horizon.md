@@ -7,6 +7,8 @@ order: 47
 
 Un pommier, une vigne ou un potager n'ont pas besoin du même soleil. Avant de placer quoi que ce soit, regarde d'où vient la lumière sur ton terrain, et quand elle n'y arrive pas. Le panneau **Soleil** (étape « Observer ») te le montre.
 
+[Ouvrir le panneau Soleil](action:panel/sun)
+
 Le soleil dépend de l'endroit : dessine d'abord le contour du terrain. Sans contour, le panneau propose le bouton **Dessiner le contour**.
 
 ## Le ciel de ton terrain

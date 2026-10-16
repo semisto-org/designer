@@ -7,6 +7,8 @@ order: 14
 
 Avant de dessiner, il faut savoir **pour qui** et **pour quoi**. La **fiche projet** rassemble tes objectifs, tes usages, ton budget, ton temps et tes contraintes. Elle t'aide à clarifier tes envies, et elle renseigne tes co-concepteurs, l'équipe de Semisto quand tu lui fais une demande, et ton IA si tu la connectes.
 
+[Ouvrir le panneau Fiche projet](action:panel/project)
+
 ## Où la trouver
 
 - Dans la carte, ouvre le panneau **Fiche projet** : une section s'ouvre à la fois, là où tu t'étais arrêté.

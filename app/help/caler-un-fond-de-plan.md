@@ -7,6 +7,8 @@ order: 36
 
 Tu as dessiné ton jardin-forêt sur papier, ou remis un plan à un client ? Pose-le sur la carte pour replacer chaque élément au bon endroit. Ouvre le panneau **Fonds de plan**.
 
+[Ouvrir le panneau Fonds de plan](action:panel/plan-images)
+
 ## Importer une image
 
 **Importer un plan** accepte les plans en PDF et les images JPEG, PNG ou WebP (30 Mo au plus). Pour un PDF de plusieurs pages, tu choisis la page qui porte le plan : elle est convertie en image dans ton navigateur, le PDF lui-même n'est pas envoyé. Tu peux en importer plusieurs : une esquisse, puis chaque version remise au client. La dernière importée passe au-dessus des autres.

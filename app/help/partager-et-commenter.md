@@ -7,6 +7,8 @@ order: 60
 
 Un projet de jardin-forêt se construit rarement seul. Terranova permet d'inviter, de discuter sur la carte même, et de montrer son travail.
 
+[Ouvrir le panneau Discussions](action:panel/discussions)
+
 ## Trois rôles par carte
 
 - **Propriétaire** (un seul) : la personne dont le forfait porte la carte. Elle gère le partage, peut archiver la carte ou la transférer.

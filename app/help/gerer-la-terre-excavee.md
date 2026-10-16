@@ -7,6 +7,8 @@ order: 53
 
 Chaque trou est aussi un tas. Une mare de 40 m² et 1 m de profondeur sort environ 20 m³ de terre, 25 m³ une fois creusée : trois camions, ou plus de trois cents brouettes. Terranova t'aide à le voir dès le plan, pour que chaque mètre cube ait une place sur ton terrain avant le premier coup de pelle.
 
+[Ouvrir le panneau Terres](action:panel/earthworks)
+
 ## Combien de terre sort
 
 Sélectionne une **mare**, une **baissière**, un **fossé** ou un **jardin de pluie** : la section **Terre excavée** de sa fiche donne le volume dans le sol, le volume une fois creusée (la terre remuée prend environ un quart de place en plus), et l'équivalent en brouettes et en camions.

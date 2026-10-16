@@ -17,6 +17,7 @@ class HelpArticle
     parse: { smart: true },
     render: { unsafe: false }
   }.freeze
+  ACTION_LINK = %r{<a href="action:panel/([a-z0-9-]+)">}
   # Old slug => new slug, for articles that changed name.
   RENAMED = {
     "connecter-claude" => "connecter-son-ia",
@@ -29,9 +30,10 @@ class HelpArticle
     # Every article, ordered by category (lowest article order first) then order.
     def all
       files = Dir.glob(DIR.join("*.md")).sort
-      signature = files.map { |file| [ file, File.mtime(file).to_f ] }
+      signature = files.map { |file| [ file, File.mtime(file).to_f ] } << HelpGlossary.mtime
       return @cache[:articles] if @cache && @cache[:signature] == signature
       articles = files.filter_map { |file| parse(file) }
+      articles << HelpGlossary.article if HelpGlossary.article
       first_order = articles.group_by(&:category).transform_values { |list| list.map(&:order).min }
       articles.sort_by! { |a| [ first_order[a.category], a.category, a.order, a.title ] }
       @cache = { signature:, articles: articles }
@@ -60,7 +62,12 @@ class HelpArticle
       words = tokenize(query)
       return [] if words.empty?
       all.filter_map { |article| (score = article.score(words)) && [ score, article ] }
-        .sort_by { |score, article| [ -score, article.order ] }.map(&:last)
+        .sort_by { |score, article| [ lexicon_last(article, words), -score, article.order ] }.map(&:last)
+    end
+
+    # The lexicon holds every word: it comes after the guides, unless asked for.
+    def lexicon_last(article, words)
+      article.slug == HelpGlossary::SLUG && !normalize(article.title).match?(/\b(#{words.map { |w| Regexp.escape(w) }.join('|')})/) ? 1 : 0
     end
 
     # The words that stand for `word`, itself first: [« mare », « etang »…].
@@ -140,13 +147,29 @@ class HelpArticle
       end
   end
 
-  def initialize(slug:, title:, summary:, category:, order:, markdown:)
-    @slug, @title, @summary, @category, @order, @markdown = slug, title, summary, category, order, markdown
+  def initialize(slug:, title:, summary:, category:, order:, markdown:, html: nil)
+    @slug, @title, @summary, @category, @order, @markdown, @html = slug, title, summary, category, order, markdown, html
   end
 
   def html
-    @html ||= Commonmarker.to_html(markdown, options: MARKDOWN_OPTIONS, plugins: { syntax_highlighter: nil })
+    @html ||= HelpGlossary.annotate(action_links(rendered))
+  end
+
+  # The body as Markdown renders it, before the glossary and action links.
+  def rendered
+    @rendered ||= Commonmarker.to_html(markdown, options: MARKDOWN_OPTIONS, plugins: { syntax_highlighter: nil })
       .gsub(HEADING_ANCHOR, "")   # keep the heading ids, drop the English "Link to heading" anchors
+  end
+
+  # The editor panels a guide's buttons open: [Ouvrir le panneau Relief](action:panel/relief).
+  def panel_actions
+    rendered.scan(ACTION_LINK).flatten.uniq
+  end
+
+  # A panel link becomes a button: in the editor it opens the panel, elsewhere
+  # it leads to the last map opened (components/help/actions.ts).
+  def action_links(html)
+    html.gsub(ACTION_LINK) { %(<a href="/maps" class="help-action" data-help-panel="#{$1}">) }
   end
 
   # Level-2 headings, for the "on this page" list: [{ id:, text: }].
@@ -156,7 +179,7 @@ class HelpArticle
 
   # Plain text of the body (no Markdown), for search and excerpts.
   def plain_text
-    @plain_text ||= ActionController::Base.helpers.strip_tags(html).squish
+    @plain_text ||= ActionController::Base.helpers.strip_tags(rendered).squish
   end
 
   # nil when a query word is missing, otherwise a relevance score. A word
