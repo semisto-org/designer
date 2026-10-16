@@ -1,7 +1,6 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 @import "tailwindcss";
 @import "@fontsource-variable/inter/wght.css";
-@import "@fontsource-variable/inter/wght-italic.css";
 @import "@fontsource-variable/eb-garamond/wght.css";
 @import "@fontsource-variable/caveat/wght.css";
 @plugin "@tailwindcss/forms";
