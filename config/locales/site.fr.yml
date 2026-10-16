@@ -470,7 +470,7 @@ fr:
           - title: "Qui est responsable de vos données ?"
             paragraphs:
               - "Le responsable du traitement est Marco & Vespucci SRL, qui édite le service Semisto Terranova sous la marque Semisto."
-              - "Adresse : [adresse à compléter]. Numéro d'entreprise (BCE) : [numéro BCE à compléter]."
+              - "Adresse : rue Ernest Feron 64, 5310 Eghezée, Belgique. Numéro d'entreprise (BCE) : [numéro BCE à compléter]."
               - "Pour toute question sur vos données : %{email}."
           - title: "Quelles données collectons-nous ?"
             items:
@@ -496,7 +496,7 @@ fr:
             paragraphs:
               - "Nous faisons appel à des prestataires, qui ne traitent vos données que pour notre compte :"
             items:
-              - "Hébergement : un serveur privé virtuel (VPS) [hébergeur et pays à confirmer]."
+              - "Infomaniak (Suisse) : hébergement du service, de ses bases de données, de vos photos et documents, et de leurs copies de sauvegarde."
               - "Stripe : paiement, facturation et calcul de la TVA."
               - "Google : uniquement si vous choisissez de vous connecter avec votre compte Google."
               - "Amazon Simple Email Service (Amazon Web Services, centres de données dans l'Union européenne) : envoi des e-mails (liens de connexion, factures, rappels)."
@@ -507,12 +507,14 @@ fr:
             outro: "Nous ne vendons pas vos données et ne les utilisons pas pour de la publicité."
           - title: "Combien de temps les conservons-nous ?"
             items:
-              - "Votre compte et vos cartes : tant que votre compte existe."
-              - "Les pièces comptables (factures, paiements) : [7 ans, à valider], comme la loi l'exige."
-              - "Les journaux techniques : [durée à définir]."
+              - "Votre compte, vos cartes et vos fichiers : tant que votre compte existe. Quand vous le supprimez, ils sont effacés du service tout de suite, et de nos copies de sauvegarde au plus tard 90 jours plus tard."
+              - "Les pièces comptables (factures, paiements) : 10 ans à partir du 1er janvier qui suit l'exercice, comme le droit belge l'exige, même après la suppression du compte."
+              - "Les journaux techniques (adresses IP, connexions) : 12 mois au plus."
+              - "Les liens et codes de connexion : 20 minutes, et ils ne servent qu'une fois."
           - title: "Vos données quittent-elles l'Union européenne ?"
             paragraphs:
-              - "Certains prestataires (Stripe, Google) peuvent traiter des données hors de l'Union européenne, avec les garanties prévues par le RGPD (clauses contractuelles types, cadre de protection des données UE-États-Unis). [À valider.]"
+              - "Le service et vos fichiers sont hébergés en Suisse, chez Infomaniak. La Commission européenne reconnaît à la Suisse un niveau de protection des données équivalent à celui de l'Union (décision d'adéquation)."
+              - "Certains prestataires (Stripe, Google) peuvent traiter des données hors de l'Union européenne, avec les garanties prévues par le RGPD : clauses contractuelles types et cadre de protection des données UE-États-Unis."
           - title: "Vos droits"
             paragraphs:
               - "Vous pouvez à tout moment demander l'accès à vos données, leur rectification, leur effacement, la limitation de leur traitement, leur portabilité, ou vous opposer à un traitement fondé sur notre intérêt légitime."
@@ -530,7 +532,7 @@ fr:
         sections:
           - title: "Qui sommes-nous ?"
             paragraphs:
-              - "Semisto Terranova est un service en ligne de cartographie et de conception de jardins-forêts, édité par Marco & Vespucci SRL sous la marque Semisto. Adresse : [adresse à compléter]. Numéro d'entreprise (BCE) : [numéro BCE à compléter]. Contact : %{email}."
+              - "Semisto Terranova est un service en ligne de cartographie et de conception de jardins-forêts, édité par Marco & Vespucci SRL sous la marque Semisto. Adresse : rue Ernest Feron 64, 5310 Eghezée, Belgique. Numéro d'entreprise (BCE) : [numéro BCE à compléter]. Contact : %{email}."
           - title: "Votre compte"
             paragraphs:
               - "Vous vous connectez avec votre adresse e-mail ou avec Google. Vous êtes responsable de l'accès à votre adresse e-mail et des actions faites avec votre compte. Les informations que vous donnez doivent être exactes."
@@ -572,4 +574,4 @@ fr:
               - "Vous pouvez demander la suppression de votre compte à tout moment. Nous pouvons suspendre un compte en cas d'abus ou de non-respect de ces conditions, en vous prévenant autant que possible."
           - title: "Droit applicable"
             paragraphs:
-              - "Ces conditions sont régies par le droit belge. En cas de litige, les tribunaux de [arrondissement à préciser] sont compétents, sans préjudice des règles impératives de protection des consommateurs. [Médiation de la consommation à préciser.]"
+              - "Ces conditions sont régies par le droit belge. En cas de litige, les tribunaux de l'arrondissement judiciaire de Namur sont compétents, sans préjudice des règles impératives de protection des consommateurs. Vous pouvez aussi vous adresser gratuitement au Service de médiation pour le consommateur (mediationconsommateur.be)."
