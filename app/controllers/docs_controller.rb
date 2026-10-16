@@ -13,6 +13,8 @@ class DocsController < ApplicationController
         requestsPerMinute: 120,
         maxFeaturesPerProposal: Mcp::DraftProposal::MAX_FEATURES,
         maxPendingDrafts: Mcp::DraftProposal::MAX_PENDING,
+        maxUpdatesPerProposal: Mcp::UpdateProposal::MAX_UPDATES,
+        maxElementsPerUpdateFilter: Mcp::UpdateProposal::MAX_FILTERED,
         bufferM: Mcp::DraftProposal::BUFFER_M,
         accessTokenMinutes: OauthAccessToken::ACCESS_TTL.in_minutes.to_i,
         refreshTokenDays: OauthAccessToken::REFRESH_TTL.in_days.to_i

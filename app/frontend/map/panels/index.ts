@@ -21,7 +21,9 @@ import RegionLayersOverlay from '@/map/data/RegionLayersOverlay'
 import IdentifyOverlay from '@/map/data/IdentifyOverlay'
 import LegendOverlay from '@/map/data/LegendOverlay'
 import AiJournalPanel from '@/map/panels/AiJournalPanel'
-import DraftsBar from '@/map/drafts/DraftsBar'
+import AiProposalsOverlay from '@/map/drafts/AiProposalsOverlay'
+import PendingUpdatesLayer from '@/map/feature_updates/PendingUpdatesLayer'
+import UpdateReviewSection from '@/map/feature_updates/UpdateReviewSection'
 import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
@@ -109,6 +111,7 @@ export const PANELS: EditorPanel[] = [
 export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'discussion', applies: () => true, component: DiscussionSection, order: 90 },
   { id: 'draft-review', applies: (f) => f.properties.status === 'draft', component: DraftReviewSection, order: 5 },
+  { id: 'update-review', applies: (f) => f.properties.status === 'active', component: UpdateReviewSection, order: 6 },
   { id: 'plant', applies: isPlant, component: PlantSection, order: 20 },
   { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
@@ -141,7 +144,8 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'layer-legend', component: LegendOverlay, order: 5 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
-  { id: 'drafts-bar', component: DraftsBar, order: 40 },
+  { id: 'ai-proposals', component: AiProposalsOverlay, order: 40 },
+  { id: 'pending-updates', component: PendingUpdatesLayer, order: 41 },
   { id: 'plants', component: PlantsOverlay, order: 20 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },

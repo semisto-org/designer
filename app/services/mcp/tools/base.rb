@@ -138,7 +138,10 @@ module Mcp
           raise ToolError, t("errors.plan_drafts") unless Entitlements.for_map(map).ai_drafts?
         end
 
-        def feature_json(feature, geometry: true)
+        # pending_update: the change an AI proposed and nobody reviewed yet
+        # (a FeatureUpdateDraft), false when the caller knows there is none.
+        def feature_json(feature, geometry: true, pending_update: nil)
+          pending_update = feature.update_drafts.pending.first if pending_update.nil?
           {
             type: "Feature",
             id: feature.id,
@@ -147,8 +150,16 @@ module Mcp
               "layer" => feature.layer, "kind" => feature.kind, "name" => feature.name, "notes" => feature.notes,
               "status" => feature.status, "source" => feature.source, "rationale" => feature.rationale,
               "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601
-            ).compact
-          }
+            ).compact,
+            pending_update: pending_update ? pending_update_json(pending_update, feature) : nil
+          }.compact
+        end
+
+        def pending_update_json(draft, feature)
+          {
+            id: draft.id, batch: draft.batch, summary: draft.summary, rationale: draft.rationale,
+            proposed_at: draft.created_at.iso8601, changes: draft.diff(feature)
+          }.compact
         end
 
         # What the client reads: the data as JSON text. A tool that returns an

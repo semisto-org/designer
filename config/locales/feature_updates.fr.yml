@@ -1,0 +1,69 @@
+# Revue, dans l'éditeur, des modifications qu'une IA propose à des éléments
+# déjà sur la carte (outil MCP propose_feature_updates).
+fr:
+  feature_updates:
+    default_author: "L'IA"
+    region: "Modifications proposées par une IA"
+    title:
+      one: "%{author} propose de modifier 1 élément"
+      other: "%{author} propose de modifier %{count} éléments"
+    cta: "Rien ne change avant ton accord : revois-les, champ par champ."
+    viewer_hint: "Un éditeur de la carte doit les revoir avant qu'elles ne s'appliquent."
+    batch_count:
+      one: "1 élément"
+      other: "%{count} éléments"
+    no_summary: "Proposition sans résumé"
+    show_items: "Voir les éléments"
+    hide_items: "Masquer les éléments"
+    focus: "Voir sur la carte"
+    accept: "Accepter"
+    reject: "Refuser"
+    adjust: "Ajuster"
+    accept_adjusted: "Accepter avec ces valeurs"
+    cancel_adjust: "Annuler"
+    accept_all:
+      one: "Accepter"
+      other: "Tout accepter (%{count})"
+    reject_all:
+      one: "Refuser"
+      other: "Tout refuser"
+    confirm_reject_all:
+      one: "Refuser cette modification ?"
+      other: "Refuser les %{count} modifications de cette proposition ?"
+    accepted: "Modification acceptée : l'élément est à jour."
+    rejected: "Modification refusée : l'élément reste tel quel."
+    accepted_all:
+      one: "1 élément modifié."
+      other: "%{count} éléments modifiés."
+    rejected_all:
+      one: "1 modification refusée."
+      other: "%{count} modifications refusées."
+    failed:
+      one: "1 modification n'a pas pu s'appliquer : %{message}"
+      other: "%{count} modifications n'ont pas pu s'appliquer, par exemple : %{message}"
+    inspector_title: "Modification proposée par %{author}"
+    rationale: "Pourquoi"
+    before: "Avant"
+    after: "Après"
+    empty_value: "(vide)"
+    removed_value: "(retiré)"
+    new_position: "Nouvelle position sur la carte"
+    adjust_hint: "Change les valeurs proposées si besoin, puis accepte."
+    fields:
+      name: "Nom"
+      notes: "Notes"
+      tags: "Étiquettes"
+      geometry: "Position"
+      planted_on: "Date de plantation"
+      species_id: "Espèce"
+      variety_id: "Variété"
+      count: "Nombre de plants"
+    history:
+      title: "Modifications proposées par une IA"
+      accepted: "Acceptée par %{name} le %{date}"
+      accepted_adjusted: "Ajustée puis acceptée par %{name} le %{date}"
+      rejected: "Refusée par %{name} le %{date}"
+      proposed_by: "Proposée par %{author}"
+      someone: "un éditeur"
+    errors:
+      invalid: "Cette modification rendrait l'élément invalide : %{errors}."

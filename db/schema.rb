@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_15_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -248,6 +248,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_210000) do
     t.datetime "updated_at", null: false
     t.index ["form_inbox_id", "external_id"], name: "index_external_forms_on_form_inbox_id_and_external_id", unique: true
     t.index ["form_inbox_id"], name: "index_external_forms_on_form_inbox_id"
+  end
+
+  create_table "feature_update_drafts", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "map_feature_id", null: false
+    t.string "batch", null: false
+    t.text "summary"
+    t.jsonb "proposed_changes", default: {}, null: false
+    t.text "rationale", null: false
+    t.string "status", default: "pending", null: false
+    t.bigint "created_by_id"
+    t.string "client_name"
+    t.bigint "reviewed_by_id"
+    t.datetime "reviewed_at"
+    t.jsonb "applied_changes"
+    t.jsonb "previous_values"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_feature_update_drafts_on_created_by_id"
+    t.index ["map_feature_id"], name: "index_feature_update_drafts_on_map_feature_id"
+    t.index ["map_feature_id"], name: "index_feature_update_drafts_one_pending", unique: true, where: "((status)::text = 'pending'::text)"
+    t.index ["map_id", "status"], name: "index_feature_update_drafts_on_map_id_and_status"
+    t.index ["reviewed_by_id"], name: "index_feature_update_drafts_on_reviewed_by_id"
   end
 
   create_table "financial_plans", force: :cascade do |t|
@@ -1323,6 +1346,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_210000) do
   add_foreign_key "comments", "maps"
   add_foreign_key "comments", "users", column: "author_id"
   add_foreign_key "external_forms", "form_inboxes"
+  add_foreign_key "feature_update_drafts", "map_features", on_delete: :cascade
+  add_foreign_key "feature_update_drafts", "maps", on_delete: :cascade
+  add_foreign_key "feature_update_drafts", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "feature_update_drafts", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "financial_plans", "maps"
   add_foreign_key "financial_plans", "users", column: "updated_by_id"
   add_foreign_key "form_inboxes", "organizations"

@@ -37,6 +37,17 @@ Ouvre la fiche d'un brouillon, depuis la barre ou en le touchant sur la carte. T
 
 Un brouillon accepté devient un élément comme les autres, à toi. Un brouillon refusé disparaît de la carte. Ton IA peut retirer ses propres brouillons pas encore revus, jamais un élément que tu as accepté.
 
+## Quand ton IA propose de modifier des éléments existants
+
+Ton IA peut aussi proposer de **changer un élément déjà sur la carte** : la date de plantation de tes herbacées, l'espèce d'un arbre, un nom, des étiquettes, des notes ou une position. Là non plus, rien ne change sans toi.
+
+- Une seconde carte apparaît sous celle des brouillons, par exemple « Claude propose de modifier 96 éléments », avec le résumé de chaque proposition, ce qui change (« Date de plantation → 23 mai 2026 ») et le pourquoi.
+- **Tout accepter** applique d'un coup toute la proposition, **Tout refuser** la refuse entière (avec confirmation). **Voir les éléments** les liste un par un, pour en accepter ou en refuser certains seulement.
+- Sur la carte, un **anneau orange en pointillés** entoure chaque élément qui attend ta décision.
+- Dans la fiche de l'élément, la modification se lit champ par champ (avant → après). **Ajuster** te laisse changer les valeurs proposées avant d'accepter.
+
+Les modifications acceptées ou refusées restent dans la fiche de l'élément, sous **Modifications proposées par une IA** : qui l'a proposée, qui l'a acceptée et quand, et ce qu'elle a changé.
+
 ## Où apparaissent les brouillons
 
 - Dans le panneau **Éléments**, avec l'étiquette **Brouillon**.

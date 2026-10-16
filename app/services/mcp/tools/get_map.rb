@@ -53,6 +53,8 @@ module Mcp
             max_features_per_proposal: DraftProposal::MAX_FEATURES,
             max_pending_drafts: DraftProposal::MAX_PENDING,
             proposal_buffer_m: DraftProposal::BUFFER_M,
+            max_updates_per_proposal: UpdateProposal::MAX_UPDATES,
+            max_elements_per_update_filter: UpdateProposal::MAX_FILTERED,
             max_plants_per_palette_proposal: PaletteProposal::MAX_PLANTS,
             max_answers_per_project_proposal: ProjectSheetProposal::MAX_ANSWERS
           }
@@ -125,6 +127,8 @@ module Mcp
             by_layer:,
             total_active: counts.sum { |(_, status), n| status == "active" ? n : 0 },
             drafts_pending: counts.sum { |(_, status), n| status == "draft" ? n : 0 },
+            # Changes an AI proposed to existing elements (never networks), waiting for review.
+            updates_pending: map.feature_update_drafts.pending.count,
             hidden_layers: [ "networks" ],
             hidden_note: t(editor? ? "notes.networks_on_request" : "notes.networks_hidden")
           }
@@ -145,7 +149,9 @@ module Mcp
           t("notes.drafts_trial", date:)
         end
 
-        def summarize_result(data) = { elements: data[:elements][:total_active], drafts: data[:elements][:drafts_pending] }
+        def summarize_result(data)
+          { elements: data[:elements][:total_active], drafts: data[:elements][:drafts_pending], updates: data[:elements][:updates_pending] }
+        end
     end
   end
 end
