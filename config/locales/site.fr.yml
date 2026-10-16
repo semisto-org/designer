@@ -469,8 +469,8 @@ fr:
         sections:
           - title: "Qui est responsable de vos données ?"
             paragraphs:
-              - "Le responsable du traitement est Marco & Vespucci SRL, qui édite le service Semisto Terranova sous la marque Semisto."
-              - "Adresse : rue Ernest Feron 64, 5310 Eghezée, Belgique. Numéro d'entreprise (BCE) : 0523.920.556."
+              - "Le responsable du traitement est Semisto ASBL, l'association qui édite le service Semisto Terranova."
+              - "Siège : Fonds d'Ahinvaux 1, 5530 Yvoir, Belgique. Numéro d'entreprise (BCE) : 0790.631.657."
               - "Pour toute question sur vos données : %{email}."
           - title: "Quelles données collectons-nous ?"
             items:
@@ -532,7 +532,7 @@ fr:
         sections:
           - title: "Qui sommes-nous ?"
             paragraphs:
-              - "Semisto Terranova est un service en ligne de cartographie et de conception de jardins-forêts, édité par Marco & Vespucci SRL sous la marque Semisto. Adresse : rue Ernest Feron 64, 5310 Eghezée, Belgique. Numéro d'entreprise (BCE) : 0523.920.556. Contact : %{email}."
+              - "Semisto Terranova est un service en ligne de cartographie et de conception de jardins-forêts, édité par Semisto ASBL. Siège : Fonds d'Ahinvaux 1, 5530 Yvoir, Belgique. Numéro d'entreprise (BCE) : 0790.631.657. Contact : %{email}."
           - title: "Votre compte"
             paragraphs:
               - "Vous vous connectez avec votre adresse e-mail ou avec Google. Vous êtes responsable de l'accès à votre adresse e-mail et des actions faites avec votre compte. Les informations que vous donnez doivent être exactes."

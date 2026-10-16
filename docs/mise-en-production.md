@@ -34,7 +34,7 @@ Référence des réglages de Semisto Terranova en production (https://terranova.
 
 Dans la console Google Cloud : origine autorisée `https://terranova.semisto.org`, URI de redirection `https://terranova.semisto.org/auth/google_oauth2/callback`, portées `email` et `profile`. Sans ces variables, seul le lien magique par e-mail est proposé.
 
-### Paiements (Stripe, compte Marco & Vespucci)
+### Paiements (Stripe, compte de Semisto ASBL)
 
 | Variable | Rôle |
 |---|---|

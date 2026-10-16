@@ -1,5 +1,5 @@
-# Billing entry points. Stripe is the payment processor (account of Marco &
-# Vespucci); while STRIPE_SECRET_KEY is absent (local dev, closed beta)
+# Billing entry points. Stripe is the payment processor (Semisto ASBL's
+# account); while STRIPE_SECRET_KEY is absent (local dev, closed beta)
 # billing is disabled and Entitlements leaves everything unlocked.
 module Billing
   PLAN_PRICE_ENV = {
