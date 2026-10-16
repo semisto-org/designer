@@ -89,3 +89,46 @@ export type AdminMapStatsRow = {
   // Bytes on disk, variants included; documents include the soil lab reports.
   storageBytes: { photos: number; documents: number }
 }
+
+// Admin::Tech: the « Tech » screen.
+export type AdminTech = {
+  version: {
+    commit: string | null
+    commitUrl: string | null
+    branch: string | null
+    bootedAt: string | null
+    environment: string
+    ruby: string
+    rails: string
+  }
+  storage: {
+    defaultService: string
+    services: { name: string; files: number; bytes: number }[]
+    backup: {
+      configured: boolean
+      lastRun: {
+        at: string
+        copied: number
+        alreadyThere: number
+        missing: number
+        failed: number
+        erased: number
+        awaitingErasure: number
+      } | null
+      awaitingErasure: number
+    }
+  }
+  jobs:
+    | { available: false }
+    | {
+        available: true
+        ready: number
+        scheduled: number
+        running: number
+        failedCount: number
+        failed: { id: number; job: string | null; failedAt: string; error: string }[]
+        processes: { kind: string; lastHeartbeatAt: string | null }[]
+        recurring: { key: string; schedule: string; lastRunAt: string | null }[]
+      }
+  services: { key: string; configured: boolean }[]
+}

@@ -496,13 +496,15 @@ Rails.application.routes.draw do
 
   # --- super-admin ---
   # The staff dashboard (figures, latest accounts and maps, admin log), the
-  # accounts list and « Se connecter en tant que », ended from the banner.
+  # accounts list and « Se connecter en tant que », ended from the banner, and
+  # « Tech » (version, files and backup, jobs, services).
   namespace :admin do
     get "/", to: "dashboard#show", as: :dashboard
     resources :users, only: %i[index update] do
       resource :impersonation, only: :create
     end
     resources :maps, only: :index
+    get "tech", to: "tech#show", as: :tech
   end
   resource :impersonation, only: :destroy
   # --- end super-admin ---

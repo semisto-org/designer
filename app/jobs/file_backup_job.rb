@@ -20,6 +20,7 @@ class FileBackupJob < ApplicationJob
     check_in_id = check_in(:in_progress)
     result = FileStorage::Backup.new.run
     Rails.logger.info("[storage:backup] #{result}")
+    FileStorage::Backup.record(result)
     raise "File backup: #{result}" if result.failed.any?
     check_in(:ok, check_in_id:)
   rescue Exception
