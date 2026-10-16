@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Snowflake, Sprout } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ClipboardCheck, Search, SlidersHorizontal, Snowflake, Sprout } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
@@ -17,6 +17,8 @@ type Props = {
   vocabulary: { strata: Strata[]; plantType: string[]; exposures: string[]; soilMoisture: string[] }
   region: CatalogueRegion | null
   catalogueSize: number
+  /** Species waiting for review, for catalogue reviewers only (else null). */
+  toReview?: number | null
 }
 
 type ListFacet = 'strata' | 'plant_type' | 'exposures' | 'soil_moisture'
@@ -34,7 +36,7 @@ function toParams(filters: PlantSearchFilters, page = 1): Record<string, string 
 }
 
 /** The plant catalogue: accent-insensitive search, design filters, cards. */
-export default function PlantsIndex({ search, vocabulary, region, catalogueSize }: Props) {
+export default function PlantsIndex({ search, vocabulary, region, catalogueSize, toReview }: Props) {
   const [filters, setFilters] = useState<PlantSearchFilters>(search.filters)
   const [query, setQuery] = useState(search.filters.q ?? '')
   const [showFilters, setShowFilters] = useState(false)
@@ -70,6 +72,12 @@ export default function PlantsIndex({ search, vocabulary, region, catalogueSize 
           <h1 className="text-2xl">{t('plants.index.title')}</h1>
           <p className="mt-1 text-sm text-loam-500">{t('plants.index.intro')}</p>
         </div>
+        {toReview != null && toReview > 0 && (
+          <Link href="/plants/review" className="inline-flex items-center gap-1.5 rounded-full bg-humus-100 px-3 py-1.5 text-sm font-medium text-humus-800 hover:bg-humus-200">
+            <ClipboardCheck className="h-4 w-4" aria-hidden />
+            {t('plants.review.link', { count: toReview })}
+          </Link>
+        )}
       </div>
 
       <form className="mt-6 flex gap-2" onSubmit={(e) => { e.preventDefault(); visit({ ...filters, q: query.trim() || null }) }} role="search">

@@ -21,6 +21,14 @@ Pour chaque espèce de la palette, **Modifier** permet de préciser sa strate su
 
 Tu peux aussi [connecter ton IA](/help/connecter-son-ia) : elle cherche dans le même catalogue et te suggère des espèces selon tes objectifs.
 
+## Ta plante n'est pas dans le catalogue
+
+Sous les résultats de la recherche, **« Ta plante n'est pas dans le catalogue ? Ajoute-la »** ouvre un petit formulaire : son nom latin (genre et espèce, par exemple *Salvia nemorosa*), son nom en français, sa strate et sa taille adulte si tu les connais.
+
+Pendant que tu tapes le nom latin, Terranova le vérifie auprès de GBIF, la référence botanique mondiale : il te signale une faute de frappe, un nom ancien (*Stipa tenuissima* s'appelle aujourd'hui *Nassella tenuissima*) ou une espèce déjà présente dans le catalogue sous un autre nom. Un clic suffit pour prendre le bon nom.
+
+La plante rejoint ta palette tout de suite. L'équipe de Semisto relit ensuite chaque nouvelle espèce avant de l'ouvrir aux autres jardins : d'ici là, toi et les personnes de cette carte êtes seuls à la voir, avec la mention **à relire**. Les valeurs que tu as saisies restent marquées **à vérifier** sur sa fiche.
+
 ## D'où viennent les informations
 
 Chaque fiche d'espèce dit **d'où vient chaque valeur** : sa source, et un statut **vérifiée**, **à vérifier** ou **non renseignée**. « À vérifier » veut dire que la valeur a été reprise d'un catalogue sans être contrôlée par une personne : jettes-y un œil avant de planter. Quand une valeur vient de PFAF, la fiche cite PFAF comme source.

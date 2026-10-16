@@ -62,4 +62,23 @@ class Catalog::SeedLoaderTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test "loads the plant lists of Semisto projects under their own source" do
+    path = Rails.root.join("db/seeds/plants/projects/walhain.yml").to_s
+    assert_includes Catalog::SeedLoader.project_paths, path
+    assert_not_includes Catalog::SeedLoader.default_paths, path
+    source = Catalog::SeedLoader.project_source(path)
+    assert_equal "semisto_walhain", source
+    assert PlantSource.known?(source)
+
+    counts = Catalog::SeedLoader.new([ path ], source:).call
+    assert_equal 35, counts[:created] + counts[:updated]
+    stipa = PlantSpecies.find_by_latin_name("Nassella tenuissima")
+    assert_equal "reviewed", stipa.review_status
+    assert_equal [ "Stipa tenuissima" ], stipa.common_names.select { _1.language == "la" }.map(&:name)
+    assert_equal %w[semisto_walhain to_verify], stipa.provenance_for(:height_max_m).then { [ _1.source, _1.status ] }
+    assert_equal(-15.0, stipa.min_temperature_c.to_f)
+    assert_equal [ "Henrianne de Gerlache", "Mel Bee" ], PlantSpecies.find_by_latin_name("Rosa × hybrida").varieties.map(&:name)
+    assert_equal 0, Catalog::SeedLoader.new([ path ], source:).call[:created]
+  end
 end

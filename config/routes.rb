@@ -227,10 +227,20 @@ Rails.application.routes.draw do
   get "maps/:map_id/forms", to: "maps/forms#index", as: :map_forms
   # --- end billing-site ---
   # --- plants ---
+  # Before /plants/:id. The species people propose, for catalogue reviewers.
+  resources :catalogue_reviews, path: "plants/review", only: %i[index update] do
+    member do
+      post :merge
+      post :reject
+    end
+  end
   resources :plants, only: %i[index show]
   resources :maps, only: [] do
     scope module: :maps do
       resource :planting, only: :show
+      resources :plant_proposals, only: :create do
+        collection { get :check }
+      end
       resources :palette_items, only: %i[index create update destroy] do
         collection { get :suggestions }
         member do

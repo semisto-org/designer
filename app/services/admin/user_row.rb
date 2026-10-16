@@ -15,7 +15,7 @@ module Admin
     def as_json(*)
       {
         id: @user.id, name: @user.display_name, email: @user.email_address, avatarUrl: @user.avatar_url,
-        admin: @user.admin?, google: @user.google_uid.present?,
+        admin: @user.admin?, catalogueReviewer: @user.catalogue_reviewer?, google: @user.google_uid.present?,
         createdAt: @user.created_at.iso8601, lastSignedInAt: @user.last_signed_in_at&.iso8601,
         mapsCount: @maps_count || Map.active.where(owner_id: @user.id).count,
         plan: @user.current_plan_key,

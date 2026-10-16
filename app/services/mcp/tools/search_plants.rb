@@ -11,7 +11,7 @@ module Mcp
       hints
 
       def perform(query:, limit: 20)
-        { query:, results: PlantCatalog.search(query.strip, limit:) }
+        { query:, results: PlantCatalog.search(query.strip, limit:, user:) }
       end
 
       private

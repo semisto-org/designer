@@ -44,6 +44,8 @@ export type SpeciesSummary = {
   nativeCountries: string[]
   invasiveCountries: string[]
   harvestMonths: number[]
+  /** « proposed »: added from a palette, waiting for Semisto's review (only its author and its maps see it). */
+  reviewStatus?: 'proposed' | 'reviewed' | 'rejected'
   /** Plants in the ground over every garden (catalogue search only, anonymous). */
   inGround?: number
   /** Main photo with its credit (catalogue search and sheet only). */

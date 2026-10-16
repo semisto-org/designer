@@ -29,7 +29,15 @@ class PlantSpecies < ApplicationRecord
     "climber" => "vine", "ground-cover" => "ground_cover", "aquatic" => "aquatic"
   }.freeze
 
+  # A species added from a map's palette waits for a catalogue reviewer:
+  # « proposed », then « reviewed » (in the shared catalogue) or « rejected »
+  # (kept for the maps that use it, never shown to anyone else).
+  REVIEW_STATUSES = %w[proposed reviewed rejected].freeze
+
   belongs_to :genus, class_name: "PlantGenus", optional: true, inverse_of: :species
+  belongs_to :proposed_by, class_name: "User", optional: true
+  belongs_to :proposed_map, class_name: "Map", optional: true
+  belongs_to :reviewed_by, class_name: "User", optional: true
   has_many :varieties, -> { order(Arel.sql("lower(plant_varieties.name)")) }, class_name: "PlantVariety",
            foreign_key: :species_id, inverse_of: :species, dependent: :destroy
   has_many :palette_items, foreign_key: :species_id, inverse_of: :species, dependent: :restrict_with_error
@@ -53,9 +61,23 @@ class PlantSpecies < ApplicationRecord
   validates :min_temperature_c, numericality: { greater_than: -70, less_than: 25 }, allow_nil: true
   validates(*YEAR_FIELDS, numericality: { only_integer: true, greater_than: 0, less_than: 200 }, allow_nil: true)
   validate :countries_are_codes
+  validates :review_status, inclusion: { in: REVIEW_STATUSES }
 
   before_validation :complete_hardiness
   before_validation :sort_months
+
+  scope :reviewed, -> { where(review_status: "reviewed") }
+  scope :proposed, -> { where(review_status: "proposed") }
+
+  # What a person may see of the catalogue: the reviewed species, plus the
+  # ones they proposed and the ones in the palette of a map they can open.
+  # A catalogue reviewer sees everything.
+  scope :visible_to, ->(user) {
+    next reviewed unless user
+    next all if user.can_review_catalogue?
+    in_palettes = PaletteItem.where(map_id: user.openable_maps.select(:id)).select(:species_id)
+    reviewed.or(where(proposed_by_id: user.id)).or(where(id: in_palettes))
+  }
 
   scope :alphabetical, -> { order(Arel.sql("lower(plant_species.latin_name)")) }
   scope :with_card_data, -> { includes(:common_names) }
@@ -79,6 +101,11 @@ class PlantSpecies < ApplicationRecord
   def self.default_strata_for(plant_type) = STRATA_BY_PLANT_TYPE[plant_type.to_s]
 
   def to_param = [ id, latin_name.parameterize ].join("-")
+
+  def reviewed? = review_status == "reviewed"
+  def proposed? = review_status == "proposed"
+
+  def visible_to?(user) = self.class.visible_to(user).exists?(id)
 
   def default_strata = strata.presence || self.class.default_strata_for(plant_type) || "shrub"
 
@@ -107,7 +134,7 @@ class PlantSpecies < ApplicationRecord
       hardinessZone: hardiness_zone, minTemperatureC: min_temperature_c&.to_f,
       exposures:, soilMoisture: soil_moisture, edibleParts: edible_parts, ecoServices: eco_services,
       edibleRating: edible_rating, nativeCountries: native_countries, invasiveCountries: invasive_countries,
-      harvestMonths: harvest_months
+      harvestMonths: harvest_months, reviewStatus: review_status
     }
   end
 

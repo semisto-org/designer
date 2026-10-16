@@ -36,7 +36,7 @@ class PaletteSuggestions
     end
 
     def candidates
-      scope = PlantSpecies.where.not(id: palette_species.map(&:id)).with_card_data
+      scope = PlantSpecies.reviewed.where.not(id: palette_species.map(&:id)).with_card_data
       zone = @map.hardiness_zone
       scope = scope.where(hardiness_zone: ..zone) if zone
       country = @map.country_code

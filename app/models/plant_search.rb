@@ -15,11 +15,14 @@ class PlantSearch
     PlantSpecies::STRATA_BY_PLANT_TYPE.map { |type, strata| "WHEN '#{type}' THEN '#{strata}'" }.join(" ") +
     " ELSE 'shrub' END)"
 
-  attr_reader :params, :country
+  attr_reader :params, :country, :user
 
-  def initialize(params = {}, country: nil)
+  # `user`: who searches; the species awaiting review are only theirs (or a
+  # catalogue reviewer's), see PlantSpecies.visible_to.
+  def initialize(params = {}, country: nil, user: nil)
     @params = (params.respond_to?(:to_unsafe_h) ? params.to_unsafe_h : params.to_h).with_indifferent_access
     @country = country.presence&.upcase
+    @user = user
   end
 
   def query = params[:q].to_s.squish.first(100)
@@ -59,7 +62,7 @@ class PlantSearch
     scope = scope.where("'mellifere' = ANY(plant_species.eco_services)") if flag?(:mellifere)
     scope = scope.where("? = ANY(plant_species.native_countries)", country) if flag?(:native) && country
     scope = scope.where.not("? = ANY(plant_species.invasive_countries)", country) if flag?(:no_invasive) && country
-    scope
+    scope.where(id: PlantSpecies.visible_to(user).select(:id))
   end
 
   def total = @total ||= scope.count

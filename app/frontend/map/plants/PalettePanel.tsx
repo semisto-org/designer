@@ -7,6 +7,7 @@ import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { PaletteDrafts } from '@/map/plants/PaletteDrafts'
+import { ProposeSpecies } from '@/map/plants/ProposeSpecies'
 import { setPlacing, setPlanting, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS, StrataDot } from '@/map/plants/strata'
 import {
@@ -140,9 +141,10 @@ export default function PalettePanel() {
           )}
           {results && (
             results.length === 0
-              ? <p className="text-xs text-loam-400">{t('palette.results_empty')}</p>
+              ? <p className="text-sm text-loam-500">{t('palette.results_empty')}</p>
               : <SpeciesList items={results} inPalette={paletteSpecies} onAdd={add} />
           )}
+          {results && <ProposeSpecies key={query.trim()} query={query} inPalette={paletteSpecies} onAdd={add} onDone={() => setQuery('')} />}
           {!results && suggestions.length > 0 && (
             <div>
               <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-loam-500">{t('palette.suggestions')}</h3>
@@ -220,7 +222,14 @@ function SpeciesList({ items, inPalette, onAdd, reasons }: {
         <li key={s.id} className="flex items-center gap-2 px-2 py-1.5">
           <StrataDot strata={s.strata} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-loam-800">{s.commonName ?? s.latinName}</p>
+            <p className="truncate text-loam-800">
+              {s.commonName ?? s.latinName}
+              {s.reviewStatus === 'proposed' && (
+                <span className="ml-1.5 rounded-full bg-humus-100 px-1.5 py-0.5 text-sm text-humus-800" title={t('plants.proposal.badge_title')}>
+                  {t('plants.proposal.badge')}
+                </span>
+              )}
+            </p>
             <p className="truncate text-xs text-loam-500">
               {reasons && s.reason ? t(`palette.reasons.${s.reason}`) : <i>{s.latinName}</i>}
               {s.hardinessZone ? ` · ${t('plants.card.zone', { zone: s.hardinessZone })}` : ''}

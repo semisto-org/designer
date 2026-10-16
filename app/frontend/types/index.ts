@@ -11,6 +11,8 @@ export type CurrentUser = {
   email: string
   avatarUrl: string | null
   admin: boolean
+  /** Accepts or merges the species people propose to the plant catalogue. */
+  catalogueReviewer: boolean
   /** Has closed the editor's « carnet de route » once (it no longer opens by itself). */
   tourSeen?: boolean
   /** Designs their own place or for clients (welcome page); null until chosen. */

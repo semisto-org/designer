@@ -58,4 +58,20 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     assert @admin.reload.admin?
     assert_equal "Tu ne peux pas changer ton propre rôle.", flash[:alert]
   end
+
+  test "gives and takes the catalogue reviewer role, logged, one's own included" do
+    sign_in_as @admin
+    alice = users(:alice)
+    patch admin_user_path(alice), params: { catalogue_reviewer: "true" }
+    assert alice.reload.catalogue_reviewer?
+    assert_not alice.admin?
+    assert_equal "reviewer_granted", AdminEvent.newest_first.first.action
+    patch admin_user_path(alice), params: { catalogue_reviewer: "false" }
+    assert_not alice.reload.catalogue_reviewer?
+    assert_equal "reviewer_revoked", AdminEvent.newest_first.first.action
+
+    patch admin_user_path(@admin), params: { catalogue_reviewer: "true" }
+    assert @admin.reload.catalogue_reviewer?
+    assert @admin.admin?
+  end
 end

@@ -93,4 +93,29 @@ class PlantsControllerTest < ActionDispatch::IntegrationTest
     get plant_path(plant_species(:alder)), as: :json
     assert_equal "Alnus glutinosa", response.parsed_body["species"]["latinName"]
   end
+
+  test "a proposed species shows only to its author, the maps that use it and reviewers" do
+    map = maps(:ahinvaux)
+    species = PlantSpecies.create!(latin_name: "Salvia nemorosa", review_status: "proposed", proposed_by: users(:michael), proposed_map: map)
+    map.palette_items.create!(species:)
+
+    get plants_path(q: "nemorosa"), as: :json
+    assert_empty response.parsed_body["results"], "bob opens no map that uses it"
+    get plant_path(species), headers: inertia_headers
+    assert_response :not_found
+    get plants_path, headers: inertia_headers
+    assert_nil response.parsed_body.dig("props", "toReview")
+    assert_equal PlantSpecies.reviewed.count, response.parsed_body.dig("props", "catalogueSize")
+
+    sign_in_as users(:alice)
+    get plants_path(q: "nemorosa"), as: :json
+    assert_equal [ "proposed" ], response.parsed_body["results"].map { _1["reviewStatus"] }
+    get plant_path(species), headers: inertia_headers
+    assert_response :success
+
+    users(:bob).update!(catalogue_reviewer: true)
+    sign_in_as users(:bob)
+    get plants_path, headers: inertia_headers
+    assert_equal 1, response.parsed_body.dig("props", "toReview")
+  end
 end

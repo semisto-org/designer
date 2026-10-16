@@ -2,7 +2,7 @@
 # end) and role changes. Kept when either user is deleted (ids nullified,
 # the e-mail addresses stay in `details`).
 class AdminEvent < ApplicationRecord
-  ACTIONS = %w[impersonation_started impersonation_ended admin_granted admin_revoked].freeze
+  ACTIONS = %w[impersonation_started impersonation_ended admin_granted admin_revoked reviewer_granted reviewer_revoked].freeze
 
   belongs_to :admin, class_name: "User", optional: true
   belongs_to :target_user, class_name: "User", optional: true
