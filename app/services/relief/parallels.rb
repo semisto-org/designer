@@ -48,24 +48,8 @@ module Relief
       up = upslope_sign
       raise Error, :flat unless up
 
-      result = (1..@above).flat_map { |k| offset(up * k * @spacing, "above", k) } +
+      (1..@above).flat_map { |k| offset(up * k * @spacing, "above", k) } +
         (1..@below).flat_map { |k| offset(-up * k * @spacing, "below", k) }
-      debug_empty(up) if result.empty? && ENV["CI"] # TEMP
-      result
-    end
-
-    # TEMP: CI-only diagnostic.
-    def debug_empty(up)
-      d = up * @spacing
-      moved = offset_vertices(d * mercator_scale)
-      wkt2 = "LINESTRING(#{moved.map { |x, y| "#{x} #{y}" }.join(',')})"
-      warn "DBG wkt=#{wkt} scale=#{mercator_scale} pts=#{mercator_points.inspect} moved=#{moved.inspect}"
-      warn "DBG boundary=#{@map.reload.boundary&.as_text}"
-      sql = "SELECT ST_AsText(ST_Transform(ST_SetSRID(ST_GeomFromText($1), 3857), 4326)) t, ST_Distance(ST_Transform(ST_SetSRID(ST_GeomFromText($1), 3857), 4326)::geography, ST_GeomFromText($2, 4326)::geography) dist, postgis_full_version() v"
-      warn "DBG sql=#{Map.connection.select_all(sql, 'dbg', [ wkt2, wkt ]).to_a.inspect}"
-      warn "DBG curves=#{curves(d).inspect}"
-    rescue => e
-      warn "DBG error #{e.class}: #{e.message}"
     end
 
     private
@@ -115,11 +99,11 @@ module Relief
           moved AS (SELECT ST_Transform(ST_SetSRID(ST_GeomFromText($2), 3857), 4326) AS g),
           noded AS (SELECT (ST_Dump(ST_UnaryUnion(g))).geom AS g FROM moved),
           kept AS (
-            SELECT ST_LineMerge(ST_Collect(noded.g)) AS g FROM noded, source
+            SELECT ST_Collect(noded.g) AS g FROM noded, source
             WHERE ST_Distance(noded.g::geography, source.g::geography) >= $3 * 0.9
           ),
           clipped AS (
-            SELECT CASE WHEN m.boundary IS NULL THEN kept.g ELSE ST_LineMerge(ST_Intersection(kept.g, m.boundary)) END AS g
+            SELECT #{merged("CASE WHEN m.boundary IS NULL THEN kept.g ELSE ST_Intersection(kept.g, m.boundary) END")} AS g
             FROM kept, maps m WHERE m.id = $4 AND kept.g IS NOT NULL
           ),
           parts AS (SELECT (ST_Dump(g)).geom AS g FROM clipped)
@@ -132,6 +116,10 @@ module Relief
           { geometry: JSON.parse(row["geometry"]), length_m: row["length_m"].to_f, samples: points(JSON.parse(row["samples"])) }
         end
       end
+
+      # ST_LineMerge only on several lines: with older GEOS (3.9) it turns a
+      # single LineString into an empty collection.
+      def merged(sql) = "(SELECT CASE WHEN GeometryType(x) = 'LINESTRING' THEN x ELSE ST_LineMerge(x) END FROM (SELECT #{sql} AS x) merged_input)"
 
       def mercator_scale
         @mercator_scale ||= 1 / Math.cos(@feature.geometry.points.sum(&:y) / @feature.geometry.num_points * Math::PI / 180)
