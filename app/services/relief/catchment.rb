@@ -1,5 +1,6 @@
 module Relief
-  # The catchment of a water element (pond, swale, rain garden) or of a point:
+  # The catchment of a water element (pond, swale, rain garden, half-moon, a
+  # structure across the flow) or of a point:
   # the ground whose runoff ends up there. A pond is sized on the area that
   # drains into it, not on its own surface.
   #
@@ -21,7 +22,7 @@ module Relief
       end
     end
 
-    KINDS = %w[pond swale keyline rain_garden].freeze
+    KINDS = %w[pond swale keyline rain_garden half_moon check_dam fascine beaver_dam_analogue hedge_bank].freeze
     # An infiltration test this close speaks for the element's soil; farther,
     # the median of the map's tests stands in.
     NEARBY_TEST_M = 50
@@ -98,9 +99,9 @@ module Relief
         )
       end
 
-      # A swale or rain garden holds water in a hollow; a keyline only when it is dug as a swale.
+      # A swale, rain garden or half-moon holds water in a hollow; a keyline only when it is dug as a swale.
       def dug?
-        return %w[swale rain_garden].include?(@feature.kind) unless @feature.kind == "keyline"
+        return %w[swale rain_garden half_moon].include?(@feature.kind) unless @feature.kind == "keyline"
 
         [ nil, "", "swale" ].include?(@feature.properties.to_h["use"])
       end
@@ -146,7 +147,8 @@ module Relief
           if @feature
             line = @feature.geometry.geometry_type == RGeo::Feature::LineString
             width = @feature.properties.to_h["width_m"].to_f
-            [ @feature.geometry.as_text, line ? [ width / 2, radius ].max : radius ]
+            width = @feature.properties.to_h["diameter_m"].to_f unless line
+            [ @feature.geometry.as_text, [ width / 2, radius ].max ]
           else
             [ "POINT(#{@lng} #{@lat})", radius ]
           end

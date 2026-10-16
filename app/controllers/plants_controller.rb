@@ -2,19 +2,22 @@
 # Read-only in v1. Both answer JSON too, for the map editor's palette.
 class PlantsController < ApplicationController
   def index
-    search = PlantSearch.new(params, country: country)
+    search = PlantSearch.new(params, country: country, user: Current.user)
     return render json: search.as_json if json_request?
 
     render inertia: "plants/index", props: {
       search: search.as_json,
       vocabulary: vocabulary,
       region: region_json,
-      catalogueSize: PlantSpecies.count
+      catalogueSize: PlantSpecies.reviewed.count,
+      # The species waiting for a catalogue reviewer, for the ones who review.
+      toReview: Current.user&.can_review_catalogue? ? PlantSpecies.proposed.count : nil
     }
   end
 
   def show
-    species = PlantSpecies.with_photos.includes(:genus, :common_names, :field_sources, varieties: %i[common_names field_sources])
+    species = PlantSpecies.visible_to(Current.user).with_photos
+                          .includes(:genus, :common_names, :field_sources, varieties: %i[common_names field_sources])
                           .find(params[:id].to_i)
     sheet = species.sheet_json
     return render json: { species: sheet } if json_request?

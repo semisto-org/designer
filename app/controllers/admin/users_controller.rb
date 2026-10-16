@@ -1,5 +1,6 @@
 # Super admin: every account, searchable, with its plan and maps, and what
-# staff can do with it: sign in as the person, give or take the admin role.
+# staff can do with it: sign in as the person, give or take the admin role or
+# the catalogue reviewer role.
 module Admin
   class UsersController < BaseController
     PER_PAGE = 50
@@ -21,9 +22,11 @@ module Admin
       }
     end
 
-    # Gives or takes the admin role. Never one's own (no locking oneself out).
+    # Gives or takes the admin role (never one's own: no locking oneself out),
+    # or the catalogue reviewer role.
     def update
       user = User.find(params[:id])
+      return update_reviewer(user) if params.key?(:catalogue_reviewer)
       return refuse(t("admin.users.errors.self")) if user == Current.user
       admin = ActiveModel::Type::Boolean.new.cast(params[:admin])
       return refuse(t("admin.users.errors.invalid")) if admin.nil?
@@ -36,6 +39,17 @@ module Admin
     end
 
     private
+      def update_reviewer(user)
+        reviewer = ActiveModel::Type::Boolean.new.cast(params[:catalogue_reviewer])
+        return refuse(t("admin.users.errors.invalid")) if reviewer.nil?
+        if user.catalogue_reviewer? != reviewer
+          user.update!(catalogue_reviewer: reviewer)
+          AdminEvent.record!(reviewer ? "reviewer_granted" : "reviewer_revoked", admin: Current.user, target: user, request:)
+        end
+        redirect_back_or_to admin_users_path, status: :see_other,
+          notice: t(reviewer ? "admin.users.flash.reviewer_granted" : "admin.users.flash.reviewer_revoked", name: user.display_name)
+      end
+
       def refuse(message)
         redirect_back_or_to admin_users_path, alert: message, status: :see_other
       end

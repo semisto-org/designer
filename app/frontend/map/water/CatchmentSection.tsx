@@ -5,11 +5,16 @@ import { useEffect, useState } from 'react'
 import { api, ApiError } from '@/lib/api'
 import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { measure } from '@/map/editor/measure'
 import type { MapFeature } from '@/types'
 
-const KINDS = ['pond', 'swale', 'keyline', 'rain_garden']
+const KINDS = ['pond', 'swale', 'keyline', 'rain_garden', 'half_moon', 'check_dam', 'fascine', 'beaver_dam_analogue', 'hedge_bank']
+// Structures across the flow: they slow water, they do not store a volume.
+const ACROSS = new Set(['check_dam', 'fascine', 'beaver_dam_analogue', 'hedge_bank'])
+// Above this catchment (m²), one structure alone takes too much water.
+const SERIES_FROM_M2: Record<string, number> = { check_dam: 20_000, fascine: 5_000 }
 
-/** Ponds, swales and rain gardens: what drains into them. */
+/** Ponds, swales, rain gardens, half-moons and structures across the flow: what drains into them. */
 export function appliesToCatchment(feature: MapFeature): boolean {
   return KINDS.includes(feature.properties.kind) && feature.properties.status !== 'rejected'
 }
@@ -132,7 +137,7 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
           )}
         </p>
       )}
-      {state.status === 'ready' && <Figures result={state.result} kind={p.kind} dug={p.kind !== 'keyline' || !p.use || p.use === 'swale'} />}
+      {state.status === 'ready' && <Figures result={state.result} feature={feature} dug={!ACROSS.has(p.kind) && (p.kind !== 'keyline' || !p.use || p.use === 'swale')} />}
       {state.status === 'ready' && <SoilLine result={state.result} feature={feature} />}
       {state.status === 'ready' && (
         <button
@@ -148,7 +153,8 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
   )
 }
 
-function Figures({ result, kind, dug }: { result: CatchmentResult; kind: string; dug: boolean }) {
+function Figures({ result, feature, dug }: { result: CatchmentResult; feature: MapFeature; dug: boolean }) {
+  const kind = feature.properties.kind
   const area = formatArea(result.areaM2)
   return (
     <div className="space-y-2 text-sm text-loam-700">
@@ -174,9 +180,21 @@ function Figures({ result, kind, dug }: { result: CatchmentResult; kind: string;
         </p>
       )}
       {result.capacityM3 == null && dug && <p className="text-loam-500">{t('relief.catchment.no_size')}</p>}
+      {ACROSS.has(kind) && <p>{acrossAdvice(kind, result.areaM2, feature)}</p>}
       {result.beyondRelief && <p className="text-loam-500">{t('relief.catchment.beyond')}</p>}
     </div>
   )
+}
+
+/** What a structure across the flow should be, for the water that reaches it. */
+export function acrossAdvice(kind: string, areaM2: number, feature: MapFeature): string {
+  if (kind === 'hedge_bank') {
+    const length = feature.geometry ? measure(feature.geometry).length : null
+    return t('relief.catchment.across.hedge_bank', { per: formatArea(length ? areaM2 / length : areaM2) })
+  }
+  const limit = SERIES_FROM_M2[kind]
+  if (limit == null) return t(`relief.catchment.across.${kind}`)
+  return t(`relief.catchment.across.${kind}_${areaM2 > limit ? 'large' : 'small'}`)
 }
 
 function duration(hours: number): string {

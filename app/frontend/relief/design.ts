@@ -1,8 +1,10 @@
 // Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)
 //
-// The map's water design on the relief: swales (and keylines) and ponds are
-// "dug" into a COPY of the terrain so that the simulated rain and the flow
-// axes take them into account. In Claudy they were traced on the 3D view; in
+// The map's water design on the relief: swales (and keylines), ponds and
+// half-moons are "dug" into a COPY of the terrain, banks and structures
+// across the flow (check dams, fascines, beaver dam analogues, hedge banks)
+// raised on it, so that the simulated rain and the flow axes take them into
+// account. In Claudy they were traced on the 3D view; in
 // Designer they are the map's own features (a pond polygon, a swale line),
 // drawn in the editor and dug here with default dimensions or those of their
 // properties.
@@ -57,7 +59,33 @@ export type PondDesign = {
   berm?: number
 }
 
-export type Design = SwaleDesign | PondDesign
+export type BarrierDesign = {
+  id: number | string
+  type: 'barrier'
+  points: GridPoint[]
+  /** Crest height above the ground (m) and crest width (m). */
+  height?: number
+  width?: number
+  /** A level crest (a dam across a gully: its height counts from the lowest ground) or one that follows the ground (a bank on contour). */
+  level?: boolean
+  /** 0 for an earth bank; for a porous structure, the share of the flow that seeps through below the crest. */
+  seep?: number
+  /** How far upstream (m) the water it holds can reach: its footprint, for the capacity. */
+  pool?: number
+}
+
+export type HalfMoonDesign = {
+  id: number | string
+  type: 'half_moon'
+  /** One centre per half-moon (grid metres). */
+  centres: GridPoint[]
+  /** Radius (m), depth at the centre (m), height of the downhill crescent berm (m). */
+  radius?: number
+  depth?: number
+  berm?: number
+}
+
+export type Design = SwaleDesign | PondDesign | BarrierDesign | HalfMoonDesign
 
 export type Footprint = { id: number | string; cells: number[]; capacity: number }
 
@@ -126,6 +154,155 @@ function digSwale(out: Float32Array, base: ArrayLike<number>, cols: number, rows
     }
   }
   return touched
+}
+
+/** The ground along a line, sampled every half cell. */
+function lineLowest(base: ArrayLike<number>, cols: number, rows: number, cellSize: number, points: GridPoint[]): number {
+  let lowest = Infinity
+  for (let k = 0; k < points.length - 1; k++) {
+    const a = points[k]
+    const b = points[k + 1]
+    const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / (cellSize / 2)))
+    for (let s = 0; s <= n; s++) lowest = Math.min(lowest, heightAt(base, cols, rows, cellSize, a.x + (b.x - a.x) * s / n, a.y + (b.y - a.y) * s / n))
+  }
+  return lowest
+}
+
+/**
+ * Raises a structure across the flow: a crest `height` m high and `width` m
+ * wide along the line. A level crest (a check dam, a beaver dam analogue)
+ * stands `height` above the LOWEST ground of the line, so it holds a pool in
+ * the gully and lets the banks frame it; otherwise (a fascine, a hedge bank)
+ * it follows the ground. Its footprint takes the uphill cells, up to `pool`
+ * m, lower than the crest: the water it holds. A porous crest is written to
+ * `crest` and `seep` instead of `flow`, the terrain the water runs on.
+ */
+function digBarrier(out: Float32Array, flow: Float32Array, crest: Float32Array, seep: Float32Array, base: ArrayLike<number>,
+  cols: number, rows: number, cellSize: number, design: BarrierDesign): number[] {
+  const { points } = design
+  const height = design.height ?? 0.4
+  const half = Math.max((design.width ?? 0.6) / 2, cellSize * 0.75)
+  const pool = design.pool ?? 20
+  const porous = (design.seep ?? 0) > 0
+  const touched: number[] = []
+  if (!points || points.length < 2) return touched
+  const levelCrest = design.level ? lineLowest(base, cols, rows, cellSize, points) + height : null
+  const levels = points.map((p) => heightAt(base, cols, rows, cellSize, p.x, p.y))
+  const uphill: number[] = []
+  for (let k = 0; k < points.length - 1; k++) {
+    const a = points[k]
+    const b = points[k + 1]
+    const length = Math.hypot(b.x - a.x, b.y - a.y) || 1
+    const nx = -(b.y - a.y) / length
+    const ny = (b.x - a.x) / length
+    const mx = (a.x + b.x) / 2
+    const my = (a.y + b.y) / 2
+    const left = heightAt(base, cols, rows, cellSize, mx + nx * 2, my + ny * 2)
+    const right = heightAt(base, cols, rows, cellSize, mx - nx * 2, my - ny * 2)
+    uphill.push(left > right ? 1 : -1)
+  }
+  const reach = Math.max(half, pool)
+  let minX = Infinity; let minY = Infinity; let maxX = -Infinity; let maxY = -Infinity
+  for (const p of points) {
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x)
+    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y)
+  }
+  const c0 = Math.max(0, Math.floor((minX - reach) / cellSize))
+  const c1 = Math.min(cols - 1, Math.ceil((maxX + reach) / cellSize))
+  const r0 = Math.max(0, Math.floor((minY - reach) / cellSize))
+  const r1 = Math.min(rows - 1, Math.ceil((maxY + reach) / cellSize))
+  for (let r = r0; r <= r1; r++) {
+    for (let c = c0; c <= c1; c++) {
+      const px = c * cellSize
+      const py = r * cellSize
+      let nearest: (ReturnType<typeof segmentDistance> & { k: number }) | null = null
+      for (let k = 0; k < points.length - 1; k++) {
+        const hit = segmentDistance(px, py, points[k], points[k + 1])
+        if (!nearest || hit.distance < nearest.distance) nearest = { ...hit, k }
+      }
+      if (!nearest || nearest.distance > reach) continue
+      const top = levelCrest ?? levels[nearest.k] + (levels[nearest.k + 1] - levels[nearest.k]) * nearest.t + height
+      const i = r * cols + c
+      if (nearest.distance <= half) {
+        if (top <= base[i]) continue
+        out[i] = Math.max(out[i], top)
+        if (porous) {
+          crest[i] = crest[i] === crest[i] ? Math.max(crest[i], top) : top
+          seep[i] = design.seep!
+        } else {
+          flow[i] = Math.max(flow[i], top)
+        }
+        touched.push(i)
+      } else if (nearest.distance <= pool && Math.sign(nearest.side) === uphill[nearest.k] && base[i] < top) {
+        touched.push(i)
+      }
+    }
+  }
+  return touched
+}
+
+/**
+ * Digs half-moons: for each centre, a bowl `depth` m deep over the disc of
+ * `radius`, below the ground at its centre, and a crescent berm `berm` m
+ * high on its downhill half, so the open side faces the slope and catches
+ * the runoff coming down it.
+ */
+function digHalfMoons(out: Float32Array, base: ArrayLike<number>, cols: number, rows: number, cellSize: number, design: HalfMoonDesign): number[] {
+  const radius = Math.max(design.radius ?? 1.5, cellSize * 0.75)
+  const depth = design.depth ?? 0.2
+  const berm = design.berm ?? 0.15
+  const rim = Math.max(0.5, cellSize)
+  const touched: number[] = []
+  for (const centre of design.centres ?? []) {
+    const level = heightAt(base, cols, rows, cellSize, centre.x, centre.y)
+    // The downhill direction, from the ground around the centre.
+    const step = Math.max(radius, cellSize)
+    const gx = heightAt(base, cols, rows, cellSize, centre.x + step, centre.y) - heightAt(base, cols, rows, cellSize, centre.x - step, centre.y)
+    const gy = heightAt(base, cols, rows, cellSize, centre.x, centre.y + step) - heightAt(base, cols, rows, cellSize, centre.x, centre.y - step)
+    const g = Math.hypot(gx, gy) || 1
+    const dx = -gx / g
+    const dy = -gy / g
+    const outer = radius + rim
+    const c0 = Math.max(0, Math.floor((centre.x - outer) / cellSize))
+    const c1 = Math.min(cols - 1, Math.ceil((centre.x + outer) / cellSize))
+    const r0 = Math.max(0, Math.floor((centre.y - outer) / cellSize))
+    const r1 = Math.min(rows - 1, Math.ceil((centre.y + outer) / cellSize))
+    for (let r = r0; r <= r1; r++) {
+      for (let c = c0; c <= c1; c++) {
+        const x = c * cellSize - centre.x
+        const y = r * cellSize - centre.y
+        const d = Math.hypot(x, y)
+        const i = r * cols + c
+        const downhill = x * dx + y * dy >= 0
+        if (d <= radius) {
+          const s = d / radius
+          out[i] = Math.min(out[i], level - depth * (1 - s * s))
+          touched.push(i)
+        } else if (d <= outer && downhill) {
+          out[i] = Math.max(out[i], level + berm)
+          touched.push(i)
+        }
+      }
+    }
+  }
+  return touched
+}
+
+/** Grid cells whose centre lies inside a polygon outline (grid metres). */
+export function ringCells(cols: number, rows: number, cellSize: number, ring: GridPoint[]): number[] {
+  if (!ring || ring.length < 3) return []
+  let minX = Infinity; let minY = Infinity; let maxX = -Infinity; let maxY = -Infinity
+  for (const p of ring) {
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x)
+    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y)
+  }
+  const cells: number[] = []
+  for (let r = Math.max(0, Math.floor(minY / cellSize)); r <= Math.min(rows - 1, Math.ceil(maxY / cellSize)); r++) {
+    for (let c = Math.max(0, Math.floor(minX / cellSize)); c <= Math.min(cols - 1, Math.ceil(maxX / cellSize)); c++) {
+      if (insideRing(c * cellSize, r * cellSize, ring)) cells.push(r * cols + c)
+    }
+  }
+  return cells
 }
 
 /** Even-odd point in polygon (grid metres). */
@@ -202,20 +379,36 @@ function digPond(out: Float32Array, base: ArrayLike<number>, cols: number, rows:
 
 /**
  * The relief with the designs dug, and for each its cells and capacity (m³
- * of water it holds before spilling). The stored relief is never modified.
+ * of water it holds before spilling). `heights` has everything (the mesh,
+ * the flow axes, the capacities); `flow` is the ground the water runs on,
+ * without the porous structures, which are in `crest` (their crest level,
+ * NaN elsewhere) and `seep`. The stored relief is never modified.
  */
 export function applyDesigns(base: ArrayLike<number>, cols: number, rows: number, cellSize: number, designs: Design[]) {
   const out = Float32Array.from(base)
+  const n = out.length
+  const crest = new Float32Array(n).fill(NaN)
+  const seep = new Float32Array(n)
   const footprints: Footprint[] = []
-  for (const design of designs) {
-    const cells = design.type === 'pond'
-      ? digPond(out, base, cols, rows, cellSize, design)
-      : digSwale(out, base, cols, rows, cellSize, design)
-    footprints.push({ id: design.id, cells, capacity: 0 })
+  // Porous structures last: `flow` is the dug relief before them.
+  const ordered = designs.map((design, index) => ({ design, index }))
+    .sort((a, b) => Number(porous(a.design)) - Number(porous(b.design)) || a.index - b.index)
+  let flow: Float32Array | null = null
+  const cellsByIndex: number[][] = []
+  for (const { design, index } of ordered) {
+    if (porous(design) && !flow) flow = Float32Array.from(out)
+    const target = flow ?? out
+    cellsByIndex[index] = design.type === 'pond' ? digPond(out, base, cols, rows, cellSize, design)
+      : design.type === 'half_moon' ? digHalfMoons(out, base, cols, rows, cellSize, design)
+        : design.type === 'barrier' ? digBarrier(out, target, crest, seep, base, cols, rows, cellSize, design)
+          : digSwale(out, base, cols, rows, cellSize, design)
   }
+  designs.forEach((design, index) => footprints.push({ id: design.id, cells: cellsByIndex[index], capacity: 0 }))
   for (const footprint of footprints) footprint.capacity = capacity(out, cols, rows, cellSize, footprint.cells)
-  return { heights: out, footprints }
+  return { heights: out, flow: flow ?? out, crest, seep, footprints }
 }
+
+const porous = (design: Design) => design.type === 'barrier' && (design.seep ?? 0) > 0
 
 /**
  * What a footprint holds before spilling. Fill from its lowest cell, always
@@ -289,6 +482,58 @@ export function downsampleDesigned(base: ArrayLike<number>, designed: ArrayLike<
       }
       out[r * outCols + c] = dug < Infinity ? dug : raised > -Infinity ? raised : sum / (factor * factor)
     }
+  }
+  return out
+}
+
+/**
+ * The porous structures on the simulation grid: a block holding part of a
+ * crest takes its highest crest and the least seep of its cells.
+ */
+export function downsampleCrest(crest: ArrayLike<number>, seep: ArrayLike<number>, cols: number, rows: number, factor: number) {
+  const f = Math.max(1, factor)
+  const outCols = Math.floor(cols / f)
+  const outRows = Math.floor(rows / f)
+  const outCrest = new Float32Array(outCols * outRows).fill(NaN)
+  const outSeep = new Float32Array(outCols * outRows)
+  let any = false
+  for (let r = 0; r < outRows; r++) {
+    for (let c = 0; c < outCols; c++) {
+      let top = -Infinity
+      let least = Infinity
+      for (let dr = 0; dr < f; dr++) {
+        for (let dc = 0; dc < f; dc++) {
+          const i = (r * f + dr) * cols + c * f + dc
+          if (crest[i] !== crest[i]) continue
+          if (crest[i] > top) top = crest[i]
+          if (seep[i] < least) least = seep[i]
+        }
+      }
+      if (top > -Infinity) {
+        outCrest[r * outCols + c] = top
+        outSeep[r * outCols + c] = least
+        any = true
+      }
+    }
+  }
+  return any ? { crest: outCrest, seep: outSeep } : null
+}
+
+/** Points every `spacing` m along a line, from its start (grid metres). */
+export function pointsAlong(points: GridPoint[], spacing: number): GridPoint[] {
+  if (points.length < 2 || !(spacing > 0)) return points.slice(0, 1)
+  const out: GridPoint[] = [points[0]]
+  let carried = 0
+  for (let k = 0; k < points.length - 1; k++) {
+    const a = points[k]
+    const b = points[k + 1]
+    const length = Math.hypot(b.x - a.x, b.y - a.y)
+    let at = spacing - carried
+    while (at <= length + 1e-9) {
+      out.push({ x: a.x + (b.x - a.x) * at / length, y: a.y + (b.y - a.y) * at / length })
+      at += spacing
+    }
+    carried = length - (at - spacing)
   }
   return out
 }

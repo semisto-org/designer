@@ -1,14 +1,30 @@
 import { router, usePage } from '@inertiajs/react'
-import { ShieldCheck, ShieldOff, UserRoundCheck } from 'lucide-react'
+import { Leaf, ShieldCheck, ShieldOff, UserRoundCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import type { SharedProps } from '@/types'
 import type { AdminUserRow } from '@/types/admin'
 
-/** « Se connecter en tant que » and the admin role, for one account. */
+/** « Se connecter en tant que », the admin role and the catalogue reviewer role, for one account. */
 export function UserActions({ user }: { user: AdminUserRow }) {
   const { currentUser } = usePage().props as unknown as SharedProps
-  if (currentUser?.id === user.id) return null
+
+  const toggleReviewer = () => {
+    const key = user.catalogueReviewer ? 'confirm_revoke_reviewer' : 'confirm_grant_reviewer'
+    if (!window.confirm(t(`admin.users.${key}`, { name: user.name }))) return
+    router.patch(`/admin/users/${user.id}`, { catalogue_reviewer: !user.catalogueReviewer }, { preserveScroll: true })
+  }
+  const reviewerLabel = user.catalogueReviewer ? t('admin.users.revoke_reviewer') : t('admin.users.grant_reviewer')
+  const reviewerButton = (
+    <Button
+      size="sm" variant="ghost" onClick={toggleReviewer} title={reviewerLabel} aria-label={reviewerLabel}
+      aria-pressed={user.catalogueReviewer}
+      className={user.catalogueReviewer ? 'text-leaf-700' : undefined}
+    >
+      <Leaf className="h-4 w-4" aria-hidden />
+    </Button>
+  )
+  if (currentUser?.id === user.id) return <div className="flex flex-wrap items-center gap-1.5">{reviewerButton}</div>
 
   const toggleAdmin = () => {
     const message = user.admin ? t('admin.users.confirm_revoke', { name: user.name }) : t('admin.users.confirm_grant', { name: user.name })
@@ -31,6 +47,7 @@ export function UserActions({ user }: { user: AdminUserRow }) {
       >
         {user.admin ? <ShieldOff className="h-4 w-4" aria-hidden /> : <ShieldCheck className="h-4 w-4" aria-hidden />}
       </Button>
+      {reviewerButton}
     </div>
   )
 }

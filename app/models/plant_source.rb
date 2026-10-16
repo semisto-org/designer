@@ -7,6 +7,8 @@ module PlantSource
 
   KNOWN = {
     "semisto" => { license: nil },
+    # A Semisto design project's plant list (palette spreadsheet), 2026.
+    "semisto_walhain" => { license: nil },
     "terranova" => { license: nil },
     "pfaf" => { license: "PFAF, usage non commercial" },
     "trefle" => { license: nil },

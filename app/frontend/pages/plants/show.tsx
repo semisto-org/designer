@@ -44,6 +44,11 @@ export default function PlantShow({ species: s, observations, plantings, region 
             </p>
           )}
           {s.genus && <p className="mt-1 text-sm text-loam-500">{t('plants.show.genus', { genus: s.genus })}</p>}
+          {s.reviewStatus && s.reviewStatus !== 'reviewed' && (
+            <p className="mt-3 rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-800 ring-1 ring-humus-200">
+              {t(s.reviewStatus === 'proposed' ? 'plants.proposal.sheet_notice' : 'plants.proposal.sheet_rejected')}
+            </p>
+          )}
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 ring-1 ring-loam-200">
               <span className="h-2.5 w-2.5 rounded-full" style={{ background: STRATA_COLORS[s.strata] }} />

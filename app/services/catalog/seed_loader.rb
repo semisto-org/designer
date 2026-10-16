@@ -21,9 +21,15 @@ module Catalog
 
     def self.default_paths = Dir[Rails.root.join("db/seeds/plants/*.yml")].sort
 
-    def initialize(paths = self.class.default_paths)
+    # Plant lists of Semisto design projects (db/seeds/plants/projects/*.yml),
+    # each loaded under its own source key: « semisto_<file name> ».
+    def self.project_paths = Dir[Rails.root.join("db/seeds/plants/projects/*.yml")].sort
+
+    def self.project_source(path) = "semisto_#{File.basename(path, '.yml')}"
+
+    def initialize(paths = self.class.default_paths, source: SOURCE)
       @paths = paths
-      @writer = SpeciesWriter.new(source: SOURCE, status: "to_verify", keep_others: true)
+      @writer = SpeciesWriter.new(source:, status: "to_verify", keep_others: true)
     end
 
     # Returns { created:, updated: }.
@@ -50,6 +56,7 @@ module Catalog
       def attributes(entry)
         attrs = entry.except(*SPECIAL)
         PAIRS.each do |key, (min_field, max_field)|
+          next unless entry.key?(key)
           min, max = Array(entry[key])
           attrs[min_field] = min
           attrs[max_field] = max || min

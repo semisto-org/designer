@@ -23,7 +23,7 @@ Sur un téléphone, « Prendre une photo » ouvre directement l'appareil photo. 
 Chaque proposition affiche un **pourcentage de confiance**, le nom latin, les noms courants et la famille.
 
 - Si l'espèce est **dans le catalogue** de Terranova, le bouton **« C'est elle »** l'attache à la plante : elle compte alors dans la liste des plantes et dans les alertes de cohérence.
-- Si l'espèce **n'est pas encore dans le catalogue**, elle reste visible mais ne peut pas être choisie. Note son nom latin : le catalogue s'enrichit au fil du temps.
+- Si l'espèce **n'est pas encore dans le catalogue**, elle reste visible mais ne peut pas être choisie. Note son nom latin et ajoute-la depuis la palette ([« Ta plante n'est pas dans le catalogue »](/help/construire-sa-palette-et-ses-patches)), puis reviens l'attacher.
 - Si **aucune ne correspond**, clique sur « Aucune ne correspond », ajoute une photo (une fleur, un fruit) et recommence.
 
 Un score élevé n'est pas une certitude. Compare avec ce que tu vois : le port, les feuilles, la saison. Avant de manger une plante ou de te soigner avec elle, **ne te fie jamais à la seule identification par photo**.

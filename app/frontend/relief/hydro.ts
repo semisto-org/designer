@@ -12,6 +12,8 @@
 //   flows to the four neighbours pushed by the difference of water level,
 //   slowed by friction. Water leaves the grid at its borders; the balance
 //   (rain − infiltration − outflow = water present) holds at every step.
+//   A porous structure across the flow (a check dam, a fascine) is a weir:
+//   above its crest water passes freely, below it only seeps through.
 
 const GRAVITY = 9.81
 
@@ -244,11 +246,29 @@ export type RainOptions = {
   percolation: number
   /** A measured rain (mm/h, hour by hour), replacing the constant storm. */
   series: number[] | null
+  /** Highest speed (m/s) of the water running over each cell, 0 for no limit: dense grass slows it. */
+  speedMap: Float32Array | null
+  /** Crest level (m) of a porous structure on the cell, NaN elsewhere. */
+  crestMap: Float32Array | null
+  /** Below its crest, the share of an open cell's flow that seeps through the structure (0..1). */
+  seepMap: Float32Array | null
 }
 
 export const DEFAULT_RAIN: RainOptions = {
   intensity: 30, infiltration: 5, duration: 60, friction: 0.5, infiltrationMap: null,
   storageMap: null, initialFill: 0.5, percolation: 0.5, series: null,
+  speedMap: null, crestMap: null, seepMap: null,
+}
+
+/**
+ * The head that pushes water from level `a` to level `b` across a porous
+ * structure of crest `crest`: what stands above the crest passes freely,
+ * what stands below only seeps (`seep` of it).
+ */
+export function weirHead(a: number, b: number, crest: number, seep: number): number {
+  const above = a > crest ? a - Math.max(crest, b) : 0
+  const below = Math.min(a, crest) - Math.min(b, crest)
+  return (above > 0 ? above : 0) + seep * below
 }
 
 /**
@@ -363,6 +383,25 @@ export class RainSimulation {
     // would accelerate forever down the slope.
     const keep = Math.max(0, 1 - this.options.friction * dt)
     const pipe = dt * GRAVITY * cellSize
+    const speedMap = this.options.speedMap
+    const crestMap = this.options.crestMap
+    const seepMap = this.options.seepMap
+    // The flow to neighbour `j` (−1 off the grid) for the levels `a` → `b`,
+    // `previous` being its value at the last step.
+    const flow = (i: number, j: number, a: number, b: number, previous: number) => {
+      if (crestMap && seepMap && j >= 0) {
+        const ci = crestMap[i]
+        const cj = crestMap[j]
+        // NaN is no structure on the cell.
+        if (ci === ci || cj === cj) {
+          const crest = ci === ci && cj === cj ? Math.max(ci, cj) : ci === ci ? ci : cj
+          const seep = ci === ci && cj === cj ? Math.min(seepMap[i], seepMap[j]) : ci === ci ? seepMap[i] : seepMap[j]
+          // Seeping water keeps no momentum: it would rush through the structure.
+          return previous * keep * (a > crest ? 1 : seep) + pipe * weirHead(a, b, crest, seep)
+        }
+      }
+      return previous * keep + pipe * (a - b)
+    }
 
     // 1. The rain falls, the soil drinks a part of it.
     let rainedStep = 0
@@ -399,17 +438,18 @@ export class RainSimulation {
         const left = c > 0 ? ground[i - 1] + depth[i - 1] : ground[i]
         const bottom = r + 1 < rows ? ground[i + cols] + depth[i + cols] : ground[i]
         const top = r > 0 ? ground[i - cols] + depth[i - cols] : ground[i]
-        let fR = fluxR[i] * keep + pipe * (level - right)
-        let fL = fluxL[i] * keep + pipe * (level - left)
-        let fB = fluxB[i] * keep + pipe * (level - bottom)
-        let fT = fluxT[i] * keep + pipe * (level - top)
+        let fR = flow(i, c + 1 < cols ? i + 1 : -1, level, right, fluxR[i])
+        let fL = flow(i, c > 0 ? i - 1 : -1, level, left, fluxL[i])
+        let fB = flow(i, r + 1 < rows ? i + cols : -1, level, bottom, fluxB[i])
+        let fT = flow(i, r > 0 ? i - cols : -1, level, top, fluxT[i])
         if (fR < 0) fR = 0
         if (fL < 0) fL = 0
         if (fB < 0) fB = 0
         if (fT < 0) fT = 0
         const total = (fR + fL + fB + fT) * dt
-        const available = d * area
-        // Never more water out than there is: scale all flows of the cell.
+        // Never more water out than there is (than can cross the cell at its highest speed): scale all flows of the cell.
+        const speed = speedMap ? speedMap[i] : 0
+        const available = d * area * (speed > 0 ? Math.min(1, (speed * dt) / cellSize) : 1)
         if (total > available) {
           const k = total > 0 ? available / total : 0
           fR *= k; fL *= k; fB *= k; fT *= k

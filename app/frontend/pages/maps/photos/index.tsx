@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { PHOTO_DRAG_TYPE, useFileDrag } from '@/lib/useFileDrag'
 import { formatMegabytes, formatMonth, photoDate, photoLabel } from '@/map/photos/format'
 import { PhotoHostContext, type PhotoHost } from '@/map/photos/host'
 import { PhotoCompare } from '@/map/photos/PhotoCompare'
@@ -72,7 +73,7 @@ export default function MapPhotos({ map, canEdit }: Props) {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [anchor, setAnchor] = useState<number | null>(null)
   const [dropTarget, setDropTarget] = useState<Shelf | null>(null)
-  const [draggingFiles, setDraggingFiles] = useState(false)
+  const draggingFiles = useFileDrag(canEdit)
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
@@ -214,18 +215,18 @@ export default function MapPhotos({ map, canEdit }: Props) {
   // Dragging photos onto an album files them there (the selection, or the one dragged).
   function onTileDragStart(event: DragEvent, photo: MapPhotoData) {
     const ids = selected.has(photo.id) ? [...selected] : [photo.id]
-    event.dataTransfer.setData('application/x-designer-photos', JSON.stringify(ids))
+    event.dataTransfer.setData(PHOTO_DRAG_TYPE, JSON.stringify(ids))
     event.dataTransfer.effectAllowed = 'move'
   }
   function onShelfDrop(event: DragEvent, target: Shelf) {
     setDropTarget(null)
-    const raw = event.dataTransfer.getData('application/x-designer-photos')
+    const raw = event.dataTransfer.getData(PHOTO_DRAG_TYPE)
     if (!raw) return
     event.preventDefault()
     event.stopPropagation()
     void fileInto(target === 'none' ? null : (target as number), JSON.parse(raw))
   }
-  const acceptsPhotos = (event: DragEvent) => event.dataTransfer.types.includes('application/x-designer-photos')
+  const acceptsPhotos = (event: DragEvent) => event.dataTransfer.types.includes(PHOTO_DRAG_TYPE)
 
   const shelfProps = (value: Shelf) => {
     const droppable = canEdit && (value === 'none' || typeof value === 'number')
@@ -246,9 +247,8 @@ export default function MapPhotos({ map, canEdit }: Props) {
 
   return (
     <div
-      onDragOver={(e) => { if (canEdit && e.dataTransfer.types.includes('Files')) { e.preventDefault(); setDraggingFiles(true) } }}
-      onDragLeave={(e) => e.currentTarget === e.target && setDraggingFiles(false)}
-      onDrop={(e) => { if (e.dataTransfer.files.length) { e.preventDefault(); setDraggingFiles(false); if (canEdit) addFiles(e.dataTransfer.files) } }}
+      onDragOver={(e) => { if (canEdit && draggingFiles) e.preventDefault() }}
+      onDrop={(e) => { if (e.dataTransfer.files.length) { e.preventDefault(); if (canEdit) addFiles(e.dataTransfer.files) } }}
     >
       <Head title={t('photo_pages.page_title', { map: map.name })} />
       <MapViewHeader map={map} current="photos" />

@@ -9,7 +9,12 @@
 # have never been read (`PhotoCameraJob.backfill`).
 class PhotoCameraJob < ApplicationJob
   queue_as :default
-  discard_on ActiveRecord::RecordNotFound, ActiveStorage::FileNotFoundError
+  discard_on ActiveRecord::RecordNotFound
+
+  # A file that is gone, or no longer matches its checksum, cannot be read:
+  # the photo is recorded as read (no camera) so the backfill moves past it
+  # instead of failing on it every ten minutes.
+  UNREADABLE = [ ActiveStorage::FileNotFoundError, ActiveStorage::IntegrityError ].freeze
 
   BACKFILL_BATCH = 50
 
@@ -30,6 +35,9 @@ class PhotoCameraJob < ApplicationJob
     changes[:heading] = heading if photo.heading.nil? && heading
     photo.update_columns(changes.merge(updated_at: Time.current))
     prepare_large_variant(photo)
+  rescue *UNREADABLE => error
+    Rails.logger.warn("[photos] cannot read photo #{photo.id}: #{error.class}")
+    photo.update_columns(camera: {}, updated_at: Time.current)
   end
 
   private

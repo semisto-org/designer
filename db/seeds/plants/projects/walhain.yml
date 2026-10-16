@@ -1,0 +1,392 @@
+# Plants of a Semisto design project in Walhain (Brabant wallon), 2026: the
+# « Palette avant » spreadsheet and the species of the planting discs.
+# Values only, as the list gives them (source « semisto_walhain », status
+# « to_verify »); the species the list left « à compléter » carry only their
+# habit and strata. Loaded by db/seeds/10_plants.rb with Catalog::SeedLoader.
+# Latin names follow the GBIF Backbone (checked 2026-10-16), with the names
+# used in the list kept as synonyms; Eriobotrya keeps its garden name.
+
+- latin_name: Maclura tricuspidata
+  common_names: ["Cudranier"]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+
+- latin_name: Echinacea tennesseensis
+  common_names: ["Échinacée du Tennessee"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 0.9
+  spread_max_m: 0.5
+  exposures: [sun]
+  flowering_months: [6, 7, 8, 9]
+
+- latin_name: Salvia nemorosa
+  common_names: ["Sauge des bois"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 0.5
+  spread_max_m: 0.3
+  min_temperature_c: -20.5
+  soil_moisture: [dry, moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [5, 6, 8, 9]
+  varieties: ["Caradonna"]
+
+- latin_name: Allium aflatunense
+  common_names: ["Ail d'Aflatun"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 0.9
+  spread_max_m: 0.1
+  min_temperature_c: -23.5
+  soil_moisture: [dry, moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [5, 6]
+  varieties: ["Purple Sensation"]
+
+- latin_name: Satureja montana
+  common_names: ["Sarriette des montagnes"]
+  plant_type: small-shrub
+  strata: ground_cover
+  foliage_type: evergreen
+  exposures: [sun]
+
+- latin_name: Thymus praecox
+  common_names: ["Thym précoce"]
+  plant_type: small-shrub
+  strata: ground_cover
+  foliage_type: evergreen
+  exposures: [sun]
+
+- latin_name: Plantago major
+  common_names: ["Grand plantain"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+
+- latin_name: Aquilegia vulgaris
+  common_names: ["Ancolie des jardins"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 0.6
+  spread_max_m: 0.3
+  min_temperature_c: -29.0
+  soil_moisture: [moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [5, 6]
+
+- latin_name: Oxalis tetraphylla
+  common_names: ["Trèfle à quatre feuilles"]
+  synonyms: [Oxalis deppei]
+  plant_type: herbaceous
+  strata: ground_cover
+  life_cycle: perennial
+  foliage_type: deciduous
+  min_temperature_c: -9.5
+  exposures: [sun]
+  flowering_months: [7, 8]
+
+- latin_name: Medicago sativa
+  common_names: ["Luzerne"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  exposures: [sun]
+
+- latin_name: Lotus corniculatus
+  common_names: ["Lotier corniculé"]
+  plant_type: herbaceous
+  strata: ground_cover
+  life_cycle: perennial
+  foliage_type: deciduous
+  exposures: [sun]
+
+- latin_name: Taraxacum officinale
+  common_names: ["Pissenlit"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+
+- latin_name: Dactylis glomerata
+  common_names: ["Dactyle aggloméré"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+
+- latin_name: Lolium arundinaceum
+  common_names: ["Fétuque élevée"]
+  synonyms: [Festuca arundinacea, Schedonorus arundinaceus]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+
+- latin_name: Salix repens
+  common_names: ["Saule rampant"]
+  plant_type: small-shrub
+  strata: ground_cover
+  foliage_type: deciduous
+
+- latin_name: Erigeron karvinskianus
+  common_names: ["Vergerette de Karvinski"]
+  plant_type: herbaceous
+  strata: ground_cover
+  life_cycle: perennial
+  foliage_type: semi-evergreen
+  height_max_m: 0.2
+  spread_max_m: 0.5
+  min_temperature_c: -15.0
+  soil_moisture: [dry]
+  exposures: [sun, partial-shade]
+  flowering_months: [5, 6, 7, 8, 9, 10]
+
+- latin_name: Eryngium planum
+  common_names: ["Panicaut"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: evergreen
+  height_max_m: 0.5
+  spread_max_m: 0.45
+  min_temperature_c: -18.0
+  soil_moisture: [dry, moist]
+  exposures: [sun]
+  flowering_months: [7, 8, 9]
+  varieties: ["Lapis Blue"]
+
+- latin_name: Rudbeckia fulgida
+  common_names: ["Rudbeckie brillante"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 0.6
+  spread_max_m: 0.5
+  min_temperature_c: -29.0
+  soil_moisture: [moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [8, 9, 10]
+  varieties: ["Goldsturm"]
+
+- latin_name: Nassella tenuissima
+  common_names: ["Stipe cheveux d'ange"]
+  synonyms: [Stipa tenuissima]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: evergreen
+  height_max_m: 0.45
+  spread_max_m: 0.45
+  min_temperature_c: -15.0
+  soil_moisture: [dry]
+  exposures: [sun]
+  flowering_months: [7, 8]
+
+- latin_name: Miscanthus sinensis
+  common_names: ["Eulalie du Japon"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 1.5
+  spread_max_m: 0.5
+  min_temperature_c: -29.0
+  soil_moisture: [moist]
+  exposures: [sun]
+  flowering_months: [9, 10]
+  varieties: ["Morning Light"]
+
+- latin_name: Oenothera lindheimeri
+  common_names: ["Gaura de Lindheimer"]
+  synonyms: [Gaura lindheimeri]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 1.0
+  spread_max_m: 0.6
+  min_temperature_c: -12.0
+  soil_moisture: [dry]
+  exposures: [sun]
+  flowering_months: [7, 8, 9]
+  varieties: ["Whirling Butterflies"]
+
+- latin_name: Verbena bonariensis
+  common_names: ["Verveine de Buenos Aires"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: semi-evergreen
+  height_max_m: 1.2
+  spread_max_m: 0.3
+  min_temperature_c: -15.0
+  soil_moisture: [dry, moist]
+  exposures: [sun]
+  flowering_months: [6, 7, 8, 9, 10]
+
+- latin_name: Rosa × hybrida
+  common_names: ["Rosier buisson"]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  height_max_m: 1.0
+  spread_max_m: 1.0
+  min_temperature_c: -15.0
+  exposures: [sun, partial-shade]
+  flowering_months: [6, 7, 9]
+  varieties: ["Henrianne de Gerlache", "Mel Bee"]
+
+- latin_name: Euphorbia characias
+  common_names: ["Euphorbe characias"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: evergreen
+  height_max_m: 0.9
+  spread_max_m: 0.6
+  min_temperature_c: -15.0
+  soil_moisture: [dry]
+  exposures: [sun]
+  flowering_months: [3, 4, 5, 6]
+
+- latin_name: Choisya ternata
+  common_names: ["Oranger du Mexique"]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: evergreen
+  height_max_m: 1.2
+  spread_max_m: 1.2
+  min_temperature_c: -15.0
+  soil_moisture: [dry, moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [4, 5, 9]
+  varieties: ["White Dazzler"]
+
+- latin_name: Hydrangea macrophylla
+  common_names: ["Hortensia"]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  height_max_m: 1.5
+  spread_max_m: 1.5
+  soil_moisture: [moist]
+  soil_richness: rich
+  exposures: [partial-shade, shade]
+  flowering_months: [7, 8, 9, 10]
+  varieties: ["Libelle"]
+
+- latin_name: Hamamelis × intermedia
+  common_names: ["Hamamélis"]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: deciduous
+  height_max_m: 4.0
+  spread_max_m: 4.0
+  min_temperature_c: -23.5
+  soil_moisture: [moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [1, 2]
+  varieties: ["Arnold's Promise"]
+
+- latin_name: Stewartia pseudocamellia
+  common_names: ["Stewartia"]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: deciduous
+
+- latin_name: Eriobotrya japonica
+  common_names: ["Néflier du Japon"]
+  synonyms: [Rhaphiolepis bibas]
+  plant_type: tree
+  strata: sub_canopy
+  foliage_type: evergreen
+  height_max_m: 6.0
+  spread_max_m: 4.5
+  min_temperature_c: -9.5
+  soil_moisture: [dry, moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [10, 11]
+
+- latin_name: Clematis armandii
+  common_names: ["Clématite du père Armand"]
+  plant_type: climber
+  strata: vine
+  foliage_type: evergreen
+  height_max_m: 4.0
+  spread_max_m: 3.0
+  min_temperature_c: -12.0
+  soil_moisture: [moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [3, 4]
+  varieties: ["Apple Blossom"]
+
+- latin_name: Wisteria floribunda
+  common_names: ["Glycine du Japon"]
+  plant_type: climber
+  strata: vine
+  foliage_type: deciduous
+  height_max_m: 8.0
+  spread_max_m: 6.0
+  min_temperature_c: -20.5
+  soil_moisture: [moist]
+  exposures: [sun]
+  flowering_months: [5, 6]
+  varieties: ["Macrobotrys"]
+
+- latin_name: Geranium himalayense × wallichianum
+  common_names: ["Géranium vivace"]
+  plant_type: herbaceous
+  strata: ground_cover
+  life_cycle: perennial
+  foliage_type: evergreen
+  height_max_m: 0.5
+  spread_max_m: 0.7
+  min_temperature_c: -23.5
+  soil_moisture: [moist]
+  exposures: [partial-shade]
+  flowering_months: [6, 7, 8, 9, 10]
+  varieties: ["Rozanne"]
+
+- latin_name: Limonium platyphyllum
+  common_names: ["Statice vivace à larges feuilles"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: deciduous
+  height_max_m: 0.7
+  spread_max_m: 0.6
+  min_temperature_c: -20.5
+  exposures: [sun]
+  flowering_months: [7, 8, 9]
+
+- latin_name: Nepeta grandiflora
+  common_names: ["Népéta à grandes fleurs"]
+  plant_type: herbaceous
+  strata: herbaceous
+  life_cycle: perennial
+  foliage_type: evergreen
+  height_max_m: 0.35
+  spread_max_m: 0.45
+  min_temperature_c: -18.0
+  soil_moisture: [dry, moist]
+  exposures: [sun, partial-shade]
+  flowering_months: [5, 6, 7, 8, 9, 10]
+  varieties: ["Summer Magic"]
+
+- latin_name: Camellia japonica
+  common_names: ["Camélia du Japon"]
+  plant_type: shrub
+  strata: shrub
+  foliage_type: evergreen
+  exposures: [partial-shade]

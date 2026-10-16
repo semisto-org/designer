@@ -14,7 +14,7 @@
 import type { Geometry } from 'geojson'
 import { buildingLayer, type BuildingData, type BuildingLayer, type BuildingsResponse } from './buildings.ts'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
-import { applyDesigns, downsampleDesigned, type Design, type Footprint } from './design.ts'
+import { applyDesigns, downsampleCrest, downsampleDesigned, pointsAlong, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
 import { coldAirField, coldLayer, type ColdAirField } from './coldAir.ts'
 import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage } from './hydro.ts'
@@ -161,6 +161,25 @@ const SWALE_DEFAULTS: Record<string, { width: number; depth: number; berm: numbe
   keyline: { width: 1, depth: 0.3, berm: 0.2 },
   ditch: { width: 1, depth: 0.5, berm: 0 },
 }
+// Structures across the flow, raised on the relief. A level crest holds a
+// pool in a gully; `seep` is the share of the flow a porous one lets
+// through below its crest (0: an earth bank); `pool` how far upstream the
+// water it holds reaches.
+const BARRIER_DEFAULTS: Record<string, { height: number; width: number; level: boolean; seep: number; pool: number }> = {
+  check_dam: { height: 0.4, width: 0.8, level: true, seep: 0.05, pool: 30 },
+  beaver_dam_analogue: { height: 0.6, width: 1, level: true, seep: 0.03, pool: 50 },
+  fascine: { height: 0.3, width: 0.5, level: false, seep: 0.15, pool: 5 },
+  hedge_bank: { height: 0.6, width: 1.5, level: false, seep: 0, pool: 5 },
+}
+const CHECK_DAM_SEEP: Record<string, number> = { dry_stone: 0.05, gabion: 0.08, wood: 0.02, brush: 0.12 }
+// What a work does to the soil it covers: hedge roots open it, dense grass
+// opens it and slows the water running over it (its highest speed, m/s).
+type SoilEffect = { rateFactor: number; speed?: number }
+const SOIL_EFFECTS: Record<string, SoilEffect> = {
+  hedge_bank: { rateFactor: 3 },
+  grass_strip: { rateFactor: 2.5, speed: 0.1 },
+  'grass_strip:lawn': { rateFactor: 1.5, speed: 0.3 },
+}
 
 const nextPaint = () => new Promise((resolve) => setTimeout(resolve, 30))
 
@@ -184,6 +203,13 @@ export class ReliefController {
   station: Station | null = null
   designs: Design[] = []
   footprints: Footprint[] = []
+  /** Grass strips: no earthworks, a soil that drinks more and slows the water. */
+  strips: Array<{ id: number | string; ring: GridPoint[]; effect: SoilEffect }> = []
+  /** The soil effect of a design, by id (hedge banks). */
+  private designEffects = new Map<number | string, SoilEffect>()
+  /** The dug relief the water runs on (without the porous structures), and those structures. */
+  private flowGround: Float32Array | null = null
+  private crestFull: { crest: Float32Array; seep: Float32Array } | null = null
   meshFactor = 1
   zRange: [number, number] = [0, 0]
   disposed = false
@@ -532,6 +558,8 @@ export class ReliefController {
 
   private designsFromFeatures(): Design[] {
     const designs: Design[] = []
+    this.strips = []
+    this.designEffects.clear()
     for (const feature of this.options.features) {
       const props = (feature.properties ?? {}) as Record<string, unknown>
       if (props.status && props.status !== 'active') continue
@@ -552,12 +580,31 @@ export class ReliefController {
           width: numberProp(props.width_m ?? props.width, defaults.width), depth: numberProp(props.depth_m ?? props.depth, defaults.depth),
           berm: props.berm === 0 ? 0 : numberProp(props.berm, defaults.berm),
         })
+      } else if (BARRIER_DEFAULTS[kind] && geometry?.type === 'LineString') {
+        const defaults = BARRIER_DEFAULTS[kind]
+        const seep = kind === 'check_dam' ? CHECK_DAM_SEEP[String(props.material)] ?? defaults.seep : defaults.seep
+        designs.push({
+          id, type: 'barrier', points: geometry.coordinates.map((p) => toGrid(this.meta, p)),
+          height: numberProp(props.height_m, defaults.height), width: numberProp(props.width_m, defaults.width),
+          level: defaults.level, seep, pool: defaults.pool,
+        })
+        if (SOIL_EFFECTS[kind]) this.designEffects.set(id, SOIL_EFFECTS[kind])
+      } else if (kind === 'half_moon' && (geometry?.type === 'Point' || geometry?.type === 'LineString')) {
+        const centres = geometry.type === 'Point'
+          ? [toGrid(this.meta, geometry.coordinates)]
+          : pointsAlong(geometry.coordinates.map((p) => toGrid(this.meta, p)), numberProp(props.spacing_m, 5))
+        designs.push({
+          id, type: 'half_moon', centres, radius: numberProp(props.diameter_m, 3) / 2, depth: numberProp(props.depth_m, 0.2),
+        })
+      } else if (kind === 'grass_strip' && geometry?.type === 'Polygon') {
+        const effect = SOIL_EFFECTS[props.cover === 'lawn' ? 'grass_strip:lawn' : 'grass_strip']
+        this.strips.push({ id, ring: geometry.coordinates[0].map((p) => toGrid(this.meta, p)), effect })
       }
     }
     return designs
   }
 
-  get hasDesigns() { return this.designs.length > 0 }
+  get hasDesigns() { return this.designs.length > 0 || this.strips.length > 0 }
 
   /** The dug relief and all that depends on it: mesh, axes, station, simulations. */
   reshape({ keepMesh = false }: { keepMesh?: boolean } = {}) {
@@ -566,9 +613,13 @@ export class ReliefController {
     if (this.rain.dig && this.designs.length) {
       const result = applyDesigns(heights, cols, rows, this.cell, this.designs)
       this.ground = result.heights
+      this.flowGround = result.flow
+      this.crestFull = result.flow === result.heights ? null : { crest: result.crest, seep: result.seep }
       this.footprints = result.footprints
     } else {
       this.ground = heights
+      this.flowGround = null
+      this.crestFull = null
       this.footprints = []
     }
     if (this.buildingsData) this.layoutBuildings()
@@ -881,16 +932,52 @@ export class ReliefController {
     const factor = this.simFactor
     const size = this.cell * factor
     const base = downsample(heights, cols, rows, factor)
-    const dug = this.footprints.length > 0
-    const designed = dug ? downsampleDesigned(heights, this.ground, cols, rows, factor) : base.heights
-    const maps = this.soilMaps()
-    this.simulation = new RainSimulation(designed, base.cols, base.rows, size, this.simOptions(maps))
-    this.baseline = dug ? new RainSimulation(base.heights, base.cols, base.rows, size, this.simOptions(maps)) : null
-    this.domainCells = null
+    const built = this.footprints.length > 0
+    const dug = built || (this.rain.dig && this.strips.length > 0)
+    const designed = built ? downsampleDesigned(heights, this.flowGround ?? this.ground, cols, rows, factor) : base.heights
+    const crest = this.crestFull ? downsampleCrest(this.crestFull.crest, this.crestFull.seep, cols, rows, factor) : null
     this.simCells.clear()
     for (const footprint of this.footprints) this.simCells.set(footprint.id, this.toSimCells(footprint.cells))
+    const maps = this.soilMaps()
+    const soil = dug ? this.designedSoil(maps.rate, base.cols * base.rows) : null
+    this.simulation = new RainSimulation(designed, base.cols, base.rows, size, {
+      ...this.simOptions(soil ? { rate: soil.rate, storage: maps.storage } : maps),
+      speedMap: soil?.speed ?? null, crestMap: crest?.crest ?? null, seepMap: crest?.seep ?? null,
+    })
+    this.baseline = dug ? new RainSimulation(base.heights, base.cols, base.rows, size, this.simOptions(maps)) : null
+    this.domainCells = null
     this.playing = false
     this.emitStats()
+  }
+
+  /**
+   * The soil of the designed land: where a hedge bank or a grass strip
+   * stands, it drinks more, and grass slows the water. Null when no work
+   * changes it.
+   */
+  private designedSoil(rate: Float32Array, n: number): { rate: Float32Array; speed: Float32Array | null } | null {
+    const effects: Array<{ cells: number[]; effect: SoilEffect }> = []
+    for (const [id, effect] of this.designEffects) {
+      const cells = this.simCells.get(id)
+      if (cells) effects.push({ cells, effect })
+    }
+    for (const strip of this.strips) effects.push({ cells: this.toSimCells(ringCells(this.meta.cols, this.meta.rows, this.cell, strip.ring)), effect: strip.effect })
+    if (!effects.length) return null
+    const out = Float32Array.from(rate)
+    let speed: Float32Array | null = null
+    const factors = new Float32Array(n).fill(1)
+    for (const { cells, effect } of effects) {
+      for (const i of cells) {
+        if (i >= n) continue
+        factors[i] = Math.max(factors[i], effect.rateFactor)
+        if (effect.speed) {
+          speed ??= new Float32Array(n)
+          speed[i] = speed[i] > 0 ? Math.min(speed[i], effect.speed) : effect.speed
+        }
+      }
+    }
+    for (let i = 0; i < n; i++) out[i] *= factors[i]
+    return { rate: out, speed }
   }
 
   setRain(settings: Partial<RainSettings>) {

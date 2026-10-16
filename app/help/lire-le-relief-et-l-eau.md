@@ -28,7 +28,7 @@ Sous **Sur la carte**, choisis **Écoulement** pour voir en bleu les axes où l'
 **Ouvrir la vue 3D** affiche le terrain en relief, en quatre onglets :
 
 - **Vue** : le fond (photo, altitudes, végétation, exposition, humidité, gel, occupation du sol, blocs), l'exagération du relief, les **Courbes de niveau** tous les 1, 2,5 ou 5 m, les **Axes d'écoulement**, les **Cuvettes** et tes éléments dessinés. Un clic sur le terrain le sonde : altitude, pente, orientation.
-- **Pluie** : choisis l'intensité (**Pluie**, **Forte** ou **Orage**), la durée de l'averse et l'état du sol au départ, puis **Faire pleuvoir**. Active **Creuser les mares et baissières de la carte** pour voir ce que tes ouvrages retiennent, comparé au terrain actuel.
+- **Pluie** : choisis l'intensité (**Pluie**, **Forte** ou **Orage**), la durée de l'averse et l'état du sol au départ, puis **Faire pleuvoir**. Active **Construire les ouvrages de l'eau de la carte** pour voir ce que tes mares, baissières, demi-lunes, seuils, talus et bandes enherbées retiennent, comparé au terrain actuel.
 - **Soleil** : les ombres à une heure donnée, ou les **Heures de soleil** en hiver, à l'équinoxe, en été ou aujourd'hui.
 - **Nuit** : où glisse et où s'accumule l'air froid par nuit claire et sans vent, de 21 h à l'aube. Fais glisser l'heure ou touche **Faire passer la nuit** : la brume descend les pentes, une nappe d'air froid s'épaissit dans les fonds et le sol blanchit là où le givre se forme en premier. Une haie ou un mur en travers de la pente retient l'air froid au-dessus de lui. Un clic sur le terrain donne l'épaisseur de la nappe à cet endroit. Garde les floraisons précoces hors de la nappe.
 
@@ -62,7 +62,7 @@ La courbe se calcule sur le relief lissé sur environ 2 m : elle ignore les peti
 
 ## Le bassin versant d'une mare ou d'une baissière
 
-Une mare ne se remplit pas avec la pluie qui tombe sur elle, mais avec toute celle qui ruisselle vers elle. Sélectionne une **mare**, une **baissière** ou un **jardin de pluie** : la partie **Bassin versant** de sa fiche colorie en bleu, sur la carte, la surface dont l'eau finit là, et donne sa taille (dont la part sur ton terrain) et la pluie qui y tombe chaque année.
+Une mare ne se remplit pas avec la pluie qui tombe sur elle, mais avec toute celle qui ruisselle vers elle. Sélectionne une **mare**, une **baissière**, un **jardin de pluie**, des **demi-lunes** ou un ouvrage en travers de l'eau (seuil, fascine, talus) : la partie **Bassin versant** de sa fiche colorie en bleu, sur la carte, la surface dont l'eau finit là, et donne sa taille (dont la part sur ton terrain) et la pluie qui y tombe chaque année.
 
 Elle compare ensuite le volume de l'ouvrage à ce qui y arrive : combien de millimètres de pluie qui ruisselle suffisent à l'emplir, sur un sol déjà gorgé d'eau comme en hiver. Peu de millimètres, et l'ouvrage débordera à chaque grosse averse : soigne son trop-plein. Beaucoup, et il se remplira lentement. Quand le bassin versant touche le bord du relief téléchargé, il continue plus haut : regarde d'où vient l'eau, chez les voisins, sur un chemin ou une route.
 
@@ -85,6 +85,19 @@ Dans **Eau et relief**, une fois le relief téléchargé, touche **Chercher les 
 Depuis la fiche d'une keyline, **Lignes parallèles** trace des lignes au-dessus et en dessous, à l'écart que tu choisis. L'écart change avec l'usage : 15 à 30 m entre des baissières, 8 à 15 m entre des lignes d'arbres, 1 à 3 m pour un décompactage. Seule la keyline suit la courbe de niveau. Ses parallèles gardent sa forme : au-dessus, elles descendent doucement vers les croupes, en dessous elles y remontent, et c'est ce qui y emmène l'eau. Les lignes s'affichent sur la carte avant que tu les ajoutes.
 
 Certains terrains n'ont pas de vallon qui casse nettement sa pente. Dans ce cas, une baissière posée avec « Suivre la courbe » fait très bien l'affaire.
+
+## Freiner l'eau : seuils, fascines, talus, demi-lunes
+
+Là où l'eau se concentre et emporte la terre, plusieurs petits ouvrages perméables valent mieux qu'un grand. Tu les trouves dans la couche Eau, quand tu dessines :
+
+- **Seuil filtrant** : un muret bas de pierres sèches, de gabions, de rondins ou de branchages, tracé d'une berge à l'autre en travers d'une ravine ou d'un fossé. Sa crête est horizontale : il retient une petite mare qui dépose sa terre et s'infiltre, et laisse passer le reste à travers ses pierres.
+- **Fascine** : des fagots de branches tenus par des piquets, en travers d'une lame d'eau diffuse qui descend la pente. Elle retient la terre et fait boire le sol juste au-dessus.
+- **Haie sur talus** : un talus de terre planté d'une haie dense, sur la courbe de niveau. Il retient l'eau dès le premier hiver, et les racines ouvrent le sol un peu plus chaque année.
+- **Demi-lunes** : des cuvettes en croissant, ouvertes vers le haut de la pente, pour un jeune arbre sur une pente sèche. Touche un point pour une demi-lune, ou trace une ligne pour une rangée, avec l'espacement de ton choix.
+- **Bande enherbée** : une bande de prairie dense sous une culture ou un sol nu. Elle freine l'eau et lui laisse le temps de s'infiltrer.
+- **Analogue de barrage de castor** : une rangée de pieux tressés de branches en travers d'un petit ruisseau. Comme tout ce qui touche un cours d'eau, il demande l'accord de l'administration.
+
+La fiche de chacun donne son **Bassin versant** et dit, d'après la surface qui y draine, s'il suffit ou s'il en faut plusieurs en série. Dans la vue 3D, la pluie les trouve sur son chemin. Le seuil, la fascine et l'analogue de barrage de castor retiennent l'eau sous leur crête, en la laissant filtrer à travers, et la débordent au-dessus. Le talus et les demi-lunes la retiennent. La bande enherbée et la haie font boire le sol davantage.
 
 ## Pendant l'averse : noter où l'eau court
 

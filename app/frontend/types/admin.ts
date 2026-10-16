@@ -7,6 +7,8 @@ export type AdminUserRow = {
   email: string
   avatarUrl: string | null
   admin: boolean
+  /** Reviews the species people propose to the plant catalogue. */
+  catalogueReviewer: boolean
   google: boolean
   createdAt: string
   lastSignedInAt: string | null
@@ -26,7 +28,7 @@ export type AdminMapRow = {
   owner: { id: number; name: string; email: string }
 }
 
-export type AdminEventAction = 'impersonation_started' | 'impersonation_ended' | 'admin_granted' | 'admin_revoked'
+export type AdminEventAction = 'impersonation_started' | 'impersonation_ended' | 'admin_granted' | 'admin_revoked' | 'reviewer_granted' | 'reviewer_revoked'
 
 export type AdminEventRow = {
   id: number

@@ -102,6 +102,16 @@ class User < ApplicationRecord
     name.presence || email_address.split("@").first
   end
 
+  # Active maps the person can open: theirs, the ones shared with them and
+  # their teams' maps (as on « Mes cartes »).
+  def openable_maps
+    Map.active.where(id: map_memberships.select(:map_id))
+       .or(Map.active.where(organization_id: organization_memberships.select(:organization_id)))
+  end
+
+  # Accepts or merges the species people propose to the plant catalogue.
+  def can_review_catalogue? = admin? || catalogue_reviewer?
+
   def entitlements
     @entitlements ||= Entitlements.for(self)
   end
@@ -117,7 +127,8 @@ class User < ApplicationRecord
     # newRequests: the "Demandes" link shows once one of my accounts has a
     # request form, with a dot while requests wait for a first call.
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
-      tourSeen: tour_seen_at.present?, accountKind: account_kind, newRequests: new_requests_count }
+      tourSeen: tour_seen_at.present?, accountKind: account_kind, newRequests: new_requests_count,
+      catalogueReviewer: can_review_catalogue? }
   end
 
   # Requests not called yet on the forms I read; nil without any form.
