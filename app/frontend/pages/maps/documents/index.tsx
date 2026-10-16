@@ -12,6 +12,7 @@ import { UploadList } from '@/documents/ProjectDocuments'
 import { useDocumentUploads } from '@/documents/upload'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { useFileDrag } from '@/lib/useFileDrag'
 import { formatMegabytes } from '@/map/photos/format'
 import { groupByTag, hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
@@ -45,7 +46,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
   const [grouped, setGrouped] = useState(true)
   // ?open=ID (from the editor's panel) opens that document at once.
   const [openId, setOpenId] = useState<number | null>(() => (typeof window === 'undefined' ? null : Number(new URLSearchParams(window.location.search).get('open')) || null))
-  const [dragging, setDragging] = useState(false)
+  const dragging = useFileDrag(canEdit)
   const [error, setError] = useState<string | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const endpoint = `/maps/${map.id}/documents`
@@ -88,7 +89,6 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
 
   function onDrop(event: DragEvent) {
     event.preventDefault()
-    setDragging(false)
     if (canEdit) addFiles(event.dataTransfer.files)
   }
 
@@ -127,7 +127,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
   )
 
   return (
-    <div onDragOver={(e) => { if (canEdit) { e.preventDefault(); setDragging(true) } }} onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)} onDrop={onDrop}>
+    <div onDragOver={(e) => { if (canEdit) e.preventDefault() }} onDrop={onDrop}>
       <Head title={t('documents.page_title', { map: map.name })} />
       <MapViewHeader map={map} current="documents" />
 
