@@ -42,6 +42,12 @@ fr:
       mellifere: "Mellifère"
       native: "Indigène en %{country}"
       no_invasive: "Sans les invasives"
+    photo:
+      alt: "%{name} en photo"
+      credit: "Photo : %{author} · %{license}"
+      credit_no_author: "Photo : %{license}"
+      on_commons: "voir sur Wikimedia Commons"
+      none: "Pas encore de photo"
     card:
       zone: "Zone %{zone}"
       height: "%{value} m de haut"

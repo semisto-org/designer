@@ -34,6 +34,8 @@ class PlantSpecies < ApplicationRecord
            foreign_key: :species_id, inverse_of: :species, dependent: :destroy
   has_many :palette_items, foreign_key: :species_id, inverse_of: :species, dependent: :restrict_with_error
   has_many :observations, class_name: "PlantObservation", foreign_key: :species_id, inverse_of: :species, dependent: :nullify
+  has_many :photos, -> { order(:position, :id) }, class_name: "PlantPhoto", foreign_key: :species_id,
+           inverse_of: :species, dependent: :destroy
 
   normalizes :latin_name, with: ->(n) { n.to_s.squish.sub(/\A(\p{L})/) { $1.upcase } }
   normalizes :native_countries, :invasive_countries, with: ->(codes) { Array(codes).map { |c| c.to_s.upcase }.uniq.sort }
@@ -57,6 +59,7 @@ class PlantSpecies < ApplicationRecord
 
   scope :alphabetical, -> { order(Arel.sql("lower(plant_species.latin_name)")) }
   scope :with_card_data, -> { includes(:common_names) }
+  scope :with_photos, -> { includes(photos: { image_attachment: { blob: { variant_records: { image_attachment: :blob } } } }) }
 
   # Latin name, common names, cultivar names: accents and case ignored.
   scope :matching, ->(query) {
@@ -85,6 +88,9 @@ class PlantSpecies < ApplicationRecord
   def native_in?(country) = country.present? && native_countries.include?(country.to_s.upcase)
   def invasive_in?(country) = country.present? && invasive_countries.include?(country.to_s.upcase)
   def woody? = %w[tree shrub small-shrub climber].include?(plant_type)
+
+  # The main photo with its credit (PlantPhoto#as_json), or nil.
+  def photo_json = photos.first&.as_json
 
   # Adult crown and height (m), with the strata default when unknown.
   def adult_spread(strata = default_strata) = PlantGrowth.spread(strata:, species: self)
@@ -117,6 +123,7 @@ class PlantSpecies < ApplicationRecord
       floweringMonths: flowering_months, fruitingMonths: fruiting_months, pruningMonths: pruning_months,
       toxicFor: toxic_for, maturityYears: maturity_years, productionStartYear: production_start_year,
       provenance: provenance_json,
+      photo: photo_json,
       varieties: varieties.map(&:sheet_json)
     )
   end

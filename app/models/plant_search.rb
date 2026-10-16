@@ -67,14 +67,14 @@ class PlantSearch
   def pages = [ (total / PER_PAGE.to_f).ceil, 1 ].max
 
   def results
-    scope.alphabetical.with_card_data.offset((page - 1) * PER_PAGE).limit(PER_PAGE)
+    scope.alphabetical.with_card_data.with_photos.offset((page - 1) * PER_PAGE).limit(PER_PAGE)
   end
 
   def as_json(*)
     species = results.to_a
     counts = PlantObservation.in_ground_counts(species.map(&:id))
     {
-      results: species.map { |s| s.summary_json.merge(inGround: counts.fetch(s.id, 0)) },
+      results: species.map { |s| s.summary_json.merge(inGround: counts.fetch(s.id, 0), photo: s.photo_json) },
       total:, page:, pages:, perPage: PER_PAGE, filters:
     }
   end

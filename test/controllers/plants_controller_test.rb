@@ -18,6 +18,25 @@ class PlantsControllerTest < ActionDispatch::IntegrationTest
     assert_includes page["props"]["vocabulary"]["strata"], "ground_cover"
   end
 
+  test "the card and the sheet show the species' photo with its credit" do
+    apple = plant_species(:apple)
+    photo = apple.photos.new(file_title: "Malus.jpg", author: "Jean Dupont", license: "CC BY-SA 4.0",
+                             page_url: "https://commons.wikimedia.org/wiki/File:Malus.jpg")
+    photo.image.attach(io: file_fixture("plant.png").open, filename: "malus.png")
+    photo.save!
+
+    get plants_path(q: "Malus"), as: :json
+    card = response.parsed_body["results"].sole["photo"]
+    assert_equal [ "Jean Dupont", "CC BY-SA 4.0" ], card.values_at("author", "license")
+    assert_match %r{/rails/active_storage/representations/}, card["cardUrl"]
+
+    get plant_path(apple), headers: inertia_headers
+    assert_equal "https://commons.wikimedia.org/wiki/File:Malus.jpg", response.parsed_body.dig("props", "species", "photo", "pageUrl")
+
+    get plants_path(q: "Alnus"), as: :json
+    assert_nil response.parsed_body["results"].sole["photo"]
+  end
+
   test "index searches without accents and filters as JSON" do
     get plants_path(q: "fraisiér"), as: :json
     assert_equal [ "Fragaria vesca" ], response.parsed_body["results"].map { |r| r["latinName"] }

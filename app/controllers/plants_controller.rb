@@ -14,7 +14,7 @@ class PlantsController < ApplicationController
   end
 
   def show
-    species = PlantSpecies.includes(:genus, :common_names, :field_sources, varieties: %i[common_names field_sources])
+    species = PlantSpecies.with_photos.includes(:genus, :common_names, :field_sources, varieties: %i[common_names field_sources])
                           .find(params[:id].to_i)
     sheet = species.sheet_json
     return render json: { species: sheet } if json_request?
