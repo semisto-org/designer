@@ -45,6 +45,24 @@ class Maps::TasksControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "Commander le broyat" ], response.parsed_body.dig("board", "tasks").pluck("title")
   end
 
+  test "an editor gives a task to someone invited, who is e-mailed their invitation" do
+    @map.invitations.create!(email_address: "dana@example.org", role: "editor", invited_by: users(:michael))
+    sign_in_as users(:michael)
+    get map_tasks_path(@map), headers: inertia_headers
+    assert_includes response.parsed_body.dig("props", "participants"), { "email" => "dana@example.org", "name" => "dana@example.org", "role" => "invited" }
+
+    assert_enqueued_emails 1 do
+      post map_tasks_path(@map), params: { task: { task_list_id: @list.id, title: "Relever les arbres", invitee_email: "dana@example.org" } }, as: :json
+    end
+    assert_response :created
+    assert_equal({ "email" => "dana@example.org", "name" => "dana@example.org", "invited" => true }, response.parsed_body.dig("task", "assignee"))
+
+    task = Task.find(response.parsed_body.dig("task", "id"))
+    patch map_task_path(@map, task), params: { task: { assignee_id: nil, invitee_email: nil } }, as: :json
+    assert_response :success
+    assert_not task.reload.assigned?
+  end
+
   test "giving a task to myself sends nothing" do
     sign_in_as users(:michael)
     assert_no_enqueued_emails do

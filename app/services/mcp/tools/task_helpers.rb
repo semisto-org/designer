@@ -17,7 +17,8 @@ module Mcp
             id: task.id, list_id: task.task_list_id, list: task.task_list.name,
             title: task.title, notes: task.notes, tags: task.tags.presence,
             due_on: task.due_on&.iso8601, overdue: task.overdue? || nil,
-            assignee: task.assignee && { id: task.assignee.id, name: task.assignee.display_name },
+            assignee: (task.assignee && { id: task.assignee.id, name: task.assignee.display_name }) ||
+                      (task.invitee_email && { email: task.invitee_email, invited: true }),
             done: task.done?, completed_at: task.completed_at&.iso8601, completed_by: task.completed_by&.display_name,
             semisto_default: task.key.present? || nil,
             map_says_done: journey ? done.include?(journey) : nil,
@@ -45,7 +46,8 @@ module Mcp
         end
 
         def notify_assignee(task)
-          return if task.assignee_id.nil? || task.assignee_id == user.id
+          return unless task.assigned?
+          return if task.assignee_id == user.id
           TaskMailer.assigned(task, user).deliver_later
         end
 

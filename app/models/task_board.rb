@@ -18,11 +18,14 @@ class TaskBoard
     }
   end
 
-  # The people a task can be given to: everyone who takes part in the map.
+  # The people a task can be given to: everyone who takes part in the map,
+  # then the addresses invited to it or to its team who have no account
+  # there yet (their tasks wait for them, Task#invitee_email).
   def participants
-    map.participants.order(:name, :email_address).map do |user|
+    people = map.participants.order(:name, :email_address).map do |user|
       { id: user.id, name: user.display_name, role: map.role_for(user) }
     end
+    people + map.invitee_emails.sort.map { |email| { email:, name: email, role: "invited" } }
   end
 
   private

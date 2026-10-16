@@ -53,6 +53,7 @@ fr:
       task_notes: "Précisions : pourquoi, comment, avec qui. null l'efface."
       due_on: "Échéance, au format AAAA-MM-JJ."
       assignee_id: "Personne à qui la confier : un id de participants (list_tasks). Elle reçoit un e-mail."
+      assignee_email: "À la place d'assignee_id : l'adresse d'une personne invitée qui n'a pas encore rejoint la carte (participants sans id, role invited, dans list_tasks). Elle reçoit un e-mail avec son lien d'invitation, et la tâche devient la sienne quand elle rejoint la carte."
       task_tags: "Étiquettes de la tâche, de préférence parmi celles que la carte utilise déjà (tags dans list_tasks). 20 au plus, 40 caractères chacune."
       tags_change: "Nouvelle liste complète d'étiquettes, qui remplace l'ancienne ([] les retire toutes). Reprends les étiquettes actuelles pour en ajouter une."
       document_title: "Titre du document tel qu'il apparaît dans la bibliothèque."
@@ -151,6 +152,7 @@ fr:
           move_to_list: "Liste où déplacer la tâche (à la fin de la liste)."
           due_on_change: "Nouvelle échéance au format AAAA-MM-JJ, ou null pour l'effacer."
           assignee_change: "Personne à qui la confier (id de participants dans list_tasks), ou null pour ne la confier à personne. La personne reçoit un e-mail."
+          assignee_email_change: "À la place d'assignee_id : l'adresse d'une personne invitée qui n'a pas encore rejoint la carte (participants sans id dans list_tasks), ou null pour ne la confier à personne. Elle reçoit un e-mail avec son lien d'invitation."
       add_document:
         title: "Ajouter un document"
         description: "Pour un document que tu as rédigé toi-même (pour un fichier existant, PDF, Word, image ou plan, utilise create_upload puis attach_documents). Range dans la bibliothèque « Documents » de la carte un document que tu as rédigé : compte rendu de visite, synthèse d'un entretien, calendrier de plantation en CSV, export GeoJSON… Il est déposé au nom de l'utilisateur, avec son titre, sa description et ses étiquettes. Formats : Markdown (md), texte (txt), CSV ou GeoJSON, 200 000 caractères au plus. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."

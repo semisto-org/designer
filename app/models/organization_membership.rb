@@ -24,6 +24,10 @@ class OrganizationMembership < ApplicationRecord
   after_destroy :stop_paying_for_team, unless: :destroyed_by_association
   after_update :stop_paying_for_team, if: -> { saved_change_to_role? && !admin? }
 
+  # Tasks given to this person's address on the team's maps before they
+  # joined become theirs.
+  after_create { Task.hand_over!(user, emails: user.email_address, maps: organization.maps.select(:id)) }
+
   scope :admins, -> { where(role: "admin") }
 
   def admin? = role == "admin"

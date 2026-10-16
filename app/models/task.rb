@@ -1,6 +1,7 @@
 # One thing to do on a design project: « Faire un test de sol »,
 # « Commander les plants ». It sits in a list of the map, may be assigned to
-# one participant of the map and given a due date, and carries free tags
+# one participant of the map (or, until they join, to someone invited to
+# the map or its team: `invitee_email`) and given a due date, and carries free tags
 # like the map's elements. A task Semisto adds by default has a `key` that
 # names the editor panel where it is done and the step of the journey that
 # says when the map shows it done (TaskList::Defaults).
@@ -21,6 +22,7 @@ class Task < ApplicationRecord
 
   normalizes :title, with: ->(title) { title.to_s.squish }
   normalizes :notes, with: ->(notes) { notes.to_s.strip.presence }
+  normalizes :invitee_email, with: ->(email) { email.to_s.strip.downcase.presence }
 
   validates :title, presence: true, length: { maximum: TITLE_MAX_LENGTH }
   validates :notes, length: { maximum: NOTES_MAX_LENGTH }
@@ -29,6 +31,7 @@ class Task < ApplicationRecord
   validate :starts_before_due
   validate :list_on_the_same_map
   validate :assignee_takes_part, if: -> { assignee_id && will_save_change_to_assignee_id? }
+  validate :invitee_is_invited, if: -> { invitee_email && will_save_change_to_invitee_email? }
 
   scope :ordered, -> { order(:position, :id) }
   scope :pending, -> { where(completed_at: nil) }
@@ -37,9 +40,28 @@ class Task < ApplicationRecord
   scope :steps, -> { where.not(step_kind: nil) }
 
   before_validation { self.map_id ||= task_list&.map_id }
+  before_validation :keep_one_assignee
   before_create :append_position
 
+  # Gives the tasks waiting for `emails` on `maps` to `user`, who just joined
+  # them (an invitation accepted, a membership added).
+  def self.hand_over!(user, emails:, maps:)
+    emails = Array(emails).compact_blank.map { _1.to_s.downcase }.uniq
+    return 0 if emails.empty?
+    where(map_id: maps, invitee_email: emails)
+      .update_all(assignee_id: user.id, invitee_email: nil, updated_at: Time.current)
+  end
+
+  # Frees the tasks waiting for `email` on `maps` once nobody invites that
+  # address there any more (the invitation was withdrawn).
+  def self.release_invitee!(email, maps:)
+    where(map_id: maps, invitee_email: email.to_s.downcase).includes(:map).find_each do |task|
+      task.update_columns(invitee_email: nil) unless task.map.invitee_emails.include?(task.invitee_email)
+    end
+  end
+
   def done? = completed_at.present?
+  def assigned? = assignee_id.present? || invitee_email.present?
   def overdue?(today = Date.current) = !done? && due_on.present? && due_on < today
 
   # Ticks or unticks the task, remembering who did it.
@@ -77,7 +99,7 @@ class Task < ApplicationRecord
       dueOn: due_on&.iso8601,
       startsOn: starts_on&.iso8601,
       stepKind: step_kind,
-      assignee: assignee && { id: assignee.id, name: assignee.display_name, avatarUrl: assignee.avatar_url }.compact,
+      assignee: assignee_json,
       completedAt: completed_at&.iso8601,
       completedBy: completed_by&.display_name,
       createdAt: created_at&.iso8601
@@ -85,6 +107,26 @@ class Task < ApplicationRecord
   end
 
   private
+    # Someone with an account, or an address invited to the map that waits
+    # for its account (« invité·e »).
+    def assignee_json
+      if assignee
+        { id: assignee.id, name: assignee.display_name, avatarUrl: assignee.avatar_url }.compact
+      elsif invitee_email
+        { email: invitee_email, name: invitee_email, invited: true }
+      end
+    end
+
+    # A task goes to one person: giving it to an account frees the invited
+    # address, and the other way round.
+    def keep_one_assignee
+      if invitee_email && will_save_change_to_invitee_email?
+        self.assignee_id = nil
+      elsif assignee_id && will_save_change_to_assignee_id?
+        self.invitee_email = nil
+      end
+    end
+
     def append_position
       self.position = (Task.where(task_list_id:).maximum(:position) || -1) + 1
     end
@@ -105,5 +147,11 @@ class Task < ApplicationRecord
     # member) can be given a task on it.
     def assignee_takes_part
       errors.add(:assignee, :not_a_participant) unless map&.participants&.exists?(id: assignee_id)
+    end
+
+    # An address can wait for its account only while the map or its team
+    # invites it.
+    def invitee_is_invited
+      errors.add(:invitee_email, :not_invited) unless map&.invitee_emails&.include?(invitee_email)
     end
 end

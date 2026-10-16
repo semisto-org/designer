@@ -5,7 +5,25 @@ import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { addTag, MAX_TAG_LENGTH, MAX_TAGS, removeTag } from '@/map/tags/tags'
 import { dueOf, formatMonth, formatMonthShort, isPlantingMonth, monthOfDay, seasonOf, yearAhead, type Day, type Season } from '@/tasks/dates'
-import type { TaskData } from '@/tasks/types'
+import type { Assignee, Participant, TaskData } from '@/tasks/types'
+
+/** A stable key for who a task goes to: `u<id>`, or `e<email>` for an invitee. */
+export function assigneeKey(person: Assignee | Participant | null | undefined): string {
+  if (!person) return ''
+  return person.id != null ? `u${person.id}` : `e${person.email ?? ''}`
+}
+
+/** What to send to give a task to the person behind `key` (or to nobody). */
+export function assigneeParams(key: string): Record<string, unknown> {
+  if (key.startsWith('u')) return { assignee_id: Number(key.slice(1)) }
+  if (key.startsWith('e')) return { invitee_email: key.slice(1) }
+  return { assignee_id: null, invitee_email: null }
+}
+
+/** The name shown for an assignee, marked when they have not joined yet. */
+export function assigneeName(person: Assignee | Participant): string {
+  return person.id == null ? t('tasks.task.invited', { name: person.name }) : person.name
+}
 
 /** The round box of a task: an empty ring, a leaf when done. */
 export function CheckButton({ done, disabled, label, onToggle }: { done: boolean; disabled?: boolean; label: string; onToggle: () => void }) {

@@ -8,7 +8,7 @@ module Mcp
     class UpdateTasks < Base
       include TaskHelpers
 
-      FIELDS = %w[title notes due_on assignee_id tags completed list_id].freeze
+      FIELDS = %w[title notes due_on assignee_id assignee_email tags completed list_id].freeze
 
       requirement :write
       arguments(
@@ -26,6 +26,7 @@ module Mcp
                 list_id: { type: "integer", minimum: 1, description: :move_to_list },
                 due_on: { type: [ "string", "null" ], format: "date", description: :due_on_change },
                 assignee_id: { type: [ "integer", "null" ], minimum: 1, description: :assignee_change },
+                assignee_email: { type: [ "string", "null" ], format: "email", description: :assignee_email_change },
                 tags: {
                   type: "array", maxItems: MapFeature::Tags::MAX_TAGS, uniqueItems: true, description: :tags_change,
                   items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
@@ -73,13 +74,21 @@ module Mcp
             task.title = changes["title"] if changes.key?("title")
             task.notes = changes["notes"] if changes.key?("notes")
             task.due_on = parse_due_on(changes["due_on"]) if changes.key?("due_on")
-            task.assignee_id = changes["assignee_id"] if changes.key?("assignee_id")
+            if changes.key?("assignee_email")
+              task.invitee_email = changes["assignee_email"]
+              task.assignee_id = nil if changes["assignee_email"].nil? && !changes.key?("assignee_id")
+            end
+            if changes.key?("assignee_id")
+              task.assignee_id = changes["assignee_id"]
+              task.invitee_email = nil if changes["assignee_id"].nil? && !changes.key?("assignee_email")
+            end
             task.tags = Array(changes["tags"]) if changes.key?("tags")
             if changes.key?("completed")
               task.completed = changes["completed"]
               task.completed_by = user if task.completed_at_changed? && task.completed_at
             end
-            reassigned = task.assignee_id_changed? && task.assignee_id.present?
+            reassigned = (task.assignee_id_changed? && task.assignee_id.present?) ||
+                         (task.invitee_email_changed? && task.invitee_email.present?)
             task.save!
             if changes.key?("list_id") && changes["list_id"] != task.task_list_id
               list = map.task_lists.find_by(id: changes["list_id"]) or raise Invalid, t("errors.task_list_not_found", id: changes["list_id"])

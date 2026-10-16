@@ -23,6 +23,7 @@ module Mcp
                 notes: { type: "string", maxLength: Task::NOTES_MAX_LENGTH, description: :task_notes },
                 due_on: { type: "string", format: "date", description: :due_on },
                 assignee_id: { type: "integer", minimum: 1, description: :assignee_id },
+                assignee_email: { type: "string", format: "email", description: :assignee_email },
                 tags: {
                   type: "array", maxItems: MapFeature::Tags::MAX_TAGS, uniqueItems: true, description: :task_tags,
                   items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
@@ -60,7 +61,7 @@ module Mcp
           created: created.map { task_json(_1.reload) },
           rejected:,
           url: "#{map_url(map)}/tasks",
-          next_step: t(created.any?(&:assignee_id) ? "notes.tasks_assigned" : "notes.tasks_written")
+          next_step: t(created.any?(&:assigned?) ? "notes.tasks_assigned" : "notes.tasks_written")
         }
       end
 
@@ -69,7 +70,7 @@ module Mcp
           map.tasks.new(
             task_list: list_for(map, line), created_by: user,
             title: line["title"], notes: line["notes"], due_on: parse_due_on(line["due_on"]),
-            assignee_id: line["assignee_id"], tags: Array(line["tags"])
+            assignee_id: line["assignee_id"], invitee_email: line["assignee_email"], tags: Array(line["tags"])
           )
         end
 

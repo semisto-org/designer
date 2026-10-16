@@ -6,7 +6,7 @@ import { EmptyState } from '@/components/ui/Card'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { BUCKETS, bucketOf } from '@/tasks/dates'
-import { AssigneeBadge, CheckButton, DueBadge, TagChip } from '@/tasks/parts'
+import { AssigneeBadge, assigneeKey, assigneeName, CheckButton, DueBadge, TagChip } from '@/tasks/parts'
 import type { TaskWithMap } from '@/tasks/types'
 import type { CurrentUser } from '@/types'
 
@@ -43,8 +43,8 @@ export default function Tasks({ scope, teams, tasks: initial, today }: Props) {
     }
     const keyed = new Map<string, { key: string; title: string; href?: string; items: TaskWithMap[] }>()
     for (const task of tasks) {
-      const key = grouping === 'map' ? `m${task.map.id}` : `a${task.assignee?.id ?? 0}`
-      const title = grouping === 'map' ? task.map.name : task.assignee?.name ?? t('tasks.mine.unassigned')
+      const key = grouping === 'map' ? `m${task.map.id}` : `a${assigneeKey(task.assignee)}`
+      const title = grouping === 'map' ? task.map.name : (task.assignee ? assigneeName(task.assignee) : t('tasks.mine.unassigned'))
       const href = grouping === 'map' ? `/maps/${task.map.id}/tasks` : undefined
       if (!keyed.has(key)) keyed.set(key, { key, title, href, items: [] })
       keyed.get(key)!.items.push(task)
@@ -117,7 +117,7 @@ export default function Tasks({ scope, teams, tasks: initial, today }: Props) {
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-loam-500">
                           <span>{grouping === 'map' ? task.listName : `${task.map.name} · ${task.listName}`}</span>
                           {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}
-                          {task.assignee && task.assignee.id !== currentUser.id && grouping !== 'assignee' && <AssigneeBadge name={task.assignee.name} url={task.assignee.avatarUrl} withName />}
+                          {task.assignee && task.assignee.id !== currentUser.id && grouping !== 'assignee' && <AssigneeBadge name={assigneeName(task.assignee)} url={task.assignee.avatarUrl} withName />}
                           {task.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
                         </div>
                       </div>

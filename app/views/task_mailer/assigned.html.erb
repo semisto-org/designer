@@ -3,5 +3,6 @@
 <p style="font-size:17px;font-weight:600;margin:16px 0 4px"><%= @task.title %></p>
 <% if @task.notes.present? %><p style="color:#6b6257;white-space:pre-line"><%= @task.notes %></p><% end %>
 <% if @task.due_on %><p><%= t(".due", date: I18n.l(@task.due_on, format: :long)) %></p><% end %>
-<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".button") %></a></p>
+<% if @invitation_url %><p><%= t(".invited") %></p><% end %>
+<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(@invitation_url ? ".join_button" : ".button") %></a></p>
 <p style="color:#6b6257;font-size:13px"><%= t(".footer") %></p>

@@ -13,6 +13,8 @@ class MapInvitation < ApplicationRecord
 
   has_secure_token :token
   before_create { self.expires_at ||= EXPIRES_IN.from_now }
+  # Tasks given to this address wait for it only while it is invited.
+  after_destroy { Task.release_invitee!(email_address, maps: map_id) }
 
   scope :pending, -> { where(accepted_at: nil).where("expires_at IS NULL OR expires_at > ?", Time.current) }
 
@@ -27,12 +29,14 @@ class MapInvitation < ApplicationRecord
   end
 
   # Whoever opens the link while signed in joins, whatever e-mail address
-  # they signed in with: the link is the invitation. Raises
+  # they signed in with: the link is the invitation. The tasks given to the
+  # invited address become theirs. Raises
   # Map::EditorLimitReached when the map already has its editors.
   def accept!(user)
     transaction do
       membership = map.grant_access!(user, role, invited_by:)
       update!(accepted_at: Time.current)
+      Task.hand_over!(user, emails: [ email_address, user.email_address ], maps: map_id)
       membership
     end
   end

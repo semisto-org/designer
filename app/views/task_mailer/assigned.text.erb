@@ -6,7 +6,9 @@
 <% if @task.notes.present? %><%= @task.notes %>
 <% end %><% if @task.due_on %>
 <%= t(".due", date: I18n.l(@task.due_on, format: :long)) %>
+<% end %><% if @invitation_url %>
+<%= t(".invited") %>
 <% end %>
-<%= t(".button") %> : <%= @url %>
+<%= t(@invitation_url ? ".join_button" : ".button") %> : <%= @url %>
 
 <%= t(".footer") %>
