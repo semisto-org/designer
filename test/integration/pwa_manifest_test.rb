@@ -5,7 +5,7 @@ class PwaManifestTest < ActionDispatch::IntegrationTest
     get "/manifest.json"
     assert_response :success
     manifest = response.parsed_body
-    assert_equal [ "Semisto Designer", "Designer", "fr", "/maps" ], manifest.values_at("name", "short_name", "lang", "start_url")
+    assert_equal [ "Semisto Terranova", "Terranova", "fr", "/maps" ], manifest.values_at("name", "short_name", "lang", "start_url")
     assert_equal I18n.t("meta.description"), manifest["description"]
     assert_includes manifest["icons"].map { |icon| icon["purpose"] }, "maskable"
     manifest["icons"].each { |icon| assert Rails.public_path.join(icon["src"].delete_prefix("/")).file?, icon["src"] }

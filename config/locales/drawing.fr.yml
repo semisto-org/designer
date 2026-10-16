@@ -400,7 +400,7 @@ fr:
       legend: "Légende"
       north: "N"
       sources: "Sources"
-      made_with: "Semisto Designer · designer.semisto.org"
+      made_with: "Semisto Terranova · terranova.semisto.org"
       boundary: "Limite du terrain"
       more: "+ %{count} autres"
 

@@ -40,7 +40,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   test "pages carry server-side meta tags: title, description, canonical and Open Graph" do
     meta = inertia_page("/tarifs").dig("props", "_inertia_meta")
     by_key = meta.index_by { |tag| tag["headKey"] }
-    assert_equal "Tarifs · Semisto Designer", by_key.dig("title", "innerContent")
+    assert_equal "Tarifs · Semisto Terranova", by_key.dig("title", "innerContent")
     assert_includes by_key.dig("description", "content"), "79 €"
     assert_equal "http://www.example.com/tarifs", by_key.dig("canonical", "href")
     assert_equal "http://www.example.com/tarifs", by_key.dig("og:url", "content")
@@ -66,7 +66,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   test "the full HTML page renders the meta tags for crawlers and link previews" do
     get "/tarifs"
     assert_response :success
-    assert_select "title", text: "Tarifs · Semisto Designer", count: 1
+    assert_select "title", text: "Tarifs · Semisto Terranova", count: 1
     assert_select "meta[name=description]", count: 1
     assert_select "link[rel=canonical][href='http://www.example.com/tarifs']"
     assert_select "meta[property='og:title'][content=Tarifs]"

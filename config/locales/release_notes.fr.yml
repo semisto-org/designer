@@ -1,4 +1,4 @@
-# « Nouveautés »: what changed in the Designer (page, thumbs up, staff
+# « Nouveautés »: what changed in Terranova (page, thumbs up, staff
 # screen). Keys in English, values in French; the backend and the React
 # frontend read the same file.
 fr:
@@ -27,7 +27,7 @@ fr:
             published_on:
               blank: "Indique la date de la nouveauté."
             link_path:
-              invalid: "Le lien doit être une adresse du Designer qui commence par « / », par exemple /help/caler-un-fond-de-plan."
+              invalid: "Le lien doit être une adresse de Terranova qui commence par « / », par exemple /help/caler-un-fond-de-plan."
             screenshot:
               invalid_type: "La capture doit être une image JPEG, PNG ou WebP."
               too_large: "La capture est trop lourde (15 Mo au plus)."
@@ -38,8 +38,8 @@ fr:
       one: "%{count} nouveauté pas encore vue"
       other: "%{count} nouveautés pas encore vues"
     title: "Nouveautés"
-    kicker: "le carnet du Designer"
-    intro: "Ce qui a poussé dans le Designer, noté au fil des saisons. Un pouce levé nous dit ce qui te plaît : c'est ce qui nous aide à choisir ce qui pousse ensuite."
+    kicker: "le carnet de Terranova"
+    intro: "Ce qui a poussé dans Terranova, noté au fil des saisons. Un pouce levé nous dit ce qui te plaît : c'est ce qui nous aide à choisir ce qui pousse ensuite."
     count:
       one: "%{count} nouveauté depuis le %{date}"
       other: "%{count} nouveautés depuis le %{date}"
@@ -54,7 +54,7 @@ fr:
       autumn: "l'automne"
     empty:
       title: "Rien de neuf pour l'instant"
-      body: "Les nouveautés du Designer s'écriront ici, au fil des saisons."
+      body: "Les nouveautés de Terranova s'écriront ici, au fil des saisons."
     screenshot:
       enlarge: "Agrandir la capture"
     like:
@@ -74,14 +74,14 @@ fr:
         other: "%{names} et %{count} autres"
       list_title: "Qui aime « %{title} »"
       see_all: "Voir qui aime"
-    teaser: "Du nouveau dans le Designer : « %{title} »"
+    teaser: "Du nouveau dans Terranova : « %{title} »"
     teaser_more:
-      one: "Du nouveau dans le Designer : « %{title} », et %{count} autre nouveauté"
-      other: "Du nouveau dans le Designer : « %{title} », et %{count} autres nouveautés"
+      one: "Du nouveau dans Terranova : « %{title} », et %{count} autre nouveauté"
+      other: "Du nouveau dans Terranova : « %{title} », et %{count} autres nouveautés"
     admin:
       nav: "Nouveautés"
       title: "Nouveautés"
-      intro: "Les nouveautés que voient les personnes qui utilisent le Designer, dans « Nouveautés ». Tutoie, parle de ce que la personne peut faire maintenant, et ajoute une capture quand elle montre mieux qu'une phrase."
+      intro: "Les nouveautés que voient les personnes qui utilisent Terranova, dans « Nouveautés ». Tutoie, parle de ce que la personne peut faire maintenant, et ajoute une capture quand elle montre mieux qu'une phrase."
       new: "Nouvelle entrée"
       edit_title: "Modifier la nouveauté"
       new_title: "Nouvelle entrée"
@@ -104,7 +104,7 @@ fr:
         screenshot_current: "Capture actuelle"
         remove_screenshot: "Retirer la capture"
         screenshot_alt_hint: "Ce que montre la capture, pour qui ne la voit pas."
-        link_hint: "Facultatif : une adresse du Designer, par exemple /help/caler-un-fond-de-plan."
+        link_hint: "Facultatif : une adresse de Terranova, par exemple /help/caler-un-fond-de-plan."
         link_label_placeholder: "Lire l'aide"
         published: "Publier"
         published_hint: "Visible par tout le monde. Une nouveauté publiée garde son moment de publication si tu la modifies : elle ne repasse pas en « nouveau »."

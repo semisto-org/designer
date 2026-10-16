@@ -18,13 +18,13 @@ fr:
         description: "Une vue aérienne datée de ton terrain, prise par Semisto et configurée sur ta carte. 280 € TTC, achat unique."
       open_source:
         title: "Open source"
-        description: "Semisto Designer est un logiciel libre (AGPL-3.0). Le code, les sources de données et leurs licences, en toute transparence."
+        description: "Semisto Terranova est un logiciel libre (AGPL-3.0). Le code, les sources de données et leurs licences, en toute transparence."
       privacy:
         title: "Politique de confidentialité"
-        description: "Quelles données Semisto Designer collecte, pourquoi, qui les héberge et comment exercer vos droits. Projet à valider."
+        description: "Quelles données Semisto Terranova collecte, pourquoi, qui les héberge et comment exercer vos droits. Projet à valider."
       terms:
         title: "Conditions d'utilisation"
-        description: "Les conditions d'utilisation de Semisto Designer : compte, formules, paiement, contenus et responsabilités. Projet à valider."
+        description: "Les conditions d'utilisation de Semisto Terranova : compte, formules, paiement, contenus et responsabilités. Projet à valider."
       help:
         title: "Centre d'aide"
         description: "Des guides concrets pour créer sa première carte, lire les couches du Géoportail, dessiner l'existant, construire sa palette et connecter son IA."
@@ -70,13 +70,13 @@ fr:
         chapters:
           - kicker: "fais défiler : trente ans vont passer"
             title: "Dessine aujourd'hui le jardin-forêt de 2056."
-            body: "Designer te montre ce que ton terrain va devenir, saison après saison, et t'apprend à le lire en chemin."
+            body: "Terranova te montre ce que ton terrain va devenir, saison après saison, et t'apprend à le lire en chemin."
           - kicker: "janvier 2026"
             title: "Voici ton terrain."
             body: "Un quart d'hectare de prairie, une pente douce vers le sud, un creux qui reste humide en hiver. Une maison, un vieux chemin. Pour l'instant, c'est tout."
           - kicker: "avril 2026 · observer"
             title: "Avant de dessiner, on regarde."
-            body: "Designer lit les couches de ta région : la pente, le sol, l'eau qui ruisselle, le vent dominant. Ici, l'eau descend vers le creux. C'est là que la mare voudra être."
+            body: "Terranova lit les couches de ta région : la pente, le sol, l'eau qui ruisselle, le vent dominant. Ici, l'eau descend vers le creux. C'est là que la mare voudra être."
           - kicker: "novembre 2026 · planter"
             title: "Chaque cercle, c'est un arbre à trente ans."
             body: "Une haie champêtre tout autour, les grands arbres au nord, puis des fruitiers et des arbustes qui descendent en lisière jusqu'aux sentiers. Les pointillés montrent la place que chacun prendra adulte. C'est là que se jouent la plupart des erreurs."
@@ -88,7 +88,7 @@ fr:
             body: "Pommes, cassis, framboises. La haie et les aulnes cassent déjà le vent d'ouest, et le sol ne se voit plus sous la consoude et les fraisiers. Le noyer, lui, prend son temps."
           - kicker: "octobre 2041 · an 15"
             title: "L'ombre a changé de place."
-            body: "Les couronnes se touchent. En fin de journée, l'ombre du noyer atteint le potager. Avec Designer, tu l'aurais vu venir dès le dessin."
+            body: "Les couronnes se touchent. En fin de journée, l'ombre du noyer atteint le potager. Avec Terranova, tu l'aurais vu venir dès le dessin."
           - kicker: "janvier 2056 · an 30"
             title: "En hiver, on voit la structure."
             body: "Les branches nues laissent passer la lumière basse. C'est la saison où l'on taille, où l'on observe, où l'on prépare la suite."
@@ -98,18 +98,18 @@ fr:
             hint: "Clique sur le terrain pour y planter un arbre, et regarde-le pousser."
           - kicker: "et tout autour"
             title: "Ton jardin-forêt, et tous les autres."
-            body: "Chaque carte dessinée dans Designer est un jardin-forêt de plus en Europe. En route vers l'ère des forêts comestibles."
+            body: "Chaque carte dessinée dans Terranova est un jardin-forêt de plus en Europe. En route vers l'ère des forêts comestibles."
         final_cta: "Créer ma carte gratuite"
         final_secondary: "Voir les forfaits"
         free: "ta première carte est gratuite, pour de bon"
-        example: "Terrain d'exemple. Le tien, Designer le dessine sur un vrai fond de carte."
+        example: "Terrain d'exemple. Le tien, Terranova le dessine sur un vrai fond de carte."
       practical:
         kicker: "en pratique"
         title: "Ce qu'il faut savoir avant d'ouvrir ton carnet"
         data:
           kicker: "tes données"
           title: "Ton terrain, à sa vraie précision"
-          body: "Là où ta région publie mieux, Designer prend le meilleur. Ailleurs en Europe, le socle commun prend le relais."
+          body: "Là où ta région publie mieux, Terranova prend le meilleur. Ailleurs en Europe, le socle commun prend le relais."
           sources:
             - name: "Wallonie"
               detail: "Cadastre, plan de secteur, relief LiDAR et sols du Géoportail"
@@ -141,14 +141,14 @@ fr:
           cta: "Comparer les formules"
         open:
           kicker: "né sur un vrai terrain"
-          body: "Designer a été éprouvé sur un lieu réel avant d'être ouvert à tous. Son code est libre (AGPL-3.0) et chaque source de données est citée."
+          body: "Terranova a été éprouvé sur un lieu réel avant d'être ouvert à tous. Son code est libre (AGPL-3.0) et chaque source de données est citée."
           cta: "Un outil libre et transparent"
     # The standout features, told on the home page and at the top of
     # « Fonctionnalités » (app/frontend/components/site/Standouts.tsx).
     # `image` is the file name in app/frontend/components/site/standouts/.
     standouts:
       kicker: "dans le carnet"
-      title: "Ce que Designer sait faire, et que tu ne trouveras nulle part ailleurs"
+      title: "Ce que Terranova sait faire, et que tu ne trouveras nulle part ailleurs"
       intro: "Des outils pensés pour apprendre à lire ton terrain, pas pour remplir un formulaire. Les voici, tels qu'ils tournent aujourd'hui."
       plan: "avec le forfait"
       entries:
@@ -156,7 +156,7 @@ fr:
           image: "rain"
           kicker: "une averse de novembre"
           title: "Fais pleuvoir sur ton terrain, avant de creuser."
-          body: "Sur le relief en 3D de ton terrain, Designer fait tomber une averse : tu vois où l'eau ruisselle, où le sol la boit et où elle s'arrête. Dessine une mare ou une baissière, creuse-la dans le relief simulé, relance la pluie : la même averse tombe sur le terrain actuel pour comparer."
+          body: "Sur le relief en 3D de ton terrain, Terranova fait tomber une averse : tu vois où l'eau ruisselle, où le sol la boit et où elle s'arrête. Dessine une mare ou une baissière, creuse-la dans le relief simulé, relance la pluie : la même averse tombe sur le terrain actuel pour comparer."
           note: "l'eau s'arrête ici : la mare voudra être là"
           caption: "la pluie simulée, et ce qu'en retient une mare"
           alt: "Le relief d'un terrain en 3D sous une averse simulée : l'eau ruisselle dans le creux et remplit une mare dessinée sur la carte."
@@ -167,7 +167,7 @@ fr:
           image: "ai-drafts"
           kicker: "ce soir, à deux"
           title: "Conçois avec ton IA, et garde la main."
-          body: "Branche ton propre assistant (Claude, ChatGPT, Le Chat…) sur ta carte. Il lit la pente, le sol, l'eau et ta fiche projet, suit la méthode de Semisto, puis pose ses idées en brouillons : une haie, une mare, des plantes pour ta palette, chacune avec son pourquoi. Tu gardes ou tu refuses, une par une. Designer, lui, n'envoie ta carte à aucune IA."
+          body: "Branche ton propre assistant (Claude, ChatGPT, Le Chat…) sur ta carte. Il lit la pente, le sol, l'eau et ta fiche projet, suit la méthode de Semisto, puis pose ses idées en brouillons : une haie, une mare, des plantes pour ta palette, chacune avec son pourquoi. Tu gardes ou tu refuses, une par une. Terranova, lui, n'envoie ta carte à aucune IA."
           note: "chaque brouillon dit pourquoi il est là"
           caption: "les brouillons de ton IA, à garder ou à refuser"
           alt: "Des brouillons proposés par une IA dans le panneau de la carte, chacun avec sa justification et deux boutons : garder ou refuser."
@@ -343,7 +343,7 @@ fr:
         title: "Questions fréquentes"
         items:
           - q: "Que se passe-t-il à l'échéance de mon forfait particulier ?"
-            a: "Rien ne se renouvelle tout seul et rien n'est supprimé. Tes cartes restent lisibles, exportables et commentables, et la plus ancienne reste modifiable comme dans la formule gratuite. Quelques semaines avant l'échéance, Designer te propose de renouveler ; si tu le fais avant la date, aucun jour n'est perdu : la nouvelle année commence à la fin de l'ancienne."
+            a: "Rien ne se renouvelle tout seul et rien n'est supprimé. Tes cartes restent lisibles, exportables et commentables, et la plus ancienne reste modifiable comme dans la formule gratuite. Quelques semaines avant l'échéance, Terranova te propose de renouveler ; si tu le fais avant la date, aucun jour n'est perdu : la nouvelle année commence à la fin de l'ancienne."
           - q: "Pourquoi pas d'abonnement pour les particuliers ?"
             a: "Un projet de jardin-forêt avance par saisons, pas par mois. Tu paies une année quand tu en as besoin, sans prélèvement automatique à surveiller."
           - q: "Quelle différence avec Atelier et Bureau d'études ?"
@@ -357,7 +357,7 @@ fr:
           - q: "Puis-je résilier un abonnement professionnel ?"
             a: "À tout moment, depuis « Gérer l'abonnement » dans ta page de facturation. L'accès continue jusqu'à la fin de la période déjà payée."
           - q: "Mes cartes m'appartiennent-elles ?"
-            a: "Oui. Tes cartes et tes dessins restent à toi. Le code de Designer est libre, et tu peux à tout moment demander la suppression de ton compte."
+            a: "Oui. Tes cartes et tes dessins restent à toi. Le code de Terranova est libre, et tu peux à tout moment demander la suppression de ton compte."
       contact:
         title: "Une question avant de te lancer ?"
         body: "Écris-nous, nous répondons volontiers : %{email}."
@@ -403,12 +403,12 @@ fr:
       hero:
         eyebrow: "Open source"
         title: "Un outil libre, construit au grand jour"
-        lead: "Semisto Designer est un logiciel libre. Tu peux lire son code, le vérifier, l'améliorer et même l'héberger toi-même."
+        lead: "Semisto Terranova est un logiciel libre. Tu peux lire son code, le vérifier, l'améliorer et même l'héberger toi-même."
       licence:
         title: "Licence AGPL-3.0"
         body:
-          - "Le code de Semisto Designer est publié sous la licence GNU AGPL-3.0. En clair : tu peux l'utiliser, l'étudier, le modifier et le partager. Si tu le modifies et l'offres en ligne à d'autres personnes, tu partages tes modifications sous la même licence."
-          - "Le service hébergé sur designer.semisto.org est celui de Semisto. Le code est celui que tout le monde peut lire."
+          - "Le code de Semisto Terranova est publié sous la licence GNU AGPL-3.0. En clair : tu peux l'utiliser, l'étudier, le modifier et le partager. Si tu le modifies et l'offres en ligne à d'autres personnes, tu partages tes modifications sous la même licence."
+          - "Le service hébergé sur terranova.semisto.org est celui de Semisto. Le code est celui que tout le monde peut lire."
         cta: "Voir le code sur GitHub"
         url: "https://github.com/semisto-org/designer"
       why:
@@ -416,7 +416,7 @@ fr:
         body: "Parce que le savoir sur le sol, l'eau et le vivant gagne à circuler, et parce que tu dois pouvoir vérifier ce que fait l'outil de ton terrain. Le service payant finance le temps nécessaire pour le faire vivre ; le code reste à tous."
       data:
         title: "Données et licences"
-        intro: "Designer n'invente pas les données du terrain : il les affiche, avec leur source. Voici d'où elles viennent."
+        intro: "Terranova n'invente pas les données du terrain : il les affiche, avec leur source. Voici d'où elles viennent."
         columns:
           source: "Source"
           use: "Ce que nous en faisons"
@@ -465,11 +465,11 @@ fr:
       updated_on: "3 octobre 2026"
       privacy:
         title: "Politique de confidentialité"
-        lead: "Ce que Semisto Designer collecte, pourquoi, qui l'héberge, et comment exercer vos droits."
+        lead: "Ce que Semisto Terranova collecte, pourquoi, qui l'héberge, et comment exercer vos droits."
         sections:
           - title: "Qui est responsable de vos données ?"
             paragraphs:
-              - "Le responsable du traitement est Marco & Vespucci SRL, qui édite le service Semisto Designer sous la marque Semisto."
+              - "Le responsable du traitement est Marco & Vespucci SRL, qui édite le service Semisto Terranova sous la marque Semisto."
               - "Adresse : [adresse à compléter]. Numéro d'entreprise (BCE) : [numéro BCE à compléter]."
               - "Pour toute question sur vos données : %{email}."
           - title: "Quelles données collectons-nous ?"
@@ -493,10 +493,10 @@ fr:
               - "Stripe : paiement, facturation et calcul de la TVA."
               - "Google : uniquement si vous choisissez de vous connecter avec votre compte Google."
               - "Un service d'envoi d'e-mails [prestataire à confirmer] : liens de connexion, factures, rappels."
-              - "Votre propre assistant IA : uniquement si vous le connectez à vos cartes via MCP. C'est vous qui le choisissez et qui décidez de ce qu'il lit ; Designer n'envoie vos cartes à aucune IA de son côté."
+              - "Votre propre assistant IA : uniquement si vous le connectez à vos cartes via MCP. C'est vous qui le choisissez et qui décidez de ce qu'il lit ; Terranova n'envoie vos cartes à aucune IA de son côté."
               - "Les services de cartographie (Service public de Wallonie, IGN, geoportail.lu, Agence européenne pour l'environnement, ISRIC, Copernicus sur Amazon Web Services, OpenFreeMap) : pour afficher les fonds de carte et les couches, ils reçoivent la zone affichée et l'adresse IP de votre navigateur ou de notre serveur."
               - "La recherche d'adresse (Nominatim, d'OpenStreetMap) : elle reçoit, depuis notre serveur, le texte que vous tapez pour trouver votre terrain."
-              - "Pl@ntNet : uniquement si vous demandez l'identification d'une plante par photo. Les photos choisies lui sont envoyées réduites et sans leur position GPS ; Designer ne les conserve pas. [Conditions de Pl@ntNet à vérifier.]"
+              - "Pl@ntNet : uniquement si vous demandez l'identification d'une plante par photo. Les photos choisies lui sont envoyées réduites et sans leur position GPS ; Terranova ne les conserve pas. [Conditions de Pl@ntNet à vérifier.]"
             outro: "Nous ne vendons pas vos données et ne les utilisons pas pour de la publicité."
           - title: "Combien de temps les conservons-nous ?"
             items:
@@ -519,11 +519,11 @@ fr:
               - "Si cette politique change de façon importante, nous vous en informons par e-mail ou sur le site avant que le changement ne s'applique."
       terms:
         title: "Conditions d'utilisation"
-        lead: "Les règles du jeu pour utiliser Semisto Designer : compte, formules, paiement, contenus et responsabilités."
+        lead: "Les règles du jeu pour utiliser Semisto Terranova : compte, formules, paiement, contenus et responsabilités."
         sections:
           - title: "Qui sommes-nous ?"
             paragraphs:
-              - "Semisto Designer est un service en ligne de cartographie et de conception de jardins-forêts, édité par Marco & Vespucci SRL sous la marque Semisto. Adresse : [adresse à compléter]. Numéro d'entreprise (BCE) : [numéro BCE à compléter]. Contact : %{email}."
+              - "Semisto Terranova est un service en ligne de cartographie et de conception de jardins-forêts, édité par Marco & Vespucci SRL sous la marque Semisto. Adresse : [adresse à compléter]. Numéro d'entreprise (BCE) : [numéro BCE à compléter]. Contact : %{email}."
           - title: "Votre compte"
             paragraphs:
               - "Vous vous connectez avec votre adresse e-mail ou avec Google. Vous êtes responsable de l'accès à votre adresse e-mail et des actions faites avec votre compte. Les informations que vous donnez doivent être exactes."
@@ -559,7 +559,7 @@ fr:
               - "Nous faisons de notre mieux pour que le service fonctionne bien, sans pouvoir garantir qu'il ne sera jamais interrompu. Dans la mesure permise par la loi, et sans exclure les droits que la loi vous reconnaît en tant que consommateur, notre responsabilité est limitée aux dommages directs."
           - title: "Open source"
             paragraphs:
-              - "Le code de Semisto Designer est publié sous licence AGPL-3.0. Ces conditions régissent l'utilisation du service hébergé par Semisto, pas votre droit d'utiliser le code."
+              - "Le code de Semisto Terranova est publié sous licence AGPL-3.0. Ces conditions régissent l'utilisation du service hébergé par Semisto, pas votre droit d'utiliser le code."
           - title: "Fin du compte"
             paragraphs:
               - "Vous pouvez demander la suppression de votre compte à tout moment. Nous pouvons suspendre un compte en cas d'abus ou de non-respect de ces conditions, en vous prévenant autant que possible."

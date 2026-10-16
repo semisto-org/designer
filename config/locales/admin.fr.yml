@@ -14,7 +14,7 @@ fr:
       release_notes: "Nouveautés"
     dashboard:
       title: "Administration"
-      intro: "Les chiffres de Semisto Designer et ce qui attend l'équipe."
+      intro: "Les chiffres de Semisto Terranova et ce qui attend l'équipe."
       inbox:
         title: "À traiter"
         service_requests:
@@ -75,7 +75,7 @@ fr:
           sign_out: "en se déconnectant"
     users:
       title: "Comptes"
-      intro: "Tous les comptes de Designer. Connecte-toi en tant que quelqu'un pour voir ce qu'il voit et l'aider."
+      intro: "Tous les comptes de Terranova. Connecte-toi en tant que quelqu'un pour voir ce qu'il voit et l'aider."
       search: "Chercher un nom ou une adresse e-mail"
       search_button: "Chercher"
       count:

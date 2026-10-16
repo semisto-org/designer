@@ -22,7 +22,7 @@ Sur un téléphone, « Prendre une photo » ouvre directement l'appareil photo. 
 
 Chaque proposition affiche un **pourcentage de confiance**, le nom latin, les noms courants et la famille.
 
-- Si l'espèce est **dans le catalogue** de Designer, le bouton **« C'est elle »** l'attache à la plante : elle compte alors dans la liste des plantes et dans les alertes de cohérence.
+- Si l'espèce est **dans le catalogue** de Terranova, le bouton **« C'est elle »** l'attache à la plante : elle compte alors dans la liste des plantes et dans les alertes de cohérence.
 - Si l'espèce **n'est pas encore dans le catalogue**, elle reste visible mais ne peut pas être choisie. Note son nom latin : le catalogue s'enrichit au fil du temps.
 - Si **aucune ne correspond**, clique sur « Aucune ne correspond », ajoute une photo (une fleur, un fruit) et recommence.
 
@@ -30,6 +30,6 @@ Un score élevé n'est pas une certitude. Compare avec ce que tu vois : le port,
 
 ## Bon à savoir
 
-- Les photos servent uniquement à l'identification. Designer ne les conserve pas.
+- Les photos servent uniquement à l'identification. Terranova ne les conserve pas.
 - Pl@ntNet reconnaît des plantes sauvages et cultivées. Il ne distingue pas les variétés : une pomme « Gala » sera proposée comme *Malus domestica*.
 - La fonction n'est pas activée sur toutes les installations. Si le bouton est grisé, choisis l'espèce dans la palette.

@@ -15,7 +15,7 @@ Le premier plan est **pré-rempli** avec la surface de ta carte et une ligne par
 
 ## Tes chiffres, pas les nôtres
 
-C'est la règle du tableau : **Designer n'invente ni rendements ni prix**. L'âge de première récolte et celui de pleine production peuvent être repris du catalogue de Semisto quand la fiche de l'espèce les indique ; tout le reste vient de toi. Le champ **Source des chiffres** de chaque espèce sert à noter d'où ils viennent : tes relevés, le catalogue d'une pépinière, une étude.
+C'est la règle du tableau : **Terranova n'invente ni rendements ni prix**. L'âge de première récolte et celui de pleine production peuvent être repris du catalogue de Semisto quand la fiche de l'espèce les indique ; tout le reste vient de toi. Le champ **Source des chiffres** de chaque espèce sert à noter d'où ils viennent : tes relevés, le catalogue d'une pépinière, une étude.
 
 Pas encore de chiffres sûrs ? Pars d'hypothèses prudentes, puis affine à mesure que tu pèses tes récoltes.
 

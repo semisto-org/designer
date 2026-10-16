@@ -75,7 +75,7 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
   test "article pages carry their own title and description in the meta tags" do
     get "/help/connecter-son-ia", headers: inertia_headers
     meta = response.parsed_body.dig("props", "_inertia_meta").index_by { |tag| tag["headKey"] }
-    assert_equal "Connecter ton IA · Semisto Designer", meta.dig("title", "innerContent")
+    assert_equal "Connecter ton IA · Semisto Terranova", meta.dig("title", "innerContent")
     assert_includes meta.dig("description", "content"), "assistant IA"
   end
 

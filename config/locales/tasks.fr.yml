@@ -212,4 +212,4 @@ fr:
       body: "%{assigner} t'a confié une tâche sur la carte « %{map} » :"
       due: "À faire pour le %{date}."
       button: "Voir les tâches de la carte"
-      footer: "Tu reçois ce message parce qu'une tâche t'a été assignée dans Semisto Designer."
+      footer: "Tu reçois ce message parce qu'une tâche t'a été assignée dans Semisto Terranova."

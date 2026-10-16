@@ -1,8 +1,8 @@
-# Semisto Designer — phone app
+# Semisto Terranova — phone app
 
-The companion of a Designer map on the terrain (iOS and Android, Expo /
+The companion of a Terranova map on the terrain (iOS and Android, Expo /
 React Native, MapLibre Native). Published by Semisto ASBL as « Semisto
-Designer », identifier `org.semisto.designer`.
+Terranova », identifier `org.semisto.designer`.
 
 What it does, for the maps one belongs to:
 
@@ -67,7 +67,7 @@ use a local server, set it to the computer's address on the local network
 - `simulator`: the test app for the iOS Simulator on a Mac (no Apple
   account needed).
 - `testflight`: store build of the test app, sent to TestFlight.
-- `production`: store builds of « Semisto Designer ».
+- `production`: store builds of « Semisto Terranova ».
 
 `development`, `preview`, `simulator` and `testflight` set `APP_VARIANT=preview`:
 `app.config.ts` then builds « Terranova (test) » with the identifier

@@ -18,7 +18,7 @@ fr:
     open_hint: "Le document à remettre : plan, fiche projet, terrain, plantes, alertes, photos et sources, prêt à imprimer en PDF."
     indicative: "Indicatif"
     footer: "%{map} · Dossier du projet · %{date}"
-    made_with: "Établi avec Semisto Designer · designer.semisto.org"
+    made_with: "Établi avec Semisto Terranova · terranova.semisto.org"
     none: "—"
 
     # ----- Choosing what to print (screen only) -----
@@ -239,7 +239,7 @@ fr:
     # ----- Sources -----
     sources:
       intro: "Les données présentées dans ce dossier viennent des sources suivantes. Les valeurs marquées « indicatif » sont des ordres de grandeur, à confirmer sur place."
-      map: "Plan, surfaces et longueurs : Semisto Designer, d'après le dessin de la carte (mesures sur l'ellipsoïde WGS 84)."
+      map: "Plan, surfaces et longueurs : Semisto Terranova, d'après le dessin de la carte (mesures sur l'ellipsoïde WGS 84)."
       cover_layer: "Fond du plan : %{detail}, %{label}."
       cover_layer_plain: "Fond du plan : %{label}."
       layers: "Couches de données : %{detail}, %{label}."
@@ -247,7 +247,7 @@ fr:
       relief: "Relief : %{label}."
       climate: "Climat : %{label}, « %{detail} »."
       climate_plain: "Climat : %{label}."
-      plant_catalogue: "Plantes : catalogue de Semisto Designer ; provenance indiquée pour chaque valeur."
+      plant_catalogue: "Plantes : catalogue de Semisto Terranova ; provenance indiquée pour chaque valeur."
       plant_source: "%{source} pour %{fields}"
       plant_license: "licence : %{license}"
       pfaf: "Les valeurs issues de PFAF (Plants For A Future) sont citées comme telles ; aucun texte de PFAF n'est reproduit."
@@ -260,4 +260,4 @@ fr:
       regulation: "Urbanisme : %{label}."
       planting: "Cohérence de la plantation : règles de densité, d'exposition et d'association issues de la pratique des jardins-forêts."
       photos: "Photos : prises par les membres du projet."
-      finances: "Finances : hypothèses saisies pour ce projet, calcul de Semisto Designer. Aucune donnée tierce."
+      finances: "Finances : hypothèses saisies pour ce projet, calcul de Semisto Terranova. Aucune donnée tierce."

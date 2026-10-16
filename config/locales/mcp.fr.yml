@@ -6,7 +6,7 @@ fr:
   mcp:
     server:
       instructions: |-
-        Semisto Designer cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
+        Semisto Terranova cartographie des terrains réels et y conçoit des jardins-forêts et des designs permaculturels. Tu agis au nom de l'utilisateur connecté, sur les cartes auxquelles il a accès, avec son rôle sur chaque carte.
         Commence par list_maps, puis get_map : contour du terrain, parcelles, surface, étape du projet et fiche projet (objectifs, usages, contraintes). list_features donne les éléments déjà dessinés ; get_region_layers et identify_at_point disent ce que savent les couches de la région (sols, relief, eau, plan de secteur…) ; get_site_data donne le soleil et l'horizon, la météo et le climat observés, les arbres déjà en place et, en France, les règles d'urbanisme et les risques ; trace_contour donne la courbe de niveau exacte qui passe par un point, à suivre pour toute baissière, keyline ou haie en travers de la pente ; get_catchment donne le bassin versant d'une mare, d'une baissière ou d'un point, sur lequel dimensionner l'ouvrage et son trop-plein.
         Tu conçois avec la méthode de Semisto : agroforesterie et jardins-forêts, eau avant plantes, diversité, résilience au climat qui vient. Avant de proposer un design ou de conseiller la personne sur l'eau, la structure ou les plantes, lis get_design_guide (sans topic pour la liste, puis « method » et le chapitre du sujet). Le guide est écrit en anglais : réponds toujours dans la langue de la personne. Explique ce que tu vois sur le terrain, propose avec ton pourquoi, et laisse toujours la décision à la personne.
         Toutes les coordonnées sont en WGS84, dans l'ordre [longitude, latitude].
@@ -14,7 +14,7 @@ fr:
         La fiche projet dit qui porte le projet, ses ambitions, ses usages, son budget, son temps, ses compétences et ses contraintes. get_project_sheet la donne avec toutes ses questions et les réponses possibles. Quand la personne parle de son projet (dans la conversation, ou dans le transcript d'un entretien qu'elle te confie), propose_project_sheet verse ses réponses dans la fiche en brouillons, que l'humain accepte ou refuse sur la fiche. N'invente rien : ne propose que ce que la personne a dit, et signale-lui toute réponse qui remplacerait une réponse déjà donnée.
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
-        Les points de prélèvement de sol (panneau Sol, onglet Points) portent les rapports PDF du laboratoire, un par analyse (standard, métaux lourds…). get_soil_samples les liste, get_soil_report lit un rapport (son texte, ou ses pages en image pour un scan), puis propose_soil_results propose les valeurs lues, que l'humain garde ou refuse une par une sur le point. Recopie fidèlement, convertis vers les unités de Designer en le disant, et ne devine aucune valeur.
+        Les points de prélèvement de sol (panneau Sol, onglet Points) portent les rapports PDF du laboratoire, un par analyse (standard, métaux lourds…). get_soil_samples les liste, get_soil_report lit un rapport (son texte, ou ses pages en image pour un scan), puis propose_soil_results propose les valeurs lues, que l'humain garde ou refuse une par une sur le point. Recopie fidèlement, convertis vers les unités de Terranova en le disant, et ne devine aucune valeur.
         Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme ou l'étiquette. Les photos du terrain se lisent avec list_photos et get_photo. Pour envoyer des fichiers (photos, vidéos, PDF, plans…), ne les mets jamais dans un appel : create_upload te donne pour chacun une adresse où l'envoyer toi-même par HTTP (curl), en morceaux pour un gros fichier, puis attach_photos ou attach_documents les rattache ; import_from_url fait venir un fichier depuis une adresse HTTPS. add_photo (une petite image en base64) et add_document (un texte que tu as rédigé) restent pour les cas simples. update_photos les légende, les date, les place et les range en albums, delete_photos et delete_documents suppriment photos et documents. Tu ne supprimes rien d'autre, et seulement ce que la personne t'a demandé de retirer.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
@@ -191,7 +191,7 @@ fr:
           content_type: "Type MIME du fichier, par exemple image/jpeg, application/pdf ou application/vnd.openxmlformats-officedocument.wordprocessingml.document. C'est l'en-tête Content-Type de l'envoi."
       attach_photos:
         title: "Rattacher des photos envoyées"
-        description: "Dernière étape après create_upload et l'envoi par PUT : fait des fichiers envoyés des photos ou des vidéos du terrain (50 au plus par appel). Comme pour une photo déposée dans Designer, la date de prise de vue, l'endroit et la direction sont lus dans les EXIF du fichier, et l'appareil (modèle, données d'un drone DJI) juste après ; ce que tu passes (légende, date, endroit, direction, album par son id ou son nom, élément lié) l'emporte sur les EXIF. Une photo HEIC devient un JPEG ; une vidéo (MP4, MOV, WebM) reste telle quelle, et son lieu et sa date sont lus dans le fichier juste après. Une photo refusée revient avec son code et sa raison (other_map : préparée pour une autre carte ; already_attached : déjà rattachée ; not_received : le PUT n'a pas été fait ; parts_missing : des morceaux manquent ; duplicate : déjà sur la carte ; unsupported_type…), les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Dernière étape après create_upload et l'envoi par PUT : fait des fichiers envoyés des photos ou des vidéos du terrain (50 au plus par appel). Comme pour une photo déposée dans Terranova, la date de prise de vue, l'endroit et la direction sont lus dans les EXIF du fichier, et l'appareil (modèle, données d'un drone DJI) juste après ; ce que tu passes (légende, date, endroit, direction, album par son id ou son nom, élément lié) l'emporte sur les EXIF. Une photo HEIC devient un JPEG ; une vidéo (MP4, MOV, WebM) reste telle quelle, et son lieu et sa date sont lus dans le fichier juste après. Une photo refusée revient avec son code et sa raison (other_map : préparée pour une autre carte ; already_attached : déjà rattachée ; not_received : le PUT n'a pas été fait ; parts_missing : des morceaux manquent ; duplicate : déjà sur la carte ; unsupported_type…), les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           attach_photo_lines: "Les photos à rattacher, une par fichier envoyé, de 1 à 50."
       attach_documents:
@@ -201,7 +201,7 @@ fr:
           attach_document_lines: "Les documents à rattacher, un par fichier envoyé, de 1 à 50."
       import_from_url:
         title: "Importer des fichiers depuis une adresse"
-        description: "Quand le fichier n'est pas sur ta machine : Semisto Designer va le chercher lui-même à son adresse HTTPS publique (fichier Drive partagé, lien de téléchargement…) et en fait une photo ou un document, comme attach_photos et attach_documents (EXIF lus pour une photo). Un lien Drive « /file/d/… » est converti en lien de téléchargement. 10 fichiers au plus par appel. Une page web (lien qui demande une connexion, page d'aperçu) est refusée avec le code not_a_file. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Quand le fichier n'est pas sur ta machine : Semisto Terranova va le chercher lui-même à son adresse HTTPS publique (fichier Drive partagé, lien de téléchargement…) et en fait une photo ou un document, comme attach_photos et attach_documents (EXIF lus pour une photo). Un lien Drive « /file/d/… » est converti en lien de téléchargement. 10 fichiers au plus par appel. Une page web (lien qui demande une connexion, page d'aperçu) est refusée avec le code not_a_file. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           import_files: "Les fichiers à importer, de 1 à 10."
           import_url: "Adresse HTTPS publique du fichier."
@@ -346,14 +346,14 @@ fr:
       photos_attached: "Les photos sont sur la page « Photos » de la carte (url) ; celles qui ont un endroit apparaissent aussi sur la carte. L'appareil et la direction d'un drone sont lus dans la minute."
       photo_added: "La photo est sur la page « Photos » de la carte (url) ; placée, elle apparaît aussi sur la carte."
     errors:
-      unauthorized: "Connexion requise : autorise ce client depuis Semisto Designer (OAuth) ou utilise un jeton personnel."
+      unauthorized: "Connexion requise : autorise ce client depuis Semisto Terranova (OAuth) ou utilise un jeton personnel."
       invalid_token: "Ce jeton n'est pas valide, a expiré ou a été révoqué."
       rate_limited: "Trop de requêtes. Réessaie dans une minute."
       map_not_found: "Carte %{id} introuvable, ou tu n'y as pas accès. list_maps donne tes cartes."
       feature_not_found: "Élément %{id} introuvable sur cette carte."
       scope_drafts: "Cette connexion n'a que l'accès en lecture. Pour proposer des brouillons, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
       editor_only: "Seuls le propriétaire et les éditeurs de la carte peuvent proposer ou retirer des brouillons. L'utilisateur est lecteur de cette carte."
-      plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite et n'a pas d'essai en cours (l'essai de 14 jours est terminé, ou il ne l'a pas encore commencé). La lecture de la carte reste possible ; les formules sont sur la page « Tarifs » de Semisto Designer."
+      plan_drafts: "Les brouillons de l'IA font partie du forfait : le propriétaire de cette carte est en formule gratuite et n'a pas d'essai en cours (l'essai de 14 jours est terminé, ou il ne l'a pas encore commencé). La lecture de la carte reste possible ; les formules sont sur la page « Tarifs » de Semisto Terranova."
       soil_sample_not_found: "Point de prélèvement %{id} introuvable sur cette carte (get_soil_samples)."
       soil_report_not_found: "Rapport %{id} introuvable sur ce point (reports dans get_soil_samples)."
       soil_out_of_range: "hors bornes : entre %{min} et %{max} dans l'unité du champ (voir result_fields et units_note)."
@@ -376,11 +376,11 @@ fr:
       too_many_pending_updates: "La carte a déjà %{pending} modifications en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
       withdraw_nothing: "Passe feature_ids (éléments en brouillon) ou update_ids (modifications proposées)."
       bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
-      identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Designer."
+      identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Terranova."
       identify_layer_failed: "Le service de cette couche n'a pas répondu."
       point_too_far: "Le point doit se trouver à moins de %{distance} m du terrain de la carte."
       no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
-      plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Designer."
+      plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Terranova."
       plant_not_found: "Plante %{id} introuvable dans le catalogue."
       photo_not_found: "Photo %{id} introuvable sur cette carte. get_map donne les photos à analyser (bioindicators.photos)."
       photo_unreadable: "La photo %{id} n'a pas pu être lue."
@@ -396,7 +396,7 @@ fr:
       write_blocked:
         scope: "Cette connexion n'a que l'accès en lecture. Pour écrire des tâches ou des documents, l'utilisateur doit reconnecter le connecteur en choisissant « Lecture et brouillons » (ou créer un jeton avec cet accès)."
         role_write: "Seuls le propriétaire et les éditeurs de la carte peuvent écrire des tâches et des documents. L'utilisateur est lecteur de cette carte."
-        plan_write: "L'écriture par l'IA fait partie du forfait : le propriétaire de cette carte est en formule gratuite et n'a pas d'essai en cours. La lecture des tâches et des documents reste possible ; les formules sont sur la page « Tarifs » de Semisto Designer."
+        plan_write: "L'écriture par l'IA fait partie du forfait : le propriétaire de cette carte est en formule gratuite et n'a pas d'essai en cours. La lecture des tâches et des documents reste possible ; les formules sont sur la page « Tarifs » de Semisto Terranova."
         read_only: "Cette carte est en lecture seule : elle dépasse le nombre de cartes du forfait de son propriétaire. Rien n'est supprimé ; la lecture reste possible."
     task_errors:
       no_list: "list_id ou list_name est requis (voir les listes dans list_tasks)."
@@ -641,7 +641,7 @@ fr:
     intro: "Branche ton propre assistant (Claude, ChatGPT, Le Chat…) sur tes cartes. Il lit la carte, ses couches et la fiche projet ; avec le forfait (ou pendant ton essai de 14 jours) et le rôle d'éditeur, il y pose des brouillons que tu acceptes ou refuses un par un."
     url:
       title: "Adresse du connecteur"
-      hint: "C'est la seule chose à copier : tu choisis ensuite, sur Semisto Designer, l'accès que tu donnes."
+      hint: "C'est la seule chose à copier : tu choisis ensuite, sur Semisto Terranova, l'accès que tu donnes."
     plan_hint: "Avec la formule gratuite, ton IA lit tes cartes. Les brouillons qu'il pose sur la carte font partie du forfait."
     trial:
       available_title: "14 jours pour essayer les brouillons, offerts"
@@ -657,8 +657,8 @@ fr:
       title: "Dans claude.ai ou Claude Desktop"
       step1: "Ouvre Paramètres → Connecteurs."
       step2: "Clique sur « Ajouter un connecteur personnalisé »."
-      step3: "Nom : Semisto Designer. URL : l'adresse ci-dessus."
-      step4: "Clique sur « Se connecter » : Semisto Designer te demande quel accès donner, lecture ou lecture et brouillons."
+      step3: "Nom : Semisto Terranova. URL : l'adresse ci-dessus."
+      step4: "Clique sur « Se connecter » : Semisto Terranova te demande quel accès donner, lecture ou lecture et brouillons."
       step5: "Dans une conversation, active le connecteur depuis le menu des outils."
       example: "« Lis ma carte du jardin et propose une haie fruitière le long de la limite nord, en tenant compte de la fiche projet. »"
     claude_code:
@@ -669,13 +669,13 @@ fr:
       title: "Dans ChatGPT"
       step1: "Il faut un abonnement payant. Ouvre Paramètres → Applications et connecteurs → Paramètres avancés, et active le mode développeur."
       step2: "Reviens à « Applications et connecteurs » et clique sur « Créer »."
-      step3: "Nom : Semisto Designer. URL : l'adresse ci-dessus. Authentification : OAuth."
-      step4: "Valide : Semisto Designer te demande quel accès donner. Dans une conversation, choisis le connecteur depuis le menu « + »."
+      step3: "Nom : Semisto Terranova. URL : l'adresse ci-dessus. Authentification : OAuth."
+      step4: "Valide : Semisto Terranova te demande quel accès donner. Dans une conversation, choisis le connecteur depuis le menu « + »."
     le_chat:
       title: "Dans Le Chat de Mistral"
       step1: "Ouvre Intelligence → Connecteurs, puis « Ajouter un connecteur » et l'onglet « Connecteur MCP personnalisé »."
-      step2: "Nom : Semisto Designer. URL : l'adresse ci-dessus. Authentification : OAuth 2.1."
-      step3: "Connecte-toi : Semisto Designer te demande quel accès donner. Active le connecteur dans une conversation."
+      step2: "Nom : Semisto Terranova. URL : l'adresse ci-dessus. Authentification : OAuth 2.1."
+      step3: "Connecte-toi : Semisto Terranova te demande quel accès donner. Active le connecteur dans une conversation."
     other:
       title: "Autres assistants"
       body: "Cursor, VS Code et tout client qui gère OAuth se connectent avec la seule adresse. Un outil qui ne gère pas OAuth utilise un jeton personnel (ci-dessous), envoyé dans l'en-tête « Authorization: Bearer ». Gemini (en Europe) et Euria n'acceptent pas encore de connecteur extérieur."
@@ -720,7 +720,7 @@ fr:
   oauth:
     authorize:
       page_title: "Autoriser une application"
-      title: "« %{client} » souhaite accéder à tes cartes Semisto Designer"
+      title: "« %{client} » souhaite accéder à tes cartes Semisto Terranova"
       signed_in_as: "Connecté en tant que %{name} (%{email})."
       redirect_notice: "Tu seras ensuite renvoyé vers %{host}. N'autorise que les applications que tu viens toi-même de connecter."
       client_site: "Site de l'application"
@@ -738,7 +738,7 @@ fr:
           trial_ended: "Ton essai de 14 jours est terminé : les brouillons demandent maintenant le forfait sur tes propres cartes. Ton IA peut toujours les lire."
       guardrails_title: "Garde-fous"
       mobile_app:
-        title: "Connecter l'app Semisto Designer de ce téléphone"
+        title: "Connecter l'app Semisto Terranova de ce téléphone"
         body: "L'app pourra consulter et modifier vos cartes comme vous le faites sur le site : photos, plantations, relevés et commentaires. Vos rôles sur chaque carte et votre forfait s'appliquent de la même façon."
         revoke: "Vous pourrez la déconnecter depuis l'app, ou depuis « Mon compte » sur le site."
         approve: "Connecter l'app"
@@ -746,13 +746,13 @@ fr:
       approve: "Autoriser %{client}"
     error:
       title: "Cette demande de connexion n'est pas valide"
-      unknown_client: "L'application qui t'envoie ici n'est pas enregistrée chez Semisto Designer. Relance la connexion depuis l'application, par exemple Claude ou ChatGPT."
+      unknown_client: "L'application qui t'envoie ici n'est pas enregistrée chez Semisto Terranova. Relance la connexion depuis l'application, par exemple Claude ou ChatGPT."
       bad_redirect: "L'adresse de retour demandée n'est pas celle que l'application a enregistrée. Par prudence, la connexion est bloquée."
       help: "Comment connecter ton IA"
   docs_mcp:
     page_title: "Serveur MCP"
     eyebrow: "Documentation"
-    title: "Ton IA sur la carte : le serveur MCP de Semisto Designer"
+    title: "Ton IA sur la carte : le serveur MCP de Semisto Terranova"
     intro: "Branche ton assistant IA (Claude, ChatGPT, Le Chat…) ou tout agent compatible MCP sur tes cartes. Il lit le terrain, ses couches et la fiche projet, propose des aménagements en brouillon et des réponses pour la fiche projet, que tu valides un par un. Cette page est générée à partir du code du serveur."
     toc: "Sommaire"
     sections:
@@ -764,7 +764,7 @@ fr:
     connect:
       url: "L'adresse du serveur (Streamable HTTP) :"
       claude_ai_title: "claude.ai et Claude Desktop"
-      claude_ai: "Paramètres → Connecteurs → « Ajouter un connecteur personnalisé ». Colle l'adresse, puis « Se connecter » : tu choisis l'accès donné, sur Semisto Designer."
+      claude_ai: "Paramètres → Connecteurs → « Ajouter un connecteur personnalisé ». Colle l'adresse, puis « Se connecter » : tu choisis l'accès donné, sur Semisto Terranova."
       claude_code_title: "Claude Code"
       claude_code: "Ajoute le serveur, puis tape /mcp pour te connecter."
       chatgpt_title: "ChatGPT"

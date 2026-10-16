@@ -1,6 +1,6 @@
 name: Deploy
 
-# Deploys main to https://designer.semisto.org through the Coolify API, once
+# Deploys main to https://terranova.semisto.org through the Coolify API, once
 # CI is green on a push to main. Can also be started by hand (Actions tab).
 #
 # Repository settings (Secrets and variables, Actions):

@@ -11,7 +11,7 @@ fr:
     account: "Mon compte"
     sign_out: "Se déconnecter"
   mailer:
-    footer: "Semisto Designer, l'atelier en ligne de Semisto pour cartographier son terrain et concevoir son jardin-forêt."
+    footer: "Semisto Terranova, l'atelier en ligne de Semisto pour cartographier son terrain et concevoir son jardin-forêt."
   maps:
     created: "Carte créée. Délimitons maintenant ton terrain."
     updated: "Carte enregistrée."

@@ -5,7 +5,7 @@ category: Concevoir
 order: 54
 ---
 
-Le design ne s'arrête pas à la plantation : c'est là que le jardin commence à te répondre. Designer t'aide à boucler la boucle **planté, puis observé** : chaque plant mis en terre peut recevoir ses observations, saison après saison.
+Le design ne s'arrête pas à la plantation : c'est là que le jardin commence à te répondre. Terranova t'aide à boucler la boucle **planté, puis observé** : chaque plant mis en terre peut recevoir ses observations, saison après saison.
 
 ## Marquer un plant comme planté
 
@@ -50,7 +50,7 @@ Les premières années comptent le plus. Un plant « en difficulté » repéré 
 
 ## Tes observations aident les autres jardins
 
-Dans le catalogue des plantes, la fiche de chaque espèce a une section **Observations des jardins Designer** : le **Taux de reprise** et la **Vigueur moyenne** des plants suivis, d'après la dernière observation de chacun. Les chiffres sont **anonymes** : ni ton nom ni ta carte n'y apparaissent.
+Dans le catalogue des plantes, la fiche de chaque espèce a une section **Observations des jardins Terranova** : le **Taux de reprise** et la **Vigueur moyenne** des plants suivis, d'après la dernière observation de chacun. Les chiffres sont **anonymes** : ni ton nom ni ta carte n'y apparaissent.
 
 Plus tu notes, plus ces repères deviennent fiables, pour tout le monde et pour toi la saison prochaine.
 

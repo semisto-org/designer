@@ -3,4 +3,4 @@
 Stripe.open_timeout = 5
 Stripe.read_timeout = 20
 Stripe.max_network_retries = 2
-Stripe.set_app_info("Semisto Designer", url: "https://designer.semisto.org")
+Stripe.set_app_info("Semisto Terranova", url: "https://terranova.semisto.org")

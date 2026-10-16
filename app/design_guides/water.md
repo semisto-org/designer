@@ -60,7 +60,7 @@ The editor has no dedicated element for most of these yet: propose hedges as `he
 
 ## Honest limits
 
-The relief in Designer is a model, and so is the rain simulation: they give orders of magnitude, not a structural design. Before digging a pond or a long swale, the person should test infiltration on site (a hole filled with water, timed as it drains), check the regulations (ponds, watercourses, wetlands, distances to boundaries) and, for large works, ask a professional. The benefits of regenerative hydrology on a whole landscape are still debated by scientists; on one's own land, slowing and infiltrating water is rarely a mistake.
+The relief in Terranova is a model, and so is the rain simulation: they give orders of magnitude, not a structural design. Before digging a pond or a long swale, the person should test infiltration on site (a hole filled with water, timed as it drains), check the regulations (ponds, watercourses, wetlands, distances to boundaries) and, for large works, ask a professional. The benefits of regenerative hydrology on a whole landscape are still debated by scientists; on one's own land, slowing and infiltrating water is rarely a mistake.
 
 ## The climate ahead
 

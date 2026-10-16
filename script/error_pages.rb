@@ -8,9 +8,9 @@ require "erb"
 LOGO = File.read(File.expand_path("../public/icon.svg", __dir__)).sub(/ width="\d+" height="\d+"/, ' width="40" height="40" aria-hidden="true"')
 
 PAGES = {
-  "400" => [ "Requête incomprise", "Le navigateur a envoyé une demande que Designer ne comprend pas. Rechargez la page, puis recommencez." ],
+  "400" => [ "Requête incomprise", "Le navigateur a envoyé une demande que Terranova ne comprend pas. Rechargez la page, puis recommencez." ],
   "404" => [ "Page introuvable", "Cette page n'existe pas, ou plus. Vérifiez l'adresse, ou repartez de vos cartes." ],
-  "406-unsupported-browser" => [ "Navigateur trop ancien", "Designer a besoin d'un navigateur récent pour afficher la carte. Mettez à jour Chrome, Firefox, Safari ou Edge, puis revenez." ],
+  "406-unsupported-browser" => [ "Navigateur trop ancien", "Terranova a besoin d'un navigateur récent pour afficher la carte. Mettez à jour Chrome, Firefox, Safari ou Edge, puis revenez." ],
   "422" => [ "Modification refusée", "La modification n'a pas été enregistrée, souvent parce que la page était ouverte depuis longtemps. Rechargez la page, puis recommencez." ],
   "500" => [ "Un souci de notre côté", "Quelque chose s'est mal passé sur le serveur. Vos cartes ne sont pas touchées : réessayez dans quelques minutes." ]
 }.freeze
@@ -22,7 +22,7 @@ TEMPLATE = ERB.new(<<~HTML, trim_mode: "-")
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="robots" content="noindex">
-    <title><%= title %> · Semisto Designer</title>
+    <title><%= title %> · Semisto Terranova</title>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <style>
       *, *::before, *::after { box-sizing: border-box; }
@@ -43,7 +43,7 @@ TEMPLATE = ERB.new(<<~HTML, trim_mode: "-")
   </head>
   <body>
     <main>
-      <a class="brand" href="/"><%= logo %>Semisto Designer</a>
+      <a class="brand" href="/"><%= logo %>Semisto Terranova</a>
       <p class="code">Erreur <%= code %></p>
       <h1><%= title %></h1>
       <p><%= body %></p>

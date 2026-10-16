@@ -1,4 +1,4 @@
-# Semisto Designer: the public site and the help center are open to crawlers;
+# Semisto Terranova: the public site and the help center are open to crawlers;
 # maps, accounts, teams and admin pages are private. Public map views (/p/)
 # stay crawlable so that their noindex tag is seen.
 User-agent: *
@@ -17,4 +17,4 @@ Disallow: /magic
 Disallow: /oauth
 Disallow: /mcp
 
-Sitemap: https://designer.semisto.org/sitemap.xml
+Sitemap: https://terranova.semisto.org/sitemap.xml

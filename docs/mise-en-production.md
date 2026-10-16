@@ -1,6 +1,6 @@
 # Mise en production
 
-Référence des réglages de Semisto Designer en production (https://designer.semisto.org). Chaque variable ci-dessous est lue par le code ; une variable absente désactive proprement la fonction concernée (l'interface le dit au lieu d'échouer).
+Référence des réglages de Semisto Terranova en production (https://terranova.semisto.org). Chaque variable ci-dessous est lue par le code ; une variable absente désactive proprement la fonction concernée (l'interface le dit au lieu d'échouer).
 
 ## Hébergement
 
@@ -9,7 +9,7 @@ Référence des réglages de Semisto Designer en production (https://designer.se
 - PostgreSQL 16 **avec PostGIS** (image conseillée : `postgis/postgis:16-3.4`). L'utilisateur doit pouvoir créer des bases et les extensions `postgis`, `citext` et `unaccent` (ou un administrateur les crée à l'avance).
 - Quatre bases sont créées à partir de `DATABASE_URL` : la principale, puis `_cache`, `_queue` et `_cable`.
 - Fichiers (photos, PDF de labo, relief importé) : un stockage S3 dès que `S3_BUCKET` est défini, sinon le disque local `/rails/storage`, qu'il faut alors monter sur un **volume persistant** (sinon tout disparaît au déploiement suivant). Un volume Docker nommé convient tel quel ; un dossier de l'hôte doit appartenir à l'utilisateur de l'image (`chown -R 1000:1000 <dossier>`), sinon les envois échouent.
-- DNS : `designer.semisto.org` → enregistrement A/AAAA vers le VPS ; le certificat TLS est géré par le proxy du VPS.
+- DNS : `terranova.semisto.org` → enregistrement A/AAAA vers le VPS ; le certificat TLS est géré par le proxy du VPS.
 - Déploiement automatique : `.github/workflows/deploy.yml` demande un déploiement à l'API de Coolify après chaque CI verte sur `main` (ou à la main, onglet Actions). Dans GitHub (Réglages, Secrets and variables, Actions) : le secret `COOLIFY_TOKEN` (jeton d'API Coolify avec la permission « deploy ») et la variable `COOLIFY_APP_UUID` (identifiant de l'application `designer`, visible dans son adresse sur Coolify) ; `COOLIFY_URL` est facultative (défaut `https://dash.semisto.org`). Sans ces réglages, le workflow ne fait rien.
 
 ## Variables d'environnement
@@ -20,8 +20,8 @@ Référence des réglages de Semisto Designer en production (https://designer.se
 |---|---|
 | `SECRET_KEY_BASE` | Clé de chiffrement des sessions (`bin/rails secret`). |
 | `DATABASE_URL` | `postgres://utilisateur:motdepasse@hôte:5432/designer_production` (`postgis://` accepté). Le nom de la base est obligatoire : les trois autres en dérivent. |
-| `APP_HOST` | `designer.semisto.org` (liens des e-mails, OAuth, plan du site). C'est aussi le seul nom d'hôte accepté : tout autre domaine reçoit une erreur 403, sauf `/up`. |
-| `MAIL_FROM` | Expéditeur, par ex. `Semisto Designer <designer@semisto.org>`. |
+| `APP_HOST` | `terranova.semisto.org` (liens des e-mails, OAuth, plan du site). C'est aussi le seul nom d'hôte accepté : tout autre domaine reçoit une erreur 403, sauf `/up`. |
+| `MAIL_FROM` | Expéditeur, par ex. `Semisto Terranova <designer@semisto.org>`. |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Envoi des e-mails : connexion par lien magique, invitations, commentaires, demandes. Sans eux, l'écran annonce « lien envoyé » mais la tâche d'envoi échoue (visible dans les journaux et Sentry) : personne ne peut se connecter par e-mail. |
 | `MAIL_BCC_ADDRESS` | Facultative. Copie cachée de **tous** les e-mails envoyés (connexion, invitations, commentaires, factures…) vers cette adresse, par ex. `hello@semisto.org` pendant la bêta ; plusieurs adresses séparées par des virgules. Vide ou absente : aucune copie. Lue à chaque envoi : la retirer suffit (après redéploiement) pour arrêter les copies. |
 | `SOLID_QUEUE_IN_PUMA` | Facultative. Par défaut en production, les tâches de fond (e-mails, import de relief, rappels de renouvellement) tournent dans le serveur web, sur une seule machine. `false` les coupe, pour les confier à un processus `bin/jobs` séparé. |
@@ -32,14 +32,14 @@ Référence des réglages de Semisto Designer en production (https://designer.se
 |---|---|
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Identifiants OAuth « Application Web ». |
 
-Dans la console Google Cloud : origine autorisée `https://designer.semisto.org`, URI de redirection `https://designer.semisto.org/auth/google_oauth2/callback`, portées `email` et `profile`. Sans ces variables, seul le lien magique par e-mail est proposé.
+Dans la console Google Cloud : origine autorisée `https://terranova.semisto.org`, URI de redirection `https://terranova.semisto.org/auth/google_oauth2/callback`, portées `email` et `profile`. Sans ces variables, seul le lien magique par e-mail est proposé.
 
 ### Paiements (Stripe, compte Marco & Vespucci)
 
 | Variable | Rôle |
 |---|---|
 | `STRIPE_SECRET_KEY` | Active la facturation. Sans elle, tout est débloqué (bêta). |
-| `STRIPE_WEBHOOK_SECRET` | Secret du webhook `https://designer.semisto.org/webhooks/stripe`. |
+| `STRIPE_WEBHOOK_SECRET` | Secret du webhook `https://terranova.semisto.org/webhooks/stripe`. |
 | `STRIPE_PRICE_YEARLY` | Forfait particulier, paiement unique 79 € TVAC. |
 | `STRIPE_PRICE_ATELIER` | Atelier, abonnement mensuel 49 € TVAC. |
 | `STRIPE_PRICE_BUREAU` | Bureau d'études, abonnement mensuel 99 € TVAC. |
@@ -109,7 +109,7 @@ Utilisées seulement par la commande ponctuelle `bin/rails catalog:import_terran
 | `PLANTNET_API_KEY` | Facultatif. Active « Identifier l'espèce par photo » dans la fiche d'une plante de la carte. Clé créée sur https://my.plantnet.org. Sans elle, le bouton est grisé et l'interface explique pourquoi. |
 | `PLANTNET_API_URL` | Facultatif : autre adresse de l'API (défaut `https://my-api.plantnet.org`). |
 
-Une à cinq photos d'une même plante partent chez Pl@ntNet, qui répond des espèces probables ; l'éditeur choisit, rien n'est enregistré sans son choix et Designer ne conserve pas les photos. L'interface affiche « Identification : Pl@ntNet ». **Avant d'activer la fonction sur un service payant, vérifiez les conditions d'utilisation de Pl@ntNet** (usage commercial, quota d'identifications, mention de la source) : l'offre gratuite est limitée.
+Une à cinq photos d'une même plante partent chez Pl@ntNet, qui répond des espèces probables ; l'éditeur choisit, rien n'est enregistré sans son choix et Terranova ne conserve pas les photos. L'interface affiche « Identification : Pl@ntNet ». **Avant d'activer la fonction sur un service payant, vérifiez les conditions d'utilisation de Pl@ntNet** (usage commercial, quota d'identifications, mention de la source) : l'offre gratuite est limitée.
 
 | Variable | Rôle |
 |---|---|
@@ -135,7 +135,7 @@ Après les avoir définies, `bin/rails app_review:prepare` donne à ce compte un
 | `CLAUDY_API_KEY` | Un des jetons `AGENT_API_TOKEN` de Claudy (lecture seule). |
 | `CLAUDY_NETWORK_LAYERS` | Facultatif : réseau d'une couche que l'API ne permet pas de reconnaître, par exemple `7=ethernet`. |
 
-Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=…`, qui verse le plan de la carte de Claudy dans une carte de Designer. Sans clé, on lui donne un export de Claudy (`FILE=…`). Elle peut être relancée sans risque de doublon. Mode d'emploi : `docs/import-claudy.md`.
+Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=…`, qui verse le plan de la carte de Claudy dans une carte de Terranova. Sans clé, on lui donne un export de Claudy (`FILE=…`). Elle peut être relancée sans risque de doublon. Mode d'emploi : `docs/import-claudy.md`.
 
 ### Climat et météo
 
@@ -158,7 +158,7 @@ Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identifica
 
 ## Claude (MCP)
 
-Aucune variable. Adresse à donner aux utilisateurs : `https://designer.semisto.org/mcp` (Claude → Paramètres → Connecteurs → Ajouter un connecteur personnalisé). Guide dans l'application : `/account/ai` ; documentation publique : `/docs/mcp`.
+Aucune variable. Adresse à donner aux utilisateurs : `https://terranova.semisto.org/mcp` (Claude → Paramètres → Connecteurs → Ajouter un connecteur personnalisé). Guide dans l'application : `/account/ai` ; documentation publique : `/docs/mcp`.
 
 ## Vues drone
 
@@ -180,7 +180,7 @@ Aucune variable. Après une mission drone (commande payée : un e-mail « Missio
 3. **Héberger** sur un bucket compatible S3, en **https**, lisible publiquement objet par objet (sans lister le bucket). Règle CORS du bucket :
    ```json
    [{
-     "AllowedOrigins": ["https://designer.semisto.org"],
+     "AllowedOrigins": ["https://terranova.semisto.org"],
      "AllowedMethods": ["GET", "HEAD"],
      "AllowedHeaders": ["Range"],
      "ExposeHeaders": ["ETag", "Content-Range", "Content-Length"],

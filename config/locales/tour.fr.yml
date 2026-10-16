@@ -14,7 +14,7 @@ fr:
     page_of: "Page %{index} sur %{total}"
     example: "Terrain d'exemple : le tien est derrière ce carnet."
     on_your_map: "Sur « %{map} »"
-    tools_title: "Dans Designer"
+    tools_title: "Dans Terranova"
     tool_open: "Ouvrir"
     start: "Commencer : %{item}"
     start_plain: "Ouvrir ma carte"
@@ -23,7 +23,7 @@ fr:
       intro:
         kicker: "ton carnet de route"
         title: "Un jardin-forêt se conçoit dans un certain ordre."
-        body: "Il se pense sur trente ans, et les erreurs coûtent cher quand les arbres ont poussé. Designer t'accompagne en quatre étapes : observer, cartographier, concevoir, planter. L'ordre compte : chaque étape nourrit la suivante."
+        body: "Il se pense sur trente ans, et les erreurs coûtent cher quand les arbres ont poussé. Terranova t'accompagne en quatre étapes : observer, cartographier, concevoir, planter. L'ordre compte : chaque étape nourrit la suivante."
         note: "et à la fin, une surprise : ton IA"
         outline:
           - "Observer ton lieu"
@@ -56,7 +56,7 @@ fr:
       design:
         kicker: "étape 3 · concevoir"
         title: "Chaque cercle, c'est un arbre à trente ans."
-        body: "Tu choisis les plantes qui conviennent au lieu, tu les places, tu dessines les aménagements : haie, mare, sentiers. Les pointillés montrent la place que chacun prendra adulte. C'est ici que se jouent la plupart des erreurs, et Designer te les montre avant qu'elles ne poussent."
+        body: "Tu choisis les plantes qui conviennent au lieu, tu les places, tu dessines les aménagements : haie, mare, sentiers. Les pointillés montrent la place que chacun prendra adulte. C'est ici que se jouent la plupart des erreurs, et Terranova te les montre avant qu'elles ne poussent."
         note: "l'ombre de 2041 se dessine en 2026"
         tools:
           palette: "Les espèces qui te plaisent et qui conviennent."

@@ -28,7 +28,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <header className="border-b border-loam-900/10 bg-white/90 backdrop-blur">
         {/* On a phone the menu takes its own row under the logo and the account. */}
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 px-4 pt-2 sm:h-14 sm:flex-nowrap sm:gap-6 sm:pt-0">
-          <Link href="/maps" className="flex h-10 items-center sm:h-auto" aria-label="Semisto Designer">
+          <Link href="/maps" className="flex h-10 items-center sm:h-auto" aria-label="Semisto Terranova">
             {/* One lockup: a `hidden` class on it would fight its own inline-flex. */}
             <Wordmark compact="mobile" />
           </Link>

@@ -1,15 +1,15 @@
 module Mcp
   # Public URLs of the MCP server and of its OAuth 2.1 authorization server.
-  # Production answers on APP_HOST (designer.semisto.org by default); local
+  # Production answers on AppHosts.primary (APP_HOST, terranova.semisto.org
+  # by default), and on an old host (designer.semisto.org) for a request
+  # made there: a connector set up before the move keeps a consistent
+  # server, issuer and resource, and its tokens stay valid. Local
   # environments use the host of the request.
   module Endpoints
-    DEFAULT_HOST = "designer.semisto.org"
-
     def self.origin(request = nil)
-      if (host = ENV["APP_HOST"].presence)
+      if ENV["APP_HOST"].present? || Rails.env.production?
+        host = request && AppHosts.legacy?(request.host) ? request.host : AppHosts.primary
         "https://#{host}"
-      elsif Rails.env.production?
-        "https://#{DEFAULT_HOST}"
       else
         request&.base_url || "http://localhost:3000"
       end
@@ -61,7 +61,7 @@ module Mcp
         authorization_servers: [ origin ],
         scopes_supported: AiAccess::SCOPES,
         bearer_methods_supported: %w[header],
-        resource_name: "Semisto Designer",
+        resource_name: "Semisto Terranova",
         resource_documentation: urls[:docs]
       }
     end

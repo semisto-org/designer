@@ -11,7 +11,7 @@ Avant de placer chaque arbre, un design commence souvent par des **zones** : ici
 
 1. En haut de la carte, touche **Zone**.
 2. Écris son nom, par exemple « Forêt-jardin en strates hautes ». C'est facultatif : tu peux le donner plus tard.
-3. Choisis sa couleur. Designer te propose d'office une couleur que tes autres zones n'utilisent pas encore.
+3. Choisis sa couleur. Terranova te propose d'office une couleur que tes autres zones n'utilisent pas encore.
 4. Touche **Une surface** pour une zone, un patch ou un massif, ou **Un tracé** pour une haie, un alignement d'arbres ou un cheminement.
 5. Clique point par point sur la carte. Reviens au premier point pour fermer une surface ; double-clique pour finir un tracé. **Terminer** fait la même chose, pratique sur un écran tactile.
 

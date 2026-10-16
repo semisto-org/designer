@@ -5,7 +5,7 @@ category: Cartographier
 order: 20
 ---
 
-Le plus sûr moyen d'obtenir un contour juste est de partir du **plan cadastral** : chaque parcelle y a sa forme officielle et son numéro. Designer assemble pour toi le contour des parcelles que tu choisis.
+Le plus sûr moyen d'obtenir un contour juste est de partir du **plan cadastral** : chaque parcelle y a sa forme officielle et son numéro. Terranova assemble pour toi le contour des parcelles que tu choisis.
 
 ## Choisir ses parcelles sur la carte
 

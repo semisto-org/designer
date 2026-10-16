@@ -34,7 +34,7 @@ class InvoicingMailerTest < ActionMailer::TestCase
   test "request_confirmation: to the requester, with the recap, where the invoice goes, and the purchase order" do
     mail = InvoicingMailer.request_confirmation(@request)
     assert_equal [ "bob@example.org" ], mail.to
-    assert_equal "Ta demande de facture pour Semisto Designer", mail.subject
+    assert_equal "Ta demande de facture pour Semisto Terranova", mail.subject
     text = mail.text_part.body.to_s
     assert_includes text, "Bonjour Bob,"
     assert_includes text, "« Administration communale de Yvoir »"
@@ -56,12 +56,12 @@ class InvoicingMailerTest < ActionMailer::TestCase
   test "grant_reminder: when the plan ends and how to ask for the next invoice" do
     grant = @request.activate!(starts_at: Time.zone.local(2026, 10, 4))
     mail = InvoicingMailer.grant_reminder(grant, "d30")
-    assert_equal "Ta formule Semisto Designer se termine le 4 octobre 2027", mail.subject
+    assert_equal "Ta formule Semisto Terranova se termine le 4 octobre 2027", mail.subject
     text = mail.text_part.body.to_s
     assert_includes text, "Ta formule Bureau d'études, réglée sur facture, est valable jusqu'au 4 octobre 2027"
     assert_includes text, "http://example.com/billing/invoice?plan=bureau"
     assert_match "Plus que 7 jours", InvoicingMailer.grant_reminder(grant, "d7").subject
-    assert_equal "Ta formule Semisto Designer est arrivée à échéance", InvoicingMailer.grant_reminder(grant, "expired").subject
+    assert_equal "Ta formule Semisto Terranova est arrivée à échéance", InvoicingMailer.grant_reminder(grant, "expired").subject
     assert_includes InvoicingMailer.grant_reminder(grant, "expired").text_part.body.to_s, "Ta première carte reste entièrement modifiable"
   end
 end

@@ -18,7 +18,7 @@ Il ajoute :
 - **les analyses** : eau et relief, climat futur, sol ;
 - **les brouillons de ton IA** sur la carte.
 
-Le prix est **TVA comprise**. Il se paie **une seule fois** : rien n'est prélevé ensuite, il n'y a **aucune reconduction automatique**. Un an plus tard, Designer te propose de le renouveler ; c'est toi qui décides.
+Le prix est **TVA comprise**. Il se paie **une seule fois** : rien n'est prélevé ensuite, il n'y a **aucune reconduction automatique**. Un an plus tard, Terranova te propose de le renouveler ; c'est toi qui décides.
 
 ### Membre de Semisto : 30 % de moins
 

@@ -16,7 +16,7 @@ const FULL_SCREEN = ['maps/show', 'public_maps/show', 'maps/reliefs/show']
 void createInertiaApp({
   pages: '../pages',
   strictMode: true,
-  title: (title) => (title ? `${title} · Semisto Designer` : 'Semisto Designer'),
+  title: (title) => (title ? `${title} · Semisto Terranova` : 'Semisto Terranova'),
   layout: (name) => {
     if (FULL_SCREEN.includes(name)) return ImpersonationFrame
     if (name === 'pages/home') return [ImpersonationFrame, HomeLayout]

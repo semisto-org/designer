@@ -1,6 +1,6 @@
 # App icon: « Quatre couronnes »
 
-One tree seen from above, as it appears on a map, with its crown at years 1, 5, 15 and 30. Each year is a watercolour wash and a pencil ring drawn by hand (open, the end overshooting the start). It carries the two things the Semisto Designer is about: reading a place from above, and the time of living things. Chosen by Michael on 2026-10-10.
+One tree seen from above, as it appears on a map, with its crown at years 1, 5, 15 and 30. Each year is a watercolour wash and a pencil ring drawn by hand (open, the end overshooting the start). It carries the two things Semisto Terranova is about: reading a place from above, and the time of living things. Chosen by Michael on 2026-10-10.
 
 Everything here and every rendered size is drawn by `script/icons.mjs`; edit the script, never the files:
 
