@@ -5,7 +5,7 @@ category: L'IA sur la carte
 order: 70
 ---
 
-Semisto Designer est fait pour travailler **avec une IA qui connaît le lieu**. Tu branches ton propre assistant (Claude, ChatGPT, Le Chat de Mistral…) sur tes cartes, par un standard ouvert appelé **MCP** (*Model Context Protocol*). Pas de copier-coller : l'assistant lit directement ta carte.
+Semisto Terranova est fait pour travailler **avec une IA qui connaît le lieu**. Tu branches ton propre assistant (Claude, ChatGPT, Le Chat de Mistral…) sur tes cartes, par un standard ouvert appelé **MCP** (*Model Context Protocol*). Pas de copier-coller : l'assistant lit directement ta carte.
 
 ## Ce que ton IA peut faire
 
@@ -32,7 +32,7 @@ Semisto Designer est fait pour travailler **avec une IA qui connaît le lieu**. 
 
 ## Quels assistants ?
 
-Tout assistant qui accepte un **connecteur MCP personnalisé** avec connexion OAuth se branche seul : tu colles l'adresse, il t'envoie sur Semisto Designer pour autoriser l'accès. Aujourd'hui, c'est le cas de :
+Tout assistant qui accepte un **connecteur MCP personnalisé** avec connexion OAuth se branche seul : tu colles l'adresse, il t'envoie sur Semisto Terranova pour autoriser l'accès. Aujourd'hui, c'est le cas de :
 
 - **Claude** (claude.ai, Claude Desktop, Claude Code) ;
 - **ChatGPT**, en mode développeur, avec un abonnement payant ;

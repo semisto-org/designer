@@ -114,7 +114,7 @@ module Providers
         @connection ||= Faraday.new do |f|
           f.options.open_timeout = OPEN_TIMEOUT
           f.options.timeout = READ_TIMEOUT
-          f.headers["User-Agent"] = "SemistoDesigner/1.0 (+https://designer.semisto.org)"
+          f.headers["User-Agent"] = "SemistoTerranova/1.0 (+https://terranova.semisto.org)"
           f.response :raise_error
         end
       end

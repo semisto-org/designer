@@ -20,15 +20,15 @@ fr:
       viewer: "Lecteur"
     sign_in:
       title: "Ton terrain dans la poche"
-      intro: "Retrouve tes cartes Semisto Designer sur le terrain, même sans réseau : où tu es, ce qui est planté, ce qu'il reste à faire."
+      intro: "Retrouve tes cartes Semisto Terranova sur le terrain, même sans réseau : où tu es, ce qui est planté, ce qu'il reste à faire."
       button: "Se connecter"
-      how: "La connexion se fait sur designer.semisto.org, avec ton compte Google ou un lien reçu par e-mail."
+      how: "La connexion se fait sur terranova.semisto.org, avec ton compte Google ou un lien reçu par e-mail."
       offline: "Pas de réseau : connecte-toi une première fois avec une connexion, puis l'app fonctionne hors ligne."
       denied: "Connexion annulée. Tu peux réessayer quand tu veux."
       failed: "La connexion n'a pas abouti. Réessaie dans un instant."
     maps:
       title: "Mes cartes"
-      empty: "Aucune carte pour l'instant. Crée ta première carte sur designer.semisto.org : elle apparaîtra ici."
+      empty: "Aucune carte pour l'instant. Crée ta première carte sur terranova.semisto.org : elle apparaîtra ici."
       offline: "Hors ligne : voici tes cartes telles qu'au dernier passage."
       failed: "Impossible de mettre à jour la liste. Tire vers le bas pour réessayer."
       updated: "modifiée le %{date}"
@@ -39,8 +39,8 @@ fr:
       downloaded: "Disponible hors ligne"
     account:
       title: "Mon compte"
-      unknown: "Compte Semisto Designer"
-      website: "Ouvrir designer.semisto.org"
+      unknown: "Compte Semisto Terranova"
+      website: "Ouvrir terranova.semisto.org"
       pending_changes:
         one: "%{count} modification attend encore d'être envoyée : si tu te déconnectes maintenant, elle sera perdue."
         other: "%{count} modifications attendent encore d'être envoyées : si tu te déconnectes maintenant, elles seront perdues."
@@ -199,4 +199,4 @@ fr:
         createComment: "Commentaire"
     trace:
       notification_title: "Trace en cours"
-      notification_body: "Semisto Designer enregistre ta trace."
+      notification_body: "Semisto Terranova enregistre ta trace."

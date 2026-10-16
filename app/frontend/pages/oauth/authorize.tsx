@@ -50,7 +50,7 @@ function MobileAppConsent({ account, fields }: Props) {
       <div className="mx-auto max-w-lg rounded-2xl bg-white p-6 shadow-sm ring-1 ring-loam-200/70 sm:p-8">
         <div className="flex items-center gap-2 text-sm text-loam-500">
           <Logo />
-          <span>Semisto Designer</span>
+          <span>Semisto Terranova</span>
         </div>
         <h1 className="mt-5 text-xl leading-snug">{t('oauth.authorize.mobile_app.title')}</h1>
         <p className="mt-2 text-sm text-loam-600">
@@ -77,7 +77,7 @@ function ClientConsent({ client, account, requestedAccess, planAllowsDrafts, aiT
       <div className="mx-auto max-w-lg rounded-2xl bg-white p-6 shadow-sm ring-1 ring-loam-200/70 sm:p-8">
         <div className="flex items-center gap-2 text-sm text-loam-500">
           <Logo />
-          <span>Semisto Designer</span>
+          <span>Semisto Terranova</span>
         </div>
         <h1 className="mt-5 text-xl leading-snug">{t('oauth.authorize.title', { client: client.name })}</h1>
         <p className="mt-2 text-sm text-loam-600">

@@ -15,7 +15,7 @@ Le **Guide** est libre d'accès. Il explique quand prélever (à l'automne ou en
 
 Un **point**, c'est un endroit où tu prélèves de la terre, avec ses résultats.
 
-1. Touche **Suggérer des emplacements**, choisis le **Nombre de points**, puis **Calculer** : Designer répartit les points sur le terrain, loin du bord, des bâtiments, de l'eau et des chemins. Garde-les avec **Ajouter ces points**. Il faut pour cela avoir dessiné le contour.
+1. Touche **Suggérer des emplacements**, choisis le **Nombre de points**, puis **Calculer** : Terranova répartit les points sur le terrain, loin du bord, des bâtiments, de l'eau et des chemins. Garde-les avec **Ajouter ces points**. Il faut pour cela avoir dessiné le contour.
 2. Ou touche **Ajouter un point**, puis clique sur la carte.
 3. Ouvre un point pour le compléter : nom, **État** (**À prélever** ou **Prélevé**), date, profondeur, laboratoire, référence du rapport, notes.
 4. À la réception des rapports, touche **Joindre un PDF** : un point garde un PDF par analyse (analyse standard, métaux lourds…), 10 au plus, 15 Mo chacun.
@@ -25,7 +25,7 @@ Pour la texture, deux valeurs suffisent, la troisième est déduite.
 
 ### Faire lire les rapports par ton IA
 
-Designer ne lit pas les PDF lui-même, mais ton IA peut le faire. Une fois [ton IA reliée à Designer](/help/connecter-son-ia), demande-lui par exemple : « Lis les rapports du laboratoire du point P1 de ma carte dans Semisto Designer et propose les résultats. » Elle lit chaque PDF (même un scan), convertit les unités si besoin (un phosphore donné en P2O5, un potassium en mg/kg…) et dit d'où vient chaque valeur.
+Terranova ne lit pas les PDF lui-même, mais ton IA peut le faire. Une fois [ton IA reliée à Terranova](/help/connecter-son-ia), demande-lui par exemple : « Lis les rapports du laboratoire du point P1 de ma carte dans Semisto Terranova et propose les résultats. » Elle lit chaque PDF (même un scan), convertit les unités si besoin (un phosphore donné en P2O5, un potassium en mg/kg…) et dit d'où vient chaque valeur.
 
 Ses propositions attendent en haut du point, sous **Valeurs lues par ton IA** : compare-les avec le rapport, garde celles qui sont justes et refuse les autres. Seules les valeurs gardées entrent dans les résultats ; une valeur qui en remplacerait une déjà saisie montre les deux. Proposer des valeurs demande le [forfait](/help/formules-et-forfait) du propriétaire de la carte, ou son essai.
 
@@ -45,17 +45,17 @@ Les plantes qui s'installent seules racontent le sol : le rumex et le plantain p
 
 Photographie un coin du terrain avec toutes ses plantes sauvages : sous **Faire lire une photo par ton IA**, touche **Prendre une photo** ou **Choisir des photos**. Elles rejoignent les photos de la carte et attendent ton IA. Si une photo n'a pas de position, touche **Placer** sur sa vignette, puis clique sur la carte : les plantes se poseront là.
 
-Demande ensuite à ton IA (Claude, ChatGPT, Le Chat… [reliée à Designer](/help/connecter-son-ia)) : « Lis les photos de bio-indicatrices de ma carte et propose les plantes sauvages que tu y vois. » Le bouton **Copier** te donne la phrase. Ton IA regarde toute la photo, reconnaît chaque espèce, dit ce qu'elle raconte du sol et propose les plantes en brouillons, chacune avec son degré de certitude (**Sûre**, **Probable**, **À vérifier**) et ce qu'elle a vu.
+Demande ensuite à ton IA (Claude, ChatGPT, Le Chat… [reliée à Terranova](/help/connecter-son-ia)) : « Lis les photos de bio-indicatrices de ma carte et propose les plantes sauvages que tu y vois. » Le bouton **Copier** te donne la phrase. Ton IA regarde toute la photo, reconnaît chaque espèce, dit ce qu'elle raconte du sol et propose les plantes en brouillons, chacune avec son degré de certitude (**Sûre**, **Probable**, **À vérifier**) et ce qu'elle a vu.
 
 Sous **Ce que ton IA a vu**, **Garde** les plantes que tu reconnais aussi et **Refuse** les autres. Seules celles que tu gardes comptent dans **Ce que disent tes plantes**. Si tu redemandes une lecture, les propositions pas encore relues sont remplacées.
 
-Sur le terrain, l'app Semisto Designer fait de même : **Relever**, puis **Une plante bio-indicatrice**, et **Faire lire par mon IA**. Les photos partent dès que le réseau revient.
+Sur le terrain, l'app Semisto Terranova fait de même : **Relever**, puis **Une plante bio-indicatrice**, et **Faire lire par mon IA**. Les photos partent dès que le réseau revient.
 
 ### Une seule plante, avec Pl@ntNet
 
 Tu ne sais pas quelle est cette plante ? Sous **Une seule plante, de près**, touche **Prendre une photo** (ou **Choisir des photos**, cinq au plus, toutes de la même plante), puis **Identifier**. [Pl@ntNet](/help/identifier-une-plante) propose des espèces ; celles de la liste des bio-indicatrices montrent tout de suite ce qu'elles disent du sol. Touche **C'est elle** sur la bonne, choisis son **Abondance**, puis **Noter à l'endroit de la photo**.
 
-La plante se pose là où la photo a été prise (position lue dans la photo, ou celle de ton téléphone si tu viens de la prendre). La première photo est gardée avec elle, dans le panneau **Photos** : touche sa vignette dans **Tes observations** pour la revoir. Si la photo n'a pas de position, Designer te demande de cliquer sur la carte.
+La plante se pose là où la photo a été prise (position lue dans la photo, ou celle de ton téléphone si tu viens de la prendre). La première photo est gardée avec elle, dans le panneau **Photos** : touche sa vignette dans **Tes observations** pour la revoir. Si la photo n'a pas de position, Terranova te demande de cliquer sur la carte.
 
 ### Par son nom
 

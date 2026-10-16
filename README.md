@@ -1,8 +1,8 @@
-# Semisto Designer
+# Semisto Terranova
 
 Cartographiez votre terrain avec précision, puis concevez votre jardin-forêt ou votre design permaculturel avec une IA qui connaît le lieu, ses données et vos objectifs.
 
-Un projet de [Semisto](https://www.semisto.org), sous licence [AGPL-3.0](LICENSE). Hébergé sur [designer.semisto.org](https://designer.semisto.org).
+Un projet de [Semisto](https://www.semisto.org), sous licence [AGPL-3.0](LICENSE). Hébergé sur [terranova.semisto.org](https://terranova.semisto.org).
 
 ## Développer
 
@@ -29,7 +29,7 @@ Sans `STRIPE_SECRET_KEY`, les paiements sont désactivés et tout est débloqué
 1. **Produits et prix** (EUR, comportement fiscal « TVA incluse ») : Forfait particulier, paiement unique, 79 € → `STRIPE_PRICE_YEARLY` ; Atelier, mensuel, 49 € → `STRIPE_PRICE_ATELIER` ; Bureau d'études, mensuel, 99 € → `STRIPE_PRICE_BUREAU` ; Mission drone, paiement unique, 280 € → `STRIPE_PRICE_DRONE`.
 2. **Stripe Tax** activé (enregistrements TVA belges et européens) et un code fiscal par produit.
 3. **Réduction membres** : un coupon de 30 % limité au Forfait particulier, puis un code promotionnel individuel par membre (saisi par le membre sur la page de paiement).
-4. **Webhook** vers `https://designer.semisto.org/webhooks/stripe`, événements `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded` → `STRIPE_WEBHOOK_SECRET`.
+4. **Webhook** vers `https://terranova.semisto.org/webhooks/stripe`, événements `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded` → `STRIPE_WEBHOOK_SECRET`.
 5. **Portail client** configuré et activé (annulation d'abonnement, moyen de paiement, factures) ; optionnel : `STRIPE_PORTAL_CONFIGURATION`.
 6. Reçus clients et image de marque des factures dans les réglages Stripe.
 

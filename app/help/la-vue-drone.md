@@ -41,4 +41,4 @@ Si tu publies ta carte (panneau **Publier**), la vue drone n'apparaît pas dans 
 
 ## Si la vue ne s'affiche pas
 
-La vue est hébergée par Semisto et chargée directement par ton navigateur. Si Designer indique que la vue drone ne répond pas, réessaie un peu plus tard ; si cela dure, écris à Semisto. Au-delà du zoom le plus fort de la prise de vue, l'image est simplement agrandie.
+La vue est hébergée par Semisto et chargée directement par ton navigateur. Si Terranova indique que la vue drone ne répond pas, réessaie un peu plus tard ; si cela dure, écris à Semisto. Au-delà du zoom le plus fort de la prise de vue, l'image est simplement agrandie.

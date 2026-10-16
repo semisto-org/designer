@@ -1,6 +1,8 @@
-# CLAUDE.md — Semisto Designer
+# CLAUDE.md — Semisto Terranova
 
-Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden or permaculture plan on it, with an AI that knows the place. Hosted by Semisto at https://designer.semisto.org. Product plan: `/mnt/project-files/designer/plan.md` (when available) — the v1 scope is steps 1 to 4 of its roadmap.
+Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden or permaculture plan on it, with an AI that knows the place. Hosted by Semisto at https://terranova.semisto.org. Product plan: `/mnt/project-files/designer/plan.md` (when available) — the v1 scope is steps 1 to 4 of its roadmap.
+
+**Name.** The product was called « Semisto Designer » until 16 October 2026; it is now **Semisto Terranova** (« Terranova » for short), at https://terranova.semisto.org. https://designer.semisto.org still answers: pages redirect to the new address (`LegacyHostRedirect`), while the MCP server, OAuth, `/api` and `.well-known` keep working there for clients connected before the move. The repository, Ruby/TypeScript identifiers, the `designer` database and app names, the phone app's bundle ids and the `designer@semisto.org` mailbox keep the old name on purpose. Semisto's internal management app (repository `terranova-2026`, app.semisto.org) is also called Terranova for now: in code comments and imports (`Catalog::TerranovaImport`, `Imports::TerranovaPalette`), « Terranova » means that internal app.
 
 ## Point of view (read before any design or copy work)
 
@@ -61,7 +63,7 @@ Why the project exists, its principles and what it refuses: @INTENT.md (imported
 - PFAF: values may be shown, each citing PFAF as source; **never copy PFAF texts or images**.
 - Rekentool (Dutch financial tool): **no data from it** in the repo or UI.
 - Open-Meteo free API is non-commercial: weather/climate go through a configurable provider with an "unavailable" state.
-- Code ported from Claudy (MIT, © Fondation Les 4 Sources) keeps a header comment: `# Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)`. Terranova has no licence and contains personal data: port logic file by file, never data or history.
+- Code ported from Claudy (MIT, © Fondation Les 4 Sources) keeps a header comment: `# Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)`. The internal Terranova app has no licence and contains personal data: port logic file by file, never data or history.
 - Sensitive layers (networks: water, gas, electricity, ethernet) are hidden by default in public views, exports and the MCP.
 
 ## Billing, public site and help center

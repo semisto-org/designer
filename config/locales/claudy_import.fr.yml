@@ -1,5 +1,5 @@
 # Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)
-# One-shot import of the Claudy map plan (Les 4 Sources) into a Designer map:
+# One-shot import of the Claudy map plan (Les 4 Sources) into a Terranova map:
 # bin/rails claudy:import (lib/tasks/claudy.rake, app/services/imports/claudy).
 # The labels of Claudy's vocabulary (node types, plant statuses, water
 # sources…) come from Claudy's models (MapLayer, Plant, MapFeature).
@@ -178,7 +178,7 @@ fr:
       palette:
         one: "Palette : %{count} espèce ou variété ajoutée."
         other: "Palette : %{count} espèces ou variétés ajoutées."
-      unmatched_species: "Espèces introuvables dans le catalogue de Designer (plantes importées sans espèce, propriété unmatched_species) :"
+      unmatched_species: "Espèces introuvables dans le catalogue de Terranova (plantes importées sans espèce, propriété unmatched_species) :"
       unmatched_species_line:
         one: "  - %{name} : %{count} plante"
         other: "  - %{name} : %{count} plantes"
@@ -211,19 +211,19 @@ fr:
           one: "  - %{count} note manuscrite sans trait."
           other: "  - %{count} notes manuscrites sans trait."
         tasks:
-          one: "  - %{count} tâche du carnet : Designer n'a pas encore de carnet de tâches."
-          other: "  - %{count} tâches du carnet : Designer n'a pas encore de carnet de tâches."
+          one: "  - %{count} tâche du carnet : Terranova n'a pas encore de carnet de tâches."
+          other: "  - %{count} tâches du carnet : Terranova n'a pas encore de carnet de tâches."
       sketches_missing:
         api: "  - Les notes manuscrites : l'API de Claudy ne les expose pas (utilise l'export, FILE=…)."
         file: "  - Les notes manuscrites : ce fichier ne les contient pas (utilise l'export de Claudy, voir docs/import-claudy.md)."
-      kept: "Laissé tel quel dans Designer :"
+      kept: "Laissé tel quel dans Terranova :"
       kept_reasons:
         edited:
-          one: "  - %{count} élément modifié dans Designer depuis le dernier import (FORCE=1 pour le remplacer)."
-          other: "  - %{count} éléments modifiés dans Designer depuis le dernier import (FORCE=1 pour les remplacer)."
+          one: "  - %{count} élément modifié dans Terranova depuis le dernier import (FORCE=1 pour le remplacer)."
+          other: "  - %{count} éléments modifiés dans Terranova depuis le dernier import (FORCE=1 pour les remplacer)."
         deleted:
-          one: "  - %{count} élément supprimé dans Designer depuis le dernier import (FORCE=1 pour le recréer)."
-          other: "  - %{count} éléments supprimés dans Designer depuis le dernier import (FORCE=1 pour les recréer)."
+          one: "  - %{count} élément supprimé dans Terranova depuis le dernier import (FORCE=1 pour le recréer)."
+          other: "  - %{count} éléments supprimés dans Terranova depuis le dernier import (FORCE=1 pour les recréer)."
       warnings: "À vérifier :"
       warning_line: "  - %{text}"
       fallback: "« %{name} » (Claudy %{type} n° %{id}) ne convient pas à « %{kind} » (%{reason}) : importé comme « %{generic} »."

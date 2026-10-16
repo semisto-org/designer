@@ -5,7 +5,7 @@ category: Cartographier
 order: 30
 ---
 
-Chaque région publie ses données ouvertes sur un géoportail : le **Géoportail de la Wallonie**, la **Géoplateforme de l'IGN** en France, **geoportail.lu** au Luxembourg, **UrbIS** à Bruxelles, **Digitaal Vlaanderen** en Flandre. Designer choisit la région d'après l'adresse de ton terrain et en affiche les plus utiles pour concevoir un jardin-forêt, dans le panneau **Couches** : un **Fond de carte** (plan ou photo aérienne), puis des couches à superposer, rangées en deux familles : **Relief, sol et eau** et **Milieux et règles**. Active-les une par une : trop de couches superposées, et on s'y perd.
+Chaque région publie ses données ouvertes sur un géoportail : le **Géoportail de la Wallonie**, la **Géoplateforme de l'IGN** en France, **geoportail.lu** au Luxembourg, **UrbIS** à Bruxelles, **Digitaal Vlaanderen** en Flandre. Terranova choisit la région d'après l'adresse de ton terrain et en affiche les plus utiles pour concevoir un jardin-forêt, dans le panneau **Couches** : un **Fond de carte** (plan ou photo aérienne), puis des couches à superposer, rangées en deux familles : **Relief, sol et eau** et **Milieux et règles**. Active-les une par une : trop de couches superposées, et on s'y perd.
 
 ## Hors de ces cinq régions
 
@@ -22,7 +22,7 @@ Dans ces régions, les parcelles se choisissent sur la carte comme en Wallonie, 
 
 ## Cliquer pour lire la donnée
 
-Une couche est un dessin ; **la donnée se lit en cliquant**. En Wallonie, quand une couche est active, un clic sur la carte interroge le Géoportail et affiche l'information à cet endroit (type de sol, altitude, zone du plan de secteur…). Si le service est momentanément injoignable, Designer le dit et tu peux réessayer.
+Une couche est un dessin ; **la donnée se lit en cliquant**. En Wallonie, quand une couche est active, un clic sur la carte interroge le Géoportail et affiche l'information à cet endroit (type de sol, altitude, zone du plan de secteur…). Si le service est momentanément injoignable, Terranova le dit et tu peux réessayer.
 
 ## Fond de carte : plan et photos aériennes
 

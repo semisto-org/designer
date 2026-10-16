@@ -27,13 +27,13 @@ Ce que le client ne lit pas : le nombre de designers, les prestations retenues, 
 
 Chaque étape (pré-design, design, mise en œuvre) liste ses tâches avec leurs heures et **pourquoi** : « 2 h + 0,02 h × 510 plants ». Tu corriges une ligne, en retires une, en ajoutes une ; le calcul d'origine reste affiché. Le prix montré au client est le calcul arrondi, ou celui que tu fixes : s'il tombe à plus de 10 % sous le calcul, l'offre te le signale.
 
-## Le Designer rend le design moins cher
+## Terranova rend le design moins cher
 
-Lire le lieu, esquisser, établir la palette ou le tableau des récoltes va plus vite avec le Designer. Chaque tâche de ton barème porte ce **gain**, et l'offre montre les heures gagnées. Le but : que le budget de ton client aille d'abord à la plantation. L'offre affiche la part du design dans le total et te prévient quand elle dépasse la part visée par ton barème.
+Lire le lieu, esquisser, établir la palette ou le tableau des récoltes va plus vite avec Terranova. Chaque tâche de ton barème porte ce **gain**, et l'offre montre les heures gagnées. Le but : que le budget de ton client aille d'abord à la plantation. L'offre affiche la part du design dans le total et te prévient quand elle dépasse la part visée par ton barème.
 
 ## Tes barèmes
 
-Un **barème** rassemble ta façon de chiffrer : taux, tâches et heures, gains du Designer, prix des plants, complexité et conditions (allers-retours compris, validité, acompte, hypothèses, exclusions). Tu pars du barème Semisto et tu en fais autant de copies que tu veux, par exemple une pour les particuliers et une pour les communes. La fiche projet choisit celui qui ouvre l'offre ; tu peux en changer à tout moment.
+Un **barème** rassemble ta façon de chiffrer : taux, tâches et heures, gains de Terranova, prix des plants, complexité et conditions (allers-retours compris, validité, acompte, hypothèses, exclusions). Tu pars du barème Semisto et tu en fais autant de copies que tu veux, par exemple une pour les particuliers et une pour les communes. La fiche projet choisit celui qui ouvre l'offre ; tu peux en changer à tout moment.
 
 ## Les versions
 

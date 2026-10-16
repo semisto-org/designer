@@ -330,7 +330,7 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: input.orientation, unit: 'mm', format: input.paper.toLowerCase(), compress: true })
   const big = input.paper === 'A3'
-  doc.setProperties({ title: pdfText(input.title), creator: 'Semisto Designer', author: pdfText(input.author ?? '') })
+  doc.setProperties({ title: pdfText(input.title), creator: 'Semisto Terranova', author: pdfText(input.author ?? '') })
 
   // Map and frame.
   doc.addImage(image, 'JPEG', frame.x, frame.y, frame.w, frame.h, undefined, 'FAST')

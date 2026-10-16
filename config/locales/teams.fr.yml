@@ -172,8 +172,8 @@ fr:
     invite:
       subject: "%{inviter} t'invite dans l'équipe « %{team} »"
       greeting: "Bonjour,"
-      body_admin: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Designer, en tant qu'administrateur."
-      body_member: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Designer."
+      body_admin: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Terranova, en tant qu'administrateur."
+      body_member: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Terranova."
       what: "Les membres d'une équipe modifient toutes ses cartes et participent à leurs discussions."
       role_admin: "En tant qu'administrateur, tu géreras aussi les membres de l'équipe : invitations, rôles et départs."
       button: "Rejoindre l'équipe"

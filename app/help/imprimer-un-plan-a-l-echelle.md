@@ -5,7 +5,7 @@ category: Partager et collaborer
 order: 64
 ---
 
-Sur le terrain, rien ne remplace une feuille où l'on peut mesurer au double-décimètre et griffonner. Designer crée un **plan PDF à l'échelle** de ton design, prêt à imprimer.
+Sur le terrain, rien ne remplace une feuille où l'on peut mesurer au double-décimètre et griffonner. Terranova crée un **plan PDF à l'échelle** de ton design, prêt à imprimer.
 
 ## Préparer la carte
 

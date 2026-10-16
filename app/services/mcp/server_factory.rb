@@ -8,7 +8,7 @@ module Mcp
     def self.build(principal:, origin:)
       MCP::Server.new(
         name: "semisto-designer",
-        title: "Semisto Designer",
+        title: "Semisto Terranova",
         version: VERSION,
         website_url: Endpoints.all(origin)[:docs],
         instructions: I18n.t("mcp.server.instructions"),

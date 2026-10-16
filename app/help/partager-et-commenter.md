@@ -5,7 +5,7 @@ category: Partager et collaborer
 order: 60
 ---
 
-Un projet de jardin-forêt se construit rarement seul. Designer permet d'inviter, de discuter sur la carte même, et de montrer son travail.
+Un projet de jardin-forêt se construit rarement seul. Terranova permet d'inviter, de discuter sur la carte même, et de montrer son travail.
 
 ## Trois rôles par carte
 

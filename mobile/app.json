@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Semisto Designer",
+    "name": "Semisto Terranova",
     "slug": "semisto-designer",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -51,8 +51,8 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Semisto Designer montre où tu es sur le plan de ton terrain et place tes photos, relevés et plantations.",
-          "locationAlwaysAndWhenInUsePermission": "Semisto Designer continue d'enregistrer ta trace quand l'écran est éteint, pendant que tu marches le long d'une haie ou d'une limite.",
+          "locationWhenInUsePermission": "Semisto Terranova montre où tu es sur le plan de ton terrain et place tes photos, relevés et plantations.",
+          "locationAlwaysAndWhenInUsePermission": "Semisto Terranova continue d'enregistrer ta trace quand l'écran est éteint, pendant que tu marches le long d'une haie ou d'une limite.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
@@ -61,9 +61,9 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Semisto Designer photographie et filme ton terrain et tes plantes pour les rattacher à la carte.",
-          "photosPermission": "Semisto Designer importe des photos et des vidéos de ton terrain déjà prises.",
-          "microphonePermission": "Semisto Designer enregistre le son des vidéos que tu filmes sur ton terrain."
+          "cameraPermission": "Semisto Terranova photographie et filme ton terrain et tes plantes pour les rattacher à la carte.",
+          "photosPermission": "Semisto Terranova importe des photos et des vidéos de ton terrain déjà prises.",
+          "microphonePermission": "Semisto Terranova enregistre le son des vidéos que tu filmes sur ton terrain."
         }
       ],
       "expo-font"
@@ -73,7 +73,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "https://designer.semisto.org",
+      "apiUrl": "https://terranova.semisto.org",
       "eas": {
         "projectId": "cf4ef807-5bd3-4f05-9170-9a8b855fef40"
       }

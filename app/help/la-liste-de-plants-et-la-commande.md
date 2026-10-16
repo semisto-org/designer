@@ -5,7 +5,7 @@ category: Concevoir
 order: 52
 ---
 
-Une fois tes plants placés et tes patches composés, Designer fait les comptes à ta place. Le panneau **Liste de plants** dit ce qu'il faut commander et planter ; le panneau **Passer à l'action** te permet de le demander à Semisto.
+Une fois tes plants placés et tes patches composés, Terranova fait les comptes à ta place. Le panneau **Liste de plants** dit ce qu'il faut commander et planter ; le panneau **Passer à l'action** te permet de le demander à Semisto.
 
 ## Ce que contient la liste
 

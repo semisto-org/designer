@@ -5,7 +5,7 @@ category: Concevoir
 order: 50
 ---
 
-Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes qui s'entraident, à plusieurs hauteurs. Designer t'aide à passer de l'idée au **plan de plantation**, puis à la **liste de plants** à commander.
+Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes qui s'entraident, à plusieurs hauteurs. Terranova t'aide à passer de l'idée au **plan de plantation**, puis à la **liste de plants** à commander.
 
 ## La palette : les plantes de ton projet
 
@@ -41,7 +41,7 @@ Un **patch** est une zone où l'on plante un mélange d'espèces : un îlot, une
 2. Sa fiche s'ouvre sur **Composition du patch**. Touche **Ajouter une plante** et choisis une espèce de la palette.
 3. Pour chaque plante, choisis le calcul : **Densité** (en plants par m², avec une valeur par défaut selon la strate) ou **Nombre** de plants.
 
-Designer calcule les quantités d'après la surface mesurée du patch. Indique aussi l'**Exposition du patch** : elle sert à la cohérence du plan.
+Terranova calcule les quantités d'après la surface mesurée du patch. Indique aussi l'**Exposition du patch** : elle sert à la cohérence du plan.
 
 Penser en strates évite les mauvaises surprises : on met la canopée là où l'ombre ne gêne pas, les arbustes en lisière, les herbacées et couvre-sols dans les interstices.
 

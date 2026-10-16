@@ -1,11 +1,11 @@
-# Semisto Designer's own iOS and Android app (mobile/). It signs in through
+# Semisto Terranova's own iOS and Android app (mobile/). It signs in through
 # the OAuth server built for MCP clients, as a public client (PKCE) with a
 # fixed client_id and a private-use redirect scheme, and is the only client
 # that receives the APP scope: its access token then works on the app's
 # JSON endpoints as if the user were signed in (Authentication).
 module MobileApp
   CLIENT_ID = "semisto-designer-mobile"
-  NAME = "Semisto Designer"
+  NAME = "Semisto Terranova"
   REDIRECT_URI = "org.semisto.designer://oauth"
   SCOPES = [ AiAccess::READ, AiAccess::DRAFTS, AiAccess::APP ].freeze
 

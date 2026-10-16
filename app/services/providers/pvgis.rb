@@ -53,7 +53,7 @@ module Providers
     PRECISION = 3
     OPEN_TIMEOUT = 5
     TIMEOUT = 15
-    USER_AGENT = "SemistoDesigner/1.0 (+https://designer.semisto.org)".freeze
+    USER_AGENT = "SemistoTerranova/1.0 (+https://terranova.semisto.org)".freeze
 
     def self.build(env = ENV)
       name = env.fetch("PVGIS_PROVIDER", "pvgis").to_s.strip.downcase

@@ -201,7 +201,7 @@ fr:
         invalid_date: "Cette date n'est pas valide."
         stripe: "Stripe a refusé l'opération : %{message}"
     stripe:
-      line: "Semisto Designer — %{plan} — %{months} mois"
+      line: "Semisto Terranova — %{plan} — %{months} mois"
       purchase_order: "Bon de commande"
       company_number: "N° d'entreprise"
   invoicing_mailer:
@@ -222,7 +222,7 @@ fr:
       next: "À faire : créer la facture (depuis la page d'administration, dans Stripe ou à la main), puis activer la formule. Répondre à cet e-mail pour lui écrire."
       open_admin: "Ouvrir les demandes de facture"
     request_confirmation:
-      subject: "Ta demande de facture pour Semisto Designer"
+      subject: "Ta demande de facture pour Semisto Terranova"
       body: "Nous avons bien reçu ta demande de facture au nom de « %{organization} ». En voici le récapitulatif :"
       invoice: "La facture sera envoyée à %{email}, payable par virement sous 30 jours."
       purchase_order: " Elle mentionnera ton bon de commande n° %{number}."
@@ -238,13 +238,13 @@ fr:
       renew: "Pour continuer une année de plus, demande une nouvelle facture : il ne faut que quelques minutes, et ton numéro de bon de commande peut y figurer."
       no_auto: "Rien n'est facturé automatiquement : tu gardes la main."
       d30:
-        subject: "Ta formule Semisto Designer se termine le %{date}"
+        subject: "Ta formule Semisto Terranova se termine le %{date}"
         body: "Ta formule %{plan}, réglée sur facture, est valable jusqu'au %{date}, soit dans un mois."
       d7:
-        subject: "Plus que 7 jours : ta formule Semisto Designer se termine le %{date}"
+        subject: "Plus que 7 jours : ta formule Semisto Terranova se termine le %{date}"
         body: "Ta formule %{plan}, réglée sur facture, se termine le %{date}, dans une semaine."
       expired:
-        subject: "Ta formule Semisto Designer est arrivée à échéance"
+        subject: "Ta formule Semisto Terranova est arrivée à échéance"
         body: "Ta formule %{plan}, réglée sur facture, a pris fin le %{date}."
         read_only:
           one: "%{count} de tes cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Demande une nouvelle facture pour la modifier à nouveau."
