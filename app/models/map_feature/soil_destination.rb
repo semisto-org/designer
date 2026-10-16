@@ -32,7 +32,9 @@ module MapFeature::SoilDestination
         next unless next_props.key?(key)
         value = next_props[key]
         id = value.is_a?(Integer) ? value : (value.is_a?(String) && value.match?(/\A\d+\z/) ? value.to_i : nil)
-        if value.blank?
+        if value.nil?
+          next # an importer may carry the key blank; nil already reads as undecided
+        elsif value.blank?
           next_props.delete(key)
         elsif id
           next_props[key] = id
