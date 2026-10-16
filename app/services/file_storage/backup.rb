@@ -26,6 +26,18 @@ module FileStorage
 
     def self.configured?(target = :backup) = FileStorage.configured?(target)
 
+    LAST_RUN_KEY = "file_backup/last_run"
+
+    # The figures of the latest run, for the admin « Tech » view.
+    def self.record(result, at: Time.current)
+      Rails.cache.write(LAST_RUN_KEY, { at: at.iso8601, copied: result.copied, alreadyThere: result.already_there,
+        missing: result.missing.size, failed: result.failed.size, erased: result.erased, awaitingErasure: result.awaiting_erasure })
+    rescue StandardError => error
+      Rails.logger.warn("[storage:backup] could not record the run: #{error.message}")
+    end
+
+    def self.last_run = Rails.cache.read(LAST_RUN_KEY)
+
     # `service` replaces the one named `target`, `alarm_floor` the floor (tests).
     def initialize(target: :backup, service: nil, alarm_floor: ORPHAN_ALARM_FLOOR, logger: Rails.logger)
       @target = target.to_s
