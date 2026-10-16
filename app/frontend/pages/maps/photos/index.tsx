@@ -367,8 +367,9 @@ export default function MapPhotos({ map, canEdit }: Props) {
           <p className="font-serif text-2xl text-prune-800">{t('photo_pages.drop_now')}</p>
         </div>
       )}
+      {/* Above the photo viewer (z-[60]) and its dialogs, so their messages show. */}
       {toast && (
-        <div role="status" className={clsx('fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg', toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
+        <div role="status" className={clsx('fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg', toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
           {toast.message}
         </div>
       )}
