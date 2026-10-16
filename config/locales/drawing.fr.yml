@@ -29,6 +29,7 @@ fr:
       shed: "Cabane ou remise"
       compost: "Compost"
       raised_bed: "Bac surélevé"
+      mound: "Butte ou talus"
       terrace: "Terrasse"
       playground: "Aire de jeux"
       fence: "Clôture"
@@ -117,6 +118,7 @@ fr:
       outdoor: "Étanche (extérieur)"
       length_m: "Longueur"
       area_m2: "Surface"
+      dug_depth_m: "Encaissement"
 
     options:
       roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }
@@ -151,7 +153,7 @@ fr:
         fallow: "Friche"
         bare: "Sol nu"
       liner: { natural: "Sol en place", clay: "Argile", epdm: "Bâche EPDM" }
-      purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade" }
+      purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade", growing: "Butte de culture", hedge_bank: "Talus planté de haie", windbreak: "Abri du vent", noise: "Écran (bruit, vue)", play: "Jeu" }
       tank_type: { buried: "Enterrée", above_ground: "Hors sol", ibc: "Cuve IBC" }
       gate_type: { pedestrian: "Piétons", vehicle: "Véhicules" }
       covering: { glass: "Verre", polycarbonate: "Polycarbonate", plastic: "Bâche plastique" }

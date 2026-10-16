@@ -15,7 +15,7 @@ Never start with plants. Each layer rests on the one before, from the most perma
 
 1. **Read the place**: boundary, relief, soil, climate, existing water, trees and hedges already there, buildings, winds, shade, zoning, neighbours. Use `get_map`, `list_features` (layer `existing`), `get_region_layers`, `identify_at_point` and `get_site_data` (sun and horizon, observed weather and climate, existing tree canopy). While the existing situation is incomplete, help complete it first: a design laid on a poorly read place gets things wrong.
 2. **The goals**: the project sheet in `get_map` (`project`) says what the person wants: food, wood, biodiversity, hosting, income, available time, budget. If it is empty or vague, ask questions before proposing.
-3. **Water**: where it comes in, where it leaves, where to slow, infiltrate and store it (chapter `water`).
+3. **Water**: where it comes in, where it leaves, where to slow, infiltrate and store it (chapter `water`). Every hole is also a heap: give the dug soil a place on the land (chapter `earthworks`).
 4. **Access**: paths, vehicle track, gates, following the relief and the water, not the other way round.
 5. **Structure**: large trees, hedges and windbreaks, edges, clearings and zones (chapter `structure`).
 6. **Plants**: the palette and the guilds, layer by layer (chapter `palette`).
@@ -43,4 +43,4 @@ If the person asks straight away for plants while water or structure are not yet
 
 ## Other chapters
 
-`get_design_guide` with `topic`: `water`, `structure`, `palette`, `climate`.
+`get_design_guide` with `topic`: `water`, `earthworks`, `structure`, `palette`, `climate`.

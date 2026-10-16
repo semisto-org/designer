@@ -116,7 +116,7 @@ layers:
         icon: spline
         color: "#2b7bb9"
         line: { width: 5, casing: "#ffffff" }
-        defaults: { width_m: 1, depth_m: 0.4 }
+        defaults: { width_m: 1, depth_m: 0.4, topsoil_to: berm, subsoil_to: berm }
         fields:
           - { key: width_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
           - { key: depth_m, type: number, unit: m, min: 0.1, max: 3, step: 0.05 }
@@ -176,6 +176,7 @@ layers:
         fields:
           - { key: width_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
           - { key: surface, type: select, options: [earth, grass, wood_chips, gravel, stepping_stones, paved] }
+          - { key: dug_depth_m, type: number, unit: m, min: 0, max: 3, step: 0.05 }
       track:
         geometry: LineString
         icon: tractor
@@ -185,6 +186,7 @@ layers:
         fields:
           - { key: width_m, type: number, unit: m, min: 1, max: 20, step: 0.1 }
           - { key: surface, type: select, options: [earth, grass, gravel, paved] }
+          - { key: dug_depth_m, type: number, unit: m, min: 0, max: 3, step: 0.05 }
       gate:
         geometry: Point
         icon: door-open
@@ -247,6 +249,15 @@ layers:
         fields:
           - { key: height_m, type: number, unit: m, min: 0.1, max: 1.5, step: 0.05 }
         computed: [raised_bed_soil]
+      mound:
+        geometry: Polygon
+        icon: mountain
+        color: "#8b5e3c"
+        fill: { opacity: 0.35, pattern: dots }
+        defaults: { height_m: 0.8 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.1, max: 5, step: 0.05 }
+          - { key: purpose, type: select, options: [growing, hedge_bank, windbreak, noise, play] }
       terrace:
         geometry: Polygon
         icon: armchair

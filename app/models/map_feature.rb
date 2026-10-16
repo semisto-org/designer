@@ -11,6 +11,7 @@ class MapFeature < ApplicationRecord
   include MapFeature::WaterSourceLink
   include MapFeature::Tags
   include MapFeature::PlantNumber
+  include MapFeature::SoilDestination
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze

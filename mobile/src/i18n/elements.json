@@ -185,6 +185,13 @@
         "color": "#8a6f47",
         "pickable": true
       },
+      "mound": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#8b5e3c",
+        "pickable": true
+      },
       "terrace": {
         "geometries": [
           "Polygon"
