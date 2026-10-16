@@ -158,6 +158,17 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_nil page.dig("props", "terrain")
     assert_equal "Europe/Brussels", page.dig("props", "timezone")
     assert_in_delta 4.9001, page.dig("props", "location", 0), 0.0001
+    assert_equal [], page.dig("props", "growingPlants", "plants")
+  end
+
+  test "the relief page brings the map's plants to grow in 3D" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9001, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:apple).id })
+    sign_in_as users(:alice)
+    get map_relief_path(@map), headers: inertia_headers
+    plants = response.parsed_body.dig("props", "growingPlants", "plants")
+    assert_equal 1, plants.size
+    assert_equal "sub_canopy", plants.first["strata"]
   end
 
   test "the relief page and its files once imported" do

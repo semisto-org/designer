@@ -24,6 +24,8 @@ import { NIVA, type NivaState } from './niva.ts'
 import { headingOf } from './heading.ts'
 import { buildNivaModel, nivaParts, setNivaLights, type NivaLights } from './nivaModel.ts'
 import type { ColdAirField } from './coldAir.ts'
+import type { PlantStrata, ScenePlant } from './growth.ts'
+import { PlantLayer } from './plantModels.ts'
 import type { RainSimulation } from './hydro.ts'
 import type { SunPosition } from './sun.ts'
 
@@ -43,6 +45,13 @@ const COLD_SHEETS = [0.35, 0.7, 1]
 const FROST_RGB = [226, 233, 240]
 
 export type CameraMode = 'chase' | 'orbit'
+export type WalkKey = 'up' | 'down' | 'left' | 'right' | 'run'
+
+/** Eye height of a standing adult (m), walking and running speeds (m/s). */
+const EYE_HEIGHT = 1.6
+const WALK_SPEED = 1.4
+const RUN_SPEED = 4
+const TURN_SPEED = 1.6
 
 export type SceneGrid = {
   heights: Float32Array
@@ -167,6 +176,20 @@ export class ReliefScene {
   private buildingFoot: Float32Array | null = null
   private buildingRise: Float32Array | null = null
   private buildingsOn = true
+  private plants: PlantLayer | null = null
+  private plantsOn = true
+  private walk: {
+    x: number
+    z: number
+    yaw: number
+    pitch: number
+    keys: Record<WalkKey, boolean>
+    ground: (x: number, z: number) => number
+    saved: { position: THREE.Vector3; target: THREE.Vector3; near: number; fov: number }
+    drag: { id: number; x: number; y: number } | null
+  } | null = null
+  private lastFrame = performance.now()
+  private walkPointer: { down: (e: PointerEvent) => void; move: (e: PointerEvent) => void; up: (e: PointerEvent) => void } | null = null
 
   constructor(container: HTMLElement, grid: SceneGrid) {
     this.container = container
@@ -447,6 +470,154 @@ ${OVERLAY_MIX}`)
     this.exaggeration = value
     this.world.scale.y = value
     this.placeBuildings()
+    this.placePlants()
+  }
+
+  // ---- The map's plants, grown to a year ------------------------------------
+
+  /** The plants (grid metres) and the real altitude of the ground under each; null removes them. */
+  setPlants(plants: ScenePlant[] | null, altitudes?: Float32Array) {
+    if (this.plants) {
+      this.scene.remove(this.plants.group)
+      this.plants.dispose()
+      this.plants = null
+    }
+    if (!plants?.length || !altitudes) return
+    this.plants = new PlantLayer(plants, altitudes)
+    this.plants.group.visible = this.plantsOn
+    this.scene.add(this.plants.group)
+    this.placePlants()
+  }
+
+  private placePlants() {
+    const g = this.grid
+    this.plants?.place({
+      x0: ((g.cols - 1) * g.cellSize) / 2, z0: ((g.rows - 1) * g.cellSize) / 2, zBase: g.zBase, exaggeration: this.exaggeration,
+    })
+  }
+
+  setPlantYear(year: number) {
+    this.plants?.setYear(year)
+  }
+
+  setPlantColors(colors: Record<PlantStrata, string>) {
+    this.plants?.setColors(colors)
+  }
+
+  showPlants(on: boolean) {
+    this.plantsOn = on
+    if (this.plants) this.plants.group.visible = on
+  }
+
+  /** The plant (index in the list given to `setPlants`) under a pointer, or null. */
+  pickPlant(event: { clientX: number; clientY: number }): number | null {
+    if (!this.plants || !this.plantsOn) return null
+    const raycaster = new THREE.Raycaster()
+    raycaster.setFromCamera(this.pointer(event), this.camera)
+    return this.plants.pick(raycaster)
+  }
+
+  private pointer(event: { clientX: number; clientY: number }): THREE.Vector2 {
+    const rect = this.renderer.domElement.getBoundingClientRect()
+    return new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1)
+  }
+
+  // ---- On foot, at eye level --------------------------------------------------
+  //
+  // The camera stands 1.6 m above the real ground (`ground`, altitude in
+  // metres at a point of the local frame, x east and z south from the
+  // north-west corner) and walks: arrows or W A S D (Z Q S D on a French
+  // keyboard, same keys), Shift to run, a drag to look around.
+
+  get walking(): boolean { return !!this.walk }
+
+  startWalk(x: number, z: number, yaw: number, ground: (x: number, z: number) => number) {
+    if (this.walk) this.stopWalk()
+    this.walk = {
+      x, z, yaw, pitch: -0.05, ground,
+      keys: { up: false, down: false, left: false, right: false, run: false },
+      saved: { position: this.camera.position.clone(), target: this.controls.target.clone(), near: this.camera.near, fov: this.camera.fov },
+      drag: null,
+    }
+    this.controls.enabled = false
+    this.camera.near = 0.1
+    this.camera.fov = 60
+    this.camera.updateProjectionMatrix()
+    const canvas = this.renderer.domElement
+    const walk = () => this.walk
+    this.walkPointer = {
+      down: (e) => { const w = walk(); if (w) w.drag = { id: e.pointerId, x: e.clientX, y: e.clientY } },
+      move: (e) => {
+        const w = walk()
+        if (!w?.drag || w.drag.id !== e.pointerId) return
+        // Drag the view: the world follows the finger.
+        w.yaw -= ((e.clientX - w.drag.x) / canvas.clientHeight) * 1.8
+        w.pitch = Math.max(-1.2, Math.min(1.2, w.pitch + ((e.clientY - w.drag.y) / canvas.clientHeight) * 1.8))
+        w.drag.x = e.clientX
+        w.drag.y = e.clientY
+      },
+      up: (e) => { const w = walk(); if (w?.drag?.id === e.pointerId) w.drag = null },
+    }
+    canvas.addEventListener('pointerdown', this.walkPointer.down)
+    window.addEventListener('pointermove', this.walkPointer.move)
+    window.addEventListener('pointerup', this.walkPointer.up)
+    window.addEventListener('pointercancel', this.walkPointer.up)
+    this.updateWalk(0)
+  }
+
+  stopWalk() {
+    const walk = this.walk
+    if (!walk) return
+    this.walk = null
+    if (this.walkPointer) {
+      this.renderer.domElement.removeEventListener('pointerdown', this.walkPointer.down)
+      window.removeEventListener('pointermove', this.walkPointer.move)
+      window.removeEventListener('pointerup', this.walkPointer.up)
+      window.removeEventListener('pointercancel', this.walkPointer.up)
+      this.walkPointer = null
+    }
+    this.camera.near = walk.saved.near
+    this.camera.fov = walk.saved.fov
+    this.camera.updateProjectionMatrix()
+    this.camera.position.copy(walk.saved.position)
+    this.controls.target.copy(walk.saved.target)
+    this.controls.enabled = this.cameraMode !== 'chase' || !this.niva?.parent
+    this.controls.update()
+  }
+
+  setWalkKey(key: WalkKey, down: boolean) {
+    if (this.walk) this.walk.keys[key] = down
+  }
+
+  resetWalkKeys() {
+    if (this.walk) for (const key of Object.keys(this.walk.keys) as WalkKey[]) this.walk.keys[key] = false
+  }
+
+  /** Where the walker stands and looks: metres from the north-west corner, heading clockwise from north. */
+  walkPosition(): { x: number; z: number; heading: number } | null {
+    return this.walk ? { x: this.walk.x, z: this.walk.z, heading: -this.walk.yaw } : null
+  }
+
+  private updateWalk(dt: number) {
+    const w = this.walk
+    if (!w) return
+    const g = this.grid
+    const width = (g.cols - 1) * g.cellSize
+    const depth = (g.rows - 1) * g.cellSize
+    const { keys } = w
+    if (keys.left) w.yaw += TURN_SPEED * dt
+    if (keys.right) w.yaw -= TURN_SPEED * dt
+    const step = ((keys.up ? 1 : 0) - (keys.down ? 1 : 0)) * (keys.run ? RUN_SPEED : WALK_SPEED) * dt
+    // yaw 0 looks north (−z); positive turns left (towards the west).
+    w.x = Math.max(0, Math.min(width, w.x - Math.sin(w.yaw) * step))
+    w.z = Math.max(0, Math.min(depth, w.z - Math.cos(w.yaw) * step))
+    const x0 = width / 2
+    const z0 = depth / 2
+    const eye = (w.ground(w.x, w.z) - g.zBase) * this.exaggeration + EYE_HEIGHT
+    this.camera.position.set(w.x - x0, eye, w.z - z0)
+    const look = new THREE.Vector3(-Math.sin(w.yaw) * Math.cos(w.pitch), Math.sin(w.pitch), -Math.cos(w.yaw) * Math.cos(w.pitch))
+    this.controls.target.copy(this.camera.position).add(look)
+    this.camera.lookAt(this.controls.target)
   }
 
   // ---- Buildings ----------------------------------------------------------
@@ -644,6 +815,10 @@ ${OVERLAY_MIX}`)
 
   /** Turns the camera around its target until it faces north, keeping its height and distance. */
   faceNorth() {
+    if (this.walk) {
+      this.walk.yaw = 0
+      return
+    }
     const { position } = this.camera
     const { target } = this.controls
     const flat = Math.hypot(position.x - target.x, position.z - target.z)
@@ -1161,8 +1336,12 @@ ${OVERLAY_MIX}`)
   }
 
   private frame() {
+    const now = performance.now()
+    const dt = Math.min(0.1, (now - this.lastFrame) / 1000)
+    this.lastFrame = now
     this.onFrame?.()
-    this.controls.update()
+    if (this.walk) this.updateWalk(dt)
+    else this.controls.update()
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -1173,6 +1352,8 @@ ${OVERLAY_MIX}`)
     if (this.onWheel) this.renderer.domElement.removeEventListener('wheel', this.onWheel)
     this.blocks?.geometry.dispose()
     this.setBuildings(null)
+    this.stopWalk()
+    this.setPlants(null)
     this.stars?.geometry.dispose()
     this.terrain.geometry.dispose()
     this.material.map?.dispose()
