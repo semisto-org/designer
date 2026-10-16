@@ -49,7 +49,7 @@ class PlantSearch
   end
 
   def scope
-    scope = PlantSpecies.matching(query).where(id: PlantSpecies.visible_to(user).select(:id))
+    scope = PlantSpecies.matching(query)
     selected(:strata).then { |v| scope = scope.where("#{STRATA_SQL} IN (?)", v) if v.any? }
     selected(:plant_type).then { |v| scope = scope.where(plant_type: v) if v.any? }
     %i[exposures soil_moisture].each do |facet|
@@ -62,7 +62,7 @@ class PlantSearch
     scope = scope.where("'mellifere' = ANY(plant_species.eco_services)") if flag?(:mellifere)
     scope = scope.where("? = ANY(plant_species.native_countries)", country) if flag?(:native) && country
     scope = scope.where.not("? = ANY(plant_species.invasive_countries)", country) if flag?(:no_invasive) && country
-    scope
+    scope.where(id: PlantSpecies.visible_to(user).select(:id))
   end
 
   def total = @total ||= scope.count
