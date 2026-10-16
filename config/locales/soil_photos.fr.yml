@@ -60,6 +60,14 @@ fr:
       done: "Photo placée."
     marker:
       open: "Voir la photo"
+    toggle:
+      hide:
+        one: "Masquer la photo de la carte"
+        other: "Masquer les %{count} photos de la carte"
+      show:
+        one: "Afficher la photo sur la carte"
+        other: "Afficher les %{count} photos sur la carte"
+      layer: "Photos"
     video:
       label: "Vidéo"
       unsupported: "Ton navigateur ne lit pas cette vidéo. Télécharge-la pour la regarder."

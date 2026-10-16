@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { api } from '@/lib/api'
 import { photoDate } from '@/map/photos/format'
+import { readPhotosShown, shownKey } from '@/map/photos/shown'
 import type { MapPhotoData, PhotoAlbumData, PhotoLimits, PhotosResponse } from '@/types/soil_photos'
 
 /**
@@ -24,6 +25,7 @@ export type PhotosState = {
   placingId: number | null
   /** The two photos of the before/after slider. */
   compare: { beforeId: number; afterId: number } | null
+  /** Markers shown on the map (per viewer and per map). */
   showOnMap: boolean
   /** Bumped on every change: lets other lists (inspector) refresh. */
   version: number
@@ -42,15 +44,15 @@ export const photoAccept = (contentTypes: string[]) => [...contentTypes, '.heic'
 
 let state: PhotosState = {
   mapId: null, photos: [], albums: [], limits: DEFAULT_LIMITS, loaded: false, loading: false, error: null,
-  openId: null, group: null, placingId: null, compare: null, showOnMap: readShowOnMap(), version: 0,
+  openId: null, group: null, placingId: null, compare: null, showOnMap: true, version: 0,
 }
 const listeners = new Set<() => void>()
 
-function readShowOnMap(): boolean {
+function storage(): Storage | null {
   try {
-    return window.localStorage.getItem('designer.photos.showOnMap') !== 'false'
+    return window.localStorage
   } catch {
-    return true
+    return null
   }
 }
 
@@ -80,7 +82,10 @@ export const photoActions = {
   async load(mapId: number, force = false) {
     if (state.mapId === mapId && (state.loaded || state.loading) && !force) return
     if (state.mapId !== mapId) {
-      set({ mapId, photos: [], albums: [], loaded: false, openId: null, group: null, placingId: null, compare: null })
+      set({
+        mapId, photos: [], albums: [], loaded: false, openId: null, group: null, placingId: null, compare: null,
+        showOnMap: readPhotosShown(storage(), mapId),
+      })
     }
     set({ loading: true, error: null })
     try {
@@ -148,7 +153,7 @@ export const photoActions = {
 
   setShowOnMap(value: boolean) {
     try {
-      window.localStorage.setItem('designer.photos.showOnMap', String(value))
+      if (state.mapId != null) window.localStorage.setItem(shownKey(state.mapId), String(value))
     } catch {
       // Private mode: the choice just does not persist.
     }

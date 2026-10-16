@@ -3,6 +3,7 @@ import * as maplibregl from 'maplibre-gl'
 import { X } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { visibleOffset } from '@/map/visiblePadding'
+import { PhotosToggleControl } from '@/map/editor/controls'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -15,6 +16,7 @@ import {
 import { PhotoHostContext, type PhotoHost } from '@/map/photos/host'
 import { PhotoCompare } from '@/map/photos/PhotoCompare'
 import { PhotoLightbox } from '@/map/photos/PhotoLightbox'
+import { photoMarkersVisible } from '@/map/photos/shown'
 import { getPhotosState, photoActions, usePhotos } from '@/map/photos/store'
 import type { MapPhotoData } from '@/types/soil_photos'
 
@@ -34,15 +36,34 @@ export default function PhotosOverlay() {
   useEffect(() => { photoActions.load(editor.map.id) }, [editor.map.id])
 
   const data = useMemo(() => photosToGeoJSON(photos), [photos])
+  const visible = photoMarkersVisible({ showOnMap, placingId })
 
   // Markers. Installed after the editor's own layers so they sit on top.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       installPhotoLayers(map, data)
-      setPhotoLayersVisible(map, showOnMap)
+      setPhotoLayersVisible(map, visible)
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [map, data, showOnMap])
+  }, [map, data, visible])
+
+  // « Photos sur la carte »: a button in the column of map controls, as soon as one photo is placed.
+  const placed = data.features.length
+  const anyPlaced = placed > 0
+  const toggle = useRef<PhotosToggleControl | null>(null)
+  useEffect(() => {
+    if (!anyPlaced) return
+    const control = new PhotosToggleControl(() => photoActions.setShowOnMap(!getPhotosState().showOnMap))
+    map.addControl(control, 'top-right')
+    toggle.current = control
+    return () => {
+      toggle.current = null
+      map.removeControl(control)
+    }
+  }, [map, anyPlaced])
+  useEffect(() => {
+    toggle.current?.update(showOnMap, t(`soil_photos.toggle.${showOnMap ? 'hide' : 'show'}`, { count: placed }))
+  }, [showOnMap, placed, anyPlaced])
   useEffect(() => () => removePhotoLayers(map), [map])
   useEffect(() => { highlightPhoto(map, openId) }, [map, openId, data])
 
