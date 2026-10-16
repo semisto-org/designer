@@ -89,7 +89,8 @@ module Relief
       # two segments' normals; PostGIS then nodes the line and drops the
       # loops that sharp bends leave on their inner side (closer to the
       # keyline than `distance`). No ST_OffsetCurve: its results differ
-      # between GEOS versions.
+      # between GEOS versions; and ST_LineMerge only on several lines, as
+      # GEOS 3.9 turns a single LineString into an empty collection.
       def curves(distance)
         moved = offset_vertices(distance * mercator_scale)
         return [] if moved.size < 2
@@ -103,10 +104,11 @@ module Relief
             WHERE ST_Distance(noded.g::geography, source.g::geography) >= $3 * 0.9
           ),
           clipped AS (
-            SELECT #{merged("CASE WHEN m.boundary IS NULL THEN kept.g ELSE ST_Intersection(kept.g, m.boundary) END")} AS g
+            SELECT CASE WHEN m.boundary IS NULL THEN kept.g ELSE ST_Intersection(kept.g, m.boundary) END AS g
             FROM kept, maps m WHERE m.id = $4 AND kept.g IS NOT NULL
           ),
-          parts AS (SELECT (ST_Dump(g)).geom AS g FROM clipped)
+          merged AS (SELECT CASE WHEN GeometryType(g) = 'LINESTRING' THEN g ELSE ST_LineMerge(g) END AS g FROM clipped),
+          parts AS (SELECT (ST_Dump(g)).geom AS g FROM merged)
           SELECT ST_AsGeoJSON(ST_Simplify(g, 0.0000005), 7) AS geometry, ST_Length(g::geography) AS length_m,
                  ST_AsGeoJSON(ST_LineInterpolatePoints(g, 0.1)) AS samples
           FROM parts WHERE GeometryType(g) = 'LINESTRING'
@@ -116,10 +118,6 @@ module Relief
           { geometry: JSON.parse(row["geometry"]), length_m: row["length_m"].to_f, samples: points(JSON.parse(row["samples"])) }
         end
       end
-
-      # ST_LineMerge only on several lines: with older GEOS (3.9) it turns a
-      # single LineString into an empty collection.
-      def merged(sql) = "(SELECT CASE WHEN GeometryType(x) = 'LINESTRING' THEN x ELSE ST_LineMerge(x) END FROM (SELECT #{sql} AS x) merged_input)"
 
       def mercator_scale
         @mercator_scale ||= 1 / Math.cos(@feature.geometry.points.sum(&:y) / @feature.geometry.num_points * Math::PI / 180)
