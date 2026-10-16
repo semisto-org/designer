@@ -22,6 +22,7 @@ module Maps
         terrain: terrain&.ready? ? terrain.as_grid(url_for: ->(kind) { file_map_relief_path(@map, kind, v: terrain.version) }) : nil,
         overview: Relief::Overview.new(@map).as_json,
         features: @map.features.where.not(status: "rejected").map(&:as_geojson),
+        growingPlants: Relief::GrowingPlants.new(@map).as_json,
         timezone: @map.region.setting(:relief, :timezone) || Time.zone.tzinfo.name,
         location: location,
         landcoverClasses: @map.region.setting(:relief, :landcover_classes) || {},

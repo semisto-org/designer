@@ -40,6 +40,16 @@ Le fond **Blocs** montre le terrain en cubes d'environ 2 m, comme un jeu de cons
 
 En bas de l'onglet **Vue**, **Prendre la Niva** te donne une Lada Niva à poser d'un clic sur le terrain. Conduis-la aux flèches (ou Z Q S D), freine avec la barre d'espace ; sur téléphone, des boutons apparaissent à l'écran. Elle grimpe jusqu'à 55 % de pente, refuse les dévers trop forts, s'arrête devant l'eau et les bâtiments et ralentit en sous-bois : une bonne façon de sentir les pentes de ton terrain. Allume ses **Phares** et sa **Rampe de toit**, passe en **Nuit** pour ne plus voir le terrain que dans ses faisceaux, et choisis une caméra **Derrière** la voiture ou **Libre**.
 
+### Tes plantes, année après année
+
+Dès que ta carte porte des plantes, elles apparaissent en volume dans la vue 3D, et une barre en bas de l'écran fait passer les années, de la plantation (année 0) à l'année 20. Fais glisser le curseur ou appuie sur la pousse pour **Laisser pousser** : chaque plante grandit vers la hauteur et l'envergure adultes de son espèce dans le catalogue, au rythme de sa strate (un arbre met une douzaine d'années ou plus, un petit fruitier quelques-unes, une vivace deux). Les plantes déjà en terre partent de leur date de plantation ; les autres, de cette année. Les plantes d'un massif sont réparties sur sa surface.
+
+Touche une plante pour lire son nom, sa taille l'année choisie et sa taille adulte. **Couleurs des strates** reprend les couleurs de la légende de la carte. La croissance reste indicative : la taille de formation, le sol et le climat la changent, et les grimpantes sont montrées sur un support de 2,50 m.
+
+### À hauteur d'yeux
+
+**Se promener** (onglet **Vue**) te place dans ton jardin, les yeux à 1,60 m : clique (ou touche) le terrain là où tu veux te tenir. Fais glisser pour regarder autour de toi, marche aux flèches (ou Z Q S D), avec Maj pour courir ; sur téléphone, des boutons apparaissent à l'écran. Fais passer les années pendant la promenade pour voir les volumes de ton futur jardin-forêt depuis le banc ou le chemin. Échap ou **Revenir à la vue d'ensemble** te ramène au-dessus du terrain.
+
 ## Tracer sur la courbe de niveau
 
 Une baissière ne retient l'eau que si elle suit **exactement** la courbe de niveau : quelques dizaines de centimètres de travers, et elle devient un fossé qui concentre l'eau au lieu de la faire boire au sol. À l'œil, sur une photo aérienne, c'est presque impossible.
