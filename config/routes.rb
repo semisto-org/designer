@@ -125,6 +125,9 @@ Rails.application.routes.draw do
   post "mcp", to: "mcp#create", as: :mcp
   match "mcp", to: "mcp#method_not_allowed", via: %i[get delete]
   match "mcp", to: "mcp#preflight", via: :options
+  # One part of a large file sent after create_upload (McpUpload#part_size).
+  put "mcp/uploads/:token/parts/:number", to: "mcp/upload_parts#update", as: :mcp_upload_part,
+    constraints: { token: %r{[^/]+}, number: /\d+/ }
   get ".well-known/oauth-authorization-server", to: "oauth/metadata#authorization_server", as: :oauth_authorization_server_metadata
   get ".well-known/oauth-protected-resource", to: "oauth/metadata#protected_resource", as: :oauth_protected_resource_metadata
   get ".well-known/oauth-protected-resource/mcp", to: "oauth/metadata#protected_resource"
