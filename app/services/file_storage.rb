@@ -7,10 +7,13 @@ module FileStorage
 
   # A service named in config/storage.yml, ready to be used: a disk always is,
   # an S3 bucket only when its bucket name is set.
+  #
+  # Read from Active Storage's registry: the configurations are only loaded
+  # with ActiveStorage::Blob, which a rake task may not have touched yet.
   def configured?(name)
-    config = Rails.configuration.active_storage.service_configurations&.dig(name.to_s)
+    config = ActiveStorage::Blob.services.send(:configurations)[name.to_sym]
     return false unless config
-    config["service"] != "S3" || config["bucket"].present?
+    config[:service].to_s != "S3" || config[:bucket].present?
   end
 
   def service(name) = ActiveStorage::Blob.services.fetch(name.to_sym)
