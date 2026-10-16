@@ -83,6 +83,7 @@ const fillOpacity = byKind((e) => e.fill?.opacity, 0.3)
 const patterned = LIBRARY.filter((e) => e.fill?.pattern)
 const cased = LIBRARY.filter((e) => e.line?.casing)
 const crowned = LIBRARY.filter((e) => e.crown)
+const arrowed = LIBRARY.filter((e) => e.line?.arrows)
 const pointKinds = LIBRARY.filter((e) => e.geometries.includes('Point'))
 
 /** Opacity factor: hidden while its shape is edited, faded when a draft. */
@@ -107,7 +108,7 @@ function pixelsPerMeter(zoom: number, latitude: number) {
   return (512 * 2 ** zoom) / (40075016.686 * Math.cos((latitude * Math.PI) / 180))
 }
 
-const DRAWING_LAYER_IDS = ['drawing-fill', 'drawing-pattern', 'drawing-crown', 'drawing-line-casing', 'drawing-line', 'drawing-point', 'drawing-icon', 'drawing-measure-label']
+const DRAWING_LAYER_IDS = ['drawing-fill', 'drawing-pattern', 'drawing-crown', 'drawing-line-casing', 'drawing-line', 'drawing-line-arrow', 'drawing-point', 'drawing-icon', 'drawing-measure-label']
 
 function drawingLayers(latitude: number): LayerSpecification[] {
   const crownProperties = [...new Set(crowned.map((e) => e.crown as string))]
@@ -173,6 +174,24 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'line-opacity': expr(['*', lineOpacity, visibleFactor]),
         'line-dasharray': lineDash as never,
       },
+    },
+    // Where the water goes: arrows along the line, in the direction it was drawn.
+    {
+      id: 'drawing-line-arrow',
+      type: 'symbol',
+      source: FEATURES_SOURCE,
+      minzoom: 15,
+      filter: libraryFilter(['LineString'], arrowed),
+      layout: {
+        'symbol-placement': 'line',
+        'symbol-spacing': 90,
+        'icon-image': expr(['concat', 'drawing-arrow-', ['downcase', featureColorExpr]]),
+        'icon-size': expr(['interpolate', ['linear'], ['zoom'], 15, 0.7, 18, 1.1, 21, 1.5]),
+        'icon-rotation-alignment': 'map',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      paint: { 'icon-opacity': visibleFactor },
     },
     {
       id: 'drawing-point',
@@ -249,6 +268,22 @@ function generateImage(id: string): ImageData | null {
     drawIcon(ctx, icon[1], 0, 0, 24, '#ffffff', 2.25)
     return ctx.getImageData(0, 0, element.width, element.height)
   }
+  const arrow = id.match(/^drawing-arrow-(#[0-9a-fA-F]{6})$/)
+  if (arrow) {
+    // A chevron pointing east (the line's direction), in the line's colour on a white halo.
+    const { element, ctx } = canvas(16)
+    ctx.lineCap = ctx.lineJoin = 'round'
+    for (const [style, width] of [['#ffffff', 5], [arrow[1], 2.5]] as const) {
+      ctx.strokeStyle = style
+      ctx.lineWidth = width
+      ctx.beginPath()
+      ctx.moveTo(5, 3.5)
+      ctx.lineTo(11, 8)
+      ctx.lineTo(5, 12.5)
+      ctx.stroke()
+    }
+    return ctx.getImageData(0, 0, element.width, element.height)
+  }
   const pattern = id.match(/^drawing-(hatch|dots)-(#[0-9a-fA-F]{6})$/)
   if (pattern) {
     const size = pattern[1] === 'hatch' ? 10 : 8
@@ -291,13 +326,14 @@ function imageFor(id: string): ImageData | null {
 const DRAWING_IMAGES = [
   ...ICON_NAMES.map((name) => `drawing-icon-${name}`),
   ...patterned.flatMap((e) => [...new Set([e.color, ...COLOR_SWATCHES])].map((color) => `drawing-${e.fill!.pattern}-${color.toLowerCase()}`)),
+  ...[...new Set([...arrowed.map((e) => e.color), ...COLOR_SWATCHES])].map((color) => `drawing-arrow-${color.toLowerCase()}`),
 ]
 
 const patternWatched = new WeakSet<MapLibreMap>()
 
 /**
  * Adds the drawing images (`drawing-icon-<name>`, `drawing-hatch-<#color>`,
- * `drawing-dots-<#color>`) to a map; safe to call again after a style
+ * `drawing-dots-<#color>`, `drawing-arrow-<#color>`) to a map; safe to call again after a style
  * change. The PDF's offscreen map also copies, on demand, the images other
  * modules added to the editor map (`copyFrom`).
  */
@@ -311,7 +347,7 @@ export function installDrawingImages(map: MapLibreMap, copyFrom?: MapLibreMap) {
   if (!patternWatched.has(map)) {
     patternWatched.add(map)
     map.on('styleimagemissing', (e: { id: string }) => {
-      if (!/^drawing-(hatch|dots)-#[0-9a-f]{6}$/.test(e.id) || map.hasImage(e.id)) return
+      if (!/^drawing-(hatch|dots|arrow)-#[0-9a-f]{6}$/.test(e.id) || map.hasImage(e.id)) return
       const image = imageFor(e.id)
       if (image) map.addImage(e.id, image, { pixelRatio: PIXEL_RATIO })
     })

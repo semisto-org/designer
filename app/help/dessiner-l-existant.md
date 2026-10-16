@@ -14,7 +14,7 @@ Chaque chose que tu dessines est un **élément**, rangé dans une couche :
 | Couche | Exemples d'éléments |
 | --- | --- |
 | Existant | Bâtiments, arbres et haies existants, murs, ruptures de pente, zones humides, chemins existants, occupation du sol (prairie, bois, potager…) |
-| Eau | Mares, baissières, fossés, citernes, puits, sources, jardins de pluie |
+| Eau | Mares, baissières, fossés, tuyaux de trop-plein, citernes, puits, sources, jardins de pluie |
 | Accès | Cheminements, chemins carrossables, portails, stationnement |
 | Structures | Serres, abris, cabanes, composts, bacs surélevés, terrasses, aires de jeux, clôtures, haies à planter, brise-vent |
 | Plantes | Les plants et les patches de ton design, posés depuis la [palette](/help/construire-sa-palette-et-ses-patches) |
@@ -55,6 +55,7 @@ Pour corriger un tracé, touche **Modifier la forme**, fais glisser les sommets 
 - **Nomme tes éléments** : « Pommier du fond », « Fossé nord ». Dans six mois, tu t'en féliciteras.
 - **Utilise les notes** pour ce que le dessin ne dit pas : un sol qui reste mouillé, un vent dominant, un voisin à ménager.
 - **Les points relevés au téléphone** gardent la précision de leur GPS. Sous les arbres, elle dépasse souvent 10 m : ces points s'entourent d'un cercle pointillé et sont marqués « Position à vérifier ». Fais-les glisser à leur vraie place, par exemple sur la vue drone, ou touche **Il est bien placé**.
+- **Une mare qui déborde dans une autre ?** Dessine le **Tuyau de trop-plein** (couche Eau) en partant de la mare qui déborde et en finissant dans celle qui reçoit : des flèches montrent le sens de l'eau. Coche **Enterré** s'il ne se voit pas. Contrairement aux conduites du réseau, il reste visible pour ton IA, qui en tient compte pour l'eau du terrain.
 - **D'où vient l'eau de chaque robinet ?** Dans le panneau **Sources d'eau**, ajoute tes sources (puits, pluie, captage, réseau public…) et dis si chacune est potable. Sélectionne ensuite un robinet et choisis sa source : il en prend la potabilité.
 - **Les réseaux** (eau, gaz, électricité) sont sensibles : ils restent masqués dans les vues publiques, les exports et pour l'IA, sauf si tu décides autrement.
 
