@@ -15,7 +15,7 @@ Où l'eau descend-elle quand il pleut fort ? Où stagne-t-elle ? Quel coin reste
 
 En Wallonie, le relief vient du Géoportail (relevés LiDAR 2021-2022 du SPW). La maille est d'**un mètre** tant que le terrain et sa marge tiennent dans environ un kilomètre carré, plus grossière au-delà ; un terrain trop étendu est refusé, avec la surface maximale. Seuls les éditeurs peuvent lancer le téléchargement. **Mettre à jour le relief** le recharge, par exemple après un changement de contour.
 
-En France, le relief vient de l'IGN (RGE ALTI, au mètre, sol nu), avec la photo aérienne de l'IGN dessus. Au Luxembourg et ailleurs en Europe, il vient du **Copernicus DEM**, à 30 m : c'est un modèle de **surface**, arbres et toits compris, lissé pour la 3D. Il donne l'allure générale du terrain, pas ses détails : une butte, un fossé ou une petite mare n'y apparaissent pas.
+En France, le relief vient de l'IGN (RGE ALTI, au mètre, sol nu), avec la photo aérienne de l'IGN dessus. Au Luxembourg et ailleurs en Europe, il vient du **Copernicus DEM**, à 30 m : c'est un modèle de **surface**, arbres et toits compris, lissé pour la 3D. Il donne l'allure générale du terrain, pas ses détails : une butte, un fossé ou une petite mare n'y apparaissent pas. À Bruxelles et en Flandre, la photo aérienne de la région (UrbIS, Digitaal Vlaanderen) est posée dessus.
 
 ## Le terrain en chiffres
 

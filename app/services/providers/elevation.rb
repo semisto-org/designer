@@ -9,7 +9,8 @@ module Providers
   # - `sample(key, points, extent)` → one value per EPSG:3857 point, in order
   #   (Float metres for :terrain/:surface, Integer class for :landcover, nil
   #   for no data);
-  # - `texture(extent, width:, height:)` → JPEG bytes of the ortho photo.
+  # - `texture(extent)` → { bytes:, width:, height: }, the ortho photo as a
+  #   JPEG; a provider without one gets the region's photo (PhotoTexture).
   module Elevation
     PROVIDERS = {
       "arcgis_elevation" => "Providers::ArcgisElevation",
@@ -27,7 +28,7 @@ module Providers
       return nil unless klass
 
       provider = klass.new(config, **options)
-      provider.dataset?(:terrain) ? provider : nil
+      provider.dataset?(:terrain) ? PhotoTexture.wrap(provider, region) : nil
     end
 
     def available?(region) = self.for(region).present?
