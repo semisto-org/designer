@@ -1,4 +1,4 @@
-import { Bot, Camera, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -66,6 +66,9 @@ import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 import TagsSection from '@/map/tags/TagsSection'
 import TasksLink from '@/tasks/TasksLink'
+import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
+import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
+import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -89,6 +92,7 @@ export const PANELS: EditorPanel[] = [
   // 3. Concevoir
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
+  { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
   // 4. Planter
   { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: PlantListPanel, order: 10 },
@@ -114,6 +118,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
   { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
+  { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
@@ -149,4 +154,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'aerial-views', component: AerialViewsOverlay, order: 1 },
   { id: 'plan-images', component: PlanImagesOverlay, order: 2 },
   { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
+  { id: 'earthworks', component: EarthworksOverlay, order: 12 },
 ]
