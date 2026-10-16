@@ -114,6 +114,15 @@ class Map < ApplicationRecord
     scope
   end
 
+  # The addresses invited to the map or to its team who do not take part in
+  # it yet: tasks can already be given to them (Task#invitee_email).
+  def invitee_emails
+    emails = invitations.pending.pluck(:email_address)
+    emails += OrganizationInvitation.pending.where(organization_id:).pluck(:email_address) if organization_id
+    emails = emails.map(&:downcase).uniq
+    emails - participants.where(email_address: emails).pluck(:email_address).map(&:downcase)
+  end
+
   # Seats held by editors, counting editor invitations still waiting to be
   # answered (so the owner cannot over-promise).
   def editor_seats_taken(except_invitation: nil)

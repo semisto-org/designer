@@ -16,7 +16,7 @@ export type TaskData = {
   /** For a default task: whether the map already shows it done (Journey). */
   mapSaysDone?: boolean
   dueOn?: string
-  assignee?: { id: number; name: string; avatarUrl?: string }
+  assignee?: Assignee
   completedAt?: string
   completedBy?: string
   createdAt?: string
@@ -24,7 +24,15 @@ export type TaskData = {
 
 export type Board = { lists: TaskListData[]; tasks: TaskData[]; seeded?: boolean }
 
-export type Participant = { id: number; name: string; role: string }
+/**
+ * Who a task is given to: someone with an account (`id`), or an address
+ * invited to the map or its team who has not joined yet (`invited`, no id):
+ * the task becomes theirs when they join.
+ */
+export type Assignee = { id?: number; email?: string; name: string; avatarUrl?: string; invited?: boolean }
+
+/** Someone a task can be given to; invitees have an `email` and no `id`. */
+export type Participant = { id?: number; email?: string; name: string; role: string }
 
 /** A task on the cross-map page, with its map and list. */
 export type TaskWithMap = TaskData & { map: { id: number; name: string }; listName: string }

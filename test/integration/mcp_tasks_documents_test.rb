@@ -99,6 +99,28 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     refute @map.tasks.exists?(title: "Tailler la haie")
   end
 
+  test "the AI gives tasks to someone invited who has not joined yet" do
+    @map.invitations.create!(email_address: "dana@example.org", role: "editor", invited_by: users(:michael))
+    data, error = call_tool(@owner, "list_tasks", { map_id: @map.id })
+    refute error
+    assert_includes data["participants"], { "email" => "dana@example.org", "name" => "dana@example.org", "role" => "invited" }
+
+    data = nil
+    assert_enqueued_emails 1 do
+      data, error = call_tool(@owner, "create_tasks", { map_id: @map.id, tasks: [ { list_name: "Chantier", title: "Relever les arbres", assignee_email: "dana@example.org" } ] })
+      refute error
+    end
+    created = data["created"].sole
+    assert_equal({ "email" => "dana@example.org", "invited" => true }, created["assignee"])
+
+    _, error = call_tool(@owner, "update_tasks", { map_id: @map.id, tasks: [ { task_id: created["id"], assignee_id: nil } ] })
+    refute error
+    refute Task.find(created["id"]).assigned?
+
+    _, error = call_tool(@owner, "update_tasks", { map_id: @map.id, tasks: [ { task_id: created["id"], assignee_email: "stranger@example.org" } ] })
+    assert error
+  end
+
   test "update_tasks ticks, moves, dates and gives tasks; a viewer only ticks their own" do
     TaskList::Defaults.seed!(@map)
     first, second = @map.task_lists.first(2)
