@@ -25,7 +25,7 @@ import { GROWTH_YEARS, calendarYear, scenePlants, sizeAt, yearsBetween, type Gro
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
 import { landcoverRoles } from './roles.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
-import { buildSoilMaps, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
+import { buildSoilMaps, calibrateRates, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
 import {
   boxBlur, compassPoint, frostClass, frostRisk, slopeAspect, spreadAccumulation, wetnessClass, wetnessIndex,
   wetnessThresholdsFor, type Compass, type FrostClass, type WetnessClass,
@@ -797,9 +797,16 @@ export class ReliefController {
 
   private soilMaps() {
     const { soil, landcoverClasses } = this.options
-    return buildSoilMaps(this.meta.cols, this.meta.rows, this.simFactor, this.landcover, landcoverClasses, {
+    const maps = buildSoilMaps(this.meta.cols, this.meta.rows, this.simFactor, this.landcover, landcoverClasses, {
       uniformRate: soil.uniformRate, storage: soil.storage, rateFactor: soil.rateFactor, storageFactor: soil.storageFactor,
     })
+    // The person's infiltration tests: measured beats modelled.
+    const measured = (soil.measurements ?? []).map((m) => ({ ...toGrid(this.meta, [m.lng, m.lat]), rate: m.rateMmH }))
+    if (measured.length > 0) {
+      const factor = this.simFactor
+      calibrateRates(maps.rate, Math.floor(this.meta.cols / factor), Math.floor(this.meta.rows / factor), this.cell * factor, measured)
+    }
+    return maps
   }
 
   private simOptions(maps: { rate: Float32Array; storage: Float32Array }) {

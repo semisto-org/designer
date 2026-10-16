@@ -21,6 +21,7 @@ fr:
       well: "Puits"
       spring: "Source"
       rain_garden: "Jardin de pluie"
+      infiltration_test: "Test d'infiltration"
       path: "Cheminement"
       track: "Chemin carrossable"
       gate: "Portail ou barrière"
@@ -120,8 +121,12 @@ fr:
       length_m: "Longueur"
       area_m2: "Surface"
       dug_depth_m: "Encaissement"
+      method: "Méthode"
+      hole_diameter_cm: "Diamètre du trou"
+      hole_depth_cm: "Profondeur du trou"
 
     options:
+      method: { hole: "Trou rempli d'eau", ring: "Anneau enfoncé" }
       roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }
       health: { good: "Bon", fair: "Moyen", poor: "Mauvais", dead: "Mort" }
       material:

@@ -954,6 +954,9 @@ function RainTab({ rain, update, playing, stats, designs, designCount, soilModel
               storage: formatNumber(soilModel.storage * soilModel.storageFactor),
             })}
         </p>
+        {(soilModel.measurements?.length ?? 0) > 0 && (
+          <p className="mt-1 text-sm text-[#3d7ea6]">{t('relief.page.rain.soil_measured', { count: soilModel.measurements!.length })}</p>
+        )}
         <details className="mt-1 text-xs text-loam-500">
           <summary className="cursor-pointer">
             {t('relief.page.rain.soil_model', { soil: t(`relief.soils.${soilModel.soil}`) })}
