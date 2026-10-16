@@ -4,6 +4,7 @@ import { MapPin, X } from 'lucide-react'
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
+import { strataKey } from '@/map/drawing/hidden'
 import { drawingStore, useDrawingState } from '@/map/drawing/store'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
@@ -34,9 +35,10 @@ const PLANTED = ['get', 'planted'] as unknown as boolean
 
 /**
  * Adult crowns as real-size circles (metres), from each plant's species.
- * Planned plants (not planted yet) are left out of the current situation.
+ * Planned plants (not planted yet) are left out of the current situation,
+ * and plants of a hidden strata are left out altogether.
  */
-function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario, labelStyle: PlantLabelStyle) {
+function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario, labelStyle: PlantLabelStyle, hiddenStrata: string[]) {
   const crowns: Feature<Polygon, CrownProps>[] = []
   const labels: Feature<Point, LabelProps>[] = []
   const points: PointColors = new Map()
@@ -45,6 +47,8 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
     if (!inScenario(feature.properties, scenario)) continue
     const strata = plantStrata(feature, data)
+    // « Calques » or the legend hid this strata: no crown, name or number.
+    if (data && hiddenStrata.includes(strataKey(strata))) continue
     const species = data?.species[String(numberProperty(feature, 'species_id'))]
     const variety = species ? data?.varieties[String(numberProperty(feature, 'variety_id'))] : undefined
     // Its number, then the name the person gave it (else its species and
@@ -244,12 +248,13 @@ export default function PlantsOverlay() {
   const { data, placing } = usePlanting(mapId)
   const scenario = useScenario()
   const hidden = useDrawingState((s) => s.hiddenLayers)
+  const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   const editorRef = useRef(editor)
   editorRef.current = editor
   const map = editor.instance
 
   const labelStyle = usePlantLabelStyle()
-  const layers = useMemo(() => crownsOf(editor, data, scenario, labelStyle), [editor.features, editor.selectedId, data, scenario, labelStyle]) // eslint-disable-line react-hooks/exhaustive-deps
+  const layers = useMemo(() => crownsOf(editor, data, scenario, labelStyle, hiddenStrata), [editor.features, editor.selectedId, data, scenario, labelStyle, hiddenStrata]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Install the crowns, and again after a basemap style change.
   const latest = useRef(layers)

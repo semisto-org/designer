@@ -276,9 +276,13 @@ fr:
       "yes": "Oui"
 
     layers_panel:
-      intro: "Affiche ou masque chaque couche. Ce choix ne vaut que pour ton écran."
+      intro: "Affiche ou masque chaque couche, et dans chacune un type d'élément ou une strate. Ce choix ne vaut que pour ton écran."
       show_all: "Tout afficher"
       toggle: "Afficher ou masquer « %{layer} »"
+      unfold: "Voir le détail de « %{layer} »"
+      fold: "Replier « %{layer} »"
+      control: "Afficher ou masquer des éléments"
+      control_hidden: "Des éléments sont masqués : les afficher ou en masquer d'autres"
       count:
         zero: "vide"
         one: "%{count} élément"

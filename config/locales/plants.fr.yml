@@ -175,6 +175,9 @@ fr:
       labels_number: "Numéro"
       labels_number_hint: "« 12 » dans la pastille du plant, et la liste des numéros dans la légende"
       numbers: "Numéros"
+      unknown_strata: "Strate inconnue"
+      hide_strata: "Masquer « %{strata} » sur la carte"
+      show_strata: "Afficher « %{strata} » sur la carte"
     strata:
       canopy: "Canopée"
       sub_canopy: "Arborée basse"

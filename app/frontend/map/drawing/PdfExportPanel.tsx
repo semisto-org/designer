@@ -12,9 +12,12 @@ import {
   attributions, exportPdf, fitScale, frameGeometry, groundSize, legendEntries, pageLayout, SCALES,
   type Orientation, type Paper,
 } from '@/map/drawing/pdf'
+import { hiddenPlantIds } from '@/map/drawing/hidden'
 import { useDrawingState } from '@/map/drawing/store'
 import { showPrintFrame } from '@/map/drawing/style'
-import type { BBox, SharedProps } from '@/types'
+import { usePlanting } from '@/map/plants/store'
+import { plantStrata } from '@/map/plants/strata'
+import type { BBox, MapFeature, SharedProps } from '@/types'
 
 type Step = 'map' | 'pdf' | null
 
@@ -51,6 +54,11 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
   const editor = useEditor()
   const { currentUser } = usePage().props as unknown as SharedProps
   const hidden = useDrawingState((s) => s.hiddenLayers)
+  // What « Calques » hides inside the layers is left out of the plan too.
+  const hiddenKinds = useDrawingState((s) => s.hiddenKinds)
+  const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
+  const { data: planting } = usePlanting(editor.map.id)
+  const hiddenIds = planting ? hiddenPlantIds(editor.features, hiddenStrata, (f) => plantStrata(f as MapFeature, planting)) : []
   const version = useDrawingState((s) => s.version)
   const instance = editor.instance
   // The version shown on the map is the one printed, and named in the title.
@@ -132,10 +140,12 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
         scale,
         center,
         hiddenLayers,
+        hiddenKinds,
+        hiddenIds,
         version,
         author: currentUser?.name ?? null,
         areaM2: editor.map.areaM2,
-        legend: legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, version),
+        legend: legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, version, { kinds: hiddenKinds, ids: hiddenIds }),
         sources: attributions(instance),
       }, setStep)
       editor.notify(t('drawing.pdf.done'))
