@@ -13,3 +13,16 @@ export function photoClickAction(map: Pick<MapLibreMap, 'getLayer' | 'queryRende
   if (layers.length === 0) return 'open'
   return map.queryRenderedFeatures(point, { layers }).length > 0 ? 'offer' : 'open'
 }
+
+/**
+ * Past this zoom, a group's photos sit within a few metres of each other
+ * (often taken from the same spot): zooming further would not help, so a
+ * click opens them instead.
+ */
+export const GROUP_OPEN_ZOOM = 20
+
+/** What a click on a group of photos does: zoom until it splits, or open its photos when they share a spot. */
+export function clusterClickAction(expansionZoom: number, currentZoom: number): 'zoom' | 'open' {
+  if (expansionZoom > GROUP_OPEN_ZOOM) return 'open'
+  return expansionZoom <= currentZoom ? 'open' : 'zoom'
+}

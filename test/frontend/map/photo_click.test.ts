@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { photoClickAction } from '../../../app/frontend/map/photos/click.ts'
+import { clusterClickAction, photoClickAction } from '../../../app/frontend/map/photos/click.ts'
 
 function fakeMap(layers: string[], hits: number) {
   const asked: string[][] = []
@@ -30,4 +30,18 @@ test('areas under a photo do not count', () => {
 
 test('without element layers the photo opens', () => {
   assert.equal(photoClickAction(fakeMap([], 1) as never, [10, 10]), 'open')
+})
+
+test('a group spread over the land zooms in until it splits', () => {
+  assert.equal(clusterClickAction(17, 15), 'zoom')
+  assert.equal(clusterClickAction(20, 18.5), 'zoom')
+})
+
+test('a group of photos taken from the same spot opens them', () => {
+  assert.equal(clusterClickAction(21, 16), 'open')
+  assert.equal(clusterClickAction(23, 19.5), 'open')
+})
+
+test('a group that zooming no longer splits opens them', () => {
+  assert.equal(clusterClickAction(19, 19.5), 'open')
 })
