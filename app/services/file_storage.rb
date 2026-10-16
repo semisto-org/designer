@@ -18,6 +18,11 @@ module FileStorage
 
   def service(name) = ActiveStorage::Blob.services.fetch(name.to_sym)
 
+  # Whether the browser may be sent straight to where the file is
+  # (ServesStoredFiles): a disk link is on the app's own origin anyway, a
+  # bucket link only when the bucket sends CORS headers.
+  def direct_downloads?(service) = !service.respond_to?(:bucket) || ENV["S3_DIRECT_DOWNLOADS"] == "true"
+
   # Every key a service holds, when it can list them in one go (an S3 bucket
   # or a disk), else nil: the caller then asks the service key by key.
   def keys_of(service)

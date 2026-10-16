@@ -71,9 +71,10 @@ Stockage retenu (2026-10) : **Object Storage du Public Cloud Infomaniak** (Genè
 | `S3_REGION` | Infomaniak : `us-east-1` quelle que soit la région (le serveur refuse `dc3-a` ou `dc4-a`). |
 | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Infomaniak : `openstack ec2 credentials create` (identifiants de l'onglet « API Access » d'Horizon). |
 | `S3_FORCE_PATH_STYLE` | `true` par défaut. |
+| `S3_DIRECT_DOWNLOADS` | `true` pour renvoyer le navigateur directement vers le seau, seulement si celui-ci accepte une règle CORS (pas chez Infomaniak). Sinon, l'application sert les fichiers elle-même. |
 | `ACTIVE_STORAGE_SERVICE` | Facultatif : force `local` ou `object_storage`. |
 
-Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la carte puis redirige vers une URL signée de cinq minutes. Le navigateur lit plusieurs de ces fichiers en JavaScript (PDF, fonds de plan, relief, esquisses) : le seau doit donc autoriser l'origine de l'application, ce que pose `bin/rails storage:cors` (lecture seule, depuis `https://APP_HOST`), relancé tout seul à chaque démarrage du serveur.
+Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la carte puis redirige vers un lien signé de quelques minutes. Le navigateur lit plusieurs de ces fichiers en JavaScript (PDF, fonds de plan, relief, esquisses), ce qui demande une règle CORS sur le seau. Le stockage objet d'Infomaniak n'en propose pas (`PutBucketCors` répond `NotImplemented`) : par défaut, l'application sert donc elle-même les fichiers d'un seau, depuis sa propre adresse (routes proxy d'Active Storage, par plages d'octets pour pdf.js ; `ServesStoredFiles`). Chez un hébergeur qui accepte le CORS, `S3_DIRECT_DOWNLOADS=true` renvoie le navigateur directement vers le seau ; `bin/rails storage:cors` (lecture seule, depuis `https://APP_HOST`) pose alors la règle, et le démarrage la repose.
 
 #### Sauvegarde des fichiers
 
@@ -89,7 +90,7 @@ Chaque nuit, la sauvegarde envoie les fichiers qu'elle n'a pas encore et ne remp
 #### Passer du disque au stockage objet
 
 1. Créer le seau et la clé S3, poser les variables `S3_*` dans Coolify, redéployer. Les nouveaux fichiers vont dans le seau ; les anciens restent servis depuis `/rails/storage`.
-2. Le démarrage pose la règle CORS du seau (sinon `bin/rails storage:cors`, terminal de l'application dans Coolify).
+2. Avec `S3_DIRECT_DOWNLOADS=true` seulement : le démarrage pose la règle CORS du seau (sinon `bin/rails storage:cors`, terminal de l'application dans Coolify).
 3. `DRY_RUN=1 bin/rails storage:migrate` pour compter, puis `bin/rails storage:migrate` (par défaut `FROM=local TO=object_storage`). Chaque fichier est copié avec sa somme de contrôle vérifiée, puis servi depuis le seau ; on peut relancer autant de fois qu'il faut, rien n'est copié deux fois. Les fichiers du disque ne sont jamais supprimés.
 4. `bin/rails storage:status` doit ne plus montrer que `object_storage`. Garder le volume `/rails/storage` quelques semaines avant de le retirer.
 

@@ -13,7 +13,7 @@ module Maps
 
     def show
       expires_in 4.minutes, private: true
-      redirect_to @report.url(expires_in: 5.minutes, disposition: params[:download].present? ? :attachment : :inline), allow_other_host: true
+      redirect_to stored_file_url(@report, expires_in: 5.minutes, disposition: params[:download].present? ? :attachment : :inline), allow_other_host: true
     end
 
     # One or several PDFs (soil_sample[lab_reports][]), all kept or none.

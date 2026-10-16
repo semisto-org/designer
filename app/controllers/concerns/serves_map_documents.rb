@@ -18,12 +18,12 @@ module ServesMapDocuments
       target, disposition = document.served(size)
       return head :not_found unless target
       expires_in DOCUMENT_LINK_LIFETIME - 1.minute, private: true
-      redirect_to target.url(expires_in: DOCUMENT_LINK_LIFETIME, disposition:), allow_other_host: true
+      redirect_to stored_file_url(target, expires_in: DOCUMENT_LINK_LIFETIME, disposition:), allow_other_host: true
     rescue ActiveStorage::Error, Vips::Error, ImageProcessing::Error => error
       # An image libvips cannot read still has its original.
       Rails.logger.warn("[documents] no #{size} for document #{document.id}: #{error.class}: #{error.message}")
       return head :not_found if size == "thumb"
-      redirect_to document.file.url(expires_in: DOCUMENT_LINK_LIFETIME, disposition: :attachment), allow_other_host: true
+      redirect_to stored_file_url(document.file, expires_in: DOCUMENT_LINK_LIFETIME, disposition: :attachment), allow_other_host: true
     end
 
     def document_limits

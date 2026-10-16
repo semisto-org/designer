@@ -48,7 +48,7 @@ module Maps
 
       def variant_link(observation, size)
         return unless observation.photo.attached?
-        observation.photo.variant(size.to_sym).processed.url(expires_in: 5.minutes, disposition: :inline)
+        stored_file_url(observation.photo.variant(size.to_sym).processed, expires_in: 5.minutes)
       rescue StandardError => error
         # A file libvips cannot read has no variant, and the original is never served.
         Rails.logger.warn("[plants] no #{size} variant for observation #{observation.id}: #{error.class}: #{error.message}")
