@@ -170,7 +170,6 @@ export class Drawer {
   destroy() {
     window.removeEventListener('keydown', this.onKey)
     this.finish(null)
-    if (this.terra.enabled) this.terra.stop()
   }
 
   private onKey = (e: KeyboardEvent) => {
@@ -193,8 +192,14 @@ export class Drawer {
     this.pending = null
     this.editedId = null
     if (this.terra.enabled) {
-      this.terra.clear()
-      this.terra.stop()
+      // Leaving the editor mid-drawing, the map may already be gone with its
+      // drawing sources: there is nothing left to clear, but still stop.
+      try {
+        this.terra.clear()
+      } catch {}
+      try {
+        this.terra.stop()
+      } catch {}
     }
     pending?.resolve(geometry)
   }
