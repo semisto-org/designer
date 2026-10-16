@@ -51,6 +51,10 @@ fr:
       submit: "Créer la carte"
     show:
       back: "Retour à mes cartes"
+      rename: "Renommer la carte"
+      rename_label: "Nom de la carte"
+      rename_blank: "Donne un nom à ta carte."
+      rename_failed: "Le nom n’a pas pu être enregistré. Réessaie."
       area_ares:
         one: "%{count} are"
         other: "%{count} ares"

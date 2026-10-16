@@ -46,6 +46,7 @@ class Map < ApplicationRecord
   # Ownership transfer proposals (« Transférer la carte »), kept as history.
   has_many :transfers, class_name: "MapTransfer", dependent: :delete_all
 
+  normalizes :name, with: ->(name) { name.strip }
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }
 
