@@ -84,6 +84,39 @@ module WeatherStations
       unavailable(reason)
     end
 
+    # The rain the nearest daily station measured on a given day, and over
+    # the three days before (how wet the soil already was). Shape:
+    #   available, reason (no_location | not_configured | upstream_error |
+    #   no_daily_station | not_yet | no_data), date, dayMm, before3Mm,
+    #   station { code, name, ..., distanceKm }, attribution
+    def rain_on(date)
+      return unavailable("not_configured") unless @provider.configured?
+      return unavailable("no_location") unless point
+      return unavailable("not_yet") if date >= @today
+
+      result = @provider.stations
+      return unavailable(result.reason.to_s) unless result.available?
+
+      ranked = rank(result.data)
+      source = ranked.find { |station, _| station.daily }
+      return unavailable("no_daily_station") unless source
+
+      days = @provider.daily(source.first.code, since: date - 3)
+      return unavailable(days.reason.to_s) unless days.available?
+
+      by_date = days.data.index_by(&:date)
+      day = by_date[date.iso8601]&.precip_mm
+      return unavailable("no_data") if day.nil?
+
+      before = (1..3).filter_map { |k| by_date[(date - k).iso8601]&.precip_mm }
+      {
+        "available" => true, "date" => date.iso8601, "dayMm" => day.round(1),
+        "before3Mm" => before.empty? ? nil : before.sum.round(1),
+        "station" => station_json(*source, nearest: source.first == ranked.first&.first),
+        "attribution" => @provider.attribution.stringify_keys
+      }
+    end
+
     # Every station of the provider as GeoJSON, for the map; the nearest one
     # is flagged so it can stand out.
     def stations_geojson

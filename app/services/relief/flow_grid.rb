@@ -59,6 +59,14 @@ module Relief
       end
     end
 
+    # How deep water stands in a cell once the depressions are filled
+    # (metres, 0 where it drains away).
+    def depression(i)
+      receivers
+      h = @heights[i]
+      h && @filled[i] ? [ @filled[i] - h, 0.0 ].max : 0.0
+    end
+
     # The cell under a WGS84 position, or nil outside the grid.
     def index_at(lng, lat)
       c, r = @extent.to_grid(lng, lat).map(&:round)
@@ -183,6 +191,7 @@ module Relief
             heap.push(j, filled[j])
           end
         end
+        @filled = filled
         receiver
       end
 

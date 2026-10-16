@@ -158,6 +158,27 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_equal "spacing", response.parsed_body["reason"]
   end
 
+  test "what the relief says about a storm observation, with the rain of that day" do
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    centre = @map.boundary.centroid
+    flow = @map.features.create!(layer: "water", kind: "storm_observation", properties: { "observed_at" => "2026-02-03T14:20:00Z" },
+      geometry: { "type" => "LineString", "coordinates" => [ [ centre.x, centre.y + 0.0001 ], [ centre.x, centre.y - 0.0001 ] ] })
+    sign_in_as users(:alice)
+    get storm_map_relief_path(@map, feature_id: flow.id), as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert body.dig("relief", "available")
+    assert_equal "flows", body.dig("relief", "water")
+    assert_operator body.dig("relief", "fallM"), :>, 1
+    assert_equal false, body.dig("rain", "available")
+
+    swale = @map.features.create!(layer: "water", kind: "swale",
+      geometry: { "type" => "LineString", "coordinates" => [ [ centre.x - 0.0001, centre.y ], [ centre.x + 0.0001, centre.y ] ] })
+    get storm_map_relief_path(@map, feature_id: swale.id), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "not_storm", response.parsed_body["reason"]
+  end
+
   test "the catchment of a pond or a point" do
     synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
     centre = @map.boundary.centroid

@@ -200,6 +200,17 @@ layers:
           - { key: method, type: select, options: [hole, ring] }
           - { key: hole_diameter_cm, type: integer, unit: cm, min: 5, max: 100 }
           - { key: hole_depth_cm, type: integer, unit: cm, min: 5, max: 150 }
+      storm_observation:
+        geometry: [LineString, Polygon, Point]
+        icon: cloud-rain
+        color: "#0e8fd6"
+        line: { width: 3, dash: [2, 1], casing: "#ffffff", arrows: true }
+        fill: { opacity: 0.3, pattern: hatch }
+        defaults: { rain: heavy }
+        fields:
+          - { key: rain, type: select, options: [drizzle, steady, heavy, storm] }
+          - { key: rain_mm, type: number, unit: mm, min: 0, max: 300, step: 0.5 }
+          - { key: muddy, type: boolean }
 
   access:
     color: "#b8851a"

@@ -103,6 +103,23 @@ module Maps
       render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
     end
 
+    # What the relief says about an observation made during a downpour
+    # (`feature_id`), and the rain the nearest station measured that day.
+    def storm
+      feature = @map.features.where.not(status: "rejected").find(params[:feature_id])
+      relief =
+        begin
+          Relief::StormCheck.new(@map, feature:).call.as_json.merge(available: true)
+        rescue Relief::StormCheck::Error => e
+          { available: false, reason: e.key, message: e.message }
+        end
+      return render(json: relief.slice(:message, :reason), status: :unprocessable_entity) if relief[:reason] == :not_storm
+
+      date = feature.observed_at&.in_time_zone&.to_date
+      rain = date ? WeatherStations::MapReport.new(@map).rain_on(date) : { "available" => false, "reason" => "no_data" }
+      render json: { relief:, rain: }
+    end
+
     private
       def soil_model
         settings = @map.effective_water_settings

@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "pendant-l-averse", published_on: "2026-10-16",
+    title: "Sous l'averse, note où l'eau court",
+    body: <<~TEXT,
+      Il pleut fort ? Sors avec ton téléphone : dans l'app Terranova, « Relever », puis « Pendant l'averse ». Trace du doigt où l'eau coule, entoure où elle stagne, touche où elle sort du sol, et ajoute une photo. Même sans réseau.
+
+      Sur l'ordinateur, chaque relevé est comparé au relief : là où l'eau suit l'axe prévu, une baissière la retiendra ; là où elle s'en écarte, un drain, une ornière ou un sol tassé la guide, et ton relevé compte plus que le modèle. Averse après averse, saison après saison, l'eau de ton lieu se raconte.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Un trait bleu tracé sous la pluie sur la carte, et sa fiche qui dit que l'eau ne suit pas le relief à cet endroit."
+  },
+  {
     key: "keyline", published_on: "2026-10-16",
     title: "Le keyline : l'eau des vallons vers les croupes",
     body: <<~TEXT,

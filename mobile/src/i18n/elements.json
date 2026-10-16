@@ -132,6 +132,15 @@
         ],
         "color": "#3d7ea6",
         "pickable": true
+      },
+      "storm_observation": {
+        "geometries": [
+          "LineString",
+          "Polygon",
+          "Point"
+        ],
+        "color": "#0e8fd6",
+        "pickable": true
       }
     }
   },
