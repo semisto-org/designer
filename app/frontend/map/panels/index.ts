@@ -65,7 +65,6 @@ import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 import TagsSection from '@/map/tags/TagsSection'
-import TasksLink from '@/tasks/TasksLink'
 import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
 import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
 import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
@@ -124,7 +123,6 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
 // Top bar actions (right side), e.g. share, export.
 export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'share', component: ShareButton, order: 80 },
-  { id: 'tasks', component: TasksLink, order: 70 },
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
