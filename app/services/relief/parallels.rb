@@ -6,8 +6,8 @@ module Relief
   # subsoiling along them carry the water of the valley out onto the drier
   # ridges (P.A. Yeomans' keyline pattern).
   #
-  # Offsets are taken in metres in Web Mercator (scaled by the latitude) by
-  # PostGIS; which side is upslope is read on the terrain.
+  # Offsets are taken in metres in Web Mercator (scaled by the latitude);
+  # which side is upslope is read on the terrain.
   class Parallels
     class Error < StandardError
       attr_reader :key
@@ -59,8 +59,8 @@ module Relief
       # positive side), -1 on the right, nil when both sides are level. Read
       # PROBE_M to each side of every segment's middle, along its normal.
       def upslope_sign
-        scale = 1 / Math.cos(@feature.geometry.points.sum(&:y) / @feature.geometry.num_points * Math::PI / 180)
-        points = @feature.geometry.points.map { |pt| Mercator.forward(pt.x, pt.y) }
+        scale = mercator_scale
+        points = mercator_points
         left = []
         right = []
         points.each_cons(2) do |(x0, y0), (x1, y1)|
@@ -84,25 +84,79 @@ module Relief
         difference.positive? ? 1 : -1
       end
 
-      # Pieces of the line offset by `distance` metres, clipped to the boundary.
+      # Pieces of the line offset by `distance` metres (positive on the left),
+      # clipped to the boundary. Each vertex moves along the bisector of its
+      # two segments' normals; PostGIS then nodes the line and drops the
+      # loops that sharp bends leave on their inner side (closer to the
+      # keyline than `distance`). No ST_OffsetCurve: its results differ
+      # between GEOS versions.
       def curves(distance)
+        moved = offset_vertices(distance * mercator_scale)
+        return [] if moved.size < 2
+
         sql = <<~SQL.squish
-          WITH line AS (SELECT ST_GeomFromText($1, 4326) AS g),
-          moved AS (
-            SELECT ST_Transform(ST_OffsetCurve(ST_Transform(g, 3857), $2 / cos(radians(ST_Y(ST_Centroid(g)))), 'join=round quad_segs=4'), 4326) AS g
-            FROM line
+          WITH source AS (SELECT ST_GeomFromText($1, 4326) AS g),
+          moved AS (SELECT ST_Transform(ST_SetSRID(ST_GeomFromText($2), 3857), 4326) AS g),
+          noded AS (SELECT (ST_Dump(ST_UnaryUnion(g))).geom AS g FROM moved),
+          kept AS (
+            SELECT ST_LineMerge(ST_Collect(noded.g)) AS g FROM noded, source
+            WHERE ST_Distance(noded.g::geography, source.g::geography) >= $3 * 0.9
           ),
           clipped AS (
-            SELECT ST_LineMerge(CASE WHEN m.boundary IS NULL THEN moved.g ELSE ST_Intersection(moved.g, m.boundary) END) AS g
-            FROM moved, maps m WHERE m.id = $3
+            SELECT CASE WHEN m.boundary IS NULL THEN kept.g ELSE ST_LineMerge(ST_Intersection(kept.g, m.boundary)) END AS g
+            FROM kept, maps m WHERE m.id = $4 AND kept.g IS NOT NULL
           ),
           parts AS (SELECT (ST_Dump(g)).geom AS g FROM clipped)
-          SELECT ST_AsGeoJSON(g, 7) AS geometry, ST_Length(g::geography) AS length_m,
+          SELECT ST_AsGeoJSON(ST_Simplify(g, 0.0000005), 7) AS geometry, ST_Length(g::geography) AS length_m,
                  ST_AsGeoJSON(ST_LineInterpolatePoints(g, 0.1)) AS samples
           FROM parts WHERE GeometryType(g) = 'LINESTRING'
         SQL
-        Map.connection.select_all(sql, "parallels", [ wkt, distance, @map.id ]).map do |row|
+        wkt = "LINESTRING(#{moved.map { |x, y| "#{x} #{y}" }.join(',')})"
+        Map.connection.select_all(sql, "parallels", [ self.wkt, wkt, distance.abs, @map.id ]).map do |row|
           { geometry: JSON.parse(row["geometry"]), length_m: row["length_m"].to_f, samples: points(JSON.parse(row["samples"])) }
+        end
+      end
+
+      def mercator_scale
+        @mercator_scale ||= 1 / Math.cos(@feature.geometry.points.sum(&:y) / @feature.geometry.num_points * Math::PI / 180)
+      end
+
+      def mercator_points
+        @mercator_points ||= @feature.geometry.points.map { |pt| Mercator.forward(pt.x, pt.y) }
+          .chunk_while { |a, b| a == b }.map(&:first)
+      end
+
+      # The keyline's vertices moved `d` (Mercator units) to the left of the
+      # line, along the bisector of the adjacent segments' normals; the miter
+      # is capped at twice the distance.
+      def offset_vertices(d)
+        pts = mercator_points
+        normals = pts.each_cons(2).map do |(x0, y0), (x1, y1)|
+          length = Math.hypot(x1 - x0, y1 - y0)
+          [ -(y1 - y0) / length, (x1 - x0) / length ]
+        end
+        return [] if normals.empty?
+
+        pts.each_with_index.map do |(x, y), i|
+          before = normals[i - 1] if i.positive?
+          after = normals[i]
+          nx, ny =
+            if before && after
+              bx = before[0] + after[0]
+              by = before[1] + after[1]
+              norm = Math.hypot(bx, by)
+              if norm < 1e-9
+                after
+              else
+                bx /= norm
+                by /= norm
+                miter = 1 / [ bx * after[0] + by * after[1], 0.5 ].max
+                [ bx * miter, by * miter ]
+              end
+            else
+              before || after
+            end
+          [ x + nx * d, y + ny * d ]
         end
       end
 
