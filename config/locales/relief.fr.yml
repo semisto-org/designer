@@ -224,7 +224,7 @@ fr:
           brake: "Frein à main"
       growth:
         title: "Les plantes du design"
-        intro: "Les plantes de la carte en volume, à la taille qu'elles auront l'année choisie : hauteur et envergure adultes du catalogue, atteintes au bout du temps propre à chaque espèce."
+        intro: "Les plantes de la carte en volume, à la taille qu'elles auront l'année choisie : hauteur et envergure adultes du catalogue, atteintes au bout du temps propre à chaque espèce. Leurs ombres suivent l'année dans le mode Soleil."
         show: "Montrer les plantes"
         strata_colors: "Couleurs des strates"
         strata_colors_hint: "Les couleurs de la légende de la carte, au lieu du vert du feuillage."
@@ -347,6 +347,8 @@ fr:
         legend_min: "0 h"
         legend_hint: "En forêt, la valeur est celle du sommet des arbres ; le relief au-delà de %{margin} m autour du terrain n'est pas compté."
         no_surface: "Sans modèle de surface, seules les ombres du relief comptent : arbres et toits n'en portent pas."
+        no_surface_plants: "Sans modèle de surface, les arbres déjà en place et les toits ne portent pas d'ombre : seuls le relief et les plantes du design en portent."
+        plants: "Les plantes du design portent leur ombre à la taille de l'année choisie : fais passer les années pour la voir grandir."
         timezone: "Heures locales du terrain (%{zone})."
       probe:
         cold_layer: "Air froid : une nappe d'environ %{depth} m vers %{time}"

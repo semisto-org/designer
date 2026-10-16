@@ -682,6 +682,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
                   dayRunning={dayRunning}
                   onToggleDay={toggleDay}
                   surface={!!terrain.surface}
+                  plants={plantCount > 0 && plantsView.on}
                   marginM={terrain.marginM}
                   timezone={timezone}
                 />
@@ -1058,7 +1059,7 @@ function StatRow({ label, value, strong }: { label: string; value: string; stron
 
 // ---- Sun tab --------------------------------------------------------------------
 
-function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, marginM, timezone }: {
+function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, plants, marginM, timezone }: {
   sun: { mode: SunMode; date: SunDate; minutes: number }
   info: SunInfo
   window: { min: number; max: number }
@@ -1066,6 +1067,8 @@ function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, m
   dayRunning: boolean
   onToggleDay: () => void
   surface: boolean
+  /** The design's plants are shown, and cast their shadows of the year shown. */
+  plants: boolean
   marginM: number
   timezone: string
 }) {
@@ -1106,11 +1109,12 @@ function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, m
             {dayRunning ? <Pause className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
             {dayRunning ? t('relief.page.sun.stop_day') : t('relief.page.sun.play_day')}
           </Button>
-          {localZone !== timezone && <p className="text-xs text-loam-400">{t('relief.page.sun.timezone', { zone: timezone })}</p>}
+          {localZone !== timezone && <p className="text-sm text-loam-400">{t('relief.page.sun.timezone', { zone: timezone })}</p>}
         </>
       )}
       <SunStatus info={info} marginM={marginM} />
-      {sun.mode !== 'off' && !surface && <p className="text-xs text-humus-700">{t('relief.page.sun.no_surface')}</p>}
+      {sun.mode !== 'off' && plants && <p className="text-sm text-leaf-800">{t('relief.page.sun.plants')}</p>}
+      {sun.mode !== 'off' && !surface && <p className="text-sm text-humus-700">{t(plants ? 'relief.page.sun.no_surface_plants' : 'relief.page.sun.no_surface')}</p>}
     </>
   )
 }

@@ -52,10 +52,13 @@ export function sunPosition(date: Date, lat: number, lng: number): SunPosition {
  * rarely falls on a cell: interpolate between the two nearest.
  *
  * `surface`: heights (m), rows from north to south. `out`/`level` are reused.
+ * `cover`: cells under a crown (a planted tree, a bush), whose ground is in
+ * its shade even when the top of the crown is in the sun.
  */
 export function shadowMask(
   surface: ArrayLike<number>, cols: number, rows: number, cellSize: number, sun: SunPosition,
   out: Uint8Array = new Uint8Array(cols * rows), level: Float32Array = new Float32Array(cols * rows),
+  cover: Uint8Array | null = null,
 ): Uint8Array {
   if (sun.altitude <= 0) {
     out.fill(0)
@@ -118,6 +121,7 @@ export function shadowMask(
       }
     }
   }
+  if (cover) for (let i = 0; i < out.length; i++) if (cover[i]) out[i] = 0
   return out
 }
 
@@ -129,7 +133,9 @@ export function shadowMask(
  */
 export async function sunHours(
   surface: ArrayLike<number>, cols: number, rows: number, cellSize: number, lat: number, lng: number, dayStart: Date,
-  { stepMinutes = 15, onProgress, signal }: { stepMinutes?: number; onProgress?: (fraction: number) => void; signal?: AbortSignal } = {},
+  { stepMinutes = 15, onProgress, signal, cover = null }: {
+    stepMinutes?: number; onProgress?: (fraction: number) => void; signal?: AbortSignal; cover?: Uint8Array | null
+  } = {},
 ): Promise<{ hours: Float32Array; daylight: number }> {
   const hours = new Float32Array(cols * rows)
   const mask = new Uint8Array(cols * rows)
@@ -144,7 +150,7 @@ export async function sunHours(
     const sun = sunPosition(at, lat, lng)
     if (sun.altitude > 0) {
       daylight += step
-      shadowMask(surface, cols, rows, cellSize, sun, mask, level)
+      shadowMask(surface, cols, rows, cellSize, sun, mask, level, cover)
       for (let i = 0; i < mask.length; i++) if (mask[i]) hours[i] += step
     }
     if (k % 6 === 5) {

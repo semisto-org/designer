@@ -9,7 +9,7 @@
 // scene.ts imports this module.
 
 import * as THREE from 'three'
-import { sizeAt, type PlantStrata, type ScenePlant } from './growth.ts'
+import { plantShape, sizeAt, type PlantStrata, type ScenePlant } from './growth.ts'
 
 /** Foliage greens per strata, as they look in summer (the 3D is not the legend). */
 export const NATURAL_GREENS: Record<PlantStrata, string> = {
@@ -23,8 +23,6 @@ export const NATURAL_GREENS: Record<PlantStrata, string> = {
   aquatic: '#5b8e6a',
 }
 const BARK = '#6e5a44'
-/** Height of the support a climber is drawn on (m). */
-const CLIMBER_SUPPORT = 2.5
 
 type Shape = 'trunk' | 'crown' | 'dome' | 'column'
 
@@ -138,26 +136,20 @@ export class PlantLayer {
         matrix.compose(position.set(x, ground + y, z), turn, scale.set(sx, sy, sx))
         this.meshes.get(shape)!.setMatrixAt(slot, matrix)
       }
-      switch (plant.form) {
-        case 'tree': {
-          // A young tree is mostly stem; the crown takes over as it grows.
-          const trunk = height * (plant.strata === 'canopy' ? 0.38 : 0.32)
-          const crown = (height - trunk) / 2
-          const radius = Math.max(0.025, spread * 0.03 + height * 0.006)
-          set('trunk', -0.1, radius, trunk + crown * 0.4 + 0.1)
-          set('crown', trunk + crown, spread / 2, crown)
+      const shape = plantShape(plant.form, plant.strata, height, spread)
+      switch (shape.kind) {
+        case 'crown':
+          if (shape.trunk > 0) {
+            const radius = Math.max(0.025, spread * 0.03 + height * 0.006)
+            set('trunk', -0.1, radius, shape.trunk + shape.half * 0.4 + 0.1)
+          }
+          set('crown', shape.centre, shape.radius, shape.half)
           break
-        }
-        case 'bush':
-          set('crown', height * 0.47, spread / 2, height / 2)
-          break
-        case 'climber':
-          // On its support (a post, a pergola, a fence): the catalogue's
-          // height is what it reaches up a tree.
-          set('column', 0, Math.min(0.6, Math.max(0.08, spread / 3)), Math.min(height, CLIMBER_SUPPORT))
+        case 'column':
+          set('column', 0, shape.radius, shape.height)
           break
         default:
-          set('dome', 0, spread / 2, Math.max(0.03, height))
+          set('dome', 0, shape.radius, shape.height)
       }
     })
     for (const mesh of this.meshes.values()) mesh.instanceMatrix.needsUpdate = true
