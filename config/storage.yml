@@ -20,7 +20,8 @@ test_backup:
 # as S3_BUCKET is set (config/environments/production.rb); everything comes
 # from the environment:
 #
-#   S3_ENDPOINT           https://s3.pub1.infomaniak.cloud      (Infomaniak Public Cloud)
+#   S3_ENDPOINT           https://s3.pub2.infomaniak.cloud      (Infomaniak Public Cloud, dc4-a;
+#                                                               pub1 for dc3-a)
 #                         https://fsn1.your-objectstorage.com   (Hetzner)
 #                         https://s3.fr-par.scw.cloud           (Scaleway)
 #   S3_REGION             us-east-1 (Infomaniak) / fsn1 / fr-par …

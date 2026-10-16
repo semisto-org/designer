@@ -67,8 +67,8 @@ Stockage retenu (2026-10) : **Object Storage du Public Cloud Infomaniak** (Genè
 | Variable | Rôle |
 |---|---|
 | `S3_BUCKET` | Active le stockage objet (`terranova-media` chez Infomaniak, projet `semisto-media`). |
-| `S3_ENDPOINT` | Infomaniak : `https://s3.pub1.infomaniak.cloud` (ou `pub2`). Ailleurs : `https://fsn1.your-objectstorage.com` (Hetzner), `https://s3.fr-par.scw.cloud` (Scaleway). |
-| `S3_REGION` | Infomaniak : `us-east-1` (le serveur refuse `dc3-a`, le nom de son datacenter). |
+| `S3_ENDPOINT` | Infomaniak : celui de la région du conteneur, `https://s3.pub2.infomaniak.cloud` pour dc4-a (notre conteneur `terranova-media`), `https://s3.pub1.infomaniak.cloud` pour dc3-a. Une adresse d'une autre région ne voit aucun conteneur (`NoSuchBucket`). Ailleurs : `https://fsn1.your-objectstorage.com` (Hetzner), `https://s3.fr-par.scw.cloud` (Scaleway). |
+| `S3_REGION` | Infomaniak : `us-east-1` quelle que soit la région (le serveur refuse `dc3-a` ou `dc4-a`). |
 | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Infomaniak : `openstack ec2 credentials create` (identifiants de l'onglet « API Access » d'Horizon). |
 | `S3_FORCE_PATH_STYLE` | `true` par défaut. |
 | `ACTIVE_STORAGE_SERVICE` | Facultatif : force `local` ou `object_storage`. |
