@@ -9,6 +9,8 @@ Une fois tes plants placés et tes patches composés, Terranova fait les comptes
 
 [Ouvrir le panneau Liste de plants](action:panel/plant-list)
 
+![Le panneau Liste de plants](/help/captures/panneau-liste-de-plants.webp)
+
 ## Ce que contient la liste
 
 Le panneau **Liste de plants** additionne :

@@ -9,6 +9,8 @@ Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes q
 
 [Ouvrir le panneau Palette](action:panel/palette)
 
+![Le panneau Palette et ses espèces](/help/captures/panneau-palette.webp)
+
 ## La palette : les plantes de ton projet
 
 La **palette** réunit les espèces choisies pour ce terrain. Dans le panneau **Palette** :

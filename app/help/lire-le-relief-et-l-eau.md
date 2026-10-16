@@ -9,6 +9,8 @@ Où l'eau descend-elle quand il pleut fort ? Où stagne-t-elle ? Quel coin reste
 
 [Ouvrir le panneau Eau et relief](action:panel/relief)
 
+![Le panneau Eau et relief : altitude, dénivelé et pentes du terrain](/help/captures/panneau-eau-et-relief.webp)
+
 ## Télécharger le relief
 
 1. Dessine d'abord le **contour du terrain** : le relief se télécharge autour de lui, avec une marge de 150 m pour tenir compte de l'eau qui arrive d'en haut.

@@ -305,10 +305,10 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       {wideRail ? <RailPortal panels={visiblePanels} /> : <EditorBar panels={visiblePanels} />}
       {panel && panel.modal && wideScreen ? (
         <Dialog open size="wide" title={t(panel.label)} onClose={() => setActivePanel(null)}>
-          <panel.component />
+          <div data-editor-panel={panel.id}><panel.component /></div>
         </Dialog>
       ) : panel && (
-        <section className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
+        <section data-editor-panel={panel.id} className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
           <h2 className="mb-3 text-base">{t(panel.label)}</h2>
           <panel.component />
         </section>

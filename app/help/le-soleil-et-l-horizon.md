@@ -9,6 +9,8 @@ Un pommier, une vigne ou un potager n'ont pas besoin du même soleil. Avant de p
 
 [Ouvrir le panneau Soleil](action:panel/sun)
 
+![Le panneau Soleil : l'horizon et la course du soleil](/help/captures/panneau-soleil.webp)
+
 Le soleil dépend de l'endroit : dessine d'abord le contour du terrain. Sans contour, le panneau propose le bouton **Dessiner le contour**.
 
 ## Le ciel de ton terrain

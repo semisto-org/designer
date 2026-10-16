@@ -299,3 +299,6 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 .prose a.help-action::before { content: "→"; }
 .prose a.help-action:hover { background: var(--color-prune-800); text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .prose a.help-term::after { transition: none; } }
+/* A guide's screenshot (script/help_captures.mjs): a panel keeps its real width. */
+.prose img[src^="/help/captures/panneau-"] { max-width: min(20rem, 100%); border-radius: 0.75rem; box-shadow: 0 4px 18px rgb(38 30 20 / 0.12), 0 0 0 1px rgb(38 30 20 / 0.08); }
+.prose img[src^="/help/captures/"] { border-radius: 0.75rem; box-shadow: 0 4px 18px rgb(38 30 20 / 0.12), 0 0 0 1px rgb(38 30 20 / 0.08); }

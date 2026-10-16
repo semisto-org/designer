@@ -9,6 +9,8 @@ Le plus sûr moyen d'obtenir un contour juste est de partir du **plan cadastral*
 
 [Ouvrir le panneau Terrain](action:panel/terrain)
 
+![Le panneau Terrain, avec le contour et les parcelles du cadastre](/help/captures/panneau-terrain.webp)
+
 ## Choisir ses parcelles sur la carte
 
 1. Ouvre le panneau **Terrain**.

@@ -9,6 +9,8 @@ Tu veux montrer ton design à un client, à la famille ou à ta commune, sans le
 
 [Ouvrir le panneau Publier](action:panel/publish)
 
+![Le panneau Publier](/help/captures/panneau-publier.webp)
+
 ## Publier ou inviter ?
 
 - **Publier** donne une vue figée à toute personne qui a l'adresse. Elle ne voit que ce que tu as choisi, et ne peut ni modifier ni commenter.

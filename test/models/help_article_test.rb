@@ -56,7 +56,7 @@ class HelpArticleTest < ActiveSupport::TestCase
 
   test "internal links point to existing articles" do
     HelpArticle.all.each do |article|
-      article.markdown.scan(%r{\]\(/help/([^)#\s]+)}).flatten.each do |target|
+      article.markdown.scan(%r{\]\(/help/(?!captures/)([^)#\s]+)}).flatten.each do |target|
         assert HelpArticle.find(target), "#{article.slug} links to a missing article: #{target}"
       end
     end
@@ -84,6 +84,21 @@ class HelpArticleTest < ActiveSupport::TestCase
     assert_empty used - panels, "unknown panels in action:panel/ links"
     html = HelpArticle.find("le-soleil-et-l-horizon").html
     assert_includes html, %(<a href="/maps" class="help-action" data-help-panel="sun">Ouvrir le panneau Soleil</a>)
+  end
+
+  test "every screenshot a guide shows is made by the capture script, and missing ones are left out" do
+    manifest = YAML.safe_load_file(Rails.root.join("app/help/captures.yml"))
+    names = manifest.map { |c| c["name"] }
+    panels = PANELS.read[/export const PANELS\b.*?= \[(.*?)\n\]/m, 1].scan(/\bid: '([\w-]+)'/).flatten
+    assert_empty manifest.filter_map { |c| c["panel"] } - panels
+    used = HelpArticle.all.flat_map { |a| a.markdown.scan(%r{\(/help/captures/([a-z0-9-]+)\.webp\)}).flatten }
+    assert_not_empty used
+    assert_empty used - names, "add these to app/help/captures.yml"
+
+    article = HelpArticle.new(slug: "x", title: "X", summary: "", category: "Test", order: 1, markdown: "![Absente](/help/captures/absente.webp)\n\nTexte")
+    assert_not_includes article.html, "<img"
+    shown = HelpArticle.find("le-soleil-et-l-horizon").html
+    assert_includes shown, %(<img loading="lazy" src="/help/captures/panneau-soleil.webp") if HelpArticle::CAPTURES_DIR.join("panneau-soleil.webp").exist?
   end
 
   test "renders Markdown to HTML with heading ids and no English anchors" do

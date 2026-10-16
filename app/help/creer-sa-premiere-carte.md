@@ -9,6 +9,8 @@ Une **carte**, dans Semisto Terranova, c'est un terrain : son contour, ce qui s'
 
 ## En quatre étapes
 
+![« Mes cartes » : chaque terrain avec son étape et sa prochaine action](/help/captures/mes-cartes.webp)
+
 1. **Connecte-toi.** Continue avec Google, ou reçois un e-mail (valable 20 minutes) : ouvre son lien, ou tape son code à six chiffres sur l'appareil où tu te connectes, pratique quand ta messagerie est sur un autre appareil. Si tu préfères, choisis un mot de passe dans « Mon compte ».
 2. **Crée la carte.** Dans « Mes cartes », choisis « Nouvelle carte », donne-lui un nom parlant (« Le jardin-forêt de la Ferme du Bois ») et, si tu le souhaites, une adresse : elle sert à centrer la carte au bon endroit.
 3. **Trace le contour du terrain.** Ouvre le panneau **Terrain** et choisis **Dessiner le contour**. Clique à chaque angle, puis double-clique (ou reviens au premier point) pour terminer. Tu peux aussi partir des parcelles du cadastre : voir [Choisir ses parcelles](/help/choisir-ses-parcelles).

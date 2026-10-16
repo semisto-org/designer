@@ -9,6 +9,8 @@ Un arbre planté aujourd'hui vivra le climat de 2050, et souvent celui de 2080. 
 
 [Ouvrir le panneau Climat](action:panel/climate)
 
+![Le panneau Climat](/help/captures/panneau-climat.webp)
+
 Le climat dépend de l'endroit : dessine d'abord le contour du terrain. Sans contour, le panneau propose le bouton **Dessiner le contour**.
 
 ## Le climat d'aujourd'hui

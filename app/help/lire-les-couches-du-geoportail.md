@@ -9,6 +9,8 @@ Chaque région publie ses données ouvertes sur un géoportail : le **Géoportai
 
 [Ouvrir le panneau Couches](action:panel/layers)
 
+![Le panneau Couches et ses groupes de couches](/help/captures/panneau-couches.webp)
+
 ## Hors de ces cinq régions
 
 Ailleurs en Europe, la carte s'ouvre avec des **couches européennes**, disponibles partout mais moins précises : Natura 2000, occupation du sol (Corine Land Cover) et estimations du sol (pH et argile de SoilGrids, par mailles de 250 m). Il n'y a alors ni photo aérienne ni cadastre : dessine le contour à la main ou importe un fichier. Ces couches européennes restent aussi disponibles dans les régions équipées.

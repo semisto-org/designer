@@ -152,7 +152,7 @@ class HelpArticle
   end
 
   def html
-    @html ||= HelpGlossary.annotate(action_links(rendered))
+    @html ||= HelpGlossary.annotate(action_links(without_missing_captures(rendered)))
   end
 
   # The body as Markdown renders it, before the glossary and action links.
@@ -170,6 +170,14 @@ class HelpArticle
   # it leads to the last map opened (components/help/actions.ts).
   def action_links(html)
     html.gsub(ACTION_LINK) { %(<a href="/maps" class="help-action" data-help-panel="#{$1}">) }
+  end
+
+  # A capture not made yet (script/help_captures.mjs) is left out rather than shown broken.
+  CAPTURE = %r{<img src="/help/captures/([a-z0-9-]+\.webp)"[^>]*/?>}
+  CAPTURES_DIR = Rails.root.join("public/help/captures")
+
+  def without_missing_captures(html)
+    html.gsub(CAPTURE) { |tag| CAPTURES_DIR.join($1).exist? ? tag.sub("<img ", %(<img loading="lazy" )) : "" }.gsub("<p></p>", "")
   end
 
   # Level-2 headings, for the "on this page" list: [{ id:, text: }].
