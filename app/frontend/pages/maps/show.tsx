@@ -54,11 +54,6 @@ export default function MapShow(props: Props) {
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
         <div className="flex-1" />
-        {map.role && (
-          <span className="hidden shrink-0 rounded-full bg-prune-100 px-2.5 py-1 text-xs text-prune-600 lg:inline">
-            {t('maps.show.your_role', { role: t(`maps.roles.${map.role}`).toLocaleLowerCase('fr') })}
-          </span>
-        )}
         <div id="editor-header-actions" className="flex shrink-0 items-center gap-1 sm:gap-2" />
       </header>
       <div className="flex min-h-0 flex-1">
