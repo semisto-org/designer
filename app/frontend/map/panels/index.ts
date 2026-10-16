@@ -1,4 +1,4 @@
-import { Bot, Camera, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -21,7 +21,9 @@ import RegionLayersOverlay from '@/map/data/RegionLayersOverlay'
 import IdentifyOverlay from '@/map/data/IdentifyOverlay'
 import LegendOverlay from '@/map/data/LegendOverlay'
 import AiJournalPanel from '@/map/panels/AiJournalPanel'
-import DraftsBar from '@/map/drafts/DraftsBar'
+import AiProposalsOverlay from '@/map/drafts/AiProposalsOverlay'
+import PendingUpdatesLayer from '@/map/feature_updates/PendingUpdatesLayer'
+import UpdateReviewSection from '@/map/feature_updates/UpdateReviewSection'
 import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
@@ -63,9 +65,14 @@ import TransferNotice from '@/transfer/TransferNotice'
 import WaterSourcesPanel from '@/map/water/WaterSourcesPanel'
 import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
+import CatchmentSection, { appliesToCatchment } from '@/map/water/CatchmentSection'
+import InfiltrationSection, { appliesToInfiltration } from '@/map/water/InfiltrationSection'
+import KeylineSection, { appliesToKeyline } from '@/map/water/KeylineSection'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 import TagsSection from '@/map/tags/TagsSection'
-import TasksLink from '@/tasks/TasksLink'
+import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
+import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
+import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -89,6 +96,7 @@ export const PANELS: EditorPanel[] = [
   // 3. Concevoir
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
+  { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
   // 4. Planter
   { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: PlantListPanel, order: 10 },
@@ -105,6 +113,7 @@ export const PANELS: EditorPanel[] = [
 export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'discussion', applies: () => true, component: DiscussionSection, order: 90 },
   { id: 'draft-review', applies: (f) => f.properties.status === 'draft', component: DraftReviewSection, order: 5 },
+  { id: 'update-review', applies: (f) => f.properties.status === 'active', component: UpdateReviewSection, order: 6 },
   { id: 'plant', applies: isPlant, component: PlantSection, order: 20 },
   { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
@@ -114,12 +123,15 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
   { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
+  { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
+  { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
+  { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
+  { id: 'keyline', applies: appliesToKeyline, component: KeylineSection, order: 23 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
 export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'share', component: ShareButton, order: 80 },
-  { id: 'tasks', component: TasksLink, order: 70 },
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
@@ -136,7 +148,8 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'layer-legend', component: LegendOverlay, order: 5 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
-  { id: 'drafts-bar', component: DraftsBar, order: 40 },
+  { id: 'ai-proposals', component: AiProposalsOverlay, order: 40 },
+  { id: 'pending-updates', component: PendingUpdatesLayer, order: 41 },
   { id: 'plants', component: PlantsOverlay, order: 20 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },
@@ -149,4 +162,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'aerial-views', component: AerialViewsOverlay, order: 1 },
   { id: 'plan-images', component: PlanImagesOverlay, order: 2 },
   { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
+  { id: 'earthworks', component: EarthworksOverlay, order: 12 },
 ]

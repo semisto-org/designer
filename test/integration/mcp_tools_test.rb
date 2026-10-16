@@ -1,9 +1,11 @@
 require "test_helper"
 require_relative "../support/map_data_test_helper"
 require "test_helpers/mcp_test_helper"
+require "test_helpers/synthetic_terrain_helper"
 
 class McpToolsTest < ActionDispatch::IntegrationTest
   include MapDataTestHelper
+  include SyntheticTerrainHelper
 
   setup do
     @map = maps(:ahinvaux)
@@ -161,6 +163,65 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     data, error = call_tool(@owner, "identify_at_point", { map_id: @map.id, lng: 4.907, lat: 50.341, layers: %w[sols] })
     refute error
     assert_match(/pas encore disponible/, data["results"].sole["error"])
+  end
+
+  test "trace_contour gives the contour line through a point, or asks for the relief" do
+    centre = @map.boundary.centroid
+    text, error = call_tool(@viewer, "trace_contour", { map_id: @map.id, lng: centre.x, lat: centre.y })
+    assert error
+    assert_match(/Eau et relief/, text)
+
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    data, error = call_tool(@viewer, "trace_contour", { map_id: @map.id, lng: centre.x, lat: centre.y })
+    refute error
+    assert_equal "LineString", data.dig("geometry", "type")
+    assert_in_delta 200, data["elevation_m"], 0.05
+    assert data["length_m"].positive?
+    assert_equal 1.0, data["cell_size_m"]
+    assert_equal "trace_contour", AiAction.last.tool
+  end
+
+  test "get_catchment gives what drains into a pond or a point" do
+    centre = @map.boundary.centroid
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    pond = @map.features.create!(layer: "water", kind: "pond", properties: { "depth_m" => 1 },
+      geometry: { "type" => "Polygon", "coordinates" => [ [ [ -1, -1 ], [ 1, -1 ], [ 1, 1 ], [ -1, 1 ], [ -1, -1 ] ].map { |x, y| [ centre.x + x * 0.00003, centre.y + y * 0.00002 ] } ] })
+
+    data, error = call_tool(@viewer, "get_catchment", { map_id: @map.id, feature_id: pond.id })
+    refute error
+    assert data["area_m2"].positive?
+    assert data["beyond_relief"]
+    assert_includes %w[Polygon MultiPolygon], data.dig("geometry", "type")
+    assert_equal "get_catchment", AiAction.last.tool
+
+    data, error = call_tool(@viewer, "get_catchment", { map_id: @map.id, lng: centre.x, lat: centre.y })
+    refute error
+    assert_equal [ centre.x, centre.y ], data["point"]
+
+    text, error = call_tool(@viewer, "get_catchment", { map_id: @map.id })
+    assert error
+    assert_match(/feature_id/, text)
+  end
+
+  test "find_keypoints gives the keypoints of the valleys with their keylines" do
+    synthetic_terrain(@map) { |dx, dy| 200 + dx.abs * 0.15 + (dy.positive? ? dy * 0.10 : dy * 0.02) }
+    data, error = call_tool(@viewer, "find_keypoints", { map_id: @map.id })
+    refute error
+    keypoint = data["keypoints"].sole
+    assert_operator keypoint["slope_above_pct"], :>, keypoint["slope_below_pct"]
+    assert_equal "LineString", keypoint.dig("keyline", "geometry", "type")
+    assert_equal "find_keypoints", AiAction.last.tool
+  end
+
+  test "trace_parallels gives the lines above and below a keyline" do
+    centre = @map.boundary.centroid
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    keyline = @map.features.create!(layer: "water", kind: "keyline", properties: { "role" => "keyline", "use" => "trees" },
+      geometry: { "type" => "LineString", "coordinates" => [ [ centre.x - 0.0002, centre.y ], [ centre.x + 0.0002, centre.y ] ] })
+    data, error = call_tool(@viewer, "trace_parallels", { map_id: @map.id, feature_id: keyline.id, spacing_m: 5, above: 1, below: 1 })
+    refute error
+    assert_equal %w[above below], data["lines"].map { |l| l["side"] }
+    assert_equal "trace_parallels", AiAction.last.tool
   end
 
   test "plant tools search the catalogue and give a species with its provenance" do

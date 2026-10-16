@@ -6,12 +6,14 @@ import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { api } from '@/lib/api'
 import { featureTitle, kindLabel, layerLabel, speciesName } from '@/lib/elements'
 import { formatDate, t, todayIso } from '@/lib/i18n'
+import { isVideo } from '@/lib/media'
 import { outbox } from '@/lib/outbox'
 import { ownProperties, type Op } from '@/lib/outbox-core'
 import { takePhoto } from '@/lib/photos'
 import { canEdit, type Comment, type MapFeature, type Survival } from '@/lib/types'
 import { useOnline, useOutbox } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
+import { chooseMedia } from '@/ui/chooseMedia'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
 import { colors, fonts, radius, space } from '@/ui/theme'
@@ -38,9 +40,10 @@ export default function FeatureScreen() {
   const pendingPhotos = ops.flatMap((op) => (op.type === 'uploadPhoto' ? [op.file] : []))
 
   const addPhoto = async () => {
-    const photo = await takePhoto()
-    if (!photo) return
-    outbox.add({ type: 'uploadPhoto', mapId, file: photo.file, takenAt: photo.takenAt, lng: photo.position?.[0] ?? null, lat: photo.position?.[1] ?? null, featureId })
+    const choice = await chooseMedia()
+    for (const item of choice?.items ?? []) {
+      outbox.add({ type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt, lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId })
+    }
   }
 
   return (
@@ -58,8 +61,15 @@ export default function FeatureScreen() {
       <Text style={s.section}>{t('mobile.feature.photos')}</Text>
       {photos.length + pendingPhotos.length === 0 ? <Body muted>{t('mobile.feature.no_photos')}</Body> : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm }}>
-          {pendingPhotos.map((file) => <RemoteImage key={file} local={file} style={s.thumb} />)}
-          {photos.map((photo) => <RemoteImage key={photo.id} path={`/maps/${mapId}/photos/${photo.id}/image?size=thumb`} style={s.thumb} />)}
+          {pendingPhotos.map((file) => isVideo(file)
+            ? <VideoMark key={file} style={s.thumb} />
+            : <RemoteImage key={file} local={file} style={s.thumb} />)}
+          {photos.map((photo) => (
+            <View key={photo.id}>
+              <RemoteImage path={`/maps/${mapId}/photos/${photo.id}/image?size=thumb`} style={s.thumb} />
+              {photo.kind === 'video' && <VideoMark overlay />}
+            </View>
+          ))}
         </ScrollView>
       )}
       {editable && <Button variant="secondary" label={t('mobile.feature.add_photo')} onPress={addPhoto} />}
@@ -216,11 +226,23 @@ function Comments({ mapId, featureId, ops, canComment }: { mapId: number; featur
   )
 }
 
+/** A video among the photos: a play mark, over its still frame (overlay) or on its own while it waits to be sent. */
+function VideoMark({ overlay, style }: { overlay?: boolean; style?: object }) {
+  return (
+    <View style={[overlay ? s.videoOverlay : [s.videoPending, style]]} pointerEvents="none" accessibilityLabel={t('mobile.media.video_label')}>
+      <Text style={s.videoPlay}>▶</Text>
+    </View>
+  )
+}
+
 const s = StyleSheet.create({
   kicker: { fontSize: 13, fontFamily: fonts.medium, color: colors.loam600 },
   section: { fontSize: 20, fontFamily: fonts.title, color: colors.loam900, marginTop: space.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   thumb: { width: 120, height: 120, borderRadius: radius.md },
+  videoOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
+  videoPending: { backgroundColor: colors.loam700, alignItems: 'center', justifyContent: 'center' },
+  videoPlay: { color: '#fff', fontSize: 28, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 6 },
   smallThumb: { width: 64, height: 64, borderRadius: radius.md },
   rowTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.loam900 },
   rowMeta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },

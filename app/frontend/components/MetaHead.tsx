@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react'
 import { createElement } from 'react'
 import type { MetaTag } from '@/types/billing'
 
-const APP_SUFFIX = / · Semisto Designer$/
+const APP_SUFFIX = / · Semisto Terranova$/
 
 /**
  * The server renders title, description, canonical, Open Graph and structured

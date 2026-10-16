@@ -1,7 +1,7 @@
 # Importing project photos from Immich
 
-Semisto keeps its project photos in Immich, on the same server as Designer.
-This one-off import brings them into the Designer maps, one Immich album per
+Semisto keeps its project photos in Immich, on the same server as Terranova.
+This one-off import brings them into Terranova maps, one Immich album per
 map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
 
 ## What it does
@@ -34,7 +34,7 @@ map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
 
 1. In Immich: Account settings > API keys > New API key, with the
    permissions `album.read`, `asset.read` and `asset.download`.
-2. In the Coolify terminal of the Designer app (the key stays on the
+2. In the Coolify terminal of Terranova app (the key stays on the
    command line, not in the app's environment):
 
    ```sh
@@ -42,7 +42,7 @@ map. Code: `lib/tasks/immich.rake`, `app/services/imports/immich/`.
    ```
 
    Lists every project album with its number of photos, how many have GPS, the
-   Designer maps whose outline contains them, and the command to run.
+   Terranova maps whose outline contains them, and the command to run.
 3. For each album, try it dry, then for real:
 
    ```sh

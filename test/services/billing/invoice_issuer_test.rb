@@ -49,7 +49,7 @@ class Billing::InvoiceIssuerTest < ActiveSupport::TestCase
 
       item = @log[:item].sole
       assert_equal %w[cus_new in_req_1 118800 eur inclusive], item.values_at("customer", "invoice", "amount", "currency", "tax_behavior")
-      assert_equal "Semisto Designer — Bureau d'études — 12 mois", item["description"]
+      assert_equal "Semisto Terranova — Bureau d'études — 12 mois", item["description"]
 
       assert_equal 1, @log[:finalize].size
       assert_equal 1, @log[:send].size

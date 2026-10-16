@@ -6,6 +6,7 @@ class McpUploadPurgeJob < ApplicationJob
   def perform
     McpUpload.stale.includes(:blob).find_each do |upload|
       blob = upload.blob
+      upload.delete_parts
       upload.destroy!
       blob.purge unless blob.attachments.exists?
     end

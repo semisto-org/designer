@@ -9,13 +9,16 @@
 #   geometry  Point | LineString | Polygon | MultiLineString (or a list when several are allowed)
 #   icon      lucide icon name (frontend registry: map/drawing/icons.ts)
 #   color     default colour; a feature's `style.color` overrides it
-#   line      line styling: width (px), dash ([dash, gap] in line widths), casing (halo colour)
+#   line      line styling: width (px), dash ([dash, gap] in line widths), casing (halo colour),
+#             arrows (true: arrows along the line, in the direction it was drawn)
 #   fill      polygon styling: opacity, pattern (hatch | dots)
 #   defaults  properties set on creation
 #   fields    editable properties: key, type (number | integer | select | boolean | text),
 #             unit, min, max, step, options (select)
 #   computed  derived values shown in the inspector (formulas in map/drawing/computed.ts)
 #   pickable  false when the kind is created by a tool, not from the library
+#   contour   true when the line can follow the contour through a clicked point
+#             (« Suivre la courbe », from the map's relief)
 #
 # Labels are in config/locales/drawing.fr.yml: editor.kinds.<kind>,
 # drawing.fields.<field>, drawing.options.<field>.<option>.
@@ -113,13 +116,27 @@ layers:
         computed: [pond_volume]
       swale:
         geometry: LineString
+        contour: true
         icon: spline
         color: "#2b7bb9"
         line: { width: 5, casing: "#ffffff" }
-        defaults: { width_m: 1, depth_m: 0.4 }
+        defaults: { width_m: 1, depth_m: 0.4, topsoil_to: berm, subsoil_to: berm }
         fields:
           - { key: width_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
           - { key: depth_m, type: number, unit: m, min: 0.1, max: 3, step: 0.05 }
+        computed: [swale_volume]
+      keyline:
+        geometry: LineString
+        contour: true
+        icon: waves
+        color: "#2b7bb9"
+        line: { width: 4, dash: [4, 1.5], casing: "#ffffff" }
+        defaults: { role: keyline, use: swale, width_m: 1, depth_m: 0.3 }
+        fields:
+          - { key: role, type: select, options: [keyline, parallel] }
+          - { key: use, type: select, options: [swale, trees, subsoiling] }
+          - { key: width_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
+          - { key: depth_m, type: number, unit: m, min: 0.05, max: 3, step: 0.05 }
         computed: [swale_volume]
       ditch:
         geometry: LineString
@@ -130,6 +147,17 @@ layers:
         fields:
           - { key: width_m, type: number, unit: m, min: 0.1, max: 10, step: 0.1 }
           - { key: depth_m, type: number, unit: m, min: 0.1, max: 5, step: 0.05 }
+      overflow_pipe:
+        geometry: LineString
+        icon: move-right
+        color: "#1f5f8b"
+        line: { width: 3, dash: [1.5, 1], casing: "#ffffff", arrows: true }
+        defaults: { buried: true, diameter_mm: 100, material: pvc }
+        fields:
+          - { key: buried, type: boolean }
+          - { key: diameter_mm, type: integer, unit: mm, min: 20, max: 1000 }
+          - { key: material, type: select, options: [pvc, pe] }
+          - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
       water_tank:
         geometry: Point
         icon: cylinder
@@ -163,12 +191,22 @@ layers:
           - { key: depth_m, type: number, unit: m, min: 0.05, max: 1, step: 0.05 }
           - { key: catchment_m2, type: number, unit: m², min: 0, max: 100000, step: 1 }
         computed: [rain_garden_volume]
+      infiltration_test:
+        geometry: Point
+        icon: gauge
+        color: "#3d7ea6"
+        defaults: { method: hole, hole_diameter_cm: 30 }
+        fields:
+          - { key: method, type: select, options: [hole, ring] }
+          - { key: hole_diameter_cm, type: integer, unit: cm, min: 5, max: 100 }
+          - { key: hole_depth_cm, type: integer, unit: cm, min: 5, max: 150 }
 
   access:
     color: "#b8851a"
     elements:
       path:
         geometry: LineString
+        contour: true
         icon: footprints
         color: "#b8851a"
         line: { width: 3, dash: [2, 1] }
@@ -176,6 +214,7 @@ layers:
         fields:
           - { key: width_m, type: number, unit: m, min: 0.2, max: 10, step: 0.1 }
           - { key: surface, type: select, options: [earth, grass, wood_chips, gravel, stepping_stones, paved] }
+          - { key: dug_depth_m, type: number, unit: m, min: 0, max: 3, step: 0.05 }
       track:
         geometry: LineString
         icon: tractor
@@ -185,6 +224,7 @@ layers:
         fields:
           - { key: width_m, type: number, unit: m, min: 1, max: 20, step: 0.1 }
           - { key: surface, type: select, options: [earth, grass, gravel, paved] }
+          - { key: dug_depth_m, type: number, unit: m, min: 0, max: 3, step: 0.05 }
       gate:
         geometry: Point
         icon: door-open
@@ -247,6 +287,15 @@ layers:
         fields:
           - { key: height_m, type: number, unit: m, min: 0.1, max: 1.5, step: 0.05 }
         computed: [raised_bed_soil]
+      mound:
+        geometry: Polygon
+        icon: mountain
+        color: "#8b5e3c"
+        fill: { opacity: 0.35, pattern: dots }
+        defaults: { height_m: 0.8 }
+        fields:
+          - { key: height_m, type: number, unit: m, min: 0.1, max: 5, step: 0.05 }
+          - { key: purpose, type: select, options: [growing, hedge_bank, windbreak, noise, play] }
       terrace:
         geometry: Polygon
         icon: armchair
@@ -270,6 +319,7 @@ layers:
           - { key: fence_type, type: select, options: [wire_mesh, electric, wood, chestnut_paling, wire] }
       hedge:
         geometry: LineString
+        contour: true
         icon: trees
         color: "#3d7d42"
         line: { width: 7, opacity: 0.85, dash: [1, 0.4] }
@@ -281,6 +331,7 @@ layers:
         computed: [hedge_plants]
       windbreak:
         geometry: LineString
+        contour: true
         icon: wind
         color: "#2f6334"
         line: { width: 9, opacity: 0.8 }

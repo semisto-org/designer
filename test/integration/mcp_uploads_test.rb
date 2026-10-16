@@ -26,21 +26,32 @@ class McpUploadsTest < ActionDispatch::IntegrationTest
     assert_response :no_content
   end
 
+  # One part of a large file, as the script sends it.
+  def put_part(upload, number, bytes, headers = {})
+    put "#{URI(upload['parts_url']).request_uri}/#{number}", params: bytes, headers: { "Content-Type" => "application/octet-stream" }.merge(headers)
+  end
+
+  def send_part(upload, number, bytes, headers = {})
+    put_part(upload, number, bytes, headers)
+    assert_response :no_content
+  end
+
   test "create_upload signs one URL per file and refuses what could never be attached" do
     data = prepare(
       spec("terrain_gps.jpg", kind: "photo", type: "image/jpeg"),
       spec("analyse_sol.pdf", kind: "photo", type: "application/pdf"),
-      spec("analyse_sol.pdf", kind: "document", type: "application/pdf", name: "programme.exe"),
+      spec("analyse_sol.pdf", kind: "document", type: "application/pdf", name: "releve.e57"),
       spec("terrain.jpg", kind: "photo", type: "image/jpeg").merge(byte_size: 30.megabytes),
       spec("terrain.jpg", kind: "photo", type: "image/jpeg").merge(checksum: "pas une empreinte MD5...")
     )
-    upload = data["uploads"].sole
+    upload, scan = data["uploads"]
+    assert_equal "releve.e57", scan["filename"]
     assert_match %r{\Ahttp://www.example.com/rails/active_storage/disk/}, upload["upload_url"]
     assert_equal "image/jpeg", upload.dig("headers", "Content-Type")
     assert_match(/\Acurl --fail -X PUT --data-binary @terrain_gps.jpg -H Content-Type:\\ image\/jpeg/, upload["curl"])
-    assert_equal %w[unsupported_type unsupported_type too_large invalid_checksum], data["rejected"].map { _1["code"] }
-    assert_equal({ "prepared" => 1, "rejected" => 4 }, AiAction.last.result)
-    assert_equal [ @map, users(:michael), "photo", nil ], McpUpload.sole.values_at(:map_id, :user_id, :kind, :attached_at).then { [ Map.find(_1[0]), User.find(_1[1]), _1[2], _1[3] ] }
+    assert_equal %w[unsupported_type too_large invalid_checksum], data["rejected"].map { _1["code"] }
+    assert_equal({ "prepared" => 2, "rejected" => 3 }, AiAction.last.result)
+    assert_equal [ @map, users(:michael), "photo", nil ], McpUpload.order(:id).first.values_at(:map_id, :user_id, :kind, :attached_at).then { [ Map.find(_1[0]), User.find(_1[1]), _1[2], _1[3] ] }
 
     text, error = call_tool(@viewer, "create_upload", { map_id: @map.id, files: [ spec("terrain.jpg", kind: "photo", type: "image/jpeg") ] })
     assert error
@@ -172,6 +183,72 @@ class McpUploadsTest < ActionDispatch::IntegrationTest
     refute error
     assert_equal [ [ doc.id ], [ 999_999 ] ], data.values_at("deleted", "not_found")
     refute MapDocument.exists?(doc.id)
+  end
+
+  test "a video is a photo upload of its own size, attached as it is" do
+    bytes = file_fixture("terrain.mp4").binread
+    data = prepare(spec("terrain.mp4", kind: "photo", type: "video/mp4"),
+      spec("terrain.mp4", kind: "photo", type: "video/quicktime", name: "long.mov").merge(byte_size: 2.gigabytes))
+    assert_equal [ "too_large" ], data["rejected"].map { _1["code"] }
+    assert_match(/1024 Mo/, data["rejected"].sole["error"])
+    send_file(data["uploads"].sole, bytes)
+    data, error = call_tool(@owner, "attach_photos", { map_id: @map.id, photos: [ { signed_id: data["uploads"].sole["signed_id"], caption: "Le tour du verger" } ] })
+    refute error, data
+    video = @map.photos.find(data["attached"].sole["id"])
+    assert_equal [ "video", "Le tour du verger", "video/mp4" ], [ video.kind, video.caption, video.image.blob.content_type ]
+  end
+
+  test "a large file goes in parts, put together and checked when attached" do
+    McpUpload.part_size_for_new = 1.megabyte
+    bytes = Random.bytes((2.5 * 1.megabyte).to_i)
+    upload = prepare(spec("x", kind: "document", type: "application/octet-stream", name: "releve lidar.e57", bytes:))["uploads"].sole
+    assert_nil upload["upload_url"]
+    assert_equal [ 3, 1.megabyte ], upload.values_at("part_count", "part_size")
+    assert_match %r{\Ahttp://www.example.com/mcp/uploads/[^/]+/parts\z}, upload["parts_url"]
+    assert_match(/\Afor n in \$\(seq 1 3\); do dd if=releve\\ lidar.e57 bs=1048576 skip=\$\(\( \(n - 1\) \* 1 \)\) count=1 /, upload["script"])
+    chunks = (0...3).map { bytes.b.byteslice(_1 * 1.megabyte, 1.megabyte) }
+
+    send_part(upload, 1, chunks[0])
+    send_part(upload, 3, chunks[2])
+    put_part(upload, 2, chunks[2])
+    assert_response :unprocessable_content
+    assert_equal({ "error" => "wrong_size", "expected" => 1.megabyte, "received" => chunks[2].bytesize }, response.parsed_body)
+    put_part(upload, 4, "x")
+    assert_response :not_found
+    put_part(upload, 2, chunks[1], "Content-MD5" => Digest::MD5.base64digest("autre chose"))
+    assert_response :unprocessable_content
+
+    text, error = call_tool(@owner, "attach_documents", { map_id: @map.id, documents: [ { signed_id: upload["signed_id"], title: "Relevé" } ] })
+    assert error
+    assert_match(/parts_missing.*n° 2\)/, text)
+
+    send_part(upload, 2, chunks[1], "Content-MD5" => Digest::MD5.base64digest(chunks[1]))
+    data, error = call_tool(@owner, "attach_documents", { map_id: @map.id, documents: [ { signed_id: upload["signed_id"], title: "Relevé" } ] })
+    refute error, data
+    document = @map.documents.find(data["attached"].sole["id"])
+    assert_equal bytes.b, document.file.download.b
+    mcp_upload = McpUpload.find_by!(blob_id: document.file.blob.id)
+    refute (1..3).any? { mcp_upload.blob.service.exist?(mcp_upload.part_key(_1)) }, "the parts are deleted"
+    put_part(upload, 1, chunks[0])
+    assert_response :conflict
+  ensure
+    McpUpload.part_size_for_new = 32.megabytes
+  end
+
+  test "parts that do not make the file announced are refused, and a forged token finds nothing" do
+    McpUpload.part_size_for_new = 1.megabyte
+    bytes = Random.bytes(1.megabyte + 10)
+    upload = prepare(spec("x", kind: "photo", type: "video/mp4", name: "drone.mp4", bytes:))["uploads"].sole
+    send_part(upload, 1, Random.bytes(1.megabyte))
+    send_part(upload, 2, Random.bytes(10))
+    text, error = call_tool(@owner, "attach_photos", { map_id: @map.id, photos: [ { signed_id: upload["signed_id"] } ] })
+    assert error
+    assert_match(/checksum_mismatch/, text)
+
+    put "/mcp/uploads/#{upload['signed_id']}/parts/1", params: "x", headers: { "Content-Type" => "application/octet-stream" }
+    assert_response :not_found, "a blob's signed_id is not a parts token"
+  ensure
+    McpUpload.part_size_for_new = 32.megabytes
   end
 
   test "uploads never attached are purged after a day, attached ones stay" do

@@ -14,12 +14,20 @@ class ApplicationController < ActionController::Base
       currentUser: authenticated? ? Current.user.as_inertia : nil,
       entitlements: authenticated? ? Current.user.entitlements.as_json : nil,
       impersonation: impersonation_props,
+      # Other accounts signed in on this browser (« Changer de compte »).
+      otherAccounts: authenticated? && !impersonating? ? other_accounts_props : [],
       releaseNotes: authenticated? ? release_notes_props : nil,
       env: { googleSignIn: GoogleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
     }
   end
 
   private
+    def other_accounts_props
+      other_sessions.map do |s|
+        { sessionId: s.id, name: s.user.display_name, email: s.user.email_address, avatarUrl: s.user.avatar_url }
+      end
+    end
+
     # The dot on « Nouveautés » in the main menu, and the latest entry for
     # the note on « Mes cartes ».
     def release_notes_props

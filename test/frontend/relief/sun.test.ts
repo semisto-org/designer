@@ -36,6 +36,21 @@ test('a wall casts a shadow h / tan(altitude) long', () => {
   assert.ok(shadowMask(surface, cols, rows, 1, { azimuth: 0, altitude: -0.1 }).every((v) => v === 0))
 })
 
+test('the ground under a crown stays in its shade, even with the crown top in the sun', () => {
+  const cols = 30
+  const rows = 3
+  const surface = new Float32Array(cols * rows)
+  const cover = new Uint8Array(cols * rows)
+  // A tree 8 m high, 3 m wide, in the middle row.
+  for (let c = 9; c <= 11; c++) { surface[cols + c] = 8; cover[cols + c] = 1 }
+  const sun = { azimuth: 270 * DEG, altitude: 45 * DEG }
+  const mask = shadowMask(surface, cols, rows, 1, sun, undefined, undefined, cover)
+  assert.equal(mask[cols + 10], 0, 'under the crown')
+  assert.equal(mask[cols + 15], 0, 'its shadow, 8 m long to the east')
+  assert.equal(mask[cols + 21], 1)
+  assert.equal(shadowMask(surface, cols, rows, 1, sun)[cols + 10], 1, 'without the cover, the crown top is lit')
+})
+
 test('sun hours on open ground equal the day length', async () => {
   const day = zonedTime(2026, 6, 21, 0, 0, 'Europe/Brussels')
   const { hours, daylight } = await sunHours(new Float32Array(9), 3, 3, 1, 50.34, 4.9, day, { stepMinutes: 30 })

@@ -773,7 +773,7 @@ fr:
   service_request_mailer:
     received:
       subject: "Nouvelle demande : %{kind} · %{map}"
-      intro: "%{user} a envoyé une demande depuis Semisto Designer : %{kind}."
+      intro: "%{user} a envoyé une demande depuis Semisto Terranova : %{kind}."
       who: "De"
       map: "Carte"
       consent: "La personne a accepté que Semisto consulte sa carte et la contacte au sujet de cette demande. Répondre à cet e-mail lui écrit directement."

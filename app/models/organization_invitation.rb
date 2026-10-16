@@ -16,6 +16,8 @@ class OrganizationInvitation < ApplicationRecord
 
   has_secure_token :token
   before_create { self.expires_at ||= EXPIRES_IN.from_now }
+  # Tasks given to this address wait for it only while it is invited.
+  after_destroy { Task.release_invitee!(email_address, maps: organization.maps.select(:id)) }
 
   scope :pending, -> { where(accepted_at: nil).where("expires_at IS NULL OR expires_at > ?", Time.current) }
 
@@ -29,13 +31,15 @@ class OrganizationInvitation < ApplicationRecord
     TeamInvitationMailer.invite(self).deliver_later
   end
 
-  # Joins the team with the invited role. Never downgrades an admin.
+  # Joins the team with the invited role. Never downgrades an admin. The
+  # tasks given to the invited address on the team's maps become theirs.
   def accept!(user)
     transaction do
       membership = organization.memberships.find_or_initialize_by(user:)
       membership.role = role if membership.new_record? || role == "admin"
       membership.save!
       update!(accepted_at: Time.current)
+      Task.hand_over!(user, emails: [ email_address, user.email_address ], maps: organization.maps.select(:id))
       membership
     end
   end

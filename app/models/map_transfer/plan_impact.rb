@@ -13,7 +13,8 @@ class MapTransfer
       @recipient = recipient
     end
 
-    def billing? = Billing.enabled?
+    # A map of a team someone pays for keeps the team's plan, whoever owns it.
+    def billing? = Billing.enabled? && @map.organization&.billing_user.nil?
 
     def entitlements = @entitlements ||= Entitlements.for(@recipient)
 
@@ -25,7 +26,7 @@ class MapTransfer
     # The recipient's maps editable today that would become read-only.
     def maps_becoming_read_only
       return Map.none unless billing?
-      @recipient.owned_maps.active.where(id: editable_now - editable_after).order(:created_at, :id)
+      @recipient.billed_maps.where(id: editable_now - editable_after).order(:created_at, :id)
     end
 
     # Paid features available on the map today that the recipient's plan does not include.
@@ -42,6 +43,7 @@ class MapTransfer
     def as_json(*)
       {
         billing: billing?,
+        teamPays: (@map.organization.name if @map.organization&.billing_user),
         plan: entitlements.plan,
         planName: I18n.t("transfer.impact.plan_names.#{entitlements.plan}"),
         maxMaps: entitlements.max_maps,
@@ -54,11 +56,11 @@ class MapTransfer
 
     private
       def editable_now
-        @editable_now ||= @recipient.owned_maps.active.order(:created_at, :id).limit(entitlements.max_maps).pluck(:id)
+        @editable_now ||= @recipient.billed_maps.order(:created_at, :id).limit(entitlements.max_maps).pluck(:id)
       end
 
       def editable_after
-        @editable_after ||= Map.active.where(owner_id: @recipient.id).or(Map.active.where(id: @map.id))
+        @editable_after ||= @recipient.billed_maps.or(Map.active.where(id: @map.id))
           .order(:created_at, :id).limit(entitlements.max_maps).pluck(:id)
       end
   end

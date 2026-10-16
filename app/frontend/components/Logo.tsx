@@ -15,7 +15,7 @@ export function Wordmark({ className, compact = false }: { className?: string; c
       {compact !== true && (
         <>
           <span aria-hidden="true" className={productClass + 'h-5 w-px bg-prune-300'} />
-          <span className={productClass + 'text-[0.95rem] font-medium lowercase text-loam-600'}>designer</span>
+          <span className={productClass + 'text-[0.95rem] font-medium lowercase text-loam-600'}>terranova</span>
         </>
       )}
     </span>

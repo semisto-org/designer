@@ -1,6 +1,7 @@
 import { Share2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { RevealLabel } from '@/components/ui/RevealLabel'
 import { t } from '@/lib/i18n'
 import { ShareDialog } from './ShareDialog'
 
@@ -9,10 +10,9 @@ export default function ShareButton() {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button size="sm" onClick={() => setOpen(true)}>
+      <Button size="sm" className="group gap-x-0 pl-2 pr-2" aria-label={t('collab.share.button')} onClick={() => setOpen(true)}>
         <Share2 className="h-4 w-4" />
-        <span className="hidden sm:inline">{t('collab.share.button')}</span>
-        <span className="sr-only sm:hidden">{t('collab.share.button')}</span>
+        <RevealLabel>{t('collab.share.button')}</RevealLabel>
       </Button>
       {open && <ShareDialog onClose={() => setOpen(false)} />}
     </>

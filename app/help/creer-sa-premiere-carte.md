@@ -5,7 +5,7 @@ category: Démarrer
 order: 10
 ---
 
-Une **carte**, dans Semisto Designer, c'est un terrain : son contour, ce qui s'y trouve déjà, le design que tu imagines et tout ce que tu apprends sur le lieu. Ta première carte est gratuite et contient déjà tout ce qu'il faut pour avancer.
+Une **carte**, dans Semisto Terranova, c'est un terrain : son contour, ce qui s'y trouve déjà, le design que tu imagines et tout ce que tu apprends sur le lieu. Ta première carte est gratuite et contient déjà tout ce qu'il faut pour avancer.
 
 ## En quatre étapes
 

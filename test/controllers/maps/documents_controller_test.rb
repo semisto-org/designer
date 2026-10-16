@@ -81,11 +81,23 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "project_sheet", @map.documents.last.origin
   end
 
-  test "a refused file says why" do
+  test "any file is filed, and a web page is only ever downloaded" do
     sign_in_as users(:michael)
     post map_documents_path(@map), params: { document: { file: Rack::Test::UploadedFile.new(StringIO.new("<p>"), "text/html", original_filename: "page.html") } }, headers: json_headers
+    assert_response :created
+    doc = @map.documents.last
+    assert_equal "page.html", doc.file.filename.to_s
+    %w[original large].each do |size|
+      get file_map_document_path(@map, doc, size:)
+      assert_equal "attachment", served_disposition
+    end
+  end
+
+  test "a refused file says why" do
+    sign_in_as users(:michael)
+    post map_documents_path(@map), params: { document: { title: "Sans fichier" } }, headers: json_headers
     assert_response :unprocessable_entity
-    assert_match "page.html", response.parsed_body["message"]
+    assert_match "Choisis un fichier", response.parsed_body["message"]
   end
 
   test "an editor renames, notes, tags and removes a document" do

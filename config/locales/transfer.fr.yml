@@ -77,6 +77,7 @@ fr:
         expired: "Cette proposition a expiré le %{date}. Si tu souhaites toujours reprendre la carte, demande à %{from} de te la proposer à nouveau."
         invalidated: "Cette proposition n'est plus valable : la carte ou tes accès ont changé entre-temps."
     impact:
+      team_pays: "Cette carte suit le forfait de l'équipe « %{team} » : rien ne change pour ton forfait."
       beta: "Pendant la bêta, toutes les fonctions sont ouvertes : la carte restera entièrement modifiable chez toi."
       fine:
         one: "Avec ta formule actuelle (%{plan}, %{count} carte modifiable), cette carte et toutes tes cartes resteront modifiables."
@@ -140,7 +141,7 @@ fr:
     proposed:
       subject: "%{from} te propose de devenir propriétaire de « %{map} »"
       greeting: "Bonjour,"
-      body: "%{from} te propose de reprendre la carte « %{map} » sur Semisto Designer : tu en deviendrais propriétaire."
+      body: "%{from} te propose de reprendre la carte « %{map} » sur Semisto Terranova : tu en deviendrais propriétaire."
       what: "La carte suivrait alors ta formule. %{from} resterait éditeur, et tout est conservé : discussions, photos, brouillons et historique."
       button: "Voir la proposition"
       decide: "Avant d'accepter, tu verras ce que cela change pour ta formule. Tu peux aussi décliner : la carte restera alors à son propriétaire actuel."

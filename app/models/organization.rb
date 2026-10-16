@@ -1,8 +1,9 @@
 # A team ("équipe") that maps can be shared with: Semisto's design office
 # first. Every member edits every map of the team without taking one of the
 # map's three editor seats (Map#role_for). A team map still belongs to its
-# owner and follows the owner's plan (Entitlements.for_map): there is no team
-# billing yet.
+# owner. It follows the plan of the team's billing user when an admin took
+# that role (« Forfait de l'équipe »), else its owner's plan
+# (Map#billing_user, Entitlements.for_map).
 #
 # Team roles: admins rename the team, invite, change roles and remove
 # members; members work on the team's maps. A team always keeps an admin.
@@ -10,6 +11,7 @@
 class Organization < ApplicationRecord
   NAME_MAX_LENGTH = 80
 
+  belongs_to :billing_user, class_name: "User", optional: true
   has_many :memberships, class_name: "OrganizationMembership", dependent: :destroy
   has_many :users, through: :memberships
   has_many :invitations, class_name: "OrganizationInvitation", dependent: :destroy
@@ -21,6 +23,7 @@ class Organization < ApplicationRecord
   normalizes :name, with: ->(n) { n.to_s.squish }
   validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }
   validates :slug, presence: true, uniqueness: true
+  validate :billing_user_is_admin, if: :billing_user_id
 
   before_validation :assign_slug, on: :create
 
@@ -58,6 +61,10 @@ class Organization < ApplicationRecord
   end
 
   private
+    def billing_user_is_admin
+      errors.add(:billing_user, :not_admin) unless admin?(billing_user)
+    end
+
     # The slug is a stable handle (not shown in URLs yet). Two teams may
     # share a name, so a taken slug gets a short random suffix.
     def assign_slug

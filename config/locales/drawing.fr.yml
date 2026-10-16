@@ -15,11 +15,14 @@ fr:
       land_cover: "Occupation du sol"
       pond: "Mare"
       swale: "Baissière"
+      keyline: "Keyline"
       ditch: "Fossé"
+      overflow_pipe: "Tuyau de trop-plein"
       water_tank: "Citerne"
       well: "Puits"
       spring: "Source"
       rain_garden: "Jardin de pluie"
+      infiltration_test: "Test d'infiltration"
       path: "Cheminement"
       track: "Chemin carrossable"
       gate: "Portail ou barrière"
@@ -29,6 +32,7 @@ fr:
       shed: "Cabane ou remise"
       compost: "Compost"
       raised_bed: "Bac surélevé"
+      mound: "Butte ou talus"
       terrace: "Terrasse"
       playground: "Aire de jeux"
       fence: "Clôture"
@@ -89,6 +93,8 @@ fr:
       depth_m: "Profondeur"
       liner: "Étanchéité"
       purpose: "Usage"
+      role: "Ligne"
+      use: "Aménagement"
       capacity_l: "Capacité"
       tank_type: "Type de citerne"
       potable: "Eau potable"
@@ -117,8 +123,15 @@ fr:
       outdoor: "Étanche (extérieur)"
       length_m: "Longueur"
       area_m2: "Surface"
+      dug_depth_m: "Encaissement"
+      method: "Méthode"
+      hole_diameter_cm: "Diamètre du trou"
+      hole_depth_cm: "Profondeur du trou"
 
     options:
+      method: { hole: "Trou rempli d'eau", ring: "Anneau enfoncé" }
+      role: { keyline: "Keyline (par le point clé)", parallel: "Parallèle à la keyline" }
+      use: { swale: "Baissière", trees: "Ligne d'arbres", subsoiling: "Décompactage" }
       roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }
       health: { good: "Bon", fair: "Moyen", poor: "Mauvais", dead: "Mort" }
       material:
@@ -151,7 +164,7 @@ fr:
         fallow: "Friche"
         bare: "Sol nu"
       liner: { natural: "Sol en place", clay: "Argile", epdm: "Bâche EPDM" }
-      purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade" }
+      purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade", growing: "Butte de culture", hedge_bank: "Talus planté de haie", windbreak: "Abri du vent", noise: "Écran (bruit, vue)", play: "Jeu" }
       tank_type: { buried: "Enterrée", above_ground: "Hors sol", ibc: "Cuve IBC" }
       gate_type: { pedestrian: "Piétons", vehicle: "Véhicules" }
       covering: { glass: "Verre", polycarbonate: "Polycarbonate", plastic: "Bâche plastique" }
@@ -218,6 +231,9 @@ fr:
       recent: "Récents"
       hint_point: "Touche la carte pour placer « %{kind} ». Échap pour annuler."
       hint_line: "Clique point par point pour tracer « %{kind} ». Double-clique ou touche « Terminer » pour finir."
+      # Said after the generic hint when one draws these kinds.
+      kind_hints:
+        overflow_pipe: "Pars de la mare qui déborde et finis dans celle qui reçoit l'eau : les flèches suivront le sens de l'eau."
       hint_polygon: "Clique point par point le contour de « %{kind} ». Reviens au premier point ou touche « Terminer »."
       hint_outline: "Clique point par point le contour sur la carte. Reviens au premier point ou touche « Terminer » ; Échap pour annuler."
       hint_path: "Clique point par point le tracé sur la carte. Double-clique ou touche « Terminer » ; Échap pour annuler."
@@ -270,13 +286,21 @@ fr:
       "yes": "Oui"
 
     layers_panel:
-      intro: "Affiche ou masque chaque couche. Ce choix ne vaut que pour ton écran."
+      intro: "Affiche ou masque chaque couche, et dans chacune un type d'élément ou une strate. Ce choix ne vaut que pour ton écran."
       show_all: "Tout afficher"
       toggle: "Afficher ou masquer « %{layer} »"
+      unfold: "Voir le détail de « %{layer} »"
+      fold: "Replier « %{layer} »"
+      control: "Afficher ou masquer des éléments"
+      control_hidden: "Des éléments sont masqués : les afficher ou en masquer d'autres"
       count:
         zero: "vide"
         one: "%{count} élément"
         other: "%{count} éléments"
+      photos_count:
+        zero: "aucune"
+        one: "%{count} photo"
+        other: "%{count} photos"
       sensitive: "Réseaux : jamais exportés ni publiés sans ton accord."
 
     alerts:
@@ -386,7 +410,7 @@ fr:
       legend: "Légende"
       north: "N"
       sources: "Sources"
-      made_with: "Semisto Designer · designer.semisto.org"
+      made_with: "Semisto Terranova · terranova.semisto.org"
       boundary: "Limite du terrain"
       more: "+ %{count} autres"
 

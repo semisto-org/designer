@@ -133,4 +133,35 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "MultiPolygon", response.parsed_body.dig("map", "boundary", "type")
     assert map.reload.boundary.present?
   end
+
+  test "the owner renames the map from the editor header" do
+    sign_in_as users(:michael)
+    map = maps(:ahinvaux)
+    patch map_path(map), params: { map: { name: "  Le verger du haut  " } }, as: :json
+    assert_response :success
+    assert_equal "Le verger du haut", response.parsed_body.dig("map", "name")
+    assert_equal "Le verger du haut", map.reload.name
+  end
+
+  test "a map cannot be renamed to nothing" do
+    sign_in_as users(:michael)
+    map = maps(:ahinvaux)
+    patch map_path(map), params: { map: { name: "   " } }, as: :json
+    assert_response :unprocessable_entity
+    assert_not_equal "", map.reload.name
+  end
+
+  test "an editor shapes the map but does not rename it" do
+    map = maps(:ahinvaux)
+    map.memberships.create!(user: users(:bob), role: "editor")
+    sign_in_as users(:bob)
+    patch map_path(map), params: { map: { name: "Autre nom" } }, as: :json
+    assert_response :forbidden
+    assert_not_equal "Autre nom", map.reload.name
+
+    # Sending the current name along with another change is not a rename.
+    patch map_path(map), params: { map: { name: map.name, stage: "design" } }, as: :json
+    assert_response :success
+    assert_equal "design", map.reload.stage
+  end
 end

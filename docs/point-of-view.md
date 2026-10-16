@@ -1,4 +1,4 @@
-# Semisto Designer — our point of view
+# Semisto Terranova — our point of view
 
 Version 1, 5 October 2026. Defined together with Michael after Katie Dill's (Stripe) talk on "zombie UI". This document is the basis for every design, copy and feature choice, whether made by a person or by an agent. When in doubt, it is the reference.
 
@@ -12,13 +12,13 @@ A network of edible forests across Europe is what Semisto's mission is about, an
 
 **A companion that teaches you to read your place and helps you grow as you design, with Semisto's knowledge behind it.**
 
-The typical person is a private individual designing their own forest garden. What they lack is know-how, not a tool. So Designer does not just execute: it explains what it sees, it proposes, it shows the reason, and it always leaves the decision to the human. Precision and teamwork are there, but they are not the identity.
+The typical person is a private individual designing their own forest garden. What they lack is know-how, not a tool. So Terranova does not just execute: it explains what it sees, it proposes, it shows the reason, and it always leaves the decision to the human. Precision and teamwork are there, but they are not the identity.
 
 Posture: that of a Semisto garden guide, "Come, we'll show you." In French we use the informal "tu", we invite, we never make anyone feel guilty.
 
 ## The thread through every detail: the time of living things
 
-A forest garden is designed over thirty years. A 3-year-old walnut has nothing in common with a 25-year-old one. No design tool shows time: Designer shows it everywhere.
+A forest garden is designed over thirty years. A 3-year-old walnut has nothing in common with a 25-year-old one. No design tool shows time: Terranova shows it everywhere.
 
 In practice, this means:
 - **A year slider** (year 1, year 5, year 15, year 30): crowns grow, shade spreads, layers fill in.

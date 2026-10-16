@@ -7,7 +7,14 @@ export const PHOTO_LAYER_IDS = [
   'photos-cluster', 'photos-cluster-icon', 'photos-cluster-badge', 'photos-cluster-count', 'photos-halo', 'photos-heading', 'photos-point',
 ] as const
 export const PHOTO_POINT_LAYER = 'photos-point'
-export const PHOTO_CLUSTER_LAYER = 'photos-cluster'
+/** Every part of a group's marker (disc, camera, badge, count): a click on any of them is a click on the group. */
+export const PHOTO_CLUSTER_LAYERS = ['photos-cluster', 'photos-cluster-icon', 'photos-cluster-badge', 'photos-cluster-count']
+/**
+ * Groups form up to this zoom. The source keeps tiles up to the map's own
+ * maximum (22): with the default 18, deeper zooms reused the zoom-18 groups,
+ * so photos a few metres apart never split however far one zoomed in.
+ */
+export const PHOTO_CLUSTER_MAX_ZOOM = 21
 
 const PRUNE = '#5b5781'
 const PRUNE_LIGHT = '#9189b8'
@@ -121,11 +128,11 @@ export function installPhotoLayers(map: MapLibreMap, data: PhotoFeatureCollectio
     return
   }
   addImages(map)
-  map.addSource(PHOTOS_SOURCE, { type: 'geojson', data, cluster: true, clusterRadius: 44, clusterMaxZoom: 18 })
+  map.addSource(PHOTOS_SOURCE, { type: 'geojson', data, cluster: true, clusterRadius: 44, clusterMaxZoom: PHOTO_CLUSTER_MAX_ZOOM, maxzoom: 22 })
   const single = ['!', ['has', 'point_count']] as never
   // A group of nearby photos reads as a camera with a count badge (a bare
   // numbered disc said nothing about what it counted). The white disc under
-  // the icon is the click target that zooms in.
+  // the icon, the camera and the badge are all click targets.
   const badge = [12, -12] as [number, number]
   map.addLayer({
     id: 'photos-cluster', type: 'circle', source: PHOTOS_SOURCE, filter: ['has', 'point_count'],

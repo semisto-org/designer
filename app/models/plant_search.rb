@@ -71,6 +71,11 @@ class PlantSearch
   end
 
   def as_json(*)
-    { results: results.map(&:summary_json), total:, page:, pages:, perPage: PER_PAGE, filters: }
+    species = results.to_a
+    counts = PlantObservation.in_ground_counts(species.map(&:id))
+    {
+      results: species.map { |s| s.summary_json.merge(inGround: counts.fetch(s.id, 0)) },
+      total:, page:, pages:, perPage: PER_PAGE, filters:
+    }
   end
 end

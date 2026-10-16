@@ -8,7 +8,7 @@ class Providers::GeocoderTest < ActiveSupport::TestCase
     stub = stub_request(:get, %r{\Ahttps://nominatim\.openstreetmap\.org/search})
       .with(query: hash_including("q" => "Rue du Bois 3 Yvoir", "format" => "jsonv2", "countrycodes" => "be",
                                   "viewbox" => "2.84,49.49,6.41,50.82", "bounded" => "1", "email" => "carto@example.org"),
-            headers: { "User-Agent" => /SemistoDesigner.*carto@example\.org/ })
+            headers: { "User-Agent" => /SemistoTerranova.*carto@example\.org/ })
       .to_return(json_response("nominatim_search.json"))
     geocoder = Providers::Geocoder.build("GEOCODER_USER_AGENT_EMAIL" => "carto@example.org")
     assert geocoder.available?

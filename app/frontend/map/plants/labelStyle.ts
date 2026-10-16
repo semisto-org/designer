@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import type { PlantLabelStyle } from '@/map/plants/labelRank'
 
 /**
- * How the viewer wants plants named on the map (« Nom » or « Code »), kept
+ * How the viewer wants plants named on the map (« Nom », « Code » or « Numéro »), kept
  * in localStorage for all their maps.
  */
 const KEY = 'designer.plantLabels'
@@ -10,7 +10,8 @@ const listeners = new Set<() => void>()
 
 function read(): PlantLabelStyle {
   try {
-    return window.localStorage.getItem(KEY) === 'code' ? 'code' : 'name'
+    const value = window.localStorage.getItem(KEY)
+    return value === 'code' || value === 'number' ? value : 'name'
   } catch {
     return 'name'
   }

@@ -134,7 +134,7 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
       <canvas ref={canvasRef} className="fixed inset-0 z-0 block h-dvh w-screen" aria-hidden="true" />
 
       <header className={'pointer-events-none fixed inset-x-0 top-0 z-20 flex items-center justify-between gap-3 px-4 pb-3 pt-[calc(0.85rem+env(safe-area-inset-top))] transition-colors duration-300 sm:px-8 ' + (stamp.past ? 'border-b border-loam-200 bg-loam-50/95' : '')}>
-        <Link href="/" className="pointer-events-auto flex items-center gap-5 rounded-full bg-loam-50/90 px-4 py-2 shadow-sm ring-1 ring-loam-900/5" aria-label="Semisto Designer">
+        <Link href="/" className="pointer-events-auto flex items-center gap-5 rounded-full bg-loam-50/90 px-4 py-2 shadow-sm ring-1 ring-loam-900/5" aria-label="Semisto Terranova">
           <Wordmark />
         </Link>
         <nav className="pointer-events-auto hidden items-center gap-5 rounded-full bg-loam-50/90 px-5 py-2.5 text-sm font-medium text-loam-700 shadow-sm ring-1 ring-loam-900/5 md:flex" aria-label={t('site.nav.menu')}>

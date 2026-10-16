@@ -26,7 +26,7 @@ class MapGeojsonExport
     {
       type: "FeatureCollection",
       name: map.name,
-      generator: "Semisto Designer",
+      generator: "Semisto Terranova",
       exported_at: Time.current.iso8601,
       features: [ boundary_feature, *features.map { |f| feature_json(f, measures[f.id]) } ].compact
     }

@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react'
 import { LifeBuoy, Search, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { AccountMenu } from '@/components/AccountMenu'
 import { Flash } from '@/components/ui/Flash'
 import { Wordmark } from '@/components/Logo'
 import { t } from '@/lib/i18n'
@@ -27,7 +28,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <header className="border-b border-loam-900/10 bg-white/90 backdrop-blur">
         {/* On a phone the menu takes its own row under the logo and the account. */}
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 px-4 pt-2 sm:h-14 sm:flex-nowrap sm:gap-6 sm:pt-0">
-          <Link href="/maps" className="flex h-10 items-center sm:h-auto" aria-label="Semisto Designer">
+          <Link href="/maps" className="flex h-10 items-center sm:h-auto" aria-label="Semisto Terranova">
             {/* One lockup: a `hidden` class on it would fight its own inline-flex. */}
             <Wordmark compact="mobile" />
           </Link>
@@ -71,20 +72,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </AsideLink>
             )}
             {currentUser && <span aria-hidden className="mx-1 h-6 w-px bg-loam-900/10 sm:mx-2" />}
-            {currentUser && (
-              <>
-                <Link href="/account" className="flex items-center gap-2 text-loam-600 hover:text-loam-900">
-                  {currentUser.avatarUrl ? (
-                    <img src={currentUser.avatarUrl} alt="" className="h-7 w-7 rounded-full object-cover" referrerPolicy="no-referrer" />
-                  ) : (
-                    <span className="grid h-7 w-7 place-items-center rounded-full bg-prune-100 text-xs font-semibold text-prune-700">
-                      {currentUser.name.slice(0, 1).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="hidden sm:inline">{currentUser.name}</span>
-                </Link>
-              </>
-            )}
+            {currentUser && <AccountMenu user={currentUser} />}
           </div>
         </div>
       </header>

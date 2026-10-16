@@ -2,7 +2,8 @@
 # JSON its writes answer with (the whole board, TaskBoard). The first visit
 # adds Semisto's default lists (TaskList::Defaults). Everyone on the map
 # reads; editors manage; the person a task is assigned to may tick it, even
-# as a viewer. Giving a task to someone else e-mails them.
+# as a viewer. Giving a task to someone else e-mails them; someone invited
+# who has no account yet gets their invitation link with it.
 module Maps
   class TasksController < ApplicationController
     include MapScoped
@@ -34,7 +35,7 @@ module Maps
       task = list.tasks.new(task_params.merge(map: @map, created_by: Current.user))
       task.completed_by = Current.user if task.completed_at
       if task.save
-        notify_assignee(task) if task.assignee_id
+        notify_assignee(task) if task.assigned?
         render json: { task: task.as_json, board: TaskBoard.new(@map) }, status: :created
       else
         render_errors task
@@ -46,7 +47,7 @@ module Maps
       Task.transaction do
         @task.assign_attributes(editable_params)
         @task.completed_by = Current.user if @task.completed_at_changed? && @task.completed_at
-        reassigned = @task.assignee_id_changed? && @task.assignee_id
+        reassigned = (@task.assignee_id_changed? && @task.assignee_id) || (@task.invitee_email_changed? && @task.invitee_email)
         @task.save!
         move if params[:task]&.key?(:position) || params[:task]&.key?(:task_list_id)
       end
@@ -78,7 +79,7 @@ module Maps
       end
 
       def task_params
-        params.require(:task).permit(:title, :notes, :assignee_id, :due_on, :completed, tags: [])
+        params.require(:task).permit(:title, :notes, :assignee_id, :invitee_email, :due_on, :completed, tags: [])
       end
 
       def editable_params
@@ -92,7 +93,7 @@ module Maps
       end
 
       def notify_assignee(task)
-        return if task.assignee == Current.user
+        return if task.assignee_id && task.assignee == Current.user
         TaskMailer.assigned(task, Current.user).deliver_later
       end
   end

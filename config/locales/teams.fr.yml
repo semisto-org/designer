@@ -39,7 +39,8 @@ fr:
     role_help:
       admin: "Un administrateur invite et retire des membres, change leurs rôles et renomme l'équipe."
       member: "Un membre modifie toutes les cartes de l'équipe et participe à leurs discussions."
-    plan_note: "Chaque carte reste à son propriétaire et suit son forfait : l'équipe ne change rien à la facturation."
+    plan_note: "Chaque carte reste à son propriétaire et suit son forfait, sauf si un admin paie les cartes de l'équipe (« Forfait de l'équipe »)."
+    plan_note_paid: "Chaque carte reste à son propriétaire, mais toutes suivent le forfait de l'équipe."
     created: "Équipe « %{name} » créée. Invite maintenant ses membres."
     renamed: "Équipe renommée."
     deleted: "Équipe « %{name} » supprimée. Ses cartes restent à leurs propriétaires."
@@ -171,8 +172,8 @@ fr:
     invite:
       subject: "%{inviter} t'invite dans l'équipe « %{team} »"
       greeting: "Bonjour,"
-      body_admin: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Designer, en tant qu'administrateur."
-      body_member: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Designer."
+      body_admin: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Terranova, en tant qu'administrateur."
+      body_member: "%{inviter} t'invite à rejoindre l'équipe « %{team} » sur Semisto Terranova."
       what: "Les membres d'une équipe modifient toutes ses cartes et participent à leurs discussions."
       role_admin: "En tant qu'administrateur, tu géreras aussi les membres de l'équipe : invitations, rôles et départs."
       button: "Rejoindre l'équipe"

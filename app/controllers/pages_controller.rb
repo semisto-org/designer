@@ -31,8 +31,8 @@ class PagesController < ApplicationController
 
   def drone = render_public("pages/drone", page: :drone, props: { priceCents: Billing::Catalog.find("drone").price_cents })
   def open_source = render_public("pages/open_source", page: :open_source)
-  def privacy = render_public("pages/privacy", page: :privacy, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json })
-  def terms = render_public("pages/terms", page: :terms, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json })
+  def privacy = render_legal(:privacy)
+  def terms = render_legal(:terms)
 
   # The public pages and every help article, for search engines.
   def sitemap
@@ -43,6 +43,21 @@ class PagesController < ApplicationController
   end
 
   private
+    # The legal texts are also written into the HTML (layouts/application),
+    # so readers without JavaScript see them: Google checks the privacy
+    # policy that way before it shows the app's name on its sign-in screen.
+    def render_legal(namespace)
+      prices = %w[yearly atelier bureau drone].to_h { |key| [ key.to_sym, euros(Billing::Catalog.fetch(key).price_cents) ] }
+      @legal_text = { namespace:, vars: { email: Billing.contact_email, **prices } }
+      render_public "pages/#{namespace}", page: namespace, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json }
+    end
+
+    # "79 €", "55,30 €", like formatPrice in lib/money.ts.
+    def euros(cents)
+      precision = (cents % 100).zero? ? 0 : 2
+      ActiveSupport::NumberHelper.number_to_currency(cents / 100.0, unit: "€", format: "%n %u", separator: ",", delimiter: " ", precision:)
+    end
+
     # The pricing FAQ as schema.org FAQPage, straight from the page copy.
     def faq_json_ld
       items = Array(t("site.pricing.faq.items"))

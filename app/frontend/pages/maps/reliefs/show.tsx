@@ -14,11 +14,15 @@ import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP
 import {
   ReliefController, type BaseLayer, type DesignSummary, type LoadingStep, type NivaInfo, type NivaKey, type ProbeInfo,
   type RainSettings, type RainStats, type SunDate, type SunInfo, type SunMode,
-  type BuildingsInfo,
+  type BuildingsInfo, type PlantInfo, type WalkMode,
 } from '@/relief/controller'
 import { NIGHT_LENGTH, nightClock } from '@/relief/coldAir'
 import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
+import { GrowthBar, GrowthSection, PlantCard, WalkPad, useGrowthYear } from '@/relief/GrowthControls'
+import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
+import type { WalkKey } from '@/relief/scene'
+import { STRATA_COLORS } from '@/map/plants/strataColors'
 import {
   formatClock, formatDepth, formatDuration, formatHours, formatMinutes, formatNumber, formatSurface, formatVolume,
 } from '@/relief/format'
@@ -32,6 +36,7 @@ type Props = {
   terrain: TerrainGridData | null
   overview: ReliefOverview
   features: MapFeature[]
+  growingPlants: GrowingPlantsData
   timezone: string
   location: [number, number] | null
   landcoverClasses: Record<string, LandcoverClassData>
@@ -164,7 +169,7 @@ function isCompact() {
   return typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches
 }
 
-function ReliefViewer({ map, terrain, features, timezone, location, landcoverClasses, soilModel, buildingsUrl }: Props & { terrain: TerrainGridData }) {
+function ReliefViewer({ map, terrain, features, growingPlants, timezone, location, landcoverClasses, soilModel, buildingsUrl }: Props & { terrain: TerrainGridData }) {
   const container = useRef<HTMLDivElement>(null)
   const controller = useRef<ReliefController | null>(null)
   const [loading, setLoading] = useState<LoadingStep | 'failed' | 'webgl'>('download')
@@ -188,6 +193,15 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
   const [niva, setNiva] = useState<NivaInfo>({ mode: 'off' })
   const [buildings, setBuildings] = useState<BuildingsInfo | null>(null)
   const [nivaSettings, setNivaSettings] = useState<NivaSettings>({ lights: { low: false, bar: false }, night: false, camera: 'chase' })
+  const [walk, setWalk] = useState<WalkMode>('off')
+  const [plantCount, setPlantCount] = useState(0)
+  const [plantsView, setPlantsView] = useState({ on: true, strataColors: false })
+  const [plantInfo, setPlantInfo] = useState<PlantInfo | null>(null)
+  const plantToday = useMemo(
+    () => Math.min(GROWTH_YEARS, Math.max(0, yearsBetween(growingPlants.origin, growingPlants.today))),
+    [growingPlants.origin, growingPlants.today],
+  )
+  const growth = useGrowthYear(Math.round(plantToday), (year) => controller.current?.setPlantYear(year))
   const pointer = useRef<[number, number] | null>(null)
   const touch = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches, [])
 
@@ -204,7 +218,15 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
       timezone,
       layerColors: LAYER_COLORS,
       buildingsUrl,
+      growingPlants,
+      strataColors: STRATA_COLORS,
       compact: isCompact(),
+      onWalk: (mode) => {
+        setWalk(mode)
+        // At eye level the relief is shown unexaggerated (and back after).
+        setView((current) => (current ? { ...current, exaggeration: instance.view.exaggeration } : current))
+        if (mode !== 'off') setProbe(null)
+      },
       onBuildings: setBuildings,
       onLoading: (step) => setLoading(step),
       onStats: setStats,
@@ -222,6 +244,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
       setView({ ...instance.view })
       setZRange(instance.zRange)
       setDesignCount(instance.designs.length)
+      setPlantCount(instance.plants.length)
       setReady(true)
     }).catch((error: unknown) => {
       if (instance.disposed) return
@@ -430,6 +453,56 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     setNivaSettings((current) => ({ ...current, ...patch, lights: { ...c.nivaLights } }))
   }
 
+  // ---- On foot: arrows (or W A S D, Z Q S D on a French keyboard) walk and
+  // turn, Shift runs, Escape comes back to the overview.
+  const walking = walk === 'walking'
+  useEffect(() => {
+    if (walk === 'off') return
+    const keys: Record<string, WalkKey> = {
+      ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down',
+      ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ShiftLeft: 'run', ShiftRight: 'run',
+    }
+    const onKey = (event: KeyboardEvent) => {
+      const c = controller.current
+      if (!c) return
+      if ((event.target as HTMLElement | null)?.closest?.('input, textarea, select, [contenteditable]')) return
+      const down = event.type === 'keydown'
+      if (down && event.code === 'Escape') {
+        c.stopWalk()
+        return
+      }
+      const key = keys[event.code]
+      if (!key) return
+      event.preventDefault()
+      c.setWalkKey(key, down)
+    }
+    const onBlur = () => controller.current?.resetWalkKeys()
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('keyup', onKey)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keyup', onKey)
+      window.removeEventListener('blur', onBlur)
+    }
+  }, [walk])
+
+  function toggleWalk() {
+    controller.current?.toggleWalk()
+    // On a phone the sheet would hide the terrain to touch.
+    if (isCompact()) setPanelOpen(false)
+  }
+
+  function updatePlantsView(patch: Partial<typeof plantsView>) {
+    setPlantsView((current) => ({ ...current, ...patch }))
+    const c = controller.current
+    if (patch.on !== undefined) {
+      c?.setPlantsOn(patch.on)
+      if (!patch.on) setPlantInfo(null)
+    }
+    if (patch.strataColors !== undefined) c?.setPlantStrataColors(patch.strataColors)
+  }
+
   // ---- Probe: a click (not a drag) on the terrain; while placing the Niva, sets it down.
   async function onPointerUp(event: React.PointerEvent) {
     const start = pointer.current
@@ -440,6 +513,20 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
       setProbe(null)
       return
     }
+    if (controller.current?.walkMode === 'placing') {
+      controller.current.placeWalker(event)
+      setProbe(null)
+      setPlantInfo(null)
+      return
+    }
+    // A plant first: it stands in front of the ground.
+    const plant = controller.current?.plantAt(event) ?? null
+    setPlantInfo(plant)
+    if (plant) {
+      setProbe(null)
+      return
+    }
+    if (walking) return
     const info = await controller.current?.probe(event)
     setProbe(info ?? null)
   }
@@ -453,7 +540,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
     <div className="relative h-dvh w-full overflow-hidden bg-[#dfe9ee]">
       <div
         ref={container}
-        className={clsx('absolute inset-0', niva.mode === 'placing' && 'cursor-crosshair')}
+        className={clsx('absolute inset-0', (niva.mode === 'placing' || walk === 'placing') && 'cursor-crosshair', walking && 'cursor-grab active:cursor-grabbing')}
         onPointerDown={(event) => { pointer.current = [event.clientX, event.clientY] }}
         onPointerUp={onPointerUp}
       />
@@ -537,6 +624,20 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
                   buildings={buildings}
                   onReset={() => controller.current?.resetView()}
                   onTop={() => controller.current?.topView()}
+                  growth={(
+                    <GrowthSection
+                      count={plantCount}
+                      patches={growingPlants.patches.length > 0}
+                      plantsOn={plantsView.on}
+                      strataColors={plantsView.strataColors}
+                      walk={walk}
+                      touch={touch}
+                      onPlants={(on) => updatePlantsView({ on })}
+                      onStrataColors={(on) => updatePlantsView({ strataColors: on })}
+                      onWalk={toggleWalk}
+                      onMoveWalker={() => controller.current?.moveWalker()}
+                    />
+                  )}
                   niva={(
                     <NivaSection
                       info={niva}
@@ -581,6 +682,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
                   dayRunning={dayRunning}
                   onToggleDay={toggleDay}
                   surface={!!terrain.surface}
+                  plants={plantCount > 0 && plantsView.on}
                   marginM={terrain.marginM}
                   timezone={timezone}
                 />
@@ -597,6 +699,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
         )}
       </aside>
 
+      {plantInfo && <PlantCard info={plantInfo} onClose={() => setPlantInfo(null)} />}
       {probe && (
         <ProbeCard
           probe={probe}
@@ -622,13 +725,45 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
       {niva.mode === 'driving' && touch && (
         <NivaPad raised={panelOpen} onKey={(key, down) => controller.current?.setNivaKey(key, down)} />
       )}
+      {ready && plantCount > 0 && plantsView.on && niva.mode !== 'driving' && (
+        <GrowthBar
+          year={growth.target}
+          shown={growth.shown}
+          playing={growth.playing}
+          today={plantToday}
+          origin={growingPlants.origin}
+          onYear={growth.set}
+          onToggle={growth.toggle}
+          className={clsx(
+            'absolute sm:bottom-3 sm:left-1/2 sm:right-auto sm:top-auto sm:w-[34rem] sm:-translate-x-1/2',
+            // On a phone, above the settings sheet when it is open.
+            panelOpen ? 'left-3 right-[5.25rem] top-3' : 'inset-x-3 bottom-[calc(4.25rem+env(safe-area-inset-bottom))]',
+          )}
+        />
+      )}
+      {walking && touch && (
+        <WalkPad raised={panelOpen} onKey={(key, down) => controller.current?.setWalkKey(key, down)} />
+      )}
+      {walk === 'placing' && (
+        <p className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-full bg-prune-600 px-3 py-1 text-sm font-medium text-white shadow sm:top-3">
+          {t(touch ? 'relief.page.walk.placing_touch' : 'relief.page.walk.placing')}
+        </p>
+      )}
+      {walking && !touch && (
+        <p className="pointer-events-none absolute left-1/2 top-3 z-10 hidden -translate-x-1/2 rounded-full bg-white/85 px-3 py-1 text-sm text-loam-600 shadow-sm md:block">
+          {t('relief.page.walk.keys')}
+        </p>
+      )}
       {niva.mode === 'placing' && (
         <p className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-full bg-prune-600 px-3 py-1 text-xs font-medium text-white shadow sm:top-auto sm:bottom-3">
           {t('relief.page.niva.placing')}
         </p>
       )}
-      {ready && !probe && !nivaActive && (
-        <p className="pointer-events-none absolute bottom-3 left-1/2 z-10 hidden -translate-x-1/2 rounded-full bg-white/80 px-3 py-1 text-[0.7rem] text-loam-500 md:block">
+      {ready && !probe && !plantInfo && !nivaActive && walk === 'off' && (
+        <p className={clsx(
+          'pointer-events-none absolute left-1/2 z-10 hidden -translate-x-1/2 rounded-full bg-white/80 px-3 py-1 text-[0.7rem] text-loam-500 md:block',
+          plantCount > 0 && plantsView.on ? 'bottom-24' : 'bottom-3',
+        )}>
           {touch ? t('relief.page.hint_touch') : t('relief.page.hint')}
         </p>
       )}
@@ -638,7 +773,7 @@ function ReliefViewer({ map, terrain, features, timezone, location, landcoverCla
 
 // ---- View tab -------------------------------------------------------------------
 
-function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, onReset, onTop, niva }: {
+function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, onReset, onTop, growth, niva }: {
   view: ViewState
   update: (patch: Partial<ViewState>) => void
   terrain: TerrainGridData
@@ -647,6 +782,7 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, o
   buildings: BuildingsInfo | null
   onReset: () => void
   onTop: () => void
+  growth: ReactNode
   niva: ReactNode
 }) {
   const bases: BaseLayer[] = [
@@ -729,6 +865,7 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, o
         </Button>
       </div>
 
+      {growth}
       {niva}
     </>
   )
@@ -818,6 +955,9 @@ function RainTab({ rain, update, playing, stats, designs, designCount, soilModel
               storage: formatNumber(soilModel.storage * soilModel.storageFactor),
             })}
         </p>
+        {(soilModel.measurements?.length ?? 0) > 0 && (
+          <p className="mt-1 text-sm text-[#3d7ea6]">{t('relief.page.rain.soil_measured', { count: soilModel.measurements!.length })}</p>
+        )}
         <details className="mt-1 text-xs text-loam-500">
           <summary className="cursor-pointer">
             {t('relief.page.rain.soil_model', { soil: t(`relief.soils.${soilModel.soil}`) })}
@@ -919,7 +1059,7 @@ function StatRow({ label, value, strong }: { label: string; value: string; stron
 
 // ---- Sun tab --------------------------------------------------------------------
 
-function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, marginM, timezone }: {
+function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, plants, marginM, timezone }: {
   sun: { mode: SunMode; date: SunDate; minutes: number }
   info: SunInfo
   window: { min: number; max: number }
@@ -927,6 +1067,8 @@ function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, m
   dayRunning: boolean
   onToggleDay: () => void
   surface: boolean
+  /** The design's plants are shown, and cast their shadows of the year shown. */
+  plants: boolean
   marginM: number
   timezone: string
 }) {
@@ -967,11 +1109,12 @@ function SunTab({ sun, info, window, update, dayRunning, onToggleDay, surface, m
             {dayRunning ? <Pause className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
             {dayRunning ? t('relief.page.sun.stop_day') : t('relief.page.sun.play_day')}
           </Button>
-          {localZone !== timezone && <p className="text-xs text-loam-400">{t('relief.page.sun.timezone', { zone: timezone })}</p>}
+          {localZone !== timezone && <p className="text-sm text-loam-400">{t('relief.page.sun.timezone', { zone: timezone })}</p>}
         </>
       )}
       <SunStatus info={info} marginM={marginM} />
-      {sun.mode !== 'off' && !surface && <p className="text-xs text-humus-700">{t('relief.page.sun.no_surface')}</p>}
+      {sun.mode !== 'off' && plants && <p className="text-sm text-leaf-800">{t('relief.page.sun.plants')}</p>}
+      {sun.mode !== 'off' && !surface && <p className="text-sm text-humus-700">{t(plants ? 'relief.page.sun.no_surface_plants' : 'relief.page.sun.no_surface')}</p>}
     </>
   )
 }

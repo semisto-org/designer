@@ -23,7 +23,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <Flash />
       <header className="border-b border-loam-900/10 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
-          <Link href="/" className="flex items-center" aria-label="Semisto Designer">
+          <Link href="/" className="flex items-center" aria-label="Semisto Terranova">
             <Wordmark />
           </Link>
           <nav className="hidden items-center gap-6 text-[0.95rem] font-medium text-loam-700 md:flex" aria-label={t('site.nav.menu')}>

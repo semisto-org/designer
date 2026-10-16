@@ -12,6 +12,7 @@ fr:
         notes: "Les notes"
         tags: "Les étiquettes"
         assignee: "La personne assignée"
+        invitee_email: "La personne invitée"
         task_list: "La liste"
       task_list:
         name: "Le nom de la liste"
@@ -21,6 +22,8 @@ fr:
           attributes:
             assignee:
               not_a_participant: "doit participer à la carte"
+            invitee_email:
+              not_invited: "doit être invité·e à la carte ou à son équipe"
             tags:
               too_many_tags: "ne peuvent pas dépasser %{count}"
               tag_too_long: "doivent faire %{count} caractères au plus chacune"
@@ -92,6 +95,10 @@ fr:
       notes_placeholder: "Le pourquoi, le comment, un lien…"
       assignee: "Assignée à"
       nobody: "Personne"
+      # Someone invited to the map or its team who has not joined yet.
+      invited: "%{name} (invité·e)"
+      invited_group: "Invité·es, pas encore arrivé·es"
+      invited_hint: "Pas encore sur la carte : la tâche l'attendra dès son arrivée."
       due_on: "Échéance"
       no_due: "Sans échéance"
       clear_due: "Retirer l'échéance"
@@ -212,4 +219,6 @@ fr:
       body: "%{assigner} t'a confié une tâche sur la carte « %{map} » :"
       due: "À faire pour le %{date}."
       button: "Voir les tâches de la carte"
-      footer: "Tu reçois ce message parce qu'une tâche t'a été assignée dans Semisto Designer."
+      invited: "Accepte d'abord l'invitation avec ce lien, en créant ton compte si tu n'en as pas encore : la tâche t'attendra dans tes tâches."
+      join_button: "Accepter l'invitation"
+      footer: "Tu reçois ce message parce qu'une tâche t'a été assignée dans Semisto Terranova."

@@ -1,6 +1,6 @@
 # Import de Claudy
 
-À la bêta, le plan du Domaine d'Ahinvaux (Les 4 Sources, Yvoir) quitte Claudy pour Designer. Claudy garde sa carte d'accueil (hébergements, salles, occupation, séjours) ; tout le reste du plan est versé dans une carte de Designer qui existe déjà, par une commande ponctuelle qu'on peut relancer autant de fois qu'on veut.
+À la bêta, le plan du Domaine d'Ahinvaux (Les 4 Sources, Yvoir) quitte Claudy pour Terranova. Claudy garde sa carte d'accueil (hébergements, salles, occupation, séjours) ; tout le reste du plan est versé dans une carte de Terranova qui existe déjà, par une commande ponctuelle qu'on peut relancer autant de fois qu'on veut.
 
 ```sh
 bin/rails claudy:import MAP_ID=12 DRY_RUN=1                 # simulation : ce qui serait fait
@@ -10,20 +10,20 @@ bin/rails claudy:import MAP_ID=12 FILE=tmp/claudy-map/claudy-map.json   # sans r
 
 | Réglage | Rôle |
 |---|---|
-| `MAP_ID` | La carte de Designer à remplir (obligatoire). |
+| `MAP_ID` | La carte de Terranova à remplir (obligatoire). |
 | `CLAUDY_API_URL` | Défaut `https://app.les4sources.be/api/v1` (`/api/v1` est ajouté s'il manque). |
 | `CLAUDY_API_KEY` | Un des jetons `AGENT_API_TOKEN` de Claudy. L'API n'est que lue, jamais écrite. |
 | `FILE` | Un fichier à la place de l'API (voir plus bas). |
 | `DRY_RUN=1` | Tout est calculé puis annulé : rien n'est écrit, aucune photo n'est téléchargée. |
 | `PHOTOS=0` | Laisse les photos dans Claudy. |
-| `FORCE=1` | Remplace aussi ce qui a été modifié dans Designer, recrée ce qui y a été supprimé. |
+| `FORCE=1` | Remplace aussi ce qui a été modifié dans Terranova, recrée ce qui y a été supprimé. |
 | `CLAUDY_NETWORK_LAYERS` | Le réseau d'une couche que l'API ne permet pas de reconnaître, par exemple `7=ethernet,8=gas`. |
 
-La commande imprime un résumé en français : créés, mis à jour, inchangés par type d'élément, photos, palette, espèces introuvables, ce qui n'est pas importé et pourquoi, ce qui est laissé tel quel dans Designer, et ce qu'il faut vérifier.
+La commande imprime un résumé en français : créés, mis à jour, inchangés par type d'élément, photos, palette, espèces introuvables, ce qui n'est pas importé et pourquoi, ce qui est laissé tel quel dans Terranova, et ce qu'il faut vérifier.
 
 ## Ce qui va où
 
-| Claudy | Designer |
+| Claudy | Terranova |
 |---|---|
 | Gestion : zones, chemins, points | Existant : zone, chemin existant, point. Description, « Gestion : … » et le journal daté dans les notes. |
 | Réseaux (eau, électricité, ethernet, gaz) | Réseaux (couche sensible, masquée par défaut dans les vues publiques, les exports et le MCP) : conduite d'eau, ligne électrique, câble ethernet, conduite de gaz ; vanne, compteur, robinet, prise ; sinon un point nommé d'après son type (« Citerne », « Switch »…). Origine de l'eau et potabilité (pluie et captage forestier : non potable ; puits : potable). |
@@ -43,11 +43,11 @@ Une forme que la bibliothèque d'éléments refuse (une mare en MultiPolygon, un
 
 Chaque élément importé porte `properties.import = { source: "claudy", type: "map_feature", id: 110 }`, et la table `import_records` garde, par élément de Claudy, ce qu'il est devenu et l'empreinte de ce que l'import a écrit. Un nouvel import :
 
-- met à jour ce que personne n'a touché dans Designer ;
+- met à jour ce que personne n'a touché dans Terranova ;
 - laisse tel quel ce qui y a été modifié ou supprimé (et le dit ; `FORCE=1` pour passer outre) ;
-- ne touche jamais à ce qui a été dessiné dans Designer ;
+- ne touche jamais à ce qui a été dessiné dans Terranova ;
 - n'importe une photo qu'une fois ;
-- ne supprime rien : un élément effacé dans Claudy reste dans Designer.
+- ne supprime rien : un élément effacé dans Claudy reste dans Terranova.
 - rattache les plantes dont l'espèce ou la variété est entrée au catalogue depuis l'import précédent.
 
 ## Par l'API
@@ -80,7 +80,7 @@ L'export a cette forme (les objets et les plantes sont rendus par les vues `show
 Pour l'écrire, dans Claudy (sans rien y modifier), enregistrer ce script dans `/tmp/claudy_export.rb` puis lancer `OUT=tmp/claudy-map bin/rails runner /tmp/claudy_export.rb` :
 
 ```ruby
-# Exports the map plan for Semisto Designer (bin/rails claudy:import FILE=…/claudy-map.json).
+# Exports the map plan for Semisto Terranova (bin/rails claudy:import FILE=…/claudy-map.json).
 out = Pathname(ENV.fetch("OUT", "tmp/claudy-map")).expand_path
 out.join("photos").mkpath
 renderer = Api::V1::BaseController.renderer.new(http_host: ENV.fetch("HOST", "app.les4sources.be"), https: true)
@@ -108,4 +108,4 @@ out.join("claudy-map.json").write(JSON.pretty_generate(export))
 puts "#{features.size} objets, #{plants.size} plantes, #{export[:map_sketches].size} notes manuscrites : #{out}"
 ```
 
-Copier ensuite le dossier entier (`claudy-map.json` et `photos/`) à côté de Designer et le supprimer après l'import : il contient les relevés d'observations.be, que l'import écarte mais que le fichier garde.
+Copier ensuite le dossier entier (`claudy-map.json` et `photos/`) à côté de Terranova et le supprimer après l'import : il contient les relevés d'observations.be, que l'import écarte mais que le fichier garde.

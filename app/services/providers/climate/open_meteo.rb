@@ -109,7 +109,7 @@ module Providers
         def connection
           @connection ||= Faraday.new(url: "#{@base_url}/", request: { open_timeout: 3, timeout: 8 }) do |f|
             f.response :json, content_type: /\bjson$/
-            f.headers["User-Agent"] = "SemistoDesigner (+https://designer.semisto.org)"
+            f.headers["User-Agent"] = "SemistoTerranova (+https://terranova.semisto.org)"
           end
         end
     end

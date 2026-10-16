@@ -11,6 +11,9 @@ class MapFeature < ApplicationRecord
   include MapFeature::WaterSourceLink
   include MapFeature::Tags
   include MapFeature::PlantNumber
+  include MapFeature::SoilDestination
+  include MapFeature::WaterCapacity
+  include MapFeature::InfiltrationTest
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze
@@ -19,6 +22,8 @@ class MapFeature < ApplicationRecord
   belongs_to :map, touch: true
   belongs_to :created_by, class_name: "User", optional: true
   belongs_to :updated_by, class_name: "User", optional: true
+  # Changes an AI proposed to this element; the accepted ones are its history.
+  has_many :update_drafts, class_name: "FeatureUpdateDraft", dependent: :delete_all
 
   validates :kind, presence: true
   validates :layer, inclusion: { in: LAYERS }

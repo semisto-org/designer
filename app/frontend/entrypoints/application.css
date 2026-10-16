@@ -151,6 +151,17 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 }
 .boundary-label-name { font-family: var(--font-serif); font-weight: 600; font-size: 15px; color: var(--color-loam-900); }
 
+/* A keypoint found in a valley: a numbered water drop, as in the field notebook.
+   MapLibre owns the marker's transform, so only its inner span may turn. */
+.keypoint-marker { display: grid; place-items: center; width: 30px; height: 30px; cursor: pointer; background: none; border: 0; padding: 0; }
+.keypoint-marker span {
+  display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50% 50% 50% 4px; transform: rotate(-45deg);
+  background: #2b7bb9; border: 2px solid #fff; box-shadow: 0 4px 10px rgb(26 26 26 / 0.25);
+}
+.keypoint-marker span::after { content: attr(data-label); transform: rotate(45deg); font: 700 14px/1 var(--font-serif); color: #fff; }
+.keypoint-marker:focus-visible { outline: 2px solid var(--color-prune-600); outline-offset: 2px; }
+
 /* Map editor controls: white stacks with soft shadows, a "N" for the compass
    (MapLibre turns the icon with the map, so the letter turns too). */
 .editor-map .maplibregl-ctrl-top-right .maplibregl-ctrl { margin: 14px 14px 0 0; }
@@ -182,6 +193,15 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 }
 .editor-recenter:hover .editor-recenter-tip { opacity: 1; transition-delay: 300ms; }
 .editor-recenter:focus-within .editor-recenter-tip { opacity: 1; }
+/* « Photos sur la carte »: plum while the photos show, grey and crossed out when hidden. */
+.editor-map .editor-photos-toggle button[data-shown="true"] { color: var(--color-prune-700); background: var(--color-prune-50); }
+.editor-map .editor-photos-toggle button[data-shown="false"] { color: var(--color-loam-500); }
+/* « Calques »: a plum dot when something is hidden on the map. */
+.editor-map .editor-layers-control button[data-hidden="true"] { color: var(--color-prune-700); }
+.editor-map .editor-layers-control button[data-hidden="true"]::after {
+  content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px;
+  border-radius: 9999px; background: var(--color-prune-600); box-shadow: 0 0 0 2px #fff;
+}
 
 /* "Sources de la carte" in words instead of the bare "i" of the attribution. */
 .editor-map .maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) {

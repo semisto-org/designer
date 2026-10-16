@@ -1,6 +1,8 @@
-# CLAUDE.md — Semisto Designer
+# CLAUDE.md — Semisto Terranova
 
-Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden or permaculture plan on it, with an AI that knows the place. Hosted by Semisto at https://designer.semisto.org. Product plan: `/mnt/project-files/designer/plan.md` (when available) — the v1 scope is steps 1 to 4 of its roadmap.
+Open-source (AGPL-3.0) web app to map a real terrain and design a forest garden or permaculture plan on it, with an AI that knows the place. Hosted by Semisto at https://terranova.semisto.org. Product plan: `/mnt/project-files/designer/plan.md` (when available) — the v1 scope is steps 1 to 4 of its roadmap.
+
+**Name.** The product was called « Semisto Designer » until 16 October 2026; it is now **Semisto Terranova** (« Terranova » for short), at https://terranova.semisto.org. https://designer.semisto.org still answers: pages redirect to the new address (`LegacyHostRedirect`), while the MCP server, OAuth, `/api` and `.well-known` keep working there for clients connected before the move. The repository, Ruby/TypeScript identifiers, the `designer` database and app names, the phone app's bundle ids and the `designer@semisto.org` mailbox keep the old name on purpose. Semisto's internal management app (repository `terranova-2026`, app.semisto.org) is also called Terranova for now: in code comments and imports (`Catalog::TerranovaImport`, `Imports::TerranovaPalette`), « Terranova » means that internal app.
 
 ## Point of view (read before any design or copy work)
 
@@ -39,9 +41,10 @@ Why the project exists, its principles and what it refuses: @INTENT.md (imported
   - Seeded: `europe` (pan-European base, no outline) and Wallonia, Brussels, Flanders, France, Luxembourg (`parent` = europe, `outline` from `db/seeds/regions/*.geojson`). A map's region comes from its place (`Region.for_point`, `Map#locate_region`); a map outside every outline belongs to `europe` and moves to a region once its place falls in one.
   - Inheritance: read layers through `region.catalogue` (own layers + the parent's not replaced by key), never `region.layers`, and settings through `region.setting(...)` (a top-level key comes whole from the region, else from the parent).
   - Providers chosen per region in settings: `relief.provider` (arcgis_elevation, geopf_altimetry, copernicus_dem), `cadastre.provider` (default: the ArcGIS layer with `options.role = cadastre`; apicarto, inspire_wfs). A new relay host goes into `Providers::GeoHttp::RELAY_HOSTS`.
-- Plans and paid features: `Entitlements` (`app/models/entitlements.rb`). A map's features follow its **owner's** plan (`Entitlements.for_map(map)`). While Stripe is not configured, everything is unlocked (beta).
+- Plans and paid features: `Entitlements` (`app/models/entitlements.rb`). A map's features follow the plan that covers it (`Map#billing_user`: its team's payer when a team admin pays for the team, else its owner; `Entitlements.for_map(map)`, `User#billed_maps`). While Stripe is not configured, everything is unlocked (beta).
 - Roles per map: owner (1), editors (max 3, free), viewers (unlimited, read + comment). `MapScoped` concern: `set_map`, `require_editor!`, `require_owner!`.
-- Teams (`Organization`, UI « Équipes », `/teams`): roles admin | member, always one admin. Members of a map's team are editors of it without taking a seat (`Map#role_for`, `Map#participants`); team admins manage the team only, never a map's sharing. Only the owner moves a map in or out (`Maps::TeamsController`, « Partager » dialog). A team map still follows its owner's plan; leaving a team does not take one's maps out of it.
+- Teams (`Organization`, UI « Équipes », `/teams`): roles admin | member, always one admin. Members of a map's team are editors of it without taking a seat (`Map#role_for`, `Map#participants`); team admins manage the team only, never a map's sharing. Only the owner moves a map in or out (`Maps::TeamsController`, « Partager » dialog). A team admin can pay for the team (`organizations.billing_user_id`, `Teams::BillingsController`): its maps then follow that admin's plan and count against it; otherwise a team map follows its owner's plan. Leaving a team does not take one's maps out of it.
+- Several accounts can be signed in on one browser (signed cookie `other_session_ids`, `Authentication#switch_to_session`, avatar menu `components/AccountMenu.tsx`); signing out hands over to the next account. Never while impersonating.
 
 ## Databases
 
@@ -61,7 +64,7 @@ Why the project exists, its principles and what it refuses: @INTENT.md (imported
 - PFAF: values may be shown, each citing PFAF as source; **never copy PFAF texts or images**.
 - Rekentool (Dutch financial tool): **no data from it** in the repo or UI.
 - Open-Meteo free API is non-commercial: weather/climate go through a configurable provider with an "unavailable" state.
-- Code ported from Claudy (MIT, © Fondation Les 4 Sources) keeps a header comment: `# Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)`. Terranova has no licence and contains personal data: port logic file by file, never data or history.
+- Code ported from Claudy (MIT, © Fondation Les 4 Sources) keeps a header comment: `# Ported from Claudy (MIT, © 2022-2023 Fondation Les 4 Sources)`. The internal Terranova app has no licence and contains personal data: port logic file by file, never data or history.
 - Sensitive layers (networks: water, gas, electricity, ethernet) are hidden by default in public views, exports and the MCP.
 
 ## Billing, public site and help center

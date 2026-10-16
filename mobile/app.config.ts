@@ -1,5 +1,5 @@
 // The base config is app.json. APP_VARIANT=preview (EAS profiles
-// « testflight » and « preview ») builds a separate test app, « Designer
+// « testflight » and « preview ») builds a separate test app, « Terranova
 // (test) », that installs next to the store one and has its own bundle
 // identifier, so testers can try it before the organisation's account exists.
 // On Android it is org.semisto.designertest, the package the Play Console
@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   if (!PREVIEW) return base
   return {
     ...base,
-    name: 'Designer (test)',
+    name: 'Terranova (test)',
     ios: { ...base.ios, bundleIdentifier: 'org.semisto.designer.preview' },
     android: { ...base.android, package: 'org.semisto.designertest' },
   }

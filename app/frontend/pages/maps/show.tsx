@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import type { Geometry } from 'geojson'
 import { ArrowLeft } from 'lucide-react'
-import { area } from '@turf/turf'
+import { area, bbox as turfBbox } from '@turf/turf'
 import type { MapMouseEvent, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -17,6 +17,7 @@ import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature } from '@/map/editor/EditorContext'
 import { Inspector } from '@/map/editor/Inspector'
+import { MapName } from '@/map/editor/MapName'
 import { RecenterControl } from '@/map/editor/controls'
 import { EditorBar, EditorRail } from '@/map/editor/Rail'
 import { StageStepper } from '@/map/editor/StageStepper'
@@ -47,18 +48,13 @@ export default function MapShow(props: Props) {
           <ArrowLeft className="h-[18px] w-[18px]" />
         </Link>
         <div className="flex min-w-0 shrink items-baseline gap-2.5">
-          <h1 className="truncate text-xl leading-none text-loam-900">{map.name}</h1>
+          <MapName map={map} setMap={setMap} />
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
         <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} />
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
         <div className="flex-1" />
-        {map.role && (
-          <span className="hidden shrink-0 rounded-full bg-prune-100 px-2.5 py-1 text-xs text-prune-600 lg:inline">
-            {t('maps.show.your_role', { role: t(`maps.roles.${map.role}`).toLocaleLowerCase('fr') })}
-          </span>
-        )}
         <div id="editor-header-actions" className="flex shrink-0 items-center gap-1 sm:gap-2" />
       </header>
       <div className="flex min-h-0 flex-1">
@@ -95,10 +91,22 @@ function panelFromUrl(): string | null {
   return PANELS.some((p) => p.id === id) ? id : null
 }
 
+/** `?feature=12` (a plant from the catalogue's map) selects that element on arrival. */
+function featureFromUrl(features: MapFeature[]): MapFeature | null {
+  if (typeof window === 'undefined') return null
+  const url = new URL(window.location.href)
+  const id = Number(url.searchParams.get('feature'))
+  if (!url.searchParams.has('feature')) return null
+  url.searchParams.delete('feature')
+  window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
+  return features.find((f) => f.properties.id === id) ?? null
+}
+
 function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, offerBuilder = false }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [arrival] = useState(() => featureFromUrl(initial))
+  const [selectedId, setSelectedId] = useState<number | null>(arrival?.properties.id ?? null)
   // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
   const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
   const [pickedStage, setPickedStage] = useState<MapStage | null>(null)
@@ -148,6 +156,13 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     return () => void instance.off('idle', fold)
   }, [instance])
   useEffect(() => installFeatureLayers(instance, { type: 'FeatureCollection', features }), [instance, features])
+
+  // Frame the element opened from a link (after the map's own framing).
+  useEffect(() => {
+    if (!arrival) return
+    const [minX, minY, maxX, maxY] = turfBbox(arrival)
+    instance.fitBounds([[minX, minY], [maxX, maxY]], { padding: 120, maxZoom: 19, duration: 0 })
+  }, [instance, arrival])
 
   // Selection highlight and click-to-select.
   useEffect(() => {

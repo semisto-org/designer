@@ -22,6 +22,7 @@ module Maps
         terrain: terrain&.ready? ? terrain.as_grid(url_for: ->(kind) { file_map_relief_path(@map, kind, v: terrain.version) }) : nil,
         overview: Relief::Overview.new(@map).as_json,
         features: @map.features.where.not(status: "rejected").map(&:as_geojson),
+        growingPlants: Relief::GrowingPlants.new(@map).as_json,
         timezone: @map.region.setting(:relief, :timezone) || Time.zone.tzinfo.name,
         location: location,
         landcoverClasses: @map.region.setting(:relief, :landcover_classes) || {},
@@ -55,12 +56,59 @@ module Maps
       render json: { available: false, attribution: nil, buildings: [] }
     end
 
+    # The contour line through a point (« Suivre la courbe » in the drawing
+    # toolbar): GeoJSON, altitude and length, or why none can be traced.
+    def contour
+      lng = Float(params[:lng], exception: false)
+      lat = Float(params[:lat], exception: false)
+      return head :bad_request unless lng && lat
+
+      render json: Relief::Contour.new(@map, lng:, lat:).call.as_json
+    rescue Relief::Contour::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
+    # The catchment of a pond, swale or rain garden (`feature_id`) or of a
+    # point (`lng`, `lat`): outline, area, capacity, rain that fills it.
+    def catchment
+      catchment =
+        if params[:feature_id].present?
+          Relief::Catchment.new(@map, feature: @map.features.find(params[:feature_id]))
+        else
+          lng = Float(params[:lng], exception: false)
+          lat = Float(params[:lat], exception: false)
+          return head :bad_request unless lng && lat
+
+          Relief::Catchment.new(@map, lng:, lat:)
+        end
+      render json: catchment.call.as_json
+    rescue Relief::Catchment::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
+    # The keypoints of the terrain's valleys, each with its keyline.
+    def keypoints
+      render json: Relief::Keypoints.new(@map).call.as_json
+    rescue Relief::Keypoints::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
+    # Lines parallel to a keyline (`feature_id`), every `spacing_m` metres,
+    # `above` and `below` it.
+    def parallels
+      feature = @map.features.where.not(status: "rejected").find(params[:feature_id])
+      lines = Relief::Parallels.new(@map, feature:, spacing_m: params[:spacing_m], above: params[:above], below: params[:below]).call
+      render json: { lines: lines.map(&:as_json) }
+    rescue Relief::Parallels::Error => e
+      render json: { message: e.message, reason: e.key }, status: :unprocessable_entity
+    end
+
     private
       def soil_model
         settings = @map.effective_water_settings
         { soil: settings["soil"], uniformRate: settings["uniform_rate_mm_h"].to_f, storage: settings["storage_mm"].to_f,
           rateFactor: settings["rate_factor"].to_f, storageFactor: settings["storage_factor"].to_f,
-          percolation: settings["percolation_mm_h"].to_f }
+          percolation: settings["percolation_mm_h"].to_f, measurements: @map.infiltration_measurements }
       end
 
       # Where the sun is computed: the boundary's centroid, else the map's

@@ -1,8 +1,10 @@
 require "test_helper"
 require_relative "../../test_helpers/relief_test_helper"
+require "test_helpers/synthetic_terrain_helper"
 
 class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
   include ReliefTestHelper
+  include SyntheticTerrainHelper
   include ActiveJob::TestHelper
 
   setup do
@@ -99,7 +101,83 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
       assert_response :payment_required
       get map_relief_path(@map)
       assert_redirected_to map_path(@map)
+      get contour_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
+      assert_response :payment_required
+      get catchment_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
+      assert_response :payment_required
+      get keypoints_map_relief_path(@map), as: :json
+      assert_response :payment_required
     end
+  end
+
+  test "the contour line through a point, for anyone who can open the map" do
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    centre = @map.boundary.centroid
+    sign_in_as users(:alice)
+    get contour_map_relief_path(@map, lng: centre.x, lat: centre.y), as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "LineString", body.dig("geometry", "type")
+    assert_in_delta 200, body["elevationM"], 0.05
+    assert_in_delta 17.8, body["lengthM"], 1
+    refute body["closed"]
+
+    get contour_map_relief_path(@map, lng: 4.95, lat: 50.34), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "outside_boundary", response.parsed_body["reason"]
+    get contour_map_relief_path(@map, lng: "nord"), as: :json
+    assert_response :bad_request
+  end
+
+  test "the keypoints of the valleys" do
+    sign_in_as users(:alice)
+    get keypoints_map_relief_path(@map), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "no_relief", response.parsed_body["reason"]
+
+    # Too small a terrain for a valley: an empty list, not an error.
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    get keypoints_map_relief_path(@map), as: :json
+    assert_response :success
+    assert_equal [], response.parsed_body["keypoints"]
+    assert_equal 1000, response.parsed_body["minCatchmentM2"]
+  end
+
+  test "the parallels of a keyline" do
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    centre = @map.boundary.centroid
+    keyline = @map.features.create!(layer: "water", kind: "keyline",
+      geometry: { "type" => "LineString", "coordinates" => [ [ centre.x - 0.0001, centre.y ], [ centre.x + 0.0001, centre.y ] ] })
+    sign_in_as users(:alice)
+    get parallels_map_relief_path(@map, feature_id: keyline.id, spacing_m: 3, above: 1, below: 2), as: :json
+    assert_response :success
+    assert_equal %w[above below below], response.parsed_body["lines"].map { |l| l["side"] }
+
+    get parallels_map_relief_path(@map, feature_id: keyline.id, spacing_m: 500, above: 1, below: 1), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "spacing", response.parsed_body["reason"]
+  end
+
+  test "the catchment of a pond or a point" do
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    centre = @map.boundary.centroid
+    pond = @map.features.create!(layer: "water", kind: "pond", properties: { "depth_m" => 1 },
+      geometry: { "type" => "Polygon", "coordinates" => [ [ [ -1, -1 ], [ 1, -1 ], [ 1, 1 ], [ -1, 1 ], [ -1, -1 ] ].map { |x, y| [ centre.x + x * 0.00003, centre.y + y * 0.00002 ] } ] })
+    sign_in_as users(:alice)
+    get catchment_map_relief_path(@map, feature_id: pond.id), as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert_operator body["areaM2"], :>, 0
+    assert body["beyondRelief"]
+    assert_includes %w[Polygon MultiPolygon], body.dig("geometry", "type")
+
+    get catchment_map_relief_path(@map, lng: centre.x, lat: centre.y), as: :json
+    assert_response :success
+    get catchment_map_relief_path(@map, lng: 4.95, lat: 50.34), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "outside_relief", response.parsed_body["reason"]
+    get catchment_map_relief_path(@map), as: :json
+    assert_response :bad_request
   end
 
   test "the relief page without terrain" do
@@ -111,6 +189,17 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_nil page.dig("props", "terrain")
     assert_equal "Europe/Brussels", page.dig("props", "timezone")
     assert_in_delta 4.9001, page.dig("props", "location", 0), 0.0001
+    assert_equal [], page.dig("props", "growingPlants", "plants")
+  end
+
+  test "the relief page brings the map's plants to grow in 3D" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9001, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:apple).id })
+    sign_in_as users(:alice)
+    get map_relief_path(@map), headers: inertia_headers
+    plants = response.parsed_body.dig("props", "growingPlants", "plants")
+    assert_equal 1, plants.size
+    assert_equal "sub_canopy", plants.first["strata"]
   end
 
   test "the relief page and its files once imported" do

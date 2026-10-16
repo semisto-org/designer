@@ -4,6 +4,61 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "keyline", published_on: "2026-10-16",
+    title: "Le keyline : l'eau des vallons vers les croupes",
+    body: <<~TEXT,
+      Dans « Eau et relief », Terranova cherche les points clés des vallons de ton terrain : là où le fond cesse de descendre raide pour descendre doucement. Chacun vient avec sa keyline, la courbe de niveau qui y passe, à poser d'un geste sur ta carte comme baissière, ligne d'arbres ou décompactage.
+
+      Depuis la keyline, trace ses parallèles au-dessus et en dessous. Elles gardent sa forme et emmènent doucement l'eau vers les croupes, plus sèches. Une baissière agit dès le premier hiver ; une ligne d'arbres prend le relais en 5 à 10 ans.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Les points clés d'un vallon numérotés sur la carte, avec la keyline en tirets et la liste des points dans le panneau « Eau et relief »."
+  },
+  {
+    key: "test-infiltration", published_on: "2026-10-16",
+    title: "Combien ton sol boit-il ? Mesure-le en une heure",
+    body: <<~TEXT,
+      Une baissière, un jardin de pluie ou une mare se dimensionnent sur ce que boit le sol. Pose un « Test d'infiltration » dans la couche Eau : sa fiche te guide pas à pas, avec un seau, une règle et un chrono qui te dit quand lire la hauteur d'eau.
+
+      La vitesse mesurée devient celle de ta carte : la simulation de pluie en 3D boit à ton rythme autour du test, et chaque baissière te dit en combien d'heures elle se vide. Refais le test dans quelques années pour voir ton sol s'ouvrir sous le jardin-forêt.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "La fiche d'un test d'infiltration : la hauteur d'eau qui baisse au fil des minutes, et la vitesse mesurée."
+  },
+  {
+    key: "bassin-versant-bilan-eau", published_on: "2026-10-16",
+    title: "D'où vient l'eau de ta mare, et quand elle manque",
+    body: <<~TEXT,
+      Une mare se remplit avec toute la pluie qui ruisselle vers elle. Sélectionne une mare, une baissière ou un jardin de pluie : sa surface d'alimentation, son bassin versant, se colorie en bleu sur la carte, et sa fiche te dit combien de pluie suffit à l'emplir et s'il faut soigner son trop-plein.
+
+      Dans le panneau « Climat », le nouveau bilan de l'eau montre mois par mois la pluie, l'eau que les plantes rendent à l'air et la réserve du sol : les mois où l'eau part, ceux où elle manque, aujourd'hui et en 2050. Avec ce que tes citernes, tes toits et tes mares gardent déjà pour l'été.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Le bassin versant d'une mare colorié en bleu sur la carte, et sa fiche : au moins 1,48 ha drainés, 3 mm de pluie suffisent à l'emplir."
+  },
+  {
+    key: "suivre-la-courbe", published_on: "2026-10-16",
+    title: "Une baissière posée pile sur la courbe de niveau",
+    body: <<~TEXT,
+      Une baissière ne fait boire l'eau au sol que si elle suit exactement la courbe de niveau : un peu de travers, elle devient un fossé. Avec le relief téléchargé, touche un point du terrain et la baissière se pose d'elle-même sur la courbe qui y passe, avec son altitude.
+
+      Le bouton « Suivre la courbe » marche aussi pour les haies, les brise-vent et les cheminements. Et ton IA connectée trace les mêmes courbes avant de te proposer une baissière ou une keyline.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "Une baissière posée sur la courbe de niveau d'un coteau, d'un bord à l'autre du terrain."
+  },
+  {
+    key: "terre-excavee", published_on: "2026-10-16",
+    title: "Où va la terre de ta mare ?",
+    body: <<~TEXT,
+      Chaque trou est aussi un tas. Ta mare, ta baissière, ton fossé ou ton chemin encaissé disent maintenant combien de terre ils vont sortir, en mètres cubes, en brouettes et en camions, avec la terre végétale à part du sous-sol.
+
+      Choisis où chacune va : une butte de la carte (ou dessine-la sur le moment), le bourrelet à côté du trou, étalée sur place, mise en tas ou évacuée. Une flèche couleur de terre montre le chemin sur la carte, et le nouveau panneau « Terres » fait le bilan de ce qui n'a pas encore de destination, avec nos conseils avant de creuser.
+    TEXT
+    link_path: "/help/gerer-la-terre-excavee", link_label: "Lire l'aide",
+    screenshot_alt: "Le panneau « Terres » : 74 m³ à sortir, dont 32 m³ sans destination, et sur la carte les flèches de la mare vers la butte et du chemin creux vers la prairie."
+  },
+  {
     key: "nuit-air-froid", published_on: "2026-10-15",
     title: "La nuit dans la vue 3D : où glisse l'air froid",
     body: <<~TEXT,

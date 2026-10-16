@@ -39,6 +39,7 @@ module Mcp
     def self.type_label(spec)
       case spec[:type]
       when "array" then "array<#{spec.dig(:items, :type) || 'any'}>"
+      when Array then spec[:type].join(" | ")
       else spec[:type].to_s
       end
     end

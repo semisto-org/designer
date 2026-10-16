@@ -102,7 +102,7 @@ module Mcp
         http.read_timeout = READ_TIMEOUT
         body = Tempfile.new([ "mcp-import", File.extname(uri.path) ], binmode: true)
         response = http.start do |connection|
-          connection.request(Net::HTTP::Get.new(uri, "User-Agent" => "SemistoDesigner/1.0")) do |res|
+          connection.request(Net::HTTP::Get.new(uri, "User-Agent" => "SemistoTerranova/1.0")) do |res|
             next unless res.is_a?(Net::HTTPSuccess)
             raise Error, "too_large" if res["content-length"].to_i > @max_bytes
             size = 0

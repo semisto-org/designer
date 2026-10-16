@@ -18,7 +18,7 @@ class Imports::Claudy::ImporterTest < ActiveSupport::TestCase
       [ "existing", "zone" ] => 1, [ "existing", "path_existing" ] => 1, [ "existing", "point" ] => 1,
       [ "networks", "water_pipe" ] => 1, [ "networks", "point" ] => 2, [ "networks", "tap" ] => 1, [ "networks", "valve" ] => 1,
       [ "networks", "electric_line" ] => 1, [ "networks", "socket" ] => 1, [ "networks", "line" ] => 1,
-      [ "notes", "note_point" ] => 3, [ "water", "swale" ] => 1, [ "water", "line" ] => 1, [ "water", "pond" ] => 1,
+      [ "notes", "note_point" ] => 3, [ "water", "swale" ] => 1, [ "water", "keyline" ] => 1, [ "water", "pond" ] => 1,
       [ "plants", "plant" ] => 5
     }, kinds)
     assert_equal 22, report.total(:created) - 2 # bio-indicator species are not map features

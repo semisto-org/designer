@@ -21,10 +21,11 @@ import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage 
 import type { BlocksInput } from './blocks.ts'
 import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaTerrain } from './niva.ts'
 import type { NivaLights } from './nivaModel.ts'
+import { GROWTH_YEARS, calendarYear, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type ScenePlant } from './growth.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
 import { landcoverRoles } from './roles.ts'
-import type { CameraMode, ReliefScene } from './scene.ts'
-import { buildSoilMaps, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
+import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
+import { buildSoilMaps, calibrateRates, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
 import {
   boxBlur, compassPoint, frostClass, frostRisk, slopeAspect, spreadAccumulation, wetnessClass, wetnessIndex,
   wetnessThresholdsFor, type Compass, type FrostClass, type WetnessClass,
@@ -92,6 +93,33 @@ export type ProbeInfo = {
   cold: { depth: number; flowing: boolean } | null
 }
 
+/** On foot: off, waiting for a click to stand there, or walking. */
+export type WalkMode = 'off' | 'placing' | 'walking'
+
+/** What the page says of a plant touched in 3D, at the year shown. */
+export type PlantInfo = {
+  name: string | null
+  latinName: string | null
+  strata: PlantStrata
+  /** The plant point's number and own name, or the patch's name. */
+  number: string | number | null
+  ownName: string | null
+  patchName: string | null
+  year: number
+  /** The calendar year of `year`, and whether the plant is really in the ground or only in the design. */
+  yearCalendar: number
+  planted: boolean
+  /** Years since it was planted at that year, or null when not planted yet. */
+  age: number | null
+  plantedYear: number
+  height: number | null
+  spread: number | null
+  adultHeight: number
+  adultSpread: number
+  maturityYears: number
+  indicative: boolean
+}
+
 export type DesignSummary = { id: number | string; kind: string; name: string | null; capacity: number; water: number }
 
 type Station = { slope: Float32Array; aspect: Float32Array; wetness: Float32Array; frost: Float32Array; spread: Float32Array }
@@ -116,6 +144,11 @@ export type ControllerOptions = {
   onDesigns?: (designs: DesignSummary[]) => void
   onNiva?: (info: NivaInfo) => void
   onBuildings?: (info: BuildingsInfo) => void
+  /** The map's plants and their growth inputs (Relief::GrowingPlants), or null. */
+  growingPlants?: GrowingPlantsData | null
+  /** Strata colours of the map's legend, for « Couleurs des strates ». */
+  strataColors?: Record<PlantStrata, string>
+  onWalk?: (mode: WalkMode) => void
 }
 
 export type BuildingsInfo = { count: number; measured: number; attribution: string | null }
@@ -187,6 +220,16 @@ export class ReliefController {
   private nivaTerrainCache: (NivaTerrain & { ground: Float32Array }) | null = null
   private lastNivaTick: number | null = null
   private lastNivaInfo = 0
+  /** The map's plants on the grid, the year they are shown at and how. */
+  plants: ScenePlant[] = []
+  plantYear = 0
+  plantsView = { on: true, strataColors: false }
+  private plantAltitudes: Float32Array | null = null
+  /** The plants raised onto the sun's heights, for the year (to a tenth) they were raised at. */
+  private plantShadeCache: { base: ArrayLike<number>; altitudes: Float32Array; year: number; heights: Float32Array; cover: Uint8Array } | null = null
+  private sunReplay: { frame: number; timer: ReturnType<typeof setTimeout> | null } = { frame: 0, timer: null }
+  walkMode: WalkMode = 'off'
+  private walkExaggeration: number | null = null
 
   constructor(options: ControllerOptions) {
     this.options = options
@@ -244,8 +287,184 @@ export class ReliefController {
     this.reshape({ keepMesh: !this.designs.length || !this.rain.dig })
     await this.applyBase()
     this.drawOverlay()
+    this.setupPlants()
     this.options.onLoading?.(null)
     void this.loadBuildings()
+  }
+
+  // ---- The map's plants, year after year -------------------------------------
+
+  /** Today, in years after year 0 (the slider's starting point). */
+  get plantToday(): number {
+    const data = this.options.growingPlants
+    return data ? Math.min(GROWTH_YEARS, Math.max(0, yearsBetween(data.origin, data.today))) : 0
+  }
+
+  private setupPlants() {
+    const data = this.options.growingPlants
+    if (!data || !this.scene) return
+    this.plants = scenePlants(this.meta, data)
+    if (!this.plants.length) return
+    this.plantYear = Math.round(this.plantToday)
+    this.layoutPlants()
+  }
+
+  /** The plants on the shown relief (redone when ponds and swales are dug). */
+  private layoutPlants() {
+    if (!this.scene || !this.plants.length) return
+    const terrain = this.nivaTerrain()
+    const altitudes = Float32Array.from(this.plants, (p) => terrain.height(p.x, p.y))
+    this.plantAltitudes = altitudes
+    this.scene.setPlants(this.plants, altitudes)
+    this.scene.setPlantYear(this.plantYear)
+    this.scene.showPlants(this.plantsView.on)
+    if (this.plantsView.strataColors && this.options.strataColors) this.scene.setPlantColors(this.options.strataColors)
+  }
+
+  setPlantYear(year: number) {
+    this.plantYear = year
+    this.scene?.setPlantYear(year)
+    this.replaySun()
+  }
+
+  setPlantsOn(on: boolean) {
+    this.plantsView.on = on
+    this.scene?.showPlants(on)
+    this.replaySun()
+  }
+
+  /**
+   * The heights the sun reads, with the plants of the year shown standing on
+   * them (when shown), and the cells their crowns cover.
+   */
+  private sunSurface(): { heights: ArrayLike<number>; cover: Uint8Array | null; plantYear: number | null } {
+    const full = this.full as NonNullable<typeof this.full>
+    const base = this.surface ?? this.buildings?.roofs ?? full.heights
+    const altitudes = this.plantAltitudes
+    if (!this.plantsView.on || !this.plants.length || !altitudes) return { heights: base, cover: null, plantYear: null }
+    const year = Math.round(this.plantYear * 10) / 10
+    const cached = this.plantShadeCache
+    if (cached?.base === base && cached.altitudes === altitudes && cached.year === year) {
+      return { heights: cached.heights, cover: cached.cover, plantYear: year }
+    }
+    const { cols, rows } = this.meta
+    const { heights, cover } = plantShade(base, cols, rows, this.cell, this.plants, altitudes, year)
+    this.plantShadeCache = { base, altitudes, year, heights, cover }
+    return { heights, cover, plantYear: year }
+  }
+
+  /**
+   * The plants changed (their year, shown or not): the shadows follow, at
+   * each frame for the shadows of an instant, once the years settle for the
+   * hours of a whole day.
+   */
+  private replaySun() {
+    if (this.sun.mode === 'off' || !this.scene) return
+    if (this.sun.mode === 'instant') {
+      if (this.sunReplay.frame) return
+      this.sunReplay.frame = requestAnimationFrame(() => {
+        this.sunReplay.frame = 0
+        if (!this.disposed) void this.renderSun()
+      })
+      return
+    }
+    if (this.sunReplay.timer) clearTimeout(this.sunReplay.timer)
+    this.sunReplay.timer = setTimeout(() => {
+      this.sunReplay.timer = null
+      if (!this.disposed) void this.renderSun()
+    }, 500)
+  }
+
+  setPlantStrataColors(on: boolean) {
+    this.plantsView.strataColors = on
+    if (!this.scene) return
+    if (on && this.options.strataColors) this.scene.setPlantColors(this.options.strataColors)
+    else void import('./plantModels.ts').then(({ NATURAL_GREENS }) => this.scene?.setPlantColors(NATURAL_GREENS))
+  }
+
+  /** The plant under a pointer and its size at the year shown, or null. */
+  plantAt(event: { clientX: number; clientY: number }): PlantInfo | null {
+    const data = this.options.growingPlants
+    const index = this.scene?.pickPlant(event)
+    if (!data || index == null) return null
+    const plant = this.plants[index]
+    if (!plant) return null
+    const point = plant.plant != null ? data.plants[plant.plant] : null
+    const patch = plant.patch ? data.patches[plant.patch[0]] : null
+    const inputs = point ?? patch?.lines[plant.patch![1]]
+    if (!inputs) return null
+    const age = this.plantYear - plant.start
+    const size = sizeAt(plant, age)
+    return {
+      name: inputs.name, latinName: inputs.latinName, strata: plant.strata,
+      number: point?.number ?? null, ownName: point?.ownName ?? null, patchName: patch?.name ?? null,
+      year: this.plantYear, yearCalendar: calendarYear(data.origin, this.plantYear), planted: !!point?.plantedOn,
+      age: age >= 0 ? age : null,
+      plantedYear: point?.plantedOn ? new Date(point.plantedOn).getUTCFullYear() : calendarYear(data.origin, plant.start),
+      height: size?.height ?? null, spread: size?.spread ?? null,
+      adultHeight: plant.heightM, adultSpread: plant.spreadM, maturityYears: plant.maturityYears, indicative: inputs.indicative,
+    }
+  }
+
+  // ---- On foot, at eye level -----------------------------------------------------
+
+  /** Take a walk (a click then says where to stand), or come back to the overview. */
+  toggleWalk() {
+    if (!this.scene) return
+    if (this.walkMode !== 'off') return this.stopWalk()
+    if (this.niva || this.nivaPlacing) this.parkNiva()
+    this.setWalkMode('placing')
+  }
+
+  /** A click while placing: stand there, facing the middle of the plants (or north). */
+  placeWalker(event: { clientX: number; clientY: number }): boolean {
+    const scene = this.scene
+    if (!scene || this.walkMode !== 'placing') return false
+    const hit = scene.pick(event)
+    if (!hit) return false
+    const cell = this.cell * this.meshFactor
+    const x = hit.col * cell
+    const z = hit.row * cell
+    let heading = 0
+    if (this.plants.length) {
+      const cx = this.plants.reduce((sum, p) => sum + p.x, 0) / this.plants.length
+      const cz = this.plants.reduce((sum, p) => sum + p.y, 0) / this.plants.length
+      if (Math.hypot(cx - x, cz - z) > 3) heading = Math.atan2(cx - x, -(cz - z))
+    }
+    // At eye level the relief is shown as it is.
+    if (this.walkExaggeration == null) this.walkExaggeration = this.view.exaggeration
+    if (this.view.exaggeration !== 1) this.setExaggeration(1)
+    const terrain = this.nivaTerrain()
+    scene.startWalk(x, z, -heading, (px, pz) => terrain.height(px, pz))
+    this.setWalkMode('walking')
+    return true
+  }
+
+  stopWalk() {
+    this.scene?.stopWalk()
+    if (this.walkExaggeration != null) {
+      if (this.walkExaggeration !== this.view.exaggeration) this.setExaggeration(this.walkExaggeration)
+      this.walkExaggeration = null
+    }
+    this.setWalkMode('off')
+  }
+
+  /** Stand elsewhere: back to placing, still on foot. */
+  moveWalker() {
+    if (this.walkMode === 'walking') this.setWalkMode('placing')
+  }
+
+  setWalkKey(key: WalkKey, down: boolean) {
+    this.scene?.setWalkKey(key, down)
+  }
+
+  resetWalkKeys() {
+    this.scene?.resetWalkKeys()
+  }
+
+  private setWalkMode(mode: WalkMode) {
+    this.walkMode = mode
+    this.options.onWalk?.(mode)
   }
 
   /**
@@ -302,6 +521,8 @@ export class ReliefController {
   dispose() {
     this.disposed = true
     this.sunAbort?.abort()
+    cancelAnimationFrame(this.sunReplay.frame)
+    if (this.sunReplay.timer) clearTimeout(this.sunReplay.timer)
     if (this.blocksTimer) clearTimeout(this.blocksTimer)
     this.scene?.dispose()
     this.scene = null
@@ -320,13 +541,15 @@ export class ReliefController {
       if (POND_KINDS.has(kind) && geometry?.type === 'Polygon') {
         designs.push({
           id, type: 'pond', ring: geometry.coordinates[0].map((p) => toGrid(this.meta, p)),
-          depth: numberProp(props.depth, 1), berm: numberProp(props.berm, 0.3),
+          depth: numberProp(props.depth_m ?? props.depth, 1), berm: numberProp(props.berm, 0.3),
         })
       } else if (SWALE_KINDS.has(kind) && geometry?.type === 'LineString') {
+        // A keyline planted with trees or subsoiled is not dug.
+        if (kind === 'keyline' && props.use && props.use !== 'swale') continue
         const defaults = SWALE_DEFAULTS[kind]
         designs.push({
           id, type: 'swale', points: geometry.coordinates.map((p) => toGrid(this.meta, p)),
-          width: numberProp(props.width, defaults.width), depth: numberProp(props.depth, defaults.depth),
+          width: numberProp(props.width_m ?? props.width, defaults.width), depth: numberProp(props.depth_m ?? props.depth, defaults.depth),
           berm: props.berm === 0 ? 0 : numberProp(props.berm, defaults.berm),
         })
       }
@@ -349,6 +572,7 @@ export class ReliefController {
       this.footprints = []
     }
     if (this.buildingsData) this.layoutBuildings()
+    this.layoutPlants()
     if (!keepMesh) this.applySurfaceHeights()
     if (this.view.base === 'blocks') void this.renderBlocks()
     this.drainage = analyzeDrainage(this.ground, cols, rows, this.cell)
@@ -510,8 +734,8 @@ export class ReliefController {
     this.scene.setHeights(downsample(heights, this.full.cols, this.full.rows, this.meshFactor).heights)
   }
 
-  resetView() { this.scene?.resetView() }
-  topView() { this.scene?.topView() }
+  resetView() { if (this.walkMode !== 'off') this.stopWalk(); this.scene?.resetView() }
+  topView() { if (this.walkMode !== 'off') this.stopWalk(); this.scene?.topView() }
   faceNorth() { this.scene?.faceNorth() }
   /** Camera heading in radians clockwise from north, or null before the scene loads. */
   heading(): number | null { return this.scene ? this.scene.heading() : null }
@@ -626,9 +850,16 @@ export class ReliefController {
 
   private soilMaps() {
     const { soil, landcoverClasses } = this.options
-    return buildSoilMaps(this.meta.cols, this.meta.rows, this.simFactor, this.landcover, landcoverClasses, {
+    const maps = buildSoilMaps(this.meta.cols, this.meta.rows, this.simFactor, this.landcover, landcoverClasses, {
       uniformRate: soil.uniformRate, storage: soil.storage, rateFactor: soil.rateFactor, storageFactor: soil.storageFactor,
     })
+    // The person's infiltration tests: measured beats modelled.
+    const measured = (soil.measurements ?? []).map((m) => ({ ...toGrid(this.meta, [m.lng, m.lat]), rate: m.rateMmH }))
+    if (measured.length > 0) {
+      const factor = this.simFactor
+      calibrateRates(maps.rate, Math.floor(this.meta.cols / factor), Math.floor(this.meta.rows / factor), this.cell * factor, measured)
+    }
+    return maps
   }
 
   private simOptions(maps: { rate: Float32Array; storage: Float32Array }) {
@@ -855,7 +1086,6 @@ export class ReliefController {
     const scene = this.scene
     if (!scene || !this.full) return
     const { cols, rows } = this.meta
-    const surface = this.surface ?? this.buildings?.roofs ?? this.full.heights
     const [lng, lat] = this.location
     const mode = this.sun.mode
     if (mode !== 'day') this.sunAbort?.abort()
@@ -866,6 +1096,7 @@ export class ReliefController {
       this.options.onSun?.({ mode: 'off' })
       return
     }
+    const { heights: surface, cover, plantYear } = this.sunSurface()
     if (mode === 'instant') {
       const sun: SunPosition = sunPosition(this.sunInstant(), lat, lng)
       scene.setSun(sun)
@@ -879,7 +1110,7 @@ export class ReliefController {
       }
       this.maskBuffer ||= new Uint8Array(cols * rows)
       this.levelBuffer ||= new Float32Array(cols * rows)
-      const mask = shadowMask(surface, cols, rows, this.cell, sun, this.maskBuffer, this.levelBuffer)
+      const mask = shadowMask(surface, cols, rows, this.cell, sun, this.maskBuffer, this.levelBuffer, cover)
       this.lastMask = mask
       const tint = this.tintBuffer()
       let shaded = 0
@@ -898,7 +1129,7 @@ export class ReliefController {
     }
     // Hours of sun of the day: computed once per date.
     scene.setSun(null)
-    const key = `${this.sun.date}:${this.sunDayStart().toISOString()}`
+    const key = `${this.sun.date}:${this.sunDayStart().toISOString()}:${plantYear ?? '-'}`
     if (this.dayHours?.key !== key) {
       this.sunAbort?.abort()
       const abort = new AbortController()
@@ -907,6 +1138,7 @@ export class ReliefController {
       try {
         const result = await sunHours(surface, cols, rows, this.cell, lat, lng, this.sunDayStart(), {
           signal: abort.signal,
+          cover,
           onProgress: (f) => this.options.onSun?.({ mode: 'day', computing: f, daylight: null }),
         })
         this.dayHours = { key, ...result }
@@ -936,6 +1168,7 @@ export class ReliefController {
   /** Take the Niva (then click to set it down), or put it away. */
   toggleNiva() {
     if (!this.scene) return
+    if (this.walkMode !== 'off') this.stopWalk()
     if (this.niva || this.nivaPlacing) return this.parkNiva()
     this.nivaPlacing = true
     this.emitNiva()

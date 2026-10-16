@@ -24,7 +24,7 @@ fr:
       title: "Formulaires"
       page_title: "Formulaires · %{team}"
       back: "%{team}"
-      intro: "Vos formulaires restent dans Tally. Designer reçoit chaque réponse et la range dans la carte concernée, sous « Formulaires » et dans ses documents, où toute l'équipe et ton IA la retrouvent."
+      intro: "Vos formulaires restent dans Tally. Terranova reçoit chaque réponse et la range dans la carte concernée, sous « Formulaires » et dans ses documents, où toute l'équipe et ton IA la retrouvent."
     connect:
       title: "Brancher Tally"
       body: "Un retour en fin de projet, un suivi à un an, une inscription à une visite… Chaque formulaire Tally peut envoyer ses réponses ici. Il suffit d'une adresse de réception, une fois pour toute l'équipe."

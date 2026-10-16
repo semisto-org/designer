@@ -31,7 +31,7 @@ module Providers
     FAILURES = 5
     WINDOW = 60
 
-    USER_AGENT = "SemistoDesigner/1.0 (+https://designer.semisto.org)".freeze
+    USER_AGENT = "SemistoTerranova/1.0 (+https://terranova.semisto.org)".freeze
 
     module_function
 

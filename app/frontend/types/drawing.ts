@@ -15,7 +15,8 @@ export type ElementField = {
   readonly?: boolean
 }
 
-export type ElementLineStyle = { width?: number; dash?: number[]; opacity?: number; casing?: string }
+/** `arrows`: arrows along the line, in the direction it was drawn (where the water goes). */
+export type ElementLineStyle = { width?: number; dash?: number[]; opacity?: number; casing?: string; arrows?: boolean }
 export type ElementFillStyle = { opacity?: number; pattern?: 'hatch' | 'dots' }
 
 export type ElementSpec = {
@@ -32,6 +33,8 @@ export type ElementSpec = {
   fields: ElementField[]
   computed: string[]
   pickable: boolean
+  /** The line can follow the contour through a clicked point (« Suivre la courbe »). */
+  contour?: boolean
 }
 
 export type ElementLayer = { layer: FeatureLayer; color: string; elements: ElementSpec[] }

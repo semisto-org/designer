@@ -77,7 +77,21 @@
         "color": "#2b7bb9",
         "pickable": true
       },
+      "keyline": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#2b7bb9",
+        "pickable": true
+      },
       "ditch": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#1f5f8b",
+        "pickable": true
+      },
+      "overflow_pipe": {
         "geometries": [
           "LineString"
         ],
@@ -110,6 +124,13 @@
           "Polygon"
         ],
         "color": "#4a90c2",
+        "pickable": true
+      },
+      "infiltration_test": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#3d7ea6",
         "pickable": true
       }
     }
@@ -183,6 +204,13 @@
           "Polygon"
         ],
         "color": "#8a6f47",
+        "pickable": true
+      },
+      "mound": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#8b5e3c",
         "pickable": true
       },
       "terrace": {

@@ -3,7 +3,8 @@ module Mcp
   # fetched by import_from_url) into a photo or a document of a map, as an
   # upload from the editor would: the real type is read from the file's
   # first bytes, a photo's EXIF block gives its date, place and direction
-  # (the AI's values win), a HEIC photo becomes a JPEG.
+  # (the AI's values win), a HEIC photo becomes a JPEG, a video (MP4, MOV,
+  # WebM) stays as it is.
   class FileAttacher
     HEAD_BYTES = 4096
 
@@ -26,8 +27,12 @@ module Mcp
     def photo(blob, source: "import")
       type = real_type(blob)
       refuse!("unsupported_type", I18n.t("mcp.upload_errors.photo_type", name: blob.filename)) unless MapPhoto::UPLOAD_TYPES.include?(type)
-      refuse!("too_large", I18n.t("mcp.upload_errors.too_large", name: blob.filename, max: MapPhoto::MAX_BYTES / 1.megabyte)) if blob.byte_size > MapPhoto::MAX_BYTES
-      exif = blob.open { |file| PhotoExif.read(file.path) }
+      video = MapPhoto::VIDEO_TYPES.include?(type)
+      max = video ? MapPhoto::VIDEO_MAX_BYTES : MapPhoto::MAX_BYTES
+      refuse!("too_large", I18n.t("mcp.upload_errors.too_large", name: blob.filename, max: max / 1.megabyte)) if blob.byte_size > max
+      # A video's place and date are read after it is saved (PhotoCameraJob),
+      # without holding the call while up to a gigabyte is read.
+      exif = video ? {} : blob.open { |file| PhotoExif.read(file.path) }
       photo = @map.photos.new(uploaded_by: @user, source:, taken_at: exif[:taken_at], heading: exif[:heading])
       if exif[:location]
         photo.location = MapPhoto.point_from(*exif[:location])
@@ -75,13 +80,10 @@ module Mcp
         Marcel::MimeType.for(StringIO.new(head), name: blob.filename.to_s)
       end
 
-      # The library takes its extensions (MapDocument::EXTENSIONS); a PDF or
-      # an image must also be one by its bytes.
+      # The library takes any file; one named as a PDF or an image must also
+      # be one by its bytes.
       def check_document_type!(blob)
         ext = File.extname(blob.filename.to_s).delete(".").downcase
-        unless MapDocument::EXTENSIONS.include?(ext)
-          refuse!("unsupported_type", I18n.t("mcp.upload_errors.document_type", name: blob.filename))
-        end
         refuse!("too_large", I18n.t("mcp.upload_errors.too_large", name: blob.filename, max: MapDocument::MAX_BYTES / 1.megabyte)) if blob.byte_size > MapDocument::MAX_BYTES
         type = real_type(blob)
         expected = MapDocument::KINDS.find { |_, exts| exts.include?(ext) }&.first

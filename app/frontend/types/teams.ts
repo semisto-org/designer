@@ -52,11 +52,21 @@ export type TeamMap = {
   updatedAt: string
 }
 
+/** « Forfait de l'équipe »: whose plan pays for the team's maps, if anyone's. */
+export type TeamBilling = {
+  billingEnabled: boolean
+  payer: { name: string; you: boolean } | null
+  planName?: string
+  maxMaps?: number
+  mapsCount?: number
+}
+
 export type TeamPageProps = {
   team: { id: number; name: string; role: TeamRole; createdAt: string }
   members: TeamMember[]
   maps: TeamMap[]
   maxNameLength: number
+  billing: TeamBilling
   /** Admins only. */
   invitations?: TeamInvitation[]
 }

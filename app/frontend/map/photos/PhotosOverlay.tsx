@@ -3,18 +3,20 @@ import * as maplibregl from 'maplibre-gl'
 import { X } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { visibleOffset } from '@/map/visiblePadding'
+import { PhotosToggleControl } from '@/map/editor/controls'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import { photoClickAction } from '@/map/photos/click'
+import { clusterClickAction, photoClickAction } from '@/map/photos/click'
 import { photoLabel, photoUrl } from '@/map/photos/format'
 import {
-  highlightPhoto, installPhotoLayers, PHOTO_CLUSTER_LAYER, PHOTO_POINT_LAYER, photosToGeoJSON, PHOTOS_SOURCE,
+  highlightPhoto, installPhotoLayers, PHOTO_CLUSTER_LAYERS, PHOTO_POINT_LAYER, photosToGeoJSON, PHOTOS_SOURCE,
   removePhotoLayers, setPhotoLayersVisible,
 } from '@/map/photos/layers'
 import { PhotoHostContext, type PhotoHost } from '@/map/photos/host'
 import { PhotoCompare } from '@/map/photos/PhotoCompare'
 import { PhotoLightbox } from '@/map/photos/PhotoLightbox'
+import { photoMarkersVisible } from '@/map/photos/shown'
 import { getPhotosState, photoActions, usePhotos } from '@/map/photos/store'
 import type { MapPhotoData } from '@/types/soil_photos'
 
@@ -34,19 +36,43 @@ export default function PhotosOverlay() {
   useEffect(() => { photoActions.load(editor.map.id) }, [editor.map.id])
 
   const data = useMemo(() => photosToGeoJSON(photos), [photos])
+  const visible = photoMarkersVisible({ showOnMap, placingId })
 
   // Markers. Installed after the editor's own layers so they sit on top.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       installPhotoLayers(map, data)
-      setPhotoLayersVisible(map, showOnMap)
+      setPhotoLayersVisible(map, visible)
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [map, data, showOnMap])
+  }, [map, data, visible])
+
+  // « Photos sur la carte »: a button in the column of map controls, as soon as one photo is placed.
+  const placed = data.features.length
+  const anyPlaced = placed > 0
+  const toggle = useRef<PhotosToggleControl | null>(null)
+  useEffect(() => {
+    if (!anyPlaced) return
+    const control = new PhotosToggleControl(() => photoActions.setShowOnMap(!getPhotosState().showOnMap))
+    map.addControl(control, 'top-right')
+    toggle.current = control
+    return () => {
+      toggle.current = null
+      map.removeControl(control)
+    }
+  }, [map, anyPlaced])
+  useEffect(() => {
+    toggle.current?.update(showOnMap, t(`soil_photos.toggle.${showOnMap ? 'hide' : 'show'}`, { count: placed }))
+  }, [showOnMap, placed, anyPlaced])
   useEffect(() => () => removePhotoLayers(map), [map])
   useEffect(() => { highlightPhoto(map, openId) }, [map, openId, data])
 
-  // Click a marker: open the photo; click a cluster: zoom into it. Hover: a small preview.
+  // Read by the click handlers below, which are not rebuilt when a panel opens.
+  const panelOpen = useRef(false)
+  panelOpen.current = editor.activePanel != null
+
+  // Click a marker: open the photo. Click a group: zoom until it splits, or
+  // open its photos when they were taken from the same spot. Hover: a small preview.
   useEffect(() => {
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 18, className: 'photo-preview', maxWidth: '200px' })
     // Over a drawn element, the element gets selected and the photo waits in a small bubble.
@@ -78,11 +104,21 @@ export default function PhotosOverlay() {
       }
     }
     const onClusterClick = async (event: MapMouseEvent & { features?: MapGeoJSONFeature[] }) => {
+      if (editor.drawing || getPhotosState().placingId != null) return
       const feature = event.features?.[0]
       const source = map.getSource(PHOTOS_SOURCE) as maplibregl.GeoJSONSource | undefined
       if (!feature || !source) return
-      const zoom = await source.getClusterExpansionZoom(Number(feature.properties?.cluster_id))
-      map.easeTo({ center: (feature.geometry as GeoJSON.Point).coordinates as [number, number], zoom: zoom + 0.5 })
+      const clusterId = Number(feature.properties?.cluster_id)
+      const zoom = await source.getClusterExpansionZoom(clusterId)
+      if (clusterClickAction(zoom, map.getZoom()) === 'zoom') {
+        map.easeTo({
+          center: (feature.geometry as GeoJSON.Point).coordinates as [number, number], zoom: zoom + 0.5,
+          offset: visibleOffset(panelOpen.current),
+        })
+        return
+      }
+      const leaves = await source.getClusterLeaves(clusterId, Infinity, 0)
+      photoActions.openGroup(leaves.map((leaf) => Number(leaf.properties?.id)))
     }
     const onEnter = (event: MapMouseEvent & { features?: MapGeoJSONFeature[] }) => {
       map.getCanvas().style.cursor = 'pointer'
@@ -104,18 +140,18 @@ export default function PhotosOverlay() {
     const pointer = () => { map.getCanvas().style.cursor = 'pointer' }
     const reset = () => { map.getCanvas().style.cursor = '' }
     map.on('click', PHOTO_POINT_LAYER, onPointClick)
-    map.on('click', PHOTO_CLUSTER_LAYER, onClusterClick)
+    map.on('click', PHOTO_CLUSTER_LAYERS, onClusterClick)
     map.on('mouseenter', PHOTO_POINT_LAYER, onEnter)
     map.on('mouseleave', PHOTO_POINT_LAYER, onLeave)
-    map.on('mouseenter', PHOTO_CLUSTER_LAYER, pointer)
-    map.on('mouseleave', PHOTO_CLUSTER_LAYER, reset)
+    map.on('mouseenter', PHOTO_CLUSTER_LAYERS, pointer)
+    map.on('mouseleave', PHOTO_CLUSTER_LAYERS, reset)
     return () => {
       map.off('click', PHOTO_POINT_LAYER, onPointClick)
-      map.off('click', PHOTO_CLUSTER_LAYER, onClusterClick)
+      map.off('click', PHOTO_CLUSTER_LAYERS, onClusterClick)
       map.off('mouseenter', PHOTO_POINT_LAYER, onEnter)
       map.off('mouseleave', PHOTO_POINT_LAYER, onLeave)
-      map.off('mouseenter', PHOTO_CLUSTER_LAYER, pointer)
-      map.off('mouseleave', PHOTO_CLUSTER_LAYER, reset)
+      map.off('mouseenter', PHOTO_CLUSTER_LAYERS, pointer)
+      map.off('mouseleave', PHOTO_CLUSTER_LAYERS, reset)
       popup.remove()
       offer.remove()
     }
@@ -199,6 +235,7 @@ export default function PhotosOverlay() {
   }), [editor.map.id, editor.canEdit, editor.notify, editor.activePanel, map])
 
   const placing = photos.find((p) => p.id === placingId)
+  const group = useMemo(() => (state.group ? photos.filter((p) => state.group?.includes(p.id)) : undefined), [photos, state.group])
   return (
     <>
       {placing && (
@@ -211,7 +248,7 @@ export default function PhotosOverlay() {
         </div>
       )}
       <PhotoHostContext.Provider value={host}>
-        <PhotoLightbox />
+        <PhotoLightbox order={group} />
         <PhotoCompare />
       </PhotoHostContext.Provider>
     </>

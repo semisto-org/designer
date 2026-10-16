@@ -16,7 +16,7 @@ fr:
       no_portal: "Le portail de facturation sera disponible après ton premier paiement."
       stripe: "Le paiement est momentanément indisponible. Réessaie dans quelques minutes."
     checkout:
-      terms: "En payant, tu acceptes les [conditions d'utilisation](%{url}) de Semisto Designer."
+      terms: "En payant, tu acceptes les [conditions d'utilisation](%{url}) de Semisto Terranova."
       success_title: "Merci, ton paiement est bien reçu."
       success_body: "Ta formule est activée dans quelques instants. Une facture t'est envoyée par e-mail."
       success_waiting: "Nous confirmons ton paiement auprès de Stripe… cette page se met à jour toute seule."
@@ -156,7 +156,7 @@ fr:
   billing_mailer:
     months: [ "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre" ]
     greeting: "Bonjour %{name},"
-    signature: "À bientôt sur Semisto Designer,"
+    signature: "À bientôt sur Semisto Terranova,"
     team: "L'équipe Semisto"
     renewal_reminder:
       cta: "Renouveler mon forfait"
@@ -164,13 +164,13 @@ fr:
       keep_days: "Si tu renouvelles avant l'échéance, aucun jour n'est perdu : la nouvelle année commence à la fin de celle-ci."
       readable: "Tes cartes restent toujours lisibles, exportables et commentables ; rien n'est jamais supprimé."
       d30:
-        subject: "Ton forfait Semisto Designer se termine le %{date}"
+        subject: "Ton forfait Semisto Terranova se termine le %{date}"
         body: "Ton forfait particulier est valable jusqu'au %{date}, soit dans un mois. Il couvre tes cartes supplémentaires, le PDF à l'échelle, les analyses et les brouillons de ton IA."
       d7:
-        subject: "Plus que 7 jours : ton forfait Semisto Designer se termine le %{date}"
+        subject: "Plus que 7 jours : ton forfait Semisto Terranova se termine le %{date}"
         body: "Ton forfait particulier se termine le %{date}, dans une semaine. Si ton projet avance encore, tu peux le renouveler dès maintenant."
       expired:
-        subject: "Ton forfait Semisto Designer est arrivé à échéance"
+        subject: "Ton forfait Semisto Terranova est arrivé à échéance"
         body: "Ton forfait particulier a pris fin le %{date}."
         read_only:
           one: "%{count} de tes cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Renouvelle le forfait pour la modifier à nouveau."
@@ -178,25 +178,25 @@ fr:
         free_ok: "Ta première carte reste entièrement modifiable, comme avant."
     ai_trial_ending:
       subject: "Ton essai des brouillons de ton IA se termine le %{date}"
-      body: "Depuis bientôt deux semaines, ton IA peut poser des brouillons sur tes cartes Semisto Designer. Ton essai se termine le %{date}."
+      body: "Depuis bientôt deux semaines, ton IA peut poser des brouillons sur tes cartes Semisto Terranova. Ton essai se termine le %{date}."
       after: "Ensuite, rien ne disparaît : ton IA continue de lire tes cartes, et tout ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demanderont le forfait."
       cta: "Voir les formules"
       account: "Où en est la connexion de ton IA : %{url}"
     drone_ordered:
       subject: "Mission drone commandée par %{name}"
-      body: "%{name} (%{email}) vient de commander une mission drone sur Semisto Designer."
+      body: "%{name} (%{email}) vient de commander une mission drone sur Semisto Terranova."
       amount: "Montant payé : %{amount} (TVA comprise)."
       promo: "Code promotionnel utilisé : %{code}."
       next: "Prochaine étape : le contacter (répondre à cet e-mail) pour organiser la prise de vue, puis configurer la vue drone sur sa carte."
   account_mailer:
     deletion_request:
       subject: "Demande de suppression de compte : %{email}"
-      body: "%{name} (%{email}) demande la suppression de son compte Semisto Designer."
+      body: "%{name} (%{email}) demande la suppression de son compte Semisto Terranova."
       owned_maps: "Cartes possédées : %{count}."
       payments: "Paiements enregistrés : %{count} (pièces comptables à conserver)."
       next: "À faire : exporter ou archiver ses cartes, puis supprimer le compte. Répondre à cet e-mail pour lui écrire."
     deletion_confirmation:
       subject: "Nous avons bien reçu ta demande de suppression de compte"
       greeting: "Bonjour %{name},"
-      body: "Nous avons bien reçu ta demande de suppression de ton compte Semisto Designer. Nous te répondons sous quelques jours."
+      body: "Nous avons bien reçu ta demande de suppression de ton compte Semisto Terranova. Nous te répondons sous quelques jours."
       note: "D'ici là, rien n'est supprimé et tu peux continuer à utiliser tes cartes. Les factures sont conservées comme la loi l'exige. Si tu n'es pas à l'origine de cette demande, réponds simplement à cet e-mail."

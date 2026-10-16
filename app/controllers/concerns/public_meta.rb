@@ -5,7 +5,7 @@
 module PublicMeta
   extend ActiveSupport::Concern
 
-  SITE_NAME = "Semisto Designer".freeze
+  SITE_NAME = "Semisto Terranova".freeze
 
   private
     # Renders an Inertia page with its meta tags. `page` is the key under

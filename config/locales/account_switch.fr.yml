@@ -1,0 +1,13 @@
+fr:
+  account_switch:
+    title: "Mes autres comptes"
+    current: "Compte actif"
+    count:
+      one: "%{count} compte connecté"
+      other: "%{count} comptes connectés"
+    add: "Ajouter un compte"
+    sign_out_this: "Déconnecter %{email}"
+    switched: "Tu es maintenant sur le compte de %{name}."
+    signed_out_to: "Compte déconnecté. Tu es maintenant sur celui de %{name}."
+    gone: "Ce compte n'est plus connecté sur ce navigateur : reconnecte-le avec « Ajouter un compte »."
+    adding: "Connecte un autre compte. Tu restes connecté avec %{email} et tu passeras de l'un à l'autre depuis ton avatar."

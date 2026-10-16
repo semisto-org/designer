@@ -135,9 +135,10 @@ export function attributions(source: MapLibreMap): string[] {
   return [...new Set(texts.filter(Boolean))]
 }
 
-type RenderOptions = { center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; version?: string | null }
+/** `hiddenKinds` and `hiddenIds` (plants of a hidden strata): what « Calques » hides inside the shown layers. */
+type RenderOptions = { center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, version }: RenderOptions): Promise<string> {
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, version, hiddenKinds, hiddenIds }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -161,7 +162,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
   try {
     installDrawingImages(map, source)
     await waitFor(map, 'load')
-    applyLayerVisibility(map, hiddenLayers, { activeOnly: true, version })
+    applyLayerVisibility(map, hiddenLayers, { activeOnly: true, version, hiddenKinds, hiddenIds })
     await waitFor(map, 'idle')
     return map.getCanvas().toDataURL('image/jpeg', 0.92)
   } finally {
@@ -175,12 +176,18 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
 export type LegendEntry = { key: string; label: string; color: string; geometry: 'Point' | 'LineString' | 'Polygon'; dash?: number[]; icon?: string }
 
 /** One entry per kind (and per named zone) drawn on the visible layers, in design layer order. */
-export function legendEntries(features: MapFeature[], hiddenLayers: string[], withBoundary: boolean, version: string | null = null): LegendEntry[] {
+export function legendEntries(
+  features: MapFeature[], hiddenLayers: string[], withBoundary: boolean, version: string | null = null,
+  hiddenInside: { kinds?: string[]; ids?: number[] } = {},
+): LegendEntry[] {
+  const hiddenKinds = hiddenInside.kinds ?? []
+  const hiddenIds = new Set(hiddenInside.ids ?? [])
   const entries: LegendEntry[] = withBoundary
     ? [{ key: 'boundary', label: t('drawing.pdf.boundary'), color: '#5b5781', geometry: 'LineString' }]
     : []
   const seen = new Set<string>()
-  const visible = features.filter((f) => f.properties.status === 'active' && !hiddenLayers.includes(f.properties.layer) && inVersion(f, version))
+  const visible = features.filter((f) => f.properties.status === 'active' && !hiddenLayers.includes(f.properties.layer) && inVersion(f, version) &&
+    !hiddenIds.has(f.properties.id) && !(f.properties.kind && hiddenKinds.includes(f.properties.kind)))
   for (const layer of DESIGN_LAYERS) {
     for (const feature of visible.filter((f) => f.properties.layer === layer)) {
       const kind = feature.properties.kind
@@ -304,6 +311,8 @@ export type PdfInput = {
   scale: number
   center: [number, number]
   hiddenLayers: string[]
+  hiddenKinds?: string[]
+  hiddenIds?: number[]
   version?: string | null
   author: string | null
   areaM2: number | null
@@ -316,12 +325,12 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
   const layout = pageLayout(input.paper, input.orientation)
   const { frame, cartouche: cart } = layout
   onProgress?.('map')
-  const image = await renderMap(source, { center: input.center, scale: input.scale, frame, hiddenLayers: input.hiddenLayers, version: input.version })
+  const image = await renderMap(source, { center: input.center, scale: input.scale, frame, hiddenLayers: input.hiddenLayers, version: input.version, hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds })
   onProgress?.('pdf')
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: input.orientation, unit: 'mm', format: input.paper.toLowerCase(), compress: true })
   const big = input.paper === 'A3'
-  doc.setProperties({ title: pdfText(input.title), creator: 'Semisto Designer', author: pdfText(input.author ?? '') })
+  doc.setProperties({ title: pdfText(input.title), creator: 'Semisto Terranova', author: pdfText(input.author ?? '') })
 
   // Map and frame.
   doc.addImage(image, 'JPEG', frame.x, frame.y, frame.w, frame.h, undefined, 'FAST')

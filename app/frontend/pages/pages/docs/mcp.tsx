@@ -14,6 +14,8 @@ type Props = {
     requestsPerMinute: number
     maxFeaturesPerProposal: number
     maxPendingDrafts: number
+    maxUpdatesPerProposal: number
+    maxElementsPerUpdateFilter: number
     bufferM: number
     accessTokenMinutes: number
     refreshTokenDays: number
@@ -129,6 +131,7 @@ export default function McpDocs({ tools, endpoints, scopes, limits }: Props) {
           <li>{t('docs_mcp.limits.rate', { count: limits.requestsPerMinute })}</li>
           <li>{t('docs_mcp.limits.proposal', { count: limits.maxFeaturesPerProposal })}</li>
           <li>{t('docs_mcp.limits.pending', { count: formatNumber(limits.maxPendingDrafts) })}</li>
+          <li>{t('docs_mcp.limits.updates', { count: limits.maxUpdatesPerProposal, filtered: limits.maxElementsPerUpdateFilter })}</li>
           <li>{t('docs_mcp.limits.buffer', { meters: limits.bufferM })}</li>
           <li>{t('docs_mcp.limits.transport')}</li>
         </ul>

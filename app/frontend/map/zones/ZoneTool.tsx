@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { featureColor } from '@/map/drawing/catalog'
-import { drawingStore, setHiddenLayers, useDrawingState } from '@/map/drawing/store'
+import { revealForDrawing, useDrawingState } from '@/map/drawing/store'
 import { isZoneKind, nextZoneColor, ZONE_COLORS, type ZoneKind } from '@/map/zones/zones'
 
 /** Zones go to the notes layer: they annotate the plan for the client. */
@@ -36,8 +36,7 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
   useEffect(() => () => latest.current.cancelDraw(), [])
 
   async function draw(kind: ZoneKind) {
-    const hidden = drawingStore.get().hiddenLayers
-    if (hidden.includes(ZONE_LAYER)) setHiddenLayers(hidden.filter((l) => l !== ZONE_LAYER))
+    revealForDrawing(ZONE_LAYER, kind)
     setDrawing(kind)
     const geometry = await latest.current.draw(kind === 'zone' ? 'polygon' : 'linestring', { color })
     setDrawing(null)

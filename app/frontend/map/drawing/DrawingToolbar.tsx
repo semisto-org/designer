@@ -1,17 +1,18 @@
 import clsx from 'clsx'
 import type { Geometry } from 'geojson'
-import { LandPlot, Pencil, Ruler, Shapes, type LucideIcon } from 'lucide-react'
+import { Hand, LandPlot, Pencil, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { formatArea, formatLength, t } from '@/lib/i18n'
+import { formatArea, formatLength, t, translations } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { measure } from '@/map/editor/measure'
 import { drawShapeFor, storedProperties } from '@/map/drawing/catalog'
+import { reliefReady, traceContour } from '@/map/drawing/contour'
 import { ElementPicker, rememberRecent } from '@/map/drawing/ElementPicker'
 import { MeasureTool, measureProperties } from '@/map/drawing/MeasureTool'
 import { saveFeature } from '@/map/drawing/save'
 import { SketchTool } from '@/map/drawing/SketchTool'
-import { drawingStore, setHiddenLayers, useDrawingState, type DrawingTool } from '@/map/drawing/store'
+import { drawingStore, revealForDrawing, useDrawingState, type DrawingTool } from '@/map/drawing/store'
 import { ZoneTool } from '@/map/zones/ZoneTool'
 import type { ElementSpec } from '@/types/drawing'
 
@@ -38,7 +39,7 @@ function ToolButton({ icon: Icon, label, hint, active, onClick }: { icon: Lucide
 function HintBar({ text, children }: { text: string; children?: React.ReactNode }) {
   return (
     <div className="pointer-events-auto flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-loam-900/90 px-3 py-2 text-sm text-white shadow-lg" role="status">
-      <span className="min-w-0 flex-1">{text}</span>
+      <span className="min-w-[14rem] flex-1">{text}</span>
       <div className="flex shrink-0 gap-2">{children}</div>
     </div>
   )
@@ -58,6 +59,11 @@ export default function DrawingToolbar() {
   const tool = useDrawingState((s) => s.tool)
   const shapeEditId = useDrawingState((s) => s.shapeEditId)
   const [drawingSpec, setDrawingSpec] = useState<ElementSpec | null>(null)
+  // « Suivre la courbe »: the line follows the contour through a clicked point.
+  const [contourAvailable, setContourAvailable] = useState(false)
+  const [contourMode, setContourMode] = useState(false)
+  const [tracing, setTracing] = useState(false)
+  const switchTo = useRef<boolean | null>(null)
   const [shapeMeasure, setShapeMeasure] = useState<string | null>(null)
 
   const setTool = useCallback((next: DrawingTool) => {
@@ -69,12 +75,47 @@ export default function DrawingToolbar() {
 
   async function drawElement(spec: ElementSpec) {
     const editor = latest.current
-    const hidden = drawingStore.get().hiddenLayers
-    if (hidden.includes(spec.layer)) setHiddenLayers(hidden.filter((l) => l !== spec.layer))
+    revealForDrawing(spec.layer, spec.kind)
     rememberRecent(spec.kind)
     setDrawingSpec(spec)
-    const geometry = await editor.draw(drawShapeFor(spec.geometries[0]))
+    // A swale or a keyline belongs on the contour: it starts there whenever the relief allows it.
+    const available = !!spec.contour && editor.entitlements.analyses && (await reliefReady(editor.map.id))
+    setContourAvailable(available)
+    let follow = available && (spec.kind === 'swale' || spec.kind === 'keyline')
+    let geometry: Geometry | null = null
+    let created: string | null = null
+    for (;;) {
+      setContourMode(follow)
+      const drawn = await latest.current.draw(follow ? 'point' : drawShapeFor(spec.geometries[0]))
+      const next = switchTo.current
+      switchTo.current = null
+      if (!drawn && next !== null) {
+        follow = next
+        continue
+      }
+      if (!drawn || !follow || drawn.type !== 'Point') {
+        geometry = drawn
+        break
+      }
+      setTracing(true)
+      try {
+        const contour = await traceContour(latest.current.map.id, drawn.coordinates)
+        geometry = contour.geometry
+        created = t('relief.contour.created', {
+          kind: t(`editor.kinds.${spec.kind}`),
+          elevation: contour.elevationM.toLocaleString('fr-BE', { maximumFractionDigits: 1 }),
+          length: formatLength(measure(contour.geometry).length),
+        })
+        break
+      } catch (error) {
+        // The point is off the terrain or on flat ground: say why and let the person try another one.
+        latest.current.notify((error as Error).message, 'error')
+      } finally {
+        setTracing(false)
+      }
+    }
     setDrawingSpec(null)
+    setContourMode(false)
     if (drawingStore.get().tool === 'draw') drawingStore.set({ tool: null })
     if (!geometry) return
     try {
@@ -82,10 +123,15 @@ export default function DrawingToolbar() {
       const version = drawingStore.get().version
       const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties: { ...spec.defaults }, ...(version ? { tags: [version] } : {}) })
       latest.current.select(feature.properties.id)
-      latest.current.notify(t('drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }))
+      latest.current.notify(created ?? t('drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }))
     } catch (error) {
       latest.current.notify((error as Error).message, 'error')
     }
+  }
+
+  function toggleContour() {
+    switchTo.current = !contourMode
+    latest.current.cancelDraw()
   }
 
   // Shape editing, asked by the inspector (ElementSection).
@@ -167,8 +213,20 @@ export default function DrawingToolbar() {
             <ElementPicker onPick={(spec) => void drawElement(spec)} onClose={close} />
           )}
           {tool === 'draw' && drawingSpec && (
-            <HintBar text={t(geometry === 'Point' ? 'drawing.toolbar.hint_point' : geometry === 'Polygon' ? 'drawing.toolbar.hint_polygon' : 'drawing.toolbar.hint_line', { kind: kindLabel })}>
-              {geometry !== 'Point' && (
+            <HintBar
+              text={
+                tracing ? t('relief.contour.tracing')
+                : contourMode ? t('relief.contour.hint', { kind: kindLabel })
+                : [t(geometry === 'Point' ? 'drawing.toolbar.hint_point' : geometry === 'Polygon' ? 'drawing.toolbar.hint_polygon' : 'drawing.toolbar.hint_line', { kind: kindLabel }), translations('drawing.toolbar.kind_hints')[drawingSpec.kind]].filter(Boolean).join(' ')
+              }
+            >
+              {contourAvailable && (
+                <Button size="sm" variant="secondary" onClick={toggleContour} disabled={tracing} title={contourMode ? undefined : t('relief.contour.follow_hint')}>
+                  {contourMode ? <Hand className="h-4 w-4" aria-hidden /> : <Spline className="h-4 w-4" aria-hidden />}
+                  {t(contourMode ? 'relief.contour.freehand' : 'relief.contour.follow')}
+                </Button>
+              )}
+              {geometry !== 'Point' && !contourMode && (
                 <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.toolbar.finish')}</Button>
               )}
               <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.toolbar.cancel')}</Button>

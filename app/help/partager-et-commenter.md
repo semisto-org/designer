@@ -5,12 +5,12 @@ category: Partager et collaborer
 order: 60
 ---
 
-Un projet de jardin-forêt se construit rarement seul. Designer permet d'inviter, de discuter sur la carte même, et de montrer son travail.
+Un projet de jardin-forêt se construit rarement seul. Terranova permet d'inviter, de discuter sur la carte même, et de montrer son travail.
 
 ## Trois rôles par carte
 
 - **Propriétaire** (un seul) : la personne dont le forfait porte la carte. Elle gère le partage, peut archiver la carte ou la transférer.
-- **Éditeur** (jusqu'à 3, gratuits) : modifie la carte à part entière. Il travaille avec ce que permet le forfait du propriétaire, et n'a pas besoin de payer.
+- **Éditeur** (jusqu'à 3, gratuits) : modifie la carte à part entière. Il travaille avec ce que permet le forfait qui couvre la carte (celui du propriétaire, ou celui de l'équipe), et n'a pas besoin de payer.
 - **Lecteur** (autant que tu veux) : consulte la carte et la commente, sans la modifier.
 
 Une carte à laquelle on est invité **ne compte jamais** dans la formule de l'invité : seules les cartes que l'on possède comptent.

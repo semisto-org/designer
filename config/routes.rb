@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   # Sign-in: Google, a magic link (or the code sent with it), or a password.
   resource :session, only: %i[new create destroy]
   post "session/code", to: "sessions#code", as: :session_code
+  # « Changer de compte »: another account signed in on this browser.
+  post "session/switch/:id", to: "sessions#switch", as: :switch_session
   post "session/password", to: "sessions#password", as: :session_password
   get "magic/:token", to: "magic_links#show", as: :magic_link
   post "magic/:token", to: "magic_links#create"
@@ -123,6 +125,9 @@ Rails.application.routes.draw do
   post "mcp", to: "mcp#create", as: :mcp
   match "mcp", to: "mcp#method_not_allowed", via: %i[get delete]
   match "mcp", to: "mcp#preflight", via: :options
+  # One part of a large file sent after create_upload (McpUpload#part_size).
+  put "mcp/uploads/:token/parts/:number", to: "mcp/upload_parts#update", as: :mcp_upload_part,
+    constraints: { token: %r{[^/]+}, number: /\d+/ }
   get ".well-known/oauth-authorization-server", to: "oauth/metadata#authorization_server", as: :oauth_authorization_server_metadata
   get ".well-known/oauth-protected-resource", to: "oauth/metadata#protected_resource", as: :oauth_protected_resource_metadata
   get ".well-known/oauth-protected-resource/mcp", to: "oauth/metadata#protected_resource"
@@ -159,6 +164,16 @@ Rails.application.routes.draw do
           post :reject_all
         end
       end
+      resources :feature_updates, only: :index do
+        member do
+          post :accept
+          post :reject
+        end
+        collection do
+          post :accept_all
+          post :reject_all
+        end
+      end
       resources :ai_actions, only: :index
     end
   end
@@ -170,6 +185,10 @@ Rails.application.routes.draw do
       resource :relief, only: :show do
         get "files/:kind", action: :file, as: :file, constraints: { kind: /grid|surface|landcover|texture/ }
         get :buildings
+        get :contour
+        get :catchment
+        get :keypoints
+        get :parallels
       end
       resource :terrain, only: %i[show create]
       resource :water_settings, only: :update
@@ -258,6 +277,7 @@ Rails.application.routes.draw do
   resources :maps, only: [] do
     scope module: :maps do
       resource :observed_climate, only: :show
+      resource :water_balance, only: :show
     end
   end
   # --- end observed_climate ---
@@ -353,6 +373,8 @@ Rails.application.routes.draw do
   resources :teams, only: %i[index create show update destroy] do
     scope module: :teams do
       resources :memberships, only: %i[update destroy]
+      # « Forfait de l'équipe »: an admin's plan pays for every team map.
+      resource :billing, only: %i[update destroy]
       resources :invitations, only: %i[create destroy] do
         post :resend, on: :member
       end

@@ -60,6 +60,14 @@ fr:
       done: "Photo placée."
     marker:
       open: "Voir la photo"
+    toggle:
+      hide:
+        one: "Masquer la photo de la carte"
+        other: "Masquer les %{count} photos de la carte"
+      show:
+        one: "Afficher la photo sur la carte"
+        other: "Afficher les %{count} photos sur la carte"
+      layer: "Photos"
     video:
       label: "Vidéo"
       unsupported: "Ton navigateur ne lit pas cette vidéo. Télécharge-la pour la regarder."
@@ -228,7 +236,7 @@ fr:
       suggest: "Suggérer des emplacements"
       add: "Ajouter un point"
       read_only: "Tu vois les points de prélèvement de cette carte. Seuls les éditeurs peuvent en ajouter."
-      empty: "Aucun point pour l'instant. Laisse Designer suggérer où prélever, ou pose les points toi-même sur la carte."
+      empty: "Aucun point pour l'instant. Laisse Terranova suggérer où prélever, ou pose les points toi-même sur la carte."
       count:
         zero: "Aucun point"
         one: "1 point"
@@ -295,7 +303,7 @@ fr:
           title: "Où prélever ?"
           intro: "Un échantillon représente une zone homogène : même sol, même végétation, même histoire. Un potager, un verger et une prairie font trois échantillons."
           steps:
-            s1: "Dans l'onglet « Points », laisse Designer suggérer des emplacements : il répartit les points sur le terrain, loin du bord, des bâtiments, de l'eau et des chemins."
+            s1: "Dans l'onglet « Points », laisse Terranova suggérer des emplacements : il répartit les points sur le terrain, loin du bord, des bâtiments, de l'eau et des chemins."
             s2: "Évite les pieds de haies et d'arbres isolés, les anciens feux, les tas de compost, les abreuvoirs, les passages d'animaux, les pieds de gouttière et les remblais."
             s3: "Au-delà d'un hectare, ou si le terrain varie beaucoup (pente, creux, ancien bras d'eau), multiplie les échantillons."
         how:
@@ -306,7 +314,7 @@ fr:
             s2: "Dans la zone, marche en zigzag et fais 10 à 15 prises, chacune à plus de 5 m d'un obstacle."
             s3: "À chaque prise, écarte les feuilles et l'herbe, puis découpe une tranche de terre en V : sur 20 cm de profondeur dans un potager, un jardin ou un verger, sur 10 cm sous une prairie permanente."
             s4: "Réunis toutes les prises dans le seau, enlève cailloux et grosses racines, mélange, puis remplis le sac avec environ 500 g de ce mélange."
-            s5: "Étiquette : zone, profondeur, date. Note-le aussi dans Designer, sur le point correspondant."
+            s5: "Étiquette : zone, profondeur, date. Note-le aussi dans Terranova, sur le point correspondant."
         ask:
           title: "Que demander au laboratoire ?"
           intro: "Choisis un laboratoire de sol agréé (en Wallonie, le réseau Requasud en regroupe plusieurs) et sa formule « jardin » ou « verger ». Demande au minimum :"
@@ -325,7 +333,7 @@ fr:
             s1: "Remplis le bocal au tiers de terre émiettée, sans cailloux, puis d'eau jusqu'aux trois quarts. Ajoute une cuillère de liquide vaisselle."
             s2: "Ferme, secoue énergiquement trois minutes, puis pose le bocal sur une table sans y toucher."
             s3: "Après 1 minute, marque la hauteur du dépôt : c'est le sable. Après 2 heures, marque le suivant : le limon. Après 24 heures, la dernière couche est l'argile."
-            s4: "Divise chaque couche par la hauteur totale pour obtenir des pourcentages, puis saisis-les dans un point : Designer en déduit la classe de texture."
+            s4: "Divise chaque couche par la hauteur totale pour obtenir des pourcentages, puis saisis-les dans un point : Terranova en déduit la classe de texture."
         after:
           title: "Après le prélèvement"
           steps:
@@ -334,7 +342,7 @@ fr:
             s3: "L'onglet « Comparer » met tes points côte à côte et situe chaque valeur (bas, correct, élevé)."
     suggestions:
       title: "Où prélever ?"
-      hint: "Designer répartit les points sur ton terrain, loin du bord, des bâtiments, de l'eau et des chemins."
+      hint: "Terranova répartit les points sur ton terrain, loin du bord, des bâtiments, de l'eau et des chemins."
       count: "Nombre de points"
       run: "Calculer"
       running: "Calcul…"
@@ -391,7 +399,7 @@ fr:
       ai:
         title: "Faire lire les rapports par ton IA"
         intro: "Ton IA (Claude, ChatGPT, Le Chat…) lit les PDF et propose chaque valeur, unités converties. Tu les vérifies ici, une par une, avant qu'elles n'entrent dans les résultats."
-        prompt: "Lis les rapports du laboratoire du point « %{label} » de ma carte « %{map} » dans Semisto Designer et propose les résultats."
+        prompt: "Lis les rapports du laboratoire du point « %{label} » de ma carte « %{map} » dans Semisto Terranova et propose les résultats."
         review_title:
           one: "1 valeur lue par ton IA"
           other: "%{count} valeurs lues par ton IA"
@@ -502,10 +510,10 @@ fr:
           one: "1 photo attend ton IA"
           other: "%{count} photos attendent ton IA"
         ask: "Demande-lui :"
-        prompt: "Lis les photos de bio-indicatrices de ma carte « %{map} » dans Semisto Designer et propose les plantes sauvages que tu y vois."
+        prompt: "Lis les photos de bio-indicatrices de ma carte « %{map} » dans Semisto Terranova et propose les plantes sauvages que tu y vois."
         copy: "Copier"
         copied: "Copié"
-        connect: "Ton IA n'est pas encore reliée à Designer ? Relie-la depuis ton compte."
+        connect: "Ton IA n'est pas encore reliée à Terranova ? Relie-la depuis ton compte."
         connect_link: "Relier mon IA"
         not_placed: "Sans position : place-la, les plantes se poseront là."
         place: "Placer"

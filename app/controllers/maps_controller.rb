@@ -70,6 +70,9 @@ class MapsController < ApplicationController
   end
 
   def update
+    # Editors shape the map; only its owner renames it.
+    return require_owner! if renaming? && @role != "owner"
+
     if @map.update(map_params)
       respond_to do |format|
         format.json { render json: { map: @map.as_inertia(Current.user) } }
@@ -89,6 +92,10 @@ class MapsController < ApplicationController
   end
 
   private
+    def renaming?
+      params[:map].respond_to?(:key?) && params[:map].key?(:name) && params[:map][:name].to_s.strip != @map.name
+    end
+
     # Map#role_for for a whole list, in two queries instead of two a map.
     def listed_roles(maps)
       user = Current.user

@@ -38,6 +38,6 @@ L'horizon vient d'un modèle du terrain dont les mailles font environ 90 m. Il v
 ## D'où viennent les chiffres
 
 - La ligne d'horizon et le rayonnement viennent de **PVGIS**, le système d'information géographique sur l'énergie solaire du Centre commun de recherche de la Commission européenne (PVGIS © European Communities, 2001-2026). Leur usage est libre, à condition de citer la source.
-- La course du soleil et les heures de jour sont calculées par Designer avec l'algorithme astronomique de la NOAA (précis à bien moins d'un degré).
+- La course du soleil et les heures de jour sont calculées par Terranova avec l'algorithme astronomique de la NOAA (précis à bien moins d'un degré).
 
 Si PVGIS ne répond pas, le panneau garde la course du soleil et les heures de jour sur un horizon dégagé, et te dit ce qui manque.

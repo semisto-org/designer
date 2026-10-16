@@ -9,7 +9,7 @@ import { useCompressionRefresh } from '@/documents/compression'
 import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
 import { UploadList } from '@/documents/ProjectDocuments'
-import { documentAccept, useDocumentUploads } from '@/documents/upload'
+import { useDocumentUploads } from '@/documents/upload'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { formatMegabytes } from '@/map/photos/format'
@@ -142,7 +142,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
               <FilePlus2 className="h-4 w-4" />{t('documents.add')}
             </Button>
             <p className="text-sm text-loam-500">{t('documents.drop_hint', { max: formatMegabytes(limits.maxBytes) })}</p>
-            <input ref={input} type="file" multiple accept={documentAccept(limits)} className="sr-only" aria-label={t('documents.add')}
+            <input ref={input} type="file" multiple className="sr-only" aria-label={t('documents.add')}
               onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
           </div>
         )}

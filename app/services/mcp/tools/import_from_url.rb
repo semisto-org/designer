@@ -49,7 +49,8 @@ module Mcp
 
       private
         def import(map, line)
-          max = line["kind"] == "photo" ? MapPhoto::MAX_BYTES : MapDocument::MAX_BYTES
+          # A photo's own limit is checked once its type is known (a video may be larger).
+          max = line["kind"] == "photo" ? MapPhoto::VIDEO_MAX_BYTES : MapDocument::MAX_BYTES
           fetched = begin
             RemoteFile.fetch(line["url"], max_bytes: max)
           rescue RemoteFile::Error => e

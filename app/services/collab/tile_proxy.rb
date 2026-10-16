@@ -30,7 +30,7 @@ module Collab
     private
       def download(z, x, y)
         url = upstream_url(z, x, y) or return nil
-        response = Faraday.new(request: { open_timeout: 4, timeout: 10 }) { |f| f.headers["User-Agent"] = "SemistoDesigner/1.0" }.get(url)
+        response = Faraday.new(request: { open_timeout: 4, timeout: 10 }) { |f| f.headers["User-Agent"] = "SemistoTerranova/1.0" }.get(url)
         type = response.headers["content-type"].to_s
         return nil unless response.success? && type.start_with?("image/") && response.body.present? && response.body.bytesize <= MAX_BYTES
         Tile.new(response.body, type.split(";").first)

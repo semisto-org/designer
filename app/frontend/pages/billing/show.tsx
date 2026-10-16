@@ -262,6 +262,14 @@ function StatusCard({ billing }: { billing: BillingData }) {
               </>
             )}
             <p className="text-loam-500">{maps}</p>
+            {billing.paidTeams.length > 0 && (
+              <p className="text-loam-500">
+                {t('team_billing.billing_page', { count: billing.paidTeams.length })}{' '}
+                {billing.paidTeams.map((team, index) => (
+                  <span key={team.id}>{index > 0 && ', '}<Link href={`/teams/${team.id}`} className="font-medium text-prune-700 underline underline-offset-2">{team.name}</Link></span>
+                ))}
+              </p>
+            )}
           </div>
         </div>
         {billing.canManage && subscription && (subscription.active || subscription.pastDue) && (

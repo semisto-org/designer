@@ -9,7 +9,7 @@ export function PublicFooter() {
     <footer className="relative z-10 border-t border-loam-200 bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <Link href="/" className="flex items-center" aria-label="Semisto Designer">
+          <Link href="/" className="flex items-center" aria-label="Semisto Terranova">
             <Wordmark />
           </Link>
           <p className="mt-3 max-w-xs text-sm text-loam-500">{tf('site.footer.tagline')}</p>

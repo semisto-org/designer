@@ -1,4 +1,5 @@
 require_relative "boot"
+require_relative "app_hosts"
 
 require "rails"
 # Pick the frameworks you want:
@@ -50,5 +51,10 @@ module Designer
     # A 404 must never be cached by the browser or a proxy (see the class).
     require_relative "../lib/middleware/no_store_not_found"
     config.middleware.insert_before 0, NoStoreNotFound
+
+    # designer.semisto.org, the first address, sends its pages to the
+    # current one (see the class); machines keep being served there.
+    require_relative "../lib/middleware/legacy_host_redirect"
+    config.middleware.insert_after NoStoreNotFound, LegacyHostRedirect
   end
 end

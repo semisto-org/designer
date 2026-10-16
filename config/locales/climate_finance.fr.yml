@@ -212,7 +212,7 @@ fr:
       harvest: "Récoltes"
       year: "Année"
     sections:
-      species_intro: "Une ligne par espèce de ta palette. Saisis tes propres rendements et prix : Designer ne les invente pas. Note d'où viennent tes chiffres."
+      species_intro: "Une ligne par espèce de ta palette. Saisis tes propres rendements et prix : Terranova ne les invente pas. Note d'où viennent tes chiffres."
       investments_intro: "Ce que tu achètes ou fais réaliser au départ. Les plants sont comptés depuis l'onglet « Plantes et récoltes »."
       fixed_costs: "Charges fixes (par an)"
       fixed_costs_intro: "Assurance, loyer ou fermage, comptabilité, entretien courant…"
@@ -372,7 +372,7 @@ fr:
       loan: "Prêt bancaire"
     export:
       title: "Plan financier : %{map}"
-      disclaimer: "Estimation indicative calculée par Semisto Designer à partir des hypothèses saisies par l'utilisateur. Euros constants, hors TVA, avant impôts."
+      disclaimer: "Estimation indicative calculée par Semisto Terranova à partir des hypothèses saisies par l'utilisateur. Euros constants, hors TVA, avant impôts."
       generated_on: "Généré le %{date}"
       headers:
         species:

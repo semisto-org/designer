@@ -5,7 +5,7 @@ category: Compte et formules
 order: 85
 ---
 
-Une administration ne peut pas toujours payer par carte. Semisto Designer t'envoie alors une **facture au nom de ton organisation**, payable **par virement sous 30 jours**, avec ton **numéro de bon de commande** si tu en as un.
+Une administration ne peut pas toujours payer par carte. Semisto Terranova t'envoie alors une **facture au nom de ton organisation**, payable **par virement sous 30 jours**, avec ton **numéro de bon de commande** si tu en as un.
 
 ## Pour qui ?
 

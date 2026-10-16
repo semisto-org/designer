@@ -53,6 +53,17 @@ module HasTerrain
     )
   end
 
+  # What the map's infiltration tests measured (mm/h), where: the rain
+  # simulation and the catchments trust them over the soil model.
+  def infiltration_measurements
+    features.active.where(kind: MapFeature::InfiltrationTest::INFILTRATION_KIND).filter_map do |feature|
+      rate = feature.infiltration_rate_mm_h
+      next unless rate && feature.geometry.respond_to?(:x)
+
+      { lng: feature.geometry.x, lat: feature.geometry.y, rateMmH: rate, id: feature.id }
+    end
+  end
+
   # Assign only known keys; blank values fall back to the region's defaults.
   def water_settings=(value)
     value = value.to_unsafe_h if value.respond_to?(:to_unsafe_h)

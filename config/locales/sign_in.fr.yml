@@ -31,15 +31,15 @@ fr:
   magic_links:
     show:
       title: "Se connecter"
-      intro: "Tu vas te connecter à Semisto Designer en tant que %{email}."
+      intro: "Tu vas te connecter à Semisto Terranova en tant que %{email}."
       submit: "Me connecter"
       why: "Ce bouton évite qu'un aperçu du lien (dans ta messagerie, par exemple) ne l'utilise à ta place."
   magic_link_mailer:
     sign_in:
-      subject: "Ton lien de connexion à Semisto Designer"
-      subject_with_code: "Ton code de connexion à Semisto Designer : %{code}"
+      subject: "Ton lien de connexion à Semisto Terranova"
+      subject_with_code: "Ton code de connexion à Semisto Terranova : %{code}"
       greeting: "Bonjour,"
-      body: "Clique sur le bouton ci-dessous pour te connecter à Semisto Designer."
+      body: "Clique sur le bouton ci-dessous pour te connecter à Semisto Terranova."
       button: "Me connecter"
       code_intro: "Tu te connectes sur un autre appareil ? Repique-y plutôt ce code :"
       code_label: "Code de connexion"

@@ -5,7 +5,7 @@ category: Concevoir
 order: 50
 ---
 
-Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes qui s'entraident, à plusieurs hauteurs. Designer t'aide à passer de l'idée au **plan de plantation**, puis à la **liste de plants** à commander.
+Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes qui s'entraident, à plusieurs hauteurs. Terranova t'aide à passer de l'idée au **plan de plantation**, puis à la **liste de plants** à commander.
 
 ## La palette : les plantes de ton projet
 
@@ -31,6 +31,8 @@ Pour un arbre ou un arbuste seul, touche **Placer** à côté de l'espèce, puis
 
 Chaque plant est dessiné à la taille de sa couronne adulte, dans la couleur de sa strate : vert foncé pour la canopée, vert clair pour l'arborée basse, framboise pour les arbustes, mangue pour les herbacées, et ainsi de suite. La **Légende**, en bas à droite de la carte (bouton « Légende » sur un téléphone), rappelle les strates présentes et combien de plants chacune compte. Un plant en pointillés n'est pas encore planté.
 
+Chaque plant porte aussi un numéro. En haut de la légende, choisis comment la carte les nomme : **Nom** (« 12 · Pommier »), **Code** (« 12 · Ma do ») ou **Numéro**. En mode Numéro, le numéro s'écrit dans la pastille du plant, comme sur un plan de plantation dessiné à la main, et la légende dit quelle espèce porte quels numéros (« 3–5 Pommier sauvage »).
+
 ## Les patches : où va quoi
 
 Un **patch** est une zone où l'on plante un mélange d'espèces : un îlot, une lisière, un massif.
@@ -39,7 +41,7 @@ Un **patch** est une zone où l'on plante un mélange d'espèces : un îlot, une
 2. Sa fiche s'ouvre sur **Composition du patch**. Touche **Ajouter une plante** et choisis une espèce de la palette.
 3. Pour chaque plante, choisis le calcul : **Densité** (en plants par m², avec une valeur par défaut selon la strate) ou **Nombre** de plants.
 
-Designer calcule les quantités d'après la surface mesurée du patch. Indique aussi l'**Exposition du patch** : elle sert à la cohérence du plan.
+Terranova calcule les quantités d'après la surface mesurée du patch. Indique aussi l'**Exposition du patch** : elle sert à la cohérence du plan.
 
 Penser en strates évite les mauvaises surprises : on met la canopée là où l'ombre ne gêne pas, les arbustes en lisière, les herbacées et couvre-sols dans les interstices.
 

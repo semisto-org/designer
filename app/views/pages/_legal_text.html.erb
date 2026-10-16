@@ -1,0 +1,19 @@
+<%# The legal text as plain HTML, for readers without JavaScript (Google's
+    privacy policy check, search engines). The React page replaces it on load
+    (entrypoints/inertia.tsx removes #prerendered). %>
+<% scope = "site.legal.#{namespace}" %>
+<article id="prerendered" class="mx-auto max-w-3xl px-4 py-12">
+  <h1><%= t("#{scope}.title") %></h1>
+  <p><%= t("#{scope}.lead") %></p>
+  <p><%= t("site.common.draft_banner") %>. <%= t("site.common.updated", date: t("site.legal.updated_on")) %></p>
+  <% Array(t("#{scope}.sections", deep_interpolation: true, **vars)).each_with_index do |section, index| %>
+    <section>
+      <h2><%= index + 1 %>. <%= section[:title] %></h2>
+      <% Array(section[:paragraphs]).each do |paragraph| %><p><%= paragraph %></p><% end %>
+      <% if section[:items].present? %>
+        <ul><% section[:items].each do |item| %><li><%= item %></li><% end %></ul>
+      <% end %>
+      <% if section[:outro].present? %><p><%= section[:outro] %></p><% end %>
+    </section>
+  <% end %>
+</article>

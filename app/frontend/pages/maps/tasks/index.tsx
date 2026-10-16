@@ -11,7 +11,7 @@ import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import { hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import { formatMonth, monthOfDay, parseDay } from '@/tasks/dates'
-import { AssigneeBadge, CheckButton, DueBadge, TagChip, TagEditor, YearStrip } from '@/tasks/parts'
+import { AssigneeBadge, assigneeKey, assigneeName, assigneeParams, CheckButton, DueBadge, TagChip, TagEditor, YearStrip } from '@/tasks/parts'
 import type { Board, Participant, TaskData, TaskListData } from '@/tasks/types'
 import type { CurrentUser } from '@/types'
 
@@ -25,7 +25,8 @@ type Props = Board & {
 // Semisto's default lists, in the order of the journey's steps (TaskList::Defaults).
 const STEPS = ['observe', 'map', 'design', 'plant']
 
-type AssigneeFilter = 'all' | 'me' | 'none' | number
+// 'all', 'me', 'none', or someone's assigneeKey.
+type AssigneeFilter = string
 
 const tagged = (task: TaskData) => ({ properties: { tags: task.tags } })
 
@@ -96,7 +97,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
   const matches = (task: TaskData) => {
     if (assignee === 'me' && task.assignee?.id !== currentUser.id) return false
     if (assignee === 'none' && task.assignee) return false
-    if (typeof assignee === 'number' && task.assignee?.id !== assignee) return false
+    if (assignee !== 'all' && assignee !== 'me' && assignee !== 'none' && assigneeKey(task.assignee) !== assignee) return false
     if (tag && !hasTag(tagged(task), tag)) return false
     if (month && (!task.dueOn || monthOfDay(task.dueOn) !== month)) return false
     if (overdueOnly && (task.completedAt || !task.dueOn || task.dueOn >= today)) return false
@@ -160,13 +161,13 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
             <label className="flex items-center gap-2 whitespace-nowrap text-sm text-loam-700">
               {t('tasks.filters.assignee')}
               <select
-                value={String(assignee)}
-                onChange={(e) => { const v = e.target.value; setAssignee(v === 'all' || v === 'me' || v === 'none' ? v : Number(v)) }}
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
                 className={inputClass + ' w-auto py-1.5'}
               >
                 <option value="all">{t('tasks.filters.everyone')}</option>
                 <option value="me">{t('tasks.filters.me')}</option>
-                {participants.filter((p) => p.id !== currentUser.id).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {participants.filter((p) => p.id !== currentUser.id).map((p) => <option key={assigneeKey(p)} value={assigneeKey(p)}>{assigneeName(p)}</option>)}
                 <option value="none">{t('tasks.filters.unassigned')}</option>
               </select>
             </label>
@@ -398,7 +399,7 @@ function TaskRow({ task, today, open, canEdit, canTick, onToggle, onOpen, onDrag
         {(task.tags.length > 0 || task.dueOn || task.assignee) && (
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}
-            {task.assignee && <AssigneeBadge name={task.assignee.name} url={task.assignee.avatarUrl} withName />}
+            {task.assignee && <AssigneeBadge name={assigneeName(task.assignee)} url={task.assignee.avatarUrl} withName />}
             {task.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
           </div>
         )}
@@ -417,6 +418,11 @@ function TaskDetail({ task, lists, participants, suggestions, mapId, today, onSa
   useEffect(() => { setTitle(task.title); setNotes(task.notes ?? '') }, [task.id, task.title, task.notes])
   useEffect(() => { ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) }, [])
 
+  const members = participants.filter((p) => p.id != null)
+  // Invited addresses, plus the task's own if its invitation has run out.
+  const invitees = participants.filter((p) => p.id == null)
+  if (task.assignee?.invited && !invitees.some((p) => p.email === task.assignee!.email)) invitees.push({ email: task.assignee.email, name: task.assignee.name, role: 'invited' })
+
   const saveTitle = () => { if (title.trim() && title !== task.title) void onSave({ title }) }
   const saveNotes = () => { if (notes !== (task.notes ?? '')) void onSave({ notes }) }
   const field = 'block text-sm font-medium text-loam-700'
@@ -434,10 +440,16 @@ function TaskDetail({ task, lists, participants, suggestions, mapId, today, onSa
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="block space-y-1">
           <span className={field}>{t('tasks.task.assignee')}</span>
-          <select value={task.assignee?.id ?? ''} onChange={(e) => void onSave({ assignee_id: e.target.value || null })} className={inputClass}>
+          <select value={assigneeKey(task.assignee)} onChange={(e) => void onSave(assigneeParams(e.target.value))} className={inputClass}>
             <option value="">{t('tasks.task.nobody')}</option>
-            {participants.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {members.map((p) => <option key={assigneeKey(p)} value={assigneeKey(p)}>{p.name}</option>)}
+            {invitees.length > 0 && (
+              <optgroup label={t('tasks.task.invited_group')}>
+                {invitees.map((p) => <option key={assigneeKey(p)} value={assigneeKey(p)}>{p.name}</option>)}
+              </optgroup>
+            )}
           </select>
+          {task.assignee?.invited && <span className="block text-sm text-loam-500">{t('tasks.task.invited_hint')}</span>}
         </label>
         <label className="block space-y-1">
           <span className={field}>{t('tasks.task.due_on')}</span>
