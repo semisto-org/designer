@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, CreditCard, MessageSquareText, SquareKanban, Log
 import { useState } from 'react'
 import { Avatar } from '@/collab/Avatar'
 import { HelpButton } from '@/components/help/HelpButton'
+import { LogoCard } from '@/components/LogoCard'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -50,6 +51,7 @@ export default function TeamShow({ team, members, maps, billing, invitations, ma
       {admin && <Invite invitations={invitations ?? []} base={base} />}
       <Maps maps={maps} paid={Boolean(billing.payer)} />
       <BillingCard billing={billing} admin={admin} base={base} />
+      {(admin || team.logoUrl) && <LogoCard logoUrl={team.logoUrl} endpoint={`${base}/logo`} param="team" intro={t('logos.team_intro')} canEdit={admin} />}
       {me && <Leave team={team} me={me} />}
       {admin && <DeleteTeam team={team} base={base} />}
     </div>

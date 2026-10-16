@@ -1,0 +1,17 @@
+fr:
+  logos:
+    title: "Logo des documents"
+    team_intro: "Il apparaît en tête des documents des cartes de l'équipe, à l'écran et dans leurs PDF."
+    account_intro: "Il apparaît en tête des documents de tes cartes, à l'écran et dans leurs PDF (sauf sur les cartes d'une équipe qui a le sien)."
+    hint: "PNG, JPEG ou WebP, 2 Mo au plus. Un fond transparent rend mieux sur le papier."
+    none: "Pas encore de logo : les documents ont un en-tête sobre."
+    choose: "Choisir un logo"
+    change: "Changer de logo"
+    remove: "Retirer"
+    uploading: "Envoi…"
+    saved: "Logo enregistré."
+    removed: "Logo retiré."
+    errors:
+      missing: "Choisis une image."
+      type: "Choisis une image PNG, JPEG ou WebP."
+      size: "L'image dépasse %{max} Mo."

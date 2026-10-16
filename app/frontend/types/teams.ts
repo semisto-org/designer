@@ -62,7 +62,7 @@ export type TeamBilling = {
 }
 
 export type TeamPageProps = {
-  team: { id: number; name: string; role: TeamRole; createdAt: string }
+  team: { id: number; name: string; role: TeamRole; createdAt: string; logoUrl: string | null }
   members: TeamMember[]
   maps: TeamMap[]
   maxNameLength: number

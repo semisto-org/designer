@@ -248,3 +248,34 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 @keyframes quick-switcher-in { from { opacity: 0; transform: translateY(-8px) scale(0.985); } }
 .quick-switcher[open] { animation: quick-switcher-in 180ms ease-out; }
 @media (prefers-reduced-motion: reduce) { .quick-switcher[open] { animation: none; } }
+
+/* Markdown pages (documents/markdown): checklists, tables and the empty
+   line's hint, which the typography plugin does not style. */
+.markdown-page ul[data-type="taskList"] { list-style: none; padding-left: 0.25rem; }
+.markdown-page ul[data-type="taskList"] li { display: flex; gap: 0.6rem; align-items: flex-start; margin: 0.25rem 0; }
+.markdown-page ul[data-type="taskList"] li > label { margin-top: 0.1rem; flex-shrink: 0; }
+.markdown-page ul[data-type="taskList"] li > div { flex: 1; min-width: 0; }
+.markdown-page ul[data-type="taskList"] li > div > p { margin: 0; }
+.markdown-page ul[data-type="taskList"] li[data-checked="true"] > div { color: var(--color-loam-500); text-decoration: line-through; text-decoration-color: var(--color-loam-300); }
+.markdown-page ul[data-type="taskList"] input[type="checkbox"] { width: 1.05rem; height: 1.05rem; border-radius: 0.3rem; color: var(--color-leaf-600); border-color: var(--color-loam-300); cursor: pointer; }
+.markdown-page table { border-collapse: collapse; width: 100%; }
+.markdown-page th, .markdown-page td { border: 1px solid var(--color-loam-200); padding: 0.4rem 0.6rem; vertical-align: top; }
+.markdown-page th > p, .markdown-page td > p { margin: 0; }
+.markdown-page .selectedCell { background: var(--color-prune-50); }
+.markdown-page .tableWrapper { overflow-x: auto; }
+.markdown-page p.is-editor-empty:first-child::before,
+.markdown-page .is-empty::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--color-loam-400); }
+.markdown-page code::before, .markdown-page code::after,
+.markdown-page blockquote p::before, .markdown-page blockquote p::after { content: none; }
+.markdown-page th { font-family: var(--font-sans); font-weight: 600; color: var(--color-loam-800); }
+.markdown-page :not(pre) > code { background: var(--color-loam-100); border-radius: 0.3rem; padding: 0.1rem 0.3rem; font-weight: 500; }
+
+/* A document printed or saved as PDF: the page alone, with even margins. */
+@media print {
+  @page { margin: 18mm 16mm; }
+  body:has(.markdown-page) { background: #fff; }
+  .markdown-page li { break-inside: avoid; }
+  .markdown-page > p:last-child:has(> br.ProseMirror-trailingBreak:only-child) { display: none; }
+  .markdown-page h1, .markdown-page h2, .markdown-page h3 { break-after: avoid; }
+  .markdown-page table, .markdown-page img, .markdown-page blockquote { break-inside: avoid; }
+}

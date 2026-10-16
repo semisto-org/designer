@@ -11,7 +11,7 @@ import ImpersonationFrame from '@/components/admin/ImpersonationBanner'
 // the home page has its own full-screen header (HomeLayout), everything
 // else uses AppLayout. A page can still set `Page.layout`.
 // ImpersonationFrame wraps them all: the « connecté en tant que » banner.
-const FULL_SCREEN = ['maps/show', 'public_maps/show', 'maps/reliefs/show']
+const FULL_SCREEN = ['maps/show', 'public_maps/show', 'maps/reliefs/show', 'maps/documents/show']
 
 void createInertiaApp({
   pages: '../pages',
