@@ -43,6 +43,7 @@ namespace :storage do
   task backup: :environment do
     abort "backup is not configured (BACKUP_S3_BUCKET)" unless FileStorage::Backup.configured?
     result = FileStorage::Backup.new.run
+    FileStorage::Backup.record(result)
     puts "backup: #{result}"
     exit 1 if result.failed.any?
   end

@@ -2,6 +2,7 @@ class User < ApplicationRecord
   include Billable
   include AiTrial
   include HeicAttachment
+  include HasLogo
 
   AVATAR_MAX_BYTES = 10.megabytes
   AVATAR_TYPES = %w[image/jpeg image/png image/webp].freeze

@@ -101,6 +101,8 @@ export type AccountData = {
   hasPassword: boolean
   /** Who the person designs for (welcome page); null until chosen. */
   accountKind: AccountKind | null
+  /** The logo printed at the top of my maps' documents (pro accounts). */
+  logoUrl: string | null
   plan: PlanKey
   /** When the plan stops unless renewed (pass or plan paid on invoice); null for a subscription or the free map. */
   planEndsAt: string | null

@@ -74,6 +74,109 @@ fr:
     compression:
       pending: "%{size} · compression en cours…"
       done: "%{size}, compressé (%{original} envoyés)"
+    markdown:
+      new: "Nouveau document"
+      untitled: "Nouveau document"
+      someone: "Quelqu'un"
+      choose_title: "Commencer un document"
+      choose_intro: "Une page de carnet que toute l'équipe lit et complète. Elle reste un fichier Markdown, que tu peux télécharger et que ton IA lit et écrit."
+      creating: "Création…"
+      back: "Documents"
+      read: "Lire"
+      edit: "Modifier"
+      pdf: "Exporter en PDF"
+      download: "Télécharger (.md)"
+      contents: "Sommaire"
+      title_label: "Titre du document"
+      empty_read: "Cette page est encore vierge."
+      empty_read_editor: "Cette page est encore vierge. Clique sur « Modifier » pour l'écrire."
+      placeholder: "Écris ici… Tape « # » pour un titre, « - » pour une liste, « [] » pour une case à cocher."
+      edited: "Modifié par %{name} %{when}"
+      edited_anonymous: "Modifié %{when}"
+      created: "Créé par %{name} %{when}"
+      saving: "Enregistrement…"
+      saved: "Enregistré"
+      unsaved: "Modifications non enregistrées"
+      offline: "Pas de connexion : tes modifications seront enregistrées dès qu'elle revient."
+      read_only: "Tu peux lire ce document. Pour le modifier, demande à un éditeur de la carte."
+      reload: "Recharger le texte"
+      printed_on: "%{map} · %{date}"
+      open_page: "Ouvrir la page"
+      toolbar:
+        label: "Mise en forme"
+        paragraph: "Texte"
+        heading1: "Grand titre"
+        heading2: "Titre"
+        heading3: "Sous-titre"
+        bold: "Gras"
+        italic: "Italique"
+        strike: "Barré"
+        code: "Code"
+        bullet_list: "Liste à puces"
+        ordered_list: "Liste numérotée"
+        task_list: "Cases à cocher"
+        quote: "Citation"
+        divider: "Séparateur"
+        link: "Lien"
+        link_prompt: "Adresse du lien (laisse vide pour l'enlever)"
+        table: "Tableau"
+        add_row: "Ajouter une ligne"
+        add_column: "Ajouter une colonne"
+        delete_row: "Supprimer la ligne"
+        delete_column: "Supprimer la colonne"
+        delete_table: "Supprimer le tableau"
+        undo: "Annuler"
+        redo: "Rétablir"
+      templates:
+        blank:
+          name: "Page blanche"
+          hint: "Pour tout ce qui ne rentre dans aucune case."
+          title: "Nouveau document"
+          body: ""
+        visit:
+          name: "Compte rendu de visite"
+          hint: "Ce que le terrain t'a montré aujourd'hui, et ce qu'il reste à vérifier."
+          title: "Visite du %{date}"
+          body: |
+            # Visite du %{date}
+
+            **Présents :** 
+
+            ## Ce qu'on a vu
+
+            - 
+
+            ## Ce que le lieu nous dit
+
+            - **L'eau :** où elle arrive, où elle stagne, où elle file
+            - **Le sol :** 
+            - **Le soleil et le vent :** 
+            - **Ce qui pousse déjà :** 
+
+            ## Idées à creuser
+
+            - [ ] 
+
+            ## Prochaines étapes
+
+            - [ ] 
+        journal:
+          name: "Journal du jardin"
+          hint: "Une page qui grandit avec le jardin, saison après saison."
+          title: "Journal du jardin"
+          body: |
+            # Journal du jardin
+
+            Ce que le jardin montre, saison après saison : floraisons, récoltes, gelées, ce qui a pris et ce qui a souffert. Dans cinq ans, ces lignes raconteront tout le chemin parcouru.
+
+            ## %{season}
+
+            - %{date} : 
+      errors:
+        too_long: "Ce document dépasse 1 Mo de texte : découpe-le en plusieurs documents."
+        stale: "%{name} a modifié ce document pendant que tu l'écrivais. Voici sa version : recopie ce qui te manque."
+        not_markdown: "Seuls les documents Markdown (.md) s'ouvrent dans l'éditeur."
+        save_failed: "L'enregistrement a échoué. Vérifie ta connexion : on réessaie tout seul."
     errors:
       file_missing: "Choisis un fichier."
       too_large: "« %{name} » dépasse %{max} Mo."

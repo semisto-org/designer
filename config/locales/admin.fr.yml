@@ -13,6 +13,56 @@ fr:
       drone: "Vues drone"
       release_notes: "Nouveautés"
       help: "Aide"
+      tech: "Tech"
+    tech:
+      title: "Tech"
+      console:
+        prompt: "designer@semisto-os:~$ terranova --status"
+        clock: "heure du serveur"
+        uptime: "en ligne depuis"
+        refresh: "rafraîchissement"
+        refresh_in: "dans %{seconds} s"
+        health:
+          ok: "tout est vert"
+          warn: "à surveiller"
+          error: "quelque chose cloche"
+          off: "inconnu"
+      version:
+        unknown_commit: "Commit inconnu : coche « Include Source Commit in Build » dans Coolify pour le voir ici."
+        booted_label: "démarré"
+      storage:
+        files:
+          one: "1 fichier"
+          other: "%{count} fichiers"
+        backup: "Sauvegarde Swiss Backup"
+        backup_off: "Pas configurée (BACKUP_S3_BUCKET)."
+        backup_never: "Aucune sauvegarde connue pour l'instant. La prochaine passe à 2 h."
+        backup_last_label: "dernière passe"
+        copied: "copiés"
+        already: "déjà là"
+        failed: "en échec"
+        missing: "absents à la source"
+        awaiting_erasure: "supprimés, gardés 89 jours"
+      jobs:
+        unavailable: "Les tâches de fond tournent sans file d'attente ici (développement ou tests)."
+        ready: "en attente"
+        scheduled: "programmées"
+        running: "en cours"
+        failed_label: "en échec"
+        no_process: "Aucun processus de tâches ne tourne."
+        recurring: "tâches planifiées"
+        no_recent_run: "pas de passage en 24 h"
+      services:
+        names:
+          object_storage: "Stockage des fichiers (S3)"
+          backup: "Sauvegarde Swiss Backup"
+          sentry: "Sentry"
+          smtp: "Envoi des e-mails"
+          google: "Connexion Google"
+          stripe: "Paiements Stripe"
+          plantnet: "Pl@ntNet"
+          magnific: "Magnific"
+          terranova: "Outil interne Terranova"
     dashboard:
       title: "Administration"
       intro: "Les chiffres de Semisto Terranova et ce qui attend l'équipe."

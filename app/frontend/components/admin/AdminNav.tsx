@@ -11,6 +11,7 @@ const ITEMS = [
   { href: '/admin/drone-views', key: 'drone' },
   { href: '/admin/release-notes', key: 'release_notes' },
   { href: '/admin/help', key: 'help' },
+  { href: '/admin/tech', key: 'tech' },
 ] as const
 
 /** Tabs between the staff screens. */

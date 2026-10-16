@@ -149,9 +149,12 @@ Rails.application.routes.draw do
     resource :tour, only: :update
     resource :password, only: %i[update destroy]
     resource :avatar, only: %i[update destroy]
+    resource :logo, only: %i[update destroy]
   end
   # A person's uploaded picture, by its blob's signed id (User#avatar_url).
   get "avatars/:key", to: "avatars#show", as: :avatar
+  # A team's or a pro account's logo, by its blob's signed id (HasLogo#logo_url).
+  get "logos/:key", to: "logos#show", as: :logo
   resources :maps, only: [] do
     scope module: :maps do
       resources :drafts, only: :index do
@@ -334,8 +337,13 @@ Rails.application.routes.draw do
         resources :renderings, only: %i[index create show], controller: "photo_renderings"
       end
       resources :photo_albums, only: %i[create update destroy]
-      resources :documents, only: %i[index create update destroy] do
-        get :file, on: :member
+      resources :documents, only: %i[index show create update destroy] do
+        member do
+          get :file
+          # The text of a Markdown document, read and saved by its editor.
+          get :content
+          patch :content, action: :update_content
+        end
       end
       resources :soil_samples, only: %i[index create update destroy] do
         collection do
@@ -393,6 +401,8 @@ Rails.application.routes.draw do
       resources :memberships, only: %i[update destroy]
       # « Forfait de l'équipe »: an admin's plan pays for every team map.
       resource :billing, only: %i[update destroy]
+      # The logo printed at the top of the team maps' documents.
+      resource :logo, only: %i[update destroy]
       resources :invitations, only: %i[create destroy] do
         post :resend, on: :member
       end
@@ -493,13 +503,15 @@ Rails.application.routes.draw do
 
   # --- super-admin ---
   # The staff dashboard (figures, latest accounts and maps, admin log), the
-  # accounts list and « Se connecter en tant que », ended from the banner.
+  # accounts list and « Se connecter en tant que », ended from the banner, and
+  # « Tech » (version, files and backup, jobs, services).
   namespace :admin do
     get "/", to: "dashboard#show", as: :dashboard
     resources :users, only: %i[index update] do
       resource :impersonation, only: :create
     end
     resources :maps, only: :index
+    get "tech", to: "tech#show", as: :tech
   end
   resource :impersonation, only: :destroy
   # --- end super-admin ---

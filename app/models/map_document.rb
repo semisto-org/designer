@@ -10,6 +10,10 @@
 # MCP server. A PDF heavier than COMPRESS_PDF_ABOVE is compressed
 # in the background (CompressMapDocumentJob) and the lighter copy replaces
 # the original, to spare storage.
+#
+# A Markdown file (.md) is read as a page and edited in place
+# (`replace_markdown!`): the file stays plain Markdown, so it downloads, and
+# the MCP reads and writes it, like any other.
 class MapDocument < ApplicationRecord
   include HeicAttachment
   include MapFeature::Tags
@@ -20,6 +24,11 @@ class MapDocument < ApplicationRecord
   class_attribute :compress_pdf_above, default: 5.megabytes
   PREVIEW_IMAGE_TYPES = %w[image/jpeg image/png image/webp image/gif].freeze
   ORIGINS = %w[library project_sheet form].freeze
+  MARKDOWN_EXTENSIONS = %w[md markdown].freeze
+  # Larger Markdown files are only downloaded: nobody writes a megabyte of text.
+  MAX_MARKDOWN_BYTES = 1.megabyte
+  # Raised when the text changed since the editor read it.
+  class StaleContent < StandardError; end
   KINDS = {
     "pdf" => %w[pdf],
     "image" => %w[jpg jpeg png webp gif heic heif tif tiff],
@@ -32,6 +41,7 @@ class MapDocument < ApplicationRecord
   belongs_to :map
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :project_sheet_link, optional: true
+  belongs_to :content_edited_by, class_name: "User", optional: true
   # An answer to one of the team's forms (Tally), filed here as Markdown.
   has_one :form_response, dependent: :nullify
 
@@ -62,6 +72,44 @@ class MapDocument < ApplicationRecord
 
   def kind = KINDS.find { |_, extensions| extensions.include?(extension) }&.first || "other"
 
+  def markdown? = file.attached? && MARKDOWN_EXTENSIONS.include?(extension)
+
+  # The text of a Markdown document that is small enough to read and edit.
+  def editable_markdown? = markdown? && file.blob.byte_size <= MAX_MARKDOWN_BYTES
+
+  def markdown_content
+    return nil unless editable_markdown?
+    file.download.dup.force_encoding(Encoding::UTF_8).scrub
+  end
+
+  # Fingerprint of the stored text: the editor sends back the one it read,
+  # so a change made meanwhile (another person, the MCP) is never overwritten.
+  def content_checksum = file.attached? ? file.blob.checksum : nil
+
+  # A new Markdown document, written in Terranova.
+  def self.build_markdown(map:, title:, content:, by:, tags: [])
+    map.documents.new(title:, tags:, origin: "library", uploaded_by: by, content_edited_by: by, content_edited_at: Time.current).tap do |document|
+      document.attach_markdown(content, filename: "#{title.to_s.parameterize.presence || "document"}.md")
+    end
+  end
+
+  # Replaces the text of a Markdown document. `base` is the checksum the
+  # editor read; nil skips the check (the MCP writes on its own).
+  def replace_markdown!(content, by:, base: nil)
+    raise ArgumentError, "document #{id} is not Markdown" unless markdown?
+    with_lock do
+      raise StaleContent if base && base != content_checksum
+      self.content_edited_by = by
+      self.content_edited_at = Time.current
+      attach_markdown(content, filename: file.filename.to_s)
+      save!
+    end
+  end
+
+  def attach_markdown(content, filename:)
+    file.attach(io: StringIO.new(content.to_s), filename:, content_type: "text/markdown", identify: false)
+  end
+
   # What the browser can show as is: an image (its variants) or a PDF.
   def preview
     return nil unless file.attached?
@@ -84,6 +132,8 @@ class MapDocument < ApplicationRecord
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601,
       uploadedBy: uploaded_by&.display_name, fromProjectLink: project_sheet_link_id.present?,
       form: (form_response&.as_inertia if origin == "form"),
+      markdown: editable_markdown?,
+      contentEditedAt: content_edited_at&.iso8601, contentEditedBy: content_edited_by&.display_name,
       thumbUrl: thumb_available? ? url.call(self, "thumb") : nil,
       previewUrl: preview ? url.call(self, preview == "image" ? "large" : "original") : nil,
       fileUrl: url.call(self, "original"),

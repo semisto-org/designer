@@ -2,6 +2,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
 import { type ReactNode, useRef, useState } from 'react'
 import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Sprout, Sparkles, Trash2 } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
+import { LogoCard } from '@/components/LogoCard'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input } from '@/components/ui/Field'
@@ -54,6 +55,10 @@ export default function AccountShow({ account }: { account: AccountData }) {
       </Card>
 
       <AccountKindCard kind={account.accountKind} />
+
+      {account.accountKind === 'professional' && (
+        <LogoCard logoUrl={account.logoUrl} endpoint="/account/logo" param="user" intro={t('logos.account_intro')} />
+      )}
 
       <PasswordCard hasPassword={account.hasPassword} />
 

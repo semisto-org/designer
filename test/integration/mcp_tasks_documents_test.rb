@@ -260,4 +260,22 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     _, error = call_tool(@viewer, "update_document", { map_id: @map.id, document_id: doc.id, title: "Autre" })
     assert error
   end
+
+  test "update_document rewrites the text of a Markdown document, never of another file" do
+    data, error = call_tool(@owner, "add_document", { map_id: @map.id, title: "Journal", content: "# Journal\n\n- Gelée" })
+    refute error
+    doc = @map.documents.find(data["id"])
+    _, error = call_tool(@owner, "update_document", { map_id: @map.id, document_id: doc.id, content: "# Journal\n\n- Gelée\n- Floraison du cornouiller" })
+    refute error
+    doc.reload
+    assert_equal "# Journal\n\n- Gelée\n- Floraison du cornouiller", doc.markdown_content
+    assert_equal [ "journal.md", users(:michael) ], [ doc.file.filename.to_s, doc.content_edited_by ]
+    assert_equal 45, AiAction.last.arguments["content_chars"], "the text is not copied into the journal"
+
+    data, = call_tool(@owner, "add_document", { map_id: @map.id, title: "Relevé", content: "a,b", format: "csv" })
+    text, error = call_tool(@owner, "update_document", { map_id: @map.id, document_id: data["id"], content: "c,d" })
+    assert error
+    assert_match(/Markdown/, text)
+    assert_equal "a,b", @map.documents.find(data["id"]).file.download
+  end
 end

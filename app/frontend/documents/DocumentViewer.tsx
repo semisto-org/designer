@@ -1,12 +1,13 @@
-import { ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, MessageSquareText, Trash2, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, MessageSquareText, PenLine, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import { DocumentIcon } from '@/documents/DocumentIcon'
 import { FormAnswers } from '@/documents/FormAnswers'
+import { MarkdownPreview } from '@/documents/markdown/MarkdownPreview'
 import { PdfPages } from '@/documents/PdfPages'
 import { TagEditor } from '@/documents/TagEditor'
 import { documentSize } from '@/documents/compression'
@@ -14,10 +15,11 @@ import type { MapDocumentData } from '@/types/documents'
 
 /**
  * One document, full screen: images and PDFs are shown right here (the
- * browser's own PDF reader), anything else waits for a download. Its title,
+ * browser's own PDF reader), a Markdown page too when the document has a
+ * page of its own (`pageUrl`), anything else waits for a download. Its title,
  * note and tags sit beside it; arrows and keys move through the list.
  */
-export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete }: {
+export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete, pageUrl }: {
   docs: MapDocumentData[]
   openId: number | null
   onOpen: (id: number | null) => void
@@ -25,6 +27,8 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
   tagSuggestions: string[]
   onSave?: (doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[] }) => Promise<void>
   onDelete?: (doc: MapDocumentData) => Promise<void>
+  /** The page where a Markdown document is read and written (the map's library only). */
+  pageUrl?: (doc: MapDocumentData) => string
 }) {
   const index = docs.findIndex((d) => d.id === openId)
   const doc = index >= 0 ? docs[index] : null
@@ -65,6 +69,7 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
   }, [openId, index, docs, onOpen])
 
   if (!doc) return null
+  const page = doc.markdown && pageUrl ? pageUrl(doc) : null
   const save = (patch: Parameters<NonNullable<typeof onSave>>[1]) => onSave?.(doc, patch)
 
   return createPortal(
@@ -80,7 +85,8 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
             <FormAnswers fields={doc.form.fields} title={doc.form.formName} className="!px-6 !py-5" />
           </div>
         )}
-        {!doc.preview && !doc.form && (
+        {page && <MarkdownPreview key={doc.id} url={page} title={doc.title} />}
+        {!doc.preview && !doc.form && !page && (
           <div className="max-w-sm text-center">
             <DocumentIcon kind={doc.kind} filename={doc.filename} className="mx-auto h-24 w-24" />
             <p className="mt-4 text-lg">{doc.filename}</p>
@@ -151,6 +157,12 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <h3 className="mb-1 text-sm font-medium text-loam-700">{t('tags.title')}</h3>
           <TagEditor tags={doc.tags} suggestions={tagSuggestions} canEdit={canEdit && !!onSave} onChange={(tags) => save({ tags })} />
         </div>
+        {page && (
+          <div className="flex flex-wrap gap-2">
+            <a href={page} className={buttonClass('primary', 'sm')}><BookOpen className="h-4 w-4" />{t('documents.markdown.open_page')}</a>
+            {canEdit && <a href={`${page}?edit=1`} className={buttonClass('secondary', 'sm')}><PenLine className="h-4 w-4" />{t('documents.markdown.edit')}</a>}
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           <a href={doc.downloadUrl} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-prune-700 ring-[1.5px] ring-inset ring-prune-600 hover:bg-prune-600 hover:text-white">
             <Download className="h-4 w-4" />{t('documents.viewer.download')}

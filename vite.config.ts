@@ -4,17 +4,21 @@ import tailwindcss from '@tailwindcss/vite'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
+import { browserLocales } from './app/frontend/lib/browserLocales'
 import RubyPlugin from 'vite-plugin-ruby'
 import { parse } from 'yaml'
 
 // Rails locale files (config/locales/*.yml) are the single source of the
 // interface strings: the frontend imports them as JSON.
+// Server-only subtrees are left out (browserLocales).
 function railsLocales(): Plugin {
   return {
     name: 'rails-locales',
     transform(code, id) {
       if (!id.endsWith('.yml') && !id.endsWith('.yaml')) return null
-      return { code: `export default ${JSON.stringify(parse(code))}`, map: null }
+      const tree = parse(code) as Record<string, unknown>
+      const data = id.includes('/config/locales/') ? browserLocales(tree) : tree
+      return { code: `export default ${JSON.stringify(data)}`, map: null }
     },
   }
 }
@@ -60,6 +64,20 @@ export default defineConfig({
     pdfjsAssets(),
   ],
   worker: { format: 'es' },
+  build: {
+    rolldownOptions: {
+      output: {
+        // Every icon and UI primitive would otherwise be its own file of a few
+        // hundred bytes: the map editor fetched about a hundred scripts.
+        codeSplitting: {
+          groups: [
+            { name: 'icons', test: /node_modules[\\/]lucide-react[\\/]/, includeDependenciesRecursively: false },
+            { name: 'ui', test: /app[\\/]frontend[\\/]components[\\/]ui[\\/]/, includeDependenciesRecursively: false },
+          ],
+        },
+      },
+    },
+  },
   server: {
     watch: { ignored: ['**/tmp/**', '**/log/**', '**/node_modules/**'] },
   },

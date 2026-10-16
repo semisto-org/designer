@@ -96,6 +96,13 @@ class Map < ApplicationRecord
     payer.billed_maps.order(:created_at, :id).limit(allowed).pluck(:id).exclude?(id)
   end
 
+  # The logo printed at the top of the map's documents: its team's, else its
+  # owner's when the owner has a pro account, else none (a neutral header).
+  def letterhead
+    holder = [ organization, (owner if owner.professional?) ].compact.find { _1.logo.attached? }
+    holder && { logoUrl: holder.logo_url, name: holder.is_a?(Organization) ? holder.name : owner.display_name }
+  end
+
   # Whose plan this map follows: the team's billing user for a map of a team
   # that has one (« Forfait de l'équipe »), else its owner.
   def billing_user

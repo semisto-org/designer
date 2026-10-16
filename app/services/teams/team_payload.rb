@@ -10,7 +10,7 @@ module Teams
 
     def as_json(*)
       data = {
-        team: { id: @team.id, name: @team.name, role: @membership.role, createdAt: @team.created_at.iso8601 },
+        team: { id: @team.id, name: @team.name, role: @membership.role, createdAt: @team.created_at.iso8601, logoUrl: @team.logo_url },
         members: members,
         maps: maps,
         billing: billing,

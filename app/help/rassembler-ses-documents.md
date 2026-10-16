@@ -1,6 +1,6 @@
 ---
 title: "Rassembler ses documents"
-summary: "Plans d'architecte, relevés, analyses, permis : la bibliothèque de la carte, rangée par étiquette, avec un aperçu des images et des PDF."
+summary: "Plans d'architecte, relevés, analyses, permis : la bibliothèque de la carte, rangée par étiquette, avec un aperçu des images et des PDF, et des pages à écrire ensemble."
 category: Observer son terrain
 order: 32
 ---
@@ -32,6 +32,23 @@ Astuce : si une étagère est ouverte quand tu ajoutes des fichiers, ils reçoiv
 
 Touche un document : les **images** et les **PDF** s'affichent directement, avec toutes leurs pages. Les autres fichiers (un plan DWG, un tableur) se **téléchargent** pour être ouverts dans leur logiciel. Les flèches du clavier passent au document suivant.
 
+## Écrire un document dans Terranova
+
+Touche **Nouveau document** pour écrire une page de carnet que toute l'équipe lit et complète : une **Page blanche**, un **Compte rendu de visite** déjà découpé (ce qu'on a vu, ce que le lieu nous dit, les prochaines étapes) ou un **Journal du jardin** qui s'ouvre sur la saison du jour.
+
+Un document Markdown (un fichier `.md`, celui que tu écris ici ou que tu déposes) s'ouvre comme une vraie page : les titres, les listes, les cases à cocher et les tableaux sont mis en forme, avec un **Sommaire** à côté quand il est long.
+
+- Touche **Modifier** pour écrire. La barre d'outils met en forme ; tu peux aussi taper directement `#` pour un titre, `-` pour une liste, `[]` pour une case à cocher, `>` pour une citation.
+- Tout s'enregistre en continu (« Enregistré » s'affiche en haut). Sans connexion, Terranova réessaie tout seul.
+- Si quelqu'un a modifié le document en même temps que toi, sa version s'affiche et la tienne reste à côté, à recopier : rien de ce que tu as tapé n'est perdu.
+- Le fichier reste du Markdown : **Télécharger** le donne tel quel, et ton IA le lit et le réécrit.
+
+## Exporter en PDF
+
+Sur la page d'un document Markdown, **Exporter en PDF** ouvre la fenêtre d'impression : choisis **Enregistrer au format PDF**. En tête de page figure le **logo de l'équipe** de la carte, sinon celui de ton **compte pro**, sinon un en-tête sobre avec le nom de la carte et la date.
+
+Le logo se choisit sur la page de l'équipe (par un de ses administrateurs) ou dans **Mon compte** pour un compte pro.
+
 ## Les documents de la fiche projet
 
 Sous la **Fiche projet**, la section **Documents du projet** permet d'y joindre des fichiers. Le **lien privé** envoyé au porteur de projet a la même section : il peut y déposer ses plans d'architecte ou un relevé, sans compte. Ces documents arrivent aussi dans la bibliothèque, sur l'étagère **Fiche projet**.
@@ -40,7 +57,7 @@ Par le lien privé, le porteur de projet ne voit que ce qu'il a lui-même envoy�
 
 ## Qui voit les documents ?
 
-Toutes les personnes qui ont accès à la carte les lisent et les téléchargent ; le propriétaire et les éditeurs les ajoutent, les renomment, les étiquettent et les suppriment.
+Toutes les personnes qui ont accès à la carte les lisent et les téléchargent ; le propriétaire et les éditeurs les ajoutent, les écrivent, les renomment, les étiquettent et les suppriment.
 
 ## Pour aller plus loin
 

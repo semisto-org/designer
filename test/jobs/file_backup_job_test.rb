@@ -1,9 +1,7 @@
 require "test_helper"
 
 class FileBackupJobTest < ActiveJob::TestCase
-  FakeResult = Struct.new(:failed) do
-    def to_s = "#{failed.size} failed"
-  end
+  def result(failed: []) = FileStorage::Backup::Result.new(copied: 1, already_there: 0, missing: [], failed:, erased: 0, awaiting_erasure: 0)
 
   # Replaces a class method for the block (the suite has no mocking library).
   def swap(object, name, implementation)
@@ -31,12 +29,12 @@ class FileBackupJobTest < ActiveJob::TestCase
   end
 
   test "a finished backup checks in with the Sentry monitor" do
-    check_ins = perform_with(result: FakeResult.new([]))
+    check_ins = perform_with(result: result)
     assert_equal [ [ "file-backup", :in_progress, nil ], [ "file-backup", :ok, "check-in-1" ] ], check_ins
   end
 
   test "a file it could not copy reports the run as failed" do
-    check_ins = perform_with(result: FakeResult.new([ 42 ]))
+    check_ins = perform_with(result: result(failed: [ 42 ]))
     assert_equal [ :in_progress, :error ], check_ins.map(&:second)
   end
 
