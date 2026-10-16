@@ -18,4 +18,14 @@ class FileStorage::CorsTest < ActiveSupport::TestCase
     assert_equal "designer-media", request[:params][:bucket]
     assert_equal [ "https://designer.semisto.org" ], request[:params][:cors_configuration][:cors_rules].sole[:allowed_origins]
   end
+
+  test "allows the app's primary host" do
+    assert_equal "https://#{AppHosts.primary}", FileStorage::Cors.app_origin
+  end
+
+  test "the boot step does nothing without a bucket, and never fails" do
+    Rails.application.load_tasks unless Rake::Task.task_defined?("storage:cors_on_boot")
+    Rake::Task["storage:cors_on_boot"].reenable
+    assert_nothing_raised { Rake::Task["storage:cors_on_boot"].invoke }
+  end
 end

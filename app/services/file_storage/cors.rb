@@ -5,6 +5,9 @@
 # the app's origin. Read-only: uploads always go through the app.
 #
 #   bin/rails storage:cors
+#
+# Set again at each boot of the server (bin/docker-entrypoint), so a new bucket
+# or a new APP_HOST needs nothing by hand.
 module FileStorage
   module Cors
     module_function
@@ -23,6 +26,6 @@ module FileStorage
       client.put_bucket_cors(bucket:, cors_configuration: { cors_rules: rules(origins) })
     end
 
-    def app_origin = "https://#{ENV.fetch("APP_HOST", "designer.semisto.org")}"
+    def app_origin = "https://#{AppHosts.primary}"
   end
 end

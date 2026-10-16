@@ -66,14 +66,14 @@ Stockage retenu (2026-10) : **Object Storage du Public Cloud Infomaniak** (Genè
 
 | Variable | Rôle |
 |---|---|
-| `S3_BUCKET` | Active le stockage objet (par ex. `designer-media`). |
+| `S3_BUCKET` | Active le stockage objet (`terranova-media` chez Infomaniak, projet `semisto-media`). |
 | `S3_ENDPOINT` | Infomaniak : `https://s3.pub1.infomaniak.cloud` (ou `pub2`). Ailleurs : `https://fsn1.your-objectstorage.com` (Hetzner), `https://s3.fr-par.scw.cloud` (Scaleway). |
 | `S3_REGION` | Infomaniak : `dc3-a` pour `pub1`, `dc4-a` pour `pub2` (obligatoire pour la signature). |
 | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Infomaniak : `openstack ec2 credentials create` (identifiants de l'onglet « API Access » d'Horizon). |
 | `S3_FORCE_PATH_STYLE` | `true` par défaut. |
 | `ACTIVE_STORAGE_SERVICE` | Facultatif : force `local` ou `object_storage`. |
 
-Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la carte puis redirige vers une URL signée de cinq minutes. Le navigateur lit plusieurs de ces fichiers en JavaScript (PDF, fonds de plan, relief, esquisses) : le seau doit donc autoriser l'origine de l'application, ce que pose `bin/rails storage:cors` (lecture seule, depuis `https://APP_HOST`).
+Les fichiers ne sont jamais publics : l'application vérifie le rôle sur la carte puis redirige vers une URL signée de cinq minutes. Le navigateur lit plusieurs de ces fichiers en JavaScript (PDF, fonds de plan, relief, esquisses) : le seau doit donc autoriser l'origine de l'application, ce que pose `bin/rails storage:cors` (lecture seule, depuis `https://APP_HOST`), relancé tout seul à chaque démarrage du serveur.
 
 #### Sauvegarde des fichiers
 
@@ -89,7 +89,7 @@ La sauvegarde ne fait qu'ajouter : chaque nuit, elle envoie les fichiers qu'elle
 #### Passer du disque au stockage objet
 
 1. Créer le seau et la clé S3, poser les variables `S3_*` dans Coolify, redéployer. Les nouveaux fichiers vont dans le seau ; les anciens restent servis depuis `/rails/storage`.
-2. `bin/rails storage:cors` (terminal de l'application dans Coolify).
+2. Le démarrage pose la règle CORS du seau (sinon `bin/rails storage:cors`, terminal de l'application dans Coolify).
 3. `DRY_RUN=1 bin/rails storage:migrate` pour compter, puis `bin/rails storage:migrate` (par défaut `FROM=local TO=object_storage`). Chaque fichier est copié avec sa somme de contrôle vérifiée, puis servi depuis le seau ; on peut relancer autant de fois qu'il faut, rien n'est copié deux fois. Les fichiers du disque ne sont jamais supprimés.
 4. `bin/rails storage:status` doit ne plus montrer que `object_storage`. Garder le volume `/rails/storage` quelques semaines avant de le retirer.
 

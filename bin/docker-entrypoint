@@ -3,8 +3,9 @@
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   # One Rails boot for both tasks. Seeds are idempotent: regions, layer
-  # catalogues, starter plant catalogue.
-  ./bin/rails db:prepare db:seed
+  # catalogues, starter plant catalogue. Then the object storage bucket's CORS
+  # rule, when there is one (storage:cors_on_boot never fails the boot).
+  ./bin/rails db:prepare db:seed storage:cors_on_boot
 fi
 
 exec "${@}"

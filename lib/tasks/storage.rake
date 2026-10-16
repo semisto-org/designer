@@ -30,6 +30,15 @@ namespace :storage do
     puts "CORS set on #{service.bucket.name} for #{FileStorage::Cors.app_origin}"
   end
 
+  # Run at each boot by bin/docker-entrypoint: never fails the boot, a bucket
+  # that refuses the rule only leaves a warning in the log.
+  task cors_on_boot: :environment do
+    next unless FileStorage.configured?(:object_storage)
+    Rake::Task["storage:cors"].invoke
+  rescue StandardError => e
+    warn "[storage:cors] not set: #{e.class}: #{e.message}"
+  end
+
   desc "Copy to the backup bucket the files it does not hold yet (what FileBackupJob does every night)"
   task backup: :environment do
     abort "backup is not configured (BACKUP_S3_BUCKET)" unless FileStorage::Backup.configured?
