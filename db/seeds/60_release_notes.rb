@@ -4,6 +4,17 @@
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
   {
+    key: "test-infiltration", published_on: "2026-10-16",
+    title: "Combien ton sol boit-il ? Mesure-le en une heure",
+    body: <<~TEXT,
+      Une baissière, un jardin de pluie ou une mare se dimensionnent sur ce que boit le sol. Pose un « Test d'infiltration » dans la couche Eau : sa fiche te guide pas à pas, avec un seau, une règle et un chrono qui te dit quand lire la hauteur d'eau.
+
+      La vitesse mesurée devient celle de ta carte : la simulation de pluie en 3D boit à ton rythme autour du test, et chaque baissière te dit en combien d'heures elle se vide. Refais le test dans quelques années pour voir ton sol s'ouvrir sous le jardin-forêt.
+    TEXT
+    link_path: "/help/lire-le-relief-et-l-eau", link_label: "Lire l'aide",
+    screenshot_alt: "La fiche d'un test d'infiltration : la hauteur d'eau qui baisse au fil des minutes, et la vitesse mesurée."
+  },
+  {
     key: "bassin-versant-bilan-eau", published_on: "2026-10-16",
     title: "D'où vient l'eau de ta mare, et quand elle manque",
     body: <<~TEXT,

@@ -66,6 +66,7 @@ import WaterSourcesPanel from '@/map/water/WaterSourcesPanel'
 import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
 import CatchmentSection, { appliesToCatchment } from '@/map/water/CatchmentSection'
+import InfiltrationSection, { appliesToInfiltration } from '@/map/water/InfiltrationSection'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 import TagsSection from '@/map/tags/TagsSection'
 import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
@@ -123,6 +124,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
   { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
   { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
+  { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
 ]
 
 // Top bar actions (right side), e.g. share, export.

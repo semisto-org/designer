@@ -118,6 +118,13 @@
         ],
         "color": "#4a90c2",
         "pickable": true
+      },
+      "infiltration_test": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#3d7ea6",
+        "pickable": true
       }
     }
   },

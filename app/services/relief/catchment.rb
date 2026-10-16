@@ -29,14 +29,19 @@ module Relief
     # blocks down to this budget (a catchment at 2 m is still precise).
     MAX_CELLS = 300_000
     EPSILON = 1e-5
+    # An infiltration test this close speaks for the element's soil; farther,
+    # the median of the map's tests stands in.
+    NEARBY_TEST_M = 50
 
     Result = Data.define(:geometry, :area_m2, :inside_boundary_m2, :beyond_relief, :cell_size_m,
-                         :capacity_m3, :fill_rain_mm, :annual_rain_m3, :annual_rainfall_mm) do
+                         :capacity_m3, :fill_rain_mm, :annual_rain_m3, :annual_rainfall_mm,
+                         :infiltration_mm_h, :infiltration_distance_m, :empties_in_h) do
       def as_json(*)
         {
           geometry:, areaM2: area_m2, insideBoundaryM2: inside_boundary_m2, beyondRelief: beyond_relief,
           cellSizeM: cell_size_m, capacityM3: capacity_m3, fillRainMm: fill_rain_mm,
-          annualRainM3: annual_rain_m3, annualRainfallMm: annual_rainfall_mm
+          annualRainM3: annual_rain_m3, annualRainfallMm: annual_rainfall_mm,
+          infiltrationMmH: infiltration_mm_h, infiltrationDistanceM: infiltration_distance_m, emptiesInH: empties_in_h
         }
       end
     end
@@ -64,7 +69,8 @@ module Relief
       def cache_key
         target = @feature ? [ @feature.id, @feature.lock_version ] : [ @lng.round(6), @lat.round(6) ]
         settings = @map.effective_water_settings.slice("annual_rainfall_mm")
-        [ "relief/catchment/v1", @terrain.id, @terrain.version, @map.boundary && Digest::SHA1.hexdigest(@map.boundary.as_text)[0, 12], settings, *target ]
+        tests = Digest::SHA1.hexdigest(@map.infiltration_measurements.to_json)[0, 12]
+        [ "relief/catchment/v2", @terrain.id, @terrain.version, @map.boundary && Digest::SHA1.hexdigest(@map.boundary.as_text)[0, 12], settings, tests, *target ]
       end
 
       def compute
@@ -79,6 +85,9 @@ module Relief
         inside_boundary = boundary_mask ? cells.count { |i| boundary_mask.getbyte(i) == 1 } * @cell_m**2 : area
         capacity = @feature&.water_capacity_m3
         rainfall = @map.effective_water_settings["annual_rainfall_mm"]&.to_f
+        infiltration, distance = measured_infiltration
+        depth = @feature&.properties.to_h["depth_m"].to_f
+        empties = infiltration&.positive? && depth.positive? && %w[swale rain_garden].include?(@feature.kind) ? (depth * 1000 / infiltration).round(1) : nil
 
         Result.new(
           geometry: outline(inside),
@@ -89,8 +98,30 @@ module Relief
           capacity_m3: capacity&.round(1),
           fill_rain_mm: capacity && area.positive? ? (capacity / area * 1000).round : nil,
           annual_rain_m3: rainfall ? (area * rainfall / 1000).round : nil,
-          annual_rainfall_mm: rainfall
+          annual_rainfall_mm: rainfall,
+          infiltration_mm_h: infiltration,
+          infiltration_distance_m: distance,
+          empties_in_h: empties
         )
+      end
+
+      # The rate (mm/h) of the nearest infiltration test within
+      # NEARBY_TEST_M, with its distance, else the median of the map's tests
+      # (distance nil), else nil.
+      def measured_infiltration
+        return nil unless @feature
+
+        rates = @map.infiltration_measurements
+        return nil if rates.empty?
+
+        nearest = @map.features.active.where(id: rates.map { |r| r[:id] })
+          .select(MapFeature.sanitize_sql_array([ "map_features.*, ST_Distance(map_features.geometry::geography, (SELECT geometry FROM map_features WHERE id = ?)::geography) AS distance_m", @feature.id ]))
+          .order("distance_m").first
+        return [ nearest.infiltration_rate_mm_h, nearest.distance_m.round ] if nearest && nearest.distance_m <= NEARBY_TEST_M
+
+        sorted = rates.map { |r| r[:rateMmH] }.sort
+        mid = sorted.size / 2
+        [ (sorted.size.odd? ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2).round(1), nil ]
       end
 
       # Heights averaged by blocks of `@factor` × `@factor` (nil = no data),

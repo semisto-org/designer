@@ -1,6 +1,6 @@
 import type { Geometry } from 'geojson'
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
-import { Eye, EyeOff, Waves } from 'lucide-react'
+import { Eye, EyeOff, Gauge, Waves } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '@/lib/api'
 import { formatArea, formatNumber, t } from '@/lib/i18n'
@@ -25,6 +25,9 @@ export type CatchmentResult = {
   fillRainMm: number | null
   annualRainM3: number | null
   annualRainfallMm: number | null
+  infiltrationMmH: number | null
+  infiltrationDistanceM: number | null
+  emptiesInH: number | null
 }
 
 type State = { status: 'loading' } | { status: 'ready'; result: CatchmentResult } | { status: 'error'; message: string; reason?: string }
@@ -130,6 +133,7 @@ export default function CatchmentSection({ feature }: { feature: MapFeature }) {
         </p>
       )}
       {state.status === 'ready' && <Figures result={state.result} kind={p.kind} />}
+      {state.status === 'ready' && <SoilLine result={state.result} feature={feature} />}
       {state.status === 'ready' && (
         <button
           type="button"
@@ -172,5 +176,62 @@ function Figures({ result, kind }: { result: CatchmentResult; kind: string }) {
       {result.capacityM3 == null && <p className="text-loam-500">{t('relief.catchment.no_size')}</p>}
       {result.beyondRelief && <p className="text-loam-500">{t('relief.catchment.beyond')}</p>}
     </div>
+  )
+}
+
+function duration(hours: number): string {
+  if (hours < 1) return t('relief.catchment.soil.minutes', { count: formatNumber(Math.max(5, Math.round(hours * 12) * 5)) })
+  if (hours < 48) return t('relief.catchment.soil.hours', { count: formatNumber(Math.round(hours)) })
+  return t('relief.catchment.soil.days', { count: formatNumber(Math.round(hours / 24)) })
+}
+
+/**
+ * What the soil does with the water held here: how long a swale or rain
+ * garden stays wet, whether a pond holds, from the person's infiltration
+ * tests; without one, an invitation to measure, right here.
+ */
+function SoilLine({ result, feature }: { result: CatchmentResult; feature: MapFeature }) {
+  const editor = useEditor()
+  const rate = result.infiltrationMmH
+  if (rate == null) {
+    return (
+      <div className="space-y-1.5 text-sm text-loam-700">
+        <p>{t('relief.catchment.soil.unknown')}</p>
+        {editor.canEdit && (
+          <button
+            type="button"
+            onClick={async () => {
+              editor.notify(t('relief.catchment.soil.measure_hint'))
+              const geometry = await editor.draw('point')
+              if (!geometry) return
+              try {
+                const created = await editor.createFeature({ layer: 'water', kind: 'infiltration_test', geometry })
+                editor.select(created.properties.id)
+              } catch (error) {
+                editor.notify((error as Error).message, 'error')
+              }
+            }}
+            className="inline-flex items-center gap-1.5 text-prune-700 underline-offset-2 hover:underline"
+          >
+            <Gauge className="h-4 w-4" />
+            {t('relief.catchment.soil.measure')}
+          </button>
+        )}
+      </div>
+    )
+  }
+  const where = result.infiltrationDistanceM != null
+    ? t('relief.catchment.soil.nearby', { rate: formatNumber(rate), distance: formatNumber(result.infiltrationDistanceM) })
+    : t('relief.catchment.soil.map', { rate: formatNumber(rate) })
+  if (feature.properties.kind === 'pond') {
+    const key = rate < 2 ? 'pond_holds' : rate < 10 ? 'pond_clay' : 'pond_liner'
+    return <p className="text-sm text-loam-700">{t(`relief.catchment.soil.${key}`, { where })}</p>
+  }
+  if (result.emptiesInH == null) return null
+  return (
+    <p className="text-sm text-loam-700">
+      {t('relief.catchment.soil.empties', { where, duration: duration(result.emptiesInH) })}{' '}
+      {t(result.emptiesInH > 48 ? 'relief.catchment.soil.empties_slow' : 'relief.catchment.soil.empties_ok')}
+    </p>
   )
 }

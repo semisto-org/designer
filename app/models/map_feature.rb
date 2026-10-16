@@ -13,6 +13,7 @@ class MapFeature < ApplicationRecord
   include MapFeature::PlantNumber
   include MapFeature::SoilDestination
   include MapFeature::WaterCapacity
+  include MapFeature::InfiltrationTest
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze
