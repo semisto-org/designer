@@ -24,7 +24,7 @@ Pourquoi ce projet existe, ses principes et ce qu'il refuse : [INTENT.md](INTENT
 
 ## Paiements (Stripe)
 
-Sans `STRIPE_SECRET_KEY`, les paiements sont désactivés et tout est débloqué (bêta fermée). Pour les ouvrir, dans le compte Stripe de Marco & Vespucci :
+Sans `STRIPE_SECRET_KEY`, les paiements sont désactivés et tout est débloqué (bêta fermée). Pour les ouvrir, dans le compte Stripe de Semisto ASBL :
 
 1. **Produits et prix** (EUR, comportement fiscal « TVA incluse ») : Forfait particulier, paiement unique, 79 € → `STRIPE_PRICE_YEARLY` ; Atelier, mensuel, 49 € → `STRIPE_PRICE_ATELIER` ; Bureau d'études, mensuel, 99 € → `STRIPE_PRICE_BUREAU` ; Mission drone, paiement unique, 280 € → `STRIPE_PRICE_DRONE`.
 2. **Stripe Tax** activé (enregistrements TVA belges et européens) et un code fiscal par produit.
