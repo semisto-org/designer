@@ -42,8 +42,8 @@ module Mcp
         raise ToolError, I18n.t("mcp.errors.too_many_pending", max: MAX_PENDING, pending:)
       end
 
-      created = create(valid)
-      Outcome.new(created:, rejected: rejected.sort_by { |r| r[:index] })
+      created, refused = create(valid)
+      Outcome.new(created:, rejected: (rejected + refused).sort_by { |r| r[:index] })
     end
 
     private
@@ -73,29 +73,42 @@ module Mcp
         GeometryCheck.spatial_errors(@map, candidates.map { |index, item| [ index, item[:geometry] ] })
       end
 
+      # Saves one draft at a time: the element library (layer, geometry
+      # type, property values) and the plant rules decide on the model, so
+      # an element they refuse is reported back with their reason instead
+      # of failing the whole proposal.
       def create(valid)
-        return [] if valid.empty?
-        created = MapFeature.transaction do
+        return [ [], [] ] if valid.empty?
+        created, refused = [], []
+        MapFeature.transaction do
           MapFeature.no_touching do
-            valid.map do |index, item|
-              feature = @map.features.create!(
-                layer: item[:layer].to_s, kind: item[:kind].to_s,
-                name: item[:name].to_s.strip.first(120).presence,
-                notes: item[:notes].to_s.strip.first(2000).presence,
-                rationale: item[:rationale].to_s.strip.first(2000),
-                properties: (item[:properties] || {}).deep_stringify_keys.except(*MapFeature.column_names),
-                tags: Array(item[:tags]),
-                style: item[:color].to_s.match?(/\A#\h{6}\z/) ? { "color" => item[:color].downcase } : {},
-                geometry: parse(item[:geometry]),
-                status: "draft", source: "ai",
-                created_by: @user, updated_by: @user
-              )
-              { index:, feature: }
+            valid.each do |index, item|
+              feature = build(item)
+              if feature.save
+                created << { index:, feature: }
+              else
+                refused << { index:, error: err(:element, kind: feature.kind, errors: feature.errors.full_messages.to_sentence) }
+              end
             end
           end
         end
-        @map.touch
-        created
+        @map.touch if created.any?
+        [ created, refused ]
+      end
+
+      def build(item)
+        @map.features.build(
+          layer: item[:layer].to_s, kind: item[:kind].to_s,
+          name: item[:name].to_s.strip.first(120).presence,
+          notes: item[:notes].to_s.strip.first(2000).presence,
+          rationale: item[:rationale].to_s.strip.first(2000),
+          properties: (item[:properties] || {}).deep_stringify_keys.except(*MapFeature.column_names),
+          tags: Array(item[:tags]),
+          style: item[:color].to_s.match?(/\A#\h{6}\z/) ? { "color" => item[:color].downcase } : {},
+          geometry: parse(item[:geometry]),
+          status: "draft", source: "ai",
+          created_by: @user, updated_by: @user
+        )
       end
   end
 end
