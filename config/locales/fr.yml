@@ -51,7 +51,6 @@ fr:
       submit: "Créer la carte"
     show:
       back: "Retour à mes cartes"
-      your_role: "Ton rôle : %{role}"
       area_ares:
         one: "%{count} are"
         other: "%{count} ares"
