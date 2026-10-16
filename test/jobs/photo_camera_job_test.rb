@@ -53,4 +53,14 @@ class PhotoCameraJobTest < ActiveJob::TestCase
     PhotoCameraJob.perform_now(placed)
     assert_in_delta 4.9, placed.reload.lng, 1e-6
   end
+
+  test "a file that no longer matches its checksum is recorded as read, and the backfill moves on" do
+    broken = create_photo(file: "drone_dji.jpg")
+    broken.image.blob.update_columns(checksum: Digest::MD5.base64digest("something else"))
+    next_one = create_photo(file: "drone_dji.jpg", salt: "b")
+    assert_nothing_raised { PhotoCameraJob.backfill }
+    assert_equal({}, broken.reload.camera)
+    assert_equal "DJI", next_one.reload.camera["make"]
+    assert_nothing_raised { PhotoCameraJob.backfill }
+  end
 end
