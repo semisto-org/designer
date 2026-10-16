@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1024,12 +1024,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_140000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "photo_looked_up_at"
+    t.string "review_status", default: "reviewed", null: false
+    t.bigint "proposed_by_id"
+    t.bigint "proposed_map_id"
+    t.bigint "reviewed_by_id"
+    t.datetime "reviewed_at"
+    t.integer "gbif_key"
+    t.string "family"
     t.index "lower((latin_name)::text)", name: "index_plant_species_on_lower_latin_name", unique: true
     t.index ["eco_services"], name: "index_plant_species_on_eco_services", using: :gin
     t.index ["exposures"], name: "index_plant_species_on_exposures", using: :gin
     t.index ["genus_id"], name: "index_plant_species_on_genus_id"
     t.index ["hardiness_zone"], name: "index_plant_species_on_hardiness_zone"
     t.index ["plant_type"], name: "index_plant_species_on_plant_type"
+    t.index ["proposed_by_id"], name: "index_plant_species_on_proposed_by_id"
+    t.index ["proposed_map_id"], name: "index_plant_species_on_proposed_map_id"
+    t.index ["review_status"], name: "index_plant_species_on_review_status"
+    t.index ["reviewed_by_id"], name: "index_plant_species_on_reviewed_by_id"
     t.index ["strata"], name: "index_plant_species_on_strata"
     t.index ["terranova_id"], name: "index_plant_species_on_terranova_id", unique: true
   end
@@ -1322,6 +1333,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_140000) do
     t.datetime "sign_in_code_sent_at"
     t.integer "sign_in_code_attempts", default: 0, null: false
     t.string "account_kind"
+    t.boolean "catalogue_reviewer", default: false, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
     t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying, 'professional'::character varying]::text[])", name: "users_account_kind_check"
@@ -1457,7 +1469,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_140000) do
   add_foreign_key "plant_observations", "plant_varieties", column: "variety_id", on_delete: :nullify
   add_foreign_key "plant_observations", "users", on_delete: :nullify
   add_foreign_key "plant_photos", "plant_species", column: "species_id", on_delete: :cascade
+  add_foreign_key "plant_species", "maps", column: "proposed_map_id", on_delete: :nullify
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
+  add_foreign_key "plant_species", "users", column: "proposed_by_id", on_delete: :nullify
+  add_foreign_key "plant_species", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "project_requests", "maps", on_delete: :nullify
   add_foreign_key "project_requests", "regions"

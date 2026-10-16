@@ -485,4 +485,12 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     _, error = call_tool(@viewer, "withdraw_draft", { map_id: @map.id, feature_ids: [ accepted.id ] })
     assert error
   end
+
+  test "plant tools never show another person's species awaiting review" do
+    species = PlantSpecies.create!(latin_name: "Salvia nemorosa", review_status: "proposed", proposed_by: users(:bob))
+    data, = call_tool(@owner, "search_plants", { query: "nemorosa" })
+    assert_empty data["results"]
+    _text, error = call_tool(@owner, "get_plant", { plant_id: species.id })
+    assert error
+  end
 end

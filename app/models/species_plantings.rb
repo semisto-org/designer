@@ -30,9 +30,7 @@ class SpeciesPlantings
 
   # Active maps the person can open (as on « Mes cartes »).
   def maps
-    @maps ||= Map.active.where(id: user.map_memberships.select(:map_id))
-                 .or(Map.active.where(organization_id: user.organization_memberships.select(:organization_id)))
-                 .order(:id).to_a
+    @maps ||= user.openable_maps.order(:id).to_a
   end
 
   def points

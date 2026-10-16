@@ -69,6 +69,8 @@ fr:
           impersonation_ended: "a quitté le compte de"
           admin_granted: "a donné le rôle d'admin à"
           admin_revoked: "a retiré le rôle d'admin à"
+          reviewer_granted: "a confié la relecture du catalogue à"
+          reviewer_revoked: "a retiré la relecture du catalogue à"
         reasons:
           stopped: "depuis le bandeau"
           expired: "au bout d'une heure"
@@ -91,6 +93,7 @@ fr:
         last_seen: "Dernière connexion"
       never: "jamais"
       admin_badge: "admin"
+      reviewer_badge: "relecture du catalogue"
       google: "Google"
       maps_count:
         zero: "aucune carte"
@@ -101,12 +104,18 @@ fr:
       revoke_admin: "Retirer le rôle d'admin"
       confirm_grant: "Donner le rôle d'admin à %{name} ? Cette personne verra tous les comptes et pourra se connecter à leur place."
       confirm_revoke: "Retirer le rôle d'admin à %{name} ?"
+      grant_reviewer: "Confier la relecture du catalogue"
+      revoke_reviewer: "Retirer la relecture du catalogue"
+      confirm_grant_reviewer: "Confier la relecture du catalogue de plantes à %{name} ? Cette personne pourra accepter, fusionner ou écarter les espèces proposées par les utilisateurs."
+      confirm_revoke_reviewer: "Retirer la relecture du catalogue à %{name} ?"
       previous: "Précédents"
       next: "Suivants"
       page: "Page %{page} sur %{pages}"
       flash:
         granted: "%{name} est maintenant admin."
         revoked: "%{name} n'est plus admin."
+        reviewer_granted: "%{name} relit maintenant le catalogue de plantes."
+        reviewer_revoked: "%{name} ne relit plus le catalogue de plantes."
       errors:
         self: "Tu ne peux pas changer ton propre rôle."
         invalid: "Ce changement de rôle n'est pas valide."

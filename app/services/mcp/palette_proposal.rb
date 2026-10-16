@@ -51,21 +51,25 @@ module Mcp
       # [species, nil] or [nil, error message].
       def resolve(line)
         if line["species_id"]
-          species = PlantSpecies.find_by(id: line["species_id"])
+          species = catalogue.find_by(id: line["species_id"])
           return species ? [ species, nil ] : [ nil, I18n.t("mcp.palette_errors.species_id", id: line["species_id"]) ]
         end
         name = line["name"].to_s.squish
         return [ nil, I18n.t("mcp.palette_errors.no_name") ] if name.blank?
-        exact = PlantSpecies.find_by_latin_name(name) || by_common_name(name)
+        exact = catalogue.find_by_latin_name(name) || by_common_name(name)
         return [ exact, nil ] if exact
-        found = PlantSpecies.matching(name).limit(2).to_a
+        found = catalogue.matching(name).limit(2).to_a
         return [ found.first, nil ] if found.size == 1
         [ nil, I18n.t(found.empty? ? "mcp.palette_errors.unknown" : "mcp.palette_errors.ambiguous", name:) ]
       end
 
       def by_common_name(name)
-        ids = PlantCommonName.where(nameable_type: "PlantSpecies").where("lower(unaccent(name)) = lower(unaccent(?))", name).distinct.pluck(:nameable_id)
+        ids = PlantCommonName.where(nameable_type: "PlantSpecies", nameable_id: catalogue.select(:id))
+                             .where("lower(unaccent(name)) = lower(unaccent(?))", name).distinct.pluck(:nameable_id)
         ids.size == 1 ? PlantSpecies.find(ids.first) : nil
       end
+
+      # Species this person may see (the ones awaiting review are theirs only).
+      def catalogue = PlantSpecies.where(id: PlantSpecies.visible_to(@user).select(:id))
   end
 end

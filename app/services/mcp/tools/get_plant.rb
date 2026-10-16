@@ -8,7 +8,7 @@ module Mcp
       hints
 
       def perform(plant_id:)
-        PlantCatalog.find(plant_id) || raise(ToolError, t("errors.plant_not_found", id: plant_id))
+        PlantCatalog.find(plant_id, user:) || raise(ToolError, t("errors.plant_not_found", id: plant_id))
       end
 
       private

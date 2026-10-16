@@ -15,11 +15,14 @@ class PlantSearch
     PlantSpecies::STRATA_BY_PLANT_TYPE.map { |type, strata| "WHEN '#{type}' THEN '#{strata}'" }.join(" ") +
     " ELSE 'shrub' END)"
 
-  attr_reader :params, :country
+  attr_reader :params, :country, :user
 
-  def initialize(params = {}, country: nil)
+  # `user`: who searches; the species awaiting review are only theirs (or a
+  # catalogue reviewer's), see PlantSpecies.visible_to.
+  def initialize(params = {}, country: nil, user: nil)
     @params = (params.respond_to?(:to_unsafe_h) ? params.to_unsafe_h : params.to_h).with_indifferent_access
     @country = country.presence&.upcase
+    @user = user
   end
 
   def query = params[:q].to_s.squish.first(100)
@@ -46,7 +49,7 @@ class PlantSearch
   end
 
   def scope
-    scope = PlantSpecies.matching(query)
+    scope = PlantSpecies.matching(query).where(id: PlantSpecies.visible_to(user).select(:id))
     selected(:strata).then { |v| scope = scope.where("#{STRATA_SQL} IN (?)", v) if v.any? }
     selected(:plant_type).then { |v| scope = scope.where(plant_type: v) if v.any? }
     %i[exposures soil_moisture].each do |facet|
