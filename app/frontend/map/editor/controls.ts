@@ -85,3 +85,49 @@ export class PhotosToggleControl implements IControl {
     this.container = this.button = this.tip = null
   }
 }
+
+// Lucide "eye" (the « Calques » icon of the rail).
+const EYE_ICON = svg('<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>')
+
+/**
+ * « Calques » from the map: one button in the column of map controls that
+ * opens the panel where layers, kinds of elements and strata are shown or
+ * hidden. A dot says that something is hidden right now.
+ */
+export class LayersControl implements IControl {
+  private container: HTMLElement | null = null
+  private button: HTMLButtonElement | null = null
+  private tip: HTMLElement | null = null
+
+  constructor(private readonly onClick: () => void) {}
+
+  onAdd(_map: MapLibreMap): HTMLElement {
+    const container = document.createElement('div')
+    container.className = 'maplibregl-ctrl maplibregl-ctrl-group editor-recenter editor-layers-control'
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = 'relative grid place-items-center text-loam-700'
+    button.innerHTML = EYE_ICON
+    button.addEventListener('click', this.onClick)
+    const tip = document.createElement('span')
+    tip.className = 'editor-recenter-tip'
+    tip.setAttribute('aria-hidden', 'true')
+    container.append(button, tip)
+    this.container = container
+    this.button = button
+    this.tip = tip
+    return container
+  }
+
+  update(label: string, somethingHidden: boolean): void {
+    if (!this.button || !this.tip) return
+    this.button.setAttribute('aria-label', label)
+    this.button.dataset.hidden = String(somethingHidden)
+    this.tip.textContent = label
+  }
+
+  onRemove(): void {
+    this.container?.remove()
+    this.container = this.button = this.tip = null
+  }
+}

@@ -185,6 +185,12 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 /* « Photos sur la carte »: plum while the photos show, grey and crossed out when hidden. */
 .editor-map .editor-photos-toggle button[data-shown="true"] { color: var(--color-prune-700); background: var(--color-prune-50); }
 .editor-map .editor-photos-toggle button[data-shown="false"] { color: var(--color-loam-500); }
+/* « Calques »: a plum dot when something is hidden on the map. */
+.editor-map .editor-layers-control button[data-hidden="true"] { color: var(--color-prune-700); }
+.editor-map .editor-layers-control button[data-hidden="true"]::after {
+  content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px;
+  border-radius: 9999px; background: var(--color-prune-600); box-shadow: 0 0 0 2px #fff;
+}
 
 /* "Sources de la carte" in words instead of the bare "i" of the attribution. */
 .editor-map .maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) {

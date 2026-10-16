@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ChevronDown, ListTree } from 'lucide-react'
+import { ChevronDown, Eye, EyeOff, ListTree } from 'lucide-react'
 import { useState } from 'react'
 import { hasLegend, LayerLegend } from '@/components/legend/LayerLegend'
 import { strataLabel } from '@/components/plants/format'
@@ -7,7 +7,8 @@ import { t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
 import { useLayerState, visibleOverlays } from '@/map/data/store'
-import { useDrawingState } from '@/map/drawing/store'
+import { strataKey, UNKNOWN_STRATA } from '@/map/drawing/hidden'
+import { setHiddenStrata, toggled, useDrawingState } from '@/map/drawing/store'
 import { numberRanges } from '@/map/plants/labelRank'
 import { isPlant, numberProperty } from '@/map/plants/properties'
 import { plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
@@ -30,25 +31,33 @@ function storedOpen(): boolean | null {
 /** The plant numbers of one species (and variety) on the map, for the « Numéro » legend. */
 type NumberedGroup = { key: string; name: string; strata: Strata | null; numbers: number[] }
 
-type PlantLegend = { counts: StrataCount[]; planned: boolean; numbered: NumberedGroup[] }
+type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; numbered: NumberedGroup[] }
 
 /**
- * The strata of the plants shown on the map, from the highest down,
- * whether some of them are still to plant (dashed), and their numbers by
- * species, first number first.
+ * The strata of the plants on the map, from the highest down (hidden ones
+ * too, so they can be shown again), how many plants have no known strata,
+ * whether some of the shown ones are still to plant (dashed), and their
+ * numbers by species, first number first.
  */
 function usePlantStrata(): PlantLegend {
   const { features, map } = useEditor()
   const { data } = usePlanting(map.id)
   const scenario = useScenario()
   const hidden = useDrawingState((s) => s.hiddenLayers)
-  if (hidden.includes('plants')) return { counts: [], planned: false, numbered: [] }
+  const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
+  if (hidden.includes('plants')) return { counts: [], unknown: 0, planned: false, numbered: [] }
   const strata: Strata[] = []
+  let unknown = 0
   const groups = new Map<string, NumberedGroup>()
   let planned = false
   for (const feature of features) {
     if (!isPlant(feature) || feature.properties.status === 'rejected' || !inScenario(feature.properties, scenario)) continue
     const s = plantStrata(feature, data)
+    if (data && !s) unknown += 1
+    if (hiddenStrata.includes(strataKey(s))) {
+      if (s) strata.push(s)
+      continue
+    }
     const number = numberProperty(feature, 'number')
     const speciesId = numberProperty(feature, 'species_id')
     const species = speciesId != null ? data?.species[String(speciesId)] : undefined
@@ -66,7 +75,7 @@ function usePlantStrata(): PlantLegend {
     planned ||= isPlannedPlant(feature.properties)
   }
   const numbered = [...groups.values()].sort((a, b) => Math.min(...a.numbers) - Math.min(...b.numbers))
-  return { counts: strataCounts(strata), planned, numbered }
+  return { counts: strataCounts(strata), unknown, planned, numbered }
 }
 
 /**
@@ -90,7 +99,7 @@ export default function LegendOverlay() {
   const layers = activePanel === 'layers' ? [] : regionLayers
     .filter((layer) => layer.category === 'overlay' && shown.includes(layer.key) && hasLegend(layer))
     .sort((a, b) => (b.position ?? 0) - (a.position ?? 0))
-  const sections = layers.length + (plants.counts.length > 0 ? 1 : 0)
+  const sections = layers.length + (plants.counts.length > 0 || plants.unknown > 0 ? 1 : 0)
   if (sections === 0 || (!wide && (activePanel || selected))) return null
 
   const toggle = () => {
@@ -128,7 +137,7 @@ export default function LegendOverlay() {
         </button>
         {open && (
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 pb-3 pt-2">
-            {plants.counts.length > 0 && <StrataLegend {...plants} />}
+            {(plants.counts.length > 0 || plants.unknown > 0) && <StrataLegend {...plants} />}
             {layers.map((layer) => (
               <div key={layer.key}>
                 <h3 className="mb-1.5 text-sm font-semibold text-loam-800">{layer.name}</h3>
@@ -142,9 +151,18 @@ export default function LegendOverlay() {
   )
 }
 
-/** One line per strata on the map: its colour, its name and how many plants. */
-function StrataLegend({ counts, planned, numbered }: PlantLegend) {
+/**
+ * One line per strata on the map: its colour, its name and how many plants.
+ * A click hides or shows that strata (crowns, points, names and numbers),
+ * remembered per map like the « Calques ».
+ */
+function StrataLegend({ counts, unknown, planned, numbered }: PlantLegend) {
   const style = usePlantLabelStyle()
+  const hidden = useDrawingState((s) => s.hiddenStrata)
+  const rows = [
+    ...counts.map(({ strata, count }) => ({ key: strata as string, label: strataLabel(strata), color: STRATA_COLORS[strata] as string, count })),
+    ...(unknown > 0 ? [{ key: UNKNOWN_STRATA, label: t('plants.legend.unknown_strata'), color: '#6b665c', count: unknown }] : []),
+  ]
   return (
     <div data-testid="strata-legend">
       <div className="mb-1.5 flex items-center justify-between gap-2">
@@ -153,14 +171,29 @@ function StrataLegend({ counts, planned, numbered }: PlantLegend) {
       </div>
       {/* The numbers are what the map shows now: read them first. */}
       {style === 'number' && numbered.length > 0 && <NumberLegend groups={numbered} />}
-      <ul className="space-y-1">
-        {counts.map(({ strata, count }) => (
-          <li key={strata} className="flex items-center gap-2 text-sm leading-tight text-loam-700">
-            <CrownSwatch color={STRATA_COLORS[strata]} />
-            <span className="min-w-0 flex-1">{strataLabel(strata)}</span>
-            <span className="tabular-nums text-loam-500">{count}</span>
-          </li>
-        ))}
+      <ul className="-mx-1.5 space-y-0.5">
+        {rows.map(({ key, label, color, count }) => {
+          const shown = !hidden.includes(key)
+          return (
+            <li key={key}>
+              <button
+                type="button"
+                onClick={() => setHiddenStrata(toggled(hidden, key))}
+                aria-pressed={shown}
+                aria-label={t(shown ? 'plants.legend.hide_strata' : 'plants.legend.show_strata', { strata: label })}
+                title={t(shown ? 'plants.legend.hide_strata' : 'plants.legend.show_strata', { strata: label })}
+                className="group flex w-full items-center gap-2 rounded-md px-1.5 py-0.5 text-left text-sm leading-tight text-loam-700 hover:bg-loam-50"
+              >
+                <span className={clsx('shrink-0', !shown && 'opacity-30')}><CrownSwatch color={color} /></span>
+                <span className={clsx('min-w-0 flex-1', !shown && 'text-loam-400 line-through decoration-loam-300')}>{label}</span>
+                <span className={clsx('tabular-nums', shown ? 'text-loam-500' : 'text-loam-400')}>{count}</span>
+                {shown
+                  ? <Eye className="h-4 w-4 shrink-0 text-loam-300 group-hover:text-loam-500" aria-hidden="true" />
+                  : <EyeOff className="h-4 w-4 shrink-0 text-loam-400" aria-hidden="true" />}
+              </button>
+            </li>
+          )
+        })}
       </ul>
       {planned && (
         <p className="mt-2 flex items-center gap-2 text-sm leading-tight text-loam-600">

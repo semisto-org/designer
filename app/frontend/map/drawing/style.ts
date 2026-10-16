@@ -7,6 +7,7 @@ import type {
   Map as MapLibreMap,
 } from 'maplibre-gl'
 import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
+import { hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { scenarioFilter, type Scenario } from '@/map/scenario'
@@ -458,12 +459,18 @@ const visibilityState = new WeakMap<MapLibreMap, Map<string, { original: unknown
  * what is still a project (planned plants, drafts) is hidden too. With a
  * `version` (a tag), only elements carrying it, or no tag at all, show.
  */
-export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options: { activeOnly?: boolean; scenario?: Scenario; version?: string | null } = {}) {
+export function applyLayerVisibility(
+  map: MapLibreMap,
+  hidden: string[],
+  options: { activeOnly?: boolean; scenario?: Scenario; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] } = {},
+) {
+  const hiddenKinds = options.hiddenKinds ?? []
+  const hiddenIds = options.hiddenIds ?? []
   const store = visibilityState.get(map) ?? new Map<string, { original: unknown; applied: string }>()
   visibilityState.set(map, store)
   const scenario = options.scenario ? scenarioFilter(options.scenario) : null
   const version = options.version ? versionFilter(options.version) : null
-  const key = `${options.activeOnly ? 'active:' : ''}${scenario ? 'current:' : ''}${options.version ? `v=${options.version}:` : ''}${[...hidden].sort().join(',')}`
+  const key = `${options.activeOnly ? 'active:' : ''}${scenario ? 'current:' : ''}${options.version ? `v=${options.version}:` : ''}${[...hidden].sort().join(',')}|${[...hiddenKinds].sort().join(',')}|${hiddenIds.join(',')}`
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
@@ -478,6 +485,7 @@ export function applyLayerVisibility(map: MapLibreMap, hidden: string[], options
     if (options.activeOnly) tests.push(['==', ['coalesce', ['get', 'status'], 'active'], 'active'])
     if (scenario) tests.push(scenario)
     if (version) tests.push(version)
+    tests.push(...hiddenTests(hiddenKinds, hiddenIds))
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
     const filter = test ? (entry.original ? ['all', entry.original, test] : test) : entry.original
     map.setFilter(id, (filter ?? null) as FilterSpecification | null)

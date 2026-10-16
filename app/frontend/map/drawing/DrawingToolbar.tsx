@@ -12,7 +12,7 @@ import { ElementPicker, rememberRecent } from '@/map/drawing/ElementPicker'
 import { MeasureTool, measureProperties } from '@/map/drawing/MeasureTool'
 import { saveFeature } from '@/map/drawing/save'
 import { SketchTool } from '@/map/drawing/SketchTool'
-import { drawingStore, setHiddenLayers, useDrawingState, type DrawingTool } from '@/map/drawing/store'
+import { drawingStore, revealForDrawing, useDrawingState, type DrawingTool } from '@/map/drawing/store'
 import { ZoneTool } from '@/map/zones/ZoneTool'
 import type { ElementSpec } from '@/types/drawing'
 
@@ -75,8 +75,7 @@ export default function DrawingToolbar() {
 
   async function drawElement(spec: ElementSpec) {
     const editor = latest.current
-    const hidden = drawingStore.get().hiddenLayers
-    if (hidden.includes(spec.layer)) setHiddenLayers(hidden.filter((l) => l !== spec.layer))
+    revealForDrawing(spec.layer, spec.kind)
     rememberRecent(spec.kind)
     setDrawingSpec(spec)
     // A swale belongs on the contour: it starts there whenever the relief allows it.

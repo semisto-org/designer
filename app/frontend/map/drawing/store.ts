@@ -1,8 +1,9 @@
 import { useSyncExternalStore } from 'react'
 
 /**
- * Small shared state of the drawing tools: which design layers are hidden
- * (per viewer and per map, kept in localStorage), which tool is open and the
+ * Small shared state of the drawing tools: which design layers, kinds of
+ * elements and plant strata are hidden (per viewer and per map, kept in
+ * localStorage), which tool is open and the
  * feature whose shape is being edited. Shared by the toolbar, the
  * inspector section, the layers panel and the exports.
  */
@@ -11,13 +12,17 @@ export type DrawingTool = 'draw' | 'zone' | 'measure' | 'sketch' | 'shape' | nul
 export type DrawingState = {
   mapId: number | null
   hiddenLayers: string[]
+  /** Kinds of elements hidden on their own (« mare », « haie »…), their layer staying shown. */
+  hiddenKinds: string[]
+  /** Plant strata hidden (`unknown`: plants whose strata is not known). */
+  hiddenStrata: string[]
   tool: DrawingTool
   shapeEditId: number | null
   /** The tag shown as « version » on the map (null: everything). */
   version: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], tool: null, shapeEditId: null, version: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], tool: null, shapeEditId: null, version: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -38,26 +43,42 @@ export function useDrawingState<T>(select: (s: DrawingState) => T): T {
   return useSyncExternalStore(drawingStore.subscribe, () => select(state))
 }
 
-const storageKey = (mapId: number) => `designer:map:${mapId}:hidden-layers`
+type HiddenList = 'layers' | 'kinds' | 'strata'
+const storageKey = (mapId: number, list: HiddenList = 'layers') => `designer:map:${mapId}:hidden-${list}`
 const versionKey = (mapId: number) => `designer:map:${mapId}:version`
 
-/** Loads the hidden layers remembered for this map (if storage allows). */
+function readList(mapId: number, list: HiddenList): string[] {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(storageKey(mapId, list)) ?? '[]')
+    return Array.isArray(saved) ? saved.filter((v): v is string => typeof v === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+function writeList(list: HiddenList, values: string[]) {
+  if (state.mapId == null) return
+  try {
+    window.localStorage.setItem(storageKey(state.mapId, list), JSON.stringify(values))
+  } catch {
+    // Private mode or blocked storage: the choice lasts for this visit only.
+  }
+}
+
+/** Loads the hidden layers, kinds and strata remembered for this map (if storage allows). */
 export function initDrawingState(mapId: number) {
   if (state.mapId === mapId) return
-  let hidden: string[] = []
-  try {
-    const saved = JSON.parse(window.localStorage.getItem(storageKey(mapId)) ?? '[]')
-    if (Array.isArray(saved)) hidden = saved.filter((v): v is string => typeof v === 'string')
-  } catch {
-    hidden = []
-  }
+  const hidden = readList(mapId, 'layers')
   let version: string | null = null
   try {
     version = window.localStorage.getItem(versionKey(mapId)) || null
   } catch {
     version = null
   }
-  drawingStore.set({ mapId, hiddenLayers: hidden, tool: null, shapeEditId: null, version })
+  drawingStore.set({
+    mapId, hiddenLayers: hidden, hiddenKinds: readList(mapId, 'kinds'), hiddenStrata: readList(mapId, 'strata'),
+    tool: null, shapeEditId: null, version,
+  })
 }
 
 /** Shows one version (a tag) on the map, or everything with null; remembered per map. */
@@ -74,12 +95,34 @@ export function setVersion(version: string | null) {
 
 export function setHiddenLayers(hidden: string[]) {
   drawingStore.set({ hiddenLayers: hidden })
-  if (state.mapId == null) return
-  try {
-    window.localStorage.setItem(storageKey(state.mapId), JSON.stringify(hidden))
-  } catch {
-    // Private mode or blocked storage: the choice lasts for this visit only.
-  }
+  writeList('layers', hidden)
+}
+
+export function setHiddenKinds(kinds: string[]) {
+  drawingStore.set({ hiddenKinds: kinds })
+  writeList('kinds', kinds)
+}
+
+export function setHiddenStrata(strata: string[]) {
+  drawingStore.set({ hiddenStrata: strata })
+  writeList('strata', strata)
+}
+
+/** Adds or removes one value of a hidden list. */
+export const toggled = (list: string[], value: string) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
+
+/** Before drawing an element: its layer and its kind show again, so one sees what one draws. */
+export function revealForDrawing(layer: string, kind?: string) {
+  const { hiddenLayers, hiddenKinds } = drawingStore.get()
+  if (hiddenLayers.includes(layer)) setHiddenLayers(hiddenLayers.filter((l) => l !== layer))
+  if (kind && hiddenKinds.includes(kind)) setHiddenKinds(hiddenKinds.filter((k) => k !== kind))
+}
+
+/** « Tout afficher »: every layer, kind and strata again. */
+export function showEverything() {
+  setHiddenLayers([])
+  setHiddenKinds([])
+  setHiddenStrata([])
 }
 
 /** Asks the drawing toolbar to let the user reshape a feature. */
