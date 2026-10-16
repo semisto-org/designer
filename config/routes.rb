@@ -176,6 +176,7 @@ Rails.application.routes.draw do
         get "files/:kind", action: :file, as: :file, constraints: { kind: /grid|surface|landcover|texture/ }
         get :buildings
         get :contour
+        get :catchment
       end
       resource :terrain, only: %i[show create]
       resource :water_settings, only: :update
@@ -264,6 +265,7 @@ Rails.application.routes.draw do
   resources :maps, only: [] do
     scope module: :maps do
       resource :observed_climate, only: :show
+      resource :water_balance, only: :show
     end
   end
   # --- end observed_climate ---

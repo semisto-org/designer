@@ -2,7 +2,8 @@ module Mcp
   module Tools
     # What the external data sources say about the map's place, in one call:
     # sun and horizon (PVGIS), nearby weather stations (IRM), the climate
-    # observed over 30 years (ERA5-Land), the trees already there (Meta/WRI
+    # observed over 30 years (ERA5-Land) and its water balance month by
+    # month, the trees already there (Meta/WRI
     # canopy height) and the town-planning rules and risks (France). Each
     # topic reuses the report the editor panel shows, without the heavy
     # drawing data (sun path points, canopy grid), and says why it is missing
@@ -12,6 +13,7 @@ module Mcp
         "sun" => ->(map) { Sun::MapReport.new(map).as_json },
         "weather_stations" => ->(map) { WeatherStations::MapReport.new(map).as_json },
         "observed_climate" => ->(map) { ObservedClimate::MapReport.new(map).as_json },
+        "water_balance" => ->(map) { WaterBalance::MapReport.new(map).as_json },
         "canopy" => ->(map) { Canopy::MapReport.new(map).as_json },
         # Network easements (gas, power lines…) stay hidden from the MCP.
         "site_rules" => ->(map) { SiteRules::MapReport.new(map, include_networks: false).as_json }

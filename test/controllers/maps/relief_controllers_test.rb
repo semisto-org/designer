@@ -103,6 +103,8 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
       assert_redirected_to map_path(@map)
       get contour_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
       assert_response :payment_required
+      get catchment_map_relief_path(@map, lng: 4.9001, lat: 50.3401), as: :json
+      assert_response :payment_required
     end
   end
 
@@ -122,6 +124,28 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_equal "outside_boundary", response.parsed_body["reason"]
     get contour_map_relief_path(@map, lng: "nord"), as: :json
+    assert_response :bad_request
+  end
+
+  test "the catchment of a pond or a point" do
+    synthetic_terrain(@map, margin_m: 4) { |_dx, dy| 200 + dy * 0.1 }
+    centre = @map.boundary.centroid
+    pond = @map.features.create!(layer: "water", kind: "pond", properties: { "depth_m" => 1 },
+      geometry: { "type" => "Polygon", "coordinates" => [ [ [ -1, -1 ], [ 1, -1 ], [ 1, 1 ], [ -1, 1 ], [ -1, -1 ] ].map { |x, y| [ centre.x + x * 0.00003, centre.y + y * 0.00002 ] } ] })
+    sign_in_as users(:alice)
+    get catchment_map_relief_path(@map, feature_id: pond.id), as: :json
+    assert_response :success
+    body = response.parsed_body
+    assert_operator body["areaM2"], :>, 0
+    assert body["beyondRelief"]
+    assert_includes %w[Polygon MultiPolygon], body.dig("geometry", "type")
+
+    get catchment_map_relief_path(@map, lng: centre.x, lat: centre.y), as: :json
+    assert_response :success
+    get catchment_map_relief_path(@map, lng: 4.95, lat: 50.34), as: :json
+    assert_response :unprocessable_entity
+    assert_equal "outside_relief", response.parsed_body["reason"]
+    get catchment_map_relief_path(@map), as: :json
     assert_response :bad_request
   end
 

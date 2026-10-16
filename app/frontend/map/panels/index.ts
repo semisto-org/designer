@@ -63,6 +63,7 @@ import TransferNotice from '@/transfer/TransferNotice'
 import WaterSourcesPanel from '@/map/water/WaterSourcesPanel'
 import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
+import CatchmentSection, { appliesToCatchment } from '@/map/water/CatchmentSection'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
 import TagsSection from '@/map/tags/TagsSection'
 import TasksLink from '@/tasks/TasksLink'
@@ -119,6 +120,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
   { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
   { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
+  { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
 ]
 
 // Top bar actions (right side), e.g. share, export.

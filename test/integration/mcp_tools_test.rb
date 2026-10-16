@@ -181,6 +181,28 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal "trace_contour", AiAction.last.tool
   end
 
+  test "get_catchment gives what drains into a pond or a point" do
+    centre = @map.boundary.centroid
+    synthetic_terrain(@map) { |_dx, dy| 200 + dy * 0.1 }
+    pond = @map.features.create!(layer: "water", kind: "pond", properties: { "depth_m" => 1 },
+      geometry: { "type" => "Polygon", "coordinates" => [ [ [ -1, -1 ], [ 1, -1 ], [ 1, 1 ], [ -1, 1 ], [ -1, -1 ] ].map { |x, y| [ centre.x + x * 0.00003, centre.y + y * 0.00002 ] } ] })
+
+    data, error = call_tool(@viewer, "get_catchment", { map_id: @map.id, feature_id: pond.id })
+    refute error
+    assert data["area_m2"].positive?
+    assert data["beyond_relief"]
+    assert_includes %w[Polygon MultiPolygon], data.dig("geometry", "type")
+    assert_equal "get_catchment", AiAction.last.tool
+
+    data, error = call_tool(@viewer, "get_catchment", { map_id: @map.id, lng: centre.x, lat: centre.y })
+    refute error
+    assert_equal [ centre.x, centre.y ], data["point"]
+
+    text, error = call_tool(@viewer, "get_catchment", { map_id: @map.id })
+    assert error
+    assert_match(/feature_id/, text)
+  end
+
   test "plant tools search the catalogue and give a species with its provenance" do
     walnut = PlantSpecies.create!(latin_name: "Juglans regia", plant_type: "tree", height_max_m: 25)
     walnut.replace_common_names!([ "Noyer commun" ])
