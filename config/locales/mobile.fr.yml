@@ -109,6 +109,13 @@ fr:
       send_comment: "Commenter"
       pending: "en attente d'envoi"
       history_offline: "L'historique s'affichera quand tu auras du réseau."
+    harvest:
+      title: "Récolte"
+      saved: "Noté pour cet arbre."
+      saved_offline: "Noté. Ce sera envoyé quand tu auras du réseau."
+      next_tree: "Arbre suivant : %{name}"
+      next_tree_hint: "Le plus proche pas encore noté aujourd'hui, à %{meters} m."
+      all_noted: "Tous les fruitiers de la carte sont notés aujourd'hui. Belle tournée !"
     plant:
       title: "Planter ici"
       locating: "Recherche de ta position…"
@@ -249,6 +256,7 @@ fr:
         updateFeature: "Modification d'un élément"
         uploadPhoto: "Photo"
         createObservation: "Observation de reprise"
+        createHarvest: "Récolte"
         createBioindicator: "Plante bio-indicatrice"
         createComment: "Commentaire"
     trace:

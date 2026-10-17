@@ -1,6 +1,7 @@
 // The outbox: every change made on the terrain is saved here first, shown
 // on the map at once, and sent to the server in order when the network is
 // there. Pure logic (no phone APIs), so it is unit-tested.
+import type { NewHarvest } from './harvests'
 import type { FeatureProperties, Geometry, MapBundle, MapFeature, Survival } from './types'
 
 /** A feature drawn on the phone gets a negative id until the server gives it one. */
@@ -22,6 +23,7 @@ export type Op = Base & (
   | { type: 'updateFeature'; featureId: FeatureRef; lockVersion: number; changes: { name?: string | null; notes?: string | null; properties?: Record<string, unknown>; geometry?: Geometry } }
   | { type: 'uploadPhoto'; file: string; lng: number | null; lat: number | null; takenAt: string | null; featureId: FeatureRef | null; caption?: string | null; bioindicatorStatus?: 'to_analyze' }
   | { type: 'createObservation'; featureId: FeatureRef; observedOn: string; survival: Survival; vigor: number | null; note: string | null; photo: string | null }
+  | { type: 'createHarvest'; featureId: FeatureRef; harvest: NewHarvest }
   | { type: 'createComment'; featureId: FeatureRef | null; body: string }
   | { type: 'createBioindicator'; observation: NewBioindicator; photo: string }
 )
@@ -108,6 +110,7 @@ export type Transport = {
   updateFeature(mapId: number, featureId: number, body: Record<string, unknown>): Promise<MapFeature>
   uploadPhoto(mapId: number, op: Extract<Op, { type: 'uploadPhoto' }>, featureId: number | null): Promise<void>
   createObservation(mapId: number, featureId: number, op: Extract<Op, { type: 'createObservation' }>): Promise<void>
+  createHarvest(mapId: number, featureId: number, harvest: NewHarvest): Promise<void>
   createComment(mapId: number, featureId: number | null, body: string): Promise<void>
   createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>): Promise<void>
 }
@@ -192,6 +195,8 @@ async function send(state: OutboxState, op: Op, transport: Transport, mapTempId:
       return transport.uploadPhoto(op.mapId, op, id(op.featureId))
     case 'createObservation':
       return transport.createObservation(op.mapId, id(op.featureId)!, op)
+    case 'createHarvest':
+      return transport.createHarvest(op.mapId, id(op.featureId)!, op.harvest)
     case 'createComment':
       return transport.createComment(op.mapId, id(op.featureId), op.body)
     case 'createBioindicator':

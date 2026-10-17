@@ -22,6 +22,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   documents: 'rassembler-ses-documents',
   palette: 'construire-sa-palette-et-ses-patches',
   'plant-list': 'la-liste-de-plants-et-la-commande',
+  harvests: 'suivre-ses-recoltes',
   elements: 'dessiner-l-existant',
   'drawing-layers': 'calques-mesures-et-croquis',
   'water-sources': 'dessiner-l-existant',
