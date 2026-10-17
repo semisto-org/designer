@@ -137,19 +137,6 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 /* Home page time-lapse: text set straight on the watercolour keeps a paper halo. */
 .timelapse-halo { text-shadow: 0 0 22px var(--color-loam-50), 0 0 8px var(--color-loam-50), 0 0 3px var(--color-loam-50); }
 
-/* Map editor: the name tag of the terrain, above its outline. */
-.boundary-label {
-  pointer-events: none;
-  white-space: nowrap;
-  border-radius: 8px;
-  background: #fff;
-  padding: 5px 10px;
-  box-shadow: 0 6px 16px rgb(26 26 26 / 0.18);
-  font-size: 12.5px;
-  color: var(--color-loam-500);
-}
-.boundary-label-name { font-family: var(--font-serif); font-weight: 600; font-size: 15px; color: var(--color-loam-900); }
-
 /* A keypoint found in a valley: a numbered water drop, as in the field notebook.
    MapLibre owns the marker's transform, so only its inner span may turn. */
 .keypoint-marker { display: grid; place-items: center; width: 30px; height: 30px; cursor: pointer; background: none; border: 0; padding: 0; }
