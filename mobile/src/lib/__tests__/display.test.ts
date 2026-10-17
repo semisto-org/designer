@@ -11,6 +11,7 @@ const plannedTree = { layer: 'plants', kind: 'plant', status: 'active', species_
 const shed = { layer: 'structures', kind: 'shed', status: 'active' }
 const draftPond = { layer: 'water', kind: 'pond', status: 'draft' }
 const existingTree = { layer: 'existing', kind: 'existing_tree', status: 'active' }
+const plannedHedge = { layer: 'structures', kind: 'hedge', status: 'active', planned: true }
 
 describe('display of the terrain map', () => {
   it('shows only what is on the ground by default', () => {
@@ -19,6 +20,8 @@ describe('display of the terrain map', () => {
     expect(isShown(existingTree, DEFAULT_DISPLAY, planting)).toBe(true)
     expect(isShown(plannedTree, DEFAULT_DISPLAY, planting)).toBe(false)
     expect(isShown(draftPond, DEFAULT_DISPLAY, planting)).toBe(false)
+    expect(isShown(plannedHedge, DEFAULT_DISPLAY, planting)).toBe(false)
+    expect(isShown(plannedHedge, { ...DEFAULT_DISPLAY, projected: true }, planting)).toBe(true)
   })
 
   it('shows the project on demand, and hides layers and strata', () => {
