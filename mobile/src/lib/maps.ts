@@ -12,10 +12,15 @@ import type { MapBundle, MapSummary } from './types'
 export const styleUrl = (mapId: number, base?: string) =>
   `${API_URL}/api/v1/maps/${mapId}/style${base ? `?base=${encodeURIComponent(base)}` : ''}`
 
-/** MapLibre fetches the style itself: it needs the token too. */
+/**
+ * MapLibre fetches the style and tiles itself: it needs the token too. The
+ * session calls this every few minutes, so the token MapLibre holds is
+ * always valid for a quarter of an hour, even on a map left open.
+ */
 let headerId: string | null = null
+export const MAP_TOKEN_MARGIN_MS = 15 * 60_000
 export async function authorizeMapRequests(): Promise<void> {
-  const token = await accessToken()
+  const token = await accessToken({ minValidityMs: MAP_TOKEN_MARGIN_MS })
   if (headerId) TransformRequestManager.removeHeader(headerId)
   headerId = token ? TransformRequestManager.addHeader({ match: `${API_URL}/api/`, name: 'Authorization', value: `Bearer ${token}` }) : null
 }
@@ -47,18 +52,24 @@ const MIN_ZOOM = 12
 const MAX_ZOOM = 19
 const MARGIN_M = 150
 
-export type DownloadState = { state: 'none' | 'active' | 'complete' | 'error'; percentage: number; bytes: number }
+// A whole farm at zoom 19 is far more than MapLibre's default (6000 tiles).
+const TILE_COUNT_LIMIT = 100_000
+let tileLimitSet = false
+
+/** 'paused': a download stopped before the end (app closed, network lost); it has to be started again. */
+export type DownloadState = { state: 'none' | 'active' | 'paused' | 'complete' | 'error'; percentage: number; bytes: number }
 
 export async function downloadState(mapId: number): Promise<DownloadState> {
   const packs = await OfflineManager.getPacks()
   const pack = packs.find((p) => p.id === packId(mapId) || p.metadata?.mapId === mapId)
   if (!pack) return { state: 'none', percentage: 0, bytes: 0 }
-  return fromStatus(await pack.status())
+  // Read back later, an unfinished pack no longer downloads.
+  return fromStatus(await pack.status(), 'paused')
 }
 
-function fromStatus(status: OfflinePackStatus): DownloadState {
+function fromStatus(status: OfflinePackStatus, unfinished: 'active' | 'paused' = 'active'): DownloadState {
   return {
-    state: status.state === 'complete' ? 'complete' : 'active',
+    state: status.state === 'complete' ? 'complete' : status.state === 'inactive' ? unfinished : 'active',
     percentage: Math.round(status.percentage),
     bytes: status.completedResourceSize,
   }
@@ -69,6 +80,10 @@ export async function downloadMap(map: MapSummary, onProgress: (state: DownloadS
   await fetchBundle(map.id)
   if (!map.bbox) return onProgress({ state: 'complete', percentage: 100, bytes: 0 })
   await authorizeMapRequests()
+  if (!tileLimitSet) {
+    OfflineManager.setTileCountLimit(TILE_COUNT_LIMIT)
+    tileLimitSet = true
+  }
   await removeDownload(map.id, { keepBundle: true })
   await new Promise<void>((resolve, reject) => {
     OfflineManager.createPack(

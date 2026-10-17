@@ -21,7 +21,7 @@ export type NewFeature = {
 
 export type Op = Base & (
   | { type: 'createFeature'; tempId: number; feature: NewFeature }
-  | { type: 'updateFeature'; featureId: FeatureRef; lockVersion: number; changes: { name?: string | null; notes?: string | null; properties?: Record<string, unknown>; geometry?: Geometry } }
+  | { type: 'updateFeature'; featureId: FeatureRef; lockVersion: number; changes: FeatureChanges }
   | { type: 'uploadPhoto'; file: string; lng: number | null; lat: number | null; takenAt: string | null; featureId: FeatureRef | null; caption?: string | null; bioindicatorStatus?: 'to_analyze' }
   | { type: 'createObservation'; featureId: FeatureRef; observedOn: string; survival: Survival; vigor: number | null; note: string | null; photo: string | null }
   | { type: 'createHarvest'; featureId: FeatureRef; harvest: NewHarvest }
@@ -41,6 +41,20 @@ export type NewBioindicator = {
   lng: number | null
   lat: number | null
   takenAt: string
+}
+
+/**
+ * What an update changes. `patch` names only the properties it changes (the
+ * server merges it), so an edit made offline never overwrites what someone
+ * changed on the website meanwhile. `properties` (a full replacement) is only
+ * kept for changes queued by older versions of the app.
+ */
+export type FeatureChanges = {
+  name?: string | null
+  notes?: string | null
+  patch?: Record<string, unknown>
+  properties?: Record<string, unknown>
+  geometry?: Geometry
 }
 
 export type OutboxState = {
@@ -92,13 +106,14 @@ export function applyPending(bundle: MapBundle, state: OutboxState): MapBundle {
   return { ...bundle, features }
 }
 
-function applyChanges(feature: MapFeature, changes: Extract<Op, { type: 'updateFeature' }>['changes']): MapFeature {
+function applyChanges(feature: MapFeature, changes: FeatureChanges): MapFeature {
   const reserved = Object.fromEntries(Object.entries(feature.properties).filter(([key]) => RESERVED.has(key)))
   return {
     ...feature,
     geometry: changes.geometry ?? feature.geometry,
     properties: {
       ...(changes.properties ? { ...reserved, ...changes.properties } : feature.properties),
+      ...changes.patch,
       ...(changes.name !== undefined ? { name: changes.name } : {}),
       ...(changes.notes !== undefined ? { notes: changes.notes } : {}),
       pending: true,
@@ -106,55 +121,94 @@ function applyChanges(feature: MapFeature, changes: Extract<Op, { type: 'updateF
   }
 }
 
-/** What the outbox needs from the server; ApiError-like errors carry a status (0 = offline). */
+/**
+ * What the outbox needs from the server; ApiError-like errors carry a status
+ * (0 = offline). `key` is the change's own id, sent as Idempotency-Key: if
+ * an answer is lost and the change is sent again, the server does not make
+ * a second one.
+ */
 export type Transport = {
-  createFeature(mapId: number, feature: NewFeature): Promise<MapFeature>
+  createFeature(mapId: number, feature: NewFeature, key: string): Promise<MapFeature>
   updateFeature(mapId: number, featureId: number, body: Record<string, unknown>): Promise<MapFeature>
-  uploadPhoto(mapId: number, op: Extract<Op, { type: 'uploadPhoto' }>, featureId: number | null): Promise<void>
-  createObservation(mapId: number, featureId: number, op: Extract<Op, { type: 'createObservation' }>): Promise<void>
-  createHarvest(mapId: number, featureId: number, harvest: NewHarvest): Promise<void>
-  createStorageReading(mapId: number, featureId: number, reading: NewStorageReading): Promise<void>
-  createComment(mapId: number, featureId: number | null, body: string): Promise<void>
-  createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>): Promise<void>
+  uploadPhoto(mapId: number, op: Extract<Op, { type: 'uploadPhoto' }>, featureId: number | null, key: string): Promise<void>
+  createObservation(mapId: number, featureId: number, op: Extract<Op, { type: 'createObservation' }>, key: string): Promise<void>
+  createHarvest(mapId: number, featureId: number, harvest: NewHarvest, key: string): Promise<void>
+  createStorageReading(mapId: number, featureId: number, reading: NewStorageReading, key: string): Promise<void>
+  createComment(mapId: number, featureId: number | null, body: string, key: string): Promise<void>
+  createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>, key: string): Promise<void>
 }
 
 type HttpError = { status: number; body?: Record<string, unknown> | null; message?: string }
 const statusOf = (error: unknown) => (typeof (error as HttpError)?.status === 'number' ? (error as HttpError).status : 0)
 
-export type FlushResult = { state: OutboxState; sent: number; stopped: 'done' | 'offline' | 'server'; sentFiles: string[] }
+export type FlushResult = { state: OutboxState; sent: number; stopped: 'done' | 'offline' | 'server' | 'auth'; sentFiles: string[] }
+
+/** Called after each op sent or refused, so a crash mid-round loses nothing and sends nothing twice. */
+export type OnStep = (state: OutboxState, sentFiles: string[]) => void
 
 /**
  * Sends the ops in order. Stops at the first network or server failure
- * (to retry later, order kept). An op the server refuses (4xx) is kept
- * with its error for the person to see, and the next ones go on.
+ * (to retry later, order kept), and when the session has expired (401):
+ * the changes wait for the person to sign in again. An op the server
+ * refuses (other 4xx) is kept with its error for the person to see, and
+ * the next ones go on.
  */
-export async function flush(initial: OutboxState, transport: Transport): Promise<FlushResult> {
+export async function flush(initial: OutboxState, transport: Transport, onStep?: OnStep): Promise<FlushResult> {
   let state: OutboxState = { ops: initial.ops.slice(), ids: { ...initial.ids } }
   let sent = 0
   const sentFiles: string[] = []
+  // Lock versions the server gave back in this round: a second offline
+  // edit of the same feature goes on top of the first one.
+  const versions = new Map<number, number>()
   for (const op of initial.ops) {
     if (op.error) continue
     const blocked = dependsOnUnsent(state, op)
     if (blocked) {
       state = replace(state, op, { ...op, error: 'parent_failed' })
+      onStep?.(state, [])
       continue
     }
     try {
-      await send(state, op, transport, (tempId, realId) => { state = { ...state, ids: { ...state.ids, [String(tempId)]: realId } } })
+      await send(state, op, transport, versions, (tempId, realId) => { state = { ...state, ids: { ...state.ids, [String(tempId)]: realId } } })
       state = { ...state, ops: state.ops.filter((o) => o.id !== op.id) }
       sent += 1
-      if (op.type === 'uploadPhoto') sentFiles.push(op.file)
-      if (op.type === 'createObservation' && op.photo) sentFiles.push(op.photo)
-      if (op.type === 'createBioindicator') sentFiles.push(op.photo)
+      const files = filesOf(op)
+      sentFiles.push(...files)
+      onStep?.(state, files)
     } catch (error) {
       const status = statusOf(error)
       if (status === 0) return { state, sent, stopped: 'offline', sentFiles }
+      if (status === 401) return { state, sent, stopped: 'auth', sentFiles }
       if (status >= 500 || status === 429) return { state, sent, stopped: 'server', sentFiles }
       const message = (error as HttpError).body?.message ?? (error as HttpError).message ?? `HTTP ${status}`
       state = replace(state, op, { ...op, error: String(message) })
+      onStep?.(state, [])
     }
   }
   return { state, sent, stopped: 'done', sentFiles }
+}
+
+/** The photos an op keeps on the phone until it is sent. */
+export function filesOf(op: Op): string[] {
+  if (op.type === 'uploadPhoto') return [op.file]
+  if (op.type === 'createObservation' && op.photo) return [op.photo]
+  if (op.type === 'createBioindicator') return [op.photo]
+  return []
+}
+
+/** Gives a refused change another try, with the changes that waited on it. */
+export function retry(state: OutboxState, id: string): OutboxState {
+  const op = state.ops.find((o) => o.id === id)
+  if (!op) return state
+  const children = op.type === 'createFeature'
+    ? new Set(state.ops.filter((o) => 'featureId' in o && o.featureId === op.tempId && o.error === 'parent_failed').map((o) => o.id))
+    : new Set<string>()
+  return { ...state, ops: state.ops.map((o) => (o.id === id || children.has(o.id) ? withoutError(o) : o)) }
+}
+
+function withoutError(op: Op): Op {
+  const { error: _error, ...rest } = op
+  return rest as Op
 }
 
 function replace(state: OutboxState, op: Op, next: Op): OutboxState {
@@ -168,7 +222,7 @@ function dependsOnUnsent(state: OutboxState, op: Op): boolean {
   return state.ops.some((o) => o.type === 'createFeature' && o.tempId === ref && o.error)
 }
 
-async function send(state: OutboxState, op: Op, transport: Transport, mapTempId: (tempId: number, realId: number) => void) {
+async function send(state: OutboxState, op: Op, transport: Transport, versions: Map<number, number>, mapTempId: (tempId: number, realId: number) => void) {
   const id = (ref: number | null) => {
     const resolved = resolveId(state, ref)
     if (resolved !== null && resolved < 0) throw { status: 422, message: 'parent_failed' }
@@ -176,36 +230,40 @@ async function send(state: OutboxState, op: Op, transport: Transport, mapTempId:
   }
   switch (op.type) {
     case 'createFeature': {
-      const created = await transport.createFeature(op.mapId, op.feature)
+      const created = await transport.createFeature(op.mapId, op.feature, op.id)
       mapTempId(op.tempId, created.id)
       return
     }
     case 'updateFeature': {
       const featureId = id(op.featureId)!
-      const body = { ...op.changes, lock_version: op.lockVersion }
+      const { patch, ...changes } = op.changes
+      const body = { ...changes, ...(patch ? { properties_patch: patch } : {}), lock_version: versions.get(featureId) ?? op.lockVersion }
+      let updated: MapFeature
       try {
-        await transport.updateFeature(op.mapId, featureId, body)
+        updated = await transport.updateFeature(op.mapId, featureId, body)
       } catch (error) {
-        // Someone changed it meanwhile: the terrain wins, on top of their version.
+        // Someone changed it meanwhile: what was changed on the terrain wins,
+        // on top of their version (only the keys the terrain changed).
         const server = (error as HttpError).body?.feature as MapFeature | undefined
         if (statusOf(error) !== 409 || !server) throw error
-        const properties = op.changes.properties ? { ...ownProperties(server.properties), ...op.changes.properties } : undefined
-        await transport.updateFeature(op.mapId, featureId, { ...op.changes, properties, lock_version: server.properties.lockVersion })
+        const properties = changes.properties ? { ...ownProperties(server.properties), ...changes.properties } : undefined
+        updated = await transport.updateFeature(op.mapId, featureId, { ...body, ...(properties ? { properties } : {}), lock_version: server.properties.lockVersion })
       }
+      if (typeof updated?.properties?.lockVersion === 'number') versions.set(featureId, updated.properties.lockVersion)
       return
     }
     case 'uploadPhoto':
-      return transport.uploadPhoto(op.mapId, op, id(op.featureId))
+      return transport.uploadPhoto(op.mapId, op, id(op.featureId), op.id)
     case 'createObservation':
-      return transport.createObservation(op.mapId, id(op.featureId)!, op)
+      return transport.createObservation(op.mapId, id(op.featureId)!, op, op.id)
     case 'createHarvest':
-      return transport.createHarvest(op.mapId, id(op.featureId)!, op.harvest)
+      return transport.createHarvest(op.mapId, id(op.featureId)!, op.harvest, op.id)
     case 'createStorageReading':
-      return transport.createStorageReading(op.mapId, id(op.featureId)!, op.reading)
+      return transport.createStorageReading(op.mapId, id(op.featureId)!, op.reading, op.id)
     case 'createComment':
-      return transport.createComment(op.mapId, id(op.featureId), op.body)
+      return transport.createComment(op.mapId, id(op.featureId), op.body, op.id)
     case 'createBioindicator':
-      return transport.createBioindicator(op.mapId, op)
+      return transport.createBioindicator(op.mapId, op, op.id)
   }
 }
 

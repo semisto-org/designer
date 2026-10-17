@@ -8,7 +8,6 @@ import { ApiError, api } from '@/lib/api'
 import { featureTitle } from '@/lib/elements'
 import { t } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
-import { ownProperties } from '@/lib/outbox-core'
 import { pickPhotos, takePhoto } from '@/lib/photos'
 import { deletePhoto } from '@/lib/storage'
 import type { IdentificationCandidate } from '@/lib/types'
@@ -57,7 +56,7 @@ export default function IdentifyScreen() {
     if (plant) {
       outbox.add({
         type: 'updateFeature', mapId, featureId: plant.id, lockVersion: plant.properties.lockVersion,
-        changes: { properties: { ...ownProperties(plant.properties), species_id: species.id } },
+        changes: { patch: { species_id: species.id } },
       })
       close()
     } else {

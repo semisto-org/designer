@@ -1,5 +1,5 @@
 // What is waiting to be sent for this map, and what the server refused
-// (with the reason), which the person can drop.
+// (with the reason), which the person can send again or drop.
 import { useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native'
@@ -46,7 +46,10 @@ export default function OutboxScreen() {
           {op.error
             ? <>
                 <Notice tone="error">{op.error === 'parent_failed' ? t('mobile.outbox.parent_failed') : t('mobile.outbox.refused', { reason: op.error })}</Notice>
-                <Button variant="danger" label={t('mobile.outbox.discard')} onPress={() => discard(op)} />
+                <View style={{ flexDirection: 'row', gap: space.sm }}>
+                  <Button variant="secondary" style={{ flex: 1 }} label={t('mobile.outbox.retry')} disabled={!online} onPress={() => outbox.retry(op.id)} />
+                  <Button variant="danger" style={{ flex: 1 }} label={t('mobile.outbox.discard')} onPress={() => discard(op)} />
+                </View>
               </>
             : <Text style={s.meta}>{t('mobile.outbox.waiting')}</Text>}
         </Card>
@@ -57,5 +60,5 @@ export default function OutboxScreen() {
 
 const s = StyleSheet.create({
   title: { fontSize: 16, fontFamily: fonts.bold, color: colors.loam900 },
-  meta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  meta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
 })

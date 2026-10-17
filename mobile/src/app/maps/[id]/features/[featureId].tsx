@@ -12,7 +12,7 @@ import { isHarvestable } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
 import { isVideo } from '@/lib/media'
 import { outbox } from '@/lib/outbox'
-import { ownProperties, type Op } from '@/lib/outbox-core'
+import type { Op } from '@/lib/outbox-core'
 import { takePhoto } from '@/lib/photos'
 import { canEdit, type Comment, type MapFeature, type Survival } from '@/lib/types'
 import { useOnline, useOutbox } from '@/state/sync'
@@ -94,7 +94,7 @@ function PlantSection({ mapId, feature, editable, ops }: { mapId: number; featur
   const markPlanted = () => {
     outbox.add({
       type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion,
-      changes: { properties: { ...ownProperties(feature.properties), planted_on: todayIso() } },
+      changes: { patch: { planted_on: todayIso() } },
     })
   }
   return (

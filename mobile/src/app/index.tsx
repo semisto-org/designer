@@ -113,7 +113,7 @@ function MapRow({ map, online }: { map: MapSummary; online: boolean }) {
         ) : (
           <Button
             variant="secondary"
-            label={t(failed ? 'mobile.maps.download_retry' : 'mobile.maps.download')}
+            label={t(failed || download?.state === 'paused' ? 'mobile.maps.download_retry' : 'mobile.maps.download')}
             disabled={!online}
             onPress={async () => {
               setFailed(false)

@@ -35,15 +35,20 @@ export default function Terrain() {
   const shown = useDisplay(mapId)
 
   // The blue dot's position, for distances and for placing things.
+  // Every 2 m is enough for « à 12 m au NE », and spares the battery.
   useEffect(() => {
     let sub: Location.LocationSubscription | null = null
-    Location.requestForegroundPermissionsAsync().then(({ granted }) => {
-      if (!granted) return
-      Location.watchPositionAsync({ accuracy: Location.LocationAccuracy.High, distanceInterval: 1 }, (fix) => {
+    let gone = false
+    Location.requestForegroundPermissionsAsync().then(async ({ granted }) => {
+      if (!granted || gone) return
+      const watcher = await Location.watchPositionAsync({ accuracy: Location.LocationAccuracy.High, distanceInterval: 2 }, (fix) => {
         setMe([fix.coords.longitude, fix.coords.latitude])
-      }).then((s) => { sub = s })
+      })
+      // The screen closed while permission was asked: stop at once.
+      if (gone) watcher.remove()
+      else sub = watcher
     })
-    return () => sub?.remove()
+    return () => { gone = true; sub?.remove() }
   }, [])
 
   // A feature the display now hides is no longer selected.

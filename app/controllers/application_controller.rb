@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   include Authentication
   include Impersonation
   include ServesStoredFiles
+  include IdempotentRequests
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   # The phone app (MobileApp) is not a browser: no check for it.

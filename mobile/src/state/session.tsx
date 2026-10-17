@@ -29,7 +29,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return () => { off(); sub.remove() }
   }, [])
 
-  useEffect(() => { if (status === 'signed_in') void authorizeMapRequests() }, [status])
+  useEffect(() => {
+    if (status !== 'signed_in') return
+    void authorizeMapRequests()
+    // A map can stay open for hours on the terrain without any other call.
+    const timer = setInterval(() => void authorizeMapRequests(), 5 * 60_000)
+    return () => clearInterval(timer)
+  }, [status])
 
   return <SessionContext.Provider value={status}>{children}</SessionContext.Provider>
 }
