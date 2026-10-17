@@ -8,6 +8,7 @@ import { kindLabel, kindsFor, layerLabel } from '@/lib/elements'
 import { cleanTrace, gpsProperties, lineLength, ringArea } from '@/lib/geo'
 import { formatDistance, t } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
+import { display } from '@/lib/display'
 import { outbox } from '@/lib/outbox'
 import { currentTrace, onFixes, startTrace, stopTrace, type Fix } from '@/lib/trace'
 import type { Geometry, Position } from '@/lib/types'
@@ -75,6 +76,7 @@ export default function RecordScreen() {
   const save = () => {
     if (!geometry || !kind) return
     outbox.addFeature(mapId, { layer: kind.layer, kind: kind.kind, name: name.trim() || null, notes: notes.trim() || null, properties: mode === 'point' ? gpsProperties(point?.accuracy ?? null) : {}, geometry })
+    display.reveal(mapId, kind, undefined)
     router.back()
   }
 
