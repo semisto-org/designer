@@ -18,7 +18,7 @@ class ApplicationController < ActionController::Base
       # Other accounts signed in on this browser (« Changer de compte »).
       otherAccounts: authenticated? && !impersonating? ? other_accounts_props : [],
       releaseNotes: authenticated? ? release_notes_props : nil,
-      env: { googleSignIn: GoogleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
+      env: { googleSignIn: GoogleSignIn.enabled?, appleSignIn: AppleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
     }
   end
 

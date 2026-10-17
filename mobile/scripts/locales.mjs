@@ -17,6 +17,8 @@ const SHARED = [
   ['plants', 'strata'],
   ['plant_feature'],
   ['plant_observations'],
+  ['plant_harvests'],
+  ['storage_readings'],
   ['editor', 'layers'],
   ['editor', 'kinds'],
   ['plantnet'],

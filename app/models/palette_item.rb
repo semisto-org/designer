@@ -21,6 +21,9 @@ class PaletteItem < ApplicationRecord
   validates :status, inclusion: { in: STATUSES }
   validates :source, inclusion: { in: SOURCES }
   validates :rationale, length: { maximum: 2000 }
+  validates :unit_price, numericality: { greater_than_or_equal_to: 0, less_than: 100_000 }, allow_nil: true
+  validates :supplier, length: { maximum: 120 }
+  validates :size, length: { maximum: 60 }
   validates :species_id, uniqueness: { scope: :map_id, conditions: -> { where(variety_id: nil) } }, if: -> { variety_id.nil? }
   validates :variety_id, uniqueness: { scope: :map_id }, allow_nil: true
   validate :variety_of_species
@@ -29,6 +32,7 @@ class PaletteItem < ApplicationRecord
   scope :drafts, -> { where(status: "draft") }
 
   normalizes :strata, :role, with: ->(v) { v.presence }
+  normalizes :supplier, :size, with: ->(v) { v.to_s.squish.presence }
 
   before_create { self.position = (PaletteItem.where(map_id:).maximum(:position) || 0) + 1 if position.zero? }
 
@@ -44,7 +48,7 @@ class PaletteItem < ApplicationRecord
   def as_json(*)
     {
       id:, speciesId: species_id, varietyId: variety_id, strata:, effectiveStrata: effective_strata,
-      role:, notes:, targetCount: target_count, position:, status:, source:, rationale:,
+      role:, notes:, targetCount: target_count, unitPrice: unit_price&.to_f, supplier:, size:, position:, status:, source:, rationale:,
       name: display_name, latinName: variety&.full_latin_name || species.latin_name,
       species: species.summary_json, variety: variety&.summary_json
     }

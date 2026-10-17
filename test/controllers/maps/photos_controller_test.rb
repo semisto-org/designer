@@ -239,6 +239,17 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta 8, photos.last["distanceM"], 1
   end
 
+  test "inspector query with linked: only the photos linked to the feature, nearby ones left out" do
+    pond = map_features(:pond)
+    create_photo(salt: 1, location: [ 4.9052 + meters_east(2), 50.3401 ])
+    older = create_photo(salt: 2, map_feature: pond, taken_at: 2.days.ago)
+    newer = create_photo(salt: 3, map_feature: pond, taken_at: 1.day.ago)
+    sign_in_as users(:alice)
+    get map_photos_path(@map, feature_id: pond.id, linked: 1), headers: json_headers
+    assert_response :success
+    assert_equal [ newer.id, older.id ], response.parsed_body["photos"].map { |p| p["id"] }
+  end
+
   test "same spot candidates for the before/after slider" do
     before = create_photo(salt: 1, location: [ 4.9, 50.34 ], heading: 90)
     after = create_photo(salt: 2, location: [ 4.9 + meters_east(3), 50.34 ], heading: 95)

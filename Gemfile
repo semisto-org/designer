@@ -21,6 +21,7 @@ gem "vite_rails", "~> 3.11"
 gem "omniauth", "~> 2.1"
 gem "omniauth-google-oauth2", "~> 1.2"
 gem "omniauth-rails_csrf_protection", "~> 2.0"
+gem "omniauth-apple", "~> 1.4"
 # Optional password (has_secure_password)
 gem "bcrypt", "~> 3.1"
 
@@ -59,6 +60,8 @@ gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
+# Reads the MBTiles GDAL writes when a drone view is imported (AerialViews::Tiler).
+gem "sqlite3", "~> 2.1"
 
 # S3-compatible object storage (Hetzner, Scaleway…) for Active Storage in production
 gem "aws-sdk-s3", "~> 1.233", require: false

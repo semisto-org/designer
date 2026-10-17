@@ -21,4 +21,18 @@ class DroneMailerTest < ActionMailer::TestCase
     assert_includes html, "Ouvrir ma carte"
     assert_includes html, "href=\"http://example.com/maps/#{map.id}\""
   end
+
+  test "import_ready: to whoever imported the view, with the file and the map" do
+    map = maps(:ahinvaux)
+    view = imported_view(map, users(:alice), bytes: "x", filename: "DJI_ortho.tif", status: "ready")
+    mail = DroneMailer.import_ready(view)
+
+    assert_equal [ users(:alice).email_address ], mail.to
+    assert_equal "Ta vue drone est prête", mail.subject
+    text = mail.text_part.body.to_s
+    [ "du 12 mai 2027 (DJI_ortho.tif)", "« Domaine d'Ahinvaux »", "« Couches »", "http://example.com/maps/#{map.id}" ].each do |fragment|
+      assert_includes text, fragment
+    end
+    assert_includes mail.html_part.body.to_s, "Ouvrir ma carte"
+  end
 end

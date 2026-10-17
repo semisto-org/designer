@@ -15,7 +15,7 @@ const NEARBY_METERS = 15
 const MAX_SHOWN = 8
 
 /** A point on (or in the middle of) a geometry, to place a photo added from its inspector. */
-function anchor(geometry: Geometry): { lng: number; lat: number } | null {
+export function anchor(geometry: Geometry): { lng: number; lat: number } | null {
   const mean = (coords: number[][]) => ({
     lng: coords.reduce((sum, c) => sum + c[0], 0) / coords.length,
     lat: coords.reduce((sum, c) => sum + c[1], 0) / coords.length,
@@ -29,7 +29,11 @@ function anchor(geometry: Geometry): { lng: number; lat: number } | null {
   }
 }
 
-/** Inspector section « Photos »: photos linked to the selected feature or taken within 15 m of it. */
+/**
+ * Inspector section « Photos »: photos linked to the selected feature or taken
+ * within 15 m of it. A plant shows only its own photos, at the top
+ * (`PlantPhotosSection`).
+ */
 export default function PhotosInspector({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
   const { version, mapId, limits } = usePhotos()

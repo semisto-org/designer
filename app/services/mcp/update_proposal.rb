@@ -62,6 +62,7 @@ module Mcp
           return err(:date, key:)
         end
         return err(:future_date, key:) if key == "planted_on" && Date.iso8601(value) > PlantableFeature.latest_today
+        return err(:training, allowed: PlantableFeature::TRAININGS.join(", ")) if key == "training" && !PlantableFeature::TRAININGS.include?(value)
         if INTEGER_PROPERTIES.include?(key) && !(value.to_s.match?(/\A\d{1,9}\z/) && value.to_i.positive?)
           return err(:integer, key:)
         end

@@ -30,7 +30,7 @@ class HelpControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the quick switcher's searches that find no guide are not counted" do
-    get "/help.json", params: { q: "gembloux", from: "switcher" }
+    get "/help.json", params: { q: "xylophone", from: "switcher" }
     assert_empty response.parsed_body["results"]
     assert_equal 0, HelpSearchMiss.count
   end

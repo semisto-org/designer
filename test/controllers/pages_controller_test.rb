@@ -6,6 +6,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     "/tarifs" => "pages/pricing",
     "/mission-drone" => "pages/drone",
     "/open-source" => "pages/open_source",
+    "/ecoconception" => "pages/ecoconception",
     "/confidentialite" => "pages/privacy",
     "/conditions" => "pages/terms"
   }.freeze
@@ -110,6 +111,25 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<loc>http://www.example.com/tarifs</loc>"
     assert_includes response.body, "<loc>http://www.example.com/help/#{HelpArticle.all.first.slug}</loc>"
     assert_not_includes response.body, "/billing"
+    assert_includes response.body, "<loc>http://www.example.com/ecoconception</loc>"
+  end
+
+  test "the ecoconception page shows the latest measurements and says which commit runs" do
+    EcoMeasurement.create!(screen: "home", environment: "production", url: "https://terranova.semisto.org/", dom_elements: 324,
+      requests: 34, bytes: 2055 * 1024, measured_at: Time.current)
+    with_source_commit("abc123") do
+      assert_equal "C", inertia_page("/ecoconception").dig("props", "measurements", 0, "grade")
+      get "/ecoconception.json"
+      assert_equal "abc123", response.parsed_body["commit"]
+    end
+  end
+
+  def with_source_commit(value)
+    previous = ENV["SOURCE_COMMIT"]
+    ENV["SOURCE_COMMIT"] = value
+    yield
+  ensure
+    ENV["SOURCE_COMMIT"] = previous
   end
 
   test "the standout features point to real help articles and pictures" do

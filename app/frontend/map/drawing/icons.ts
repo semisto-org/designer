@@ -37,6 +37,7 @@ import { __iconData as sprout } from 'lucide-react/dist/esm/icons/sprout.mjs'
 import { __iconData as squareParking } from 'lucide-react/dist/esm/icons/square-parking.mjs'
 import { __iconData as stickyNote } from 'lucide-react/dist/esm/icons/sticky-note.mjs'
 import { __iconData as tent } from 'lucide-react/dist/esm/icons/tent.mjs'
+import { __iconData as thermometerSnowflake } from 'lucide-react/dist/esm/icons/thermometer-snowflake.mjs'
 import { __iconData as thermometerSun } from 'lucide-react/dist/esm/icons/thermometer-sun.mjs'
 import { __iconData as toyBrick } from 'lucide-react/dist/esm/icons/toy-brick.mjs'
 import { __iconData as tractor } from 'lucide-react/dist/esm/icons/tractor.mjs'
@@ -89,6 +90,7 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'square-parking': squareParking,
   'sticky-note': stickyNote,
   'tent': tent,
+  'thermometer-snowflake': thermometerSnowflake,
   'thermometer-sun': thermometerSun,
   'toy-brick': toyBrick,
   'tractor': tractor,

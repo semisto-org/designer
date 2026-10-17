@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link } from '@inertiajs/react'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'leaf'
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'leaf' | 'ink'
 type Size = 'sm' | 'md' | 'lg'
 
 const variants: Record<Variant, string> = {
@@ -11,6 +11,8 @@ const variants: Record<Variant, string> = {
   secondary: 'bg-white text-prune-700 ring-[1.5px] ring-inset ring-prune-600 hover:bg-prune-600 hover:text-white',
   ghost: 'text-prune-700 hover:bg-prune-50',
   danger: 'bg-clay-500 text-white hover:bg-clay-700 focus-visible:outline-clay-500',
+  // Black, as Apple asks of its « Continuer avec Apple » button.
+  ink: 'bg-loam-950 text-white hover:bg-loam-800 focus-visible:outline-loam-950',
 }
 const sizes: Record<Size, string> = {
   sm: 'px-3 py-1.5 text-sm gap-1.5',

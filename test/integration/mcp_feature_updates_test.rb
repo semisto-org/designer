@@ -140,6 +140,21 @@ class McpFeatureUpdatesTest < ActionDispatch::IntegrationTest
     assert error, "updates or filter, not both"
   end
 
+  test "a tree kept as a pollard or a coppice: the training goes through, with its name for the review" do
+    data, error = call_tool(@owner, "propose_feature_updates", {
+      map_id: @map.id, updates: [
+        { feature_id: @tree.id, changes: { properties: { training: "pollard" } }, rationale: "Taillé en têtard tous les 5 ans, d'après Michael." },
+        { feature_id: @herbs[0].id, changes: { properties: { training: "espalier" } }, rationale: "Une forme qui n'existe pas encore." }
+      ]
+    })
+    refute error, data
+    created = data["created"].sole
+    assert_includes created["diff"], { "field" => "properties.training", "before" => nil, "after" => "pollard" }
+    assert_match(/training vaut pollard, coppice/, data["rejected"].sole["error"])
+    change = FeatureUpdateDraft.find(created["id"]).as_review_json[:changes].sole
+    assert_equal "En trogne (taillé en tête)", change[:afterLabel]
+  end
+
   test "idempotent: what changes nothing comes back as unchanged" do
     args = { map_id: @map.id, filter: { tag: "Strate basse" }, changes: { properties: { planted_on: "2026-05-23" } }, rationale: }
     call_tool(@owner, "propose_feature_updates", args)

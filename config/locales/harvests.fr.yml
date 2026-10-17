@@ -1,0 +1,157 @@
+fr:
+  plant_harvests:
+    title: "Récoltes"
+    panel_title: "Récoltes"
+    intro: "Note chaque saison les arbres qui portent et ce que tu fais de leurs fruits. Au fil des années, tu verras lesquels donnent bien, lesquels alternent et lesquels renouveler."
+    add: "Noter la récolte"
+    noted_on: "Date"
+    stage: "Ce que tu notes"
+    stages:
+      on_tree: "Fruits sur l'arbre"
+      picked: "Récolte"
+    amount: "Quantité"
+    amounts:
+      on_tree:
+        none: "Aucun fruit"
+        light: "Quelques fruits"
+        normal: "Bien chargé"
+        heavy: "Très chargé"
+      picked:
+        light: "Un peu"
+        normal: "Une bonne récolte"
+        heavy: "Beaucoup"
+    uses_label: "Pour quoi faire"
+    uses:
+      juice: "Jus"
+      cooking: "Compote et cuisson"
+      fresh: "À croquer"
+      storage: "Mis en garde"
+      other: "Autre"
+    quantity_kg: "Poids en kg (facultatif)"
+    kg: "%{value} kg"
+    note: "Note"
+    note_placeholder: "Calibre, maladies, goût, cueilli par qui…"
+    save: "Enregistrer"
+    saved: "Récolte notée."
+    saved_many:
+      one: "Noté pour %{count} arbre."
+      other: "Noté pour %{count} arbres."
+    deleted: "Ligne supprimée."
+    delete: "Supprimer la ligne"
+    confirm_delete: "Supprimer cette ligne du carnet de récolte ?"
+    empty: "Rien de noté pour cet arbre. Passe le voir à la floraison ou quand les fruits grossissent, puis à la cueillette."
+    by: "par %{name}"
+    statuses:
+      picked: "Récolté"
+      bore: "A porté"
+      none: "Sans fruits"
+      unnoted: "Pas noté"
+    seasons_title: "Saison après saison"
+    watch: "Rien de noté depuis %{count} saisons suivies"
+    watch_hint: "Beaucoup de variétés anciennes portent une année sur deux : on attend %{count} saisons sans fruits avant de penser à remplacer un arbre."
+    bearing_from: "Premiers fruits attendus vers %{year}"
+    last_bore: "Derniers fruits notés en %{year}"
+    never_bore: "Pas encore de fruits notés"
+    season: "Saison %{year}"
+    previous_season: "Saison précédente"
+    next_season: "Saison suivante"
+    totals: "%{picked}\u00A0récoltés · %{bore}\u00A0portent · %{none}\u00A0sans\u00A0fruits · %{unnoted}\u00A0pas\u00A0notés"
+    total_kg: "%{value} kg pesés"
+    filters:
+      all: "Tous"
+      unnoted: "Pas encore notés"
+      watch: "À surveiller"
+    select_all: "Tout cocher"
+    select_none: "Tout décocher"
+    selected:
+      one: "%{count} arbre coché"
+      other: "%{count} arbres cochés"
+    batch_title: "Noter pour les arbres cochés"
+    show_on_map: "Montrer sur la carte"
+    no_species: "Plant sans espèce"
+    empty_map: "Aucun arbre ni arbuste fruitier sur cette carte pour l'instant. Pose tes fruitiers avec la palette : ils apparaîtront ici, prêts à suivre."
+    empty_filter: "Aucun arbre dans ce filtre."
+    load_error: "Le carnet de récolte n'a pas pu être chargé."
+    legend:
+      picked: "Récolté"
+      bore: "Porte des fruits"
+      none: "Sans fruits"
+      unnoted: "Pas encore noté"
+    errors:
+      no_plant: "Coche au moins un arbre de la carte."
+    not_planted: "Pas encore planté : marque-le planté plus haut sur sa fiche pour y noter des fruits ou une récolte."
+    not_planted_short: "Pas encore planté"
+    months:
+      "1": "janvier"
+      "2": "février"
+      "3": "mars"
+      "4": "avril"
+      "5": "mai"
+      "6": "juin"
+      "7": "juillet"
+      "8": "août"
+      "9": "septembre"
+      "10": "octobre"
+      "11": "novembre"
+      "12": "décembre"
+    advice:
+      title: "Que faire de cette récolte ?"
+      good_for: "Bonne pour : %{uses}"
+      variety_uses:
+        fresh: "à croquer"
+        cooking: "compote et cuisson"
+        juice: "jus"
+        cider: "cidre ou poiré"
+        drying: "séchage"
+      picking: "Cueillette en %{month}"
+      eating: "à manger de %{from} à %{until}"
+      eating_until: "à manger jusqu'en %{until}"
+      keeping:
+        keeps: "Variété de garde : les plus beaux fruits, cueillis à la main et sans choc, vont en cave jusqu'en %{until}. Les abîmés et les tombés vont au jus tout de suite."
+        weeks: "Elle se garde quelques semaines, jusqu'en %{until} : à croquer d'abord, le reste en compote ou au jus."
+        short: "Elle se garde peu : à croquer ou à cuire dans la semaine, le surplus au jus."
+      ripens_in_store: "Elle se cueille en %{picking} mais n'est vraiment bonne qu'à partir de %{from} : elle finit de mûrir en cave."
+      unknown: "On ne sait pas encore combien de temps cette variété se garde. Note ce que tu en fais : au fil des saisons, ce carnet le saura pour toi."
+      no_variety: "Ce plant n'a pas de variété. Précise-la sur sa fiche pour savoir ce qu'elle donne de mieux."
+      rule: "Repère : un fruit tombé ou cogné ne se garde pas, il va au jus ou en compote."
+      here_title: "Ici, au fil des récoltes"
+      here_uses: "Déjà fait avec cette variété : %{uses}."
+      here_use: "%{use} %{count} fois"
+      here_none: "Rien encore de noté ici pour cette variété : ta première récolte commencera son histoire."
+    varieties:
+      title: "Que faire de chaque variété ?"
+      intro: "Ce que chaque variété du lieu donne de mieux et combien de temps elle se garde, d'après le catalogue, puis ce que vous en avez fait ici."
+      groups:
+        keeps: "À garder en cave"
+        weeks: "Se garde quelques semaines"
+        short: "À manger ou cuire tout de suite"
+        unknown: "Pas encore renseignées"
+      plants:
+        one: "%{count} arbre"
+        other: "%{count} arbres"
+      until: "jusqu'en %{month}"
+      here: "Ici : %{uses}"
+  activerecord:
+    models:
+      plant_harvest: "Récolte"
+    attributes:
+      plant_harvest:
+        noted_on: "Date"
+        stage: "Ce que tu notes"
+        amount: "Quantité"
+        quantity_kg: "Poids"
+        uses: "Usage"
+        note: "Note"
+    errors:
+      models:
+        plant_harvest:
+          not_planted: "%{plant} n'est pas encore planté : marque-le planté sur sa fiche avant d'y noter des fruits ou une récolte."
+          attributes:
+            noted_on:
+              in_future: "ne peut pas être dans le futur"
+            amount:
+              exclusion: "« aucun fruit » se note comme fruits sur l'arbre, pas comme une récolte"
+            uses:
+              present: "se notent seulement pour une récolte"
+            quantity_kg:
+              present: "se note seulement pour une récolte"

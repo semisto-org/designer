@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import { isPlannedPlant, setScenario, useScenario, type Scenario } from '@/map/scenario'
+import { isPlanned, setScenario, useScenario, type Scenario } from '@/map/scenario'
 
 const OPTIONS: Scenario[] = ['current', 'projected']
 
@@ -9,12 +9,12 @@ const OPTIONS: Scenario[] = ['current', 'projected']
  * « Actuelle | Projetée » in the editor header: shows what is on the ground
  * today, or the whole design with what is still a project drawn apart.
  * Only there when the map holds something planned (plants not planted yet,
- * Claude's drafts).
+ * elements « En projet », Claude's drafts).
  */
 export default function ScenarioToggle() {
   const { features } = useEditor()
   const scenario = useScenario()
-  const hasProject = features.some((f) => f.properties.status === 'draft' || isPlannedPlant(f.properties))
+  const hasProject = features.some((f) => f.properties.status === 'draft' || isPlanned(f.properties))
   if (!hasProject && scenario === 'projected') return null
   return (
     <div role="group" aria-label={t('scenario.label')} className="inline-flex shrink-0 rounded-full bg-loam-100 p-0.5 text-xs font-medium sm:text-sm">

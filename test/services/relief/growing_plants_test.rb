@@ -28,11 +28,18 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_equal PlantGrowth.maturity(strata: "sub_canopy", species: plant_species(:apple)).years, apple[:maturityYears]
     assert_equal "2025-11-20", apple[:plantedOn]
     assert_equal "Le grand", apple[:ownName]
+    assert_nil apple[:training]
 
     alder = data[:plants].last
     assert_equal "canopy", alder[:strata]
     assert_equal 20.0, alder[:heightM]
     assert_nil alder[:plantedOn]
+  end
+
+  test "a pollard says so: the browser draws it smaller" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:alder).id, "training" => "pollard" })
+    assert_equal "pollard", Relief::GrowingPlants.new(@map).as_json[:plants].sole[:training]
   end
 
   test "nothing planted yet: year 0 is today" do

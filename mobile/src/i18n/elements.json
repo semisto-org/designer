@@ -244,6 +244,14 @@
         "color": "#4a4668",
         "pickable": true
       },
+      "fruit_store": {
+        "geometries": [
+          "Point",
+          "Polygon"
+        ],
+        "color": "#3f6f8f",
+        "pickable": true
+      },
       "compost": {
         "geometries": [
           "Point"

@@ -5,6 +5,7 @@ fr:
     views:
       map: "Carte"
       project: "Fiche projet"
+      palette: "Palette végétale"
       tasks: "Tâches"
       photos: "Photos"
       documents: "Documents"

@@ -1,4 +1,4 @@
-import { Download, Printer } from 'lucide-react'
+import { Download, Leaf, Printer } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { buttonClass } from '@/components/ui/Button'
 import { strataLabel } from '@/components/plants/format'
@@ -91,6 +91,9 @@ export default function PlantListPanel() {
         </a>
         <a href={`/maps/${mapId}/plant_list/print`} target="_blank" rel="noreferrer" className={buttonClass('secondary', 'sm')}>
           <Printer className="h-4 w-4" />{t('plant_list.print')}
+        </a>
+        <a href={`/maps/${mapId}/palette`} className={buttonClass('secondary', 'sm')}>
+          <Leaf className="h-4 w-4" />{t('plant_list.open_palette')}
         </a>
       </div>
 

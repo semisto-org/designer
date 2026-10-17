@@ -17,7 +17,7 @@ La **palette** réunit les espèces choisies pour ce terrain. Dans le panneau **
 
 - cherche une espèce dans « Ajouter une espèce : pommier, sureau… », puis touche **Ajouter à la palette** ;
 - **Rustiques ici**, coché d'office, ne garde que les espèces qui supportent le froid de la zone de ton terrain ;
-- parcours les **Suggestions pour ce terrain** : fixateurs d'azote, strates manquantes, plantes mellifères, avec la raison de chaque suggestion.
+- les **Suggestions pour ce terrain** sont dans l'onglet **Palette végétale** : voir [La palette végétale en tableau](/help/la-palette-vegetale-en-tableau).
 
 Pour chercher plus largement, le catalogue **Plantes** se filtre par strate, port, rusticité, exposition, humidité du sol, usages, plantes comestibles, fixatrices d'azote, mellifères ou indigènes, et peut écarter les invasives.
 

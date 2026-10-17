@@ -28,3 +28,9 @@ export function hiddenTests(kinds: string[], ids: number[]): unknown[] {
   if (ids.length) tests.push(['!', ['in', ['get', 'id'], ['literal', ids]]])
   return tests
 }
+
+/** A layer's own filter combined with what « Calques » hides (either may be missing). */
+export function composeFilter(original: unknown, test: unknown): unknown {
+  if (!test) return original ?? null
+  return original ? ['all', original, test] : test
+}

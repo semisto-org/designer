@@ -22,7 +22,7 @@ Why the project exists, its principles and what it refuses: @INTENT.md (imported
 
 ## Language
 
-- **Code, comments, commit messages: English.**
+- **Code, comments, commit messages: English.** So are all Markdown documents in the repository (README, `docs/`, `app/design_guides/`, `mobile/`); the only French Markdown is the help center (`app/help/*.md`), which is interface copy.
 - **Interface: French only (v1)**, through Rails I18n files: `config/locales/*.yml`. The React frontend imports the same YAML files (`app/frontend/lib/i18n.ts`, `t('key')`). Never hardcode French strings in components or controllers. Each feature area owns its own file `config/locales/<area>.fr.yml` (top-level key `fr:`), to avoid merge conflicts.
 - French typography in UI copy: sentence case for titles (« Mes cartes », not « Mes Cartes »), `«  »` quotes, non-breaking feel; friendly, concrete, encouraging tone (the "particulier" designing their own forest garden is the core user).
 

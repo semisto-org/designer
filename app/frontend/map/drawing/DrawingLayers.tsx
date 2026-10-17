@@ -9,6 +9,7 @@ import { FEATURES_SOURCE } from '@/map/layers/features'
 import { usePhotos } from '@/map/photos/store'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
+import { useSoil } from '@/map/soil/store'
 import type { MapFeature } from '@/types'
 import { initScenario, scenarioStore, useScenario } from '@/map/scenario'
 
@@ -80,7 +81,10 @@ export default function DrawingLayers() {
     }
   }, [map])
   const photosShown = usePhotos().showOnMap
-  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photosShown
+  const hiddenSoil = useDrawingState((s) => s.hiddenSoil)
+  const soil = useSoil()
+  const soilHidden = (soil.observations.length > 0 || soil.samples.length > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
+  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photosShown || soilHidden
   useEffect(() => {
     control.current?.update(t(somethingHidden ? 'drawing.layers_panel.control_hidden' : 'drawing.layers_panel.control'), somethingHidden)
   }, [somethingHidden])

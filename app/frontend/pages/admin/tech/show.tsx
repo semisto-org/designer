@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { AdminNav } from '@/components/admin/AdminNav'
+import { gradeTone, Sparkline } from '@/components/eco/Sparkline'
 import { formatNumber, t } from '@/lib/i18n'
 import { formatDate } from '@/lib/money'
 import { relativeTime } from '@/lib/relativeTime'
@@ -81,6 +82,7 @@ export default function AdminTechPage({ tech }: Props) {
           <Jobs jobs={tech.jobs} now={now} />
           <Services services={tech.services} />
         </div>
+        <Sobriety sobriety={tech.sobriety} />
       </div>
     </div>
   )
@@ -290,5 +292,59 @@ function Services({ services }: { services: AdminTech['services'] }) {
         </p>
       ))}
     </Panel>
+  )
+}
+
+const GRADE_TEXT = { leaf: 'text-leaf-300', humus: 'text-humus-300', clay: 'text-clay-100' }
+
+/** The last EcoIndex of each screen, its trend, and what 10 000 page views weigh on average. */
+function Sobriety({ sobriety }: { sobriety: AdminTech['sobriety'] }) {
+  const { screens } = sobriety
+  const average = screens.length ? screens.reduce((sum, row) => sum + row.gesGrams, 0) / screens.length : 0
+  return (
+    <div className="border-t border-white/10">
+      <Panel command={t('admin.tech.sobriety.command')}>
+        {!sobriety.configured && <p className="text-humus-300">{t('admin.tech.sobriety.token_off')}</p>}
+        {screens.length === 0 ? (
+          <p className="text-loam-400">{t('admin.tech.sobriety.empty')}</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[40rem] border-collapse text-left">
+                <tbody>
+                  {screens.map((row) => (
+                    <tr key={row.screen} className="border-b border-white/5 last:border-0">
+                      <td className="py-1.5 pr-3 text-loam-100">
+                        {t(`eco.screens.${row.screen}`)} <span className="text-loam-500">{row.url}</span>
+                      </td>
+                      <td className={clsx('py-1.5 pr-3 tabular-nums', GRADE_TEXT[gradeTone(row.grade)])}>{row.grade} {row.score}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums">{t('eco.kilobytes', { value: formatNumber(row.kilobytes) })}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums">{t('eco.requests', { count: row.requests })}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums">{t('eco.ges', { value: formatNumber(row.gesGrams) })}</td>
+                      <td className={clsx('py-1.5 pr-3', GRADE_TEXT[gradeTone(row.grade)])}>
+                        <Sparkline scores={row.history} label={row.history.join(', ')} />
+                      </td>
+                      <td className="py-1.5 text-right text-loam-500">
+                        <span title={formatDate(row.measuredAt)}>{relativeTime(row.measuredAt)}</span>
+                        {row.environment === 'test_copy' && <span> · {t('eco.environments.test_copy')}</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-white/10 pt-2">
+              <span>
+                <span className="text-loam-400">{t('admin.tech.sobriety.average')} {t('admin.tech.sobriety.per_page')} </span>
+                <span className="text-leaf-300">{t('eco.ges', { value: formatNumber(Math.round(average * 100) / 100) })}</span>
+                <span className="text-loam-400"> · {t('admin.tech.sobriety.per_10k')} </span>
+                <span className="text-leaf-300">{t('admin.tech.sobriety.kilograms', { value: formatNumber(Math.round(average * 100) / 10) })}</span>
+              </span>
+              <a href="/ecoconception" className="text-humus-300 underline-offset-2 hover:underline">{t('admin.tech.sobriety.public_page')}</a>
+            </div>
+          </>
+        )}
+      </Panel>
+    </div>
   )
 }

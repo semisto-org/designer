@@ -1,46 +1,46 @@
 # Semisto Terranova
 
-Cartographiez votre terrain avec précision, puis concevez votre jardin-forêt ou votre design permaculturel avec une IA qui connaît le lieu, ses données et vos objectifs.
+Map your land accurately, then design your forest garden or permaculture plan with an AI that knows the place, its data and your goals.
 
-Un projet de [Semisto](https://www.semisto.org), sous licence [AGPL-3.0](LICENSE). Hébergé sur [terranova.semisto.org](https://terranova.semisto.org).
+A [Semisto](https://www.semisto.org) project, licensed under [AGPL-3.0](LICENSE). Hosted at [terranova.semisto.org](https://terranova.semisto.org).
 
-## Développer
+## Development
 
-Prérequis : Ruby 3.3, Node 22, PostgreSQL 16 avec PostGIS.
+Requirements: Ruby 3.3, Node 22, PostgreSQL 16 with PostGIS.
 
 ```sh
 bundle install
 npm install
 bin/rails db:prepare db:seed
 bin/dev            # Vite
-bin/rails s        # Rails, sur http://localhost:3000
+bin/rails s        # Rails, on http://localhost:3000
 ```
 
-En développement, `/dev/login?email=vous@exemple.org` vous connecte sans e-mail.
+In development, `/dev/login?email=you@example.org` signs you in without an e-mail.
 
-Tests : `bin/rails test` et `npx tsc -p tsconfig.app.json`.
+Tests: `bin/rails test` and `npx tsc -p tsconfig.app.json`.
 
-Pourquoi ce projet existe, ses principes et ce qu'il refuse : [INTENT.md](INTENT.md) (en anglais). Les conventions du code (en anglais) sont dans [CLAUDE.md](CLAUDE.md).
+Why this project exists, its principles and what it refuses: [INTENT.md](INTENT.md). Code conventions are in [CLAUDE.md](CLAUDE.md). The interface is in French only for now; its copy lives in `config/locales/*.fr.yml` and the help articles in `app/help/`.
 
-## Paiements (Stripe)
+## Payments (Stripe)
 
-Sans `STRIPE_SECRET_KEY`, les paiements sont désactivés et tout est débloqué (bêta fermée). Pour les ouvrir, dans le compte Stripe de Semisto ASBL :
+Without `STRIPE_SECRET_KEY`, payments are off and everything is unlocked (closed beta). To turn them on, in Semisto ASBL's Stripe account:
 
-1. **Produits et prix** (EUR, comportement fiscal « TVA incluse ») : Forfait particulier, paiement unique, 79 € → `STRIPE_PRICE_YEARLY` ; Atelier, mensuel, 49 € → `STRIPE_PRICE_ATELIER` ; Bureau d'études, mensuel, 99 € → `STRIPE_PRICE_BUREAU` ; Mission drone, paiement unique, 280 € → `STRIPE_PRICE_DRONE`.
-2. **Stripe Tax** activé (enregistrements TVA belges et européens) et un code fiscal par produit.
-3. **Réduction membres** : un coupon de 30 % limité au Forfait particulier, puis un code promotionnel individuel par membre (saisi par le membre sur la page de paiement).
-4. **Webhook** vers `https://terranova.semisto.org/webhooks/stripe`, événements `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded` → `STRIPE_WEBHOOK_SECRET`.
-5. **Portail client** configuré et activé (annulation d'abonnement, moyen de paiement, factures) ; optionnel : `STRIPE_PORTAL_CONFIGURATION`.
-6. Reçus clients et image de marque des factures dans les réglages Stripe.
+1. **Products and prices** (EUR, tax behaviour "inclusive"): Forfait particulier (individual pass), one-off payment, €79 → `STRIPE_PRICE_YEARLY`; Atelier, monthly, €49 → `STRIPE_PRICE_ATELIER`; Bureau d'études, monthly, €99 → `STRIPE_PRICE_BUREAU`; Mission drone, one-off payment, €280 → `STRIPE_PRICE_DRONE`.
+2. **Stripe Tax** enabled (Belgian and EU VAT registrations) and a tax code per product.
+3. **Member discount**: a 30 % coupon restricted to the Forfait particulier, then one promotion code per member (entered by the member on the checkout page).
+4. **Webhook** to `https://terranova.semisto.org/webhooks/stripe`, events `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded` → `STRIPE_WEBHOOK_SECRET`.
+5. **Customer portal** configured and enabled (cancel a subscription, payment method, invoices); optional: `STRIPE_PORTAL_CONFIGURATION`.
+6. Customer receipts and invoice branding in the Stripe settings.
 
-Les communes, écoles et entreprises peuvent aussi **payer sur facture** (virement, bon de commande, écran d'administration `/admin/invoice-requests`, administrateurs nommés avec `bin/rails users:admin EMAIL=…`) : voir [Paiement sur facture (communes)](docs/mise-en-production.md#paiement-sur-facture-communes).
+Municipalities, schools and companies can also **pay by invoice** (bank transfer, purchase order, admin screen `/admin/invoice-requests`, admins named with `bin/rails users:admin EMAIL=…`): see [Paying by invoice (municipalities)](docs/deployment.md#paying-by-invoice-municipalities).
 
-Autres variables : `SEMISTO_CONTACT_EMAIL` (adresse affichée sur le site et destinataire des demandes, `designer@semisto.org` par défaut). `bin/rails billing:payments` liste les paiements enregistrés (base du partage de revenus avec Semisto) ; `bin/rails billing:renewal_reminders` envoie les rappels d'échéance à la main (une tâche récurrente le fait chaque jour en production).
+Other variables: `SEMISTO_CONTACT_EMAIL` (address shown on the site and recipient of requests, `designer@semisto.org` by default). `bin/rails billing:payments` lists recorded payments (the basis of the revenue share with Semisto); `bin/rails billing:renewal_reminders` sends renewal reminders by hand (a recurring job does it every day in production).
 
-## Mise en production
+## Deployment
 
-Toutes les variables d'environnement, l'hébergement et la liste des vérifications avant l'ouverture : [docs/mise-en-production.md](docs/mise-en-production.md).
+Every environment variable, hosting, and the checklist before the public opening: [docs/deployment.md](docs/deployment.md).
 
 ## Licences
 
-Code : AGPL-3.0. Le code repris de [Claudy](https://github.com/les4sources/claudy) garde sa mention MIT (© Fondation Les 4 Sources).
+Code: AGPL-3.0. Code ported from [Claudy](https://github.com/les4sources/claudy) keeps its MIT notice (© Fondation Les 4 Sources).

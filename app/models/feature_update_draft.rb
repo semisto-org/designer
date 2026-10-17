@@ -129,6 +129,7 @@ class FeatureUpdateDraft < ApplicationRecord
       case field
       when "properties.species_id" then species[value.to_i]&.then { |s| [ s.common_name, s.latin_name ].compact.uniq.join(" · ") }
       when "properties.variety_id" then varieties[value.to_i]&.full_latin_name
+      when "properties.training" then I18n.t("plant_feature.trainings.#{value}", default: nil)
       end
     end
     diff.map { |c| c.merge({ beforeLabel: name.(c[:field], c[:before]), afterLabel: name.(c[:field], c[:after]) }.compact) }

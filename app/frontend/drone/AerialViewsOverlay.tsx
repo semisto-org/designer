@@ -1,13 +1,15 @@
 import { usePage } from '@inertiajs/react'
 import type { ErrorEvent as MapErrorEvent, MapSourceDataEvent } from 'maplibre-gl'
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import { importsStore } from '@/drone/imports'
 import { aerialStore, useAerialState } from '@/drone/store'
 import { placeAerialLayers, syncAerialViews } from '@/drone/layers'
 import { aerialViewIdOf } from '@/drone/placement'
 import { useEditor } from '@/map/editor/EditorContext'
-import type { AerialView } from '@/types/drone'
+import type { AerialImport, AerialView } from '@/types/drone'
 
 const NONE: AerialView[] = []
+const NO_IMPORTS: AerialImport[] = []
 
 // A view is flagged unreachable when its tiles fail and none has ever
 // loaded: a few missing tiles at the edge of the flight are normal.
@@ -18,6 +20,11 @@ export function useAerialViews(): AerialView[] {
   return usePage<{ aerialViews?: AerialView[] }>().props.aerialViews ?? NONE
 }
 
+/** The views imported from a file, for editors (prop `aerialImports`). */
+function useAerialImportsProp(): AerialImport[] {
+  return usePage<{ aerialImports?: AerialImport[] }>().props.aerialImports ?? NO_IMPORTS
+}
+
 /**
  * Applies the drone-view choice of « Couches » to MapLibre, whether the
  * panel is open or not, keeps the views above the base map, and watches
@@ -26,12 +33,17 @@ export function useAerialViews(): AerialView[] {
 export default function AerialViewsOverlay() {
   const { instance, map, regionLayers } = useEditor()
   const views = useAerialViews()
+  const imports = useAerialImportsProp()
   const state = useAerialState()
   const health = useRef(new Map<number, { errors: number; loaded: boolean }>())
 
   useLayoutEffect(() => {
     aerialStore.init(map.id, views)
   }, [map.id, views])
+
+  useLayoutEffect(() => {
+    importsStore.init(map.id, imports)
+  }, [map.id, imports])
 
   useEffect(() => {
     if (state.mapId !== map.id) return

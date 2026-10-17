@@ -1,3 +1,4 @@
+import type { EcoScreen } from './eco'
 // Super admin screens (Admin::DashboardController, Admin::UsersController).
 export type PlanKey = 'free' | 'yearly' | 'atelier' | 'bureau'
 
@@ -131,4 +132,5 @@ export type AdminTech = {
         recurring: { key: string; schedule: string; lastRunAt: string | null }[]
       }
   services: { key: string; configured: boolean }[]
+  sobriety: { screens: EcoScreen[]; configured: boolean }
 }

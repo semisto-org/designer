@@ -1,6 +1,6 @@
-# « Vues drone »: the dated aerial views Semisto sets up on a map after a
-# drone mission (base-map choice of the editor, staff screen, e-mail to the
-# owner). Keys in English, values in French; the backend and the React
+# « Vues drone »: the dated aerial views on a map, set up by Semisto after a
+# drone mission or imported from a file by anyone editing the map (base-map
+# choice of the editor, import, staff screen, e-mails). Keys in English, values in French; the backend and the React
 # frontend read the same file.
 fr:
   activerecord:
@@ -17,6 +17,8 @@ fr:
         max_zoom: "Zoom maximum"
         map: "Carte"
         plan_purchase: "Commande"
+        status: "État"
+        source_filename: "Fichier"
     errors:
       models:
         aerial_view:
@@ -55,17 +57,67 @@ fr:
   drone:
     default_name: "Vue drone"
     attribution_default: "Vue drone © Semisto"
+    attribution_imported: "Vue drone © %{name}"
     view_label: "%{name} · %{date}"
 
     # Map editor, « Couches » panel, under the base maps.
     layers:
       title: "Vues drone"
       none: "Sans vue drone"
-      hint_one: "Prise par Semisto, elle se pose sur le fond choisi ci-dessus : dessine directement dessus."
+      hint_one: "Elle se pose sur le fond choisi ci-dessus : dessine directement dessus."
       hint_many: "Passe d'une date à l'autre pour comparer ton terrain d'une saison, d'une année à l'autre. Chaque vue se pose sur le fond choisi ci-dessus."
       opacity: "Opacité de la vue drone"
       unreachable: "Cette vue drone ne répond pas pour l'instant. Réessaie un peu plus tard ; si cela dure, écris à Semisto."
       help: "La vue drone"
+
+    # Importing a drone view from a file, in the « Couches » panel (editors).
+    import:
+      button: "Importer une vue drone"
+      intro_empty: "Tu as fait voler un drone au-dessus de ton terrain ? Importe l'orthophoto : elle devient un fond sur lequel dessiner, et chaque vol suivant s'ajoute à côté, pour voir ton jardin grandir."
+      title: "Importer une vue drone"
+      file: "Fichier"
+      file_hint: "L'orthophoto exportée par ton logiciel de drone (DJI Terra, WebODM, Pix4D…) en GeoTIFF géoréférencé (.tif), ou une archive .mbtiles ou .pmtiles. Jusqu'à %{max} Go, même pour un grand terrain."
+      choose: "Choisir le fichier"
+      change: "Changer de fichier"
+      name: "Nom"
+      captured_on: "Date du vol"
+      captured_on_hint: "Proposée d'après la date du fichier : vérifie que c'est bien le jour du vol. C'est elle qui range tes vues dans le temps."
+      submit: "Envoyer et préparer la vue"
+      cancel: "Annuler"
+      close: "Fermer"
+      reading: "Lecture du fichier…"
+      sending: "Envoi : %{percent} % (%{sent} sur %{total})"
+      keep_open: "Garde cette page ouverte jusqu'à la fin de l'envoi. Tu peux continuer à travailler sur la carte."
+      leave_warning: "La vue drone n'est pas encore entièrement envoyée. Quitter la page arrête l'envoi."
+      list_title: "Tes imports"
+      statuses:
+        uploading: "Envoi en cours"
+        processing: "En préparation…"
+        ready: "Sur la carte"
+        failed: "Pas pu être préparée"
+      uploading_stale: "Envoi interrompu : retire-la et envoie le fichier à nouveau."
+      processing_hint: "Terranova découpe l'image en tuiles pour qu'elle s'affiche vite, même zoomée. Pour un grand terrain, cela peut prendre une heure : tu reçois un e-mail quand elle est sur la carte."
+      file_line: "%{file} · %{size}"
+      remove: "Retirer"
+      confirm_remove: "Retirer « %{name} » de la carte ? Plus personne ne la verra, et le fichier préparé est supprimé."
+      done: "« %{name} » est sur la carte."
+      failures:
+        upload_incomplete: "Le fichier n'est pas arrivé en entier. Envoie-le à nouveau."
+        upload_expired: "L'envoi s'est arrêté avant la fin. Envoie le fichier à nouveau."
+        unsupported_format: "Ce fichier n'est ni un GeoTIFF, ni un MBTiles, ni un PMTiles lisible."
+        not_georeferenced: "Cette image n'est pas géoréférencée : exporte l'orthophoto en GeoTIFF depuis ton logiciel de drone (une simple photo JPEG ne suffit pas)."
+        not_raster: "Ce fichier ne contient pas d'image en couleurs (par exemple un modèle de relief ou des tuiles vectorielles)."
+        empty: "Ce fichier ne contient aucune tuile."
+        conversion_failed: "La préparation a échoué. Réessaie ; si cela recommence, écris à Semisto."
+      errors:
+        no_file: "Choisis le fichier de ta vue drone."
+        format: "Choisis un GeoTIFF (.tif), un .mbtiles ou un .pmtiles."
+        too_large: "Ce fichier dépasse %{max} Go. Écris à Semisto : on trouvera comment l'importer."
+        checksum: "Le fichier n'a pas pu être vérifié. Envoie-le à nouveau."
+        expired: "Cet envoi a expiré. Envoie le fichier à nouveau."
+        missing_parts: "Une partie du fichier n'est pas arrivée. Envoie-le à nouveau."
+        busy: "La vue est en préparation : attends qu'elle soit prête pour la retirer."
+        network: "L'envoi a été coupé. Vérifie ta connexion, puis réessaie."
 
     # « Publier » panel (owner) and the public view (/p/:token).
     publish:
@@ -79,7 +131,7 @@ fr:
       link: "Vues drone"
       back: "Demandes envoyées depuis les cartes"
       intro: "Les missions drone payées et les vues aériennes posées sur les cartes. Pose la vue sur une carte de l'acheteur : un e-mail lui donne le lien vers sa carte."
-      hosting_note: "Colle l'adresse d'une archive .pmtiles ou d'un modèle de tuiles {z}/{x}/{y}, toujours en https. Le navigateur lit les tuiles directement chez l'hébergeur : celui-ci doit autoriser terranova.semisto.org (CORS, avec l'en-tête Range pour une archive PMTiles). La marche à suivre est dans docs/mise-en-production.md."
+      hosting_note: "Colle l'adresse d'une archive .pmtiles ou d'un modèle de tuiles {z}/{x}/{y}, toujours en https. Le navigateur lit les tuiles directement chez l'hébergeur : celui-ci doit autoriser terranova.semisto.org (CORS, avec l'en-tête Range pour une archive PMTiles). La marche à suivre est dans docs/deployment.md."
       filters:
         todo: "À configurer"
         done: "Configurées"
@@ -133,6 +185,13 @@ fr:
         removed: "Vue retirée de la carte « %{map} »."
 
   drone_mailer:
+    import_ready:
+      subject: "Ta vue drone est prête"
+      body: "La vue drone du %{date} (%{file}) est maintenant sur ta carte « %{map} »."
+      where: "Tu la retrouves dans le panneau « Couches », sous « Vues drone » (« %{name} »). Elle sert directement de fond pour dessiner, et le prochain vol s'ajoutera à côté pour comparer."
+      cta: "Ouvrir ma carte"
+      shared: "Elle est visible par les personnes avec qui tu partages cette carte."
+      help: "Tout savoir sur la vue drone"
     view_ready:
       subject: "Ta vue drone est sur ta carte"
       body: "Bonne nouvelle : la vue drone de ton terrain, prise le %{date}, est maintenant sur ta carte « %{map} »."

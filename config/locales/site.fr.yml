@@ -474,7 +474,7 @@ fr:
               - "Pour toute question sur vos données : %{email}."
           - title: "Quelles données collectons-nous ?"
             items:
-              - "Votre compte : votre adresse e-mail, votre nom, et votre photo de profil si vous vous connectez avec Google."
+              - "Votre compte : votre adresse e-mail, votre nom, et votre photo de profil si vous vous connectez avec Google. Si vous vous connectez avec Apple, nous recevons votre nom (une seule fois) et votre adresse e-mail, ou l'adresse relais qu'Apple crée pour vous si vous choisissez de masquer la vôtre."
               - "Vos contenus : les cartes, contours, dessins, notes, commentaires et photos que vous créez ou ajoutez."
               - "Vos paiements : la formule achetée, le montant, la TVA, la date et le code promotionnel éventuel. Le paiement lui-même est traité par Stripe : nous ne voyons ni ne conservons votre numéro de carte."
               - "Des données techniques : votre adresse IP et des journaux de connexion, utiles à la sécurité et au dépannage."
@@ -486,6 +486,11 @@ fr:
               - "Nous ne vendons pas ces informations, ne les utilisons pas pour de la publicité, ne les transmettons à aucun tiers en dehors des prestataires listés plus bas, et ne les utilisons pas pour entraîner des modèles d'intelligence artificielle."
               - "L'utilisation des informations reçues des API de Google respecte la politique relative aux données utilisateur des services d'API Google (Google API Services User Data Policy), y compris ses exigences d'utilisation limitée (Limited Use)."
               - "Vous pouvez retirer cet accès à tout moment depuis les paramètres de votre compte Google (myaccount.google.com/permissions) ; votre compte Semisto Terranova reste utilisable par lien de connexion envoyé par e-mail. Pour effacer aussi les informations déjà reçues, supprimez votre compte depuis « Mon compte » ou écrivez à %{email}."
+          - title: "Ce que nous recevons d'Apple"
+            paragraphs:
+              - "Si vous choisissez « Continuer avec Apple », Apple nous transmet un identifiant propre à Semisto Terranova, votre adresse e-mail (ou une adresse relais qui vous transfère nos messages, si vous masquez la vôtre) et, à la première connexion seulement, votre nom. Nous ne recevons rien d'autre."
+              - "Nous les utilisons comme celles reçues de Google : créer votre compte, vous reconnaître, afficher votre nom aux personnes avec qui vous partagez une carte, et vous écrire au sujet de votre compte. Nous ne les vendons pas, ne les utilisons pas pour de la publicité et ne les transmettons à aucun tiers en dehors des prestataires listés plus bas."
+              - "Vous pouvez retirer cet accès à tout moment dans les réglages de votre identifiant Apple (« Se connecter avec Apple ») ; votre compte Semisto Terranova reste utilisable par lien de connexion envoyé par e-mail. Pour effacer aussi les informations déjà reçues, supprimez votre compte depuis « Mon compte » ou écrivez à %{email}."
           - title: "Pourquoi, et sur quelle base légale ?"
             items:
               - "Fournir le service que vous avez demandé (créer vos cartes, les partager, vous envoyer un lien de connexion) : l'exécution du contrat."
@@ -500,6 +505,7 @@ fr:
               - "Infomaniak (Suisse) : hébergement du service, de ses bases de données, de vos photos et documents, et de leurs copies de sauvegarde."
               - "Stripe : paiement, facturation et calcul de la TVA."
               - "Google : uniquement si vous choisissez de vous connecter avec votre compte Google."
+              - "Apple : uniquement si vous choisissez de vous connecter avec votre identifiant Apple, et pour transférer nos e-mails si vous masquez votre adresse."
               - "Amazon Simple Email Service (Amazon Web Services, centres de données dans l'Union européenne) : envoi des e-mails (liens de connexion, factures, rappels)."
               - "Votre propre assistant IA : uniquement si vous le connectez à vos cartes via MCP. C'est vous qui le choisissez et qui décidez de ce qu'il lit ; Terranova n'envoie vos cartes à aucune IA de son côté."
               - "Les services de cartographie (Service public de Wallonie, IGN, geoportail.lu, Agence européenne pour l'environnement, ISRIC, Copernicus sur Amazon Web Services, OpenFreeMap) : pour afficher les fonds de carte et les couches, ils reçoivent la zone affichée et l'adresse IP de votre navigateur ou de notre serveur."
@@ -515,7 +521,7 @@ fr:
           - title: "Vos données quittent-elles l'Union européenne ?"
             paragraphs:
               - "Le service et vos fichiers sont hébergés en Suisse, chez Infomaniak. La Commission européenne reconnaît à la Suisse un niveau de protection des données équivalent à celui de l'Union (décision d'adéquation)."
-              - "Certains prestataires (Stripe, Google) peuvent traiter des données hors de l'Union européenne, avec les garanties prévues par le RGPD : clauses contractuelles types et cadre de protection des données UE-États-Unis."
+              - "Certains prestataires (Stripe, Google, Apple) peuvent traiter des données hors de l'Union européenne, avec les garanties prévues par le RGPD : clauses contractuelles types et cadre de protection des données UE-États-Unis."
           - title: "Vos droits"
             paragraphs:
               - "Vous pouvez à tout moment demander l'accès à vos données, leur rectification, leur effacement, la limitation de leur traitement, leur portabilité, ou vous opposer à un traitement fondé sur notre intérêt légitime."

@@ -53,7 +53,7 @@ module Maps
               sensitive: Collab::PublicSnapshot.sensitive_region_layer?(layer) }
           end,
           # The drone view a publication would show (the newest), if any.
-          aerialView: map.aerial_views.first&.as_inertia&.slice(:name, :capturedOn)
+          aerialView: map.aerial_views.ready.first&.as_inertia&.slice(:name, :capturedOn)
         }
       end
   end
