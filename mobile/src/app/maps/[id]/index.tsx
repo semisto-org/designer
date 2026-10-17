@@ -6,11 +6,14 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useDisplay } from '@/lib/display'
+import { hidesMore, isShown } from '@/lib/display-core'
 import { featureTitle, kindLabel, speciesName } from '@/lib/elements'
 import { anchor, bearing, distance } from '@/lib/geo'
 import { formatDate, formatDistance, t } from '@/lib/i18n'
 import { styleUrl } from '@/lib/maps'
 import { outbox } from '@/lib/outbox'
+import { pickFeatureId } from '@/lib/pick'
 import { canEdit, type MapFeature, type Position } from '@/lib/types'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
@@ -29,6 +32,7 @@ export default function Terrain() {
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [me, setMe] = useState<Position | null>(null)
   const [follow, setFollow] = useState(false)
+  const shown = useDisplay(mapId)
 
   // The blue dot's position, for distances and for placing things.
   useEffect(() => {
@@ -42,7 +46,11 @@ export default function Terrain() {
     return () => sub?.remove()
   }, [])
 
-  const selected = useMemo(() => bundle?.features.find((f) => f.id === selectedId) ?? null, [bundle, selectedId])
+  // A feature the display now hides is no longer selected.
+  const selected = useMemo(() => {
+    const feature = bundle?.features.find((f) => f.id === selectedId) ?? null
+    return feature && isShown(feature.properties, shown, bundle?.planting) ? feature : null
+  }, [bundle, selectedId, shown])
 
   if (!bundle) {
     return (
@@ -78,7 +86,7 @@ export default function Terrain() {
     <View style={s.fill}>
       <Map style={s.fill} mapStyle={styleUrl(mapId)} compass compassPosition={{ top: insets.top + 64, right: 12 }}
         attributionPosition={{ bottom: 8, left: 8 }} logo={false}
-        onPress={() => setSelectedId(null)}
+        onPress={(e) => { if (!('features' in e.nativeEvent && pickFeatureId(e.nativeEvent.features) !== null)) setSelectedId(null) }}
         onRegionWillChange={(e) => { if (e.nativeEvent.userInteraction) setFollow(false) }}>
         <Camera
           ref={camera}
@@ -86,7 +94,7 @@ export default function Terrain() {
           trackUserLocation={follow ? 'heading' : undefined}
           onTrackUserLocationChange={(e) => setFollow(!!e.nativeEvent.trackUserLocation)}
         />
-        <FeatureLayers bundle={bundle} selectedId={selectedId} onSelect={setSelectedId} />
+        <FeatureLayers bundle={bundle} display={shown} selectedId={selectedId} onSelect={setSelectedId} />
         <UserLocation accuracy heading />
       </Map>
 
@@ -103,6 +111,8 @@ export default function Terrain() {
             </Text>
           </Pressable>
         </View>
+        <RoundButton label="◧" accessibilityLabel={t('mobile.display.open')} dot={hidesMore(shown)}
+          onPress={() => router.push({ pathname: '/maps/[id]/display', params: { id: String(mapId) } })} />
         <RoundButton label="◎" accessibilityLabel={t('mobile.terrain.follow')} active={follow} onPress={() => setFollow((v) => !v)} />
       </View>
 
@@ -167,11 +177,12 @@ function Action({ label, icon, onPress }: { label: string; icon: string; onPress
   )
 }
 
-function RoundButton({ label, onPress, active, accessibilityLabel }: { label: string; onPress: () => void; active?: boolean; accessibilityLabel: string }) {
+function RoundButton({ label, onPress, active, dot, accessibilityLabel }: { label: string; onPress: () => void; active?: boolean; dot?: boolean; accessibilityLabel: string }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel}
       style={[s.round, active && { backgroundColor: colors.prune600 }]}>
       <Text style={{ fontSize: 22, color: active ? colors.white : colors.prune700 }}>{label}</Text>
+      {dot && <View style={s.dot} />}
     </Pressable>
   )
 }
@@ -182,6 +193,7 @@ const s = StyleSheet.create({
   header: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md },
   headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.loam900, textShadowColor: '#fff', textShadowRadius: 6 },
   headerSub: { fontSize: 13, color: colors.loam700, textShadowColor: '#fff', textShadowRadius: 6 },
+  dot: { position: 'absolute', top: 6, right: 6, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.prune600, borderWidth: 1.5, borderColor: colors.white },
   round: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', ...shadow },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.md, gap: space.sm },
   actions: { flexDirection: 'row', gap: space.sm },

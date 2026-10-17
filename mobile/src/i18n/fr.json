@@ -69,6 +69,27 @@
       "open": "Ouvrir",
       "viewer": "Tu consultes cette carte : tu peux la parcourir et commenter ses éléments."
     },
+    "display": {
+      "open": "Affichage de la carte",
+      "title": "Affichage",
+      "projected": "Montrer le projet",
+      "projected_hint": "Les plantes encore à planter et les brouillons de ton IA. Sans lui, la carte montre ce qui est sur le terrain aujourd'hui, pour relever l'existant.",
+      "projected_none": "Rien en projet sur cette carte pour l'instant.",
+      "projected_count": {
+        "one": "%{count} élément en projet sur cette carte.",
+        "other": "%{count} éléments en projet sur cette carte."
+      },
+      "layers": "Couches",
+      "strata": "Strates des plantes",
+      "strata_hint": "Touche une strate pour la masquer ou la remettre.",
+      "unknown_strata": "Strate inconnue",
+      "count": {
+        "one": "%{count} élément",
+        "other": "%{count} éléments"
+      },
+      "show_all": "Tout réafficher",
+      "remembered": "Ce choix est gardé sur ce téléphone, pour cette carte."
+    },
     "actions": {
       "photo": "Photo, vidéo",
       "plant": "Planter",

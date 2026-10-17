@@ -1,17 +1,20 @@
 // The design drawn over the base map: zones, lines, points and plants,
-// coloured like on the website. Tapping a feature selects it.
+// coloured like on the website, as the display settings filter them.
+// Tapping a feature selects it (the closest point first, see pickFeatureId).
 import { GeoJSONSource, Layer } from '@maplibre/maplibre-react-native'
 import { useMemo } from 'react'
+import { isShown, type Display } from '@/lib/display-core'
 import { featureColor, featureTitle } from '@/lib/elements'
+import { pickFeatureId } from '@/lib/pick'
 import type { MapBundle } from '@/lib/types'
 
 export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-point', 'features-plant']
 const FONT = ['Noto Sans Regular']
 
-export function FeatureLayers({ bundle, selectedId, onSelect }: { bundle: MapBundle; selectedId: number | null; onSelect: (id: number) => void }) {
+export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundle: MapBundle; display: Display; selectedId: number | null; onSelect: (id: number) => void }) {
   const data = useMemo<GeoJSON.FeatureCollection>(() => ({
     type: 'FeatureCollection',
-    features: bundle.features.map((feature) => ({
+    features: bundle.features.filter((feature) => isShown(feature.properties, display, bundle.planting)).map((feature) => ({
       type: 'Feature',
       id: feature.id,
       geometry: feature.geometry as GeoJSON.Geometry,
@@ -25,7 +28,7 @@ export function FeatureLayers({ bundle, selectedId, onSelect }: { bundle: MapBun
         pending: feature.properties.pending ? 1 : 0,
       },
     })),
-  }), [bundle, selectedId])
+  }), [bundle, display, selectedId])
 
   const boundary = bundle.map.boundary
 
@@ -40,8 +43,11 @@ export function FeatureLayers({ bundle, selectedId, onSelect }: { bundle: MapBun
         id="features"
         data={data}
         onPress={(event) => {
-          const fid = event.nativeEvent.features?.[0]?.properties?.fid
-          if (typeof fid === 'number') onSelect(fid)
+          const fid = pickFeatureId(event.nativeEvent.features)
+          if (fid === null) return
+          // Otherwise the press bubbles up to the Map, whose onPress clears the selection.
+          event.stopPropagation()
+          onSelect(fid)
         }}
       >
         <Layer id="features-fill" type="fill" filter={['==', ['geometry-type'], 'Polygon']}
