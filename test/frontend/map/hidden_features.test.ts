@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { hiddenPlantIds, hiddenTests, strataKey, UNKNOWN_STRATA } from '../../../app/frontend/map/drawing/hidden.ts'
+import { composeFilter, hiddenPlantIds, hiddenTests, strataKey, UNKNOWN_STRATA } from '../../../app/frontend/map/drawing/hidden.ts'
 
 const f = (id: number, layer: string, kind: string | null) => ({ properties: { id, layer, kind } })
 const pond = f(1, 'water', 'pond')
@@ -30,4 +30,13 @@ test('the map filter leaves out hidden kinds and plant ids', () => {
     ['!', ['in', ['coalesce', ['get', 'kind'], ''], ['literal', ['pond']]]],
     ['!', ['in', ['get', 'id'], ['literal', [4, 5]]]],
   ])
+})
+
+test('a layer keeps its own filter under what « Calques » hides', () => {
+  const own = ['!', ['==', ['get', 'kind'], 'plant']]
+  const hide = ['!', ['in', ['get', 'layer'], ['literal', ['networks']]]]
+  assert.deepEqual(composeFilter(own, hide), ['all', own, hide])
+  assert.deepEqual(composeFilter(null, hide), hide)
+  assert.deepEqual(composeFilter(own, null), own)
+  assert.equal(composeFilter(null, null), null)
 })
