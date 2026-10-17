@@ -38,6 +38,9 @@ export type AdminAerialView = AerialView & {
   planPurchaseId: number | null
   createdAt: string
   createdBy: string | null
+  /** For a view imported from a file or copied into Terranova. */
+  status?: AerialImportStatus
+  failure?: string | null
 }
 
 export type AdminDroneOrder = {

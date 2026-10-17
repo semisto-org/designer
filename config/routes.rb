@@ -482,7 +482,9 @@ Rails.application.routes.draw do
   # of a drone order (or of any map) and removes one. The map editor gets a
   # map's views in its props (MapsController#show).
   namespace :admin do
-    resources :aerial_views, path: "drone-views", only: %i[index create destroy]
+    resources :aerial_views, path: "drone-views", only: %i[index create destroy] do
+      post :copy, on: :member
+    end
   end
   # Drone views anyone editing the map imports from a file (Couches panel):
   # sent in parts (PUT /mcp/uploads/:token/parts/:n), then converted in the

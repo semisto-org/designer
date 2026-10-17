@@ -1,6 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowLeft, Drone, Info, Mail, Map as MapIcon, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Copy, Drone, Info, Mail, Map as MapIcon, Plus, Trash2 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, EmptyState } from '@/components/ui/Card'
@@ -167,6 +167,12 @@ function ViewRow({ view, showOwner = false }: { view: AdminAerialView; showOwner
     if (!window.confirm(question)) return
     router.delete(`${PATH}/${view.id}`, { preserveScroll: true, onStart: () => setBusy(true), onFinish: () => setBusy(false) })
   }
+  function copy() {
+    if (!window.confirm(t('drone.admin.confirm_copy', { name: view.name, host: view.host ?? '' }))) return
+    router.post(`${PATH}/${view.id}/copy`, {}, { preserveScroll: true, onStart: () => setBusy(true), onFinish: () => setBusy(false) })
+  }
+  const copyable = view.kind === 'xyz' && !view.status
+  const pending = view.status && view.status !== 'ready'
   return (
     <li className="flex items-start justify-between gap-3 py-2.5 text-sm">
       <div className="min-w-0">
@@ -182,10 +188,23 @@ function ViewRow({ view, showOwner = false }: { view: AdminAerialView; showOwner
           ].filter(Boolean).join(' · ')}
         </p>
         {view.createdBy && <p className="text-xs text-loam-400">{t('drone.admin.added_by', { name: view.createdBy })}</p>}
+        {pending && (
+          <p className={clsx('text-sm', view.status === 'failed' ? 'text-clay-700' : 'text-humus-700')}>
+            {t(`drone.admin.view_statuses.${view.status}`)}
+            {view.failure ? ` : ${t(`drone.import.failures.${view.failure}`)}` : ''}
+          </p>
+        )}
       </div>
-      <Button variant="ghost" size="sm" disabled={busy} onClick={remove} className="shrink-0 text-clay-700">
-        <Trash2 className="h-4 w-4" aria-hidden />{t('drone.admin.remove')}
-      </Button>
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        {copyable && (
+          <Button variant="ghost" size="sm" disabled={busy} onClick={copy}>
+            <Copy className="h-4 w-4" aria-hidden />{t('drone.admin.copy')}
+          </Button>
+        )}
+        <Button variant="ghost" size="sm" disabled={busy} onClick={remove} className="text-clay-700">
+          <Trash2 className="h-4 w-4" aria-hidden />{t('drone.admin.remove')}
+        </Button>
+      </div>
     </li>
   )
 }

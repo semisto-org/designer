@@ -108,6 +108,7 @@ fr:
         not_georeferenced: "Cette image n'est pas géoréférencée : exporte l'orthophoto en GeoTIFF depuis ton logiciel de drone (une simple photo JPEG ne suffit pas)."
         not_raster: "Ce fichier ne contient pas d'image en couleurs (par exemple un modèle de relief ou des tuiles vectorielles)."
         empty: "Ce fichier ne contient aucune tuile."
+        source_unreachable: "L'adresse d'origine des tuiles ne répond pas, ou refuse l'accès."
         conversion_failed: "La préparation a échoué. Réessaie ; si cela recommence, écris à Semisto."
       errors:
         no_file: "Choisis le fichier de ta vue drone."
@@ -151,6 +152,14 @@ fr:
       added_by: "Ajoutée par %{name}"
       remove: "Retirer"
       confirm_remove: "Retirer « %{name} » du %{date} de la carte « %{map} » ? Plus personne ne la verra sur la carte. Les fichiers chez l'hébergeur ne sont pas touchés."
+      copy: "Copier dans Terranova"
+      confirm_copy: "Copier les tuiles de « %{name} » dans Terranova ? Elles sont lues une fois chez %{host}, sur le terrain de la carte et autour, puis gardées avec les fichiers de la carte. Tu reçois un e-mail quand la copie est prête ; retire alors l'ancienne vue."
+      copy_filename: "copie de %{host}"
+      view_statuses:
+        uploading: "Envoi en cours"
+        processing: "Copie en cours"
+        failed: "Échec"
+
       other_title: "Vues sans commande"
       other_intro: "Pour une carte de Semisto ou un cas particulier : indique le numéro de la carte (dans son adresse, /maps/12). Personne n'est prévenu par e-mail."
       other_empty: "Aucune vue posée hors commande pour l'instant."
@@ -183,6 +192,7 @@ fr:
         added: "Vue ajoutée sur la carte « %{map} »."
         added_and_notified: "Vue ajoutée sur la carte « %{map} » ; un e-mail prévient %{name}."
         removed: "Vue retirée de la carte « %{map} »."
+        copying: "Copie lancée pour la carte « %{map} ». Un e-mail te prévient quand elle est prête."
 
   drone_mailer:
     import_ready:
