@@ -1,9 +1,11 @@
-// Builds the app's copies of two server files, which stay the single
+// Builds the app's copies of three server files, which stay the single
 // sources of truth:
 // - src/i18n/fr.json from the Rails locale files (config/locales/*.fr.yml),
 //   only the keys the app uses: mobile.fr.yml and shared vocabularies;
 // - src/i18n/elements.json from the element library (config/map_elements.yml):
-//   per layer its colour and, per kind, geometries and colour.
+//   per layer its colour and, per kind, geometries and colour;
+// - src/i18n/seasons.json from the help center's month cards
+//   (app/help/seasons.yml): per month its title and body.
 // Run: npm run locales (CI runs it with --check).
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -63,8 +65,11 @@ const elements = Object.fromEntries(Object.entries(catalog.layers).map(([layer, 
   }])),
 }]))
 
+const months = parse(readFileSync(join(root, 'app', 'help', 'seasons.yml'), 'utf8'))
+const seasons = Object.fromEntries(Object.entries(months).map(([month, card]) => [month, { title: card.title, body: card.body }]))
+
 let stale = false
-for (const [name, value] of [['fr.json', out], ['elements.json', elements]]) {
+for (const [name, value] of [['fr.json', out], ['elements.json', elements], ['seasons.json', seasons]]) {
   const file = join(root, 'mobile', 'src', 'i18n', name)
   const json = `${JSON.stringify(value, null, 2)}\n`
   if (!process.argv.includes('--check')) writeFileSync(file, json)

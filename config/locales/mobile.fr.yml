@@ -89,6 +89,31 @@ fr:
         autumn: "Automne"
       open: "Ouvrir"
       viewer: "Tu consultes cette carte : tu peux la parcourir et commenter ses éléments."
+      here_today: "Aujourd'hui, ici"
+      note_here: "Noter ici"
+      note_title: "Que veux-tu noter ici ?"
+      around: "Autour de moi"
+      around_hint: "Ce qui est dessiné à moins de %{distance}, du plus proche au plus loin."
+      around_none: "Rien de dessiné à moins de %{distance}. Avance un peu, ou note ce que tu vois."
+      around_locating: "Je cherche où tu es…"
+      around_no_position: "Autorise la localisation pour voir ce qui pousse autour de toi."
+      open_full: "Ouvrir la fiche"
+      planted_today: "Planté aujourd'hui"
+      planted_toast: "Noté : planté aujourd'hui"
+      follow_up: "Suivi"
+      undo: "Annuler"
+      undone: "C'est annulé"
+      age:
+        today: "planté aujourd'hui"
+        days:
+          one: "planté hier"
+          other: "planté il y a %{count} jours"
+        months:
+          one: "planté il y a %{count} mois"
+          other: "planté il y a %{count} mois"
+        winters:
+          one: "a passé son premier hiver ici"
+          other: "a passé %{count} hivers ici"
     display:
       open: "Affichage de la carte"
       title: "Affichage"
@@ -107,11 +132,18 @@ fr:
         other: "%{count} éléments"
       show_all: "Tout réafficher"
       remembered: "Ce choix est gardé sur ce téléphone, pour cette carte."
+    sheet:
+      label: "Feuille du terrain"
+      levels:
+        "0": "réduite"
+        "1": "à moitié ouverte"
+        "2": "ouverte"
     actions:
       photo: "Photo, vidéo"
       plant: "Planter"
       record: "Relever"
       identify: "Identifier"
+      storm: "Averse"
     photo:
       saved_title: "Photo gardée"
       saved_title_video: "Vidéo gardée"
