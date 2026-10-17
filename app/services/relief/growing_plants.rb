@@ -39,6 +39,7 @@ module Relief
             number: feature.properties["number"].presence,
             ownName: feature.name.presence,
             training: feature.plant_training,
+            graft: feature.plant_graft,
             plantedOn: (feature.planted_on&.iso8601 rescue nil)
           )
         end

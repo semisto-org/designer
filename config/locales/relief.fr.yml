@@ -248,6 +248,9 @@ fr:
           adult: "Adulte : %{height} m × %{spread} m, vers %{years} ans."
           pollard: "Conduite en trogne : jusqu'à %{height} m × %{spread} m entre deux tailles de la tête."
           coppice: "Conduite en cépée : jusqu'à %{height} m × %{spread} m entre deux recépages."
+          graft: "Fruitier greffé : %{details}."
+          trunk: "tronc de %{value} m"
+          vigor: "vigueur %{value}"
           indicative: "Tailles indicatives (valeur par défaut de la strate)."
           close: "Fermer"
       walk:

@@ -58,6 +58,10 @@ fr:
       species_id: "Espèce"
       variety_id: "Variété"
       training: "Conduite"
+      graft_form: "Forme du fruitier greffé"
+      trunk_height: "Hauteur du tronc (m)"
+      rootstock_vigor: "Vigueur du porte-greffe"
+      rootstock: "Porte-greffe"
       count: "Nombre de plants"
     history:
       title: "Modifications proposées par une IA"

@@ -63,6 +63,12 @@ module Mcp
         end
         return err(:future_date, key:) if key == "planted_on" && Date.iso8601(value) > PlantableFeature.latest_today
         return err(:training, allowed: PlantableFeature::TRAININGS.join(", ")) if key == "training" && !PlantableFeature::TRAININGS.include?(value)
+        return err(:graft_form, allowed: PlantableFeature::GRAFT_FORMS.join(", ")) if key == "graft_form" && !PlantableFeature::GRAFT_FORMS.include?(value)
+        return err(:rootstock_vigor, allowed: PlantableFeature::ROOTSTOCK_VIGORS.join(", ")) if key == "rootstock_vigor" && !PlantableFeature::ROOTSTOCK_VIGORS.include?(value)
+        if key == "trunk_height" && !(value.is_a?(Numeric) && PlantableFeature::TRUNK_HEIGHTS.cover?(value))
+          return err(:trunk_height, min: PlantableFeature::TRUNK_HEIGHTS.min, max: PlantableFeature::TRUNK_HEIGHTS.max)
+        end
+        return err(:rootstock, max: PlantableFeature::ROOTSTOCK_LENGTH) if key == "rootstock" && !(value.is_a?(String) && value.length <= PlantableFeature::ROOTSTOCK_LENGTH)
         if INTEGER_PROPERTIES.include?(key) && !(value.to_s.match?(/\A\d{1,9}\z/) && value.to_i.positive?)
           return err(:integer, key:)
         end

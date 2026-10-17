@@ -21,7 +21,7 @@ import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage 
 import type { BlocksInput } from './blocks.ts'
 import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaTerrain } from './niva.ts'
 import type { NivaLights } from './nivaModel.ts'
-import { GROWTH_YEARS, calendarYear, managedSize, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type PlantTraining, type ScenePlant } from './growth.ts'
+import { GRAFT_FORMS, GROWTH_YEARS, calendarYear, managedSize, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type PlantTraining, type ScenePlant, type GraftForm, type RootstockVigor } from './growth.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
 import { landcoverRoles } from './roles.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
@@ -119,6 +119,8 @@ export type PlantInfo = {
   maturityYears: number
   /** Kept free, pollarded or coppiced: the adult size is then what it reaches between two cuts. */
   training: PlantTraining
+  /** A grafted fruit tree: its form, trunk (m), rootstock vigour and rootstock as drawn, or null. */
+  graft: { form: GraftForm | null; trunk: number; vigor: RootstockVigor; rootstock: string | null } | null
   indicative: boolean
 }
 
@@ -432,7 +434,13 @@ export class ReliefController {
       plantedYear: point?.plantedOn ? new Date(point.plantedOn).getUTCFullYear() : calendarYear(data.origin, plant.start),
       height: size?.height ?? null, spread: size?.spread ?? null,
       adultHeight: adult.height, adultSpread: adult.spread, maturityYears: adult.maturityYears,
-      training: plant.training, indicative: inputs.indicative,
+      training: plant.training,
+      graft: plant.graft && point?.graft ? {
+        ...plant.graft,
+        form: GRAFT_FORMS.includes(point.graft.form as GraftForm) ? (point.graft.form as GraftForm) : null,
+        rootstock: point.graft.rootstock,
+      } : null,
+      indicative: inputs.indicative,
     }
   }
 

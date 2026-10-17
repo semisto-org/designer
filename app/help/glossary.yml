@@ -38,6 +38,9 @@
 - term: Fascine
   forms: [fascines]
   definition: "Fagots de branches tenus par des piquets, posés en travers d'une pente où l'eau ruisselle. Elle retient la terre et laisse filtrer l'eau."
+- term: Haute-tige
+  forms: [hautes-tiges, demi-tige, demi-tiges, basse-tige, basses-tiges]
+  definition: "Forme d'un fruitier greffé, nommée d'après la hauteur de son tronc : haute-tige à 1,80 m et plus, demi-tige vers 1,20 à 1,60 m, basse-tige vers 0,50 à 0,80 m. Le tronc est formé en pépinière et ne monte plus ensuite."
 - term: Infiltration
   forms: []
   definition: "Vitesse à laquelle le sol boit l'eau, en millimètres par heure. Elle se mesure sur place avec un seau, un trou et une règle (test d'infiltration)."
@@ -62,6 +65,9 @@
 - term: Point clé
   forms: [points clés]
   definition: "Endroit d'un vallon où le fond cesse de descendre raide pour descendre doucement. La keyline part de là."
+- term: Porte-greffe
+  forms: [porte-greffes]
+  definition: "Plant sur lequel on greffe une variété fruitière. C'est lui qui donne ses racines à l'arbre et fixe sa vigueur : un pommier sur M9 reste vers 3 m, le même sur franc dépasse 8 m."
 - term: Rusticité
   forms: [zone de rusticité]
   definition: "Le froid qu'une plante supporte en hiver. La zone de rusticité (échelle USDA) d'un lieu vient de la température la plus basse atteinte en moyenne chaque hiver."

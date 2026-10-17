@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  MANAGED_MATURITY, MANAGED_SIZE, PLANTING_SIZE, calendarYear, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
+  GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
   type GrowingPlantsData, type GrowthInputs, type ScenePlant,
 } from '../../../app/frontend/relief/growth.ts'
 import type { GridMeta } from '../../../app/frontend/relief/grid.ts'
@@ -195,4 +195,61 @@ test('only trees and bushes take a training; anything else is free', () => {
   assert.equal(trainingOf('tree', null), 'free')
   // A climber or a perennial keeps its own shape whatever it is told.
   assert.equal(plantShape('climber', 'vine', 8, 2, 'pollard').kind, 'column')
+})
+
+test('a grafted fruit tree: its form gives a trunk and a rootstock, what the sheet says wins', () => {
+  const none = { form: null, trunkHeight: null, vigor: null, rootstock: null }
+  assert.equal(graftOf('tree', none), null)
+  assert.equal(graftOf('tree', null), null)
+  // Only a tree stands on a trunk.
+  assert.equal(graftOf('bush', { ...none, form: 'standard' }), null)
+  assert.deepEqual(graftOf('tree', { ...none, form: 'standard' }), { trunk: GRAFT_TRUNK.standard, vigor: 'vigorous' })
+  assert.deepEqual(graftOf('tree', { ...none, form: 'bush' }), { trunk: 0.6, vigor: 'semi_dwarf' })
+  assert.deepEqual(graftOf('tree', { ...none, form: 'half_standard', trunkHeight: 1.25, vigor: 'semi_dwarf' }), { trunk: 1.25, vigor: 'semi_dwarf' })
+  // A vigour alone, or a trunk alone, is enough to say the tree is grafted.
+  assert.deepEqual(graftOf('tree', { ...none, vigor: 'dwarf' }), { trunk: 0.6, vigor: 'dwarf' })
+  assert.deepEqual(graftOf('tree', { ...none, trunkHeight: 2.1 }), { trunk: 2.1, vigor: 'vigorous' })
+  // Unknown values are ignored, out-of-range trunks brought back.
+  assert.equal(graftOf('tree', { ...none, form: 'espalier', vigor: 'huge' }), null)
+  assert.equal(graftOf('tree', { ...none, trunkHeight: 9 })!.trunk, 3)
+})
+
+test('a grafted tree is planted with its trunk formed, and only its crown grows, to the size its rootstock allows', () => {
+  const tree = { strata: 'sub_canopy' as const, heightM: 8, spreadM: 7, maturityYears: 15, training: 'free' as const }
+  const standard = { ...tree, graft: { trunk: 1.8, vigor: 'vigorous' as const } }
+  const bush = { ...tree, graft: { trunk: 0.6, vigor: 'dwarf' as const } }
+  // On a vigorous rootstock, the species' own size; on M9, much smaller and sooner.
+  assert.deepEqual(managedSize(standard), { height: 8, spread: 7, maturityYears: 15 })
+  assert.deepEqual(managedSize(bush), { ...VIGOR_SIZE.dwarf })
+  // Year 0: already as tall as its trunk, unlike a seedling.
+  assert.ok(sizeAt(standard, 0)!.height > 1.8)
+  assert.ok(sizeAt(standard, 0)!.height > sizeAt(tree, 0)!.height)
+  for (const age of [0, 3, 10, 20]) {
+    const shape = plantShape('tree', 'sub_canopy', sizeAt(standard, age)!.height, sizeAt(standard, age)!.spread, 'free', 1.8)
+    assert.equal(shape.kind, 'crown')
+    // The trunk does not grow: the first branches stay at 1.80 m.
+    if (shape.kind === 'crown') assert.equal(shape.trunk, 1.8)
+  }
+  assert.ok(sizeAt(bush, 5)!.height > 0.9 * VIGOR_SIZE.dwarf.height)
+  // A standard on a dwarfing rootstock still carries a crown above its trunk.
+  assert.ok(managedSize({ ...tree, graft: { trunk: 2.5, vigor: 'very_dwarf' } }).height >= 2.5 + GRAFT_CROWN)
+  // A pollard is a pollard, whatever it was grafted on.
+  assert.deepEqual(managedSize({ ...standard, training: 'pollard' }).height, Math.min(8, MANAGED_SIZE.pollard.height))
+})
+
+test('scene plants: a grafted tree takes its graft, unless it is pollarded', () => {
+  const [lng, lat] = lngLat(525_000 + 15, 6_590_000 - 15)
+  const graft = { form: 'standard', trunkHeight: null, vigor: null, rootstock: 'MM111' }
+  const data: GrowingPlantsData = {
+    today: '2028-06-01',
+    origin: '2026-06-01',
+    plants: [
+      { ...inputs({ strata: 'sub_canopy', plantType: 'tree' }), id: 1, lng, lat, number: null, ownName: null, training: null, graft, plantedOn: null },
+      { ...inputs({ strata: 'sub_canopy', plantType: 'tree' }), id: 2, lng, lat, number: null, ownName: null, training: 'pollard', graft, plantedOn: null },
+    ],
+    patches: [],
+  }
+  const [grafted, pollard] = scenePlants(meta, data)
+  assert.deepEqual(grafted.graft, { trunk: 1.8, vigor: 'vigorous' })
+  assert.equal(pollard.graft, null)
 })
