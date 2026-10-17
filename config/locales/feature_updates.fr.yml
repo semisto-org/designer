@@ -57,6 +57,7 @@ fr:
       planted_on: "Date de plantation"
       species_id: "Espèce"
       variety_id: "Variété"
+      training: "Conduite"
       count: "Nombre de plants"
     history:
       title: "Modifications proposées par une IA"

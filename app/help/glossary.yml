@@ -11,6 +11,9 @@
 - term: Brise-vent
   forms: [brise-vents]
   definition: "Haie haute et assez dense, plantée en travers du vent dominant. Elle protège, sur une distance d'environ dix fois sa hauteur, les cultures, les bêtes et le sol qui sèche moins vite."
+- term: Cépée
+  forms: [cépées]
+  definition: "Arbre ou arbuste coupé au ras du sol tous les quelques ans, qui repart en une touffe de tiges depuis sa souche. On en tire du bois, des piquets, des perches, et il reste bien plus bas qu'un arbre libre."
 - term: Courbe de niveau
   forms: [courbes de niveau]
   definition: "Ligne qui relie les points d'un terrain à la même altitude. Une ligne tracée dessus ne monte ni ne descend : l'eau ne peut pas la suivre."
@@ -68,6 +71,9 @@
 - term: Strate
   forms: [strates]
   definition: "Un des étages d'un jardin-forêt : canopée, arbres bas, arbustes, herbacées, couvre-sols, racines, grimpantes. Chaque strate a sa hauteur et sa part de lumière."
+- term: Trogne
+  forms: [trognes]
+  definition: "Arbre dont on coupe régulièrement les branches au sommet d'un tronc court (souvent vers 2 m), pour le fourrage, le bois ou les perches. Son tronc s'épaissit et se creuse, refuge précieux pour la faune ; on dit aussi têtard."
 - term: Trop-plein
   forms: []
   definition: "Sortie prévue pour l'eau quand un ouvrage (mare, baissière, citerne) est plein. Sans lui, l'eau déborde où elle veut et creuse."
