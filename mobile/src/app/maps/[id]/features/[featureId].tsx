@@ -1,10 +1,13 @@
 // One element of the map: what it is, its photos and comments and, for a
-// plant, its planting and follow-up (reprise, vigueur, photo).
+// plant, its planting and follow-up (reprise, vigueur, photo) and, for a
+// fruit tree, its harvest.
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { HarvestSection } from '@/harvest/HarvestSection'
 import { api } from '@/lib/api'
 import { featureTitle, kindLabel, layerLabel, speciesName } from '@/lib/elements'
+import { isHarvestable } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
 import { isVideo } from '@/lib/media'
 import { outbox } from '@/lib/outbox'
@@ -28,7 +31,8 @@ export default function FeatureScreen() {
   const mapId = Number(params.id)
   const featureId = Number(params.featureId)
   const { bundle } = useMapBundle(mapId)
-  const ops = useOutbox().ops.filter((op) => op.mapId === mapId && 'featureId' in op && op.featureId === featureId)
+  const mapOps = useOutbox().ops.filter((op) => op.mapId === mapId)
+  const ops = mapOps.filter((op) => 'featureId' in op && op.featureId === featureId)
   const feature = bundle?.features.find((f) => f.id === featureId)
 
   if (!bundle || !feature) {
@@ -55,6 +59,8 @@ export default function FeatureScreen() {
         {feature.properties.notes ? <Body muted>{feature.properties.notes}</Body> : null}
         {feature.id < 0 && <Notice>{t('mobile.feature.not_sent')}</Notice>}
       </Card>
+
+      {isHarvestable(feature, bundle.planting) && <HarvestSection bundle={bundle} feature={feature} editable={editable} ops={ops} allOps={mapOps} />}
 
       {isPlant && <PlantSection mapId={mapId} feature={feature} editable={editable} ops={ops} />}
 
