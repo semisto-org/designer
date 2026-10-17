@@ -53,9 +53,10 @@ module Maps
       # edit made offline never overwrites what changed on the website since.
       def update_params
         permitted = feature_params
+        # Free keys, like properties: {} above (the jsonb holds any property).
         patch = params.dig(:feature, :properties_patch)
-        return permitted unless patch.respond_to?(:permit!)
-        permitted.merge(properties: (permitted[:properties] || @feature.properties).to_h.merge(patch.permit!.to_h))
+        return permitted unless patch.respond_to?(:to_unsafe_h)
+        permitted.merge(properties: (permitted[:properties] || @feature.properties).to_h.merge(patch.to_unsafe_h))
       end
   end
 end
