@@ -65,11 +65,18 @@ class Maps::PlantPalettesControllerTest < ActionDispatch::IntegrationTest
     id = response.parsed_body["view"]["id"]
     assert_equal "supplier", response.parsed_body["view"]["settings"]["group_by"]
 
-    patch map_plant_palette_view_path(@map, id), params: { view: { name: "Courses de mars", settings: { columns: %w[name to_plant], filters: { to_plant_only: true } } } }, as: :json
+    patch map_plant_palette_view_path(@map, id), params: { view: { name: "Courses de mars", settings: {
+      columns: %w[name to_plant], sort: { key: "to_plant", dir: "desc" },
+      filters: { to_plant_only: true, statuses: %w[planned planting], tag: "Chantier mars" }, unknown: "dropped"
+    } } }, as: :json
     assert_response :success
     view = PlantPaletteView.find(id)
     assert_equal "Courses de mars", view.name
     assert view.settings["filters"]["to_plant_only"]
+    assert_equal %w[planned planting], view.settings["filters"]["statuses"]
+    assert_equal "Chantier mars", view.settings["filters"]["tag"]
+    assert_equal({ "key" => "to_plant", "dir" => "desc" }, view.settings["sort"])
+    assert_not view.settings.key?("unknown")
 
     delete map_plant_palette_view_path(@map, id), as: :json
     assert_response :success

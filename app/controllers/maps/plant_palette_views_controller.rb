@@ -30,6 +30,12 @@ module Maps
       render json: { views: views }
     end
 
+    # The shape PlantPaletteView.clean_settings reads; it still checks every value.
+    SETTINGS_KEYS = [
+      :group_by, { columns: [], sort: %i[key dir],
+                   filters: [ :tag, :untagged, :supplier, :search, :to_plant_only, { statuses: [], strata: [], roles: [] } ] }
+    ].freeze
+
     private
       def set_view
         @view = @map.plant_palette_views.find(params[:id])
@@ -39,7 +45,8 @@ module Maps
 
       def view_params
         attrs = params.require(:view).permit(:name, :position)
-        attrs[:settings] = params[:view][:settings].permit!.to_h if params[:view][:settings].respond_to?(:permit!)
+        settings = params[:view][:settings]
+        attrs[:settings] = settings.permit(*SETTINGS_KEYS).to_h if settings.respond_to?(:permit)
         attrs
       end
   end
