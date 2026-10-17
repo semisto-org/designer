@@ -42,6 +42,8 @@ import StorageSection, { appliesToFruitStore } from '@/map/storage/StorageSectio
 import PatchSection from '@/map/plants/PatchSection'
 import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
+import PlantPeekOverlay from '@/map/plants/PlantPeekOverlay'
+import PlantPhotosSection from '@/map/plants/PlantPhotosSection'
 import { isPatch, isPlant } from '@/map/plants/properties'
 import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
@@ -126,7 +128,8 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'fruit-store', applies: appliesToFruitStore, component: StorageSection, order: 20.5 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
-  { id: 'photos', applies: () => true, component: PhotosInspector, order: 70 },
+  { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
+  { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
@@ -160,6 +163,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'ai-proposals', component: AiProposalsOverlay, order: 40 },
   { id: 'pending-updates', component: PendingUpdatesLayer, order: 41 },
   { id: 'plants', component: PlantsOverlay, order: 20 },
+  { id: 'plant-peek', component: PlantPeekOverlay, order: 42 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },
   { id: 'weather-stations', component: WeatherStationsOverlay, order: 61 },

@@ -21,7 +21,9 @@ export function Inspector({ feature }: { feature: MapFeature }) {
   }, [p.id, p.name, p.notes])
   // A rounded surface is measured as drawn, like the area written on the map.
   const m = measure(displayGeometry(feature))
-  const sections = INSPECTOR_SECTIONS.filter((s) => s.applies(feature)).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
+  const applicable = INSPECTOR_SECTIONS.filter((s) => s.applies(feature)).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
+  const topSections = applicable.filter((s) => s.placement === 'top')
+  const sections = applicable.filter((s) => s.placement !== 'top')
 
   function save(patch: { name?: string; notes?: string }) {
     if (!editor.canEdit) return
@@ -43,6 +45,7 @@ export function Inspector({ feature }: { feature: MapFeature }) {
         </button>
       </div>
       <div className="mt-3 space-y-3">
+        {topSections.map((s) => <s.component key={s.id} feature={feature} />)}
         <Field label={t('editor.inspector.name')}>
           <Input value={name} disabled={!editor.canEdit} onChange={(e) => setName(e.target.value)} onBlur={() => save({ name })} />
         </Field>
