@@ -1,4 +1,4 @@
-/** « Vues drone »: dated aerial views Semisto sets up on a map. */
+/** « Vues drone »: dated aerial views on a map, set up by Semisto or imported from a file. */
 export type AerialViewKind = 'xyz' | 'pmtiles'
 
 /** A view as the map editor receives it (prop `aerialViews` of maps/show, newest first). */
@@ -8,11 +8,25 @@ export type AerialView = {
   /** ISO date of the flight ("2027-05-12"). */
   capturedOn: string
   kind: AerialViewKind
-  /** https only: an XYZ template ({z}/{x}/{y}) or one .pmtiles archive. */
+  /** An XYZ template ({z}/{x}/{y}) or one .pmtiles archive (for an imported view, a path of the app). */
   url: string
   attribution: string | null
   minZoom: number | null
   maxZoom: number | null
+}
+
+export type AerialImportStatus = 'uploading' | 'processing' | 'ready' | 'failed'
+
+/** A view someone imported from a file on the map (prop `aerialImports`, editors only). */
+export type AerialImport = Omit<AerialView, 'url'> & {
+  url: string | null
+  status: AerialImportStatus
+  /** Why it could not be prepared (drone.import.failures.*). */
+  failure: string | null
+  bounds: { west: number; south: number; east: number; north: number } | null
+  filename: string
+  byteSize: number
+  createdBy: string | null
 }
 
 /** Staff screen: a view with where it lives and who added it. */

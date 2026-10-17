@@ -442,6 +442,13 @@ GEM
       fugit (~> 1.11)
       railties (>= 7.1)
       thor (>= 1.3.1)
+    sqlite3 (2.10.0-aarch64-linux-gnu)
+    sqlite3 (2.10.0-aarch64-linux-musl)
+    sqlite3 (2.10.0-arm-linux-gnu)
+    sqlite3 (2.10.0-arm64-darwin)
+    sqlite3 (2.10.0-x86_64-darwin)
+    sqlite3 (2.10.0-x86_64-linux-gnu)
+    sqlite3 (2.10.0-x86_64-linux-musl)
     stripe (20.0.0)
       bigdecimal
       logger
@@ -527,6 +534,7 @@ DEPENDENCIES
   solid_cable
   solid_cache
   solid_queue
+  sqlite3 (~> 2.1)
   stripe (~> 20.0)
   thruster
   tzinfo-data
@@ -705,6 +713,13 @@ CHECKSUMS
   solid_cable (4.1.0) sha256=828e3d509207b82b4f05f4e9c85f696994710679b52d511aa7f97ebd212d3226
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41
   solid_queue (1.7.0) sha256=6566b70b801d1c317c81bba7bcdd5677c019afac584a30374b4164002ca356d3
+  sqlite3 (2.10.0-aarch64-linux-gnu) sha256=dafeea94182af2eb53a10797be359fa6ec4270532bd45255d1c2beb69f2eb743
+  sqlite3 (2.10.0-aarch64-linux-musl) sha256=ec4ffedded0bd8579629e14d0647cfee9092c0af0009c05d6404d90857b1cb8b
+  sqlite3 (2.10.0-arm-linux-gnu) sha256=bcf2e165f27fd28f46ba34eeba3503d557ea7f76f9dd40434ce719f2ba0d5cda
+  sqlite3 (2.10.0-arm64-darwin) sha256=f619f33adfd01a1827e8764a3da92b289c1a99d93707d021a242dccba6909c4e
+  sqlite3 (2.10.0-x86_64-darwin) sha256=67306588548e62095855a511285daf33389d7f4311c1c33a1addd23e2b90cec5
+  sqlite3 (2.10.0-x86_64-linux-gnu) sha256=295f48b240ba663efa2e3b6f38cbc0f19f5c8a2823a71fda3bf15531be5dd0e8
+  sqlite3 (2.10.0-x86_64-linux-musl) sha256=876dd86a15c7828075ff7612e3d0ab0eb2eba0d8485b13fd4000e8a335f86bc5
   stripe (20.0.0) sha256=00059df3a845418dc4e73e52f7d98f5803ed5810242dbe9d440f6da528311e7d
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
   thruster (0.1.26) sha256=6e45e807086b29d51404841bd1ad493b67cd95892fd65dc5afcdd32e82e94ce8

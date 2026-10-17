@@ -73,7 +73,8 @@ class MapElementsTest < ActiveSupport::TestCase
   test "properties are checked against the kind's fields" do
     assert_not feature(properties: { "depth_m" => 12 }).valid?
     assert_not feature(properties: { "depth_m" => "deep" }).valid?
-    assert_not feature(properties: { "liner" => "concrete" }).valid?
+    assert_not feature(properties: { "liner" => "plastic" }).valid?
+    assert feature(properties: { "liner" => "concrete" }).valid?
     assert feature(properties: { "liner" => "epdm", "depth_m" => 0.8, "free_note" => "kept" }).valid?
     assert feature(properties: { "depth_m" => nil }).valid?
 

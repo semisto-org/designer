@@ -32,3 +32,5 @@
 - name: mes-cartes
   path: /maps
   selector: main
+- name: panneau-recoltes
+  panel: harvests

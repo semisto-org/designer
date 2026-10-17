@@ -6,9 +6,10 @@ import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
 import { strataKey } from '@/map/drawing/hidden'
 import { drawingStore, useDrawingState } from '@/map/drawing/store'
+import { setBaseFilter } from '@/map/drawing/style'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
-import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
+import { isPatch, isPlant, numberProperty, trainedCrown, trainingProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
 import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
@@ -92,7 +93,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     }
     if (!strata || !species) continue
     points.set(feature.properties.id, STRATA_COLORS[strata])
-    const radiusM = Math.max(species.crownM / 2, 0.15)
+    const radiusM = Math.max(trainedCrown(species.crownM, trainingProperty(feature), strata) / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
     crowns.push({
       ...polygon,
@@ -124,7 +125,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   ensureLabelBackground(map)
   colorPoints(map, data.points)
   // Plants are named here, by crown size: not a second time by the features layer.
-  if (map.getLayer('features-label')) map.setFilter('features-label', featureLabelFilter({ withPlants: false }) as never)
+  setBaseFilter(map, 'features-label', featureLabelFilter({ withPlants: false }))
   const crowns = map.getSource(CROWNS) as GeoJSONSource | undefined
   if (crowns) {
     crowns.setData(data.crowns)

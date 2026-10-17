@@ -6,6 +6,8 @@ import { formatArea, formatLength, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { measure } from '@/map/editor/measure'
 import { INSPECTOR_SECTIONS } from '@/map/panels'
+import PlantHeading from '@/map/plants/PlantHeading'
+import { isPlant } from '@/map/plants/properties'
 import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
@@ -21,7 +23,9 @@ export function Inspector({ feature }: { feature: MapFeature }) {
   }, [p.id, p.name, p.notes])
   // A rounded surface is measured as drawn, like the area written on the map.
   const m = measure(displayGeometry(feature))
-  const sections = INSPECTOR_SECTIONS.filter((s) => s.applies(feature)).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
+  const applicable = INSPECTOR_SECTIONS.filter((s) => s.applies(feature)).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
+  const topSections = applicable.filter((s) => s.placement === 'top')
+  const sections = applicable.filter((s) => s.placement !== 'top')
 
   function save(patch: { name?: string; notes?: string }) {
     if (!editor.canEdit) return
@@ -33,9 +37,12 @@ export function Inspector({ feature }: { feature: MapFeature }) {
     <aside className="absolute inset-x-2 bottom-14 z-20 max-h-[60%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs uppercase tracking-wide text-loam-400">
-            {t(`editor.layers.${p.layer}`)} · {t(`editor.kinds.${p.kind}`)}
-          </p>
+          {/* A plant is named by its number and species, not « Plantes · Plante ». */}
+          {isPlant(feature) ? <PlantHeading feature={feature} /> : (
+            <p className="text-xs uppercase tracking-wide text-loam-400">
+              {t(`editor.layers.${p.layer}`)} · {t(`editor.kinds.${p.kind}`)}
+            </p>
+          )}
           {p.status === 'draft' && <p className="mt-1 text-xs text-humus-700">{t('editor.draft_hint')}</p>}
         </div>
         <button type="button" onClick={() => editor.select(null)} className="rounded p-1 text-loam-400 hover:bg-loam-100" aria-label={t('common.close')}>
@@ -43,6 +50,7 @@ export function Inspector({ feature }: { feature: MapFeature }) {
         </button>
       </div>
       <div className="mt-3 space-y-3">
+        {topSections.map((s) => <s.component key={s.id} feature={feature} />)}
         <Field label={t('editor.inspector.name')}>
           <Input value={name} disabled={!editor.canEdit} onChange={(e) => setName(e.target.value)} onBlur={() => save({ name })} />
         </Field>

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ensureLabelBackground, LABEL_IMAGE, labelBackground, markerLabel } from '../../../app/frontend/map/layers/labels.ts'
+import { ensureLabelBackground, LABEL_IMAGE, labelBackground, markerLabel, PAPER_LABEL_IMAGE, PAPER_LABEL_OPACITY } from '../../../app/frontend/map/layers/labels.ts'
 
 test('marker labels are white text on the stretchable background', () => {
   const { layout, paint } = markerLabel(['get', 'name'])
@@ -38,9 +38,31 @@ test('the background image is added once and comes back after a style swap', () 
   }
   ensureLabelBackground(map as never)
   ensureLabelBackground(map as never)
-  assert.equal(images.size, 1)
+  assert.equal(images.size, 2)
   assert.equal(listeners.length, 1)
   images.clear()
   listeners[0]({ id: LABEL_IMAGE })
   assert.ok(images.has(LABEL_IMAGE))
+})
+
+test('zone names get a paper background, beige clair at 90 % opacity', () => {
+  const image = labelBackground([0xf7, 0xf3, 0xea], PAPER_LABEL_OPACITY)
+  const middle = Math.floor(image.width / 2)
+  const i = (middle * image.width + middle) * 4
+  assert.deepEqual(Array.from(image.data.slice(i, i + 4)), [0xf7, 0xf3, 0xea, Math.round(255 * 0.9)])
+})
+
+test('both backgrounds are registered and each comes back after a style swap', () => {
+  const images = new Map<string, unknown>()
+  const listeners: Array<(e: { id: string }) => void> = []
+  const map = {
+    hasImage: (id: string) => images.has(id),
+    addImage: (id: string, image: unknown) => { images.set(id, image) },
+    on: (_type: string, listener: (e: { id: string }) => void) => { listeners.push(listener) },
+  }
+  ensureLabelBackground(map as never)
+  assert.deepEqual([...images.keys()].sort(), [LABEL_IMAGE, PAPER_LABEL_IMAGE].sort())
+  images.clear()
+  listeners[0]({ id: PAPER_LABEL_IMAGE })
+  assert.deepEqual([...images.keys()], [PAPER_LABEL_IMAGE])
 })

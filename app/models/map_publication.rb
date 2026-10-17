@@ -82,7 +82,7 @@ class MapPublication < ApplicationRecord
   # owner still shows it.
   def aerial_view
     id = snapshot["aerial_view_id"]
-    id && options["show_aerial_view"] ? map.aerial_views.find_by(id:) : nil
+    id && options["show_aerial_view"] ? map.aerial_views.ready.find_by(id:) : nil
   end
 
   def public_path = "/p/#{token}"
@@ -107,7 +107,7 @@ class MapPublication < ApplicationRecord
       },
       features: { type: "FeatureCollection", features: features },
       layers: region_layers.map { |layer| public_layer(layer) },
-      aerialView: aerial_view&.as_inertia
+      aerialView: aerial_view&.as_inertia(archive_url: "#{public_path}/aerial-view")
     }
   end
 

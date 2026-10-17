@@ -15,7 +15,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client libgeos-c1v5 ghostscript ffmpeg && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client libgeos-c1v5 ghostscript ffmpeg gdal-bin && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
@@ -25,6 +25,12 @@ ENV RAILS_ENV="production" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so"
+
+# go-pmtiles (BSD-3-Clause) packs imported drone views into one PMTiles
+# archive (AerialViews::Tiler). Built from its tagged module, which Go's
+# checksum database verifies; static, so it runs on the base image as is.
+FROM docker.io/library/golang:1.25-bookworm AS pmtiles
+RUN CGO_ENABLED=0 GOBIN=/out go install -ldflags="-s -w" github.com/protomaps/go-pmtiles@v1.31.2
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
@@ -81,6 +87,7 @@ USER 1000:1000
 # Copy built artifacts: gems, application
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
+COPY --from=pmtiles /out/go-pmtiles /usr/local/bin/pmtiles
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]

@@ -6,12 +6,14 @@ import { formatDate, formatDecimal, strataLabel, todayIso } from '@/components/p
 import { t } from '@/lib/i18n'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { useEditor } from '@/map/editor/EditorContext'
-import { numberProperty, ownProperties } from '@/map/plants/properties'
+import { numberProperty, ownProperties, TRAINABLE_STRATA, trainedCrown, trainingProperty } from '@/map/plants/properties'
 import { usePlanting } from '@/map/plants/store'
 import { StrataDot } from '@/map/plants/strata'
 import type { MapFeature } from '@/types'
 
-/** Inspector section of a plant: its species (from the palette), crown and planting date. */
+const TRAININGS = ['free', 'pollard', 'coppice'] as const
+
+/** Inspector section of a plant: its species (from the palette), crown, training and planting date. */
 export default function PlantSection({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
   const { data } = usePlanting(editor.map.id)
@@ -24,6 +26,9 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
   const variety = varietyId != null ? data?.varieties[String(varietyId)] : undefined
   const palette = data?.palette ?? []
   const current = palette.find((i) => i.speciesId === speciesId && i.varietyId === varietyId)
+  const strata = current?.effectiveStrata ?? species?.strata
+  const training = trainingProperty(feature)
+  const trainable = strata != null && TRAINABLE_STRATA.includes(strata)
 
   async function save(patch: Record<string, unknown>) {
     const properties = { ...ownProperties(feature), ...patch }
@@ -52,7 +57,8 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
             </p>
             <p className="text-xs italic text-loam-500">{variety?.latinName ?? species.latinName}</p>
             <p className="mt-1 text-xs text-loam-600">
-              {strataLabel(current?.effectiveStrata ?? species.strata)} · {t('plant_feature.crown', { value: formatDecimal(species.crownM) })}
+              {strataLabel(current?.effectiveStrata ?? species.strata)} · {t('plant_feature.crown', { value: formatDecimal(trainedCrown(species.crownM, training, strata)) })}
+              {training !== 'free' && trainable && <span> ({t(`plant_feature.crown_${training}`)})</span>}
               {species.crownIndicative && <span className="text-loam-400"> ({t('plant_feature.crown_indicative')})</span>}
             </p>
           </div>
@@ -99,6 +105,16 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
           </Field>
         )
       )}
+
+      {trainable && (editor.canEdit ? (
+        <Field label={t('plant_feature.training')} hint={t('plant_feature.training_hint')}>
+          <Select value={training} onChange={(e) => void save({ training: e.target.value === 'free' ? null : e.target.value })}>
+            {TRAININGS.map((value) => <option key={value} value={value}>{t(`plant_feature.trainings.${value}`)}</option>)}
+          </Select>
+        </Field>
+      ) : training !== 'free' ? (
+        <p className="text-loam-600">{t('plant_feature.training')} : <span className="font-medium text-loam-900">{t(`plant_feature.trainings.${training}`)}</span></p>
+      ) : null)}
 
       {plantedOn ? (
         <div className="flex items-center justify-between gap-2 rounded-lg bg-leaf-50 p-2 text-xs text-leaf-800">

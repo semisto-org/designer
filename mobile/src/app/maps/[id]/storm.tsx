@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { t } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
 import { styleUrl } from '@/lib/maps'
+import { display, useDisplay } from '@/lib/display'
 import { outbox } from '@/lib/outbox'
 import { markGeometry, RAINS, stormProperties, thinStroke, type Rain, type StormMark, type StormWater } from '@/lib/storm'
 import type { Position } from '@/lib/types'
@@ -32,6 +33,7 @@ type Pixel = { x: number; y: number }
 export default function StormScreen() {
   const mapId = Number(useLocalSearchParams<{ id: string }>().id)
   const { bundle } = useMapBundle(mapId)
+  const shown = useDisplay(mapId)
   const insets = useSafeAreaInsets()
   const mapRef = useRef<MapRef>(null)
   const [observedAt] = useState(() => new Date().toISOString())
@@ -105,6 +107,7 @@ export default function StormScreen() {
       const geometry = markGeometry(mark)
       return geometry ? [outbox.addFeature(mapId, { layer: 'water', kind: 'storm_observation', notes: notes.trim() || null, properties, geometry })] : []
     })
+    if (ids.length) display.reveal(mapId, { layer: 'water', kind: 'storm_observation' }, undefined)
     for (const item of media) {
       outbox.add({
         type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt,
@@ -146,7 +149,7 @@ export default function StormScreen() {
     <View style={s.fill}>
       <Map ref={mapRef} style={s.fill} mapStyle={styleUrl(mapId)} logo={false} attributionPosition={{ bottom: 8, left: 8 }}>
         <Camera initialViewState={bbox ? { bounds: bbox, padding: { top: 120, bottom: 260, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }} />
-        <FeatureLayers bundle={bundle} selectedId={null} onSelect={() => {}} />
+        <FeatureLayers bundle={bundle} display={shown} selectedId={null} onSelect={() => {}} />
         <GeoJSONSource id="storm-marks" data={drawn}>
           <Layer id="storm-fill" type="fill" filter={['==', ['geometry-type'], 'Polygon']} paint={{ 'fill-color': WATER, 'fill-opacity': 0.3 }} />
           <Layer id="storm-casing" type="line" filter={['!=', ['geometry-type'], 'Point']} paint={{ 'line-color': '#ffffff', 'line-width': 7 }} />

@@ -14,6 +14,31 @@ fr:
       release_notes: "Nouveautés"
       help: "Aide"
       tech: "Tech"
+      catalogue: "Catalogue"
+    catalogue:
+      title: "Catalogue"
+      intro: "Les suggestions de plantes ne valent que ce que valent les fiches. Ici, champ par champ, ce qui est vérifié sur une source, ce qui reste à vérifier et ce qui manque, parmi les espèces relues et parmi celles que les gens mettent vraiment dans leurs palettes."
+      total:
+        one: "%{count} espèce relue"
+        other: "%{count} espèces relues"
+      used_total:
+        one: "dont %{count} dans au moins une palette"
+        other: "dont %{count} dans au moins une palette"
+      field: "Champ"
+      sourced: "Vérifié"
+      to_verify: "À vérifier"
+      empty: "Vide"
+      used_filled: "Rempli dans les palettes"
+      used_filled_short: "Dans les palettes"
+      decides_fit: "juge les suggestions"
+      decides_fit_help: "Ce champ décide si une plante convient au terrain : chaque fiche où il manque montre « ? » au lieu d'un verdict."
+      to_complete_title: "Fiches à compléter d'abord"
+      to_complete_intro: "Les espèces les plus utilisées dans les palettes à qui il manque un champ qui juge les suggestions."
+      to_complete_empty: "Aucune espèce des palettes ne manque d'un champ qui juge les suggestions."
+      maps:
+        one: "%{count} palette"
+        other: "%{count} palettes"
+      missing: "Manque : %{fields}"
     tech:
       title: "Tech"
       console:

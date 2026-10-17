@@ -6,38 +6,76 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { DESIGN_LAYERS, featureColor, layerColor } from '@/map/drawing/catalog'
 import { isPlantLike, strataKey, UNKNOWN_STRATA } from '@/map/drawing/hidden'
-import { setHiddenKinds, setHiddenLayers, setHiddenStrata, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
+import { setHiddenKinds, setHiddenLayers, setHiddenSoil, setHiddenStrata, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
 import { LAYER_COLORS } from '@/map/layers/features'
 import { photoActions, usePhotos } from '@/map/photos/store'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata, STRATA_COLORS } from '@/map/plants/strata'
+import { soilActions, useSoil } from '@/map/soil/store'
+import { SOIL_MARKERS, type SoilMarker } from '@/map/soil/visibility'
 import { STRATA } from '@/types/plants'
 import type { MapFeature } from '@/types'
+
+/** The colours of the soil markers on the map (see map/soil/layers). */
+const SOIL_COLORS: Record<SoilMarker, string> = { bioindicators: '#d9a527', samples: '#3d7d42' }
 
 /** One line under a layer: a kind of element, or (plants) a strata. */
 type Part = { key: string; label: string; color: string; count: number; hidden: boolean; toggle: () => void }
 
 /**
  * "Calques": show or hide each design layer, and inside it each kind of
- * element (plants: each strata), and the photos, for this viewer only.
+ * element (plants: each strata; what exists: also the bio-indicator plants
+ * and soil sampling points), and the photos, for this viewer only.
  */
 export default function LayersPanel() {
   const editor = useEditor()
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenKinds = useDrawingState((s) => s.hiddenKinds)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
+  const hiddenSoil = useDrawingState((s) => s.hiddenSoil)
+  const soil = useSoil()
   const { data: planting } = usePlanting(editor.map.id)
   const photos = usePhotos()
   const placedPhotos = photos.photos.filter((p) => p.lng != null && p.lat != null).length
   // Layers with something hidden inside open first: it must be easy to find again.
   const [opened, setOpened] = useState<string[]>(() => [...new Set([
     ...(hiddenStrata.length ? ['plants'] : []),
+    ...(hiddenSoil.length ? ['existing'] : []),
     ...editor.features.filter((f) => f.properties.kind && hiddenKinds.includes(f.properties.kind)).map((f) => f.properties.layer as string),
   ])])
 
   const drawn = editor.features.filter((f) => f.properties.status !== 'rejected')
   const counts = new Map<string, number>()
   drawn.forEach((f) => counts.set(f.properties.layer, (counts.get(f.properties.layer) ?? 0) + 1))
+  // Bio-indicator plants and sampling points are drawn by the « Sol » module, as part of what exists.
+  const soilCounts: Record<SoilMarker, number> = {
+    bioindicators: soil.observations.filter((o) => o.status !== 'draft' && o.lng != null && o.lat != null).length,
+    samples: soil.samples.filter((s) => s.lng != null && s.lat != null).length,
+  }
+  counts.set('existing', (counts.get('existing') ?? 0) + soilCounts.bioindicators + soilCounts.samples)
+
+  function soilParts(): Part[] {
+    return SOIL_MARKERS.filter((marker) => soilCounts[marker] > 0).map((marker) => {
+      const shown = soil.showOnMap && !hiddenSoil.includes(marker)
+      return {
+        key: `soil:${marker}`,
+        label: t(`drawing.layers_panel.soil.${marker}`),
+        color: SOIL_COLORS[marker],
+        count: soilCounts[marker],
+        hidden: !shown,
+        toggle: () => {
+          if (shown) return setHiddenSoil([...hiddenSoil, marker])
+          // The « Sol » switch was off: turn it back on for this marker only.
+          if (!soil.showOnMap) {
+            soilActions.setShowOnMap(true)
+            setHiddenSoil(SOIL_MARKERS.filter((m) => m !== marker))
+          } else {
+            setHiddenSoil(hiddenSoil.filter((m) => m !== marker))
+          }
+        },
+      }
+    })
+  }
 
   function partsOf(layer: string): Part[] {
     const inLayer = drawn.filter((f) => f.properties.layer === layer)
@@ -78,10 +116,12 @@ export default function LayersPanel() {
         toggle: () => setHiddenKinds(toggled(hiddenKinds, kind)),
       })
     }
+    if (layer === 'existing') parts.push(...soilParts())
     return parts
   }
 
-  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap
+  const soilHidden = (soilCounts.bioindicators > 0 || soilCounts.samples > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
+  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden
 
   return (
     <div className="space-y-3">
@@ -149,7 +189,7 @@ export default function LayersPanel() {
         </li>
       </ul>
       {somethingHidden && (
-        <button type="button" onClick={() => { showEverything(); photoActions.setShowOnMap(true) }} className="text-sm font-medium text-prune-700 hover:underline">
+        <button type="button" onClick={() => { showEverything(); photoActions.setShowOnMap(true); soilActions.setShowOnMap(true) }} className="text-sm font-medium text-prune-700 hover:underline">
           {t('drawing.layers_panel.show_all')}
         </button>
       )}

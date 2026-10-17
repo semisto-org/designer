@@ -43,6 +43,8 @@ export type InspectorSection = {
   applies: (feature: MapFeature) => boolean
   component: ComponentType<{ feature: MapFeature }>
   order?: number
+  /** `top`: above the name and notes (a plant's photos). */
+  placement?: 'top'
 }
 
 /**

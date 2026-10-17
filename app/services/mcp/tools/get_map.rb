@@ -39,6 +39,7 @@ module Mcp
           },
           documents: map.documents.count,
           photos: map.photos.count,
+          offer: offer(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -63,6 +64,43 @@ module Mcp
 
       private
         MAX_BIOINDICATORS = 100
+
+        # The offer's versions and the budget of the last accepted one, for
+        # the team that priced it (never a viewer: the client may be one).
+        # Semisto's internal app reads it to set a design project's planned
+        # budget against the hours worked. HTVA is what VAT leaves of each
+        # part at its own rate (services, plants, supplies).
+        def offer(map)
+          return nil unless editor? && Offer.shown_to?(map, user)
+          offer = map.offer or return nil
+          versions = offer.versions.to_a
+          accepted = versions.select { _1.status == "accepted" }.max_by(&:number)
+          {
+            url: "#{map_url(map)}/offer",
+            versions: versions.map { { number: _1.number, label: _1.label, status: _1.status, saved_at: _1.created_at.iso8601 } },
+            accepted: accepted && offer_budget(accepted)
+          }
+        end
+
+        def offer_budget(version)
+          totals = version.result["totals"] || {}
+          plants = version.result["plants"] || {}
+          settings = version.inputs["settings"] || {}
+          htva = ->(tvac, kind) { tvac.to_f / (1 + settings.fetch("vat_#{kind}_pct", 0).to_f / 100) }
+          services_htva = htva.(totals["services_price_tvac"], :services)
+          plants_htva = htva.(plants["plants_base_tvac"], :plants) + htva.(plants["supplies_base_tvac"], :supplies)
+          phases = version.result["phases"] || []
+          {
+            number: version.number, label: version.label, note: version.note, pricing_name: version.pricing_name,
+            accepted_at: version.updated_at.iso8601,
+            total_tvac: totals["total_tvac"], total_htva: (services_htva + plants_htva).round(2),
+            services_tvac: totals["services_price_tvac"], services_htva: services_htva.round(2),
+            plants_supplies_tvac: totals["plants_supplies_base_tvac"], plants_supplies_htva: plants_htva.round(2),
+            design_tvac: totals["design_tvac"], implementation_tvac: totals["implementation_tvac"],
+            hours_min: phases.sum { _1["hours_min"].to_f }.round(1), hours_max: phases.sum { _1["hours_max"].to_f }.round(1),
+            phases: phases.map { { key: _1["key"], price_tvac: _1["price_tvac"], hours_min: _1["hours_min"], hours_max: _1["hours_max"] } }
+          }
+        end
 
         # Wild plants noted on the terrain (by hand, from a photo identified by
         # Pl@ntNet, or accepted from an AI's proposal), what the curated list

@@ -7,8 +7,16 @@ module Catalog
   # contributors and comments are never read. Each imported value carries
   # the provenance « terranova », status « to_verify ».
   #
-  # Upsert by `terranova_id`, else by latin name. A value someone marked
-  # « sourced » from another source is never overwritten (SpeciesWriter).
+  # Only the species of the chosen baskets come in (TerranovaTriage; basket A
+  # by default), most used first. A species the Designer did not know arrives
+  # « proposed »: it joins the shared catalogue only once a reviewer accepted
+  # it (CatalogueReviewsController), in that order.
+  #
+  # Upsert by `terranova_id`, else by latin name. A value the Designer already
+  # holds from another source is kept, and listed as a conflict when
+  # Terranova disagrees; a blank is filled (SpeciesWriter, keep_others).
+  # Genera come from the species' names, never from Terranova's genus links,
+  # some of which point at the wrong genus.
   #
   # Field mapping logic ported from Terranova (Plant::Knowledge: on a row
   # nobody assessed, a column default means « unknown », not a fact).
@@ -30,27 +38,33 @@ module Catalog
 
     SHORT_TEXT = 60
 
-    Result = Struct.new(:genera, :species_created, :species_updated, :varieties, :skipped, :errors, keyword_init: true) do
+    Result = Struct.new(:genera, :species_created, :species_updated, :varieties, :skipped, :left_out, :conflicts, :errors, keyword_init: true) do
       def to_s
-        "genera #{genera}, species #{species_created} created / #{species_updated} updated, " \
-          "varieties #{varieties}, skipped #{skipped}, errors #{errors.size}"
+        "genera #{genera}, species #{species_created} created (to review) / #{species_updated} updated, " \
+          "varieties #{varieties}, left out #{left_out.map { "#{_1} #{_2}" }.join(', ').presence || 0}, " \
+          "skipped #{skipped}, conflicts #{conflicts.size}, errors #{errors.size}"
       end
     end
 
-    attr_reader :provider, :result
+    attr_reader :provider, :baskets, :result
 
-    def initialize(provider: Providers::Terranova.new)
+    def initialize(provider: Providers::Terranova.new, baskets: %w[A])
       @provider = provider
-      @writer = SpeciesWriter.new(source: SOURCE, status: "to_verify")
+      @baskets = baskets
+      @writer = SpeciesWriter.new(source: SOURCE, status: "to_verify", keep_others: true)
       @genera = {}
       @species = {}
-      @result = Result.new(genera: 0, species_created: 0, species_updated: 0, varieties: 0, skipped: 0, errors: [])
+      @result = Result.new(genera: 0, species_created: 0, species_updated: 0, varieties: 0, skipped: 0,
+                           left_out: Hash.new(0), conflicts: [], errors: [])
     end
 
     def call
       raise Providers::Terranova::Unavailable, "TERRANOVA_API_TOKEN is not set" unless provider.configured?
-      provider.each_genus { |row| guard(row) { import_genus(row) } }
-      provider.each_species { |row| guard(row) { import_species(row) } }
+      @genus_rows = provider.each_genus.to_a.index_by { _1["latin_name"].to_s.squish.downcase }
+      TerranovaTriage.new(provider.each_species.to_a).entries.each do |entry|
+        next result.left_out[entry.basket] += 1 unless baskets.include?(entry.basket)
+        guard(entry.row) { import_species(entry) }
+      end
       provider.each_variety { |row| guard(row) { import_variety(row) } }
       result
     end
@@ -157,29 +171,32 @@ module Catalog
         result.errors << "#{row['latin_name'] || row['id']}: #{e.message}"
       end
 
-      def import_genus(row)
-        latin = row["latin_name"].to_s.squish.split.first
-        return result.skipped += 1 if latin.blank?
-        genus = PlantGenus.find_by(terranova_id: row["id"]) || PlantGenus.where("lower(latin_name) = ?", latin.downcase).first ||
-                PlantGenus.new(latin_name: latin)
-        genus.terranova_id ||= row["id"]
-        @writer.write(genus, { "common_name" => self.class.short(row["common_name"]) })
-        @genera[row["id"]] = genus
-        result.genera += 1
+      # The genus of a species' name, with Terranova's French name for it.
+      def genus_for(latin)
+        genus = PlantGenus.for_latin_name(latin) or return nil
+        @genera[genus.id] ||= begin
+          row = @genus_rows[genus.latin_name.downcase]
+          if row
+            genus.terranova_id ||= row["id"] unless PlantGenus.where.not(id: genus.id).exists?(terranova_id: row["id"])
+            @writer.write(genus, { "common_name" => self.class.short(row["common_name"]) })
+          end
+          result.genera += 1
+          genus
+        end
       end
 
-      def import_species(row)
-        latin = row["latin_name"].to_s.squish
-        return result.skipped += 1 if latin.blank?
+      def import_species(entry)
+        row, latin = entry.row, entry.latin_name
         species = PlantSpecies.find_by(terranova_id: row["id"]) || PlantSpecies.find_by_latin_name(latin) ||
-                  PlantSpecies.new(latin_name: latin)
+                  PlantSpecies.new(latin_name: latin, review_status: "proposed")
         return result.skipped += 1 if species.terranova_id.present? && species.terranova_id != row["id"]
         created = species.new_record?
         PlantSpecies.transaction do
           species.terranova_id = row["id"]
-          species.genus ||= @genera[row["genus_id"]] || PlantGenus.for_latin_name(latin)
+          species.genus ||= genus_for(latin)
           @writer.write(species, self.class.species_attributes(row), common_names: self.class.common_names(row["common_names_fr"]))
         end
+        result.conflicts.concat(entry.conflicts.map { |field, ours, theirs| [ latin, field, ours, theirs ] })
         @species[row["id"]] = species
         created ? result.species_created += 1 : result.species_updated += 1
       end

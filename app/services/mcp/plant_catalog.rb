@@ -3,9 +3,14 @@ module Mcp
   # values as the species sheet, each with its per-field provenance.
   module PlantCatalog
     # `user`: the species proposed but not yet reviewed are only theirs.
-    def self.search(query, limit:, user: nil)
-      PlantSpecies.matching(query).where(id: PlantSpecies.visible_to(user).select(:id))
-                  .includes(:common_names).limit(limit).map(&:summary_json)
+    # `site` (PlantFit::Site): each result also says how it fits that map.
+    def self.search(query, limit:, user: nil, site: nil)
+      species = PlantSpecies.matching(query).where(id: PlantSpecies.visible_to(user).select(:id))
+                            .includes(:common_names, *(site ? [ :field_sources ] : [])).limit(limit)
+      species.map do |s|
+        next s.summary_json unless site
+        s.summary_json.merge(fit: site.fit(s).as_json, excludedBy: site.excluded_by(s))
+      end
     end
 
     def self.find(id, user: nil)

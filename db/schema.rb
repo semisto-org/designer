@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_193000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -64,7 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.string "name", null: false
     t.date "captured_on", null: false
     t.string "kind", null: false
-    t.string "url", limit: 2048, null: false
+    t.string "url", limit: 2048
     t.string "attribution"
     t.integer "min_zoom"
     t.integer "max_zoom"
@@ -72,9 +72,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "ready", null: false
+    t.string "failure"
+    t.string "source_filename"
+    t.bigint "source_byte_size"
+    t.jsonb "bounds"
+    t.bigint "source_upload_id"
     t.index ["created_by_id"], name: "index_aerial_views_on_created_by_id"
     t.index ["map_id", "captured_on"], name: "index_aerial_views_on_map_id_and_captured_on"
     t.index ["plan_purchase_id"], name: "index_aerial_views_on_plan_purchase_id"
+    t.index ["source_upload_id"], name: "index_aerial_views_on_source_upload_id"
   end
 
   create_table "ai_actions", force: :cascade do |t|
@@ -806,6 +813,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.string "status", default: "active", null: false
     t.string "source", default: "human", null: false
     t.text "rationale"
+    t.decimal "unit_price", precision: 10, scale: 2
+    t.string "supplier"
+    t.string "size"
     t.index ["created_by_id"], name: "index_palette_items_on_created_by_id"
     t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "(variety_id IS NULL)"
     t.index ["map_id", "variety_id"], name: "index_palette_items_unique_variety", unique: true, where: "(variety_id IS NOT NULL)"
@@ -987,6 +997,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.index ["terranova_id"], name: "index_plant_genera_on_terranova_id", unique: true
   end
 
+  create_table "plant_harvests", force: :cascade do |t|
+    t.bigint "map_feature_id", null: false
+    t.bigint "map_id", null: false
+    t.bigint "species_id"
+    t.bigint "variety_id"
+    t.bigint "user_id"
+    t.date "noted_on", null: false
+    t.string "stage", null: false
+    t.string "amount"
+    t.decimal "quantity_kg", precision: 8, scale: 1
+    t.string "uses", default: [], null: false, array: true
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_feature_id", "noted_on"], name: "index_plant_harvests_on_map_feature_id_and_noted_on"
+    t.index ["map_feature_id"], name: "index_plant_harvests_on_map_feature_id"
+    t.index ["map_id", "noted_on"], name: "index_plant_harvests_on_map_id_and_noted_on"
+    t.index ["map_id"], name: "index_plant_harvests_on_map_id"
+    t.index ["species_id"], name: "index_plant_harvests_on_species_id"
+    t.index ["user_id"], name: "index_plant_harvests_on_user_id"
+    t.index ["variety_id"], name: "index_plant_harvests_on_variety_id"
+  end
+
   create_table "plant_observations", force: :cascade do |t|
     t.bigint "map_feature_id", null: false
     t.bigint "map_id", null: false
@@ -1005,6 +1038,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.index ["species_id"], name: "index_plant_observations_on_species_id"
     t.index ["user_id"], name: "index_plant_observations_on_user_id"
     t.index ["variety_id"], name: "index_plant_observations_on_variety_id"
+  end
+
+  create_table "plant_palette_views", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.jsonb "settings", default: {}, null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_plant_palette_views_on_created_by_id"
+    t.index ["map_id"], name: "index_plant_palette_views_on_map_id"
   end
 
   create_table "plant_photos", force: :cascade do |t|
@@ -1097,6 +1142,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.integer "terranova_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "uses", default: [], null: false, array: true
+    t.integer "picking_month"
+    t.integer "eating_from_month"
+    t.integer "eating_until_month"
     t.index ["species_id"], name: "index_plant_varieties_on_species_id"
     t.index ["terranova_id"], name: "index_plant_varieties_on_terranova_id", unique: true
   end
@@ -1296,6 +1345,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.index ["map_id"], name: "index_soil_samples_on_map_id"
   end
 
+  create_table "storage_readings", force: :cascade do |t|
+    t.bigint "map_feature_id", null: false
+    t.bigint "map_id", null: false
+    t.bigint "user_id"
+    t.date "measured_on", null: false
+    t.decimal "temperature_c", precision: 4, scale: 1
+    t.decimal "temperature_min_c", precision: 4, scale: 1
+    t.decimal "temperature_max_c", precision: 4, scale: 1
+    t.integer "humidity_pct"
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_feature_id", "measured_on"], name: "index_storage_readings_on_map_feature_id_and_measured_on"
+    t.index ["map_feature_id"], name: "index_storage_readings_on_map_feature_id"
+    t.index ["map_id", "measured_on"], name: "index_storage_readings_on_map_id_and_measured_on"
+    t.index ["map_id"], name: "index_storage_readings_on_map_id"
+    t.index ["user_id"], name: "index_storage_readings_on_user_id"
+  end
+
   create_table "stripe_events", force: :cascade do |t|
     t.string "stripe_event_id", null: false
     t.string "event_type", null: false
@@ -1377,7 +1445,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
-    t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying, 'professional'::character varying]::text[])", name: "users_account_kind_check"
+    t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying::text, 'professional'::character varying::text])", name: "users_account_kind_check"
   end
 
   create_table "water_sources", force: :cascade do |t|
@@ -1397,6 +1465,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
   add_foreign_key "admin_events", "users", column: "admin_id", on_delete: :nullify
   add_foreign_key "admin_events", "users", column: "target_user_id", on_delete: :nullify
   add_foreign_key "aerial_views", "maps"
+  add_foreign_key "aerial_views", "mcp_uploads", column: "source_upload_id", on_delete: :nullify
   add_foreign_key "aerial_views", "plan_purchases", on_delete: :nullify
   add_foreign_key "aerial_views", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "ai_actions", "maps", on_delete: :cascade
@@ -1507,11 +1576,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
   add_foreign_key "plan_images", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plan_purchases", "users"
   add_foreign_key "plan_subscriptions", "users"
+  add_foreign_key "plant_harvests", "map_features", on_delete: :cascade
+  add_foreign_key "plant_harvests", "maps", on_delete: :cascade
+  add_foreign_key "plant_harvests", "plant_species", column: "species_id", on_delete: :nullify
+  add_foreign_key "plant_harvests", "plant_varieties", column: "variety_id", on_delete: :nullify
+  add_foreign_key "plant_harvests", "users", on_delete: :nullify
   add_foreign_key "plant_observations", "map_features", on_delete: :cascade
   add_foreign_key "plant_observations", "maps", on_delete: :cascade
   add_foreign_key "plant_observations", "plant_species", column: "species_id", on_delete: :nullify
   add_foreign_key "plant_observations", "plant_varieties", column: "variety_id", on_delete: :nullify
   add_foreign_key "plant_observations", "users", on_delete: :nullify
+  add_foreign_key "plant_palette_views", "maps", on_delete: :cascade
+  add_foreign_key "plant_palette_views", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plant_photos", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "plant_species", "maps", column: "proposed_map_id", on_delete: :nullify
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
@@ -1537,6 +1613,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_103000) do
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
   add_foreign_key "soil_samples", "maps"
   add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "storage_readings", "map_features", on_delete: :cascade
+  add_foreign_key "storage_readings", "maps", on_delete: :cascade
+  add_foreign_key "storage_readings", "users", on_delete: :nullify
   add_foreign_key "task_lists", "maps", on_delete: :cascade
   add_foreign_key "task_lists", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "tasks", "maps", on_delete: :cascade
