@@ -126,10 +126,10 @@ function PlantCard({ feature, onOpen, onClose, mobile }: { feature: MapFeature; 
   const number = numberProperty(feature, 'number')
   const plantedOn = typeof feature.properties.planted_on === 'string' ? feature.properties.planted_on : null
   const plantedYear = plantedOn ? Number(plantedOn.slice(0, 4)) : null
-  const age = plantedYear != null ? new Date().getFullYear() - plantedYear + 1 : null
 
   const name = species ? species.commonName ?? species.latinName : feature.properties.name || t('plant_peek.no_species')
-  const latin = variety?.latinName ?? species?.latinName
+  // The variety has its own line: the latin name stays the species'.
+  const latin = species?.latinName
   const hasPhotos = (photos?.length ?? 0) > 0
   const titleId = `plant-peek-${feature.properties.id}`
 
@@ -139,7 +139,7 @@ function PlantCard({ feature, onOpen, onClose, mobile }: { feature: MapFeature; 
         <span className="absolute -top-3 left-3 z-10 rounded-full px-2.5 py-0.5 text-sm font-semibold tabular-nums shadow ring-2 ring-white"
           style={strata ? { background: STRATA_COLORS[strata], color: inkOn(STRATA_COLORS[strata]) } : undefined}
           title={t('plant_feature.number')}>
-          {t('plant_peek.number', { number })}
+          {number}
         </span>
       )}
       <div className={'overflow-hidden rounded-2xl bg-white text-loam-800 shadow-xl ring-1 ring-loam-200' + (mobile && hasPhotos ? ' flex' : '')}>
@@ -160,13 +160,10 @@ function PlantCard({ feature, onOpen, onClose, mobile }: { feature: MapFeature; 
           {(strata || plantedYear != null) && (
             <ul className="mt-2 space-y-1 text-sm text-loam-700">
               {strata && <li className="flex items-center gap-2"><StrataDot strata={strata} />{strataLabel(strata)}</li>}
-              {plantedYear != null && age != null && (
-                <li className="flex items-start gap-2">
-                  <Shovel className="mt-0.5 h-3.5 w-3.5 shrink-0 text-leaf-700" aria-hidden="true" />
-                  <span>
-                    {t('plant_peek.planted_in', { year: plantedYear })}
-                    {age >= 1 && <span className="text-loam-500"> · {t('plant_peek.age', { count: age })}</span>}
-                  </span>
+              {plantedYear != null && (
+                <li className="flex items-center gap-2">
+                  <Shovel className="h-3.5 w-3.5 shrink-0 text-leaf-700" aria-hidden="true" />
+                  {t('plant_peek.planted_in', { year: plantedYear })}
                 </li>
               )}
             </ul>

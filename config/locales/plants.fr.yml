@@ -597,12 +597,8 @@ fr:
     unmark: "Annuler"
     planted: "Plant marqué comme planté."
   plant_peek:
-    number: "n° %{number}"
     no_species: "Plant sans espèce"
     planted_in: "Planté en %{year}"
-    age:
-      one: "1re année en terre"
-      other: "%{count}e année en terre"
     details: "Tous les détails"
     open: "Ouvrir la fiche du plant"
     open_photo: "Agrandir la photo"
