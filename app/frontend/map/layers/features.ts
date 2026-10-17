@@ -1,6 +1,6 @@
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
-import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
+import { ensureLabelBackground, markerLabel, PAPER_LABEL_IMAGE } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
 import { displayGeometry, isRounded, isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
@@ -65,27 +65,34 @@ function withZones(data: MapFeatureCollection): MapFeatureCollection {
 }
 
 /**
- * A zone's name and, on a second smaller line, its measure; written in ink
- * with a white halo, like a note on a plan.
+ * A zone's name and, on a second smaller line, its measure, written in ink
+ * on a paper label, like a note stuck on a plan: readable on a grey roof,
+ * a dark wood or a busy aerial photo, where a thin halo was lost.
  */
-function zoneLabelLayout(placement: 'point' | 'line-center') {
+export function zoneLabelLayout(placement: 'point' | 'line-center') {
   const name = ['coalesce', ['get', 'name'], '']
   const measured = ['coalesce', ['get', 'zone_measure'], '']
   return {
     'text-field': ['format',
-      name, { 'font-scale': 1 },
+      name, { 'font-scale': 1, 'text-font': ['literal', ['Noto Sans Bold']] },
       ['case', ['all', ['!=', name, ''], ['!=', measured, '']], '\n', ''], {},
-      measured, { 'font-scale': 0.8 },
+      measured, { 'font-scale': 0.85, 'text-color': ZONE_MEASURE_COLOR },
     ],
-    'text-size': ['interpolate', ['linear'], ['zoom'], 15, 11, 17, 14, 20, 17],
+    'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 17, 14, 20, 17],
     'text-font': ['Noto Sans Regular'],
     'text-max-width': 12,
+    'text-line-height': 1.25,
     'symbol-placement': placement,
     'text-padding': 4,
+    'icon-image': PAPER_LABEL_IMAGE,
+    'icon-text-fit': 'both',
+    'icon-text-fit-padding': [3, 7, 3, 7],
   }
 }
 
-const ZONE_LABEL_PAINT = { 'text-color': '#1b1712', 'text-halo-color': 'rgba(255, 255, 255, 0.9)', 'text-halo-width': 2, 'text-halo-blur': 0.5 }
+/** loam-900 for the name, loam-600 for the measure under it. */
+const ZONE_MEASURE_COLOR = '#4d4a45'
+export const ZONE_LABEL_PAINT = { 'text-color': '#1a1a1a' }
 
 const isPlantPoint = ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]
 
