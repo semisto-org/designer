@@ -28,6 +28,8 @@ export type GrowthInputs = {
 
 export type GrowingPlantData = GrowthInputs & {
   id: number
+  /** How the gardener keeps it: left free, pollarded or coppiced. */
+  training: PlantTraining | null
   lng: number
   lat: number
   number: string | number | null
@@ -50,6 +52,13 @@ export type GrowingPlantsData = {
   patches: GrowingPatchData[]
 }
 
+/**
+ * How a tree or a bush is kept: free (as nature grows it), pollarded (a
+ * trunk cut back to a head every few years, « trogne ») or coppiced (cut
+ * back to the ground, regrowing as many stems, « cépée »).
+ */
+export type PlantTraining = 'free' | 'pollard' | 'coppice'
+
 /** How a plant is drawn: a tree on its trunk, a bush, a low clump, a mat, a climber. */
 export type PlantForm = 'tree' | 'bush' | 'clump' | 'mat' | 'climber'
 
@@ -62,6 +71,7 @@ export type ScenePlant = {
   heightM: number
   spreadM: number
   maturityYears: number
+  training: PlantTraining
   /** Years after year 0 when it goes into the ground. */
   start: number
   /** Index in `GrowingPlantsData.plants`, or null for a plant of a patch. */
@@ -109,16 +119,54 @@ export function growthShare(age: number, maturityYears: number): number {
   return Math.min(1, Math.pow(1 - Math.exp((-3 * age) / maturity), 1.3) / 0.93)
 }
 
+/** Height of a pollard's head, where it is cut back (m). */
+export const POLLARD_HEAD = 2
+
+/**
+ * The most a pollard or a coppice reaches between two cuts (m): an average
+ * over its cycle, as it is cut back every five to fifteen years. Its roots,
+ * not its crown, keep the age of the tree.
+ */
+export const MANAGED_SIZE: Record<Exclude<PlantTraining, 'free'>, { height: number; spread: number }> = {
+  pollard: { height: POLLARD_HEAD + 3.5, spread: 4 },
+  coppice: { height: 5, spread: 4 },
+}
+
+/** Whether a plant drawn with `form` can be pollarded or coppiced (a tree or a bush). */
+export function trainable(form: PlantForm): boolean {
+  return form === 'tree' || form === 'bush'
+}
+
+/**
+ * Years a pollard or a coppice takes to reach its size between two cuts: the
+ * head or the stool is formed in the first years, then the shoots are vigorous.
+ */
+export const MANAGED_MATURITY = 10
+
+/** The size a plant reaches as it is kept, and when: its adult size, or less and sooner when it is cut back. */
+export function managedSize(plant: Pick<ScenePlant, 'heightM' | 'spreadM' | 'maturityYears'> & { training?: PlantTraining }): { height: number; spread: number; maturityYears: number } {
+  const cap = plant.training && plant.training !== 'free' ? MANAGED_SIZE[plant.training] : null
+  return cap
+    ? { height: Math.min(plant.heightM, cap.height), spread: Math.min(plant.spreadM, cap.spread), maturityYears: Math.min(plant.maturityYears, MANAGED_MATURITY) }
+    : { height: plant.heightM, spread: plant.spreadM, maturityYears: plant.maturityYears }
+}
+
 /** Height and spread `age` years after planting, or null before it is planted. */
-export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'>, age: number): { height: number; spread: number } | null {
+export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'> & { training?: PlantTraining }, age: number): { height: number; spread: number } | null {
   if (age < 0) return null
   const start = PLANTING_SIZE[plant.strata] ?? PLANTING_SIZE.shrub
-  const adultHeight = Math.max(0.02, plant.heightM)
-  const adultSpread = Math.max(0.05, plant.spreadM)
+  const adult = managedSize(plant)
+  const adultHeight = Math.max(0.02, adult.height)
+  const adultSpread = Math.max(0.05, adult.spread)
   const h0 = Math.min(start.height, adultHeight)
   const s0 = Math.min(start.spread, adultSpread)
-  const share = growthShare(age, plant.maturityYears)
+  const share = growthShare(age, adult.maturityYears)
   return { height: h0 + (adultHeight - h0) * share, spread: s0 + (adultSpread - s0) * share }
+}
+
+/** A training the server sent, or free when it is unknown or the form cannot take it. */
+export function trainingOf(form: PlantForm, value: string | null | undefined): PlantTraining {
+  return trainable(form) && (value === 'pollard' || value === 'coppice') ? value : 'free'
 }
 
 /** The form a plant is drawn with, from its strata and its type. */
@@ -138,12 +186,23 @@ export const CLIMBER_SUPPORT = 2.5
  * models and the shade: a crown (an ellipsoid of horizontal radius `radius`
  * and vertical half-axis `half`, centred `centre` metres above the ground),
  * on a trunk of `trunk` metres for a tree; a dome for a clump or a mat; a
- * column for a climber.
+ * column for a climber. A pollard is a short trunk crowned by its regrowth,
+ * a coppice a crown of stems from the ground.
  */
-export function plantShape(form: PlantForm, strata: PlantStrata, height: number, spread: number):
+export function plantShape(form: PlantForm, strata: PlantStrata, height: number, spread: number, training: PlantTraining = 'free'):
   { kind: 'crown'; trunk: number; centre: number; half: number; radius: number }
   | { kind: 'dome'; height: number; radius: number }
   | { kind: 'column'; height: number; radius: number } {
+  if (trainable(form) && training === 'pollard') {
+    // The head is grown first (a young pollard is a whip), then holds.
+    const trunk = Math.min(POLLARD_HEAD, height * 0.55)
+    const half = (height - trunk) / 2
+    return { kind: 'crown', trunk, centre: trunk + half, half, radius: spread / 2 }
+  }
+  if (trainable(form) && training === 'coppice') {
+    // Many stems from the stool: a crown resting on the ground, a little lifted.
+    return { kind: 'crown', trunk: 0, centre: height * 0.52, half: height * 0.48, radius: spread / 2 }
+  }
   switch (form) {
     case 'tree': {
       // A young tree is mostly stem; the crown takes over as it grows.
@@ -186,7 +245,7 @@ export function plantShade(
   plants.forEach((plant, index) => {
     const size = sizeAt(plant, year - plant.start)
     if (!size) return
-    const shape = plantShape(plant.form, plant.strata, size.height, size.spread)
+    const shape = plantShape(plant.form, plant.strata, size.height, size.spread, plant.training)
     const r = shape.radius
     // Smaller than a cell: its shadow is lost in the grid.
     if (r < cell / 2) return
@@ -284,9 +343,10 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
   const placed = data.plants.map((p) => ({ ...toGrid(meta, [p.lng, p.lat]), p }))
   const startOf = (date: string | null) => Math.max(0, yearsBetween(data.origin, date ?? data.today))
   placed.forEach(({ x, y, p }, index) => {
+    const form = plantForm(p.strata, p.plantType)
     plants.push({
-      x, y, form: plantForm(p.strata, p.plantType), strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
-      maturityYears: p.maturityYears, start: startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
+      x, y, form, strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
+      maturityYears: p.maturityYears, training: trainingOf(form, p.training), start: startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
     })
   })
   const patchStart = startOf(null)
@@ -299,7 +359,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
       for (const point of scatter(ring, count, patch.id * 131 + lineIndex * 17)) {
         plants.push({
           ...point, form: plantForm(line.strata, line.plantType), strata: line.strata, heightM: line.heightM,
-          spreadM: line.spreadM, maturityYears: line.maturityYears, start: patchStart, plant: null,
+          spreadM: line.spreadM, maturityYears: line.maturityYears, training: 'free', start: patchStart, plant: null,
           patch: [patchIndex, lineIndex], seed: Math.round(point.x * 1000 + point.y * 7),
         })
       }

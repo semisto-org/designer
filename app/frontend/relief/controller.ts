@@ -21,7 +21,7 @@ import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage 
 import type { BlocksInput } from './blocks.ts'
 import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaTerrain } from './niva.ts'
 import type { NivaLights } from './nivaModel.ts'
-import { GROWTH_YEARS, calendarYear, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type ScenePlant } from './growth.ts'
+import { GROWTH_YEARS, calendarYear, managedSize, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type PlantTraining, type ScenePlant } from './growth.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
 import { landcoverRoles } from './roles.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
@@ -117,6 +117,8 @@ export type PlantInfo = {
   adultHeight: number
   adultSpread: number
   maturityYears: number
+  /** Kept free, pollarded or coppiced: the adult size is then what it reaches between two cuts. */
+  training: PlantTraining
   indicative: boolean
 }
 
@@ -421,6 +423,7 @@ export class ReliefController {
     if (!inputs) return null
     const age = this.plantYear - plant.start
     const size = sizeAt(plant, age)
+    const adult = managedSize(plant)
     return {
       name: inputs.name, latinName: inputs.latinName, strata: plant.strata,
       number: point?.number ?? null, ownName: point?.ownName ?? null, patchName: patch?.name ?? null,
@@ -428,7 +431,8 @@ export class ReliefController {
       age: age >= 0 ? age : null,
       plantedYear: point?.plantedOn ? new Date(point.plantedOn).getUTCFullYear() : calendarYear(data.origin, plant.start),
       height: size?.height ?? null, spread: size?.spread ?? null,
-      adultHeight: plant.heightM, adultSpread: plant.spreadM, maturityYears: plant.maturityYears, indicative: inputs.indicative,
+      adultHeight: adult.height, adultSpread: adult.spread, maturityYears: adult.maturityYears,
+      training: plant.training, indicative: inputs.indicative,
     }
   }
 

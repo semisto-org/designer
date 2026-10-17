@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  PLANTING_SIZE, calendarYear, growthShare, insideRing, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, yearsBetween,
+  MANAGED_MATURITY, MANAGED_SIZE, PLANTING_SIZE, calendarYear, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
   type GrowingPlantsData, type GrowthInputs, type ScenePlant,
 } from '../../../app/frontend/relief/growth.ts'
 import type { GridMeta } from '../../../app/frontend/relief/grid.ts'
@@ -79,8 +79,8 @@ test('scene plants: points where they stand, planted ones from their year, patch
     today: '2028-06-01',
     origin: '2026-06-01',
     plants: [
-      { ...inputs(), id: 1, lng, lat, number: 3, ownName: null, plantedOn: '2026-06-01' },
-      { ...inputs({ speciesId: 2, strata: 'canopy', plantType: 'tree' }), id: 2, lng, lat, number: null, ownName: null, plantedOn: null },
+      { ...inputs(), id: 1, lng, lat, number: 3, ownName: null, training: null, plantedOn: '2026-06-01' },
+      { ...inputs({ speciesId: 2, strata: 'canopy', plantType: 'tree' }), id: 2, lng, lat, number: null, ownName: null, training: 'pollard', plantedOn: null },
     ],
     patches: [{
       id: 9,
@@ -97,6 +97,8 @@ test('scene plants: points where they stand, planted ones from their year, patch
   // Not planted yet: from today, two years after the first planting.
   assert.ok(Math.abs(plants[1].start - 2) < 0.01)
   assert.equal(plants[1].form, 'tree')
+  assert.equal(plants[1].training, 'pollard')
+  assert.equal(first.training, 'free')
   // Ten currants in the patch, one of which is the point already placed in it.
   const fromPatch = plants.filter((p) => p.patch)
   assert.equal(fromPatch.length, 9)
@@ -108,7 +110,7 @@ test('a plant casts its volume onto the heights the sun reads, from the year it 
   const rows = 21
   const base = new Float32Array(cols * rows).fill(100)
   const oak: ScenePlant = {
-    x: 10, y: 10, form: 'tree', strata: 'canopy', heightM: 12, spreadM: 8, maturityYears: 15,
+    x: 10, y: 10, form: 'tree', strata: 'canopy', heightM: 12, spreadM: 8, maturityYears: 15, training: 'free',
     start: 2, plant: 0, patch: null, seed: 1,
   }
   const altitudes = Float32Array.of(100)
@@ -132,7 +134,7 @@ test('a plant casts its volume onto the heights the sun reads, from the year it 
 test('a perennial raises the heights but leaves the ground under it in the light', () => {
   const base = new Float32Array(9).fill(0)
   const clump: ScenePlant = {
-    x: 1, y: 1, form: 'clump', strata: 'herbaceous', heightM: 0.6, spreadM: 2, maturityYears: 2,
+    x: 1, y: 1, form: 'clump', strata: 'herbaceous', heightM: 0.6, spreadM: 2, maturityYears: 2, training: 'free',
     start: 0, plant: 0, patch: null, seed: 1,
   }
   const shade = plantShade(base, 3, 3, 1, [clump], Float32Array.of(0), 10)
@@ -145,4 +147,52 @@ test('a crown takes the shape its 3D model has', () => {
   assert.equal(tree.kind, 'crown')
   if (tree.kind === 'crown') assert.ok(Math.abs(tree.centre + tree.half - 10) < 1e-9 && tree.radius === 3)
   assert.equal(plantShape('climber', 'vine', 8, 2).height, 2.5)
+})
+
+test('a pollard or a coppice stays smaller than the same tree left free, at every age', () => {
+  const oak = { strata: 'canopy' as const, heightM: 20, spreadM: 14, maturityYears: 25 }
+  const pollard = { ...oak, training: 'pollard' as const }
+  const coppice = { ...oak, training: 'coppice' as const }
+  assert.deepEqual(managedSize(oak), { height: 20, spread: 14, maturityYears: 25 })
+  assert.deepEqual(managedSize(pollard), { ...MANAGED_SIZE.pollard, maturityYears: MANAGED_MATURITY })
+  assert.deepEqual(managedSize(coppice), { ...MANAGED_SIZE.coppice, maturityYears: MANAGED_MATURITY })
+  // Planted the same size, they part ways as the tree grows.
+  assert.deepEqual(sizeAt(pollard, 0), sizeAt(oak, 0))
+  for (const age of [5, 10, 20]) {
+    assert.ok(sizeAt(pollard, age)!.height < sizeAt(oak, age)!.height)
+    assert.ok(sizeAt(coppice, age)!.spread <= sizeAt(oak, age)!.spread)
+  }
+  // A hazel smaller than the cap keeps its own size.
+  const hazel = { strata: 'shrub' as const, heightM: 4, spreadM: 3, maturityYears: 8, training: 'coppice' as const }
+  assert.deepEqual(managedSize(hazel), { height: 4, spread: 3, maturityYears: 8 })
+  // Its shoots fill the size between two cuts sooner than the free tree grows.
+  assert.ok(sizeAt(coppice, 10)!.height > 0.9 * MANAGED_SIZE.coppice.height)
+})
+
+test('a pollard stands on a short trunk, a coppice rests on the ground', () => {
+  const pollard = plantShape('tree', 'canopy', 5.5, 4, 'pollard')
+  assert.equal(pollard.kind, 'crown')
+  if (pollard.kind === 'crown') {
+    assert.equal(pollard.trunk, 2)
+    assert.ok(Math.abs(pollard.centre + pollard.half - 5.5) < 1e-9)
+  }
+  const coppice = plantShape('tree', 'canopy', 5, 4, 'coppice')
+  assert.equal(coppice.kind, 'crown')
+  if (coppice.kind === 'crown') {
+    assert.equal(coppice.trunk, 0)
+    assert.ok(Math.abs(coppice.centre + coppice.half - 5) < 1e-9)
+  }
+  // A young pollard is mostly its stem: the head is not above the tree.
+  const young = plantShape('tree', 'canopy', 1.6, 0.5, 'pollard')
+  if (young.kind === 'crown') assert.ok(young.trunk < 1.6)
+})
+
+test('only trees and bushes take a training; anything else is free', () => {
+  assert.equal(trainingOf('tree', 'pollard'), 'pollard')
+  assert.equal(trainingOf('bush', 'coppice'), 'coppice')
+  assert.equal(trainingOf('clump', 'coppice'), 'free')
+  assert.equal(trainingOf('tree', 'espalier'), 'free')
+  assert.equal(trainingOf('tree', null), 'free')
+  // A climber or a perennial keeps its own shape whatever it is told.
+  assert.equal(plantShape('climber', 'vine', 8, 2, 'pollard').kind, 'column')
 })

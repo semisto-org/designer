@@ -38,6 +38,7 @@ module Relief
             id: feature.id, lng: point.x.round(7), lat: point.y.round(7),
             number: feature.properties["number"].presence,
             ownName: feature.name.presence,
+            training: feature.plant_training,
             plantedOn: (feature.planted_on&.iso8601 rescue nil)
           )
         end
