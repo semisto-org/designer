@@ -350,7 +350,7 @@ fr:
           change_name: "Nouveau nom court affiché sur la carte ; null l'efface."
           change_notes: "Nouvelles notes, qui remplacent les anciennes ; null les efface."
           change_tags: "Liste complète des étiquettes, qui remplace l'ancienne ([] les retire toutes). Reprends les étiquettes actuelles pour en ajouter une."
-          change_properties: "Attributs à changer, fusionnés avec ceux de l'élément ; une clé à null est supprimée. Pour une plante : planted_on (date de plantation, AAAA-MM-JJ, pas dans le futur), species_id et variety_id (search_plants, get_plant), count (nombre de plants, entier positif)."
+          change_properties: "Attributs à changer, fusionnés avec ceux de l'élément ; une clé à null est supprimée. Pour une plante : planted_on (date de plantation, AAAA-MM-JJ, pas dans le futur), species_id et variety_id (search_plants, get_plant), count (nombre de plants, entier positif). Pour tout autre élément (mare, haie, chemin…) : planned (true quand il est encore en projet, absent quand il est sur le terrain) et built_on (date de réalisation, AAAA-MM-JJ)."
           change_geometry: "Nouvelle géométrie GeoJSON, du même type que l'actuelle (un Point reste un Point), en WGS84 [longitude, latitude], à moins de 200 m du contour du terrain."
           update_rationale: "Pourquoi cette modification, et d'où vient l'information (ce que la personne a dit, une photo, un document…). Obligatoire, 10 caractères au moins."
           filter: "Choisit les éléments actifs à modifier avec les mêmes changes : tag, kind, layer, species_id, ids, combinables. À utiliser avec changes et rationale, sans updates."

@@ -596,6 +596,13 @@ fr:
     planted_date: "Date de plantation"
     unmark: "Annuler"
     planted: "Plant marqué comme planté."
+  plant_peek:
+    no_species: "Plant sans espèce"
+    planted_in: "Planté en %{year}"
+    details: "Tous les détails"
+    open: "Ouvrir la fiche du plant"
+    open_photo: "Agrandir la photo"
+    add_photo: "Ajouter une photo de ce plant"
   plant_observations:
     title: "Suivi de reprise"
     add: "Noter une observation"

@@ -71,6 +71,10 @@ fr:
     video:
       label: "Vidéo"
       unsupported: "Ton navigateur ne lit pas cette vidéo. Télécharge-la pour la regarder."
+    gallery:
+      previous: "Photo précédente"
+      next: "Photo suivante"
+      position: "Photo %{index} sur %{count}"
     lightbox:
       previous: "Photo précédente"
       next: "Photo suivante"

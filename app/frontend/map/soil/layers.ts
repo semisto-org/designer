@@ -112,16 +112,20 @@ export function installSoilLayers(map: MapLibreMap, data: { samples: Collection;
   raise(map)
 }
 
-const SUGGESTION_LAYER_IDS: readonly string[] = [SUGGESTION_LAYER, 'soil-suggestions-rank']
+/** Which soil layers each switch shows: a marker always goes with its name. */
+const LAYERS_OF = {
+  samples: ['soil-samples-halo', SAMPLE_LAYER, 'soil-samples-label'],
+  bioindicators: [OBSERVATION_LAYER, 'soil-observations-label'],
+  suggestions: [SUGGESTION_LAYER, 'soil-suggestions-rank'],
+} as const
 
 export function setSoilLayersVisible(
   map: Pick<MapLibreMap, 'getLayer' | 'setLayoutProperty'>,
-  visible: { points: boolean; suggestions: boolean },
+  visible: { samples: boolean; bioindicators: boolean; suggestions: boolean },
 ) {
-  SOIL_LAYER_IDS.forEach((id) => {
-    const on = SUGGESTION_LAYER_IDS.includes(id) ? visible.suggestions : visible.points
-    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none')
-  })
+  for (const [group, ids] of Object.entries(LAYERS_OF) as [keyof typeof LAYERS_OF, readonly string[]][]) {
+    ids.forEach((id) => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visible[group] ? 'visible' : 'none'))
+  }
 }
 
 export function highlightSample(map: MapLibreMap, id: number | null) {

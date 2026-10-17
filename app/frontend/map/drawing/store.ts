@@ -16,13 +16,15 @@ export type DrawingState = {
   hiddenKinds: string[]
   /** Plant strata hidden (`unknown`: plants whose strata is not known). */
   hiddenStrata: string[]
+  /** Markers of the « Sol » module hidden here: `bioindicators`, `samples`. */
+  hiddenSoil: string[]
   tool: DrawingTool
   shapeEditId: number | null
   /** The tag shown as « version » on the map (null: everything). */
   version: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], tool: null, shapeEditId: null, version: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, version: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -43,7 +45,7 @@ export function useDrawingState<T>(select: (s: DrawingState) => T): T {
   return useSyncExternalStore(drawingStore.subscribe, () => select(state))
 }
 
-type HiddenList = 'layers' | 'kinds' | 'strata'
+type HiddenList = 'layers' | 'kinds' | 'strata' | 'soil'
 const storageKey = (mapId: number, list: HiddenList = 'layers') => `designer:map:${mapId}:hidden-${list}`
 const versionKey = (mapId: number) => `designer:map:${mapId}:version`
 
@@ -65,7 +67,7 @@ function writeList(list: HiddenList, values: string[]) {
   }
 }
 
-/** Loads the hidden layers, kinds and strata remembered for this map (if storage allows). */
+/** Loads the hidden layers, kinds, strata and soil markers remembered for this map (if storage allows). */
 export function initDrawingState(mapId: number) {
   if (state.mapId === mapId) return
   const hidden = readList(mapId, 'layers')
@@ -76,7 +78,7 @@ export function initDrawingState(mapId: number) {
     version = null
   }
   drawingStore.set({
-    mapId, hiddenLayers: hidden, hiddenKinds: readList(mapId, 'kinds'), hiddenStrata: readList(mapId, 'strata'),
+    mapId, hiddenLayers: hidden, hiddenKinds: readList(mapId, 'kinds'), hiddenStrata: readList(mapId, 'strata'), hiddenSoil: readList(mapId, 'soil'),
     tool: null, shapeEditId: null, version,
   })
 }
@@ -108,6 +110,11 @@ export function setHiddenStrata(strata: string[]) {
   writeList('strata', strata)
 }
 
+export function setHiddenSoil(soil: string[]) {
+  drawingStore.set({ hiddenSoil: soil })
+  writeList('soil', soil)
+}
+
 /** Adds or removes one value of a hidden list. */
 export const toggled = (list: string[], value: string) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
 
@@ -118,11 +125,12 @@ export function revealForDrawing(layer: string, kind?: string) {
   if (kind && hiddenKinds.includes(kind)) setHiddenKinds(hiddenKinds.filter((k) => k !== kind))
 }
 
-/** « Tout afficher »: every layer, kind and strata again. */
+/** « Tout afficher »: every layer, kind, strata and soil marker again. */
 export function showEverything() {
   setHiddenLayers([])
   setHiddenKinds([])
   setHiddenStrata([])
+  setHiddenSoil([])
 }
 
 /** Asks the drawing toolbar to let the user reshape a feature. */

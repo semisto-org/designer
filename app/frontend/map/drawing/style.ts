@@ -7,10 +7,10 @@ import type {
   Map as MapLibreMap,
 } from 'maplibre-gl'
 import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
-import { hiddenTests } from '@/map/drawing/hidden'
+import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
-import { scenarioFilter, type Scenario } from '@/map/scenario'
+import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, scenarioFilter, type Scenario } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 
 /**
@@ -39,6 +39,7 @@ const expr = (value: unknown) => value as Expr
 
 const isLibrary = expr(['in', ['get', 'kind'], ['literal', KINDS]])
 const isDraft = expr(['==', ['get', 'status'], 'draft'])
+const isPlannedElement = expr(PLANNED_ELEMENT_EXPR)
 const selected = expr(['boolean', ['feature-state', 'selected'], false])
 const editing = expr(['boolean', ['feature-state', 'editing'], false])
 
@@ -87,8 +88,10 @@ const crowned = LIBRARY.filter((e) => e.crown)
 const arrowed = LIBRARY.filter((e) => e.line?.arrows)
 const pointKinds = LIBRARY.filter((e) => e.geometries.includes('Point'))
 
-/** Opacity factor: hidden while its shape is edited, faded when a draft. */
-const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, 1])
+/** Opacity factor: hidden while its shape is edited, faded when a draft or still a project. */
+const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, isPlannedElement, PLANNED_OPACITY, 1])
+/** A planned element keeps its own dash if it has one, else draws dashed: « not there yet ». */
+const plannedDash = expr(['case', ['all', isPlannedElement, ['!', ['in', ['get', 'kind'], ['literal', LIBRARY.filter((e) => e.line?.dash).map((e) => e.kind)]]]], ['literal', [3, 2]], lineDash])
 
 function zoomScaled(base: Expr, stops: [number, number][], extraSelected = 0): Expr {
   return expr(['interpolate', ['linear'], ['zoom'],
@@ -173,7 +176,7 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'line-color': featureColorExpr,
         'line-width': zoomScaled(expr(['case', ['==', ['geometry-type'], 'Polygon'], ['min', lineWidth, 2.5], lineWidth]), [[14, 0.4], [18, 1], [21, 1.6]], 2),
         'line-opacity': expr(['*', lineOpacity, visibleFactor]),
-        'line-dasharray': lineDash as never,
+        'line-dasharray': plannedDash as never,
       },
     },
     // Where the water goes: arrows along the line, in the direction it was drawn.
@@ -450,13 +453,15 @@ function versionFilter(version: string): unknown {
   return ['any', ['==', tags, '[]'], ['in', JSON.stringify(version.toLocaleLowerCase('fr')), tags]]
 }
 
-const visibilityState = new WeakMap<MapLibreMap, Map<string, { original: unknown; applied: string }>>()
+/** Per layer: its own filter, the test « Calques » adds, and the filter last set from both. */
+type VisibilityEntry = { original: unknown; applied: string; test: unknown; filter: string }
+const visibilityState = new WeakMap<MapLibreMap, Map<string, VisibilityEntry>>()
 
 /**
  * Hides the given design layers (`existing`, `water`…) on every map layer
  * drawn from the features source, whoever added it, by combining its own
  * filter with a test on the feature's `layer`. With `scenario: 'current'`,
- * what is still a project (planned plants, drafts) is hidden too. With a
+ * what is still a project (planned plants and elements, drafts) is hidden too. With a
  * `version` (a tag), only elements carrying it, or no tag at all, show.
  */
 export function applyLayerVisibility(
@@ -466,7 +471,7 @@ export function applyLayerVisibility(
 ) {
   const hiddenKinds = options.hiddenKinds ?? []
   const hiddenIds = options.hiddenIds ?? []
-  const store = visibilityState.get(map) ?? new Map<string, { original: unknown; applied: string }>()
+  const store = visibilityState.get(map) ?? new Map<string, VisibilityEntry>()
   visibilityState.set(map, store)
   const scenario = options.scenario ? scenarioFilter(options.scenario) : null
   const version = options.version ? versionFilter(options.version) : null
@@ -474,8 +479,10 @@ export function applyLayerVisibility(
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
-    if (!entry) {
-      entry = { original: map.getFilter(id) ?? null, applied: '' }
+    const current = map.getFilter(id) ?? null
+    // New layer, or one whose filter was replaced since (a style reload…): start again from its filter.
+    if (!entry || JSON.stringify(current) !== entry.filter) {
+      entry = { original: current, applied: '', test: null, filter: JSON.stringify(current) }
       store.set(id, entry)
     }
     if (entry.applied === key) continue
@@ -487,10 +494,31 @@ export function applyLayerVisibility(
     if (version) tests.push(version)
     tests.push(...hiddenTests(hiddenKinds, hiddenIds))
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
-    const filter = test ? (entry.original ? ['all', entry.original, test] : test) : entry.original
-    map.setFilter(id, (filter ?? null) as FilterSpecification | null)
+    const filter = composeFilter(entry.original, test)
+    map.setFilter(id, filter as FilterSpecification | null)
     entry.applied = key
+    entry.test = test
+    entry.filter = JSON.stringify(map.getFilter(id) ?? null)
   }
+}
+
+/**
+ * Changes the own filter of a layer drawn from the features source (the
+ * editor's plants overlay names plants itself, so `features-label` leaves
+ * them out) while keeping what « Calques » hides on it. A plain `setFilter`
+ * would show the names of hidden elements again.
+ */
+export function setBaseFilter(map: MapLibreMap, id: string, filter: unknown) {
+  if (!map.getLayer(id)) return
+  const entry = visibilityState.get(map)?.get(id)
+  if (!entry) {
+    if (JSON.stringify(map.getFilter(id) ?? null) !== JSON.stringify(filter)) map.setFilter(id, filter as FilterSpecification)
+    return
+  }
+  if (JSON.stringify(entry.original) === JSON.stringify(filter)) return
+  entry.original = filter
+  map.setFilter(id, composeFilter(filter, entry.test) as FilterSpecification | null)
+  entry.filter = JSON.stringify(map.getFilter(id) ?? null)
 }
 
 // --- Transient overlays: measure in progress, PDF print frame ----------------

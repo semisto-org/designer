@@ -2,7 +2,7 @@ import type { MapGeoJSONFeature, MapMouseEvent } from 'maplibre-gl'
 import { X } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
-import { useDrawingState } from '@/map/drawing/store'
+import { drawingStore, setHiddenSoil, useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
   highlightSample, installSoilLayers, OBSERVATION_LAYER, observationsToGeoJSON, removeSoilLayers, SAMPLE_LAYER,
@@ -23,6 +23,7 @@ export default function SoilOverlay() {
   const state = useSoil()
   const { samples, observations, suggestions, showOnMap, openId, placing } = state
   const hiddenLayers = useDrawingState((s) => s.hiddenLayers)
+  const hiddenSoil = useDrawingState((s) => s.hiddenSoil)
 
   useEffect(() => {
     soilActions.load(editor.map.id)
@@ -37,10 +38,10 @@ export default function SoilOverlay() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       installSoilLayers(map, { samples: sampleData, observations: observationData, suggestions: suggestionData })
-      setSoilLayersVisible(map, soilVisibility({ showOnMap, suggesting: suggestions != null, hiddenLayers }))
+      setSoilLayersVisible(map, soilVisibility({ showOnMap, suggesting: suggestions != null, hiddenLayers, hiddenSoil }))
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [map, sampleData, observationData, suggestionData, showOnMap, suggestions, hiddenLayers])
+  }, [map, sampleData, observationData, suggestionData, showOnMap, suggestions, hiddenLayers, hiddenSoil])
   useEffect(() => () => removeSoilLayers(map), [map])
   useEffect(() => { highlightSample(map, openId) }, [map, openId, sampleData])
 
@@ -83,6 +84,10 @@ export default function SoilOverlay() {
   // so it also works over a drawn feature, unlike passive map clicks.
   useEffect(() => {
     if (!placing) return
+    // One sees where the marker lands, even if « Calques » hid its kind.
+    const marker = placing.kind === 'new-sample' || placing.kind === 'sample' ? 'samples' : 'bioindicators'
+    const { hiddenSoil: hiddenNow } = drawingStore.get()
+    if (hiddenNow.includes(marker)) setHiddenSoil(hiddenNow.filter((m) => m !== marker))
     const canvas = map.getCanvas()
     canvas.style.cursor = 'crosshair'
     const onClick = async (event: MapMouseEvent) => {

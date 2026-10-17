@@ -329,6 +329,9 @@ fr:
         one: "%{count} photo"
         other: "%{count} photos"
       sensitive: "Réseaux : jamais exportés ni publiés sans ton accord."
+      soil:
+        bioindicators: "Bio-indicatrices"
+        samples: "Points de prélèvement de sol"
 
     alerts:
       intro: "Des règles fixes et sourcées de ta région, vérifiées sur ton dessin."
