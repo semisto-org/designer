@@ -563,6 +563,34 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert error
   end
 
+  test "search_plants with a map: how each plant fits the terrain, and suggestions without a query" do
+    regions(:wallonia).update!(settings: { "climate" => { "hardiness_zone" => 7 } })
+    @map.features.create!(layer: "plants", kind: "patch", geometry: square(lng: 4.904, lat: 50.3395, size: 0.0002),
+                          properties: { "exposure" => "shade" })
+
+    data, error = call_tool(@owner, "search_plants", { query: "Malus", map_id: @map.id })
+    refute error
+    apple = data["results"].sole
+    assert_equal "one_misfit", apple.dig("fit", "tier")
+    assert_equal({ "key" => "exposure", "status" => "misfit", "site" => [ "shade" ], "verified" => false },
+                 apple.dig("fit", "criteria").find { |c| c["key"] == "exposure" })
+    assert_nil apple["excludedBy"]
+    assert_equal "patches", data.dig("site", "signals", "exposure", "origin")
+
+    data, = call_tool(@owner, "search_plants", { query: "Robinia", map_id: @map.id })
+    assert_equal "invasive", data["results"].sole["excludedBy"]
+
+    data, error = call_tool(@owner, "search_plants", { map_id: @map.id })
+    refute error
+    assert data["suggestions"].any?
+    assert data["suggestions"].all? { |s| s["fit"] && s["reason"] }
+    assert_equal 1, data.dig("excluded", "invasive")
+
+    text, error = call_tool(@owner, "search_plants", {})
+    assert error
+    assert_match(/map_id/, text)
+  end
+
   test "plant tools never show another person's species awaiting review" do
     species = PlantSpecies.create!(latin_name: "Salvia nemorosa", review_status: "proposed", proposed_by: users(:bob))
     data, = call_tool(@owner, "search_plants", { query: "nemorosa" })

@@ -30,7 +30,11 @@ export async function api<T = unknown>(
     body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
   })
   if (response.status === 204) return undefined as T
-  const data = await response.json().catch(() => ({}))
+  // An abort while the body is read must reject, not read as an empty body.
+  const data = await response.json().catch(() => {
+    if (signal?.aborted) throw signal.reason
+    return {}
+  })
   if (!response.ok) throw new ApiError(response.status, data)
   return data as T
 }

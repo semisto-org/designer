@@ -147,6 +147,18 @@ class PlantingTest < ActiveSupport::TestCase
     assert_match "couvre-sol", strata.message
   end
 
+  test "alerts: what the catalogue does not say is said, not taken for a fit" do
+    plant_species(:comfrey).update!(hardiness_zone: nil, exposures: [])
+    @patch.update!(properties: { "exposure" => "shade" })
+    @patch.patch_items.create!(species: plant_species(:comfrey), density: 1)
+
+    unknown = @map.planting_alerts.alerts.select { |a| a.rule == "unknown" }
+    assert_equal %w[info info], unknown.map(&:level)
+    assert_match "jusqu'à quel froid tient", unknown.first.message
+    assert_match "quelle exposition préfère", unknown.last.message
+    assert unknown.all? { |a| a.message.include?(plant_species(:comfrey).common_name || "Symphytum officinale") }
+  end
+
   test "palette suggestions fill what is missing, hardy and not invasive" do
     @map.palette_items.create!(species: plant_species(:apple))
     suggestions = PaletteSuggestions.new(@map).suggestions

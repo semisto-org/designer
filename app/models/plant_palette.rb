@@ -108,6 +108,7 @@ class PlantPalette
         hardinessZone: species.hardiness_zone, exposures: species.exposures, edibleRating: species.edible_rating,
         floweringMonths: species.flowering_months, harvestMonths: species.harvest_months,
         native: country ? species.native_in?(country) : nil,
+        fit: site.fit(species).as_json, excludedBy: site.excluded_by(species),
         photo: species.photo_json&.dig(:cardUrl),
         tags: row_tags(key, features),
         plantedFrom: features.filter_map { |f| f.properties["planted_on"].presence }.min,
@@ -132,6 +133,9 @@ class PlantPalette
 
     def country = map.country_code
 
+    # What the land tells, to judge each species on it (PlantFit).
+    def site = @site ||= PlantFit::Site.new(map)
+
     # Mean crown of the existing trees as drawn, else a canopy tree's.
     def tree_spread(trees)
       crowns = trees.filter_map { |tree| tree.feature.properties["crown_diameter_m"].to_f.nonzero? }
@@ -142,7 +146,7 @@ class PlantPalette
 
     def species_index
       @species_index ||= PlantSpecies.where(id: quantities.species_index.keys | existing_trees.filter_map { |t| t.key.first if t.key.first != :existing })
-                                     .includes(:common_names).with_photos.index_by(&:id)
+                                     .includes(:common_names, :field_sources).with_photos.index_by(&:id)
     end
 
     # Active plant points with their tags and properties.

@@ -19,6 +19,7 @@ columns:
   - height
   - spread
   - hardiness
+  - fit             # one verdict per criterion the land lets us judge (PlantFit)
   - exposures
   - edible
   - flowering
@@ -39,7 +40,7 @@ groups: [none, strata, status, role, tag, supplier, plant_type]
 statuses: [existing, chosen, planned, planting, planted]
 presets:
   base:
-    columns: [name, strata, role, status, existing, planned, planted, to_plant, height, spread, hardiness]
+    columns: [name, strata, role, status, fit, existing, planned, planted, to_plant, height, spread]
     group_by: strata
     sort: { key: name, dir: asc }
     filters: {}

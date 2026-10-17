@@ -44,6 +44,7 @@ export function displayValue(row: PaletteRow, column: string): string {
     case 'edible': return value == null ? '' : t('plants.units.rating', { value: Number(value) })
     case 'flowering': return months(row.floweringMonths)
     case 'harvest': return months(row.harvestMonths)
+    case 'fit': return row.fit && row.speciesId != null ? fitText(row) : ''
     case 'native': return value == null ? '' : t(value ? 'plant_palette.cells.yes_value' : 'plant_palette.cells.no_value')
     case 'unit_price':
     case 'amount':
@@ -54,6 +55,13 @@ export function displayValue(row: PaletteRow, column: string): string {
       return row.plantedTo && row.plantedTo !== row.plantedFrom ? `${formatDate(row.plantedFrom)} → ${formatDate(row.plantedTo)}` : formatDate(row.plantedFrom)
     default: return value == null ? '' : typeof value === 'number' ? formatDecimal(value) : String(value)
   }
+}
+
+/** The verdicts in words, for the CSV: « Rusticité ✓, Exposition ? ». */
+const MARKS: Record<string, string> = { fits: '✓', partial: '~', misfit: '✗', unknown: '?' }
+function fitText(row: PaletteRow): string {
+  const flag = row.excludedBy === 'invasive' || row.excludedBy === 'toxic' ? [t(`palette.fit.excluded_by.${row.excludedBy}`)] : []
+  return [...flag, ...row.fit!.criteria.map((c) => `${t(`palette.fit.criteria.${c.key}`)} ${MARKS[c.status]}`)].join(', ')
 }
 
 /** A total under a column: euros for money, plain numbers for the rest. */

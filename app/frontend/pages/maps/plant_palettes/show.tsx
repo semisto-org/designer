@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Copy, Eye, MoreHorizontal, Pencil, RotateCcw, Save, Sprout, Trash2 } from 'lucide-react'
+import { Compass, Copy, Eye, MoreHorizontal, Pencil, RotateCcw, Save, Sprout, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { MapViewHeader } from '@/components/map_views/MapViews'
@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n'
 import { columnLabel, displayValue, formatEuro } from '@/palette/format'
 import { PaletteTable } from '@/palette/PaletteTable'
 import { PlantSheet } from '@/palette/PlantSheet'
+import { SuggestionsSheet } from '@/palette/Suggestions'
 import {
   cellValue, crownArea, GROWTH_YEARS, normalizeSettings, sameSettings, scopeOf, toCsv, UNTAGGED, viewGroups,
   type PaletteRow, type ViewSettings,
@@ -68,6 +69,7 @@ export default function PlantPalettePage({ map, rows: initialRows, tags: initial
   }, [current, presets, views])
   const [settings, setSettings] = useState<ViewSettings>(baseline)
   const [open, setOpen] = useState<PaletteRow | null>(null)
+  const [suggesting, setSuggesting] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('suggestions'))
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -149,6 +151,15 @@ export default function PlantPalettePage({ map, rows: initialRows, tags: initial
     }
   }, [map.id])
 
+  const inPalette = useMemo(() => new Set(rows.filter((r) => r.inPalette && r.varietyId == null && r.speciesId != null).map((r) => r.speciesId!)), [rows])
+  const closeSuggestions = useCallback(() => setSuggesting(false), [])
+  const suggestionAdded = useCallback(async (name: string) => {
+    const res = await api<{ rows: PaletteRow[]; tags: string[] }>(`/maps/${map.id}/palette.json`)
+    setRows(res.rows)
+    setTags(res.tags)
+    setStatus(t('plant_palette.suggestions.added', { name }))
+  }, [map.id])
+
   const groups = useMemo(() => viewGroups(rows, settings, tags), [rows, settings, tags])
   const shown = groups.flatMap((g) => g.rows)
   const suppliers = useMemo(() => [...new Set(rows.map((r) => r.supplier).filter((s): s is string => !!s))].sort((a, b) => a.localeCompare(b, 'fr')), [rows])
@@ -178,6 +189,12 @@ export default function PlantPalettePage({ map, rows: initialRows, tags: initial
         <div className="flex items-center gap-3">
           <h1 className="text-3xl">{t('plant_palette.title')}</h1>
           <span className="print:hidden"><HelpButton slug="la-palette-vegetale-en-tableau" /></span>
+          <button
+            type="button" onClick={() => setSuggesting(true)}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-leaf-800 ring-1 ring-inset ring-leaf-200 hover:bg-leaf-50 print:hidden"
+          >
+            <Compass className="h-4 w-4" aria-hidden />{t('plant_palette.suggestions.open')}
+          </button>
           {!canEdit && (
             <span title={t('plant_palette.read_only')} className="inline-flex items-center gap-1 rounded-full bg-loam-100 px-2.5 py-0.5 text-sm text-loam-600 print:hidden">
               <Eye className="h-3.5 w-3.5" aria-hidden />{t('plant_palette.read_only_badge')}
@@ -233,10 +250,10 @@ export default function PlantPalettePage({ map, rows: initialRows, tags: initial
             </ul>
           </nav>
 
-          {(presetIntro || (editableView && status)) && (
+          {(presetIntro || status) && (
             <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm print:hidden">
               {presetIntro && <p className="text-loam-600">{presetIntro}</p>}
-              {editableView && status && <p className="text-loam-500">{status}</p>}
+              {status && <p className="text-loam-500">{status}</p>}
             </div>
           )}
 
@@ -279,6 +296,7 @@ export default function PlantPalettePage({ map, rows: initialRows, tags: initial
         </>
       )}
 
+      {suggesting && <SuggestionsSheet mapId={map.id} canEdit={canEdit} inPalette={inPalette} onAdded={suggestionAdded} onClose={closeSuggestions} />}
       {open && <PlantSheet mapId={map.id} row={rows.find((r) => r.key === open.key) ?? open} country={map.country} onClose={() => setOpen(null)} />}
     </>
   )
