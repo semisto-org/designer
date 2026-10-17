@@ -59,6 +59,7 @@ fr:
           sentry: "Sentry"
           smtp: "Envoi des e-mails"
           google: "Connexion Google"
+          apple: "Connexion avec Apple"
           stripe: "Paiements Stripe"
           plantnet: "Pl@ntNet"
           magnific: "Magnific"

@@ -97,6 +97,7 @@ export type AccountData = {
   hasOwnAvatar: boolean
   signedUpAt: string
   googleLinked: boolean
+  appleLinked: boolean
   /** Has chosen an (optional) password. */
   hasPassword: boolean
   /** Who the person designs for (welcome page); null until chosen. */
