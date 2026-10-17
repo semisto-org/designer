@@ -1,6 +1,6 @@
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
-import { PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
-import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
+import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
+import { ensureLabelBackground, markerLabel, PAPER_LABEL_IMAGE } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
 import { displayGeometry, isRounded, isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
@@ -65,27 +65,34 @@ function withZones(data: MapFeatureCollection): MapFeatureCollection {
 }
 
 /**
- * A zone's name and, on a second smaller line, its measure; written in ink
- * with a white halo, like a note on a plan.
+ * A zone's name and, on a second smaller line, its measure, written in ink
+ * on a paper label, like a note stuck on a plan: readable on a grey roof,
+ * a dark wood or a busy aerial photo, where a thin halo was lost.
  */
-function zoneLabelLayout(placement: 'point' | 'line-center') {
+export function zoneLabelLayout(placement: 'point' | 'line-center') {
   const name = ['coalesce', ['get', 'name'], '']
   const measured = ['coalesce', ['get', 'zone_measure'], '']
   return {
     'text-field': ['format',
-      name, { 'font-scale': 1 },
+      name, { 'font-scale': 1, 'text-font': ['literal', ['Noto Sans Bold']] },
       ['case', ['all', ['!=', name, ''], ['!=', measured, '']], '\n', ''], {},
-      measured, { 'font-scale': 0.8 },
+      measured, { 'font-scale': 0.85, 'text-color': ZONE_MEASURE_COLOR },
     ],
-    'text-size': ['interpolate', ['linear'], ['zoom'], 15, 11, 17, 14, 20, 17],
+    'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 17, 14, 20, 17],
     'text-font': ['Noto Sans Regular'],
     'text-max-width': 12,
+    'text-line-height': 1.25,
     'symbol-placement': placement,
     'text-padding': 4,
+    'icon-image': PAPER_LABEL_IMAGE,
+    'icon-text-fit': 'both',
+    'icon-text-fit-padding': [3, 7, 3, 7],
   }
 }
 
-const ZONE_LABEL_PAINT = { 'text-color': '#1b1712', 'text-halo-color': 'rgba(255, 255, 255, 0.9)', 'text-halo-width': 2, 'text-halo-blur': 0.5 }
+/** loam-900 for the name, loam-600 for the measure under it. */
+const ZONE_MEASURE_COLOR = '#4d4a45'
+export const ZONE_LABEL_PAINT = { 'text-color': '#1a1a1a' }
 
 const isPlantPoint = ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]
 
@@ -113,13 +120,15 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
   const draft = ['==', ['get', 'status'], 'draft']
   // A planned plant (not planted yet) is a hollow ring at 75 % opacity; a planted one is solid.
   const planned = PLANNED_PLANT_EXPR as never
+  // A planned element (pond, hedge…) is a dashed outline over a fainter fill.
+  const plannedElement = PLANNED_ELEMENT_EXPR as never
   map.addLayer({
     id: 'features-fill',
     type: 'fill',
     source: FEATURES_SOURCE,
     filter: ['==', ['geometry-type'], 'Polygon'],
     // A named zone is drawn bolder than other surfaces: it is what the plan says.
-    paint: { 'fill-color': color, 'fill-opacity': ['case', draft as never, 0.15, isZone as never, ZONE_FILL_OPACITY, 0.28] },
+    paint: { 'fill-color': color, 'fill-opacity': ['case', draft as never, 0.15, plannedElement, 0.12, isZone as never, ZONE_FILL_OPACITY, 0.28] },
   })
   map.addLayer({
     id: 'features-line',
@@ -129,7 +138,8 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     paint: {
       'line-color': color,
       'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, ['==', ['get', 'kind'], 'line'], 3, 2],
-      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], ['literal', [1, 0]]] as never,
+      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], plannedElement, ['literal', [3, 2]], ['literal', [1, 0]]] as never,
+      'line-opacity': ['case', plannedElement, PLANNED_OPACITY, 1] as never,
     },
   })
   map.addLayer({
@@ -142,7 +152,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 20, 9],
       'circle-stroke-color': ['case', planned, pointColor, '#ffffff'] as never,
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 3, planned, 3, 1.5],
-      'circle-opacity': ['case', draft as never, 0.6, planned, PLANNED_OPACITY, 1],
+      'circle-opacity': ['case', draft as never, 0.6, ['any', planned, plannedElement], PLANNED_OPACITY, 1],
       'circle-stroke-opacity': ['case', planned, PLANNED_OPACITY, 1] as never,
     },
   })

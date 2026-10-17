@@ -53,6 +53,36 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil AiAction.last.map, "no journal entry on a map the user cannot open"
   end
 
+  test "get_map gives the offer's versions and the accepted budget, to the team only" do
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_nil data["offer"], "a personal account never sees an offer"
+
+    users(:michael).update!(account_kind: "professional")
+    offer = Offer.build_for(@map)
+    offer.inputs = offer.inputs.merge("scope" => [ { "label" => "Jardin-forêt", "planting_type" => "forest_garden", "measure" => 2_000 } ])
+    offer.save!
+    offer.save_version!(user: users(:michael)).update!(status: "sent")
+    accepted = offer.save_version!(user: users(:michael), note: "Signée")
+    accepted.update!(status: "accepted")
+
+    data, error = call_tool(@owner, "get_map", { map_id: @map.id })
+    refute error
+    assert_equal "http://www.example.com/maps/#{@map.id}/offer", data.dig("offer", "url")
+    assert_equal [ %w[V1 sent], %w[V2 accepted] ], data.dig("offer", "versions").map { _1.values_at("label", "status") }
+    budget = data.dig("offer", "accepted")
+    totals = accepted.result["totals"]
+    assert_equal [ 2, "Signée", totals["total_tvac"] ], budget.values_at("number", "note", "total_tvac")
+    assert budget["total_htva"].positive?
+    assert_operator budget["total_htva"], :<, budget["total_tvac"]
+    assert_in_delta budget["total_htva"], budget["services_htva"] + budget["plants_supplies_htva"], 0.02
+    assert_in_delta totals["services_price_tvac"] / 1.21, budget["services_htva"], 0.01
+    assert budget["hours_max"] >= budget["hours_min"]
+    assert budget["hours_min"].positive?
+
+    data, = call_tool(@viewer, "get_map", { map_id: @map.id })
+    assert_nil data["offer"], "a viewer (maybe the client) never sees the offer"
+  end
+
   test "get_map gives the bio-indicator plants noted on the terrain and what they point to" do
     @map.bioindicator_observations.create!(catalog_key: "ortie", abundance: "dominant", location: [ 4.906, 50.341 ])
     data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
@@ -531,6 +561,34 @@ class McpToolsTest < ActionDispatch::IntegrationTest
 
     _, error = call_tool(@viewer, "withdraw_draft", { map_id: @map.id, feature_ids: [ accepted.id ] })
     assert error
+  end
+
+  test "search_plants with a map: how each plant fits the terrain, and suggestions without a query" do
+    regions(:wallonia).update!(settings: { "climate" => { "hardiness_zone" => 7 } })
+    @map.features.create!(layer: "plants", kind: "patch", geometry: square(lng: 4.904, lat: 50.3395, size: 0.0002),
+                          properties: { "exposure" => "shade" })
+
+    data, error = call_tool(@owner, "search_plants", { query: "Malus", map_id: @map.id })
+    refute error
+    apple = data["results"].sole
+    assert_equal "one_misfit", apple.dig("fit", "tier")
+    assert_equal({ "key" => "exposure", "status" => "misfit", "site" => [ "shade" ], "verified" => false },
+                 apple.dig("fit", "criteria").find { |c| c["key"] == "exposure" })
+    assert_nil apple["excludedBy"]
+    assert_equal "patches", data.dig("site", "signals", "exposure", "origin")
+
+    data, = call_tool(@owner, "search_plants", { query: "Robinia", map_id: @map.id })
+    assert_equal "invasive", data["results"].sole["excludedBy"]
+
+    data, error = call_tool(@owner, "search_plants", { map_id: @map.id })
+    refute error
+    assert data["suggestions"].any?
+    assert data["suggestions"].all? { |s| s["fit"] && s["reason"] }
+    assert_equal 1, data.dig("excluded", "invasive")
+
+    text, error = call_tool(@owner, "search_plants", {})
+    assert error
+    assert_match(/map_id/, text)
   end
 
   test "plant tools never show another person's species awaiting review" do

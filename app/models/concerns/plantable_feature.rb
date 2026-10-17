@@ -17,6 +17,7 @@ module PlantableFeature
   included do
     has_many :patch_items, -> { order(:position, :id) }, inverse_of: :map_feature, dependent: :delete_all
     has_many :plant_observations, -> { order(:observed_on, :id) }, dependent: :destroy
+    has_many :plant_harvests, -> { order(:noted_on, :id) }, dependent: :destroy
 
     before_validation :normalize_plant_properties, if: :plant?
     validate :validate_plant, if: :plant?

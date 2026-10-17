@@ -2,6 +2,7 @@ require "test_helper"
 
 class Catalog::TerranovaImportTest < ActiveSupport::TestCase
   BASE = "https://terranova.test/api/v1".freeze
+  ALL = %w[A B C].freeze
 
   setup do
     @provider = Providers::Terranova.new(url: BASE, token: "secret")
@@ -12,7 +13,7 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
   end
 
   test "imports genera, species and varieties with terranova provenance" do
-    result = Catalog::TerranovaImport.new(provider: @provider).call
+    result = Catalog::TerranovaImport.new(provider: @provider, baskets: ALL).call
 
     assert_equal 2, result.genera
     assert_equal 3, result.species_created
@@ -63,7 +64,7 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
   end
 
   test "an unassessed row keeps column defaults as unknown" do
-    Catalog::TerranovaImport.new(provider: @provider).call
+    Catalog::TerranovaImport.new(provider: @provider, baskets: ALL).call
     shell = PlantSpecies.find_by!(terranova_id: 103)
     assert_nil shell.plant_type
     assert_nil shell.foliage_type
@@ -75,18 +76,18 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
   end
 
   test "never imports free text" do
-    Catalog::TerranovaImport.new(provider: @provider).call
+    Catalog::TerranovaImport.new(provider: @provider, baskets: ALL).call
     texts = PlantSpecies.pluck(:latin_name) + PlantCommonName.pluck(:name) + PlantVariety.pluck(:ripening, :productivity).flatten.compact
     assert texts.none? { |text| text.include?("ne jamais importer") }
   end
 
   test "is idempotent and never overwrites a value sourced elsewhere" do
-    Catalog::TerranovaImport.new(provider: @provider).call
+    Catalog::TerranovaImport.new(provider: @provider, baskets: ALL).call
     elder = PlantSpecies.find_by!(terranova_id: 101)
     elder.update!(height_max_m: 6.5)
     elder.record_provenance!(%w[height_max_m], source: "trefle", upstream_source: "usda", status: "sourced")
 
-    result = Catalog::TerranovaImport.new(provider: @provider).call
+    result = Catalog::TerranovaImport.new(provider: @provider, baskets: ALL).call
     assert_equal 0, result.species_created
     assert_equal 3, result.species_updated
     assert_equal 3, PlantSpecies.where.not(terranova_id: nil).count
@@ -100,6 +101,41 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
     existing = PlantSpecies.create!(latin_name: "Sambucus nigra", plant_type: "shrub")
     Catalog::TerranovaImport.new(provider: @provider).call
     assert_equal 101, existing.reload.terranova_id
+  end
+
+  # Michael, 2026-10-17: fewer values that are right rather than many wrong.
+  test "imports only basket A, as species waiting for review" do
+    result = Catalog::TerranovaImport.new(provider: @provider).call
+
+    assert_equal 1, result.species_created
+    assert_equal({ "B" => 1, "C" => 1 }, result.left_out)
+    assert_equal [ 101 ], PlantSpecies.where.not(terranova_id: nil).pluck(:terranova_id)
+    elder = PlantSpecies.find_by!(terranova_id: 101)
+    assert elder.proposed?, "a reviewer accepts it into the shared catalogue"
+    assert_nil elder.proposed_by
+    assert_equal "Haschberg", elder.varieties.sole.name
+    assert_equal 1, result.skipped, "the orphan variety; the B and C species bring no variety either"
+  end
+
+  test "an existing species stays reviewed and keeps its values, the disagreement is listed" do
+    existing = PlantSpecies.create!(latin_name: "Sambucus nigra", plant_type: "shrub", height_max_m: 6)
+    existing.record_provenance!(%w[height_max_m], source: "seed")
+
+    result = Catalog::TerranovaImport.new(provider: @provider).call
+
+    existing.reload
+    assert existing.reviewed?
+    assert_equal 6.0, existing.height_max_m.to_f
+    assert_equal 4.0, existing.spread_max_m.to_f, "a blank is filled"
+    assert_includes result.conflicts, [ "Sambucus nigra", "height_max_m", existing.height_max_m, 7.0 ]
+  end
+
+  test "takes the genus from the species name, not from Terranova's genus link" do
+    stub_page("plant/genera", 1, nil, { "genera" => [ { "id" => 11, "latin_name" => "Pinus", "common_name" => "Pin" } ],
+                                        "meta" => { "pages" => 1 } })
+    Catalog::TerranovaImport.new(provider: @provider).call
+    assert_equal "Sambucus", PlantSpecies.find_by!(terranova_id: 101).genus.latin_name
+    assert_nil PlantGenus.find_by(latin_name: "Pinus")
   end
 
   test "refuses to run without a token" do
@@ -119,8 +155,9 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
   end
 
   private
-    def stub_page(path, page, file)
+    def stub_page(path, page, file, json = nil)
+      body = json ? JSON.dump(json) : file_fixture("terranova/#{file}").read
       stub_request(:get, "#{BASE}/#{path}").with(query: { page: page.to_s, per_page: "200" })
-        .to_return(status: 200, body: file_fixture("terranova/#{file}").read, headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body:, headers: { "Content-Type" => "application/json" })
     end
 end

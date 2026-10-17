@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/lib/i18n'
 import { strataKey } from '@/map/drawing/hidden'
 import { drawingStore, useDrawingState } from '@/map/drawing/store'
+import { setBaseFilter } from '@/map/drawing/style'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { isPatch, isPlant, numberProperty, trainedCrown, trainingProperty } from '@/map/plants/properties'
@@ -124,7 +125,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   ensureLabelBackground(map)
   colorPoints(map, data.points)
   // Plants are named here, by crown size: not a second time by the features layer.
-  if (map.getLayer('features-label')) map.setFilter('features-label', featureLabelFilter({ withPlants: false }) as never)
+  setBaseFilter(map, 'features-label', featureLabelFilter({ withPlants: false }))
   const crowns = map.getSource(CROWNS) as GeoJSONSource | undefined
   if (crowns) {
     crowns.setData(data.crowns)

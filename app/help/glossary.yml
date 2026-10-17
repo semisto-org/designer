@@ -2,6 +2,9 @@
 # (/help/lexique) lists them, and the first time a guide uses one, it is
 # underlined with its definition on hover or tap. `forms` are the other
 # spellings found in the guides (plural, feminine…). French, like the guides.
+- term: Alternance
+  forms: [alternantes, alternant]
+  definition: "Habitude de beaucoup de fruitiers, surtout les variétés anciennes : une année très chargée, puis une année presque sans fruits. On juge donc un arbre sur plusieurs saisons."
 - term: Baissière
   forms: [baissières]
   definition: "Fossé peu profond creusé exactement sur la courbe de niveau, avec sa terre en bourrelet en aval. Il arrête l'eau qui ruisselle et la fait boire au sol, au lieu de l'emmener."

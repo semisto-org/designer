@@ -64,7 +64,7 @@ module Maps
       end
 
       def item_params
-        params.require(:palette_item).permit(:species_id, :variety_id, :strata, :role, :notes, :target_count)
+        params.require(:palette_item).permit(:species_id, :variety_id, :strata, :role, :notes, :target_count, :unit_price, :supplier, :size)
       end
   end
 end

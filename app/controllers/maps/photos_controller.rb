@@ -26,6 +26,11 @@ module Maps
       scope = @map.photos.includes(:uploaded_by, image_attachment: :blob)
       if params[:feature_id].present?
         feature = @map.features.find(params[:feature_id])
+        # `linked=1`: only the photos linked to the feature (a plant's gallery).
+        if params[:linked].present?
+          linked = scope.where(map_feature_id: feature.id).chronological
+          return render json: { photos: linked.map(&:as_inertia) }
+        end
         scope = MapPhoto.around_feature(feature).includes(:uploaded_by, image_attachment: :blob)
           .order(Arel.sql("(map_photos.map_feature_id = #{feature.id.to_i}) DESC NULLS LAST, distance_m ASC NULLS LAST"))
         return render json: { photos: scope.map(&:as_inertia) }

@@ -10,7 +10,10 @@
 #   invasive    (warning) a species invasive in the map's country;
 #   nitrogen    (warning/info) too few nitrogen fixers among woody plants;
 #   strata      (info)    key strata missing from a planting of some size;
-#   pollination (warning) a self-sterile or dioecious species without partner.
+#   pollination (warning) a self-sterile or dioecious species without partner;
+#   unknown     (info)    the catalogue does not say a species' hardiness, or
+#                         the exposure it likes while its patch has one: not
+#                         checked, so said rather than taken for a fit.
 #
 # Density rule ported from Terranova (ConceptAlerts#density_alerts): judged on
 # the TOTAL of each strata on a patch, since a forest-garden patch mixes
@@ -38,7 +41,7 @@ class PlantingAlerts
   end
 
   def alerts
-    @alerts ||= (patch_alerts + species_alerts + nitrogen_alerts + strata_alerts + pollination_alerts)
+    @alerts ||= (patch_alerts + species_alerts + nitrogen_alerts + strata_alerts + pollination_alerts + unknown_alerts)
                 .sort_by.with_index { |alert, i| [ LEVELS.index(alert.level), i ] }
   end
 
@@ -180,6 +183,21 @@ class PlantingAlerts
         Alert.new(level: "warning", rule: "pollination", species_id:,
                   message: t("pollination_#{fertility.underscore}", name: name_of(species)))
       end
+    end
+
+    # ── What could not be checked ───────────────────────────────────────────
+
+    def unknown_alerts
+      found = []
+      if map.hardiness_zone
+        names = design_species.select { |s| s.hardiness_zone.nil? }.map { |s| name_of(s) }
+        found << Alert.new(level: "info", rule: "unknown", message: t("unknown_hardiness", names: names.to_sentence, count: names.size)) if names.any?
+      end
+      names = quantities.patches.select { |patch| patch.feature.properties["exposure"].present? }
+                        .flat_map { |patch| patch.lines.map { |line| line.item.species } }
+                        .select { |s| s.exposures.empty? }.uniq.map { |s| name_of(s) }
+      found << Alert.new(level: "info", rule: "unknown", message: t("unknown_exposure", names: names.to_sentence, count: names.size)) if names.any?
+      found
     end
 
     # ── Formatting ──────────────────────────────────────────────────────────

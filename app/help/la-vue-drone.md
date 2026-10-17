@@ -1,13 +1,30 @@
 ---
 title: "La vue drone de ton terrain"
-summary: "Une photo aérienne récente et datée, prise par Semisto : où la trouver sur la carte, dessiner dessus et comparer d'une saison à l'autre."
+summary: "Une photo aérienne récente et datée de ton terrain, prise avec ton drone ou par Semisto : l'importer, dessiner dessus et comparer d'une saison à l'autre."
 category: Cartographier
 order: 41
 ---
 
-Les photos aériennes publiques ont souvent quelques années, et elles montrent rarement ton terrain à la saison qui t'intéresse. Avec la **mission drone**, Semisto photographie ton terrain d'en haut, à une date convenue avec toi, puis pose cette vue sur ta carte. Tous les détails et le prix sont sur la page [Mission drone](/mission-drone).
+Les photos aériennes publiques ont souvent quelques années, et elles montrent rarement ton terrain à la saison qui t'intéresse. Une vue drone, c'est ton terrain vu d'en haut, le jour du vol. Deux façons de l'avoir : tu fais voler ton propre drone et tu importes l'image, ou Semisto vient la prendre pour toi avec la **mission drone**.
 
-## Comment ça se passe
+## Importer ta propre vue drone
+
+Assemble d'abord les photos du vol en une seule image vue du dessus (une **orthophoto**) avec ton logiciel de drone : DJI Terra, WebODM, Pix4D, Agisoft… Exporte-la en **GeoTIFF** (`.tif`) : c'est le format qui garde la position exacte de l'image sur le terrain. Une archive `.mbtiles` ou `.pmtiles` déjà prête convient aussi.
+
+1. Ouvre le panneau **Couches** : sous **Vues drone**, clique sur **Importer une vue drone**.
+2. Choisis le fichier, donne un nom à la vue et vérifie la **date du vol** : c'est elle qui range tes vues dans le temps.
+3. Clique sur **Envoyer et préparer la vue**. Le fichier part en morceaux : garde la page ouverte pendant l'envoi. Une courte coupure de réseau n'est pas grave : l'envoi réessaie tout seul.
+4. Terranova prépare ensuite la vue pour qu'elle s'affiche vite à tous les zooms. Tu peux fermer la page : un e-mail te prévient quand elle est sur ta carte.
+
+Le fichier peut peser jusqu'à **10 Go**, de quoi couvrir un très grand terrain avec beaucoup de détail. Un gros fichier prend du temps à envoyer et à préparer : compte une à deux heures pour quelques gigaoctets.
+
+[Ouvrir le panneau Couches](action:panel/layers)
+
+Si l'import échoue, Terranova dit pourquoi sous **Tes imports**. Le cas le plus fréquent : l'image n'est pas géoréférencée (un simple `.jpg` ou un `.tif` sans coordonnées). Réexporte-la en GeoTIFF depuis ton logiciel de drone.
+
+## La mission drone de Semisto
+
+Pas de drone ? Semisto photographie ton terrain d'en haut, à une date convenue avec toi, puis pose cette vue sur ta carte. Tous les détails et le prix sont sur la page [Mission drone](/mission-drone).
 
 1. Tu commandes la mission en ligne, depuis la page [Mission drone](/mission-drone) ou depuis **Formule et facturation**. Un compte gratuit suffit, sans forfait.
 2. Semisto te recontacte pour organiser le vol : l'accès au terrain, la période, la météo.
@@ -39,6 +56,10 @@ Elle fait partie de ta carte : toutes les personnes avec qui tu partages cette c
 
 Si tu publies ta carte (panneau **Publier**), la vue drone n'apparaît pas dans la vue publique, sauf si tu coches **Vue drone** : la plus récente sert alors de fond, pour tous ceux qui ont le lien. Une vue arrivée après la publication n'y apparaît qu'après **Mettre à jour la vue publiée**. Voir [Publier sa carte](/help/publier-sa-carte).
 
+## Retirer une vue importée
+
+Dans **Tes imports**, **Retirer** supprime la vue et son fichier de la carte. Les éléments dessinés dessus restent en place.
+
 ## Si la vue ne s'affiche pas
 
-La vue est hébergée par Semisto et chargée directement par ton navigateur. Si Terranova indique que la vue drone ne répond pas, réessaie un peu plus tard ; si cela dure, écris à Semisto. Au-delà du zoom le plus fort de la prise de vue, l'image est simplement agrandie.
+La vue est hébergée par Semisto et chargée par ton navigateur. Si Terranova indique que la vue drone ne répond pas, réessaie un peu plus tard ; si cela dure, écris à Semisto. Au-delà du zoom le plus fort de la prise de vue, l'image est simplement agrandie.

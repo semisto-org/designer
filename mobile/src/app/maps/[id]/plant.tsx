@@ -6,6 +6,7 @@ import { FlatList, Pressable, StyleSheet, Switch, Text, View } from 'react-nativ
 import { gpsProperties } from '@/lib/geo'
 import { formatDistance, t, todayIso } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
+import { display } from '@/lib/display'
 import { outbox } from '@/lib/outbox'
 import { speciesChoices } from '@/lib/species'
 import type { Position } from '@/lib/types'
@@ -33,11 +34,13 @@ export default function PlantScreen() {
 
   const save = () => {
     if (!fix || fix === 'none') return
-    outbox.addFeature(mapId, {
+    const feature = {
       layer: 'plants', kind: 'plant',
       properties: { ...(speciesId ? { species_id: speciesId } : {}), ...(plantedToday ? { planted_on: todayIso() } : {}), ...gpsProperties(fix.accuracy) },
-      geometry: { type: 'Point', coordinates: fix.position },
-    })
+      geometry: { type: 'Point' as const, coordinates: fix.position },
+    }
+    outbox.addFeature(mapId, feature)
+    display.reveal(mapId, { layer: feature.layer, kind: feature.kind, ...feature.properties }, bundle?.planting)
     router.back()
   }
 

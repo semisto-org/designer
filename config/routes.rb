@@ -55,6 +55,7 @@ Rails.application.routes.draw do
   constraints token: MapPublication::TOKEN_PATTERN do
     get "p/:token", to: "public_maps#show", as: :public_map
     get "p/:token/tiles/:layer_key/:z/:x/:y", to: "public_maps/tiles#show", as: :public_map_tile
+    get "p/:token/aerial-view", to: "public_maps/aerial_views#show", as: :public_map_aerial_view
   end
   # --- end collab ---
   # --- journey ---
@@ -263,10 +264,13 @@ Rails.application.routes.draw do
         resources :plant_observations, only: %i[index create destroy] do
           member { get :photo }
         end
+        resources :plant_harvests, only: %i[index create destroy]
+        resources :storage_readings, only: %i[index create destroy]
       end
       resource :plant_list, only: :show do
         get :print
       end
+      resources :harvests, only: %i[index create]
     end
   end
   # --- end plants ---
@@ -475,6 +479,19 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :aerial_views, path: "drone-views", only: %i[index create destroy]
   end
+  # Drone views anyone editing the map imports from a file (Couches panel):
+  # sent in parts (PUT /mcp/uploads/:token/parts/:n), then converted in the
+  # background; `archive` serves the PMTiles archive to whoever sees the map.
+  resources :maps, only: [] do
+    scope module: :maps do
+      resources :aerial_views, only: %i[index create destroy] do
+        member do
+          post :complete
+          get :archive
+        end
+      end
+    end
+  end
   # --- end drone ---
 
   # --- transfer ---
@@ -506,7 +523,8 @@ Rails.application.routes.draw do
   # --- super-admin ---
   # The staff dashboard (figures, latest accounts and maps, admin log), the
   # accounts list and « Se connecter en tant que », ended from the banner, and
-  # « Tech » (version, files and backup, jobs, services).
+  # « Tech » (version, files and backup, jobs, services), and how complete the
+  # plant catalogue is (« Catalogue »).
   namespace :admin do
     get "/", to: "dashboard#show", as: :dashboard
     resources :users, only: %i[index update] do
@@ -514,10 +532,24 @@ Rails.application.routes.draw do
     end
     resources :maps, only: :index
     get "tech", to: "tech#show", as: :tech
+    get "catalogue", to: "catalogue#show", as: :catalogue
   end
   resource :impersonation, only: :destroy
   # --- end super-admin ---
 
+  # --- plant-palette ---
+  # « Palette végétale »: the table of a map's plants (existing, chosen,
+  # planned, planted), its saved views and each plant's sheet on the land.
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :plant_palette, path: "palette", only: :show do
+        get "plants/:key", action: :plant, as: :plant, constraints: { key: %r{[^/]+} }
+        patch "plants/:key", action: :update_plant, constraints: { key: %r{[^/]+} }
+      end
+      resources :plant_palette_views, path: "palette/views", only: %i[create update destroy]
+    end
+  end
+  # --- end plant-palette ---
   # --- tasks ---
   # A map's task lists (« Tâches »), and the tasks of all my maps and my
   # teams' maps (/tasks).

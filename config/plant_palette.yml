@@ -1,0 +1,61 @@
+# The « Palette végétale » table: its columns, how rows can be grouped, and
+# the views every map starts with. Shared by the server (PlantPaletteView
+# validates saved views against it) and the page (app/frontend/palette).
+# Labels live in config/locales/plant_palette.fr.yml.
+columns:
+  - name            # common name with the variety, latin name below (always shown, first)
+  - latin_name
+  - strata
+  - plant_type
+  - role
+  - status          # existing, chosen, planned, planting, planted
+  - tags
+  - existing        # existing trees of that species, kept
+  - target          # the palette's aim
+  - planned         # planned on the map (isolated plants + patch lines)
+  - planted
+  - to_plant        # planned − planted
+  - patches
+  - height
+  - spread
+  - hardiness
+  - fit             # one verdict per criterion the land lets us judge (PlantFit)
+  - exposures
+  - edible
+  - flowering
+  - harvest
+  - native
+  - size            # « calibre » or container, as ordered
+  - supplier
+  - unit_price
+  - amount          # planned × unit price
+  - amount_to_plant # to plant × unit price
+  - planted_dates
+  - established
+  - struggling
+  - dead
+  - survival_rate
+  - notes
+groups: [none, strata, status, role, tag, supplier, plant_type]
+statuses: [existing, chosen, planned, planting, planted]
+presets:
+  base:
+    columns: [name, strata, role, status, fit, existing, planned, planted, to_plant, height, spread]
+    group_by: strata
+    sort: { key: name, dir: asc }
+    filters: {}
+  budget:
+    columns: [name, size, supplier, planned, unit_price, amount, to_plant, amount_to_plant]
+    group_by: strata
+    sort: { key: name, dir: asc }
+    filters: { statuses: [chosen, planned, planting] }
+  shopping:
+    columns: [name, size, to_plant, unit_price, amount_to_plant, notes]
+    group_by: supplier
+    sort: { key: latin_name, dir: asc }
+    filters: { to_plant_only: true }
+  follow_up:
+    columns: [name, strata, tags, planted, to_plant, planted_dates, established, struggling, dead, survival_rate]
+    group_by: status
+    sort: { key: name, dir: asc }
+    filters: { statuses: [planting, planted] }

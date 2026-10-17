@@ -371,6 +371,42 @@ fr:
     zone_unknown: "Zone de rusticité de la région inconnue"
     results_empty: "Aucune espèce trouvée."
     suggestions: "Suggestions pour ce terrain"
+    suggestions_link: "Suggestions pour ce terrain, dans la palette végétale"
+    fit:
+      label: "Ce qui convient ici"
+      site_intro: "Ce que je sais de ton terrain :"
+      zone: "zone %{zone}"
+      criteria:
+        hardiness: "Rusticité"
+        exposure: "Exposition"
+        moisture: "Humidité"
+        soil_type: "Sol"
+        ph: "pH"
+      status:
+        fits: "convient"
+        partial: "tolère"
+        misfit: "ne convient pas"
+        unknown: "le catalogue ne le dit pas encore"
+      unverified: "Valeur du catalogue encore à vérifier"
+      origins:
+        climate: "climat"
+        patches: "tes patchs"
+        sheet: "fiche projet"
+        soil_samples: "analyse de sol"
+      excluded: "Écartées d'office : %{list}."
+      excluded_hardiness:
+        one: "%{count} moins rustique que ton climat"
+        other: "%{count} moins rustiques que ton climat"
+      excluded_invasive:
+        one: "%{count} invasive dans ton pays"
+        other: "%{count} invasives dans ton pays"
+      excluded_toxic:
+        one: "%{count} toxique pour tes animaux"
+        other: "%{count} toxiques pour tes animaux"
+      excluded_by:
+        invasive: "Invasive ici"
+        toxic: "Toxique pour tes animaux"
+      more: "Donne une exposition à tes patchs et décris ton sol dans la fiche projet : les suggestions en tiendront compte."
     reasons:
       nitrogen: "Fixe l'azote et nourrit le sol"
       strata_sub_canopy: "Pour la strate arborée basse"
@@ -411,7 +447,7 @@ fr:
     balance: "Équilibre des strates"
     balance_hint: "Plants prévus par strate, en patches et isolés."
     balance_empty: "Rien de prévu pour l'instant."
-    empty: "La palette est vide. Cherche une espèce ou pars des suggestions."
+    empty: "La palette est vide. Cherche une espèce ou pars des suggestions pour ce terrain."
     draw_patch: "Dessiner un patch"
     drawing_patch: "Dessine le contour du patch sur la carte : reviens au premier point ou touche « Terminer »."
     patch_created: "Patch créé : compose-le dans le panneau de droite."
@@ -431,6 +467,7 @@ fr:
       other: "%{count} plants sans espèce ne sont pas comptés."
     export_csv: "Exporter (CSV)"
     print: "Version imprimable"
+    open_palette: "Palette végétale (tableau)"
     coherence: "Cohérence du plan"
     coherence_none: "Rien à signaler : le plan est cohérent avec ce que l'on sait des espèces."
     why: "Pourquoi ?"
@@ -474,6 +511,7 @@ fr:
       nitrogen: "Azote"
       strata: "Strates"
       pollination: "Pollinisation"
+      unknown: "À vérifier"
     messages:
       density_low: "%{patch}, strate %{strata} : %{density} plants/m², sous la plage %{min} à %{max}."
       density_high: "%{patch}, strate %{strata} : %{density} plants/m², au-dessus de la plage %{min} à %{max}."
@@ -488,6 +526,12 @@ fr:
         other: "Strates absentes du plan : %{strata}."
       pollination_self_sterile: "%{name} est autostérile : prévois au moins deux variétés différentes pour avoir des fruits."
       pollination_dioecious: "%{name} est dioïque : il faut au moins deux pieds, un mâle et une femelle."
+      unknown_hardiness:
+        one: "Le catalogue ne dit pas encore jusqu'à quel froid tient %{names} : sa rusticité n'est pas vérifiée."
+        other: "Le catalogue ne dit pas encore jusqu'à quel froid tiennent %{names} : leur rusticité n'est pas vérifiée."
+      unknown_exposure:
+        one: "Le catalogue ne dit pas quelle exposition préfère %{names} : son patch n'est pas vérifié."
+        other: "Le catalogue ne dit pas quelle exposition préfèrent %{names} : leurs patchs ne sont pas vérifiés."
     explanations:
       density: "Les plages de densité viennent de la pratique des jardins-forêts. Trop dense, les plantes se gênent et s'étiolent ; trop clair, le sol reste nu et les adventices s'installent."
       exposure: "Une plante à contre-exposition pousse mal et produit peu. Déplace-la ou corrige l'exposition du patch."
@@ -496,6 +540,7 @@ fr:
       nitrogen: "Les fixateurs d'azote (aulnes, éléagnus, argousier, trèfles…) nourrissent le sol sans engrais. Repère courant : 15 à 30 % des ligneux au démarrage, que l'on taille ensuite pour nourrir les fruitiers."
       strata: "Un jardin-forêt occupe tous les étages, des arbres au couvre-sol. Chaque strate manquante, c'est de la lumière et du sol perdus, ou une place laissée aux adventices."
       pollination: "Sans partenaire de pollinisation, une plante fleurit mais ne donne pas de fruits, et l'erreur ne se voit qu'après plusieurs années."
+      unknown: "Une donnée absente du catalogue n'est pas une bonne nouvelle : renseigne-toi auprès d'une pépinière ou d'une flore, ou signale-le à Semisto pour qu'on complète la fiche."
     zone_unknown: "La zone de rusticité de la région n'est pas renseignée : la rusticité des espèces n'est pas vérifiée."
     countries:
       BE: "Belgique"
@@ -559,6 +604,13 @@ fr:
       free: "Libre"
       pollard: "En trogne (taillé en tête)"
       coppice: "En cépée (recépé au pied)"
+  plant_peek:
+    no_species: "Plant sans espèce"
+    planted_in: "Planté en %{year}"
+    details: "Tous les détails"
+    open: "Ouvrir la fiche du plant"
+    open_photo: "Agrandir la photo"
+    add_photo: "Ajouter une photo de ce plant"
   plant_observations:
     title: "Suivi de reprise"
     add: "Noter une observation"

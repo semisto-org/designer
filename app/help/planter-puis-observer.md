@@ -22,7 +22,9 @@ Sur la carte, un plant planté a une couronne pleine ; un plant encore **en proj
 En haut de l'éditeur, le sélecteur **Actuelle | Projetée** change ce que tu vois :
 
 - **Projetée** montre tout le design : ce qui est planté et ce qui est en projet ;
-- **Actuelle** montre le terrain tel qu'il est aujourd'hui : les plants en projet et les brouillons de l'IA disparaissent.
+- **Actuelle** montre le terrain tel qu'il est aujourd'hui : les plants en projet, les aménagements en projet et les brouillons de l'IA disparaissent.
+
+Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans leur fiche, la section **Sur le terrain** dit s'ils sont déjà là ou **en projet**. Touche **C'est un projet** pour une mare encore à creuser : elle passe en pointillés et ne se voit plus qu'en situation projetée. Une fois creusée, **Marquer comme réalisé** garde la date et la fait apparaître en situation actuelle.
 
 Le choix est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse en situation projetée, pour que tu les voies apparaître.
 

@@ -67,4 +67,27 @@ class DronePublicationTest < ActionDispatch::IntegrationTest
     get map_publication_path(@map), as: :json
     assert_nil response.parsed_body["aerialView"]
   end
+
+  test "an imported view is read through the public page, only while it is published" do
+    view = imported_view(@map, @owner, bytes: "x", status: "ready")
+    view.update!(captured_on: Date.new(2028, 6, 1))
+    view.archive.attach(io: file_fixture("drone-view.pmtiles").open, filename: "vue.pmtiles", content_type: "application/vnd.pmtiles")
+    publication = publish("show_aerial_view" => "1")
+    assert_equal view.id, publication.snapshot["aerial_view_id"]
+    assert_equal "/p/#{publication.token}/aerial-view", public_props(publication).dig("aerialView", "url")
+
+    get public_map_aerial_view_path(publication.token)
+    assert_response :redirect
+    assert_match %r{/rails/active_storage/}, response.location
+
+    publication.unpublish!
+    get public_map_aerial_view_path(publication.token)
+    assert_response :gone
+  end
+
+  test "a view still being prepared is never published" do
+    imported_view(@map, @owner, bytes: "x", status: "processing").update!(captured_on: Date.new(2028, 6, 1))
+    publication = publish("show_aerial_view" => "1")
+    assert_equal @newer.id, publication.snapshot["aerial_view_id"]
+  end
 end

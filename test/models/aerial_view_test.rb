@@ -106,4 +106,23 @@ class AerialViewTest < ActiveSupport::TestCase
     assert_equal "tiles.example.org", view.host
     assert_equal [ @map.id, @map.name, "Michael" ], view.as_admin_json.values_at(:mapId, :mapName, :ownerName)
   end
+
+  test "an imported view needs no address; it is read through the path its caller gives" do
+    view = imported_view(@map, users(:michael), bytes: "x", status: "ready")
+    assert view.valid?
+    assert_nil view.url
+    json = view.as_inertia(archive_url: "/maps/#{@map.id}/aerial_views/#{view.id}/archive")
+    assert_equal [ "/maps/#{@map.id}/aerial_views/#{view.id}/archive", "ready", "orthophoto.tif", 1 ], json.values_at(:url, :status, :filename, :byteSize)
+    refute AerialView.new(map: @map, captured_on: Date.current, kind: "pmtiles").valid?, "a view set up by staff still needs one"
+    view.status = "lost"
+    refute view.valid?
+  end
+
+  test "failing an import keeps the view, with why, and lets go of the parts" do
+    view = imported_view(@map, users(:michael), bytes: "x", status: "processing")
+    upload = view.source_upload
+    view.fail!("not_georeferenced")
+    assert_equal [ "failed", "not_georeferenced" ], [ view.reload.status, view.failure ]
+    refute McpUpload.exists?(upload.id)
+  end
 end
