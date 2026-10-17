@@ -83,7 +83,7 @@ const s = StyleSheet.create({
   row: { paddingVertical: space.md, paddingHorizontal: space.md, borderRadius: radius.md, borderBottomWidth: 1, borderBottomColor: colors.loam100 },
   rowSelected: { backgroundColor: colors.prune50 },
   name: { fontSize: 16, fontFamily: fonts.medium, color: colors.loam900 },
-  latin: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  latin: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
   toggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.sm },
   toggleLabel: { fontSize: 16, fontFamily: fonts.body, color: colors.loam900 },
 })

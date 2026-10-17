@@ -7,6 +7,7 @@ import { isShown, type Display } from '@/lib/display-core'
 import { featureColor, featureTitle } from '@/lib/elements'
 import { pickFeatureId } from '@/lib/pick'
 import type { MapBundle } from '@/lib/types'
+import { colors } from '@/ui/theme'
 
 export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-point', 'features-plant']
 const FONT = ['Noto Sans Regular']
@@ -36,7 +37,10 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
     <>
       {boundary && (
         <GeoJSONSource id="boundary" data={{ type: 'Feature', geometry: boundary as GeoJSON.Geometry, properties: {} }}>
-          <Layer id="boundary-line" type="line" paint={{ 'line-color': '#ffffff', 'line-width': 3, 'line-dasharray': [2, 1.5] }} />
+          {/* As on the website (map/layers/boundary.ts): a plum wash, a white casing, a plum line. */}
+          <Layer id="boundary-fill" type="fill" paint={{ 'fill-color': colors.prune600, 'fill-opacity': 0.12 }} />
+          <Layer id="boundary-casing" type="line" paint={{ 'line-color': '#ffffff', 'line-width': 6, 'line-opacity': 0.9 }} />
+          <Layer id="boundary-line" type="line" paint={{ 'line-color': colors.prune600, 'line-width': 3 }} />
         </GeoJSONSource>
       )}
       <GeoJSONSource
@@ -59,13 +63,13 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
         <Layer id="features-plant" type="circle" filter={['==', ['get', 'kind'], 'plant']}
           paint={{
             'circle-color': ['case', ['==', ['get', 'planted'], 1], ['get', 'color'], '#ffffff'],
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 16, 4, 20, ['case', ['==', ['get', 'selected'], 1], 14, 10]],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 16, 6, 20, ['case', ['==', ['get', 'selected'], 1], 14, 10]],
             'circle-stroke-color': ['get', 'color'],
-            'circle-stroke-width': ['case', ['==', ['get', 'selected'], 1], 4, 2.5],
+            'circle-stroke-width': ['case', ['==', ['get', 'selected'], 1], 4, 3],
             'circle-opacity': ['case', ['==', ['get', 'pending'], 1], 0.7, 1],
           }} />
         <Layer id="features-label" type="symbol" minzoom={17}
-          layout={{ 'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 12, 'text-offset': [0, 1.2], 'text-anchor': 'top', 'text-optional': true }}
+          layout={{ 'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 14, 'text-offset': [0, 1.2], 'text-anchor': 'top', 'text-optional': true }}
           paint={{ 'text-color': '#1b1712', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }} />
       </GeoJSONSource>
     </>

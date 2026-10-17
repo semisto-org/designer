@@ -11,7 +11,15 @@ const root = () => {
 }
 
 export function readJson<T>(name: string): T | null {
-  const file = new File(root(), name)
+  // The file itself, else what a crash mid-write left behind (see writeJson).
+  for (const candidate of [name, `${name}.tmp`, `${name}.bak`]) {
+    const value = parse<T>(new File(root(), candidate))
+    if (value !== null) return value
+  }
+  return null
+}
+
+function parse<T>(file: File): T | null {
   if (!file.exists) return null
   try {
     return JSON.parse(file.textSync()) as T
@@ -20,15 +28,22 @@ export function readJson<T>(name: string): T | null {
   }
 }
 
+/**
+ * Writes the new version next to the old one, then swaps them, keeping the
+ * old one aside until the swap is done: whenever the app is killed, one
+ * complete version stays readable (readJson tries name, .tmp, then .bak).
+ */
 export function writeJson(name: string, value: unknown): void {
   const file = new File(root(), name)
-  // Write then swap, so a crash mid-write never leaves half a file.
   const tmp = new File(root(), `${name}.tmp`)
+  const bak = new File(root(), `${name}.bak`)
   if (tmp.exists) tmp.delete()
   tmp.create()
   tmp.write(JSON.stringify(value))
-  if (file.exists) file.delete()
-  tmp.moveSync(file)
+  if (bak.exists) bak.delete()
+  if (file.exists) file.moveSync(bak)
+  tmp.moveSync(new File(root(), name))
+  if (bak.exists) bak.delete()
 }
 
 export function removeFile(name: string): void {

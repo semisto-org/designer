@@ -1,4 +1,4 @@
-import { formatDistance, has, t, todayIso } from '../i18n'
+import { formatDistance, has, seasonOf, t, todayIso } from '../i18n'
 
 describe('i18n', () => {
   it('reads the Rails strings with %{var} and plural forms', () => {
@@ -13,5 +13,15 @@ describe('i18n', () => {
     expect(formatDistance(12.4)).toBe('12 m')
     expect(formatDistance(1234)).toMatch(/^1,2\s?km$/)
     expect(todayIso(new Date(2026, 9, 4, 23, 30))).toBe('2026-10-04')
+  })
+})
+
+describe('seasonOf', () => {
+  it('counts winter from December, autumn from September', () => {
+    expect(seasonOf(new Date(2026, 11, 1))).toBe('winter')
+    expect(seasonOf(new Date(2027, 1, 28))).toBe('winter')
+    expect(seasonOf(new Date(2027, 2, 1))).toBe('spring')
+    expect(seasonOf(new Date(2026, 6, 14))).toBe('summer')
+    expect(seasonOf(new Date(2026, 9, 17))).toBe('autumn')
   })
 })

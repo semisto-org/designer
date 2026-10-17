@@ -82,11 +82,14 @@ export async function completeSignIn(url: string): Promise<SignInResult> {
   return 'signed_in'
 }
 
-/** A valid access token, refreshed when it expires within a minute. Null when signed out. */
-export async function accessToken({ force = false } = {}): Promise<string | null> {
+/**
+ * A valid access token, refreshed when it expires within `minValidityMs`
+ * (a minute by default). Null when signed out.
+ */
+export async function accessToken({ force = false, minValidityMs = 60_000 } = {}): Promise<string | null> {
   const tokens = await loadTokens()
   if (!tokens) return null
-  if (!force && tokens.expiresAt - Date.now() > 60_000) return tokens.accessToken
+  if (!force && tokens.expiresAt - Date.now() > minValidityMs) return tokens.accessToken
   refreshing ??= refresh(tokens).finally(() => { refreshing = null })
   return (await refreshing)?.accessToken ?? null
 }

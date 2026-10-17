@@ -7,7 +7,7 @@
 // photo with it. Identifying needs the network; the note goes through the outbox.
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { ApiError, api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { currentPosition } from '@/lib/location'
@@ -18,6 +18,7 @@ import { deletePhoto } from '@/lib/storage'
 import type { IdentificationCandidate } from '@/lib/types'
 import { useOnline } from '@/state/sync'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
+import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, space } from '@/ui/theme'
 
 const MAX = 5
@@ -64,7 +65,7 @@ export default function BioindicatorScreen() {
       type: 'uploadPhoto', mapId, file: p.file, takenAt: p.takenAt, featureId: null, bioindicatorStatus: 'to_analyze',
       lng: p.position?.[0] ?? null, lat: p.position?.[1] ?? null,
     }))
-    Alert.alert(t('mobile.bioindicator.title'), t('mobile.bioindicator.ai_saved', { count: photos.length }))
+    toast(t('mobile.bioindicator.title'), { body: t('mobile.bioindicator.ai_saved', { count: photos.length }) })
     router.back()
   }
 
@@ -82,7 +83,7 @@ export default function BioindicatorScreen() {
       },
     })
     others.forEach((p) => deletePhoto(p.file))
-    Alert.alert(t('mobile.bioindicator.title'), t('mobile.bioindicator.saved', { name }))
+    toast(t('mobile.bioindicator.title'), { body: t('mobile.bioindicator.saved', { name }) })
     router.back()
   }
 
@@ -183,10 +184,10 @@ const s = StyleSheet.create({
   kept: { borderWidth: 3, borderColor: colors.prune600 },
   section: { fontSize: 20, fontFamily: fonts.title, color: colors.loam900, marginTop: space.md },
   name: { fontSize: 17, fontFamily: fonts.bold, color: colors.loam900 },
-  latin: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
-  meta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  latin: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
+  meta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
-  inList: { fontSize: 13, fontFamily: fonts.bold, color: colors.prune700 },
-  indicator: { fontSize: 12, fontFamily: fonts.medium, color: colors.loam900, backgroundColor: colors.loam100, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, overflow: 'hidden' },
+  inList: { fontSize: 14, fontFamily: fonts.bold, color: colors.prune700 },
+  indicator: { fontSize: 14, fontFamily: fonts.medium, color: colors.loam900, backgroundColor: colors.loam100, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, overflow: 'hidden' },
   unverified: { backgroundColor: colors.white, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.loam500 },
 })

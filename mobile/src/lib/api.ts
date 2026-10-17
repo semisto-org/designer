@@ -16,9 +16,12 @@ export class ApiError extends Error {
 export type UploadFile = { uri: string; name: string; type: string }
 type Body = Record<string, unknown> | FormData | undefined
 
-async function send(method: string, path: string, body: Body, token: string | null, timeoutMs?: number): Promise<Response> {
+type Options = { timeoutMs?: number; idempotencyKey?: string }
+
+async function send(method: string, path: string, body: Body, token: string | null, { timeoutMs, idempotencyKey }: Options): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (token) headers.Authorization = `Bearer ${token}`
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey
   let payload: BodyInit | undefined
   if (body instanceof FormData) payload = body
   else if (body !== undefined) {
@@ -34,12 +37,20 @@ async function send(method: string, path: string, body: Body, token: string | nu
   }
 }
 
-/** timeoutMs: how long to wait for the answer (a video upload needs far longer). */
-export async function api<T = unknown>(method: string, path: string, body?: Body, options: { timeoutMs?: number } = {}): Promise<T> {
+/**
+ * timeoutMs: how long to wait for the answer (a video upload needs far longer).
+ * idempotencyKey: the server answers a second send of the same key with the
+ * first answer instead of doing it twice (outbox retries).
+ */
+export async function api<T = unknown>(method: string, path: string, body?: Body, options: Options = {}): Promise<T> {
   let response: Response
   try {
-    response = await send(method, path, body, await accessToken(), options.timeoutMs)
-    if (response.status === 401) response = await send(method, path, body, await accessToken({ force: true }), options.timeoutMs)
+    response = await send(method, path, body, await accessToken(), options)
+    if (response.status === 401) {
+      // Never resend without a token: a refused refresh stays a 401.
+      const token = await accessToken({ force: true })
+      if (token) response = await send(method, path, body, token, options)
+    }
   } catch {
     throw new ApiError(0, null, 'offline')
   }

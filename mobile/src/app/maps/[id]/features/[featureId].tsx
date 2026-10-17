@@ -3,7 +3,7 @@
 // fruit tree, its harvest; for a fruit store, its temperature and humidity.
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { HarvestSection } from '@/harvest/HarvestSection'
 import { api } from '@/lib/api'
 import { featureTitle, kindLabel, layerLabel, speciesName } from '@/lib/elements'
@@ -12,7 +12,7 @@ import { isHarvestable } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
 import { isVideo } from '@/lib/media'
 import { outbox } from '@/lib/outbox'
-import { ownProperties, type Op } from '@/lib/outbox-core'
+import type { Op } from '@/lib/outbox-core'
 import { takePhoto } from '@/lib/photos'
 import { canEdit, type Comment, type MapFeature, type Survival } from '@/lib/types'
 import { useOnline, useOutbox } from '@/state/sync'
@@ -21,6 +21,7 @@ import { StoreSection } from '@/storage/StoreSection'
 import { chooseMedia } from '@/ui/chooseMedia'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
+import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, space } from '@/ui/theme'
 
 type Observation = { id: number; observedOn: string; survival: Survival; vigor: number | null; note: string | null; author: string | null; thumbUrl: string | null }
@@ -94,7 +95,7 @@ function PlantSection({ mapId, feature, editable, ops }: { mapId: number; featur
   const markPlanted = () => {
     outbox.add({
       type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion,
-      changes: { properties: { ...ownProperties(feature.properties), planted_on: todayIso() } },
+      changes: { patch: { planted_on: todayIso() } },
     })
   }
   return (
@@ -124,7 +125,7 @@ function ObservationForm({ mapId, featureId }: { mapId: number; featureId: numbe
     if (!survival) return
     outbox.add({ type: 'createObservation', mapId, featureId, observedOn: todayIso(), survival, vigor, note: note.trim() || null, photo })
     setSurvival(null); setVigor(null); setNote(''); setPhoto(null)
-    Alert.alert(t('plant_observations.saved'))
+    toast(t('plant_observations.saved'))
   }
 
   return (
@@ -246,7 +247,7 @@ function VideoMark({ overlay, style }: { overlay?: boolean; style?: object }) {
 }
 
 const s = StyleSheet.create({
-  kicker: { fontSize: 13, fontFamily: fonts.medium, color: colors.loam600 },
+  kicker: { fontSize: 14, fontFamily: fonts.medium, color: colors.loam600 },
   section: { fontSize: 20, fontFamily: fonts.title, color: colors.loam900, marginTop: space.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   thumb: { width: 120, height: 120, borderRadius: radius.md },
@@ -255,6 +256,6 @@ const s = StyleSheet.create({
   videoPlay: { color: '#fff', fontSize: 28, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 6 },
   smallThumb: { width: 64, height: 64, borderRadius: radius.md },
   rowTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.loam900 },
-  rowMeta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  rowMeta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
 })
 

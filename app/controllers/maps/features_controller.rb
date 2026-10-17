@@ -23,7 +23,7 @@ module Maps
     end
 
     def update
-      if @feature.update(feature_params.merge(updated_by: Current.user))
+      if @feature.update(update_params.merge(updated_by: Current.user))
         render json: @feature.as_geojson
       else
         render_errors @feature
@@ -47,6 +47,16 @@ module Maps
         permitted = raw.permit(:layer, :kind, :name, :notes, :status, :lock_version, properties: {}, style: {}, tags: [])
         permitted[:geometry] = raw[:geometry].to_unsafe_h if raw[:geometry].present?
         permitted
+      end
+
+      # properties_patch (the phone app) changes only the keys it names, so an
+      # edit made offline never overwrites what changed on the website since.
+      def update_params
+        permitted = feature_params
+        # Free keys, like properties: {} above (the jsonb holds any property).
+        patch = params.dig(:feature, :properties_patch)
+        return permitted unless patch.respond_to?(:to_unsafe_h)
+        permitted.merge(properties: (permitted[:properties] || @feature.properties).to_h.merge(patch.to_unsafe_h))
       end
   end
 end

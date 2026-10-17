@@ -130,6 +130,41 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a change sent twice with the same Idempotency-Key is made once, and the first answer comes back" do
+    token = app_token(users(:michael))
+    feature = { layer: "notes", kind: "note", name: "Repère", geometry: { type: "Point", coordinates: [ 4.95, 50.32 ] } }
+    headers = bearer(token).merge("Idempotency-Key" => "op-1")
+    assert_difference -> { @map.features.count }, 1 do
+      post "/maps/#{@map.id}/features", params: { feature: }, headers:, as: :json
+      assert_response :created
+      first = response.parsed_body["id"]
+      post "/maps/#{@map.id}/features", params: { feature: }, headers:, as: :json
+      assert_response :created
+      assert_equal first, response.parsed_body["id"]
+    end
+
+    # Another key, or another person with the same key, is a new change.
+    assert_difference -> { @map.features.count }, 1 do
+      post "/maps/#{@map.id}/features", params: { feature: }, headers: bearer(token).merge("Idempotency-Key" => "op-2"), as: :json
+    end
+    # A refusal is not kept: the change can be sent again once allowed.
+    post "/maps/#{@map.id}/features", params: { feature: }, headers: bearer(app_token(users(:alice))).merge("Idempotency-Key" => "op-1"), as: :json
+    assert_response :forbidden
+    assert_equal 2, IdempotentRequest.count
+  end
+
+  test "properties_patch changes only the properties it names" do
+    feature = @map.features.create!(layer: "plants", kind: "plant", properties: { "note_from_web" => "garder" },
+      geometry: { "type" => "Point", "coordinates" => [ 4.95, 50.32 ] })
+    patch "/maps/#{@map.id}/features/#{feature.id}",
+      params: { feature: { properties_patch: { planted_on: "2026-10-17" }, lock_version: feature.lock_version } },
+      headers: bearer(app_token(users(:michael))), as: :json
+    assert_response :success
+    feature.reload
+    assert_equal "2026-10-17", feature.properties["planted_on"]
+    assert_equal "garder", feature.properties["note_from_web"]
+  end
+
   test "no other credential is accepted as the app" do
     get "/api/v1/maps"
     assert_response :unauthorized

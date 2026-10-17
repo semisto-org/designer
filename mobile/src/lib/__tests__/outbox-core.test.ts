@@ -1,4 +1,4 @@
-import { applyPending, emptyOutbox, flush, nextTempId, ownProperties, type Op, type OutboxState, type Transport } from '../outbox-core'
+import { applyPending, emptyOutbox, flush, nextTempId, ownProperties, retry, type Op, type OutboxState, type Transport } from '../outbox-core'
 import type { MapBundle, MapFeature } from '../types'
 
 const at = '2026-10-04T10:00:00Z'
@@ -138,5 +138,76 @@ describe('flush', () => {
     const result = await flush(state([op]), t)
     expect(result.sent).toBe(1)
     expect(bodies[1]).toEqual({ properties: { species_id: 7, variety_id: 2, planted_on: '2026-10-04' }, lock_version: 5 })
+  })
+})
+
+describe('flush, field-safe', () => {
+  const patch = (id: string, featureId: number, lockVersion: number, changes: Record<string, unknown>): Op => ({
+    id, mapId: 1, createdAt: at, type: 'updateFeature', featureId, lockVersion, changes: { patch: changes },
+  })
+
+  it('sends only the changed properties, as a patch', async () => {
+    const bodies: Record<string, unknown>[] = []
+    const { t } = transport({ updateFeature: async (_m, id, body) => { bodies.push(body); return plant(id) } })
+    await flush(state([patch('a', 5, 2, { planted_on: '2026-10-17' })]), t)
+    expect(bodies).toEqual([{ properties_patch: { planted_on: '2026-10-17' }, lock_version: 2 }])
+  })
+
+  it('puts a second offline edit of a feature on top of the first', async () => {
+    const versions: unknown[] = []
+    const { t } = transport({
+      updateFeature: async (_m, id, body) => { versions.push(body.lock_version); return plant(id, { lockVersion: Number(body.lock_version) + 1 }) },
+    })
+    await flush(state([patch('a', 5, 2, { planted_on: '2026-10-17' }), patch('b', 5, 2, { species_id: 9 })]), t)
+    expect(versions).toEqual([2, 3])
+  })
+
+  it('on a conflict, sends the patch again on the newer version, without the old snapshot', async () => {
+    const bodies: Record<string, unknown>[] = []
+    const { t } = transport({
+      updateFeature: async (_m, id, body) => {
+        bodies.push(body)
+        if (bodies.length === 1) throw { status: 409, body: { feature: plant(id, { lockVersion: 4, name_from_web: 'x' }) } }
+        return plant(id, { lockVersion: 5 })
+      },
+    })
+    const result = await flush(state([patch('a', 5, 2, { planted_on: '2026-10-17' })]), t)
+    expect(result.sent).toBe(1)
+    expect(bodies[1]).toEqual({ properties_patch: { planted_on: '2026-10-17' }, lock_version: 4 })
+  })
+
+  it('pauses on an expired session instead of refusing every change', async () => {
+    const { t } = transport({ createComment: async () => { throw { status: 401 } } })
+    const ops: Op[] = [
+      { id: 'a', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Bonjour' },
+      { id: 'b', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Encore' },
+    ]
+    const result = await flush(state(ops), t)
+    expect(result.stopped).toBe('auth')
+    expect(result.state.ops.map((o) => o.error)).toEqual([undefined, undefined])
+  })
+
+  it('reports each step and sends each change with its own key', async () => {
+    const keys: string[] = []
+    const steps: number[] = []
+    const { t } = transport({ createComment: async (_m, _f, _b, key) => { keys.push(key) } })
+    const ops: Op[] = [
+      { id: 'a', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Un' },
+      { id: 'b', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Deux' },
+    ]
+    await flush(state(ops), t, (progress) => steps.push(progress.ops.length))
+    expect(keys).toEqual(['a', 'b'])
+    expect(steps).toEqual([1, 0])
+  })
+})
+
+describe('retry', () => {
+  it('gives a refused change, and what waited on it, another try', () => {
+    const ops: Op[] = [
+      { ...create('a', -1), error: 'Refusé' },
+      { id: 'b', mapId: 1, createdAt: at, type: 'createComment', featureId: -1, body: 'x', error: 'parent_failed' },
+      { id: 'c', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'y', error: 'Autre' },
+    ]
+    expect(retry(state(ops), 'a').ops.map((o) => o.error)).toEqual([undefined, undefined, 'Autre'])
   })
 })

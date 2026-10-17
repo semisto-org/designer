@@ -58,6 +58,18 @@ The app talks to `extra.apiUrl` in `app.json` (production by default). To
 use a local server, set it to the computer's address on the local network
 (e.g. `http://192.168.1.20:3000`) for the development build only.
 
+## Errors and updates
+
+- Crashes and errors go to Sentry when the build has `EXPO_PUBLIC_SENTRY_DSN`
+  (an EAS environment variable of the project); without it nothing is sent.
+  Source maps are not uploaded yet (`SENTRY_DISABLE_AUTO_UPLOAD` in
+  `eas.json`) until a `SENTRY_AUTH_TOKEN` is set.
+- JavaScript-only changes reach installed builds over the air: GitHub
+  Actions « Mobile update », channel = the build profile (`testflight` for
+  the test app). The runtime version is the native fingerprint, so an update
+  never reaches a build whose native modules differ; adding a native module
+  needs « Mobile build ».
+
 ## Release
 
 `eas.json` profiles:

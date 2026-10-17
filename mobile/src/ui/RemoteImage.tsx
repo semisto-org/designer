@@ -1,7 +1,10 @@
-// An image served by Designer (photos, observation photos): the request
+// An image served by Terranova (photos, observation photos): the request
 // carries the app's token; the server redirects to a short-lived file link.
+// Kept on disk under its path (not the link, which changes), so photos seen
+// once still show on the terrain without network.
+import { Image, type ImageStyle } from 'expo-image'
 import { useEffect, useState } from 'react'
-import { Image, type ImageStyle, type StyleProp } from 'react-native'
+import type { StyleProp } from 'react-native'
 import { accessToken } from '@/lib/auth'
 import { API_URL } from '@/lib/config'
 import { colors } from './theme'
@@ -14,8 +17,9 @@ export function RemoteImage({ path, local, style }: { path?: string | null; loca
 
   const source = local
     ? { uri: local }
-    : path && token ? { uri: `${API_URL}${path}`, headers: { Authorization: `Bearer ${token}` } } : null
-  return source
-    ? <Image source={source} style={[{ backgroundColor: colors.loam100 }, style]} resizeMode="cover" />
-    : <Image style={[{ backgroundColor: colors.loam100 }, style]} />
+    : path ? { uri: `${API_URL}${path}`, cacheKey: path, headers: token ? { Authorization: `Bearer ${token}` } : undefined } : null
+  return (
+    <Image source={source} style={[{ backgroundColor: colors.loam100 }, style]} contentFit="cover" cachePolicy="disk" transition={180}
+      accessibilityIgnoresInvertColors />
+  )
 }

@@ -20,7 +20,11 @@ const listeners = new Set<(fixes: Fix[]) => void>()
 TaskManager.defineTask<{ locations: Location.LocationObject[] }>(TASK, async ({ data, error }) => {
   if (error || !data) return
   const trace = readJson<TraceFile>(FILE)
-  if (!trace) return
+  // No trace on file (cancelled, or the app was reinstalled): stop the GPS.
+  if (!trace) {
+    await Location.stopLocationUpdatesAsync(TASK).catch(() => undefined)
+    return
+  }
   for (const location of data.locations) {
     trace.fixes.push({ position: [location.coords.longitude, location.coords.latitude], accuracy: location.coords.accuracy, at: location.timestamp })
   }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_201500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_203000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -361,6 +361,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_201500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["query"], name: "index_help_search_misses_on_query", unique: true
+  end
+
+  create_table "idempotent_requests", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "key", null: false
+    t.integer "status", null: false
+    t.text "body", default: "", null: false
+    t.datetime "created_at", null: false
+    t.index ["created_at"], name: "index_idempotent_requests_on_created_at"
+    t.index ["user_id", "key"], name: "index_idempotent_requests_on_user_id_and_key", unique: true
   end
 
   create_table "import_records", force: :cascade do |t|
@@ -1517,6 +1527,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_201500) do
   add_foreign_key "form_responses", "map_documents", on_delete: :nullify
   add_foreign_key "form_responses", "maps", on_delete: :nullify
   add_foreign_key "help_feedbacks", "users", on_delete: :nullify
+  add_foreign_key "idempotent_requests", "users", on_delete: :cascade
   add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "invoice_requests", "users"
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify
