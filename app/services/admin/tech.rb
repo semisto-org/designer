@@ -65,6 +65,7 @@ module Admin
           [ :sentry, ENV["SENTRY_DSN"].present? ],
           [ :smtp, ENV["SMTP_ADDRESS"].present? ],
           [ :google, ENV["GOOGLE_CLIENT_ID"].present? ],
+          [ :apple, AppleSignIn.enabled? ],
           [ :stripe, Billing.enabled? ],
           [ :plantnet, Providers::PlantNet.configured? ],
           [ :magnific, Providers::Magnific.configured? ],

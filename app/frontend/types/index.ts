@@ -41,7 +41,7 @@ export type SharedProps = {
   otherAccounts?: OtherAccount[]
   /** Signed in: entries of « Nouveautés » not seen yet. */
   releaseNotes: import('./releaseNotes').ReleaseNotesStatus | null
-  env: { googleSignIn: boolean; billing: boolean; plantnet: boolean }
+  env: { googleSignIn: boolean; appleSignIn: boolean; billing: boolean; plantnet: boolean }
 }
 
 export type LngLat = [number, number]

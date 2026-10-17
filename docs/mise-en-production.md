@@ -34,6 +34,17 @@ Référence des réglages de Semisto Terranova en production (https://terranova.
 
 Dans la console Google Cloud : origine autorisée `https://terranova.semisto.org`, URI de redirection `https://terranova.semisto.org/auth/google_oauth2/callback`, portées `email` et `profile`. Sans ces variables, seul le lien magique par e-mail est proposé.
 
+### Connexion avec Apple
+
+| Variable | Rôle |
+|---|---|
+| `APPLE_CLIENT_ID` | Identifiant du Services ID, par ex. `org.semisto.terranova.signin`. |
+| `APPLE_TEAM_ID` | Team ID du compte développeur de Semisto ASBL (10 caractères). |
+| `APPLE_KEY_ID` | Identifiant de la clé « Sign in with Apple ». |
+| `APPLE_PRIVATE_KEY` | Contenu du fichier `.p8` de cette clé (retours à la ligne réels ou `\n`). |
+
+Sur developer.apple.com (Certificates, Identifiers & Profiles) : activer « Sign in with Apple » sur l'App ID de l'app, créer un Services ID lié à cet App ID avec le domaine `terranova.semisto.org` et l'URL de retour `https://terranova.semisto.org/auth/apple/return`, puis créer une clé avec « Sign in with Apple » (le `.p8` ne se télécharge qu'une fois). Pour écrire aux personnes qui masquent leur adresse (`…@privaterelay.appleid.com`), déclarer l'expéditeur (`MAIL_FROM`) dans « Sign in with Apple for Email Communication » ; son domaine doit passer SPF et DKIM. Le bouton apparaît sur la page de connexion, donc aussi dans l'app mobile, qui l'ouvre dans le navigateur du téléphone. Sans ces variables, il n'est pas proposé.
+
 ### Paiements (Stripe, compte de Semisto ASBL)
 
 | Variable | Rôle |
@@ -175,7 +186,7 @@ Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=
 
 ## Connexions sortantes
 
-Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.magnific.com` et le serveur d'images de Magnific (mise en image, si `MAGNIFIC_API_KEY` est défini), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo. L'import ponctuel de Claudy joint `app.les4sources.be`.
+Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.magnific.com` et le serveur d'images de Magnific (mise en image, si `MAGNIFIC_API_KEY` est défini), `api.stripe.com`, `appleid.apple.com` (connexion avec Apple, si `APPLE_CLIENT_ID` est défini), le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo. L'import ponctuel de Claudy joint `app.les4sources.be`.
 
 ## Claude (MCP)
 

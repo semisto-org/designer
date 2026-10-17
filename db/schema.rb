@@ -1441,6 +1441,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_193000) do
     t.integer "sign_in_code_attempts", default: 0, null: false
     t.string "account_kind"
     t.boolean "catalogue_reviewer", default: false, null: false
+    t.string "apple_uid"
+    t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
     t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying::text, 'professional'::character varying::text])", name: "users_account_kind_check"

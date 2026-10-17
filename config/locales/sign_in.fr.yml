@@ -11,10 +11,16 @@ fr:
     code_invalid: "Ce code n'est pas le bon, ou il a expiré. Vérifie-le, ou demande un nouvel e-mail."
     password_invalid: "Adresse e-mail ou mot de passe incorrect."
     google_failed: "La connexion avec Google n'a pas abouti."
+    apple_failed: "La connexion avec Apple n'a pas abouti."
+    apple_return:
+      title: "Connexion avec Apple"
+      wait: "Connexion en cours…"
+      continue: "Continuer"
     new:
       title: "Se connecter"
-      intro: "Connecte-toi avec Google, reçois un lien par e-mail, ou utilise ton mot de passe si tu en as choisi un."
+      intro: "Connecte-toi avec Google ou Apple, reçois un lien par e-mail, ou utilise ton mot de passe si tu en as choisi un."
       google: "Continuer avec Google"
+      apple: "Continuer avec Apple"
       or: "ou"
       email: "Adresse e-mail"
       send_link: "Recevoir un lien de connexion"
