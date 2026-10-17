@@ -4,10 +4,10 @@ import { useSyncExternalStore } from 'react'
  * « Situation actuelle » / « situation projetée » on the editor map.
  *
  * - projected (default): everything, with what is still a project (a plant
- *   not yet marked as planted) drawn apart: dashed crown, faint fill,
- *   hollow point, all at 75 % opacity;
- * - current: what is on the ground today only, so planned plants and
- *   Claude's drafts are hidden.
+ *   not yet marked as planted, an element marked « En projet ») drawn apart:
+ *   dashed crown or outline, faint fill, hollow point, all at 75 % opacity;
+ * - current: what is on the ground today only, so planned plants, planned
+ *   elements and Claude's drafts are hidden.
  *
  * The choice is per viewer and per map, kept in localStorage.
  */
@@ -22,10 +22,23 @@ export function isPlannedPlant(properties: Properties): boolean {
   return properties?.kind === 'plant' && properties?.layer === 'plants' && typeof properties?.planted_on !== 'string'
 }
 
+/**
+ * Any other element (pond, hedge, path, shed…) marked « En projet »:
+ * `planned: true`, until it is marked as done (`built_on`).
+ */
+export function isPlannedElement(properties: Properties): boolean {
+  return properties?.planned === true && !(properties?.kind === 'plant' && properties?.layer === 'plants')
+}
+
+/** What is not on the ground yet: a planned plant or a planned element. */
+export function isPlanned(properties: Properties): boolean {
+  return isPlannedPlant(properties) || isPlannedElement(properties)
+}
+
 /** Whether a feature is shown in the given scenario. */
 export function inScenario(properties: Properties, scenario: Scenario): boolean {
   if (scenario === 'projected') return true
-  return properties?.status !== 'draft' && !isPlannedPlant(properties)
+  return properties?.status !== 'draft' && !isPlanned(properties)
 }
 
 /** Opacity of what is still a project, so it reads as « not there yet ». */
@@ -39,10 +52,20 @@ export const PLANNED_PLANT_EXPR = [
   ['!=', ['typeof', ['get', 'planted_on']], 'string'],
 ] as const
 
+/** MapLibre expression twin of isPlannedElement. */
+export const PLANNED_ELEMENT_EXPR = [
+  'all',
+  ['==', ['get', 'planned'], true],
+  ['!', ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]],
+] as const
+
+/** MapLibre expression twin of isPlanned. */
+export const PLANNED_EXPR = ['any', PLANNED_PLANT_EXPR, PLANNED_ELEMENT_EXPR] as const
+
 /** Extra filter test for the scenario, or null when it shows everything. */
 export function scenarioFilter(scenario: Scenario): unknown[] | null {
   if (scenario === 'projected') return null
-  return ['all', ['!', PLANNED_PLANT_EXPR], ['!=', ['coalesce', ['get', 'status'], 'active'], 'draft']]
+  return ['all', ['!', PLANNED_EXPR], ['!=', ['coalesce', ['get', 'status'], 'active'], 'draft']]
 }
 
 // --- Store ---------------------------------------------------------------

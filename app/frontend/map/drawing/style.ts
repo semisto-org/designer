@@ -10,7 +10,7 @@ import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
 import { hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
-import { scenarioFilter, type Scenario } from '@/map/scenario'
+import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, scenarioFilter, type Scenario } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 
 /**
@@ -39,6 +39,7 @@ const expr = (value: unknown) => value as Expr
 
 const isLibrary = expr(['in', ['get', 'kind'], ['literal', KINDS]])
 const isDraft = expr(['==', ['get', 'status'], 'draft'])
+const isPlannedElement = expr(PLANNED_ELEMENT_EXPR)
 const selected = expr(['boolean', ['feature-state', 'selected'], false])
 const editing = expr(['boolean', ['feature-state', 'editing'], false])
 
@@ -87,8 +88,10 @@ const crowned = LIBRARY.filter((e) => e.crown)
 const arrowed = LIBRARY.filter((e) => e.line?.arrows)
 const pointKinds = LIBRARY.filter((e) => e.geometries.includes('Point'))
 
-/** Opacity factor: hidden while its shape is edited, faded when a draft. */
-const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, 1])
+/** Opacity factor: hidden while its shape is edited, faded when a draft or still a project. */
+const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, isPlannedElement, PLANNED_OPACITY, 1])
+/** A planned element keeps its own dash if it has one, else draws dashed: « not there yet ». */
+const plannedDash = expr(['case', ['all', isPlannedElement, ['!', ['in', ['get', 'kind'], ['literal', LIBRARY.filter((e) => e.line?.dash).map((e) => e.kind)]]]], ['literal', [3, 2]], lineDash])
 
 function zoomScaled(base: Expr, stops: [number, number][], extraSelected = 0): Expr {
   return expr(['interpolate', ['linear'], ['zoom'],
@@ -173,7 +176,7 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'line-color': featureColorExpr,
         'line-width': zoomScaled(expr(['case', ['==', ['geometry-type'], 'Polygon'], ['min', lineWidth, 2.5], lineWidth]), [[14, 0.4], [18, 1], [21, 1.6]], 2),
         'line-opacity': expr(['*', lineOpacity, visibleFactor]),
-        'line-dasharray': lineDash as never,
+        'line-dasharray': plannedDash as never,
       },
     },
     // Where the water goes: arrows along the line, in the direction it was drawn.
@@ -456,7 +459,7 @@ const visibilityState = new WeakMap<MapLibreMap, Map<string, { original: unknown
  * Hides the given design layers (`existing`, `water`…) on every map layer
  * drawn from the features source, whoever added it, by combining its own
  * filter with a test on the feature's `layer`. With `scenario: 'current'`,
- * what is still a project (planned plants, drafts) is hidden too. With a
+ * what is still a project (planned plants and elements, drafts) is hidden too. With a
  * `version` (a tag), only elements carrying it, or no tag at all, show.
  */
 export function applyLayerVisibility(

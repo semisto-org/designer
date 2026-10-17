@@ -1,7 +1,7 @@
 // What the terrain map shows. On the ground the phone is a tool to record
 // what is there, so by default it shows the existing only: plants already
 // in the ground, structures, networks… The project (plants still to plant,
-// your AI's drafts) comes back with one switch. Layers and plant strata can
+// elements marked « En projet », your AI's drafts) comes back with one switch. Layers and plant strata can
 // be hidden too, like in « Calques » on the website.
 // Same rule as the website's « Situation actuelle » (app/frontend/map/scenario.ts).
 import type { Planting } from './types'
@@ -19,15 +19,18 @@ export const DEFAULT_DISPLAY: Display = { projected: false, hiddenLayers: [], hi
 /** Plants whose species (or its strata) is not known. */
 export const UNKNOWN_STRATA = 'unknown'
 
-export type Properties = { layer: string; kind: string; status?: string; planted_on?: unknown; species_id?: unknown }
+export type Properties = { layer: string; kind: string; status?: string; planted_on?: unknown; planned?: unknown; species_id?: unknown }
 
 const isPlant = (p: Properties) => p.layer === 'plants' && p.kind === 'plant'
 
 /** A plant drawn on the plan but not marked as planted yet. */
 export const isPlannedPlant = (p: Properties) => isPlant(p) && typeof p.planted_on !== 'string'
 
+/** Any other element (pond, hedge, path…) marked « En projet » on the website. */
+export const isPlannedElement = (p: Properties) => !isPlant(p) && p.planned === true
+
 /** Whether a feature belongs to the project rather than to the ground today. */
-export const isProjected = (p: Properties) => p.status === 'draft' || isPlannedPlant(p)
+export const isProjected = (p: Properties) => p.status === 'draft' || isPlannedPlant(p) || isPlannedElement(p)
 
 export function strataOf(p: Properties, planting: Planting | undefined): string {
   return planting?.species[String(p.species_id)]?.strata ?? UNKNOWN_STRATA
