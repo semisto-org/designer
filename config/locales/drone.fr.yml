@@ -131,7 +131,7 @@ fr:
       link: "Vues drone"
       back: "Demandes envoyées depuis les cartes"
       intro: "Les missions drone payées et les vues aériennes posées sur les cartes. Pose la vue sur une carte de l'acheteur : un e-mail lui donne le lien vers sa carte."
-      hosting_note: "Colle l'adresse d'une archive .pmtiles ou d'un modèle de tuiles {z}/{x}/{y}, toujours en https. Le navigateur lit les tuiles directement chez l'hébergeur : celui-ci doit autoriser terranova.semisto.org (CORS, avec l'en-tête Range pour une archive PMTiles). La marche à suivre est dans docs/mise-en-production.md."
+      hosting_note: "Colle l'adresse d'une archive .pmtiles ou d'un modèle de tuiles {z}/{x}/{y}, toujours en https. Le navigateur lit les tuiles directement chez l'hébergeur : celui-ci doit autoriser terranova.semisto.org (CORS, avec l'en-tête Range pour une archive PMTiles). La marche à suivre est dans docs/deployment.md."
       filters:
         todo: "À configurer"
         done: "Configurées"
