@@ -32,7 +32,7 @@ jobs:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Expo token is set
         run: test -n "$EXPO_TOKEN" || { echo "::error::Add the EXPO_TOKEN repository secret first."; exit 1; }
