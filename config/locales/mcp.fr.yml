@@ -15,7 +15,7 @@ fr:
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
         Les points de prélèvement de sol (panneau Sol, onglet Points) portent les rapports PDF du laboratoire, un par analyse (standard, métaux lourds…). get_soil_samples les liste, get_soil_report lit un rapport (son texte, ou ses pages en image pour un scan), puis propose_soil_results propose les valeurs lues, que l'humain garde ou refuse une par une sur le point. Recopie fidèlement, convertis vers les unités de Terranova en le disant, et ne devine aucune valeur.
-        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme, l'étiquette ou réécrit le texte d'un document Markdown. Les photos du terrain se lisent avec list_photos et get_photo. Pour envoyer des fichiers (photos, vidéos, PDF, plans…), ne les mets jamais dans un appel : create_upload te donne pour chacun une adresse où l'envoyer toi-même par HTTP (curl), en morceaux pour un gros fichier, puis attach_photos ou attach_documents les rattache ; import_from_url fait venir un fichier depuis une adresse HTTPS. add_photo (une petite image en base64) et add_document (un texte que tu as rédigé) restent pour les cas simples. update_photos les légende, les date, les place et les range en albums, delete_photos et delete_documents suppriment photos et documents. Tu ne supprimes rien d'autre, et seulement ce que la personne t'a demandé de retirer. Le carnet de récolte (panneau « Récoltes ») est aussi le carnet de l'équipe : list_harvests dit quels arbres ont porté, saison après saison, et record_harvests y note directement ce que la personne a vu ou cueilli.
+        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme, l'étiquette ou réécrit le texte d'un document Markdown. Les photos du terrain se lisent avec list_photos et get_photo. Pour envoyer des fichiers (photos, vidéos, PDF, plans…), ne les mets jamais dans un appel : create_upload te donne pour chacun une adresse où l'envoyer toi-même par HTTP (curl), en morceaux pour un gros fichier, puis attach_photos ou attach_documents les rattache ; import_from_url fait venir un fichier depuis une adresse HTTPS. add_photo (une petite image en base64) et add_document (un texte que tu as rédigé) restent pour les cas simples. update_photos les légende, les date, les place et les range en albums, delete_photos et delete_documents suppriment photos et documents. Tu ne supprimes rien d'autre, et seulement ce que la personne t'a demandé de retirer. Le carnet de récolte (panneau « Récoltes ») est aussi le carnet de l'équipe : list_harvests dit quels arbres ont porté, saison après saison, et record_harvests y note directement ce que la personne a vu ou cueilli. Les relevés des lieux de stockage des fruits aussi : list_storage_readings les lit avec ce qu'ils disent de la garde, record_storage_readings y note les températures et l'humidité que la personne te donne.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -163,6 +163,21 @@ fr:
           harvest_uses: "Pour une récolte : juice (jus), cooking (compote et cuisson), fresh (à croquer), storage (mis en garde), other."
           quantity_kg: "Poids récolté pour chaque plant de la ligne, en kg."
           harvest_note: "Note libre : calibre, maladies, goût, qui a cueilli."
+      list_storage_readings:
+        title: "Lire les relevés des lieux de stockage"
+        description: "Les lieux où l'équipe garde ses fruits (éléments « Lieu de stockage des fruits » : cave, chambre froide, grange, remise, frigo), chacun avec ses relevés de température et d'humidité, du plus récent au plus ancien. temperatureC : la température lue ; temperatureMinC et temperatureMaxC : le plus froid et le plus chaud depuis le relevé précédent (thermomètre mini-maxi) ; humidityPct : l'humidité relative. verdict dit pour chaque relevé si la température et l'humidité conviennent pour garder pommes et poires : good, fair (limite), bad (trop loin), frost (gel), et de quel côté (warm, cold, dry, wet). ranges donne les plages de référence (bien : 0,5 à 6 °C et 85 à 95 %). summary dit le verdict du dernier relevé et ce qu'on sait de l'hiver (novembre à mars : winterReadings, winterLowC, winterHighC), advice ce qu'il conseille. La garde se décide en hiver : si l'hiver manque, dis-le, et propose un relevé par semaine de novembre à mars."
+      record_storage_readings:
+        title: "Noter des relevés de stockage"
+        description: "Note des relevés de température et d'humidité dans un lieu de stockage des fruits, directement (ce ne sont pas des brouillons), quand la personne te les donne : « cave : 1er mai 60 % 20° ». store_id vient de list_storage_readings ; s'il n'y a pas encore de lieu de stockage sur la carte, propose-le d'abord avec propose_features (couche structures, type fruit_store, propriété store_type) et attends que la personne l'accepte. Chaque relevé demande au moins une température ou l'humidité ; un relevé refusé revient avec sa raison, les autres sont gardés. N'invente rien : ne note que ce que la personne a dit, et demande l'année si elle ne la donne pas. 100 relevés au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte."
+        params:
+          storage_readings: "Les relevés à noter, de 1 à 100."
+          store_id: "Identifiant du lieu de stockage (list_storage_readings)."
+          measured_on: "Date du relevé (AAAA-MM-JJ), jamais dans le futur."
+          temperature_c: "Température lue, en °C."
+          temperature_min_c: "Le plus froid depuis le relevé précédent (thermomètre mini-maxi), en °C."
+          temperature_max_c: "Le plus chaud depuis le relevé précédent, en °C."
+          humidity_pct: "Humidité relative, en %."
+          storage_note: "Note libre : porte ouverte, caisses rentrées, linge humide posé…"
       list_documents:
         title: "Lister les documents"
         description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable)."
@@ -382,6 +397,7 @@ fr:
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
       tasks_written: "Les tâches sont sur la page « Tâches » de la carte (url)."
       harvests_written: "Les lignes sont dans le panneau « Récoltes » de la carte (url) et sur la fiche de chaque plant."
+      storage_written: "Les relevés sont sur la fiche de chaque lieu de stockage, dans l'éditeur de la carte (url)."
       tasks_assigned: "Les tâches sont sur la page « Tâches » de la carte (url). Les personnes à qui tu les as confiées reçoivent un e-mail."
       document_added: "Le document est dans la bibliothèque « Documents » de la carte (url)."
       project_link_author: "Le porteur du projet (lien de la fiche projet)"
@@ -447,6 +463,8 @@ fr:
     harvest_errors:
       no_plant: "feature_ids ou numbers est requis : à quels plants s'applique la ligne ?"
       not_found: "plants introuvables sur cette carte (ou qui ne sont pas des plants) : %{plants}."
+    storage_errors:
+      not_found: "lieu de stockage %{id} introuvable sur cette carte (list_storage_readings donne les lieux)."
     task_errors:
       no_list: "list_id ou list_name est requis (voir les listes dans list_tasks)."
       due_on: "échéance « %{value} » illisible : AAAA-MM-JJ attendu."
@@ -644,6 +662,10 @@ fr:
       record_harvests:
         one: "a noté 1 récolte"
         other: "a noté %{count} récoltes"
+      list_storage_readings: "a lu les relevés des lieux de stockage"
+      record_storage_readings:
+        one: "a noté 1 relevé de stockage"
+        other: "a noté %{count} relevés de stockage"
       list_documents: "a lu la liste des documents"
       get_document: "a lu un document"
       create_tasks:

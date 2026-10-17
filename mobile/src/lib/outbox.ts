@@ -1,6 +1,7 @@
 // The outbox bound to the phone: saved in outbox.json, sent through api().
 import * as Crypto from 'expo-crypto'
 import { api, form } from './api'
+import { storageReadingBody } from './fruitStore'
 import { harvestBody } from './harvests'
 import { emptyOutbox, flush, nextTempId, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
 import { isVideo, mediaFile } from './media'
@@ -104,6 +105,9 @@ const transport: Transport = {
   },
   async createHarvest(mapId, featureId, harvest) {
     await api('POST', `/maps/${mapId}/features/${featureId}/plant_harvests`, harvestBody(harvest))
+  },
+  async createStorageReading(mapId, featureId, reading) {
+    await api('POST', `/maps/${mapId}/features/${featureId}/storage_readings`, storageReadingBody(reading))
   },
   async createBioindicator(mapId, { observation: o, photo }) {
     const located = o.lng !== null && o.lat !== null

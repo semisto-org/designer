@@ -264,6 +264,7 @@ Rails.application.routes.draw do
           member { get :photo }
         end
         resources :plant_harvests, only: %i[index create destroy]
+        resources :storage_readings, only: %i[index create destroy]
       end
       resource :plant_list, only: :show do
         get :print

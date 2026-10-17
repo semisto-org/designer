@@ -12,6 +12,7 @@ module MapPlanting
     has_many :palette_drafts, -> { drafts.order(:position, :id) }, class_name: "PaletteItem", dependent: :delete_all
     has_many :patch_items, dependent: :delete_all
     has_many :plant_observations, dependent: :destroy
+    has_many :storage_readings, dependent: :delete_all
     has_many :plant_harvests, dependent: :destroy
   end
 

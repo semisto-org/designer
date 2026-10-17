@@ -26,6 +26,7 @@ function transport(overrides: Partial<Transport> = {}) {
     createObservation: async (_m, featureId) => { calls.push(`observation ${featureId}`) },
     createComment: async (_m, featureId) => { calls.push(`comment ${featureId}`) },
     createHarvest: async (_m, featureId, harvest) => { calls.push(`harvest ${featureId} ${harvest.stage}`) },
+    createStorageReading: async (_m, featureId, reading) => { calls.push(`storage ${featureId} ${reading.humidityPct}`) },
     createBioindicator: async (_m, op) => { calls.push(`bioindicator ${op.observation.speciesName}`) },
     ...overrides,
   }
@@ -74,10 +75,11 @@ describe('flush', () => {
       { id: 'c', mapId: 1, createdAt: at, type: 'uploadPhoto', featureId: -1, file: 'file:///p.jpg', lng: 4.9, lat: 50.3, takenAt: at },
       { id: 'd', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Belle reprise' },
       { id: 'e', mapId: 1, createdAt: at, type: 'createHarvest', featureId: -1, harvest: { notedOn: '2026-10-12', stage: 'picked', amount: null, uses: ['juice'], quantityKg: null, note: null } },
+      { id: 'f', mapId: 1, createdAt: at, type: 'createStorageReading', featureId: -1, reading: { measuredOn: '2026-10-12', temperatureC: 18, temperatureMinC: null, temperatureMaxC: null, humidityPct: 70, note: null } },
     ]
     const result = await flush(state(ops), t)
-    expect(calls).toEqual(['create', 'observation 100', 'photo 100', 'comment null', 'harvest 100 picked'])
-    expect(result).toMatchObject({ sent: 5, stopped: 'done', state: { ops: [], ids: { '-1': 100 } } })
+    expect(calls).toEqual(['create', 'observation 100', 'photo 100', 'comment null', 'harvest 100 picked', 'storage 100 70'])
+    expect(result).toMatchObject({ sent: 6, stopped: 'done', state: { ops: [], ids: { '-1': 100 } } })
     expect(result.sentFiles).toEqual(['file:///obs.jpg', 'file:///p.jpg'])
   })
 
