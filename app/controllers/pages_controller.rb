@@ -31,12 +31,23 @@ class PagesController < ApplicationController
 
   def drone = render_public("pages/drone", page: :drone, props: { priceCents: Billing::Catalog.find("drone").price_cents })
   def open_source = render_public("pages/open_source", page: :open_source)
+
+  # What a page view of Terranova costs, measured after each deployment
+  # (EcoMeasurement). The JSON also tells the « EcoIndex » workflow which
+  # commit is online, so it measures only once the new one is.
+  def ecoconception
+    props = { measurements: EcoMeasurement.latest_with_history, commit: ENV["SOURCE_COMMIT"].presence }
+    respond_to do |format|
+      format.html { render_public "pages/ecoconception", page: :ecoconception, props: }
+      format.json { render json: props }
+    end
+  end
   def privacy = render_legal(:privacy)
   def terms = render_legal(:terms)
 
   # The public pages and every help article, for search engines.
   def sitemap
-    @urls = [ [ "/", 1.0 ], [ "/fonctionnalites", 0.9 ], [ "/tarifs", 0.9 ], [ "/mission-drone", 0.6 ], [ "/open-source", 0.5 ],
+    @urls = [ [ "/", 1.0 ], [ "/fonctionnalites", 0.9 ], [ "/tarifs", 0.9 ], [ "/mission-drone", 0.6 ], [ "/open-source", 0.5 ], [ "/ecoconception", 0.4 ],
               [ "/help", 0.7 ], [ "/confidentialite", 0.2 ], [ "/conditions", 0.2 ] ]
     @urls += HelpArticle.all.map { |article| [ "/help/#{article.slug}", 0.6 ] }
     render formats: :xml

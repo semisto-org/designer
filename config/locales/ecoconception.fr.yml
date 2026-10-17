@@ -1,0 +1,89 @@
+# « Écoconception » : ce que pèse une page de Terranova (EcoIndex, mesuré
+# après chaque mise en ligne), sur la page publique /ecoconception et dans la
+# vue admin « Tech ».
+fr:
+  eco:
+    screens:
+      home: "Accueil"
+      features: "Fonctionnalités"
+      pricing: "Tarifs"
+      help: "Centre d'aide"
+      sign_in: "Connexion"
+      ecoconception: "Écoconception"
+      maps: "Mes cartes"
+      editor: "Éditeur de carte"
+      catalogue: "Catalogue des plantes"
+      plant: "Fiche plante"
+    environments:
+      production: "en ligne"
+      test_copy: "copie d'essai"
+    ges: "%{value} g CO2e"
+    water: "%{value} cl d'eau"
+    kilobytes: "%{value} Ko"
+    requests:
+      one: "%{count} requête"
+      other: "%{count} requêtes"
+    score: "%{score}/100"
+  site:
+    footer:
+      ecoconception: "Écoconception"
+    seo:
+      ecoconception:
+        title: "Écoconception"
+        description: "Ce que pèse une page de Semisto Terranova, mesuré avec EcoIndex après chaque mise en ligne, et ce que nous faisons pour l'alléger."
+    ecoconception:
+      hero:
+        eyebrow: "Écoconception"
+        title: "Un outil sobre pour faire pousser des forêts"
+        lead: "Concevoir un jardin-forêt ne devrait pas peser lourd sur la planète. Voici ce que coûte une page de Terranova, mesuré après chaque mise en ligne, et ce que nous faisons pour l'alléger."
+      measures:
+        title: "Ce que pèse une page"
+        intro: "La note EcoIndex, de A à G, tient compte du nombre d'éléments de la page, des requêtes et du poids transféré. Elle donne aussi une estimation des gaz à effet de serre et de l'eau consommés à chaque page vue."
+        columns:
+          screen: "Écran"
+          grade: "Note"
+          weight: "Poids"
+          requests: "Requêtes"
+          ges: "Par page vue"
+          trend: "Au fil des versions"
+        measured_on: "Dernière mesure le %{date}."
+        method: "Les pages publiques sont mesurées en ligne. Les écrans de travail sont mesurés sur une copie du même code, avec un jardin d'essai de 150 plantes."
+        editor_note: "L'éditeur de carte est l'écran le plus lourd : il charge la carte, la photo aérienne et le relief de ton terrain. C'est le prix d'un vrai lieu plutôt que d'un dessin."
+        empty: "La première mesure arrive avec la prochaine mise en ligne."
+        method_link: "La méthode EcoIndex"
+        method_url: "https://www.ecoindex.fr/"
+        trend_label: "Évolution de la note : %{scores}"
+      choices:
+        title: "Ce que nous faisons"
+        items:
+          - title: "Ni publicité ni pistage"
+            body: "Aucune régie publicitaire ni traceur commercial. Pour compter les visites, une seule statistique anonyme, sans cookie."
+          - title: "Des images au bon poids"
+            body: "Tes photos sont réduites à la taille d'affichage et débarrassées de leurs métadonnées. Les illustrations du site sont en WebP."
+          - title: "Seulement ce dont l'écran a besoin"
+            body: "Le code est découpé par écran, les textes réservés au serveur ne voyagent pas, et ce qui ne change pas reste un an dans le cache de ton navigateur."
+          - title: "Des données gardées le temps utile"
+            body: "Les fichiers envoyés par ton IA et jamais posés sur une carte sont effacés, et la sauvegarde d'un fichier supprimé disparaît au plus tard 90 jours après."
+          - title: "L'IA à la demande"
+            body: "Aucun modèle ne tourne en arrière-plan. Ton IA passe par le MCP quand tu le lui demandes, et la mise en image d'une photo reste limitée par un quota mensuel."
+          - title: "Un code ouvert"
+            body: "Le code est libre : chacun peut vérifier ces choix et proposer mieux."
+      next:
+        title: "Ce qui reste à faire"
+        items:
+          - "Charger les textes de l'interface écran par écran, pour alléger chaque page."
+          - "Alléger encore l'éditeur de carte, l'écran où tu passes le plus de temps."
+          - "Publier les engagements énergétiques de notre hébergeur."
+      rgesn: "Cette démarche suit le référentiel général d'écoconception de services numériques (RGESN). Première auto-évaluation : octobre 2026."
+  admin:
+    tech:
+      sobriety:
+        command: "ecoindex --latest"
+        empty: "Aucune mesure reçue. Le workflow « EcoIndex » mesure après chaque mise en ligne."
+        token_off: "ECOINDEX_TOKEN n'est pas posé : les mesures ne sont pas reçues."
+        average: "moyenne"
+        per_page: "par page vue"
+        per_10k: "pour 10 000 pages vues"
+        kilograms: "%{value} kg CO2e"
+        measured: "mesuré"
+        public_page: "Voir la page publique"

@@ -1,0 +1,128 @@
+name: EcoIndex
+
+# Measures what a page view of Terranova weighs (script/ecoindex.mjs) once a
+# deployment is live, and sends the counts to production, which shows them on
+# /ecoconception and in the admin « Tech » view. Can also be started by hand.
+#
+# Public pages are measured on https://terranova.semisto.org. Signed-in
+# screens are measured on a development server of the same commit, with a
+# demo map (bin/rails ecoindex:demo), since the job has no production account.
+#
+# Repository settings (Secrets and variables, Actions):
+#   secret ECOINDEX_TOKEN  same value as ECOINDEX_TOKEN in production
+# Without it, the job measures, keeps the JSON as an artifact and sends nothing.
+
+on:
+  workflow_run:
+    workflows: [ Deploy ]
+    types: [ completed ]
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ecoindex
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PRODUCTION_URL: https://terranova.semisto.org
+
+jobs:
+  measure:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: Start PostGIS
+        run: |
+          nohup docker run --detach --name postgis --publish 5432:5432 \
+            --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD=postgres \
+            postgis/postgis:16-3.4 > "$RUNNER_TEMP/postgis.log" 2>&1 &
+
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libgeos-dev
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.COMMIT }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          cache-version: geos
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install JavaScript packages
+        run: npm ci && npx playwright install --with-deps chromium
+
+      # Coolify builds for a few minutes after Deploy asked it to: production
+      # says which commit it runs on /ecoconception.json (SOURCE_COMMIT, set
+      # when « Include Source Commit in Build » is on). When it does not say,
+      # the job waits a fixed ten minutes instead.
+      - name: Wait for production to run this commit
+        if: github.event_name == 'workflow_run'
+        run: |
+          live=""
+          for i in $(seq 1 60); do
+            live=$(curl --silent --max-time 10 "$PRODUCTION_URL/ecoconception.json" | jq -r '.commit // empty' || true)
+            if [ "$live" = "$COMMIT" ]; then echo "Production runs $COMMIT."; exit 0; fi
+            if [ -z "$live" ] && [ "$i" -ge 30 ]; then echo "Production does not name its commit; measuring after ten minutes."; exit 0; fi
+            sleep 20
+          done
+          echo "::warning::Production does not report $COMMIT after 20 minutes (it reports '${live}'); measuring anyway."
+
+      - name: Wait for PostGIS
+        run: |
+          for i in $(seq 1 90); do
+            docker exec postgis pg_isready --host 127.0.0.1 --username postgres > /dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          docker logs postgis || true
+          exit 1
+
+      - name: Prepare the copy
+        env:
+          RAILS_ENV: development
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          bin/rails db:prepare db:seed
+          bin/rails ecoindex:demo | tee "$RUNNER_TEMP/demo.txt"
+          echo "MAP_ID=$(sed -n 's/^MAP_ID=//p' "$RUNNER_TEMP/demo.txt")" >> "$GITHUB_ENV"
+          echo "PLANT_ID=$(sed -n 's/^PLANT_ID=//p' "$RUNNER_TEMP/demo.txt")" >> "$GITHUB_ENV"
+          bin/vite build
+          VITE_RUBY_AUTO_BUILD=false nohup bin/rails server --port 3000 > "$RUNNER_TEMP/rails.log" 2>&1 &
+          for i in $(seq 1 60); do
+            curl --silent --fail --output /dev/null http://localhost:3000/up && exit 0
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/rails.log"
+          exit 1
+
+      - name: Measure
+        env:
+          ECOINDEX_TOKEN: ${{ secrets.ECOINDEX_TOKEN }}
+        run: |
+          node script/ecoindex.mjs --production "$PRODUCTION_URL" --copy http://localhost:3000 \
+            --map "$MAP_ID" --plant "$PLANT_ID" --commit "$COMMIT" \
+            --out "$RUNNER_TEMP/ecoindex.json" --post "$PRODUCTION_URL"
+
+      - name: Keep the measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecoindex-${{ env.COMMIT }}
+          path: ${{ runner.temp }}/ecoindex.json
+          if-no-files-found: ignore

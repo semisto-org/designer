@@ -83,6 +83,16 @@ class Admin::TechTest < ActiveSupport::TestCase
       assert_not_includes Admin::Tech.call.to_json, "secret@"
     end
   end
+
+  test "reports the latest EcoIndex measurements and whether they can be received" do
+    EcoMeasurement.create!(screen: "editor", environment: "test_copy", url: "http://localhost:3000/maps/2", dom_elements: 398,
+      requests: 77, bytes: 1_500_000, measured_at: Time.current)
+    with_env("ECOINDEX_TOKEN" => nil) do
+      sobriety = Admin::Tech.call[:sobriety]
+      assert_equal [ "editor" ], sobriety[:screens].pluck(:screen)
+      assert_not sobriety[:configured]
+    end
+  end
 end
 
 class FileStorage::BackupLastRunTest < ActiveSupport::TestCase
