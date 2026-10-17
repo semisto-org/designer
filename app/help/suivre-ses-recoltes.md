@@ -42,6 +42,18 @@ La frise montre les cinq dernières saisons, la plus récente à droite : un ron
 
 Un jeune arbre apparaît en pâle les années où il ne pouvait pas encore porter : Terranova part de sa date de plantation et du nombre d'années avant les premiers fruits de sa variété (ou de son espèce), et annonce « Premiers fruits attendus vers … ».
 
+## Jus, compote ou table ?
+
+Sur la fiche d'un arbre, la carte **Que faire de cette récolte ?** part de sa variété :
+
+- ce qu'elle donne de mieux (**à croquer**, **compote et cuisson**, **jus**, **cidre ou poiré**, **séchage**) ;
+- quand on la cueille et jusqu'à quand on la mange ;
+- une suggestion selon sa durée de garde : une **variété de garde** va en cave (les plus beaux fruits, cueillis à la main), une variété qui se garde **quelques semaines** se croque d'abord, une variété qui **se garde peu** se croque ou se cuit tout de suite. Les fruits tombés ou cognés vont au jus ou en compote.
+
+Ces repères viennent du catalogue, avec leur source (souvent les fiches du CRA-W de Gembloux) : touche l'étiquette **à vérifier** pour l'ouvrir. Dessous, **Ici, au fil des récoltes** rappelle ce que vous avez déjà fait de cette variété sur le lieu, et vos notes (« compote excellente »). Avec les saisons, c'est ce savoir-là qui compte le plus.
+
+Dans le panneau Récoltes, **Que faire de chaque variété ?** range toutes les variétés du lieu : à garder en cave, quelques semaines, à manger ou cuire tout de suite.
+
 ## Quels arbres renouveler ?
 
 Le filtre **À surveiller** liste les arbres sans fruits notés depuis trois saisons suivies d'affilée. Une saison est « suivie » dès que quelqu'un a noté au moins une ligne sur la carte cette année-là.
@@ -50,4 +62,4 @@ Pourquoi trois et pas une ? Beaucoup de variétés anciennes connaissent l'alter
 
 ## Avec ton IA
 
-Ton IA lit le carnet de récolte et peut y noter ce que tu lui dis : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Elle peut aussi croiser les récoltes avec les fiches des variétés pour t'aider à choisir entre jus, compote et table. Voir [Connecter son IA](/help/connecter-son-ia).
+Ton IA lit le carnet de récolte et peut y noter ce que tu lui dis : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Elle voit aussi ce que chaque variété donne de mieux et ce que vous en avez fait, pour t'aider à choisir entre jus, compote et table. Voir [Connecter son IA](/help/connecter-son-ia).

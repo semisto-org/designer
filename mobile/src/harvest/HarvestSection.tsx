@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { api } from '@/lib/api'
 import { featureTitle } from '@/lib/elements'
-import { amountsFor, HARVEST_STAGES, HARVEST_USES, nextTree, type HarvestAmount, type HarvestStage, type HarvestUse } from '@/lib/harvests'
+import { adviceLines, amountsFor, HARVEST_STAGES, HARVEST_USES, nextTree, type HarvestAdvice, type HarvestAmount, type HarvestStage, type HarvestUse } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
 import type { Op } from '@/lib/outbox-core'
@@ -25,7 +25,7 @@ export function HarvestSection({ bundle, feature, editable, ops, allOps }: { bun
   const mapId = bundle.map.id
   const online = useOnline()
   const pending = ops.flatMap((op) => (op.type === 'createHarvest' ? [op] : []))
-  const [history, setHistory] = useState<{ harvests: Harvest[]; seasons: number[]; plant: PlantRow | null } | null>(null)
+  const [history, setHistory] = useState<{ harvests: Harvest[]; seasons: number[]; plant: PlantRow | null; advice?: HarvestAdvice } | null>(null)
   const [noted, setNoted] = useState<Set<number>>(new Set())
   const [stage, setStage] = useState<HarvestStage | null>(null)
   const [amount, setAmount] = useState<HarvestAmount | null>(null)
@@ -82,6 +82,12 @@ export function HarvestSection({ bundle, feature, editable, ops, allOps }: { bun
             )
           })}
         </View>
+      )}
+      {history?.advice && (
+        <Card style={s.advice}>
+          <Text style={s.adviceTitle}>{t('plant_harvests.advice.title')}</Text>
+          {adviceLines(history.advice, t).map((line, i) => <Body key={i}>{line}</Body>)}
+        </Card>
       )}
       {editable && (
         <Card style={{ gap: space.sm }}>
@@ -172,5 +178,7 @@ const s = StyleSheet.create({
   dot: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.loam500, borderStyle: 'dashed' },
   year: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
   rowTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.loam900 },
+  advice: { gap: space.xs, backgroundColor: colors.leaf50 },
+  adviceTitle: { fontSize: 17, fontFamily: fonts.title, color: colors.loam900 },
   rowMeta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
 })

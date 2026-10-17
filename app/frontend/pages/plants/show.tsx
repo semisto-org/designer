@@ -151,6 +151,8 @@ export default function PlantShow({ species: s, observations, plantings, region 
                   {v.ripening && <span className="text-loam-600">{t('plants.fields.ripening')} : {v.ripening} <ProvenanceBadge provenance={v.provenance.ripening} /></span>}
                   {v.productivity && <span className="text-loam-600">{t('plants.fields.productivity')} : {v.productivity}</span>}
                   {v.diseaseResistance && <span className="text-loam-600">{t('plants.fields.disease_resistance')} : {v.diseaseResistance}</span>}
+                  {v.uses.length > 0 && <span className="text-loam-600">{t('plant_harvests.advice.good_for', { uses: v.uses.map((u) => t(`plant_harvests.advice.variety_uses.${u}`)).join(', ') })} <ProvenanceBadge provenance={v.provenance.uses} /></span>}
+                  {v.eatingUntilMonth && <span className="text-loam-600">{v.pickingMonth ? `${t('plant_harvests.advice.picking', { month: t(`plant_harvests.months.${v.pickingMonth}`) })} · ` : ''}{t('plant_harvests.advice.eating_until', { until: t(`plant_harvests.months.${v.eatingUntilMonth}`) })}</span>}
                 </li>
               ))}
             </ul>

@@ -67,9 +67,21 @@ class HarvestLogTest < ActiveSupport::TestCase
     refute row[:watch]
   end
 
+  test "the varieties of the place, by what they are good for and what was done with them here" do
+    variety = plant_varieties(:reinette)
+    variety.update!(uses: %w[juice], picking_month: 9, eating_until_month: 10)
+    tree = plant(plant_species(:apple), name: "n° 12", variety:)
+    note(tree, 2026, 9, stage: "picked", uses: %w[cooking])
+
+    row = HarvestLog.new(@map, season: 2026).varieties.find { _1[:id] == variety.id }
+    assert_equal "weeks", row[:keeping]
+    assert_equal 1, row[:plants]
+    assert_equal({ "cooking" => 1 }, row[:here])
+  end
+
   private
-    def plant(species, name: nil, planted_on: nil)
-      properties = { "species_id" => species.id, "planted_on" => planted_on&.iso8601 }.compact
+    def plant(species, name: nil, planted_on: nil, variety: nil)
+      properties = { "species_id" => species.id, "variety_id" => variety&.id, "planted_on" => planted_on&.iso8601 }.compact
       @map.features.create!(layer: "plants", kind: "plant", name:, geometry: point, properties:)
     end
 

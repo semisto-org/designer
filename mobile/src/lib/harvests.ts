@@ -59,3 +59,50 @@ export function nextTree(bundle: MapBundle, from: MapFeature, noted: Set<number>
   }
   return best
 }
+
+export type VarietyUse = 'fresh' | 'cooking' | 'juice' | 'cider' | 'drying'
+
+/** « Que faire de cette récolte ? », as the server sends it (HarvestAdvice). */
+export type HarvestAdvice = {
+  variety: {
+    name: string
+    uses: VarietyUse[]
+    pickingMonth: number | null
+    eatingFromMonth: number | null
+    eatingUntilMonth: number | null
+  } | null
+  keeping: 'keeps' | 'weeks' | 'short' | null
+  ripensInStore: boolean
+  here: { picked: number; uses: Partial<Record<HarvestUse, number>>; notes: { plant: string | null; notedOn: string; note: string }[] }
+}
+
+type Translate = (key: string, vars?: Record<string, string | number>) => string
+
+/** The advice as lines of text, in the order the web sheet shows them. */
+export function adviceLines(advice: HarvestAdvice, t: Translate): string[] {
+  const v = advice.variety
+  const month = (m: number) => t(`plant_harvests.months.${m}`)
+  if (!v) return [t('plant_harvests.advice.no_variety'), t('plant_harvests.advice.rule')]
+  const lines: string[] = []
+  if (v.uses.length > 0) lines.push(t('plant_harvests.advice.good_for', { uses: v.uses.map((u) => t(`plant_harvests.advice.variety_uses.${u}`)).join(', ') }))
+  const season = [
+    v.pickingMonth ? t('plant_harvests.advice.picking', { month: month(v.pickingMonth) }) : null,
+    v.eatingUntilMonth
+      ? v.eatingFromMonth
+        ? t('plant_harvests.advice.eating', { from: month(v.eatingFromMonth), until: month(v.eatingUntilMonth) })
+        : t('plant_harvests.advice.eating_until', { until: month(v.eatingUntilMonth) })
+      : null,
+  ].filter(Boolean).join(' · ')
+  if (season) lines.push(season)
+  lines.push(advice.keeping
+    ? t(`plant_harvests.advice.keeping.${advice.keeping}`, { until: v.eatingUntilMonth ? month(v.eatingUntilMonth) : '' })
+    : t('plant_harvests.advice.unknown'))
+  if (advice.ripensInStore && v.pickingMonth && v.eatingFromMonth) {
+    lines.push(t('plant_harvests.advice.ripens_in_store', { picking: month(v.pickingMonth), from: month(v.eatingFromMonth) }))
+  }
+  lines.push(t('plant_harvests.advice.rule'))
+  const here = Object.entries(advice.here.uses).map(([use, count]) => t('plant_harvests.advice.here_use', { use: t(`plant_harvests.uses.${use}`).toLowerCase(), count: count ?? 0 }))
+  lines.push(advice.here.picked === 0 ? t('plant_harvests.advice.here_none') : here.length > 0 ? t('plant_harvests.advice.here_uses', { uses: here.join(', ') }) : '')
+  advice.here.notes.forEach((n) => lines.push(`« ${n.note} »${n.plant ? ` — ${n.plant}` : ''}`))
+  return lines.filter(Boolean)
+}

@@ -5,6 +5,7 @@ import { formatDate } from '@/components/plants/format'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { AdviceCard } from '@/map/harvests/AdviceCard'
 import { harvestsActions } from '@/map/harvests/store'
 import { HarvestForm, harvestBody, SeasonDot, SeasonStrip } from '@/map/harvests/shared'
 import type { MapFeature } from '@/types'
@@ -78,6 +79,7 @@ export default function HarvestsSection({ feature }: { feature: MapFeature }) {
           </p>
         )}
       </div>
+      {data.advice && <AdviceCard advice={data.advice} />}
       {data.harvests.length === 0
         ? <p className="text-sm text-loam-500">{t('plant_harvests.empty')}</p>
         : (

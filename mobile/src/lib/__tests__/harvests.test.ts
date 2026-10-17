@@ -1,4 +1,4 @@
-import { amountsFor, harvestBody, isHarvestable, nextTree } from '../harvests'
+import { adviceLines, amountsFor, harvestBody, isHarvestable, nextTree } from '../harvests'
 import type { MapBundle, MapFeature } from '../types'
 
 const species = {
@@ -35,5 +35,25 @@ describe('harvests', () => {
     expect(nextTree(bundle, bundle.features[0], new Set([1]))?.feature.id).toBe(2)
     expect(nextTree(bundle, bundle.features[0], new Set([1, 2]))?.feature.id).toBe(3)
     expect(nextTree(bundle, bundle.features[0], new Set([1, 2, 3]))).toBeNull()
+  })
+})
+
+describe('adviceLines', () => {
+  const t = (key: string, vars: Record<string, string | number> = {}) => `${key}${Object.keys(vars).length ? JSON.stringify(vars) : ''}`
+  const here = { picked: 0, uses: {}, notes: [] }
+
+  it('says the plant needs a variety first', () => {
+    expect(adviceLines({ variety: null, keeping: null, ripensInStore: false, here }, t)[0]).toBe('plant_harvests.advice.no_variety')
+  })
+
+  it('turns a keeping variety into a cellar suggestion, with its season', () => {
+    const lines = adviceLines({
+      variety: { name: 'Reinette de France', uses: ['fresh', 'cooking'], pickingMonth: 10, eatingFromMonth: 12, eatingUntilMonth: 3 },
+      keeping: 'keeps', ripensInStore: true, here: { picked: 2, uses: { juice: 2 }, notes: [{ plant: 'n° 80', notedOn: '2026-10-12', note: 'Belle année' }] },
+    }, t)
+    expect(lines).toContain('plant_harvests.advice.keeping.keeps{"until":"plant_harvests.months.3"}')
+    expect(lines.some((l) => l.startsWith('plant_harvests.advice.ripens_in_store'))).toBe(true)
+    expect(lines.some((l) => l.startsWith('plant_harvests.advice.here_uses'))).toBe(true)
+    expect(lines.at(-1)).toBe('« Belle année » — n° 80')
   })
 })
