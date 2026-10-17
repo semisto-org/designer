@@ -4,7 +4,6 @@ require_relative "../../test_helpers/drone_test_helper"
 class AerialViews::XyzCopyTest < ActiveSupport::TestCase
   include DroneTestHelper
 
-  TILE = Vips::Image.black(256, 256).add([ 40, 120, 60 ]).cast(:uchar).pngsave_buffer.freeze
   TILES = %r{\Ahttps://tiles\.example\.org/ahinvaux/\d+/\d+/\d+\.png\z}
 
   setup do
@@ -14,6 +13,10 @@ class AerialViews::XyzCopyTest < ActiveSupport::TestCase
 
   teardown { FileUtils.remove_entry(@dir) }
 
+  # Built in the test, not when the file loads: libvips started before the
+  # parallel workers fork leaves them stuck on its threads.
+  def tile = @tile ||= Vips::Image.black(256, 256).add([ 40, 120, 60 ]).cast(:uchar).pngsave_buffer
+
   def copy_view(**attributes)
     aerial_view(@map, kind: "xyz", url: XYZ_URL, status: "processing", source_filename: "copie de tiles.example.org", **attributes)
   end
@@ -22,7 +25,7 @@ class AerialViews::XyzCopyTest < ActiveSupport::TestCase
   def stub_tiles(max:)
     stub_request(:get, TILES).to_return do |request|
       z = request.uri.path[%r{/ahinvaux/(\d+)/}, 1].to_i
-      z <= max ? { status: 200, body: TILE, headers: { "Content-Type" => "image/png" } } : { status: 404 }
+      z <= max ? { status: 200, body: tile, headers: { "Content-Type" => "image/png" } } : { status: 404 }
     end
   end
 
