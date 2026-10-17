@@ -1,11 +1,13 @@
 ---
 title: "Photos et suivi dans le temps"
 summary: "Ajouter ses photos, les placer sur la carte, les ranger en albums et comparer un même endroit avant et après."
-category: Comprendre son terrain
-order: 49
+category: Planter
+order: 62
 ---
 
 Une photo datée et placée vaut bien des notes. Le panneau **Photos** garde la mémoire du terrain : le lieu avant les travaux, la reprise d'une haie, la mare qui se remplit.
+
+[Ouvrir le panneau Photos](action:panel/photos)
 
 ## Ajouter des photos
 

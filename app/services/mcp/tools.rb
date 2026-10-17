@@ -4,7 +4,7 @@ module Mcp
     def self.all
       [
         ListMaps, GetMap, ListFeatures, GetFeature, GetRegionLayers, IdentifyAtPoint, GetSiteData, TraceContour, GetCatchment, FindKeypoints, TraceParallels, GetStormObservations,
-        SearchPlants, GetPlant, GetDesignGuide, GetProjectSheet, GetBioindicatorPhoto, GetSoilSamples, GetSoilReport,
+        SearchPlants, GetPlant, GetDesignGuide, GetHelp, GetProjectSheet, GetBioindicatorPhoto, GetSoilSamples, GetSoilReport,
         ListTasks, ListDocuments, GetDocument, ListPhotos, GetPhoto,
         ProposeFeatures, ProposeFeatureUpdates, ProposePalette, ProposeProjectSheet, ProposeBioindicators, ProposeSoilResults, WithdrawDraft,
         CreateTasks, UpdateTasks, AddDocument, UpdateDocument, AddPhoto, UpdatePhotos, DeletePhotos,

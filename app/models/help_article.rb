@@ -17,6 +17,12 @@ class HelpArticle
     parse: { smart: true },
     render: { unsafe: false }
   }.freeze
+  ACTION_LINK = %r{<a href="action:panel/([a-z0-9-]+)">}
+  # The categories that follow a step of the journey, with that step: the
+  # help center draws them as the editor does.
+  STAGE_BY_CATEGORY = {
+    "Observer son terrain" => "observe", "Cartographier" => "map", "Concevoir" => "design", "Planter" => "plant"
+  }.freeze
   # Old slug => new slug, for articles that changed name.
   RENAMED = {
     "connecter-claude" => "connecter-son-ia",
@@ -29,9 +35,10 @@ class HelpArticle
     # Every article, ordered by category (lowest article order first) then order.
     def all
       files = Dir.glob(DIR.join("*.md")).sort
-      signature = files.map { |file| [ file, File.mtime(file).to_f ] }
+      signature = files.map { |file| [ file, File.mtime(file).to_f ] } << HelpGlossary.mtime
       return @cache[:articles] if @cache && @cache[:signature] == signature
       articles = files.filter_map { |file| parse(file) }
+      articles << HelpGlossary.article if HelpGlossary.article
       first_order = articles.group_by(&:category).transform_values { |list| list.map(&:order).min }
       articles.sort_by! { |a| [ first_order[a.category], a.category, a.order, a.title ] }
       @cache = { signature:, articles: articles }
@@ -47,18 +54,85 @@ class HelpArticle
       RENAMED[slug.to_s]
     end
 
-    # [{ name:, articles: [HelpArticle] }] in display order.
+    # [{ name:, stage:, articles: [HelpArticle] }] in display order.
     def categories
-      all.group_by(&:category).map { |name, articles| { name:, articles: } }
+      all.group_by(&:category).map { |name, articles| { name:, stage: STAGE_BY_CATEGORY[name], articles: } }
     end
 
-    # Simple full-text search: every word must appear (accents and case are
-    # ignored); title hits weigh more than summary, then body.
+    # What the garden asks for this month and its guides (app/help/seasons.yml).
+    def season(date = Date.current)
+      entry = (YAML.safe_load_file(DIR.join("seasons.yml")) || {})[date.month]
+      return nil unless entry
+      { month: date.month, title: entry["title"], body: entry["body"],
+        articles: Array(entry["guides"]).filter_map { |slug| find(slug) } }
+    end
+
+    # Full-text search: every word must be found (accents and case are
+    # ignored), as typed, through a synonym (app/help/synonyms.yml) or, from
+    # four letters, with one slip (« baisière »); title hits weigh more than
+    # summary, then body, and a slip weighs less than the word itself.
     def search(query)
       words = tokenize(query)
       return [] if words.empty?
       all.filter_map { |article| (score = article.score(words)) && [ score, article ] }
-        .sort_by { |score, article| [ -score, article.order ] }.map(&:last)
+        .sort_by { |score, article| [ lexicon_last(article, words), -score, article.order ] }.map(&:last)
+    end
+
+    # The lexicon holds every word: it comes after the guides, unless asked for.
+    def lexicon_last(article, words)
+      article.slug == HelpGlossary::SLUG && !normalize(article.title).match?(/\b(#{words.map { |w| Regexp.escape(w) }.join('|')})/) ? 1 : 0
+    end
+
+    # The words that stand for `word`, itself first: [« mare », « etang »…].
+    def alternatives(word)
+      [ word, *synonyms.fetch(word, []) ]
+    end
+
+    def synonyms
+      file = DIR.join("synonyms.yml")
+      mtime = File.exist?(file) ? File.mtime(file).to_f : nil
+      return @synonyms[:map] if @synonyms && @synonyms[:mtime] == mtime
+      groups = mtime ? Array(YAML.safe_load_file(file)) : []
+      map = {}
+      groups.each do |group|
+        terms = group.map { |term| normalize(term).squish }.uniq
+        terms.each { |term| (map[term] ||= []).concat(terms - [ term ]).uniq! }
+      end
+      @synonyms = { mtime:, map: }
+      map
+    end
+
+    # The words of the help center one slip away from `word`, or from its
+    # beginning: « baisiere » finds « baissiere », « palete » « palettes ».
+    def slips(word)
+      articles = all
+      @slips = { articles:, vocabulary: articles.flat_map { |a| a.send(:field_words).values.flat_map(&:to_a) }.to_set, found: {} } unless @slips && @slips[:articles].equal?(articles)
+      found = @slips[:found]
+      found.clear if found.size > 500
+      found[word] ||= @slips[:vocabulary].select do |text|
+        next false if text.length < word.length - 1
+        distance(word, text) <= 1 || distance(word, text[0, word.length]) <= 1
+      end.to_set
+    end
+
+    # Optimal string alignment distance, stopped early above `max` (the
+    # same as app/frontend/quick_switcher/match.ts).
+    def distance(a, b, max = 1)
+      return max + 1 if (a.length - b.length).abs > max
+      rows = [ (0..b.length).to_a ]
+      (1..a.length).each do |i|
+        rows[i] = [ i ]
+        best = i
+        (1..b.length).each do |j|
+          cost = a[i - 1] == b[j - 1] ? 0 : 1
+          value = [ rows[i - 1][j] + 1, rows[i][j - 1] + 1, rows[i - 1][j - 1] + cost ].min
+          value = [ value, rows[i - 2][j - 2] + 1 ].min if i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1]
+          rows[i][j] = value
+          best = value if value < best
+        end
+        return max + 1 if best > max
+      end
+      rows[a.length][b.length]
     end
 
     def tokenize(text)
@@ -86,13 +160,37 @@ class HelpArticle
       end
   end
 
-  def initialize(slug:, title:, summary:, category:, order:, markdown:)
-    @slug, @title, @summary, @category, @order, @markdown = slug, title, summary, category, order, markdown
+  def initialize(slug:, title:, summary:, category:, order:, markdown:, html: nil)
+    @slug, @title, @summary, @category, @order, @markdown, @html = slug, title, summary, category, order, markdown, html
   end
 
   def html
-    @html ||= Commonmarker.to_html(markdown, options: MARKDOWN_OPTIONS, plugins: { syntax_highlighter: nil })
+    @html ||= HelpGlossary.annotate(action_links(without_missing_captures(rendered)))
+  end
+
+  # The body as Markdown renders it, before the glossary and action links.
+  def rendered
+    @rendered ||= Commonmarker.to_html(markdown, options: MARKDOWN_OPTIONS, plugins: { syntax_highlighter: nil })
       .gsub(HEADING_ANCHOR, "")   # keep the heading ids, drop the English "Link to heading" anchors
+  end
+
+  # The editor panels a guide's buttons open: [Ouvrir le panneau Relief](action:panel/relief).
+  def panel_actions
+    rendered.scan(ACTION_LINK).flatten.uniq
+  end
+
+  # A panel link becomes a button: in the editor it opens the panel, elsewhere
+  # it leads to the last map opened (components/help/actions.ts).
+  def action_links(html)
+    html.gsub(ACTION_LINK) { %(<a href="/maps" class="help-action" data-help-panel="#{$1}">) }
+  end
+
+  # A capture not made yet (script/help_captures.mjs) is left out rather than shown broken.
+  CAPTURE = %r{<img src="/help/captures/([a-z0-9-]+\.webp)"[^>]*/?>}
+  CAPTURES_DIR = Rails.root.join("public/help/captures")
+
+  def without_missing_captures(html)
+    html.gsub(CAPTURE) { |tag| CAPTURES_DIR.join($1).exist? ? tag.sub("<img ", %(<img loading="lazy" )) : "" }.gsub("<p></p>", "")
   end
 
   # Level-2 headings, for the "on this page" list: [{ id:, text: }].
@@ -102,27 +200,20 @@ class HelpArticle
 
   # Plain text of the body (no Markdown), for search and excerpts.
   def plain_text
-    @plain_text ||= ActionController::Base.helpers.strip_tags(html).squish
+    @plain_text ||= ActionController::Base.helpers.strip_tags(rendered).squish
   end
 
   # nil when a query word is missing, otherwise a relevance score. A word
-  # matches the start of a word of the text ("plant" finds "plants").
+  # matches the start of a word of the text (« plant » finds « plants »).
   def score(words)
-    fields = { title: title, summary: summary, category: category, body: plain_text }
-      .transform_values { |text| self.class.normalize(text) }
-    patterns = words.index_with { |word| /\b#{Regexp.escape(word)}/ }
-    return nil unless patterns.all? { |_, pattern| fields.values.any? { |text| text.match?(pattern) } }
-    patterns.sum do |_, pattern|
-      (fields[:title].match?(pattern) ? 10 : 0) + (fields[:summary].match?(pattern) ? 4 : 0) +
-        (fields[:category].match?(pattern) ? 2 : 0) + [ fields[:body].scan(pattern).size, 5 ].min
-    end
+    words.sum { |word| word_score(word) || (return nil) }
   end
 
   # A short passage of the body around the first matching word.
   def excerpt(words, length: 160)
     return summary if words.blank?
     haystack = self.class.normalize(plain_text)
-    position = words.filter_map { |w| haystack.index(/\b#{Regexp.escape(w)}/) }.min
+    position = words.flat_map { |w| self.class.alternatives(w) }.filter_map { |w| haystack.index(/\b#{Regexp.escape(w)}/) }.min
     return summary if position.nil?
     start = [ position - 50, 0 ].max
     snippet = plain_text[start, length].to_s
@@ -133,7 +224,39 @@ class HelpArticle
     { slug:, title:, summary:, category:, url: "/help/#{slug}" }
   end
 
-  def to_drawer_json
-    as_json.merge(html:, headings:)
+  # The other guides of its category, in order.
+  def related
+    self.class.all.select { |article| article.category == category && article != self }
   end
+
+  def to_drawer_json
+    as_json.merge(html:, headings:, related: related.map(&:as_json))
+  end
+
+  private
+    WEIGHTS = { title: 10, summary: 4, category: 2 }.freeze
+    SLIP_MIN_LENGTH = 4
+
+    def normalized_fields
+      @normalized_fields ||= { title:, summary:, category:, body: plain_text }.transform_values { |text| self.class.normalize(text) }
+    end
+
+    def field_words
+      @field_words ||= normalized_fields.transform_values { |text| text.scan(/[a-z0-9]{2,}/).to_set }
+    end
+
+    def word_score(word)
+      exact = self.class.alternatives(word).sum do |term|
+        pattern = /\b#{Regexp.escape(term)}/
+        WEIGHTS.sum { |field, weight| normalized_fields[field].match?(pattern) ? weight : 0 } +
+          [ normalized_fields[:body].scan(pattern).size, 5 ].min
+      end
+      return exact if exact.positive?
+      return nil if word.length < SLIP_MIN_LENGTH
+      near = self.class.slips(word)
+      slip = WEIGHTS.merge(body: 1).sum do |field, weight|
+        field_words[field].intersect?(near) ? (weight / 2.0).ceil : 0
+      end
+      slip.positive? ? slip : nil
+    end
 end

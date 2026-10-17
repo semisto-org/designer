@@ -1,11 +1,13 @@
 ---
 title: "Les arbres déjà en place"
 summary: "La hauteur des arbres sur ton terrain et autour, vue du ciel : le plus grand, la part du terrain sous les arbres, et où ils se trouvent."
-category: Comprendre son terrain
-order: 48
+category: Observer son terrain
+order: 30
 ---
 
 Un jardin-forêt ne part presque jamais de rien. Le vieux chêne en bordure, la haie du voisin, le bosquet au fond : ils font déjà de l'ombre, coupent le vent et nourrissent le sol. Le panneau **Arbres en place** (étape **Observer**) te les montre avant que tu ne dessines quoi que ce soit.
+
+[Ouvrir le panneau Arbres en place](action:panel/canopy)
 
 Dessine d'abord le contour du terrain : le panneau mesure les arbres dedans, et dans une bande d'une trentaine de mètres autour, car l'ombre d'un arbre voisin compte aussi.
 
@@ -27,4 +29,4 @@ Garde deux choses en tête :
 1. **Ce sont des images d'il y a quelques années**, prises entre 2016 et 2020 environ selon l'endroit. Le panneau te dit quand. Les arbres abattus ou plantés depuis n'y figurent pas, et ceux qui restent ont grandi.
 2. **C'est une estimation**, pas un relevé arbre par arbre : un ordre de grandeur de quelques mètres. Pour un arbre qui compte vraiment dans ton design, va le voir, mesure-le, et dessine-le dans **Cartographier** comme un élément existant (voir [Dessiner l'existant](/help/dessiner-l-existant)).
 
-Si ta région a son propre modèle de surface (LiDAR), la vue 3D du [relief](/help/lire-le-relief-et-l-eau) montre aussi les arbres en volume.
+Si ta région a son propre modèle de surface (LiDAR), la [vue 3D du terrain](/help/la-vue-3d-du-terrain) montre aussi les arbres en volume.

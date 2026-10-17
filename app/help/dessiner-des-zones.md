@@ -2,7 +2,7 @@
 title: "Dessiner des zones nommées"
 summary: "Délimiter les zones de ton design, leur donner une couleur et un nom, et lire leur surface sur la carte, comme sur un plan remis au client."
 category: Concevoir
-order: 51
+order: 53
 ---
 
 Avant de placer chaque arbre, un design commence souvent par des **zones** : ici la forêt-jardin en strates hautes, là un patch de plantes mellifères, le long du fossé une haie persistante, et la fenêtre à garder ouverte sur le paysage. L'outil **Zone** les dessine comme sur un plan remis au client : une couleur douce, un nom écrit sur la carte, et sa surface ou sa longueur juste dessous.

@@ -1,15 +1,17 @@
 import { router, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowRight, CornerDownLeft, Plus, Search, Users } from 'lucide-react'
+import { ArrowRight, BookOpen, CornerDownLeft, Plus, Search, Users } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { nextStepText } from '@/my_maps/ResumeCard'
 import { PaletteStrip } from '@/my_maps/PaletteStrip'
 import { StageIcon, StagePath } from '@/my_maps/StagePath'
 import { TerrainSketch } from '@/my_maps/TerrainSketch'
+import { openHelp } from '@/components/help/openHelp'
 import { api } from '@/lib/api'
 import { formatArea, t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { MapStage, SharedProps } from '@/types'
+import type { HelpArticleSummary } from '@/types/billing'
 import type { ResumeStep } from '@/types/myMaps'
 import type { ListedMap, TeamAwareUser } from '@/types/teams'
 import { byRecent, isSwitcherShortcut, rememberOpened, searchMaps, searchPages, type Match, type SwitcherMap, type SwitcherPage } from './match'
@@ -40,15 +42,19 @@ type Preview = { map: ListedMap; next: ResumeStep }
 type Entry =
   | { type: 'map'; match: Match }
   | { type: 'page'; page: SwitcherPage }
+  | { type: 'guide'; article: HelpArticleSummary }
   | { type: 'create'; name: string }
 
-const entryKey = (entry: Entry) => entry.type === 'map' ? `map-${entry.match.map.id}` : entry.type === 'page' ? `page-${entry.page.key}` : 'create'
+const entryKey = (entry: Entry) =>
+  entry.type === 'map' ? `map-${entry.match.map.id}` : entry.type === 'page' ? `page-${entry.page.key}` : entry.type === 'guide' ? `guide-${entry.article.slug}` : 'create'
+
+const GUIDES_SHOWN = 4
 
 /**
  * Cmd+J / Ctrl+J from anywhere, map editor included: a centred field to type
  * a few letters of a map and jump to it. Arrows move, Enter opens. The maps
  * opened lately come first; a slip or the initials still find a map; pages
- * of the app answer too. On a wide screen the chosen map shows its terrain,
+ * of the app and the help guides answer too. On a wide screen the chosen map shows its terrain,
  * which grows to year 30, and its next step. Mounted once (ImpersonationFrame).
  */
 export default function QuickSwitcher() {
@@ -115,14 +121,16 @@ export default function QuickSwitcher() {
     if (currentId) writeRecent(rememberOpened(readRecent(), currentId))
   }, [url, currentId])
 
+  const guides = useGuides(open ? query : '')
   const pages = useMemo(() => appPages(currentUser as TeamAwareUser | null), [currentUser])
   const { entries, mapCount } = useMemo(() => {
     const found = searchMaps(byRecent(maps ?? [], recent), query)
     const list: Entry[] = found.map((match) => ({ type: 'map', match }))
     list.push(...searchPages(pages, query).map((page): Entry => ({ type: 'page', page })))
+    list.push(...guides.map((article): Entry => ({ type: 'guide', article })))
     if (maps && found.length === 0 && query.trim()) list.push({ type: 'create', name: query.trim() })
     return { entries: list, mapCount: found.length }
-  }, [maps, recent, query, pages])
+  }, [maps, recent, query, pages, guides])
 
   useEffect(() => { setActive(0) }, [query])
   useEffect(() => {
@@ -136,6 +144,11 @@ export default function QuickSwitcher() {
 
   const go = (entry: Entry | undefined) => {
     if (!entry) return
+    if (entry.type === 'guide') {
+      setOpen(false)
+      openHelp(entry.article.slug)
+      return
+    }
     const href = entry.type === 'map' ? `/maps/${entry.match.map.id}` : entry.type === 'page' ? entry.page.href : `/maps/new?name=${encodeURIComponent(entry.name)}`
     setOpen(false)
     if (href !== url) router.visit(href)
@@ -237,16 +250,20 @@ export default function QuickSwitcher() {
                     </div>
                   )
                 }
-                const first = index === mapCount
+                const first = entries[index - 1]?.type !== entry.type
+                const heading = entry.type === 'create' ? t('quick_switcher.none', { query: typed }) : entry.type === 'guide' ? t('quick_switcher.guides') : t('quick_switcher.pages')
                 return (
                   <div key={entryKey(entry)}>
-                    {first && <p className="px-2 pt-3 pb-1 font-hand text-lg leading-none text-loam-500">{entry.type === 'create' ? t('quick_switcher.none', { query: typed }) : t('quick_switcher.pages')}</p>}
+                    {first && <p className="px-2 pt-3 pb-1 font-hand text-lg leading-none text-loam-500">{heading}</p>}
                     <div {...option(entry, index)} className={rowClass}>
-                      <span className={clsx('grid h-9 w-9 shrink-0 place-items-center rounded-full', selected ? 'bg-prune-50 text-prune-600' : 'bg-loam-100 text-loam-500')}>
-                        {entry.type === 'create' ? <Plus className="h-5 w-5" aria-hidden /> : <ArrowRight className="h-5 w-5" aria-hidden />}
+                      <span className={clsx('grid h-9 w-9 shrink-0 place-items-center rounded-full', selected ? 'bg-prune-50 text-prune-600' : entry.type === 'guide' ? 'bg-leaf-50 text-leaf-600' : 'bg-loam-100 text-loam-500')}>
+                        {entry.type === 'create' ? <Plus className="h-5 w-5" aria-hidden /> : entry.type === 'guide' ? <BookOpen className="h-5 w-5" aria-hidden /> : <ArrowRight className="h-5 w-5" aria-hidden />}
                       </span>
-                      <span className="min-w-0 flex-1 truncate font-medium text-loam-900">
-                        {entry.type === 'create' ? t('quick_switcher.create', { name: entry.name }) : entry.page.label}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium text-loam-900">
+                          {entry.type === 'create' ? t('quick_switcher.create', { name: entry.name }) : entry.type === 'guide' ? entry.article.title : entry.page.label}
+                        </span>
+                        {entry.type === 'guide' && <span className="block truncate text-sm text-loam-500">{entry.article.category}</span>}
                       </span>
                       {selected && <CornerDownLeft className="h-4 w-4 shrink-0 text-prune-500" aria-hidden />}
                     </div>
@@ -271,6 +288,27 @@ export default function QuickSwitcher() {
       )}
     </dialog>
   )
+}
+
+/**
+ * The help guides matching what is typed (two letters at least), a moment
+ * after typing stops. The switcher's searches are not counted as help
+ * searches that found nothing: a map's name is not a missing guide.
+ */
+function useGuides(query: string): HelpArticleSummary[] {
+  const [guides, setGuides] = useState<HelpArticleSummary[]>([])
+  const typed = query.trim()
+  useEffect(() => {
+    if (typed.length < 2) { setGuides([]); return }
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      api<{ results: HelpArticleSummary[] }>(`/help.json?from=switcher&q=${encodeURIComponent(typed)}`, { signal: controller.signal })
+        .then((data) => setGuides(data.results.slice(0, GUIDES_SHOWN)))
+        .catch(() => {})
+    }, 180)
+    return () => { window.clearTimeout(timer); controller.abort() }
+  }, [typed])
+  return guides
 }
 
 /** The chosen map's preview, fetched once per map and kept for the session. */
@@ -326,7 +364,13 @@ function PreviewPane({ preview, pending, entry }: { preview: Preview | null; pen
         </>
       ) : (
         <div className="m-auto max-w-[14rem] p-6 text-center font-hand text-lg leading-snug text-loam-400">
-          {pending ? t('quick_switcher.preview_loading') : entry?.type === 'create' ? t('quick_switcher.preview_create') : entry?.type === 'page' ? t('quick_switcher.preview_page') : t('quick_switcher.preview_empty')}
+          {entry?.type === 'guide' ? (
+            <span className="block text-left">
+              <span className="block font-sans text-sm font-medium text-leaf-700">{entry.article.category}</span>
+              <span className="mt-1 block font-serif text-xl leading-tight font-semibold text-prune-800">{entry.article.title}</span>
+              <span className="mt-2 block text-loam-600">{entry.article.summary}</span>
+            </span>
+          ) : pending ? t('quick_switcher.preview_loading') : entry?.type === 'create' ? t('quick_switcher.preview_create') : entry?.type === 'page' ? t('quick_switcher.preview_page') : t('quick_switcher.preview_empty')}
         </div>
       )}
     </aside>

@@ -26,6 +26,7 @@ import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
 import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
 import { MODAL_PANEL_QUERY } from '@/map/panels/registry'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
+import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
 
 type Props = {
   map: MapData
@@ -109,6 +110,15 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const [selectedId, setSelectedId] = useState<number | null>(arrival?.properties.id ?? null)
   // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
   const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
+  // A guide's « Ouvrir le panneau… » button asks for a panel (components/help/actions).
+  useEffect(() => {
+    const onOpen = (event: Event) => {
+      const panel = (event as CustomEvent<{ panel: string }>).detail?.panel
+      if (panel) setActivePanel(panel)
+    }
+    window.addEventListener(OPEN_EDITOR_PANEL, onOpen)
+    return () => window.removeEventListener(OPEN_EDITOR_PANEL, onOpen)
+  }, [])
   const [pickedStage, setPickedStage] = useState<MapStage | null>(null)
   const focusStage = pickedStage ?? map.stage
   const [drawingShape, setDrawingShape] = useState<DrawShape | 'edit' | null>(null)
@@ -295,10 +305,10 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       {wideRail ? <RailPortal panels={visiblePanels} /> : <EditorBar panels={visiblePanels} />}
       {panel && panel.modal && wideScreen ? (
         <Dialog open size="wide" title={t(panel.label)} onClose={() => setActivePanel(null)}>
-          <panel.component />
+          <div data-editor-panel={panel.id}><panel.component /></div>
         </Dialog>
       ) : panel && (
-        <section className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
+        <section data-editor-panel={panel.id} className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
           <h2 className="mb-3 text-base">{t(panel.label)}</h2>
           <panel.component />
         </section>

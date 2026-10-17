@@ -1,7 +1,7 @@
 fr:
   quick_switcher:
     title: "Accès rapide"
-    placeholder: "Aller à une carte, une page…"
+    placeholder: "Aller à une carte, une page, un guide…"
     open: "Aller à une carte"
     escape: "Échap"
     recent: "Tes cartes, de la dernière ouverte"
@@ -10,6 +10,7 @@ fr:
       one: "1 carte trouvée"
       other: "%{count} cartes trouvées"
     pages: "Pages"
+    guides: "Guides d'aide"
     here: "Tu y es"
     none: "Aucune de tes cartes ne répond à « %{query} »"
     create: "Créer la carte « %{name} »"

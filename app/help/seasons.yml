@@ -1,0 +1,51 @@
+# The season card of the help center: what a forest garden asks for this
+# month (in a temperate Western European climate), and the guides that help.
+# One entry per month, 1 to 12. French, like the guides.
+1:
+  title: "Janvier, le jardin dort"
+  body: "Les arbres sont nus : c'est le meilleur moment pour voir le relief, les axes de l'eau et les ombres les plus longues de l'année."
+  guides: [le-soleil-et-l-horizon, lire-le-relief-et-l-eau, construire-sa-palette-et-ses-patches]
+2:
+  title: "Février, les dernières plantations à racines nues"
+  body: "Tant que le sol n'est pas gelé, les arbres à racines nues se plantent encore. Note où l'eau stagne après les pluies d'hiver."
+  guides: [la-liste-de-plants-et-la-commande, planter-puis-observer, le-bilan-de-l-eau]
+3:
+  title: "Mars, la sève remonte"
+  body: "Les bourgeons gonflent : finis les plantations, paille le sol nu et surveille les gelées tardives au fond des vallons."
+  guides: [planter-puis-observer, la-vue-3d-du-terrain, le-climat-observe]
+4:
+  title: "Avril, le jardin se réveille"
+  body: "Les plantes sauvages qui sortent racontent ton sol : c'est le moment des bio-indicatrices et d'une analyse de terre."
+  guides: [analyser-son-sol, identifier-une-plante, photos-et-suivi-dans-le-temps]
+5:
+  title: "Mai, observe la reprise"
+  body: "Les jeunes plants ont-ils démarré ? Une photo au même endroit chaque mois montre la reprise mieux que la mémoire."
+  guides: [photos-et-suivi-dans-le-temps, planter-puis-observer, les-arbres-deja-en-place]
+6:
+  title: "Juin, le soleil le plus haut"
+  body: "Les ombres sont les plus courtes de l'année et les floraisons battent leur plein : un bon mois pour inviter des amis à commenter la carte."
+  guides: [le-soleil-et-l-horizon, partager-et-commenter, esquisser-et-mettre-en-image]
+7:
+  title: "Juillet, le mois qui a soif"
+  body: "Le bilan de l'eau devient négatif : regarde où ton terrain manque d'eau et ce que tes toits et tes mares pourraient garder."
+  guides: [le-bilan-de-l-eau, le-bassin-versant-et-l-infiltration, le-climat-d-aujourd-hui-et-de-demain]
+8:
+  title: "Août, la sécheresse parle"
+  body: "Les coins qui jaunissent les premiers et ceux qui restent verts disent où va l'eau. Note-les sur la carte avant de les oublier."
+  guides: [le-bilan-de-l-eau, dessiner-l-existant, calques-mesures-et-croquis]
+9:
+  title: "Septembre, prépare l'automne"
+  body: "Le sol se réhumidifie : c'est le moment de tracer baissières et mares sur la courbe de niveau, avant les grandes pluies."
+  guides: [tracer-sur-la-courbe-et-le-keyline, le-bassin-versant-et-l-infiltration, gerer-la-terre-excavee]
+10:
+  title: "Octobre, la saison de concevoir"
+  body: "Après la pluie, regarde où l'eau s'arrête. Puis choisis tes espèces et fais ta liste : les pépinières prennent les commandes de l'hiver."
+  guides: [construire-sa-palette-et-ses-patches, la-liste-de-plants-et-la-commande, dessiner-des-zones]
+11:
+  title: "Novembre, la Sainte-Catherine"
+  body: "« À la Sainte-Catherine, tout bois prend racine » : la grande saison de plantation commence. Commande, prépare le sol, plante."
+  guides: [la-liste-de-plants-et-la-commande, planter-puis-observer, imprimer-un-plan-a-l-echelle]
+12:
+  title: "Décembre, l'ombre la plus longue"
+  body: "Le soleil est au plus bas : vérifie quels coins restent à l'ombre en hiver avant d'y placer potager ou mare."
+  guides: [le-soleil-et-l-horizon, la-vue-3d-du-terrain, remplir-la-fiche-projet]

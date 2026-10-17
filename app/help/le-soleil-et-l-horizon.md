@@ -1,11 +1,15 @@
 ---
 title: "Le soleil et l'horizon de ton terrain"
 summary: "La ligne des collines vue depuis ton terrain, la course du soleil en hiver, à l'équinoxe et en été, et les heures de soleil direct mois par mois."
-category: Comprendre son terrain
-order: 47
+category: Observer son terrain
+order: 23
 ---
 
 Un pommier, une vigne ou un potager n'ont pas besoin du même soleil. Avant de placer quoi que ce soit, regarde d'où vient la lumière sur ton terrain, et quand elle n'y arrive pas. Le panneau **Soleil** (étape « Observer ») te le montre.
+
+[Ouvrir le panneau Soleil](action:panel/sun)
+
+![Le panneau Soleil : l'horizon et la course du soleil](/help/captures/panneau-soleil.webp)
 
 Le soleil dépend de l'endroit : dessine d'abord le contour du terrain. Sans contour, le panneau propose le bouton **Dessiner le contour**.
 

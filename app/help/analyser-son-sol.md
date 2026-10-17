@@ -1,11 +1,15 @@
 ---
 title: "Analyser son sol"
 summary: "Où et comment prélever, quoi demander au laboratoire, lire les résultats et ce que disent les plantes déjà là."
-category: Comprendre son terrain
-order: 48
+category: Observer son terrain
+order: 28
 ---
 
 Un jardin-forêt se construit sur son sol. Le panneau **Sol** t'accompagne de la bêche au rapport du laboratoire, en quatre onglets : **Guide**, **Points**, **Comparer** et **Plantes**.
+
+[Ouvrir le panneau Sol](action:panel/soil)
+
+![Le panneau Sol](/help/captures/panneau-sol.webp)
 
 ## Guide : bien prélever
 

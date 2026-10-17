@@ -2,10 +2,14 @@
 title: "Publier sa carte"
 summary: "Mettre en ligne une vue en lecture seule de ton design, à une adresse que tu partages, en choisissant ce qui reste privé."
 category: Partager et collaborer
-order: 62
+order: 71
 ---
 
 Tu veux montrer ton design à un client, à la famille ou à ta commune, sans leur créer de compte ? **Publie une vue** de la carte : elle se lit à une adresse que tu partages, sans connexion et sans modification possible.
+
+[Ouvrir le panneau Publier](action:panel/publish)
+
+![Le panneau Publier](/help/captures/panneau-publier.webp)
 
 ## Publier ou inviter ?
 

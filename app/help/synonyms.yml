@@ -1,0 +1,22 @@
+# Words a reader may type for the same thing, for the help center search
+# (normalised: lower case, no accents). A query word finds the articles that
+# hold any word of its group. Keep groups small and truly equivalent.
+- [mare, etang, bassin, plan d'eau]
+- [baissiere, swale, noue, fosse]
+- [haie, brise vent]
+- [cadastre, parcelle, parcellaire]
+- [ia, claude, chatgpt, gemini, mistral, intelligence artificielle, assistant]
+- [relief, pente, altitude, courbe de niveau, mnt]
+- [ombre, ombrage, ensoleillement, soleil]
+- [prix, tarif, abonnement, forfait, formule, payer, paiement]
+- [facture, devis, offre]
+- [partager, inviter, collaborateur, editeur, lecteur]
+- [equipe, collectif, organisation]
+- [supprimer, effacer, retirer]
+- [photo, image, video]
+- [espece, plante, vegetal, essence]
+- [palette, liste de plantes]
+- [sol, terre, analyse de sol]
+- [pluie, precipitation, averse]
+- [drone, vue aerienne, orthophoto]
+- [compte, profil, mot de passe, connexion, se connecter]

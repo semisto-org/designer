@@ -2,7 +2,7 @@
 title: "Payer sur facture"
 summary: "Pour une commune, une école, une association ou une entreprise : une facture au nom de l'organisation, avec ton bon de commande, payable par virement."
 category: Compte et formules
-order: 85
+order: 91
 ---
 
 Une administration ne peut pas toujours payer par carte. Semisto Terranova t'envoie alors une **facture au nom de ton organisation**, payable **par virement sous 30 jours**, avec ton **numéro de bon de commande** si tu en as un.

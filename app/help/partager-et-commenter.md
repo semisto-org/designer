@@ -2,10 +2,12 @@
 title: "Partager et commenter"
 summary: "Inviter des proches ou un designer, commenter la carte, et publier une vue à montrer."
 category: Partager et collaborer
-order: 60
+order: 70
 ---
 
 Un projet de jardin-forêt se construit rarement seul. Terranova permet d'inviter, de discuter sur la carte même, et de montrer son travail.
+
+[Ouvrir le panneau Discussions](action:panel/discussions)
 
 ## Trois rôles par carte
 

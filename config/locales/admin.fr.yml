@@ -12,6 +12,7 @@ fr:
       invoices: "Factures"
       drone: "Vues drone"
       release_notes: "Nouveautés"
+      help: "Aide"
       tech: "Tech"
     tech:
       title: "Tech"

@@ -65,7 +65,7 @@ export default function StormSection({ feature }: { feature: MapFeature }) {
           <CloudRain className="h-4 w-4" style={{ color: WATER }} />
           {t('relief.storm.title')} · {t(`relief.storm.water.${water}`)}
         </h3>
-        <HelpButton compact slug="lire-le-relief-et-l-eau" />
+        <HelpButton compact slug="le-bilan-de-l-eau" />
       </div>
       <p className="text-sm text-loam-600">{t('relief.storm.intro')}</p>
       <label className="flex items-center gap-2 text-sm text-loam-700">

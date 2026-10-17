@@ -4,7 +4,8 @@ class HelpArticleTest < ActiveSupport::TestCase
   EXPECTED_SLUGS = %w[
     creer-sa-premiere-carte le-parcours-en-quatre-etapes remplir-la-fiche-projet
     choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone dessiner-l-existant calques-mesures-et-croquis
-    lire-le-relief-et-l-eau le-climat-d-aujourd-hui-et-de-demain analyser-son-sol photos-et-suivi-dans-le-temps
+    lire-le-relief-et-l-eau la-vue-3d-du-terrain tracer-sur-la-courbe-et-le-keyline le-bassin-versant-et-l-infiltration le-bilan-de-l-eau
+    le-climat-d-aujourd-hui-et-de-demain analyser-son-sol photos-et-suivi-dans-le-temps
     construire-sa-palette-et-ses-patches la-liste-de-plants-et-la-commande planter-puis-observer
     les-alertes-reglementaires le-tableau-financier
     partager-et-commenter publier-sa-carte imprimer-un-plan-a-l-echelle
@@ -13,7 +14,7 @@ class HelpArticleTest < ActiveSupport::TestCase
 
   # The help center's categories, in display order.
   CATEGORIES = [
-    "Démarrer", "Cartographier", "Comprendre son terrain", "Concevoir",
+    "Démarrer", "Observer son terrain", "Cartographier", "Concevoir", "Planter",
     "Partager et collaborer", "L'IA sur la carte", "Compte et formules"
   ].freeze
 
@@ -26,15 +27,15 @@ class HelpArticleTest < ActiveSupport::TestCase
   test "ships the expected articles and every file has a valid front matter" do
     files = Dir.glob(HelpArticle::DIR.join("*.md")).map { |f| File.basename(f, ".md") }
     assert_equal EXPECTED_SLUGS.sort, files.sort & EXPECTED_SLUGS
-    assert_equal files.sort, HelpArticle.all.map(&:slug).sort, "an article was ignored: check its front matter"
+    assert_equal (files + [ HelpGlossary::SLUG ]).sort, HelpArticle.all.map(&:slug).sort, "an article was ignored: check its front matter"
     HelpArticle.all.each do |article|
       assert article.title.present? && article.summary.present? && article.category.present?, article.slug
     end
   end
 
-  test "the plant identification article is in the design category" do
+  test "the plant identification article is in the observation category" do
     article = HelpArticle.find("identifier-une-plante")
-    assert_equal "Concevoir", article.category
+    assert_equal "Observer son terrain", article.category
     assert_includes article.html, "Pl@ntNet"
     assert_equal "identifier-une-plante", HelpArticle.search("photographier feuille fleur").first.slug
   end
@@ -55,7 +56,7 @@ class HelpArticleTest < ActiveSupport::TestCase
 
   test "internal links point to existing articles" do
     HelpArticle.all.each do |article|
-      article.markdown.scan(%r{\]\(/help/([^)#\s]+)}).flatten.each do |target|
+      article.markdown.scan(%r{\]\(/help/(?!captures/)([^)#\s]+)}).flatten.each do |target|
         assert HelpArticle.find(target), "#{article.slug} links to a missing article: #{target}"
       end
     end
@@ -76,6 +77,40 @@ class HelpArticleTest < ActiveSupport::TestCase
     slugs.uniq.each { |slug| assert HelpArticle.find(slug), "HelpAction.tsx names a missing article: #{slug}" }
   end
 
+  test "every panel button in a guide names a panel of the editor" do
+    panels = PANELS.read[/export const PANELS\b.*?= \[(.*?)\n\]/m, 1].scan(/\bid: '([\w-]+)'/).flatten
+    used = HelpArticle.all.flat_map(&:panel_actions)
+    assert_includes used, "relief"
+    assert_empty used - panels, "unknown panels in action:panel/ links"
+    html = HelpArticle.find("le-soleil-et-l-horizon").html
+    assert_includes html, %(<a href="/maps" class="help-action" data-help-panel="sun">Ouvrir le panneau Soleil</a>)
+  end
+
+  test "every screenshot a guide shows is made by the capture script, and missing ones are left out" do
+    manifest = YAML.safe_load_file(Rails.root.join("app/help/captures.yml"))
+    names = manifest.map { |c| c["name"] }
+    panels = PANELS.read[/export const PANELS\b.*?= \[(.*?)\n\]/m, 1].scan(/\bid: '([\w-]+)'/).flatten
+    assert_empty manifest.filter_map { |c| c["panel"] } - panels
+    used = HelpArticle.all.flat_map { |a| a.markdown.scan(%r{\(/help/captures/([a-z0-9-]+)\.webp\)}).flatten }
+    assert_not_empty used
+    assert_empty used - names, "add these to app/help/captures.yml"
+
+    article = HelpArticle.new(slug: "x", title: "X", summary: "", category: "Test", order: 1, markdown: "![Absente](/help/captures/absente.webp)\n\nTexte")
+    assert_not_includes article.html, "<img"
+    shown = HelpArticle.find("le-soleil-et-l-horizon").html
+    assert_includes shown, %(<img loading="lazy" src="/help/captures/panneau-soleil.webp") if HelpArticle::CAPTURES_DIR.join("panneau-soleil.webp").exist?
+  end
+
+  test "every month has its season card, with existing guides" do
+    (1..12).each do |month|
+      season = HelpArticle.season(Date.new(2026, month, 1))
+      assert season, "no season card for month #{month}"
+      assert season[:title].present? && season[:body].present?
+      raw = YAML.safe_load_file(HelpArticle::DIR.join("seasons.yml"))[month]["guides"]
+      assert_equal raw.size, season[:articles].size, "month #{month} names a missing guide"
+    end
+  end
+
   test "renders Markdown to HTML with heading ids and no English anchors" do
     article = HelpArticle.find("formules-et-forfait")
     assert_includes article.html, "<h2 id=\"la-carte-gratuite\">La carte gratuite</h2>"
@@ -92,11 +127,12 @@ class HelpArticleTest < ActiveSupport::TestCase
     names = HelpArticle.categories.map { |c| c[:name] }
     assert_equal CATEGORIES, names
     cartographier = HelpArticle.categories.find { |c| c[:name] == "Cartographier" }[:articles]
-    assert_equal %w[choisir-ses-parcelles lire-les-couches-du-geoportail la-vue-drone caler-un-fond-de-plan dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
+    assert_equal %w[choisir-ses-parcelles la-vue-drone caler-un-fond-de-plan dessiner-l-existant calques-mesures-et-croquis], cartographier.map(&:slug)
+    assert_equal [ nil, "observe", "map", "design", "plant" ], HelpArticle.categories.first(5).map { |c| c[:stage] }
   end
 
   test "search finds articles by words in the body, ignoring case and accents" do
-    assert_equal "lire-les-couches-du-geoportail", HelpArticle.search("RUISSELLEMENT").first.slug
+    assert_includes HelpArticle.search("RUISSELLEMENT").first(2).map(&:slug), "lire-les-couches-du-geoportail"
     assert_equal "lire-les-couches-du-geoportail", HelpArticle.search("geoportail").first.slug
     assert_includes HelpArticle.search("Géoportail").map(&:slug), "choisir-ses-parcelles"
     assert_equal [ "connecter-son-ia" ], HelpArticle.search("mcp").map(&:slug)
@@ -111,6 +147,18 @@ class HelpArticleTest < ActiveSupport::TestCase
   test "search matches the start of words, not any substring" do
     assert_includes HelpArticle.search("plant").map(&:slug), "construire-sa-palette-et-ses-patches"
     assert_empty HelpArticle.search("ouvelle xyz")
+  end
+
+  test "search forgives one slip in a word of four letters or more" do
+    assert_includes HelpArticle.search("baisière").map(&:slug), "tracer-sur-la-courbe-et-le-keyline"
+    assert_equal "construire-sa-palette-et-ses-patches", HelpArticle.search("palete").first.slug
+    assert_empty HelpArticle.search("xqzw")
+  end
+
+  test "search finds a word through its synonyms" do
+    assert_includes HelpArticle.search("étang").map(&:slug), "le-bassin-versant-et-l-infiltration"
+    assert_includes HelpArticle.search("chatgpt").map(&:slug), "connecter-son-ia"
+    assert_includes HelpArticle.alternatives("mare"), "etang"
   end
 
   test "an empty or too short query finds nothing" do
@@ -134,7 +182,7 @@ class HelpArticleTest < ActiveSupport::TestCase
       HelpArticle.const_set(:DIR, Pathname(dir))
       HelpArticle.instance_variable_set(:@cache, nil)
       begin
-        assert_equal [ "ok" ], HelpArticle.all.map(&:slug)
+        assert_equal [ "ok" ], HelpArticle.all.map(&:slug) - [ HelpGlossary::SLUG ]
       ensure
         HelpArticle.send(:remove_const, :DIR)
         HelpArticle.const_set(:DIR, stub_const)

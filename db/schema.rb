@@ -318,6 +318,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
     t.index ["map_id"], name: "index_form_responses_on_map_id"
   end
 
+  create_table "help_feedbacks", force: :cascade do |t|
+    t.string "slug", null: false
+    t.boolean "helpful", null: false
+    t.text "comment"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug", "created_at"], name: "index_help_feedbacks_on_slug_and_created_at"
+    t.index ["user_id"], name: "index_help_feedbacks_on_user_id"
+  end
+
+  create_table "help_search_misses", force: :cascade do |t|
+    t.string "query", null: false
+    t.integer "count", default: 1, null: false
+    t.datetime "last_searched_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["query"], name: "index_help_search_misses_on_query", unique: true
+  end
+
   create_table "import_records", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.string "source", null: false
@@ -1407,6 +1427,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
   add_foreign_key "form_responses", "external_forms"
   add_foreign_key "form_responses", "map_documents", on_delete: :nullify
   add_foreign_key "form_responses", "maps", on_delete: :nullify
+  add_foreign_key "help_feedbacks", "users", on_delete: :nullify
   add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "invoice_requests", "users"
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify

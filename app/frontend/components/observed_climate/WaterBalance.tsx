@@ -100,7 +100,7 @@ export function WaterBalance({ mapId, version }: { mapId: number | string; versi
     <section aria-labelledby="water-balance" className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <SectionTitle id="water-balance">{t('water_balance.title')}</SectionTitle>
-        <HelpButton compact slug="lire-le-relief-et-l-eau" />
+        <HelpButton compact slug="le-bilan-de-l-eau" />
       </div>
       <p className="text-sm text-loam-700">{t('water_balance.intro')}</p>
 

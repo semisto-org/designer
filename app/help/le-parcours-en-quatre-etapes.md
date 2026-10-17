@@ -7,6 +7,10 @@ order: 12
 
 Concevoir un jardin-forêt, c'est une foule de petites tâches. Le **parcours** les range en quatre étapes et t'indique, à tout moment, la prochaine chose utile à faire. Rien n'est imposé : c'est un fil conducteur, pas un examen.
 
+[Ouvrir le panneau Parcours](action:panel/journey)
+
+![Le panneau Parcours : les quatre étapes et la prochaine action utile](/help/captures/panneau-parcours.webp)
+
 ## Le carnet de route
 
 À ta première arrivée sur une carte, Terranova ouvre le **carnet de route** : quelques pages qui racontent les quatre étapes sur un terrain d'exemple, pendant que trente ans passent sous tes yeux. Chaque page montre les panneaux qui servent l'étape et où en est ta carte. La dernière explique pourquoi brancher ton IA prend tout son sens quand ton carnet est rempli (voir [Connecter ton IA](/help/connecter-son-ia)).

@@ -2,10 +2,14 @@
 title: "Construire sa palette et ses patches"
 summary: "Choisir ses plantes, les regrouper en patches, et obtenir la liste de plants."
 category: Concevoir
-order: 50
+order: 52
 ---
 
 Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes qui s'entraident, à plusieurs hauteurs. Terranova t'aide à passer de l'idée au **plan de plantation**, puis à la **liste de plants** à commander.
+
+[Ouvrir le panneau Palette](action:panel/palette)
+
+![Le panneau Palette et ses espèces](/help/captures/panneau-palette.webp)
 
 ## La palette : les plantes de ton projet
 

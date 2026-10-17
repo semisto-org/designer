@@ -1,11 +1,15 @@
 ---
 title: "Le climat d'aujourd'hui et de demain"
 summary: "Zone de rusticité, gelées, pluie, climat projeté en 2050 et 2080 : vérifier que tes plantes tiendront dans la durée."
-category: Comprendre son terrain
-order: 47
+category: Observer son terrain
+order: 24
 ---
 
 Un arbre planté aujourd'hui vivra le climat de 2050, et souvent celui de 2080. Le panneau **Climat** te montre le climat actuel de ton terrain, celui qui se dessine, et vérifie tes plantes face aux deux.
+
+[Ouvrir le panneau Climat](action:panel/climate)
+
+![Le panneau Climat](/help/captures/panneau-climat.webp)
 
 Le climat dépend de l'endroit : dessine d'abord le contour du terrain. Sans contour, le panneau propose le bouton **Dessiner le contour**.
 
@@ -15,7 +19,7 @@ Le climat dépend de l'endroit : dessine d'abord le contour du terrain. Sans con
 - La **Région climatique** : touche-la pour lire sa description (l'Ardenne, par exemple, est plus froide et plus arrosée).
 - Les normales : **Température moyenne**, **Pluie par an**, moyennes en été et en hiver, **Jours de gel**, **Saison sans gel**, et les dates habituelles des **Dernières gelées** et des **Premières gelées**.
 
-Ce sont les normales 1991-2020, arrondies par grande région climatique : un ordre de grandeur, pas une mesure de ta parcelle. Un fond de vallée gèle souvent plus tard qu'un coteau voisin ; la vue 3D du [relief](/help/lire-le-relief-et-l-eau) montre où l'air froid stagne.
+Ce sont les normales 1991-2020, arrondies par grande région climatique : un ordre de grandeur, pas une mesure de ta parcelle. Un fond de vallée gèle souvent plus tard qu'un coteau voisin ; la [vue 3D du terrain](/help/la-vue-3d-du-terrain) montre où l'air froid stagne.
 
 ## Le climat qui vient
 

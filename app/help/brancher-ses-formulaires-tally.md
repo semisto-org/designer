@@ -2,7 +2,7 @@
 title: "Recevoir les réponses de tes formulaires Tally"
 summary: "Pour les équipes : un retour en fin de projet, un suivi à un an… Tes formulaires restent dans Tally, et chaque réponse se range dans la carte du client, sous « Formulaires »."
 category: Partager et collaborer
-order: 73
+order: 77
 ---
 
 Un projet se termine et tu veux savoir ce que ton client en a pensé ? Un an après la plantation, tu veux prendre des nouvelles du jardin ? Ces formulaires sont propres à ta façon de travailler : garde-les dans **Tally**, où tu les construis comme tu veux. Terranova s'occupe du reste : chaque réponse arrive dans la carte du bon client, à côté de ses plans et de ses photos.

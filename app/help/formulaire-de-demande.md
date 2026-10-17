@@ -2,7 +2,7 @@
 title: "Recevoir des demandes de projet"
 summary: "Pour les pros et les équipes : un formulaire public où les porteurs de projet choisissent leurs parcelles et répondent à quelques questions, puis la demande devient une carte et une offre."
 category: Partager et collaborer
-order: 71
+order: 76
 ---
 
 Tu conçois des jardins-forêts pour d'autres ? Plutôt qu'un formulaire en ligne séparé, donne à tes futurs clients un lien vers **ton formulaire de demande**. Ils y situent leur lieu sur la carte, touchent leurs parcelles cadastrales, disent ce qu'ils attendent de toi, et la demande t'arrive avec le contour déjà tracé.

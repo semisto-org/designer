@@ -1,8 +1,8 @@
 ---
 title: "Le climat observé chez toi"
 summary: "Trente ans de climat reconstitué à l'endroit de ton terrain : gelées de printemps et d'automne, pluie et température mois par mois, ce qui a déjà changé."
-category: Comprendre son terrain
-order: 48
+category: Observer son terrain
+order: 25
 ---
 
 Les normales du panneau **Climat** sont des moyennes par grande région. La partie **Le climat observé ici (1995–2024)** descend d'un cran : elle reprend trente ans de climat, heure par heure, à l'endroit de ton terrain.
@@ -22,7 +22,7 @@ La première fois qu'on ouvre le panneau pour un endroit, le calcul prend enviro
 
 ## Les limites
 
-Une maille de 9 km lisse le relief : un fond de vallée gèle souvent plus tard qu'un coteau voisin, et un mur exposé au sud fait gagner quelques degrés. Croise ces chiffres avec ce que tu observes sur place et avec la vue 3D du [relief](/help/lire-le-relief-et-l-eau).
+Une maille de 9 km lisse le relief : un fond de vallée gèle souvent plus tard qu'un coteau voisin, et un mur exposé au sud fait gagner quelques degrés. Croise ces chiffres avec ce que tu observes sur place et avec la [vue 3D du terrain](/help/la-vue-3d-du-terrain).
 
 Les dates de gel sont calculées sur la température de l'air à 2 m (gel dès 0 °C) : au ras du sol, les gelées blanches arrivent un peu plus souvent.
 

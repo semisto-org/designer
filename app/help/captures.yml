@@ -1,0 +1,34 @@
+# The screenshots of the help guides, made by script/help_captures.mjs from
+# a real map, so they can be made again after any redesign instead of going
+# stale. Each one lands in public/help/captures/<name>.webp; a guide shows
+# it with ![What it shows](/help/captures/<name>.webp). Until a capture has
+# been made, the guide simply leaves the image out.
+#
+#   name:     file name, also used in the guide
+#   panel:    an editor panel to open and photograph (its id in map/panels/index.ts)
+#   path:     or a page of the app to photograph ({map} is the map's id)
+#   selector: the part of the page to keep (default: the panel, or the page)
+#   mobile:   true for a phone-sized capture
+- name: panneau-parcours
+  panel: journey
+- name: panneau-terrain
+  panel: terrain
+- name: panneau-couches
+  panel: layers
+- name: panneau-eau-et-relief
+  panel: relief
+- name: panneau-soleil
+  panel: sun
+- name: panneau-climat
+  panel: climate
+- name: panneau-sol
+  panel: soil
+- name: panneau-palette
+  panel: palette
+- name: panneau-liste-de-plants
+  panel: plant-list
+- name: panneau-publier
+  panel: publish
+- name: mes-cartes
+  path: /maps
+  selector: main
