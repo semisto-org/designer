@@ -472,6 +472,8 @@
     "errors": {
       "no_plant": "Coche au moins un arbre de la carte."
     },
+    "not_planted": "Pas encore planté : marque-le planté plus haut sur sa fiche pour y noter des fruits ou une récolte.",
+    "not_planted_short": "Pas encore planté",
     "months": {
       "1": "janvier",
       "2": "février",
