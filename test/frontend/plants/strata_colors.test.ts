@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { inkOn, STRATA_COLORS, strataCounts } from '../../../app/frontend/map/plants/strataColors.ts'
+import { drawsCrown, inkOn, STRATA_COLORS, strataCounts } from '../../../app/frontend/map/plants/strataColors.ts'
 import { STRATA } from '../../../app/frontend/types/plants.ts'
 
 // CIE L*a*b* distance between two sRGB colours (CIE76).
@@ -45,4 +45,10 @@ test('a number is written in white on dark strata and in ink on light ones', () 
   assert.equal(inkOn(STRATA_COLORS.shrub), '#ffffff')
   assert.equal(inkOn(STRATA_COLORS.sub_canopy), '#1b1712')
   assert.equal(inkOn(STRATA_COLORS.herbaceous), '#1b1712')
+})
+
+test('climbers have no crown on the plan, every other strata keeps one', () => {
+  assert.equal(drawsCrown('vine'), false)
+  for (const strata of STRATA.filter((s) => s !== 'vine')) assert.equal(drawsCrown(strata), true, strata)
+  assert.equal(drawsCrown(null), true)
 })
