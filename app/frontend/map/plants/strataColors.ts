@@ -19,6 +19,15 @@ export const STRATA_COLORS: Record<Strata, string> = {
   aquatic: '#2b7bb9',
 }
 
+/**
+ * Climbers grow up a tree, a wall or a trellis, not out over the ground: a
+ * crown at their adult spread would cover what is under them. They show as
+ * their point only (and, in 3D, on their support).
+ */
+export function drawsCrown(strata: Strata | null | undefined): boolean {
+  return strata !== 'vine'
+}
+
 export type StrataCount = { strata: Strata; count: number }
 
 /** The strata found among plants, from the highest down, with how many plants each. */
