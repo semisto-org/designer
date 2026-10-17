@@ -5,9 +5,16 @@ import type { Map as MapLibreMap, StyleImageMetadata, SymbolLayerSpecification }
  * aerial photos as on plans. MapLibre text has no background of its own, so
  * every label layer stretches a small rounded image around its text
  * (`icon-text-fit`).
+ *
+ * Zone names get a paper label instead (beige clair, ink text), like a note
+ * stuck on the plan: a halo alone vanished on a grey roof or a busy photo.
  */
 export const LABEL_IMAGE = 'marker-label-bg'
 export const LABEL_OPACITY = 0.7
+export const PAPER_LABEL_IMAGE = 'paper-label-bg'
+export const PAPER_LABEL_OPACITY = 0.9
+/** loam-50 (beige clair), the notebook's paper. */
+const PAPER_RGB: [number, number, number] = [0xf7, 0xf3, 0xea]
 const PIXEL_RATIO = 2
 const RADIUS = 8 // device pixels, 4 CSS px
 const SIZE = RADIUS * 2 + 2
@@ -15,9 +22,9 @@ const SIZE = RADIUS * 2 + 2
 type LabelImage = { width: number; height: number; data: Uint8Array } & Partial<StyleImageMetadata>
 
 /** The rounded background, drawn by hand (no canvas) with anti-aliased corners. */
-export function labelBackground(): LabelImage {
+export function labelBackground(rgb: [number, number, number] = [0, 0, 0], opacity = LABEL_OPACITY): LabelImage {
   const data = new Uint8Array(SIZE * SIZE * 4)
-  const alpha = Math.round(255 * LABEL_OPACITY)
+  const alpha = Math.round(255 * opacity)
   const samples = 4
   for (let y = 0; y < SIZE; y++) {
     for (let x = 0; x < SIZE; x++) {
@@ -32,7 +39,11 @@ export function labelBackground(): LabelImage {
           if ((px - cx) ** 2 + (py - cy) ** 2 <= RADIUS ** 2) inside++
         }
       }
-      data[(y * SIZE + x) * 4 + 3] = Math.round((alpha * inside) / (samples * samples))
+      const i = (y * SIZE + x) * 4
+      data[i] = rgb[0]
+      data[i + 1] = rgb[1]
+      data[i + 2] = rgb[2]
+      data[i + 3] = Math.round((alpha * inside) / (samples * samples))
     }
   }
   return {
@@ -50,20 +61,25 @@ type ImageHost = Pick<MapLibreMap, 'hasImage' | 'addImage'> & { on?: MapLibreMap
 
 const watched = new WeakSet<object>()
 
+const BACKGROUNDS: Record<string, () => LabelImage> = {
+  [LABEL_IMAGE]: () => labelBackground(),
+  [PAPER_LABEL_IMAGE]: () => labelBackground(PAPER_RGB, PAPER_LABEL_OPACITY),
+}
+
 /**
- * Registers the background image on the map (again after a basemap style
- * swap, which drops images: the `styleimagemissing` event brings it back).
+ * Registers the background images on the map (again after a basemap style
+ * swap, which drops images: the `styleimagemissing` event brings them back).
  */
 export function ensureLabelBackground(map: ImageHost) {
-  const add = () => {
-    if (map.hasImage(LABEL_IMAGE)) return
-    const { width, height, data, ...options } = labelBackground()
-    map.addImage(LABEL_IMAGE, { width, height, data }, options)
+  const add = (id: string) => {
+    if (map.hasImage(id)) return
+    const { width, height, data, ...options } = BACKGROUNDS[id]()
+    map.addImage(id, { width, height, data }, options)
   }
-  add()
+  Object.keys(BACKGROUNDS).forEach(add)
   if (map.on && !watched.has(map)) {
     watched.add(map)
-    map.on('styleimagemissing', (e: { id: string }) => { if (e.id === LABEL_IMAGE) add() })
+    map.on('styleimagemissing', (e: { id: string }) => { if (e.id in BACKGROUNDS) add(e.id) })
   }
 }
 
