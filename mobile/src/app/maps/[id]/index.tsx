@@ -11,6 +11,7 @@ import { anchor, bearing, distance } from '@/lib/geo'
 import { formatDate, formatDistance, t } from '@/lib/i18n'
 import { styleUrl } from '@/lib/maps'
 import { outbox } from '@/lib/outbox'
+import { pickFeatureId } from '@/lib/pick'
 import { canEdit, type MapFeature, type Position } from '@/lib/types'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
@@ -78,7 +79,7 @@ export default function Terrain() {
     <View style={s.fill}>
       <Map style={s.fill} mapStyle={styleUrl(mapId)} compass compassPosition={{ top: insets.top + 64, right: 12 }}
         attributionPosition={{ bottom: 8, left: 8 }} logo={false}
-        onPress={() => setSelectedId(null)}
+        onPress={(e) => { if (!('features' in e.nativeEvent && pickFeatureId(e.nativeEvent.features) !== null)) setSelectedId(null) }}
         onRegionWillChange={(e) => { if (e.nativeEvent.userInteraction) setFollow(false) }}>
         <Camera
           ref={camera}

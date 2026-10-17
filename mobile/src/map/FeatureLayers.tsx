@@ -1,8 +1,10 @@
 // The design drawn over the base map: zones, lines, points and plants,
-// coloured like on the website. Tapping a feature selects it.
+// coloured like on the website. Tapping a feature selects it (the closest
+// point first, see pickFeatureId).
 import { GeoJSONSource, Layer } from '@maplibre/maplibre-react-native'
 import { useMemo } from 'react'
 import { featureColor, featureTitle } from '@/lib/elements'
+import { pickFeatureId } from '@/lib/pick'
 import type { MapBundle } from '@/lib/types'
 
 export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-point', 'features-plant']
@@ -40,8 +42,11 @@ export function FeatureLayers({ bundle, selectedId, onSelect }: { bundle: MapBun
         id="features"
         data={data}
         onPress={(event) => {
-          const fid = event.nativeEvent.features?.[0]?.properties?.fid
-          if (typeof fid === 'number') onSelect(fid)
+          const fid = pickFeatureId(event.nativeEvent.features)
+          if (fid === null) return
+          // Otherwise the press bubbles up to the Map, whose onPress clears the selection.
+          event.stopPropagation()
+          onSelect(fid)
         }}
       >
         <Layer id="features-fill" type="fill" filter={['==', ['geometry-type'], 'Polygon']}
