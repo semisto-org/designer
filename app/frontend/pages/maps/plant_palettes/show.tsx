@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Copy, Lock, MoreHorizontal, Pencil, RotateCcw, Save, Sprout, Trash2 } from 'lucide-react'
+import { Copy, Eye, MoreHorizontal, Pencil, RotateCcw, Save, Sprout, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { MapViewHeader } from '@/components/map_views/MapViews'
@@ -174,14 +174,15 @@ export default function PlantPalettePage({ map, rows: initialRows, tags: initial
       <Head title={t('plant_palette.page_title', { map: map.name })} />
       <div className="print:hidden"><MapViewHeader map={map} current="palette" /></div>
 
-      <div className="mb-5 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl">{t('plant_palette.title')}</h1>
-            <span className="print:hidden"><HelpButton slug="la-palette-vegetale-en-tableau" /></span>
-          </div>
-          <p className="mt-2 max-w-2xl text-sm text-loam-600 print:hidden">{t('plant_palette.intro')}</p>
-          {!canEdit && <p className="mt-2 text-sm text-loam-500 print:hidden">{t('plant_palette.read_only')}</p>}
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl">{t('plant_palette.title')}</h1>
+          <span className="print:hidden"><HelpButton slug="la-palette-vegetale-en-tableau" /></span>
+          {!canEdit && (
+            <span title={t('plant_palette.read_only')} className="inline-flex items-center gap-1 rounded-full bg-loam-100 px-2.5 py-0.5 text-sm text-loam-600 print:hidden">
+              <Eye className="h-3.5 w-3.5" aria-hidden />{t('plant_palette.read_only_badge')}
+            </span>
+          )}
         </div>
         {rows.length > 0 && <Summary rows={rows} areaM2={map.areaM2 ?? null} />}
       </div>
@@ -232,11 +233,12 @@ export default function PlantPalettePage({ map, rows: initialRows, tags: initial
             </ul>
           </nav>
 
-          <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm print:hidden">
-            {presetIntro && <p className="text-loam-600">{presetIntro}</p>}
-            {current.kind === 'preset' && canEdit && !modified && <p className="inline-flex items-center gap-1 text-loam-500"><Lock className="h-3.5 w-3.5" aria-hidden />{t('plant_palette.views.preset_hint')}</p>}
-            {editableView && status && <p className="text-loam-500">{status}</p>}
-          </div>
+          {(presetIntro || (editableView && status)) && (
+            <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm print:hidden">
+              {presetIntro && <p className="text-loam-600">{presetIntro}</p>}
+              {editableView && status && <p className="text-loam-500">{status}</p>}
+            </div>
+          )}
 
           {/* No backdrop blur here: it would pin the filters' phone sheet to this bar instead of the screen. */}
           <div className="sticky top-0 z-20 -mx-4 mb-3 bg-loam-50 px-4 py-2 print:static">
@@ -296,8 +298,9 @@ function ViewTab({ active, onClick, children }: { active: boolean; onClick: () =
 }
 
 /**
- * The palette at a glance, then the garden in time: how much of the land
- * the crowns of its trees and shrubs will cover after 1, 5, 15 and 30 years.
+ * The palette at a glance in one line, then the garden in time: how much of
+ * the land the crowns of its trees and shrubs will cover after 1, 5, 15 and
+ * 30 years.
  */
 function Summary({ rows, areaM2 }: { rows: PaletteRow[]; areaM2: number | null }) {
   const species = rows.length
@@ -308,36 +311,40 @@ function Summary({ rows, areaM2 }: { rows: PaletteRow[]; areaM2: number | null }
   const stages = GROWTH_YEARS.map((years) => ({ years, area: crownArea(rows, years) }))
   const largest = Math.max(1, ...stages.map((s) => s.area))
   const showGrowth = areaM2 != null && areaM2 > 0 && largest > 1
+  const facts = [
+    t('plant_palette.summary.species', { count: species }),
+    t('plant_palette.summary.planned', { count: planned }),
+    t('plant_palette.summary.planted', { count: planted }),
+    existing > 0 ? t('plant_palette.summary.existing', { count: existing }) : null,
+    budget > 0 ? t('plant_palette.summary.budget', { amount: formatEuro(budget) }) : null,
+  ].filter(Boolean)
 
   return (
-    <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
-      <ul className="space-y-0.5 text-sm text-loam-700">
-        <li className="font-semibold text-loam-900">{t('plant_palette.summary.species', { count: species })}</li>
-        <li>{t('plant_palette.summary.planned', { count: planned })} · {t('plant_palette.summary.planted', { count: planted })}</li>
-        {existing > 0 && <li>{t('plant_palette.summary.existing', { count: existing })}</li>}
-        {budget > 0 && <li>{t('plant_palette.summary.budget', { amount: formatEuro(budget) })}</li>}
-      </ul>
+    <>
+      <p className="text-sm text-loam-700">{facts.join(' · ')}</p>
       {showGrowth && (
-        <figure className="rounded-2xl bg-white px-4 py-3 ring-1 ring-loam-900/10 print:hidden" title={t('plant_palette.growth.hint')}>
-          <figcaption className="mb-2 text-sm">
-            <span className="block font-medium text-leaf-800">{t('plant_palette.growth.title')}</span>
-            <span className="block text-loam-500">{t('plant_palette.growth.caption')}</span>
-          </figcaption>
-          <ol className="flex items-end gap-4">
+        <figure
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm lg:ml-auto print:hidden"
+          title={`${t('plant_palette.growth.caption')}. ${t('plant_palette.growth.hint')}`}
+        >
+          <figcaption className="font-medium text-leaf-800">{t('plant_palette.growth.short')}</figcaption>
+          <ol className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {stages.map(({ years, area }) => {
-              const size = 10 + 34 * Math.sqrt(area / largest)
+              const size = 6 + 14 * Math.sqrt(area / largest)
               return (
-                <li key={years} className="flex flex-col items-center gap-1">
-                  <span aria-hidden className="block rounded-full bg-leaf-500/70 ring-2 ring-leaf-600/30" style={{ width: size, height: size }} />
-                  <span className="text-sm tabular-nums text-loam-800">{formatDecimal(Math.round((area * 100) / areaM2!))} %</span>
-                  <span className="text-sm text-loam-500">{t('plant_palette.growth.years', { years })}</span>
+                <li key={years} className="flex items-center gap-1.5 whitespace-nowrap">
+                  <span className="flex h-5 w-5 items-center justify-center" aria-hidden>
+                    <span className="block rounded-full bg-leaf-500/70 ring-1 ring-leaf-600/30" style={{ width: size, height: size }} />
+                  </span>
+                  <span className="tabular-nums text-loam-800">{formatDecimal(Math.round((area * 100) / areaM2!))} %</span>
+                  <span className="text-loam-500">{t('plant_palette.growth.years', { years })}</span>
                 </li>
               )
             })}
           </ol>
         </figure>
       )}
-    </div>
+    </>
   )
 }
 

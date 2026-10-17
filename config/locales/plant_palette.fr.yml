@@ -2,7 +2,7 @@ fr:
   plant_palette:
     page_title: "Palette végétale · %{map}"
     title: "Palette végétale"
-    intro: "Toutes les plantes du projet dans un même tableau : celles qui poussent déjà sur le terrain, celles que tu as choisies, celles qui sont dessinées sur la carte et celles qui sont en terre. Chaque vue les regarde sous un autre angle."
+    read_only_badge: "Lecture seule"
     read_only: "Tu peux consulter la palette et ses vues. Pour enregistrer une vue ou noter un prix, demande à un éditeur de la carte."
     existing_unnamed: "Arbre existant"
     summary:
@@ -13,6 +13,7 @@ fr:
       budget: "Budget prévu : %{amount}"
     growth:
       title: "Ce jardin dans le temps"
+      short: "Sous les houppiers :"
       years: "An %{years}"
       now: "Aujourd'hui"
       caption: "Part du terrain sous les houppiers des arbres et arbustes"
@@ -33,7 +34,6 @@ fr:
       name_prompt: "Nom de la vue"
       saving: "Enregistrement…"
       saved_now: "Vue enregistrée"
-      preset_hint: "Une vue de départ ne se modifie pas : duplique-la pour l'adapter à ton chantier."
     presets:
       base: "Base"
       budget: "Budget"
