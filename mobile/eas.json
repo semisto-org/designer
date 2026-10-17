@@ -9,8 +9,10 @@
       "distribution": "internal",
       "env": {
         "APP_ENV": "development",
-        "APP_VARIANT": "preview"
-      }
+        "APP_VARIANT": "preview",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
@@ -18,8 +20,10 @@
         "buildType": "apk"
       },
       "env": {
-        "APP_VARIANT": "preview"
-      }
+        "APP_VARIANT": "preview",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
+      "channel": "preview"
     },
     "simulator": {
       "distribution": "internal",
@@ -27,18 +31,26 @@
         "simulator": true
       },
       "env": {
-        "APP_VARIANT": "preview"
-      }
+        "APP_VARIANT": "preview",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
+      "channel": "simulator"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "channel": "production",
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      }
     },
     "testflight": {
       "distribution": "store",
       "autoIncrement": true,
       "env": {
-        "APP_VARIANT": "preview"
-      }
+        "APP_VARIANT": "preview",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
+      "channel": "testflight"
     }
   },
   "submit": {

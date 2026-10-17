@@ -122,5 +122,5 @@ const s = StyleSheet.create({
   photo: { width: 96, height: 96, borderRadius: radius.md, backgroundColor: colors.loam100 },
   section: { fontSize: 20, fontFamily: fonts.title, color: colors.loam900, marginTop: space.md },
   latin: { fontSize: 17, fontFamily: fonts.bold, color: colors.loam900 },
-  meta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  meta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
 })

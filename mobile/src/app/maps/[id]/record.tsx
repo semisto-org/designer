@@ -179,5 +179,5 @@ const s = StyleSheet.create({
   cardTitle: { fontSize: 20, fontFamily: fonts.title, color: colors.loam900 },
   big: { fontSize: 40, fontFamily: fonts.title, color: colors.prune700 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  layer: { fontSize: 13, fontFamily: fonts.medium, color: colors.loam600, marginTop: space.sm },
+  layer: { fontSize: 14, fontFamily: fonts.medium, color: colors.loam600, marginTop: space.sm },
 })

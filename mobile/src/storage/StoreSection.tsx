@@ -113,5 +113,5 @@ const s = StyleSheet.create({
   row: { flexDirection: 'row', gap: space.sm },
   cell: { flex: 1, gap: space.xs },
   rowTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.loam900 },
-  rowMeta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  rowMeta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
 })

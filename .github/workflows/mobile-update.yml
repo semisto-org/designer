@@ -1,0 +1,54 @@
+# Sends a JavaScript-only change of the phone app to the phones that already
+# have a build (EAS Update), without a new store build. Started by hand from
+# the Actions tab. A change that adds a native module needs « Mobile build »
+# instead: the update only reaches builds with the same runtime fingerprint.
+name: Mobile update
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel (the EAS build profile of the phones to update)"
+        type: choice
+        options: [testflight, preview, production]
+        default: testflight
+      message:
+        description: "What changes, in a few words"
+        type: string
+        required: true
+
+concurrency:
+  group: mobile-update-${{ inputs.channel }}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Expo token is set
+        run: test -n "$EXPO_TOKEN" || { echo "::error::Add the EXPO_TOKEN repository secret first."; exit 1; }
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Publish the update
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          MESSAGE: ${{ inputs.message }}
+          # The test app (« Terranova (test) ») has its own identifier.
+          APP_VARIANT: ${{ inputs.channel != 'production' && 'preview' || '' }}
+        run: npx --yes eas-cli@latest update --channel "$CHANNEL" --message "$MESSAGE" --non-interactive

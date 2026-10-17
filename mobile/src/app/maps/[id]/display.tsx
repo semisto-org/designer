@@ -71,6 +71,6 @@ export default function DisplayScreen() {
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md, paddingVertical: space.xs },
   rowLabel: { fontSize: 16, fontFamily: fonts.body, color: colors.loam900 },
-  rowSub: { fontSize: 13, fontFamily: fonts.body, color: colors.loam500 },
+  rowSub: { fontSize: 14, fontFamily: fonts.body, color: colors.loam500 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 })

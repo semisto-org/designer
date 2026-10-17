@@ -41,7 +41,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F7F5F2",
+          "backgroundColor": "#F7F3EA",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120
         }
@@ -66,7 +66,8 @@
           "microphonePermission": "Semisto Terranova enregistre le son des vidéos que tu filmes sur ton terrain."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -78,6 +79,12 @@
         "projectId": "cf4ef807-5bd3-4f05-9170-9a8b855fef40"
       }
     },
-    "owner": "semisto.org"
+    "owner": "semisto.org",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/cf4ef807-5bd3-4f05-9170-9a8b855fef40"
+    }
   }
 }

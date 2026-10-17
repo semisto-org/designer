@@ -1,21 +1,26 @@
-import { EBGaramond_500Medium } from '@expo-google-fonts/eb-garamond'
+import { Caveat_500Medium } from '@expo-google-fonts/caveat'
+import { EBGaramond_500Medium, EBGaramond_600SemiBold } from '@expo-google-fonts/eb-garamond'
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, useFonts } from '@expo-google-fonts/inter'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 // Defines the background task of GPS traces: must load with the bundle.
 import '@/lib/trace'
 import { t } from '@/lib/i18n'
+import { Sentry } from '@/lib/monitoring'
 import { SessionProvider, useSession } from '@/state/session'
 import { useAutoSync } from '@/state/sync'
+import { ErrorScreen } from '@/ui/ErrorScreen'
+import { ToastHost } from '@/ui/Toast'
 import { colors, fonts } from '@/ui/theme'
 
 SplashScreen.preventAutoHideAsync()
 
 function Navigator() {
   const status = useSession()
-  const [fontsLoaded, fontError] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, EBGaramond_500Medium })
+  const [fontsLoaded, fontError] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, EBGaramond_500Medium, EBGaramond_600SemiBold, Caveat_500Medium })
   const ready = status !== 'loading' && (fontsLoaded || !!fontError)
   useAutoSync()
   useEffect(() => { if (ready) SplashScreen.hideAsync() }, [ready])
@@ -25,7 +30,7 @@ function Navigator() {
       screenOptions={{
         headerTintColor: colors.prune700,
         headerStyle: { backgroundColor: colors.loam50 },
-        headerTitleStyle: { color: colors.loam900, fontFamily: fonts.title, fontSize: 20 },
+        headerTitleStyle: { color: colors.loam900, fontFamily: fonts.display, fontSize: 20 },
         contentStyle: { backgroundColor: colors.loam50 },
         headerBackTitle: t('mobile.common.back'),
       }}
@@ -46,11 +51,18 @@ function Navigator() {
   )
 }
 
-export default function RootLayout() {
+function RootLayout() {
   return (
-    <SessionProvider>
-      <StatusBar style="dark" />
-      <Navigator />
-    </SessionProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Sentry.ErrorBoundary fallback={({ resetError }) => <ErrorScreen onRetry={resetError} />}>
+        <SessionProvider>
+          <StatusBar style="dark" />
+          <Navigator />
+          <ToastHost />
+        </SessionProvider>
+      </Sentry.ErrorBoundary>
+    </GestureHandlerRootView>
   )
 }
+
+export default Sentry.wrap(RootLayout)

@@ -18,14 +18,16 @@ import type { Position } from '@/lib/types'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
 import { chooseMedia, type MediaChoice } from '@/ui/chooseMedia'
-import { Body, Button, Chip, Input, Label, Notice } from '@/ui/kit'
+import { Body, Button, Chip, IconButton, Input, Label, Notice } from '@/ui/kit'
+import { Icon, type IconName } from '@/ui/Icon'
+import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, shadow, space } from '@/ui/theme'
 
 const WATER = '#0e8fd6'
-const TOOLS: Array<{ water: StormWater; icon: string }> = [
-  { water: 'flows', icon: '〰️' },
-  { water: 'pools', icon: '💧' },
-  { water: 'seeps', icon: '⛲' },
+const TOOLS: Array<{ water: StormWater; icon: IconName }> = [
+  { water: 'flows', icon: 'flows' },
+  { water: 'pools', icon: 'pools' },
+  { water: 'seeps', icon: 'seeps' },
 ]
 
 type Pixel = { x: number; y: number }
@@ -114,7 +116,7 @@ export default function StormScreen() {
         lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: ids[0] ?? null,
       })
     }
-    Alert.alert(t('mobile.storm.saved_title'), t('mobile.storm.saved', { count: ids.length }))
+    toast(t('mobile.storm.saved_title'), { body: t('mobile.storm.saved', { count: ids.length }) })
     router.back()
   }
 
@@ -168,9 +170,7 @@ export default function StormScreen() {
       )}
 
       <View style={[s.header, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
-        <Pressable onPress={leave} style={s.round} accessibilityRole="button" accessibilityLabel={t('mobile.common.back')}>
-          <Text style={{ fontSize: 22, color: colors.prune700 }}>‹</Text>
-        </Pressable>
+        <IconButton icon="back" label={t('mobile.common.back')} onPress={leave} />
         <View style={s.headerCard}>
           <Text style={s.headerTitle}>{t('mobile.storm.title')}</Text>
           <Text style={s.headerSub}>{tool && step === 'draw' ? t(`mobile.storm.hint_${tool}`) : t('mobile.storm.hint_pan')}</Text>
@@ -184,7 +184,7 @@ export default function StormScreen() {
             {TOOLS.map(({ water, icon }) => (
               <Pressable key={water} onPress={() => setTool(tool === water ? null : water)} accessibilityRole="button"
                 accessibilityState={{ selected: tool === water }} style={[s.tool, tool === water && s.toolActive]}>
-                <Text style={{ fontSize: 22 }}>{icon}</Text>
+                <Icon name={icon} size={26} color={tool === water ? colors.white : colors.blueberry} />
                 <Text style={[s.toolLabel, tool === water && { color: colors.white }]}>{t(`mobile.storm.water.${water}`)}</Text>
               </Pressable>
             ))}
@@ -194,7 +194,9 @@ export default function StormScreen() {
               {marks.length === 0 ? t('mobile.storm.none_yet') : counts.filter(([, n]) => n > 0).map(([water, n]) => t(`mobile.storm.count_${water}`, { count: n })).join(' · ')}
             </Text>
             {marks.length > 0 && (
-              <Pressable onPress={() => setMarks((all) => all.slice(0, -1))} hitSlop={8}>
+              <Pressable onPress={() => setMarks((all) => all.slice(0, -1))} accessibilityRole="button"
+                style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8 }}>
+                <Icon name="undo" size={20} color={colors.prune700} />
                 <Text style={s.link}>{t('mobile.storm.undo')}</Text>
               </Pressable>
             )}
@@ -232,7 +234,6 @@ const s = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
   dot: { position: 'absolute', width: 6, height: 6, borderRadius: 3, backgroundColor: WATER },
   header: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'flex-start', gap: space.sm, paddingHorizontal: space.md },
-  round: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', ...shadow },
   headerCard: { flex: 1, backgroundColor: colors.white, borderRadius: radius.lg, paddingHorizontal: space.md, paddingVertical: space.sm, ...shadow },
   headerTitle: { fontSize: 17, fontFamily: fonts.title, color: colors.loam900 },
   headerSub: { fontSize: 14, color: colors.loam600 },
@@ -241,7 +242,7 @@ const s = StyleSheet.create({
   tools: { flexDirection: 'row', gap: space.sm },
   tool: { flex: 1, minHeight: 68, borderRadius: radius.lg, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', gap: 2, ...shadow },
   toolActive: { backgroundColor: WATER },
-  toolLabel: { fontSize: 13, fontFamily: fonts.bold, color: colors.loam700 },
+  toolLabel: { fontSize: 14, fontFamily: fonts.bold, color: colors.loam700 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.white, borderRadius: radius.lg, paddingHorizontal: space.md, paddingVertical: space.sm, ...shadow },
   count: { fontSize: 14, color: colors.loam700, flex: 1 },
   link: { fontSize: 14, fontFamily: fonts.bold, color: colors.prune600 },

@@ -43,3 +43,19 @@ export function todayIso(now = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
+
+/** « sam. 17 oct. », the day as written in a field notebook. */
+export function formatDay(now = new Date()): string {
+  return now.toLocaleDateString('fr-BE', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+export type Season = 'winter' | 'spring' | 'summer' | 'autumn'
+
+/** The season by the months gardeners count in (December to February is winter). */
+export function seasonOf(now = new Date()): Season {
+  const month = now.getMonth()
+  if (month === 11 || month <= 1) return 'winter'
+  if (month <= 4) return 'spring'
+  if (month <= 7) return 'summer'
+  return 'autumn'
+}

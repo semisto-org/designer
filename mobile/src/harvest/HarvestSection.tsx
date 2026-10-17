@@ -176,9 +176,9 @@ const s = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   strip: { flexDirection: 'row', gap: space.md },
   dot: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.loam500, borderStyle: 'dashed' },
-  year: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  year: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
   rowTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.loam900 },
   advice: { gap: space.xs, backgroundColor: colors.leaf50 },
   adviceTitle: { fontSize: 17, fontFamily: fonts.title, color: colors.loam900 },
-  rowMeta: { fontSize: 13, fontFamily: fonts.body, color: colors.loam600 },
+  rowMeta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
 })

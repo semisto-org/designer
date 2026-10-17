@@ -4,13 +4,14 @@ import { Camera, Map, UserLocation, type CameraRef } from '@maplibre/maplibre-re
 import * as Location from 'expo-location'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
 import { featureTitle, kindLabel, speciesName } from '@/lib/elements'
 import { anchor, bearing, distance } from '@/lib/geo'
-import { formatDate, formatDistance, t } from '@/lib/i18n'
+import { formatDate, formatDay, formatDistance, seasonOf, t } from '@/lib/i18n'
+import { haptics } from '@/lib/haptics'
 import { styleUrl } from '@/lib/maps'
 import { outbox } from '@/lib/outbox'
 import { pickFeatureId } from '@/lib/pick'
@@ -19,8 +20,10 @@ import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
 import { useOnline, useOutbox } from '@/state/sync'
 import { chooseMedia } from '@/ui/chooseMedia'
-import { Body, Button, Notice } from '@/ui/kit'
-import { colors, fonts, radius, shadow, space } from '@/ui/theme'
+import { Icon, type IconName } from '@/ui/Icon'
+import { Body, Button, IconButton, Notice } from '@/ui/kit'
+import { toast } from '@/ui/Toast'
+import { colors, fonts, radius, shadows, space, touch, type } from '@/ui/theme'
 
 export default function Terrain() {
   const mapId = Number(useLocalSearchParams<{ id: string }>().id)
@@ -70,6 +73,11 @@ export default function Terrain() {
   const failed = pending.filter((op) => op.error).length
   const waiting = pending.length - failed
   const bbox = bundle.map.bbox
+  const sync = failed > 0
+    ? { icon: 'error' as const, color: colors.clay700, issue: true, label: t('mobile.terrain.failed', { count: failed }) }
+    : waiting > 0
+      ? { icon: online ? 'sending' as const : 'offline' as const, color: colors.humus700, issue: false, label: t(online ? 'mobile.terrain.sending' : 'mobile.terrain.waiting', { count: waiting }) }
+      : { icon: online ? 'synced' as const : 'offline' as const, color: online ? colors.leaf700 : colors.loam600, issue: false, label: online ? t('mobile.terrain.synced') : t('mobile.terrain.offline') }
 
   const addPhoto = async () => {
     const choice = await chooseMedia()
@@ -84,7 +92,7 @@ export default function Terrain() {
     const title = count > 1 ? 'mobile.photo.saved_title_many' : choice.items[0].video ? 'mobile.photo.saved_title_video' : 'mobile.photo.saved_title'
     const body = selected ? t(count > 1 ? 'mobile.photo.saved_feature_many' : 'mobile.photo.saved_feature')
       : choice.from === 'library' ? t('mobile.photo.saved_library', { count }) : t('mobile.photo.saved')
-    Alert.alert(t(title), body)
+    toast(t(title), { body })
   }
 
   return (
@@ -103,22 +111,26 @@ export default function Terrain() {
         <UserLocation accuracy heading />
       </Map>
 
-      {/* Header: back, title, sync state */}
+      {/* Header: back, the map's name on a paper label (readable in the sun), the day and sync state */}
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
-        <RoundButton label="‹" accessibilityLabel={t('mobile.common.back')} onPress={() => router.back()} />
-        <View style={{ flex: 1 }}>
-          <Text style={s.headerTitle} numberOfLines={1}>{bundle.map.name}</Text>
-          <Pressable onPress={() => router.push({ pathname: '/maps/[id]/outbox', params: { id: String(mapId) } })}>
-            <Text style={[s.headerSub, failed > 0 && { color: colors.clay700 }]}>
-              {failed > 0 ? t('mobile.terrain.failed', { count: failed })
-                : waiting > 0 ? t(online ? 'mobile.terrain.sending' : 'mobile.terrain.waiting', { count: waiting })
-                : online ? t('mobile.terrain.synced') : t('mobile.terrain.offline')}
+        <IconButton icon="back" label={t('mobile.common.back')} onPress={() => router.back()} />
+        <Pressable
+          style={s.titleChip}
+          accessibilityRole="button"
+          accessibilityHint={t('mobile.outbox.title')}
+          onPress={() => router.push({ pathname: '/maps/[id]/outbox', params: { id: String(mapId) } })}
+        >
+          <Text style={s.headerTitle} numberOfLines={1} maxFontSizeMultiplier={1.3}>{bundle.map.name}</Text>
+          <View style={s.headerLine}>
+            <Icon name={sync.icon} size={16} color={sync.color} />
+            <Text style={[s.headerSub, { color: sync.color }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
+              {sync.issue ? sync.label : `${t('mobile.terrain.today', { season: t(`mobile.terrain.seasons.${seasonOf()}`), date: formatDay() })} · ${sync.label}`}
             </Text>
-          </Pressable>
-        </View>
-        <RoundButton label="◧" accessibilityLabel={t('mobile.display.open')} dot={hidesMore(shown)}
+          </View>
+        </Pressable>
+        <IconButton icon="display" label={hidesMore(shown) ? t('mobile.terrain.hides_more') : t('mobile.display.open')} dot={hidesMore(shown)}
           onPress={() => router.push({ pathname: '/maps/[id]/display', params: { id: String(mapId) } })} />
-        <RoundButton label="◎" accessibilityLabel={t('mobile.terrain.follow')} active={follow} onPress={() => setFollow((v) => !v)} />
+        <IconButton icon="follow" label={t('mobile.terrain.follow')} active={follow} onPress={() => setFollow((v) => !v)} />
       </View>
 
       {/* Bottom: the selected feature, else the actions */}
@@ -131,10 +143,10 @@ export default function Terrain() {
         ) : null}
         {editable ? (
           <View style={s.actions}>
-            <Action label={t('mobile.actions.photo')} icon="📷" onPress={addPhoto} />
-            <Action label={t('mobile.actions.plant')} icon="🌱" onPress={() => router.push({ pathname: '/maps/[id]/plant', params: { id: String(mapId) } })} />
-            <Action label={t('mobile.actions.record')} icon="📍" onPress={() => router.push({ pathname: '/maps/[id]/record', params: { id: String(mapId) } })} />
-            <Action label={t('mobile.actions.identify')} icon="🔍" onPress={() => router.push({ pathname: '/maps/[id]/identify', params: { id: String(mapId), ...(selected?.properties.kind === 'plant' ? { featureId: String(selected.id) } : {}) } })} />
+            <Action label={t('mobile.actions.photo')} icon="photo" onPress={addPhoto} />
+            <Action label={t('mobile.actions.plant')} icon="plant" onPress={() => router.push({ pathname: '/maps/[id]/plant', params: { id: String(mapId) } })} />
+            <Action label={t('mobile.actions.record')} icon="point" onPress={() => router.push({ pathname: '/maps/[id]/record', params: { id: String(mapId) } })} />
+            <Action label={t('mobile.actions.identify')} icon="identify" onPress={() => router.push({ pathname: '/maps/[id]/identify', params: { id: String(mapId), ...(selected?.properties.kind === 'plant' ? { featureId: String(selected.id) } : {}) } })} />
           </View>
         ) : (
           !selected && <Notice>{t('mobile.terrain.viewer')}</Notice>
@@ -151,43 +163,41 @@ function SelectedCard({ feature, me, planting, onOpen, onClose }: {
   const meters = me ? distance(me, point) : null
   const direction = me ? compass(bearing(me, point)) : null
   const isPlant = feature.properties.kind === 'plant'
+  const title = featureTitle(feature, planting)
+  const parts = (where: string | null) => [
+    isPlant ? (feature.properties.planted_on ? t('plant_feature.planted_on', { date: formatDate(feature.properties.planted_on) }) : t('mobile.feature.to_plant'))
+      : feature.properties.name ? kindLabel(feature.properties.kind) : null,
+    isPlant && feature.properties.name ? speciesName(planting, feature.properties.species_id) : null,
+    meters !== null ? t('mobile.terrain.distance', { distance: formatDistance(meters), direction: where }) : null,
+  ].filter(Boolean).join(' · ')
+  // Two buttons side by side, never one inside the other (screen readers reach both).
   return (
-    <Pressable onPress={onOpen} style={s.card} accessibilityRole="button">
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={s.cardTitle} numberOfLines={1}>{featureTitle(feature, planting)}</Text>
-        <Text style={s.cardSub} numberOfLines={1}>
-          {[
-            isPlant ? (feature.properties.planted_on ? t('plant_feature.planted_on', { date: formatDate(feature.properties.planted_on) }) : t('mobile.feature.to_plant'))
-              : feature.properties.name ? kindLabel(feature.properties.kind) : null,
-            isPlant && feature.properties.name ? speciesName(planting, feature.properties.species_id) : null,
-            meters !== null ? t('mobile.terrain.distance', { distance: formatDistance(meters), direction }) : null,
-          ].filter(Boolean).join(' · ')}
-        </Text>
-      </View>
-      <Text style={s.cardOpen}>{t('mobile.terrain.open')}</Text>
-      <Pressable onPress={onClose} hitSlop={12} accessibilityLabel={t('mobile.common.close')}><Text style={s.cardClose}>×</Text></Pressable>
-    </Pressable>
+    <View style={s.card}>
+      <Pressable onPress={onOpen} style={s.cardMain} accessibilityRole="button"
+        accessibilityLabel={`${title}, ${parts(direction && t(`mobile.terrain.directions.${direction}`))}`} accessibilityHint={t('mobile.terrain.open')}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={s.cardTitle} numberOfLines={1}>{title}</Text>
+          <Text style={s.cardSub} numberOfLines={1}>{parts(direction)}</Text>
+        </View>
+        <Text style={s.cardOpen}>{t('mobile.terrain.open')}</Text>
+        <Icon name="next" size={20} color={colors.prune700} />
+      </Pressable>
+      <Pressable onPress={onClose} style={s.cardClose} accessibilityRole="button" accessibilityLabel={t('mobile.common.close')}>
+        <Icon name="close" color={colors.loam600} />
+      </Pressable>
+    </View>
   )
 }
 
 const DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']
 const compass = (deg: number) => DIRECTIONS[Math.round(deg / 45) % 8]
 
-function Action({ label, icon, onPress }: { label: string; icon: string; onPress: () => void }) {
+function Action({ label, icon, onPress }: { label: string; icon: IconName; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label} style={({ pressed }) => [s.action, pressed && { opacity: 0.8 }]}>
-      <Text style={{ fontSize: 22 }}>{icon}</Text>
-      <Text style={s.actionLabel}>{label}</Text>
-    </Pressable>
-  )
-}
-
-function RoundButton({ label, onPress, active, dot, accessibilityLabel }: { label: string; onPress: () => void; active?: boolean; dot?: boolean; accessibilityLabel: string }) {
-  return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel}
-      style={[s.round, active && { backgroundColor: colors.prune600 }]}>
-      <Text style={{ fontSize: 22, color: active ? colors.white : colors.prune700 }}>{label}</Text>
-      {dot && <View style={s.dot} />}
+    <Pressable onPress={() => { haptics.tap(); onPress() }} accessibilityRole="button" accessibilityLabel={label}
+      style={({ pressed }) => [s.action, pressed && { transform: [{ scale: 0.97 }] }]}>
+      <Icon name={icon} size={26} color={colors.prune700} />
+      <Text style={s.actionLabel} numberOfLines={1} maxFontSizeMultiplier={1.3}>{label}</Text>
     </Pressable>
   )
 }
@@ -196,17 +206,24 @@ const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.loam50 },
   center: { alignItems: 'center', justifyContent: 'center' },
   header: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md },
-  headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.loam900, textShadowColor: '#fff', textShadowRadius: 6 },
-  headerSub: { fontSize: 13, color: colors.loam700, textShadowColor: '#fff', textShadowRadius: 6 },
-  dot: { position: 'absolute', top: 6, right: 6, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.prune600, borderWidth: 1.5, borderColor: colors.white },
-  round: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', ...shadow },
+  titleChip: {
+    flex: 1, minHeight: touch.field, justifyContent: 'center', paddingHorizontal: space.md, paddingVertical: 6,
+    backgroundColor: colors.paper, borderRadius: radius.control, borderWidth: 1, borderColor: colors.loam200, ...shadows.md,
+  },
+  headerTitle: { ...type.mapName, fontSize: 19, lineHeight: 23, color: colors.loam900 },
+  headerLine: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerSub: { ...type.meta, flexShrink: 1 },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.md, gap: space.sm },
   actions: { flexDirection: 'row', gap: space.sm },
-  action: { flex: 1, minHeight: 68, borderRadius: radius.lg, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', gap: 2, ...shadow },
-  actionLabel: { fontSize: 13, fontFamily: fonts.bold, color: colors.loam700 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.white, borderRadius: radius.lg, padding: space.md, ...shadow },
+  action: {
+    flex: 1, minHeight: 72, borderRadius: radius.lg, backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.loam200,
+    alignItems: 'center', justifyContent: 'center', gap: 4, ...shadows.md,
+  },
+  actionLabel: { ...type.label, color: colors.loam800 },
+  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.paper, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.loam200, ...shadows.md },
+  cardMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: touch.field, paddingLeft: space.lg, paddingVertical: space.md },
   cardTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.loam900 },
-  cardSub: { fontSize: 13, color: colors.loam500 },
+  cardSub: { ...type.meta, color: colors.loam500 },
   cardOpen: { fontSize: 14, fontFamily: fonts.bold, color: colors.prune600 },
-  cardClose: { fontSize: 24, color: colors.loam500, paddingHorizontal: 4 },
+  cardClose: { width: touch.field, minHeight: touch.field, alignItems: 'center', justifyContent: 'center' },
 })
