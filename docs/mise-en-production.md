@@ -173,6 +173,13 @@ Utilisées seulement par la commande ponctuelle `bin/rails claudy:import MAP_ID=
 | `SENTRY_DSN` | Facultatif : envoie les erreurs à Sentry, celles du serveur (Rails) et celles du navigateur (React). Le DSN est lu au démarrage et transmis à la page : rien à définir au moment du build. |
 | `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | Facultatifs. |
 
+### Mesure d'audience
+
+| Variable | Rôle |
+|---|---|
+| `PLAUSIBLE_DOMAIN` | Facultatif : le nom du site dans Plausible (`terranova.semisto.org`). Ajoute le script de l'instance Plausible de Semisto, sans cookie ni donnée personnelle. Sans elle, aucune mesure. |
+| `PLAUSIBLE_SCRIPT_URL` | Facultatif : l'adresse du script, par défaut `https://stats.semisto.org/js/script.js`. |
+
 ## Connexions sortantes
 
 Le serveur doit pouvoir joindre : `geoservices.wallonie.be` (couches, identification, relief), `tiles.openfreemap.org` et `tile.openstreetmap.org` (fond de plan), `nominatim.openstreetmap.org` (adresses), `my-api.plantnet.org` (identification des plantes par photo, si `PLANTNET_API_KEY` est défini), `api.magnific.com` et le serveur d'images de Magnific (mise en image, si `MAGNIFIC_API_KEY` est défini), `api.stripe.com`, le serveur SMTP, le fournisseur S3 et, si défini, Sentry et Open-Meteo. L'import ponctuel de Claudy joint `app.les4sources.be`.
