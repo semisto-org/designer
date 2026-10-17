@@ -1,5 +1,5 @@
 import { Bot, Camera, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
-import { Trees } from 'lucide-react'
+import { Apple, Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
@@ -35,6 +35,9 @@ import OfferPanel from '@/map/panels/OfferPanel'
 import PlantListPanel from '@/map/plants/PlantListPanel'
 import PlantSection from '@/map/plants/PlantSection'
 import ObservationsSection from '@/map/plants/ObservationsSection'
+import HarvestsPanel from '@/map/harvests/HarvestsPanel'
+import HarvestsSection from '@/map/harvests/HarvestsSection'
+import HarvestsOverlay from '@/map/harvests/HarvestsOverlay'
 import PatchSection from '@/map/plants/PatchSection'
 import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
@@ -101,6 +104,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
   // 4. Planter
   { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: PlantListPanel, order: 10 },
+  { id: 'harvests', label: 'plant_harvests.panel_title', icon: Apple, group: 'plant', component: HarvestsPanel, order: 15 },
   { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'plant', component: FinancesPanel, order: 20 },
   { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: ActionsPanel, order: 30 },
   // Échanger (no number)
@@ -117,6 +121,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'update-review', applies: (f) => f.properties.status === 'active', component: UpdateReviewSection, order: 6 },
   { id: 'plant', applies: isPlant, component: PlantSection, order: 20 },
   { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
+  { id: 'plant-harvests', applies: isPlant, component: HarvestsSection, order: 20.5 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: () => true, component: PhotosInspector, order: 70 },
@@ -158,6 +163,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'weather-stations', component: WeatherStationsOverlay, order: 61 },
   { id: 'weather-now', component: WeatherNowOverlay, order: 62 },
   { id: 'canopy', component: CanopyOverlay, order: 3 },
+  { id: 'harvests', component: HarvestsOverlay, order: 21 },
   { id: 'drawing-layers', component: DrawingLayers, order: 10 },
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },

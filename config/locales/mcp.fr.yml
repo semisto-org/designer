@@ -15,7 +15,7 @@ fr:
         get_map donne aussi la palette de la carte (les espèces choisies). Si l'utilisateur te confie une liste de plantes (tableur, PDF, export d'un autre outil), propose_palette la verse dans la palette en brouillons, que l'humain accepte ou refuse dans le panneau Palette.
         get_map liste aussi les photos de plantes sauvages que la personne t'a laissées à analyser (bioindicators.photos) : regarde chacune avec get_bioindicator_photo, puis propose_bioindicators verse les plantes que tu y reconnais, en brouillons, avec ce qu'elles disent du sol.
         Les points de prélèvement de sol (panneau Sol, onglet Points) portent les rapports PDF du laboratoire, un par analyse (standard, métaux lourds…). get_soil_samples les liste, get_soil_report lit un rapport (son texte, ou ses pages en image pour un scan), puis propose_soil_results propose les valeurs lues, que l'humain garde ou refuse une par une sur le point. Recopie fidèlement, convertis vers les unités de Terranova en le disant, et ne devine aucune valeur.
-        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme, l'étiquette ou réécrit le texte d'un document Markdown. Les photos du terrain se lisent avec list_photos et get_photo. Pour envoyer des fichiers (photos, vidéos, PDF, plans…), ne les mets jamais dans un appel : create_upload te donne pour chacun une adresse où l'envoyer toi-même par HTTP (curl), en morceaux pour un gros fichier, puis attach_photos ou attach_documents les rattache ; import_from_url fait venir un fichier depuis une adresse HTTPS. add_photo (une petite image en base64) et add_document (un texte que tu as rédigé) restent pour les cas simples. update_photos les légende, les date, les place et les range en albums, delete_photos et delete_documents suppriment photos et documents. Tu ne supprimes rien d'autre, et seulement ce que la personne t'a demandé de retirer.
+        Les tâches du projet (« Tâches ») et sa bibliothèque de documents (« Documents ») sont le carnet de l'équipe, pas le design : list_tasks donne les listes, les tâches, qui les porte et pour quand ; list_documents et get_document donnent les plans, rapports, analyses de sol et autres documents rassemblés, avec leur texte. Là, tu écris directement, comme un coéquipier, quand la personne te le demande : create_tasks et update_tasks ajoutent, cochent, datent et confient des tâches (la personne à qui une tâche est confiée reçoit un e-mail : dis-le avant), add_document range dans la bibliothèque un document que tu as rédigé (compte rendu, synthèse, calendrier), update_document le renomme, l'étiquette ou réécrit le texte d'un document Markdown. Les photos du terrain se lisent avec list_photos et get_photo. Pour envoyer des fichiers (photos, vidéos, PDF, plans…), ne les mets jamais dans un appel : create_upload te donne pour chacun une adresse où l'envoyer toi-même par HTTP (curl), en morceaux pour un gros fichier, puis attach_photos ou attach_documents les rattache ; import_from_url fait venir un fichier depuis une adresse HTTPS. add_photo (une petite image en base64) et add_document (un texte que tu as rédigé) restent pour les cas simples. update_photos les légende, les date, les place et les range en albums, delete_photos et delete_documents suppriment photos et documents. Tu ne supprimes rien d'autre, et seulement ce que la personne t'a demandé de retirer. Le carnet de récolte (panneau « Récoltes ») est aussi le carnet de l'équipe : list_harvests dit quels arbres ont porté, saison après saison, et record_harvests y note directement ce que la personne a vu ou cueilli.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
@@ -145,6 +145,24 @@ fr:
           task_status: "pending : à faire ; done : faites ; all : toutes."
           assignee: "me : celles de l'utilisateur ; nobody : celles de personne ; anyone : toutes."
           task_tag: "Étiquette des tâches, sans tenir compte des majuscules."
+      list_harvests:
+        title: "Lire le carnet de récolte"
+        description: "Le carnet de récolte de la carte (panneau « Récoltes ») : chaque arbre, arbuste ou grimpante fruitière, saison par saison (seasons : les 5 dernières jusqu'à season). Pour chaque plant et chaque saison, status picked (récolté), bore (fruits vus sur l'arbre, pas encore cueillis) ou none (regardé, aucun fruit) ; amount (light, normal, heavy), uses (juice : jus, cooking : compote et cuisson, fresh : à croquer, storage : mis en garde, other) et quantityKg. Une saison absente : rien de noté. followedSeasons : les années où l'équipe a noté au moins une ligne sur la carte ; quietSeasons : les saisons suivies d'affilée, jusqu'à la dernière, sans fruits vus ni cueillis ; watch : vrai à partir de watchSeasons (3), car beaucoup de variétés anciennes ne portent qu'une année sur deux. bearingFrom : l'année où un jeune plant devrait donner ses premiers fruits (avant, il n'est jamais compté). lines : les lignes de la saison, avec leur auteur. Pour conseiller jus, compote ou table par variété, croise ce carnet avec get_plant et dis d'où vient ton conseil."
+        params:
+          season: "Saison (année) à lire ; par défaut l'année en cours."
+      record_harvests:
+        title: "Noter des récoltes"
+        description: "Note des lignes dans le carnet de récolte, directement (ce ne sont pas des brouillons), quand la personne te dit ce qu'elle a vu ou cueilli : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Chaque ligne vaut pour un ou plusieurs plants, désignés par feature_ids ou par leur numéro sur le plan (numbers, comme « 9.1 ») ; tous ses plants doivent exister, sinon la ligne est refusée avec sa raison. stage on_tree : les fruits vus sur l'arbre, amount obligatoire (none pour un arbre sans fruits) ; stage picked : la récolte, amount facultatif (jamais none), uses et quantity_kg facultatifs. N'invente rien : ne note que ce que la personne a dit, et demande la date si elle ne la donne pas. 50 lignes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte."
+        params:
+          harvest_lines: "Les lignes à noter, de 1 à 50."
+          harvest_feature_ids: "Identifiants des plants (list_features, type plant)."
+          harvest_numbers: "Numéros des plants sur le plan, tels qu'écrits sur la carte (\"7\", \"9.1\")."
+          noted_on: "Date de l'observation ou de la cueillette (AAAA-MM-JJ), jamais dans le futur."
+          harvest_stage: "on_tree : fruits vus sur l'arbre ; picked : récolté."
+          harvest_amount: "none (aucun fruit, seulement pour on_tree), light (un peu), normal, heavy (beaucoup)."
+          harvest_uses: "Pour une récolte : juice (jus), cooking (compote et cuisson), fresh (à croquer), storage (mis en garde), other."
+          quantity_kg: "Poids récolté pour chaque plant de la ligne, en kg."
+          harvest_note: "Note libre : calibre, maladies, goût, qui a cueilli."
       list_documents:
         title: "Lister les documents"
         description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable)."
@@ -363,6 +381,7 @@ fr:
       nothing_new: "Rien de nouveau à revoir : ces éléments ont déjà ces valeurs, ou la même modification attend déjà (voir unchanged)."
       review: "Les brouillons attendent la revue d'un humain dans l'éditeur de la carte, qui accepte, ajuste ou refuse chaque élément."
       tasks_written: "Les tâches sont sur la page « Tâches » de la carte (url)."
+      harvests_written: "Les lignes sont dans le panneau « Récoltes » de la carte (url) et sur la fiche de chaque plant."
       tasks_assigned: "Les tâches sont sur la page « Tâches » de la carte (url). Les personnes à qui tu les as confiées reçoivent un e-mail."
       document_added: "Le document est dans la bibliothèque « Documents » de la carte (url)."
       project_link_author: "Le porteur du projet (lien de la fiche projet)"
@@ -425,6 +444,9 @@ fr:
         role_write: "Seuls le propriétaire et les éditeurs de la carte peuvent écrire des tâches et des documents. L'utilisateur est lecteur de cette carte."
         plan_write: "L'écriture par l'IA fait partie du forfait : le propriétaire de cette carte est en formule gratuite et n'a pas d'essai en cours. La lecture des tâches et des documents reste possible ; les formules sont sur la page « Tarifs » de Semisto Terranova."
         read_only: "Cette carte est en lecture seule : elle dépasse le nombre de cartes du forfait de son propriétaire. Rien n'est supprimé ; la lecture reste possible."
+    harvest_errors:
+      no_plant: "feature_ids ou numbers est requis : à quels plants s'applique la ligne ?"
+      not_found: "plants introuvables sur cette carte (ou qui ne sont pas des plants) : %{plants}."
     task_errors:
       no_list: "list_id ou list_name est requis (voir les listes dans list_tasks)."
       due_on: "échéance « %{value} » illisible : AAAA-MM-JJ attendu."
@@ -618,6 +640,10 @@ fr:
         one: "a retiré 1 brouillon"
         other: "a retiré %{count} brouillons"
       list_tasks: "a lu les tâches"
+      list_harvests: "a lu le carnet de récolte"
+      record_harvests:
+        one: "a noté 1 récolte"
+        other: "a noté %{count} récoltes"
       list_documents: "a lu la liste des documents"
       get_document: "a lu un document"
       create_tasks:

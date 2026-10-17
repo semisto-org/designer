@@ -263,10 +263,12 @@ Rails.application.routes.draw do
         resources :plant_observations, only: %i[index create destroy] do
           member { get :photo }
         end
+        resources :plant_harvests, only: %i[index create destroy]
       end
       resource :plant_list, only: :show do
         get :print
       end
+      resources :harvests, only: %i[index create]
     end
   end
   # --- end plants ---

@@ -25,6 +25,7 @@ function transport(overrides: Partial<Transport> = {}) {
     uploadPhoto: async (_m, _op, featureId) => { calls.push(`photo ${featureId}`) },
     createObservation: async (_m, featureId) => { calls.push(`observation ${featureId}`) },
     createComment: async (_m, featureId) => { calls.push(`comment ${featureId}`) },
+    createHarvest: async (_m, featureId, harvest) => { calls.push(`harvest ${featureId} ${harvest.stage}`) },
     createBioindicator: async (_m, op) => { calls.push(`bioindicator ${op.observation.speciesName}`) },
     ...overrides,
   }
@@ -72,10 +73,11 @@ describe('flush', () => {
       { id: 'b', mapId: 1, createdAt: at, type: 'createObservation', featureId: -1, observedOn: '2026-10-04', survival: 'established', vigor: 4, note: null, photo: 'file:///obs.jpg' },
       { id: 'c', mapId: 1, createdAt: at, type: 'uploadPhoto', featureId: -1, file: 'file:///p.jpg', lng: 4.9, lat: 50.3, takenAt: at },
       { id: 'd', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Belle reprise' },
+      { id: 'e', mapId: 1, createdAt: at, type: 'createHarvest', featureId: -1, harvest: { notedOn: '2026-10-12', stage: 'picked', amount: null, uses: ['juice'], quantityKg: null, note: null } },
     ]
     const result = await flush(state(ops), t)
-    expect(calls).toEqual(['create', 'observation 100', 'photo 100', 'comment null'])
-    expect(result).toMatchObject({ sent: 4, stopped: 'done', state: { ops: [], ids: { '-1': 100 } } })
+    expect(calls).toEqual(['create', 'observation 100', 'photo 100', 'comment null', 'harvest 100 picked'])
+    expect(result).toMatchObject({ sent: 5, stopped: 'done', state: { ops: [], ids: { '-1': 100 } } })
     expect(result.sentFiles).toEqual(['file:///obs.jpg', 'file:///p.jpg'])
   })
 
