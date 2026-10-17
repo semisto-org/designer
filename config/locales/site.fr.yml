@@ -462,7 +462,7 @@ fr:
         cta: "Ouvrir une discussion"
         url: "https://github.com/semisto-org/designer/issues"
     legal:
-      updated_on: "16 octobre 2026"
+      updated_on: "17 octobre 2026"
       privacy:
         title: "Politique de confidentialité"
         lead: "Ce que Semisto Terranova collecte, pourquoi, qui l'héberge, et comment exercer vos droits."
@@ -478,7 +478,7 @@ fr:
               - "Vos contenus : les cartes, contours, dessins, notes, commentaires et photos que vous créez ou ajoutez."
               - "Vos paiements : la formule achetée, le montant, la TVA, la date et le code promotionnel éventuel. Le paiement lui-même est traité par Stripe : nous ne voyons ni ne conservons votre numéro de carte."
               - "Des données techniques : votre adresse IP et des journaux de connexion, utiles à la sécurité et au dépannage."
-            outro: "Nous utilisons un cookie de session, nécessaire pour vous garder connecté. Nous n'utilisons ni cookies publicitaires ni traceurs tiers."
+            outro: "Nous utilisons un cookie de session, nécessaire pour vous garder connecté. Nous n'utilisons ni cookies publicitaires ni traceurs tiers. Nous comptons les visites avec Plausible, installé sur nos propres serveurs : il ne pose aucun cookie, ne garde ni votre adresse IP ni aucun identifiant, et ne donne que des chiffres d'ensemble (pages vues, pays, type d'appareil)."
           - title: "Ce que nous recevons de Google"
             paragraphs:
               - "Si vous choisissez « Continuer avec Google », Google nous transmet uniquement votre nom, votre adresse e-mail et votre photo de profil. Nous ne demandons accès à rien d'autre : ni vos e-mails, ni vos contacts, ni vos fichiers, ni votre agenda."
@@ -497,6 +497,7 @@ fr:
               - "Facturer et tenir la comptabilité : une obligation légale."
               - "Vous prévenir de l'échéance de votre forfait : l'exécution du contrat et notre intérêt légitime à vous éviter une surprise."
               - "Sécuriser le service et prévenir les abus : notre intérêt légitime."
+              - "Compter les visites, de façon anonyme, pour savoir quelles pages aident et lesquelles améliorer : notre intérêt légitime."
           - title: "Qui reçoit vos données ?"
             paragraphs:
               - "Nous faisons appel à des prestataires, qui ne traitent vos données que pour notre compte :"

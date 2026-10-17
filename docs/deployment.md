@@ -188,6 +188,13 @@ Used only by the one-off command `bin/rails claudy:import MAP_ID=…`, which pou
 | `SENTRY_DSN` | Optional: sends errors to Sentry, both the server's (Rails) and the browser's (React). The DSN is read at boot and passed to the page: nothing to set at build time. |
 | `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | Optional. |
 
+### Audience measurement
+
+| Variable | Role |
+|---|---|
+| `PLAUSIBLE_DOMAIN` | Optional: the site's name in Plausible (`terranova.semisto.org`). Adds the script of Semisto's own Plausible instance: no cookie, no personal data. Without it, nothing is measured. |
+| `PLAUSIBLE_SCRIPT_URL` | Optional: the script URL, `https://stats.semisto.org/js/script.js` by default. |
+
 ## Outbound connections
 
 The server must be able to reach: `geoservices.wallonie.be` (layers, identification, relief), `tiles.openfreemap.org` and `tile.openstreetmap.org` (base map), `nominatim.openstreetmap.org` (addresses), `my-api.plantnet.org` (plant identification by photo, if `PLANTNET_API_KEY` is set), `api.magnific.com` and Magnific's image server (photo rendering, if `MAGNIFIC_API_KEY` is set), `api.stripe.com`, `appleid.apple.com` (Sign in with Apple, if `APPLE_CLIENT_ID` is set), the SMTP server, the S3 provider and, if set, Sentry and Open-Meteo. The one-off Claudy import reaches `app.les4sources.be`.
