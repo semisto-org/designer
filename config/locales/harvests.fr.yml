@@ -1,0 +1,104 @@
+fr:
+  plant_harvests:
+    title: "Récoltes"
+    panel_title: "Récoltes"
+    intro: "Note chaque saison les arbres qui portent et ce que tu fais de leurs fruits. Au fil des années, tu verras lesquels donnent bien, lesquels alternent et lesquels renouveler."
+    add: "Noter la récolte"
+    noted_on: "Date"
+    stage: "Ce que tu notes"
+    stages:
+      on_tree: "Fruits sur l'arbre"
+      picked: "Récolte"
+    amount: "Quantité"
+    amounts:
+      on_tree:
+        none: "Aucun fruit"
+        light: "Quelques fruits"
+        normal: "Bien chargé"
+        heavy: "Très chargé"
+      picked:
+        light: "Un peu"
+        normal: "Une bonne récolte"
+        heavy: "Beaucoup"
+    uses_label: "Pour quoi faire"
+    uses:
+      juice: "Jus"
+      cooking: "Compote et cuisson"
+      fresh: "À croquer"
+      storage: "Mis en garde"
+      other: "Autre"
+    quantity_kg: "Poids en kg (facultatif)"
+    kg: "%{value} kg"
+    note: "Note"
+    note_placeholder: "Calibre, maladies, goût, cueilli par qui…"
+    save: "Enregistrer"
+    saved: "Récolte notée."
+    saved_many:
+      one: "Noté pour %{count} arbre."
+      other: "Noté pour %{count} arbres."
+    deleted: "Ligne supprimée."
+    delete: "Supprimer la ligne"
+    confirm_delete: "Supprimer cette ligne du carnet de récolte ?"
+    empty: "Rien de noté pour cet arbre. Passe le voir à la floraison ou quand les fruits grossissent, puis à la cueillette."
+    by: "par %{name}"
+    statuses:
+      picked: "Récolté"
+      bore: "A porté"
+      none: "Sans fruits"
+      unnoted: "Pas noté"
+    seasons_title: "Saison après saison"
+    watch: "Rien de noté depuis %{count} saisons suivies"
+    watch_hint: "Beaucoup de variétés anciennes portent une année sur deux : on attend %{count} saisons sans fruits avant de penser à remplacer un arbre."
+    bearing_from: "Premiers fruits attendus vers %{year}"
+    last_bore: "Derniers fruits notés en %{year}"
+    never_bore: "Pas encore de fruits notés"
+    season: "Saison %{year}"
+    previous_season: "Saison précédente"
+    next_season: "Saison suivante"
+    totals: "%{picked}\u00A0récoltés · %{bore}\u00A0portent · %{none}\u00A0sans\u00A0fruits · %{unnoted}\u00A0pas\u00A0notés"
+    total_kg: "%{value} kg pesés"
+    filters:
+      all: "Tous"
+      unnoted: "Pas encore notés"
+      watch: "À surveiller"
+    select_all: "Tout cocher"
+    select_none: "Tout décocher"
+    selected:
+      one: "%{count} arbre coché"
+      other: "%{count} arbres cochés"
+    batch_title: "Noter pour les arbres cochés"
+    show_on_map: "Montrer sur la carte"
+    no_species: "Plant sans espèce"
+    empty_map: "Aucun arbre ni arbuste fruitier sur cette carte pour l'instant. Pose tes fruitiers avec la palette : ils apparaîtront ici, prêts à suivre."
+    empty_filter: "Aucun arbre dans ce filtre."
+    load_error: "Le carnet de récolte n'a pas pu être chargé."
+    legend:
+      picked: "Récolté"
+      bore: "Porte des fruits"
+      none: "Sans fruits"
+      unnoted: "Pas encore noté"
+    errors:
+      no_plant: "Coche au moins un arbre de la carte."
+  activerecord:
+    models:
+      plant_harvest: "Récolte"
+    attributes:
+      plant_harvest:
+        noted_on: "Date"
+        stage: "Ce que tu notes"
+        amount: "Quantité"
+        quantity_kg: "Poids"
+        uses: "Usage"
+        note: "Note"
+    errors:
+      models:
+        plant_harvest:
+          attributes:
+            noted_on:
+              in_future: "ne peut pas être dans le futur"
+            amount:
+              exclusion: "« aucun fruit » se note comme fruits sur l'arbre, pas comme une récolte"
+            uses:
+              present: "se notent seulement pour une récolte"
+            quantity_kg:
+              present: "se note seulement pour une récolte"

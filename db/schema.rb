@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -987,6 +987,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
     t.index ["terranova_id"], name: "index_plant_genera_on_terranova_id", unique: true
   end
 
+  create_table "plant_harvests", force: :cascade do |t|
+    t.bigint "map_feature_id", null: false
+    t.bigint "map_id", null: false
+    t.bigint "species_id"
+    t.bigint "variety_id"
+    t.bigint "user_id"
+    t.date "noted_on", null: false
+    t.string "stage", null: false
+    t.string "amount"
+    t.decimal "quantity_kg", precision: 8, scale: 1
+    t.string "uses", default: [], null: false, array: true
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_feature_id", "noted_on"], name: "index_plant_harvests_on_map_feature_id_and_noted_on"
+    t.index ["map_feature_id"], name: "index_plant_harvests_on_map_feature_id"
+    t.index ["map_id", "noted_on"], name: "index_plant_harvests_on_map_id_and_noted_on"
+    t.index ["map_id"], name: "index_plant_harvests_on_map_id"
+    t.index ["species_id"], name: "index_plant_harvests_on_species_id"
+    t.index ["user_id"], name: "index_plant_harvests_on_user_id"
+    t.index ["variety_id"], name: "index_plant_harvests_on_variety_id"
+  end
+
   create_table "plant_observations", force: :cascade do |t|
     t.bigint "map_feature_id", null: false
     t.bigint "map_id", null: false
@@ -1505,6 +1528,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
   add_foreign_key "plan_images", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plan_purchases", "users"
   add_foreign_key "plan_subscriptions", "users"
+  add_foreign_key "plant_harvests", "map_features", on_delete: :cascade
+  add_foreign_key "plant_harvests", "maps", on_delete: :cascade
+  add_foreign_key "plant_harvests", "plant_species", column: "species_id", on_delete: :nullify
+  add_foreign_key "plant_harvests", "plant_varieties", column: "variety_id", on_delete: :nullify
+  add_foreign_key "plant_harvests", "users", on_delete: :nullify
   add_foreign_key "plant_observations", "map_features", on_delete: :cascade
   add_foreign_key "plant_observations", "maps", on_delete: :cascade
   add_foreign_key "plant_observations", "plant_species", column: "species_id", on_delete: :nullify
