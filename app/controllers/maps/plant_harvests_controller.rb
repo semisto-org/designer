@@ -36,7 +36,8 @@ module Maps
         {
           harvests: @plant.plant_harvests.includes(:user).newest_first.map(&:as_json),
           seasons: log.seasons, followedSeasons: log.followed_seasons, watchSeasons: HarvestLog::WATCH_SEASONS,
-          plant: log.plant(@plant.id)&.then { _1.merge(seasons: _1[:seasons].transform_keys(&:to_s)) }
+          plant: log.plant(@plant.id)&.then { _1.merge(seasons: _1[:seasons].transform_keys(&:to_s)) },
+          advice: HarvestAdvice.new(@map, @plant).as_json
         }
       end
 

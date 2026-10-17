@@ -1,3 +1,5 @@
+import type { Provenance } from '@/types/plants'
+
 /** Harvest log of the fruit plants (PlantHarvest, HarvestLog). */
 export const HARVEST_STAGES = ['on_tree', 'picked'] as const
 export const HARVEST_AMOUNTS = ['none', 'light', 'normal', 'heavy'] as const
@@ -52,6 +54,43 @@ export type HarvestLogData = {
     quantityKg: number | null; uses: Partial<Record<HarvestUse, number>>; watch: number
   }
   plants: HarvestPlantRow[]
+  varieties: HarvestVariety[]
+}
+
+type Keeping = 'keeps' | 'weeks' | 'short' | null
+
+/** A variety's uses and season (PlantVariety#uses_json). */
+export type VarietyUsesData = {
+  id: number
+  name: string
+  uses: VarietyUse[]
+  keeping: Keeping
+  pickingMonth: number | null
+  eatingFromMonth: number | null
+  eatingUntilMonth: number | null
+  provenance: Record<string, Provenance>
+}
+
+/** « Que faire de chaque variété ? » in the panel. */
+export type HarvestVariety = VarietyUsesData & {
+  speciesName: string | null
+  plants: number
+  here: Partial<Record<HarvestUse, number>>
+}
+
+export const VARIETY_USES = ['fresh', 'cooking', 'juice', 'cider', 'drying'] as const
+export type VarietyUse = (typeof VARIETY_USES)[number]
+
+/** « Que faire de cette récolte ? » (HarvestAdvice). */
+export type HarvestAdviceData = {
+  variety: VarietyUsesData | null
+  keeping: Keeping
+  ripensInStore: boolean
+  here: {
+    picked: number
+    uses: Partial<Record<HarvestUse, number>>
+    notes: { featureId: number; plant: string | null; notedOn: string; note: string }[]
+  }
 }
 
 /** GET /maps/:id/features/:id/plant_harvests */
@@ -61,6 +100,7 @@ export type PlantHarvestsData = {
   followedSeasons: number[]
   watchSeasons: number
   plant: HarvestPlantRow | null
+  advice: HarvestAdviceData
 }
 
 export type HarvestInput = {

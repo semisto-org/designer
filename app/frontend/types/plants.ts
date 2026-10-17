@@ -81,6 +81,10 @@ export type VarietySheet = VarietySummary & {
   diseaseResistance: string | null
   maturityYears: number | null
   productionStartYear: number | null
+  uses: ('fresh' | 'cooking' | 'juice' | 'cider' | 'drying')[]
+  pickingMonth: number | null
+  eatingFromMonth: number | null
+  eatingUntilMonth: number | null
   provenance: Record<string, Provenance>
 }
 

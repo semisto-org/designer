@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { VarietiesGuide } from '@/map/harvests/AdviceCard'
 import { harvestsActions, useHarvests } from '@/map/harvests/store'
 import { HarvestForm, harvestBody, plantLabel, SeasonDot, SeasonStrip, StatusLegend } from '@/map/harvests/shared'
 import { visibleOffset } from '@/map/visiblePadding'
@@ -100,6 +101,7 @@ export default function HarvestsPanel() {
       {totals.plants === 0 ? (
         <p className="rounded-2xl border border-dashed border-loam-300 p-3 text-sm text-loam-600">{t('plant_harvests.empty_map')}</p>
       ) : (<>
+        <VarietiesGuide varieties={current.varieties ?? []} />
         <StatusLegend />
         <div className="flex flex-wrap gap-1.5">
           {(['all', 'unnoted', 'watch'] as const).map((value) => (

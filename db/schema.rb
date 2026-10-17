@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1120,6 +1120,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_120000) do
     t.integer "terranova_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "uses", default: [], null: false, array: true
+    t.integer "picking_month"
+    t.integer "eating_from_month"
+    t.integer "eating_until_month"
     t.index ["species_id"], name: "index_plant_varieties_on_species_id"
     t.index ["terranova_id"], name: "index_plant_varieties_on_terranova_id", unique: true
   end

@@ -1,0 +1,244 @@
+# What old fruit varieties are good for and when they keep, read on
+# 2026-10-17 for the conservatory orchard of Les 4 Sources (map n° 1).
+# Facts only (uses, months), each citing the reference it comes from; no
+# text copied. Loaded by db/seeds/10_plants.rb with
+# Catalog::VarietyUsesLoader, source « semisto », status « to_verify ».
+#
+# The CRA-W tables (M. Lateur, 2013, « Aide au choix ») give one range from
+# picking to the end of keeping in a good cellar: there eating_from_month is
+# the picking month. Uses: a CRA-W column rated « + » or better, or a use
+# the reference names. Left out for lack of a reference: Buchet, Reinette du
+# Portugal, Semis d'Italie Druez, Moreau, Côtelée Nisole, Tête de Cheval,
+# Mentine Rolain, Verte Huet, Norman's Pippin; pears Poire de Brûlée and
+# Bergamote Henin.
+
+- species: Malus domestica
+  names:
+  - Président van Dievoet
+  - Cabarette
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 10
+  eating_from_month: 10
+  eating_until_month: 6
+  upstream_source: CRA-W Gembloux
+  url: https://parc-naturel-gaume.be/wp-content/uploads/Choix_POMMES.pdf
+
+- species: Malus domestica
+  names:
+  - Reinette Étoilée
+  - Reinette Rouge Étoilée
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 9
+  eating_from_month: 9
+  eating_until_month: 12
+  upstream_source: CRA-W Gembloux
+  url: http://www.diversifruits.be/uploads/6/7/8/1/6781850/1_listevarietescertifruit_fr_2017-2018.pdf
+
+- species: Malus domestica
+  names:
+  - Reinette Hernaut
+  - Reinette Hernault
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 10
+  eating_from_month: 10
+  eating_until_month: 4
+  upstream_source: CRA-W Gembloux
+  url: https://parc-naturel-gaume.be/wp-content/uploads/Choix_POMMES.pdf
+
+- species: Malus domestica
+  names:
+  - Rabaël
+  - Belle-Fleur Large Mouche
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 9
+  eating_from_month: 9
+  eating_until_month: 3
+  upstream_source: CRA-W Gembloux
+  url: https://www.pepiniere-paquet.be/wp-content/uploads/2022/11/2022_Descriptions-var-RGF_Gblx_CERTIFRUIT_Fr.pdf
+
+- species: Malus domestica
+  names:
+  - Gueule de Mouton
+  - Keuleman
+  uses:
+  - cooking
+  - juice
+  - cider
+  picking_month: 10
+  eating_from_month: 10
+  eating_until_month: 5
+  upstream_source: CRA-W Gembloux
+  url: https://parc-naturel-gaume.be/wp-content/uploads/Choix_POMMES.pdf
+
+- species: Malus domestica
+  names:
+  - Schöner von Nordhausen
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  - drying
+  picking_month: 10
+  eating_from_month: 1
+  eating_until_month: 4
+  upstream_source: Trenthorst, Obstsorten
+  url: https://www.trenthorst.de/.cm4all/uproc.php/0/TrentObst/Apfelsorten/schoener_von_nordhausen.pdf?cdp=a
+
+- species: Malus domestica
+  names:
+  - Reinette de Waleffe
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 9
+  eating_from_month: 9
+  eating_until_month: 5
+  upstream_source: CRA-W Gembloux
+  url: https://parc-naturel-gaume.be/wp-content/uploads/Choix_POMMES.pdf
+
+- species: Malus domestica
+  names:
+  - Calville des Prairies
+  - Cwastresse Simple
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 10
+  eating_from_month: 10
+  eating_until_month: 3
+  upstream_source: CRA-W Gembloux
+  url: http://www.diversifruits.be/uploads/6/7/8/1/6781850/1_listevarietescertifruit_fr_2017-2018.pdf
+
+- species: Malus domestica
+  names:
+  - Président Roulin
+  uses:
+  - cooking
+  - juice
+  - cider
+  picking_month: 9
+  eating_from_month: 9
+  eating_until_month: 12
+  upstream_source: CRA-W Gembloux
+  url: http://www.diversifruits.be/uploads/6/7/8/1/6781850/1_listevarietescertifruit_fr_2017-2018.pdf
+
+- species: Malus domestica
+  names:
+  - Gris Braibant
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 10
+  eating_from_month: 10
+  eating_until_month: 5
+  upstream_source: CRA-W Gembloux
+  url: http://www.diversifruits.be/uploads/6/7/8/1/6781850/1_listevarietescertifruit_fr_2017-2018.pdf
+
+- species: Malus domestica
+  names:
+  - Ligita
+  picking_month: 10
+  eating_until_month: 3
+  upstream_source: Institute of Horticulture, Latvia
+  url: https://www.darzkopibasinstituts.lv/sites/dobele/files/2019-11/apple_Ligita_EN.pdf
+
+- species: Malus domestica
+  names:
+  - Boskoop Rouge
+  - Rode Boskoop
+  - Roter Boskoop
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  - drying
+  picking_month: 10
+  eating_from_month: 12
+  eating_until_month: 3
+  upstream_source: Trenthorst, Obstsorten
+  url: https://www.trenthorst.de/.cm4all/uproc.php/0/TrentObst/Apfelsorten/Roter_Boskoop.pdf?cdp=a
+
+- species: Malus domestica
+  names:
+  - Reinette de France
+  uses:
+  - fresh
+  - cooking
+  - juice
+  - cider
+  picking_month: 10
+  eating_from_month: 10
+  eating_until_month: 2
+  upstream_source: CRA-W Gembloux
+  url: https://parc-naturel-gaume.be/wp-content/uploads/Choix_POMMES.pdf
+
+- species: Malus domestica
+  names:
+  - Grenadier
+  uses:
+  - cooking
+  - juice
+  - cider
+  picking_month: 8
+  eating_from_month: 8
+  eating_until_month: 9
+  upstream_source: CRA-W Gembloux
+  url: http://www.diversifruits.be/uploads/6/7/8/1/6781850/1_listevarietescertifruit_fr_2017-2018.pdf
+
+- species: Pyrus communis
+  names:
+  - Calebasse à la Reine
+  uses:
+  - fresh
+  - cooking
+  picking_month: 8
+  eating_from_month: 8
+  eating_until_month: 9
+  upstream_source: CRA-W Gembloux
+  url: https://parc-naturel-gaume.be/wp-content/uploads/Choix_POIRES.pdf
+
+- species: Pyrus communis
+  names:
+  - Saint-Mathieu
+  uses:
+  - cooking
+  picking_month: 9
+  eating_from_month: 9
+  eating_until_month: 12
+  upstream_source: CRA-W Gembloux
+  url: http://www.diversifruits.be/uploads/6/7/8/1/6781850/1_listevarietescertifruit_fr_2017-2018.pdf
+
+- species: Pyrus communis
+  names:
+  - Beurré de Naghin
+  uses:
+  - fresh
+  picking_month: 10
+  eating_from_month: 10
+  eating_until_month: 12
+  upstream_source: CRA-W Gembloux
+  url: https://parc-naturel-gaume.be/wp-content/uploads/Choix_POIRES.pdf

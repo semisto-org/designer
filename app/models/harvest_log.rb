@@ -66,8 +66,26 @@ class HarvestLog
   def as_json(*)
     {
       season:, seasons:, followedSeasons: followed_seasons, watchSeasons: WATCH_SEASONS,
-      totals:, plants: plants.map { _1.merge(seasons: _1[:seasons].transform_keys(&:to_s)) }
+      totals:, plants: plants.map { _1.merge(seasons: _1[:seasons].transform_keys(&:to_s)) },
+      varieties:
     }
+  end
+
+  # « Que faire de chaque variété ? »: the varieties of the listed plants,
+  # what each is good for and how long it keeps, and what this place did
+  # with it so far (uses of its harvest lines, all seasons up to this one).
+  def varieties
+    counts = plants.filter_map { _1[:varietyId] }.tally
+    picked = harvests.select(&:picked?).group_by(&:variety_id)
+    counts.map do |id, count|
+      variety = varieties_by_id[id]
+      lines = picked.fetch(id, [])
+      variety.uses_json.merge(
+        speciesName: species_by_id[variety.species_id]&.then { _1.common_name || _1.latin_name },
+        plants: count,
+        here: PlantHarvest::USES.index_with { |use| lines.count { _1.uses.include?(use) } }.select { |_, n| n.positive? }
+      )
+    end.sort_by { [ _1[:speciesName].to_s, _1[:name].to_s ] }
   end
 
   # One plant's line, for its sheet (nil when the plant is not on the map).
@@ -87,7 +105,7 @@ class HarvestLog
     end
 
     def varieties_by_id
-      @varieties_by_id ||= PlantVariety.includes(:common_names).where(id: candidates.map(&:plant_variety_id).compact.uniq).index_by(&:id)
+      @varieties_by_id ||= PlantVariety.includes(:common_names, :field_sources).where(id: candidates.map(&:plant_variety_id).compact.uniq).index_by(&:id)
     end
 
     def row(feature, species, variety, lines)
