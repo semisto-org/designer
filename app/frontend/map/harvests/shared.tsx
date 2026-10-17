@@ -16,9 +16,9 @@ export const STATUS_COLORS: Record<SeasonStatus | 'unnoted', string> = {
 
 /** A plant's name as the panel lists it: its own name, else number, species and variety. */
 export function plantLabel(row: HarvestPlantRow): string {
-  if (row.name) return row.name
-  const what = [row.speciesName ?? t('plant_harvests.no_species'), row.varietyName].filter(Boolean).join(' ')
-  return row.number != null ? `n° ${row.number} — ${what}` : what
+  const what = row.name || [row.speciesName ?? t('plant_harvests.no_species'), row.varietyName].filter(Boolean).join(' ')
+  // The number is what tells two « Figuier » apart: it is the one shown on the map.
+  return row.number != null && !what.startsWith(`n° ${row.number}`) ? `n° ${row.number} — ${what}` : what
 }
 
 /** One season as a drawn dot: full for a harvest, half for fruit seen, crossed for none, dashed when not noted. */

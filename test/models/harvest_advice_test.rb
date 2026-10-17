@@ -38,7 +38,7 @@ class HarvestAdviceTest < ActiveSupport::TestCase
 
   private
     def plant(name:, variety: nil)
-      properties = { "species_id" => plant_species(:apple).id, "variety_id" => variety&.id }.compact
+      properties = { "species_id" => plant_species(:apple).id, "variety_id" => variety&.id, "planted_on" => "2015-03-01" }.compact
       @map.features.create!(layer: "plants", kind: "plant", name:, geometry: RGeo::Geographic.spherical_factory(srid: 4326).point(4.97, 50.33), properties:)
     end
 end

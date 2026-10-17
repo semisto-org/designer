@@ -6,19 +6,23 @@ const species = {
   '2': { id: 2, latinName: 'Symphytum officinale', commonName: 'Consoude', strata: 'herbaceous' },
 }
 
-function plant(id: number, lng: number, speciesId = 1): MapFeature {
+function plant(id: number, lng: number, speciesId = 1, plantedOn: string | null = '2020-11-20'): MapFeature {
   return {
     type: 'Feature', id, geometry: { type: 'Point', coordinates: [lng, 50.34] },
-    properties: { id, layer: 'plants', kind: 'plant', name: null, notes: null, status: 'active', lockVersion: 0, species_id: speciesId },
+    properties: { id, layer: 'plants', kind: 'plant', name: null, notes: null, status: 'active', lockVersion: 0, species_id: speciesId, ...(plantedOn ? { planted_on: plantedOn } : {}) },
   } as MapFeature
 }
 
-const bundle = { features: [plant(1, 4.9), plant(2, 4.9001), plant(3, 4.9002), plant(4, 4.90005, 2)], planting: { species, palette: [] } } as unknown as MapBundle
+const bundle = { features: [plant(1, 4.9), plant(2, 4.9001), plant(3, 4.9002), plant(4, 4.90005, 2), plant(5, 4.90001, 1, null)], planting: { species, palette: [] } } as unknown as MapBundle
 
 describe('harvests', () => {
   it('applies to trees and shrubs, not herbs', () => {
     expect(isHarvestable(bundle.features[0], bundle.planting)).toBe(true)
     expect(isHarvestable(bundle.features[3], bundle.planting)).toBe(false)
+  })
+
+  it('leaves out a tree still to plant', () => {
+    expect(isHarvestable(bundle.features[4], bundle.planting)).toBe(false)
   })
 
   it('never offers « no fruit » for a harvest', () => {
