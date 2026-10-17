@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   get "magic/:token", to: "magic_links#show", as: :magic_link
   post "magic/:token", to: "magic_links#create"
   get "auth/google_oauth2/callback", to: "omniauth_callbacks#google"
+  post "auth/apple/return", to: "auth/apple_returns#create"
+  post "auth/apple/callback", to: "omniauth_callbacks#apple"
   get "auth/failure", to: "omniauth_callbacks#failure"
   get "dev/login", to: "dev/logins#show" if Rails.env.local?
 

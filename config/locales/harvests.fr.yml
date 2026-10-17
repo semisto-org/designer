@@ -79,6 +79,8 @@ fr:
       unnoted: "Pas encore noté"
     errors:
       no_plant: "Coche au moins un arbre de la carte."
+    not_planted: "Pas encore planté : marque-le planté plus haut sur sa fiche pour y noter des fruits ou une récolte."
+    not_planted_short: "Pas encore planté"
     months:
       "1": "janvier"
       "2": "février"
@@ -143,6 +145,7 @@ fr:
     errors:
       models:
         plant_harvest:
+          not_planted: "%{plant} n'est pas encore planté : marque-le planté sur sa fiche avant d'y noter des fruits ou une récolte."
           attributes:
             noted_on:
               in_future: "ne peut pas être dans le futur"

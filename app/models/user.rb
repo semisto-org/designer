@@ -93,6 +93,17 @@ class User < ApplicationRecord
     user
   end
 
+  # Apple sends the name only on the very first sign-in, and the e-mail may be
+  # a private relay address (…@privaterelay.appleid.com) that forwards mail.
+  def self.from_apple(auth)
+    info = auth.info
+    user = find_by(apple_uid: auth.uid) || find_or_initialize_by(email_address: info.email.to_s.downcase)
+    user.apple_uid ||= auth.uid
+    user.name = info.name if user.name.blank? && info.name.present?
+    user.save!
+    user
+  end
+
   # The uploaded picture (served by AvatarsController), else Google's.
   def avatar_url
     return super unless avatar.attached? && avatar.blob.persisted?

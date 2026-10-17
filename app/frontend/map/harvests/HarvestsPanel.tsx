@@ -44,7 +44,9 @@ export default function HarvestsPanel() {
   if (!current) return <p className="text-sm text-loam-400">{loading ? t('common.loading') : ''}</p>
 
   const toggle = (id: number) => setChecked((set) => { const next = new Set(set); next.has(id) ? next.delete(id) : next.add(id); return next })
-  const allChecked = rows.length > 0 && rows.every((r) => checked.has(r.featureId))
+  // A plant still to plant only shows its past lines: nothing to note on it.
+  const notable = rows.filter((r) => r.plantedOn)
+  const allChecked = notable.length > 0 && notable.every((r) => checked.has(r.featureId))
 
   function focus(row: HarvestPlantRow) {
     const feature = editor.features.find((f) => f.properties.id === row.featureId)
@@ -115,10 +117,10 @@ export default function HarvestsPanel() {
         </div>
         {filter === 'watch' && <p className="text-sm text-loam-600">{t('plant_harvests.watch_hint', { count: current.watchSeasons })}</p>}
 
-        {editor.canEdit && rows.length > 0 && (
+        {editor.canEdit && notable.length > 0 && (
           <label className="flex items-center gap-2 text-sm text-loam-700">
             <input type="checkbox" className="h-4 w-4 accent-prune-600" checked={allChecked}
-              onChange={() => setChecked(allChecked ? new Set() : new Set(rows.map((r) => r.featureId)))} />
+              onChange={() => setChecked(allChecked ? new Set() : new Set(notable.map((r) => r.featureId)))} />
             {allChecked ? t('plant_harvests.select_none') : t('plant_harvests.select_all')}
           </label>
         )}
@@ -132,12 +134,14 @@ export default function HarvestsPanel() {
                   {group.rows.map((row) => (
                     <li key={row.featureId} className="flex items-start gap-2 py-2">
                       {editor.canEdit && (
-                        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-prune-600" checked={checked.has(row.featureId)}
+                        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-prune-600 disabled:opacity-30" checked={checked.has(row.featureId)}
+                          disabled={!row.plantedOn} title={row.plantedOn ? undefined : t('plant_harvests.not_planted_short')}
                           onChange={() => toggle(row.featureId)} aria-label={plantLabel(row)} />
                       )}
                       <button type="button" onClick={() => focus(row)} className="min-w-0 flex-1 text-left">
                         <span className={clsx('block text-loam-800 hover:underline', editor.selectedId === row.featureId && 'font-medium text-prune-700')}>{plantLabel(row)}</span>
                         <span className="mt-1 block"><SeasonStrip row={row} seasons={current.seasons.slice(0, -1)} size="sm" /></span>
+                        {!row.plantedOn && <span className="mt-0.5 block text-sm text-loam-500">{t('plant_harvests.not_planted_short')}</span>}
                         {row.watch && <span className="mt-0.5 block text-sm text-humus-700">{t('plant_harvests.watch', { count: row.quietSeasons })}</span>}
                       </button>
                       <SeasonDot summary={row.seasons[String(season)]} />

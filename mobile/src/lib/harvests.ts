@@ -23,9 +23,9 @@ export type NewHarvest = {
 // Same strata as the server's HarvestLog::WOODY_STRATA (trees, shrubs, climbers).
 const WOODY = new Set(['canopy', 'sub_canopy', 'shrub', 'vine'])
 
-/** A tree, shrub or climber: the plants a harvest is noted on. */
+/** A tree, shrub or climber in the ground: the plants a harvest is noted on. */
 export function isHarvestable(feature: MapFeature, planting: Planting | undefined): boolean {
-  if (feature.properties.kind !== 'plant') return false
+  if (feature.properties.kind !== 'plant' || !feature.properties.planted_on) return false
   const strata = planting?.species[String(feature.properties.species_id)]?.strata
   return strata ? WOODY.has(strata) : false
 }

@@ -36,6 +36,17 @@ Interface labels are quoted in French, as they appear in the app.
 
 In the Google Cloud console: authorised origin `https://terranova.semisto.org`, redirect URI `https://terranova.semisto.org/auth/google_oauth2/callback`, scopes `email` and `profile`. Without these variables, only the e-mail magic link is offered.
 
+### Sign in with Apple
+
+| Variable | Role |
+|---|---|
+| `APPLE_CLIENT_ID` | The Services ID identifier, e.g. `org.semisto.terranova.signin`. |
+| `APPLE_TEAM_ID` | Team ID of Semisto ASBL's developer account (10 characters). |
+| `APPLE_KEY_ID` | Identifier of the "Sign in with Apple" key. |
+| `APPLE_PRIVATE_KEY` | Contents of that key's `.p8` file (real line breaks or `\n`). |
+
+On developer.apple.com (Certificates, Identifiers & Profiles): enable "Sign in with Apple" on the app's App ID, create a Services ID linked to that App ID with the domain `terranova.semisto.org` and the return URL `https://terranova.semisto.org/auth/apple/return`, then create a key with "Sign in with Apple" (the `.p8` can only be downloaded once). To write to people who hide their address (`…@privaterelay.appleid.com`), register the sender (`MAIL_FROM`) under "Sign in with Apple for Email Communication"; its domain must pass SPF and DKIM. The button appears on the sign-in page, so also in the mobile app, which opens it in the phone's browser. Without these variables, it is not offered.
+
 ### Payments (Stripe, Semisto ASBL's account)
 
 | Variable | Role |
@@ -179,7 +190,7 @@ Used only by the one-off command `bin/rails claudy:import MAP_ID=…`, which pou
 
 ## Outbound connections
 
-The server must be able to reach: `geoservices.wallonie.be` (layers, identification, relief), `tiles.openfreemap.org` and `tile.openstreetmap.org` (base map), `nominatim.openstreetmap.org` (addresses), `my-api.plantnet.org` (plant identification by photo, if `PLANTNET_API_KEY` is set), `api.magnific.com` and Magnific's image server (photo rendering, if `MAGNIFIC_API_KEY` is set), `api.stripe.com`, the SMTP server, the S3 provider and, if set, Sentry and Open-Meteo. The one-off Claudy import reaches `app.les4sources.be`.
+The server must be able to reach: `geoservices.wallonie.be` (layers, identification, relief), `tiles.openfreemap.org` and `tile.openstreetmap.org` (base map), `nominatim.openstreetmap.org` (addresses), `my-api.plantnet.org` (plant identification by photo, if `PLANTNET_API_KEY` is set), `api.magnific.com` and Magnific's image server (photo rendering, if `MAGNIFIC_API_KEY` is set), `api.stripe.com`, `appleid.apple.com` (Sign in with Apple, if `APPLE_CLIENT_ID` is set), the SMTP server, the S3 provider and, if set, Sentry and Open-Meteo. The one-off Claudy import reaches `app.les4sources.be`.
 
 ## Claude (MCP)
 

@@ -3,7 +3,7 @@ require "test_helper"
 class Maps::HarvestsControllersTest < ActionDispatch::IntegrationTest
   setup do
     @map = maps(:ahinvaux)
-    @apples = 2.times.map { |i| @map.features.create!(layer: "plants", kind: "plant", name: "n° #{i + 1} — Pommier", geometry: point, properties: { "species_id" => plant_species(:apple).id }) }
+    @apples = 2.times.map { |i| @map.features.create!(layer: "plants", kind: "plant", name: "n° #{i + 1} — Pommier", geometry: point, properties: { "species_id" => plant_species(:apple).id, "planted_on" => "2015-03-01" }) }
   end
 
   test "an editor notes the harvest of one tree, reads it back and removes it" do
@@ -44,6 +44,19 @@ class Maps::HarvestsControllersTest < ActionDispatch::IntegrationTest
 
     post map_harvests_path(@map), params: { feature_ids: [ map_features(:pond).id ], plant_harvest: { noted_on: "2026-10-12", stage: "picked" } }, as: :json
     assert_response :unprocessable_entity
+  end
+
+  test "a tree still to plant cannot be noted, alone or in a batch" do
+    young = @map.features.create!(layer: "plants", kind: "plant", name: "Figuier", geometry: point, properties: { "species_id" => plant_species(:apple).id })
+    sign_in_as users(:michael)
+    post map_feature_plant_harvests_path(@map, young), params: { plant_harvest: { noted_on: Date.current.iso8601, stage: "picked" } }, as: :json
+    assert_response :unprocessable_entity
+
+    assert_no_difference -> { PlantHarvest.count } do
+      post map_harvests_path(@map), params: { feature_ids: [ *@apples.map(&:id), young.id ], plant_harvest: { noted_on: Date.current.iso8601, stage: "picked" } }, as: :json
+    end
+    assert_response :unprocessable_entity
+    assert_match "pas encore planté", response.body
   end
 
   test "the map's log, season by season" do

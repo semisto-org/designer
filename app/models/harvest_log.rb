@@ -2,9 +2,10 @@
 # which were picked and where the fruit went, and which plants have given
 # nothing for several seasons (to think about renewing them).
 #
-# Plants listed: the fruit and nut plants of the map (trees, shrubs and
+# Plants listed: the fruit and nut plants in the ground (trees, shrubs and
 # climbers whose species gives fruit or seeds, or whose edible parts are
-# unknown), plus any plant that already has a harvest line.
+# unknown, and marked as planted), plus any plant that already has a
+# harvest line. A plant still to plant has nothing to pick yet.
 #
 # A season counts as « followed » once someone noted at least one line on
 # the map that year: in a followed season, a plant with nothing noted gave
@@ -43,7 +44,7 @@ class HarvestLog
       candidates.filter_map do |feature|
         lines = by_plant.fetch(feature.id, [])
         species = species_by_id[feature.plant_species_id]
-        next unless lines.any? || self.class.harvestable_species?(species)
+        next unless lines.any? || (feature.planted? && self.class.harvestable_species?(species))
         row(feature, species, varieties_by_id[feature.plant_variety_id], lines)
       end.sort_by { [ _1[:speciesName].to_s, _1[:varietyName].to_s, _1[:name].to_s, _1[:featureId] ] }
     end
