@@ -1,5 +1,5 @@
 # Uploaded files: where they are, moving them to another service, the bucket's
-# CORS rule and the backup copy. See FileStorage and docs/mise-en-production.md.
+# CORS rule and the backup copy. See FileStorage and docs/deployment.md.
 namespace :storage do
   desc "Count the files per service and size, and say whether the backup is configured"
   task status: :environment do
