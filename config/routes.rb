@@ -55,6 +55,7 @@ Rails.application.routes.draw do
   constraints token: MapPublication::TOKEN_PATTERN do
     get "p/:token", to: "public_maps#show", as: :public_map
     get "p/:token/tiles/:layer_key/:z/:x/:y", to: "public_maps/tiles#show", as: :public_map_tile
+    get "p/:token/aerial-view", to: "public_maps/aerial_views#show", as: :public_map_aerial_view
   end
   # --- end collab ---
   # --- journey ---
@@ -477,6 +478,19 @@ Rails.application.routes.draw do
   # map's views in its props (MapsController#show).
   namespace :admin do
     resources :aerial_views, path: "drone-views", only: %i[index create destroy]
+  end
+  # Drone views anyone editing the map imports from a file (Couches panel):
+  # sent in parts (PUT /mcp/uploads/:token/parts/:n), then converted in the
+  # background; `archive` serves the PMTiles archive to whoever sees the map.
+  resources :maps, only: [] do
+    scope module: :maps do
+      resources :aerial_views, only: %i[index create destroy] do
+        member do
+          post :complete
+          get :archive
+        end
+      end
+    end
   end
   # --- end drone ---
 

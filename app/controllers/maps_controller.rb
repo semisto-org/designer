@@ -58,8 +58,10 @@ class MapsController < ApplicationController
       layers: @map.region.catalogue.enabled.map(&:as_inertia),
       features: @map.features.where.not(status: "rejected").map(&:as_geojson),
       mapEntitlements: map_entitlements.as_json,
-      # Dated drone views, newest first (« Couches », with the base maps).
-      aerialViews: @map.aerial_views.map(&:as_inertia),
+      # Dated drone views, newest first (« Couches », with the base maps),
+      # and for editors the ones imported from a file, to follow them.
+      aerialViews: @map.aerial_views.ready.map { _1.as_inertia(archive_url: archive_map_aerial_view_path(@map, _1)) },
+      aerialImports: %w[owner editor].include?(@role) ? @map.aerial_views.imported.includes(:created_by).map { _1.as_inertia(archive_url: archive_map_aerial_view_path(@map, _1)) } : [],
       # Sketches and plans laid under the drawing (« Fonds de plan »).
       planImages: @map.plan_images.with_attached_image.map(&:as_inertia),
       # The « carnet de route » ends on Claude: already plugged in, or how to.

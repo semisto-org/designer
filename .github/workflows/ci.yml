@@ -111,7 +111,14 @@ jobs:
             postgis/postgis:16-3.4 > "$RUNNER_TEMP/postgis.log" 2>&1 &
 
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev ghostscript ffmpeg
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev ghostscript ffmpeg gdal-bin
+
+      # Packs imported drone views (AerialViews::Tiler), as in the Dockerfile.
+      - name: Install pmtiles
+        run: |
+          GOTOOLCHAIN=auto GOBIN="$HOME/.local/bin" go install github.com/protomaps/go-pmtiles@v1.31.2
+          ln -s "$HOME/.local/bin/go-pmtiles" "$HOME/.local/bin/pmtiles"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Checkout code
         uses: actions/checkout@v6
