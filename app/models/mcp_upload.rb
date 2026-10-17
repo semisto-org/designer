@@ -10,9 +10,18 @@
 # or lasts long enough to be cut on a slow connection, and a failed part is
 # sent again on its own. The parts are put together into the blob, and
 # checked against the file's MD5, when the upload is attached (assemble!).
+#
+# The map editor sends a drone view to import the same way, in parts
+# (kind "aerial_view", AerialView#source_upload): the parts are read back
+# one after the other by AerialViewImportJob and never put together in the
+# storage. Such a file can be large and the connection slow, so it is kept
+# longer (AERIAL_LIFETIME) and its blob is marked composed: its MD5 is only
+# known once the browser has read the whole file (AerialViewsController).
 class McpUpload < ApplicationRecord
   KINDS = %w[photo document].freeze
+  AERIAL_VIEW = "aerial_view".freeze
   UNATTACHED_LIFETIME = 24.hours
+  AERIAL_LIFETIME = 3.days
   URL_LIFETIME = 15.minutes
   # A whole number of MiB, so `dd bs=1048576` cuts the parts (smaller in tests).
   class_attribute :part_size_for_new, default: 32.megabytes
@@ -35,11 +44,14 @@ class McpUpload < ApplicationRecord
   belongs_to :map
   belongs_to :user
 
-  validates :kind, inclusion: { in: KINDS }
+  validates :kind, inclusion: { in: KINDS + [ AERIAL_VIEW ] }
   validates :part_size, numericality: { greater_than: 0 }, allow_nil: true
 
   scope :unattached, -> { where(attached_at: nil) }
-  scope :stale, ->(now = Time.current) { unattached.where(created_at: ...(now - UNATTACHED_LIFETIME)) }
+  scope :stale, ->(now = Time.current) {
+    unattached.where.not(kind: AERIAL_VIEW).where(created_at: ...(now - UNATTACHED_LIFETIME))
+      .or(unattached.where(kind: AERIAL_VIEW, created_at: ...(now - AERIAL_LIFETIME)))
+  }
 
   def self.multipart?(byte_size) = byte_size > part_size_for_new
 
@@ -54,7 +66,9 @@ class McpUpload < ApplicationRecord
   # for parts, once put together).
   def received? = blob.service.exist?(blob.key)
 
-  def part_token = signed_id(purpose: PART_PURPOSE, expires_in: PARTS_URL_LIFETIME)
+  def part_token = signed_id(purpose: PART_PURPOSE, expires_in: aerial_view? ? AERIAL_LIFETIME : PARTS_URL_LIFETIME)
+
+  def aerial_view? = kind == AERIAL_VIEW
 
   def part_count = (blob.byte_size.to_f / part_size).ceil
 
@@ -93,5 +107,30 @@ class McpUpload < ApplicationRecord
   def delete_parts
     return unless multipart?
     (1..part_count).each { |number| blob.service.delete(part_key(number)) }
+  end
+
+  # Writes the parts, in order, to `path` without putting them together in
+  # the storage, and checks the result against the blob's MD5. Raises
+  # Incomplete like assemble!.
+  def download_parts_to(path)
+    missing = missing_parts
+    raise Incomplete.new(missing) if missing.any?
+    md5 = Digest::MD5.new
+    File.open(path, "wb") do |file|
+      (1..part_count).each do |number|
+        blob.service.download(part_key(number)) do |chunk|
+          md5 << chunk
+          file.write(chunk)
+        end
+      end
+    end
+    raise Incomplete unless blob.checksum.present? && md5.base64digest == blob.checksum
+    path
+  end
+
+  # Lets go of the parts and the blob (the upload goes with its blob).
+  def discard!
+    delete_parts
+    blob.purge
   end
 end

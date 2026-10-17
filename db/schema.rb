@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -64,7 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_160000) do
     t.string "name", null: false
     t.date "captured_on", null: false
     t.string "kind", null: false
-    t.string "url", limit: 2048, null: false
+    t.string "url", limit: 2048
     t.string "attribution"
     t.integer "min_zoom"
     t.integer "max_zoom"
@@ -72,9 +72,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_160000) do
     t.bigint "created_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "ready", null: false
+    t.string "failure"
+    t.string "source_filename"
+    t.bigint "source_byte_size"
+    t.jsonb "bounds"
+    t.bigint "source_upload_id"
     t.index ["created_by_id"], name: "index_aerial_views_on_created_by_id"
     t.index ["map_id", "captured_on"], name: "index_aerial_views_on_map_id_and_captured_on"
     t.index ["plan_purchase_id"], name: "index_aerial_views_on_plan_purchase_id"
+    t.index ["source_upload_id"], name: "index_aerial_views_on_source_upload_id"
   end
 
   create_table "ai_actions", force: :cascade do |t|
@@ -1456,6 +1463,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_160000) do
   add_foreign_key "admin_events", "users", column: "admin_id", on_delete: :nullify
   add_foreign_key "admin_events", "users", column: "target_user_id", on_delete: :nullify
   add_foreign_key "aerial_views", "maps"
+  add_foreign_key "aerial_views", "mcp_uploads", column: "source_upload_id", on_delete: :nullify
   add_foreign_key "aerial_views", "plan_purchases", on_delete: :nullify
   add_foreign_key "aerial_views", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "ai_actions", "maps", on_delete: :cascade

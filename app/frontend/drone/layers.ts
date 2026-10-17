@@ -24,7 +24,9 @@ export function aerialSource(view: AerialView): RasterSourceSpecification {
   }
   if (view.kind === 'pmtiles') {
     ensurePmtilesProtocol()
-    return { type: 'raster', url: `pmtiles://${view.url}`, tileSize: 256, attribution, ...zooms }
+    // An imported view is a path of the app (it checks who may see the map).
+    const url = new URL(view.url, window.location.href).href
+    return { type: 'raster', url: `pmtiles://${url}`, tileSize: 256, attribution, ...zooms }
   }
   return { type: 'raster', tiles: [view.url], tileSize: 256, attribution, ...zooms }
 }

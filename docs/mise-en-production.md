@@ -183,6 +183,17 @@ Aucune variable. Adresse à donner aux utilisateurs : `https://terranova.semisto
 
 ## Vues drone
 
+### Vues importées par les utilisateurs
+
+Tout éditeur d'une carte importe sa propre orthophoto depuis **Couches → Vues drone → Importer une vue drone** : GeoTIFF géoréférencé, `.mbtiles` ou `.pmtiles`, jusqu'à 10 Go (`AerialView::MAX_UPLOAD_BYTES`). Le navigateur envoie le fichier en morceaux de 32 Mo (sous la limite de 100 Mo de Cloudflare), vers le stockage des fichiers ; une tâche de fond (`AerialViewImportJob`, une seule à la fois sur le serveur) le convertit en une archive PMTiles (tuiles WebP) attachée à la vue, puis supprime l'original. La vue est servie par l'application (`/maps/:id/aerial_views/:id/archive`, requêtes `Range`), donc sans réglage CORS chez l'hébergeur.
+
+- **Outils dans l'image** : `gdal-bin` (paquet Debian) et `pmtiles` (go-pmtiles, compilé dans une étape du `Dockerfile`). Sans eux, l'import échoue avec « conversion impossible ».
+- **Disque de travail** : `AERIAL_WORK_DIR` (défaut `tmp/aerial` dans l'application). La conversion y écrit l'original, les tuiles et l'archive : prévoir environ **3 fois la taille du plus gros fichier** (30 Go pour 10 Go). Sur Coolify, pointer cette variable vers un volume qui a cette place (par exemple sous `/rails/storage`) ; le dossier est vidé à la fin de chaque conversion, réussie ou non.
+- **Durée** : quelques minutes pour 1 Go, une à deux heures pour plusieurs Go. Chaque étape de la conversion est arrêtée au bout de 4 heures.
+- Un envoi abandonné est nettoyé au bout de 3 jours (`McpUploadPurgeJob`) : la vue passe en échec « envoi expiré ».
+
+### Vues posées par Semisto (mission drone)
+
 Aucune variable. Après une mission drone (commande payée : un e-mail « Mission drone commandée » arrive à `SEMISTO_CONTACT_EMAIL`), l'équipe pose la vue sur une carte du client depuis **Demandes → Vues drone** (`/admin/drone-views`, comptes `admin` seulement). Le client reçoit alors l'e-mail « Votre vue drone est sur votre carte ». Les tuiles ne passent pas par le serveur : le navigateur les lit directement chez l'hébergeur.
 
 1. **Produire l'orthophoto.** Assembler les photos du vol dans OpenDroneMap / WebODM et exporter l'orthomosaïque en GeoTIFF (`odm_orthophoto.tif`). Noter la date du vol.
@@ -217,6 +228,7 @@ Aucune politique de sécurité du contenu (CSP) n'est active (`config/initialize
 
 - Un essai complet de Stripe en mode test : forfait avec code promo, abonnement, remboursement, mission drone.
 - Une vraie vue drone (PMTiles) servie par le bucket de production, CORS compris, sur ordinateur et sur téléphone.
+- Un import de vue drone de plusieurs Go en production, pour vérifier la place sur `AERIAL_WORK_DIR` et la durée de conversion.
 - Un import de relief réel et les couches du Géoportail depuis le serveur (identifiants de couches, zooms, champ CAPAKEY du cadastre).
 - La licence des données du SPW pour un relais de tuiles avec cache.
 - Les valeurs indicatives écrites sans accès aux sources : normales et projections climatiques de Wallonie, fourchettes d'analyse de sol, règles d'urbanisme (CoDT), catalogue de départ (106 espèces « à vérifier »), plantes bio-indicatrices.
