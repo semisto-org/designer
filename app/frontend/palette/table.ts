@@ -7,6 +7,10 @@
 /** Filter value meaning « plants without any tag » (same as map/tags/tags.ts). */
 export const UNTAGGED = '\u0000untagged'
 
+import type { FitExclusion, FitTier, PlantFit } from '@/types/plants'
+
+export const FIT_TIERS: FitTier[] = ['fits', 'unknowns', 'one_misfit', 'misfits']
+
 export type PlantStatus = 'existing' | 'chosen' | 'planned' | 'planting' | 'planted'
 export const STATUSES: PlantStatus[] = ['existing', 'chosen', 'planned', 'planting', 'planted']
 
@@ -47,6 +51,8 @@ export type PaletteRow = {
   floweringMonths: number[]
   harvestMonths: number[]
   native?: boolean | null
+  fit?: PlantFit
+  excludedBy?: FitExclusion | null
   photo?: string | null
   tags: string[]
   plantedFrom?: string | null
@@ -136,6 +142,8 @@ export function cellValue(row: PaletteRow, column: string): string | number | bo
     case 'flowering': return row.floweringMonths.join(', ') || null
     case 'harvest': return row.harvestMonths.join(', ') || null
     case 'native': return row.native ?? null
+    // Sorts from what suits best to what suits least.
+    case 'fit': return row.fit ? FIT_TIERS.indexOf(row.excludedBy ? 'misfits' : row.fit.tier) : null
     case 'size': return row.size ?? null
     case 'supplier': return row.supplier ?? null
     case 'unit_price': return row.unitPrice ?? null

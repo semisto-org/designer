@@ -279,6 +279,9 @@ export type FitCriterion = {
 
 export type PlantFit = { tier: FitTier; criteria: FitCriterion[] }
 
+/** A known fact that rules a species out on this land (PlantFit::Site#excluded_by). */
+export type FitExclusion = 'hardiness' | 'invasive' | 'toxic'
+
 export type SiteSignalOrigin = 'climate' | 'patches' | 'sheet' | 'soil_samples'
 
 /** What the map tells about its growing conditions (PlantFit::Site). */

@@ -103,6 +103,7 @@ fr:
       height: "Hauteur adulte"
       spread: "Envergure adulte"
       hardiness: "Rusticité"
+      fit: "Convient ici ?"
       exposures: "Exposition"
       edible: "Comestible"
       flowering: "Floraison"
@@ -120,6 +121,7 @@ fr:
       survival_rate: "Reprise"
       notes: "Notes"
     column_hints:
+      fit: "Chaque critère que ton terrain permet de juger : ✓ convient, ~ tolère, ✗ ne convient pas, ? le catalogue ne le dit pas encore. En pointillés : valeur du catalogue encore à vérifier."
       existing: "Arbres existants de cette espèce, conservés et vivants."
       planned: "Plants isolés et lignes des massifs dessinés sur la carte."
       to_plant: "Prévus moins ceux déjà en terre."
@@ -138,7 +140,7 @@ fr:
     group_count: { one: "%{count} espèce", other: "%{count} espèces" }
     empty:
       title: "La palette est encore vide"
-      text: "Commence par lire ton terrain sur la carte, puis choisis tes espèces dans le panneau Palette ou dessine tes premiers plants : ils apparaîtront ici, prêts à être comptés, chiffrés et commandés."
+      text: "Commence par lire ton terrain sur la carte, puis pars des suggestions pour ce terrain, choisis tes espèces dans le panneau Palette ou dessine tes premiers plants : ils apparaîtront ici, prêts à être comptés, chiffrés et commandés."
       action: "Ouvrir la palette sur la carte"
       filtered: "Aucune plante ne répond à ces filtres."
     sheet:
@@ -182,6 +184,17 @@ fr:
     errors:
       not_in_catalogue: "Cette plante n'est pas dans le catalogue : on ne peut pas lui donner de prix ici."
       generic: "Quelque chose n'a pas marché. Réessaie dans un instant."
+    suggestions:
+      open: "Suggestions pour ce terrain"
+      title: "Suggestions pour ce terrain"
+      intro: "Des espèces du catalogue qui conviennent à ce que je sais de ton terrain, les plus sûres d'abord. Rien n'est ajouté sans toi."
+      legend: "Sous chaque espèce : ✓ convient, ~ tolère, ✗ ne convient pas, ? le catalogue ne le dit pas encore. En pointillés, une valeur encore à vérifier."
+      empty: "Pas de nouvelle suggestion : ta palette couvre déjà ce que je sais proposer pour ce terrain."
+      loading: "Je regarde ton terrain…"
+      load_error: "Impossible de charger les suggestions."
+      add: "Ajouter"
+      added: "%{name} ajouté à la palette."
+      close: "Fermer les suggestions"
     csv_filename: "palette-vegetale"
   activerecord:
     errors:

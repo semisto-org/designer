@@ -42,6 +42,19 @@ class PlantPaletteTest < ActiveSupport::TestCase
     assert_equal [ "Chantier mars" ], comfrey[:tags]
   end
 
+  test "each catalogue row says how the species fits this land" do
+    regions(:wallonia).update!(settings: { "climate" => { "hardiness_zone" => 7 } })
+    @patch.update!(properties: { "exposure" => "shade" })
+    plant!(plant_species(:apple))
+
+    apple = row(PlantPalette.new(Map.find(@map.id)), "#{plant_species(:apple).id}-")
+    statuses = apple[:fit][:criteria].to_h { |c| [ c[:key], c[:status] ] }
+    assert_equal "fits", statuses["hardiness"]
+    assert_equal "misfit", statuses["exposure"], "an apple tree wants sun, the patch is in shade"
+    assert_equal "one_misfit", apple[:fit][:tier]
+    assert_nil apple[:excludedBy]
+  end
+
   test "quantities per tag, as the plant list filtered by that tag" do
     plant!(plant_species(:apple), tags: [ "Chantier mars" ])
     plant!(plant_species(:apple), tags: [ "Chantier novembre" ])

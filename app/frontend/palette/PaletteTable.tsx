@@ -4,6 +4,7 @@ import { useState, type KeyboardEvent } from 'react'
 import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { StrataDot } from '@/map/plants/strata'
+import { FitChips } from '@/palette/Fit'
 import { columnLabel, displayTotal, displayValue, groupLabel, NUMERIC } from '@/palette/format'
 import { statusOf, totals, type Group, type PaletteRow, type PlantStatus, type ViewSettings } from '@/palette/table'
 import type { Strata } from '@/types/plants'
@@ -149,6 +150,14 @@ function Cell({ row, column, canEdit, suppliers, onOpen, onEdit }: {
     return (
       <td className={base}>
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><StrataDot strata={row.strata as Strata} />{displayValue(row, column)}</span>
+      </td>
+    )
+  }
+
+  if (column === 'fit') {
+    return (
+      <td className={clsx(base, !row.fit && 'text-loam-300')}>
+        {row.fit && (row.fit.criteria.length > 0 || row.excludedBy) ? <FitChips fit={row.fit} excludedBy={row.excludedBy} className="flex-nowrap" /> : t('plant_palette.cells.empty')}
       </td>
     )
   }

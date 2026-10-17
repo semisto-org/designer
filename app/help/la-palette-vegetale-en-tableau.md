@@ -20,6 +20,12 @@ La colonne **État** résume où en est chaque plante : Existante, Choisie, Pré
 
 En haut, **Ce jardin dans le temps** montre la part du terrain que couvriront les houppiers des arbres et arbustes après 1, 5, 15 et 30 ans.
 
+## Ce qui convient à ton terrain
+
+La colonne **Convient ici ?** (dans la vue **Base**) juge chaque plante sur ton terrain, une pastille par critère : **✓** elle convient, **~** elle tolère, **✗** elle ne convient pas, **?** le catalogue ne le dit pas encore. Une pastille en pointillé repose sur une valeur que Semisto n'a pas encore vérifiée. Les critères viennent de ce que Terranova sait du lieu : le climat (rusticité), l'exposition que tu donnes à tes patchs, le sol décrit dans ta fiche projet et tes analyses de sol (pH, texture). Plus tu en renseignes, plus le jugement est fin. Une plante invasive dans ton pays ou toxique pour les animaux de ta fiche projet le dit aussi.
+
+Touche **Suggestions pour ce terrain**, à côté du titre, pour voir ce que Terranova sait de ton lieu et des espèces qui y conviennent, les plus sûres d'abord : fixateurs d'azote, strates manquantes, plantes mellifères, chacune avec sa raison et ses pastilles. Les plantes trop frileuses pour ton climat, invasives ou toxiques pour tes animaux sont écartées d'office. **Ajouter** la met dans la palette ; rien n'y entre sans toi.
+
 ## Les vues
 
 Quatre vues de départ regardent la palette sous des angles différents :

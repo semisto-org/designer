@@ -1,4 +1,4 @@
-import { ExternalLink, MapPin, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { Compass, ExternalLink, MapPin, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
@@ -9,10 +9,9 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { PaletteDrafts } from '@/map/plants/PaletteDrafts'
 import { ProposeSpecies } from '@/map/plants/ProposeSpecies'
 import { setPlacing, setPlanting, usePlanting } from '@/map/plants/store'
-import { FitChips, SiteSummary } from '@/map/plants/PlantFitParts'
 import { STRATA_COLORS, StrataDot } from '@/map/plants/strata'
 import {
-  STRATA, type PaletteItem, type PaletteRole, type PaletteSuggestion, type PaletteSuggestions, type PlantSearchResult, type PlantingState,
+  STRATA, type PaletteItem, type PaletteRole, type PlantSearchResult, type PlantingState,
   type SpeciesSummary, type Strata,
 } from '@/types/plants'
 
@@ -30,13 +29,10 @@ export default function PalettePanel() {
   const [query, setQuery] = useState('')
   const [hardyOnly, setHardyOnly] = useState(true)
   const [results, setResults] = useState<SpeciesSummary[] | null>(null)
-  const [suggestions, setSuggestions] = useState<PaletteSuggestion[]>([])
-  const [suggestionsSite, setSuggestionsSite] = useState<Pick<PaletteSuggestions, 'site' | 'excluded'> | null>(null)
   const [editing, setEditing] = useState<number | null>(null)
   const zone = data?.zone ?? null
 
   const paletteSpecies = useMemo(() => new Set(data?.palette.filter((i) => !i.varietyId).map((i) => i.speciesId)), [data])
-  const paletteSize = data?.palette.length ?? 0
 
   // Catalogue search, debounced.
   useEffect(() => {
@@ -53,16 +49,6 @@ export default function PalettePanel() {
     }, 250)
     return () => { window.clearTimeout(timer); controller.abort() }
   }, [query, hardyOnly, zone, data?.country])
-
-  // Suggestions, refreshed when the palette changes.
-  useEffect(() => {
-    if (!editor.canEdit) return
-    const controller = new AbortController()
-    api<PaletteSuggestions>(`/maps/${mapId}/palette_items/suggestions`, { signal: controller.signal })
-      .then((r) => { setSuggestions(r.suggestions); setSuggestionsSite(r.site ? { site: r.site, excluded: r.excluded } : null) })
-      .catch(() => undefined)
-    return () => controller.abort()
-  }, [mapId, paletteSize, editor.canEdit])
 
   async function add(species: SpeciesSummary) {
     try {
@@ -147,12 +133,10 @@ export default function PalettePanel() {
               : <SpeciesList items={results} inPalette={paletteSpecies} onAdd={add} />
           )}
           {results && <ProposeSpecies key={query.trim()} query={query} inPalette={paletteSpecies} onAdd={add} onDone={() => setQuery('')} />}
-          {!results && suggestions.length > 0 && (
-            <div>
-              <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-loam-500">{t('palette.suggestions')}</h3>
-              {suggestionsSite && <SiteSummary data={suggestionsSite} />}
-              <SpeciesList items={suggestions} inPalette={paletteSpecies} onAdd={add} reasons />
-            </div>
+          {!results && (
+            <a href={`/maps/${mapId}/palette?suggestions=1`} className="inline-flex items-center gap-1.5 text-sm font-medium text-leaf-800 hover:underline">
+              <Compass className="h-4 w-4" aria-hidden />{t('palette.suggestions_link')}
+            </a>
           )}
         </div>
       )}
@@ -216,9 +200,7 @@ export default function PalettePanel() {
   )
 }
 
-function SpeciesList({ items, inPalette, onAdd, reasons }: {
-  items: (SpeciesSummary & { reason?: string; fit?: PaletteSuggestion['fit'] })[]; inPalette: Set<number>; onAdd: (s: SpeciesSummary) => void; reasons?: boolean
-}) {
+function SpeciesList({ items, inPalette, onAdd }: { items: SpeciesSummary[]; inPalette: Set<number>; onAdd: (s: SpeciesSummary) => void }) {
   return (
     <ul className="max-h-64 divide-y divide-loam-100 overflow-y-auto rounded-lg ring-1 ring-loam-200">
       {items.map((s) => (
@@ -234,10 +216,9 @@ function SpeciesList({ items, inPalette, onAdd, reasons }: {
               )}
             </p>
             <p className="truncate text-xs text-loam-500">
-              {reasons && s.reason ? t(`palette.reasons.${s.reason}`) : <i>{s.latinName}</i>}
+              <i>{s.latinName}</i>
               {s.hardinessZone ? ` · ${t('plants.card.zone', { zone: s.hardinessZone })}` : ''}
             </p>
-            {s.fit && <FitChips fit={s.fit} />}
           </div>
           <a href={`/plants/${s.slug}`} target="_blank" rel="noreferrer" className="rounded p-1 text-loam-400 hover:bg-loam-100" title={t('palette.open_sheet')} aria-label={t('palette.open_sheet')}>
             <ExternalLink className="h-3.5 w-3.5" />

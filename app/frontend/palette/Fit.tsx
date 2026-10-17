@@ -1,5 +1,5 @@
 import { t } from '@/lib/i18n'
-import type { FitCriterion, FitCriterionKey, PaletteSuggestions, PlantFit, SiteProfile } from '@/types/plants'
+import type { FitCriterion, FitCriterionKey, FitExclusion, PaletteSuggestions, PlantFit, SiteProfile } from '@/types/plants'
 
 // Criterion → the catalogue vocabulary its values come from.
 const FACET: Record<Exclude<FitCriterionKey, 'hardiness'>, string> = {
@@ -31,15 +31,18 @@ function criterionTitle(c: FitCriterion) {
  * The verdicts of one species, one chip per criterion the site can judge.
  * A verdict resting on a value nobody checked yet has a dashed outline.
  */
-export function FitChips({ fit }: { fit: PlantFit }) {
-  if (fit.criteria.length === 0) return null
+export function FitChips({ fit, excludedBy, className = 'mt-1' }: { fit: PlantFit; excludedBy?: FitExclusion | null; className?: string }) {
+  // Hardiness already has its chip; invasiveness and toxicity have none.
+  const flag = excludedBy === 'invasive' || excludedBy === 'toxic' ? excludedBy : null
+  if (fit.criteria.length === 0 && !flag) return null
   return (
-    <ul className="mt-1 flex flex-wrap gap-1" aria-label={t('palette.fit.label')}>
+    <ul className={`flex flex-wrap gap-1 ${className}`} aria-label={t('palette.fit.label')}>
+      {flag && <li className={`whitespace-nowrap rounded-full border px-1.5 text-sm ${TONE.misfit}`}><span aria-hidden>✗ </span>{t(`palette.fit.excluded_by.${flag}`)}</li>}
       {fit.criteria.map((c) => (
         <li
           key={c.key}
           title={criterionTitle(c)}
-          className={`rounded-full border px-1.5 text-sm ${TONE[c.status]} ${c.status !== 'unknown' && !c.verified ? 'border-dashed' : ''}`}
+          className={`relative whitespace-nowrap rounded-full border px-1.5 text-sm ${TONE[c.status]} ${c.status !== 'unknown' && !c.verified ? 'border-dashed' : ''}`}
         >
           <span aria-hidden>{MARK[c.status]} </span>
           {t(`palette.fit.criteria.${c.key}`)}
