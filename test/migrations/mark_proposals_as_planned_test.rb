@@ -2,8 +2,8 @@ require "test_helper"
 require Rails.root.join("db/migrate/20261017190000_mark_proposals_as_planned")
 
 class MarkProposalsAsPlannedTest < ActiveSupport::TestCase
-  POINT = { "type" => "Point", "coordinates" => [4.9051, 50.3401] }.freeze
-  LINE = { "type" => "LineString", "coordinates" => [[4.9051, 50.3401], [4.9052, 50.3402]] }.freeze
+  POINT = { "type" => "Point", "coordinates" => [ 4.9051, 50.3401 ] }.freeze
+  LINE = { "type" => "LineString", "coordinates" => [ [ 4.9051, 50.3401 ], [ 4.9052, 50.3402 ] ] }.freeze
 
   setup do
     @map = maps(:ahinvaux)
@@ -23,7 +23,7 @@ class MarkProposalsAsPlannedTest < ActiveSupport::TestCase
 
     assert_equal true, pond.reload.properties["planned"]
     assert_equal true, hedge.reload.properties["planned"]
-    [plant, existing, hedgerow].each { |f| assert_nil f.reload.properties["planned"], f.name }
+    [ plant, existing, hedgerow ].each { |f| assert_nil f.reload.properties["planned"], f.name }
     assert_equal "Proposition — Mare de tête ouest", pond.name
 
     MarkProposalsAsPlanned.new.down

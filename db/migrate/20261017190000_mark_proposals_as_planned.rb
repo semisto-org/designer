@@ -14,7 +14,7 @@ class MarkProposalsAsPlanned < ActiveRecord::Migration[8.1]
       .or(Feature.where(layer: "plants").where.not(kind: "plant"))
       .where("name ~* ?", PROPOSAL)
       .where("NOT (properties ? 'planned')")
-      .update_all(["properties = properties || ?::jsonb, lock_version = lock_version + 1", { planned: true }.to_json])
+      .update_all([ "properties = properties || ?::jsonb, lock_version = lock_version + 1", { planned: true }.to_json ])
   end
 
   def down
