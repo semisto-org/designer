@@ -19,6 +19,8 @@ La **palette** réunit les espèces choisies pour ce terrain. Dans le panneau **
 - **Rustiques ici**, coché d'office, ne garde que les espèces qui supportent le froid de la zone de ton terrain ;
 - parcours les **Suggestions pour ce terrain** : fixateurs d'azote, strates manquantes, plantes mellifères, avec la raison de chaque suggestion.
 
+Sous chaque suggestion, une pastille par critère dit comment la plante convient à ton terrain : **✓** elle convient, **~** elle tolère, **✗** elle ne convient pas, **?** le catalogue ne le dit pas encore. Une pastille en pointillé repose sur une valeur que Semisto n'a pas encore vérifiée. Les critères viennent de ce que Terranova sait du lieu : le climat (rusticité), l'exposition que tu donnes à tes patchs, le sol décrit dans ta fiche projet et tes analyses de sol (pH, texture). Plus tu en renseignes, plus les suggestions sont fines. Les plantes trop frileuses pour ton climat, invasives dans ton pays ou toxiques pour les animaux de ta fiche projet sont écartées d'office.
+
 Pour chercher plus largement, le catalogue **Plantes** se filtre par strate, port, rusticité, exposition, humidité du sol, usages, plantes comestibles, fixatrices d'azote, mellifères ou indigènes, et peut écarter les invasives.
 
 Pour chaque espèce de la palette, **Modifier** permet de préciser sa strate sur ce terrain, son rôle (nourricière, fertilité, pionnière, haie…), un objectif de nombre de plants et tes notes. L'**Équilibre des strates** montre combien de plants sont prévus à chaque étage.

@@ -9,9 +9,10 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { PaletteDrafts } from '@/map/plants/PaletteDrafts'
 import { ProposeSpecies } from '@/map/plants/ProposeSpecies'
 import { setPlacing, setPlanting, usePlanting } from '@/map/plants/store'
+import { FitChips, SiteSummary } from '@/map/plants/PlantFitParts'
 import { STRATA_COLORS, StrataDot } from '@/map/plants/strata'
 import {
-  STRATA, type PaletteItem, type PaletteRole, type PaletteSuggestion, type PlantSearchResult, type PlantingState,
+  STRATA, type PaletteItem, type PaletteRole, type PaletteSuggestion, type PaletteSuggestions, type PlantSearchResult, type PlantingState,
   type SpeciesSummary, type Strata,
 } from '@/types/plants'
 
@@ -30,6 +31,7 @@ export default function PalettePanel() {
   const [hardyOnly, setHardyOnly] = useState(true)
   const [results, setResults] = useState<SpeciesSummary[] | null>(null)
   const [suggestions, setSuggestions] = useState<PaletteSuggestion[]>([])
+  const [suggestionsSite, setSuggestionsSite] = useState<Pick<PaletteSuggestions, 'site' | 'excluded'> | null>(null)
   const [editing, setEditing] = useState<number | null>(null)
   const zone = data?.zone ?? null
 
@@ -56,8 +58,8 @@ export default function PalettePanel() {
   useEffect(() => {
     if (!editor.canEdit) return
     const controller = new AbortController()
-    api<{ suggestions: PaletteSuggestion[] }>(`/maps/${mapId}/palette_items/suggestions`, { signal: controller.signal })
-      .then((r) => setSuggestions(r.suggestions))
+    api<PaletteSuggestions>(`/maps/${mapId}/palette_items/suggestions`, { signal: controller.signal })
+      .then((r) => { setSuggestions(r.suggestions); setSuggestionsSite(r.site ? { site: r.site, excluded: r.excluded } : null) })
       .catch(() => undefined)
     return () => controller.abort()
   }, [mapId, paletteSize, editor.canEdit])
@@ -148,6 +150,7 @@ export default function PalettePanel() {
           {!results && suggestions.length > 0 && (
             <div>
               <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-loam-500">{t('palette.suggestions')}</h3>
+              {suggestionsSite && <SiteSummary data={suggestionsSite} />}
               <SpeciesList items={suggestions} inPalette={paletteSpecies} onAdd={add} reasons />
             </div>
           )}
@@ -214,7 +217,7 @@ export default function PalettePanel() {
 }
 
 function SpeciesList({ items, inPalette, onAdd, reasons }: {
-  items: (SpeciesSummary & { reason?: string })[]; inPalette: Set<number>; onAdd: (s: SpeciesSummary) => void; reasons?: boolean
+  items: (SpeciesSummary & { reason?: string; fit?: PaletteSuggestion['fit'] })[]; inPalette: Set<number>; onAdd: (s: SpeciesSummary) => void; reasons?: boolean
 }) {
   return (
     <ul className="max-h-64 divide-y divide-loam-100 overflow-y-auto rounded-lg ring-1 ring-loam-200">
@@ -234,6 +237,7 @@ function SpeciesList({ items, inPalette, onAdd, reasons }: {
               {reasons && s.reason ? t(`palette.reasons.${s.reason}`) : <i>{s.latinName}</i>}
               {s.hardinessZone ? ` · ${t('plants.card.zone', { zone: s.hardinessZone })}` : ''}
             </p>
+            {s.fit && <FitChips fit={s.fit} />}
           </div>
           <a href={`/plants/${s.slug}`} target="_blank" rel="noreferrer" className="rounded p-1 text-loam-400 hover:bg-loam-100" title={t('palette.open_sheet')} aria-label={t('palette.open_sheet')}>
             <ExternalLink className="h-3.5 w-3.5" />

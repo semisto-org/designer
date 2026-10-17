@@ -228,7 +228,7 @@ export type PlantListData = {
 }
 
 export type AlertLevel = 'blocking' | 'warning' | 'info'
-export type AlertRule = 'density' | 'exposure' | 'hardiness' | 'invasive' | 'nitrogen' | 'strata' | 'pollination'
+export type AlertRule = 'density' | 'exposure' | 'hardiness' | 'invasive' | 'nitrogen' | 'strata' | 'pollination' | 'unknown'
 
 export type PlantingAlert = {
   level: AlertLevel
@@ -259,7 +259,39 @@ export type PlantingState = {
   alerts: PlantingAlerts
 }
 
-export type PaletteSuggestion = SpeciesSummary & { reason: string }
+export type FitStatus = 'fits' | 'partial' | 'misfit' | 'unknown'
+export type FitCriterionKey = 'hardiness' | 'exposure' | 'moisture' | 'soil_type' | 'ph'
+export type FitTier = 'fits' | 'unknowns' | 'one_misfit' | 'misfits'
+
+/** One verdict of PlantFit: never a score, and « unknown » when the catalogue is silent. */
+export type FitCriterion = {
+  key: FitCriterionKey
+  status: FitStatus
+  /** What the site says: vocabulary keys, or the zone number for hardiness. */
+  site: (string | number)[]
+  /** The catalogue value was checked against a source. */
+  verified: boolean
+}
+
+export type PlantFit = { tier: FitTier; criteria: FitCriterion[] }
+
+export type SiteSignalOrigin = 'climate' | 'patches' | 'sheet' | 'soil_samples'
+
+/** What the map tells about its growing conditions (PlantFit::Site). */
+export type SiteProfile = {
+  signals: Partial<Record<FitCriterionKey, { values: (string | number)[]; origin: SiteSignalOrigin }>>
+  toxicFor: string[]
+  country: string | null
+}
+
+export type PaletteSuggestion = SpeciesSummary & { reason: string; fit?: PlantFit }
+
+export type PaletteSuggestions = {
+  suggestions: PaletteSuggestion[]
+  zone: number | null
+  site: SiteProfile
+  excluded: { hardiness: number; invasive: number; toxic: number }
+}
 
 export type PlantObservation = {
   id: number
