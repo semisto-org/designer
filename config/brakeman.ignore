@@ -141,13 +141,13 @@
     {
       "warning_type": "Mass Assignment",
       "warning_code": 105,
-      "fingerprint": "e97c768a825b1ab5e857c3f442afd6b8e08c3aec7f5c72725aa481d6d486d62a",
+      "fingerprint": "d6f91550ff6c01b62bf7581809e6e78ca2e57f439b919b85fdbb58017a546a59",
       "check_name": "PermitAttributes",
       "message": "Potentially dangerous key allowed for mass assignment",
       "file": "app/controllers/maps/palette_items_controller.rb",
-      "line": 48,
+      "line": 67,
       "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
-      "code": "params.require(:palette_item).permit(:species_id, :variety_id, :strata, :role, :notes, :target_count)",
+      "code": "params.require(:palette_item).permit(:species_id, :variety_id, :strata, :role, :notes, :target_count, :unit_price, :supplier, :size)",
       "render_path": null,
       "location": {
         "type": "method",
@@ -159,7 +159,30 @@
       "cwe_id": [
         915
       ],
-      "note": "`role` here is the plant role in the palette (nitrogen fixer, nurse…), not an authorization role; editing requires require_editor!."
+      "note": "`role` here is the plant role in the palette (nitrogen fixer, nurse\u2026), not an authorization role; editing requires require_editor!."
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 105,
+      "fingerprint": "3af7ce3194a4276a541e0dd3beb96b12f8c46d313c2fe03922355b43ad19a81a",
+      "check_name": "PermitAttributes",
+      "message": "Potentially dangerous key allowed for mass assignment",
+      "file": "app/controllers/maps/plant_palettes_controller.rb",
+      "line": 61,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.require(:plant).permit(:role, :notes, :target_count, :unit_price, :supplier, :size, :strata)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Maps::PlantPalettesController",
+        "method": "plant_params"
+      },
+      "user_input": ":role",
+      "confidence": "Medium",
+      "cwe_id": [
+        915
+      ],
+      "note": "`role` here is the plant role in the palette (nitrogen fixer, nurse\u2026), not an authorization role; editing requires require_editor!."
     }
   ],
   "updated": "2026-10-04 01:30:00 +0000",

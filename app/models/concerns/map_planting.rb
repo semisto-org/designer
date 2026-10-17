@@ -13,6 +13,8 @@ module MapPlanting
     has_many :patch_items, dependent: :delete_all
     has_many :plant_observations, dependent: :destroy
     has_many :plant_harvests, dependent: :destroy
+    # The table views of its « Palette végétale » (PlantPalette).
+    has_many :plant_palette_views, -> { ordered }, dependent: :delete_all, inverse_of: :map
   end
 
   # Aggregated plants to buy and plant, by species and cultivar (PlantList).
