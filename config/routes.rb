@@ -518,6 +518,19 @@ Rails.application.routes.draw do
   resource :impersonation, only: :destroy
   # --- end super-admin ---
 
+  # --- plant-palette ---
+  # « Palette végétale »: the table of a map's plants (existing, chosen,
+  # planned, planted), its saved views and each plant's sheet on the land.
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :plant_palette, path: "palette", only: :show do
+        get "plants/:key", action: :plant, as: :plant, constraints: { key: %r{[^/]+} }
+        patch "plants/:key", action: :update_plant, constraints: { key: %r{[^/]+} }
+      end
+      resources :plant_palette_views, path: "palette/views", only: %i[create update destroy]
+    end
+  end
+  # --- end plant-palette ---
   # --- tasks ---
   # A map's task lists (« Tâches »), and the tasks of all my maps and my
   # teams' maps (/tasks).

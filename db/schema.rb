@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -806,6 +806,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
     t.string "status", default: "active", null: false
     t.string "source", default: "human", null: false
     t.text "rationale"
+    t.decimal "unit_price", precision: 10, scale: 2
+    t.string "supplier"
+    t.string "size"
     t.index ["created_by_id"], name: "index_palette_items_on_created_by_id"
     t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "(variety_id IS NULL)"
     t.index ["map_id", "variety_id"], name: "index_palette_items_unique_variety", unique: true, where: "(variety_id IS NOT NULL)"
@@ -1005,6 +1008,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
     t.index ["species_id"], name: "index_plant_observations_on_species_id"
     t.index ["user_id"], name: "index_plant_observations_on_user_id"
     t.index ["variety_id"], name: "index_plant_observations_on_variety_id"
+  end
+
+  create_table "plant_palette_views", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.jsonb "settings", default: {}, null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_plant_palette_views_on_created_by_id"
+    t.index ["map_id"], name: "index_plant_palette_views_on_map_id"
   end
 
   create_table "plant_photos", force: :cascade do |t|
@@ -1510,6 +1525,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_220332) do
   add_foreign_key "plant_observations", "plant_species", column: "species_id", on_delete: :nullify
   add_foreign_key "plant_observations", "plant_varieties", column: "variety_id", on_delete: :nullify
   add_foreign_key "plant_observations", "users", on_delete: :nullify
+  add_foreign_key "plant_palette_views", "maps", on_delete: :cascade
+  add_foreign_key "plant_palette_views", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "plant_photos", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "plant_species", "maps", column: "proposed_map_id", on_delete: :nullify
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
