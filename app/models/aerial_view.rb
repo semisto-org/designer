@@ -6,7 +6,7 @@
 # - staff paste an address (/admin/drone-views), and the browser reads the
 #   tiles straight from where Semisto hosts them: kind "xyz", a {z}/{x}/{y}
 #   raster template, or kind "pmtiles", one .pmtiles archive read by HTTP
-#   range requests (see docs/mise-en-production.md);
+#   range requests (see docs/deployment.md);
 # - anyone editing the map imports a file (GeoTIFF from the drone software,
 #   MBTiles or PMTiles), sent in parts (McpUpload); AerialViewImportJob turns
 #   it into one PMTiles archive kept with the map's files (`archive`, read
