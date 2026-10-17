@@ -180,7 +180,7 @@ fr:
         vegetable_garden: "Potager"
         fallow: "Friche"
         bare: "Sol nu"
-      liner: { natural: "Sol en place", clay: "Argile", epdm: "Bâche EPDM" }
+      liner: { natural: "Sol en place", clay: "Argile", epdm: "Bâche EPDM", concrete: "Béton" }
       purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade", growing: "Butte de culture", hedge_bank: "Talus planté de haie", windbreak: "Abri du vent", noise: "Écran (bruit, vue)", play: "Jeu" }
       tank_type: { buried: "Enterrée", above_ground: "Hors sol", ibc: "Cuve IBC" }
       gate_type: { pedestrian: "Piétons", vehicle: "Véhicules" }
