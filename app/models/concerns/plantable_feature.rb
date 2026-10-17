@@ -42,6 +42,9 @@ module PlantableFeature
     nil
   end
 
+  # In the ground: a plant without a planting date is still to plant.
+  def planted? = planted_on.present?
+
   # Surface (m²) measured by PostGIS on the ellipsoid; nil for non-polygons.
   def area_m2
     return nil unless persisted?

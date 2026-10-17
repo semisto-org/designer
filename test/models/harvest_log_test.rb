@@ -28,6 +28,18 @@ class HarvestLogTest < ActiveSupport::TestCase
     assert_equal({ "juice" => 1 }, log.totals[:uses])
   end
 
+  test "a tree still to plant is not listed, unless it already has lines" do
+    young = plant(plant_species(:apple), name: "Pommier à planter", planted_on: nil)
+    assert_nil HarvestLog.new(@map, season: 2026).plant(young.id)
+
+    # Noted while marked as planted, then unmarked.
+    young.update!(properties: young.properties.merge("planted_on" => "2020-03-01"))
+    young.plant_harvests.create!(noted_on: Date.new(2026, 7, 1), stage: "on_tree", amount: "light")
+    young.update!(properties: young.properties.except("planted_on"))
+    row = HarvestLog.new(@map, season: 2026).plant(young.id)
+    assert_nil row[:plantedOn]
+  end
+
   test "a herb with a harvest line is listed too" do
     note(@comfrey, 2026, 6, stage: "picked")
     assert HarvestLog.new(@map, season: 2026).plant(@comfrey.id)
@@ -80,7 +92,7 @@ class HarvestLogTest < ActiveSupport::TestCase
   end
 
   private
-    def plant(species, name: nil, planted_on: nil, variety: nil)
+    def plant(species, name: nil, planted_on: Date.new(2015, 3, 1), variety: nil)
       properties = { "species_id" => species.id, "variety_id" => variety&.id, "planted_on" => planted_on&.iso8601 }.compact
       @map.features.create!(layer: "plants", kind: "plant", name:, geometry: point, properties:)
     end

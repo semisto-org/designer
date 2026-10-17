@@ -71,7 +71,18 @@ class PlantHarvest < ApplicationRecord
     end
 
     def harvests_a_plant
-      errors.add(:map_feature, :invalid) unless map_feature&.kind == PlantableFeature::PLANT
+      if map_feature&.kind != PlantableFeature::PLANT
+        errors.add(:map_feature, :invalid)
+      elsif !map_feature.planted?
+        errors.add(:base, :not_planted, plant: plant_label)
+      end
+    end
+
+    def plant_label
+      number = map_feature.properties["number"]
+      name = map_feature.name.to_s.strip
+      return name.presence || (number ? "n° #{number}" : "##{map_feature.id}") if number.nil? || name.empty? || name.start_with?("n°")
+      "n° #{number} #{name}"
     end
 
     def not_in_the_future
