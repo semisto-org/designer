@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1338,6 +1338,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_140000) do
     t.index ["map_id"], name: "index_soil_samples_on_map_id"
   end
 
+  create_table "storage_readings", force: :cascade do |t|
+    t.bigint "map_feature_id", null: false
+    t.bigint "map_id", null: false
+    t.bigint "user_id"
+    t.date "measured_on", null: false
+    t.decimal "temperature_c", precision: 4, scale: 1
+    t.decimal "temperature_min_c", precision: 4, scale: 1
+    t.decimal "temperature_max_c", precision: 4, scale: 1
+    t.integer "humidity_pct"
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_feature_id", "measured_on"], name: "index_storage_readings_on_map_feature_id_and_measured_on"
+    t.index ["map_feature_id"], name: "index_storage_readings_on_map_feature_id"
+    t.index ["map_id", "measured_on"], name: "index_storage_readings_on_map_id_and_measured_on"
+    t.index ["map_id"], name: "index_storage_readings_on_map_id"
+    t.index ["user_id"], name: "index_storage_readings_on_user_id"
+  end
+
   create_table "stripe_events", force: :cascade do |t|
     t.string "stripe_event_id", null: false
     t.string "event_type", null: false
@@ -1417,7 +1436,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_140000) do
     t.boolean "catalogue_reviewer", default: false, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
-    t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying, 'professional'::character varying]::text[])", name: "users_account_kind_check"
+    t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying::text, 'professional'::character varying::text])", name: "users_account_kind_check"
   end
 
   create_table "water_sources", force: :cascade do |t|
@@ -1584,6 +1603,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_140000) do
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
   add_foreign_key "soil_samples", "maps"
   add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "storage_readings", "map_features", on_delete: :cascade
+  add_foreign_key "storage_readings", "maps", on_delete: :cascade
+  add_foreign_key "storage_readings", "users", on_delete: :nullify
   add_foreign_key "task_lists", "maps", on_delete: :cascade
   add_foreign_key "task_lists", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "tasks", "maps", on_delete: :cascade

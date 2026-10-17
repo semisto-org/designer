@@ -1,0 +1,71 @@
+fr:
+  storage_readings:
+    title: "Climat du lieu de stockage"
+    intro: "Note la température et l'humidité de temps en temps. Terranova te dit si les fruits s'y gardent bien."
+    add: "Noter un relevé"
+    measured_on: "Date"
+    temperature_c: "Température (°C)"
+    temperature_min_c: "Mini (°C)"
+    temperature_max_c: "Maxi (°C)"
+    min_max_hint: "Avec un thermomètre mini-maxi : le plus froid et le plus chaud depuis le dernier relevé."
+    humidity_pct: "Humidité (%)"
+    note: "Note"
+    note_placeholder: "Porte ouverte, caisses rentrées, linge humide posé…"
+    save: "Enregistrer"
+    cancel: "Annuler"
+    saved: "Relevé noté."
+    deleted: "Relevé supprimé."
+    delete: "Supprimer le relevé"
+    confirm_delete: "Supprimer ce relevé ?"
+    empty: "Aucun relevé pour l'instant. Un thermomètre-hygromètre suffit, posé à hauteur des caisses."
+    by: "par %{name}"
+    chart_title: "Relevé après relevé"
+    chart_good: "Bande verte : là où pommes et poires se gardent le mieux"
+    temperature_value: "%{value} °C"
+    min_max_value: "mini %{min} °C · maxi %{max} °C"
+    humidity_value: "%{value} %"
+    ranges: "Pour garder pommes et poires : %{tmin} à %{tmax} °C, %{hmin} à %{hmax} % d'humidité, à l'abri du gel et de la lumière."
+    latest: "Dernier relevé, le %{date}"
+    statuses:
+      good: "Bien"
+      fair: "Limite"
+      bad: "Trop loin"
+      frost: "Gel"
+    overall:
+      good: "Les fruits s'y gardent bien."
+      fair: "Ça peut aller, avec un peu d'attention."
+      bad: "Les fruits ne s'y garderont pas longtemps."
+      frost: "Il a gelé : les fruits gelés ne se gardent plus."
+    advice:
+      warm_bad: "Trop chaud : à 18–20 °C, une pomme mûrit plusieurs fois plus vite qu'à 4 °C. Un jour au chaud vaut une semaine en cave. Garde ici les fruits à manger vite, et cherche un endroit plus frais pour l'hiver."
+      warm_fair: "Un peu chaud : une cave à 6–8 °C garde encore bien les pommes. Aère les nuits fraîches et ferme le jour."
+      dry_bad: "Trop sec : sous 75 %, les fruits se rident et perdent du poids. Pose un linge humide ou un bac d'eau, ou emballe les fruits dans du papier journal."
+      dry_fair: "Un peu sec : un bac d'eau ou un sol arrosé de temps en temps aide les fruits à rester fermes."
+      wet: "Très humide : c'est bon pour les fruits tant que l'air circule. Surveille la pourriture et écarte les fruits abîmés."
+      frost: "Le thermomètre est descendu à 0 °C ou en dessous : protège les caisses (couverture, paille) ou rentre-les plus au chaud par grand froid."
+      apart: "Garde les pommes à l'écart des légumes : elles dégagent de l'éthylène qui fait germer les pommes de terre et vieillir les choux."
+    winter:
+      none: "L'hiver décidera : relève chaque semaine de novembre à mars, idéalement avec un thermomètre mini-maxi. C'est là qu'on voit si ce lieu garde les fruits jusqu'au printemps."
+      seen: "Cet hiver : %{count} relevés, de %{low} à %{high} °C."
+    compare: "Tu as plusieurs lieux ? Relève-les le même jour pour voir lequel garde le mieux."
+  activerecord:
+    models:
+      storage_reading: "Relevé de stockage"
+    attributes:
+      storage_reading:
+        measured_on: "Date"
+        temperature_c: "Température"
+        temperature_min_c: "Mini"
+        temperature_max_c: "Maxi"
+        humidity_pct: "Humidité"
+        note: "Note"
+        map_feature: "Lieu de stockage"
+    errors:
+      models:
+        storage_reading:
+          attributes:
+            measured_on:
+              in_future: "ne peut pas être dans le futur"
+            temperature_min_c:
+              above_max: "doit être plus bas que le maxi"
+          nothing_measured: "Note au moins une température ou l'humidité."

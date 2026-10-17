@@ -1,12 +1,13 @@
 // One element of the map: what it is, its photos and comments and, for a
 // plant, its planting and follow-up (reprise, vigueur, photo) and, for a
-// fruit tree, its harvest.
+// fruit tree, its harvest; for a fruit store, its temperature and humidity.
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { HarvestSection } from '@/harvest/HarvestSection'
 import { api } from '@/lib/api'
 import { featureTitle, kindLabel, layerLabel, speciesName } from '@/lib/elements'
+import { isFruitStore } from '@/lib/fruitStore'
 import { isHarvestable } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
 import { isVideo } from '@/lib/media'
@@ -16,6 +17,7 @@ import { takePhoto } from '@/lib/photos'
 import { canEdit, type Comment, type MapFeature, type Survival } from '@/lib/types'
 import { useOnline, useOutbox } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
+import { StoreSection } from '@/storage/StoreSection'
 import { chooseMedia } from '@/ui/chooseMedia'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
@@ -61,6 +63,8 @@ export default function FeatureScreen() {
       </Card>
 
       {isHarvestable(feature, bundle.planting) && <HarvestSection bundle={bundle} feature={feature} editable={editable} ops={ops} allOps={mapOps} />}
+
+      {isFruitStore(feature.properties.kind) && <StoreSection mapId={mapId} feature={feature} editable={editable} ops={ops} />}
 
       {isPlant && <PlantSection mapId={mapId} feature={feature} editable={editable} ops={ops} />}
 

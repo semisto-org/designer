@@ -60,6 +60,18 @@ Le filtre **À surveiller** liste les arbres sans fruits notés depuis trois sai
 
 Pourquoi trois et pas une ? Beaucoup de variétés anciennes connaissent l'alternance : une grosse année, puis une année presque vide. Un arbre vide une saison n'est pas un arbre à remplacer. Avant de décider, regarde aussi sa reprise et sa vigueur dans le [suivi de reprise](/help/planter-puis-observer), et la place qu'il a : un arbre à l'ombre ou serré par ses voisins porte peu.
 
+## Où garder les fruits ?
+
+Une pomme cueillie continue de mûrir. Au chaud, elle mûrit vite : à 18–20 °C, elle vieillit plusieurs fois plus vite qu'à 4 °C. Un jour au chaud vaut une semaine en cave. Pour garder pommes et poires jusqu'au printemps, il leur faut :
+
+- **du frais** : 0,5 à 6 °C (une cave traditionnelle à 6–8 °C garde encore bien les pommes), jamais de gel ;
+- **de l'humidité** : 85 à 95 %. Plus sec, les fruits se rident et perdent du poids ;
+- **de l'ombre et un peu d'air**, et les pommes à l'écart des légumes : elles font germer les pommes de terre.
+
+Dessine ton lieu de garde sur la carte avec l'élément **Lieu de stockage des fruits** (couche Structures) : cave, chambre froide, grange, remise ou frigo. Sur sa fiche, note de temps en temps la température et l'humidité. Terranova trace les relevés sur une bande verte, celle où les fruits se gardent le mieux, et te dit quoi faire quand c'est trop chaud, trop sec ou qu'il a gelé. Dans le verger ou à la cave, l'application mobile note aussi les relevés, même sans réseau.
+
+C'est l'hiver qui décide : relève chaque semaine de novembre à mars, idéalement avec un thermomètre mini-maxi qui garde le plus froid et le plus chaud depuis ton dernier passage. Et si tu as plusieurs lieux, relève-les le même jour pour voir lequel garde le mieux.
+
 ## Avec ton IA
 
-Ton IA lit le carnet de récolte et peut y noter ce que tu lui dis : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Elle voit aussi ce que chaque variété donne de mieux et ce que vous en avez fait, pour t'aider à choisir entre jus, compote et table. Voir [Connecter son IA](/help/connecter-son-ia).
+Ton IA lit le carnet de récolte et peut y noter ce que tu lui dis : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Elle voit aussi ce que chaque variété donne de mieux et ce que vous en avez fait, pour t'aider à choisir entre jus, compote et table, et lit ou note les relevés de tes lieux de stockage. Voir [Connecter son IA](/help/connecter-son-ia).

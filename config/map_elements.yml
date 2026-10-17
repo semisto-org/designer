@@ -340,6 +340,14 @@ layers:
         defaults: { height_m: 2.5 }
         fields:
           - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+      fruit_store:
+        geometry: [Point, Polygon]
+        icon: thermometer-snowflake
+        color: "#3f6f8f"
+        fill: { opacity: 0.35 }
+        defaults: { store_type: cellar }
+        fields:
+          - { key: store_type, type: select, options: [cellar, cold_room, barn, shed, fridge, other] }
       compost:
         geometry: Point
         icon: recycle

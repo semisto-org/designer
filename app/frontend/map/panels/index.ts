@@ -38,6 +38,7 @@ import ObservationsSection from '@/map/plants/ObservationsSection'
 import HarvestsPanel from '@/map/harvests/HarvestsPanel'
 import HarvestsSection from '@/map/harvests/HarvestsSection'
 import HarvestsOverlay from '@/map/harvests/HarvestsOverlay'
+import StorageSection, { appliesToFruitStore } from '@/map/storage/StorageSection'
 import PatchSection from '@/map/plants/PatchSection'
 import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
@@ -122,6 +123,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'plant', applies: isPlant, component: PlantSection, order: 20 },
   { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
   { id: 'plant-harvests', applies: isPlant, component: HarvestsSection, order: 20.5 },
+  { id: 'fruit-store', applies: appliesToFruitStore, component: StorageSection, order: 20.5 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: () => true, component: PhotosInspector, order: 70 },

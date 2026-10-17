@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, PencilLine, Sparkles, Undo2, Upload, X } from 'lucide-react'
+import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, PencilLine, Sparkles, ThermometerSnowflake, Undo2, Upload, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -21,6 +21,8 @@ const ICONS: Record<string, typeof Bot> = {
   update_tasks: ListChecks,
   list_harvests: Apple,
   record_harvests: Apple,
+  list_storage_readings: ThermometerSnowflake,
+  record_storage_readings: ThermometerSnowflake,
   list_documents: FileText,
   get_document: FileText,
   add_document: FileText,
@@ -63,6 +65,7 @@ function describe(action: AiActionData): string {
     case 'create_tasks': return t('ai_journal.actions.create_tasks', { count: n('created') })
     case 'update_tasks': return t('ai_journal.actions.update_tasks', { count: n('updated') })
     case 'record_harvests': return t('ai_journal.actions.record_harvests', { count: n('created') })
+    case 'record_storage_readings': return t('ai_journal.actions.record_storage_readings', { count: n('created') })
     case 'update_photos': return t('ai_journal.actions.update_photos', { count: n('updated') })
     case 'delete_photos': return t('ai_journal.actions.delete_photos', { count: n('deleted') })
     case 'create_upload': return t('ai_journal.actions.create_upload', { count: n('prepared') })
