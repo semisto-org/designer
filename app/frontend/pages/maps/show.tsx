@@ -25,6 +25,8 @@ import { installBoundary, installBoundaryLabel } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
 import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
 import { MODAL_PANEL_QUERY } from '@/map/panels/registry'
+import { plantPeek } from '@/map/plants/peek'
+import { isPlant } from '@/map/plants/properties'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
 import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
 
@@ -196,7 +198,17 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       // The click that ends a drawing (double-click) must not select what lies under it.
       if (drawer.current?.active || performance.now() - drawEndedAt.current < 400) return
       const id = featureAt(instance, e.point, areaOf)
-      if (id != null) setSelectedId(id)
+      if (id == null) return plantPeek.close()
+      // A plant opens its card first; the card opens the inspector. An AI
+      // draft goes straight to the inspector, where it is reviewed.
+      const feature = featuresRef.current.find((f) => f.properties.id === id)
+      if (feature && isPlant(feature) && feature.properties.status !== 'draft') {
+        setSelectedId(null)
+        plantPeek.open(id)
+        return
+      }
+      plantPeek.close()
+      setSelectedId(id)
     }
     // Like mouseenter/mouseleave: the cursor only changes when it crosses an
     // element's edge, so other tools' cursors (crosshair) are left alone.
