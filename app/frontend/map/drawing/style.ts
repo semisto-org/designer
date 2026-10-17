@@ -7,7 +7,7 @@ import type {
   Map as MapLibreMap,
 } from 'maplibre-gl'
 import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
-import { hiddenTests } from '@/map/drawing/hidden'
+import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, scenarioFilter, type Scenario } from '@/map/scenario'
@@ -453,7 +453,9 @@ function versionFilter(version: string): unknown {
   return ['any', ['==', tags, '[]'], ['in', JSON.stringify(version.toLocaleLowerCase('fr')), tags]]
 }
 
-const visibilityState = new WeakMap<MapLibreMap, Map<string, { original: unknown; applied: string }>>()
+/** Per layer: its own filter, the test « Calques » adds, and the filter last set from both. */
+type VisibilityEntry = { original: unknown; applied: string; test: unknown; filter: string }
+const visibilityState = new WeakMap<MapLibreMap, Map<string, VisibilityEntry>>()
 
 /**
  * Hides the given design layers (`existing`, `water`…) on every map layer
@@ -469,7 +471,7 @@ export function applyLayerVisibility(
 ) {
   const hiddenKinds = options.hiddenKinds ?? []
   const hiddenIds = options.hiddenIds ?? []
-  const store = visibilityState.get(map) ?? new Map<string, { original: unknown; applied: string }>()
+  const store = visibilityState.get(map) ?? new Map<string, VisibilityEntry>()
   visibilityState.set(map, store)
   const scenario = options.scenario ? scenarioFilter(options.scenario) : null
   const version = options.version ? versionFilter(options.version) : null
@@ -477,8 +479,10 @@ export function applyLayerVisibility(
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
-    if (!entry) {
-      entry = { original: map.getFilter(id) ?? null, applied: '' }
+    const current = map.getFilter(id) ?? null
+    // New layer, or one whose filter was replaced since (a style reload…): start again from its filter.
+    if (!entry || JSON.stringify(current) !== entry.filter) {
+      entry = { original: current, applied: '', test: null, filter: JSON.stringify(current) }
       store.set(id, entry)
     }
     if (entry.applied === key) continue
@@ -490,10 +494,31 @@ export function applyLayerVisibility(
     if (version) tests.push(version)
     tests.push(...hiddenTests(hiddenKinds, hiddenIds))
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
-    const filter = test ? (entry.original ? ['all', entry.original, test] : test) : entry.original
-    map.setFilter(id, (filter ?? null) as FilterSpecification | null)
+    const filter = composeFilter(entry.original, test)
+    map.setFilter(id, filter as FilterSpecification | null)
     entry.applied = key
+    entry.test = test
+    entry.filter = JSON.stringify(map.getFilter(id) ?? null)
   }
+}
+
+/**
+ * Changes the own filter of a layer drawn from the features source (the
+ * editor's plants overlay names plants itself, so `features-label` leaves
+ * them out) while keeping what « Calques » hides on it. A plain `setFilter`
+ * would show the names of hidden elements again.
+ */
+export function setBaseFilter(map: MapLibreMap, id: string, filter: unknown) {
+  if (!map.getLayer(id)) return
+  const entry = visibilityState.get(map)?.get(id)
+  if (!entry) {
+    if (JSON.stringify(map.getFilter(id) ?? null) !== JSON.stringify(filter)) map.setFilter(id, filter as FilterSpecification)
+    return
+  }
+  if (JSON.stringify(entry.original) === JSON.stringify(filter)) return
+  entry.original = filter
+  map.setFilter(id, composeFilter(filter, entry.test) as FilterSpecification | null)
+  entry.filter = JSON.stringify(map.getFilter(id) ?? null)
 }
 
 // --- Transient overlays: measure in progress, PDF print frame ----------------
