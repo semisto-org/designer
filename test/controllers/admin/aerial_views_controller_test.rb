@@ -147,4 +147,28 @@ class Admin::AerialViewsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Vue retirée de la carte « Domaine d'Ahinvaux ».", flash[:notice]
     assert @order.reload.persisted?
   end
+
+  test "an XYZ view is copied into Terranova as a new view, converted in the background" do
+    source = aerial_view(@map, kind: "xyz", url: XYZ_URL, max_zoom: 20, name: "Orthophoto 2023")
+    sign_in_as @admin
+    assert_enqueued_with(job: AerialViewImportJob) do
+      post copy_admin_aerial_view_path(source)
+    end
+    assert_redirected_to admin_aerial_views_path
+    copy = @map.aerial_views.where.not(id: source.id).sole
+    assert_equal [ "Orthophoto 2023", "processing", XYZ_URL, 20, "copie de tiles.example.org", @admin ],
+      [ copy.name, copy.status, copy.url, copy.max_zoom, copy.source_filename, copy.created_by ]
+    assert_nil copy.plan_purchase_id, "the buyer is not e-mailed a second time"
+    assert source.reload.persisted?, "the original stays until staff remove it"
+  end
+
+  test "only an XYZ view set up by staff can be copied, and only by an admin" do
+    view = aerial_view(@map)
+    sign_in_as @admin
+    post copy_admin_aerial_view_path(view)
+    assert_response :unprocessable_entity
+    sign_in_as users(:alice)
+    post copy_admin_aerial_view_path(aerial_view(@map, kind: "xyz", url: XYZ_URL))
+    assert_response :not_found
+  end
 end

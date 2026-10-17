@@ -2,7 +2,9 @@
 # with the buyer's maps and the views already delivered; staff add the
 # dated aerial view to one of the buyer's maps (the owner is e-mailed), or
 # to any map by its number (Semisto's own maps, no e-mail), and remove a
-# view. Admins only (anyone else gets a 404, as if the page did not exist).
+# view. A view set up as an XYZ address can be copied into Terranova: its
+# tiles are fetched once and kept with the map's files (AerialViews::XyzCopy),
+# so the map no longer depends on the host that served them. Admins only (anyone else gets a 404, as if the page did not exist).
 module Admin
   class AerialViewsController < ApplicationController
     before_action :require_admin!
@@ -39,6 +41,19 @@ module Admin
       else
         redirect_back_or_to admin_aerial_views_path, inertia: { errors: view.errors }, status: :see_other
       end
+    end
+
+    def copy
+      source = AerialView.find(params[:id])
+      return head :unprocessable_entity unless source.kind == "xyz" && !source.imported?
+      view = source.map.aerial_views.create!(
+        name: source.name, captured_on: source.captured_on, kind: "xyz", url: source.url,
+        attribution: source.attribution, min_zoom: source.min_zoom, max_zoom: source.max_zoom,
+        status: "processing", source_filename: t("drone.admin.copy_filename", host: source.host),
+        created_by: Current.user
+      )
+      AerialViewImportJob.perform_later(view)
+      redirect_back_or_to admin_aerial_views_path, notice: t("drone.admin.flash.copying", map: view.map.name), status: :see_other
     end
 
     def destroy

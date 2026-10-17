@@ -26,7 +26,7 @@ class AerialView < ApplicationRecord
   MAX_UPLOAD_BYTES = 10.gigabytes
   UPLOAD_EXTENSIONS = %w[.tif .tiff .mbtiles .pmtiles].freeze
   # Why an import stopped (drone.import.failures.* in the interface).
-  FAILURES = %w[upload_incomplete upload_expired unsupported_format not_georeferenced not_raster empty conversion_failed].freeze
+  FAILURES = %w[upload_incomplete upload_expired unsupported_format not_georeferenced not_raster empty source_unreachable conversion_failed].freeze
 
   belongs_to :map
   belongs_to :plan_purchase, optional: true
