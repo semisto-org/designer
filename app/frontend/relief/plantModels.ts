@@ -136,11 +136,12 @@ export class PlantLayer {
         matrix.compose(position.set(x, ground + y, z), turn, scale.set(sx, sy, sx))
         this.meshes.get(shape)!.setMatrixAt(slot, matrix)
       }
-      const shape = plantShape(plant.form, plant.strata, height, spread)
+      const shape = plantShape(plant.form, plant.strata, height, spread, plant.training)
       switch (shape.kind) {
         case 'crown':
           if (shape.trunk > 0) {
-            const radius = Math.max(0.025, spread * 0.03 + height * 0.006)
+            // A pollard's trunk swells under its head, cut after cut.
+            const radius = Math.max(0.025, spread * 0.03 + height * 0.006) * (plant.training === 'pollard' ? 2.2 : 1)
             set('trunk', -0.1, radius, shape.trunk + shape.half * 0.4 + 0.1)
           }
           set('crown', shape.centre, shape.radius, shape.half)

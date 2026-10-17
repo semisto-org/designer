@@ -1,6 +1,7 @@
 # The admin « Tech » view: the version online, where the files are and the
 # state of their backup, the background jobs, and which external services are
-# configured. Never a secret: a service is only « configured » or not.
+# configured, and what a page view costs (EcoIndex, measured after each
+# deployment). Never a secret: a service is only « configured » or not.
 module Admin
   class Tech
     REPOSITORY = "https://github.com/semisto-org/designer".freeze
@@ -9,7 +10,7 @@ module Admin
     def self.call = new.as_json
 
     def as_json(*)
-      { version:, storage:, jobs:, services: }
+      { version:, storage:, jobs:, services:, sobriety: }
     end
 
     private
@@ -58,6 +59,10 @@ module Admin
         end
       end
 
+      def sobriety
+        { screens: EcoMeasurement.latest_with_history, configured: ENV["ECOINDEX_TOKEN"].present? }
+      end
+
       def services
         [
           [ :object_storage, FileStorage.configured?(:object_storage) ],
@@ -65,6 +70,7 @@ module Admin
           [ :sentry, ENV["SENTRY_DSN"].present? ],
           [ :smtp, ENV["SMTP_ADDRESS"].present? ],
           [ :google, ENV["GOOGLE_CLIENT_ID"].present? ],
+          [ :apple, AppleSignIn.enabled? ],
           [ :stripe, Billing.enabled? ],
           [ :plantnet, Providers::PlantNet.configured? ],
           [ :magnific, Providers::Magnific.configured? ],

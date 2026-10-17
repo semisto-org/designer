@@ -107,7 +107,8 @@ export default function HarvestsSection({ feature }: { feature: MapFeature }) {
             ))}
           </ul>
         )}
-      {editor.canEdit && (adding
+      {editor.canEdit && !row.plantedOn && <p className="text-sm text-loam-500">{t('plant_harvests.not_planted')}</p>}
+      {editor.canEdit && row.plantedOn && (adding
         ? <HarvestForm withWeight saving={saving} errors={errors} onSubmit={save} onCancel={() => { setAdding(false); setErrors({}) }} />
         : <Button variant="secondary" size="sm" className="w-full" onClick={() => setAdding(true)}>{t('plant_harvests.add')}</Button>)}
     </section>

@@ -12,7 +12,7 @@ class McpHarvestsTest < ActionDispatch::IntegrationTest
     # number property is always a whole number.
     @apples = [ [ "7", 7 ], [ "9.1", 40 ] ].map do |label, number|
       @map.features.create!(layer: "plants", kind: "plant", name: "n° #{label} — Pommier", geometry: point,
-                            properties: { "species_id" => plant_species(:apple).id, "number" => number })
+                            properties: { "species_id" => plant_species(:apple).id, "number" => number, "planted_on" => "2015-03-01" })
     end
   end
 

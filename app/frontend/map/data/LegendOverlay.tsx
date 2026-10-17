@@ -11,7 +11,7 @@ import { strataKey, UNKNOWN_STRATA } from '@/map/drawing/hidden'
 import { setHiddenStrata, toggled, useDrawingState } from '@/map/drawing/store'
 import { numberRanges } from '@/map/plants/labelRank'
 import { isPlant, numberProperty } from '@/map/plants/properties'
-import { plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
+import { drawsCrown, plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
 import { setPlantLabelStyle, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { usePlanting } from '@/map/plants/store'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, useScenario } from '@/map/scenario'
@@ -160,8 +160,8 @@ function StrataLegend({ counts, unknown, planned, numbered }: PlantLegend) {
   const style = usePlantLabelStyle()
   const hidden = useDrawingState((s) => s.hiddenStrata)
   const rows = [
-    ...counts.map(({ strata, count }) => ({ key: strata as string, label: strataLabel(strata), color: STRATA_COLORS[strata] as string, count })),
-    ...(unknown > 0 ? [{ key: UNKNOWN_STRATA, label: t('plants.legend.unknown_strata'), color: '#6b665c', count: unknown }] : []),
+    ...counts.map(({ strata, count }) => ({ key: strata as string, label: strataLabel(strata), color: STRATA_COLORS[strata] as string, crown: drawsCrown(strata), count })),
+    ...(unknown > 0 ? [{ key: UNKNOWN_STRATA, label: t('plants.legend.unknown_strata'), color: '#6b665c', crown: true, count: unknown }] : []),
   ]
   return (
     <div data-testid="strata-legend">
@@ -172,7 +172,7 @@ function StrataLegend({ counts, unknown, planned, numbered }: PlantLegend) {
       {/* The numbers are what the map shows now: read them first. */}
       {style === 'number' && numbered.length > 0 && <NumberLegend groups={numbered} />}
       <ul className="-mx-1.5 space-y-0.5">
-        {rows.map(({ key, label, color, count }) => {
+        {rows.map(({ key, label, color, crown, count }) => {
           const shown = !hidden.includes(key)
           return (
             <li key={key}>
@@ -184,7 +184,7 @@ function StrataLegend({ counts, unknown, planned, numbered }: PlantLegend) {
                 title={t(shown ? 'plants.legend.hide_strata' : 'plants.legend.show_strata', { strata: label })}
                 className="group flex w-full items-center gap-2 rounded-md px-1.5 py-0.5 text-left text-sm leading-tight text-loam-700 hover:bg-loam-50"
               >
-                <span className={clsx('shrink-0', !shown && 'opacity-30')}><CrownSwatch color={color} /></span>
+                <span className={clsx('shrink-0', !shown && 'opacity-30')}><CrownSwatch color={color} crown={crown} /></span>
                 <span className={clsx('min-w-0 flex-1', !shown && 'text-loam-400 line-through decoration-loam-300')}>{label}</span>
                 <span className={clsx('tabular-nums', shown ? 'text-loam-500' : 'text-loam-400')}>{count}</span>
                 {shown
@@ -249,13 +249,16 @@ function PlantLabelSwitch() {
   )
 }
 
-/** A crown as the map draws it: tinted disc, white ring, outline (dashed when still to plant). */
-function CrownSwatch({ color, planned = false }: { color: string; planned?: boolean }) {
+/**
+ * A crown as the map draws it: tinted disc, white ring, outline (dashed when
+ * still to plant). Climbers have no crown on the map: their point alone.
+ */
+function CrownSwatch({ color, planned = false, crown = true }: { color: string; planned?: boolean; crown?: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" className="shrink-0" aria-hidden="true" style={{ opacity: planned ? PLANNED_OPACITY : 1 }}>
-      <circle cx="9" cy="9" r="7" fill={color} fillOpacity={planned ? 0.15 : 0.45} stroke="#ffffff" strokeWidth="3.5" />
-      <circle cx="9" cy="9" r="7" fill="none" stroke={color} strokeWidth="1.75" strokeDasharray={planned ? '3 2.2' : undefined} />
-      <circle cx="9" cy="9" r="2.2" fill={planned ? '#ffffff' : color} stroke={planned ? color : '#ffffff'} strokeWidth="1" />
+      {crown && <circle cx="9" cy="9" r="7" fill={color} fillOpacity={planned ? 0.15 : 0.45} stroke="#ffffff" strokeWidth="3.5" />}
+      {crown && <circle cx="9" cy="9" r="7" fill="none" stroke={color} strokeWidth="1.75" strokeDasharray={planned ? '3 2.2' : undefined} />}
+      <circle cx="9" cy="9" r={crown ? 2.2 : 4} fill={planned ? '#ffffff' : color} stroke={planned ? color : '#ffffff'} strokeWidth="1" />
     </svg>
   )
 }

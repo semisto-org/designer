@@ -3,7 +3,7 @@ import type { PlantingState, Strata } from '@/types/plants'
 import { numberProperty } from '@/map/plants/properties'
 import { STRATA_COLORS } from '@/map/plants/strataColors'
 
-export { STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strataColors'
+export { drawsCrown, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strataColors'
 
 export function StrataDot({ strata, className = '' }: { strata: Strata; className?: string }) {
   return <span className={'inline-block h-2.5 w-2.5 shrink-0 rounded-full ' + className} style={{ background: STRATA_COLORS[strata] }} aria-hidden />

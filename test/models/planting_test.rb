@@ -45,6 +45,17 @@ class PlantingTest < ActiveSupport::TestCase
     assert_not bad_exposure.valid?
   end
 
+  test "a plant is left free, or kept as a pollard or a coppice" do
+    plant = plant!(plant_species(:alder))
+    assert_nil plant.plant_training
+    plant.update!(properties: plant.properties.merge("training" => "coppice"))
+    assert_equal "coppice", plant.reload.plant_training
+    plant.update!(properties: plant.properties.merge("training" => "free"))
+    assert_not plant.reload.properties.key?("training"), "free is the default, kept as no key"
+    plant.properties = plant.properties.merge("training" => "espalier")
+    assert_not plant.valid?
+  end
+
   test "patch quantities: density × PostGIS area, count, strata default" do
     @patch.patch_items.create!(species: plant_species(:comfrey), density: 1)
     @patch.patch_items.create!(species: plant_species(:strawberry))

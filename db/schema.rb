@@ -253,6 +253,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_203000) do
     t.index ["map_id"], name: "index_comments_on_map_id"
   end
 
+  create_table "eco_measurements", force: :cascade do |t|
+    t.string "screen", null: false
+    t.string "environment", null: false
+    t.string "url", null: false
+    t.integer "dom_elements", null: false
+    t.integer "requests", null: false
+    t.integer "bytes", null: false
+    t.integer "score", null: false
+    t.string "grade", null: false
+    t.decimal "ges_grams", precision: 5, scale: 2, null: false
+    t.decimal "water_centiliters", precision: 5, scale: 2, null: false
+    t.string "commit"
+    t.datetime "measured_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["screen", "measured_at"], name: "index_eco_measurements_on_screen_and_measured_at"
+  end
+
   create_table "external_forms", force: :cascade do |t|
     t.bigint "form_inbox_id", null: false
     t.string "provider", default: "tally", null: false
@@ -1451,6 +1469,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_203000) do
     t.integer "sign_in_code_attempts", default: 0, null: false
     t.string "account_kind"
     t.boolean "catalogue_reviewer", default: false, null: false
+    t.string "apple_uid"
+    t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
     t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying::text, 'professional'::character varying::text])", name: "users_account_kind_check"

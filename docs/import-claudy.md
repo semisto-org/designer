@@ -1,68 +1,68 @@
-# Import de Claudy
+# Importing from Claudy
 
-À la bêta, le plan du Domaine d'Ahinvaux (Les 4 Sources, Yvoir) quitte Claudy pour Terranova. Claudy garde sa carte d'accueil (hébergements, salles, occupation, séjours) ; tout le reste du plan est versé dans une carte de Terranova qui existe déjà, par une commande ponctuelle qu'on peut relancer autant de fois qu'on veut.
+At the beta, the plan of the Domaine d'Ahinvaux (Les 4 Sources, Yvoir) moves from Claudy to Terranova. Claudy keeps its welcome map (lodgings, rooms, occupancy, stays); the rest of the plan is poured into an existing Terranova map by a one-off command that can be run again as often as needed.
 
 ```sh
-bin/rails claudy:import MAP_ID=12 DRY_RUN=1                 # simulation : ce qui serait fait
-bin/rails claudy:import MAP_ID=12                           # par l'API (CLAUDY_API_KEY)
-bin/rails claudy:import MAP_ID=12 FILE=tmp/claudy-map/claudy-map.json   # sans réseau
+bin/rails claudy:import MAP_ID=12 DRY_RUN=1                 # dry run: what would be done
+bin/rails claudy:import MAP_ID=12                           # through the API (CLAUDY_API_KEY)
+bin/rails claudy:import MAP_ID=12 FILE=tmp/claudy-map/claudy-map.json   # offline
 ```
 
-| Réglage | Rôle |
+| Setting | Role |
 |---|---|
-| `MAP_ID` | La carte de Terranova à remplir (obligatoire). |
-| `CLAUDY_API_URL` | Défaut `https://app.les4sources.be/api/v1` (`/api/v1` est ajouté s'il manque). |
-| `CLAUDY_API_KEY` | Un des jetons `AGENT_API_TOKEN` de Claudy. L'API n'est que lue, jamais écrite. |
-| `FILE` | Un fichier à la place de l'API (voir plus bas). |
-| `DRY_RUN=1` | Tout est calculé puis annulé : rien n'est écrit, aucune photo n'est téléchargée. |
-| `PHOTOS=0` | Laisse les photos dans Claudy. |
-| `FORCE=1` | Remplace aussi ce qui a été modifié dans Terranova, recrée ce qui y a été supprimé. |
-| `CLAUDY_NETWORK_LAYERS` | Le réseau d'une couche que l'API ne permet pas de reconnaître, par exemple `7=ethernet,8=gas`. |
+| `MAP_ID` | The Terranova map to fill (required). |
+| `CLAUDY_API_URL` | Default `https://app.les4sources.be/api/v1` (`/api/v1` is appended if missing). |
+| `CLAUDY_API_KEY` | One of Claudy's `AGENT_API_TOKEN` tokens. The API is only read, never written. |
+| `FILE` | A file instead of the API (see below). |
+| `DRY_RUN=1` | Everything is computed then rolled back: nothing is written, no photo is downloaded. |
+| `PHOTOS=0` | Leaves the photos in Claudy. |
+| `FORCE=1` | Also replaces what was changed in Terranova, and recreates what was deleted there. |
+| `CLAUDY_NETWORK_LAYERS` | The network of a layer the API cannot identify, for example `7=ethernet,8=gas`. |
 
-La commande imprime un résumé en français : créés, mis à jour, inchangés par type d'élément, photos, palette, espèces introuvables, ce qui n'est pas importé et pourquoi, ce qui est laissé tel quel dans Terranova, et ce qu'il faut vérifier.
+The command prints a summary in French: created, updated and unchanged per feature type, photos, palette, species not found, what is not imported and why, what is left as is in Terranova, and what to check.
 
-## Ce qui va où
+## What goes where
 
 | Claudy | Terranova |
 |---|---|
-| Gestion : zones, chemins, points | Existant : zone, chemin existant, point. Description, « Gestion : … » et le journal daté dans les notes. |
-| Réseaux (eau, électricité, ethernet, gaz) | Réseaux (couche sensible, masquée par défaut dans les vues publiques, les exports et le MCP) : conduite d'eau, ligne électrique, câble ethernet, conduite de gaz ; vanne, compteur, robinet, prise ; sinon un point nommé d'après son type (« Citerne », « Switch »…). Origine de l'eau et potabilité (pluie et captage forestier : non potable ; puits : potable). |
-| Vue 3D : baissière, keyline, mare, haie | Eau : baissière, ligne (`design_type: keyline`), mare ; Structures : haie. Largeur, profondeur, berme, pente. |
-| Biodiversité : relevés saisis dans Claudy | Notes : point de note (règne, noms, date, nombre). Sans l'observateur. |
-| Plantes bio-indicatrices | Notes : point de note avec le diagnostic, les pistes et les limites ; chaque espèce devient une observation du panneau Sol, reliée au catalogue des bio-indicatrices. Sans l'observateur ni l'analyste. |
-| Plantes placées | Plantes : plante liée à l'espèce et à la variété du catalogue par le nom latin normalisé (synonymes latins du catalogue compris, par exemple *Rosmarinus officinalis* pour *Salvia rosmarinus*), ou, pour une plante sans nom latin, par son nom commun français s'il ne désigne qu'une espèce ; date de plantation connue (`planted_on`, ou le 1er janvier de l'année avec `planted_on_precision: "year"`) ; numéro, statut, santé, zone et journal dans les notes. Chaque espèce ou variété entre dans la palette de la carte. |
-| Plantes introuvables dans le catalogue | Plantes sans espèce, avec `unmatched_species` (nom, nom latin, variété), listées dans le résumé. Le catalogue n'est jamais complété par l'import. |
-| Notes manuscrites (export seulement) | Notes : croquis (MultiLineString). |
-| Photos (JPEG, PNG, WebP, HEIC) | Photos de la carte, liées à leur élément, placées s'il s'agit d'un point. Les HEIC sont converties en JPEG. |
+| Management: zones, paths, points | Existing: zone, existing path, point. Description, « Gestion : … » and the dated log in the notes. |
+| Networks (water, electricity, ethernet, gas) | Networks (sensitive layer, hidden by default in public views, exports and the MCP): water pipe, power line, ethernet cable, gas pipe; valve, meter, tap, socket; otherwise a point named after its type (« Citerne », « Switch »…). Water origin and drinkability (rain and forest catchment: not drinkable; well: drinkable). |
+| 3D view: swale, keyline, pond, hedge | Water: swale, line (`design_type: keyline`), pond; Structures: hedge. Width, depth, berm, slope. |
+| Biodiversity: records entered in Claudy | Notes: note point (kingdom, names, date, count). Without the observer. |
+| Bioindicator plants | Notes: note point with the diagnosis, leads and limits; each species becomes an observation in the Soil panel, linked to the bioindicator catalogue. Without the observer or the analyst. |
+| Placed plants | Plants: plant linked to the catalogue's species and variety by normalised Latin name (including the catalogue's Latin synonyms, for example *Rosmarinus officinalis* for *Salvia rosmarinus*), or, for a plant with no Latin name, by its French common name if it names only one species; known planting date (`planted_on`, or 1 January of the year with `planted_on_precision: "year"`); number, status, health, zone and log in the notes. Each species or variety joins the map's palette. |
+| Plants not found in the catalogue | Plants without a species, with `unmatched_species` (name, Latin name, variety), listed in the summary. The import never adds to the catalogue. |
+| Handwritten notes (export only) | Notes: sketch (MultiLineString). |
+| Photos (JPEG, PNG, WebP, HEIC) | Map photos, linked to their feature, placed when it is a point. HEIC files are converted to JPEG. |
 
-Une forme que la bibliothèque d'éléments refuse (une mare en MultiPolygon, une valeur hors bornes) entre comme forme générique de la même couche (zone, ligne ou point), signalée dans « À vérifier ». Les valeurs par défaut de la bibliothèque (diamètre, potabilité…) ne sont jamais appliquées : ce que Claudy ne disait pas reste vide.
+A shape the feature library refuses (a MultiPolygon pond, an out-of-range value) comes in as a generic shape of the same layer (zone, line or point), flagged under « À vérifier ». The library's default values (diameter, drinkability…) are never applied: what Claudy did not say stays empty.
 
-**Pas importé** : la carte d'accueil (couches Lieux et Accueil : hébergements, salles, accès), les fils de commentaires (ils portent le nom de leurs auteurs, et l'API ne les expose pas), les relevés venus d'observations.be (données de tiers nommant leurs observateurs), les plantes mortes, les plantes sans position (leur espèce entre quand même dans la palette), les tâches du carnet, les jauges, les équipements UniFi, la pépinière, le prix d'achat et le lien Notion des plantes. Aucun utilisateur de Claudy n'est repris.
+**Not imported**: the welcome map (Lieux and Accueil layers: lodgings, rooms, accesses), comment threads (they carry their authors' names, and the API does not expose them), records from observations.be (third-party data naming its observers), dead plants, plants without a position (their species still joins the palette), logbook tasks, gauges, UniFi equipment, the nursery, and plants' purchase price and Notion link. No Claudy user is carried over.
 
-## Relancer
+## Running it again
 
-Chaque élément importé porte `properties.import = { source: "claudy", type: "map_feature", id: 110 }`, et la table `import_records` garde, par élément de Claudy, ce qu'il est devenu et l'empreinte de ce que l'import a écrit. Un nouvel import :
+Each imported feature carries `properties.import = { source: "claudy", type: "map_feature", id: 110 }`, and the `import_records` table keeps, for each Claudy object, what it became and a fingerprint of what the import wrote. A new import:
 
-- met à jour ce que personne n'a touché dans Terranova ;
-- laisse tel quel ce qui y a été modifié ou supprimé (et le dit ; `FORCE=1` pour passer outre) ;
-- ne touche jamais à ce qui a été dessiné dans Terranova ;
-- n'importe une photo qu'une fois ;
-- ne supprime rien : un élément effacé dans Claudy reste dans Terranova.
-- rattache les plantes dont l'espèce ou la variété est entrée au catalogue depuis l'import précédent.
+- updates what nobody touched in Terranova;
+- leaves as is what was changed or deleted there (and says so; `FORCE=1` to override);
+- never touches what was drawn in Terranova;
+- imports a photo only once;
+- deletes nothing: a feature removed in Claudy stays in Terranova;
+- links the plants whose species or variety joined the catalogue since the previous import.
 
-## Par l'API
+## Through the API
 
-L'API v1 de Claudy donne les objets de la carte (`GET /map_features`) et les plantes (`GET /plants`), 200 par page, puis chaque objet importé en détail (journal, photos). Elle ne donne ni les couches ni les notes manuscrites : le réseau de chaque couche est reconnu à ses nœuds (une citerne est de l'eau, un switch de l'ethernet) ; une couche qui n'a que des lignes est importée sans réseau et le résumé donne la ligne `CLAUDY_NETWORK_LAYERS=…` à ajouter. Pour les notes manuscrites, passer par l'export.
+Claudy's v1 API gives the map objects (`GET /map_features`) and the plants (`GET /plants`), 200 per page, then each imported object in detail (log, photos). It gives neither the layers nor the handwritten notes: each layer's network is recognised from its nodes (a tank is water, a switch is ethernet); a layer with only lines is imported without a network and the summary gives the `CLAUDY_NETWORK_LAYERS=…` line to add. For handwritten notes, use the export.
 
-## Par un fichier
+## From a file
 
-`FILE=` accepte trois formes :
+`FILE=` accepts three shapes:
 
-1. **L'export de Claudy** (recommandé : couches, notes manuscrites et fichiers des photos compris).
-2. Une réponse de l'API enregistrée telle quelle : `{ "data": [...], "meta": {...} }` (objets de la carte ou plantes, avec ou sans le détail).
-3. Le GeoJSON de la carte de Claudy (`/map/features.json`) : la couche est devinée, les plantes n'y ont que leur nom commun (rapproché du catalogue comme ci-dessus).
+1. **Claudy's export** (recommended: layers, handwritten notes and photo files included).
+2. An API response saved as is: `{ "data": [...], "meta": {...} }` (map objects or plants, with or without the detail).
+3. The GeoJSON of Claudy's map (`/map/features.json`): the layer is guessed, and plants only have their common name (matched against the catalogue as above).
 
-L'export a cette forme (les objets et les plantes sont rendus par les vues `show` de l'API de Claudy ; chaque photo a un `path` relatif au fichier) :
+The export has this shape (objects and plants are rendered by the `show` views of Claudy's API; each photo has a `path` relative to the file):
 
 ```json
 {
@@ -77,7 +77,7 @@ L'export a cette forme (les objets et les plantes sont rendus par les vues `show
 }
 ```
 
-Pour l'écrire, dans Claudy (sans rien y modifier), enregistrer ce script dans `/tmp/claudy_export.rb` puis lancer `OUT=tmp/claudy-map bin/rails runner /tmp/claudy_export.rb` :
+To write it, in Claudy (without changing anything there), save this script as `/tmp/claudy_export.rb` then run `OUT=tmp/claudy-map bin/rails runner /tmp/claudy_export.rb`:
 
 ```ruby
 # Exports the map plan for Semisto Terranova (bin/rails claudy:import FILE=…/claudy-map.json).
@@ -105,7 +105,7 @@ export = {
   map_features: features, plants: plants, map_sketches: MapSketch.ordered.map(&:as_detail)
 }
 out.join("claudy-map.json").write(JSON.pretty_generate(export))
-puts "#{features.size} objets, #{plants.size} plantes, #{export[:map_sketches].size} notes manuscrites : #{out}"
+puts "#{features.size} features, #{plants.size} plants, #{export[:map_sketches].size} handwritten notes: #{out}"
 ```
 
-Copier ensuite le dossier entier (`claudy-map.json` et `photos/`) à côté de Terranova et le supprimer après l'import : il contient les relevés d'observations.be, que l'import écarte mais que le fichier garde.
+Then copy the whole folder (`claudy-map.json` and `photos/`) next to Terranova and delete it after the import: it contains the observations.be records, which the import leaves out but the file keeps.

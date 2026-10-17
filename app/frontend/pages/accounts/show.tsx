@@ -35,6 +35,7 @@ export default function AccountShow({ account }: { account: AccountData }) {
           <p className="truncate font-medium text-loam-900">{account.name ?? account.email}</p>
           <p>{t('account.member_since', { date: formatDate(account.signedUpAt) })}</p>
           {account.googleLinked && <p>{t('account.google')}</p>}
+          {account.appleLinked && <p>{t('account.apple')}</p>}
         </AvatarPicker>
         <form
           onSubmit={(event) => {

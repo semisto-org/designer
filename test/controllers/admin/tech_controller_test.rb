@@ -13,7 +13,7 @@ class Admin::TechControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "admin/tech/show", response.parsed_body["component"]
     tech = response.parsed_body.dig("props", "tech")
-    assert_equal %w[jobs services storage version], tech.keys.sort
+    assert_equal %w[jobs services sobriety storage version], tech.keys.sort
     assert_equal false, tech.dig("jobs", "available")
   end
 end

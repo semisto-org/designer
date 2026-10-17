@@ -126,7 +126,7 @@ The web/print split is **intentional** (validated Michael, 2026-04-15).
 - **Logo wordmark "semisto"** is a warm humanist serif (Sole Serif Small style) in lowercase.
 - The tagline "food forest" always sits below in Allotrope sans-serif.
 
-Type personality: **serif for display and poetry, sans for structure and UI, stencil only as a rare branding accent.** Pas d'italique sur le serif (validé Michael, 2026-07) — l'italique de la fonte ne convient pas ; les leads, citations et accents h3 restent en romain (jouer sur corps, graisse et couleur).
+Type personality: **serif for display and poetry, sans for structure and UI, stencil only as a rare branding accent.** No italics on the serif (approved by Michael, 2026-07): the typeface's italic does not suit the brand; leads, quotes and h3 accents stay roman (play on size, weight and colour instead).
 
 **Font fallbacks & substitutions used in this design system:**
 - Allotrope Variable → **Inter** (closest weights 400 / 475 / 500 / 600 / 700)

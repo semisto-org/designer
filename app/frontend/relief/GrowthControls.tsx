@@ -222,7 +222,11 @@ export function PlantCard({ info, onClose }: { info: PlantInfo; onClose: () => v
       ) : (
         <p className="font-medium text-loam-700">{t('relief.page.growth.card.not_yet', { year: info.yearCalendar })}</p>
       )}
-      <p>{t('relief.page.growth.card.adult', { height: m(info.adultHeight), spread: m(info.adultSpread), years: info.maturityYears })}</p>
+      {info.training === 'free' ? (
+        <p>{t('relief.page.growth.card.adult', { height: m(info.adultHeight), spread: m(info.adultSpread), years: info.maturityYears })}</p>
+      ) : (
+        <p>{t(`relief.page.growth.card.${info.training}`, { height: m(info.adultHeight), spread: m(info.adultSpread) })}</p>
+      )}
       {info.indicative && <p className="text-loam-400">{t('relief.page.growth.card.indicative')}</p>}
     </div>
   )

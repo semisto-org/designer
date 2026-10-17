@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   get "magic/:token", to: "magic_links#show", as: :magic_link
   post "magic/:token", to: "magic_links#create"
   get "auth/google_oauth2/callback", to: "omniauth_callbacks#google"
+  post "auth/apple/return", to: "auth/apple_returns#create"
+  post "auth/apple/callback", to: "omniauth_callbacks#apple"
   get "auth/failure", to: "omniauth_callbacks#failure"
   get "dev/login", to: "dev/logins#show" if Rails.env.local?
 
@@ -210,6 +212,9 @@ Rails.application.routes.draw do
   get "tarifs", to: "pages#pricing", as: :pricing
   get "mission-drone", to: "pages#drone", as: :drone_mission
   get "open-source", to: "pages#open_source", as: :open_source
+  get "ecoconception", to: "pages#ecoconception", as: :ecoconception
+  # Measurements of the « EcoIndex » workflow (ECOINDEX_TOKEN).
+  post "eco_measurements", to: "eco_measurements#create"
   get "confidentialite", to: "pages#privacy", as: :privacy
   get "conditions", to: "pages#terms", as: :terms
   get "sitemap", to: "pages#sitemap", defaults: { format: "xml" }, as: :sitemap

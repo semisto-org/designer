@@ -9,12 +9,12 @@ import { drawingStore, useDrawingState } from '@/map/drawing/store'
 import { setBaseFilter } from '@/map/drawing/style'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
-import { isPatch, isPlant, numberProperty } from '@/map/plants/properties'
+import { isPatch, isPlant, numberProperty, trainedCrown, trainingProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
 import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
 import { plantLabelStyleStore, usePlantLabelStyle } from '@/map/plants/labelStyle'
-import { plantStrata, STRATA_COLORS } from '@/map/plants/strata'
+import { drawsCrown, plantStrata, STRATA_COLORS } from '@/map/plants/strata'
 import { inkOn } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
@@ -62,7 +62,8 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
       latinName: variety?.latinName ?? species?.latinName,
     }, labelStyle)
     if (label) {
-      const crownM = species?.crownM
+      // A climber has no crown on the plan: named like a small plant.
+      const crownM = drawsCrown(strata) ? species?.crownM : null
       labels.push({
         type: 'Feature',
         geometry: feature.geometry,
@@ -93,7 +94,8 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     }
     if (!strata || !species) continue
     points.set(feature.properties.id, STRATA_COLORS[strata])
-    const radiusM = Math.max(species.crownM / 2, 0.15)
+    if (!drawsCrown(strata)) continue
+    const radiusM = Math.max(trainedCrown(species.crownM, trainingProperty(feature), strata) / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
     crowns.push({
       ...polygon,

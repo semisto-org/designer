@@ -21,7 +21,7 @@ import { MapName } from '@/map/editor/MapName'
 import { RecenterControl } from '@/map/editor/controls'
 import { EditorBar, EditorRail } from '@/map/editor/Rail'
 import { StageStepper } from '@/map/editor/StageStepper'
-import { installBoundary, installBoundaryLabel } from '@/map/layers/boundary'
+import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
 import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
 import { MODAL_PANEL_QUERY } from '@/map/panels/registry'
@@ -136,8 +136,6 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   }, [instance])
 
   useEffect(() => installBoundary(instance, map.boundary), [instance, map.boundary])
-  const areaLabel = map.areaM2 != null ? headerArea(map.areaM2) : null
-  useEffect(() => installBoundaryLabel(instance, map.boundary, map.name, areaLabel), [instance, map.boundary, map.name, areaLabel])
 
   // A step declared on the map takes the focus back.
   useEffect(() => setPickedStage(null), [map.stage])

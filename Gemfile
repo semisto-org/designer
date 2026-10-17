@@ -21,6 +21,7 @@ gem "vite_rails", "~> 3.11"
 gem "omniauth", "~> 2.1"
 gem "omniauth-google-oauth2", "~> 1.2"
 gem "omniauth-rails_csrf_protection", "~> 2.0"
+gem "omniauth-apple", "~> 1.4"
 # Optional password (has_secure_password)
 gem "bcrypt", "~> 3.1"
 

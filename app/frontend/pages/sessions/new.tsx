@@ -34,7 +34,16 @@ export default function SignIn({ reviewAccess = false, addingTo = null }: { revi
             </Button>
           </form>
         )}
-        {env.googleSignIn && !sent && (
+        {env.appleSignIn && !sent && (
+          <form method="post" action="/auth/apple" className={env.googleSignIn ? '-mt-3' : undefined}>
+            <input type="hidden" name="authenticity_token" value={csrf} />
+            <Button type="submit" variant="ink" className="w-full" size="lg">
+              <AppleIcon />
+              {t('sessions.new.apple')}
+            </Button>
+          </form>
+        )}
+        {(env.googleSignIn || env.appleSignIn) && !sent && (
           <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-loam-400">
             <span className="h-px flex-1 bg-loam-200" />
             {t('sessions.new.or')}
@@ -154,6 +163,14 @@ function ReviewAccess({ csrf }: { csrf: string }) {
         <Button type="submit" variant="secondary" className="w-full">{t('app_review.submit')}</Button>
       </form>
     </details>
+  )
+}
+
+function AppleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+      <path d="M16.37 12.62c-.02-2.3 1.88-3.4 1.96-3.46a4.22 4.22 0 0 0-3.32-1.8c-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-2.99-.79a4.43 4.43 0 0 0-3.75 2.27c-1.6 2.77-.41 6.87 1.15 9.12.76 1.1 1.67 2.33 2.86 2.29 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.22a9.8 9.8 0 0 0 1.25-2.57 3.97 3.97 0 0 1-2.4-3.65zM14.1 5.86A3.97 3.97 0 0 0 15.04 3a4.05 4.05 0 0 0-2.62 1.36 3.8 3.8 0 0 0-.96 2.75 3.36 3.36 0 0 0 2.64-1.25z" />
+    </svg>
   )
 }
 

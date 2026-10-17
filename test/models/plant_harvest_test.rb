@@ -39,6 +39,15 @@ class PlantHarvestTest < ActiveSupport::TestCase
     refute PlantHarvest.new(map_feature: pond, noted_on: Date.current, stage: "picked").valid?
   end
 
+  test "a plant still to plant takes no line, and the message says which one" do
+    young = plant(species: plant_species(:apple), name: "Pommier", planted_on: nil)
+    young.update!(properties: young.properties.merge("number" => 122))
+    line = young.plant_harvests.new(noted_on: Date.current, stage: "on_tree", amount: "light")
+    refute line.valid?
+    assert line.errors.of_kind?(:base, :not_planted)
+    assert_match "n° 122 Pommier n'est pas encore planté", line.errors.full_messages.to_sentence
+  end
+
   test "removing the plant removes its log" do
     @apple.plant_harvests.create!(noted_on: Date.current, stage: "picked")
     assert_difference -> { PlantHarvest.count }, -1 do
@@ -47,7 +56,7 @@ class PlantHarvestTest < ActiveSupport::TestCase
   end
 
   private
-    def plant(species:, variety: nil, name: nil, planted_on: nil)
+    def plant(species:, variety: nil, name: nil, planted_on: Date.new(2015, 3, 1))
       properties = { "species_id" => species.id, "variety_id" => variety&.id, "planted_on" => planted_on&.iso8601 }.compact
       @map.features.create!(layer: "plants", kind: "plant", name:, geometry: point, properties:)
     end
