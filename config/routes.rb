@@ -212,6 +212,9 @@ Rails.application.routes.draw do
   get "tarifs", to: "pages#pricing", as: :pricing
   get "mission-drone", to: "pages#drone", as: :drone_mission
   get "open-source", to: "pages#open_source", as: :open_source
+  get "ecoconception", to: "pages#ecoconception", as: :ecoconception
+  # Measurements of the « EcoIndex » workflow (ECOINDEX_TOKEN).
+  post "eco_measurements", to: "eco_measurements#create"
   get "confidentialite", to: "pages#privacy", as: :privacy
   get "conditions", to: "pages#terms", as: :terms
   get "sitemap", to: "pages#sitemap", defaults: { format: "xml" }, as: :sitemap

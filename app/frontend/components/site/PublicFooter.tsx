@@ -27,6 +27,7 @@ export function PublicFooter() {
           <h2 className="font-sans text-sm font-semibold text-loam-900">{t('site.footer.about')}</h2>
           <ul className="mt-3 space-y-2 text-sm text-loam-500">
             <li><Link href="/open-source" className="hover:text-loam-900">{t('public.footer.license')}</Link></li>
+            <li><Link href="/ecoconception" className="hover:text-loam-900">{t('site.footer.ecoconception')}</Link></li>
             <li><Link href="/confidentialite" className="hover:text-loam-900">{t('public.footer.privacy')}</Link></li>
             <li><Link href="/conditions" className="hover:text-loam-900">{t('public.footer.terms')}</Link></li>
             <li><a href="https://www.semisto.org" className="hover:text-loam-900">semisto.org</a></li>

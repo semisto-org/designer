@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_193000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_201500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -251,6 +251,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_193000) do
     t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
     t.index ["map_id", "created_at"], name: "index_comments_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_comments_on_map_id"
+  end
+
+  create_table "eco_measurements", force: :cascade do |t|
+    t.string "screen", null: false
+    t.string "environment", null: false
+    t.string "url", null: false
+    t.integer "dom_elements", null: false
+    t.integer "requests", null: false
+    t.integer "bytes", null: false
+    t.integer "score", null: false
+    t.string "grade", null: false
+    t.decimal "ges_grams", precision: 5, scale: 2, null: false
+    t.decimal "water_centiliters", precision: 5, scale: 2, null: false
+    t.string "commit"
+    t.datetime "measured_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["screen", "measured_at"], name: "index_eco_measurements_on_screen_and_measured_at"
   end
 
   create_table "external_forms", force: :cascade do |t|
