@@ -10,8 +10,8 @@ module Maps
 
     before_action :set_map
     before_action :require_editor!, except: %i[index show file content]
-    before_action :set_document, only: %i[show update destroy file content update_content]
-    before_action :require_markdown!, only: %i[show content update_content]
+    before_action :set_document, only: %i[show update destroy file content update_content collab]
+    before_action :require_markdown!, only: %i[show content update_content collab]
 
     def index
       respond_to do |format|
@@ -48,17 +48,34 @@ module Maps
     end
 
     def content
-      render json: { content: @document.markdown_content, checksum: @document.content_checksum }
+      render json: { content: @document.markdown_content, checksum: @document.content_checksum, document: as_json(@document) }
+    end
+
+    # What the shared editor starts from: the text and the edits made
+    # together so far (MapDocumentChannel), joined in the browser.
+    def collab
+      render json: { content: @document.markdown_content, checksum: @document.content_checksum, **@document.collab_state }
     end
 
     # Saves the editor's text. `base` is the checksum it read: when the text
     # changed meanwhile, nothing is written and the current text comes back.
+    # A save from the shared editor (`live`) has no base: everyone on the
+    # page holds the same text. `mine: false` says the last edit came from
+    # someone else on the page, who stays its author; `epoch` is the shared
+    # text it was written in: once the file was rewritten from elsewhere,
+    # a late save of the former text is refused.
     def update_content
       text = params.require(:content).to_s
       if text.bytesize > MapDocument::MAX_MARKDOWN_BYTES
         return render json: { message: t("documents.markdown.errors.too_long") }, status: :unprocessable_entity
       end
-      @document.replace_markdown!(text, by: Current.user, base: params[:base].presence)
+      if ActiveModel::Type::Boolean.new.cast(params[:live])
+        mine = params[:mine].nil? || ActiveModel::Type::Boolean.new.cast(params[:mine])
+        epoch = params[:epoch].presence&.to_i
+        @document.replace_markdown!(text, by: mine ? Current.user : (@document.content_edited_by || Current.user), live: true, epoch:)
+      else
+        @document.replace_markdown!(text, by: Current.user, base: params[:base].presence)
+      end
       render json: { document: as_json(@document.reload), checksum: @document.content_checksum }
     rescue MapDocument::StaleContent
       @document.reload

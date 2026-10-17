@@ -1,6 +1,6 @@
 ---
 title: "Rassembler ses documents"
-summary: "Plans d'architecte, relevés, analyses, permis : la bibliothèque de la carte, rangée par étiquette, avec un aperçu des images et des PDF, et des pages à écrire ensemble."
+summary: "Plans d'architecte, relevés, analyses, permis : la bibliothèque de la carte, rangée par étiquette, avec un aperçu des images et des PDF, et des pages à écrire à plusieurs, en direct."
 category: Observer son terrain
 order: 32
 ---
@@ -40,7 +40,9 @@ Un document Markdown (un fichier `.md`, celui que tu écris ici ou que tu dépos
 
 - Touche **Modifier** pour écrire. La barre d'outils met en forme ; tu peux aussi taper directement `#` pour un titre, `-` pour une liste, `[]` pour une case à cocher, `>` pour une citation.
 - Tout s'enregistre en continu (« Enregistré » s'affiche en haut). Sans connexion, Terranova réessaie tout seul.
-- Si quelqu'un a modifié le document en même temps que toi, sa version s'affiche et la tienne reste à côté, à recopier : rien de ce que tu as tapé n'est perdu.
+- **À plusieurs en même temps** : les éditeurs de la carte qui ouvrent le même document écrivent sur la même page. Tu vois leurs mots arriver, leur curseur à leur couleur avec leur prénom, et en haut, avec qui tu écris. Ceux qui lisent voient la page se mettre à jour.
+- Si ta connexion se coupe, continue d'écrire : tes mots rejoignent les autres dès qu'elle revient.
+- Si ton IA réécrit le document pendant que tu l'as ouvert, la page repart de sa nouvelle version et te le dit.
 - Le fichier reste du Markdown : **Télécharger** le donne tel quel, et ton IA le lit et le réécrit.
 
 ## Exporter en PDF

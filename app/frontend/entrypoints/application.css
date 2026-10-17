@@ -303,6 +303,10 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 .prose img[src^="/help/captures/"] { border-radius: 0.75rem; box-shadow: 0 4px 18px rgb(38 30 20 / 0.12), 0 0 0 1px rgb(38 30 20 / 0.08); }
 /* Markdown pages (documents/markdown): checklists, tables and the empty
    line's hint, which the typography plugin does not style. */
+/* Someone else writing on the same page: their caret and their first name. */
+.markdown-page .collab-caret { position: relative; margin: 0 -1px; border-left: 2px solid; border-right: 0; word-break: normal; pointer-events: none; }
+.markdown-page .collab-caret-label { position: absolute; top: -1.45em; left: -2px; white-space: nowrap; border-radius: 0.375rem 0.375rem 0.375rem 0; padding: 0.05rem 0.4rem; font-family: var(--font-sans); font-size: 0.875rem; font-weight: 600; line-height: 1.3; color: #fff; user-select: none; }
+@media print { .markdown-page .collab-caret { display: none; } .markdown-page .collaboration-carets__selection { background: none !important; } }
 .markdown-page ul[data-type="taskList"] { list-style: none; padding-left: 0.25rem; }
 .markdown-page ul[data-type="taskList"] li { display: flex; gap: 0.6rem; align-items: flex-start; margin: 0.25rem 0; }
 .markdown-page ul[data-type="taskList"] li > label { margin-top: 0.1rem; flex-shrink: 0; }

@@ -102,6 +102,13 @@ fr:
       reload: "Recharger le texte"
       printed_on: "%{map} · %{date}"
       open_page: "Ouvrir la page"
+      live:
+        connecting: "Ouverture de la page partagée…"
+        with: "Avec %{names}"
+        and: " et "
+        others: "Qui écrit aussi sur cette page"
+        solo: "L'écriture à plusieurs n'est pas joignable pour l'instant : tu écris sans les autres, et ton texte s'enregistre comme d'habitude."
+        reset: "Ce document vient d'être réécrit depuis ailleurs (par ton IA, peut-être) : la page repart de sa nouvelle version."
       toolbar:
         label: "Mise en forme"
         paragraph: "Texte"

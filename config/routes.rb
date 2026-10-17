@@ -343,6 +343,8 @@ Rails.application.routes.draw do
           # The text of a Markdown document, read and saved by its editor.
           get :content
           patch :content, action: :update_content
+          # Where the shared editor starts (MapDocumentChannel).
+          get :collab
         end
       end
       resources :soil_samples, only: %i[index create update destroy] do
