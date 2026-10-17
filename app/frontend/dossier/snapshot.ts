@@ -6,7 +6,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { applyLayerVisibility, installDrawingLayers } from '@/map/drawing/style'
 import { installBoundary } from '@/map/layers/boundary'
 import { installFeatureLayers } from '@/map/layers/features'
-import { STRATA_COLORS } from '@/map/plants/strata'
+import { drawsCrown, STRATA_COLORS } from '@/map/plants/strata'
 import type { Dossier, DossierRaster } from '@/types/dossier'
 import type { Strata } from '@/types/plants'
 
@@ -59,13 +59,14 @@ function baseStyle(cover: Dossier['cover'], withCadastre: boolean): StyleSpecifi
   return style
 }
 
-/** Adult crowns of the plants, true size, coloured by strata. */
+/** Adult crowns of the plants, true size, coloured by strata (climbers have none). */
 function crowns(cover: Dossier['cover']): FeatureCollection<Polygon, { color: string }> {
   const features: Feature<Polygon, { color: string }>[] = []
   for (const feature of cover.features.features) {
     const crown = feature.properties.dossierCrownM
     if (feature.geometry.type !== 'Point' || typeof crown !== 'number') continue
     const strata = feature.properties.dossierStrata as Strata
+    if (!drawsCrown(strata)) continue
     const polygon = circle(feature.geometry.coordinates, Math.max(crown / 2, 0.15) / 1000, { steps: 32, units: 'kilometers' })
     features.push({ ...polygon, properties: { color: STRATA_COLORS[strata] ?? '#3d7d42' } })
   }
