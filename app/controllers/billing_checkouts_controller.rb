@@ -5,7 +5,7 @@ class BillingCheckoutsController < ApplicationController
 
   def create
     url = Billing::Checkout.call(
-      user: Current.user, plan_key: params[:plan].to_s,
+      user: Current.user, plan_key: params[:plan].to_s, interval: params[:interval].presence,
       success_url: "#{billing_url(checkout: 'success')}&session_id={CHECKOUT_SESSION_ID}",
       cancel_url: billing_url(checkout: "cancelled"),
       terms_url: terms_url

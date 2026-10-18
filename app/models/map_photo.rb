@@ -14,6 +14,7 @@
 class MapPhoto < ApplicationRecord
   include PointLocation
   include HeicAttachment
+  include CountsTowardStorage
 
   MAX_BYTES = 25.megabytes
   # What is stored for a photo; a HEIC photo (iPhone) is accepted at upload
@@ -46,6 +47,11 @@ class MapPhoto < ApplicationRecord
   has_many :renderings, class_name: "PhotoRendering", dependent: :destroy, inverse_of: :photo
   # A photo painted by « Mettre en image » keeps a link to the photo it came from.
   belongs_to :derived_from, class_name: "MapPhoto", optional: true
+  # A photo taken again from the same spot (« Reprendre cette photo » on the
+  # phone) points to the first photo of its series, so a garden's before and
+  # after stay together whatever the GPS says.
+  belongs_to :retake_of, class_name: "MapPhoto", optional: true, inverse_of: :retakes
+  has_many :retakes, class_name: "MapPhoto", foreign_key: :retake_of_id, inverse_of: :retake_of, dependent: nil
 
   # Variants go through libvips: rotated from EXIF, metadata (GPS included)
   # stripped. Viewers only ever get variants; the original file, EXIF and
@@ -56,7 +62,8 @@ class MapPhoto < ApplicationRecord
   end
 
   converts_heic :image
-  before_validation :set_kind, :normalize_heading, :record_checksum, :clear_location_source_without_location
+  before_validation :set_kind, :normalize_heading, :record_checksum, :clear_location_source_without_location, :retake_the_first
+  before_destroy :hand_series_over
   after_create_commit -> { PhotoCameraJob.perform_later(self) }, if: -> { image.attached? }
 
   validates :caption, length: { maximum: 500 }
@@ -71,6 +78,7 @@ class MapPhoto < ApplicationRecord
   validate :not_already_imported
   validate :album_and_feature_belong_to_map
   validate :video_has_no_bioindicators
+  validate :retake_of_a_photo_of_this_map
 
   scope :for_bioindicators, -> { where.not(bioindicator_status: nil) }
   scope :images, -> { where(kind: "photo") }
@@ -89,16 +97,28 @@ class MapPhoto < ApplicationRecord
               "CASE WHEN map_photos.location IS NULL THEN NULL ELSE ST_Distance(map_photos.location::geography, #{geography}) END AS distance_m")
   end
 
-  # Other photos of the same spot (same place, similar direction), closest
-  # first: the candidates for a before/after comparison (photos only).
+  # Other photos of the same spot, the candidates for a before/after
+  # comparison (photos only): the photo's series first, oldest first, then
+  # the photos taken nearby in a similar direction, closest first.
   def same_spot(meters: SAME_SPOT_METERS, heading_tolerance: SAME_SPOT_HEADING_DEGREES)
-    return [] unless location
+    retaken = series.reject { |other| other.id == id }
+    return retaken unless location
     distance = self.class.sanitize_sql_array([
       "ST_Distance(map_photos.location::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance_m", lng, lat
     ])
-    map.photos.images.located.within_meters_of_point(lng, lat, meters).where.not(id: id)
+    nearby = map.photos.images.located.within_meters_of_point(lng, lat, meters).where.not(id: [ id, *retaken.map(&:id) ])
       .select("map_photos.*", distance).order(Arel.sql("distance_m"))
       .select { |other| heading_close?(other.heading, heading_tolerance) }
+    retaken + nearby
+  end
+
+  # The first photo of the series and its retakes, oldest first (this photo
+  # alone when it was never taken again).
+  def series
+    first_id = retake_of_id || id
+    return [ self ] unless first_id
+    map.photos.images.where(id: first_id).or(map.photos.images.where(retake_of_id: first_id))
+      .sort_by { |photo| [ photo.taken_at || photo.created_at, photo.id ] }
   end
 
   def video? = kind == "video"
@@ -116,7 +136,7 @@ class MapPhoto < ApplicationRecord
       id:, kind:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
       albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
-      derivedFromId: derived_from_id, renderingStyle: rendering_style,
+      derivedFromId: derived_from_id, renderingStyle: rendering_style, retakeOfId: retake_of_id,
       camera: camera.presence,
       width: meta["width"], height: meta["height"], durationS: meta["duration"]&.to_f&.round,
       byteSize: blob&.byte_size, filename: blob&.filename&.to_s,
@@ -180,6 +200,26 @@ class MapPhoto < ApplicationRecord
 
     def video_has_no_bioindicators
       errors.add(:bioindicator_status, I18n.t("soil_photos.errors.video_bioindicators")) if video? && bioindicator_status.present?
+    end
+
+    # Always the first of the series, never a retake of a retake.
+    def retake_the_first
+      self.retake_of = retake_of.retake_of if retake_of&.retake_of
+      self.retake_of = nil if retake_of && retake_of.id == id
+    end
+
+    def retake_of_a_photo_of_this_map
+      return unless retake_of
+      errors.add(:retake_of, :invalid) if retake_of.map_id != map_id || retake_of.video? || video?
+    end
+
+    # The series outlives its first photo: the oldest retake takes its place.
+    def hand_series_over
+      heirs = retakes.sort_by { |photo| [ photo.taken_at || photo.created_at, photo.id ] }
+      return if heirs.empty?
+      heir = heirs.shift
+      MapPhoto.where(id: heir.id).update_all(retake_of_id: nil)
+      MapPhoto.where(id: heirs.map(&:id)).update_all(retake_of_id: heir.id)
     end
 
     def album_and_feature_belong_to_map

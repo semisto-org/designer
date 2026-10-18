@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_175713) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_191000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -539,6 +539,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_175713) do
     t.bigint "derived_from_id"
     t.string "rendering_style"
     t.string "kind", default: "photo", null: false
+    t.bigint "retake_of_id"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
@@ -548,6 +549,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_175713) do
     t.index ["map_id", "taken_at"], name: "index_map_photos_on_map_id_and_taken_at"
     t.index ["map_id"], name: "index_map_photos_on_map_id"
     t.index ["photo_album_id"], name: "index_map_photos_on_photo_album_id"
+    t.index ["retake_of_id"], name: "index_map_photos_on_retake_of_id"
     t.index ["uploaded_by_id"], name: "index_map_photos_on_uploaded_by_id"
   end
 
@@ -1497,6 +1499,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_175713) do
     t.string "account_kind"
     t.boolean "catalogue_reviewer", default: false, null: false
     t.string "apple_uid"
+    t.string "vat_number"
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
@@ -1575,6 +1578,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_175713) do
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
   add_foreign_key "map_photos", "map_features", on_delete: :nullify
   add_foreign_key "map_photos", "map_photos", column: "derived_from_id", on_delete: :nullify
+  add_foreign_key "map_photos", "map_photos", column: "retake_of_id", on_delete: :nullify
   add_foreign_key "map_photos", "maps"
   add_foreign_key "map_photos", "photo_albums", on_delete: :nullify
   add_foreign_key "map_photos", "users", column: "uploaded_by_id", on_delete: :nullify

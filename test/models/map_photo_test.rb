@@ -207,4 +207,30 @@ class MapPhotoTest < ActiveSupport::TestCase
     assert_match(/\A2026-05-17T14:32:10/, payload[:takenAt])
     assert_nil payload[:distanceM]
   end
+
+  test "a retake joins the series of the first photo, whatever the GPS says" do
+    first = create_photo(salt: 1, location: [ 4.9, 50.34 ], heading: 90, taken_at: "2025-10-18T10:00:00")
+    second = create_photo(salt: 2, retake_of: first, location: [ 4.9 + meters_east(40), 50.34 ], taken_at: "2026-04-18T10:00:00")
+    third = create_photo(salt: 3, retake_of: second, taken_at: "2026-10-18T10:00:00")
+    assert_equal first, third.retake_of, "a retake of a retake points to the first photo"
+    assert_equal [ first, second, third ], second.series
+    assert_equal [ second.id, third.id ], first.same_spot.map(&:id)
+    assert_equal first.id, third.as_inertia[:retakeOfId]
+  end
+
+  test "a retake is of a photo of the same map, never a video" do
+    other_map = Map.create!(name: "Autre", owner: users(:bob), region: regions(:wallonia))
+    elsewhere = create_photo(map: other_map, salt: 1)
+    assert_not build_photo(salt: 2, retake_of: elsewhere).valid?
+  end
+
+  test "deleting the first photo hands the series to the oldest retake" do
+    first = create_photo(salt: 1, taken_at: "2024-06-01T10:00:00")
+    second = create_photo(salt: 2, retake_of: first, taken_at: "2025-06-01T10:00:00")
+    third = create_photo(salt: 3, retake_of: first, taken_at: "2026-06-01T10:00:00")
+    first.destroy!
+    assert_nil second.reload.retake_of_id
+    assert_equal second.id, third.reload.retake_of_id
+    assert_equal [ second, third ], third.series
+  end
 end

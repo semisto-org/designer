@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { ButtonLink } from '@/components/ui/Button'
 import { WelcomeCard } from '@/components/journey/WelcomeCard'
 import { t } from '@/lib/i18n'
+import { ArchivedMaps, type ArchivedMap } from '@/my_maps/ArchivedMaps'
 import { MapCardGrid } from '@/my_maps/MapCard'
 import { ResumeCard } from '@/my_maps/ResumeCard'
 import { SeasonNote } from '@/my_maps/SeasonNote'
@@ -22,11 +23,13 @@ type Props = {
   incomingTransfers?: IncomingTransfer[]
   /** The map worked on last and its next step: it opens large, first. */
   resume?: Resume | null
+  /** My archived maps, listed at the bottom. */
+  archivedMaps?: ArchivedMap[]
 }
 
 // « Mes cartes » as a field notebook: the map worked on last opens as a full
 // page, the others are pinned sketches of their terrain below it.
-export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfers = [], resume }: Props) {
+export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfers = [], resume, archivedMaps = [] }: Props) {
   const resumed = resume ? maps.find((map) => map.id === resume.mapId) : undefined
   const { own, byTeam } = groupMapsByTeam(maps.filter((map) => map !== resumed), teams)
   const resumedIsOwn = resumed != null && !byTeam.some(({ team }) => team.id === resumed.teamId)
@@ -71,6 +74,7 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
           <MapCardGrid maps={teamMaps} showOwner headingLevel="h3" />
         </TeamMapsSection>
       ))}
+      <ArchivedMaps maps={archivedMaps} />
     </div>
   )
 }

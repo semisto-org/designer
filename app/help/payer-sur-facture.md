@@ -11,9 +11,9 @@ Une administration ne peut pas toujours payer par carte. Semisto Terranova t'env
 
 Les **communes**, **écoles**, **associations** et **entreprises** qui veulent une formule pour un an :
 
-- **Atelier** : 49 € par mois, soit **588 € pour un an** ;
-- **Bureau d'études** : 99 € par mois, soit **1 188 € pour un an** ;
-- **Forfait particulier** : **79 € pour un an**.
+- **Pro** : **490 € pour un an** (deux mois offerts par rapport au mois), et **441 €** pour une première année commandée avant le 31 décembre 2026 ;
+- **Team** : **1 290 € pour un an**, et **1 161 €** pour une première année commandée avant le 31 décembre 2026 ;
+- **Home** : **79 € pour un an**.
 
 Les montants sont **TVA comprise**.
 
@@ -33,7 +33,7 @@ Tu reçois un e-mail de confirmation, et la demande apparaît dans **Formule et 
 - **Ta formule peut être activée dès l'envoi de la facture**, sans attendre le paiement : tu reçois un e-mail quand c'est fait.
 - Tu règles **par virement, sous 30 jours**, aux coordonnées bancaires indiquées sur la facture.
 
-La formule apparaît alors dans [Formule et facturation](/billing), avec sa date de fin : par exemple « Formule Bureau d'études jusqu'au 4 octobre 2027, réglée sur facture ».
+La formule apparaît alors dans [Formule et facturation](/billing), avec sa date de fin : par exemple « Formule Team jusqu'au 4 octobre 2027, réglée sur facture ».
 
 ## À la fin de l'année
 

@@ -67,8 +67,9 @@ class PlanResolutionTest < ActiveSupport::TestCase
 
   test "the plan with the most maps wins when several apply" do
     pass
-    subscription(plan_key: "atelier")
     assert_equal "yearly", @user.current_plan_key
+    subscription(plan_key: "atelier")
+    assert_equal "atelier", @user.current_plan_key
     subscription(plan_key: "bureau")
     assert_equal "bureau", @user.current_plan_key
   end
@@ -77,12 +78,15 @@ class PlanResolutionTest < ActiveSupport::TestCase
     @user.plan_grants.create!(plan_key:, starts_at:, ends_at:)
   end
 
-  test "Bureau d'études has no map limit, even with billing on" do
+  test "Team has 20 active maps; archived maps do not count" do
     subscription(plan_key: "bureau")
     with_billing do
-      30.times { |i| @user.owned_maps.create!(name: "Client #{i}") }
-      assert Entitlements.for(@user).can_create_map?(@user)
+      maps = 21.times.map { |i| @user.owned_maps.create!(name: "Client #{i}") }
+      refute Entitlements.for(@user).can_create_map?(@user)
+      assert_equal 1, @user.read_only_maps_count
+      maps.first(2).each(&:archive!)
       assert_equal 0, @user.read_only_maps_count
+      assert Entitlements.for(@user).can_create_map?(@user)
     end
   end
 
@@ -107,12 +111,12 @@ class PlanResolutionTest < ActiveSupport::TestCase
     grant(plan_key: "atelier")
     assert_equal "atelier", @user.current_plan_key
     pass
-    assert_equal "yearly", @user.current_plan_key
+    assert_equal "atelier", @user.current_plan_key
     grant(plan_key: "bureau")
     assert_equal "bureau", @user.current_plan_key
     @user.plan_grants.update_all(revoked_at: Time.current)
     subscription(plan_key: "atelier")
-    assert_equal "yearly", @user.current_plan_key
+    assert_equal "atelier", @user.current_plan_key
   end
 
   test "maps beyond a grant's limit become read-only when it ends" do

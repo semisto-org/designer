@@ -12,10 +12,10 @@ fr:
         description: "Fond de carte et couches du Géoportail, dessin de l'existant, palette de plantes, fiche projet, partage et commentaires, et ton IA qui lit ta carte."
       pricing:
         title: "Tarifs"
-        description: "Une carte gratuite, un forfait particulier à 79 € par an payé une seule fois, des formules pour les professionnels. 30 % de réduction pour les membres de Semisto."
+        description: "Une carte gratuite, Home à 79 € par an payé une seule fois (59 € pour les membres de Semisto), Pro et Team pour les professionnels, au mois ou à l'année."
       drone:
         title: "Mission drone"
-        description: "Une vue aérienne datée de ton terrain, prise par Semisto et configurée sur ta carte. 280 € TTC, achat unique."
+        description: "Une vue aérienne datée de ton terrain, prise par Semisto et configurée sur ta carte. 380 € TTC, achat unique."
       open_source:
         title: "Open source"
         description: "Semisto Terranova est un logiciel libre (AGPL-3.0). Le code, les sources de données et leurs licences, en toute transparence."
@@ -132,12 +132,12 @@ fr:
             - name: "Carte gratuite"
               price: "0 €"
               note: "une carte, pour de bon"
-            - name: "Forfait particulier"
+            - name: "Home"
               price: "%{yearly}"
               note: "par an, payé une seule fois"
             - name: "Pour les pros"
               price: "dès %{atelier}"
-              note: "par mois, résiliable"
+              note: "par mois, ou deux mois offerts à l'année"
           cta: "Comparer les formules"
         open:
           kicker: "né sur un vrai terrain"
@@ -290,14 +290,14 @@ fr:
     pricing:
       hero:
         eyebrow: "Tarifs"
-        title: "Gratuit pour commencer, un forfait quand le projet s'étoffe"
-        lead: "Pas d'abonnement pour les particuliers : le forfait se paie une fois par an, sans reconduction automatique. Tous les prix sont TTC, TVA comprise."
+        title: "Gratuit pour commencer, une formule quand le projet s'étoffe"
+        lead: "Pas d'abonnement pour les particuliers : Home se paie une fois par an, sans reconduction automatique. Tous les prix sont TTC, TVA comprise."
       individuals:
         title: "Pour les particuliers"
         intro: "Concevoir son propre jardin-forêt, à son rythme."
       pros:
         title: "Pour les professionnels"
-        intro: "Bureaux d'études, pépiniéristes : plusieurs projets à la fois, en abonnement mensuel résiliable."
+        intro: "Concepteurs, paysagistes, bureaux d'études : plusieurs projets à la fois. Au mois, ou à l'année avec deux mois offerts."
       badge_individual: "Sans abonnement"
       cta_free: "Créer ma carte gratuite"
       cta_choose: "Choisir"
@@ -305,12 +305,20 @@ fr:
         title: "Ce que contient chaque formule"
         columns:
           free: "Gratuit"
-          yearly: "Forfait"
-          atelier: "Atelier"
-          bureau: "Bureau d'études"
+          yearly: "Home"
+          atelier: "Pro"
+          bureau: "Team"
         rows:
-          - label: "Cartes que tu possèdes"
-            values: ["1", "10", "5", "20"]
+          - label: "Cartes actives à la fois"
+            values: ["1", "3", "6", "20"]
+          - label: "Cartes archivées, en lecture"
+            values: ["no", "yes", "yes", "yes"]
+          - label: "Stockage des photos et documents"
+            values: ["1 Go", "5 Go", "20 Go", "120 Go"]
+          - label: "Images par mois avec « Mettre en image »"
+            values: ["no", "10", "30", "120"]
+          - label: "Éditeurs invités sans limite"
+            values: ["yes", "yes", "yes", "yes"]
           - label: "Fond de carte et couches du Géoportail"
             values: ["yes", "yes", "yes", "yes"]
           - label: "Dessin, palette, liste de plants, fiche projet"
@@ -327,12 +335,14 @@ fr:
             values: ["no", "yes", "yes", "yes"]
           - label: "Brouillons de ton IA sur la carte (14 jours d'essai offerts)"
             values: ["no", "yes", "yes", "yes"]
-          - label: "Éditeurs invités gratuits"
+          - label: "Offres et barèmes pour tes clients"
             values: ["no", "no", "yes", "yes"]
+          - label: "Toute une équipe sur les mêmes cartes"
+            values: ["no", "no", "no", "yes"]
       member:
         eyebrow: "Membres de Semisto"
-        title: "30 % de réduction sur le forfait particulier"
-        body: "Les membres de Semisto reçoivent par e-mail un code promotionnel personnel. Saisis-le sur la page de paiement : le forfait passe de %{yearly} à %{member}."
+        title: "Home à %{member} pour les membres de Semisto"
+        body: "Si ta cotisation à Semisto est en ordre et que tu te connectes avec l'adresse e-mail de ton adhésion, Terranova le reconnaît tout seul : Home passe de %{yearly} à %{member}, sans code à saisir."
         note: "Pas encore membre ? Rejoins Semisto et soutiens la mission qui fait vivre cet outil."
         cta: "Découvrir Semisto"
       drone:
@@ -342,18 +352,22 @@ fr:
       faq:
         title: "Questions fréquentes"
         items:
-          - q: "Que se passe-t-il à l'échéance de mon forfait particulier ?"
+          - q: "Que se passe-t-il à l'échéance de Home ?"
             a: "Rien ne se renouvelle tout seul et rien n'est supprimé. Tes cartes restent lisibles, exportables et commentables, et la plus ancienne reste modifiable comme dans la formule gratuite. Quelques semaines avant l'échéance, Terranova te propose de renouveler ; si tu le fais avant la date, aucun jour n'est perdu : la nouvelle année commence à la fin de l'ancienne."
           - q: "Pourquoi pas d'abonnement pour les particuliers ?"
             a: "Un projet de jardin-forêt avance par saisons, pas par mois. Tu paies une année quand tu en as besoin, sans prélèvement automatique à surveiller."
-          - q: "Quelle différence avec Atelier et Bureau d'études ?"
-            a: "Le forfait particulier couvre jusqu'à 10 cartes pour ton usage personnel. Atelier (5 cartes) et Bureau d'études (cartes illimitées) sont des abonnements mensuels résiliables à tout moment, pensés pour mener des projets de clients, avec des éditeurs invités gratuits."
+          - q: "Quelle différence entre Home, Pro et Team ?"
+            a: "Home couvre 3 cartes actives pour tes propres lieux. Pro (6 cartes actives) et Team (20 cartes actives, pour toute une équipe) sont des abonnements pensés pour mener des projets de clients, avec les offres et les barèmes. Ils se paient au mois (%{atelier} et %{bureau}) ou à l'année avec deux mois offerts (%{atelier_yearly} et %{bureau_yearly})."
+          - q: "Qu'est-ce qu'une carte archivée ?"
+            a: "Un projet terminé que tu ranges : il reste lisible, exportable et commentable, et ne compte plus dans tes cartes actives. Tu peux le désarchiver quand ta formule a de la place. Toutes les formules payantes gardent les cartes archivées sans limite."
+          - q: "Y a-t-il une offre de lancement ?"
+            a: "Oui : un abonnement Pro ou Team payé à l'année et souscrit avant le 31 décembre 2026 a un mois de plus offert sur sa première année, soit %{atelier_launch} pour Pro et %{bureau_launch} pour Team."
           - q: "Les prix sont-ils TTC ?"
             a: "Oui. Le prix affiché est celui que tu paies, TVA comprise. La TVA applicable est calculée au paiement selon ton pays, et une facture détaillée t'est envoyée automatiquement par e-mail."
           - q: "Comment se passe le paiement ?"
             a: "Le paiement est traité par Stripe, un prestataire de paiement spécialisé : Semisto ne voit ni ne conserve ton numéro de carte. Tu reçois une facture par e-mail, et tu la retrouves dans ta page « Formule et facturation »."
-          - q: "Comment obtenir la réduction de 30 % des membres de Semisto ?"
-            a: "Les membres reçoivent un code promotionnel personnel par e-mail. Il se saisit à la caisse, sur la page de paiement du forfait particulier."
+          - q: "Comment obtenir le prix membre de Semisto ?"
+            a: "Il n'y a rien à faire : connecte-toi avec l'adresse e-mail de ton adhésion. Si ta cotisation est en ordre, Home te coûte %{member} au lieu de %{yearly}, et la réduction s'applique toute seule au paiement."
           - q: "Puis-je résilier un abonnement professionnel ?"
             a: "À tout moment, depuis « Gérer l'abonnement » dans ta page de facturation. L'accès continue jusqu'à la fin de la période déjà payée."
           - q: "Mes cartes m'appartiennent-elles ?"
@@ -546,11 +560,12 @@ fr:
           - title: "Les formules et les prix"
             items:
               - "La carte gratuite comprend une carte que vous possédez, avec les fonctions décrites sur la page des tarifs."
-              - "Le forfait particulier coûte %{yearly} TTC. Il se paie en une fois, vaut un an à partir du paiement et ne se renouvelle pas automatiquement. Un renouvellement fait avant l'échéance s'ajoute à la période en cours."
-              - "Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, cartes illimitées) sont des abonnements mensuels, reconduits chaque mois jusqu'à résiliation. Vous pouvez résilier à tout moment depuis votre page de facturation ; l'accès continue jusqu'à la fin de la période payée."
+              - "La formule Home coûte %{yearly} TTC. Elle se paie en une fois, vaut un an à partir du paiement et ne se renouvelle pas automatiquement. Un renouvellement fait avant l'échéance s'ajoute à la période en cours."
+              - "Pro (%{atelier} par mois, 6 cartes actives) et Team (%{bureau} par mois, 20 cartes actives) sont des abonnements, mensuels ou annuels (%{atelier_yearly} et %{bureau_yearly} par an), reconduits à chaque période jusqu'à résiliation. Vous pouvez résilier à tout moment depuis votre page de facturation ; l'accès continue jusqu'à la fin de la période payée."
+              - "Un abonnement Pro ou Team annuel souscrit avant le 31 décembre 2026 bénéficie d'un mois offert sur sa première année (%{atelier_launch} et %{bureau_launch}). Les années suivantes sont au prix annuel."
               - "La mission drone (%{drone} TTC) est une prestation unique, réalisée par Semisto après un échange avec vous."
               - "Tous les prix sont TTC. Un prix peut changer pour l'avenir ; il ne change jamais une période déjà payée."
-            outro: "Les membres de Semisto bénéficient de 30 % de réduction sur le forfait particulier, avec un code personnel."
+            outro: "Les membres de Semisto dont la cotisation est en ordre paient la formule Home %{member} au lieu de %{yearly}. La réduction est reconnue automatiquement à partir de l'adresse e-mail de l'adhésion."
           - title: "Paiement et facturation"
             paragraphs:
               - "Le paiement passe par Stripe. Une facture vous est envoyée par e-mail. Si le paiement d'un abonnement échoue, l'accès est maintenu pendant 7 jours, le temps de mettre à jour votre moyen de paiement, puis revient à la formule gratuite."

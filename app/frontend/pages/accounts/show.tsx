@@ -1,6 +1,6 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
 import { type ReactNode, useRef, useState } from 'react'
-import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Sprout, Sparkles, Trash2 } from 'lucide-react'
+import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Receipt, Sprout, Sparkles, Trash2 } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { LogoCard } from '@/components/LogoCard'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -60,6 +60,7 @@ export default function AccountShow({ account }: { account: AccountData }) {
       {account.accountKind === 'professional' && (
         <LogoCard logoUrl={account.logoUrl} endpoint="/account/logo" param="user" intro={t('logos.account_intro')} />
       )}
+      {(account.accountKind === 'professional' || account.vatNumber) && <VatNumberCard vatNumber={account.vatNumber} />}
 
       <PasswordCard hasPassword={account.hasPassword} />
 
@@ -192,6 +193,31 @@ function AccountKindCard({ kind }: { kind: AccountKind | null }) {
           {t(`account.kind.change_to_${other}`)}
         </Button>
       </div>
+    </Card>
+  )
+}
+
+// The VAT (BCE) number: printed on every invoice, and what lets a business
+// elsewhere in the EU pay without VAT (reverse charge).
+function VatNumberCard({ vatNumber }: { vatNumber: string | null }) {
+  const form = useForm({ vat_number: vatNumber ?? '' })
+  return (
+    <Card>
+      <h2 className="flex items-center gap-2 text-base"><Receipt className="h-4 w-4 text-leaf-500" aria-hidden="true" />{t('billing.vat_number.title')}</h2>
+      <p className="mt-2 text-sm text-loam-600">{t('billing.vat_number.intro')}</p>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          form.transform((data) => ({ user: { vat_number: data.vat_number } }))
+          form.patch('/account', { preserveScroll: true })
+        }}
+        className="mt-4 space-y-4"
+      >
+        <Field label={t('billing.vat_number.label')} hint={t('billing.vat_number.hint')} error={form.errors.vat_number}>
+          <Input value={form.data.vat_number} onChange={(event) => form.setData('vat_number', event.target.value)} placeholder="BE 0123.456.789" autoComplete="off" maxLength={20} />
+        </Field>
+        <Button type="submit" disabled={form.processing || !form.isDirty}>{t('account.save')}</Button>
+      </form>
     </Card>
   )
 }

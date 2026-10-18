@@ -6,7 +6,7 @@ import type { MapData } from '@/types'
 
 /** The map's name in the editor header; its owner renames it in place. */
 export function MapName({ map, setMap }: { map: MapData; setMap: (map: MapData) => void }) {
-  const canRename = map.role === 'owner' && !map.readOnlyByPlan
+  const canRename = map.role === 'owner' && !map.readOnlyByPlan && !map.archived
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(map.name)
   const [saving, setSaving] = useState(false)

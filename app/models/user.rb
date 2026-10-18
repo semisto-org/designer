@@ -40,6 +40,9 @@ class User < ApplicationRecord
   # Who the person designs for (welcome page, « Mon compte »). Null until chosen.
   ACCOUNT_KINDS = %w[individual professional].freeze
   validates :account_kind, inclusion: { in: ACCOUNT_KINDS }, allow_nil: true
+  # A professional's VAT (BCE) number, for correct invoices; stored as BE0123456789.
+  normalizes :vat_number, with: ->(number) { Billing::VatNumber.normalize(number) || number.to_s.strip.presence }
+  validate :vat_number_recognised
 
   SIGN_IN_TTL = 20.minutes
   SIGN_IN_CODE_MAX_ATTEMPTS = 5
@@ -151,6 +154,11 @@ class User < ApplicationRecord
   end
 
   private
+    def vat_number_recognised
+      return if vat_number.blank? || Billing::VatNumber.normalize(vat_number) == vat_number
+      errors.add(:vat_number, :invalid, message: I18n.t("billing.vat_number.invalid"))
+    end
+
     def avatar_is_acceptable
       return unless avatar.attached?
       blob = avatar.blob

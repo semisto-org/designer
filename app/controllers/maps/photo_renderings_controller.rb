@@ -33,7 +33,7 @@ module Maps
     def create
       return render_refusal("not_configured", :service_unavailable) unless Providers::Magnific.configured?
       return render_refusal("plan", :forbidden) unless Entitlements.for_map(@map).renderings?
-      return render_refusal("monthly_limit", :too_many_requests, limit: PhotoRendering::MONTHLY_LIMIT) if remaining <= 0
+      return render_refusal("monthly_limit", :too_many_requests, limit: monthly_limit) if remaining <= 0
 
       rendering = @photo.renderings.new(
         map: @map, requested_by: Current.user, style: params[:style].to_s, instructions: params[:instructions].to_s,
@@ -59,13 +59,16 @@ module Maps
         json
       end
 
-      def remaining = PhotoRendering.remaining_this_month(@map.owner)
+      # The quota is the payer's: their plan's allowance, across the maps it pays for.
+      def payer = @map.billing_user
+      def monthly_limit = Entitlements.for(payer).renderings_per_month
+      def remaining = PhotoRendering.remaining_this_month(payer)
 
       def availability
         {
           available: Providers::Magnific.configured?,
           allowed: Entitlements.for_map(@map).renderings?,
-          remaining:, monthlyLimit: PhotoRendering::MONTHLY_LIMIT
+          remaining:, monthlyLimit: monthly_limit
         }
       end
 

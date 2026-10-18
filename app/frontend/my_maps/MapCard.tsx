@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { formatArea, t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { ListedMap } from '@/types/teams'
+import { ArchiveButton } from './ArchivedMaps'
 import { PaletteStrip } from './PaletteStrip'
 import { StagePath } from './StagePath'
 import { TerrainSketch } from './TerrainSketch'
@@ -43,8 +44,9 @@ export function MapCardGrid({ maps, showOwner = false, headingLevel }: { maps: L
   return (
     <ul className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {maps.map((map) => (
-        <li key={map.id}>
+        <li key={map.id} className="group relative">
           <MapCard map={map} showOwner={showOwner} headingLevel={headingLevel} />
+          {map.role === 'owner' && <ArchiveButton id={map.id} name={map.name} />}
         </li>
       ))}
     </ul>

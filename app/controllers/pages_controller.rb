@@ -58,9 +58,19 @@ class PagesController < ApplicationController
     # so readers without JavaScript see them: Google checks the privacy
     # policy that way before it shows the app's name on its sign-in screen.
     def render_legal(namespace)
-      prices = %w[yearly atelier bureau drone].to_h { |key| [ key.to_sym, euros(Billing::Catalog.fetch(key).price_cents) ] }
-      @legal_text = { namespace:, vars: { email: Billing.contact_email, **prices } }
-      render_public "pages/#{namespace}", page: namespace, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json }
+      @legal_text = { namespace:, vars: { email: Billing.contact_email, **price_vars } }
+      render_public "pages/#{namespace}", page: namespace, props: { contactEmail: Billing.contact_email, catalog: Billing::Catalog.as_json, memberPriceCents: Billing::Catalog.member_price_cents }
+    end
+
+    # The prices the pricing copy, the FAQ and the terms quote, as in pricing.tsx.
+    def price_vars
+      vars = %w[yearly atelier bureau drone].to_h { |key| [ key.to_sym, euros(Billing::Catalog.fetch(key).price_cents) ] }
+      %w[atelier bureau].each do |key|
+        plan = Billing::Catalog.fetch(key)
+        vars[:"#{key}_yearly"] = euros(plan.yearly_price_cents)
+        vars[:"#{key}_launch"] = euros(Billing::Catalog.launch_offer? ? plan.launch_price_cents : plan.yearly_price_cents)
+      end
+      vars.merge(member: euros(Billing::Catalog.member_price_cents), email: Billing.contact_email)
     end
 
     # "79 €", "55,30 €", like formatPrice in lib/money.ts.
@@ -73,6 +83,8 @@ class PagesController < ApplicationController
     def faq_json_ld
       items = Array(t("site.pricing.faq.items"))
       return if items.empty?
+      vars = price_vars
+      items = items.map { |item| item.transform_values { |text| I18n.interpolate(text.to_s, vars) } }
       {
         "@context" => "https://schema.org",
         "@type" => "FAQPage",

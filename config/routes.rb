@@ -34,6 +34,8 @@ Rails.application.routes.draw do
   resources :maps, only: [] do
     scope module: :maps do
       resource :sharing, only: :show
+      # Archive (create) and bring back (destroy): the owner only.
+      resource :archive, only: %i[create destroy]
       resources :memberships, only: %i[update destroy]
       resources :invitations, only: %i[create destroy] do
         post :resend, on: :member

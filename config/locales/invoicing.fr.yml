@@ -140,7 +140,7 @@ fr:
     pricing:
       title: "Payer sur facture"
       body: "Commune, école, association ou entreprise : reçois une facture payable par virement."
-      detail: "Atelier, Bureau d'études ou Forfait particulier, pour un an, avec ton numéro de bon de commande sur la facture."
+      detail: "Pro, Team ou Home, pour un an, avec ton numéro de bon de commande sur la facture."
       cta: "Demander une facture"
     admin:
       title: "Demandes de facture"

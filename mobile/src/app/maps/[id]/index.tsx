@@ -16,6 +16,7 @@ import { t, todayIso } from '@/lib/i18n'
 import { styleUrl } from '@/lib/maps'
 import { outbox } from '@/lib/outbox'
 import { pickFeatureId } from '@/lib/pick'
+import { photosHere } from '@/lib/retake'
 import { around, whereFrom } from '@/lib/terrain'
 import { canEdit, type MapFeature, type Position } from '@/lib/types'
 import { haptics } from '@/lib/haptics'
@@ -93,6 +94,7 @@ export default function Terrain() {
   )
   const selected = useMemo(() => visible.find((f) => f.id === selectedId) ?? null, [visible, selectedId])
   const nearby = useMemo(() => (me ? around(visible, me, { radius: AROUND_RADIUS }) : []), [visible, me])
+  const shotHere = useMemo(() => (me && bundle ? photosHere(bundle.photos, me) : []), [bundle, me])
   const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
   const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
   const here = target ? arrived(target.meters, accuracy) : false
@@ -152,7 +154,7 @@ export default function Terrain() {
     for (const item of choice.items) {
       outbox.add({
         type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt,
-        lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: feature?.id ?? null,
+        lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: feature?.id ?? null, heading: item.heading ?? null,
       })
     }
     const count = choice.items.length
@@ -276,10 +278,12 @@ export default function Terrain() {
       >
         {selected
           ? <FeatureBody mapId={mapId} feature={selected} photos={photosOf(selected)}
-              onOpen={() => go('/maps/[id]/features/[featureId]', { featureId: String(selected.id) })} />
+              onOpen={() => go('/maps/[id]/features/[featureId]', { featureId: String(selected.id) })}
+              onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />
           : visit && editable
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
-            : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan} />}
+            : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
+                mapId={mapId} photosHere={shotHere} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
       </Sheet>
     </View>
   )

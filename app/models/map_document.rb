@@ -16,6 +16,7 @@
 # the MCP reads and writes it, like any other.
 class MapDocument < ApplicationRecord
   include HeicAttachment
+  include CountsTowardStorage
   include MapFeature::Tags
 
   MAX_BYTES = 200.megabytes
