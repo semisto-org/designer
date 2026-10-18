@@ -141,7 +141,7 @@ const transport: Transport = {
   },
   async createObservation(mapId, featureId, op, key) {
     await api('POST', `/maps/${mapId}/features/${featureId}/plant_observations`, form('plant_observation', {
-      observed_on: op.observedOn, survival: op.survival, vigor: op.vigor, note: op.note,
+      observed_on: op.observedOn, kind: op.kind ?? 'follow_up', survival: op.survival, vigor: op.vigor, note: op.note,
       photo: op.photo ? photoFile(op.photo) : null,
     }), once(key))
   },

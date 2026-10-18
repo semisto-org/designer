@@ -7,6 +7,7 @@
 #   gbif = Providers::Gbif.build
 #   gbif.available?                   # false when GBIF_PROVIDER=none
 #   gbif.match("Stipa tenuissima")    # => Match (status "synonym", accepted_name "Nassella tenuissima")
+#   gbif.common_names(8344835)        # => [CommonName("Basilic camphré", "fr", ["Catalogue of Life"]), …]
 #
 # Match#status:
 # - "accepted": the name is the accepted name of a species (or below);
@@ -33,7 +34,24 @@ module Providers
       end
     end
 
+    # A vernacular name in one language (ISO 639-1, as PlantCommonName
+    # stores it), with the datasets GBIF has it from.
+    CommonName = Data.define(:name, :language, :sources) do
+      def as_json(*) = { name:, language:, sources: }
+    end
+
     MATCH_URL = "https://api.gbif.org/v1/species/match".freeze
+    VERNACULAR_URL = "https://api.gbif.org/v1/species/%d/vernacularNames".freeze
+    # GBIF tags vernacular names in ISO 639-3 (« fra »); the catalogue keeps
+    # ISO 639-1 (« fr »). The languages of Europe, where Terranova grows.
+    LANGUAGES = {
+      "fra" => "fr", "nld" => "nl", "deu" => "de", "eng" => "en", "ita" => "it", "spa" => "es", "por" => "pt",
+      "cat" => "ca", "eus" => "eu", "glg" => "gl", "ltz" => "lb", "dan" => "da", "swe" => "sv", "nor" => "no",
+      "nob" => "nb", "nno" => "nn", "fin" => "fi", "est" => "et", "lav" => "lv", "lit" => "lt", "pol" => "pl",
+      "ces" => "cs", "slk" => "sk", "slv" => "sl", "hrv" => "hr", "srp" => "sr", "bos" => "bs", "hun" => "hu",
+      "ron" => "ro", "bul" => "bg", "ell" => "el", "gle" => "ga", "cym" => "cy", "isl" => "is", "mlt" => "mt",
+      "ukr" => "uk", "rus" => "ru", "bre" => "br", "oci" => "oc", "cos" => "co", "wln" => "wa", "fry" => "fy"
+    }.freeze
     SPECIES_RANKS = %w[SPECIES SUBSPECIES VARIETY FORM].freeze
     OPEN_TIMEOUT = 3
     TIMEOUT = 8
@@ -57,6 +75,16 @@ module Providers
       return Match.new(status: "unknown", name: nil, accepted_name: nil, family: nil, key: nil, rank: nil) if query.length < 3
 
       Rails.cache.fetch([ "gbif-match", query.downcase ], expires_in: 30.days) { lookup(query) }
+    end
+
+    # The vernacular names GBIF holds for a species (its accepted key), in
+    # the languages of Europe, most cited first. The same name from several
+    # datasets comes once, with all of them as sources.
+    def common_names(key)
+      raise Unavailable, "not configured" unless available?
+      return [] if key.blank?
+
+      Rails.cache.fetch([ "gbif-vernacular", key.to_i ], expires_in: 30.days) { lookup_common_names(key.to_i) }
     end
 
     # The name as a gardener writes it: GBIF's canonical name drops the hybrid
@@ -84,6 +112,17 @@ module Providers
         accepted = synonym ? data["species"] : nil
         Match.new(status:, name:, accepted_name: accepted, family: data["family"].presence,
                   key: synonym ? data["acceptedUsageKey"] || data["speciesKey"] : data["usageKey"], rank:)
+      end
+
+      def lookup_common_names(key)
+        rows = get_json(format(VERNACULAR_URL, key), limit: 1000).fetch("results", [])
+        rows.filter_map do |row|
+          language = LANGUAGES[row["language"].to_s.downcase]
+          name = row["vernacularName"].to_s.squish
+          [ language, name, row["source"].to_s.squish.presence ] if language && name.present?
+        end.group_by { |language, name, _| [ language, name.downcase ] }.map do |(language, _), group|
+          CommonName.new(name: group.first[1], language:, sources: group.filter_map(&:third).uniq)
+        end.sort_by.with_index { |n, i| [ -n.sources.size, i ] }
       end
 
       def get_json(url, params)

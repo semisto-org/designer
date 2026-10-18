@@ -45,4 +45,16 @@ class Providers::GbifTest < ActiveSupport::TestCase
     assert_raises(Providers::Gbif::Unavailable) { Providers::Gbif.new.match("Salvia nemorosa") }
     assert_raises(Providers::Gbif::Unavailable) { Providers::Gbif.new(available: false).match("Salvia nemorosa") }
   end
+
+  test "common names in the languages of Europe, the most cited first" do
+    stub_gbif_common_names(8344835, [
+      [ "Basilic camphré", "fra", "Catalogue of Life" ], [ "Kampferbasilikum", "deu", "Wikidata" ],
+      [ "basilic camphré", "fra", "Wikidata" ], [ "Basilic du Kilimandjaro", "fra", nil ], [ "Mvumbasi", "swa", "Wikidata" ]
+    ])
+    names = Providers::Gbif.new.common_names(8344835)
+    assert_equal [ "Basilic camphré", "Kampferbasilikum", "Basilic du Kilimandjaro" ], names.map(&:name)
+    assert_equal %w[fr de fr], names.map(&:language)
+    assert_equal [ "Catalogue of Life", "Wikidata" ], names.first.sources
+    assert_equal [], Providers::Gbif.new.common_names(nil)
+  end
 end

@@ -444,6 +444,18 @@
       "storm_button": "Noter l'eau qui court",
       "surface_if_closed": "Fermée, ce serait %{area}"
     },
+    "journal": {
+      "year_age": {
+        "one": "%{year} · sa première année",
+        "other": "%{year} · année %{count}"
+      },
+      "planted": "Mis en terre",
+      "first_harvest": "Première récolte",
+      "photos": {
+        "one": "%{count} photo",
+        "other": "%{count} photos"
+      }
+    },
     "measure": {
       "title": "Mesurer",
       "hint_empty": "Touche la carte aux coins de ce que tu mesures, ou marche et touche « Point ici » à chaque coin.",

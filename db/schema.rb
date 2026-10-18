@@ -1171,6 +1171,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_203000) do
     t.datetime "reviewed_at"
     t.integer "gbif_key"
     t.string "family"
+    t.datetime "values_check_requested_at"
+    t.datetime "values_checked_at"
+    t.string "values_check_error"
     t.index "lower((latin_name)::text)", name: "index_plant_species_on_lower_latin_name", unique: true
     t.index ["eco_services"], name: "index_plant_species_on_eco_services", using: :gin
     t.index ["exposures"], name: "index_plant_species_on_exposures", using: :gin
@@ -1183,6 +1186,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_203000) do
     t.index ["reviewed_by_id"], name: "index_plant_species_on_reviewed_by_id"
     t.index ["strata"], name: "index_plant_species_on_strata"
     t.index ["terranova_id"], name: "index_plant_species_on_terranova_id", unique: true
+  end
+
+  create_table "plant_value_checks", force: :cascade do |t|
+    t.bigint "species_id", null: false
+    t.string "field", null: false
+    t.string "verdict", null: false
+    t.jsonb "source_value"
+    t.float "confidence"
+    t.string "source"
+    t.string "url"
+    t.text "excerpt"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["species_id", "field"], name: "index_plant_value_checks_on_species_id_and_field", unique: true
   end
 
   create_table "plant_varieties", force: :cascade do |t|
@@ -1676,6 +1693,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_203000) do
   add_foreign_key "plant_species", "plant_genera", column: "genus_id"
   add_foreign_key "plant_species", "users", column: "proposed_by_id", on_delete: :nullify
   add_foreign_key "plant_species", "users", column: "reviewed_by_id", on_delete: :nullify
+  add_foreign_key "plant_value_checks", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "project_requests", "maps", on_delete: :nullify
   add_foreign_key "project_requests", "regions"

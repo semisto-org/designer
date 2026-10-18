@@ -249,9 +249,12 @@ Rails.application.routes.draw do
   # --- plants ---
   # Before /plants/:id. The species people propose, for catalogue reviewers.
   resources :catalogue_reviews, path: "plants/review", only: %i[index update] do
+    post :check, on: :collection
     member do
       post :merge
       post :reject
+      post :gbif
+      post :check
     end
   end
   resources :plants, only: %i[index show]
