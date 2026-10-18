@@ -1,7 +1,9 @@
+import { usePage } from '@inertiajs/react'
 import { useEffect, useRef } from 'react'
 import { cable } from '@/lib/cable'
 import { t } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
+import type { SharedProps } from '@/types'
 import type { FeatureBroadcast } from '@/types/drawing'
 
 /**
@@ -11,14 +13,15 @@ import type { FeatureBroadcast } from '@/types/drawing'
  */
 export default function LiveSync() {
   const editor = useEditor()
-  const latest = useRef<Editor>(editor)
-  latest.current = editor
+  const userId = usePage<SharedProps>().props.currentUser?.id ?? null
+  const latest = useRef({ editor, userId })
+  latest.current = { editor, userId }
   const mapId = editor.map.id
 
   useEffect(() => {
     const subscription = cable().subscriptions.create(
       { channel: 'MapFeaturesChannel', map_id: mapId },
-      { received: (message: FeatureBroadcast) => apply(latest.current, message) },
+      { received: (message: FeatureBroadcast) => apply(latest.current.editor, message, latest.current.userId) },
     )
     return () => {
       subscription.unsubscribe()
@@ -28,7 +31,7 @@ export default function LiveSync() {
   return null
 }
 
-function apply(editor: Editor, message: FeatureBroadcast) {
+function apply(editor: Editor, message: FeatureBroadcast, userId: number | null) {
   const current = editor.features.find((f) => f.properties.id === message.id)
   if (message.action === 'upsert') {
     if (current && current.properties.lockVersion >= message.feature.properties.lockVersion) return
@@ -36,6 +39,7 @@ function apply(editor: Editor, message: FeatureBroadcast) {
     if (current && editor.selectedId === message.id) editor.notify(t('drawing.live.changed_selected'))
   } else if (current) {
     editor.removeFeatures([message.id])
-    if (editor.selectedId === message.id) editor.notify(t('drawing.live.removed_selected'))
+    // Our own deletion can echo back before its response: no « someone else » then.
+    if (editor.selectedId === message.id && message.actorId !== userId) editor.notify(t('drawing.live.removed_selected'))
   }
 }

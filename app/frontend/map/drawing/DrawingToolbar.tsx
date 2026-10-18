@@ -13,6 +13,7 @@ import { ElementPicker, rememberRecent } from '@/map/drawing/ElementPicker'
 import { MeasureTool, measureProperties } from '@/map/drawing/MeasureTool'
 import { saveFeature } from '@/map/drawing/save'
 import { SketchTool } from '@/map/drawing/SketchTool'
+import { StepBackButton } from '@/map/drawing/StepBackButton'
 import { drawingStore, revealForDrawing, useDrawingState, type DrawingTool } from '@/map/drawing/store'
 import { ZoneTool } from '@/map/zones/ZoneTool'
 import type { ElementSpec } from '@/types/drawing'
@@ -240,6 +241,7 @@ export default function DrawingToolbar() {
       {!tool && (editor.drawingShape === 'polygon' || editor.drawingShape === 'linestring') && (
         <div className="pointer-events-none absolute inset-x-2 top-14 z-30 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
           <HintBar text={t(editor.drawingShape === 'polygon' ? 'drawing.toolbar.hint_outline' : 'drawing.toolbar.hint_path')}>
+            <StepBackButton editor={editor} />
             <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.toolbar.finish')}</Button>
             <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.toolbar.cancel')}</Button>
           </HintBar>
@@ -265,6 +267,7 @@ export default function DrawingToolbar() {
                   {t(contourMode ? 'relief.contour.freehand' : 'relief.contour.follow')}
                 </Button>
               )}
+              {geometry !== 'Point' && !contourMode && <StepBackButton editor={editor} />}
               {geometry !== 'Point' && !contourMode && (
                 <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.toolbar.finish')}</Button>
               )}
@@ -276,6 +279,7 @@ export default function DrawingToolbar() {
           {tool === 'sketch' && editor.canEdit && <SketchTool onClose={close} />}
           {tool === 'shape' && (
             <HintBar text={movingPoint ? t('drawing.edit.move_hint') : [t(`drawing.edit.points.${pointTool}_hint`), shapeMeasure].filter(Boolean).join(' · ')}>
+              <StepBackButton editor={editor} />
               {!movingPoint && <PointTools tool={pointTool} onPick={(next) => editor.setPointTool(next)} />}
               <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t(movingPoint ? 'drawing.edit.save_position' : 'drawing.edit.save')}</Button>
               <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.edit.cancel')}</Button>

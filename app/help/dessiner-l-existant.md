@@ -34,7 +34,8 @@ Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Exi
    - **un point** (arbre, puits, compteur) : touche la carte à l'endroit voulu ;
    - **une ligne** (haie, fossé, chemin) : clique point par point, puis double-clique ou touche **Terminer** ;
    - **une surface** (bâtiment, mare, potager) : clique le contour point par point, puis reviens au premier point ou touche **Terminer**.
-4. **Annuler**, ou la touche Échap, abandonne le tracé.
+4. Un point de trop ? **⌘Z** (Mac) ou **Ctrl+Z** (PC), ou la flèche de retour au téléphone, retire le dernier.
+5. **Annuler**, ou la touche Échap, abandonne le tracé.
 
 L'élément est ajouté à la carte et sa fiche s'ouvre.
 
@@ -66,6 +67,17 @@ Une mare a été relevée trois mètres trop au nord, avec ses berges et les pla
 1. Sur ordinateur, garde la touche **Maj** enfoncée et clique sur chaque élément (zone, plante, mare, haie…) ; un nouveau clic le retire. **Maj** et glisser autour de plusieurs éléments les prend tous d'un coup, sauf ceux que le cadre ne contient pas entièrement.
 2. Sur téléphone, touche un premier élément, puis **Sélectionner plusieurs éléments** dans sa fiche, et touche les autres.
 3. Touche **Déplacer ensemble**, fais glisser la sélection orange à sa place, puis **Enregistrer la position**. Chaque élément garde sa distance aux autres ; **Annuler** (ou Échap) les laisse où ils étaient.
+
+## Revenir en arrière
+
+Une fausse manœuvre se rattrape : **⌘Z** sur Mac, **Ctrl+Z** sur PC. **⌘⇧Z** (ou **Ctrl+Y**) rétablit ce que tu viens d'annuler.
+
+- **En modifiant une forme**, chaque point glissé, ajouté ou retiré s'annule un par un, avant même d'enregistrer. Au téléphone, touche la flèche de retour à côté de **Enregistrer la forme**.
+- **Sur la carte**, tu annules dans l'ordre ce que tu viens de faire : un élément ajouté, déplacé, modifié ou supprimé, plusieurs éléments déplacés ensemble (en un seul pas), une proposition de ton IA acceptée ou refusée.
+- **Un élément supprimé** revient tel quel, avec son numéro, ses photos, ses relevés et ses commentaires. Juste après la suppression, le bouton **Annuler** du message le fait aussi.
+- **À plusieurs**, rien n'écrase le travail d'un autre : si quelqu'un a modifié l'élément entre-temps, Terranova te le dit et n'annule pas.
+
+L'historique dure le temps de ta visite : il repart à zéro quand tu rouvres la carte.
 
 ## Conseils de relevé
 

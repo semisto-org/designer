@@ -7,6 +7,7 @@ class MapFeature < ApplicationRecord
   include PlantableFeature
   include GpsFix
   include MapFeature::Elements
+  include MapFeature::Trash
   include MapFeature::Broadcasts
   include MapFeature::WaterSourceLink
   include MapFeature::Tags

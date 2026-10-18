@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_203000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -478,7 +478,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_203000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "tags", default: [], null: false, array: true
+    t.datetime "deleted_at"
     t.index ["created_by_id"], name: "index_map_features_on_created_by_id"
+    t.index ["deleted_at"], name: "index_map_features_on_deleted_at", where: "(deleted_at IS NOT NULL)"
     t.index ["geometry"], name: "index_map_features_on_geometry", using: :gist
     t.index ["map_id", "layer"], name: "index_map_features_on_map_id_and_layer"
     t.index ["map_id", "status"], name: "index_map_features_on_map_id_and_status"

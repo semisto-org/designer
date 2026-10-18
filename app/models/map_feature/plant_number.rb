@@ -53,7 +53,8 @@ module MapFeature::PlantNumber
       return 1 unless map
       # Two plants placed at the same time must not share a number.
       Map.where(id: map.id).lock.pick(:id) if map.persisted?
-      map.features.where(kind: PlantableFeature::PLANT).where.not(id:).maximum(Arel.sql(NUMBER_SQL)).to_i + 1
+      # Trashed plants count: a restored plant must not meet its number taken.
+      map.features.unscope(where: :deleted_at).where(kind: PlantableFeature::PLANT).where.not(id:).maximum(Arel.sql(NUMBER_SQL)).to_i + 1
     end
 
     def validate_plant_number

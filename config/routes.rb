@@ -19,7 +19,9 @@ Rails.application.routes.draw do
 
   resources :maps, except: :edit do
     scope module: :maps do
-      resources :features, only: %i[index create update destroy]
+      resources :features, only: %i[index create update destroy] do
+        post :restore, on: :member
+      end
     end
   end
 

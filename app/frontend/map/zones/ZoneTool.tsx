@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { featureColor } from '@/map/drawing/catalog'
+import { StepBackButton } from '@/map/drawing/StepBackButton'
 import { revealForDrawing, useDrawingState } from '@/map/drawing/store'
 import { isZoneKind, nextZoneColor, ZONE_COLORS, type ZoneKind } from '@/map/zones/zones'
 
@@ -63,6 +64,7 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
         <span className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/70" style={{ background: color }} aria-hidden />
         <span className="min-w-0 flex-1">{t(drawing === 'zone' ? 'zones.hint_surface' : 'zones.hint_path')}</span>
         <div className="flex shrink-0 gap-2">
+          <StepBackButton editor={editor} />
           <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.toolbar.finish')}</Button>
           <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.toolbar.cancel')}</Button>
         </div>

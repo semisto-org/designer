@@ -24,7 +24,7 @@ class MapSketch
              ST_AsGeoJSON(ST_SimplifyPreserveTopology(geometry, #{SIMPLIFY}), 6) AS geojson,
              row_number() OVER (PARTITION BY map_id, layer, kind ORDER BY id) AS rank
       FROM map_features
-      WHERE map_id = ANY($1::bigint[]) AND status = 'active'
+      WHERE map_id = ANY($1::bigint[]) AND status = 'active' AND deleted_at IS NULL
         AND (layer = 'water' OR kind IN (#{(HEDGE_KINDS + %w[building existing_tree]).map { "'#{_1}'" }.join(", ")}))
         AND layer <> 'networks'
     ) shapes WHERE rank <= #{SHAPE_LIMIT}
@@ -39,7 +39,7 @@ class MapSketch
              CASE WHEN properties->>'variety_id' ~ '^[0-9]+$' THEN (properties->>'variety_id')::bigint END AS variety_id,
              row_number() OVER (PARTITION BY map_id ORDER BY id) AS rank
       FROM map_features
-      WHERE map_id = ANY($1::bigint[]) AND status = 'active' AND kind = 'plant'
+      WHERE map_id = ANY($1::bigint[]) AND status = 'active' AND deleted_at IS NULL AND kind = 'plant'
     ) plants WHERE rank <= #{PLANT_LIMIT}
   SQL
 

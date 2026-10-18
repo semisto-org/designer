@@ -129,10 +129,14 @@ export default function SelectionOverlay() {
     }
     setSaving(true)
     // One after the other: each save touches the map, whose version two saves at once would fight over.
-    let count = 0
-    for (const f of changed) {
-      if (await saveFeature(latest.current, f.properties.id, { geometry: moved.get(f.properties.id) })) count += 1
-    }
+    // One ⌘Z puts them all back.
+    const count = await latest.current.undoGroup(t('undo.labels.move_all', { count: changed.length }), async () => {
+      let saved = 0
+      for (const f of changed) {
+        if (await saveFeature(latest.current, f.properties.id, { geometry: moved.get(f.properties.id) })) saved += 1
+      }
+      return saved
+    })
     setSaving(false)
     setMoved(null)
     // saveFeature already said why an element could not be saved.

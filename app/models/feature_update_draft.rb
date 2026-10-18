@@ -23,7 +23,8 @@ class FeatureUpdateDraft < ApplicationRecord
   validates :batch, :rationale, presence: true
   validate :changes_shape
 
-  scope :pending, -> { where(status: "pending") }
+  # A trashed element's pending changes wait, hidden, until it is restored.
+  scope :pending, -> { where(status: "pending", map_feature_id: MapFeature.select(:id)) }
   scope :reviewed, -> { where(status: %w[accepted rejected]) }
   scope :ordered, -> { order(:id) }
 

@@ -1,0 +1,30 @@
+fr:
+  undo:
+    action: "Annuler"
+    step_back: "Revenir en arrière (⌘Z / Ctrl+Z)"
+    deleted: "Supprimé : « %{name} »."
+    undone: "Annulé : %{label}."
+    redone: "Rétabli : %{label}."
+    nothing_to_undo: "Rien à annuler."
+    nothing_to_redo: "Rien à rétablir."
+    shape_nothing_to_undo: "Rien à annuler sur cette forme."
+    shape_nothing_to_redo: "Rien à rétablir sur cette forme."
+    changed_meanwhile: "« %{name} » a été modifié entre-temps par quelqu'un d'autre : rien n'est annulé, pour ne pas effacer son travail."
+    gone: "« %{name} » n'est plus sur la carte : rien à annuler."
+    failed: "Impossible d'annuler : %{message}"
+    labels:
+      create: "l'ajout de « %{name} »"
+      update: "la modification de « %{name} »"
+      reshape: "la forme de « %{name} »"
+      delete: "la suppression de « %{name} »"
+      accept: "l'acceptation de « %{name} »"
+      reject: "le refus de « %{name} »"
+      accept_all:
+        one: "l'acceptation d'une proposition"
+        other: "l'acceptation de %{count} propositions"
+      move_all:
+        one: "le déplacement d'un élément"
+        other: "le déplacement de %{count} éléments"
+      reject_all:
+        one: "le refus d'une proposition"
+        other: "le refus de %{count} propositions"

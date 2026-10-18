@@ -34,9 +34,16 @@ module Maps
       render json: { message: t("maps.errors.stale"), feature: @feature.reload.as_geojson }, status: :conflict
     end
 
+    # To the trash: « Annuler » brings it back (restore) for MapFeature::Trash::KEEP_FOR.
     def destroy
-      @feature.destroy!
+      @feature.trash!(by: Current.user)
       head :no_content
+    end
+
+    def restore
+      feature = @map.features.trashed.find(params[:id])
+      feature.restore!(by: Current.user)
+      render json: feature.as_geojson
     end
 
     private
