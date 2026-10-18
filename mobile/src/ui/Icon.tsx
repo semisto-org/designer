@@ -1,7 +1,7 @@
 // The app's icons: Lucide (the website's set), one stroke for all, hidden
 // from screen readers (the button around an icon carries the label).
 import {
-  Aperture, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
+  Apple, Aperture, Bandage, Bug, Flower2, Scissors, Wrench, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
   Eye, EyeOff, Fence, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Navigation2, NotebookPen, PawPrint, Ruler, ScanSearch, Shovel, Sprout,
   SkipForward, Square, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
@@ -12,6 +12,7 @@ const ICONS = {
   photo: Camera, plant: Sprout, point: MapPin, measure: Ruler, identify: ScanSearch, trace: Footprints,
   display: Layers, follow: LocateFixed,
   note: NotebookPen, storm: CloudRainWind, planted: Shovel, followUp: HeartPulse, sheet: BookOpen,
+  flowering: Flower2, pruning: Scissors, damage: Bandage, disease: Bug, intervention: Wrench, harvest: Apple,
   flows: Waves, pools: Droplet, seeps: Droplets,
   synced: CircleCheck, sending: CloudUpload, offline: CloudOff,
   info: Info, warning: TriangleAlert, error: CircleAlert,
