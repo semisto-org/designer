@@ -250,6 +250,7 @@ Rails.application.routes.draw do
     member do
       post :merge
       post :reject
+      post :gbif
     end
   end
   resources :plants, only: %i[index show]
