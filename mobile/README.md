@@ -6,7 +6,13 @@ Terranova », identifier `org.semisto.designer`.
 
 What it does, for the maps one belongs to:
 
-- shows the map and the design around the person's position (GPS, heading);
+- shows the map and the design around the person's position (GPS, heading),
+  under one sheet (`ui/Sheet.tsx`, `terrain/SheetContent.tsx`): at rest the
+  day, the help center's card of the month (`app/help/seasons.yml`, copied
+  by `npm run locales`) and « Autour de moi », the elements within 30 m
+  nearest first (also the screen reader's way to the map); « Noter ici »;
+  a chosen element with its age (« a passé 2 hivers ici »), its distance
+  and direction, and one-tap gestures (« Planté aujourd'hui » with undo);
 - downloads a map for offline use (map data + base map tiles of the
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
   network is back;

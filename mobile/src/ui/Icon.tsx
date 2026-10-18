@@ -1,8 +1,8 @@
 // The app's icons: Lucide (the website's set), one stroke for all, hidden
 // from screen readers (the button around an icon carries the label).
 import {
-  Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CloudOff, CloudUpload, Droplet, Droplets, Footprints,
-  Info, Layers, LocateFixed, MapPin, ScanSearch, Sprout, TriangleAlert, Undo2, Waves, X, type LucideIcon,
+  BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets, Footprints,
+  HeartPulse, Info, Layers, LocateFixed, MapPin, NotebookPen, ScanSearch, Shovel, Sprout, TriangleAlert, Undo2, Waves, X, type LucideIcon,
 } from 'lucide-react-native'
 import { colors } from './theme'
 
@@ -10,6 +10,7 @@ const ICONS = {
   back: ChevronLeft, next: ChevronRight, close: X, check: Check, undo: Undo2,
   photo: Camera, plant: Sprout, point: MapPin, identify: ScanSearch, trace: Footprints,
   display: Layers, follow: LocateFixed,
+  note: NotebookPen, storm: CloudRainWind, planted: Shovel, followUp: HeartPulse, sheet: BookOpen,
   flows: Waves, pools: Droplet, seeps: Droplets,
   synced: CircleCheck, sending: CloudUpload, offline: CloudOff,
   info: Info, warning: TriangleAlert, error: CircleAlert,

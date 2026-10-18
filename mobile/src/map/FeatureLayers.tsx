@@ -9,7 +9,7 @@ import { pickFeatureId } from '@/lib/pick'
 import type { MapBundle } from '@/lib/types'
 import { colors } from '@/ui/theme'
 
-export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-point', 'features-plant']
+export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-line-dashed', 'features-point', 'features-plant']
 const FONT = ['Noto Sans Regular']
 
 export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundle: MapBundle; display: Display; selectedId: number | null; onSelect: (id: number) => void }) {
@@ -27,6 +27,8 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
         planted: feature.properties.planted_on ? 1 : 0,
         selected: feature.id === selectedId ? 1 : 0,
         pending: feature.properties.pending ? 1 : 0,
+        // Not on the ground yet: an AI draft, or a structure still in project.
+        dashed: feature.properties.status === 'draft' || feature.properties.planned === true ? 1 : 0,
       },
     })),
   }), [bundle, display, selectedId])
@@ -54,12 +56,18 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
           onSelect(fid)
         }}
       >
+        {/* As on the website (map/layers/features.ts): what is not on the ground yet is lighter and dashed. */}
         <Layer id="features-fill" type="fill" filter={['==', ['geometry-type'], 'Polygon']}
-          paint={{ 'fill-color': ['get', 'color'], 'fill-opacity': ['case', ['==', ['get', 'selected'], 1], 0.45, 0.25] }} />
-        <Layer id="features-line" type="line" filter={['!=', ['geometry-type'], 'Point']}
+          paint={{ 'fill-color': ['get', 'color'], 'fill-opacity': ['case', ['==', ['get', 'selected'], 1], 0.45, ['==', ['get', 'dashed'], 1], 0.12, 0.25] }} />
+        <Layer id="features-line" type="line" filter={['all', ['!=', ['geometry-type'], 'Point'], ['==', ['get', 'dashed'], 0]]}
           paint={{ 'line-color': ['get', 'color'], 'line-width': ['case', ['==', ['get', 'selected'], 1], 5, 2.5] }} />
+        <Layer id="features-line-dashed" type="line" filter={['all', ['!=', ['geometry-type'], 'Point'], ['==', ['get', 'dashed'], 1]]}
+          paint={{ 'line-color': ['get', 'color'], 'line-width': ['case', ['==', ['get', 'selected'], 1], 5, 2.5], 'line-dasharray': [3, 2] }} />
         <Layer id="features-point" type="circle" filter={['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'plant']]}
-          paint={{ 'circle-color': ['get', 'color'], 'circle-radius': ['case', ['==', ['get', 'selected'], 1], 10, 7], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2 }} />
+          paint={{
+            'circle-color': ['get', 'color'], 'circle-radius': ['case', ['==', ['get', 'selected'], 1], 10, 7], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2,
+            'circle-opacity': ['case', ['==', ['get', 'dashed'], 1], 0.6, 1],
+          }} />
         <Layer id="features-plant" type="circle" filter={['==', ['get', 'kind'], 'plant']}
           paint={{
             'circle-color': ['case', ['==', ['get', 'planted'], 1], ['get', 'color'], '#ffffff'],
