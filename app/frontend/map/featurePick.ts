@@ -60,6 +60,14 @@ export function hitsAt(map: Pickable, point: { x: number; y: number }): Hit[] {
   return found.map(hitOf)
 }
 
+/** Everything selectable drawn in a screen box (Shift+drag), even partly. */
+export function hitsIn(map: Pickable, from: { x: number; y: number }, to: { x: number; y: number }): Hit[] {
+  const present = PICK_LAYERS.filter((id) => map.getLayer(id))
+  if (!present.length) return []
+  const box: [PointLike, PointLike] = [[Math.min(from.x, to.x), Math.min(from.y, to.y)], [Math.max(from.x, to.x), Math.max(from.y, to.y)]]
+  return map.queryRenderedFeatures(box, { layers: present }).map(hitOf)
+}
+
 /** The element a click at this point selects, or null. */
 export function featureAt(map: Pickable, point: { x: number; y: number }, areaOf?: (id: number) => number): number | null {
   return pickFeature(hitsAt(map, point), areaOf)

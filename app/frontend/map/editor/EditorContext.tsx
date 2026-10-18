@@ -41,6 +41,12 @@ export type Editor = {
   selectedId: number | null
   selected: MapFeature | null
   select: (id: number | null) => void
+  /** Elements picked together (Shift+click, or « Sélectionner plusieurs » on a phone) to move them at once; usually empty. */
+  selection: number[]
+  setSelection: (ids: number[]) => void
+  /** A tap adds to the selection instead of replacing it (phones have no Shift key). */
+  multiSelect: boolean
+  setMultiSelect: (on: boolean) => void
   createFeature: (input: NewFeature) => Promise<MapFeature>
   updateFeature: (id: number, patch: FeaturePatch) => Promise<SavedFeature>
   deleteFeature: (id: number) => Promise<void>

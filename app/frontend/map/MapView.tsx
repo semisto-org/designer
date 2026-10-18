@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { t } from '@/lib/i18n'
 import { MapContext } from '@/map/MapContext'
+import { boxSelect } from '@/map/boxSelect'
 import { isWebGLError } from '@/map/webgl'
 
 // MapLibre locates its worker next to its own module, which a bundler moves:
@@ -60,6 +61,9 @@ export function MapView({ center, zoom, bbox, style, className, children, onRead
         center: center ?? [4.87, 50.47],
         zoom: zoom ?? 8,
         maxZoom: 22,
+        boxZoom: {
+          boxZoomEnd: (map, from, to) => boxSelect.handler ? boxSelect.handler(from, to) : map.fitScreenCoordinates(from, to, map.getBearing(), { linear: true }),
+        },
         attributionControl: { compact: true },
         // Needed to export the canvas (scaled PDF, thumbnails).
         canvasContextAttributes: { preserveDrawingBuffer: true },
