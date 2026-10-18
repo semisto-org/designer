@@ -9,6 +9,20 @@ export type CatalogPlan = {
   interval: 'year' | 'month' | null
   maxMaps: number | null
   purchasable: boolean
+  /** Pro and Team: the yearly price (two months free), else null. */
+  yearlyPriceCents: number | null
+  /** The first year's yearly price while the launch offer runs, else null. */
+  launchPriceCents: number | null
+  yearlyPurchasable: boolean
+  storageGb: number | null
+  renderingsPerMonth: number | null
+}
+
+export type BillingInterval = 'month' | 'year'
+
+export type StorageUsageData = {
+  usedBytes: number
+  limitBytes: number | null
 }
 
 export type PassData = {
@@ -84,8 +98,12 @@ export type BillingData = {
   invoiceRequests: InvoiceRequestSummary[]
   catalog: CatalogPlan[]
   memberPriceCents: number
+  /** Semisto membership fee up to date: Home is discounted automatically at checkout. */
+  member: boolean
+  storage: StorageUsageData
   checkout: 'success' | 'cancelled' | null
   highlight: CatalogKey | null
+  interval: BillingInterval
 }
 
 export type AccountKind = 'individual' | 'professional'
@@ -102,6 +120,8 @@ export type AccountData = {
   hasPassword: boolean
   /** Who the person designs for (welcome page); null until chosen. */
   accountKind: AccountKind | null
+  /** VAT (BCE) number printed on invoices, as BE0123456789. */
+  vatNumber: string | null
   /** The logo printed at the top of my maps' documents (pro accounts). */
   logoUrl: string | null
   plan: PlanKey

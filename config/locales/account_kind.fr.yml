@@ -14,7 +14,7 @@ fr:
       points:
         - "Ta première carte est gratuite et le reste."
         - "Un carnet de route t'accompagne étape par étape : observer, cartographier, concevoir, planter."
-        - "Le forfait particulier (%{yearly} par an) ajoute d'autres cartes, le PDF à l'échelle et les analyses du lieu."
+        - "La formule Home (%{yearly} par an) ajoute d'autres cartes, de la place pour tes photos, le PDF à l'échelle et les analyses du lieu."
       note: "an 1, an 5, an 15… ton jardin grandit ici"
       submit: "Je conçois mon lieu"
     professional:
@@ -24,7 +24,7 @@ fr:
       points:
         - "Les outils de ton activité : tâches de projet, barèmes et offres chiffrées depuis la carte."
         - "Une équipe pour travailler à plusieurs sur les cartes de tes clients."
-        - "Les formules Atelier (%{atelier} par mois, 5 cartes) et Bureau d'études (%{bureau} par mois, cartes illimitées)."
+        - "Les formules Pro (%{atelier} par mois, 6 cartes actives) et Team (%{bureau} par mois, 20 cartes actives pour toute l'équipe)."
       note: "un lieu par client, chacun à son rythme"
       submit: "Je conçois pour des clients"
   account:

@@ -96,9 +96,9 @@ fr:
       and: "et"
       plan_names:
         free: "carte gratuite"
-        yearly: "forfait particulier"
-        atelier: "Atelier"
-        bureau: "Bureau d'études"
+        yearly: "Home"
+        atelier: "Pro"
+        bureau: "Team"
     problems:
       # Shown to the recipient (accept, decline, their screen).
       recipient:

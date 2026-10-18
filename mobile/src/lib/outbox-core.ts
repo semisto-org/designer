@@ -22,7 +22,7 @@ export type NewFeature = {
 export type Op = Base & (
   | { type: 'createFeature'; tempId: number; feature: NewFeature }
   | { type: 'updateFeature'; featureId: FeatureRef; lockVersion: number; changes: FeatureChanges }
-  | { type: 'uploadPhoto'; file: string; lng: number | null; lat: number | null; takenAt: string | null; featureId: FeatureRef | null; caption?: string | null; bioindicatorStatus?: 'to_analyze' }
+  | { type: 'uploadPhoto'; file: string; lng: number | null; lat: number | null; takenAt: string | null; featureId: FeatureRef | null; caption?: string | null; bioindicatorStatus?: 'to_analyze'; heading?: number | null; retakeOf?: number | null }
   | { type: 'createObservation'; featureId: FeatureRef; observedOn: string; survival: Survival; vigor: number | null; note: string | null; photo: string | null }
   | { type: 'createHarvest'; featureId: FeatureRef; harvest: NewHarvest }
   | { type: 'createStorageReading'; featureId: FeatureRef; reading: NewStorageReading }
@@ -141,9 +141,17 @@ export type Transport = {
 }
 
 type HttpError = { status: number; body?: Record<string, unknown> | null; message?: string }
-const statusOf = (error: unknown) => (typeof (error as HttpError)?.status === 'number' ? (error as HttpError).status : 0)
+const statusOf = (error: unknown) => (error as HttpError)?.status
+const reasonOf = (error: unknown) => String((error as HttpError)?.body?.message ?? (error as HttpError)?.message ?? error)
 
-export type FlushResult = { state: OutboxState; sent: number; stopped: 'done' | 'offline' | 'server' | 'auth'; sentFiles: string[] }
+export type FlushResult = {
+  state: OutboxState
+  sent: number
+  stopped: 'done' | 'offline' | 'server' | 'auth'
+  sentFiles: string[]
+  /** When a round stops: the change it stopped on, and why (shown in « Envois »). */
+  blocked?: { id: string; reason: string }
+}
 
 /** Called after each op sent or refused, so a crash mid-round loses nothing and sends nothing twice. */
 export type OnStep = (state: OutboxState, sentFiles: string[]) => void
@@ -179,11 +187,13 @@ export async function flush(initial: OutboxState, transport: Transport, onStep?:
       onStep?.(state, files)
     } catch (error) {
       const status = statusOf(error)
-      if (status === 0) return { state, sent, stopped: 'offline', sentFiles }
-      if (status === 401) return { state, sent, stopped: 'auth', sentFiles }
-      if (status >= 500 || status === 429) return { state, sent, stopped: 'server', sentFiles }
-      const message = (error as HttpError).body?.message ?? (error as HttpError).message ?? `HTTP ${status}`
-      state = replace(state, op, { ...op, error: String(message) })
+      const blocked = { id: op.id, reason: reasonOf(error) }
+      if (status === 0) return { state, sent, stopped: 'offline', sentFiles, blocked }
+      if (status === 401) return { state, sent, stopped: 'auth', sentFiles, blocked }
+      if (typeof status === 'number' && (status >= 500 || status === 429)) return { state, sent, stopped: 'server', sentFiles, blocked }
+      // A refusal, or a fault in the app itself (no HTTP status): set this
+      // change aside with its reason, never hold back the next ones for it.
+      state = replace(state, op, { ...op, error: typeof status === 'number' ? blocked.reason : `app: ${blocked.reason}` })
       onStep?.(state, [])
     }
   }

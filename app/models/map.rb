@@ -79,6 +79,22 @@ class Map < ApplicationRecord
   def editable_by?(user) = %w[owner editor].include?(role_for(user))
   def manageable_by?(user) = role_for(user) == "owner"
 
+  # An archived map stays readable, exportable and commentable, never
+  # editable, and does not count against the plan's active maps.
+  def archived? = archived_at.present?
+
+  # Archiving frees a place among the payer's active maps; bringing a map
+  # back needs one.
+  def archive!
+    update!(archived_at: Time.current) unless archived?
+  end
+
+  def unarchivable? = archived? && Entitlements.for(billing_user).can_create_map?(billing_user)
+
+  def unarchive!
+    update!(archived_at: nil) if archived?
+  end
+
   # After a plan ends, the payer's maps beyond the plan's limit stay readable
   # (view, export, comment) but cannot be edited: the oldest maps keep the
   # allowance, up to max_maps. Nothing is ever deleted. Never true while
@@ -166,6 +182,7 @@ class Map < ApplicationRecord
       # The views show « Formulaires » for a team's maps only.
       teamId: organization_id,
       ownerName: owner.display_name,
+      archived: archived?,
       updatedAt: updated_at.iso8601,
       lockVersion: lock_version
     }

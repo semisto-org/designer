@@ -11,12 +11,21 @@ module MapScoped
 
     def require_editor!
       if %w[owner editor].include?(@role)
+        return deny_editing_archived if @map.archived?
         return unless @map.read_only_by_plan?
         return deny_editing_by_plan
       end
       respond_to do |format|
         format.json { render json: { message: t("maps.errors.read_only") }, status: :forbidden }
         format.any { redirect_to map_path(@map), alert: t("maps.errors.read_only") }
+      end
+    end
+
+    # An archived map is read-only until its owner brings it back.
+    def deny_editing_archived
+      respond_to do |format|
+        format.json { render json: { message: t("maps.errors.archived"), code: "archived" }, status: :forbidden }
+        format.any { redirect_to map_path(@map), alert: t("maps.errors.archived") }
       end
     end
 

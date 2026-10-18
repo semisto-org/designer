@@ -8,7 +8,11 @@ module BillingTestHelper
     "STRIPE_PRICE_YEARLY" => "price_yearly",
     "STRIPE_PRICE_ATELIER" => "price_atelier",
     "STRIPE_PRICE_BUREAU" => "price_bureau",
-    "STRIPE_PRICE_DRONE" => "price_drone"
+    "STRIPE_PRICE_ATELIER_YEARLY" => "price_atelier_yearly",
+    "STRIPE_PRICE_BUREAU_YEARLY" => "price_bureau_yearly",
+    "STRIPE_PRICE_DRONE" => "price_drone",
+    "STRIPE_COUPON_MEMBER" => "coupon_member",
+    "STRIPE_COUPON_LAUNCH" => "coupon_launch"
   }.freeze
 
   def with_billing(overrides = {})

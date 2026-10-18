@@ -27,7 +27,7 @@ class FormResponse < ApplicationRecord
       update!(map:)
       document = map_document if map_document&.map_id == map.id
       document ||= map.documents.create!(
-        title: document_title, tags: [ form.name ], origin: "form",
+        title: document_title, tags: [ form.name ], origin: "form", skip_storage_quota: true,
         file: { io: StringIO.new(to_markdown), filename: "#{form.name.parameterize.presence || "formulaire"}-#{submitted_at.to_date.iso8601}.md", content_type: "text/markdown" }
       )
       map_document&.destroy! if map_document && map_document != document

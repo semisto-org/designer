@@ -265,6 +265,68 @@
         "other": "Elles rejoindront les photos de la carte, placées d'après leur position quand elles en ont une."
       }
     },
+    "retake": {
+      "photo": "Photo",
+      "gone": "Cette photo n'est plus sur la carte.",
+      "by": "Prise par %{name}",
+      "start": "Reprendre cette photo",
+      "start_hint": "Reviens au même endroit dans quelques mois : la photo d'aujourd'hui s'affichera en transparence sur l'appareil, et tu verras ton jardin pousser.",
+      "here_title": "Déjà photographié ici",
+      "here_hint": "Reprends une de ces photos au même endroit pour voir ce qui a poussé depuis.",
+      "here_count": {
+        "one": "%{count} photo",
+        "other": "%{count} photos"
+      },
+      "start_hint_again": "Une photo de plus au même endroit, et la série raconte encore mieux comment le jardin grandit.",
+      "series": {
+        "one": "%{count} photo au même endroit",
+        "other": "%{count} photos au même endroit, la dernière %{span}"
+      },
+      "before": "Avant",
+      "after": "Après",
+      "compare_label": "Avant et après : glisse vers la gauche ou la droite",
+      "title": "Reprendre la photo du %{date}",
+      "no_camera": "L'appareil photo n'est pas autorisé. Tu peux l'autoriser dans les réglages du téléphone.",
+      "walk": "Va %{distance} vers %{direction} : c'est là que la photo a été prise.",
+      "turn_left": "Tu y es. Tourne-toi un peu vers la gauche.",
+      "turn_right": "Tu y es. Tourne-toi un peu vers la droite.",
+      "ready": "Tu y es, à %{accuracy} près. Aligne ce que tu vois sur la photo en transparence, puis déclenche.",
+      "locating": "Je cherche où tu es…",
+      "free": "Aligne ce que tu vois sur la photo en transparence, puis déclenche.",
+      "ghost": "Photo en transparence",
+      "ghost_levels": {
+        "0": "Légère",
+        "1": "Marquée",
+        "2": "Cachée"
+      },
+      "shoot": "Prendre la photo",
+      "failed": "La photo n'a pas pu être prise. Réessaie.",
+      "review_title": "Avant, après",
+      "review_hint": "Glisse le trait pour passer de l'une à l'autre.",
+      "keep": "Garder cette photo",
+      "again": "Recommencer",
+      "saved_title": "Photo gardée",
+      "saved": "Elle rejoint la série, à côté de la précédente.",
+      "elapsed": {
+        "same_day": "le même jour",
+        "days": {
+          "one": "%{count} jour plus tard",
+          "other": "%{count} jours plus tard"
+        },
+        "months": {
+          "one": "%{count} mois plus tard",
+          "other": "%{count} mois plus tard"
+        },
+        "years": {
+          "one": "%{count} an plus tard",
+          "other": "%{count} ans plus tard"
+        },
+        "years_half": {
+          "one": "%{count} an et demi plus tard",
+          "other": "%{count} ans et demi plus tard"
+        }
+      }
+    },
     "media": {
       "title": "Ajouter aux photos de la carte",
       "body": "Une photo, une vidéo du terrain, ou ce que tu as déjà dans ta galerie.",
@@ -278,6 +340,7 @@
     "feature": {
       "untitled": "Élément",
       "gone": "Cet élément n'est plus sur la carte.",
+      "open_photo": "Ouvrir la photo du %{date}",
       "not_sent": "Pas encore envoyé : il le sera dès que le réseau revient.",
       "to_plant": "À planter",
       "planted_today": "Planté aujourd'hui",
@@ -445,6 +508,17 @@
       "offline": "Hors ligne : tes modifications sont gardées sur le téléphone et partiront au retour du réseau.",
       "empty": "Rien en attente : tout est enregistré.",
       "send_now": "Envoyer maintenant",
+      "sending": "Envoi en cours…",
+      "blocked_here": "L'envoi s'arrête ici : %{reason}. Il sera réessayé tout seul ; si ça se répète, tu peux abandonner cette modification pour laisser partir les suivantes.",
+      "run": {
+        "sent": {
+          "one": "1 modification envoyée.",
+          "other": "%{count} modifications envoyées."
+        },
+        "offline": "L'envoi n'a pas abouti (%{reason}). Nouvel essai tout seul dans quelques instants.",
+        "server": "Le serveur ne répond pas pour l'instant (%{reason}). Nouvel essai tout seul dans quelques instants.",
+        "auth": "Ta session a expiré : reconnecte-toi depuis ton compte, tes envois partiront ensuite."
+      },
       "waiting": "En attente d'envoi",
       "refused": "Refusé par le serveur : %{reason}",
       "parent_failed": "Pas envoyé : l'élément auquel il se rapporte a été refusé.",

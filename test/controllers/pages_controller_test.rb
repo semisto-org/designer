@@ -75,9 +75,9 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   test "the pricing page exposes the catalogue and the member price" do
     props = inertia_page("/tarifs")["props"]
     prices = props["catalog"].to_h { |plan| [ plan["key"], plan["priceCents"] ] }
-    assert_equal({ "free" => 0, "yearly" => 7_900, "atelier" => 4_900, "bureau" => 9_900, "drone" => 28_000 }, prices)
-    assert_equal 5_530, props["memberPriceCents"]
-    assert_equal [ 1, 10, 5, Entitlements::UNLIMITED_MAPS ], props["catalog"].first(4).map { |plan| plan["maxMaps"] }
+    assert_equal({ "free" => 0, "yearly" => 7_900, "atelier" => 4_900, "bureau" => 12_900, "drone" => 38_000 }, prices)
+    assert_equal 5_900, props["memberPriceCents"]
+    assert_equal [ 1, 3, 6, 20 ], props["catalog"].first(4).map { |plan| plan["maxMaps"] }
   end
 
   test "the full HTML page renders the meta tags for crawlers and link previews" do

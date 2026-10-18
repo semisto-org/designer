@@ -89,15 +89,7 @@ module Billing
       # True when the EU VAT number is on the customer (printed on the invoice).
       # A number Stripe refuses is printed as a custom field instead.
       def attach_tax_id(customer_id)
-        vat = @request.eu_vat_number or return false
-        known = Array(gateway.list_tax_ids(customer_id)["data"]).any? do |tax_id|
-          tax_id["type"] == "eu_vat" && tax_id["value"].to_s.upcase.gsub(/[^0-9A-Z]/, "") == vat
-        end
-        gateway.create_tax_id(customer_id, type: "eu_vat", value: vat) unless known
-        true
-      rescue Providers::StripeGateway::Error => e
-        Rails.error.report(e, handled: true, severity: :warning)
-        false
+        VatNumber.attach(gateway, customer_id, @request.eu_vat_number)
       end
 
       # The draft (or open invoice) of an earlier attempt that stopped half-way.

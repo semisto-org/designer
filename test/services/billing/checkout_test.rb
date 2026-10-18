@@ -57,6 +57,64 @@ class Billing::CheckoutTest < ActiveSupport::TestCase
     end
   end
 
+  test "Pro and Team can be paid yearly; until the end of 2026 the launch coupon replaces the promotion code field" do
+    with_billing do
+      travel_to Time.zone.local(2026, 12, 31, 22) do
+        call("atelier", interval: "year")
+        params = @requests.last
+        assert_equal "price_atelier_yearly", params.dig("line_items", "0", "price")
+        assert_equal "coupon_launch", params.dig("discounts", "0", "coupon")
+        assert_nil params["allow_promotion_codes"]
+        assert_equal "year", params.dig("metadata", "interval")
+      end
+      travel_to(Time.zone.local(2027, 1, 1, 0, 30)) { call("bureau", interval: "year") }
+      assert_equal "price_bureau_yearly", @requests.last.dig("line_items", "0", "price")
+      assert_nil @requests.last["discounts"]
+      assert_equal "true", @requests.last["allow_promotion_codes"]
+      call("bureau", interval: "month")
+      assert_equal "price_bureau", @requests.last.dig("line_items", "0", "price")
+      assert_nil @requests.last["discounts"]
+    end
+  end
+
+  test "a Semisto member in good standing gets the member coupon on Home only" do
+    with_billing("SEMISTO_MEMBERSHIP_API_TOKEN" => "standing-token") do
+      standing = stub_request(:post, "https://app.semisto.org/api/v1/asbl/standing")
+        .with(body: { email: "bob@example.org" }.to_json, headers: { "Authorization" => "Bearer standing-token" })
+        .to_return(body: { in_good_standing: true, paid_through: "2026-12-31" }.to_json)
+      call("yearly")
+      assert_equal "coupon_member", @requests.last.dig("discounts", "0", "coupon")
+      assert_nil @requests.last["allow_promotion_codes"]
+      call("atelier")
+      assert_nil @requests.last["discounts"]
+      assert_requested standing
+    end
+  end
+
+  test "no member price when the internal app says no or cannot be reached" do
+    with_billing("SEMISTO_MEMBERSHIP_API_TOKEN" => "standing-token") do
+      stub_request(:post, "https://app.semisto.org/api/v1/asbl/standing").to_return(body: { in_good_standing: false, paid_through: nil }.to_json)
+      call("yearly")
+      assert_equal "true", @requests.last["allow_promotion_codes"]
+      Rails.cache.clear
+      stub_request(:post, "https://app.semisto.org/api/v1/asbl/standing").to_timeout
+      call("yearly")
+      assert_nil @requests.last["discounts"]
+    end
+  end
+
+  test "the VAT number from « Mon compte » goes on the Stripe customer, and an address is always asked" do
+    @user.update!(vat_number: "0790.631.657")
+    with_billing do
+      stub_request(:get, stripe_api("customers/cus_new/tax_ids?limit=100")).to_return(body: { data: [] }.to_json, headers: { "Content-Type" => "application/json" })
+      tax_ids = []
+      stub_stripe_post("customers/cus_new/tax_ids", { id: "txi_1" }, log: tax_ids)
+      call("atelier")
+      assert_equal [ { "type" => "eu_vat", "value" => "BE0790631657" } ], tax_ids
+      assert_equal "required", @requests.last["billing_address_collection"]
+    end
+  end
+
   test "the drone mission is a one-off payment" do
     with_billing do
       call("drone")

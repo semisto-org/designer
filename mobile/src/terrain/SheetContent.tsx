@@ -3,9 +3,10 @@
 // chosen, that feature with its age, where it stands and the gestures it asks.
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native'
 import { featureColor, featureTitle, kindLabel, speciesName } from '@/lib/elements'
-import { formatDay, formatDistance, formatTime, seasonOf, t } from '@/lib/i18n'
+import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '@/lib/i18n'
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
+import type { SpotPhotos } from '@/lib/retake'
 import { arrived, arrowAngle, type Target } from '@/lib/tour'
 import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
 import type { MapFeature, Photo, Planting } from '@/lib/types'
@@ -54,10 +55,12 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
   /** Plants of the design still to put in the ground, for the planting round. */
   toPlant?: number; onTour?: () => void
+  /** Photos already taken where one stands: what can be taken again here. */
+  mapId?: number; photosHere?: SpotPhotos[]; onPhoto?: (photo: Photo) => void
 }) {
   const card = monthCard()
   return (
@@ -78,6 +81,21 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
       {located === 'yes' && around.length === 0 && <Body muted>{t('mobile.terrain.around_none', { distance: formatDistance(AROUND_RADIUS) })}</Body>}
       {located === 'yes' && around.length > 0 && <Body muted>{t('mobile.terrain.around_hint', { distance: formatDistance(AROUND_RADIUS) })}</Body>}
       {around.map((item) => <AroundRow key={item.feature.id} item={item} planting={planting} onPress={() => onPick(item.feature)} />)}
+      {photosHere.length > 0 && onPhoto && mapId !== undefined && (
+        <>
+          <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.retake.here_title')}</Text>
+          <Body muted>{t('mobile.retake.here_hint')}</Body>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm }}>
+            {photosHere.map(({ photo, meters, count }) => (
+              <Pressable key={photo.id} onPress={() => { haptics.tap(); onPhoto(photo) }} accessibilityRole="button"
+                accessibilityLabel={[formatDate(photo.takenAt), formatDistance(meters), count > 1 ? t('mobile.retake.here_count', { count }) : null].filter(Boolean).join(', ')}>
+                <RemoteImage path={`/maps/${mapId}/photos/${photo.id}/image?size=thumb`} style={s.strip} />
+                <Text style={s.meta} maxFontSizeMultiplier={1.3}>{count > 1 ? t('mobile.retake.here_count', { count }) : formatDate(photo.takenAt)}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </>
+      )}
     </View>
   )
 }
@@ -281,13 +299,20 @@ export function FeatureTop({ mapId, feature, planting, photo, where, gestures, o
   )
 }
 
-export function FeatureBody({ mapId, feature, photos, onOpen }: { mapId: number; feature: MapFeature; photos: Photo[]; onOpen: () => void }) {
+export function FeatureBody({ mapId, feature, photos, onOpen, onPhoto }: {
+  mapId: number; feature: MapFeature; photos: Photo[]; onOpen: () => void; onPhoto?: (photo: Photo) => void
+}) {
   return (
     <View style={s.body}>
       {feature.properties.notes ? <Text style={s.notes} maxFontSizeMultiplier={MAX_FONT_SCALE}>{feature.properties.notes}</Text> : null}
       {photos.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm }}>
-          {photos.slice(0, 8).map((photo) => <RemoteImage key={photo.id} path={`/maps/${mapId}/photos/${photo.id}/image?size=thumb`} style={s.strip} />)}
+          {photos.slice(0, 8).map((photo) => (
+            <Pressable key={photo.id} disabled={!onPhoto} onPress={() => { haptics.tap(); onPhoto?.(photo) }}
+              accessibilityRole="button" accessibilityLabel={t('mobile.feature.open_photo', { date: formatDate(photo.takenAt) })}>
+              <RemoteImage path={`/maps/${mapId}/photos/${photo.id}/image?size=thumb`} style={s.strip} />
+            </Pressable>
+          ))}
         </ScrollView>
       )}
       <Button variant="ghost" icon="sheet" label={t('mobile.terrain.open_full')} onPress={onOpen} />

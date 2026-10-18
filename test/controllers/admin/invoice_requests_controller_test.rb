@@ -2,6 +2,9 @@ require "test_helper"
 require_relative "../../test_helpers/billing_test_helper"
 
 class Admin::InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
+  # After the launch offer: invoices carry the plain yearly prices.
+  setup { travel_to Time.zone.local(2027, 2, 1) }
+
   include BillingTestHelper
 
   setup do
@@ -44,7 +47,7 @@ class Admin::InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_equal({ "open" => 1, "paid" => 1, "cancelled" => 0, "all" => 2 }, props["counts"])
     assert_equal false, props["stripeEnabled"]
     row = props["requests"].sole
-    assert_equal [ "Administration communale de Yvoir", "compta@yvoir.be", "BC-42", true, 118_800, "Bob" ],
+    assert_equal [ "Administration communale de Yvoir", "compta@yvoir.be", "BC-42", true, 129_000, "Bob" ],
       row.values_at("organizationName", "billingEmail", "purchaseOrder", "euVat", "amountCents").push(row.dig("user", "name"))
     assert_equal "Rue 1, 5530 Yvoir, BE", row["stripeAddress"]
     assert_equal Date.current.iso8601, row["suggestedStart"]
@@ -67,7 +70,7 @@ class Admin::InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_response :see_other
     grant = @pending.reload.plan_grant
     assert_equal [ Time.zone.local(2026, 11, 2), Time.zone.local(2027, 11, 2), @admin ], [ grant.starts_at, grant.ends_at, grant.granted_by ]
-    assert_equal "Formule Bureau d'études activée du 2 novembre 2026 au 2 novembre 2027.", flash[:notice]
+    assert_equal "Formule Team activée du 2 novembre 2026 au 2 novembre 2027.", flash[:notice]
     assert_no_difference("PlanGrant.count") { post activate_admin_invoice_request_path(@pending) }
   end
 

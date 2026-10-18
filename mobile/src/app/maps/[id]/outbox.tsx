@@ -1,10 +1,12 @@
 // What is waiting to be sent for this map, and what the server refused
-// (with the reason), which the person can send again or drop.
+// (with the reason), which the person can send again or drop. After a
+// round of sending, it says how it went, and on which change and why it
+// stopped: a send that never ends is never silent.
 import { useLocalSearchParams } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native'
 import { formatDate, t } from '@/lib/i18n'
-import { outbox } from '@/lib/outbox'
+import { outbox, type SendRun } from '@/lib/outbox'
 import type { Op } from '@/lib/outbox-core'
 import { useOnline, useOutbox } from '@/state/sync'
 import { Body, Button, Card, Notice, styles } from '@/ui/kit'
@@ -15,10 +17,13 @@ export default function OutboxScreen() {
   const ops = useOutbox().ops.filter((op) => op.mapId === mapId)
   const online = useOnline()
   const [sending, setSending] = useState(false)
+  const [run, setRun] = useState<SendRun | null>(outbox.lastRun())
+  useEffect(() => outbox.subscribe(() => setRun(outbox.lastRun())), [])
+  const blocked = run && run.stopped !== 'done' ? run.blocked : undefined
 
   const sendNow = async () => {
     setSending(true)
-    try { await outbox.flush() } finally { setSending(false) }
+    try { setRun(await outbox.flush()) } finally { setSending(false) }
   }
 
   const discard = (op: Op) => Alert.alert(t('mobile.outbox.discard_title'), t('mobile.outbox.discard_body'), [
@@ -35,7 +40,8 @@ export default function OutboxScreen() {
       ListHeaderComponent={
         <View style={{ gap: space.md }}>
           <Notice tone={online ? 'info' : 'warning'}>{online ? t('mobile.outbox.online') : t('mobile.outbox.offline')}</Notice>
-          {online && ops.some((op) => !op.error) && <Button variant="secondary" label={t('mobile.outbox.send_now')} busy={sending} onPress={sendNow} />}
+          {online && ops.some((op) => !op.error) && <Button variant="secondary" label={sending ? t('mobile.outbox.sending') : t('mobile.outbox.send_now')} busy={sending} onPress={sendNow} />}
+          {!sending && run && <RunNotice run={run} />}
         </View>
       }
       ListEmptyComponent={<Body muted>{t('mobile.outbox.empty')}</Body>}
@@ -51,11 +57,22 @@ export default function OutboxScreen() {
                   <Button variant="danger" style={{ flex: 1 }} label={t('mobile.outbox.discard')} onPress={() => discard(op)} />
                 </View>
               </>
-            : <Text style={s.meta}>{t('mobile.outbox.waiting')}</Text>}
+            : blocked?.id === op.id
+              ? <>
+                  <Notice tone="warning">{t('mobile.outbox.blocked_here', { reason: blocked.reason })}</Notice>
+                  <Button variant="danger" label={t('mobile.outbox.discard')} onPress={() => discard(op)} />
+                </>
+              : <Text style={s.meta}>{t('mobile.outbox.waiting')}</Text>}
         </Card>
       )}
     />
   )
+}
+
+/** How the last round went, in words. */
+function RunNotice({ run }: { run: SendRun }) {
+  if (run.stopped === 'done') return run.sent > 0 ? <Notice tone="info">{t('mobile.outbox.run.sent', { count: run.sent })}</Notice> : null
+  return <Notice tone={run.stopped === 'auth' ? 'error' : 'warning'}>{t(`mobile.outbox.run.${run.stopped}`, { count: run.sent, reason: run.blocked?.reason ?? '' })}</Notice>
 }
 
 const s = StyleSheet.create({

@@ -47,12 +47,13 @@ class PhotoRenderingTest < ActiveSupport::TestCase
 
   test "the monthly quota counts the owner's renderings on all their maps, failures aside" do
     owner = @map.owner
-    assert_equal PhotoRendering::MONTHLY_LIMIT, PhotoRendering.remaining_this_month(owner)
+    limit = Entitlements.for(owner).renderings_per_month
+    assert_equal limit, PhotoRendering.remaining_this_month(owner)
     build.save!
     build.tap(&:save!).fail!("timeout")
     travel_to(2.months.ago) { build.save! }
     assert_equal 1, PhotoRendering.used_this_month(owner)
-    assert_equal PhotoRendering::MONTHLY_LIMIT - 1, PhotoRendering.remaining_this_month(owner)
+    assert_equal limit - 1, PhotoRendering.remaining_this_month(owner)
   end
 
   test "a finished image becomes a photo at the same place, linked to its source" do

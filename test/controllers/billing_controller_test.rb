@@ -24,7 +24,20 @@ class BillingControllerTest < ActionDispatch::IntegrationTest
     assert_nil props["pass"]
     assert_equal false, props["canManage"]
     assert_equal false, props["enabled"]
-    assert_equal 5_530, props["memberPriceCents"]
+    assert_equal 5_900, props["memberPriceCents"]
+    assert_equal false, props["member"]
+    assert_equal({ "usedBytes" => 0, "limitBytes" => nil }, props["storage"])
+    assert_equal "year", props["interval"]
+  end
+
+  test "a Semisto member in good standing is told the member price applies by itself" do
+    sign_in_as @user
+    with_billing("SEMISTO_MEMBERSHIP_API_TOKEN" => "standing-token") do
+      stub_request(:post, "https://app.semisto.org/api/v1/asbl/standing").to_return(body: { in_good_standing: true, paid_through: "2026-12-31" }.to_json)
+      props = billing_props
+      assert_equal true, props["member"]
+      assert_equal 1.gigabyte, props.dig("storage", "limitBytes")
+    end
   end
 
   test "shows the yearly pass, its expiry and the days left" do

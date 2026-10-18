@@ -36,7 +36,7 @@ class Maps::PhotoRenderingsControllerTest < ActionDispatch::IntegrationTest
     info = response.parsed_body
     assert info["available"]
     assert info["allowed"]
-    assert_equal PhotoRendering::MONTHLY_LIMIT - 1, info["remaining"]
+    assert_equal Entitlements.for(@map.billing_user).renderings_per_month - 1, info["remaining"]
     assert_equal [ rendering.id ], info["renderings"].map { |r| r["id"] }
     assert info["renderings"].first["resultPhoto"]
   end
@@ -70,7 +70,7 @@ class Maps::PhotoRenderingsControllerTest < ActionDispatch::IntegrationTest
     end
 
     now = Time.current
-    PhotoRendering.insert_all(Array.new(PhotoRendering::MONTHLY_LIMIT) {
+    PhotoRendering.insert_all(Array.new(Entitlements.for(@map.billing_user).renderings_per_month) {
       { map_id: @map.id, map_photo_id: @photo.id, style: "photo", status: "done", created_at: now, updated_at: now }
     })
     ask

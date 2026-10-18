@@ -7,6 +7,7 @@
 # sheet, as anonymous counts.
 class PlantObservation < ApplicationRecord
   include HeicAttachment
+  include CountsTowardStorage
 
   SURVIVALS = %w[established struggling dead].freeze
   KINDS = %w[follow_up flowering pruning damage disease intervention other].freeze

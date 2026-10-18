@@ -136,7 +136,7 @@ fr:
       title: "Le constructeur d’offre est réservé aux pros"
       not_member: "Cette carte appartient à l’équipe « %{team} ». Seuls ses membres chiffrent ses offres."
       not_owner: "Seul le propriétaire de la carte, ou l’équipe à qui elle appartient, chiffre son offre. Une personne invitée sur la carte (souvent le client) ne la voit jamais."
-      no_plan: "Chiffrer une offre depuis la carte fait partie des formules Atelier et Bureau d’études, ou des cartes d’une équipe."
+      no_plan: "Chiffrer une offre depuis la carte fait partie des formules Pro et Team, ou des cartes d’une équipe."
       back: "Revenir à la carte"
     pricing:
       title: "Barème"

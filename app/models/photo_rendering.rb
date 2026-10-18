@@ -18,9 +18,6 @@ class PhotoRendering < ApplicationRecord
   INSTRUCTIONS_MAX = 500
   INPUT_TYPES = %w[image/jpeg image/png image/webp].freeze
   INPUT_MAX_BYTES = 15.megabytes
-  # Images each map owner can have painted per calendar month, all their
-  # maps together (every image is paid in Magnific credits).
-  MONTHLY_LIMIT = 30
   # Longer than that, the job gives up.
   DEADLINE = 5.minutes
 
@@ -59,14 +56,16 @@ class PhotoRendering < ApplicationRecord
 
   after_create_commit -> { PhotoRenderingJob.perform_later(self) }
 
-  # Images the owner of `map` has had painted this month, all their maps together.
-  def self.used_this_month(owner)
-    return 0 unless owner
-    joins(:map).where(maps: { owner_id: owner.id }).this_month.where.not(status: "failed").count
+  # Images painted this month on the maps `payer`'s plan pays for (every
+  # image is paid in Magnific credits). The allowance per calendar month is
+  # the plan's (Entitlements#renderings_per_month).
+  def self.used_this_month(payer)
+    return 0 unless payer
+    where(map_id: payer.billed_maps(archived: true).select(:id)).this_month.where.not(status: "failed").count
   end
 
-  def self.remaining_this_month(owner)
-    [ MONTHLY_LIMIT - used_this_month(owner), 0 ].max
+  def self.remaining_this_month(payer)
+    [ Entitlements.for(payer).renderings_per_month - used_this_month(payer), 0 ].max
   end
 
   def finished? = status.in?(%w[done failed])
@@ -123,6 +122,7 @@ class PhotoRendering < ApplicationRecord
     extension = Rack::Mime::MIME_TYPES.invert[content_type] || ".jpg"
     transaction do
       result = map.photos.create!(
+        skip_storage_quota: true,
         image: { io:, filename: "#{I18n.t("photo_renderings.filename", style: style_label).parameterize}-#{id}#{extension}", content_type: },
         caption: caption.truncate(500), source: "ai", uploaded_by: requested_by,
         location: photo.location, location_source: photo.location_source, heading: photo.heading,
