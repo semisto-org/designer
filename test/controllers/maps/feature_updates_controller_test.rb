@@ -137,4 +137,49 @@ class Maps::FeatureUpdatesControllerTest < ActionDispatch::IntegrationTest
     get map_ai_actions_path(@map), as: :json
     assert_equal({ "active" => 1, "draft" => 1 }, response.parsed_body["actions"].first["outcome"])
   end
+
+  test "renumbering a whole map in one proposal: the new numbers cover the old ones, « Tout accepter » swaps them in" do
+    trees = 4.times.map { |i| plant(i) }
+    outside = plant(10)
+    assert_equal [ 1, 2, 3, 4 ], trees.map { |t| t.reload.plant_number }
+    # Field labels: 1 → 3, 2 → 1, 3 → 4, 4 → 2 (a cycle, every number already taken).
+    targets = { trees[0] => 3, trees[1] => 1, trees[2] => 4, trees[3] => 2 }
+    data, error = call_tool(personal_token(users(:michael)), "propose_feature_updates", {
+      map_id: @map.id, summary: "Numéros des étiquettes",
+      updates: targets.map { |tree, number| { feature_id: tree.id, changes: { properties: { number: } }, rationale: "Numéro de l'étiquette sur le terrain." } }
+    })
+    refute error, data
+    assert_equal 4, data["created"].size
+    assert(data["created"].none? { |c| c["swaps_with"] }, "every holder is renumbered by the same proposal")
+    assert_equal [ 1, 2, 3, 4 ], trees.map { |t| t.reload.plant_number }, "nothing changes before a person accepts"
+
+    sign_in_as users(:michael)
+    get map_feature_updates_path(@map), as: :json
+    batch = response.parsed_body["batches"].sole
+    post accept_all_map_feature_updates_path(@map), params: { batch: batch["batch"], ids: response.parsed_body["updates"].map { |u| u["id"] } }, as: :json
+    assert_response :success
+    assert_empty response.parsed_body["failed"]
+    assert_equal targets.values, trees.map { |t| t.reload.plant_number }
+    assert_equal 5, outside.reload.plant_number
+  end
+
+  test "a plant renumbered alone swaps with the holder; two plants asking for one number are refused" do
+    a, b, c = 3.times.map { |i| plant(i) }
+    data, error = call_tool(personal_token(users(:michael)), "propose_feature_updates", {
+      map_id: @map.id, updates: [ { feature_id: a.id, changes: { properties: { number: 2 } }, rationale: "Numéro de l'étiquette sur le terrain." } ]
+    })
+    refute error, data
+    assert_equal({ "feature_id" => b.id, "takes_number" => 1 }, data["created"].sole["swaps_with"])
+
+    sign_in_as users(:michael)
+    post accept_map_feature_update_path(@map, data["created"].sole["id"]), as: :json
+    assert_response :success
+    assert_equal [ 2, 1, 3 ], [ a, b, c ].map { |p| p.reload.plant_number }
+
+    data, = call_tool(personal_token(users(:michael)), "propose_feature_updates", {
+      map_id: @map.id, updates: [ a, c ].map { |p| { feature_id: p.id, changes: { properties: { number: 7 } }, rationale: "Numéro de l'étiquette sur le terrain." } }
+    })
+    assert_match "numéro 7", data.to_s
+    assert_equal 0, @map.feature_update_drafts.pending.count
+  end
 end

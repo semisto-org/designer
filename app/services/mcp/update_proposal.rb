@@ -11,7 +11,7 @@ module Mcp
     MAX_PROPERTIES_BYTES = DraftProposal::MAX_PROPERTIES_BYTES
     ALLOWED = FeatureUpdateDraft::FIELDS
     # Integer references to the plant catalogue, and quantities.
-    INTEGER_PROPERTIES = %w[species_id variety_id count].freeze
+    INTEGER_PROPERTIES = %w[species_id variety_id count number].freeze
     DATE_FORMAT = /\A\d{4}-\d{2}-\d{2}\z/
 
     Outcome = Data.define(:batch, :created, :unchanged, :rejected)
@@ -99,6 +99,12 @@ module Mcp
         candidates << [ index, item, feature ]
       end
 
+      twice = numbers_asked_twice(candidates)
+      candidates.reject! do |index, item, feature|
+        number = twice[index] or next false
+        rejected << { index:, feature_id: feature.id, error: self.class.err(:number_twice, number:) }
+      end
+
       spatial = GeometryCheck.spatial_errors(@map, candidates.filter_map { |index, item, _| [ index, item[:changes][:geometry] ] if item[:changes].key?(:geometry) })
 
       valid = []
@@ -118,17 +124,42 @@ module Mcp
           valid << [ index, item, feature, changes ]
         end
       end
+      swaps = number_swaps(valid)
 
       waiting = @map.feature_update_drafts.pending.count - valid.count { |_, _, feature, _| pending[feature.id] }
       if waiting + valid.size > MAX_PENDING
         raise ToolError, I18n.t("mcp.errors.too_many_pending_updates", max: MAX_PENDING, pending: waiting)
       end
 
-      created = create(batch, valid, pending)
+      created = create(batch, valid, pending, swaps)
       Outcome.new(batch:, created:, unchanged:, rejected: rejected.sort_by { |r| r[:index] })
     end
 
     private
+      # The plant number each candidate asks for, when another candidate
+      # asks for the same one: { index => number }.
+      def numbers_asked_twice(candidates)
+        asked = candidates.filter_map do |index, item, _|
+          number = item[:changes].dig(:properties, :number) || item[:changes].dig("properties", "number")
+          [ index, number.to_i ] if number.to_s.match?(/\A\d{1,9}\z/)
+        end
+        counts = asked.map(&:last).tally
+        asked.select { |_, number| counts[number] > 1 }.to_h
+      end
+
+      # For each valid change of number, the plant that holds that number
+      # today when it is not renumbered by this proposal too: it will take
+      # the number the changed plant leaves. { index => { feature_id:, number: } }
+      def number_swaps(valid)
+        renumbered = valid.filter_map { |_, _, feature, changes| feature.id if changes.dig("properties", "number") }
+        valid.each_with_object({}) do |(index, _, feature, changes), out|
+          number = changes.dig("properties", "number") or next
+          holder = @map.features.where(kind: PlantableFeature::PLANT).where.not(id: [ feature.id, *renumbered ]).where.not(status: "rejected")
+                       .where("#{MapFeature::PlantNumber::NUMBER_SQL} = ?", number.to_i).pick(:id)
+          out[index] = { feature_id: holder, takes_number: feature.plant_number } if holder
+        end
+      end
+
       def item_error(item, feature)
         return self.class.err(:not_found, id: item[:feature_id]) unless feature
         return self.class.err(:not_active, status: feature.status) unless feature.status == "active"
@@ -154,6 +185,7 @@ module Mcp
         %w[name notes].each { |field| raw[field] = raw[field].to_s.strip.presence if raw.key?(field) }
         before = FeatureUpdateDraft.snapshot(feature, raw)
         FeatureUpdateDraft.assign(feature, raw)
+        feature.swap_number = raw["properties"].is_a?(Hash) && raw["properties"].key?("number")
         unless feature.valid?
           return [ nil, self.class.err(:invalid, errors: feature.errors.full_messages.to_sentence) ]
         end
@@ -169,10 +201,11 @@ module Mcp
         [ changes, nil ]
       ensure
         feature.restore_attributes
+        feature.swap_number = false
         feature.errors.clear
       end
 
-      def create(batch, valid, pending)
+      def create(batch, valid, pending, swaps)
         return [] if valid.empty?
         FeatureUpdateDraft.transaction do
           replaced = valid.filter_map { |_, _, feature, _| pending[feature.id]&.id }
@@ -183,7 +216,7 @@ module Mcp
               rationale: item[:rationale].to_s.strip.first(2000),
               created_by: @user, client_name: @client_name&.first(100)
             )
-            { index:, id: draft.id, feature_id: feature.id, name: feature.name, diff: draft.diff(feature), replaces: pending[feature.id]&.id }.compact
+            { index:, id: draft.id, feature_id: feature.id, name: feature.name, diff: draft.diff(feature), replaces: pending[feature.id]&.id, swaps_with: swaps[index] }.compact
           end
         end
       end

@@ -79,9 +79,14 @@ class FeatureUpdateDraft < ApplicationRecord
   # the element would not be valid; the caller wraps it in a transaction.
   def accept!(user, adjusted = nil)
     changes = adjusted ? adjust(adjusted) : proposed_changes
-    feature = map_feature
+    # Fresh: accepting an earlier change of the same proposal may have given
+    # this element another plant number (a swap), which bumped its lock.
+    feature = map_feature.reload
     previous = self.class.snapshot(feature, changes)
     self.class.assign(feature, changes)
+    # A new plant number is a swap: the plant holding it takes the one this
+    # plant leaves (MapFeature::PlantNumber).
+    feature.swap_number = changes["properties"].is_a?(Hash) && changes["properties"].key?("number")
     feature.updated_by = user
     feature.save!
     update!(status: "accepted", reviewed_by: user, reviewed_at: Time.current, applied_changes: changes, previous_values: previous)
@@ -132,6 +137,7 @@ class FeatureUpdateDraft < ApplicationRecord
       when "properties.training" then I18n.t("plant_feature.trainings.#{value}", default: nil)
       when "properties.graft_form" then I18n.t("plant_feature.graft_form_names.#{value}", default: nil)
       when "properties.rootstock_vigor" then I18n.t("plant_feature.vigor_names.#{value}", default: nil)
+      when "properties.planted_on_precision" then I18n.t("feature_updates.precisions.#{value}", default: nil)
       end
     end
     diff.map { |c| c.merge({ beforeLabel: name.(c[:field], c[:before]), afterLabel: name.(c[:field], c[:after]) }.compact) }

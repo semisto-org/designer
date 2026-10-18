@@ -63,6 +63,11 @@ fr:
       rootstock_vigor: "Vigueur du porte-greffe"
       rootstock: "Porte-greffe"
       count: "Nombre de plants"
+      number: "Numéro"
+      planted_on_precision: "Précision de la date"
+    precisions:
+      year: "Année seulement"
+      unknown: "Date inconnue"
     history:
       title: "Modifications proposées par une IA"
       accepted: "Acceptée par %{name} le %{date}"
