@@ -66,6 +66,13 @@
           "microphonePermission": "Semisto Terranova enregistre le son des vidéos que tu filmes sur ton terrain."
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Semisto Terranova photographie et filme ton terrain et tes plantes pour les rattacher à la carte.",
+          "recordAudioAndroid": false
+        }
+      ],
       "expo-font",
       "@sentry/react-native"
     ],
