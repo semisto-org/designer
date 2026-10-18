@@ -13,7 +13,6 @@ module Collab
       owner = @map.manageable_by?(@user)
       data = {
         role: @map.role_for(@user),
-        maxEditors: Map::MAX_EDITORS,
         editorsCount: @map.editors_count,
         members: members(owner),
         organization: organization

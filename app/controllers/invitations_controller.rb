@@ -18,7 +18,5 @@ class InvitationsController < ApplicationController
 
     invitation.accept!(Current.user)
     joined(map)
-  rescue Map::EditorLimitReached
-    render_join_problem("editor_limit", map:, status: :conflict)
   end
 end

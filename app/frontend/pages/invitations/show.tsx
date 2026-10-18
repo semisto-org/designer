@@ -5,7 +5,7 @@ import { ButtonLink } from '@/components/ui/Button'
 import PublicLayout from '@/layouts/PublicLayout'
 import { t } from '@/lib/i18n'
 
-type State = 'invalid' | 'used' | 'expired' | 'disabled' | 'editor_limit'
+type State = 'invalid' | 'used' | 'expired' | 'disabled'
 
 /** A link to join a map that cannot be used (the working case redirects to the map). */
 export default function InvitationProblem({ state, mapName }: { state: State; mapName: string | null }) {

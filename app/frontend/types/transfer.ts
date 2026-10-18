@@ -7,7 +7,7 @@ export type TransferCandidate = {
   /** Editors only: a team's addresses stay with its admins. */
   email: string | null
   avatarUrl: string | null
-  /** Edits through the map's team, without a seat: the former owner will take a free one. */
+  /** Edits through the map's team, without a membership of their own. */
   viaTeam: boolean
 }
 
@@ -34,7 +34,6 @@ export type TransferSectionData = {
   // Owner only.
   pending?: PendingTransfer | null
   candidates?: TransferCandidate[]
-  seatsLeft?: number
   viewersCount?: number
   team?: string | null
   expiresInDays?: number

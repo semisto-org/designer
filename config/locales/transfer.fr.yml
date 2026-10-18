@@ -14,7 +14,6 @@ fr:
           self: "Tu es déjà propriétaire de cette carte."
           not_editor: "%{name} doit d'abord être éditeur de la carte : invite cette personne comme éditeur, puis propose-lui la carte."
           already_pending: "Une proposition de transfert attend déjà une réponse pour cette carte."
-          no_seat: "Les %{count} places d'éditeur sont prises : libères-en une pour pouvoir rester éditeur une fois la carte confiée à %{name}."
   transfer:
     section:
       title: "Transférer la propriété"
@@ -29,10 +28,6 @@ fr:
         you_stay: "tu restes éditeur de la carte, tu peux continuer à la modifier ;"
         kept: "tout est conservé : équipe, vue publique, discussions, photos, brouillons et historique ;"
         consent: "%{name} reçoit un e-mail et peut accepter ou décliner pendant %{days} jours."
-      team_seat:
-        one: "%{name} modifie la carte grâce à l'équipe, sans place d'éditeur : tu prendras la dernière place libre."
-        other: "%{name} modifie la carte grâce à l'équipe, sans place d'éditeur : tu prendras l'une des %{count} places libres."
-      team_no_seat: "%{name} modifie la carte grâce à l'équipe, sans place d'éditeur, et les %{max} places sont prises : libères-en une pour pouvoir rester éditeur après le transfert."
       propose: "Proposer à %{name}"
       back: "Annuler"
       proposed: "Proposition envoyée à %{name}."
@@ -116,7 +111,6 @@ fr:
         archived: "La carte a été archivée : elle ne peut plus être transférée."
         owner_changed: "%{from} n'est plus propriétaire de la carte : la proposition n'est plus valable."
         not_editor: "Tu n'es plus éditeur de la carte : la proposition n'est plus valable."
-        no_seat: "Les %{count} places d'éditeur de la carte sont prises : %{from} ne pourrait pas y rester éditeur. Demande-lui d'en libérer une, puis réessaie."
       # Shown to the owner (sharing dialog, cancel).
       owner:
         not_owner: "Seul le propriétaire de la carte peut annuler la proposition."
@@ -128,7 +122,6 @@ fr:
         archived: "La carte est archivée : la proposition ne peut plus être acceptée."
         owner_changed: "Tu n'es plus propriétaire de la carte."
         not_editor: "%{to} n'est plus éditeur de la carte : la proposition ne pourra pas être acceptée. Annule-la pour en faire une autre."
-        no_seat: "Les %{count} places d'éditeur sont prises : libères-en une, sans quoi tu ne pourrais pas rester éditeur et %{to} ne pourra pas accepter."
     flash:
       accepted: "Tu es maintenant propriétaire de « %{map} »."
       declined: "Proposition déclinée : la carte reste à %{from}."

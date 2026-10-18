@@ -19,7 +19,7 @@ type Props = {
 /**
  * "Équipe" section of the sharing dialog (owner only): confide the map to one
  * of the owner's teams, or take it out. The map stays the owner's and follows
- * the owner's plan; the team's members edit it without taking an editor seat.
+ * the owner's plan; the team's members edit it without being invited on it.
  */
 export function MapTeamSection({ data, busy, base, run }: Props) {
   const teams = data.teams ?? []

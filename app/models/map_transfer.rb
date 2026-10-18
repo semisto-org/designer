@@ -1,17 +1,16 @@
 # « Transférer la carte »: the owner proposes the map to one of its editors,
 # who accepts or declines within 14 days. On acceptance the recipient becomes
 # the owner (the map then follows their plan, Entitlements.for_map) and the
-# former owner stays on as an editor, in the recipient's seat. Nothing else
+# former owner stays on as an editor. Nothing else
 # moves: team, publication, share link, comments, photos, drafts and history
 # stay with the map, and nothing is ever deleted.
 #
-# Recipients: an editor of the map. A member of the map's team edits without
-# a seat; they can be chosen too, provided a seat is free for the former
-# owner (so the three-editor limit always holds).
+# Recipients: an editor of the map, or a member of the map's team (who edits
+# through the team, without a membership of their own).
 class MapTransfer < ApplicationRecord
   EXPIRES_IN = 14.days
   STATUSES = %w[pending accepted declined canceled expired invalidated].freeze
-  # Problems that end a proposal for good; :no_seat only waits for a free seat.
+  # Problems that end a proposal for good.
   ENDING_PROBLEMS = %i[archived owner_changed not_editor].freeze
 
   # Raised by accept!, decline! and cancel!, with a French message for the user.
@@ -74,8 +73,7 @@ class MapTransfer < ApplicationRecord
   def problem
     return :archived if map.archived_at?
     return :owner_changed unless map.owner_id == from_user_id
-    return :not_editor unless map.role_for(to_user) == "editor"
-    :no_seat if seat_needed? && map.editors_count >= Map::MAX_EDITORS
+    :not_editor unless map.role_for(to_user) == "editor"
   end
 
   def ending_problem
@@ -83,16 +81,16 @@ class MapTransfer < ApplicationRecord
     found if ENDING_PROBLEMS.include?(found)
   end
 
-  # The recipient edits through the map's team, without a seat: the former
-  # owner will need a free one to stay on as an editor.
-  def seat_needed?
+  # The recipient edits through the map's team, without a membership of
+  # their own (the sharing dialog then hides their e-mail address).
+  def recipient_via_team?
     !map.memberships.exists?(user_id: to_user_id, role: "editor")
   end
 
   # A refusal or problem in plain French, for the recipient or the owner.
   def message_for(reason, audience: :recipient)
     I18n.t("transfer.problems.#{audience}.#{reason}", from: from_user.display_name, to: to_user.display_name,
-           map: map.name, count: Map::MAX_EDITORS, date: I18n.l(expires_at.to_date, format: :long))
+           map: map.name, date: I18n.l(expires_at.to_date, format: :long))
   end
 
   # For the maps list: a proposal waiting for the recipient's answer.
@@ -119,10 +117,6 @@ class MapTransfer < ApplicationRecord
 
     MapTransferMailer.accepted(self).deliver_later
     self
-  rescue ActiveRecord::RecordInvalid => e
-    # A seat taken meanwhile (MapMembership checks the limit): nothing changed.
-    raise unless e.record.is_a?(MapMembership)
-    raise Refused.new(:no_seat, message_for(:no_seat))
   end
 
   # The recipient says no: the map stays its owner's, who gets an e-mail.
@@ -155,8 +149,8 @@ class MapTransfer < ApplicationRecord
     end
 
     # Owner and editor swap places: the recipient's membership becomes the
-    # owner's, the former owner's becomes an editor's (the recipient's seat,
-    # so the limit holds; MapMembership refuses a fourth editor). The map row
+    # owner's, the former owner's becomes an editor's (a recipient from the
+    # map's team gets a membership of their own on the way). The map row
     # only changes owner: a sharing change, not an edit (no lock_version
     # bump, no reordering of the maps list).
     def hand_over!
@@ -173,8 +167,6 @@ class MapTransfer < ApplicationRecord
       elsif to_user_id == from_user_id then errors.add(:base, :self)
       elsif map.role_for(to_user) != "editor" then errors.add(:base, :not_editor, name: to_user.display_name)
       elsif map.transfers.where(status: "pending").where.not(id:).exists? then errors.add(:base, :already_pending)
-      elsif seat_needed? && map.editor_seats_taken >= Map::MAX_EDITORS
-        errors.add(:base, :no_seat, count: Map::MAX_EDITORS, name: to_user.display_name)
       end
     end
 end

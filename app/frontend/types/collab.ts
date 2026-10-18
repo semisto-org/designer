@@ -66,7 +66,6 @@ export type SharingInvitation = {
 
 export type SharingData = {
   role: 'owner' | 'editor' | 'viewer'
-  maxEditors: number
   editorsCount: number
   members: SharingMember[]
   organization: { id: number; name: string; members: number } | null

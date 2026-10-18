@@ -53,4 +53,9 @@ jobs:
           EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.MOBILE_SENTRY_DSN }}
           # The test app (« Terranova (test) ») has its own identifier.
           APP_VARIANT: ${{ inputs.channel != 'production' && 'preview' || '' }}
-        run: npx --yes eas-cli@latest update --channel "$CHANNEL" --message "$MESSAGE" --non-interactive
+        # One platform at a time: « all » would also export the web, which the
+        # native map (MapLibre) cannot render.
+        run: |
+          for platform in ios android; do
+            npx --yes eas-cli@latest update --channel "$CHANNEL" --message "$MESSAGE" --platform "$platform" --non-interactive
+          done
