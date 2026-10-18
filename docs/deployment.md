@@ -148,6 +148,7 @@ Used only by the one-off command `bin/rails catalog:import_terranova` (genera, s
 | Variable | Role |
 |---|---|
 | `PLANTNET_API_KEY` | Optional. Turns on « Identifier l'espèce par photo » in a map plant's sheet. Key created at https://my.plantnet.org. Without it, the button is greyed out and the interface explains why. |
+| `TYPESAFE_API_KEY` | Optional. Lets Jev (TypeSafe) check the values of proposed species against PFAF and Wikipédia on `/plants/review`. Without it, the « Faire vérifier par Jev » button is hidden and the page says why. |
 | `PLANTNET_API_URL` | Optional: another API address (default `https://my-api.plantnet.org`). |
 
 One to five photos of the same plant go to Pl@ntNet, which answers with likely species; the editor chooses, nothing is saved without their choice, and Terranova does not keep the photos. The interface shows « Identification : Pl@ntNet ». **Before turning the feature on for a paid service, check Pl@ntNet's terms of use** (commercial use, identification quota, source attribution): the free tier is limited.
@@ -204,7 +205,7 @@ Used only by the one-off command `bin/rails claudy:import MAP_ID=…`, which pou
 
 ## Outbound connections
 
-The server must be able to reach: `geoservices.wallonie.be` (layers, identification, relief), `tiles.openfreemap.org` and `tile.openstreetmap.org` (base map), `nominatim.openstreetmap.org` (addresses), `my-api.plantnet.org` (plant identification by photo, if `PLANTNET_API_KEY` is set), `api.magnific.com` and Magnific's image server (photo rendering, if `MAGNIFIC_API_KEY` is set), `api.stripe.com`, `appleid.apple.com` (Sign in with Apple, if `APPLE_CLIENT_ID` is set), the SMTP server, the S3 provider and, if set, Sentry and Open-Meteo. The one-off Claudy import reaches `app.les4sources.be`.
+The server must be able to reach: `geoservices.wallonie.be` (layers, identification, relief), `tiles.openfreemap.org` and `tile.openstreetmap.org` (base map), `nominatim.openstreetmap.org` (addresses), `my-api.plantnet.org` (plant identification by photo, if `PLANTNET_API_KEY` is set), `api.typesafe.ai`, `pfaf.org` and `en.wikipedia.org` / `fr.wikipedia.org` (checking proposed species, if `TYPESAFE_API_KEY` is set), `api.magnific.com` and Magnific's image server (photo rendering, if `MAGNIFIC_API_KEY` is set), `api.stripe.com`, `appleid.apple.com` (Sign in with Apple, if `APPLE_CLIENT_ID` is set), the SMTP server, the S3 provider and, if set, Sentry and Open-Meteo. The one-off Claudy import reaches `app.les4sources.be`.
 
 ## Claude (MCP)
 

@@ -121,4 +121,60 @@ class CatalogueReviewsControllerTest < ActionDispatch::IntegrationTest
     post gbif_catalogue_review_path(@species), as: :json
     assert_equal({ "match" => { "status" => "unavailable" }, "commonNames" => [] }, response.parsed_body)
   end
+
+  test "Jev checks the values in the background, once the key is set" do
+    sign_in_as @reviewer
+    previous = ENV["TYPESAFE_API_KEY"]
+    ENV["TYPESAFE_API_KEY"] = nil
+    post check_catalogue_reviews_path
+    assert_redirected_to catalogue_reviews_path
+    assert_nil @species.reload.values_check_requested_at
+
+    ENV["TYPESAFE_API_KEY"] = "key"
+    assert_enqueued_jobs 1, only: PlantValueCheckJob do
+      post check_catalogue_reviews_path
+    end
+    assert_not_nil @species.reload.values_check_requested_at
+    assert_no_enqueued_jobs(only: PlantValueCheckJob) { post check_catalogue_reviews_path } # already asked
+    assert_enqueued_jobs(1, only: PlantValueCheckJob) { post check_catalogue_review_path(@species) }
+
+    get catalogue_reviews_path, headers: inertia_headers
+    proposal = response.parsed_body.dig("props", "proposals").sole
+    assert_equal [ "unchecked", "pending" ], [ proposal["state"], proposal.dig("check", "state") ]
+    assert_equal true, response.parsed_body.dig("props", "jevAvailable")
+  ensure
+    ENV["TYPESAFE_API_KEY"] = previous
+  end
+
+  test "the queue opens on the species ready to accept" do
+    ready = PlantSpecies.create!(latin_name: "Ocimum kilimandscharicum", review_status: "proposed", gbif_key: 8344835,
+                                 values_checked_at: Time.current)
+    ready.value_checks.create!(field: "foliage_type", verdict: "confirmed", source: "pfaf")
+    doubtful = PlantSpecies.create!(latin_name: "Salvia pratensis", review_status: "proposed", gbif_key: 1, values_checked_at: Time.current)
+    doubtful.value_checks.create!(field: "plant_type", verdict: "contradicted", source_value: "herbaceous", source: "wikipedia")
+
+    sign_in_as @reviewer
+    get catalogue_reviews_path, headers: inertia_headers
+    props = response.parsed_body["props"]
+    assert_equal [ [ "Ocimum kilimandscharicum", "ready" ], [ "Salvia pratensis", "attention" ], [ "Salvia nemorossa", "unchecked" ] ],
+                 props["proposals"].map { _1.values_at("latinName", "state") }
+    assert_equal({ "ready" => 1, "attention" => 1, "unchecked" => 1 }, props["summary"])
+    assert_equal "herbaceous", props["proposals"].second.dig("check", "results").sole["sourceValue"]
+  end
+
+  test "accepting makes confirmed values sourced and takes the values the reviewer chose" do
+    Catalog::SpeciesWriter.new(source: "terranova", status: "to_verify").write(@species, { "foliage_type" => "deciduous", "height_max_m" => 1.0 })
+    @species.update!(values_checked_at: Time.current)
+    @species.value_checks.create!(field: "foliage_type", verdict: "confirmed", source: "wikipedia", url: "https://en.wikipedia.org/wiki/Salvia")
+    @species.value_checks.create!(field: "height_max_m", verdict: "contradicted", source_value: 0.6, source: "pfaf", url: "https://pfaf.org/x")
+    @species.value_checks.create!(field: "strata", verdict: "contradicted", source_value: "shrub", source: "pfaf")
+
+    sign_in_as @reviewer
+    patch catalogue_review_path(@species), params: { review: { latin_name: "Salvia nemorosa", take: [ "height_max_m" ] } }
+    @species.reload
+    assert_equal [ "sourced", "wikipedia", "https://en.wikipedia.org/wiki/Salvia" ], @species.provenance_for("foliage_type").values_at(:status, :source, :url)
+    assert_equal 0.6, @species.height_max_m
+    assert_equal [ "sourced", "pfaf" ], @species.provenance_for("height_max_m").values_at(:status, :source)
+    assert_equal "herbaceous", @species.strata, "a contradiction not taken changes nothing"
+  end
 end
