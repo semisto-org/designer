@@ -6,6 +6,7 @@ import { formatDate, todayIso } from '@/components/plants/format'
 import { inputClass } from '@/components/ui/Field'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { SelectAll, useRangeSelect } from '@/palette/BatchBar'
 import { filterPlants, parsePlanted, plantedInput, type PlantFilters, type PlantLine, type PlantedPatch } from '@/palette/plants'
 import type { MapFeature } from '@/types'
 
@@ -21,6 +22,9 @@ type Props = {
   /** Its status or planting date changed: the species quantities did too. */
   onPlantedChanged: () => void
   onStatus: (message: string | null, error?: boolean) => void
+  /** Plants chosen for an action on the selection (editors only), by id. */
+  selected?: Set<number>
+  onSelect?: (next: Set<number>) => void
 }
 
 const lineOf = (feature: MapFeature): Partial<PlantLine> => {
@@ -40,10 +44,14 @@ const lineOf = (feature: MapFeature): Partial<PlantLine> => {
  * number and Enter jumps to the next plant, so a whole plan is renumbered
  * from the keyboard; a number another plant holds swaps the two.
  */
-export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedChanged, onStatus }: Props) {
+export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedChanged, onStatus, selected, onSelect }: Props) {
   const [filters, setFilters] = useState<PlantFilters>({ search: '', status: '', tag: '' })
   const shown = useMemo(() => filterPlants(plants, filters), [plants, filters])
   const table = useRef<HTMLTableElement>(null)
+  const chosen = selected ?? new Set<number>()
+  const selecting = onSelect != null
+  const order = shown.map((plant) => plant.id)
+  const toggle = useRangeSelect(order, chosen, onSelect ?? (() => {}))
 
   async function save(plant: PlantLine, body: Record<string, unknown>): Promise<Saved | null> {
     try {
@@ -126,6 +134,14 @@ export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedCh
           <table ref={table} className="w-full min-w-max border-collapse text-sm">
             <thead className="sticky top-0 z-10 bg-loam-50/95 backdrop-blur">
               <tr>
+                {selecting && (
+                  <th scope="col" className="w-10 border-b border-loam-900/10 py-2.5 pl-3 pr-1 text-left print:hidden">
+                    <SelectAll
+                      ids={order} selected={chosen as Set<unknown>}
+                      onChange={(all) => onSelect(all ? new Set([...chosen, ...order]) : new Set([...chosen].filter((id) => !order.includes(id))))}
+                    />
+                  </th>
+                )}
                 {(['number', 'plant', 'status', 'planted', 'tags'] as const).map((column) => (
                   <th key={column} scope="col" className={clsx('border-b border-loam-900/10 px-3 py-2.5 text-left font-medium text-loam-600', column === 'number' && 'w-24')}>
                     {t(`plant_palette.plants.columns.${column}`)}
@@ -135,7 +151,16 @@ export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedCh
             </thead>
             <tbody>
               {shown.map((plant) => (
-                <tr key={plant.id} className="border-b border-loam-100 last:border-0 hover:bg-loam-50/60">
+                <tr key={plant.id} className={clsx('border-b border-loam-100 last:border-0', chosen.has(plant.id) ? 'bg-prune-50/70' : 'hover:bg-loam-50/60')}>
+                  {selecting && (
+                    <td className="w-10 py-2 pl-3 pr-1 align-middle print:hidden">
+                      <input
+                        type="checkbox" checked={chosen.has(plant.id)} onChange={() => {}} onClick={(e) => toggle(plant.id, e)}
+                        aria-label={t('plant_palette.batch.select_row', { name: [plant.number && `n° ${plant.number}`, plant.species ?? plant.name].filter(Boolean).join(' · ') })}
+                        className="h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-600"
+                      />
+                    </td>
+                  )}
                   <td className="p-1 pl-2">
                     {canEdit ? (
                       <NumberField plant={plant} onCommit={renumber} onNext={focusNext} onInvalid={() => onStatus(t('plant_palette.plants.number_invalid'), true)} />

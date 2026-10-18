@@ -9,8 +9,9 @@ import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { BatchBar, BatchToast, type BatchChange } from '@/palette/BatchBar'
 import { columnLabel, displayValue, formatEuro } from '@/palette/format'
-import { PaletteTable } from '@/palette/PaletteTable'
+import { PaletteTable, selectable } from '@/palette/PaletteTable'
 import { PlantSheet } from '@/palette/PlantSheet'
 import type { PlantLine } from '@/palette/plants'
 import { PlantsTable } from '@/palette/PlantsTable'
@@ -37,6 +38,9 @@ type Props = {
 }
 
 type Mode = 'species' | 'plants'
+type Palette = { rows: PaletteRow[]; plants: PlantLine[]; tags: string[] }
+type BatchResult = Palette & { changed: { species: number; plants: number }; undo: unknown }
+type Done = { message: string; undo: unknown | null }
 const modeKey = (mapId: number) => `palette-mode-${mapId}`
 const readMode = (mapId: number): Mode => {
   if (new URLSearchParams(window.location.search).has('plants')) return 'plants'
@@ -84,6 +88,10 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
   const [suggesting, setSuggesting] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('suggestions'))
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set())
+  const [selectedPlants, setSelectedPlants] = useState<Set<number>>(() => new Set())
+  const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState<Done | null>(null)
 
   const currentView = current.kind === 'view' ? views.find((v) => v.id === current.id) ?? null : null
   const editableView = canEdit && currentView != null
@@ -167,6 +175,8 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
     setMode(next)
     setStatus(null)
     setError(null)
+    setSelectedKeys(new Set())
+    setSelectedPlants(new Set())
     try { window.localStorage.setItem(modeKey(map.id), next) } catch { /* private window */ }
   }
 
@@ -177,8 +187,7 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
     }))
   }, [])
 
-  const reload = useCallback(async () => {
-    const res = await api<{ rows: PaletteRow[]; plants: PlantLine[]; tags: string[] }>(`/maps/${map.id}/palette.json`)
+  const refresh = useCallback((res: Palette) => {
     setRows(res.rows)
     setTags(res.tags)
     // Keep the table's order while someone renumbers: only the values move.
@@ -187,7 +196,71 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
       const kept = list.filter((p) => fresh.has(p.id)).map((p) => fresh.get(p.id)!)
       return [...kept, ...res.plants.filter((p) => !list.some((old) => old.id === p.id))]
     })
-  }, [map.id])
+  }, [])
+
+  const reload = useCallback(async () => {
+    refresh(await api<Palette>(`/maps/${map.id}/palette.json`))
+  }, [map.id, refresh])
+
+  // The selection keeps only what is still on the page (a plant deleted
+  // on the map, a species that left the palette).
+  useEffect(() => {
+    const keys = new Set(rows.filter(selectable).map((r) => r.key))
+    setSelectedKeys((s) => ([...s].every((k) => keys.has(k)) ? s : new Set([...s].filter((k) => keys.has(k)))))
+    const ids = new Set(plants.map((p) => p.id))
+    setSelectedPlants((s) => ([...s].every((id) => ids.has(id)) ? s : new Set([...s].filter((id) => ids.has(id)))))
+  }, [rows, plants])
+
+  // A new selection takes the place of the last action's message.
+  const selecting = selectedKeys.size + selectedPlants.size > 0
+  useEffect(() => { if (selecting) setDone(null) }, [selecting])
+
+  /** An action on the selection of the current table, confirmed first when it deletes. */
+  async function applyBatch(change: BatchChange, value: string | null) {
+    const species = mode === 'species'
+    const keys = species ? [...selectedKeys] : []
+    const plantIds = species ? [] : [...selectedPlants]
+    if (change === 'delete' && !window.confirm(deleteQuestion(keys, plantIds))) return
+    setBusy(true)
+    try {
+      const res = await api<BatchResult>(`/maps/${map.id}/palette/batch`, {
+        method: 'POST', body: { batch: { keys, plant_ids: plantIds, change, value: value ?? '' } },
+      })
+      refresh(res)
+      setSelectedKeys(new Set())
+      setSelectedPlants(new Set())
+      setError(null)
+      setDone({ message: batchMessage(change, res.changed, keys, res.rows), undo: res.changed.species + res.changed.plants > 0 ? res.undo : null })
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('plant_palette.errors.generic'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const undoBatch = useCallback(async (undo: unknown) => {
+    setBusy(true)
+    try {
+      refresh(await api<Palette>(`/maps/${map.id}/palette/batch/undo`, { method: 'POST', body: { undo } }))
+      setDone({ message: t('plant_palette.batch.undone'), undo: null })
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('plant_palette.errors.generic'))
+    } finally {
+      setBusy(false)
+    }
+  }, [map.id, refresh])
+
+  function deleteQuestion(keys: string[], plantIds: number[]) {
+    if (keys.length === 0) return `${t('plant_palette.batch.delete_plants_confirm', { count: plantIds.length })} ${t('plant_palette.batch.delete_undo_hint')}`
+    const names = keys.map((key) => rows.find((r) => r.key === key)?.name).filter((n): n is string => !!n)
+    const listed = names.length > 3 ? `${names.slice(0, 3).join(', ')} ${t('plant_palette.batch.and_more', { count: names.length - 3 })}` : names.join(', ')
+    const drawn = plants.filter((p) => p.key != null && keys.includes(p.key)).length
+    return [
+      t('plant_palette.batch.delete_species_confirm', { names: listed }),
+      drawn > 0 ? t('plant_palette.batch.delete_species_plants', { count: drawn }) : null,
+      t('plant_palette.batch.delete_undo_hint'),
+    ].filter(Boolean).join(' ')
+  }
 
   const plantStatus = useCallback((message: string | null, failed = false) => {
     if (failed) { setError(message); setStatus(null) } else { setStatus(message); setError(null) }
@@ -258,7 +331,10 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
             <>
               {status && <p className="mb-3 text-sm text-leaf-800 print:hidden" role="status">{status}</p>}
               {error && <p className="mb-3 rounded-lg bg-clay-50 px-3 py-2 text-sm text-clay-700 print:hidden" role="alert">{error}</p>}
-              <PlantsTable mapId={map.id} plants={plants} tags={tags} canEdit={canEdit} onSaved={plantSaved} onPlantedChanged={() => void reload()} onStatus={plantStatus} />
+              <PlantsTable
+                mapId={map.id} plants={plants} tags={tags} canEdit={canEdit} onSaved={plantSaved} onPlantedChanged={() => void reload()} onStatus={plantStatus}
+                selected={canEdit ? selectedPlants : undefined} onSelect={canEdit ? setSelectedPlants : undefined}
+              />
             </>
           ) : (
             <>
@@ -339,6 +415,7 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
                 <PaletteTable
                   groups={groups} settings={settings} canEdit={canEdit} suppliers={suppliers}
                   onOpen={setOpen} onEdit={editPlant}
+                  selected={canEdit ? selectedKeys : undefined} onSelect={canEdit ? setSelectedKeys : undefined}
                   onSort={(key) => setSettings((s) => ({ ...s, sort: { key, dir: s.sort.key === key && s.sort.dir === 'asc' ? 'desc' : 'asc' } }))}
                 />
               )}
@@ -346,6 +423,20 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
           )}
         </>
       )}
+
+      {canEdit && (mode === 'species' ? selectedKeys.size : selectedPlants.size) > 0 ? (
+        <BatchBar
+          kind={mode} count={mode === 'species' ? selectedKeys.size : selectedPlants.size} busy={busy} onApply={(change, value) => void applyBatch(change, value)}
+          onClear={() => { setSelectedKeys(new Set()); setSelectedPlants(new Set()) }}
+        />
+      ) : done && (
+        <BatchToast
+          message={done.message} busy={busy} onClose={() => setDone(null)}
+          onUndo={done.undo ? () => void undoBatch(done.undo) : null}
+        />
+      )}
+      {/* Room under the table, so the bar never hides its last rows. */}
+      {canEdit && <div aria-hidden className="h-20 print:hidden" />}
 
       {suggesting && <SuggestionsSheet mapId={map.id} canEdit={canEdit} inPalette={inPalette} onAdded={suggestionAdded} onClose={closeSuggestions} />}
       {open && <PlantSheet mapId={map.id} row={rows.find((r) => r.key === open.key) ?? open} country={map.country} onClose={() => setOpen(null)} />}
@@ -431,6 +522,20 @@ function Summary({ rows, areaM2 }: { rows: PaletteRow[]; areaM2: number | null }
       )}
     </>
   )
+}
+
+/** What an action on the selection did, in one sentence or two. */
+function batchMessage(change: BatchChange, changed: { species: number; plants: number }, keys: string[], rows: PaletteRow[]): string {
+  if (changed.species + changed.plants === 0) return t('plant_palette.batch.done.nothing')
+  if (change === 'role' || change === 'strata') return t(`plant_palette.batch.done.${change}`, { count: changed.species })
+  if (change === 'planted') return t('plant_palette.batch.done.planted', { count: changed.plants })
+  const parts = [
+    changed.species > 0 ? t('plant_palette.batch.done.deleted_species', { count: changed.species }) : null,
+    changed.plants > 0 ? t('plant_palette.batch.done.deleted_plants', { count: changed.plants }) : null,
+    // A species still composed in a patch keeps its row.
+    keys.some((key) => rows.some((r) => r.key === key && r.composed > 0)) ? t('plant_palette.batch.done.still_in_patches') : null,
+  ]
+  return parts.filter(Boolean).join(' ')
 }
 
 const slug = (value: string) => value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
