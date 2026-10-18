@@ -1,8 +1,8 @@
 // One element of the map: what it is, its photos and comments and, for a
-// plant, its planting and follow-up (reprise, vigueur, photo) and, for a
+// plant, its planting and its journal as a frieze through the years and, for a
 // fruit tree, its harvest; for a fruit store, its temperature and humidity.
 import { router, Stack, useLocalSearchParams } from 'expo-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { HarvestSection } from '@/harvest/HarvestSection'
 import { api } from '@/lib/api'
@@ -10,20 +10,22 @@ import { featureTitle, kindLabel, layerLabel, speciesName } from '@/lib/elements
 import { isFruitStore } from '@/lib/fruitStore'
 import { isHarvestable } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
+import { entryReady, journalOf, OBSERVATION_KINDS, type JournalEntry, type JournalHarvest, type ObservationKind } from '@/lib/journal'
 import { isVideo } from '@/lib/media'
 import { outbox } from '@/lib/outbox'
 import type { Op } from '@/lib/outbox-core'
 import { takePhoto } from '@/lib/photos'
-import { canEdit, type Comment, type MapFeature, type Survival } from '@/lib/types'
+import { canEdit, type Comment, type MapFeature, type Photo, type Survival } from '@/lib/types'
 import { useOnline, useOutbox } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
 import { StoreSection } from '@/storage/StoreSection'
 import { keptFile } from '@/lib/storage'
 import { chooseMedia } from '@/ui/chooseMedia'
+import { Icon, type IconName } from '@/ui/Icon'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
 import { toast } from '@/ui/Toast'
-import { colors, fonts, radius, space } from '@/ui/theme'
+import { colors, fonts, radius, space, type } from '@/ui/theme'
 
 type Observation = { id: number; observedOn: string; kind?: string; survival: Survival | null; vigor: number | null; note: string | null; author: string | null; thumbUrl: string | null }
 
@@ -68,7 +70,7 @@ export default function FeatureScreen() {
 
       {isFruitStore(feature.properties.kind) && <StoreSection mapId={mapId} feature={feature} editable={editable} ops={ops} />}
 
-      {isPlant && <PlantSection mapId={mapId} feature={feature} editable={editable} ops={ops} />}
+      {isPlant && <PlantSection mapId={mapId} feature={feature} editable={editable} ops={ops} photos={photos} harvestable={isHarvestable(feature, bundle.planting)} />}
 
       <Text style={s.section}>{t('mobile.feature.photos')}</Text>
       {photos.length + pendingPhotos.length === 0 ? <Body muted>{t('mobile.feature.no_photos')}</Body> : (
@@ -92,7 +94,7 @@ export default function FeatureScreen() {
   )
 }
 
-function PlantSection({ mapId, feature, editable, ops }: { mapId: number; feature: MapFeature; editable: boolean; ops: Op[] }) {
+function PlantSection({ mapId, feature, editable, ops, photos, harvestable }: { mapId: number; feature: MapFeature; editable: boolean; ops: Op[]; photos: Photo[]; harvestable: boolean }) {
   const plantedOn = feature.properties.planted_on
   const markPlanted = () => {
     outbox.add({
@@ -116,34 +118,50 @@ function PlantSection({ mapId, feature, editable, ops }: { mapId: number; featur
             </>}
         {plantedOn && editable && <ObservationForm mapId={mapId} featureId={feature.id} />}
       </Card>
-      {plantedOn && <Observations mapId={mapId} featureId={feature.id} ops={ops} />}
+      {plantedOn && <Journal mapId={mapId} feature={feature} photos={photos} harvestable={harvestable} ops={ops} />}
     </>
   )
 }
 
+// One tap says what is noted (reprise, floraison, taille, dégât…), then only
+// what that kind asks: the take for a follow-up, words for « Autre ».
 function ObservationForm({ mapId, featureId }: { mapId: number; featureId: number }) {
+  const [kind, setKind] = useState<ObservationKind>('follow_up')
   const [survival, setSurvival] = useState<Survival | null>(null)
   const [vigor, setVigor] = useState<number | null>(null)
   const [note, setNote] = useState('')
   const [photo, setPhoto] = useState<string | null>(null)
+  const ready = entryReady(kind, survival, note)
 
   const save = () => {
-    if (!survival) return
-    outbox.add({ type: 'createObservation', mapId, featureId, observedOn: todayIso(), survival, vigor, note: note.trim() || null, photo })
-    setSurvival(null); setVigor(null); setNote(''); setPhoto(null)
+    if (!ready) return
+    outbox.add({
+      type: 'createObservation', mapId, featureId, observedOn: todayIso(), kind,
+      survival: kind === 'follow_up' ? survival : null, vigor: kind === 'follow_up' ? vigor : null, note: note.trim() || null, photo,
+    })
+    setSurvival(null); setVigor(null); setNote(''); setPhoto(null); setKind('follow_up')
     toast(t('plant_observations.saved'))
   }
 
   return (
     <View>
-      <Label>{t('plant_observations.survival')}</Label>
+      <Label>{t('plant_observations.kind')}</Label>
       <View style={s.chips}>
-        {SURVIVALS.map((value) => <Chip key={value} label={t(`plant_observations.survivals.${value}`)} selected={survival === value} onPress={() => setSurvival(value)} />)}
+        {OBSERVATION_KINDS.map((value) => <Chip key={value} role="radio" label={t(`plant_observations.kinds.${value}`)} selected={kind === value} onPress={() => setKind(value)} />)}
       </View>
-      <Label>{t('plant_observations.vigor')}</Label>
-      <View style={s.chips}>
-        {VIGORS.map((value) => <Chip key={value} label={`${value} · ${t(`plant_observations.vigors.${value}`)}`} selected={vigor === value} onPress={() => setVigor(vigor === value ? null : value)} />)}
-      </View>
+      <Body muted>{t(`plant_observations.kind_hints.${kind}`)}</Body>
+      {kind === 'follow_up' && (
+        <>
+          <Label>{t('plant_observations.survival')}</Label>
+          <View style={s.chips}>
+            {SURVIVALS.map((value) => <Chip key={value} label={t(`plant_observations.survivals.${value}`)} selected={survival === value} onPress={() => setSurvival(value)} />)}
+          </View>
+          <Label>{t('plant_observations.vigor')}</Label>
+          <View style={s.chips}>
+            {VIGORS.map((value) => <Chip key={value} label={`${value} · ${t(`plant_observations.vigors.${value}`)}`} selected={vigor === value} onPress={() => setVigor(vigor === value ? null : value)} />)}
+          </View>
+        </>
+      )}
       <Label>{t('plant_observations.note')}</Label>
       <Input value={note} onChangeText={setNote} placeholder={t('plant_observations.note_placeholder')} multiline />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.md }}>
@@ -151,7 +169,7 @@ function ObservationForm({ mapId, featureId }: { mapId: number; featureId: numbe
         <Button variant="secondary" style={{ flex: 1 }} label={photo ? t('mobile.feature.retake_photo') : t('plant_observations.choose_photo')}
           onPress={async () => { const taken = await takePhoto(); if (taken) setPhoto(taken.file) }} />
       </View>
-      <Button style={{ marginTop: space.md }} label={t('plant_observations.save')} disabled={!survival} onPress={save} />
+      <Button style={{ marginTop: space.md }} label={t('plant_observations.save')} disabled={!ready} onPress={save} />
     </View>
   )
 }
@@ -168,42 +186,96 @@ function useRemote<T>(path: string | null, refreshKey: unknown): { data: T | nul
   return { data, offline: !online && data === null }
 }
 
-function Observations({ mapId, featureId, ops }: { mapId: number; featureId: number; ops: Op[] }) {
+const ENTRY_ICONS: Record<ObservationKind, IconName> = {
+  follow_up: 'followUp', flowering: 'flowering', pruning: 'pruning', damage: 'damage', disease: 'disease', intervention: 'intervention', other: 'note',
+}
+
+/**
+ * The plant's life as a frieze: one band per year (« 2026 · année 2 »), and
+ * in it, newest first, what was noted, harvested and photographed, down to
+ * the day it went in. What waits in the outbox shows at once.
+ */
+function Journal({ mapId, feature, photos, harvestable, ops }: { mapId: number; feature: MapFeature; photos: Photo[]; harvestable: boolean; ops: Op[] }) {
   const pending = ops.flatMap((op) => (op.type === 'createObservation' ? [op] : []))
-  const { data, offline } = useRemote<{ observations: Observation[] }>(featureId > 0 ? `/maps/${mapId}/features/${featureId}/plant_observations` : null, pending.length)
-  const list = data?.observations ?? []
+  const pendingHarvests = ops.filter((op) => op.type === 'createHarvest').length
+  const remote = feature.id > 0
+  const { data, offline } = useRemote<{ observations: Observation[] }>(remote ? `/maps/${mapId}/features/${feature.id}/plant_observations` : null, pending.length)
+  const { data: harvests } = useRemote<{ harvests: JournalHarvest[] }>(remote && harvestable ? `/maps/${mapId}/features/${feature.id}/plant_harvests` : null, pendingHarvests)
+  const years = useMemo(() => journalOf({
+    plantedOn: feature.properties.planted_on,
+    precision: (feature.properties.planted_on_precision as 'day' | 'year' | 'unknown' | undefined) ?? 'day',
+    observations: [
+      ...pending.map((op) => ({ key: op.id, observedOn: op.observedOn, kind: op.kind ?? 'follow_up', survival: op.survival, vigor: op.vigor, note: op.note, local: op.photo, pending: true })),
+      ...(data?.observations ?? []).map((o) => ({ key: String(o.id), observedOn: o.observedOn, kind: (o.kind ?? 'follow_up') as ObservationKind, survival: o.survival, vigor: o.vigor, note: o.note, author: o.author, thumb: o.thumbUrl })),
+    ],
+    harvests: (harvests?.harvests ?? []).map((h) => ({ ...h, key: String((h as JournalHarvest & { id?: number }).id ?? h.notedOn) })),
+    photos: photos.map((p) => ({ id: p.id, takenAt: p.takenAt })),
+  }), [feature, pending, data, harvests, photos])
+
   return (
-    <View style={{ gap: space.sm }}>
-      {pending.map((op) => (
-        <ObservationRow key={op.id} observedOn={op.observedOn} survival={op.survival} vigor={op.vigor} note={op.note} local={op.photo} pending />
-      ))}
-      {list.map((o) => <ObservationRow key={o.id} observedOn={o.observedOn} kind={o.kind} survival={o.survival} vigor={o.vigor} note={o.note} author={o.author} thumb={o.thumbUrl} />)}
+    <View style={{ gap: space.md }}>
       {offline && <Body muted>{t('mobile.feature.history_offline')}</Body>}
-      {!offline && data && list.length === 0 && pending.length === 0 && <Body muted>{t('plant_observations.empty')}</Body>}
+      {!offline && data && years.length === 0 && <Body muted>{t('plant_observations.empty')}</Body>}
+      {years.map((year) => (
+        <View key={year.year} style={s.year}>
+          <Text style={s.yearTitle} accessibilityRole="header">
+            {year.age ? t('mobile.journal.year_age', { year: String(year.year), count: year.age }) : String(year.year)}
+          </Text>
+          <View style={s.band}>
+            {year.entries.map((entry) => <JournalRow key={entry.key} mapId={mapId} entry={entry} />)}
+          </View>
+        </View>
+      ))}
     </View>
   )
 }
 
-function ObservationRow({ observedOn, kind, survival, vigor, note, author, thumb, local, pending }: {
-  observedOn: string; kind?: string; survival: Survival | null; vigor: number | null; note: string | null; author?: string | null; thumb?: string | null; local?: string | null; pending?: boolean
-}) {
-  return (
-    <Card style={{ flexDirection: 'row', gap: space.md, padding: space.md }}>
-      {(thumb || local) && <RemoteImage path={thumb} local={local} style={s.smallThumb} />}
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={s.rowTitle}>
-          {[
-            kind && kind !== 'follow_up' ? t(`plant_observations.kinds.${kind}`) : null,
-            survival ? t(`plant_observations.survivals.${survival}`) : null,
-            vigor ? `${t('plant_observations.vigor')} ${vigor}/5` : null,
-          ].filter(Boolean).join(' · ')}
-        </Text>
-        <Text style={s.rowMeta}>
-          {[formatDate(observedOn), author ? t('plant_observations.by', { name: author }) : null, pending ? t('mobile.feature.pending') : null].filter(Boolean).join(' · ')}
-        </Text>
-        {note ? <Body>{note}</Body> : null}
+function JournalRow({ mapId, entry }: { mapId: number; entry: JournalEntry }) {
+  const when = entry.type === 'planted' && entry.precision === 'year' ? '' : formatDate(entry.date)
+  if (entry.type === 'photos') {
+    return (
+      <View style={s.entry}>
+        <View style={s.mark}><Icon name="photo" size={18} color={colors.prune700} /></View>
+        <View style={{ flex: 1, gap: space.xs }}>
+          <Text style={s.rowMeta}>{[when, t('mobile.journal.photos', { count: entry.ids.length })].join(' · ')}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm }}>
+            {entry.ids.map((id) => (
+              <Pressable key={id} onPress={() => router.push(`/maps/${mapId}/photo/${id}`)} accessibilityRole="button" accessibilityLabel={t('mobile.feature.open_photo', { date: when })}>
+                <RemoteImage path={`/maps/${mapId}/photos/${id}/image?size=thumb`} style={s.smallThumb} />
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
       </View>
-    </Card>
+    )
+  }
+  const { icon, title, detail, note, thumb, local, author, pending } =
+    entry.type === 'planted' ? { icon: 'planted' as IconName, title: t('mobile.journal.planted'), detail: null, note: null, thumb: null, local: null, author: null, pending: false }
+    : entry.type === 'harvest' ? {
+        icon: 'harvest' as IconName,
+        title: entry.first ? t('mobile.journal.first_harvest') : t(`plant_harvests.stages.${entry.harvest.stage}`),
+        detail: entry.harvest.amount ? t(`plant_harvests.amounts.${entry.harvest.stage}.${entry.harvest.amount}`) : null, note: entry.harvest.note, thumb: null, local: null, author: null, pending: false,
+      }
+    : {
+        icon: ENTRY_ICONS[entry.observation.kind] ?? 'note',
+        title: t(`plant_observations.kinds.${entry.observation.kind}`),
+        detail: [
+          entry.observation.survival ? t(`plant_observations.survivals.${entry.observation.survival}`) : null,
+          entry.observation.vigor ? `${t('plant_observations.vigor')} ${entry.observation.vigor}/5` : null,
+        ].filter(Boolean).join(' · ') || null,
+        note: entry.observation.note, thumb: entry.observation.thumb, local: entry.observation.local, author: entry.observation.author, pending: entry.observation.pending,
+      }
+  const highlight = entry.type === 'planted' || (entry.type === 'harvest' && entry.first)
+  return (
+    <View style={s.entry} accessible accessibilityLabel={[title, detail, when, note].filter(Boolean).join(', ')}>
+      <View style={[s.mark, highlight && s.markStrong]}><Icon name={icon} size={18} color={highlight ? colors.white : colors.prune700} /></View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={s.rowTitle}>{[title, detail].filter(Boolean).join(' · ')}</Text>
+        <Text style={s.rowMeta}>{[when, author ? t('plant_observations.by', { name: author }) : null, pending ? t('mobile.feature.pending') : null].filter(Boolean).join(' · ')}</Text>
+        {note ? <Text style={s.entryNote}>{note}</Text> : null}
+      </View>
+      {(thumb || local) && <RemoteImage path={thumb} local={local} style={s.smallThumb} />}
+    </View>
   )
 }
 
@@ -267,5 +339,13 @@ const s = StyleSheet.create({
   smallThumb: { width: 64, height: 64, borderRadius: radius.md },
   rowTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.loam900 },
   rowMeta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
+  year: { gap: space.sm },
+  yearTitle: { ...type.hand, color: colors.prune700 },
+  // The frieze: a thin line down the year, a mark per entry on it.
+  band: { borderLeftWidth: 2, borderLeftColor: colors.loam200, marginLeft: 15, paddingLeft: space.md, gap: space.md },
+  entry: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md, marginLeft: -(space.md + 17) },
+  mark: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper, borderWidth: 1.5, borderColor: colors.prune700 },
+  markStrong: { backgroundColor: colors.leaf700, borderColor: colors.leaf700 },
+  entryNote: { ...type.hand, fontSize: 19, lineHeight: 24, color: colors.loam800 },
 })
 

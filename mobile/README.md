@@ -37,8 +37,11 @@ What it does, for the maps one belongs to:
   photo joins the series (`MapPhoto#retake_of`) and the photo screen wipes
   from before to after (`ui/BeforeAfter.tsx`); the sheet lists the photos
   already taken where one stands (« Déjà photographié ici »);
-- plants: place a plant where one stands, mark it planted, record its
-  reprise and vigueur with a photo;
+- plants: place a plant where one stands, mark it planted; its journal
+  (`lib/journal.ts`) notes a take, flowering, pruning, damage, disease or an
+  intervention in one tap, and shows the plant's life as a frieze by year
+  (« 2026 · année 3 »): planting, notes, harvests with the first one marked,
+  photos;
 - survey: a GPS point, or a walked trace saved as a line or a closed
   surface (keeps recording with the screen off; GPS jumps faster than a
   walk are dropped, `cleanTrace`);
