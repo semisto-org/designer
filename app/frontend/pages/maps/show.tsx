@@ -381,6 +381,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
         notify(t('undo.deleted', { name: featureName(current) }), 'info', { label: t('undo.action'), run: () => void step('undo') })
       },
       recordDraftReview: tracked.reviewed,
+      recordRemoval: tracked.remove,
       undoGroup: (label, run) => history.group(label, run),
       upsertFeatures,
       removeFeatures,

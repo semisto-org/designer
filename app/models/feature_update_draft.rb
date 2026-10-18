@@ -10,9 +10,13 @@
 #   { "name" => "…", "notes" => "…", "tags" => [ … ],
 #     "properties" => { "planted_on" => "2026-05-23", "count" => nil },   # nil removes the key
 #     "geometry" => { GeoJSON } }
+# or, for a proposed deletion (MCP tool propose_deletions), only
+#   { "delete" => true }
+# which, once accepted, puts the element in the map's trash (MapFeature::Trash).
 class FeatureUpdateDraft < ApplicationRecord
   STATUSES = %w[pending accepted rejected withdrawn].freeze
   FIELDS = %w[name notes tags properties geometry].freeze
+  DELETION = { "delete" => true }.freeze
 
   belongs_to :map
   belongs_to :map_feature
@@ -29,6 +33,9 @@ class FeatureUpdateDraft < ApplicationRecord
   scope :ordered, -> { order(:id) }
 
   def pending? = status == "pending"
+
+  def self.deletion?(changes) = changes.respond_to?(:to_h) && changes.to_h.deep_stringify_keys == DELETION
+  def deletion? = self.class.deletion?(proposed_changes)
 
   # Writes `changes` (FIELDS, properties merged key by key, nil removing a
   # key) on the feature, in memory.
@@ -48,6 +55,7 @@ class FeatureUpdateDraft < ApplicationRecord
 
   # The current values of the fields `changes` touches, in the same shape.
   def self.snapshot(feature, changes)
+    return {} if deletion?(changes)
     changes = changes.to_h.deep_stringify_keys
     changes.each_with_object({}) do |(field, value), out|
       out[field] =
@@ -63,6 +71,7 @@ class FeatureUpdateDraft < ApplicationRecord
   # Field by field, before → after, against the element as it is now:
   #   [ { field: "properties.planted_on", before: nil, after: "2026-05-23" }, … ]
   def self.diff(feature, changes)
+    return [ { field: "delete", before: nil, after: true } ] if deletion?(changes)
     before = snapshot(feature, changes)
     changes.to_h.deep_stringify_keys.flat_map do |field, value|
       if field == "properties"
@@ -78,7 +87,10 @@ class FeatureUpdateDraft < ApplicationRecord
   # Applies the proposal (or the person's adjustment of its values) to the
   # element and marks it accepted. Raises ActiveRecord::RecordInvalid when
   # the element would not be valid; the caller wraps it in a transaction.
+  # A deletion cannot be adjusted: it puts the element in the trash, where
+  # « Annuler » finds it (MapFeature::Trash::KEEP_FOR).
   def accept!(user, adjusted = nil)
+    return accept_deletion!(user) if deletion?
     changes = adjusted ? adjust(adjusted) : proposed_changes
     # Fresh: accepting an earlier change of the same proposal may have given
     # this element another plant number (a swap), which bumped its lock.
@@ -145,6 +157,13 @@ class FeatureUpdateDraft < ApplicationRecord
   end
 
   private
+    def accept_deletion!(user)
+      feature = map_feature.reload
+      feature.trash!(by: user)
+      update!(status: "accepted", reviewed_by: user, reviewed_at: Time.current, applied_changes: DELETION, previous_values: {})
+      feature
+    end
+
     # Only the fields (and property keys) the AI proposed can be adjusted.
     def adjust(adjusted)
       adjusted = adjusted.to_h.deep_stringify_keys
@@ -159,6 +178,7 @@ class FeatureUpdateDraft < ApplicationRecord
     end
 
     def changes_shape
+      return if deletion?
       unless proposed_changes.is_a?(Hash) && proposed_changes.any? && (proposed_changes.keys - FIELDS).empty?
         errors.add(:proposed_changes, :invalid)
       end

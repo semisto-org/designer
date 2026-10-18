@@ -158,7 +158,7 @@ module Mcp
         def pending_update_json(draft, feature)
           {
             id: draft.id, batch: draft.batch, summary: draft.summary, rationale: draft.rationale,
-            proposed_at: draft.created_at.iso8601, changes: draft.diff(feature)
+            proposed_at: draft.created_at.iso8601, deletion: draft.deletion? || nil, changes: draft.diff(feature)
           }.compact
         end
 

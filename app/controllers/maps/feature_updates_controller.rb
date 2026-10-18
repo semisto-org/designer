@@ -1,7 +1,9 @@
 # Human review of the changes an AI proposed to elements already on a map
 # (FeatureUpdateDraft, from the MCP tool propose_feature_updates): accept
 # (maybe after adjusting the values), reject, or all of one proposal at
-# once. Accepted changes stay as the element's history.
+# once. Accepted changes stay as the element's history. An accepted
+# deletion (propose_deletions) puts the element in the trash: the answer
+# names it in deletedId(s) instead of sending it back.
 module Maps
   class FeatureUpdatesController < ApplicationController
     include MapScoped
@@ -30,7 +32,7 @@ module Maps
     def accept
       draft = @map.feature_update_drafts.pending.find(params[:id])
       feature = FeatureUpdateDraft.transaction { draft.accept!(Current.user, adjusted_changes) }
-      render json: { id: draft.id, feature: feature.as_geojson }
+      render json: feature.trashed? ? { id: draft.id, deletedId: feature.id } : { id: draft.id, feature: feature.as_geojson }
     rescue ActiveRecord::RecordInvalid => e
       render json: { message: t("feature_updates.errors.invalid", errors: e.record.errors.full_messages.to_sentence) }, status: :unprocessable_entity
     end
@@ -61,7 +63,8 @@ module Maps
       end
       # A fresh copy: the savepoint of a skipped change can leave this one stale.
       @map.reload.touch if accepted.any?
-      render json: { features: accepted.map(&:as_geojson), failed: }
+      deleted, changed = accepted.partition(&:trashed?)
+      render json: { features: changed.map(&:as_geojson), deletedIds: deleted.map(&:id), failed: }
     end
 
     def reject_all

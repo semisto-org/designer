@@ -17,6 +17,8 @@ export type ProposedChanges = {
   tags?: string[]
   properties?: Record<string, unknown>
   geometry?: unknown
+  /** A proposed deletion (propose_deletions) carries only this. */
+  delete?: true
 }
 
 export type FeatureUpdateData = {
@@ -60,6 +62,11 @@ export type FeatureUpdateHistoryEntry = {
 /** Fields the review names in words (feature_updates.fields.*). */
 export const KNOWN_FIELDS = ['name', 'notes', 'tags', 'geometry', 'planted_on', 'species_id', 'variety_id', 'training', 'graft_form', 'trunk_height', 'rootstock_vigor', 'rootstock', 'count', 'number', 'planted_on_precision'] as const
 
+/** The AI proposes to remove the element: accepting puts it in the trash. */
+export function isDeletion(update: Pick<FeatureUpdateData, 'proposedChanges'>): boolean {
+  return update.proposedChanges?.delete === true
+}
+
 /** `properties.planted_on` → `planted_on`; `name` → `name`. */
 export function fieldKey(field: string): string {
   return field.startsWith('properties.') ? field.slice('properties.'.length) : field
@@ -95,7 +102,7 @@ export function shownValue(change: FeatureUpdateChange, side: 'before' | 'after'
 
 /** A field the person can retype before accepting (not a position, not a nested object). */
 export function adjustable(change: FeatureUpdateChange): boolean {
-  if (change.field === 'geometry') return false
+  if (change.field === 'geometry' || change.field === 'delete') return false
   const after = change.after
   return after == null || ['string', 'number', 'boolean'].includes(typeof after) || Array.isArray(after)
 }

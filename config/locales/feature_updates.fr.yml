@@ -1,5 +1,5 @@
 # Revue, dans l'éditeur, des modifications qu'une IA propose à des éléments
-# déjà sur la carte (outil MCP propose_feature_updates).
+# déjà sur la carte (outils MCP propose_feature_updates et propose_deletions).
 fr:
   feature_updates:
     default_author: "L'IA"
@@ -7,6 +7,9 @@ fr:
     title:
       one: "%{author} propose de modifier 1 élément"
       other: "%{author} propose de modifier %{count} éléments"
+    title_deletions:
+      one: "%{author} propose de supprimer 1 élément"
+      other: "%{author} propose de supprimer %{count} éléments"
     cta: "Rien ne change avant ton accord : revois-les, champ par champ."
     viewer_hint: "Un éditeur de la carte doit les revoir avant qu'elles ne s'appliquent."
     batch_count:
@@ -30,6 +33,28 @@ fr:
     confirm_reject_all:
       one: "Refuser cette modification ?"
       other: "Refuser les %{count} modifications de cette proposition ?"
+    delete: "Supprimer"
+    keep: "Garder"
+    delete_all:
+      one: "Supprimer"
+      other: "Tout supprimer (%{count})"
+    keep_all:
+      one: "Garder"
+      other: "Tout garder"
+    confirm_keep_all:
+      one: "Garder cet élément sur la carte ?"
+      other: "Garder les %{count} éléments sur la carte ?"
+    deleted: "Élément mis à la corbeille. ⌘Z (Ctrl+Z) le remet sur la carte."
+    kept: "Suppression refusée : l'élément reste sur la carte."
+    kept_all:
+      one: "1 élément gardé sur la carte."
+      other: "%{count} éléments gardés sur la carte."
+    deleted_all:
+      one: "1 élément mis à la corbeille. ⌘Z (Ctrl+Z) le remet sur la carte."
+      other: "%{count} éléments mis à la corbeille. ⌘Z (Ctrl+Z) les remet sur la carte."
+    deletion: "Supprimer cet élément de la carte"
+    deletion_title: "Suppression proposée par %{author}"
+    deletion_hint: "Accepter le met à la corbeille, avec ses photos, son journal et ses récoltes : ⌘Z (Ctrl+Z) le remet sur la carte."
     accepted: "Modification acceptée : l'élément est à jour."
     rejected: "Modification refusée : l'élément reste tel quel."
     accepted_all:

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { adjustable, adjustedChanges, fieldKey, inputValue, isKnownField, shownValue, updatesOfBatch } from '../../../app/frontend/map/feature_updates/diff.ts'
+import { adjustable, adjustedChanges, fieldKey, inputValue, isDeletion, isKnownField, shownValue, updatesOfBatch } from '../../../app/frontend/map/feature_updates/diff.ts'
 import type { FeatureUpdateData } from '../../../app/frontend/map/feature_updates/diff.ts'
 
 test('a property field is named by its key', () => {
@@ -38,4 +38,10 @@ test('the person retypes values, sent back in the shape the server expects', () 
 test('the updates of one proposal', () => {
   const update = (id: number, batch: string) => ({ id, batch }) as FeatureUpdateData
   assert.deepEqual(updatesOfBatch([update(1, 'a'), update(2, 'b'), update(3, 'a')], 'a').map((u) => u.id), [1, 3])
+})
+
+test('a proposed deletion is recognised and has nothing to adjust', () => {
+  assert.ok(isDeletion({ proposedChanges: { delete: true } }))
+  assert.ok(!isDeletion({ proposedChanges: { name: 'Pommier' } }))
+  assert.ok(!adjustable({ field: 'delete', before: null, after: true }))
 })

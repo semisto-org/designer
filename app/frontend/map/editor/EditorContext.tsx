@@ -56,6 +56,8 @@ export type Editor = {
   deleteFeature: (id: number) => Promise<void>
   /** An AI draft reviewed outside updateFeature (Maps::DraftsController), so ⌘Z can put it back to review. */
   recordDraftReview: (draft: MapFeature, verdict: 'accept' | 'reject', after?: MapFeature) => void
+  /** An element put in the trash outside deleteFeature (an AI's deletion accepted), so ⌘Z restores it. */
+  recordRemoval: (feature: MapFeature) => void
   /** Every change made by `run` is undone in one ⌘Z (« Tout accepter », a group move). */
   undoGroup: <T>(label: string, run: () => Promise<T>) => Promise<T>
   /** Replace or insert features received from elsewhere (other panels, real time). */

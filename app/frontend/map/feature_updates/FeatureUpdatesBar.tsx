@@ -1,12 +1,12 @@
 import clsx from 'clsx'
-import { Check, ChevronDown, ChevronUp, Crosshair, PencilLine, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Crosshair, PencilLine, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
 import ChangeList from '@/map/feature_updates/ChangeList'
-import { updatesOfBatch, type FeatureUpdateBatch } from '@/map/feature_updates/diff'
+import { isDeletion, updatesOfBatch, type FeatureUpdateBatch } from '@/map/feature_updates/diff'
 import { focusFeature } from '@/map/feature_updates/focus'
 import { acceptBatch, loadFeatureUpdates, rejectBatch, rejectUpdate, acceptUpdate, useFeatureUpdates } from '@/map/feature_updates/store'
 
@@ -41,6 +41,7 @@ export default function FeatureUpdatesBar() {
 
   const authors = [...new Set(batches.map((b) => b.clientName).filter(Boolean))]
   const author = authors.length === 1 ? authors[0]! : t('feature_updates.default_author')
+  const onlyDeletions = updates.every(isDeletion)
   const inspectorOpen = editor.selected != null
   // On a phone the inspector is a bottom sheet: fold the card while it is up.
   const expanded = open && (isDesktop || !inspectorOpen)
@@ -61,11 +62,11 @@ export default function FeatureUpdatesBar() {
         className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-humus-50"
       >
         <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-humus-100 text-humus-700">
-          <PencilLine className="h-4 w-4" />
+          {onlyDeletions ? <Trash2 className="h-4 w-4" /> : <PencilLine className="h-4 w-4" />}
         </span>
         <span className="min-w-0 flex-1">
           <span className="line-clamp-2 text-sm font-semibold leading-snug text-loam-900">
-            {t('feature_updates.title', { count: updates.length, author })}
+            {t(onlyDeletions ? 'feature_updates.title_deletions' : 'feature_updates.title', { count: updates.length, author })}
           </span>
           {!expanded && (
             <span className="block truncate text-sm text-loam-500">{t(editor.canEdit ? 'feature_updates.cta' : 'feature_updates.viewer_hint')}</span>
@@ -94,6 +95,8 @@ function BatchBlock({ batch, card, isDesktop }: { batch: FeatureUpdateBatch; car
   // What the proposal changes, read on its first element: a batch by filter changes the same fields everywhere.
   const sample = items[0]
   const sameEverywhere = items.every((u) => JSON.stringify(u.proposedChanges) === JSON.stringify(sample?.proposedChanges))
+  // One call of the AI proposes either changes or deletions (propose_deletions).
+  const deletion = sample ? isDeletion(sample) : false
 
   async function run(key: number | 'all', action: () => Promise<string | void>) {
     setBusy(key)
@@ -154,21 +157,21 @@ function BatchBlock({ batch, card, isDesktop }: { batch: FeatureUpdateBatch; car
                     <>
                       <button
                         type="button"
-                        aria-label={`${t('feature_updates.accept')} « ${label} »`}
-                        title={t('feature_updates.accept')}
+                        aria-label={`${t(deletion ? 'feature_updates.delete' : 'feature_updates.accept')} « ${label} »`}
+                        title={t(deletion ? 'feature_updates.delete' : 'feature_updates.accept')}
                         disabled={busy !== null}
                         onClick={() => run(update.id, () => acceptUpdate(editor, update.id))}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-leaf-600 hover:bg-leaf-50 disabled:opacity-40"
+                        className={clsx('grid h-8 w-8 shrink-0 place-items-center rounded-lg disabled:opacity-40', deletion ? 'text-clay-500 hover:bg-clay-50' : 'text-leaf-600 hover:bg-leaf-50')}
                       >
-                        <Check className="h-4 w-4" />
+                        {deletion ? <Trash2 className="h-4 w-4" /> : <Check className="h-4 w-4" />}
                       </button>
                       <button
                         type="button"
-                        aria-label={`${t('feature_updates.reject')} « ${label} »`}
-                        title={t('feature_updates.reject')}
+                        aria-label={`${t(deletion ? 'feature_updates.keep' : 'feature_updates.reject')} « ${label} »`}
+                        title={t(deletion ? 'feature_updates.keep' : 'feature_updates.reject')}
                         disabled={busy !== null}
                         onClick={() => run(update.id, () => rejectUpdate(editor, update.id))}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-clay-500 hover:bg-clay-50 disabled:opacity-40"
+                        className={clsx('grid h-8 w-8 shrink-0 place-items-center rounded-lg disabled:opacity-40', deletion ? 'text-loam-500 hover:bg-loam-50' : 'text-clay-500 hover:bg-clay-50')}
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -186,27 +189,30 @@ function BatchBlock({ batch, card, isDesktop }: { batch: FeatureUpdateBatch; car
           <Button
             size="sm"
             variant="ghost"
-            className="text-clay-500"
+            className={deletion ? undefined : 'text-clay-500'}
             disabled={busy !== null}
             onClick={() => {
-              if (!window.confirm(t('feature_updates.confirm_reject_all', { count: ids.length }))) return
-              void run('all', async () => t('feature_updates.rejected_all', { count: await rejectBatch(editor, batch.batch, ids) }))
+              if (!window.confirm(t(deletion ? 'feature_updates.confirm_keep_all' : 'feature_updates.confirm_reject_all', { count: ids.length }))) return
+              void run('all', async () => {
+                const count = await rejectBatch(editor, batch.batch, ids)
+                return t(deletion ? 'feature_updates.kept_all' : 'feature_updates.rejected_all', { count })
+              })
             }}
           >
-            {t('feature_updates.reject_all', { count: ids.length })}
+            {t(deletion ? 'feature_updates.keep_all' : 'feature_updates.reject_all', { count: ids.length })}
           </Button>
           <Button
             size="sm"
-            variant="leaf"
+            variant={deletion ? 'danger' : 'leaf'}
             disabled={busy !== null}
             onClick={() => run('all', async () => {
-              const { accepted, failed } = await acceptBatch(editor, batch.batch, ids)
+              const { accepted, deleted, failed } = await acceptBatch(editor, batch.batch, ids)
               if (failed.length) editor.notify(t('feature_updates.failed', { count: failed.length, message: failed[0].message }), 'error')
-              return t('feature_updates.accepted_all', { count: accepted })
+              return deleted ? t('feature_updates.deleted_all', { count: deleted }) : t('feature_updates.accepted_all', { count: accepted })
             })}
           >
-            <Check className="h-4 w-4" />
-            {t('feature_updates.accept_all', { count: ids.length })}
+            {deletion ? <Trash2 className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+            {t(deletion ? 'feature_updates.delete_all' : 'feature_updates.accept_all', { count: ids.length })}
           </Button>
         </div>
       )}

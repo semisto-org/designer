@@ -1,4 +1,4 @@
-import { Check, History, PencilLine, SlidersHorizontal, X } from 'lucide-react'
+import { Check, History, PencilLine, SlidersHorizontal, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
@@ -6,7 +6,7 @@ import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import ChangeList, { fieldLabel } from '@/map/feature_updates/ChangeList'
-import { adjustable, adjustedChanges, inputValue, type FeatureUpdateData, type FeatureUpdateHistoryEntry } from '@/map/feature_updates/diff'
+import { adjustable, adjustedChanges, inputValue, isDeletion, type FeatureUpdateData, type FeatureUpdateHistoryEntry } from '@/map/feature_updates/diff'
 import { acceptUpdate, rejectUpdate, useFeatureUpdates } from '@/map/feature_updates/store'
 import type { MapFeature } from '@/types'
 
@@ -52,6 +52,7 @@ function PendingUpdate({ update }: { update: FeatureUpdateData }) {
   const [typed, setTyped] = useState<Record<string, string> | null>(null)
   const author = update.clientName || t('feature_updates.default_author')
   const fields = update.changes.filter(adjustable)
+  const deletion = isDeletion(update)
 
   async function run(action: () => Promise<void>, message: string) {
     setBusy(true)
@@ -65,13 +66,15 @@ function PendingUpdate({ update }: { update: FeatureUpdateData }) {
   }
 
   return (
-    <div className="space-y-2 rounded-lg border border-humus-200 bg-humus-50/60 p-3">
-      <p className="flex items-center gap-1.5 text-sm font-semibold text-humus-800">
-        <PencilLine className="h-4 w-4" />
-        {t('feature_updates.inspector_title', { author })}
+    <div className={deletion ? 'space-y-2 rounded-lg border border-clay-200 bg-clay-50/60 p-3' : 'space-y-2 rounded-lg border border-humus-200 bg-humus-50/60 p-3'}>
+      <p className={deletion ? 'flex items-center gap-1.5 text-sm font-semibold text-clay-700' : 'flex items-center gap-1.5 text-sm font-semibold text-humus-800'}>
+        {deletion ? <Trash2 className="h-4 w-4" /> : <PencilLine className="h-4 w-4" />}
+        {t(deletion ? 'feature_updates.deletion_title' : 'feature_updates.inspector_title', { author })}
       </p>
       {update.summary && <p className="text-sm text-loam-600">{update.summary}</p>}
-      {typed ? (
+      {deletion ? (
+        <p className="text-sm text-loam-600">{t('feature_updates.deletion_hint')}</p>
+      ) : typed ? (
         <div className="space-y-2">
           <p className="text-sm text-loam-600">{t('feature_updates.adjust_hint')}</p>
           {fields.map((change) => (
@@ -110,6 +113,17 @@ function PendingUpdate({ update }: { update: FeatureUpdateData }) {
             </Button>
             <Button size="sm" variant="ghost" disabled={busy} onClick={() => setTyped(null)}>
               {t('feature_updates.cancel_adjust')}
+            </Button>
+          </div>
+        ) : deletion ? (
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="danger" className="flex-1" disabled={busy} onClick={() => run(() => acceptUpdate(editor, update.id), t('feature_updates.deleted'))}>
+              <Trash2 className="h-4 w-4" />
+              {t('feature_updates.delete')}
+            </Button>
+            <Button size="sm" variant="secondary" disabled={busy} onClick={() => run(() => rejectUpdate(editor, update.id), t('feature_updates.kept'))}>
+              <X className="h-4 w-4" />
+              {t('feature_updates.keep')}
             </Button>
           </div>
         ) : (
