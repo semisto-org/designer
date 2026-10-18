@@ -182,6 +182,7 @@ fr:
     harvest:
       title: "Récolte"
       saved: "Noté pour cet arbre."
+      saved_nothing: "Noté : aucun fruit sur cet arbre."
       saved_offline: "Noté. Ce sera envoyé quand tu auras du réseau."
       next_tree: "Arbre suivant : %{name}"
       next_tree_hint: "Le plus proche pas encore noté aujourd'hui, à %{meters} m."

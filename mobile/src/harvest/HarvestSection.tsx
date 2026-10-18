@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { api } from '@/lib/api'
 import { featureTitle } from '@/lib/elements'
-import { adviceLines, amountsFor, HARVEST_STAGES, HARVEST_USES, nextTree, type HarvestAdvice, type HarvestAmount, type HarvestStage, type HarvestUse } from '@/lib/harvests'
+import { adviceLines, amountsFor, HARVEST_STAGES, nothingHarvest, HARVEST_USES, nextTree, type HarvestAdvice, type HarvestAmount, type HarvestStage, type HarvestUse } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
 import type { Op } from '@/lib/outbox-core'
@@ -32,7 +32,7 @@ export function HarvestSection({ bundle, feature, editable, ops, allOps }: { bun
   const [uses, setUses] = useState<HarvestUse[]>([])
   const [kg, setKg] = useState('')
   const [note, setNote] = useState('')
-  const [justSaved, setJustSaved] = useState(false)
+  const [justSaved, setJustSaved] = useState<'harvest' | 'nothing' | null>(null)
   const season = new Date().getFullYear()
 
   const load = useCallback(async () => {
@@ -59,7 +59,14 @@ export function HarvestSection({ bundle, feature, editable, ops, allOps }: { bun
       harvest: { notedOn: todayIso(), stage, amount, uses: stage === 'picked' ? uses : [], quantityKg: stage === 'picked' && quantity > 0 ? quantity : null, note: note.trim() || null },
     })
     setStage(null); setAmount(null); setUses([]); setKg(''); setNote('')
-    setJustSaved(true)
+    setJustSaved('harvest')
+  }
+
+  // Came to pick, nothing on the tree: one tap, then on to the next tree.
+  const saveNothing = () => {
+    outbox.add({ type: 'createHarvest', mapId, featureId: feature.id, harvest: nothingHarvest(todayIso(), note) })
+    setStage(null); setAmount(null); setUses([]); setKg(''); setNote('')
+    setJustSaved('nothing')
   }
 
   const goNext = () => {
@@ -93,7 +100,7 @@ export function HarvestSection({ bundle, feature, editable, ops, allOps }: { bun
         <Card style={{ gap: space.sm }}>
           {justSaved && (
             <View style={{ gap: space.sm }}>
-              <Body>{online ? t('mobile.harvest.saved') : t('mobile.harvest.saved_offline')}</Body>
+              <Body>{!online ? t('mobile.harvest.saved_offline') : justSaved === 'nothing' ? t('mobile.harvest.saved_nothing') : t('mobile.harvest.saved')}</Body>
               {next
                 ? <>
                     <Button label={t('mobile.harvest.next_tree', { name: featureTitle(next.feature, bundle.planting) })} onPress={goNext} />
@@ -105,9 +112,11 @@ export function HarvestSection({ bundle, feature, editable, ops, allOps }: { bun
           <View style={s.chips}>
             {HARVEST_STAGES.map((value) => (
               <Chip key={value} label={t(`plant_harvests.stages.${value}`)} selected={stage === value}
-                onPress={() => { setStage(value); setAmount(null); setJustSaved(false) }} />
+                onPress={() => { setStage(value); setAmount(null); setJustSaved(null) }} />
             ))}
+            <Chip label={t('plant_harvests.nothing')} onPress={saveNothing} />
           </View>
+          {!stage && !justSaved && <Body muted>{t('plant_harvests.nothing_hint')}</Body>}
           {stage && (
             <>
               <Label>{t('plant_harvests.amount')}</Label>

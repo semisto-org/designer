@@ -199,6 +199,7 @@
     "harvest": {
       "title": "Récolte",
       "saved": "Noté pour cet arbre.",
+      "saved_nothing": "Noté : aucun fruit sur cet arbre.",
       "saved_offline": "Noté. Ce sera envoyé quand tu auras du réseau.",
       "next_tree": "Arbre suivant : %{name}",
       "next_tree_hint": "Le plus proche pas encore noté aujourd'hui, à %{meters} m.",
@@ -522,6 +523,8 @@
       "on_tree": "Fruits sur l'arbre",
       "picked": "Récolte"
     },
+    "nothing": "Aucun fruit",
+    "nothing_hint": "Rien à récolter sur cet arbre aujourd'hui : noté comme une saison sans fruits.",
     "amount": "Quantité",
     "amounts": {
       "on_tree": {

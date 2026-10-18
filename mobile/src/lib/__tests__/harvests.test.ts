@@ -1,4 +1,4 @@
-import { adviceLines, amountsFor, harvestBody, isHarvestable, nextTree } from '../harvests'
+import { adviceLines, amountsFor, harvestBody, isHarvestable, nextTree, nothingHarvest } from '../harvests'
 import type { MapBundle, MapFeature } from '../types'
 
 const species = {
@@ -28,6 +28,10 @@ describe('harvests', () => {
   it('never offers « no fruit » for a harvest', () => {
     expect(amountsFor('picked')).toEqual(['light', 'normal', 'heavy'])
     expect(amountsFor('on_tree')).toContain('none')
+  })
+
+  it('notes « no fruit » in one go, as a look at an empty tree', () => {
+    expect(harvestBody(nothingHarvest('2026-10-18')).plant_harvest).toMatchObject({ noted_on: '2026-10-18', stage: 'on_tree', amount: 'none', uses: [], quantity_kg: null, note: null })
   })
 
   it('sends uses and weight only with a harvest', () => {
