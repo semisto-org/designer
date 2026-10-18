@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import type { Geometry } from 'geojson'
 import { ArrowLeft } from 'lucide-react'
-import { area, bbox as turfBbox } from '@turf/turf'
+import { area, polygon, bbox as turfBbox } from '@turf/turf'
 import type { MapMouseEvent, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -12,9 +12,10 @@ import { api } from '@/lib/api'
 import { formatArea, t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { MapView } from '@/map/MapView'
-import { featureAt, hitsAt } from '@/map/featurePick'
+import { boxSelect } from '@/map/boxSelect'
+import { featureAt, hitsAt, hitsIn } from '@/map/featurePick'
 import { useMapInstance } from '@/map/MapContext'
-import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
+import { Drawer, type DrawOptions, type DrawShape, type PointTool } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature, type NotifyAction, type SavedFeature } from '@/map/editor/EditorContext'
 import { featureHistory, UndoRefused } from '@/map/editor/featureHistory'
 import { historyShortcut, isTextTarget, UndoHistory } from '@/map/editor/history'
@@ -30,6 +31,7 @@ import { MODAL_PANEL_QUERY } from '@/map/panels/registry'
 import { featureName } from '@/map/earthworks/model'
 import { plantPeek } from '@/map/plants/peek'
 import { isPlant } from '@/map/plants/properties'
+import { idsWithin, selectionMove, toggled } from '@/map/selection/move'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
 import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
 
@@ -113,6 +115,8 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [arrival] = useState(() => featureFromUrl(initial))
   const [selectedId, setSelectedId] = useState<number | null>(arrival?.properties.id ?? null)
+  const [selection, setSelection] = useState<number[]>([])
+  const [multiSelect, setMultiSelect] = useState(false)
   // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
   const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
   // A guide's « Ouvrir le panneau… » button asks for a panel (components/help/actions).
@@ -178,29 +182,48 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     instance.fitBounds([[minX, minY], [maxX, maxY]], { padding: 120, maxZoom: 19, duration: 0 })
   }, [instance, arrival])
 
-  // Selection highlight and click-to-select.
+  // Selection highlight (one element, or several picked together) and click-to-select.
   useEffect(() => {
-    if (selectedId == null) return
-    instance.setFeatureState({ source: FEATURES_SOURCE, id: selectedId }, { selected: true })
+    const ids = selection.length ? selection : selectedId != null ? [selectedId] : []
+    ids.forEach((id) => instance.setFeatureState({ source: FEATURES_SOURCE, id }, { selected: true }))
     return () => {
-      if (instance.getSource(FEATURES_SOURCE)) instance.setFeatureState({ source: FEATURES_SOURCE, id: selectedId }, { selected: false })
+      if (!instance.getSource(FEATURES_SOURCE)) return
+      ids.forEach((id) => instance.setFeatureState({ source: FEATURES_SOURCE, id }, { selected: false }))
     }
-  }, [instance, selectedId])
+  }, [instance, selectedId, selection])
 
   // One listener for the whole map: the most precise element under the
   // cursor wins (a plant over the zone it sits in), see `featurePick`.
   const featuresRef = useRef(features)
   featuresRef.current = features
+  const selectedIdRef = useRef(selectedId)
+  selectedIdRef.current = selectedId
+  const multiSelectRef = useRef(multiSelect)
+  multiSelectRef.current = multiSelect
   useEffect(() => {
     const areaOf = (id: number) => {
       const feature = featuresRef.current.find((f) => f.properties.id === id)
       return feature ? area(feature) : Infinity
     }
+    // The click that ends a drawing (double-click) must not select what lies under it.
+    const busy = () => drawer.current?.active || selectionMove.active || performance.now() - drawEndedAt.current < 400
+    // Shift+click (or a tap while « Sélectionner plusieurs » is on) adds the
+    // element to the selection, or takes it out, to move them together.
+    const toggleAt = (point: { x: number; y: number }) => {
+      const id = featureAt(instance, point, areaOf)
+      if (id == null) return
+      plantPeek.close()
+      const already = selectedIdRef.current
+      setSelection((current) => toggled(current, id, already))
+      setSelectedId(null)
+    }
     const onClick = (e: MapMouseEvent) => {
-      // The click that ends a drawing (double-click) must not select what lies under it.
-      if (drawer.current?.active || performance.now() - drawEndedAt.current < 400) return
+      if (busy()) return
+      if (canEdit && (e.originalEvent.shiftKey || multiSelectRef.current)) return toggleAt(e.point)
       const id = featureAt(instance, e.point, areaOf)
       if (id == null) return plantPeek.close()
+      setSelection([])
+      setMultiSelect(false)
       // A plant opens its card first; the card opens the inspector. An AI
       // draft goes straight to the inspector, where it is reviewed.
       const feature = featuresRef.current.find((f) => f.properties.id === id)
@@ -212,6 +235,28 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       plantPeek.close()
       setSelectedId(id)
     }
+    // MapLibre's box zoom swallows a Shift+click: it comes back as a box cancelled on the spot.
+    const onBoxCancel = (e: { originalEvent?: Event }) => {
+      const original = e.originalEvent
+      if (!canEdit || !(original instanceof MouseEvent) || busy()) return
+      const rect = instance.getCanvas().getBoundingClientRect()
+      toggleAt({ x: original.clientX - rect.left, y: original.clientY - rect.top })
+    }
+    // Shift+drag selects every element drawn entirely inside the box.
+    if (canEdit) {
+      boxSelect.handler = (from, to) => {
+        if (busy()) return
+        const corners = [[from.x, from.y], [to.x, from.y], [to.x, to.y], [from.x, to.y], [from.x, from.y]]
+          .map(([x, y]) => instance.unproject([x, y]).toArray())
+        const box = polygon([corners])
+        const ids = idsWithin(featuresRef.current, hitsIn(instance, from, to), box)
+        if (!ids.length) return
+        plantPeek.close()
+        const already = selectedIdRef.current
+        setSelection((current) => [...new Set([...(current.length || already == null ? current : [already]), ...ids])])
+        setSelectedId(null)
+      }
+    }
     // Like mouseenter/mouseleave: the cursor only changes when it crosses an
     // element's edge, so other tools' cursors (crosshair) are left alone.
     let over = false
@@ -222,12 +267,15 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       instance.getCanvas().style.cursor = now ? 'pointer' : ''
     }
     instance.on('click', onClick)
+    instance.on('boxzoomcancel', onBoxCancel)
     instance.on('mousemove', onMove)
     return () => {
       instance.off('click', onClick)
+      instance.off('boxzoomcancel', onBoxCancel)
       instance.off('mousemove', onMove)
+      boxSelect.handler = null
     }
-  }, [instance])
+  }, [instance, canEdit])
 
   const notify = useCallback((message: string, tone: 'info' | 'error' = 'info', action?: NotifyAction) => {
     setToast({ message, tone, action })
@@ -245,6 +293,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const removeFeatures = useCallback((ids: number[]) => {
     setFeatures((current) => current.filter((f) => !ids.includes(f.properties.id)))
     setSelectedId((id) => (id != null && ids.includes(id) ? null : id))
+    setSelection((current) => (current.some((id) => ids.includes(id)) ? current.filter((id) => !ids.includes(id)) : current))
   }, [])
 
   // « Annuler » / « Rétablir » (⌘Z, ⌘⇧Z): one history per open map.
@@ -295,7 +344,16 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       isOwner: map.role === 'owner',
       features, selectedId,
       selected: features.find((f) => f.properties.id === selectedId) ?? null,
-      select: setSelectedId,
+      select(id: number | null) {
+        setSelectedId(id)
+        if (id == null) return
+        setSelection([])
+        setMultiSelect(false)
+      },
+      selection,
+      setSelection,
+      multiSelect,
+      setMultiSelect,
       async createFeature(input: NewFeature) {
         const feature = await api<MapFeature>(base, { method: 'POST', body: { feature: input } })
         upsertFeatures([feature])
@@ -348,6 +406,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
           setDrawingShape(null)
         }
       },
+      setPointTool: (tool: PointTool) => drawer.current?.setPointTool(tool),
       finishDraw: () => drawer.current?.commit(),
       undoDrawStep: () => shapeStep('undo'),
       cancelDraw: () => drawer.current?.cancel(),
@@ -359,7 +418,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       focusStep: setPickedStage,
       notify,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep])
 
   const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'offers' ? canEdit && offerBuilder : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)

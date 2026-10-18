@@ -22,6 +22,9 @@ fr:
       accept_all:
         one: "l'acceptation d'une proposition"
         other: "l'acceptation de %{count} propositions"
+      move_all:
+        one: "le déplacement d'un élément"
+        other: "le déplacement de %{count} éléments"
       reject_all:
         one: "le refus d'une proposition"
         other: "le refus de %{count} propositions"

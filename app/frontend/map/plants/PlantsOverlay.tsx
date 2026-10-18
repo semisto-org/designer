@@ -88,7 +88,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
           color,
           ink: inkOn(color),
           planted: !isPlannedPlant(feature.properties),
-          selected: editor.selectedId === feature.properties.id,
+          selected: editor.selectedId === feature.properties.id || editor.selection.includes(feature.properties.id),
         },
       })
     }
@@ -103,7 +103,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
         featureId: feature.properties.id,
         color: STRATA_COLORS[strata],
         planted: !isPlannedPlant(feature.properties),
-        selected: editor.selectedId === feature.properties.id,
+        selected: editor.selectedId === feature.properties.id || editor.selection.includes(feature.properties.id),
       },
     })
   }
@@ -257,7 +257,7 @@ export default function PlantsOverlay() {
   const map = editor.instance
 
   const labelStyle = usePlantLabelStyle()
-  const layers = useMemo(() => crownsOf(editor, data, scenario, labelStyle, hiddenStrata), [editor.features, editor.selectedId, data, scenario, labelStyle, hiddenStrata]) // eslint-disable-line react-hooks/exhaustive-deps
+  const layers = useMemo(() => crownsOf(editor, data, scenario, labelStyle, hiddenStrata), [editor.features, editor.selectedId, editor.selection, data, scenario, labelStyle, hiddenStrata]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Install the crowns, and again after a basemap style change.
   const latest = useRef(layers)
@@ -296,6 +296,9 @@ export default function PlantsOverlay() {
   useEffect(() => {
     if (!placing || !editorRef.current.canEdit) return
     setScenario('projected')
+    // A distinct cursor while placing (application.css, .placing-plant).
+    const container = editorRef.current.instance.getContainer()
+    container.classList.add('placing-plant')
     let stopped = false
     void (async () => {
       while (!stopped) {
@@ -315,6 +318,7 @@ export default function PlantsOverlay() {
     })()
     return () => {
       stopped = true
+      container.classList.remove('placing-plant')
       editorRef.current.cancelDraw()
     }
   }, [placing])

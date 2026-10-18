@@ -292,7 +292,19 @@ fr:
 
     edit:
       start: "Modifier la forme"
-      hint: "Fais glisser les sommets ou la forme entière ; un point au milieu d'un côté ajoute un sommet."
+      points:
+        label: "Points de la forme"
+        move: "Déplacer"
+        move_title: "Déplacer les points (A). Clique un point puis Suppr pour l'enlever."
+        move_hint: "Fais glisser les points ou la forme entière. + ajoute des points, − en retire."
+        add: "Ajouter un point"
+        add_title: "Ajouter un point (+). Alt pour retirer."
+        add_hint: "Clique sur un côté pour y ajouter un point. Alt pour retirer, Échap pour revenir."
+        remove: "Retirer un point"
+        remove_title: "Retirer un point (−). Alt pour ajouter."
+        remove_hint: "Clique sur un point pour le retirer. Alt pour ajouter, Échap pour revenir."
+        line_minimum: "Une ligne garde au moins deux points."
+        polygon_minimum: "Une surface garde au moins trois points."
       save: "Enregistrer la forme"
       cancel: "Annuler"
       saved: "Forme enregistrée."

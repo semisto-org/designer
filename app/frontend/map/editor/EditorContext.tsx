@@ -1,7 +1,7 @@
 import type { Geometry } from 'geojson'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import { createContext, useContext } from 'react'
-import type { DrawOptions, DrawShape } from '@/map/editor/draw'
+import type { DrawOptions, DrawShape, PointTool } from '@/map/editor/draw'
 import type {
   EntitlementsData, FeatureLayer, MapData, MapFeature, MapFeatureProperties, MapStage, RegionLayerData,
 } from '@/types'
@@ -44,6 +44,12 @@ export type Editor = {
   selectedId: number | null
   selected: MapFeature | null
   select: (id: number | null) => void
+  /** Elements picked together (Shift+click, or « Sélectionner plusieurs » on a phone) to move them at once; usually empty. */
+  selection: number[]
+  setSelection: (ids: number[]) => void
+  /** A tap adds to the selection instead of replacing it (phones have no Shift key). */
+  multiSelect: boolean
+  setMultiSelect: (on: boolean) => void
   createFeature: (input: NewFeature) => Promise<MapFeature>
   updateFeature: (id: number, patch: FeaturePatch) => Promise<SavedFeature>
   /** To the trash; « Annuler » (⌘Z, or the toast's button) restores it. */
@@ -61,6 +67,8 @@ export type Editor = {
   draw: (shape: DrawShape, options?: DrawOptions) => Promise<Geometry | null>
   /** Let the user reshape a geometry (drag vertices or the shape); resolves on finishDraw(), null on cancelDraw(). */
   editGeometry: (geometry: Geometry, options?: DrawOptions) => Promise<Geometry | null>
+  /** What a click does on a line or polygon being reshaped: move, add or remove points. */
+  setPointTool: (tool: PointTool) => void
   /** Finish the current drawing now (closes a line or polygon, keeps an edit). */
   finishDraw: () => void
   /** Step back in the shape being drawn (its last point) or edited (its last drag), like ⌘Z. */

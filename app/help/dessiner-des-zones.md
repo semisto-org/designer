@@ -25,7 +25,7 @@ Touche la zone, ou son nom, pour ouvrir sa fiche :
 - **Couleur** : une des huit teintes du plan, ou n'importe quelle autre avec la pipette ;
 - **Arrondir les angles** : une surface se dessine d'office avec des coins légèrement arrondis (au plus 3 m), comme tracée à la main, sans changer sa surface de plus de quelques m² ; le curseur en dessous arrondit plus ou moins fort, de **Léger** à **Fort** ; décoche la case pour retrouver les angles vifs (un tracé peut aussi adoucir ses coudes) ;
 - **Écrire la surface sur la carte** (ou la longueur, pour un tracé) : décoche-la si seul le nom compte, pour une flèche de vue par exemple ;
-- **Modifier la forme**, pour déplacer un sommet.
+- **Modifier la forme**, pour déplacer, ajouter ou retirer des points (voir [Dessiner l'existant](/help/dessiner-l-existant)).
 
 Les zones se rangent dans la couche **Notes** : le panneau **Calques** les masque ou les affiche toutes d'un coup.
 

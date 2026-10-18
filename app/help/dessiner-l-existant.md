@@ -50,14 +50,30 @@ Touche un élément sur la carte, ou dans le panneau **Éléments** qui les list
 - sa **Couleur**, si tu veux la distinguer des autres ;
 - pour une surface (une mare, un massif, un bâtiment…), **Angles arrondis** : coche la case, puis glisse le curseur de **Léger** à **Fort**. Les angles s'adoucissent sur la carte, jusqu'à une forme ovale ; la surface et les estimations suivent la forme arrondie, et les points que tu as cliqués restent ceux que tu modifies.
 
-Pour corriger un tracé, touche **Modifier la forme**, fais glisser les sommets (un point au milieu d'un côté ajoute un sommet), puis **Enregistrer la forme**.
+Pour corriger un tracé, touche **Modifier la forme**, fais glisser les points (un point au milieu d'un côté en ajoute un), puis **Enregistrer la forme**. Pour ajouter ou retirer des points, les boutons de la barre (flèche, **+**, **−**) ou les touches d'Illustrator :
+
+- **+** : un clic sur un côté y ajoute un point, exactement là où tu cliques ;
+- **−** : un clic sur un point le retire ;
+- **Alt** maintenue passe de l'un à l'autre, le temps du clic ;
+- **A** (ou **V**) revient à la flèche ; là, clique un point puis **Suppr** pour le retirer, ou fais un clic droit dessus ;
+- **Échap** repose l'outil, un second **Échap** abandonne la modification.
+
+Une ligne garde au moins deux points, une surface trois.
+
+## Déplacer plusieurs éléments ensemble
+
+Une mare a été relevée trois mètres trop au nord, avec ses berges et les plantes autour ? Déplace-les d'un seul geste :
+
+1. Sur ordinateur, garde la touche **Maj** enfoncée et clique sur chaque élément (zone, plante, mare, haie…) ; un nouveau clic le retire. **Maj** et glisser autour de plusieurs éléments les prend tous d'un coup, sauf ceux que le cadre ne contient pas entièrement.
+2. Sur téléphone, touche un premier élément, puis **Sélectionner plusieurs éléments** dans sa fiche, et touche les autres.
+3. Touche **Déplacer ensemble**, fais glisser la sélection orange à sa place, puis **Enregistrer la position**. Chaque élément garde sa distance aux autres ; **Annuler** (ou Échap) les laisse où ils étaient.
 
 ## Revenir en arrière
 
 Une fausse manœuvre se rattrape : **⌘Z** sur Mac, **Ctrl+Z** sur PC. **⌘⇧Z** (ou **Ctrl+Y**) rétablit ce que tu viens d'annuler.
 
-- **En modifiant une forme**, chaque sommet glissé s'annule un par un, avant même d'enregistrer. Au téléphone, touche la flèche de retour à côté de **Enregistrer la forme**.
-- **Sur la carte**, tu annules dans l'ordre ce que tu viens de faire : un élément ajouté, déplacé, modifié ou supprimé, une proposition de ton IA acceptée ou refusée.
+- **En modifiant une forme**, chaque point glissé, ajouté ou retiré s'annule un par un, avant même d'enregistrer. Au téléphone, touche la flèche de retour à côté de **Enregistrer la forme**.
+- **Sur la carte**, tu annules dans l'ordre ce que tu viens de faire : un élément ajouté, déplacé, modifié ou supprimé, plusieurs éléments déplacés ensemble (en un seul pas), une proposition de ton IA acceptée ou refusée.
 - **Un élément supprimé** revient tel quel, avec son numéro, ses photos, ses relevés et ses commentaires. Juste après la suppression, le bouton **Annuler** du message le fait aussi.
 - **À plusieurs**, rien n'écrase le travail d'un autre : si quelqu'un a modifié l'élément entre-temps, Terranova te le dit et n'annule pas.
 

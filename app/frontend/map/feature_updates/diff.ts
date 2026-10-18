@@ -58,7 +58,7 @@ export type FeatureUpdateHistoryEntry = {
 }
 
 /** Fields the review names in words (feature_updates.fields.*). */
-export const KNOWN_FIELDS = ['name', 'notes', 'tags', 'geometry', 'planted_on', 'species_id', 'variety_id', 'training', 'graft_form', 'trunk_height', 'rootstock_vigor', 'rootstock', 'count'] as const
+export const KNOWN_FIELDS = ['name', 'notes', 'tags', 'geometry', 'planted_on', 'species_id', 'variety_id', 'training', 'graft_form', 'trunk_height', 'rootstock_vigor', 'rootstock', 'count', 'number', 'planted_on_precision'] as const
 
 /** `properties.planted_on` → `planted_on`; `name` → `name`. */
 export function fieldKey(field: string): string {
