@@ -383,6 +383,10 @@
     }
   },
   "plant_feature": {
+    "other_properties": {
+      "title": "Autres informations",
+      "hint": "Notées par ton IA ou venues d'un import. Elles ne changent rien d'autre sur la carte."
+    },
     "title": "Plante",
     "number": "Numéro sur le plan",
     "number_hint": "Donné tout seul au numéro libre suivant. Change-le si ton plan était déjà numéroté.",
@@ -455,10 +459,31 @@
     "rootstock_placeholder": "M9, MM106, franc…"
   },
   "plant_observations": {
-    "title": "Suivi de reprise",
-    "add": "Noter une observation",
+    "title": "Journal du plant",
+    "intro": "Ce qui arrive à ce plant, date après date : sa reprise, sa floraison, une taille, un dégât. Chaque note s'ajoute aux précédentes sans les effacer. Les fruits vus et cueillis vont dans les récoltes.",
+    "add": "Ajouter au journal",
     "observed_on": "Date",
+    "kind": "Ce que tu notes",
+    "kinds": {
+      "follow_up": "Reprise",
+      "flowering": "Floraison",
+      "pruning": "Taille",
+      "damage": "Casse ou dégât",
+      "disease": "Maladie ou ravageur",
+      "intervention": "Intervention",
+      "other": "Autre"
+    },
+    "kind_hints": {
+      "follow_up": "A-t-il repris ? C'est la dernière reprise notée qui dit l'état du plant.",
+      "flowering": "Début, pleine floraison ou fin : la date te servira l'an prochain.",
+      "pruning": "Ce qui a été taillé : formation, gourmands, bois mort…",
+      "damage": "Branche cassée, écorce rongée, protection arrachée…",
+      "disease": "Ce que tu vois sur les feuilles, les fruits ou l'écorce.",
+      "intervention": "Protection, tuteur, paillage, arrosage, greffe…",
+      "other": "Tout ce qui mérite de rester dans l'histoire de ce plant."
+    },
     "survival": "Reprise",
+    "survival_optional": "Reprise (facultatif)",
     "survivals": {
       "established": "Repris",
       "struggling": "En difficulté",
@@ -478,12 +503,12 @@
     "photo": "Photo",
     "choose_photo": "Ajouter une photo (facultatif)",
     "save": "Enregistrer",
-    "saved": "Observation enregistrée.",
-    "deleted": "Observation supprimée.",
-    "delete": "Supprimer l'observation",
-    "confirm_delete": "Supprimer cette observation ?",
-    "empty": "Pas encore d'observation.",
-    "plant_first": "Marque d'abord ce plant comme planté pour suivre sa reprise.",
+    "saved": "Ajouté au journal.",
+    "deleted": "Note supprimée du journal.",
+    "delete": "Supprimer cette note",
+    "confirm_delete": "Supprimer cette note du journal ?",
+    "empty": "Rien dans le journal pour l'instant.",
+    "plant_first": "Marque d'abord ce plant comme planté pour tenir son journal.",
     "by": "par %{name}"
   },
   "plant_harvests": {

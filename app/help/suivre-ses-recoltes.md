@@ -58,7 +58,7 @@ Dans le panneau Récoltes, **Que faire de chaque variété ?** range toutes les 
 
 Le filtre **À surveiller** liste les arbres sans fruits notés depuis trois saisons suivies d'affilée. Une saison est « suivie » dès que quelqu'un a noté au moins une ligne sur la carte cette année-là.
 
-Pourquoi trois et pas une ? Beaucoup de variétés anciennes connaissent l'alternance : une grosse année, puis une année presque vide. Un arbre vide une saison n'est pas un arbre à remplacer. Avant de décider, regarde aussi sa reprise et sa vigueur dans le [suivi de reprise](/help/planter-puis-observer), et la place qu'il a : un arbre à l'ombre ou serré par ses voisins porte peu.
+Pourquoi trois et pas une ? Beaucoup de variétés anciennes connaissent l'alternance : une grosse année, puis une année presque vide. Un arbre vide une saison n'est pas un arbre à remplacer. Avant de décider, regarde aussi sa reprise et sa vigueur dans son [journal](/help/planter-puis-observer), et la place qu'il a : un arbre à l'ombre ou serré par ses voisins porte peu.
 
 ## Où garder les fruits ?
 

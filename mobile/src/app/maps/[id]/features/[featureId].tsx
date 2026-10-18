@@ -24,7 +24,7 @@ import { RemoteImage } from '@/ui/RemoteImage'
 import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, space } from '@/ui/theme'
 
-type Observation = { id: number; observedOn: string; survival: Survival; vigor: number | null; note: string | null; author: string | null; thumbUrl: string | null }
+type Observation = { id: number; observedOn: string; kind?: string; survival: Survival | null; vigor: number | null; note: string | null; author: string | null; thumbUrl: string | null }
 
 const SURVIVALS: Survival[] = ['established', 'struggling', 'dead']
 const VIGORS = [1, 2, 3, 4, 5]
@@ -175,22 +175,26 @@ function Observations({ mapId, featureId, ops }: { mapId: number; featureId: num
       {pending.map((op) => (
         <ObservationRow key={op.id} observedOn={op.observedOn} survival={op.survival} vigor={op.vigor} note={op.note} local={op.photo} pending />
       ))}
-      {list.map((o) => <ObservationRow key={o.id} observedOn={o.observedOn} survival={o.survival} vigor={o.vigor} note={o.note} author={o.author} thumb={o.thumbUrl} />)}
+      {list.map((o) => <ObservationRow key={o.id} observedOn={o.observedOn} kind={o.kind} survival={o.survival} vigor={o.vigor} note={o.note} author={o.author} thumb={o.thumbUrl} />)}
       {offline && <Body muted>{t('mobile.feature.history_offline')}</Body>}
       {!offline && data && list.length === 0 && pending.length === 0 && <Body muted>{t('plant_observations.empty')}</Body>}
     </View>
   )
 }
 
-function ObservationRow({ observedOn, survival, vigor, note, author, thumb, local, pending }: {
-  observedOn: string; survival: Survival; vigor: number | null; note: string | null; author?: string | null; thumb?: string | null; local?: string | null; pending?: boolean
+function ObservationRow({ observedOn, kind, survival, vigor, note, author, thumb, local, pending }: {
+  observedOn: string; kind?: string; survival: Survival | null; vigor: number | null; note: string | null; author?: string | null; thumb?: string | null; local?: string | null; pending?: boolean
 }) {
   return (
     <Card style={{ flexDirection: 'row', gap: space.md, padding: space.md }}>
       {(thumb || local) && <RemoteImage path={thumb} local={local} style={s.smallThumb} />}
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={s.rowTitle}>
-          {t(`plant_observations.survivals.${survival}`)}{vigor ? ` · ${t('plant_observations.vigor')} ${vigor}/5` : ''}
+          {[
+            kind && kind !== 'follow_up' ? t(`plant_observations.kinds.${kind}`) : null,
+            survival ? t(`plant_observations.survivals.${survival}`) : null,
+            vigor ? `${t('plant_observations.vigor')} ${vigor}/5` : null,
+          ].filter(Boolean).join(' · ')}
         </Text>
         <Text style={s.rowMeta}>
           {[formatDate(observedOn), author ? t('plant_observations.by', { name: author }) : null, pending ? t('mobile.feature.pending') : null].filter(Boolean).join(' · ')}

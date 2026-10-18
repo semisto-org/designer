@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_203000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1055,11 +1055,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_203000) do
     t.bigint "variety_id"
     t.bigint "user_id"
     t.date "observed_on", null: false
-    t.string "survival", null: false
+    t.string "survival"
     t.integer "vigor"
     t.text "note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "kind", default: "follow_up", null: false
     t.index ["map_feature_id", "observed_on"], name: "index_plant_observations_on_map_feature_id_and_observed_on"
     t.index ["map_feature_id"], name: "index_plant_observations_on_map_feature_id"
     t.index ["map_id"], name: "index_plant_observations_on_map_id"
