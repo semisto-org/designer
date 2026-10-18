@@ -1,6 +1,9 @@
 require "test_helper"
 
 class InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
+  # After the launch offer: invoices carry the plain yearly prices.
+  setup { travel_to Time.zone.local(2027, 2, 1) }
+
   include ActionMailer::TestHelper
 
   setup { @user = users(:bob) }
@@ -28,7 +31,7 @@ class InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
     body = response.parsed_body
     assert_equal "invoice_requests/new", body["component"]
     assert_equal({ "planKey" => "yearly", "billingEmail" => "bob@example.org" }, body["props"]["defaults"])
-    assert_equal [ 58_800, 118_800, 7_900 ], body["props"]["plans"].map { _1["amountCents"] }
+    assert_equal [ 49_000, 129_000, 7_900 ], body["props"]["plans"].map { _1["amountCents"] }
     get new_invoice_request_path(plan: "drone"), headers: inertia_headers
     assert_equal "atelier", response.parsed_body["props"]["defaults"]["planKey"]
   end
@@ -42,7 +45,7 @@ class InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
     end
     invoice_request = InvoiceRequest.last
     assert_redirected_to invoice_request_path(invoice_request)
-    assert_equal [ @user, "requested", 118_800, "BC-2026-042" ], [ invoice_request.user, invoice_request.status, invoice_request.amount_cents, invoice_request.purchase_order ]
+    assert_equal [ @user, "requested", 129_000, "BC-2026-042" ], [ invoice_request.user, invoice_request.status, invoice_request.amount_cents, invoice_request.purchase_order ]
 
     get invoice_request_path(invoice_request), headers: inertia_headers
     props = response.parsed_body["props"]
@@ -81,6 +84,6 @@ class InvoiceRequestsControllerTest < ActionDispatch::IntegrationTest
     billing = response.parsed_body["props"]["billing"]
     assert_equal "bureau", billing["plan"]
     assert_equal [ [ "bureau", true, true ] ], billing["grants"].map { _1.values_at("planKey", "active", "onInvoice") }
-    assert_equal [ [ "École", "requested", 118_800 ] ], billing["invoiceRequests"].map { _1.values_at("organizationName", "status", "amountCents") }
+    assert_equal [ [ "École", "requested", 129_000 ] ], billing["invoiceRequests"].map { _1.values_at("organizationName", "status", "amountCents") }
   end
 end

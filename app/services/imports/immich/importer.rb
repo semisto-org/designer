@@ -159,7 +159,7 @@ module Imports
           position = self.class.position(asset)
           @located += 1 if position
           map.photos.new(
-            source: "import", album: photo_album(album_name), caption: asset.dig("exifInfo", "description").to_s.strip.truncate(500).presence,
+            source: "import", skip_storage_quota: true, album: photo_album(album_name), caption: asset.dig("exifInfo", "description").to_s.strip.truncate(500).presence,
             taken_at: taken_at(asset), location: position,
             location_source: position ? "exif" : nil
           )

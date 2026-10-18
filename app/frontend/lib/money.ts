@@ -19,3 +19,17 @@ export function formatMoney(amountCents: number, currency = 'EUR'): string {
   if (currency.toUpperCase() === 'EUR') return formatPrice(amountCents)
   return new Intl.NumberFormat('fr-BE', { style: 'currency', currency: currency.toUpperCase() }).format(amountCents / 100)
 }
+
+const sizeFormat = new Intl.NumberFormat('fr-BE', { maximumFractionDigits: 1 })
+
+/** A file size the French way: "350 Ko", "4,2 Go". */
+export function formatBytes(bytes: number): string {
+  const units = ['o', 'Ko', 'Mo', 'Go', 'To']
+  let value = bytes
+  let unit = 0
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024
+    unit += 1
+  }
+  return `${sizeFormat.format(value)} ${units[unit]}`
+}

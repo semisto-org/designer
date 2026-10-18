@@ -40,12 +40,16 @@ module Billable
 
   # The active maps this user's plan pays for: their own maps (outside a team,
   # or in a team nobody pays for) and every map of the teams they pay for.
-  def billed_maps
+  # With `archived: true`, archived ones too (their files still take room).
+  def billed_maps(archived: false)
+    maps = archived ? Map.all : Map.active
     unpaid_teams = Organization.where(billing_user_id: nil).select(:id)
-    Map.active.where(owner_id: id, organization_id: nil)
-      .or(Map.active.where(owner_id: id, organization_id: unpaid_teams))
-      .or(Map.active.where(organization_id: Organization.where(billing_user_id: id).select(:id)))
+    maps.where(owner_id: id, organization_id: nil)
+      .or(maps.where(owner_id: id, organization_id: unpaid_teams))
+      .or(maps.where(organization_id: Organization.where(billing_user_id: id).select(:id)))
   end
+
+  def archived_billed_maps = billed_maps(archived: true).where.not(archived_at: nil)
 
   # Billed maps that are read-only because they exceed the plan's limit.
   def read_only_maps_count

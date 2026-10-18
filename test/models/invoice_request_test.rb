@@ -1,6 +1,9 @@
 require "test_helper"
 
 class InvoiceRequestTest < ActiveSupport::TestCase
+  # After the launch offer: invoices carry the plain yearly prices.
+  setup { travel_to Time.zone.local(2027, 2, 1) }
+
   include ActionMailer::TestHelper
 
   setup { @user = users(:bob) }
@@ -13,8 +16,8 @@ class InvoiceRequestTest < ActiveSupport::TestCase
   end
 
   test "a valid request is priced from the catalogue for a year, tax included" do
-    assert_equal 118_800, build.tap(&:save!).amount_cents
-    assert_equal 58_800, build(plan_key: "atelier").tap(&:save!).amount_cents
+    assert_equal 129_000, build.tap(&:save!).amount_cents
+    assert_equal 49_000, build(plan_key: "atelier").tap(&:save!).amount_cents
     assert_equal 7_900, build(plan_key: "yearly").tap(&:save!).amount_cents
     request = build.tap(&:save!)
     assert_equal [ "requested", 12, "eur" ], [ request.status, request.duration_months, request.currency ]
@@ -23,7 +26,7 @@ class InvoiceRequestTest < ActiveSupport::TestCase
   test "the price is frozen when the request is sent, whatever is posted" do
     request = build(amount_cents: 1)
     request.save!
-    assert_equal 118_800, request.amount_cents
+    assert_equal 129_000, request.amount_cents
   end
 
   test "requires the organisation, its address and a valid billing e-mail" do
@@ -116,10 +119,15 @@ class InvoiceRequestTest < ActiveSupport::TestCase
     assert_nil build(company_number: "0207.360.311").eu_vat_number
   end
 
+  test "until the end of 2026, Pro and Team on invoice get the launch offer's extra month" do
+    travel_to Time.zone.local(2026, 12, 31, 23)
+    assert_equal [ 44_100, 116_100, 7_900 ], %w[atelier bureau yearly].map { InvoiceRequest.amount_cents_for(_1) }
+  end
+
   test "the yearly amount of each plan, for the form" do
     assert_equal [
-      { key: "atelier", amountCents: 58_800, monthlyCents: 4_900 },
-      { key: "bureau", amountCents: 118_800, monthlyCents: 9_900 },
+      { key: "atelier", amountCents: 49_000, monthlyCents: 4_900 },
+      { key: "bureau", amountCents: 129_000, monthlyCents: 12_900 },
       { key: "yearly", amountCents: 7_900, monthlyCents: nil }
     ], InvoiceRequest.plans_json
   end

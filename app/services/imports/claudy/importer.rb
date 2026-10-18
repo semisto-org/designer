@@ -328,7 +328,7 @@ module Imports
           point = feature.geometry if feature.geometry&.geometry_type == RGeo::Feature::Point
           caption = feature.name.present? ? I18n.t("claudy_import.photos.caption", name: feature.name) : I18n.t("claudy_import.photos.caption_unnamed")
           taken_at = Time.zone.parse(photo["created_at"].to_s) rescue nil
-          map.photos.new(source: "import", map_feature: feature, caption: caption.truncate(500), taken_at:,
+          map.photos.new(source: "import", skip_storage_quota: true, map_feature: feature, caption: caption.truncate(500), taken_at:,
                          location: point, location_source: point ? "map" : nil)
         end
 

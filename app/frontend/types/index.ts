@@ -123,6 +123,8 @@ export type MapData = {
   lockVersion: number
   /** The owner's plan no longer covers this map: it stays readable but cannot be edited. */
   readOnlyByPlan?: boolean
+  /** Put away by its owner: readable, not editable, out of the plan's count. */
+  archived?: boolean
 }
 
 export type FeatureLayer =

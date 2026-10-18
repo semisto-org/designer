@@ -3,11 +3,15 @@ import { Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { tf, values } from '@/lib/content'
 import { formatPrice } from '@/lib/money'
-import type { CatalogPlan } from '@/types/billing'
+import type { BillingInterval, CatalogPlan } from '@/types/billing'
 
-/** One plan of the catalogue (pricing page and billing page). The action is the caller's button. */
-export function PlanCard({ plan, action, badge, highlighted, current, className }: {
+/**
+ * One plan of the catalogue (pricing page and billing page). The action is the
+ * caller's button. `interval` picks the monthly or yearly price of Pro and Team.
+ */
+export function PlanCard({ plan, interval = 'month', action, badge, highlighted, current, className }: {
   plan: CatalogPlan
+  interval?: BillingInterval
   action?: ReactNode
   badge?: string
   highlighted?: boolean
@@ -16,7 +20,12 @@ export function PlanCard({ plan, action, badge, highlighted, current, className 
 }) {
   const base = `billing.plans.${plan.key}`
   const features = values(`${base}.features`)
-  const priceNote = plan.key === 'free' ? null : tf(`${base}.price_note`)
+  const yearly = interval === 'year' && plan.yearlyPriceCents !== null
+  const priceCents = yearly ? plan.yearlyPriceCents! : plan.priceCents
+  const priceNote = plan.key === 'free' ? null : yearly ? tf('billing.interval.per_year') : tf(`${base}.price_note`)
+  let offerNote: string | null = null
+  if (yearly && plan.launchPriceCents !== null) offerNote = tf('billing.launch_offer', { price: formatPrice(plan.launchPriceCents) })
+  else if (!yearly && plan.yearlyPriceCents !== null) offerNote = tf('billing.yearly_option', { price: formatPrice(plan.yearlyPriceCents) })
   const renewalNote = plan.key === 'free' ? null : tf(`${base}.renewal_note`)
   return (
     <article
@@ -28,14 +37,15 @@ export function PlanCard({ plan, action, badge, highlighted, current, className 
       )}
     >
       {badge && (
-        <span className="absolute -top-3 left-6 rounded-full bg-prune-600 px-3 py-0.5 text-xs font-semibold text-white">{badge}</span>
+        <span className="absolute -top-3 left-6 rounded-full bg-prune-600 px-3 py-0.5 text-sm font-semibold text-white">{badge}</span>
       )}
       <h3 className="text-lg text-loam-900">{tf(`${base}.name`)}</h3>
       <p className="mt-1 sm:min-h-[2.6rem] text-sm text-loam-500">{tf(`${base}.tagline`)}</p>
       <p className="mt-4 flex flex-wrap items-baseline gap-x-2">
-        <span className="text-4xl font-semibold tracking-tight text-loam-900">{formatPrice(plan.priceCents)}</span>
+        <span className="text-4xl font-semibold tracking-tight text-loam-900">{formatPrice(priceCents)}</span>
         {priceNote && <span className="text-sm text-loam-500">{priceNote}</span>}
       </p>
+      {offerNote && <p className="mt-1 text-sm text-loam-600">{offerNote}</p>}
       {renewalNote && <p className="mt-1 text-sm font-medium text-leaf-700">{renewalNote}</p>}
       <ul className="mt-5 flex-1 space-y-2.5 text-sm text-loam-700">
         {features.map((feature) => (

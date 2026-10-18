@@ -9,7 +9,7 @@ fr:
       requests_hint: "Un formulaire public où tes futurs clients choisissent leurs parcelles : chaque demande devient une carte, puis une offre."
       intro: "Un barème, c’est ta façon de chiffrer : taux, tâches et heures, ce que Terranova te fait gagner, prix des plants, complexité et conditions. Plusieurs barèmes par compte, par exemple un pour les particuliers et un pour les communes : la fiche projet choisit lequel ouvre l’offre."
       empty_title: "Pas encore de barème à gérer"
-      empty_body: "Les barèmes servent aux formules Atelier et Bureau d’études, et aux équipes. Rejoins ou crée une équipe, ou passe à une formule pro."
+      empty_body: "Les barèmes servent aux formules Pro et Team, et aux équipes. Rejoins ou crée une équipe, ou passe à une formule pro."
       mine: "Mes barèmes"
       team: "Équipe « %{name} »"
       new_from_semisto: "Nouveau barème, depuis celui de Semisto"

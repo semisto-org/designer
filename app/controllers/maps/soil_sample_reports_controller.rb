@@ -20,6 +20,8 @@ module Maps
     def create
       files = Array(params.dig(:soil_sample, :lab_reports)).select { |file| file.respond_to?(:original_filename) }
       return render(json: { message: t("soil.errors.report_missing") }, status: :unprocessable_entity) if files.empty?
+      usage = StorageUsage.for_map(@map)
+      return render(json: { message: StorageUsage.full_message(usage) }, status: :unprocessable_entity) unless usage.allows?(files.sum(&:size))
       before = @sample.lab_reports.map(&:id)
       if @sample.lab_reports.attach(files)
         render json: @sample.reload.as_inertia(analyses: map_entitlements.analyses?), status: :created

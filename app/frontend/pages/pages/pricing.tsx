@@ -1,21 +1,28 @@
 import { Check, Landmark, Minus } from 'lucide-react'
+import { useState } from 'react'
 import { CheckoutButton } from '@/components/billing/CheckoutButton'
+import { IntervalToggle } from '@/components/billing/IntervalToggle'
 import { PlanCard } from '@/components/billing/PlanCard'
 import { Faq, type FaqItem } from '@/components/site/Faq'
 import { CtaBand, Eyebrow, PageHero, Section, SectionHeading } from '@/components/site/Section'
 import { ButtonLink } from '@/components/ui/Button'
 import { content, tf } from '@/lib/content'
 import { formatPrice } from '@/lib/money'
-import type { CatalogKey, CatalogPlan } from '@/types/billing'
+import type { BillingInterval, CatalogKey, CatalogPlan } from '@/types/billing'
 
 type Row = { label: string; values: string[] }
 const COLUMNS: CatalogKey[] = ['free', 'yearly', 'atelier', 'bureau']
 
 export default function Pricing({ catalog, memberPriceCents, contactEmail }: { catalog: CatalogPlan[]; memberPriceCents: number; contactEmail: string }) {
+  const [interval, chooseInterval] = useState<BillingInterval>('year')
   const plan = (key: CatalogKey) => catalog.find((p) => p.key === key)!
   const price = (key: CatalogKey) => formatPrice(plan(key).priceCents)
+  const yearlyPrice = (key: CatalogKey) => formatPrice(plan(key).yearlyPriceCents ?? 0)
+  const launchPrice = (key: CatalogKey) => formatPrice(plan(key).launchPriceCents ?? plan(key).yearlyPriceCents ?? 0)
   const vars = {
     yearly: price('yearly'), atelier: price('atelier'), bureau: price('bureau'), drone: price('drone'),
+    atelier_yearly: yearlyPrice('atelier'), bureau_yearly: yearlyPrice('bureau'),
+    atelier_launch: launchPrice('atelier'), bureau_launch: launchPrice('bureau'),
     member: formatPrice(memberPriceCents), email: contactEmail,
   }
   const columns = content<Record<string, string>>('site.pricing.compare.columns')
@@ -26,7 +33,7 @@ export default function Pricing({ catalog, memberPriceCents, contactEmail }: { c
     key === 'free' ? (
       <ButtonLink href="/session/new" variant="secondary" className="w-full">{tf('site.pricing.cta_free')}</ButtonLink>
     ) : (
-      <CheckoutButton plan={key} variant={key === 'yearly' ? 'primary' : 'secondary'} className="w-full">
+      <CheckoutButton plan={key} interval={plan(key).kind === 'subscription' ? interval : undefined} variant={key === 'yearly' ? 'primary' : 'secondary'} className="w-full">
         {tf('site.pricing.cta_choose')}
       </CheckoutButton>
     )
@@ -46,9 +53,10 @@ export default function Pricing({ catalog, memberPriceCents, contactEmail }: { c
           </div>
           <div>
             <SectionHeading className="lg:min-h-[7.25rem]" title={tf('site.pricing.pros.title')} intro={tf('site.pricing.pros.intro')} />
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
-              <PlanCard plan={plan('atelier')} action={action('atelier')} />
-              <PlanCard plan={plan('bureau')} action={action('bureau')} />
+            <IntervalToggle value={interval} onChange={chooseInterval} className="mt-6" />
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <PlanCard plan={plan('atelier')} interval={interval} action={action('atelier')} />
+              <PlanCard plan={plan('bureau')} interval={interval} action={action('bureau')} />
             </div>
           </div>
         </div>
@@ -58,7 +66,7 @@ export default function Pricing({ catalog, memberPriceCents, contactEmail }: { c
         <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_1fr]">
           <div>
             <Eyebrow>{tf('site.pricing.member.eyebrow')}</Eyebrow>
-            <h2 className="mt-2 text-balance text-2xl sm:text-3xl">{tf('site.pricing.member.title')}</h2>
+            <h2 className="mt-2 text-balance text-2xl sm:text-3xl">{tf('site.pricing.member.title', vars)}</h2>
             <p className="mt-3 max-w-2xl text-pretty text-lg leading-relaxed text-loam-600">{tf('site.pricing.member.body', vars)}</p>
           </div>
           <div>

@@ -1,37 +1,63 @@
 ---
 title: "Formules et forfait"
-summary: "Ce que contient la carte gratuite, ce qu'ajoute le forfait particulier, et ce qui se passe à l'échéance."
+summary: "Ce que contient la carte gratuite, ce qu'ajoutent Home, Pro et Team, et ce qui se passe à l'échéance."
 category: Compte et formules
 order: 90
 ---
 
 ## La carte gratuite
 
-Une carte à toi, pour toujours, avec tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et ton IA en lecture. Tu peux aussi **essayer ses brouillons pendant 14 jours** (voir plus bas). **Le design lui-même tend vers la gratuité** : le forfait ne paie pas le droit de concevoir.
+Une carte active à toi, pour toujours, avec **1 Go** pour tes photos et documents et tout ce qu'il faut pour concevoir : fond de carte et couches du Géoportail, dessin, palette et liste de plants, fiche projet, commentaires, partage, et ton IA en lecture. Tu peux aussi **essayer ses brouillons pendant 14 jours** (voir plus bas). **Le design lui-même tend vers la gratuité** : une formule ne paie pas le droit de concevoir.
 
-## Le forfait particulier : 79 € par an, payé une fois
+## Home : 79 € par an, payé une fois
 
-Il ajoute :
+La formule de qui conçoit son propre lieu. Elle ajoute :
 
-- **les autres cartes** (jusqu'à 10) ;
+- **3 cartes actives**, et autant de cartes archivées que tu veux ;
+- **5 Go** pour tes photos, vidéos et documents ;
 - **le PDF à l'échelle** ;
 - **les analyses** : eau et relief, climat futur, sol ;
-- **les brouillons de ton IA** sur la carte.
+- **les brouillons de ton IA** sur la carte ;
+- **10 images par mois** avec « Mettre en image ».
 
-Le prix est **TVA comprise**. Il se paie **une seule fois** : rien n'est prélevé ensuite, il n'y a **aucune reconduction automatique**. Un an plus tard, Terranova te propose de le renouveler ; c'est toi qui décides.
+Le prix est **TVA comprise**. Il se paie **une seule fois** : rien n'est prélevé ensuite, il n'y a **aucune reconduction automatique**. Un an plus tard, Terranova te propose de renouveler ; c'est toi qui décides.
 
-### Membre de Semisto : 30 % de moins
+### Membre de Semisto : 59 € au lieu de 79 €
 
-Les membres de Semisto en ordre de cotisation reçoivent par e-mail un **code promotionnel personnel**. Saisis-le sur la page de paiement : le forfait passe de 79 € à **55,30 €**. Un code est lié à une personne ; si tu ne l'as pas reçu, écris à l'équipe Semisto.
+Si tu es membre de Semisto et que ta **cotisation est en ordre**, Terranova le reconnaît tout seul, **sans code à saisir** : il suffit que ton compte utilise la même adresse e-mail que ton adhésion. La réduction de **20 €** s'applique au paiement. Si elle n'apparaît pas, vérifie l'adresse de ton compte ou écris à l'équipe Semisto.
 
 ## Les formules pour les professionnels
 
-Sans promotion, dès l'ouverture :
+- **Pro** : 49 € par mois, **6 cartes actives à la fois**, 20 Go, 30 images par mois, et les offres et barèmes pour tes clients.
+- **Team** : 129 € par mois, **20 cartes actives à la fois**, 120 Go, 120 images par mois, pour une équipe qui conçoit ensemble. C'est la formule que l'administrateur d'une [équipe](/help/travailler-en-equipe) prend pour en payer toutes les cartes.
 
-- **Atelier** : 49 € par mois, jusqu'à 5 cartes.
-- **Bureau d'études** : 99 € par mois, cartes illimitées.
+Dans les deux cas, les cartes archivées sont sans limite : un pro mène quelques projets à la fois, et en garde beaucoup au fil des ans.
 
-Ce sont des abonnements mensuels, résiliables à tout moment depuis le portail de facturation.
+### Payer à l'année : deux mois offerts
+
+Pro et Team se paient au mois ou à l'année. À l'année, tu paies **10 mois pour 12** : **490 €** pour Pro, **1 290 €** pour Team.
+
+**Offre de lancement** : un abonnement annuel pris **avant le 31 décembre 2026** offre **un mois de plus** sur sa première année, soit **441 €** pour Pro et **1 161 €** pour Team. Elle s'applique toute seule au paiement.
+
+Ce sont des abonnements résiliables à tout moment depuis le portail de facturation.
+
+## Éditeurs invités : sans limite
+
+Sur toutes les formules, y compris la carte gratuite, tu invites **autant d'éditeurs que tu veux** sur une carte, gratuitement. Ils la modifient avec ce que permet la formule de la personne qui la paie.
+
+## Cartes actives et cartes archivées
+
+Une carte **active** est une carte sur laquelle tu travailles : elle compte dans ta formule. Quand un projet est terminé ou en pause, **archive-le** depuis « Mes cartes » (bouton **Archiver** sur la carte) :
+
+- elle quitte la liste et **libère une place** de ta formule ;
+- elle reste **lisible, exportable et commentable**, mais ne se modifie plus ;
+- tu la retrouves en bas de « Mes cartes », dans **Cartes archivées**, et tu la **désarchives** dès que ta formule a une place libre.
+
+Les photos et documents d'une carte archivée restent stockés : ils comptent toujours dans ta place.
+
+## La place pour tes fichiers
+
+Photos, vidéos, documents, rapports d'analyse de sol et vues aériennes que tu importes comptent dans la place de ta formule : **1 Go** gratuit, **5 Go** avec Home, **20 Go** avec Pro, **120 Go** avec Team. Les miniatures, les données du terrain que Terranova calcule et les vues drone livrées par Semisto ne comptent pas. Quand la place est pleine, un nouveau fichier est refusé avec un message clair : rien de ce qui est déjà là n'est touché. La place utilisée s'affiche dans [Formule et facturation](/billing).
 
 ## Essayer les brouillons de ton IA : 14 jours offerts
 
@@ -40,24 +66,24 @@ Avec la carte gratuite, ton IA lit tes cartes. Pour voir ce qu'elle apporte vrai
 - l'essai démarre **la première fois que tu connectes ton IA avec l'accès « Lecture et brouillons »**, pas à l'inscription : tu le lances quand tu es prêt ;
 - la date de fin est affichée sur la page **Connecter ton IA** de ton compte et sur la page d'autorisation, et ton IA la connaît aussi ;
 - trois jours avant la fin, tu reçois un e-mail de rappel ;
-- à la fin, rien ne disparaît : ton IA continue de lire tes cartes, et ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demandent le forfait.
+- à la fin, rien ne disparaît : ton IA continue de lire tes cartes, et ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demandent une formule.
 
 L'essai n'a lieu qu'une fois par compte.
 
-## La mission drone : 280 €
+## La mission drone : 380 €
 
 Un achat ponctuel : Semisto réalise une prise de vue aérienne datée de ton terrain et configure la vue sur ta carte. Après ton paiement, l'équipe te contacte pour organiser la mission.
 
-## Quand le forfait prend fin
+## Quand la formule prend fin
 
 Le travail reste à toi.
 
 - **Tes cartes restent lisibles**, exportables et commentables. **Rien n'est supprimé.**
 - Ta **première carte** reste entièrement modifiable, comme dans la formule gratuite.
-- Les **cartes supplémentaires** passent en **lecture seule** jusqu'au renouvellement. Les éditeurs invités ne peuvent plus les modifier non plus.
-- Nous te prévenons par e-mail **30 jours** avant l'échéance, **7 jours** avant, et le jour même.
+- Les **autres cartes actives** passent en **lecture seule** jusqu'au renouvellement. Les éditeurs invités ne peuvent plus les modifier non plus. Tu peux aussi en archiver pour en garder une autre modifiable.
+- Pour Home, nous te prévenons par e-mail **30 jours** avant l'échéance, **7 jours** avant, et le jour même.
 
-Renouveler **avant** l'échéance ne fait perdre aucun jour : la nouvelle année commence à la fin de l'ancienne.
+Renouveler Home **avant** l'échéance ne fait perdre aucun jour : la nouvelle année commence à la fin de l'ancienne.
 
 ## Payer, facture, gestion
 

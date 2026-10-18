@@ -28,6 +28,8 @@ class AerialView < ApplicationRecord
   # Why an import stopped (drone.import.failures.* in the interface).
   FAILURES = %w[upload_incomplete upload_expired unsupported_format not_georeferenced not_raster empty source_unreachable conversion_failed].freeze
 
+  include CountsTowardStorage
+
   belongs_to :map
   belongs_to :plan_purchase, optional: true
   belongs_to :created_by, class_name: "User", optional: true
@@ -60,6 +62,9 @@ class AerialView < ApplicationRecord
 
   # Imported from a file on the map (as opposed to an address set by staff).
   def imported? = source_filename.present?
+
+  # An import counts with the size announced before its upload starts.
+  def incoming_storage_bytes = imported? ? source_byte_size.to_i : 0
 
   def ready? = status == "ready"
 
