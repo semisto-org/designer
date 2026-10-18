@@ -37,6 +37,8 @@ export type GrowingPlantData = GrowthInputs & {
   number: string | number | null
   ownName: string | null
   plantedOn: string | null
+  /** In the ground since a date nobody knows: shown grown from year 0. */
+  plantedLongAgo?: boolean
 }
 
 export type GrowingPatchData = {
@@ -452,7 +454,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
     const training = trainingOf(form, p.training)
     plants.push({
       x, y, form, strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
-      maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null, start: startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
+      maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null, start: p.plantedLongAgo ? -p.maturityYears : startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
     })
   })
   const patchStart = startOf(null)

@@ -24,4 +24,21 @@ class Maps::FeaturesValidationTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_includes response.parsed_body["message"], "Profondeur de « Mare » doit être compris entre 0,1 et 6 m"
   end
+
+  test "a taken plant number is refused with its code, then swapped on request" do
+    map = maps(:ahinvaux)
+    map.features.where(kind: "plant").delete_all
+    seven = map.features.create!(layer: "plants", kind: "plant", geometry: point, properties: { "number" => 7 })
+    twelve = map.features.create!(layer: "plants", kind: "plant", geometry: point, properties: { "number" => 12 })
+
+    patch map_feature_path(map, twelve), params: { feature: { properties_patch: { number: 7 }, lock_version: twelve.lock_version } }, as: :json
+    assert_response :unprocessable_entity
+    assert_equal [ "number_taken" ], response.parsed_body.dig("codes", "base")
+
+    patch map_feature_path(map, twelve), params: { feature: { properties_patch: { number: 7 }, swap_number: true, lock_version: twelve.lock_version } }, as: :json
+    assert_response :success
+    assert_equal 7, response.parsed_body.dig("properties", "number")
+    assert_equal seven.id, response.parsed_body.dig("swapped", "id")
+    assert_equal 12, response.parsed_body.dig("swapped", "properties", "number")
+  end
 end

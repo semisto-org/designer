@@ -23,9 +23,11 @@ export function whereLabel(meters: number, direction: Direction): string {
 export function featureLine(feature: MapFeature, planting: Planting | undefined): string {
   const isPlant = feature.properties.kind === 'plant'
   if (!isPlant) return feature.properties.name ? kindLabel(feature.properties.kind) : ''
-  const age = plantedAge(feature.properties.planted_on)
+  // In the ground since a date nobody knows: no age to tell.
+  const unknown = !!feature.properties.planted_on && feature.properties.planted_on_precision === 'unknown'
+  const age = unknown ? null : plantedAge(feature.properties.planted_on)
   return [
-    age ? ageLabel(age) : t('mobile.feature.to_plant'),
+    unknown ? t('plant_feature.planted_unknown') : age ? ageLabel(age) : t('mobile.feature.to_plant'),
     feature.properties.name ? speciesName(planting, feature.properties.species_id) : null,
   ].filter(Boolean).join(' · ')
 }

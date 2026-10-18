@@ -45,6 +45,24 @@ class PlantingTest < ActiveSupport::TestCase
     assert_not bad_exposure.valid?
   end
 
+  test "a planting date can be known to the day, to the year, or not at all" do
+    plant = plant!(plant_species(:apple), planted_on: "2015-01-01")
+    plant.update!(properties: plant.properties.merge("planted_on_precision" => "year"))
+    assert_equal "year", plant.planted_on_precision
+    assert_equal Date.new(2015, 1, 1), plant.known_planted_on
+
+    plant.update!(properties: plant.properties.merge("planted_on_precision" => "unknown"))
+    assert plant.planted?, "still in the ground"
+    assert_nil plant.known_planted_on
+
+    plant.update!(properties: plant.properties.merge("planted_on" => nil))
+    assert_not plant.planted?
+    assert_not plant.properties.key?("planted_on_precision"), "no precision without a date"
+
+    plant.properties = plant.properties.merge("planted_on" => "2015-01-01", "planted_on_precision" => "decade")
+    assert_not plant.valid?
+  end
+
   test "a plant is left free, or kept as a pollard or a coppice" do
     plant = plant!(plant_species(:alder))
     assert_nil plant.plant_training

@@ -77,7 +77,7 @@ export default function ObservationsSection({ feature }: { feature: MapFeature }
             </ul>
           )}
           {editor.canEdit && (adding ? (
-            <ObservationForm base={base} plantedOn={plantedOn} onSaved={(list) => { setObservations(list); setAdding(false) }} onCancel={() => setAdding(false)} />
+            <ObservationForm base={base} plantedOn={feature.properties.planted_on_precision === 'unknown' ? undefined : plantedOn} onSaved={(list) => { setObservations(list); setAdding(false) }} onCancel={() => setAdding(false)} />
           ) : (
             <Button variant="secondary" size="sm" className="w-full" onClick={() => setAdding(true)}>{t('plant_observations.add')}</Button>
           ))}
@@ -88,7 +88,7 @@ export default function ObservationsSection({ feature }: { feature: MapFeature }
 }
 
 function ObservationForm({ base, plantedOn, onSaved, onCancel }: {
-  base: string; plantedOn: string; onSaved: (list: PlantObservation[]) => void; onCancel: () => void
+  base: string; plantedOn?: string; onSaved: (list: PlantObservation[]) => void; onCancel: () => void
 }) {
   const editor = useEditor()
   const [observedOn, setObservedOn] = useState(todayIso())

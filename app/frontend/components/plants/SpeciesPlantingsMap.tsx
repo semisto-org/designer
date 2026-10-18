@@ -3,7 +3,7 @@ import * as maplibregl from 'maplibre-gl'
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
 import { ArrowRight, Sprout, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { formatDate } from '@/lib/money'
+import { plantedLabel, plantedPrecision } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { useMapInstance } from '@/map/MapContext'
 import { MapView } from '@/map/MapView'
@@ -41,7 +41,7 @@ export function SpeciesPlantingsMap({ plantings }: { plantings: SpeciesPlantings
             {picked.variety && <p className="text-loam-600">{picked.variety}</p>}
             <p className="mt-1 text-loam-600">
               {picked.plantedOn
-                ? t('plants.show.plantings_planted_on', { date: formatDate(picked.plantedOn) })
+                ? plantedLabel(picked.plantedOn, plantedPrecision(picked.plantedPrecision))
                 : picked.inGround ? t('plants.show.plantings_legend_in_ground') : t('plants.show.plantings_legend_planned')}
             </p>
             <Link href={`/maps/${picked.mapId}?feature=${picked.id}`} className="mt-2 inline-flex items-center gap-1 font-medium text-prune-700 hover:text-prune-900">

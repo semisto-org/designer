@@ -10,6 +10,18 @@ export function formatDate(iso: string | null | undefined): string {
   return dateFormat.format(new Date(y, m - 1, d))
 }
 
+/** How much of a planting date is known: the day (null), the year, or nothing (`planted_on_precision`). */
+export type PlantedPrecision = 'year' | 'unknown' | null
+
+export const plantedPrecision = (value: unknown): PlantedPrecision => (value === 'year' || value === 'unknown' ? value : null)
+
+/** « Planté le 3 mars 2024 », « Planté en 2015 » or « En terre, date de plantation inconnue ». */
+export function plantedLabel(plantedOn: string, precision: PlantedPrecision): string {
+  if (precision === 'unknown') return t('plant_feature.planted_unknown')
+  if (precision === 'year') return t('plant_feature.planted_in', { year: plantedOn.slice(0, 4) })
+  return t('plant_feature.planted_on', { date: formatDate(plantedOn) })
+}
+
 export function todayIso(): string {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`

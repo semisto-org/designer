@@ -103,7 +103,11 @@ function PlantSection({ mapId, feature, editable, ops }: { mapId: number; featur
       <Text style={s.section}>{t('plant_observations.title')}</Text>
       <Card style={{ gap: space.md }}>
         {plantedOn
-          ? <Body>{t('plant_feature.planted_on', { date: formatDate(plantedOn) })}</Body>
+          ? <Body>{feature.properties.planted_on_precision === 'unknown'
+              ? t('plant_feature.planted_unknown')
+              : feature.properties.planted_on_precision === 'year'
+                ? t('plant_feature.planted_in', { year: String(plantedOn).slice(0, 4) })
+                : t('plant_feature.planted_on', { date: formatDate(plantedOn) })}</Body>
           : <>
               <Body muted>{t('plant_observations.plant_first')}</Body>
               {editable && <Button label={t('mobile.feature.planted_today')} onPress={markPlanted} />}

@@ -112,6 +112,8 @@ export type PlantInfo = {
   /** Years since it was planted at that year, or null when not planted yet. */
   age: number | null
   plantedYear: number
+  /** In the ground since an unknown date. */
+  longAgo: boolean
   height: number | null
   spread: number | null
   adultHeight: number
@@ -429,7 +431,7 @@ export class ReliefController {
     return {
       name: inputs.name, latinName: inputs.latinName, strata: plant.strata,
       number: point?.number ?? null, ownName: point?.ownName ?? null, patchName: patch?.name ?? null,
-      year: this.plantYear, yearCalendar: calendarYear(data.origin, this.plantYear), planted: !!point?.plantedOn,
+      year: this.plantYear, yearCalendar: calendarYear(data.origin, this.plantYear), planted: !!point?.plantedOn || !!point?.plantedLongAgo, longAgo: !!point?.plantedLongAgo,
       age: age >= 0 ? age : null,
       plantedYear: point?.plantedOn ? new Date(point.plantedOn).getUTCFullYear() : calendarYear(data.origin, plant.start),
       height: size?.height ?? null, spread: size?.spread ?? null,

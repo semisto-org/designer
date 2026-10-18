@@ -145,7 +145,7 @@ class HarvestLog
     # the variety's (else the species') years to first fruit.
     def bearing_from(feature, species, variety)
       years = variety&.production_start_year || species&.production_start_year
-      planted = feature.planted_on
+      planted = feature.known_planted_on
       planted && years ? planted.year + years : nil
     end
 

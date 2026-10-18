@@ -10,7 +10,7 @@ class SpeciesPlantings
 
   POINTS_SQL = <<~SQL.squish.freeze
     SELECT f.id, f.map_id, ST_X(ST_PointOnSurface(f.geometry)) AS lng, ST_Y(ST_PointOnSurface(f.geometry)) AS lat,
-           f.properties->>'planted_on' AS planted_on,
+           f.properties->>'planted_on' AS planted_on, f.properties->>'planted_on_precision' AS planted_precision,
            CASE WHEN f.properties->>'variety_id' ~ '^[0-9]+$' THEN (f.properties->>'variety_id')::bigint END AS variety_id,
            EXISTS (SELECT 1 FROM plant_observations o WHERE o.map_feature_id = f.id) AS observed
     FROM map_features f
@@ -42,7 +42,8 @@ class SpeciesPlantings
         planted_on = row["planted_on"].presence
         {
           id: row["id"], mapId: row["map_id"], lng: row["lng"].to_f.round(7), lat: row["lat"].to_f.round(7),
-          inGround: planted_on.present? || row["observed"], plantedOn: planted_on, varietyId: row["variety_id"]
+          inGround: planted_on.present? || row["observed"], plantedOn: planted_on,
+          plantedPrecision: (row["planted_precision"].presence if planted_on), varietyId: row["variety_id"]
         }
       end
     end

@@ -36,6 +36,15 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_nil alder[:plantedOn]
   end
 
+  test "a plant in the ground since an unknown date is shown grown, and moves no year 0" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:apple).id, "planted_on" => "2020-05-01", "planted_on_precision" => "unknown" })
+    data = Relief::GrowingPlants.new(@map).as_json
+    assert_equal Date.current.iso8601, data[:origin]
+    assert_nil data[:plants].first[:plantedOn]
+    assert data[:plants].first[:plantedLongAgo]
+  end
+
   test "a pollard says so: the browser draws it smaller" do
     @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
                           properties: { "species_id" => plant_species(:alder).id, "training" => "pollard" })

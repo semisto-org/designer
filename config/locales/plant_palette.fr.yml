@@ -196,6 +196,37 @@ fr:
       added: "%{name} ajouté à la palette."
       close: "Fermer les suggestions"
     csv_filename: "palette-vegetale"
+    modes:
+      label: "Regarder la palette"
+      species: "Par espèce"
+      plants: "Plant par plant"
+    plants:
+      intro: "Chaque plant de la carte avec son numéro sur le plan. Tape un numéro et Entrée passe au plant suivant : si le numéro est déjà pris, les deux plants échangent leurs numéros."
+      intro_read_only: "Chaque plant de la carte avec son numéro sur le plan."
+      search: "Chercher un numéro, une espèce, un nom…"
+      all_statuses: "Tous les plants"
+      all_tags: "Toutes les étiquettes"
+      count: { one: "%{count} plant", other: "%{count} plants" }
+      empty: "Aucun plant ne correspond."
+      none: "Aucun plant n'est encore dessiné sur la carte."
+      columns:
+        number: "N°"
+        plant: "Plant"
+        status: "Statut"
+        planted: "Plantation"
+        tags: "Étiquettes"
+      statuses:
+        planned: "Prévu"
+        planted: "En terre"
+      no_species: "Sans espèce"
+      show_on_map: "Voir sur la carte"
+      date_unknown: "date inconnue"
+      date_placeholder: "2015, 12/03/2024 ou vide"
+      date_hint: "Une année, une date, ou rien si tu ne sais pas quand il a été planté."
+      date_invalid: "Je n'ai pas compris cette date : tape une année (2015) ou une date (12/03/2024)."
+      number_invalid: "Un numéro est un nombre entier à partir de 1."
+      swapped: "N° %{number} donné à ce plant ; l'autre plant prend le n° %{other}."
+      stale: "Ce plant venait d'être modifié par quelqu'un d'autre : sa ligne est à jour, recommence."
   activerecord:
     errors:
       models:

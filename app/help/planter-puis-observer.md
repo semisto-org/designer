@@ -13,7 +13,9 @@ Le design ne s'arrête pas à la plantation : c'est là que le jardin commence �
 2. Dans sa fiche, section **Plante**, vérifie l'espèce affichée. S'il n'en a pas, choisis-la sous **Choisir l'espèce**, parmi les espèces de la palette : un plant sans espèce ne peut pas être marqué planté.
 3. Indique la **Date de plantation**, puis touche **Marquer comme planté**.
 
-La fiche affiche alors « Planté le … ». Une erreur ? **Annuler** retire la date. Dans la [liste de plants](/help/la-liste-de-plants-et-la-commande), le nombre de plants plantés se met à jour.
+La fiche affiche alors « Planté le … ». Une erreur ? **Annuler** retire la date.
+
+Un arbre planté avant ton arrivée, dont personne ne connaît l'année ? Touche plutôt **Déjà en terre, date inconnue** : il compte comme planté, et la vue 3D le montre déjà adulte. Si tu ne connais que l'année, tape-la dans la vue **Plant par plant** de la [palette végétale](/help/la-palette-vegetale-en-tableau). Dans la [liste de plants](/help/la-liste-de-plants-et-la-commande), le nombre de plants plantés se met à jour.
 
 ## Situation actuelle ou projetée
 
