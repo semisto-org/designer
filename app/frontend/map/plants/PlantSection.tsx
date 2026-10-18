@@ -6,7 +6,9 @@ import { formatDate, formatDecimal, strataLabel, todayIso } from '@/components/p
 import { t } from '@/lib/i18n'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { useEditor } from '@/map/editor/EditorContext'
-import { numberProperty, ownProperties, TRAINABLE_STRATA, trainedCrown, trainingProperty } from '@/map/plants/properties'
+import { GRAFTABLE_STRATA, graftProperties, graftProperty, numberProperty, ownProperties, TRAINABLE_STRATA, trainedCrown, trainingProperty } from '@/map/plants/properties'
+import { knownRootstock, rootstocksFor } from '@/map/plants/rootstocks'
+import { GRAFT_FORMS, GRAFT_TRUNK, ROOTSTOCK_VIGORS, TRUNK_RANGE, type GraftForm } from '@/relief/growth'
 import { usePlanting } from '@/map/plants/store'
 import { StrataDot } from '@/map/plants/strata'
 import type { MapFeature } from '@/types'
@@ -29,6 +31,10 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
   const strata = current?.effectiveStrata ?? species?.strata
   const training = trainingProperty(feature)
   const trainable = strata != null && TRAINABLE_STRATA.includes(strata)
+  const graftable = training === 'free' && strata != null && GRAFTABLE_STRATA.includes(strata)
+  const graftData = graftProperties(feature)
+  const graft = graftable ? graftProperty(feature, strata) : null
+  const graftForm = GRAFT_FORMS.includes(graftData.form as GraftForm) ? (graftData.form as GraftForm) : null
 
   async function save(patch: Record<string, unknown>) {
     const properties = { ...ownProperties(feature), ...patch }
@@ -57,8 +63,9 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
             </p>
             <p className="text-xs italic text-loam-500">{variety?.latinName ?? species.latinName}</p>
             <p className="mt-1 text-xs text-loam-600">
-              {strataLabel(current?.effectiveStrata ?? species.strata)} · {t('plant_feature.crown', { value: formatDecimal(trainedCrown(species.crownM, training, strata)) })}
+              {strataLabel(current?.effectiveStrata ?? species.strata)} · {t('plant_feature.crown', { value: formatDecimal(trainedCrown(species.crownM, training, strata, graft)) })}
               {training !== 'free' && trainable && <span> ({t(`plant_feature.crown_${training}`)})</span>}
+              {graft && <span> ({t('plant_feature.crown_graft', { vigor: t(`plant_feature.vigor_names.${graft.vigor}`) })})</span>}
               {species.crownIndicative && <span className="text-loam-400"> ({t('plant_feature.crown_indicative')})</span>}
             </p>
           </div>
@@ -114,6 +121,86 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
         </Field>
       ) : training !== 'free' ? (
         <p className="text-loam-600">{t('plant_feature.training')} : <span className="font-medium text-loam-900">{t(`plant_feature.trainings.${training}`)}</span></p>
+      ) : null)}
+
+      {graftable && (editor.canEdit ? (
+        <div className="space-y-3">
+          <Field label={t('plant_feature.graft_form')} hint={t('plant_feature.graft_form_hint')}>
+            <Select
+              value={graft ? graftForm ?? 'custom' : ''}
+              onChange={(e) => {
+                const value = e.target.value
+                // A new form takes its usual trunk; « Non greffé » forgets the graft.
+                if (value === '') void save({ graft_form: null, trunk_height: null, rootstock_vigor: null, rootstock: null })
+                else if (value !== 'custom') void save({ graft_form: value, trunk_height: null })
+              }}
+            >
+              <option value="">{t('plant_feature.graft_forms.none')}</option>
+              {GRAFT_FORMS.map((value) => <option key={value} value={value}>{t(`plant_feature.graft_forms.${value}`)}</option>)}
+              {graft && !graftForm && <option value="custom">{t('plant_feature.graft_forms.custom')}</option>}
+            </Select>
+          </Field>
+          {graft && (
+            <>
+              <Field label={t('plant_feature.trunk_height')} hint={t('plant_feature.trunk_height_hint')}>
+                <Input
+                  key={`${feature.properties.id}:trunk:${graftData.trunkHeight ?? ''}:${graftForm ?? ''}`}
+                  type="number"
+                  min={TRUNK_RANGE.min}
+                  max={TRUNK_RANGE.max}
+                  step={0.05}
+                  inputMode="decimal"
+                  className="w-28"
+                  defaultValue={graftData.trunkHeight ?? ''}
+                  placeholder={formatDecimal(graftForm ? GRAFT_TRUNK[graftForm] : graft.trunk)}
+                  onBlur={(e) => {
+                    const raw = e.target.value.replace(',', '.').trim()
+                    const value = raw === '' ? null : Math.round(Number(raw) * 100) / 100
+                    if (value === graftData.trunkHeight) return
+                    if (value === null || (value >= TRUNK_RANGE.min && value <= TRUNK_RANGE.max)) void save({ trunk_height: value })
+                    else e.target.value = graftData.trunkHeight != null ? String(graftData.trunkHeight) : ''
+                  }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+                />
+              </Field>
+              <Field label={t('plant_feature.rootstock_vigor')} hint={t('plant_feature.rootstock_vigor_hint')}>
+                <Select value={graftData.vigor ?? ''} onChange={(e) => void save({ rootstock_vigor: e.target.value || null })}>
+                  <option value="">{t('plant_feature.rootstock_vigors.default', { vigor: t(`plant_feature.vigor_names.${graft.vigor}`) })}</option>
+                  {ROOTSTOCK_VIGORS.map((value) => <option key={value} value={value}>{t(`plant_feature.rootstock_vigors.${value}`)}</option>)}
+                </Select>
+              </Field>
+              <Field label={t('plant_feature.rootstock')} hint={t('plant_feature.rootstock_hint')}>
+                <Input
+                  key={`${feature.properties.id}:rootstock:${graftData.rootstock ?? ''}`}
+                  list={`rootstocks-${feature.properties.id}`}
+                  maxLength={40}
+                  defaultValue={graftData.rootstock ?? ''}
+                  placeholder={t('plant_feature.rootstock_placeholder')}
+                  onBlur={(e) => {
+                    const value = e.target.value.trim() || null
+                    if (value === graftData.rootstock) return
+                    // A known rootstock says how vigorous the tree will be.
+                    const known = knownRootstock(value)
+                    void save({ rootstock: known?.name ?? value, ...(known ? { rootstock_vigor: known.vigor } : {}) })
+                  }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+                />
+                <datalist id={`rootstocks-${feature.properties.id}`}>
+                  {rootstocksFor(species?.latinName).map((r) => <option key={r.name} value={r.name}>{t(`plant_feature.vigor_names.${r.vigor}`)}</option>)}
+                </datalist>
+              </Field>
+            </>
+          )}
+        </div>
+      ) : graft ? (
+        <p className="text-loam-600">
+          {t('plant_feature.graft_form')} : <span className="font-medium text-loam-900">{[
+            graftForm && t(`plant_feature.graft_form_names.${graftForm}`),
+            t('relief.page.growth.card.trunk', { value: formatDecimal(graft.trunk) }),
+            t('relief.page.growth.card.vigor', { value: t(`plant_feature.vigor_names.${graft.vigor}`) }),
+            graftData.rootstock,
+          ].filter(Boolean).join(', ')}</span>
+        </p>
       ) : null)}
 
       {plantedOn ? (

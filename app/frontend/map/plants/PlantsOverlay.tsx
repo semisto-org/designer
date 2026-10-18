@@ -9,7 +9,7 @@ import { drawingStore, useDrawingState } from '@/map/drawing/store'
 import { setBaseFilter } from '@/map/drawing/style'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
-import { isPatch, isPlant, numberProperty, trainedCrown, trainingProperty } from '@/map/plants/properties'
+import { graftProperty, isPatch, isPlant, numberProperty, trainedCrown, trainingProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
 import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
@@ -95,7 +95,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     if (!strata || !species) continue
     points.set(feature.properties.id, STRATA_COLORS[strata])
     if (!drawsCrown(strata)) continue
-    const radiusM = Math.max(trainedCrown(species.crownM, trainingProperty(feature), strata) / 2, 0.15)
+    const radiusM = Math.max(trainedCrown(species.crownM, trainingProperty(feature), strata, graftProperty(feature, strata)) / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
     crowns.push({
       ...polygon,

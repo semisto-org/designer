@@ -56,6 +56,23 @@ class PlantingTest < ActiveSupport::TestCase
     assert_not plant.valid?
   end
 
+  test "a grafted fruit tree: its form, trunk, rootstock vigour and rootstock, all optional" do
+    plant = plant!(plant_species(:apple))
+    assert_nil plant.plant_graft
+    plant.update!(properties: plant.properties.merge("graft_form" => "standard", "trunk_height" => "1,85", "rootstock_vigor" => "vigorous", "rootstock" => "  MM111 "))
+    plant.reload
+    assert_equal 1.85, plant.properties["trunk_height"], "a decimal comma is read, kept as a number"
+    assert_equal({ form: "standard", trunkHeight: 1.85, vigor: "vigorous", rootstock: "MM111" }, plant.plant_graft)
+    plant.update!(properties: plant.properties.merge("graft_form" => "", "trunk_height" => nil, "rootstock_vigor" => "", "rootstock" => " "))
+    assert_nil plant.reload.plant_graft
+    assert_empty plant.properties.slice(*PlantableFeature::GRAFT_KEYS)
+    [ { "graft_form" => "espalier" }, { "rootstock_vigor" => "huge" }, { "trunk_height" => 5 }, { "trunk_height" => "tall" }, { "rootstock" => "x" * 41 } ].each do |bad|
+      plant.properties = plant.properties.merge(bad)
+      assert_not plant.valid?, bad.inspect
+      plant.reload
+    end
+  end
+
   test "patch quantities: density × PostGIS area, count, strata default" do
     @patch.patch_items.create!(species: plant_species(:comfrey), density: 1)
     @patch.patch_items.create!(species: plant_species(:strawberry))

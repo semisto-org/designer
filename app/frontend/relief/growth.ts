@@ -30,6 +30,8 @@ export type GrowingPlantData = GrowthInputs & {
   id: number
   /** How the gardener keeps it: left free, pollarded or coppiced. */
   training: PlantTraining | null
+  /** A grafted fruit tree: its form, trunk height (m), rootstock vigour and rootstock, as the gardener gave them. */
+  graft: GraftData | null
   lng: number
   lat: number
   number: string | number | null
@@ -59,6 +61,75 @@ export type GrowingPlantsData = {
  */
 export type PlantTraining = 'free' | 'pollard' | 'coppice'
 
+/**
+ * The form a grafted fruit tree is sold with, named after its trunk: a
+ * standard (« haute-tige », hoogstam), a half-standard (« demi-tige »,
+ * halfstam) or a bush (« basse-tige », laagstam). The trunk is formed in the
+ * nursery and does not grow taller afterwards.
+ */
+export type GraftForm = 'standard' | 'half_standard' | 'bush'
+
+/**
+ * How vigorous the rootstock is, which sets the tree's adult size (for an
+ * apple: M27, M9, M26, MM106, then MM111, M25 or a seedling).
+ */
+export type RootstockVigor = 'very_dwarf' | 'dwarf' | 'semi_dwarf' | 'semi_vigorous' | 'vigorous'
+
+export const GRAFT_FORMS: readonly GraftForm[] = ['bush', 'half_standard', 'standard']
+export const ROOTSTOCK_VIGORS: readonly RootstockVigor[] = ['very_dwarf', 'dwarf', 'semi_dwarf', 'semi_vigorous', 'vigorous']
+
+/** What the server sends of a grafted tree (properties graft_form, trunk_height, rootstock_vigor, rootstock). */
+export type GraftData = {
+  form: string | null
+  trunkHeight: number | null
+  vigor: string | null
+  rootstock: string | null
+}
+
+/** A grafted tree as the scene draws it: the height of its trunk (m) and the vigour of its rootstock. */
+export type Graft = { trunk: number; vigor: RootstockVigor }
+
+/**
+ * Trunk height of each form (m), within what Belgian, French and Dutch
+ * nurseries sell: a standard from 1.80 m (the Walloon orchard grant's
+ * minimum), a half-standard 1.20 to 1.60 m, a bush 0.50 to 0.80 m.
+ */
+export const GRAFT_TRUNK: Record<GraftForm, number> = { standard: 1.8, half_standard: 1.4, bush: 0.6 }
+
+/** The rootstock a form is usually grafted on, when the gardener does not say. */
+export const FORM_VIGOR: Record<GraftForm, RootstockVigor> = { standard: 'vigorous', half_standard: 'semi_vigorous', bush: 'semi_dwarf' }
+
+/** Trunk heights the sheet accepts (m). */
+export const TRUNK_RANGE = { min: 0.2, max: 3 } as const
+
+/**
+ * The most a tree reaches on a weak rootstock (m), and the years it takes:
+ * an apple on M27, M9, M26 or MM106. A vigorous rootstock (MM111, M25, a
+ * seedling) lets the species grow to its own size.
+ */
+export const VIGOR_SIZE: Record<Exclude<RootstockVigor, 'vigorous'>, { height: number; spread: number; maturityYears: number }> = {
+  very_dwarf: { height: 2, spread: 1.5, maturityYears: 4 },
+  dwarf: { height: 3, spread: 2.5, maturityYears: 5 },
+  semi_dwarf: { height: 4, spread: 3.5, maturityYears: 7 },
+  semi_vigorous: { height: 5.5, spread: 5, maturityYears: 10 },
+}
+
+/** A crown is at least this tall above the trunk of a grafted tree (m). */
+export const GRAFT_CROWN = 1.2
+
+/** A grafted tree as the scene draws it, or null when the plant is not one (or not a tree). */
+export function graftOf(form: PlantForm, data: GraftData | null | undefined): Graft | null {
+  if (form !== 'tree' || !data) return null
+  const graftForm = GRAFT_FORMS.includes(data.form as GraftForm) ? (data.form as GraftForm) : null
+  const given = ROOTSTOCK_VIGORS.includes(data.vigor as RootstockVigor) ? (data.vigor as RootstockVigor) : null
+  const height = typeof data.trunkHeight === 'number' && Number.isFinite(data.trunkHeight)
+    ? Math.min(TRUNK_RANGE.max, Math.max(TRUNK_RANGE.min, data.trunkHeight)) : null
+  if (!graftForm && !given && height == null) return null
+  const trunk = height ?? (graftForm ? GRAFT_TRUNK[graftForm] : given === 'vigorous' ? GRAFT_TRUNK.standard : given === 'semi_vigorous' ? GRAFT_TRUNK.half_standard : GRAFT_TRUNK.bush)
+  const vigor = given ?? (graftForm ? FORM_VIGOR[graftForm] : trunk >= GRAFT_TRUNK.standard ? 'vigorous' : trunk >= 1.2 ? 'semi_vigorous' : 'semi_dwarf')
+  return { trunk, vigor }
+}
+
 /** How a plant is drawn: a tree on its trunk, a bush, a low clump, a mat, a climber. */
 export type PlantForm = 'tree' | 'bush' | 'clump' | 'mat' | 'climber'
 
@@ -72,6 +143,8 @@ export type ScenePlant = {
   spreadM: number
   maturityYears: number
   training: PlantTraining
+  /** A grafted fruit tree: its trunk and its rootstock's vigour, or null. */
+  graft?: Graft | null
   /** Years after year 0 when it goes into the ground. */
   start: number
   /** Index in `GrowingPlantsData.plants`, or null for a plant of a patch. */
@@ -143,18 +216,38 @@ export function trainable(form: PlantForm): boolean {
  */
 export const MANAGED_MATURITY = 10
 
-/** The size a plant reaches as it is kept, and when: its adult size, or less and sooner when it is cut back. */
-export function managedSize(plant: Pick<ScenePlant, 'heightM' | 'spreadM' | 'maturityYears'> & { training?: PlantTraining }): { height: number; spread: number; maturityYears: number } {
+type Kept = { training?: PlantTraining; graft?: Graft | null }
+
+/**
+ * The size a plant reaches as it is kept, and when: its adult size, or less
+ * and sooner when it is cut back or grafted on a weak rootstock. A grafted
+ * tree always carries a crown above its trunk.
+ */
+export function managedSize(plant: Pick<ScenePlant, 'heightM' | 'spreadM' | 'maturityYears'> & Kept): { height: number; spread: number; maturityYears: number } {
   const cap = plant.training && plant.training !== 'free' ? MANAGED_SIZE[plant.training] : null
-  return cap
-    ? { height: Math.min(plant.heightM, cap.height), spread: Math.min(plant.spreadM, cap.spread), maturityYears: Math.min(plant.maturityYears, MANAGED_MATURITY) }
-    : { height: plant.heightM, spread: plant.spreadM, maturityYears: plant.maturityYears }
+  if (cap) return { height: Math.min(plant.heightM, cap.height), spread: Math.min(plant.spreadM, cap.spread), maturityYears: Math.min(plant.maturityYears, MANAGED_MATURITY) }
+  const graft = plant.graft
+  if (graft) {
+    const vigor = graft.vigor === 'vigorous' ? null : VIGOR_SIZE[graft.vigor]
+    return {
+      height: Math.max(graft.trunk + GRAFT_CROWN, vigor ? Math.min(plant.heightM, vigor.height) : plant.heightM),
+      spread: vigor ? Math.min(plant.spreadM, vigor.spread) : plant.spreadM,
+      maturityYears: vigor ? Math.min(plant.maturityYears, vigor.maturityYears) : plant.maturityYears,
+    }
+  }
+  return { height: plant.heightM, spread: plant.spreadM, maturityYears: plant.maturityYears }
 }
 
+/** A grafted tree leaves the nursery with its trunk formed and the start of a crown (m). */
+export const GRAFTED_CROWN_AT_PLANTING = { height: 0.6, spread: 0.6 }
+
 /** Height and spread `age` years after planting, or null before it is planted. */
-export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'> & { training?: PlantTraining }, age: number): { height: number; spread: number } | null {
+export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'> & Kept, age: number): { height: number; spread: number } | null {
   if (age < 0) return null
-  const start = PLANTING_SIZE[plant.strata] ?? PLANTING_SIZE.shrub
+  const graft = plant.training && plant.training !== 'free' ? null : plant.graft
+  const start = graft
+    ? { height: graft.trunk + GRAFTED_CROWN_AT_PLANTING.height, spread: GRAFTED_CROWN_AT_PLANTING.spread }
+    : PLANTING_SIZE[plant.strata] ?? PLANTING_SIZE.shrub
   const adult = managedSize(plant)
   const adultHeight = Math.max(0.02, adult.height)
   const adultSpread = Math.max(0.05, adult.spread)
@@ -187,9 +280,10 @@ export const CLIMBER_SUPPORT = 2.5
  * and vertical half-axis `half`, centred `centre` metres above the ground),
  * on a trunk of `trunk` metres for a tree; a dome for a clump or a mat; a
  * column for a climber. A pollard is a short trunk crowned by its regrowth,
- * a coppice a crown of stems from the ground.
+ * a coppice a crown of stems from the ground, a grafted tree a crown on the
+ * trunk it was sold with (`graftTrunk`, m).
  */
-export function plantShape(form: PlantForm, strata: PlantStrata, height: number, spread: number, training: PlantTraining = 'free'):
+export function plantShape(form: PlantForm, strata: PlantStrata, height: number, spread: number, training: PlantTraining = 'free', graftTrunk: number | null = null):
   { kind: 'crown'; trunk: number; centre: number; half: number; radius: number }
   | { kind: 'dome'; height: number; radius: number }
   | { kind: 'column'; height: number; radius: number } {
@@ -202,6 +296,12 @@ export function plantShape(form: PlantForm, strata: PlantStrata, height: number,
   if (trainable(form) && training === 'coppice') {
     // Many stems from the stool: a crown resting on the ground, a little lifted.
     return { kind: 'crown', trunk: 0, centre: height * 0.52, half: height * 0.48, radius: spread / 2 }
+  }
+  if (form === 'tree' && graftTrunk != null) {
+    // The trunk is the nursery's; only the crown grows, above it.
+    const trunk = Math.min(graftTrunk, Math.max(0, height - 0.4))
+    const half = (height - trunk) / 2
+    return { kind: 'crown', trunk, centre: trunk + half, half, radius: spread / 2 }
   }
   switch (form) {
     case 'tree': {
@@ -219,6 +319,11 @@ export function plantShape(form: PlantForm, strata: PlantStrata, height: number,
     default:
       return { kind: 'dome', height: Math.max(0.03, height), radius: spread / 2 }
   }
+}
+
+/** The trunk a scene plant is drawn on when it is a grafted tree left free, or null. */
+export function graftTrunk(plant: Pick<ScenePlant, 'training'> & { graft?: Graft | null }): number | null {
+  return plant.graft && plant.training === 'free' ? plant.graft.trunk : null
 }
 
 /** Crowns lower than this leave the ground under them in the light (a perennial is its own sunny top). */
@@ -245,7 +350,7 @@ export function plantShade(
   plants.forEach((plant, index) => {
     const size = sizeAt(plant, year - plant.start)
     if (!size) return
-    const shape = plantShape(plant.form, plant.strata, size.height, size.spread, plant.training)
+    const shape = plantShape(plant.form, plant.strata, size.height, size.spread, plant.training, graftTrunk(plant))
     const r = shape.radius
     // Smaller than a cell: its shadow is lost in the grid.
     if (r < cell / 2) return
@@ -344,9 +449,10 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
   const startOf = (date: string | null) => Math.max(0, yearsBetween(data.origin, date ?? data.today))
   placed.forEach(({ x, y, p }, index) => {
     const form = plantForm(p.strata, p.plantType)
+    const training = trainingOf(form, p.training)
     plants.push({
       x, y, form, strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
-      maturityYears: p.maturityYears, training: trainingOf(form, p.training), start: startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
+      maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null, start: startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
     })
   })
   const patchStart = startOf(null)

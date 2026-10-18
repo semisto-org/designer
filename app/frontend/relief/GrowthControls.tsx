@@ -227,6 +227,16 @@ export function PlantCard({ info, onClose }: { info: PlantInfo; onClose: () => v
       ) : (
         <p>{t(`relief.page.growth.card.${info.training}`, { height: m(info.adultHeight), spread: m(info.adultSpread) })}</p>
       )}
+      {info.graft && (
+        <p>{t('relief.page.growth.card.graft', {
+          details: [
+            info.graft.form && t(`plant_feature.graft_form_names.${info.graft.form}`),
+            t('relief.page.growth.card.trunk', { value: m(info.graft.trunk) }),
+            t('relief.page.growth.card.vigor', { value: t(`plant_feature.vigor_names.${info.graft.vigor}`) }),
+            info.graft.rootstock,
+          ].filter(Boolean).join(', '),
+        })}</p>
+      )}
       {info.indicative && <p className="text-loam-400">{t('relief.page.growth.card.indicative')}</p>}
     </div>
   )

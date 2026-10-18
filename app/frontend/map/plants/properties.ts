@@ -1,4 +1,4 @@
-import { MANAGED_SIZE, type PlantTraining } from '@/relief/growth'
+import { graftOf, MANAGED_SIZE, managedSize, type Graft, type GraftData, type PlantTraining } from '@/relief/growth'
 import type { MapFeature } from '@/types'
 
 // Keys MapFeature#as_geojson merges into properties: not part of the
@@ -27,10 +27,35 @@ export function trainingProperty(feature: MapFeature): PlantTraining {
   return value === 'pollard' || value === 'coppice' ? value : 'free'
 }
 
-/** The crown (m) a plant reaches as it is kept: a pollard or a coppice stays narrower than its species left free. */
-export function trainedCrown(crownM: number, training: PlantTraining, strata: string | null | undefined): number {
-  if (training === 'free' || !strata || !TRAINABLE_STRATA.includes(strata)) return crownM
-  return Math.min(crownM, MANAGED_SIZE[training].spread)
+/** Strata whose plants can be grafted fruit trees on a trunk (trees). */
+export const GRAFTABLE_STRATA: readonly string[] = ['canopy', 'sub_canopy']
+
+/** What the sheet says of a grafted fruit tree, as the server sends it to the 3D view. */
+export function graftProperties(feature: MapFeature): GraftData {
+  const p = feature.properties
+  const trunk = typeof p.trunk_height === 'number' ? p.trunk_height : typeof p.trunk_height === 'string' ? Number(p.trunk_height) : NaN
+  return {
+    form: typeof p.graft_form === 'string' ? p.graft_form : null,
+    trunkHeight: Number.isFinite(trunk) ? trunk : null,
+    vigor: typeof p.rootstock_vigor === 'string' ? p.rootstock_vigor : null,
+    rootstock: typeof p.rootstock === 'string' ? p.rootstock : null,
+  }
+}
+
+/** The grafted tree a plant is, or null when its sheet says nothing of a graft or it is not a tree. */
+export function graftProperty(feature: MapFeature, strata: string | null | undefined): Graft | null {
+  return strata && GRAFTABLE_STRATA.includes(strata) ? graftOf('tree', graftProperties(feature)) : null
+}
+
+/**
+ * The crown (m) a plant reaches as it is kept: a pollard or a coppice stays
+ * narrower than its species left free, and so does a tree grafted on a weak
+ * rootstock.
+ */
+export function trainedCrown(crownM: number, training: PlantTraining, strata: string | null | undefined, graft: Graft | null = null): number {
+  if (!strata || !TRAINABLE_STRATA.includes(strata)) return crownM
+  if (training !== 'free') return Math.min(crownM, MANAGED_SIZE[training].spread)
+  return graft ? managedSize({ heightM: 0, spreadM: crownM, maturityYears: 1, graft }).spread : crownM
 }
 
 export const isPlant = (f: MapFeature) => f.properties.layer === 'plants' && f.properties.kind === 'plant'

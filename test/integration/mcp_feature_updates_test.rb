@@ -155,6 +155,26 @@ class McpFeatureUpdatesTest < ActionDispatch::IntegrationTest
     assert_equal "En trogne (taillé en tête)", change[:afterLabel]
   end
 
+  test "a grafted fruit tree: its form, trunk and rootstock go through, wrong values come back with the allowed ones" do
+    data, error = call_tool(@owner, "propose_feature_updates", {
+      map_id: @map.id, updates: [
+        { feature_id: @tree.id, changes: { properties: { graft_form: "standard", trunk_height: 1.9, rootstock_vigor: "vigorous", rootstock: "Franc" } }, rationale: "Haute-tige sur franc, d'après l'étiquette de la pépinière." },
+        { feature_id: @herbs[0].id, changes: { properties: { graft_form: "espalier" } }, rationale: "Une forme qui n'existe pas encore." },
+        { feature_id: @herbs[1].id, changes: { properties: { trunk_height: 7 } }, rationale: "Un tronc bien trop haut pour un fruitier." }
+      ]
+    })
+    refute error, data
+    created = data["created"].sole
+    assert_includes created["diff"], { "field" => "properties.graft_form", "before" => nil, "after" => "standard" }
+    assert_includes created["diff"], { "field" => "properties.trunk_height", "before" => nil, "after" => 1.9 }
+    errors = data["rejected"].map { |r| r["error"] }
+    assert_match(/graft_form vaut standard, half_standard, bush/, errors.first)
+    assert_match(/trunk_height/, errors.last)
+    labels = FeatureUpdateDraft.find(created["id"]).as_review_json[:changes].to_h { |c| [ c[:field], c[:afterLabel] ] }
+    assert_equal "haute-tige", labels["properties.graft_form"]
+    assert_equal "forte", labels["properties.rootstock_vigor"]
+  end
+
   test "idempotent: what changes nothing comes back as unchanged" do
     args = { map_id: @map.id, filter: { tag: "Strate basse" }, changes: { properties: { planted_on: "2026-05-23" } }, rationale: }
     call_tool(@owner, "propose_feature_updates", args)

@@ -9,7 +9,7 @@
 // scene.ts imports this module.
 
 import * as THREE from 'three'
-import { plantShape, sizeAt, type PlantStrata, type ScenePlant } from './growth.ts'
+import { graftTrunk, plantShape, sizeAt, type PlantStrata, type ScenePlant } from './growth.ts'
 
 /** Foliage greens per strata, as they look in summer (the 3D is not the legend). */
 export const NATURAL_GREENS: Record<PlantStrata, string> = {
@@ -136,7 +136,7 @@ export class PlantLayer {
         matrix.compose(position.set(x, ground + y, z), turn, scale.set(sx, sy, sx))
         this.meshes.get(shape)!.setMatrixAt(slot, matrix)
       }
-      const shape = plantShape(plant.form, plant.strata, height, spread, plant.training)
+      const shape = plantShape(plant.form, plant.strata, height, spread, plant.training, graftTrunk(plant))
       switch (shape.kind) {
         case 'crown':
           if (shape.trunk > 0) {

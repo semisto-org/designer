@@ -42,6 +42,13 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_equal "pollard", Relief::GrowingPlants.new(@map).as_json[:plants].sole[:training]
   end
 
+  test "a grafted tree says its form and rootstock: the browser plants it on its trunk" do
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:alder).id, "graft_form" => "half_standard", "rootstock" => "MM106" })
+    graft = Relief::GrowingPlants.new(@map).as_json[:plants].sole[:graft]
+    assert_equal({ form: "half_standard", trunkHeight: nil, vigor: nil, rootstock: "MM106" }, graft)
+  end
+
   test "nothing planted yet: year 0 is today" do
     @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
                           properties: { "species_id" => plant_species(:comfrey).id })
