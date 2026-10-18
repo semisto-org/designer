@@ -1,4 +1,4 @@
-import { formatDistance, has, seasonOf, t, todayIso } from '../i18n'
+import { formatArea, formatDistance, has, seasonOf, t, todayIso } from '../i18n'
 
 describe('i18n', () => {
   it('reads the Rails strings with %{var} and plural forms', () => {
@@ -12,6 +12,8 @@ describe('i18n', () => {
   it('formats distances and the local date', () => {
     expect(formatDistance(12.4)).toBe('12 m')
     expect(formatDistance(1234)).toMatch(/^1,2\s?km$/)
+    expect(formatArea(470.4)).toBe('470 m²')
+    expect(formatArea(12_345)).toMatch(/^1,23\s?ha$/)
     expect(todayIso(new Date(2026, 9, 4, 23, 30))).toBe('2026-10-04')
   })
 })

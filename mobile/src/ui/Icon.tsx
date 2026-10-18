@@ -2,14 +2,14 @@
 // from screen readers (the button around an icon carries the label).
 import {
   Aperture, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
-  Eye, EyeOff, Fence, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Navigation2, NotebookPen, PawPrint, ScanSearch, Shovel, Sprout,
+  Eye, EyeOff, Fence, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Navigation2, NotebookPen, PawPrint, Ruler, ScanSearch, Shovel, Sprout,
   SkipForward, Square, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
 import { colors } from './theme'
 
 const ICONS = {
   back: ChevronLeft, next: ChevronRight, close: X, check: Check, undo: Undo2,
-  photo: Camera, plant: Sprout, point: MapPin, identify: ScanSearch, trace: Footprints,
+  photo: Camera, plant: Sprout, point: MapPin, measure: Ruler, identify: ScanSearch, trace: Footprints,
   display: Layers, follow: LocateFixed,
   note: NotebookPen, storm: CloudRainWind, planted: Shovel, followUp: HeartPulse, sheet: BookOpen,
   flows: Waves, pools: Droplet, seeps: Droplets,

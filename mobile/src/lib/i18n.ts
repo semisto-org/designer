@@ -38,6 +38,12 @@ export function formatDistance(meters: number): string {
   return `${(meters / 1000).toLocaleString('fr-BE', { maximumFractionDigits: 1 })} km`
 }
 
+/** « 470 m² », « 1,2 ha » (from one hectare). */
+export function formatArea(squareMeters: number): string {
+  if (squareMeters < 10_000) return `${Math.round(squareMeters).toLocaleString('fr-BE')} m²`
+  return `${(squareMeters / 10_000).toLocaleString('fr-BE', { maximumFractionDigits: 2 })} ha`
+}
+
 /** Today's date on the phone, as the server's ISO date (YYYY-MM-DD). */
 export function todayIso(now = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0')

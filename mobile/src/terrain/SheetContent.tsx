@@ -119,11 +119,12 @@ function AroundRow({ item, planting, onPress }: { item: Nearby; planting: Planti
 
 // ── « Noter ici » ──────────────────────────────────────────────────────
 
-export type NoteChoice = 'photo' | 'plant' | 'record' | 'identify' | 'storm'
+export type NoteChoice = 'photo' | 'plant' | 'record' | 'measure' | 'identify' | 'storm'
 const NOTES: { choice: NoteChoice; icon: IconName; label: string }[] = [
   { choice: 'photo', icon: 'photo', label: 'mobile.actions.photo' },
   { choice: 'plant', icon: 'plant', label: 'mobile.actions.plant' },
   { choice: 'record', icon: 'point', label: 'mobile.actions.record' },
+  { choice: 'measure', icon: 'measure', label: 'mobile.actions.measure' },
   { choice: 'identify', icon: 'identify', label: 'mobile.actions.identify' },
   { choice: 'storm', icon: 'storm', label: 'mobile.actions.storm' },
 ]

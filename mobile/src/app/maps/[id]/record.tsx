@@ -1,14 +1,16 @@
 // « Relever »: a downpour's water (storm.tsx), a GPS point where one stands (a spring, a tree, a problem…)
 // or a trace walked along a hedge, a path, a boundary, saved as a line or a
-// closed surface. Keeps recording with the screen off.
+// closed surface. Keeps recording with the screen off. Also where a measure
+// (measure.tsx) becomes an element.
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { kindLabel, kindsFor, layerLabel } from '@/lib/elements'
 import { cleanTrace, gpsProperties, lineLength, ringArea } from '@/lib/geo'
-import { formatDistance, t } from '@/lib/i18n'
+import { formatArea, formatDistance, t } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
 import { display } from '@/lib/display'
+import { decodePoints } from '@/lib/measure'
 import { outbox } from '@/lib/outbox'
 import { currentTrace, onFixes, startTrace, stopTrace, type Fix } from '@/lib/trace'
 import type { Geometry, Position } from '@/lib/types'
@@ -19,13 +21,16 @@ type Mode = 'choose' | 'point' | 'tracing' | 'trace'
 type Shape = 'LineString' | 'Polygon'
 
 export default function RecordScreen() {
-  const mapId = Number(useLocalSearchParams<{ id: string }>().id)
+  // From « Mesurer »: the measured points (and their shape), or walk straight away.
+  const params = useLocalSearchParams<{ id: string; points?: string; shape?: string; walk?: string }>()
+  const mapId = Number(params.id)
   const resumed = currentTrace()
-  const [mode, setMode] = useState<Mode>(resumed?.mapId === mapId ? 'tracing' : 'choose')
+  const [measured] = useState(() => decodePoints(params.points))
+  const [mode, setMode] = useState<Mode>(resumed?.mapId === mapId ? 'tracing' : measured.length >= 2 ? 'trace' : 'choose')
   const [point, setPoint] = useState<{ position: Position; accuracy: number | null } | null>(null)
   const [fixes, setFixes] = useState<Fix[]>(resumed?.mapId === mapId ? resumed.fixes : [])
-  const [positions, setPositions] = useState<Position[]>([])
-  const [shape, setShape] = useState<Shape>('LineString')
+  const [positions, setPositions] = useState<Position[]>(measured.length >= 2 ? measured : [])
+  const [shape, setShape] = useState<Shape>(params.shape === 'Polygon' && measured.length >= 3 ? 'Polygon' : 'LineString')
   const [kind, setKind] = useState<{ layer: string; kind: string } | null>(null)
   const [name, setName] = useState('')
   const [notes, setNotes] = useState('')
@@ -45,6 +50,7 @@ export default function RecordScreen() {
     if ((await startTrace(mapId)) === 'no_permission') { setProblem(t('mobile.record.no_permission')); return }
     setFixes([]); setMode('tracing')
   }
+  useEffect(() => { if (params.walk === '1' && mode === 'choose') void begin() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const finish = async () => {
     const points = await stopTrace()
@@ -111,12 +117,15 @@ export default function RecordScreen() {
   if (mode === 'tracing') {
     const walked = cleanTrace(fixes)
     const last = fixes[fixes.length - 1]
+    // Walking round a bed or a meadow: what it would measure, closed now.
+    const closed = walked.length >= 3 ? ringArea([...walked, walked[0]]) : 0
     return (
       <View style={[styles.screen, styles.content]}>
         <Card style={{ gap: space.sm, alignItems: 'center' }}>
           <Text style={s.big}>{formatDistance(lineLength(walked))}</Text>
           <Body muted>{t('mobile.record.points', { count: walked.length })}</Body>
           {last?.accuracy ? <Body muted>{t('mobile.record.accuracy', { accuracy: formatDistance(last.accuracy) })}</Body> : null}
+          {closed >= 10 ? <Body muted>{t('mobile.record.surface_if_closed', { area: formatArea(closed) })}</Body> : null}
         </Card>
         <Notice>{t('mobile.record.tracing_hint')}</Notice>
         <Button label={t('mobile.record.trace_stop')} onPress={finish} />
@@ -141,7 +150,7 @@ export default function RecordScreen() {
           </View>
           <Body>
             {shape === 'Polygon'
-              ? t('mobile.record.area', { area: Math.round(ringArea([...positions, positions[0]])).toLocaleString('fr-BE') })
+              ? t('mobile.record.area', { area: formatArea(ringArea([...positions, positions[0]])) })
               : t('mobile.record.length', { length: formatDistance(lineLength(positions)) })}
           </Body>
         </>

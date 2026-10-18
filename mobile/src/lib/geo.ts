@@ -44,16 +44,31 @@ export function anchor(geometry: Geometry): Position {
 
 /**
  * Cleans a walked GPS trace: drops fixes less accurate than `maxAccuracy`
- * meters and points closer than `minStep` meters to the previous kept one.
+ * meters, points closer than `minStep` meters to the previous kept one, and
+ * GPS jumps: a fix that would mean moving faster than `maxSpeed` m/s since
+ * the last kept one (a walk is about 1.5 m/s; a jump is tens of meters in a
+ * second, under trees or near a wall). Three jumps in a row
+ * mean the walker really is there (or the kept point was the jump): taken.
  */
-export function cleanTrace(fixes: { position: Position; accuracy: number | null }[], { maxAccuracy = 15, minStep = 2 } = {}): Position[] {
-  const kept: Position[] = []
+export function cleanTrace(
+  fixes: { position: Position; accuracy: number | null; at?: number }[],
+  { maxAccuracy = 15, minStep = 2, maxSpeed = 5 } = {},
+): Position[] {
+  const kept: { position: Position; at?: number }[] = []
+  let jumps = 0
   for (const fix of fixes) {
     if (fix.accuracy !== null && fix.accuracy > maxAccuracy) continue
-    if (kept.length && distance(kept[kept.length - 1], fix.position) < minStep) continue
-    kept.push(fix.position)
+    const last = kept[kept.length - 1]
+    if (last) {
+      const step = distance(last.position, fix.position)
+      if (step < minStep) continue
+      const fast = last.at != null && fix.at != null && fix.at > last.at && step / ((fix.at - last.at) / 1000) > maxSpeed
+      if (fast && ++jumps < 3) continue
+    }
+    jumps = 0
+    kept.push(fix)
   }
-  return kept
+  return kept.map((fix) => fix.position)
 }
 
 /** Area of a ring in square meters (spherical excess, good at terrain scale). */
