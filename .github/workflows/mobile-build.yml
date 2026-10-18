@@ -3,6 +3,8 @@
 # organisation « semisto.org »). The first iOS build is made once from a computer
 # (`eas build`), because Apple asks for its account and a two-factor code to
 # create the signing certificate; later iOS builds reuse it from here.
+# With the repository secret MOBILE_SENTRY_DSN (project « terranova-mobile »
+# of the Sentry organisation marco-vespucci-sprl), builds report crashes.
 name: Mobile build
 
 on:
@@ -52,6 +54,21 @@ jobs:
           if [ "$(jq -r '.expo.extra.eas.projectId // empty' app.json)" = "" ]; then
             npx --yes eas-cli@latest init --non-interactive --force
           fi
+
+      # EAS builds read the project's EAS environment variables, not this
+      # runner's: the DSN is copied there before each build, so changing the
+      # secret is enough.
+      - name: Give the build its Sentry DSN
+        env:
+          SENTRY_DSN: ${{ secrets.MOBILE_SENTRY_DSN }}
+        run: |
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "::warning::No MOBILE_SENTRY_DSN secret: this build will not report crashes."
+            exit 0
+          fi
+          npx --yes eas-cli@latest env:set --name EXPO_PUBLIC_SENTRY_DSN --value "$SENTRY_DSN" \
+            --environment production --environment preview --environment development \
+            --visibility plaintext --scope project --non-interactive
 
       - name: Start the build
         env:

@@ -66,8 +66,12 @@ use a local server, set it to the computer's address on the local network
 
 ## Errors and updates
 
-- Crashes and errors go to Sentry when the build has `EXPO_PUBLIC_SENTRY_DSN`
-  (an EAS environment variable of the project); without it nothing is sent.
+- Crashes and errors go to Sentry (project `terranova-mobile` of the
+  organisation `marco-vespucci-sprl`) when the build has
+  `EXPO_PUBLIC_SENTRY_DSN`; without it nothing is sent. The DSN lives in
+  the GitHub secret `MOBILE_SENTRY_DSN`: « Mobile build » copies it into the
+  EAS environment variables before building, « Mobile update » bundles with
+  it. For a build made from a computer, run `eas env:set` once with it.
   Source maps are not uploaded yet (`SENTRY_DISABLE_AUTO_UPLOAD` in
   `eas.json`) until a `SENTRY_AUTH_TOKEN` is set.
 - JavaScript-only changes reach installed builds over the air: GitHub

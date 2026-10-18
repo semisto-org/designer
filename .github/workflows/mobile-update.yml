@@ -49,6 +49,8 @@ jobs:
         env:
           CHANNEL: ${{ inputs.channel }}
           MESSAGE: ${{ inputs.message }}
+          # The update is bundled here: the DSN comes from this runner's env.
+          EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.MOBILE_SENTRY_DSN }}
           # The test app (« Terranova (test) ») has its own identifier.
           APP_VARIANT: ${{ inputs.channel != 'production' && 'preview' || '' }}
         run: npx --yes eas-cli@latest update --channel "$CHANNEL" --message "$MESSAGE" --non-interactive
