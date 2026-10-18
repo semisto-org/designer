@@ -21,6 +21,21 @@ export async function currentPosition(): Promise<Position | null> {
   }
 }
 
+/** Where the phone faces (0 = north, clockwise), or null when the compass does not answer in time. */
+export async function currentHeading(timeoutMs = 1500): Promise<number | null> {
+  try {
+    const found = await Promise.race([
+      Location.getHeadingAsync(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+    ])
+    if (!found) return null
+    const deg = found.trueHeading >= 0 ? found.trueHeading : found.magHeading
+    return deg >= 0 ? deg % 360 : null
+  } catch {
+    return null
+  }
+}
+
 /** A fresh fix with its accuracy in meters, for placing something where one stands. */
 export async function currentPositionWithAccuracy(): Promise<{ position: Position; accuracy: number | null } | null> {
   if (!(await locationAllowed())) return null

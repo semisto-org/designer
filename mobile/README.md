@@ -28,7 +28,15 @@ What it does, for the maps one belongs to:
 - downloads a map for offline use (map data + base map tiles of the
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
   network is back;
-- geolocated photos, on the map or on an element;
+- geolocated photos, on the map or on an element, with the direction the
+  camera faced;
+- a photo taken again from the same spot (« Reprendre cette photo »,
+  `lib/retake.ts`, screen `retake/[photoId]`, expo-camera): the earlier
+  photo shows faintly over the camera, the blue dot leads to where it was
+  taken and the compass turns the person to face the same way; the new
+  photo joins the series (`MapPhoto#retake_of`) and the photo screen wipes
+  from before to after (`ui/BeforeAfter.tsx`); the sheet lists the photos
+  already taken where one stands (« Déjà photographié ici »);
 - plants: place a plant where one stands, mark it planted, record its
   reprise and vigueur with a photo;
 - survey: a GPS point, or a walked trace saved as a line or a closed

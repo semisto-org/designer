@@ -5,7 +5,7 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator'
 import * as ImagePicker from 'expo-image-picker'
 import { exifDate, exifPosition } from './exif'
-import { currentPosition } from './location'
+import { currentHeading, currentPosition } from './location'
 import { keepPhoto, keepVideo } from './storage'
 import type { Position } from './types'
 
@@ -15,15 +15,16 @@ export const VIDEO_MAX_BYTES = 1024 ** 3
 /** A long walk around the terrain, not a film. */
 const VIDEO_MAX_SECONDS = 10 * 60
 
-export type TakenPhoto = { file: string; position: Position | null; takenAt: string }
+export type TakenPhoto = { file: string; position: Position | null; takenAt: string; heading?: number | null }
 
 /** A photo or a video for the map; takenAt is null when the file itself says when (a gallery video). */
-export type TakenMedia = { file: string; position: Position | null; takenAt: string | null; video?: boolean }
+export type TakenMedia = { file: string; position: Position | null; takenAt: string | null; video?: boolean; heading?: number | null }
 
 /** Picked media, and the names of the videos left out for being too large. */
 export type PickedMedia = { items: TakenMedia[]; tooLarge: string[] }
 
-async function normalize(asset: ImagePicker.ImagePickerAsset): Promise<string> {
+/** A photo file as the server takes it: JPEG, at most 2560 px wide. */
+export async function normalize(asset: { uri: string; width: number }): Promise<string> {
   const context = ImageManipulator.manipulate(asset.uri)
   if (asset.width > MAX_WIDTH) context.resize({ width: MAX_WIDTH })
   const image = await context.renderAsync()
@@ -36,9 +37,12 @@ export async function takePhoto(): Promise<TakenPhoto | null> {
   const permission = await ImagePicker.requestCameraPermissionsAsync()
   if (!permission.granted) return null
   const positionPromise = currentPosition()
+  // Where the camera faces, read before the camera covers the screen: the
+  // person aims, then shoots, so it is the direction of the photo.
+  const headingPromise = currentHeading()
   const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.9, exif: false })
   if (result.canceled || !result.assets[0]) return null
-  return { file: await normalize(result.assets[0]), position: await positionPromise, takenAt: new Date().toISOString() }
+  return { file: await normalize(result.assets[0]), position: await positionPromise, takenAt: new Date().toISOString(), heading: await headingPromise }
 }
 
 /** Films the terrain; null when the person cancels or refuses the camera. */

@@ -1,9 +1,9 @@
 // One element of the map: what it is, its photos and comments and, for a
 // plant, its planting and follow-up (reprise, vigueur, photo) and, for a
 // fruit tree, its harvest; for a fruit store, its temperature and humidity.
-import { Stack, useLocalSearchParams } from 'expo-router'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { HarvestSection } from '@/harvest/HarvestSection'
 import { api } from '@/lib/api'
 import { featureTitle, kindLabel, layerLabel, speciesName } from '@/lib/elements'
@@ -50,7 +50,7 @@ export default function FeatureScreen() {
   const addPhoto = async () => {
     const choice = await chooseMedia()
     for (const item of choice?.items ?? []) {
-      outbox.add({ type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt, lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId })
+      outbox.add({ type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt, lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId, heading: item.heading ?? null })
     }
   }
 
@@ -77,10 +77,11 @@ export default function FeatureScreen() {
             ? <VideoMark key={file} style={s.thumb} />
             : <RemoteImage key={file} local={file} style={s.thumb} />)}
           {photos.map((photo) => (
-            <View key={photo.id}>
+            <Pressable key={photo.id} onPress={() => router.push(`/maps/${mapId}/photo/${photo.id}`)}
+              accessibilityRole="button" accessibilityLabel={t('mobile.feature.open_photo', { date: formatDate(photo.takenAt) })}>
               <RemoteImage path={`/maps/${mapId}/photos/${photo.id}/image?size=thumb`} style={s.thumb} />
               {photo.kind === 'video' && <VideoMark overlay />}
-            </View>
+            </Pressable>
           ))}
         </ScrollView>
       )}

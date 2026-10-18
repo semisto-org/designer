@@ -136,7 +136,7 @@ const transport: Transport = {
     await api('POST', `/maps/${mapId}/photos`, form('photo', {
       image: mediaFile(present(op.file)), taken_at: op.takenAt, caption: op.caption, source: 'phone',
       lng: op.lng, lat: op.lat, location_source: located ? 'device' : null, map_feature_id: featureId,
-      bioindicator_status: op.bioindicatorStatus ?? null,
+      bioindicator_status: op.bioindicatorStatus ?? null, heading: op.heading ?? null, retake_of_id: op.retakeOf ?? null,
     }), { ...once(key), ...(isVideo(op.file) ? { timeoutMs: VIDEO_TIMEOUT_MS } : {}) })
   },
   async createObservation(mapId, featureId, op, key) {
