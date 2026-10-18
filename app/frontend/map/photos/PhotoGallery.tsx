@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import { photoLabel, photoUrl } from '@/map/photos/format'
 import { useSwipe } from '@/map/photos/useSwipe'
@@ -9,14 +9,15 @@ import type { MapPhotoData } from '@/types/soil_photos'
 /**
  * A row of photos seen one at a time: a swipe with a finger on touch
  * screens, arrows with a mouse, dots underneath. A tap or click on the photo
- * calls `onOpen`.
+ * calls `onOpen`. `overlay` draws controls over the photo shown.
  */
-export function PhotoGallery({ mapId, photos, onOpen, openLabel, className }: {
+export function PhotoGallery({ mapId, photos, onOpen, openLabel, className, overlay }: {
   mapId: number
   photos: MapPhotoData[]
   onOpen: (photo: MapPhotoData) => void
   openLabel: string
   className?: string
+  overlay?: (photo: MapPhotoData) => ReactNode
 }) {
   const [index, setIndex] = useState(0)
   const count = photos.length
@@ -51,6 +52,7 @@ export function PhotoGallery({ mapId, photos, onOpen, openLabel, className }: {
           </button>
         ))}
       </div>
+      {overlay && photos[index] && overlay(photos[index])}
       {previous && (
         <button type="button" onClick={previous} aria-label={t('soil_photos.gallery.previous')}
           className="absolute left-2 top-1/2 -translate-y-1/2 hidden rounded-full bg-white/90 p-1.5 text-loam-800 shadow hover:bg-white [@media(pointer:fine)]:block">

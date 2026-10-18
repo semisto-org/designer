@@ -225,6 +225,16 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ newer.id, older.id ], response.parsed_body["photos"].map { |p| p["id"] }
   end
 
+  test "inspector query with linked: the feature's cover photo comes first" do
+    pond = map_features(:pond)
+    older = create_photo(salt: 2, map_feature: pond, taken_at: 2.days.ago)
+    newer = create_photo(salt: 3, map_feature: pond, taken_at: 1.day.ago)
+    pond.update!(properties: pond.properties.to_h.merge("cover_photo_id" => older.id))
+    sign_in_as users(:alice)
+    get map_photos_path(@map, feature_id: pond.id, linked: 1), headers: json_headers
+    assert_equal [ older.id, newer.id ], response.parsed_body["photos"].map { |p| p["id"] }
+  end
+
   test "inspector query: photos linked to a feature or within 15 m, with distances" do
     pond = map_features(:pond)
     east = 4.9052
