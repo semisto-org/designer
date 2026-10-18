@@ -44,7 +44,7 @@ module ProjectRequests
       def copy_photos(map)
         @request.photos.each do |photo|
           image = { io: StringIO.new(photo.download), filename: photo.filename.to_s, content_type: photo.content_type }
-          MapPhoto.create(map:, uploaded_by: @user, source: "import", image:)
+          MapPhoto.create(map:, uploaded_by: @user, source: "import", image:, skip_storage_quota: true)
         rescue ActiveStorage::FileNotFoundError
           next
         end

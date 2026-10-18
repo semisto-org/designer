@@ -13,6 +13,7 @@ class AccountsController < ApplicationController
         appleLinked: user.apple_uid.present?,
         hasPassword: user.password?,
         accountKind: user.account_kind,
+        vatNumber: user.vat_number,
         plan:,
         planEndsAt: plan_ends_at(user, plan)&.iso8601,
         ownedMaps: user.billed_maps.count,
@@ -23,8 +24,8 @@ class AccountsController < ApplicationController
   end
 
   def update
-    if Current.user.update(params.require(:user).permit(:name, :account_kind))
-      redirect_to account_path, notice: params[:user].key?(:account_kind) ? t("account.kind.saved") : t("account.saved")
+    if Current.user.update(params.require(:user).permit(:name, :account_kind, :vat_number))
+      redirect_to account_path, notice: saved_notice
     else
       redirect_to account_path, inertia: { errors: Current.user.errors }
     end
@@ -39,6 +40,12 @@ class AccountsController < ApplicationController
   end
 
   private
+    def saved_notice
+      return t("account.kind.saved") if params[:user].key?(:account_kind)
+      return t("billing.vat_number.saved") if params[:user].key?(:vat_number)
+      t("account.saved")
+    end
+
     # When the current plan stops unless renewed: the yearly pass or the plan
     # given on invoice (PlanGrant), whichever lasts longer. None for a
     # subscription, which renews by itself.

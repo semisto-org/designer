@@ -53,14 +53,19 @@ On developer.apple.com (Certificates, Identifiers & Profiles): enable "Sign in w
 |---|---|
 | `STRIPE_SECRET_KEY` | Turns billing on. Without it, everything is unlocked (beta). |
 | `STRIPE_WEBHOOK_SECRET` | Secret of the webhook `https://terranova.semisto.org/webhooks/stripe`. |
-| `STRIPE_PRICE_YEARLY` | Forfait particulier (individual pass), one-off payment, €79 VAT included. |
-| `STRIPE_PRICE_ATELIER` | Atelier, monthly subscription, €49 VAT included. |
-| `STRIPE_PRICE_BUREAU` | Bureau d'études, monthly subscription, €99 VAT included. |
-| `STRIPE_PRICE_DRONE` | Mission drone, one-off payment, €280 VAT included. |
+| `STRIPE_PRICE_YEARLY` | Home (plan key `yearly`), one-off payment, €79 VAT included. |
+| `STRIPE_PRICE_ATELIER` | Pro (key `atelier`), monthly subscription, €49 VAT included. |
+| `STRIPE_PRICE_ATELIER_YEARLY` | Pro, yearly subscription on the same product, €490 VAT included (two months free). |
+| `STRIPE_PRICE_BUREAU` | Team (key `bureau`), monthly subscription, €129 VAT included. |
+| `STRIPE_PRICE_BUREAU_YEARLY` | Team, yearly subscription on the same product, €1,290 VAT included. |
+| `STRIPE_PRICE_DRONE` | Mission drone, one-off payment, €380 VAT included. |
+| `STRIPE_COUPON_MEMBER` | Coupon applied automatically to Semisto members in good standing: €20 off, once, restricted to the Home product. |
+| `STRIPE_COUPON_LAUNCH` | Coupon applied automatically to yearly Pro and Team subscriptions taken before 31 December 2026: 10 % off, once (one more free month on the first year). |
+| `SEMISTO_MEMBERSHIP_API_TOKEN` | Token of Semisto's internal app (« Mon compte › Jetons API ») with only the `asbl:standing` scope: asks whether an e-mail is a member in good standing (`POST /asbl/standing`). Without it, nobody gets the member price. Uses `TERRANOVA_API_URL`. |
 | `STRIPE_PORTAL_CONFIGURATION` | Optional: customer portal configuration. |
 | `BILLING_DISABLED` | Optional: `true` turns billing off even with a key. |
 
-Webhook events: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`. Prices in EUR, "inclusive" tax, Stripe Tax enabled. Member discount: a 30 % coupon restricted to the Forfait particulier, then one promotion code per member.
+Webhook events: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`. Prices in EUR, "inclusive" tax (all prices are shown VAT included), Stripe Tax enabled with the Belgian registration; Checkout always asks for a billing address and lets businesses give their VAT number, and the VAT number a user saves in « Mon compte » is put on their Stripe customer before each payment (reverse charge for EU businesses outside Belgium). Member discount: no codes any more; Terranova asks the internal app and applies `STRIPE_COUPON_MEMBER` by itself. A session carries either an automatic coupon or the promotion code field, never both (Stripe's rule). See `/mnt/project-files/designer/tva-abonnements.md` for the VAT analysis (OSS threshold, Peppol).
 
 ### Paying by invoice (municipalities)
 
@@ -248,7 +253,7 @@ No content security policy (CSP) is active (`config/initializers/content_securit
 
 ## To check before the public opening
 
-- A full Stripe test in test mode: individual pass with a promotion code, subscription, refund, drone mission.
+- A full Stripe test in test mode: Home with a promotion code, Home as a member, Pro monthly, Team yearly with the launch coupon, a business VAT number, refund, drone mission.
 - A real drone view (PMTiles) served by the production bucket, CORS included, on a computer and on a phone.
 - A drone view import of several GB in production, to check the room on `AERIAL_WORK_DIR` and the conversion time.
 - A real relief import and the Géoportail layers from the server (layer ids, zooms, the cadastre's CAPAKEY field).

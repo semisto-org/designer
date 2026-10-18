@@ -50,7 +50,7 @@ module Admin
         name: source.name, captured_on: source.captured_on, kind: "xyz", url: source.url,
         attribution: source.attribution, min_zoom: source.min_zoom, max_zoom: source.max_zoom,
         status: "processing", source_filename: t("drone.admin.copy_filename", host: source.host),
-        created_by: Current.user
+        created_by: Current.user, skip_storage_quota: true
       )
       AerialViewImportJob.perform_later(view)
       redirect_back_or_to admin_aerial_views_path, notice: t("drone.admin.flash.copying", map: view.map.name), status: :see_other

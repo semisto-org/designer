@@ -40,8 +40,13 @@ class BillingController < ApplicationController
         invoiceRequests: user.invoice_requests.newest_first.limit(5).map(&:as_member_json),
         catalog: Billing::Catalog.as_json,
         memberPriceCents: Billing::Catalog.member_price_cents,
+        # Asked of Semisto's internal app only once payments are open.
+        member: Billing.enabled? && Billing::MemberStanding.in_good_standing?(user),
+        storage: StorageUsage.new(user).as_json,
         checkout: CHECKOUT_RESULTS.include?(params[:checkout]) ? params[:checkout] : nil,
-        highlight: Billing::Catalog.find(params[:plan])&.key
+        highlight: Billing::Catalog.find(params[:plan])&.key,
+        # Pro and Team are shown yearly unless the visitor came for the monthly price.
+        interval: params[:interval] == "month" ? "month" : "year"
       }
     end
 

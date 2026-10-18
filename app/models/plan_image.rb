@@ -8,6 +8,8 @@
 # image, measured by the browser when it is uploaded). Opacity and visibility
 # are shared by everyone on the map.
 class PlanImage < ApplicationRecord
+  include CountsTowardStorage
+
   MAX_BYTES = 30.megabytes
   CONTENT_TYPES = %w[image/jpeg image/png image/webp].freeze
   NAME_MAX = 80

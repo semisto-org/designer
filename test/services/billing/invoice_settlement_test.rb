@@ -2,6 +2,9 @@ require "test_helper"
 require_relative "../../test_helpers/billing_test_helper"
 
 class Billing::InvoiceSettlementTest < ActiveSupport::TestCase
+  # After the launch offer: invoices carry the plain yearly prices.
+  setup { travel_to Time.zone.local(2027, 2, 1) }
+
   include BillingTestHelper
 
   setup do
@@ -36,7 +39,7 @@ class Billing::InvoiceSettlementTest < ActiveSupport::TestCase
       stub_stripe_post("invoices/in_req_1/pay", invoice_request_invoice(@request, amount_paid: 0, paid_out_of_band: true), log:)
       Billing::InvoiceSettlement.mark_paid(@request, by: @staff)
       assert_equal "true", log.sole["paid_out_of_band"]
-      assert_equal [ 58_800, "atelier", @request ], BillingPayment.sole.values_at(:amount_cents, :plan_key).push(BillingPayment.sole.invoice_request)
+      assert_equal [ 49_000, "atelier", @request ], BillingPayment.sole.values_at(:amount_cents, :plan_key).push(BillingPayment.sole.invoice_request)
       assert_equal [ "paid", @staff ], [ @request.reload.status, @request.handled_by ]
       assert @request.plan_grant.active?
     end

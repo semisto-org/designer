@@ -2,15 +2,16 @@ import { Head, Link, router, usePage } from '@inertiajs/react'
 import { CircleCheck, FlaskConical, Info, Landmark, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { CheckoutButton } from '@/components/billing/CheckoutButton'
+import { IntervalToggle } from '@/components/billing/IntervalToggle'
 import { PlanCard } from '@/components/billing/PlanCard'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
-import { formatDate, formatMoney, formatPrice } from '@/lib/money'
+import { formatBytes, formatDate, formatMoney, formatPrice } from '@/lib/money'
 import type { SharedProps } from '@/types'
-import type { BillingData, CatalogKey, CatalogPlan, GrantData, InvoiceRequestStatus, InvoiceRequestSummary } from '@/types/billing'
+import type { BillingData, BillingInterval, CatalogKey, CatalogPlan, GrantData, InvoiceRequestStatus, InvoiceRequestSummary } from '@/types/billing'
 
 const PLAN_ORDER: CatalogKey[] = ['free', 'yearly', 'atelier', 'bureau']
 // A pro account sees its plans first; nothing is hidden.
@@ -24,6 +25,7 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
   const catalog = (key: CatalogKey) => billing.catalog.find((plan) => plan.key === key) as CatalogPlan
   const confirmed = billing.plan !== 'free' || billing.payments.some((p) => Date.now() - Date.parse(p.paidAt) < 30 * 60_000) || billing.drone.length > 0
   const waiting = billing.checkout === 'success' && !confirmed
+  const [interval, chooseInterval] = useState<BillingInterval>(billing.interval)
 
   // Back from Stripe before the confirmation reached us: look again for a short while.
   const polls = useRef(0)
@@ -78,21 +80,25 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
       {billing.enabled && <StatusCard billing={billing} />}
       {!billing.enabled && billing.grants.length > 0 && (
         <Card className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">{t('invoicing.billing.grant_title')}</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-leaf-600">{t('invoicing.billing.grant_title')}</p>
           <div className="mt-2 space-y-1.5 text-sm text-loam-600"><GrantLines grants={billing.grants} /></div>
         </Card>
       )}
 
-      <h2 className="mt-12 text-lg">{t('billing.plans_title')}</h2>
+      <div className="mt-12 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg">{t('billing.plans_title')}</h2>
+        <IntervalToggle value={interval} onChange={chooseInterval} />
+      </div>
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {planOrder.map((key) => (
           <div key={key} ref={billing.highlight === key ? highlighted : undefined} className="flex">
             <PlanCard
               plan={catalog(key)}
+              interval={interval}
               className="w-full"
               highlighted={billing.highlight === key}
               current={billing.plan === key}
-              action={<PlanAction billing={billing} plan={catalog(key)} />}
+              action={<PlanAction billing={billing} plan={catalog(key)} interval={interval} />}
             />
           </div>
         ))}
@@ -113,8 +119,8 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
         </Card>
         <Card className="bg-leaf-50/60">
           <h3 className="text-base">{t('billing.member.title')}</h3>
-          <p className="mt-1 text-sm text-loam-600">
-            {tf('billing.member.body', { price: formatPrice(billing.memberPriceCents), full: formatPrice(catalog('yearly').priceCents) })}
+          <p className={billing.member ? 'mt-1 text-sm font-medium text-leaf-800' : 'mt-1 text-sm text-loam-600'}>
+            {tf(billing.member ? 'billing.member.recognised' : 'billing.member.body', { price: formatPrice(billing.memberPriceCents), full: formatPrice(catalog('yearly').priceCents) })}
           </p>
         </Card>
       </div>
@@ -189,7 +195,7 @@ function PortalButton({ label, variant = 'secondary' }: { label: string; variant
 }
 
 /** The button of a plan card: buy, renew, manage in the portal, or "your current plan". */
-function PlanAction({ billing, plan }: { billing: BillingData; plan: CatalogPlan }) {
+function PlanAction({ billing, plan, interval }: { billing: BillingData; plan: CatalogPlan; interval: BillingInterval }) {
   const subscribed = billing.subscription?.active ? billing.subscription : null
   if (plan.key === 'free') {
     return billing.enabled && billing.plan === 'free' ? <p className="text-center text-sm font-medium text-leaf-700">{t('billing.actions.current')}</p> : null
@@ -205,10 +211,13 @@ function PlanAction({ billing, plan }: { billing: BillingData; plan: CatalogPlan
     }
     return <PortalButton label={t('billing.actions.manage')} />
   }
-  if (!billing.enabled || !plan.purchasable) return <Button variant="secondary" disabled className="w-full">{t('billing.actions.unavailable')}</Button>
+  const yearly = plan.kind === 'subscription' && interval === 'year'
+  if (!billing.enabled || !(yearly ? plan.yearlyPurchasable : plan.purchasable)) {
+    return <Button variant="secondary" disabled className="w-full">{t('billing.actions.unavailable')}</Button>
+  }
   const renewing = plan.key === 'yearly' && Boolean(billing.pass || billing.expiredPass)
   return (
-    <CheckoutButton plan={plan.key} variant={plan.key === 'yearly' ? 'primary' : 'secondary'} className="w-full">
+    <CheckoutButton plan={plan.key} interval={plan.kind === 'subscription' ? interval : undefined} variant={plan.key === 'yearly' ? 'primary' : 'secondary'} className="w-full">
       {renewing ? t('billing.actions.renew') : t('billing.actions.choose')}
     </CheckoutButton>
   )
@@ -229,7 +238,7 @@ function StatusCard({ billing }: { billing: BillingData }) {
 
   return (
     <Card className="mt-6">
-      <p className="text-xs font-semibold uppercase tracking-wide text-leaf-600">{t('billing.status.current')}</p>
+      <p className="text-sm font-semibold uppercase tracking-wide text-leaf-600">{t('billing.status.current')}</p>
       <div className="mt-1 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 max-w-2xl">
           <h2 className="text-xl">{title}</h2>
@@ -262,6 +271,9 @@ function StatusCard({ billing }: { billing: BillingData }) {
               </>
             )}
             <p className="text-loam-500">{maps}</p>
+            {billing.storage.limitBytes !== null && (
+              <p className="text-loam-500">{t('billing.storage.used', { used: formatBytes(billing.storage.usedBytes), limit: formatBytes(billing.storage.limitBytes) })}</p>
+            )}
             {billing.paidTeams.length > 0 && (
               <p className="text-loam-500">
                 {t('team_billing.billing_page', { count: billing.paidTeams.length })}{' '}

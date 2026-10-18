@@ -1,10 +1,16 @@
 module Billing
   # Creates the Stripe Checkout Session for a plan, server side: prices come
   # from the STRIPE_PRICE_* variables, Stripe Tax computes Belgian and EU VAT,
-  # members type their individual promotion code on the Checkout page, and
-  # one-off payments get an automatic invoice. The user keeps one Stripe
-  # customer, created on the first purchase.
+  # and one-off payments get an automatic invoice. Two discounts are applied
+  # by Terranova itself: Home for Semisto members in good standing (checked
+  # in Semisto's own app, MemberStanding), and the launch offer on a yearly
+  # Pro or Team subscription. Otherwise the customer may type a promotion
+  # code (beta testers): Stripe allows one or the other, not both. The user
+  # keeps one Stripe customer, created on the first purchase; the VAT number
+  # from « Mon compte » is put on it before each payment.
   class Checkout
+    INTERVALS = %w[month year].freeze
+
     # reason: :not_configured, :unknown_plan, :price_missing, :manage_in_portal
     class Unavailable < StandardError
       attr_reader :reason
@@ -17,9 +23,11 @@ module Billing
 
     def self.call(...) = new(...).call
 
-    def initialize(user:, plan_key:, success_url:, cancel_url:, terms_url:, gateway: nil)
+    def initialize(user:, plan_key:, success_url:, cancel_url:, terms_url:, interval: nil, gateway: nil, at: Time.current)
       @user = user
       @plan = Catalog.find(plan_key)
+      @interval = @plan&.subscription? && INTERVALS.include?(interval.to_s) ? interval.to_s : nil
+      @at = at
       @success_url = success_url
       @cancel_url = cancel_url
       @terms_url = terms_url
@@ -30,7 +38,7 @@ module Billing
     def call
       raise Unavailable.new(:not_configured) unless Billing.enabled?
       raise Unavailable.new(:unknown_plan) if @plan.nil? || @plan.free?
-      price_id = Billing.price_id(@plan.key) or raise Unavailable.new(:price_missing)
+      price_id = Billing.price_id(@plan.key, @interval) or raise Unavailable.new(:price_missing)
       raise Unavailable.new(:manage_in_portal) if @plan.subscription? && @user.current_plan_subscription
 
       create_session(price_id).fetch("url")
@@ -43,7 +51,10 @@ module Billing
       def create_session(price_id)
         attempts = 0
         begin
-          gateway.create_checkout_session(session_params(price_id, customer_id))
+          customer = customer_id
+          # The VAT number given in « Mon compte » is on the invoice (and reverse charge applies to EU businesses).
+          VatNumber.attach(gateway, customer, @user.vat_number)
+          gateway.create_checkout_session(session_params(price_id, customer))
         rescue Providers::StripeGateway::Error => e
           raise unless e.message.match?(/no such customer/i) && (attempts += 1) == 1
           @user.billing_account&.destroy
@@ -60,17 +71,31 @@ module Billing
         @user.reload.billing_account.stripe_customer_id
       end
 
+      def yearly? = @interval == "year"
+
+      # The coupon Terranova applies by itself, if any.
+      def automatic_coupon
+        if @plan.key == "yearly" && MemberStanding.in_good_standing?(@user)
+          Billing.coupon_id(:member)
+        elsif yearly? && Catalog.launch_offer?(@at)
+          Billing.coupon_id(:launch)
+        end
+      end
+
       def session_params(price_id, customer_id)
         metadata = { user_id: @user.id.to_s, plan_key: @plan.key }
+        metadata[:interval] = @interval if @interval
+        coupon = automatic_coupon
         description = I18n.t("billing.plans.#{@plan.key}.name")
         params = {
           mode: @plan.mode,
           customer: customer_id,
           customer_update: { address: "auto", name: "auto" },
+          # An address on every invoice; it is also what Stripe Tax reads.
+          billing_address_collection: "required",
           client_reference_id: @user.id.to_s,
           line_items: [ { price: price_id, quantity: 1 } ],
           automatic_tax: { enabled: true },
-          allow_promotion_codes: true,
           tax_id_collection: { enabled: true },
           locale: "fr",
           metadata:,
@@ -78,6 +103,11 @@ module Billing
           cancel_url: @cancel_url,
           custom_text: { submit: { message: I18n.t("billing.checkout.terms", url: @terms_url) } }
         }
+        if coupon
+          params[:discounts] = [ { coupon: } ]
+        else
+          params[:allow_promotion_codes] = true
+        end
         if @plan.subscription?
           params[:subscription_data] = { metadata:, description: }
         else

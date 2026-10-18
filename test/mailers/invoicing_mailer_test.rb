@@ -1,6 +1,9 @@
 require "test_helper"
 
 class InvoicingMailerTest < ActionMailer::TestCase
+  # After the launch offer: invoices carry the plain yearly prices.
+  setup { travel_to Time.zone.local(2027, 2, 1) }
+
   setup do
     @user = users(:bob)
     @request = @user.invoice_requests.create!(
@@ -14,10 +17,10 @@ class InvoicingMailerTest < ActionMailer::TestCase
     mail = InvoicingMailer.request_received(@request)
     assert_equal [ "designer@semisto.org" ], mail.to
     assert_equal [ "bob@example.org" ], mail.reply_to
-    assert_equal "Demande de facture : Administration communale de Yvoir (Bureau d'études)", mail.subject
+    assert_equal "Demande de facture : Administration communale de Yvoir (Team)", mail.subject
     text = mail.text_part.body.to_s
     [ "Bob (bob@example.org) demande à payer sur facture.", "5530 Yvoir", "BE0207360311", "compta@yvoir.be", "BC-2026-042",
-      "Bureau d'études, pour un an", "1 188 €, TVA comprise", "service Environnement", "http://example.com/admin/invoice-requests" ].each do |fragment|
+      "Team, pour un an", "1 290 €, TVA comprise", "service Environnement", "http://example.com/admin/invoice-requests" ].each do |fragment|
       assert_includes text, fragment
     end
     assert_includes mail.html_part.body.to_s, "Ouvrir les demandes de facture"
@@ -48,7 +51,7 @@ class InvoicingMailerTest < ActionMailer::TestCase
     grant = @request.activate!(starts_at: Time.zone.local(2026, 10, 4))
     mail = InvoicingMailer.plan_activated(grant)
     assert_equal [ "bob@example.org" ], mail.to
-    assert_equal "Ta formule Bureau d'études est activée", mail.subject
+    assert_equal "Ta formule Team est activée", mail.subject
     assert_includes mail.text_part.body.to_s, "du 4 octobre 2026 au 4 octobre 2027, réglée sur facture"
     assert_includes mail.text_part.body.to_s, "http://example.com/maps"
   end
@@ -58,7 +61,7 @@ class InvoicingMailerTest < ActionMailer::TestCase
     mail = InvoicingMailer.grant_reminder(grant, "d30")
     assert_equal "Ta formule Semisto Terranova se termine le 4 octobre 2027", mail.subject
     text = mail.text_part.body.to_s
-    assert_includes text, "Ta formule Bureau d'études, réglée sur facture, est valable jusqu'au 4 octobre 2027"
+    assert_includes text, "Ta formule Team, réglée sur facture, est valable jusqu'au 4 octobre 2027"
     assert_includes text, "http://example.com/billing/invoice?plan=bureau"
     assert_match "Plus que 7 jours", InvoicingMailer.grant_reminder(grant, "d7").subject
     assert_equal "Ta formule Semisto Terranova est arrivée à échéance", InvoicingMailer.grant_reminder(grant, "expired").subject

@@ -7,7 +7,7 @@ order: 76
 
 Tu conçois des jardins-forêts pour d'autres ? Plutôt qu'un formulaire en ligne séparé, donne à tes futurs clients un lien vers **ton formulaire de demande**. Ils y situent leur lieu sur la carte, touchent leurs parcelles cadastrales, disent ce qu'ils attendent de toi, et la demande t'arrive avec le contour déjà tracé.
 
-Le formulaire est réservé aux comptes pros (formules Atelier ou Bureau d'études) et aux équipes. Ouvre-le depuis **Barèmes d'offre**, ou dans le menu **Demandes** dès que ton compte en a un.
+Le formulaire est réservé aux comptes pros (formules Pro ou Team) et aux équipes. Ouvre-le depuis **Barèmes d'offre**, ou dans le menu **Demandes** dès que ton compte en a un.
 
 ## Ce que remplit la personne
 

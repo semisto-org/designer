@@ -37,6 +37,17 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "saves a VAT number typed the Belgian way, and refuses one that is not valid" do
+    sign_in_as @user
+    patch "/account", params: { user: { vat_number: "0790.631.657" } }
+    assert_redirected_to account_path
+    assert_equal "BE0790631657", @user.reload.vat_number
+    patch "/account", params: { user: { vat_number: "0790.631.658" } }
+    assert_equal "BE0790631657", @user.reload.vat_number
+    patch "/account", params: { user: { vat_number: "" } }
+    assert_nil @user.reload.vat_number
+  end
+
   test "updates the name" do
     sign_in_as @user
     patch "/account", params: { user: { name: "Robert Dupont", email_address: "evil@example.org" } }

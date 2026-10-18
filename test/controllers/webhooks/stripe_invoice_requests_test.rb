@@ -4,6 +4,9 @@ require_relative "../../test_helpers/billing_test_helper"
 # invoice.paid and charge.refunded for the invoices sent to communes and
 # companies (« Payer sur facture »).
 class Webhooks::StripeInvoiceRequestsTest < ActionDispatch::IntegrationTest
+  # After the launch offer: invoices carry the plain yearly prices.
+  setup { travel_to Time.zone.local(2027, 2, 1) }
+
   include BillingTestHelper
   include ActionMailer::TestHelper
 
@@ -23,7 +26,7 @@ class Webhooks::StripeInvoiceRequestsTest < ActionDispatch::IntegrationTest
       assert_response :success
 
       payment = @user.billing_payments.sole
-      assert_equal [ 118_800, 2_062, "eur", "bureau", "in_req_1", @invoice_request ],
+      assert_equal [ 129_000, 2_062, "eur", "bureau", "in_req_1", @invoice_request ],
         payment.values_at(:amount_cents, :tax_cents, :currency, :plan_key, :stripe_invoice_id).push(payment.invoice_request)
       assert_equal "https://invoice.stripe.com/i/acct/in_req_1", payment.hosted_invoice_url
       assert_nil payment.plan_subscription
@@ -65,7 +68,7 @@ class Webhooks::StripeInvoiceRequestsTest < ActionDispatch::IntegrationTest
   test "an invoice marked paid outside Stripe is recorded at its total" do
     with_billing do
       post_stripe_event(stripe_event("invoice.paid", invoice_request_invoice(@invoice_request, amount_paid: 0, paid_out_of_band: true)))
-      assert_equal 118_800, BillingPayment.sole.amount_cents
+      assert_equal 129_000, BillingPayment.sole.amount_cents
     end
   end
 
@@ -81,10 +84,10 @@ class Webhooks::StripeInvoiceRequestsTest < ActionDispatch::IntegrationTest
   test "a full refund of the invoice ends the plan, a partial one keeps it" do
     with_billing do
       post_stripe_event(stripe_event("invoice.paid", invoice_request_invoice(@invoice_request)))
-      post_stripe_event(stripe_event("charge.refunded", { "id" => "ch_1", "invoice" => "in_req_1", "amount" => 118_800, "amount_refunded" => 50_000 }))
+      post_stripe_event(stripe_event("charge.refunded", { "id" => "ch_1", "invoice" => "in_req_1", "amount" => 129_000, "amount_refunded" => 50_000 }))
       assert_equal "bureau", @user.reload.current_plan_key
-      post_stripe_event(stripe_event("charge.refunded", { "id" => "ch_1", "invoice" => "in_req_1", "amount" => 118_800, "amount_refunded" => 118_800 }))
-      assert_equal 118_800, BillingPayment.sole.refunded_cents
+      post_stripe_event(stripe_event("charge.refunded", { "id" => "ch_1", "invoice" => "in_req_1", "amount" => 129_000, "amount_refunded" => 129_000 }))
+      assert_equal 129_000, BillingPayment.sole.refunded_cents
       assert @invoice_request.reload.plan_grant.revoked?
       assert_equal "free", @user.reload.current_plan_key
     end

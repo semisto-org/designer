@@ -46,12 +46,13 @@ class InvoiceRequest < ApplicationRecord
 
   STATUSES.each { |name| define_method(:"#{name}?") { status == name } }
 
-  # What a year of the plan costs, VAT included: twelve months of a monthly
-  # subscription, or the yearly pass.
-  def self.amount_cents_for(plan_key)
+  # What a year of the plan costs, VAT included: the yearly price of a
+  # subscription (launch offer included while it runs), or the Home pass.
+  def self.amount_cents_for(plan_key, at: Time.current)
     plan = Billing::Catalog.find(plan_key)
     return nil unless plan && PLAN_KEYS.include?(plan.key)
-    plan.subscription? ? plan.price_cents * DURATION_MONTHS : plan.price_cents
+    return plan.price_cents unless plan.yearly_option?
+    Billing::Catalog.launch_offer?(at) ? plan.launch_price_cents : plan.yearly_price_cents
   end
 
   # The plans that can be paid on invoice, with their yearly amount.

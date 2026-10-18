@@ -14,6 +14,7 @@
 class MapPhoto < ApplicationRecord
   include PointLocation
   include HeicAttachment
+  include CountsTowardStorage
 
   MAX_BYTES = 25.megabytes
   # What is stored for a photo; a HEIC photo (iPhone) is accepted at upload

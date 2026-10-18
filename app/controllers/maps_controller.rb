@@ -29,6 +29,8 @@ class MapsController < ApplicationController
       resume: maps.first && { mapId: maps.first.id, next: Journey.new(maps.first).next_action },
       canCreate: Current.user.entitlements.can_create_map?(Current.user),
       teams: Current.user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } },
+      # My archived maps, at the bottom: readable, and brought back when the plan has room.
+      archivedMaps: archived_maps_json,
       # Ownership transfers waiting for my answer (transfer area).
       incomingTransfers: MapTransfer.incoming_for(Current.user).map(&:as_incoming_json)
     }
@@ -88,8 +90,9 @@ class MapsController < ApplicationController
     end
   end
 
+  # Archives the map (Maps::ArchivesController does the same, and brings it back).
   def destroy
-    @map.update!(archived_at: Time.current)
+    @map.archive!
     redirect_to maps_path, notice: t("maps.archived"), status: :see_other
   end
 
@@ -99,6 +102,12 @@ class MapsController < ApplicationController
     end
 
     # Map#role_for for a whole list, in two queries instead of two a map.
+    def archived_maps_json
+      Current.user.owned_maps.where.not(archived_at: nil).includes(organization: :billing_user).order(archived_at: :desc).limit(200).map do |map|
+        { id: map.id, name: map.name, archivedAt: map.archived_at.iso8601, teamId: map.organization_id, canRestore: map.unarchivable? }
+      end
+    end
+
     def listed_roles(maps)
       user = Current.user
       team_ids = user.organization_memberships.pluck(:organization_id).to_set

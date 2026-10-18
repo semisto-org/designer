@@ -1,0 +1,20 @@
+# Archived maps: put away by their owner, readable, out of the plan's count.
+fr:
+  maps:
+    errors:
+      archived: "Cette carte est archivée : elle reste lisible, exportable et commentable. Son propriétaire peut la désarchiver pour la modifier à nouveau."
+    archives:
+      archived: "« %{name} » est archivée. Tu la retrouves en bas de « Mes cartes »."
+      restored: "« %{name} » est de retour parmi tes cartes."
+      no_room: "Ta formule a déjà toutes ses cartes actives : archive une autre carte, ou passe à une formule plus grande, pour ramener celle-ci."
+      archive: "Archiver"
+      archive_title: "Archiver « %{name} » : elle quitte la liste, reste lisible et libère une place de ta formule."
+      section_title: "Cartes archivées"
+      section_intro: "Rangées, pas effacées : elles restent lisibles, exportables et commentables, et ne comptent pas dans les cartes de ta formule."
+      archived_on: "Archivée le %{date}"
+      open: "Ouvrir"
+      restore: "Désarchiver"
+      restore_full: "Ta formule a toutes ses cartes actives : archive une autre carte pour ramener celle-ci."
+      badge: "Archivée"
+      badge_hint: "Carte archivée : lisible, exportable et commentable, mais plus modifiable."
+      badge_owner: "Archivée · désarchiver"
