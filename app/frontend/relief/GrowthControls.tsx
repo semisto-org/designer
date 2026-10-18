@@ -214,7 +214,7 @@ export function PlantCard({ info, onClose }: { info: PlantInfo; onClose: () => v
       {info.ownName && info.name && <p className="text-loam-500">{info.name}</p>}
       {info.latinName && <p className="text-loam-500">{info.latinName}</p>}
       {info.patchName && <p className="text-loam-500">{info.patchName}</p>}
-      <p>{info.ownName || info.name ? `${t(`plants.strata.${info.strata}`)} · ` : ''}{t(info.planted ? 'relief.page.growth.card.planted_in' : 'relief.page.growth.card.planned_in', { year: info.plantedYear })}</p>
+      <p>{info.ownName || info.name ? `${t(`plants.strata.${info.strata}`)} · ` : ''}{info.longAgo ? t('relief.page.growth.card.planted_long_ago') : t(info.planted ? 'relief.page.growth.card.planted_in' : 'relief.page.growth.card.planned_in', { year: info.plantedYear })}</p>
       {info.height != null && info.spread != null ? (
         <p className="font-medium text-leaf-800">
           {t('relief.page.growth.card.now', { year: info.yearCalendar, height: m(info.height), spread: m(info.spread) })}

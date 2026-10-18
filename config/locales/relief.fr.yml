@@ -242,6 +242,7 @@ fr:
         patch_note: "Les plantes des massifs sont réparties sur leur surface."
         card:
           planted_in: "plantée en %{year}"
+          planted_long_ago: "en terre depuis longtemps"
           planned_in: "prévue en %{year}"
           not_yet: "Pas encore en terre en %{year}."
           now: "En %{year} : %{height} m de haut, %{spread} m de large."

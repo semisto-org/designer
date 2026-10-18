@@ -24,7 +24,9 @@ module Maps
 
     def update
       if @feature.update(update_params.merge(updated_by: Current.user))
-        render json: @feature.as_geojson
+        # A renumbered plant that swapped numbers sends the other plant too.
+        swapped = @feature.swapped_with
+        render json: swapped ? @feature.as_geojson.merge(swapped: swapped.as_geojson) : @feature.as_geojson
       else
         render_errors @feature
       end
@@ -44,7 +46,7 @@ module Maps
 
       def feature_params
         raw = params.require(:feature)
-        permitted = raw.permit(:layer, :kind, :name, :notes, :status, :lock_version, properties: {}, style: {}, tags: [])
+        permitted = raw.permit(:layer, :kind, :name, :notes, :status, :lock_version, :swap_number, properties: {}, style: {}, tags: [])
         permitted[:geometry] = raw[:geometry].to_unsafe_h if raw[:geometry].present?
         permitted
       end

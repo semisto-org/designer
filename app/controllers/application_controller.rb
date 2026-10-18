@@ -47,6 +47,8 @@ class ApplicationController < ActionController::Base
 
     # JSON errors for the map editor's fetch calls.
     def render_errors(record, status: :unprocessable_entity)
-      render json: { errors: record.errors.to_hash(true), message: record.errors.full_messages.to_sentence }, status:
+      # codes: the machine-readable reasons ({ base: ["number_taken"] }).
+      codes = record.errors.details.transform_values { |list| list.map { |d| d[:error] }.select { |e| e.is_a?(Symbol) } }.reject { |_, v| v.empty? }
+      render json: { errors: record.errors.to_hash(true), message: record.errors.full_messages.to_sentence, codes: }, status:
     end
 end

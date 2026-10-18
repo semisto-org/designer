@@ -125,7 +125,7 @@ function PlantCard({ feature, onOpen, onClose, mobile }: { feature: MapFeature; 
   const strata = plantStrata(feature, data)
   const number = numberProperty(feature, 'number')
   const plantedOn = typeof feature.properties.planted_on === 'string' ? feature.properties.planted_on : null
-  const plantedYear = plantedOn ? Number(plantedOn.slice(0, 4)) : null
+  const plantedYear = plantedOn && feature.properties.planted_on_precision !== 'unknown' ? Number(plantedOn.slice(0, 4)) : null
 
   const name = species ? species.commonName ?? species.latinName : feature.properties.name || t('plant_peek.no_species')
   // The variety has its own line: the latin name stays the species'.

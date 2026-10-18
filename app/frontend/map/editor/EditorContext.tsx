@@ -18,7 +18,10 @@ export type NewFeature = {
   tags?: string[]
 }
 
-export type FeaturePatch = Partial<Omit<NewFeature, 'geometry'>> & { geometry?: Geometry }
+/** swap_number: a plant taking a number another plant holds gives it its own (the other comes back in `swapped`). */
+export type FeaturePatch = Partial<Omit<NewFeature, 'geometry'>> & { geometry?: Geometry; swap_number?: boolean }
+
+export type SavedFeature = MapFeature & { swapped?: MapFeature }
 
 /**
  * Everything a panel, tool or inspector of the map editor needs. Panels
@@ -39,7 +42,7 @@ export type Editor = {
   selected: MapFeature | null
   select: (id: number | null) => void
   createFeature: (input: NewFeature) => Promise<MapFeature>
-  updateFeature: (id: number, patch: FeaturePatch) => Promise<MapFeature>
+  updateFeature: (id: number, patch: FeaturePatch) => Promise<SavedFeature>
   deleteFeature: (id: number) => Promise<void>
   /** Replace or insert features received from elsewhere (other panels, real time). */
   upsertFeatures: (features: MapFeature[]) => void

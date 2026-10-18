@@ -127,7 +127,7 @@ export type ObservationStats = {
 
 /** The species' plant points on the maps the viewer can open. */
 export type SpeciesPlantings = {
-  points: { id: number; mapId: number; lng: number; lat: number; inGround: boolean; plantedOn: string | null; variety: string | null }[]
+  points: { id: number; mapId: number; lng: number; lat: number; inGround: boolean; plantedOn: string | null; plantedPrecision?: string | null; variety: string | null }[]
   maps: { id: number; name: string; inGround: number; planned: number }[]
   inGround: number
   planned: number

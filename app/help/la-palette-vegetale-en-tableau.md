@@ -47,6 +47,15 @@ Change les **filtres**, le **groupement**, les **colonnes** ou le **tri** à ta 
 
 Les éditeurs de la carte cliquent dans une cellule **Prix unitaire**, **Calibre**, **Fournisseur**, **Objectif** ou **Notes** pour la remplir ; Entrée enregistre, Échap annule. Le tableau calcule le **Total prévu** et le **Reste à acheter**. Une plante dessinée mais pas encore dans la palette y entre à ce moment-là.
 
+## Plant par plant
+
+En haut du tableau, **Plant par plant** remplace les espèces par chaque plant de la carte, rangés par numéro :
+
+- **N°** : tape un numéro, Entrée enregistre et passe au plant suivant, si bien qu'un plan entier se renumérote au clavier. Si un autre plant porte déjà ce numéro, les deux échangent leurs numéros ;
+- **Statut** : **Prévu** ou **En terre**. Un plant mis en terre ici a d'abord une date inconnue ;
+- **Plantation** : une année (« 2015 »), une date (« 12/03/2024 »), ou rien quand personne ne sait quand il a été planté, comme pour les vieux arbres trouvés en arrivant ;
+- l'épingle ouvre le plant sur la carte.
+
 ## La fiche d'une plante
 
 Touche le nom d'une plante pour ouvrir sa fiche :

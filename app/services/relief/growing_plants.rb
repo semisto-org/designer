@@ -40,7 +40,9 @@ module Relief
             ownName: feature.name.presence,
             training: feature.plant_training,
             graft: feature.plant_graft,
-            plantedOn: (feature.planted_on&.iso8601 rescue nil)
+            plantedOn: (feature.known_planted_on&.iso8601 rescue nil),
+            # In the ground since an unknown date: grown already.
+            plantedLongAgo: feature.planted_on_precision == "unknown"
           )
         end
       end

@@ -16,6 +16,24 @@ class PlantPaletteTest < ActiveSupport::TestCase
 
   def row(palette, key) = palette.rows.find { |r| r[:key] == key }
 
+  test "plant by plant: each point with its number, its species and its planting" do
+    apple = plant!(plant_species(:apple), tags: [ "Verger" ], planted_on: "2015-01-01")
+    apple.update!(properties: apple.properties.merge("planted_on_precision" => "year", "number" => 9))
+    bare = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.907, lat: 50.341), properties: { "number" => 2 })
+
+    plants = PlantPalette.new(@map).as_json[:plants]
+    assert_equal [ bare.id, apple.id ], plants.map { _1[:id] }, "in the order of their numbers"
+    line = plants.last
+    assert_equal 9, line[:number]
+    assert_equal "#{plant_species(:apple).id}-", line[:key]
+    assert_equal "Pommier", line[:species]
+    assert_equal "2015-01-01", line[:plantedOn]
+    assert_equal "year", line[:plantedPrecision]
+    assert_equal [ "Verger" ], line[:tags]
+    assert_nil plants.first[:species]
+    assert_nil plants.first[:plantedOn]
+  end
+
   test "one row per species chosen, planned or growing, with the palette's choices" do
     PaletteItem.create!(map: @map, species: plant_species(:alder), role: "support", unit_price: 4.5, supplier: "Pépinière du Bocq", size: "60/80")
     plant!(plant_species(:apple), tags: [ "Chantier mars" ], planted_on: "2026-03-01")

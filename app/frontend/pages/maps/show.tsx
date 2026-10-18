@@ -15,7 +15,7 @@ import { MapView } from '@/map/MapView'
 import { featureAt, hitsAt } from '@/map/featurePick'
 import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
-import { EditorContext, type Editor, type FeaturePatch, type NewFeature } from '@/map/editor/EditorContext'
+import { EditorContext, type Editor, type FeaturePatch, type NewFeature, type SavedFeature } from '@/map/editor/EditorContext'
 import { Inspector } from '@/map/editor/Inspector'
 import { MapName } from '@/map/editor/MapName'
 import { RecenterControl } from '@/map/editor/controls'
@@ -257,11 +257,12 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       },
       async updateFeature(id: number, patch: FeaturePatch) {
         const current = features.find((f) => f.properties.id === id)
-        const feature = await api<MapFeature>(`${base}/${id}`, {
+        const feature = await api<SavedFeature>(`${base}/${id}`, {
           method: 'PATCH',
           body: { feature: { ...patch, lock_version: current?.properties.lockVersion } },
         })
-        upsertFeatures([feature])
+        const { swapped, ...saved } = feature
+        upsertFeatures(swapped ? [saved, swapped] : [saved])
         return feature
       },
       async deleteFeature(id: number) {

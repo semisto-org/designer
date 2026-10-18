@@ -2,7 +2,8 @@ import { ExternalLink, Shovel } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
-import { formatDate, formatDecimal, strataLabel, todayIso } from '@/components/plants/format'
+import { formatDecimal, plantedLabel, plantedPrecision, strataLabel, todayIso } from '@/components/plants/format'
+import { ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -20,10 +21,12 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
   const { data } = usePlanting(editor.map.id)
   const [date, setDate] = useState(todayIso())
+  const [taken, setTaken] = useState<number | null>(null)
   const speciesId = numberProperty(feature, 'species_id')
   const varietyId = numberProperty(feature, 'variety_id')
   const number = numberProperty(feature, 'number')
   const plantedOn = typeof feature.properties.planted_on === 'string' ? feature.properties.planted_on : null
+  const precision = plantedPrecision(feature.properties.planted_on_precision)
   const species = speciesId != null ? data?.species[String(speciesId)] : undefined
   const variety = varietyId != null ? data?.varieties[String(varietyId)] : undefined
   const palette = data?.palette ?? []
@@ -43,6 +46,20 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
       await editor.updateFeature(feature.properties.id, { properties })
     } catch (e) {
       editor.notify(e instanceof Error ? e.message : String(e), 'error')
+    }
+  }
+
+  // A number another plant holds is refused, then offered as a swap.
+  async function renumber(value: number, swap = false) {
+    const properties = { ...ownProperties(feature), number: value }
+    try {
+      const saved = await editor.updateFeature(feature.properties.id, { properties, swap_number: swap || undefined })
+      setTaken(null)
+      const other = saved.swapped?.properties.number
+      if (swap && other != null) editor.notify(t('plant_feature.number_swapped', { number: String(other) }))
+    } catch (e) {
+      if (!swap && e instanceof ApiError && e.data.codes && JSON.stringify(e.data.codes).includes('number_taken')) setTaken(value)
+      else editor.notify(e instanceof Error ? e.message : String(e), 'error')
     }
   }
 
@@ -90,11 +107,20 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
             defaultValue={number ?? ''}
             onBlur={(e) => {
               const value = Number(e.target.value)
-              if (Number.isInteger(value) && value > 0 && value !== number) void save({ number: value })
-              else e.target.value = number != null ? String(number) : ''
+              if (Number.isInteger(value) && value > 0 && value !== number) void renumber(value)
+              else { e.target.value = number != null ? String(number) : ''; setTaken(null) }
             }}
             onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
           />
+          {taken != null && (
+            <div className="mt-2 rounded-lg bg-humus-50 p-2 text-sm text-humus-900">
+              <p>{t('plant_feature.number_taken', { number: String(taken) })}</p>
+              <div className="mt-1.5 flex gap-3">
+                <button type="button" className="font-medium text-prune-700 underline" onClick={() => void renumber(taken, true)}>{t('plant_feature.number_swap')}</button>
+                <button type="button" className="text-loam-600 underline" onClick={() => setTaken(null)}>{t('plant_feature.unmark')}</button>
+              </div>
+            </div>
+          )}
         </Field>
       ) : number != null ? (
         <p className="text-loam-600">{t('plant_feature.number')} : <span className="font-medium tabular-nums text-loam-900">{number}</span></p>
@@ -204,10 +230,10 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
       ) : null)}
 
       {plantedOn ? (
-        <div className="flex items-center justify-between gap-2 rounded-lg bg-leaf-50 p-2 text-xs text-leaf-800">
-          <span className="inline-flex items-center gap-1.5"><Shovel className="h-4 w-4" />{t('plant_feature.planted_on', { date: formatDate(plantedOn) })}</span>
+        <div className="flex items-center justify-between gap-2 rounded-lg bg-leaf-50 p-2 text-sm text-leaf-800">
+          <span className="inline-flex items-center gap-1.5"><Shovel className="h-4 w-4 shrink-0" />{plantedLabel(plantedOn, precision)}</span>
           {editor.canEdit && (
-            <button type="button" className="text-leaf-700 underline" onClick={() => save({ planted_on: null })}>{t('plant_feature.unmark')}</button>
+            <button type="button" className="text-leaf-700 underline" onClick={() => save({ planted_on: null, planted_on_precision: null })}>{t('plant_feature.unmark')}</button>
           )}
         </div>
       ) : editor.canEdit && speciesId != null ? (
@@ -215,9 +241,16 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
           <Field label={t('plant_feature.planted_date')}>
             <Input type="date" value={date} max={todayIso()} onChange={(e) => setDate(e.target.value)} />
           </Field>
-          <Button variant="leaf" size="sm" className="w-full" onClick={() => save({ planted_on: date }).then(() => editor.notify(t('plant_feature.planted')))}>
+          <Button variant="leaf" size="sm" className="w-full" disabled={!date} onClick={() => save({ planted_on: date, planted_on_precision: null }).then(() => editor.notify(t('plant_feature.planted')))}>
             <Shovel className="h-4 w-4" />{t('plant_feature.mark_planted')}
           </Button>
+          <button
+            type="button" title={t('plant_feature.mark_planted_unknown_hint')}
+            className="w-full text-center text-sm text-leaf-800 underline"
+            onClick={() => save({ planted_on: todayIso(), planted_on_precision: 'unknown' }).then(() => editor.notify(t('plant_feature.planted')))}
+          >
+            {t('plant_feature.mark_planted_unknown')}
+          </button>
         </div>
       ) : null}
     </section>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MonthsCalendar } from '@/components/plants/MonthsCalendar'
 import { SpeciesSheetPhoto } from '@/components/plants/SpeciesPhoto'
 import { SpeciesTags } from '@/components/plants/SpeciesTags'
-import { formatDate, formatDecimal, metres, strataLabel, vocab } from '@/components/plants/format'
+import { formatDate, formatDecimal, metres, plantedLabel, plantedPrecision, strataLabel, vocab } from '@/components/plants/format'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { StrataDot } from '@/map/plants/strata'
@@ -12,7 +12,7 @@ import { displayValue, formatEuro } from '@/palette/format'
 import { toPlant, type PaletteRow } from '@/palette/table'
 import type { SpeciesSheet, Strata } from '@/types/plants'
 
-type PlantOnLand = { id: number; name: string | null; tags: string[]; plantedOn: string | null; inPatch: boolean; survival: string | null; vigor: number | null; observedOn: string | null }
+type PlantOnLand = { id: number; number: number | null; name: string | null; tags: string[]; plantedOn: string | null; plantedPrecision: string | null; inPatch: boolean; survival: string | null; vigor: number | null; observedOn: string | null }
 type PatchOnLand = { id: number; name: string | null; tags: string[]; areaM2: number | null; quantity: number }
 type TreeOnLand = { id: number; name: string | null; label: string; tags: string[]; heightM: number | null; health: string | null }
 type Details = { key: string; plants: PlantOnLand[]; patches: PatchOnLand[]; existingTrees: TreeOnLand[] }
@@ -59,7 +59,7 @@ export function PlantSheet({ mapId, row, country, onClose }: { mapId: number; ro
 
   const variety = row.varietyId ? species?.varieties.find((v) => v.id === row.varietyId) : null
   const plants = details?.plants ?? []
-  const firstPlanted = plants.map((p) => p.plantedOn).filter((d): d is string => !!d).sort()[0]
+  const firstPlanted = plants.filter((p) => p.plantedPrecision !== 'unknown').map((p) => p.plantedOn).filter((d): d is string => !!d).sort()[0]
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end print:hidden" role="dialog" aria-modal="true" aria-label={row.name}>
@@ -132,10 +132,10 @@ export function PlantSheet({ mapId, row, country, onClose }: { mapId: number; ro
                 <Block title={`${t('plant_palette.sheet.plants')} · ${t('plant_palette.sheet.plants_count', { count: plants.length })}`}>
                   {(showAll ? plants : plants.slice(0, PLANTS_SHOWN)).map((plant, i) => (
                     <FeatureLine
-                      key={plant.id} mapId={mapId} featureId={plant.id} title={plant.name || t('plant_palette.sheet.plant_number', { number: i + 1 })} tags={plant.tags}
+                      key={plant.id} mapId={mapId} featureId={plant.id} title={plant.name || t('plant_palette.sheet.plant_number', { number: plant.number ?? i + 1 })} tags={plant.tags}
                       icon={<Shovel className={clsx('h-4 w-4', plant.plantedOn ? 'text-leaf-600' : 'text-loam-300')} />}
                     >
-                      <span>{plant.plantedOn ? t('plant_palette.sheet.planted_on', { date: formatDate(plant.plantedOn) }) : t('plant_palette.sheet.not_planted')}</span>
+                      <span>{plant.plantedOn ? plantedLabel(plant.plantedOn, plantedPrecision(plant.plantedPrecision)) : t('plant_palette.sheet.not_planted')}</span>
                       {plant.survival && (
                         <span className={clsx('ml-2 inline-flex rounded-full px-2 py-px ring-1 ring-inset', SURVIVAL_TONES[plant.survival])} title={plant.observedOn ? t('plant_palette.sheet.observed', { date: formatDate(plant.observedOn) }) : undefined}>
                           {t(`plant_palette.sheet.survival.${plant.survival}`)}

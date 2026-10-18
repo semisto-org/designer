@@ -26,7 +26,23 @@ class PlantPalette
   def quantities = @quantities ||= map.planted_quantities
 
   def as_json(*)
-    { rows:, tags: tags, currency: "EUR" }
+    { rows:, plants:, tags: tags, currency: "EUR" }
+  end
+
+  # Every plant drawn on the map, one by one, for the « Plant par plant »
+  # table: its number on the plan, its species row, whether it is in the
+  # ground and since when.
+  def plants
+    names = rows.to_h { |row| [ row[:key], row[:name] ] }
+    plant_features.map do |f|
+      key = plant_key(f)
+      planted_on = f.properties["planted_on"].presence
+      {
+        id: f.id, number: f.plant_number, name: f.name.presence, key: key && key_string(key), species: key && names[key_string(key)],
+        plantedOn: planted_on, plantedPrecision: (f.properties["planted_on_precision"].presence if planted_on),
+        tags: f.tags, lockVersion: f.lock_version
+      }
+    end.sort_by { |plant| [ plant[:number] || Float::INFINITY, plant[:id] ] }
   end
 
   def rows
@@ -51,6 +67,7 @@ class PlantPalette
         observation = latest[f.id]
         {
           id: f.id, name: f.name, tags: f.tags, plantedOn: f.properties["planted_on"].presence,
+          plantedPrecision: f.properties["planted_on_precision"].presence, number: f.plant_number,
           inPatch: quantities.plants.find { |p| p.id == f.id }&.in_patch || false,
           survival: observation&.survival, vigor: observation&.vigor, observedOn: observation&.observed_on&.iso8601
         }
@@ -151,7 +168,7 @@ class PlantPalette
 
     # Active plant points with their tags and properties.
     def plant_features
-      @plant_features ||= map.features.active.where(kind: "plant").select(:id, :name, :tags, :properties).order(:id).to_a
+      @plant_features ||= map.features.active.where(kind: "plant").select(:id, :map_id, :kind, :name, :tags, :properties, :lock_version).order(:id).to_a
     end
 
     def plant_features_by_key = @plant_features_by_key ||= plant_features.group_by { |f| plant_key(f) }

@@ -45,6 +45,8 @@ Chaque plant est dessiné à la taille de sa couronne adulte, dans la couleur de
 
 Chaque plant porte aussi un numéro. En haut de la légende, choisis comment la carte les nomme : **Nom** (« 12 · Pommier »), **Code** (« 12 · Ma do ») ou **Numéro**. En mode Numéro, le numéro s'écrit dans la pastille du plant, comme sur un plan de plantation dessiné à la main, et la légende dit quelle espèce porte quels numéros (« 3–5 Pommier sauvage »).
 
+Pour reprendre la numérotation d'un plan existant, change le **Numéro sur le plan** dans la fiche du plant : si un autre plant le porte déjà, **Échanger les numéros** lui donne l'ancien numéro de celui-ci. Pour tout un plan, la vue **Plant par plant** de la [palette végétale](/help/la-palette-vegetale-en-tableau) va plus vite.
+
 ## Les patches : où va quoi
 
 Un **patch** est une zone où l'on plante un mélange d'espèces : un îlot, une lisière, un massif.

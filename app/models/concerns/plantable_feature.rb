@@ -1,6 +1,6 @@
 # Plants and patches drawn on a map are MapFeatures of the "plants" layer:
 #   - kind "plant": a Point, properties { species_id, variety_id, planted_on,
-#     training } (pollard | coppice, optional: how a tree or a bush is kept,
+#     planted_on_precision, training } (pollard | coppice, optional: how a tree or a bush is kept,
 #     left free when absent), and for a grafted fruit tree graft_form
 #     (standard | half_standard | bush), trunk_height (m), rootstock_vigor
 #     (ROOTSTOCK_VIGORS) and rootstock (free text, « MM106 »), all optional;
@@ -23,6 +23,11 @@ module PlantableFeature
   TRUNK_HEIGHTS = (0.2..3.0)
   ROOTSTOCK_LENGTH = 40
   GRAFT_KEYS = %w[graft_form trunk_height rootstock_vigor rootstock].freeze
+  # How much of `planted_on` is known: the exact day (no key), only the year
+  # (the date is the 1st of January), or nothing at all, for a plant that was
+  # in the ground before anyone noted it (the date is then the day it was
+  # found there: planted on or before it).
+  PLANTED_ON_PRECISIONS = %w[year unknown].freeze
 
   included do
     has_many :patch_items, -> { order(:position, :id) }, inverse_of: :map_feature, dependent: :delete_all
@@ -62,6 +67,12 @@ module PlantableFeature
   # In the ground: a plant without a planting date is still to plant.
   def planted? = planted_on.present?
 
+  def planted_on_precision = planted? ? properties["planted_on_precision"].presence : nil
+
+  # The planting date when someone knows it (to the year at least), for ages
+  # and growth; nil for a plant still to plant or planted at an unknown date.
+  def known_planted_on = planted_on_precision == "unknown" ? nil : planted_on
+
   # Surface (m²) measured by PostGIS on the ellipsoid; nil for non-polygons.
   def area_m2
     return nil unless persisted?
@@ -87,6 +98,7 @@ module PlantableFeature
       else
         props.delete("planted_on")
       end
+      props.delete("planted_on_precision") if props["planted_on"].blank? || props["planted_on_precision"].blank?
       # Free is the default: no key.
       props.delete("training") if props["training"].blank? || props["training"] == "free"
       %w[graft_form rootstock_vigor].each { |key| props.delete(key) if props[key].blank? }
@@ -118,6 +130,9 @@ module PlantableFeature
       if properties["planted_on"].present?
         date = planted_on
         errors.add(:properties, :invalid) if date.nil? || date > PlantableFeature.latest_today
+      end
+      if properties.key?("planted_on_precision") && !PLANTED_ON_PRECISIONS.include?(properties["planted_on_precision"])
+        errors.add(:properties, :invalid)
       end
     end
 
