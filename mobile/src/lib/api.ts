@@ -51,8 +51,10 @@ export async function api<T = unknown>(method: string, path: string, body?: Body
       const token = await accessToken({ force: true })
       if (token) response = await send(method, path, body, token, options)
     }
-  } catch {
-    throw new ApiError(0, null, 'offline')
+  } catch (error) {
+    // Kept for « Envois »: a timeout, or what the phone said about the network.
+    const cause = error instanceof Error ? (error.name === 'AbortError' ? 'timeout' : error.message) : 'offline'
+    throw new ApiError(0, null, cause)
   }
   if (response.status === 204) return undefined as T
   const text = await response.text()

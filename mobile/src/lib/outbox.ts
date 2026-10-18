@@ -5,12 +5,16 @@ import { storageReadingBody } from './fruitStore'
 import { harvestBody } from './harvests'
 import { emptyOutbox, filesOf, flush, nextTempId, retry, retryDelayMs, type FlushResult, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
 import { isVideo, mediaFile } from './media'
+import { report } from './monitoring'
 import { deletePhoto, keptFile, readJson, writeJson } from './storage'
 import type { MapFeature } from './types'
 
 const FILE = 'outbox.json'
 let state: OutboxState = readJson<OutboxState>(FILE) ?? emptyOutbox()
-let flushing: Promise<number> | null = null
+/** How the last round of sending ended, for « Envois ». */
+export type SendRun = { at: string; sent: number; stopped: FlushResult['stopped']; blocked?: FlushResult['blocked'] }
+let flushing: Promise<SendRun> | null = null
+let lastRun: SendRun | null = null
 // A round stopped by the network or the server is tried again on a timer.
 let retryTimer: ReturnType<typeof setTimeout> | null = null
 let failures = 0
@@ -59,13 +63,16 @@ export const outbox = {
   pending: (mapId?: number) => state.ops.filter((op) => !op.error && (mapId === undefined || op.mapId === mapId)).length,
   failed: (mapId?: number) => state.ops.filter((op) => op.error && (mapId === undefined || op.mapId === mapId)),
 
-  /** Sends what is waiting; resolves with the number of changes sent. */
-  flush(): Promise<number> {
+  lastRun: () => lastRun,
+
+  /** Sends what is waiting; resolves with how the round ended. */
+  flush(): Promise<SendRun> {
     flushing ??= (async () => {
       try {
         if (retryTimer) { clearTimeout(retryTimer); retryTimer = null }
         let sent = 0
         let stopped: FlushResult['stopped'] = 'done'
+        let blocked: FlushResult['blocked']
         // Ops added while sending go in the next round.
         for (let round = 0; round < 5 && outbox.pending() > 0; round++) {
           const snapshot = state
@@ -84,6 +91,7 @@ export const outbox = {
           save(result.state, [])
           sent += result.sent
           stopped = result.stopped
+          blocked = result.blocked
           if (stopped !== 'done') break
         }
         // An expired session waits for the next sign-in (onAuthChange).
@@ -93,7 +101,10 @@ export const outbox = {
         } else {
           failures = 0
         }
-        return sent
+        if (blocked) report(new Error(`outbox stopped (${stopped}): ${blocked.reason}`), { op: state.ops.find((o) => o.id === blocked.id)?.type })
+        lastRun = { at: new Date().toISOString(), sent, stopped, blocked }
+        listeners.forEach((listener) => listener(state))
+        return lastRun
       } finally {
         flushing = null
       }

@@ -445,6 +445,17 @@
       "offline": "Hors ligne : tes modifications sont gardées sur le téléphone et partiront au retour du réseau.",
       "empty": "Rien en attente : tout est enregistré.",
       "send_now": "Envoyer maintenant",
+      "sending": "Envoi en cours…",
+      "blocked_here": "L'envoi s'arrête ici : %{reason}. Il sera réessayé tout seul ; si ça se répète, tu peux abandonner cette modification pour laisser partir les suivantes.",
+      "run": {
+        "sent": {
+          "one": "1 modification envoyée.",
+          "other": "%{count} modifications envoyées."
+        },
+        "offline": "L'envoi n'a pas abouti (%{reason}). Nouvel essai tout seul dans quelques instants.",
+        "server": "Le serveur ne répond pas pour l'instant (%{reason}). Nouvel essai tout seul dans quelques instants.",
+        "auth": "Ta session a expiré : reconnecte-toi depuis ton compte, tes envois partiront ensuite."
+      },
       "waiting": "En attente d'envoi",
       "refused": "Refusé par le serveur : %{reason}",
       "parent_failed": "Pas envoyé : l'élément auquel il se rapporte a été refusé.",
