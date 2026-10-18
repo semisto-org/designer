@@ -14,7 +14,7 @@ import { useMediaQuery } from '@/lib/useMediaQuery'
 import { MapView } from '@/map/MapView'
 import { featureAt, hitsAt } from '@/map/featurePick'
 import { useMapInstance } from '@/map/MapContext'
-import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
+import { Drawer, type DrawOptions, type DrawShape, type PointTool } from '@/map/editor/draw'
 import { EditorContext, type Editor, type FeaturePatch, type NewFeature, type SavedFeature } from '@/map/editor/EditorContext'
 import { Inspector } from '@/map/editor/Inspector'
 import { MapName } from '@/map/editor/MapName'
@@ -293,6 +293,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
           setDrawingShape(null)
         }
       },
+      setPointTool: (tool: PointTool) => drawer.current?.setPointTool(tool),
       finishDraw: () => drawer.current?.commit(),
       cancelDraw: () => drawer.current?.cancel(),
       drawing,

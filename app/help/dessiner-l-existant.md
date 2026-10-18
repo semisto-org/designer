@@ -49,7 +49,15 @@ Touche un élément sur la carte, ou dans le panneau **Éléments** qui les list
 - sa **Couleur**, si tu veux la distinguer des autres ;
 - pour une surface (une mare, un massif, un bâtiment…), **Angles arrondis** : coche la case, puis glisse le curseur de **Léger** à **Fort**. Les angles s'adoucissent sur la carte, jusqu'à une forme ovale ; la surface et les estimations suivent la forme arrondie, et les points que tu as cliqués restent ceux que tu modifies.
 
-Pour corriger un tracé, touche **Modifier la forme**, fais glisser les sommets (un point au milieu d'un côté ajoute un sommet), puis **Enregistrer la forme**.
+Pour corriger un tracé, touche **Modifier la forme**, fais glisser les points (un point au milieu d'un côté en ajoute un), puis **Enregistrer la forme**. Pour ajouter ou retirer des points, les boutons de la barre (flèche, **+**, **−**) ou les touches d'Illustrator :
+
+- **+** : un clic sur un côté y ajoute un point, exactement là où tu cliques ;
+- **−** : un clic sur un point le retire ;
+- **Alt** maintenue passe de l'un à l'autre, le temps du clic ;
+- **A** (ou **V**) revient à la flèche ; là, clique un point puis **Suppr** pour le retirer, ou fais un clic droit dessus ;
+- **Échap** repose l'outil, un second **Échap** abandonne la modification.
+
+Une ligne garde au moins deux points, une surface trois.
 
 ## Conseils de relevé
 
