@@ -1,4 +1,5 @@
-# Follow-up of a planted plant: observations (take, vigour, note, photo).
+# The journal of a planted plant: dated entries (follow-up, flowering,
+# pruning, damage…), each with an optional take, vigour, note and photo.
 module Maps
   class PlantObservationsController < ApplicationController
     include MapScoped
@@ -56,7 +57,7 @@ module Maps
       end
 
       def observation_params
-        params.require(:plant_observation).permit(:observed_on, :survival, :vigor, :note, :photo)
+        params.require(:plant_observation).permit(:observed_on, :kind, :survival, :vigor, :note, :photo)
       end
   end
 end

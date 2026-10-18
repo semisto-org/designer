@@ -215,4 +215,21 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_match "futur", response.parsed_body["message"]
   end
+
+  test "the plant's journal: a pruning needs no take, a follow-up does, « other » needs a note" do
+    sign_in_as users(:michael)
+    plant = @map.features.create!(layer: "plants", kind: "plant", geometry: point, properties: { "planted_on" => "2026-03-01" })
+    post map_feature_plant_observations_path(@map, plant),
+         params: { plant_observation: { observed_on: "2026-06-01", kind: "pruning", note: "Gourmands recoupés" } }, as: :json
+    assert_response :created
+    assert_equal [ "pruning", nil ], response.parsed_body["observation"].values_at("kind", "survival")
+
+    post map_feature_plant_observations_path(@map, plant), params: { plant_observation: { observed_on: "2026-06-01" } }, as: :json
+    assert_response :unprocessable_entity
+    assert_match "Reprise", response.parsed_body["message"]
+    post map_feature_plant_observations_path(@map, plant), params: { plant_observation: { observed_on: "2026-06-01", kind: "other" } }, as: :json
+    assert_response :unprocessable_entity
+    post map_feature_plant_observations_path(@map, plant), params: { plant_observation: { observed_on: "2026-06-01", kind: "harvest", survival: "dead" } }, as: :json
+    assert_response :unprocessable_entity
+  end
 end

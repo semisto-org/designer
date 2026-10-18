@@ -1057,11 +1057,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_100000) do
     t.bigint "variety_id"
     t.bigint "user_id"
     t.date "observed_on", null: false
-    t.string "survival", null: false
+    t.string "survival"
     t.integer "vigor"
     t.text "note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "kind", default: "follow_up", null: false
     t.index ["map_feature_id", "observed_on"], name: "index_plant_observations_on_map_feature_id_and_observed_on"
     t.index ["map_feature_id"], name: "index_plant_observations_on_map_feature_id"
     t.index ["map_id"], name: "index_plant_observations_on_map_id"

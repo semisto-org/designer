@@ -30,17 +30,20 @@ Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans l
 
 Le choix est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse en situation projetée, pour que tu les voies apparaître.
 
-## Noter une observation
+## Tenir le journal du plant
 
-Une fois le plant marqué, la section **Suivi de reprise** apparaît dans sa fiche.
+Une fois le plant marqué, la section **Journal du plant** apparaît dans sa fiche. Chaque note s'ajoute aux précédentes sans les effacer : c'est l'histoire de ce plant, année après année.
 
-1. Touche **Noter une observation**.
+1. Touche **Ajouter au journal**.
 2. Choisis la **Date**, entre la plantation et aujourd'hui.
-3. Indique la **Reprise** : **Repris**, **En difficulté** ou **Mort**.
-4. Si tu le souhaites, note la **Vigueur**, de 1 (**Chétif**) à 5 (**Vigoureux**), une **Note** (feuillage, dégâts, paillage, arrosage…) et une **Photo** (JPEG, PNG, WebP ou HEIC, 15 Mo au plus).
-5. Touche **Enregistrer**.
+3. Choisis **Ce que tu notes** : **Reprise**, **Floraison**, **Taille**, **Casse ou dégât**, **Maladie ou ravageur**, **Intervention** (protection, tuteur, paillage, arrosage, greffe…) ou **Autre**.
+4. Pour une **Reprise**, indique **Repris**, **En difficulté** ou **Mort**. Pour les autres notes, c'est facultatif.
+5. Si tu le souhaites, note la **Vigueur**, de 1 (**Chétif**) à 5 (**Vigoureux**), une **Note** et une **Photo** (JPEG, PNG, WebP ou HEIC, 15 Mo au plus).
+6. Touche **Enregistrer**.
 
-Les observations s'alignent par date, avec le nom de la personne qui les a notées. La corbeille à côté d'une observation la supprime.
+Les notes s'alignent par date, avec le nom de la personne qui les a écrites. La dernière reprise notée dit l'état du plant. La corbeille à côté d'une note la supprime. Les fruits vus et cueillis vont dans les [récoltes](/help/suivre-ses-recoltes), juste au-dessus.
+
+Ton IA peut aussi lire ce journal et y ajouter des notes, quand tu lui racontes ce qui s'est passé au jardin.
 
 ## Quand observer ?
 

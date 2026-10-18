@@ -1,10 +1,15 @@
-# Follow-up of a planted plant (a MapFeature of kind "plant"): did it take
-# (établie, en difficulté, morte), how vigorous (1 to 5), a note and a photo.
-# Observations of every garden feed the species sheet, as anonymous counts.
+# The journal of a planted plant (a MapFeature of kind "plant"): dated
+# entries, never rewritten, each of one kind. A follow-up entry says whether
+# it took (établie, en difficulté, morte); every entry may add how vigorous
+# it is (1 to 5), a note and a photo. Flowering, pruning, damage, disease or
+# an intervention are noted the same way; fruit seen and picked belong to the
+# harvest log (PlantHarvest). The take of every garden feeds the species
+# sheet, as anonymous counts.
 class PlantObservation < ApplicationRecord
   include HeicAttachment
 
   SURVIVALS = %w[established struggling dead].freeze
+  KINDS = %w[follow_up flowering pruning damage disease intervention other].freeze
   # Same rules as the map's photos (MapPhoto): HEIC is converted to JPEG.
   PHOTO_TYPES = MapPhoto::CONTENT_TYPES
   MAX_PHOTO_BYTES = MapPhoto::MAX_BYTES
@@ -25,7 +30,10 @@ class PlantObservation < ApplicationRecord
   converts_heic :photo
 
   validates :observed_on, presence: true
-  validates :survival, inclusion: { in: SURVIVALS }
+  validates :kind, inclusion: { in: KINDS }
+  validates :survival, inclusion: { in: SURVIVALS }, allow_nil: true
+  validates :survival, presence: true, if: -> { kind == "follow_up" }
+  validates :note, presence: true, if: -> { kind == "other" }
   validates :vigor, inclusion: { in: 1..5 }, allow_nil: true
   validates :note, length: { maximum: 2000 }
   validate :observes_a_plant
@@ -36,9 +44,10 @@ class PlantObservation < ApplicationRecord
 
   scope :chronological, -> { order(:observed_on, :id) }
 
-  # Latest observation of each plant: the state a garden is in today.
+  # Latest entry of each plant that says whether it took: the state a garden
+  # is in today (a pruning note says nothing about it).
   scope :latest_per_plant, -> {
-    where(id: select("DISTINCT ON (map_feature_id) id").order(:map_feature_id, observed_on: :desc, id: :desc))
+    where(id: where.not(survival: nil).select("DISTINCT ON (map_feature_id) id").order(:map_feature_id, observed_on: :desc, id: :desc))
   }
 
   # Anonymous counts for a species sheet, over every garden. A plant counts as
@@ -84,7 +93,7 @@ class PlantObservation < ApplicationRecord
 
   def as_json(*)
     {
-      id:, featureId: map_feature_id, observedOn: observed_on.iso8601, survival:, vigor:, note:,
+      id:, featureId: map_feature_id, observedOn: observed_on.iso8601, kind:, survival:, vigor:, note:,
       author: user&.display_name,
       photoUrl: photo_path("large"),
       thumbUrl: photo_path("thumb"),

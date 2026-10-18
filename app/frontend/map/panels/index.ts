@@ -46,6 +46,7 @@ import SelectionOverlay from '@/map/selection/SelectionOverlay'
 import PlantPeekOverlay from '@/map/plants/PlantPeekOverlay'
 import PlantPhotosSection from '@/map/plants/PlantPhotosSection'
 import { isPatch, isPlant } from '@/map/plants/properties'
+import OtherPropertiesSection from '@/map/plants/OtherPropertiesSection'
 import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
@@ -129,6 +130,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'plant-harvests', applies: isPlant, component: HarvestsSection, order: 20.5 },
   { id: 'fruit-store', applies: appliesToFruitStore, component: StorageSection, order: 20.5 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
+  { id: 'plant-other-properties', applies: isPlant, component: OtherPropertiesSection, order: 23 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
   { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },

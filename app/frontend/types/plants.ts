@@ -300,11 +300,16 @@ export type PaletteSuggestions = {
   excluded: { hardiness: number; invasive: number; toxic: number }
 }
 
+export const PLANT_OBSERVATION_KINDS = ['follow_up', 'flowering', 'pruning', 'damage', 'disease', 'intervention', 'other'] as const
+export type PlantObservationKind = (typeof PLANT_OBSERVATION_KINDS)[number]
+
 export type PlantObservation = {
   id: number
   featureId: number
   observedOn: string
-  survival: 'established' | 'struggling' | 'dead'
+  kind: PlantObservationKind
+  /** Whether it took: always on a follow-up entry, optional on the others. */
+  survival: 'established' | 'struggling' | 'dead' | null
   vigor: number | null
   note: string | null
   author: string | null

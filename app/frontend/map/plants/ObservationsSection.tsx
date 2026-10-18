@@ -8,7 +8,7 @@ import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { MapFeature } from '@/types'
-import type { PlantObservation } from '@/types/plants'
+import { PLANT_OBSERVATION_KINDS, type PlantObservation, type PlantObservationKind } from '@/types/plants'
 
 const SURVIVALS = ['established', 'struggling', 'dead'] as const
 const SURVIVAL_TONES: Record<string, string> = {
@@ -17,7 +17,11 @@ const SURVIVAL_TONES: Record<string, string> = {
   dead: 'bg-clay-500 text-white ring-clay-500',
 }
 
-/** « Planté → observé »: follow-up of a planted plant (take, vigour, note, photo). */
+/**
+ * « Journal du plant »: dated entries of a planted plant, never rewritten
+ * (take, flowering, pruning, damage…), each with an optional vigour, note
+ * and photo. The latest take says the state of the plant.
+ */
 export default function ObservationsSection({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
   const plantedOn = typeof feature.properties.planted_on === 'string' ? feature.properties.planted_on : null
@@ -47,21 +51,22 @@ export default function ObservationsSection({ feature }: { feature: MapFeature }
 
   return (
     <section className="space-y-3 border-t border-loam-100 pt-3 text-sm">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-loam-500">{t('plant_observations.title')}</h3>
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-loam-500">{t('plant_observations.title')}</h3>
       {!plantedOn ? (
-        <p className="text-xs text-loam-500">{t('plant_observations.plant_first')}</p>
+        <p className="text-loam-500">{t('plant_observations.plant_first')}</p>
       ) : (
         <>
-          {observations && observations.length === 0 && <p className="text-xs text-loam-400">{t('plant_observations.empty')}</p>}
+          {observations && observations.length === 0 && <p className="text-loam-500">{t('plant_observations.intro')}</p>}
           {observations && observations.length > 0 && (
             <ul className="space-y-2">
               {observations.map((o) => (
-                <li key={o.id} className="flex gap-2 rounded-lg bg-loam-50 p-2 text-xs">
+                <li key={o.id} className="flex gap-2 rounded-lg bg-loam-50 p-2">
                   {o.photoUrl && <a href={o.photoUrl} target="_blank" rel="noreferrer"><img src={o.thumbUrl ?? o.photoUrl} alt="" className="h-12 w-12 rounded object-cover" /></a>}
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-1.5">
                       <span className="font-medium text-loam-800">{formatDate(o.observedOn)}</span>
-                      <span className={clsx('rounded px-1.5 ring-1 ring-inset', SURVIVAL_TONES[o.survival])}>{t(`plant_observations.survivals.${o.survival}`)}</span>
+                      {o.kind !== 'follow_up' && <span className="rounded bg-white px-1.5 text-loam-700 ring-1 ring-inset ring-loam-200">{t(`plant_observations.kinds.${o.kind}`)}</span>}
+                      {o.survival && <span className={clsx('rounded px-1.5 ring-1 ring-inset', SURVIVAL_TONES[o.survival])}>{t(`plant_observations.survivals.${o.survival}`)}</span>}
                       {o.vigor != null && <span className="text-loam-600">{t('plant_observations.vigor')} {o.vigor}/5</span>}
                     </p>
                     {o.note && <p className="mt-0.5 whitespace-pre-line text-loam-600">{o.note}</p>}
@@ -92,7 +97,8 @@ function ObservationForm({ base, plantedOn, onSaved, onCancel }: {
 }) {
   const editor = useEditor()
   const [observedOn, setObservedOn] = useState(todayIso())
-  const [survival, setSurvival] = useState<string>('established')
+  const [kind, setKind] = useState<PlantObservationKind>('follow_up')
+  const [survival, setSurvival] = useState<string | null>('established')
   const [vigor, setVigor] = useState<number | null>(null)
   const [note, setNote] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
@@ -102,7 +108,8 @@ function ObservationForm({ base, plantedOn, onSaved, onCancel }: {
   async function submit() {
     const body = new FormData()
     body.append('plant_observation[observed_on]', observedOn)
-    body.append('plant_observation[survival]', survival)
+    body.append('plant_observation[kind]', kind)
+    if (survival) body.append('plant_observation[survival]', survival)
     if (vigor != null) body.append('plant_observation[vigor]', String(vigor))
     if (note.trim()) body.append('plant_observation[note]', note.trim())
     if (photo) body.append('plant_observation[photo]', photo)
@@ -125,15 +132,32 @@ function ObservationForm({ base, plantedOn, onSaved, onCancel }: {
         <Input type="date" value={observedOn} min={plantedOn} max={todayIso()} onChange={(e) => setObservedOn(e.target.value)} />
       </Field>
       <fieldset>
-        <legend className="mb-1 text-sm font-medium text-loam-700">{t('plant_observations.survival')}</legend>
+        <legend className="mb-1 text-sm font-medium text-loam-700">{t('plant_observations.kind')}</legend>
+        <div className="flex flex-wrap gap-1.5">
+          {PLANT_OBSERVATION_KINDS.map((k) => (
+            <button
+              key={k}
+              type="button"
+              aria-pressed={kind === k}
+              onClick={() => { setKind(k); setSurvival(k === 'follow_up' ? (survival ?? 'established') : null) }}
+              className={clsx('rounded-full px-2.5 py-1 text-sm ring-1 ring-inset', kind === k ? 'bg-prune-600 text-white ring-prune-600' : 'bg-white text-loam-700 ring-loam-200')}
+            >
+              {t(`plant_observations.kinds.${k}`)}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1 text-sm text-loam-500">{t(`plant_observations.kind_hints.${kind}`)}</p>
+      </fieldset>
+      <fieldset>
+        <legend className="mb-1 text-sm font-medium text-loam-700">{t(kind === 'follow_up' ? 'plant_observations.survival' : 'plant_observations.survival_optional')}</legend>
         <div className="flex flex-wrap gap-1.5">
           {SURVIVALS.map((s) => (
             <button
               key={s}
               type="button"
               aria-pressed={survival === s}
-              onClick={() => setSurvival(s)}
-              className={clsx('rounded-full px-2.5 py-1 text-xs ring-1 ring-inset', survival === s ? SURVIVAL_TONES[s] : 'bg-white text-loam-700 ring-loam-200')}
+              onClick={() => setSurvival(kind !== 'follow_up' && survival === s ? null : s)}
+              className={clsx('rounded-full px-2.5 py-1 text-sm ring-1 ring-inset', survival === s ? SURVIVAL_TONES[s] : 'bg-white text-loam-700 ring-loam-200')}
             >
               {t(`plant_observations.survivals.${s}`)}
             </button>
@@ -150,29 +174,29 @@ function ObservationForm({ base, plantedOn, onSaved, onCancel }: {
               aria-pressed={vigor === v}
               title={t(`plant_observations.vigors.${v}`)}
               onClick={() => setVigor(vigor === v ? null : v)}
-              className={clsx('h-8 w-8 rounded-lg text-xs ring-1 ring-inset', vigor === v ? 'bg-prune-600 text-white ring-prune-600' : 'bg-white text-loam-700 ring-loam-200')}
+              className={clsx('h-8 w-8 rounded-lg text-sm ring-1 ring-inset', vigor === v ? 'bg-prune-600 text-white ring-prune-600' : 'bg-white text-loam-700 ring-loam-200')}
             >
               {v}
             </button>
           ))}
         </div>
-        <p className="mt-1 text-xs text-loam-400">{vigor ? t(`plant_observations.vigors.${vigor}`) : t('plant_observations.vigor_hint')}</p>
+        <p className="mt-1 text-sm text-loam-500">{vigor ? t(`plant_observations.vigors.${vigor}`) : t('plant_observations.vigor_hint')}</p>
       </fieldset>
       <Field label={t('plant_observations.note')}>
         <Textarea rows={2} value={note} placeholder={t('plant_observations.note_placeholder')} onChange={(e) => setNote(e.target.value)} />
       </Field>
       <div>
         <span className="mb-1 block text-sm font-medium text-loam-700">{t('plant_observations.photo')}</span>
-        <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm text-loam-700 ring-1 ring-inset ring-loam-200 hover:bg-loam-100">
           <Camera className="h-4 w-4 shrink-0 text-loam-400" />
           <span className="truncate">{photo ? photo.name : t('plant_observations.choose_photo')}</span>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" className="sr-only" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
         </label>
-        {errors.photo && <span className="mt-1 block text-xs text-clay-500">{errors.photo[0]}</span>}
+        {errors.photo && <span className="mt-1 block text-sm text-clay-500">{errors.photo[0]}</span>}
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={onCancel}>{t('common.cancel')}</Button>
-        <Button size="sm" onClick={submit} disabled={saving}>{t('plant_observations.save')}</Button>
+        <Button size="sm" onClick={submit} disabled={saving || (kind === 'follow_up' && !survival) || (kind === 'other' && !note.trim())}>{t('plant_observations.save')}</Button>
       </div>
     </div>
   )
