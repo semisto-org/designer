@@ -6,6 +6,7 @@ import { featureColor, featureTitle, kindLabel, speciesName } from '@/lib/elemen
 import { formatDay, formatDistance, formatTime, seasonOf, t } from '@/lib/i18n'
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
+import { arrived, arrowAngle, type Target } from '@/lib/tour'
 import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
 import type { MapFeature, Photo, Planting } from '@/lib/types'
 import { Icon, type IconName } from '@/ui/Icon'
@@ -53,12 +54,22 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
+  /** Plants of the design still to put in the ground, for the planting round. */
+  toPlant?: number; onTour?: () => void
 }) {
   const card = monthCard()
   return (
     <View style={s.body}>
+      {toPlant > 0 && onTour && (
+        <View style={s.invite}>
+          <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.tour.title')}</Text>
+          <Body>{t('mobile.tour.invite', { count: toPlant })}</Body>
+          <Body muted>{t('mobile.tour.invite_hint')}</Body>
+          <Button icon="planted" label={t('mobile.tour.start')} onPress={onTour} />
+        </View>
+      )}
       {card && <Body muted>{card.body}</Body>}
       {viewer && <Body muted>{t('mobile.terrain.viewer')}</Body>}
       <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.terrain.around')}</Text>
@@ -176,6 +187,69 @@ export function VisitBody({ notes, planting, onPick }: { notes: MapFeature[]; pl
   )
 }
 
+// ── The planting round ─────────────────────────────────────────────────
+
+/**
+ * The plant to go to: a big arrow turned by the way the phone faces, the
+ * distance in large figures, then « Tu y es » once close enough; and the
+ * gestures « Planté ! », « Planté ici », « Passer ».
+ */
+export function TourTop({ target, left, skippedLeft, planting, accuracy, heading, located, onPlanted, onPlantedHere, onSkip, onEnd }: {
+  target: Target | null; left: number; skippedLeft: number; planting: Planting | undefined
+  accuracy: number | null; heading: number | null; located: boolean
+  onPlanted: () => void; onPlantedHere: () => void; onSkip: () => void; onEnd: () => void
+}) {
+  if (!target) {
+    return (
+      <View style={s.top}>
+        <View style={s.titleRow}>
+          <Text accessibilityRole="header" style={[s.monthTitle, { flex: 1 }]} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+            {located ? t('mobile.tour.done_title') : t('mobile.tour.title')}
+          </Text>
+          <IconButton icon="close" label={t('mobile.tour.end')} onPress={onEnd} size={touch.min} />
+        </View>
+        <Body muted>{!located ? t('mobile.tour.no_position') : skippedLeft > 0 ? t('mobile.tour.skipped_left', { count: skippedLeft }) : t('mobile.tour.done')}</Body>
+      </View>
+    )
+  }
+  const here = arrived(target.meters, accuracy)
+  const angle = arrowAngle(target.bearing, heading)
+  const title = featureTitle(target.feature, planting)
+  const number = target.feature.properties.number
+  const direction = t(`mobile.terrain.directions.${target.direction}`)
+  const where = here ? t('mobile.tour.here') : t('mobile.tour.far', { distance: formatDistance(target.meters), direction })
+  return (
+    <View style={s.top}>
+      <View style={s.titleRow}>
+        <Text style={[s.hand, { flex: 1 }]} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.tour.title')} · {t('mobile.tour.left', { count: left })}</Text>
+        <IconButton icon="close" label={t('mobile.tour.end')} onPress={onEnd} size={touch.min} />
+      </View>
+      <View style={s.titleRow} accessible accessibilityLiveRegion="polite" accessibilityLabel={[title, number ? t('mobile.tour.number', { number: String(number) }) : null, where].filter(Boolean).join(', ')}>
+        <View style={[s.compass, here && s.compassHere]}>
+          {here
+            ? <Icon name="arrived" size={40} color={colors.white} />
+            : <View style={{ transform: [{ rotate: `${angle ?? 0}deg` }], opacity: angle === null ? 0.35 : 1 }}><Icon name="heading" size={40} color={colors.prune700} /></View>}
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[s.distanceBig, here && { color: colors.leaf700 }]} maxFontSizeMultiplier={1.3}>{here ? t('mobile.tour.here') : formatDistance(target.meters)}</Text>
+          <Text style={s.featureTitle} numberOfLines={2} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+            {number ? `${t('mobile.tour.number', { number: String(number) })} · ` : ''}{title}
+          </Text>
+          <Text style={s.meta} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+            {here ? t('mobile.tour.here_hint', { accuracy: formatDistance(Math.max(1, accuracy ?? 2)) }) : angle === null ? t('mobile.tour.no_heading', { direction }) : direction}
+          </Text>
+        </View>
+      </View>
+      <View style={s.gestures}>
+        <Button icon="planted" label={t('mobile.tour.planted')} onPress={onPlanted} variant={here ? 'primary' : 'secondary'} style={s.gesture} />
+        <Button icon="point" label={t('mobile.tour.planted_here')} onPress={onPlantedHere} variant="secondary" style={s.gesture}
+          accessibilityHint={t('mobile.tour.planted_here_hint')} />
+        <Button icon="skip" label={t('mobile.tour.skip')} onPress={onSkip} variant="ghost" style={s.gesture} />
+      </View>
+    </View>
+  )
+}
+
 // ── A feature ──────────────────────────────────────────────────────────
 
 export type QuickAction = { key: string; icon: IconName; label: string; onPress: () => void; primary?: boolean }
@@ -244,6 +318,10 @@ const s = StyleSheet.create({
   photoEmpty: { backgroundColor: colors.loam100, alignItems: 'center', justifyContent: 'center' },
   bigDot: { width: 22, height: 22, borderRadius: 11, borderWidth: 3, borderColor: colors.white },
   featureTitle: { ...type.mapName, color: colors.loam900 },
+  invite: { gap: space.sm, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.leaf50, borderWidth: 1, borderColor: colors.loam200 },
+  compass: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.loam50, borderWidth: 2, borderColor: colors.prune700 },
+  compassHere: { backgroundColor: colors.leaf700, borderColor: colors.leaf700 },
+  distanceBig: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, color: colors.prune700 },
   gestures: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.md },
   gesture: { flexGrow: 1 },
   notes: { ...type.hand, fontSize: 22, lineHeight: 27, color: colors.loam800 },

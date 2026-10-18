@@ -2,8 +2,8 @@
 // from screen readers (the button around an icon carries the label).
 import {
   BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
-  Fence, Flag, Footprints, Heart, HeartPulse, Hourglass, Info, Layers, Layers2, LocateFixed, MapPin, NotebookPen, PawPrint, ScanSearch, Shovel, Sprout,
-  Square, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
+  Fence, Flag, Footprints, Heart, HeartPulse, Hourglass, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Navigation2, NotebookPen, PawPrint, ScanSearch, Shovel, Sprout,
+  SkipForward, Square, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
 import { colors } from './theme'
 
@@ -16,6 +16,7 @@ const ICONS = {
   synced: CircleCheck, sending: CloudUpload, offline: CloudOff,
   info: Info, warning: TriangleAlert, error: CircleAlert,
   visit: Flag, ticked: SquareCheck, unticked: Square,
+  heading: Navigation2, arrived: MapPinCheck, skip: SkipForward,
   // The themes of a site visit's notes (lib/visit-core.ts).
   wish: Heart, water: Droplets, soil: Layers2, tree: TreeDeciduous, fauna: PawPrint, climate: Wind,
   neighbours: Fence, history: Hourglass, question: CircleQuestionMark, other: NotebookPen,
