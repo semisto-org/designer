@@ -13,11 +13,20 @@ Un jardin-forêt n'est pas une liste d'espèces : c'est un ensemble de plantes q
 
 ## La palette : les plantes de ton projet
 
-La **palette** réunit les espèces choisies pour ce terrain. Dans le panneau **Palette** :
+La **palette** réunit les espèces et les variétés choisies pour ce terrain. Dans le panneau **Palette** :
 
-- cherche une espèce dans « Ajouter une espèce : pommier, sureau… », puis touche **Ajouter à la palette** ;
-- **Rustiques ici**, coché d'office, ne garde que les espèces qui supportent le froid de la zone de ton terrain ;
+- le champ « Chercher : pommier, sureau… » cherche d'abord **dans ta palette** ;
+- si la plante n'y est pas, **L'ajouter depuis le catalogue** s'ouvre de lui-même : touche **+** pour l'ajouter. Les espèces qui supportent les hivers de ton terrain viennent en premier, chacune avec sa zone de rusticité ;
 - les **Suggestions pour ce terrain** sont dans l'onglet **Palette végétale** : voir [La palette végétale en tableau](/help/la-palette-vegetale-en-tableau).
+
+## Ajouter une variété
+
+Un pommier 'Belle fleur double', une poire 'Saint-Mathieu' : chaque variété a sa ligne dans la palette, et ses plants gardent leur nom sur la carte.
+
+- Tape le nom de la variété, ou l'espèce et la variété (« pommier belle fleur ») : sous l'espèce trouvée, la variété apparaît, prête à être ajoutée d'un clic.
+- Ou cherche l'espèce (« pommier »), puis touche **Une variété** sous elle : choisis dans la liste des variétés que le catalogue connaît, ou écris le nom de la tienne. Une variété que le catalogue ne connaît pas encore y est ajoutée, sans valeurs, à compléter plus tard.
+
+Si l'espèce est déjà dans ta palette, touche **Ajouter un autre « pommier » depuis le catalogue** sous tes résultats pour retrouver l'espèce et sa ligne **Une variété**.
 
 Pour chercher plus largement, le catalogue **Plantes** se filtre par strate, port, rusticité, exposition, humidité du sol, usages, plantes comestibles, fixatrices d'azote, mellifères ou indigènes, et peut écarter les invasives.
 

@@ -50,6 +50,8 @@ export type SpeciesSummary = {
   inGround?: number
   /** Main photo with its credit (catalogue search and sheet only). */
   photo?: SpeciesPhoto | null
+  /** The cultivars the search query names (catalogue search only). */
+  namedVarieties?: VarietySummary[]
 }
 
 /** A free photo of a species (PlantPhoto#as_json), always shown with its credit. */

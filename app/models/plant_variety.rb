@@ -31,6 +31,35 @@ class PlantVariety < ApplicationRecord
     "#{species.latin_name} '#{name}'"
   end
 
+  # The cultivar of this species by that name, accents, case, hyphens and
+  # quotes aside ('Belle-fleur double' is 'Belle fleur double'), or a new one.
+  # Someone who finds a cultivar missing adds it from the palette; only its
+  # name enters the catalogue, its values stay empty until sourced.
+  def self.find_or_create_named!(species, name)
+    name = name.to_s.squish.delete_prefix("'").delete_suffix("'").squish
+    species.varieties.detect { |v| fold(v.name) == fold(name) } || species.varieties.create!(name:)
+  end
+
+  # The cultivars a search names, per species: the ones the query says more
+  # about than the species does (« pommier belle fleur » names 'Belle fleur
+  # double', « pommier » alone names none). At most `limit` per species.
+  def self.named_in(species_list, query, limit: 6)
+    words = PlantSpecies.search_words(query).map { |w| fold(w) }
+    return {} if words.empty?
+    species_list = Array(species_list)
+    varieties = where(species_id: species_list.map(&:id)).includes(:common_names).order(:name).group_by(&:species_id)
+    species_list.each_with_object({}) do |species, found|
+      species_text = fold([ species.latin_name, *species.common_names.map(&:name) ].join(" "))
+      named = varieties.fetch(species.id, []).select do |variety|
+        text = fold([ variety.name, *variety.common_names.map(&:name) ].join(" "))
+        words.all? { |w| text.include?(w) || species_text.include?(w) } && words.any? { |w| text.include?(w) && !species_text.include?(w) }
+      end
+      found[species.id] = named.first(limit) if named.any?
+    end
+  end
+
+  def self.fold(text) = I18n.transliterate(text.to_s).downcase.gsub(/[\s'’\-]+/, " ").squish
+
   def summary_json
     { id:, speciesId: species_id, name:, latinName: full_latin_name, commonName: common_name }
   end

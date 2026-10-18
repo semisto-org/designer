@@ -83,16 +83,32 @@ class PlantSpecies < ApplicationRecord
   scope :with_card_data, -> { includes(:common_names) }
   scope :with_photos, -> { includes(photos: { image_attachment: { blob: { variant_records: { image_attachment: :blob } } } }) }
 
-  # Latin name, common names, cultivar names: accents and case ignored.
+  # Latin name, common names, cultivar names: accents and case ignored. Every
+  # word of the query must appear in one of them, so « belle-fleur »
+  # finds 'Belle fleur double' and « pommier belle fleur » finds the apple
+  # through its common name and its cultivar.
   scope :matching, ->(query) {
-    term = query.to_s.squish
-    next all if term.blank?
-    pattern = "%#{sanitize_sql_like(term)}%"
-    names = PlantCommonName.where(nameable_type: "PlantSpecies").where("unaccent(plant_common_names.name) ILIKE unaccent(?)", pattern).select(:nameable_id)
-    variety_names = PlantCommonName.where(nameable_type: "PlantVariety").where("unaccent(plant_common_names.name) ILIKE unaccent(?)", pattern).select(:nameable_id)
-    varieties = PlantVariety.where("unaccent(plant_varieties.name) ILIKE unaccent(?)", pattern).or(PlantVariety.where(id: variety_names)).select(:species_id)
-    where("unaccent(plant_species.latin_name) ILIKE unaccent(?)", pattern).or(where(id: names)).or(where(id: varieties))
+    words = search_words(query)
+    next all if words.empty?
+    words.inject(all) do |scope, word|
+      pattern = "%#{sanitize_sql_like(word)}%"
+      names = PlantCommonName.where(nameable_type: "PlantSpecies").where("unaccent(plant_common_names.name) ILIKE unaccent(?)", pattern).select(:nameable_id)
+      variety_names = PlantCommonName.where(nameable_type: "PlantVariety").where("unaccent(plant_common_names.name) ILIKE unaccent(?)", pattern).select(:nameable_id)
+      varieties = PlantVariety.where("unaccent(plant_varieties.name) ILIKE unaccent(?)", pattern).or(PlantVariety.where(id: variety_names)).select(:species_id)
+      scope.where(
+        "unaccent(plant_species.latin_name) ILIKE unaccent(:p) OR plant_species.id IN (#{names.to_sql}) OR plant_species.id IN (#{varieties.to_sql})",
+        p: pattern
+      )
+    end
   }
+
+  # The words of a search, split on spaces, hyphens and apostrophes; a lone
+  # letter (the d of « d'Althan ») says nothing when other words are there.
+  def self.search_words(query)
+    words = query.to_s.squish.first(100).split(/[\s'’\-]+/).compact_blank.uniq
+    long = words.select { |w| w.length > 1 }
+    long.any? ? long.first(8) : words
+  end
 
   def self.find_by_latin_name(latin_name)
     where("lower(latin_name) = ?", latin_name.to_s.squish.downcase).first
