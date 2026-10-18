@@ -227,6 +227,44 @@ fr:
       number_invalid: "Un numéro est un nombre entier à partir de 1."
       swapped: "N° %{number} donné à ce plant ; l'autre plant prend le n° %{other}."
       stale: "Ce plant venait d'être modifié par quelqu'un d'autre : sa ligne est à jour, recommence."
+    batch:
+      select_all: "Tout sélectionner"
+      select_row: "Sélectionner %{name}"
+      selected_species: { one: "%{count} espèce sélectionnée", other: "%{count} espèces sélectionnées" }
+      selected_plants: { one: "%{count} plant sélectionné", other: "%{count} plants sélectionnés" }
+      clear: "Tout désélectionner"
+      label: "Actions sur la sélection"
+      role: "Rôle"
+      strata: "Strate"
+      strata_catalogue: "Strate du catalogue"
+      state: "État"
+      state_hint: "Les plants déjà en terre gardent leur date."
+      states:
+        planned: "Prévu"
+        today: "En terre aujourd'hui"
+        unknown: "En terre, date inconnue"
+      delete: "Supprimer"
+      working: "Un instant…"
+      not_selectable: "Arbre existant hors catalogue : il se modifie sur la carte."
+      delete_species_confirm: "Retirer de la palette : %{names} ?"
+      delete_species_plants: { one: "Son plant dessiné sur la carte ira à la corbeille.", other: "Leurs %{count} plants dessinés sur la carte iront à la corbeille." }
+      delete_plants_confirm: { one: "Mettre ce plant à la corbeille ?", other: "Mettre ces %{count} plants à la corbeille ?" }
+      delete_undo_hint: "Tu pourras annuler : la corbeille les garde 30 jours."
+      and_more: { one: "et %{count} autre", other: "et %{count} autres" }
+      done:
+        role: { one: "Rôle changé pour %{count} espèce.", other: "Rôle changé pour %{count} espèces." }
+        strata: { one: "Strate changée pour %{count} espèce.", other: "Strate changée pour %{count} espèces." }
+        planted: { one: "%{count} plant mis à jour.", other: "%{count} plants mis à jour." }
+        deleted_species: { one: "%{count} espèce retirée de la palette.", other: "%{count} espèces retirées de la palette." }
+        deleted_plants: { one: "%{count} plant à la corbeille.", other: "%{count} plants à la corbeille." }
+        nothing: "Rien à changer : la sélection était déjà dans cet état."
+        still_in_patches: "Les massifs qui la contiennent ne bougent pas : retire-la de leur composition sur la carte."
+      undo: "Annuler"
+      undone: "C'est annulé, tout est revenu comme avant."
+      errors:
+        unknown_change: "Cette action n'existe pas."
+        empty: "Choisis d'abord au moins une plante."
+        invalid_value: "Cette valeur n'existe pas."
   activerecord:
     errors:
       models:

@@ -556,6 +556,8 @@ Rails.application.routes.draw do
       resource :plant_palette, path: "palette", only: :show do
         get "plants/:key", action: :plant, as: :plant, constraints: { key: %r{[^/]+} }
         patch "plants/:key", action: :update_plant, constraints: { key: %r{[^/]+} }
+        post "batch", action: :batch
+        post "batch/undo", action: :undo_batch, as: :undo_batch
       end
       resources :plant_palette_views, path: "palette/views", only: %i[create update destroy]
     end

@@ -17,7 +17,8 @@ module Mcp
     def call(lines)
       raise ToolError, I18n.t("mcp.errors.too_many_plants", max: MAX_PLANTS) if lines.size > MAX_PLANTS
       pending = @map.palette_drafts.count
-      taken = PaletteItem.where(map: @map).pluck(:species_id, :variety_id).to_set
+      taken = PaletteItem.where(map: @map).pluck(:species_id, :variety_id, :variety_name)
+                         .to_set { |species_id, variety_id, name| [ species_id, variety_id || (name && PlantVariety.fold(name)) ] }
       created = []
       rejected = []
       lines.each_with_index do |line, index|
@@ -25,18 +26,24 @@ module Mcp
         species, error = resolve(line)
         variety = species && line["variety_id"] && species.varieties.find_by(id: line["variety_id"])
         error ||= I18n.t("mcp.palette_errors.variety", id: line["variety_id"]) if species && line["variety_id"] && !variety
-        error ||= I18n.t("mcp.palette_errors.taken", name: species.common_name || species.latin_name) if species && taken.include?([ species.id, variety&.id ])
+        # A cultivar by name: the catalogue's when it knows it, else a name
+        # the human's acceptance turns into a new cultivar.
+        variety_name = line["variety_name"].to_s.squish.delete_prefix("'").delete_suffix("'").squish.presence unless line["variety_id"]
+        variety ||= species && variety_name && species.varieties.detect { |v| PlantVariety.fold(v.name) == PlantVariety.fold(variety_name) }
+        variety_name = nil if variety
+        key = [ species&.id, variety&.id || (variety_name && PlantVariety.fold(variety_name)) ]
+        error ||= I18n.t("mcp.palette_errors.taken", name: species.common_name || species.latin_name) if species && taken.include?(key)
         error ||= I18n.t("mcp.palette_errors.pending", max: MAX_PENDING) if pending >= MAX_PENDING
         if error
           rejected << { index:, name: line["name"], error: }
           next
         end
         item = @map.palette_drafts.new(
-          species:, variety:, strata: line["strata"], role: line["role"], target_count: line["target_count"],
+          species:, variety:, variety_name:, strata: line["strata"], role: line["role"], target_count: line["target_count"],
           notes: line["notes"], rationale: line["rationale"], source: "ai", created_by: @user
         )
         if item.save
-          taken << [ species.id, variety&.id ]
+          taken << key
           pending += 1
           created << { index:, item: }
         else

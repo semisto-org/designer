@@ -107,6 +107,25 @@ describe('flush', () => {
     expect(result.state.ops.map((o) => o.id)).toEqual(['b', 'c'])
   })
 
+  it('says on which change and why a round stopped', async () => {
+    const { t } = transport({ uploadPhoto: async () => { throw { status: 0, message: 'Network request failed' } } })
+    const ops: Op[] = [{ id: 'b', mapId: 1, createdAt: at, type: 'uploadPhoto', featureId: null, file: 'f', lng: null, lat: null, takenAt: at }]
+    const result = await flush(state(ops), t)
+    expect(result.blocked).toEqual({ id: 'b', reason: 'Network request failed' })
+  })
+
+  it('sets aside a change the app itself fails on, and sends the next ones', async () => {
+    const { t, calls } = transport({ uploadPhoto: async () => { throw new TypeError('undefined is not an object') } })
+    const ops: Op[] = [
+      { id: 'b', mapId: 1, createdAt: at, type: 'uploadPhoto', featureId: null, file: 'f', lng: null, lat: null, takenAt: at },
+      { id: 'c', mapId: 1, createdAt: at, type: 'createComment', featureId: 5, body: 'y' },
+    ]
+    const result = await flush(state(ops), t)
+    expect(result.stopped).toBe('done')
+    expect(result.state.ops.map((o) => [o.id, o.error])).toEqual([['b', 'app: undefined is not an object']])
+    expect(calls).toEqual(['comment 5'])
+  })
+
   it('stops on a server error, to retry later', async () => {
     const { t } = transport({ createComment: async () => { throw { status: 503 } } })
     const result = await flush(state([{ id: 'a', mapId: 1, createdAt: at, type: 'createComment', featureId: 5, body: 'x' }]), t)

@@ -1,6 +1,6 @@
 import { act, create } from 'react-test-renderer'
 import type { MapFeature } from '@/lib/types'
-import { FeatureTop, NoteTop, RestBody, RestTop, VisitBody, VisitTop } from '../SheetContent'
+import { FeatureTop, NoteTop, RestBody, RestTop, TourTop, VisitBody, VisitTop } from '../SheetContent'
 
 jest.mock('@/lib/haptics', () => ({ haptics: { tap: jest.fn(), select: jest.fn(), success: jest.fn(), warning: jest.fn() } }))
 jest.mock('@/ui/Icon', () => ({ Icon: () => null }))
@@ -100,5 +100,44 @@ describe('terrain sheet', () => {
     const rows = tree.root.findAll((node) => node.props.accessibilityRole === 'button' && typeof node.props.accessibilityLabel === 'string' && (node.type as unknown) !== 'View')
     const labels = [...new Set(rows.map((n) => n.props.accessibilityLabel))]
     expect(labels).toEqual(['Question, Note 2, 14 h 20', 'Eau, Note 1, 14 h 05'])
+  })
+
+  it('offers the photos already taken where one stands, to take them again', () => {
+    const shot = { id: 7, kind: 'photo' as const, caption: null, takenAt: '2025-10-18T10:00:00Z', lng: 4.95, lat: 50.32, featureId: null, uploadedBy: null }
+    const onPhoto = jest.fn()
+    let tree!: ReturnType<typeof create>
+    act(() => {
+      tree = create(<RestBody located="yes" planting={planting} viewer={false} onPick={() => {}} around={[]}
+        mapId={1} photosHere={[{ photo: shot, meters: 4, count: 3 }]} onPhoto={onPhoto} />)
+    })
+    expect(texts(tree)).toContain('Déjà photographié ici')
+    expect(texts(tree)).toContain('3 photos')
+    const button = tree.root.findAll((n) => typeof n.props.accessibilityLabel === 'string' && n.props.accessibilityLabel.startsWith('18 octobre 2025') && n.props.onPress)[0]
+    act(() => button.props.onPress())
+    expect(onPhoto).toHaveBeenCalledWith(shot)
+  })
+
+  it('on the planting round, leads to the plant, then says « Tu y es »', () => {
+    const target = { feature: { ...plant, properties: { ...plant.properties, planted_on: undefined, number: 12 } }, meters: 7.2, bearing: 45, direction: 'NE' as const }
+    const props = { left: 5, skippedLeft: 0, planting, accuracy: 3, heading: 0, located: true, onPlanted: jest.fn(), onPlantedHere: jest.fn(), onSkip: jest.fn(), onEnd: jest.fn() }
+    let far!: ReturnType<typeof create>
+    let near!: ReturnType<typeof create>
+    act(() => { far = create(<TourTop {...props} target={target} />) })
+    act(() => { near = create(<TourTop {...props} target={{ ...target, meters: 1.5 }} />) })
+    expect(texts(far)).toContain('7 m')
+    expect(texts(far).join(' ')).toMatch(/n° 12 · Groseillier/)
+    expect(texts(near)).toContain('Tu y es')
+    const planted = near.root.findAll((n) => n.props.accessibilityLabel === 'Planté !' && n.props.onPress)[0]
+    act(() => planted.props.onPress())
+    expect(props.onPlanted).toHaveBeenCalled()
+  })
+
+  it('says when everything is planted', () => {
+    let tree!: ReturnType<typeof create>
+    act(() => {
+      tree = create(<TourTop target={null} left={0} skippedLeft={0} planting={planting} accuracy={3} heading={null} located
+        onPlanted={() => {}} onPlantedHere={() => {}} onSkip={() => {}} onEnd={() => {}} />)
+    })
+    expect(texts(tree)).toContain('Tout est planté')
   })
 })

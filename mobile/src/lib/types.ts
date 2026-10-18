@@ -51,6 +51,12 @@ export type Photo = {
   lat: number | null
   featureId: number | null
   uploadedBy: string | null
+  /** Where the camera faced, 0 = north, clockwise. */
+  heading?: number | null
+  /** The first photo of the series this one retakes. */
+  retakeOfId?: number | null
+  width?: number | null
+  height?: number | null
 }
 
 export type Species = { id: number; latinName: string; commonName: string | null; strata: string | null }

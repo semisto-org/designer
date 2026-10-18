@@ -57,7 +57,7 @@ export default function VisitNote() {
     for (const item of media) {
       outbox.add({
         type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt,
-        lng: item.position?.[0] ?? position[0], lat: item.position?.[1] ?? position[1], featureId: tempId,
+        lng: item.position?.[0] ?? position[0], lat: item.position?.[1] ?? position[1], featureId: tempId, heading: item.heading ?? null,
       })
     }
     display.reveal(mapId, { layer: 'notes', kind: 'note_point' }, undefined)

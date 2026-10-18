@@ -539,6 +539,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_190000) do
     t.bigint "derived_from_id"
     t.string "rendering_style"
     t.string "kind", default: "photo", null: false
+    t.bigint "retake_of_id"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
@@ -548,6 +549,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_190000) do
     t.index ["map_id", "taken_at"], name: "index_map_photos_on_map_id_and_taken_at"
     t.index ["map_id"], name: "index_map_photos_on_map_id"
     t.index ["photo_album_id"], name: "index_map_photos_on_photo_album_id"
+    t.index ["retake_of_id"], name: "index_map_photos_on_retake_of_id"
     t.index ["uploaded_by_id"], name: "index_map_photos_on_uploaded_by_id"
   end
 
@@ -846,8 +848,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_190000) do
     t.decimal "unit_price", precision: 10, scale: 2
     t.string "supplier"
     t.string "size"
+    t.string "variety_name"
     t.index ["created_by_id"], name: "index_palette_items_on_created_by_id"
-    t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "(variety_id IS NULL)"
+    t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "((variety_id IS NULL) AND (variety_name IS NULL))"
     t.index ["map_id", "variety_id"], name: "index_palette_items_unique_variety", unique: true, where: "(variety_id IS NOT NULL)"
     t.index ["map_id"], name: "index_palette_items_on_map_id"
     t.index ["species_id"], name: "index_palette_items_on_species_id"
@@ -1575,6 +1578,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_190000) do
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
   add_foreign_key "map_photos", "map_features", on_delete: :nullify
   add_foreign_key "map_photos", "map_photos", column: "derived_from_id", on_delete: :nullify
+  add_foreign_key "map_photos", "map_photos", column: "retake_of_id", on_delete: :nullify
   add_foreign_key "map_photos", "maps"
   add_foreign_key "map_photos", "photo_albums", on_delete: :nullify
   add_foreign_key "map_photos", "users", column: "uploaded_by_id", on_delete: :nullify

@@ -9,22 +9,25 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useDisplay } from '@/lib/display'
+import { display, useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
 import { anchor } from '@/lib/geo'
 import { t, todayIso } from '@/lib/i18n'
 import { styleUrl } from '@/lib/maps'
 import { outbox } from '@/lib/outbox'
 import { pickFeatureId } from '@/lib/pick'
+import { photosHere } from '@/lib/retake'
 import { around, whereFrom } from '@/lib/terrain'
 import { canEdit, type MapFeature, type Position } from '@/lib/types'
+import { haptics } from '@/lib/haptics'
+import { arrived, nextTarget, remaining } from '@/lib/tour'
 import { useVisit, visits } from '@/lib/visit'
 import { visitNotes } from '@/lib/visit-core'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
 import { useOnline, useOutbox } from '@/state/sync'
 import {
-  AROUND_RADIUS, FeatureBody, FeatureTop, NoteTop, RestBody, RestTop, VisitBody, VisitTop, whereLabel, type NoteChoice, type QuickAction,
+  AROUND_RADIUS, FeatureBody, FeatureTop, NoteTop, RestBody, RestTop, TourTop, VisitBody, VisitTop, whereLabel, type NoteChoice, type QuickAction,
 } from '@/terrain/SheetContent'
 import { chooseMedia } from '@/ui/chooseMedia'
 import { Icon } from '@/ui/Icon'
@@ -48,6 +51,10 @@ export default function Terrain() {
   const [level, setLevel] = useState<SheetLevel>(0)
   const shown = useDisplay(mapId)
   const visit = useVisit(mapId)
+  const [accuracy, setAccuracy] = useState<number | null>(null)
+  const [touring, setTouring] = useState(false)
+  const [skipped, setSkipped] = useState<ReadonlySet<number>>(new Set())
+  const [heading, setHeading] = useState<number | null>(null)
 
   // The blue dot's position, for distances and for placing things.
   // Every 2 m is enough for « à 12 m au nord-est », and spares the battery.
@@ -59,6 +66,7 @@ export default function Terrain() {
       if (!granted) { setLocated('denied'); return }
       const watcher = await Location.watchPositionAsync({ accuracy: Location.LocationAccuracy.High, distanceInterval: 2 }, (fix) => {
         setMe([fix.coords.longitude, fix.coords.latitude])
+        setAccuracy(fix.coords.accuracy ?? null)
         setLocated('yes')
       })
       // The screen closed while permission was asked: stop at once.
@@ -68,6 +76,17 @@ export default function Terrain() {
     return () => { gone = true; sub?.remove() }
   }, [])
 
+  // On the planting round, the arrow follows the way the phone faces.
+  useEffect(() => {
+    if (!touring) return
+    let sub: Location.LocationSubscription | null = null
+    let gone = false
+    Location.watchHeadingAsync((h) => setHeading(h.trueHeading >= 0 ? h.trueHeading : h.magHeading >= 0 ? h.magHeading : null))
+      .then((watcher) => { if (gone) watcher.remove(); else sub = watcher })
+      .catch(() => setHeading(null))
+    return () => { gone = true; sub?.remove() }
+  }, [touring])
+
   // What the display shows: the map, the list around and the selection follow it.
   const visible = useMemo(
     () => (bundle ? bundle.features.filter((f) => isShown(f.properties, shown, bundle.planting)) : []),
@@ -75,6 +94,18 @@ export default function Terrain() {
   )
   const selected = useMemo(() => visible.find((f) => f.id === selectedId) ?? null, [visible, selectedId])
   const nearby = useMemo(() => (me ? around(visible, me, { radius: AROUND_RADIUS }) : []), [visible, me])
+  const shotHere = useMemo(() => (me && bundle ? photosHere(bundle.photos, me) : []), [bundle, me])
+  const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
+  const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
+  const here = target ? arrived(target.meters, accuracy) : false
+  const targetId = target?.feature.id ?? null
+  // A soft buzz when one reaches the plant, and the map turns to the next one.
+  useEffect(() => { if (here) haptics.success() }, [here, targetId])
+  useEffect(() => {
+    if (!target || !bundle) return
+    display.reveal(mapId, target.feature.properties, bundle.planting)
+    camera.current?.easeTo({ center: anchor(target.feature.geometry), duration: 500, padding: { top: 120, bottom: 320, left: 0, right: 0 } })
+  }, [targetId]) // eslint-disable-line react-hooks/exhaustive-deps
   const visitNoted = useMemo(() => (bundle && visit ? visitNotes(bundle, visit.key) : []), [bundle, visit])
 
   if (!bundle) {
@@ -123,7 +154,7 @@ export default function Terrain() {
     for (const item of choice.items) {
       outbox.add({
         type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt,
-        lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: feature?.id ?? null,
+        lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: feature?.id ?? null, heading: item.heading ?? null,
       })
     }
     const count = choice.items.length
@@ -140,22 +171,31 @@ export default function Terrain() {
   }
 
   // A plant one has just put in the ground: one tap, and « Annuler » for a slip of the thumb.
-  const markPlanted = (feature: MapFeature) => {
+  const markPlanted = (feature: MapFeature, { at, message }: { at?: Position; message?: string } = {}) => {
     const op = outbox.add({
       type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion,
-      changes: { patch: { planted_on: todayIso() } },
+      changes: { patch: { planted_on: todayIso() }, ...(at ? { geometry: { type: 'Point', coordinates: at } } : {}) },
     })
-    toast(t('mobile.terrain.planted_toast'), {
+    toast(message ?? t('mobile.terrain.planted_toast'), {
       action: {
         label: t('mobile.terrain.undo'),
         onPress: () => {
           if (outbox.get().ops.some((o) => o.id === op.id)) outbox.discard(op.id)
-          else outbox.add({ type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion, changes: { patch: { planted_on: null } } })
+          else outbox.add({ type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion, changes: { patch: { planted_on: null }, ...(at ? { geometry: feature.geometry } : {}) } })
           toast(t('mobile.terrain.undone'), { tone: 'info' })
         },
       },
     })
   }
+
+  const startTour = () => {
+    setSkipped(new Set())
+    setSelectedId(null)
+    setNoting(false)
+    setTouring(true)
+    setLevel(0)
+  }
+  const endTour = () => { setTouring(false); setHeading(null) }
 
   const quickActions = (feature: MapFeature): QuickAction[] => {
     const open = () => go('/maps/[id]/features/[featureId]', { featureId: String(feature.id) })
@@ -185,7 +225,7 @@ export default function Terrain() {
           trackUserLocation={follow ? 'heading' : undefined}
           onTrackUserLocationChange={(e) => setFollow(!!e.nativeEvent.trackUserLocation)}
         />
-        <FeatureLayers bundle={bundle} display={shown} selectedId={selectedId}
+        <FeatureLayers bundle={bundle} display={shown} selectedId={selectedId ?? (touring ? targetId : null)}
           onSelect={(id) => { const feature = id === null ? null : visible.find((f) => f.id === id); if (feature) pick(feature); else unselect() }} />
         <UserLocation accuracy heading />
       </Map>
@@ -218,7 +258,13 @@ export default function Terrain() {
         top={
           <>
             {bundle.map.readOnlyByPlan && <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}><Notice tone="warning">{t('mobile.maps.read_only_by_plan')}</Notice></View>}
-            {selected
+            {touring && editable && !selected
+              ? <TourTop target={target} left={toPlantCount} skippedLeft={skipped.size} planting={bundle.planting} accuracy={accuracy} heading={heading}
+                  located={located === 'yes'} onEnd={endTour}
+                  onPlanted={() => target && markPlanted(target.feature, { message: t('mobile.tour.planted_toast') })}
+                  onPlantedHere={() => target && me && markPlanted(target.feature, { at: me, message: t('mobile.tour.moved_toast') })}
+                  onSkip={() => target && setSkipped((all) => new Set([...all, target.feature.id]))} />
+              : selected
               ? <FeatureTop mapId={mapId} feature={selected} planting={bundle.planting} photo={photosOf(selected)[0] ?? null} where={where}
                   gestures={quickActions(selected)} onClose={unselect} />
               : visit && editable
@@ -232,10 +278,12 @@ export default function Terrain() {
       >
         {selected
           ? <FeatureBody mapId={mapId} feature={selected} photos={photosOf(selected)}
-              onOpen={() => go('/maps/[id]/features/[featureId]', { featureId: String(selected.id) })} />
+              onOpen={() => go('/maps/[id]/features/[featureId]', { featureId: String(selected.id) })}
+              onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />
           : visit && editable
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
-            : <RestBody around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan} />}
+            : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
+                mapId={mapId} photosHere={shotHere} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
       </Sheet>
     </View>
   )

@@ -269,6 +269,17 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ after.id ], response.parsed_body["photos"].map { |p| p["id"] }
   end
 
+  test "an editor retakes a photo from the phone: it joins the series and the first photo's feature" do
+    first = create_photo(salt: 1, location: [ 4.9, 50.34 ], heading: 90, map_feature: map_features(:pond))
+    sign_in_as users(:michael)
+    post_photo "terrain.jpg", retake_of_id: first.id, heading: 92, source: "phone", lng: 4.9, lat: 50.34
+    assert_response :created
+    body = response.parsed_body
+    assert_equal first.id, body["retakeOfId"]
+    assert_equal map_features(:pond).id, body["featureId"]
+    assert_equal 92.0, body["heading"]
+  end
+
   test "image: a viewer is redirected to a short-lived link on the stored file; no variant is public" do
     photo = create_photo
     sign_in_as users(:alice)

@@ -1,13 +1,14 @@
 # « Palette végétale »: the table of a map's plants, next to the map, the
 # project sheet and the tasks. Everyone on the map reads it; editors save
 # views and set a plant's role, price, supplier and size (its palette item,
-# created on the fly for a plant drawn but not yet in the palette).
+# created on the fly for a plant drawn but not yet in the palette), one
+# plant at a time or for a whole selection (batch, undone by undo_batch).
 module Maps
   class PlantPalettesController < ApplicationController
     include MapScoped
 
     before_action :set_map
-    before_action :require_editor!, only: :update_plant
+    before_action :require_editor!, only: %i[update_plant batch undo_batch]
 
     def show
       palette = PlantPalette.new(@map)
@@ -44,6 +45,24 @@ module Maps
       else
         render_errors item
       end
+    end
+
+    # Actions on the selection of either table (PlantPalette::Batch).
+    def batch
+      selection = params.require(:batch)
+      result = PlantPalette::Batch.new(
+        @map, keys: selection[:keys], plant_ids: selection[:plant_ids], change: selection[:change], value: selection[:value], by: Current.user
+      ).run!
+      render json: PlantPalette.new(@map.reload).as_json.merge(result)
+    rescue PlantPalette::Batch::Invalid => e
+      render json: { message: e.message }, status: :unprocessable_entity
+    end
+
+    def undo_batch
+      PlantPalette::Batch.new(@map, by: Current.user).undo!(params.require(:undo).to_unsafe_h)
+      render json: PlantPalette.new(@map.reload)
+    rescue PlantPalette::Batch::Invalid => e
+      render json: { message: e.message }, status: :unprocessable_entity
     end
 
     private

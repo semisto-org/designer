@@ -4,6 +4,7 @@ import { useState, type KeyboardEvent } from 'react'
 import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { StrataDot } from '@/map/plants/strata'
+import { SelectAll, useRangeSelect } from '@/palette/BatchBar'
 import { FitChips } from '@/palette/Fit'
 import { columnLabel, displayTotal, displayValue, groupLabel, NUMERIC } from '@/palette/format'
 import { statusOf, totals, type Group, type PaletteRow, type PlantStatus, type ViewSettings } from '@/palette/table'
@@ -29,20 +30,38 @@ type Props = {
   onOpen: (row: PaletteRow) => void
   onSort: (key: string) => void
   onEdit: (row: PaletteRow, field: string, value: string | null) => Promise<boolean>
+  /** Rows chosen for an action on the selection (editors only), by key. */
+  selected?: Set<string>
+  onSelect?: (next: Set<string>) => void
 }
 
+/** Species rows can be selected; an existing tree outside the catalogue cannot. */
+export const selectable = (row: PaletteRow) => row.speciesId != null
+
 /** The table itself: sticky header, one band per group with its subtotal, the grand total at the bottom. */
-export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onSort, onEdit }: Props) {
+export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onSort, onEdit, selected, onSelect }: Props) {
   const columns = settings.columns
   const all = groups.flatMap((g) => g.rows)
   const grand = totals(all, columns)
   const grouped = settings.group_by !== 'none'
+  const selecting = selected != null && onSelect != null
+  const order = [...new Set(all.filter(selectable).map((row) => row.key))]
+  const toggle = useRangeSelect(order, selected ?? new Set<string>(), onSelect ?? (() => {}))
+  const span = columns.length + (selecting ? 1 : 0)
 
   return (
     <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-loam-900/10 print:overflow-visible print:shadow-none print:ring-0">
       <table className="w-full min-w-max border-collapse text-sm">
         <thead className="sticky top-0 z-10 bg-loam-50/95 backdrop-blur">
           <tr>
+            {selecting && (
+              <th scope="col" className="sticky left-0 z-10 w-10 border-b border-loam-900/10 bg-loam-50 py-2.5 pl-3 pr-1 text-left print:hidden">
+                <SelectAll
+                  ids={order} selected={selected as Set<unknown>}
+                  onChange={(all) => onSelect(all ? new Set([...selected, ...order]) : new Set([...selected].filter((key) => !order.includes(key))))}
+                />
+              </th>
+            )}
             {columns.map((column) => {
               const sorted = settings.sort.key === column
               const hint = t(`plant_palette.column_hints.${column}`)
@@ -50,7 +69,7 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
                 <th
                   key={column} scope="col"
                   aria-sort={sorted ? (settings.sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
-                  className={clsx('border-b border-loam-900/10 px-3 py-2.5 font-medium text-loam-600', NUMERIC.has(column) ? 'text-right' : 'text-left', column === 'name' && 'sticky left-0 z-10 bg-loam-50')}
+                  className={clsx('border-b border-loam-900/10 px-3 py-2.5 font-medium text-loam-600', NUMERIC.has(column) ? 'text-right' : 'text-left', column === 'name' && clsx('sticky z-10 bg-loam-50', selecting ? 'left-10 print:left-0' : 'left-0'))}
                 >
                   <button
                     type="button" onClick={() => onSort(column)}
@@ -71,7 +90,7 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
             <tbody key={group.key ?? '\u0000'}>
               {grouped && (
                 <tr className="bg-prune-50/40">
-                  <th colSpan={columns.length} scope="colgroup" className="px-3 pb-1.5 pt-4 text-left">
+                  <th colSpan={span} scope="colgroup" className="px-3 pb-1.5 pt-4 text-left">
                     <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <span className="inline-flex items-center gap-2 font-serif text-lg font-semibold text-prune-800">
                         {settings.group_by === 'strata' && group.key && <StrataDot strata={group.key as Strata} />}
@@ -85,21 +104,36 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
                   </th>
                 </tr>
               )}
-              {group.rows.map((row) => (
-                <tr key={`${group.key ?? ''}|${row.key}`} className="group/row border-b border-loam-100 last:border-0 hover:bg-loam-50/60">
-                  {columns.map((column) => (
-                    <Cell key={column} row={row} column={column} canEdit={canEdit && row.speciesId != null} suppliers={suppliers} onOpen={onOpen} onEdit={onEdit} />
-                  ))}
-                </tr>
-              ))}
+              {group.rows.map((row) => {
+                const on = selecting && selected.has(row.key)
+                return (
+                  <tr key={`${group.key ?? ''}|${row.key}`} className={clsx('group/row border-b border-loam-100 last:border-0', on ? 'bg-prune-50/70' : 'hover:bg-loam-50/60')}>
+                    {selecting && (
+                      <td className={clsx('sticky left-0 z-[1] w-10 py-2 pl-3 pr-1 align-middle print:hidden', on ? 'bg-prune-50' : 'bg-white group-hover/row:bg-loam-50')}>
+                        <input
+                          type="checkbox" checked={on} disabled={!selectable(row)}
+                          onChange={() => {}} onClick={(e) => toggle(row.key, e)}
+                          aria-label={t('plant_palette.batch.select_row', { name: row.name })}
+                          title={selectable(row) ? undefined : t('plant_palette.batch.not_selectable')}
+                          className="h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-600 disabled:opacity-40"
+                        />
+                      </td>
+                    )}
+                    {columns.map((column) => (
+                      <Cell key={column} row={row} column={column} canEdit={canEdit && row.speciesId != null} suppliers={suppliers} onOpen={onOpen} onEdit={onEdit} stickyLeft={selecting ? 'left-10 print:left-0' : 'left-0'} on={on} />
+                    ))}
+                  </tr>
+                )
+              })}
             </tbody>
           )
         })}
         {Object.keys(grand).length > 0 && (
           <tfoot>
             <tr className="border-t-2 border-loam-900/15 bg-loam-50/80 font-semibold text-loam-900">
+              {selecting && <td className="sticky left-0 w-10 bg-loam-50 print:hidden" />}
               {columns.map((column, i) => (
-                <td key={column} className={clsx('px-3 py-2.5 tabular-nums', NUMERIC.has(column) ? 'text-right' : 'text-left', i === 0 && 'sticky left-0 bg-loam-50')}>
+                <td key={column} className={clsx('px-3 py-2.5 tabular-nums', NUMERIC.has(column) ? 'text-right' : 'text-left', i === 0 && clsx('sticky bg-loam-50', selecting ? 'left-10 print:left-0' : 'left-0'))}>
                   {i === 0 ? t('plant_palette.totals') : column in grand ? displayTotal(column, grand[column]) : ''}
                 </td>
               ))}
@@ -111,8 +145,8 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
   )
 }
 
-function Cell({ row, column, canEdit, suppliers, onOpen, onEdit }: {
-  row: PaletteRow; column: string; canEdit: boolean; suppliers: string[]
+function Cell({ row, column, canEdit, suppliers, onOpen, onEdit, stickyLeft, on }: {
+  row: PaletteRow; column: string; canEdit: boolean; suppliers: string[]; stickyLeft: string; on: boolean
   onOpen: (row: PaletteRow) => void
   onEdit: (row: PaletteRow, field: string, value: string | null) => Promise<boolean>
 }) {
@@ -121,7 +155,7 @@ function Cell({ row, column, canEdit, suppliers, onOpen, onEdit }: {
 
   if (column === 'name') {
     return (
-      <th scope="row" className="sticky left-0 z-[1] max-w-[11rem] bg-white sm:max-w-[18rem] px-3 py-2 text-left font-normal group-hover/row:bg-loam-50">
+      <th scope="row" className={clsx('sticky z-[1] max-w-[11rem] sm:max-w-[18rem] px-3 py-2 text-left font-normal', stickyLeft, on ? 'bg-prune-50' : 'bg-white group-hover/row:bg-loam-50')}>
         <button type="button" onClick={() => onOpen(row)} className="flex w-full min-w-0 items-center gap-2.5 text-left">
           {row.photo
             ? <img src={row.photo} alt="" loading="lazy" className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-loam-900/10 print:hidden" />

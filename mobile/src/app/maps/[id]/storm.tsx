@@ -113,7 +113,7 @@ export default function StormScreen() {
     for (const item of media) {
       outbox.add({
         type: 'uploadPhoto', mapId, file: item.file, takenAt: item.takenAt,
-        lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: ids[0] ?? null,
+        lng: item.position?.[0] ?? null, lat: item.position?.[1] ?? null, featureId: ids[0] ?? null, heading: item.heading ?? null,
       })
     }
     toast(t('mobile.storm.saved_title'), { body: t('mobile.storm.saved', { count: ids.length }) })

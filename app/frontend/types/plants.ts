@@ -167,6 +167,8 @@ export type PaletteItem = {
   id: number
   speciesId: number
   varietyId: number | null
+  /** A draft naming a cultivar the catalogue doesn't know yet: created when accepted. */
+  newVariety?: boolean
   strata: Strata | null
   effectiveStrata: Strata
   role: PaletteRole | null
