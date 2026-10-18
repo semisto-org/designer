@@ -35,6 +35,11 @@ export function amountsFor(stage: HarvestStage): HarvestAmount[] {
   return HARVEST_AMOUNTS.filter((a) => stage === 'on_tree' || a !== 'none')
 }
 
+/** « Aucun fruit »: came to pick, the tree carries nothing (a season without fruit). */
+export function nothingHarvest(notedOn: string, note = ''): NewHarvest {
+  return { notedOn, stage: 'on_tree', amount: 'none', uses: [], quantityKg: null, note: note.trim() || null }
+}
+
 export function harvestBody(h: NewHarvest) {
   const picked = h.stage === 'picked'
   return {

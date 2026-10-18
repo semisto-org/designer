@@ -9,6 +9,9 @@ fr:
     stages:
       on_tree: "Fruits sur l'arbre"
       picked: "Récolte"
+    # One tap when the tree has nothing to pick: saved as « Fruits sur l'arbre · Aucun fruit ».
+    nothing: "Aucun fruit"
+    nothing_hint: "Rien à récolter sur cet arbre aujourd'hui : noté comme une saison sans fruits."
     amount: "Quantité"
     amounts:
       on_tree:

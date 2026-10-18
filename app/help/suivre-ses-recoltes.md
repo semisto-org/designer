@@ -12,6 +12,7 @@ Un verger se juge sur des années, pas sur une saison. Le carnet de récolte gar
 Pour chaque arbre, arbuste ou grimpante fruitière, deux sortes de lignes :
 
 - **Fruits sur l'arbre** : ce que tu vois en passant, avant la cueillette. **Aucun fruit**, **Quelques fruits**, **Bien chargé** ou **Très chargé**. C'est utile dès que les fruits grossissent, et c'est la seule façon de dire qu'un arbre n'a rien donné.
+- **Aucun fruit** : tu viens cueillir et l'arbre n'a rien. Un seul geste : dans l'application mobile, la ligne est notée tout de suite et tu passes à l'arbre suivant. La saison compte alors comme une saison sans fruits.
 - **Récolte** : la cueillette elle-même. La quantité (**Un peu**, **Une bonne récolte**, **Beaucoup**) et le poids sont facultatifs. Indique surtout **Pour quoi faire** : **Jus**, **Compote et cuisson**, **À croquer**, **Mis en garde** ou **Autre**.
 
 Une note libre accompagne chaque ligne : calibre, maladies, goût, qui a cueilli.

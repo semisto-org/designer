@@ -103,17 +103,24 @@ export function HarvestForm({ onSubmit, onCancel, withWeight, saving, errors = {
   const update = (patch: Partial<HarvestInput>) => setInput((current) => ({ ...current, ...patch }))
   const amounts = HARVEST_AMOUNTS.filter((a) => picked ? a !== 'none' : true)
   const ready = picked || input.amount != null
+  const nothing = input.stage === 'on_tree' && input.amount === 'none'
 
   return (
     <div className="space-y-3 rounded-2xl bg-loam-50 p-3">
-      <div className="grid grid-cols-2 gap-1.5" role="group" aria-label={t('plant_harvests.stage')}>
+      <div className="grid grid-cols-3 gap-1.5" role="group" aria-label={t('plant_harvests.stage')}>
         {HARVEST_STAGES.map((stage) => (
-          <button key={stage} type="button" aria-pressed={input.stage === stage}
+          <button key={stage} type="button" aria-pressed={input.stage === stage && !nothing}
             onClick={() => update({ stage, amount: null, uses: stage === 'picked' ? input.uses : [] })}
-            className={clsx(chip(input.stage === stage), 'py-2 font-medium')}>
+            className={clsx(chip(input.stage === stage && !nothing), 'py-2 font-medium')}>
             {t(`plant_harvests.stages.${stage}`)}
           </button>
         ))}
+        {/* Came to pick, nothing on the tree: an empty-tree look, saved as a season without fruit. */}
+        <button type="button" aria-pressed={nothing} title={t('plant_harvests.nothing_hint')}
+          onClick={() => update({ stage: 'on_tree', amount: 'none', uses: [], quantityKg: '' })}
+          className={clsx(chip(nothing, 'bg-loam-600 text-white ring-loam-600'), 'py-2 font-medium')}>
+          {t('plant_harvests.nothing')}
+        </button>
       </div>
       <Field label={t('plant_harvests.noted_on')} error={errors.noted_on}>
         <Input type="date" value={input.notedOn} max={todayIso()} onChange={(e) => update({ notedOn: e.target.value })} />
