@@ -1,0 +1,118 @@
+# « Codes promo »: the super admin screen that makes Stripe promotion codes
+# (Admin::PromoCodesController, pages/admin/promo_codes). Keys in English,
+# values in French; the backend and the React frontend read the same file.
+fr:
+  admin:
+    nav:
+      promo_codes: "Codes promo"
+    dashboard:
+      events:
+        actions:
+          promotion_code_created: "a créé le code promo"
+          promotion_code_deactivated: "a désactivé le code promo"
+  activemodel:
+    errors:
+      models:
+        billing/promo_code_form:
+          attributes:
+            code:
+              code_format: "Le code fait 3 à 40 caractères : des lettres sans accent, des chiffres et des tirets, par exemple BETA-K7QX."
+            discount_type:
+              invalid: "Choisis un pourcentage ou un montant."
+            percent_off:
+              percent_range: "Indique un pourcentage entre 1 et 100."
+            amount_off:
+              amount_range: "Indique un montant en euros, plus grand que zéro."
+            duration:
+              invalid: "Choisis une durée pour les abonnements."
+            duration_in_months:
+              months_range: "Indique un nombre de mois entre 1 et 36."
+            max_redemptions:
+              max_redemptions_range: "Laisse vide pour ne pas limiter, ou indique un nombre entier à partir de 1."
+            expires_on:
+              in_the_past: "Cette date est déjà passée : choisis aujourd'hui ou plus tard."
+            note:
+              too_long: "La note est trop longue (%{count} caractères au maximum)."
+            plan_keys:
+              no_plan: "Coche au moins une formule."
+              plan_not_configured: "Pas encore de prix Stripe pour : %{plans}."
+  admin_promo_codes:
+    title: "Codes promo"
+    intro: "Des codes de réduction à offrir aux bêta testeurs, à un partenaire ou à une promotion de formation. Chaque code se tape au moment du paiement ; il est créé dans Stripe, sans passer par son tableau de bord."
+    disabled: "Les paiements ne sont pas configurés sur ce serveur (pas de clé Stripe) : tout est ouvert pendant la bêta, et aucun code ne peut être créé ici. Ajoute STRIPE_SECRET_KEY pour activer cet écran."
+    list_error: "Stripe n'a pas répondu pour la liste des codes : %{message}"
+    form:
+      title: "Nouveau code"
+      code: "Code"
+      code_hint: "En majuscules : lettres, chiffres et tirets. C'est ce que la personne tape au paiement."
+      another: "Autre suggestion"
+      discount: "Réduction"
+      percent: "Pourcentage"
+      amount: "Montant fixe"
+      percent_suffix: "%"
+      amount_suffix: "€"
+      duration: "Durée pour les abonnements"
+      duration_hint: "Pour les formules en abonnement. Un paiement unique l'ignore."
+      durations:
+        once: "Le premier paiement"
+        repeating: "Pendant quelques mois"
+        forever: "Pour toujours"
+      months: "Nombre de mois"
+      plans: "Formules concernées"
+      plans_hint: "La Mission drone n'est pas cochée d'office : Semisto la chiffre au cas par cas."
+      plan_subscription: "abonnement"
+      plan_one_time: "paiement unique"
+      plan_not_configured: "pas de prix Stripe"
+      max_redemptions: "Utilisations au maximum"
+      max_redemptions_hint: "Vide : sans limite."
+      expires_on: "Valable jusqu'au"
+      expires_on_hint: "Vide : sans date de fin. Le code expire le soir de ce jour."
+      first_time_only: "Réservé aux nouveaux clients"
+      first_time_only_hint: "Seulement pour quelqu'un qui n'a encore rien payé."
+      note: "Note interne"
+      note_placeholder: "Bêta testeurs automne 2026"
+      note_hint: "Pour s'y retrouver plus tard. Gardée dans Stripe, jamais montrée au client."
+      submit: "Créer le code"
+      working: "Création…"
+      summary: "Le code %{code} offrira %{discount} sur %{plans}."
+    list:
+      title: "Codes existants"
+      empty: "Aucun code pour l'instant. Le premier sera en haut de cette liste."
+      active: "Actif"
+      inactive: "Désactivé"
+      expired: "Expiré"
+      percent_off: "−%{value} %"
+      amount_off: "−%{value}"
+      durations:
+        once: "le premier paiement"
+        repeating: "pendant %{months} mois"
+        forever: "pour toujours"
+      all_plans: "toutes les formules"
+      redeemed:
+        zero: "pas encore utilisé"
+        one: "utilisé une fois"
+        other: "utilisé %{count} fois"
+      redeemed_max:
+        zero: "pas encore utilisé, %{max} fois au plus"
+        one: "utilisé une fois sur %{max}"
+        other: "utilisé %{count} fois sur %{max}"
+      payments:
+        zero: "aucun paiement enregistré"
+        one: "un paiement enregistré"
+        other: "%{count} paiements enregistrés"
+      expires: "jusqu'au %{date}"
+      no_expiry: "sans date de fin"
+      first_time_only: "nouveaux clients"
+      created: "créé le %{date}"
+      created_by: "par %{email}"
+      deactivate: "Désactiver"
+      confirm_deactivate: "Désactiver le code %{code} ? Personne ne pourra plus le taper. Les paiements déjà faits ne changent pas, et Stripe ne permet pas de le réactiver."
+      older: "Codes plus anciens"
+      newest: "Revenir aux plus récents"
+    flash:
+      created: "Le code %{code} est prêt dans Stripe."
+      deactivated: "Le code %{code} est désactivé."
+      disabled: "Les paiements ne sont pas configurés : impossible de créer ou modifier un code."
+    errors:
+      code_taken: "Ce code existe déjà dans Stripe : choisis-en un autre."
+      stripe: "Stripe a refusé : %{message}"

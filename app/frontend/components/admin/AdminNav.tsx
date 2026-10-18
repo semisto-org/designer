@@ -8,6 +8,7 @@ const ITEMS = [
   { href: '/admin/maps', key: 'maps' },
   { href: '/admin/requests', key: 'requests' },
   { href: '/admin/invoice-requests', key: 'invoices' },
+  { href: '/admin/promo-codes', key: 'promo_codes' },
   { href: '/admin/drone-views', key: 'drone' },
   { href: '/admin/release-notes', key: 'release_notes' },
   { href: '/admin/catalogue', key: 'catalogue' },

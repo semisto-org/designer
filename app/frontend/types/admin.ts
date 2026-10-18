@@ -30,6 +30,7 @@ export type AdminMapRow = {
 }
 
 export type AdminEventAction = 'impersonation_started' | 'impersonation_ended' | 'admin_granted' | 'admin_revoked' | 'reviewer_granted' | 'reviewer_revoked'
+  | 'promotion_code_created' | 'promotion_code_deactivated'
 
 export type AdminEventRow = {
   id: number
