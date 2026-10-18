@@ -1,4 +1,4 @@
-import { applyPending, emptyOutbox, flush, nextTempId, ownProperties, retry, type Op, type OutboxState, type Transport } from '../outbox-core'
+import { applyPending, emptyOutbox, flush, nextTempId, ownProperties, retry, retryDelayMs, type Op, type OutboxState, type Transport } from '../outbox-core'
 import type { MapBundle, MapFeature } from '../types'
 
 const at = '2026-10-04T10:00:00Z'
@@ -209,5 +209,11 @@ describe('retry', () => {
       { id: 'c', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'y', error: 'Autre' },
     ]
     expect(retry(state(ops), 'a').ops.map((o) => o.error)).toEqual([undefined, undefined, 'Autre'])
+  })
+})
+
+describe('retryDelayMs', () => {
+  it('waits 30 s, then doubles, up to 10 minutes', () => {
+    expect([1, 2, 3, 4, 5, 6, 20].map(retryDelayMs)).toEqual([30_000, 60_000, 120_000, 240_000, 480_000, 600_000, 600_000])
   })
 })
