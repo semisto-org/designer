@@ -15,7 +15,7 @@ export function t(key: string, vars: Vars = {}): string {
   let value = lookup(key)
   if (value && typeof value === 'object' && 'count' in vars) {
     const forms = value as Dict
-    value = vars.count === 1 ? forms.one : (forms.other ?? forms.one)
+    value = vars.count === 0 && forms.zero ? forms.zero : vars.count === 1 ? forms.one : (forms.other ?? forms.one)
   }
   if (typeof value !== 'string') return key
   return value.replace(/%\{(\w+)\}/g, (_, name: string) => String(vars[name] ?? ''))
@@ -47,6 +47,13 @@ export function todayIso(now = new Date()): string {
 /** « sam. 17 oct. », the day as written in a field notebook. */
 export function formatDay(now = new Date()): string {
   return now.toLocaleDateString('fr-BE', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+/** « 14 h 05 », the hour as French writes it (the website's site_visit_hour). */
+export function formatTime(iso: string | Date): string {
+  const date = typeof iso === 'string' ? new Date(iso) : iso
+  if (Number.isNaN(date.getTime())) return ''
+  return `${date.getHours()} h ${String(date.getMinutes()).padStart(2, '0')}`
 }
 
 export type Season = 'winter' | 'spring' | 'summer' | 'autumn'

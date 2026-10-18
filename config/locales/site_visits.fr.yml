@@ -1,0 +1,33 @@
+fr:
+  time:
+    formats:
+      site_visit_hour: "%-H h %M"
+  site_visits:
+    themes:
+      wish: "Envies du porteur"
+      water: "Eau"
+      soil: "Sol"
+      tree: "Arbres en place"
+      fauna: "Faune"
+      climate: "Vent, soleil et froid"
+      neighbours: "Voisins et règles"
+      history: "Histoire du lieu"
+      question: "Questions en suspens"
+      other: "Autres notes"
+    report:
+      title: "Visite du %{date}"
+      tag: "Visite de terrain"
+      range: "de %{from} à %{to}"
+      notes:
+        one: "1 note"
+        other: "%{count} notes"
+      photos:
+        one: "1 photo"
+        other: "%{count} photos"
+      note_photos:
+        one: "(1 photo)"
+        other: "(%{count} photos)"
+      no_text: "Note sans texte"
+      empty: "Aucune note pendant cette visite."
+    task_list: "Questions des visites"
+    task_notes: "Question notée pendant la %{title}."

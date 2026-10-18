@@ -3,9 +3,10 @@
 // chosen, that feature with its age, where it stands and the gestures it asks.
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native'
 import { featureColor, featureTitle, kindLabel, speciesName } from '@/lib/elements'
-import { formatDay, formatDistance, seasonOf, t } from '@/lib/i18n'
+import { formatDay, formatDistance, formatTime, seasonOf, t } from '@/lib/i18n'
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
+import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
 import type { MapFeature, Photo, Planting } from '@/lib/types'
 import { Icon, type IconName } from '@/ui/Icon'
 import { Body, Button, IconButton, MAX_FONT_SCALE } from '@/ui/kit'
@@ -34,7 +35,7 @@ export function featureLine(feature: MapFeature, planting: Planting | undefined)
 
 // ── At rest ────────────────────────────────────────────────────────────
 
-export function RestTop({ editable, onNote }: { editable: boolean; onNote: () => void }) {
+export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNote: () => void; onVisit?: () => void }) {
   const card = monthCard()
   return (
     <View style={s.top}>
@@ -42,7 +43,12 @@ export function RestTop({ editable, onNote }: { editable: boolean; onNote: () =>
         {t('mobile.terrain.today', { season: t(`mobile.terrain.seasons.${seasonOf()}`), date: formatDay() })}
       </Text>
       {card && <Text accessibilityRole="header" style={s.monthTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{card.title}</Text>}
-      {editable && <Button icon="note" label={t('mobile.terrain.note_here')} onPress={onNote} style={{ marginTop: space.sm }} />}
+      {editable && (
+        <View style={s.gestures}>
+          <Button icon="note" label={t('mobile.terrain.note_here')} onPress={onNote} style={s.gesture} />
+          {onVisit && <Button variant="secondary" icon="visit" label={t('mobile.visit.start')} onPress={onVisit} style={s.gesture} />}
+        </View>
+      )}
     </View>
   )
 }
@@ -113,6 +119,63 @@ export function NoteTop({ onChoose, onClose }: { onChoose: (choice: NoteChoice) 
   )
 }
 
+// ── A site visit ───────────────────────────────────────────────────────
+
+/** The visit under way: since when, how many notes, a tile per theme and « Terminer ». */
+export function VisitTop({ visit, count, onTheme, onEnd }: { visit: Visit; count: number; onTheme: (theme: Theme | null) => void; onEnd: () => void }) {
+  const minutes = minutesSince(visit.startedAt)
+  return (
+    <View style={s.top}>
+      <View style={s.titleRow}>
+        <View style={{ flex: 1 }} accessible>
+          <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+            {t('mobile.visit.under_way', { time: formatTime(visit.startedAt) })} · {t('mobile.visit.lasted', { count: minutes })}
+          </Text>
+          <Text accessibilityRole="header" style={s.monthTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.what')}</Text>
+        </View>
+      </View>
+      <View style={s.tiles}>
+        {[...THEMES, null].map((theme) => (
+          <Pressable key={theme ?? 'other'} onPress={() => { haptics.tap(); onTheme(theme) }} accessibilityRole="button"
+            accessibilityLabel={theme ? t(`mobile.visit.themes.${theme}`) : t('mobile.visit.free_note')}
+            accessibilityHint={t(`mobile.visit.hints.${theme ?? 'other'}`)}
+            style={({ pressed }) => [s.tile, s.themeTile, pressed && { transform: [{ scale: 0.97 }] }]}>
+            <Icon name={theme ?? 'other'} size={24} color={theme === 'question' ? colors.humus700 : colors.prune700} />
+            <Text style={s.tileLabel} numberOfLines={2} maxFontSizeMultiplier={1.3}>{theme ? t(`mobile.visit.themes.${theme}`) : t('mobile.visit.free_note')}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Button variant="secondary" icon="check" label={`${t('mobile.visit.end')} · ${t('mobile.visit.notes', { count })}`} onPress={onEnd} style={{ marginTop: space.sm }} />
+    </View>
+  )
+}
+
+/** The visit's notes so far, the last one first: each one opens on the map. */
+export function VisitBody({ notes, planting, onPick }: { notes: MapFeature[]; planting: Planting | undefined; onPick: (feature: MapFeature) => void }) {
+  return (
+    <View style={s.body}>
+      <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.notes_title')}</Text>
+      {notes.length === 0 && <Body muted>{t('mobile.visit.none_yet')}</Body>}
+      {notes.slice().reverse().map((note) => {
+        const theme = themeOf(note) ?? 'other'
+        const title = featureTitle(note, planting)
+        const time = typeof note.properties.taken_at === 'string' ? formatTime(note.properties.taken_at) : ''
+        return (
+          <Pressable key={note.id} onPress={() => { haptics.tap(); onPick(note) }} accessibilityRole="button"
+            accessibilityLabel={[t(`mobile.visit.themes.${theme}`), title, time].filter(Boolean).join(', ')}
+            style={({ pressed }) => [s.row, pressed && { backgroundColor: colors.loam100 }]}>
+            <Icon name={theme} size={22} color={theme === 'question' ? colors.humus700 : colors.prune700} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.rowTitle} numberOfLines={2} maxFontSizeMultiplier={MAX_FONT_SCALE}>{title}</Text>
+              <Text style={s.meta} numberOfLines={1} maxFontSizeMultiplier={MAX_FONT_SCALE}>{[t(`mobile.visit.themes.${theme}`), time].filter(Boolean).join(' · ')}</Text>
+            </View>
+          </Pressable>
+        )
+      })}
+    </View>
+  )
+}
+
 // ── A feature ──────────────────────────────────────────────────────────
 
 export type QuickAction = { key: string; icon: IconName; label: string; onPress: () => void; primary?: boolean }
@@ -175,7 +238,8 @@ const s = StyleSheet.create({
     flexGrow: 1, flexBasis: '30%', minHeight: 76, borderRadius: radius.lg, backgroundColor: colors.loam50, borderWidth: 1, borderColor: colors.loam200,
     alignItems: 'center', justifyContent: 'center', gap: 4,
   },
-  tileLabel: { ...type.label, color: colors.loam800 },
+  tileLabel: { ...type.label, color: colors.loam800, textAlign: 'center' },
+  themeTile: { flexBasis: '22%', minHeight: 72, paddingHorizontal: 4 },
   photo: { width: 64, height: 64, borderRadius: radius.md },
   photoEmpty: { backgroundColor: colors.loam100, alignItems: 'center', justifyContent: 'center' },
   bigDot: { width: 22, height: 22, borderRadius: 11, borderWidth: 3, borderColor: colors.white },

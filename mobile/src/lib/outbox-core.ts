@@ -28,6 +28,7 @@ export type Op = Base & (
   | { type: 'createStorageReading'; featureId: FeatureRef; reading: NewStorageReading }
   | { type: 'createComment'; featureId: FeatureRef | null; body: string }
   | { type: 'createBioindicator'; observation: NewBioindicator; photo: string }
+  | { type: 'closeVisit'; key: string; startedAt: string; endedAt: string; questionIds: FeatureRef[] }
 )
 
 /** A wild plant noted from its photo (identified by Pl@ntNet, confirmed by the person). */
@@ -136,6 +137,7 @@ export type Transport = {
   createStorageReading(mapId: number, featureId: number, reading: NewStorageReading, key: string): Promise<void>
   createComment(mapId: number, featureId: number | null, body: string, key: string): Promise<void>
   createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>, key: string): Promise<void>
+  closeVisit(mapId: number, op: Extract<Op, { type: 'closeVisit' }>, questionIds: number[], key: string): Promise<void>
 }
 
 type HttpError = { status: number; body?: Record<string, unknown> | null; message?: string }
@@ -275,6 +277,9 @@ async function send(state: OutboxState, op: Op, transport: Transport, versions: 
       return transport.createComment(op.mapId, id(op.featureId), op.body, op.id)
     case 'createBioindicator':
       return transport.createBioindicator(op.mapId, op, op.id)
+    case 'closeVisit':
+      // A question whose note the server refused is left out, not the whole visit.
+      return transport.closeVisit(op.mapId, op, op.questionIds.map((ref) => resolveId(state, ref)!).filter((id) => id > 0), op.id)
   }
 }
 

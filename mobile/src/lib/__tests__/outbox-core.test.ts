@@ -28,6 +28,7 @@ function transport(overrides: Partial<Transport> = {}) {
     createHarvest: async (_m, featureId, harvest) => { calls.push(`harvest ${featureId} ${harvest.stage}`) },
     createStorageReading: async (_m, featureId, reading) => { calls.push(`storage ${featureId} ${reading.humidityPct}`) },
     createBioindicator: async (_m, op) => { calls.push(`bioindicator ${op.observation.speciesName}`) },
+    closeVisit: async (_m, op, questionIds) => { calls.push(`visit ${op.key} [${questionIds.join(',')}]`) },
     ...overrides,
   }
   return { t, calls }
@@ -215,5 +216,21 @@ describe('retry', () => {
 describe('retryDelayMs', () => {
   it('waits 30 s, then doubles, up to 10 minutes', () => {
     expect([1, 2, 3, 4, 5, 6, 20].map(retryDelayMs)).toEqual([30_000, 60_000, 120_000, 240_000, 480_000, 600_000, 600_000])
+  })
+})
+
+describe('closeVisit', () => {
+  it('sends the questions taken offline with their server ids, leaving out a refused one', async () => {
+    const { t, calls } = transport({
+      createFeature: async (_m, feature) => {
+        if (feature.name === 'refused') throw { status: 422, body: { message: 'non' } }
+        return plant(feature.name === 'one' ? 501 : 502)
+      },
+    })
+    const note = (id: string, tempId: number, name: string): Op => ({ ...create(id, tempId), feature: { layer: 'notes', kind: 'note_point', name, properties: {}, geometry: { type: 'Point', coordinates: [4.9, 50.3] } } } as Op)
+    const close: Op = { id: 'c', mapId: 1, createdAt: at, type: 'closeVisit', key: 'visit-1234abcd', startedAt: at, endedAt: at, questionIds: [-1, -2, 77] }
+    const result = await flush(state([note('a', -1, 'one'), note('b', -2, 'refused'), close]), t)
+    expect(calls).toContain('visit visit-1234abcd [501,77]')
+    expect(result.state.ops.map((op) => op.id)).toEqual(['b'])
   })
 })

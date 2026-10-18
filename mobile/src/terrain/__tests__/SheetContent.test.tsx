@@ -1,6 +1,6 @@
 import { act, create } from 'react-test-renderer'
 import type { MapFeature } from '@/lib/types'
-import { FeatureTop, NoteTop, RestBody, RestTop } from '../SheetContent'
+import { FeatureTop, NoteTop, RestBody, RestTop, VisitBody, VisitTop } from '../SheetContent'
 
 jest.mock('@/lib/haptics', () => ({ haptics: { tap: jest.fn(), select: jest.fn(), success: jest.fn(), warning: jest.fn() } }))
 jest.mock('@/ui/Icon', () => ({ Icon: () => null }))
@@ -62,5 +62,43 @@ describe('terrain sheet', () => {
     const button = tree.root.find((node) => node.props.accessibilityLabel === 'Planté aujourd\'hui' && node.props.onPress)
     act(() => { button.props.onPress() })
     expect(planted).toHaveBeenCalled()
+  })
+
+  it('offers to start a visit next to « Noter ici »', () => {
+    const started = jest.fn()
+    let tree!: ReturnType<typeof create>
+    act(() => { tree = create(<RestTop editable onNote={() => {}} onVisit={started} />) })
+    expect(texts(tree)).toContain('Commencer une visite')
+  })
+
+  it('during a visit, gives a tile per theme and counts the notes', () => {
+    const themes: (string | null)[] = []
+    const ended = jest.fn()
+    let tree!: ReturnType<typeof create>
+    act(() => {
+      tree = create(<VisitTop visit={{ key: 'visit-1234abcd', startedAt: new Date().toISOString() }} count={3}
+        onTheme={(theme) => themes.push(theme)} onEnd={ended} />)
+    })
+    const tiles = tree.root.findAll((node) => node.props.accessibilityHint && node.props.onPress && (node.type as unknown) !== 'View')
+    const labels = [...new Set(tiles.map((n) => n.props.accessibilityLabel))]
+    expect(labels).toEqual(['Envie', 'Eau', 'Sol', 'Arbre en place', 'Faune', 'Vent, soleil, froid', 'Voisins, règles', 'Histoire du lieu', 'Question', 'Autre chose'])
+    act(() => { tiles.find((n) => n.props.accessibilityLabel === 'Eau')!.props.onPress() })
+    expect(themes).toEqual(['water'])
+    expect(texts(tree).join(' ')).toMatch(/Terminer la visite · 3 notes/)
+  })
+
+  it('lists the visit notes, the last first, read with their theme', () => {
+    const note = (id: number, theme: string, at: string): MapFeature => ({
+      type: 'Feature', id, geometry: { type: 'Point', coordinates: [4.95, 50.32] },
+      properties: { id, layer: 'notes', kind: 'note_point', name: `Note ${id}`, notes: null, status: 'active', lockVersion: 0, theme, taken_at: at },
+    })
+    let tree!: ReturnType<typeof create>
+    act(() => {
+      tree = create(<VisitBody planting={planting} onPick={() => {}}
+        notes={[note(1, 'water', '2026-10-18T14:05:00'), note(2, 'question', '2026-10-18T14:20:00')]} />)
+    })
+    const rows = tree.root.findAll((node) => node.props.accessibilityRole === 'button' && typeof node.props.accessibilityLabel === 'string' && (node.type as unknown) !== 'View')
+    const labels = [...new Set(rows.map((n) => n.props.accessibilityLabel))]
+    expect(labels).toEqual(['Question, Note 2, 14 h 20', 'Eau, Note 1, 14 h 05'])
   })
 })

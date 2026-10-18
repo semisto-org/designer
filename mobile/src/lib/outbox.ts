@@ -153,4 +153,9 @@ const transport: Transport = {
       comment: { body, ...(featureId ? { commentable_type: 'MapFeature', commentable_id: featureId } : {}) },
     }, once(key))
   },
+  async closeVisit(mapId, op, questionIds, key) {
+    await api('POST', `/maps/${mapId}/site_visits`, {
+      site_visit: { key: op.key, started_at: op.startedAt, ended_at: op.endedAt, question_ids: questionIds },
+    }, once(key))
+  },
 }

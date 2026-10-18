@@ -1,8 +1,9 @@
 // The app's icons: Lucide (the website's set), one stroke for all, hidden
 // from screen readers (the button around an icon carries the label).
 import {
-  BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets, Footprints,
-  HeartPulse, Info, Layers, LocateFixed, MapPin, NotebookPen, ScanSearch, Shovel, Sprout, TriangleAlert, Undo2, Waves, X, type LucideIcon,
+  BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
+  Fence, Flag, Footprints, Heart, HeartPulse, Hourglass, Info, Layers, Layers2, LocateFixed, MapPin, NotebookPen, PawPrint, ScanSearch, Shovel, Sprout,
+  Square, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
 import { colors } from './theme'
 
@@ -14,6 +15,10 @@ const ICONS = {
   flows: Waves, pools: Droplet, seeps: Droplets,
   synced: CircleCheck, sending: CloudUpload, offline: CloudOff,
   info: Info, warning: TriangleAlert, error: CircleAlert,
+  visit: Flag, ticked: SquareCheck, unticked: Square,
+  // The themes of a site visit's notes (lib/visit-core.ts).
+  wish: Heart, water: Droplets, soil: Layers2, tree: TreeDeciduous, fauna: PawPrint, climate: Wind,
+  neighbours: Fence, history: Hourglass, question: CircleQuestionMark, other: NotebookPen,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
