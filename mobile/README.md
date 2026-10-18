@@ -20,6 +20,11 @@ What it does, for the maps one belongs to:
   `POST /maps/:id/site_visits` through the outbox, and the server files the
   report in the map's documents, with the chosen questions as tasks
   (`SiteVisit`);
+- the planting round (« Tournée de plantation », `lib/tour.ts`): from the
+  blue dot to the nearest plant still to plant, with an arrow turned by the
+  compass and the distance, « Tu y es » within 2 m (or the GPS accuracy, at
+  most 6 m), then « Planté ! », « Planté ici » (moves the plant to where it
+  really went in) or « Passer »;
 - downloads a map for offline use (map data + base map tiles of the
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
   network is back;

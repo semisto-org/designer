@@ -185,6 +185,38 @@
       "closed": "Le compte rendu sera dans les documents de la carte dès que le téléphone l'aura envoyé.",
       "keep_going": "Continuer la visite"
     },
+    "tour": {
+      "title": "Tournée de plantation",
+      "invite": {
+        "one": "%{count} plant attend d'être mis en terre.",
+        "other": "%{count} plants attendent d'être mis en terre."
+      },
+      "invite_hint": "Je te mène au plus proche, puis au suivant. Tu n'as qu'à suivre la flèche.",
+      "start": "Commencer la tournée",
+      "left": {
+        "one": "encore %{count} à planter",
+        "other": "encore %{count} à planter"
+      },
+      "number": "n° %{number}",
+      "far": "%{distance} %{direction}",
+      "here": "Tu y es",
+      "here_hint": "Le trou est sous tes pieds, à %{accuracy} près.",
+      "no_heading": "Tourne-toi vers %{direction} : la boussole du téléphone ne répond pas.",
+      "no_position": "Je cherche où tu es…",
+      "planted": "Planté !",
+      "planted_here": "Planté ici",
+      "planted_here_hint": "Le plant n'est pas tout à fait là où il était dessiné : je le pose là où tu te tiens.",
+      "skip": "Passer",
+      "end": "Terminer",
+      "done_title": "Tout est planté",
+      "done": "Plus aucun plant à mettre en terre sur cette carte. Belle journée de plantation !",
+      "skipped_left": {
+        "one": "Il reste %{count} plant passé : tu y reviendras une autre fois.",
+        "other": "Il reste %{count} plants passés : tu y reviendras une autre fois."
+      },
+      "planted_toast": "Planté. Au suivant !",
+      "moved_toast": "Planté ici, à sa vraie place."
+    },
     "display": {
       "open": "Affichage de la carte",
       "title": "Affichage",
