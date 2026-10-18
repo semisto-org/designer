@@ -2,19 +2,42 @@
 # reviewers (User#can_review_catalogue?): accept one (corrected if needed)
 # into the shared catalogue, merge it into the species it duplicates, or keep
 # it off the shared catalogue (it stays on the maps that use it).
+#
+# Jev can check each species' values against open pages first
+# (Catalog::ValueCheck, `check`): the queue then opens on the species ready
+# to accept (GBIF knows the name, no page contradicts a value), then those
+# that need a look, then those not checked yet.
 class CatalogueReviewsController < ApplicationController
+  STATES = %w[ready attention unchecked].freeze
+
   before_action :require_reviewer!
-  before_action :set_species, only: %i[update merge reject gbif]
+  before_action :set_species, only: %i[update merge reject gbif check]
 
   def index
-    species = PlantSpecies.proposed.includes(:common_names, :field_sources, :proposed_by, :proposed_map, :genus)
+    species = PlantSpecies.proposed.includes(:common_names, :field_sources, :proposed_by, :proposed_map, :genus, :value_checks)
                           .order(:created_at, :id).to_a
     maps = PaletteItem.where(species_id: species.map(&:id)).joins(:map).merge(Map.active)
                       .pluck(:species_id, "maps.id", "maps.name").group_by(&:first)
+    proposals = species.map { |s| proposal_json(s, maps.fetch(s.id, [])) }.sort_by.with_index { |p, i| [ STATES.index(p[:state]), i ] }
     render inertia: "catalogue_reviews/index", props: {
-      proposals: species.map { |s| proposal_json(s, maps.fetch(s.id, [])) },
+      proposals:,
+      summary: STATES.index_with { |state| proposals.count { _1[:state] == state } },
+      jevAvailable: Providers::Jev.build.available?,
       vocabulary: { strata: PlantVocabulary::STRATA }
     }
+  end
+
+  # Asks Jev to check the values of every species not checked yet (or of one,
+  # with an id), in the background; the page follows the verdicts as they come.
+  def check
+    unless Providers::Jev.build.available?
+      return redirect_to(catalogue_reviews_path, alert: t("plants.review.flash.jev_unavailable"), status: :see_other)
+    end
+    targets = @species ? [ @species ] : PlantSpecies.proposed.where(values_checked_at: nil, values_check_requested_at: [ nil, ..1.hour.ago ])
+    ids = targets.map(&:id)
+    PlantSpecies.where(id: ids).update_all(values_check_requested_at: Time.current)
+    ids.each { PlantValueCheckJob.perform_later(_1) }
+    redirect_to catalogue_reviews_path, notice: t("plants.review.flash.checking", count: ids.size), status: :see_other
   end
 
   # Accepts the species into the shared catalogue, with the corrections the
@@ -29,6 +52,7 @@ class CatalogueReviewsController < ApplicationController
       # species already had stay as synonyms, so a name in use is not lost.
       names = review_params[:common_name].present? ? [ review_params[:common_name], *french_names(@species) ] : nil
       Catalog::SpeciesWriter.new(source: "semisto", status: "to_verify").write(@species, values, common_names: names)
+      apply_checks(@species, Array(params.dig(:review, :take)).map(&:to_s))
     end
     redirect_to catalogue_reviews_path, notice: t("plants.review.flash.accepted", name: @species.latin_name), status: :see_other
   rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
@@ -76,7 +100,31 @@ class CatalogueReviewsController < ApplicationController
     end
 
     def set_species
-      @species = PlantSpecies.proposed.find(params[:id])
+      @species = PlantSpecies.proposed.find(params[:id]) if params[:id] || action_name != "check"
+    end
+
+    # What Jev's check brings to an accepted species: a value a page confirms
+    # becomes « sourced » from that page; a value a page contradicts is
+    # replaced by the page's when the reviewer took it (`take`). The rest
+    # stays « to verify ».
+    def apply_checks(species, take)
+      species.value_checks.each do |check|
+        next unless check.source
+        license = PlantSource.default_license(check.source)
+        if check.verdict == "confirmed"
+          species.record_provenance!([ check.field ], source: check.source, url: check.url, status: "sourced", license:)
+        elsif check.verdict == "contradicted" && take.include?(check.field)
+          Catalog::SpeciesWriter.new(source: check.source, status: "sourced", url: check.url, license:)
+                                .write(species, { check.field => check.source_value })
+        end
+      end
+    end
+
+    def check_state(species)
+      requested, checked = species.values_check_requested_at, species.values_checked_at
+      return "pending" if requested && (checked.nil? || checked < requested)
+      return "error" if species.values_check_error.present?
+      checked ? "done" : "none"
     end
 
     def french_names(species)
@@ -88,7 +136,14 @@ class CatalogueReviewsController < ApplicationController
     end
 
     def proposal_json(species, maps)
+      checks = species.value_checks.to_a
+      state = if check_state(species) != "done" then "unchecked"
+      elsif species.gbif_key.present? && checks.none? { _1.verdict == "contradicted" } then "ready"
+      else "attention"
+      end
       species.summary_json.merge(
+        state:,
+        check: { state: check_state(species), error: species.values_check_error, results: checks.map(&:as_json) },
         family: species.family,
         gbifUrl: species.gbif_key && "https://www.gbif.org/species/#{species.gbif_key}",
         proposedBy: species.proposed_by&.display_name,

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { ArrowLeft, Check, ExternalLink, GitMerge, Search, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Check, CircleHelp, ExternalLink, GitMerge, LoaderCircle, Search, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { gbifCheck, type GbifCheck } from '@/components/plants/gbifQueue'
 import { Button } from '@/components/ui/Button'
@@ -19,9 +19,26 @@ type Proposal = SpeciesSummary & {
   proposedAt: string
   maps: { id: number; name: string }[]
   values: { field: string; value: unknown; source: string }[]
+  state: ReviewState
+  check: { state: 'none' | 'pending' | 'done' | 'error'; error: string | null; results: ValueCheck[] }
 }
 
-type Props = { proposals: Proposal[]; vocabulary: { strata: Strata[] } }
+type ReviewState = 'ready' | 'attention' | 'unchecked'
+type Verdict = 'confirmed' | 'partial' | 'contradicted' | 'unknown'
+type ValueCheck = {
+  field: string; verdict: Verdict; sourceValue: unknown; confidence: number | null
+  source: string | null; url: string | null; excerpt: string | null
+}
+
+type Props = {
+  proposals: Proposal[]
+  summary: Record<ReviewState, number>
+  jevAvailable: boolean
+  vocabulary: { strata: Strata[] }
+}
+
+const FILTERS = ['ready', 'attention', 'unchecked', 'all'] as const
+type Filter = (typeof FILTERS)[number]
 
 const MONTH_FIELDS = ['flowering_months', 'fruiting_months', 'harvest_months', 'pruning_months']
 const RATING_FIELDS = ['watering_need', 'edible_rating', 'medicinal_rating', 'taste_rating', 'productivity', 'disease_resistance']
@@ -51,7 +68,19 @@ function formatValue(field: string, value: unknown): string {
 }
 
 /** The species people added from their palettes, waiting for a catalogue reviewer. */
-export default function CatalogueReviews({ proposals, vocabulary }: Props) {
+export default function CatalogueReviews({ proposals, summary, jevAvailable, vocabulary }: Props) {
+  const [filter, setFilter] = useState<Filter>(() => (summary.ready > 0 ? 'ready' : 'all'))
+  const counts: Record<Filter, number> = { ...summary, all: proposals.length }
+  const shown = filter === 'all' ? proposals : proposals.filter((p) => p.state === filter)
+  const pending = proposals.some((p) => p.check.state === 'pending')
+
+  // While Jev reads, the verdicts arrive card by card.
+  useEffect(() => {
+    if (!pending) return
+    const timer = window.setInterval(() => router.reload({ only: ['proposals', 'summary'] }), 5000)
+    return () => window.clearInterval(timer)
+  }, [pending])
+
   return (
     <>
       <Head title={t('plants.review.title')} />
@@ -65,25 +94,50 @@ export default function CatalogueReviews({ proposals, vocabulary }: Props) {
       {proposals.length === 0 ? (
         <div className="mt-8"><EmptyState title={t('plants.review.empty')} /></div>
       ) : (
-        <ul className="mt-6 space-y-4">
-          {proposals.map((p) => <ProposalCard key={p.id} proposal={p} strata={vocabulary.strata} />)}
-        </ul>
+        <>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div role="tablist" className="flex flex-wrap gap-1.5">
+              {FILTERS.map((f) => (
+                <button key={f} type="button" role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
+                  className={`rounded-full px-3 py-1 text-sm ring-1 ${filter === f ? 'bg-prune-700 text-white ring-prune-700' : 'bg-white text-loam-700 ring-loam-200 hover:bg-loam-50'}`}>
+                  {t(`plants.review.filters.${f}`)} <span className={filter === f ? 'text-prune-100' : 'text-loam-500'}>{counts[f]}</span>
+                </button>
+              ))}
+            </div>
+            {summary.unchecked > 0 && (jevAvailable ? (
+              <Button size="sm" variant="secondary" disabled={pending} onClick={() => router.post('/plants/review/check', {}, { preserveScroll: true })}>
+                <Sparkles className="h-4 w-4" aria-hidden />{t('plants.review.check.all', { count: summary.unchecked })}
+              </Button>
+            ) : <p className="text-sm text-loam-500">{t('plants.review.check.unavailable')}</p>)}
+          </div>
+          <p className="mt-2 max-w-2xl text-sm text-loam-500">{t(`plants.review.filters.${filter}_hint`)}</p>
+          {shown.length === 0 ? (
+            <p className="mt-6 text-sm text-loam-500">{t('plants.review.filters.empty')}</p>
+          ) : (
+            <ul className="mt-4 space-y-4">
+              {shown.map((p) => <ProposalCard key={p.id} proposal={p} strata={vocabulary.strata} jevAvailable={jevAvailable} />)}
+            </ul>
+          )}
+        </>
       )}
     </>
   )
 }
 
-function ProposalCard({ proposal: p, strata: strataKeys }: { proposal: Proposal; strata: Strata[] }) {
+function ProposalCard({ proposal: p, strata: strataKeys, jevAvailable }: { proposal: Proposal; strata: Strata[]; jevAvailable: boolean }) {
   const [latinName, setLatinName] = useState(p.latinName)
   const [commonName, setCommonName] = useState(p.commonName ?? '')
   const [strata, setStrata] = useState<string>(p.values.find((v) => v.field === 'strata') ? p.strata : '')
   const [merging, setMerging] = useState(false)
+  const [take, setTake] = useState<string[]>([])
+  const checks = new Map(p.check.results.map((c) => [c.field, c]))
+  const toggleTake = (field: string) => setTake((list) => (list.includes(field) ? list.filter((f) => f !== field) : [...list, field]))
   const [gbif, setGbif] = useState<GbifCheck | null>(null)
   useEffect(() => { gbifCheck(p.id).then(setGbif) }, [p.id])
   const family = p.family ?? (gbif?.match.status === 'accepted' ? gbif.match.family : null)
   const when = relativeTime(p.proposedAt)
 
-  const accept = () => router.patch(`/plants/review/${p.id}`, { review: { latin_name: latinName, common_name: commonName, strata } }, { preserveScroll: true })
+  const accept = () => router.patch(`/plants/review/${p.id}`, { review: { latin_name: latinName, common_name: commonName, strata, take } }, { preserveScroll: true })
   const reject = () => {
     if (window.confirm(t('plants.review.confirm_reject', { name: p.latinName }))) router.post(`/plants/review/${p.id}/reject`, {}, { preserveScroll: true })
   }
@@ -114,13 +168,12 @@ function ProposalCard({ proposal: p, strata: strataKeys }: { proposal: Proposal;
         </div>
         <div>
           <p className="font-medium text-loam-700">{t('plants.review.values')}</p>
+          <CheckStatus proposal={p} jevAvailable={jevAvailable} />
           {p.values.length === 0 ? <p className="text-loam-500">{t('plants.review.no_values')}</p> : (
-            <dl className="mt-0.5 space-y-0.5">
+            <dl className="mt-1 space-y-1">
               {p.values.map((v) => (
-                <div key={v.field} className="flex gap-2">
-                  <dt className="text-loam-500">{fieldLabel(v.field)}</dt>
-                  <dd className="text-loam-800">{formatValue(v.field, v.value)}</dd>
-                </div>
+                <ValueRow key={v.field} field={v.field} value={v.value} check={checks.get(v.field)}
+                  taken={take.includes(v.field)} onTake={() => toggleTake(v.field)} />
               ))}
             </dl>
           )}
@@ -155,6 +208,64 @@ function ProposalCard({ proposal: p, strata: strataKeys }: { proposal: Proposal;
       </div>
       {merging && <MergePicker proposal={p} />}
     </li>
+  )
+}
+
+/** Where Jev's check of this card stands, with what to do about it. */
+function CheckStatus({ proposal: p, jevAvailable }: { proposal: Proposal; jevAvailable: boolean }) {
+  const recheck = () => router.post(`/plants/review/${p.id}/check`, {}, { preserveScroll: true })
+  const { state, results } = p.check
+  if (state === 'pending') {
+    return <p className="mt-0.5 flex items-center gap-1.5 text-loam-500"><LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />{t('plants.review.check.pending')}</p>
+  }
+  const action = jevAvailable && (
+    <button type="button" onClick={recheck} className="text-prune-700 hover:underline">
+      {t(state === 'none' ? 'plants.review.check.one' : 'plants.review.check.again')}
+    </button>
+  )
+  if (state === 'error') return <p className="mt-0.5 text-clay-700">{t('plants.review.check.error')} {action}</p>
+  if (state === 'none') return action ? <p className="mt-0.5">{action}</p> : null
+  const count = (v: Verdict) => results.filter((r) => r.verdict === v).length
+  return (
+    <p className="mt-0.5 text-loam-500">
+      {t('plants.review.check.summary', { confirmed: count('confirmed'), contradicted: count('contradicted'), unknown: count('unknown') + count('partial') })} {action}
+    </p>
+  )
+}
+
+const VERDICT_STYLES: Record<Verdict, string> = {
+  confirmed: 'text-leaf-700', partial: 'text-humus-700', contradicted: 'text-clay-700', unknown: 'text-loam-400',
+}
+
+/** One value to verify, with what the open pages say about it. */
+function ValueRow({ field, value, check, taken, onTake }: {
+  field: string; value: unknown; check: ValueCheck | undefined; taken: boolean; onTake: () => void
+}) {
+  const source = check?.source ? t(`plants.sources.${check.source}`) : ''
+  const Icon = check?.verdict === 'confirmed' ? Check : check?.verdict === 'unknown' ? CircleHelp : AlertTriangle
+  return (
+    <div>
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        {check && <Icon className={`h-4 w-4 shrink-0 self-center ${VERDICT_STYLES[check.verdict]}`} aria-label={t(`plants.review.verdicts.${check.verdict}`)} />}
+        <dt className="text-loam-500">{fieldLabel(field)}</dt>
+        <dd className={taken ? 'text-loam-400 line-through' : 'text-loam-800'}>{formatValue(field, value)}</dd>
+        {check && check.verdict !== 'unknown' && (
+          <span className={VERDICT_STYLES[check.verdict]}>
+            {check.verdict === 'confirmed' ? t('plants.review.verdicts.confirmed_by', { source })
+              : check.verdict === 'partial' ? t('plants.review.verdicts.partial_by', { source, value: formatValue(field, check.sourceValue) })
+                : t('plants.review.verdicts.contradicted_by', { source, value: formatValue(field, check.sourceValue) })}
+            {check.url && <a href={check.url} target="_blank" rel="noreferrer" className="ml-1 inline-flex align-middle" aria-label={source}><ExternalLink className="h-3.5 w-3.5" aria-hidden /></a>}
+          </span>
+        )}
+        {check?.verdict === 'contradicted' && (
+          <button type="button" onClick={onTake} aria-pressed={taken}
+            className={`rounded-full px-2 py-0.5 text-sm ring-1 ${taken ? 'bg-leaf-100 text-leaf-800 ring-leaf-300' : 'bg-white text-prune-700 ring-loam-200 hover:bg-loam-50'}`}>
+            {taken ? t('plants.review.verdicts.taken') : t('plants.review.verdicts.take')}
+          </button>
+        )}
+      </div>
+      {check?.excerpt && check.verdict !== 'confirmed' && <p className="ml-6 mt-0.5 text-sm text-loam-500">« {check.excerpt} »</p>}
+    </div>
   )
 }
 
