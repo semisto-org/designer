@@ -12,7 +12,7 @@ import { colors } from '@/ui/theme'
 export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-line-dashed', 'features-point', 'features-plant']
 const FONT = ['Noto Sans Regular']
 
-export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundle: MapBundle; display: Display; selectedId: number | null; onSelect: (id: number) => void }) {
+export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundle: MapBundle; display: Display; selectedId: number | null; onSelect?: (id: number) => void }) {
   const data = useMemo<GeoJSON.FeatureCollection>(() => ({
     type: 'FeatureCollection',
     features: bundle.features.filter((feature) => isShown(feature.properties, display, bundle.planting)).map((feature) => ({
@@ -48,13 +48,14 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
       <GeoJSONSource
         id="features"
         data={data}
-        onPress={(event) => {
+        // Without onSelect (measuring), a tap goes through to the map.
+        onPress={onSelect && ((event) => {
           const fid = pickFeatureId(event.nativeEvent.features)
           if (fid === null) return
           // Otherwise the press bubbles up to the Map, whose onPress clears the selection.
           event.stopPropagation()
           onSelect(fid)
-        }}
+        })}
       >
         {/* As on the website (map/layers/features.ts): what is not on the ground yet is lighter and dashed. */}
         <Layer id="features-fill" type="fill" filter={['==', ['geometry-type'], 'Polygon']}

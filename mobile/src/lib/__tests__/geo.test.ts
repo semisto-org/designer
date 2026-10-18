@@ -29,6 +29,26 @@ describe('geo', () => {
     expect(cleanTrace(fixes)).toEqual([a, north])
   })
 
+  it('drops GPS jumps, and follows the walker when the jumps go on', () => {
+    const east = (m: number): [number, number] => [4.95 + m / (111_320 * Math.cos((50.32 * Math.PI) / 180)), 50.32]
+    const walk = [
+      { position: east(0), accuracy: 5, at: 0 },
+      { position: east(3), accuracy: 5, at: 2000 },
+      { position: east(60), accuracy: 8, at: 3000 }, // 57 m in a second
+      { position: east(6), accuracy: 5, at: 4000 },
+    ]
+    expect(cleanTrace(walk)).toEqual([east(0), east(3), east(6)])
+    const moved = [
+      { position: east(0), accuracy: 5, at: 0 },
+      { position: east(80), accuracy: 5, at: 1000 },
+      { position: east(83), accuracy: 5, at: 3000 },
+      { position: east(86), accuracy: 5, at: 5000 },
+    ]
+    expect(cleanTrace(moved)).toEqual([east(0), east(86)])
+    // Without times (older traces), only accuracy and steps count.
+    expect(cleanTrace([{ position: east(0), accuracy: 5 }, { position: east(60), accuracy: 5 }])).toEqual([east(0), east(60)])
+  })
+
   it('anchors and grows boxes', () => {
     expect(anchor({ type: 'LineString', coordinates: [[0, 0], [2, 2]] })).toEqual([1, 1])
     const [w, s, e, n] = expandBbox([4.9, 50.3, 5.0, 50.4], 150)

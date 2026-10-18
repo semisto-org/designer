@@ -40,7 +40,12 @@ What it does, for the maps one belongs to:
 - plants: place a plant where one stands, mark it planted, record its
   reprise and vigueur with a photo;
 - survey: a GPS point, or a walked trace saved as a line or a closed
-  surface (keeps recording with the screen off);
+  surface (keeps recording with the screen off; GPS jumps faster than a
+  walk are dropped, `cleanTrace`);
+- « Mesurer » (`app/maps/[id]/measure.tsx`, `lib/measure.ts`): corners
+  tapped on the map or taken with « Point ici » where one stands; length,
+  area in m², ares or hectares, perimeter and each side's length live on the
+  map, then « Ajouter à la carte » hands the shape to the record screen;
 - species identification with Pl@ntNet (through the server);
 - comments on elements;
 - « Supprimer mon compte » (account screen): sends the deletion request to
