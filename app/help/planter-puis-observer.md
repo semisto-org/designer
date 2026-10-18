@@ -45,6 +45,12 @@ Les notes s'alignent par date, avec le nom de la personne qui les a écrites. La
 
 Ton IA peut aussi lire ce journal et y ajouter des notes, quand tu lui racontes ce qui s'est passé au jardin.
 
+## Ce qu'il y a à faire sur ce plant
+
+Sous le journal, la section **À faire** montre les tâches qui concernent ce plant : une taille, une protection à remplacer, un tuteur à reprendre. Coche une tâche quand elle est faite. **Ajouter une tâche** en crée une nouvelle, liée à ce plant, dans la liste de ton choix.
+
+Ces tâches sont aussi sur la page **Tâches** de la carte. Chacune y montre les plants qu'elle concerne : touche un plant pour le retrouver sur la carte. Une même tâche peut concerner plusieurs plants, comme « Recouper les gourmands » sur tous les pommiers du verger.
+
 ## Quand observer ?
 
 Un rythme simple suffit :

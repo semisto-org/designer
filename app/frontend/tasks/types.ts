@@ -20,7 +20,12 @@ export type TaskData = {
   completedAt?: string
   completedBy?: string
   createdAt?: string
+  /** Elements of the map the task is about (plants, a hedge…). */
+  features?: TaskFeature[]
 }
+
+/** An element a task is about, with the label the map shows it by (« n° 7 — Pommier »). */
+export type TaskFeature = { id: number; kind: string; label: string }
 
 export type Board = { lists: TaskListData[]; tasks: TaskData[]; seeded?: boolean }
 

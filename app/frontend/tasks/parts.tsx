@@ -1,11 +1,11 @@
 import clsx from 'clsx'
-import { Calendar, Check, X } from 'lucide-react'
+import { Calendar, Check, MapPin, X } from 'lucide-react'
 import { useId, useState, type KeyboardEvent } from 'react'
 import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { addTag, MAX_TAG_LENGTH, MAX_TAGS, removeTag } from '@/map/tags/tags'
 import { dueOf, formatMonth, formatMonthShort, isPlantingMonth, monthOfDay, seasonOf, yearAhead, type Day, type Season } from '@/tasks/dates'
-import type { Assignee, Participant, TaskData } from '@/tasks/types'
+import type { Assignee, Participant, TaskData, TaskFeature } from '@/tasks/types'
 
 /** A stable key for who a task goes to: `u<id>`, or `e<email>` for an invitee. */
 export function assigneeKey(person: Assignee | Participant | null | undefined): string {
@@ -187,5 +187,21 @@ export function YearStrip({ tasks, today, month, onMonth }: {
         <span className="inline-block h-1 w-6 rounded-full bg-leaf-500" aria-hidden />{t('tasks.year.planting_window')}
       </p>
     </section>
+  )
+}
+
+/** An element a task is about: opens the map on it. */
+export function FeatureChip({ mapId, feature, onRemove }: { mapId: number; feature: TaskFeature; onRemove?: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 py-0.5 pl-2 pr-2 text-sm text-leaf-800 ring-1 ring-inset ring-leaf-200">
+      <a href={`/maps/${mapId}?feature=${feature.id}`} className="inline-flex items-center gap-1 hover:underline" title={t('tasks.task.show_on_map')}>
+        <MapPin className="h-3.5 w-3.5" aria-hidden />{feature.label}
+      </a>
+      {onRemove && (
+        <button type="button" onClick={onRemove} className="-mr-1 rounded-full p-0.5 hover:bg-leaf-200" aria-label={t('tasks.task.unlink_feature', { label: feature.label })}>
+          <X className="h-3 w-3" />
+        </button>
+      )}
+    </span>
   )
 }

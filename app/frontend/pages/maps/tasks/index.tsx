@@ -11,7 +11,7 @@ import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import { hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import { formatMonth, monthOfDay, parseDay } from '@/tasks/dates'
-import { AssigneeBadge, assigneeKey, assigneeName, assigneeParams, CheckButton, DueBadge, TagChip, TagEditor, YearStrip } from '@/tasks/parts'
+import { AssigneeBadge, assigneeKey, assigneeName, assigneeParams, CheckButton, DueBadge, FeatureChip, TagChip, TagEditor, YearStrip } from '@/tasks/parts'
 import type { Board, Participant, TaskData, TaskListData } from '@/tasks/types'
 import type { CurrentUser } from '@/types'
 
@@ -208,7 +208,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
               if (filtering && shown.length === 0) return null
               return (
                 <ListSection
-                  key={list.id} list={list} all={all} shown={shown} today={today} canEdit={canEdit}
+                  key={list.id} list={list} mapId={map.id} all={all} shown={shown} today={today} canEdit={canEdit}
                   filtering={filtering} first={index === 0} last={index === board.lists.length - 1} hiddenDone={showDone ? 0 : all.filter((x) => x.completedAt && matches(x)).length}
                   openId={openId} setOpenId={setOpenId} currentUserId={currentUser.id}
                   onToggle={toggle} onCreate={(title) => createTask(list, title)}
@@ -245,10 +245,10 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
 }
 
 function ListSection({
-  list, all, shown, today, canEdit, filtering, first, last, hiddenDone, openId, setOpenId, currentUserId,
+  list, mapId, all, shown, today, canEdit, filtering, first, last, hiddenDone, openId, setOpenId, currentUserId,
   onToggle, onCreate, onRename, onMove, onDelete, dragId, setDragId, onDrop, renderDetail,
 }: {
-  list: TaskListData; all: TaskData[]; shown: TaskData[]; today: string; canEdit: boolean; filtering: boolean; first: boolean; last: boolean; hiddenDone: number
+  list: TaskListData; mapId: number; all: TaskData[]; shown: TaskData[]; today: string; canEdit: boolean; filtering: boolean; first: boolean; last: boolean; hiddenDone: number
   openId: number | null; setOpenId: (id: number | null) => void; currentUserId: number
   onToggle: (task: TaskData) => void; onCreate: (title: string) => Promise<boolean>
   onRename: (name: string) => Promise<boolean>; onMove: (delta: number) => void; onDelete: () => void
@@ -331,7 +331,7 @@ function ListSection({
             className={clsx(dragId === task.id && 'opacity-40')}
           >
             <TaskRow
-              task={task} today={today} open={openId === task.id} canEdit={canEdit}
+              task={task} mapId={mapId} today={today} open={openId === task.id} canEdit={canEdit}
               canTick={canEdit || task.assignee?.id === currentUserId}
               onToggle={() => onToggle(task)} onOpen={() => setOpenId(openId === task.id ? null : task.id)}
               onDragStart={() => setDragId(task.id)} onDragEnd={() => setDragId(null)}
@@ -356,8 +356,11 @@ function MenuItem({ icon: Icon, label, onClick, danger }: { icon: typeof Pencil;
   )
 }
 
-function TaskRow({ task, today, open, canEdit, canTick, onToggle, onOpen, onDragStart, onDragEnd }: {
-  task: TaskData; today: string; open: boolean; canEdit: boolean; canTick: boolean
+/** Elements shown on a task's line; the rest are counted (all of them in its detail). */
+const MAX_FEATURE_CHIPS = 6
+
+function TaskRow({ task, mapId, today, open, canEdit, canTick, onToggle, onOpen, onDragStart, onDragEnd }: {
+  task: TaskData; mapId: number; today: string; open: boolean; canEdit: boolean; canTick: boolean
   onToggle: () => void; onOpen: () => void; onDragStart: () => void; onDragEnd: () => void
 }) {
   const done = !!task.completedAt
@@ -396,10 +399,14 @@ function TaskRow({ task, today, open, canEdit, canTick, onToggle, onOpen, onDrag
             )}
           </div>
         )}
-        {(task.tags.length > 0 || task.dueOn || task.assignee) && (
+        {(task.tags.length > 0 || task.dueOn || task.assignee || task.features) && (
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}
             {task.assignee && <AssigneeBadge name={assigneeName(task.assignee)} url={task.assignee.avatarUrl} withName />}
+            {task.features?.slice(0, MAX_FEATURE_CHIPS).map((f) => <FeatureChip key={f.id} mapId={mapId} feature={f} />)}
+            {task.features && task.features.length > MAX_FEATURE_CHIPS && (
+              <span className="text-sm text-loam-500">{t('tasks.task.more_features', { count: task.features.length - MAX_FEATURE_CHIPS })}</span>
+            )}
             {task.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
           </div>
         )}
@@ -462,6 +469,17 @@ function TaskDetail({ task, lists, participants, suggestions, mapId, today, onSa
           </select>
         </label>
       </div>
+      {task.features && (
+        <div className="space-y-1">
+          <span className={field}>{t('tasks.task.features')}</span>
+          <div className="flex flex-wrap gap-1.5">
+            {task.features.map((f) => (
+              <FeatureChip key={f.id} mapId={mapId} feature={f}
+                onRemove={() => void onSave({ feature_ids: task.features!.filter((other) => other.id !== f.id).map((other) => other.id) })} />
+            ))}
+          </div>
+        </div>
+      )}
       <div className="space-y-1">
         <span className={field}>{t('tasks.task.tags')}</span>
         <TagEditor tags={task.tags} suggestions={suggestions} onChange={(tags) => void onSave({ tags })} />

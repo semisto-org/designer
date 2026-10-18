@@ -11,9 +11,11 @@ class TaskBoard
 
   def as_json(*)
     done = journey_done
+    tasks = map.tasks.reload.includes(:assignee, :completed_by, :features).order(:position, :id).to_a
+    labels = MapFeature.labels_for(tasks.flat_map(&:features).uniq)
     {
       lists: map.task_lists.reload.map(&:as_json),
-      tasks: map.tasks.reload.includes(:assignee, :completed_by).order(:position, :id).map { |task| task.as_json(journey_done: done) },
+      tasks: tasks.map { |task| task.as_json(journey_done: done, labels:) },
       seeded: map.tasks_seeded_at.present?
     }
   end

@@ -2,13 +2,13 @@ module Mcp
   module Tools
     # Changes tasks of a map: ticks or unticks them, renames them, moves them
     # to another list, gives them to someone, sets or clears a due date,
-    # retags them. Only the fields passed change; null clears a due date or
+    # retags them, links them to elements of the map. Only the fields passed change; null clears a due date or
     # an assignee. Editors change everything; a viewer only ticks the tasks
     # given to them, as on the page. Nothing is deleted from here.
     class UpdateTasks < Base
       include TaskHelpers
 
-      FIELDS = %w[title notes due_on assignee_id assignee_email tags completed list_id].freeze
+      FIELDS = %w[title notes due_on assignee_id assignee_email tags completed list_id feature_ids numbers].freeze
 
       requirement :write
       arguments(
@@ -27,6 +27,8 @@ module Mcp
                 due_on: { type: [ "string", "null" ], format: "date", description: :due_on_change },
                 assignee_id: { type: [ "integer", "null" ], minimum: 1, description: :assignee_change },
                 assignee_email: { type: [ "string", "null" ], format: "email", description: :assignee_email_change },
+                feature_ids: { type: "array", maxItems: Task::MAX_FEATURES, uniqueItems: true, items: { type: "integer", minimum: 1 }, description: :task_feature_ids_change },
+                numbers: { type: "array", maxItems: Task::MAX_FEATURES, items: { type: "string", minLength: 1, maxLength: 20 }, description: :task_numbers_change },
                 tags: {
                   type: "array", maxItems: MapFeature::Tags::MAX_TAGS, uniqueItems: true, description: :tags_change,
                   items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
@@ -83,6 +85,9 @@ module Mcp
               task.invitee_email = nil if changes["assignee_id"].nil? && !changes.key?("assignee_email")
             end
             task.tags = Array(changes["tags"]) if changes.key?("tags")
+            if (features = features_for(map, changes))
+              task.features = features
+            end
             if changes.key?("completed")
               task.completed = changes["completed"]
               task.completed_by = user if task.completed_at_changed? && task.completed_at

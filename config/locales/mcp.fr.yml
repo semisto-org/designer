@@ -55,6 +55,10 @@ fr:
       assignee_id: "Personne à qui la confier : un id de participants (list_tasks). Elle reçoit un e-mail."
       assignee_email: "À la place d'assignee_id : l'adresse d'une personne invitée qui n'a pas encore rejoint la carte (participants sans id, role invited, dans list_tasks). Elle reçoit un e-mail avec son lien d'invitation, et la tâche devient la sienne quand elle rejoint la carte."
       task_tags: "Étiquettes de la tâche, de préférence parmi celles que la carte utilise déjà (tags dans list_tasks). 20 au plus, 40 caractères chacune."
+      task_feature_ids: "Éléments de la carte que la tâche concerne (identifiants donnés par list_features) : des plants, une haie, une mare… Depuis la fiche de l'élément, on voit ce qu'il y a à y faire ; depuis la tâche, on le retrouve sur la carte."
+      task_numbers: "Plants que la tâche concerne, par leur numéro sur le plan (\"7\", \"9.1\"), en plus de feature_ids."
+      task_feature_ids_change: "Nouvelle liste complète des éléments que la tâche concerne, qui remplace l'ancienne ([] les retire tous)."
+      task_numbers_change: "Plants par leur numéro sur le plan, ajoutés à feature_ids dans la nouvelle liste."
       tags_change: "Nouvelle liste complète d'étiquettes, qui remplace l'ancienne ([] les retire toutes). Reprends les étiquettes actuelles pour en ajouter une."
       document_title: "Titre du document tel qu'il apparaît dans la bibliothèque."
       document_description: "Ce que contient le document, en une ou deux phrases. null l'efface."
@@ -141,11 +145,13 @@ fr:
           query: "Des mots à chercher dans l'aide (fautes de frappe et synonymes acceptés)."
       list_tasks:
         title: "Lire les tâches du projet"
-        description: "Les tâches de la carte (page « Tâches ») : ses listes (dont celles que Semisto ajoute par défaut, une par étape), chaque tâche avec ses notes, ses étiquettes, son échéance (et si elle est dépassée), la personne qui la porte, et si elle est faite (quand, par qui). Pour une tâche de Semisto, map_says_done dit si la carte montre déjà ce travail fait, et open_in_map ouvre le panneau où il se fait. Donne aussi les participants à qui une tâche peut être confiée et ce que cette connexion peut faire. Filtres par liste, statut, personne et étiquette."
+        description: "Les tâches de la carte (page « Tâches ») : ses listes (dont celles que Semisto ajoute par défaut, une par étape), chaque tâche avec ses notes, ses étiquettes, son échéance (et si elle est dépassée), la personne qui la porte, et si elle est faite (quand, par qui). Pour une tâche de Semisto, map_says_done dit si la carte montre déjà ce travail fait, et open_in_map ouvre le panneau où il se fait. Donne aussi les participants à qui une tâche peut être confiée et ce que cette connexion peut faire. Filtres par liste, statut, personne et étiquette. Chaque tâche dit aussi les éléments de la carte qu'elle concerne (features, avec leur numéro et leur nom, et l'adresse qui les montre sur la carte) ; feature_ids ou numbers ne gardent que les tâches d'un ou plusieurs plants."
         params:
           task_status: "pending : à faire ; done : faites ; all : toutes."
           assignee: "me : celles de l'utilisateur ; nobody : celles de personne ; anyone : toutes."
           task_tag: "Étiquette des tâches, sans tenir compte des majuscules."
+          task_feature_filter: "Seulement les tâches qui concernent l'un de ces éléments (identifiants donnés par list_features)."
+          task_numbers_filter: "Seulement les tâches qui concernent l'un de ces plants, par leur numéro sur le plan."
       list_harvests:
         title: "Lire le carnet de récolte"
         description: "Le carnet de récolte de la carte (panneau « Récoltes ») : chaque arbre, arbuste ou grimpante fruitière, saison par saison (seasons : les 5 dernières jusqu'à season). Pour chaque plant et chaque saison, status picked (récolté), bore (fruits vus sur l'arbre, pas encore cueillis) ou none (regardé, aucun fruit) ; amount (light, normal, heavy), uses (juice : jus, cooking : compote et cuisson, fresh : à croquer, storage : mis en garde, other) et quantityKg. Une saison absente : rien de noté. followedSeasons : les années où l'équipe a noté au moins une ligne sur la carte ; quietSeasons : les saisons suivies d'affilée, jusqu'à la dernière, sans fruits vus ni cueillis ; watch : vrai à partir de watchSeasons (3), car beaucoup de variétés anciennes ne portent qu'une année sur deux. bearingFrom : l'année où un jeune plant devrait donner ses premiers fruits (avant, il n'est jamais compté). lines : les lignes de la saison, avec leur auteur. varieties : chaque variété du lieu avec ce qu'elle donne de mieux selon le catalogue (uses : fresh à croquer, cooking compote et cuisson, juice jus, cider cidre ou poiré, drying séchage), pickingMonth (mois de cueillette), eatingFromMonth et eatingUntilMonth (saison où on la mange), keeping (keeps : se garde en cave, weeks : quelques semaines, short : à manger ou cuire tout de suite, null : inconnu), la provenance de chaque valeur (souvent « à vérifier ») et here : ce que l'équipe en a déjà fait ici. Pour conseiller jus, compote ou table, pars de ce que le lieu a vécu (here, les notes des lignes), puis du catalogue, et dis d'où vient ton conseil."
@@ -213,13 +219,13 @@ fr:
           offset: "Pour un long texte : la valeur next_offset de l'appel précédent."
       create_tasks:
         title: "Ajouter des tâches"
-        description: "Ajoute des tâches au projet, directement (ce ne sont pas des brouillons), quand la personne te le demande ou accepte ta proposition. Chaque tâche va dans une liste existante (list_id) ou dans la liste nommée list_name, créée si la carte ne l'a pas. Elle peut porter des notes, une échéance, des étiquettes, et être confiée à un participant de la carte (assignee_id), qui reçoit un e-mail : dis-le à la personne avant. 50 tâches au plus par appel ; une tâche refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Ajoute des tâches au projet, directement (ce ne sont pas des brouillons), quand la personne te le demande ou accepte ta proposition. Chaque tâche va dans une liste existante (list_id) ou dans la liste nommée list_name, créée si la carte ne l'a pas. Elle peut porter des notes, une échéance, des étiquettes, et être confiée à un participant de la carte (assignee_id), qui reçoit un e-mail : dis-le à la personne avant. 50 tâches au plus par appel ; une tâche refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire). Une tâche peut concerner des éléments de la carte (feature_ids, ou numbers pour des plants : « Recouper les gourmands » sur les pommiers 7 et 9) : la fiche de chaque plant montre alors ce qu'il y a à y faire. Pour une même action sur plusieurs arbres, une tâche qui les concerne tous suffit ; une tâche par arbre quand chacun a sa propre échéance ou ses propres précisions."
         params:
           tasks: "Les tâches à ajouter, de 1 à 50."
           list_name: "Nom de la liste où ranger la tâche, quand list_id manque : une liste existante (sans tenir compte des majuscules) ou une nouvelle, par exemple « Chantier de mars »."
       update_tasks:
         title: "Modifier des tâches"
-        description: "Modifie des tâches : les cocher ou les décocher (completed), changer leur titre ou leurs notes, les déplacer dans une autre liste, les confier à quelqu'un ou à personne, poser ou effacer une échéance, changer leurs étiquettes. Seuls les champs passés changent. Un lecteur de la carte ne peut que cocher les tâches qui lui sont confiées ; le propriétaire et les éditeurs modifient tout. Rien n'est supprimé. 50 tâches au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons » et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Modifie des tâches : les cocher ou les décocher (completed), changer leur titre ou leurs notes, les déplacer dans une autre liste, les confier à quelqu'un ou à personne, poser ou effacer une échéance, changer leurs étiquettes. Seuls les champs passés changent. Un lecteur de la carte ne peut que cocher les tâches qui lui sont confiées ; le propriétaire et les éditeurs modifient tout. Rien n'est supprimé. 50 tâches au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons » et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire). feature_ids et numbers remplacent la liste des éléments que la tâche concerne."
         params:
           task_changes: "Les modifications, une par tâche, de 1 à 50."
           completed: "true : la tâche est faite ; false : elle est de nouveau à faire."
@@ -492,6 +498,8 @@ fr:
     storage_errors:
       not_found: "lieu de stockage %{id} introuvable sur cette carte (list_storage_readings donne les lieux)."
     task_errors:
+      features_not_found: "éléments introuvables sur cette carte : %{ids}."
+      too_many_features: "une tâche concerne %{max} éléments au plus."
       no_list: "list_id ou list_name est requis (voir les listes dans list_tasks)."
       due_on: "échéance « %{value} » illisible : AAAA-MM-JJ attendu."
     upload_errors:

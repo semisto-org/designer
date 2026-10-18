@@ -135,4 +135,26 @@ class Maps::TasksControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_not Task.exists?(task.id)
   end
+
+  test "a task about plants: created from a plant's sheet, listed on it, unlinked from the task page" do
+    plant = @map.features.create!(layer: "plants", kind: "plant", name: "Pommier", geometry: point, properties: { "number" => 7 })
+    other = @map.features.create!(layer: "plants", kind: "plant", name: "Poirier", geometry: point, properties: { "number" => 8 })
+    sign_in_as users(:michael)
+    post map_tasks_path(@map), params: { task: { task_list_id: @list.id, title: "Recouper les gourmands", feature_ids: [ plant.id, other.id ] } }, as: :json
+    assert_response :created
+    task = response.parsed_body["task"]
+    assert_equal [ "n° 7 — Pommier", "n° 8 — Poirier" ], task["features"].pluck("label")
+    assert_equal task["features"], response.parsed_body["board"]["tasks"].find { _1["id"] == task["id"] }["features"]
+
+    sign_in_as users(:alice)
+    get map_tasks_path(@map, feature_id: plant.id, format: :json)
+    assert_equal [ "Recouper les gourmands" ], response.parsed_body["tasks"].pluck("title")
+    assert_includes response.parsed_body["lists"].pluck("name"), "Chantier"
+
+    sign_in_as users(:michael)
+    patch map_task_path(@map, task["id"]), params: { task: { feature_ids: [ other.id ] } }, as: :json
+    assert_response :success
+    get map_tasks_path(@map, feature_id: plant.id, format: :json)
+    assert_empty response.parsed_body["tasks"]
+  end
 end
