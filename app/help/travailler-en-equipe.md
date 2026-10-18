@@ -10,7 +10,7 @@ Un bureau d'études, une association, un groupe en formation : quand plusieurs p
 ## Ce que fait une équipe
 
 - Chaque membre de l'équipe **modifie toutes les cartes confiées à l'équipe** et participe à leurs discussions.
-- Les membres **n'occupent pas** les 3 places d'éditeur d'une carte : celles-ci restent libres pour tes invités extérieurs (un client, un voisin, un formateur).
+- Les membres n'ont **pas besoin d'être invités** sur chaque carte. Tu peux toujours y ajouter des invités extérieurs (un client, un voisin, un formateur), autant que tu veux.
 - Une carte confiée à l'équipe **reste à son propriétaire**. Elle suit son forfait, sauf si un admin a pris le **forfait de l'équipe** : toutes les cartes de l'équipe suivent alors le forfait de cet admin, et elles ne comptent plus dans celui des designers.
 - Un designer qui travaille aussi à son compte garde ainsi ses cartes perso sur son propre forfait, et celles de l'équipe sur le forfait de l'équipe.
 

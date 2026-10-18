@@ -75,7 +75,6 @@ export function MapTransferSection({ data, base }: Props) {
       ) : open ? (
         <ProposeForm
           state={state}
-          maxEditors={data.maxEditors}
           busy={busy}
           onCancel={() => setOpen(false)}
           onPropose={(candidate) => void run(
@@ -124,24 +123,21 @@ function NoCandidate({ state }: { state: TransferSectionData }) {
 
 type FormProps = {
   state: TransferSectionData
-  maxEditors: number
   busy: boolean
   onCancel: () => void
   onPropose: (candidate: TransferCandidate) => void
 }
 
-function ProposeForm({ state, maxEditors, busy, onCancel, onPropose }: FormProps) {
+function ProposeForm({ state, busy, onCancel, onPropose }: FormProps) {
   const candidates = state.candidates ?? []
   const [userId, setUserId] = useState<number>(candidates[0].userId)
   const selected = candidates.find((c) => c.userId === userId) ?? candidates[0]
   const editors = candidates.filter((c) => !c.viaTeam)
   const team = candidates.filter((c) => c.viaTeam)
-  const seatsLeft = state.seatsLeft ?? 0
-  const blocked = selected.viaTeam && seatsLeft === 0
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    if (!blocked) onPropose(selected)
+    onPropose(selected)
   }
 
   return (
@@ -181,16 +177,9 @@ function ProposeForm({ state, maxEditors, busy, onCancel, onPropose }: FormProps
           <li>{tf('transfer.section.changes.consent', { name: selected.name, days: state.expiresInDays ?? 14 })}</li>
         </ul>
       </div>
-      {selected.viaTeam && (
-        <p className={'text-xs ' + (blocked ? 'text-humus-700' : 'text-loam-500')}>
-          {blocked
-            ? tf('transfer.section.team_no_seat', { name: selected.name, max: maxEditors })
-            : tf('transfer.section.team_seat', { name: selected.name, count: seatsLeft })}
-        </p>
-      )}
 
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={busy || blocked}>{tf('transfer.section.propose', { name: selected.name })}</Button>
+        <Button type="submit" size="sm" disabled={busy}>{tf('transfer.section.propose', { name: selected.name })}</Button>
         <Button size="sm" variant="ghost" disabled={busy} onClick={onCancel}>{tf('transfer.section.back')}</Button>
       </div>
     </form>

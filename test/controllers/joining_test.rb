@@ -68,15 +68,27 @@ class JoiningTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "an editor invitation on a map that filled up explains the situation and stays open" do
+  test "an editor invitation on a map that already has three editors still joins" do
     invitation = @map.invitations.create!(email_address: "bob@example.org", role: "editor", invited_by: @owner)
     3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
     sign_in_as @bob
-    get invitation_path(invitation.token), headers: inertia_headers
-    assert_response :conflict
-    assert_equal "editor_limit", response.parsed_body["props"]["state"]
-    assert_nil @map.role_for(@bob)
-    assert_not invitation.reload.accepted?
+    get invitation_path(invitation.token)
+    assert_redirected_to map_path(@map)
+    assert_equal "editor", @map.role_for(@bob)
+    assert invitation.reload.accepted?
+    assert_equal 4, @map.editors_count
+  end
+
+  test "an editor share link lets a fourth and a fifth editor join" do
+    3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
+    link = @map.create_share_link!(role: "editor", created_by: @owner)
+    [ @bob, make_user("Fifth") ].each do |user|
+      sign_in_as user
+      get join_path(link.token)
+      assert_redirected_to map_path(@map)
+      assert_equal "editor", @map.role_for(user)
+    end
+    assert_equal 5, @map.editors_count
   end
 
   test "share link: join as the link's role" do
@@ -105,7 +117,7 @@ class JoiningTest < ActionDispatch::IntegrationTest
     assert_nil @map.role_for(@bob)
   end
 
-  test "an existing viewer opening an editor link is upgraded when a seat is free" do
+  test "an existing viewer opening an editor link is upgraded" do
     link = @map.create_share_link!(role: "editor", created_by: @owner)
     sign_in_as users(:alice)
     get join_path(link.token)

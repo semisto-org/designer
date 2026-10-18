@@ -16,11 +16,10 @@ class MapTest < ActiveSupport::TestCase
     assert_not map.viewable_by?(users(:bob))
   end
 
-  test "at most three editors" do
+  test "any number of editors" do
     map = maps(:ahinvaux)
-    3.times { |i| map.memberships.create!(user: User.create!(email_address: "e#{i}@example.org"), role: "editor") }
-    extra = map.memberships.new(user: users(:bob), role: "editor")
-    assert_not extra.valid?
-    assert extra.errors.added?(:role, :editor_limit, count: 3)
+    5.times { |i| map.memberships.create!(user: User.create!(email_address: "e#{i}@example.org"), role: "editor") }
+    assert_equal 5, map.editors_count
+    assert map.memberships.new(user: users(:bob), role: "editor").valid?
   end
 end

@@ -22,8 +22,6 @@ fr:
           attributes:
             email_address:
               already_participant: "a déjà accès à cette carte"
-            role:
-              editor_limit: "est limité à %{count} éditeurs par carte"
         comment:
           attributes:
             body:
@@ -47,9 +45,9 @@ fr:
       members: "Personnes ayant accès"
       you: "(toi)"
       editors_count:
-        one: "%{count} éditeur sur %{max}"
-        other: "%{count} éditeurs sur %{max}"
-      full: "(complet)"
+        zero: "Aucun éditeur"
+        one: "%{count} éditeur"
+        other: "%{count} éditeurs"
       role_of: "Rôle de %{name}"
       remove: "Retirer %{name}"
       remove_confirm: "Retirer %{name} de la carte ? Cette personne ne pourra plus l'ouvrir."
@@ -64,7 +62,6 @@ fr:
       invited: "Invitation envoyée à %{email}."
       role_help_viewer: "Un lecteur consulte la carte et participe aux discussions."
       role_help_editor: "Un éditeur dessine et modifie la carte, gratuitement : il travaille avec le forfait qui couvre la carte."
-      editors_full: "Les %{max} places d'éditeur sont prises (invitations en attente comprises). Passe un éditeur en lecteur ou annule une invitation pour en libérer une."
       pending: "Invitations en attente"
       resend: "Renvoyer l'invitation à %{email}"
       resent: "Invitation renvoyée à %{email}."
@@ -97,8 +94,6 @@ fr:
         cannot_delete: "Seuls l'auteur du commentaire et le propriétaire de la carte peuvent le supprimer."
     sharing:
       errors:
-        editor_limit: "Cette carte a déjà ses %{count} éditeurs, le maximum. Passe un éditeur en lecteur pour libérer une place."
-        editor_limit_invite: "Cette carte a déjà ses %{count} éditeurs (invitations en attente comprises). Invite cette personne comme lecteur, ou libère une place d'éditeur."
         role: "Ce rôle n'existe pas : choisis éditeur ou lecteur."
         owner_fixed: "Le rôle du propriétaire ne peut pas changer."
         owner_stays: "Le propriétaire ne peut pas quitter sa carte."
@@ -170,9 +165,6 @@ fr:
         disabled:
           title: "Lien désactivé"
           body: "Le propriétaire de la carte « %{map} » a désactivé ce lien. Demande-lui un nouveau lien ou une invitation par e-mail."
-        editor_limit:
-          title: "Plus de place d'éditeur"
-          body: "La carte « %{map} » a déjà ses 3 éditeurs. Demande au propriétaire de libérer une place, ou de t'inviter comme lecteur."
   public_maps:
     read_only: "Lecture seule"
     published_on: "Vue publiée le %{date}"

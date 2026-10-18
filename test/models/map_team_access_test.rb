@@ -50,7 +50,7 @@ class MapTeamAccessTest < ActiveSupport::TestCase
     assert_equal "viewer", @map.role_for(users(:alice))
   end
 
-  test "team members do not take editor seats, and inviting them is refused" do
+  test "team members are not editor members of the map, and inviting them is refused" do
     assert_equal 0, @map.editors_count
     invitation = @map.invitations.new(email_address: @team_member.email_address, role: "editor", invited_by: @owner)
     assert_not invitation.valid?

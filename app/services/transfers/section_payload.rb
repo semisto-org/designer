@@ -1,9 +1,8 @@
 module Transfers
   # The « Transférer la propriété » section of the sharing dialog. The owner
   # gets the pending proposal, or the people the map can be proposed to: its
-  # editors, and the members of its team (they edit without a seat; the
-  # former owner then needs a free one). Anyone else only learns about a
-  # proposal made to them (`incoming`, for the editor's header notice).
+  # editors, and the members of its team (they edit through it). Anyone else
+  # only learns about a proposal made to them (`incoming`, for the editor's header notice).
   class SectionPayload
     def initialize(map, user, url_helpers:)
       @map = map
@@ -18,7 +17,6 @@ module Transfers
         role: "owner",
         pending:,
         candidates:,
-        seatsLeft: [ Map::MAX_EDITORS - @map.editor_seats_taken, 0 ].max,
         viewersCount: @map.memberships.where(role: "viewer").count,
         team: @map.organization&.name,
         expiresInDays: MapTransfer::EXPIRES_IN.in_days.to_i,
@@ -34,7 +32,7 @@ module Transfers
         problem = transfer.problem
         {
           id: transfer.id,
-          recipient: person(transfer.to_user, via_team: transfer.seat_needed?),
+          recipient: person(transfer.to_user, via_team: transfer.recipient_via_team?),
           createdAt: transfer.created_at.iso8601,
           expiresAt: transfer.expires_at.iso8601,
           problem: problem && transfer.message_for(problem, audience: :owner)

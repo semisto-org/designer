@@ -12,14 +12,11 @@ module Maps
       role = params.require(:membership).require(:role)
       return render_message(t("collab.sharing.errors.role"), :unprocessable_entity) unless %w[editor viewer].include?(role)
       return render_message(t("collab.sharing.errors.owner_fixed"), :unprocessable_entity) if @membership.role == "owner"
-      raise Map::EditorLimitReached if role == "editor" && @membership.role != "editor" && @map.editors_count >= Map::MAX_EDITORS
 
       @membership.update!(role:)
       render_sharing
-    rescue Map::EditorLimitReached => e
-      render_message(e.message, :unprocessable_entity)
     rescue ActiveRecord::RecordInvalid => e
-      render_message(editor_limit?(e.record) ? Map::EditorLimitReached.new.message : e.message, :unprocessable_entity)
+      render_message(e.message, :unprocessable_entity)
     end
 
     def destroy
@@ -40,8 +37,6 @@ module Maps
       def set_membership
         @membership = @map.memberships.find(params[:id])
       end
-
-      def editor_limit?(record) = record.errors.of_kind?(:role, :editor_limit)
 
       def render_sharing
         render json: Collab::SharingPayload.new(@map, Current.user, url_helpers: self)

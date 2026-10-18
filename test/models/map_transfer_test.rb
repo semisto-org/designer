@@ -105,7 +105,7 @@ class MapTransferTest < ActiveSupport::TestCase
     assert_equal "owner", @map.memberships.find_by(user: @lea).role
     assert_equal "editor", @map.role_for(@owner)
     assert_equal "editor", @map.memberships.find_by(user: @owner).role
-    assert_equal 3, @map.editors_count, "the former owner takes the recipient's seat"
+    assert_equal 3, @map.editors_count, "the former owner becomes an editor in the recipient's place"
     assert_equal "viewer", @map.role_for(@viewer)
     assert_equal team, @map.organization
     assert publication.reload.live?
@@ -196,14 +196,14 @@ class MapTransferTest < ActiveSupport::TestCase
     assert_match(/Michael a annulé/, error.message)
   end
 
-  test "a team member without a seat can receive the map when a seat is free for the former owner" do
+  test "a team member can receive the map; the former owner stays on as an editor" do
     bob = users(:bob)
     team = make_team(admin: @owner, members: [ bob ])
     @map.update!(organization: team)
     assert_equal "editor", @map.role_for(bob)
 
     transfer = propose(to: bob)
-    assert transfer.seat_needed?
+    assert transfer.recipient_via_team?
     transfer.accept!(by: bob)
 
     @map.reload
@@ -213,23 +213,20 @@ class MapTransferTest < ActiveSupport::TestCase
     assert_equal 2, @map.editors_count
   end
 
-  test "a team member cannot receive the map when the three seats are taken" do
+  test "a team member receives the map however many editors it has" do
     bob = users(:bob)
     @map.update!(organization: make_team(admin: @owner, members: [ bob ]))
     add_member(@map, make_user("Paul"), "editor")
     add_member(@map, make_user("Zoé"), "editor")
 
-    error = assert_raises(ActiveRecord::RecordInvalid) { propose(to: bob) }
-    assert error.record.errors.of_kind?(:base, :no_seat)
-
-    # Proposed while a seat was free, the seat taken meanwhile: refused, kept pending.
-    @map.memberships.find_by(user: @lea).destroy!
     transfer = propose(to: bob)
     add_member(@map, make_user("Max"), "editor")
-    error = assert_raises(MapTransfer::Refused) { transfer.accept!(by: bob) }
-    assert_equal :no_seat, error.reason
-    assert transfer.reload.pending?
-    assert_equal @owner, @map.reload.owner
+    transfer.accept!(by: bob)
+
+    @map.reload
+    assert_equal bob, @map.owner
+    assert_equal "editor", @map.memberships.find_by(user: @owner).role
+    assert_equal 5, @map.editors_count, "Léa, Paul, Zoé, Max and the former owner"
   end
 
   test "incoming proposals for a user, on active maps only" do

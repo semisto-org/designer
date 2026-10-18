@@ -9,7 +9,6 @@ class MapInvitation < ApplicationRecord
   validates :email_address, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :role, inclusion: { in: ROLES }
   validate :not_already_a_participant, on: :create
-  validate :editor_slot_available, on: :create
 
   has_secure_token :token
   before_create { self.expires_at ||= EXPIRES_IN.from_now }
@@ -30,8 +29,7 @@ class MapInvitation < ApplicationRecord
 
   # Whoever opens the link while signed in joins, whatever e-mail address
   # they signed in with: the link is the invitation. The tasks given to the
-  # invited address become theirs. Raises
-  # Map::EditorLimitReached when the map already has its editors.
+  # invited address become theirs.
   def accept!(user)
     transaction do
       membership = map.grant_access!(user, role, invited_by:)
@@ -46,15 +44,6 @@ class MapInvitation < ApplicationRecord
       return if email_address.blank?
       if map.participants.exists?(email_address:)
         errors.add(:email_address, :already_participant)
-      end
-    end
-
-    # Pending editor invitations hold a seat, so the owner cannot promise
-    # a fourth one by e-mail.
-    def editor_slot_available
-      return unless role == "editor" && map
-      if map.editor_seats_taken(except_invitation: self) >= Map::MAX_EDITORS
-        errors.add(:role, :editor_limit, count: Map::MAX_EDITORS)
       end
     end
 end

@@ -1,6 +1,6 @@
 # A team ("équipe") that maps can be shared with: Semisto's design office
-# first. Every member edits every map of the team without taking one of the
-# map's three editor seats (Map#role_for). A team map still belongs to its
+# first. Every member edits every map of the team without being invited on
+# it (Map#role_for). A team map still belongs to its
 # owner. It follows the plan of the team's billing user when an admin took
 # that role (« Forfait de l'équipe »), else its owner's plan
 # (Map#billing_user, Entitlements.for_map).
