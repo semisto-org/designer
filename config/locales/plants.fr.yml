@@ -365,6 +365,8 @@ fr:
       rejected: "Proposition refusée : %{name}."
       all_accepted: "Les plantes proposées ont rejoint ta palette."
       all_rejected: "Propositions refusées."
+      new_variety: "nouvelle variété"
+      new_variety_title: "Le catalogue ne connaît pas encore cette variété : elle y sera ajoutée si tu acceptes."
     intro: "Les espèces et variétés choisies pour ce terrain. Cherche une plante ou une variété : si elle n'y est pas, ajoute-la depuis le catalogue."
     search_placeholder: "Chercher : pommier, sureau…"
     search_label: "Chercher une plante dans la palette"

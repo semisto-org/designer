@@ -44,6 +44,11 @@ export function PaletteDrafts({ drafts }: { drafts: PaletteDraft[] }) {
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1.5 font-medium text-loam-800">
                 <StrataDot strata={draft.effectiveStrata} /><span className="truncate">{draft.name}</span>
+                {draft.newVariety && (
+                  <span className="shrink-0 rounded-full bg-humus-100 px-1.5 py-0.5 text-sm font-normal text-humus-800" title={t('palette.drafts.new_variety_title')}>
+                    {t('palette.drafts.new_variety')}
+                  </span>
+                )}
               </p>
               <p className="truncate text-xs text-loam-500">
                 <i>{draft.latinName}</i> · {strataLabel(draft.effectiveStrata)}

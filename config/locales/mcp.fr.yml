@@ -312,13 +312,14 @@ fr:
           feature_tags: "Étiquettes de l'élément, de préférence parmi celles que la carte utilise déjà (tags dans get_map), par exemple « phase 1 » ou « zone nord ». 20 au plus, 40 caractères chacune."
       propose_palette:
         title: "Proposer des plantes pour la palette"
-        description: "Verse une liste de plantes dans la palette de la carte, en brouillons que l'humain accepte ou refuse dans le panneau Palette : par exemple la liste que l'utilisateur tient dans un tableur, un PDF ou l'export d'un autre outil, ou tes propres choix. Chaque plante est reconnue par species_id (search_plants) ou, à défaut, par son nom latin ou commun exact ; un nom introuvable ou ambigu est renvoyé avec sa raison : cherche-le avec search_plants et renvoie-le avec son species_id. Une espèce déjà dans la palette (ou déjà proposée) est ignorée. 200 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Verse une liste de plantes dans la palette de la carte, en brouillons que l'humain accepte ou refuse dans le panneau Palette : par exemple la liste que l'utilisateur tient dans un tableur, un PDF ou l'export d'un autre outil, ou tes propres choix. Chaque plante est reconnue par species_id (search_plants) ou, à défaut, par son nom latin ou commun exact ; un nom introuvable ou ambigu est renvoyé avec sa raison : cherche-le avec search_plants et renvoie-le avec son species_id. Un cultivar se donne par variety_id (get_plant) ou par son nom (variety_name) : un nom que le catalogue ne connaît pas encore devient un cultivar quand l'humain accepte le brouillon. Une espèce ou un cultivar déjà dans la palette (ou déjà proposé) est refusé. 200 plantes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           summary: "Résumé de la proposition, par exemple d'où vient la liste."
           plants: "Les plantes proposées, de 1 à 200."
           species_id: "Identifiant de l'espèce, donné par search_plants. Prioritaire sur name."
           plant_name: "Nom de la plante tel qu'il figure dans la source (latin ou commun), quand species_id manque."
           variety_id: "Identifiant d'un cultivar de l'espèce (get_plant), facultatif."
+          variety_name: "Nom du cultivar, quand variety_id manque (« Double Philippe »). S'il est au catalogue (accents, tirets et majuscules ignorés), c'est celui-là ; sinon le cultivar sera créé au catalogue quand l'humain acceptera le brouillon, pas avant."
           strata: "Strate jouée sur ce design, si elle diffère de celle de l'espèce."
           role: "Rôle : food (nourricier), support (soutien), pioneer (pionnier), hedge (haie), ornamental (ornement)."
           target_count: "Nombre de plants visés, s'il est connu (par exemple une quantité du tableur)."
