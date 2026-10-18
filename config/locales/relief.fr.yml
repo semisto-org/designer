@@ -412,6 +412,7 @@ fr:
     # « Suivre la courbe » in the drawing toolbar, and the MCP tool trace_contour.
     catchment:
       title: "Bassin versant"
+      map_label: "Bassin versant de l'élément choisi"
       loading: "Calcul du bassin versant…"
       intro: "Toute la pluie qui ruisselle sur la surface bleue de la carte finit ici."
       area: "%{area} drainés"
