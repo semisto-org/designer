@@ -137,6 +137,13 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 /* Home page time-lapse: text set straight on the watercolour keeps a paper halo. */
 .timelapse-halo { text-shadow: 0 0 22px var(--color-loam-50), 0 0 8px var(--color-loam-50), 0 0 3px var(--color-loam-50); }
 
+/* Placing plants from the palette: a seedling at the cross, so the mode is
+   visible under the hand and each click reads as one plant. Wins over the
+   pointer/grab cursors other map tools set inline on the canvas. */
+.placing-plant .maplibregl-canvas {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M16 4v7M16 21v7M4 16h7M21 16h7' stroke='%23fff' stroke-width='4'/%3E%3Cpath d='M16 4v7M16 21v7M4 16h7M21 16h7' stroke='%232b2940' stroke-width='2'/%3E%3C/g%3E%3Cpath d='M21 11c0-5 4-8 9-8 0 5-4 8-9 8z' fill='%237d8900' stroke='%23fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%234d5500' stroke='%23fff' stroke-width='1.5'/%3E%3C/svg%3E") 16 16, crosshair !important;
+}
+
 /* A keypoint found in a valley: a numbered water drop, as in the field notebook.
    MapLibre owns the marker's transform, so only its inner span may turn. */
 .keypoint-marker { display: grid; place-items: center; width: 30px; height: 30px; cursor: pointer; background: none; border: 0; padding: 0; }

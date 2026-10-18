@@ -296,6 +296,9 @@ export default function PlantsOverlay() {
   useEffect(() => {
     if (!placing || !editorRef.current.canEdit) return
     setScenario('projected')
+    // A distinct cursor while placing (application.css, .placing-plant).
+    const container = editorRef.current.instance.getContainer()
+    container.classList.add('placing-plant')
     let stopped = false
     void (async () => {
       while (!stopped) {
@@ -315,6 +318,7 @@ export default function PlantsOverlay() {
     })()
     return () => {
       stopped = true
+      container.classList.remove('placing-plant')
       editorRef.current.cancelDraw()
     }
   }, [placing])
