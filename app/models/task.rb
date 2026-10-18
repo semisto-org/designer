@@ -4,7 +4,8 @@
 # the map or its team: `invitee_email`) and given a due date, and carries free tags
 # like the map's elements. A task Semisto adds by default has a `key` that
 # names the editor panel where it is done and the step of the journey that
-# says when the map shows it done (TaskList::Defaults).
+# says when the map shows it done (TaskList::Defaults). A task can be about
+# elements of its map (« Tailler les pommiers 7 et 9 »): `features`.
 class Task < ApplicationRecord
   include MapFeature::Tags
 
@@ -13,12 +14,15 @@ class Task < ApplicationRecord
   # well as its due date (« Plantation du 1er décembre au 31 janvier »).
   STEP_KINDS = %w[design site plant].freeze
   NOTES_MAX_LENGTH = 5000
+  MAX_FEATURES = 200
 
   belongs_to :map
   belongs_to :task_list
   belongs_to :assignee, class_name: "User", optional: true
   belongs_to :completed_by, class_name: "User", optional: true
   belongs_to :created_by, class_name: "User", optional: true
+  has_many :task_features, dependent: :delete_all
+  has_many :features, -> { order(:id) }, through: :task_features, source: :map_feature
 
   normalizes :title, with: ->(title) { title.to_s.squish }
   normalizes :notes, with: ->(notes) { notes.to_s.strip.presence }
@@ -30,6 +34,7 @@ class Task < ApplicationRecord
   validates :starts_on, :due_on, presence: true, if: :step_kind
   validate :starts_before_due
   validate :list_on_the_same_map
+  validate :features_on_the_same_map
   validate :assignee_takes_part, if: -> { assignee_id && will_save_change_to_assignee_id? }
   validate :invitee_is_invited, if: -> { invitee_email && will_save_change_to_invitee_email? }
 
@@ -38,6 +43,7 @@ class Task < ApplicationRecord
   scope :done, -> { where.not(completed_at: nil) }
   scope :overdue, ->(today = Date.current) { pending.where(due_on: ...today) }
   scope :steps, -> { where.not(step_kind: nil) }
+  scope :about, ->(feature_ids) { where(id: TaskFeature.where(map_feature_id: feature_ids).select(:task_id)) }
 
   before_validation { self.map_id ||= task_list&.map_id }
   before_validation :keep_one_assignee
@@ -90,8 +96,9 @@ class Task < ApplicationRecord
   # The editor panel where a default task is done (« Ouvrir dans la carte »).
   def panel = TaskList::Defaults.panel_for(key)
 
-  # `journey_done`: the journey items the map shows done (Journey#items).
-  def as_json(journey_done: [])
+  # `journey_done`: the journey items the map shows done (Journey#items);
+  # `labels`: the names of the linked elements (MapFeature.labels_for).
+  def as_json(journey_done: [], labels: nil)
     journey = TaskList::Defaults.journey_for(key)
     {
       id:, listId: task_list_id, title:, notes:, key:, position:, tags:,
@@ -102,8 +109,16 @@ class Task < ApplicationRecord
       assignee: assignee_json,
       completedAt: completed_at&.iso8601,
       completedBy: completed_by&.display_name,
-      createdAt: created_at&.iso8601
+      createdAt: created_at&.iso8601,
+      features: features_json(labels).presence
     }.compact
+  end
+
+  # The elements the task is about, with the label the map shows them by.
+  def features_json(labels = nil)
+    linked = features.to_a
+    labels ||= MapFeature.labels_for(linked)
+    linked.map { |feature| { id: feature.id, kind: feature.kind, label: labels[feature.id] } }
   end
 
   private
@@ -141,6 +156,12 @@ class Task < ApplicationRecord
 
     def list_on_the_same_map
       errors.add(:task_list, :invalid) if task_list && map_id && task_list.map_id != map_id
+    end
+
+    def features_on_the_same_map
+      linked = features.to_a
+      errors.add(:features, :too_many, count: MAX_FEATURES) if linked.size > MAX_FEATURES
+      errors.add(:features, :other_map) if map_id && linked.any? { |feature| feature.map_id != map_id || feature.status == "rejected" }
     end
 
     # Only someone who takes part in the map (owner, editor, viewer, team

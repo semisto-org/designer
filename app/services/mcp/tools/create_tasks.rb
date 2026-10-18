@@ -4,7 +4,8 @@ module Mcp
     # a list found or made by its name (list_name). Tasks are the team's
     # to-do list, not the design: the AI writes them directly, like a
     # teammate, and the journal keeps the trace. A task given to someone
-    # else e-mails them, as on the page.
+    # else e-mails them, as on the page. A task may be about elements of the
+    # map (« Tailler les pommiers 7 et 9 »): feature_ids, or plant numbers.
     class CreateTasks < Base
       include TaskHelpers
 
@@ -24,6 +25,8 @@ module Mcp
                 due_on: { type: "string", format: "date", description: :due_on },
                 assignee_id: { type: "integer", minimum: 1, description: :assignee_id },
                 assignee_email: { type: "string", format: "email", description: :assignee_email },
+                feature_ids: { type: "array", maxItems: Task::MAX_FEATURES, uniqueItems: true, items: { type: "integer", minimum: 1 }, description: :task_feature_ids },
+                numbers: { type: "array", maxItems: Task::MAX_FEATURES, items: { type: "string", minLength: 1, maxLength: 20 }, description: :task_numbers },
                 tags: {
                   type: "array", maxItems: MapFeature::Tags::MAX_TAGS, uniqueItems: true, description: :task_tags,
                   items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
@@ -67,11 +70,14 @@ module Mcp
 
       private
         def build(map, line)
-          map.tasks.new(
+          features = features_for(map, line)
+          task = map.tasks.new(
             task_list: list_for(map, line), created_by: user,
             title: line["title"], notes: line["notes"], due_on: parse_due_on(line["due_on"]),
             assignee_id: line["assignee_id"], invitee_email: line["assignee_email"], tags: Array(line["tags"])
           )
+          task.features = features if features
+          task
         end
 
         # The list named by id, or by name (found regardless of case, else

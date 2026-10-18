@@ -3,7 +3,9 @@
 # adds Semisto's default lists (TaskList::Defaults). Everyone on the map
 # reads; editors manage; the person a task is assigned to may tick it, even
 # as a viewer. Giving a task to someone else e-mails them; someone invited
-# who has no account yet gets their invitation link with it.
+# who has no account yet gets their invitation link with it. A task may be
+# about elements of the map (feature_ids); `?feature_id=` lists the tasks
+# of one element, for its sheet in the editor.
 module Maps
   class TasksController < ApplicationController
     include MapScoped
@@ -26,13 +28,18 @@ module Maps
             today: Date.current.iso8601
           )
         end
-        format.json { render json: board }
+        format.json do
+          next render json: board unless params[:feature_id].present?
+          tasks = @map.tasks.about(params[:feature_id].to_i).includes(:assignee, :completed_by, :features).order(:completed_at, :due_on, :id)
+          render json: { tasks: tasks.map(&:as_json), lists: @map.task_lists.map(&:as_json) }
+        end
       end
     end
 
     def create
       list = @map.task_lists.find(params.require(:task).require(:task_list_id))
-      task = list.tasks.new(task_params.merge(map: @map, created_by: Current.user))
+      task = list.tasks.new(task_params.except(:feature_ids).merge(map: @map, created_by: Current.user))
+      task.features = linked_features if task_params.key?(:feature_ids)
       task.completed_by = Current.user if task.completed_at
       if task.save
         notify_assignee(task) if task.assigned?
@@ -45,7 +52,9 @@ module Maps
     def update
       reassigned = false
       Task.transaction do
-        @task.assign_attributes(editable_params)
+        attributes = editable_params
+        @task.assign_attributes(attributes.except(:feature_ids))
+        @task.features = linked_features if attributes.key?(:feature_ids)
         @task.completed_by = Current.user if @task.completed_at_changed? && @task.completed_at
         reassigned = (@task.assignee_id_changed? && @task.assignee_id) || (@task.invitee_email_changed? && @task.invitee_email)
         @task.save!
@@ -79,11 +88,18 @@ module Maps
       end
 
       def task_params
-        params.require(:task).permit(:title, :notes, :assignee_id, :invitee_email, :due_on, :completed, tags: [])
+        params.require(:task).permit(:title, :notes, :assignee_id, :invitee_email, :due_on, :completed, tags: [], feature_ids: [])
       end
 
       def editable_params
         can_edit? ? task_params : task_params.slice(:completed)
+      end
+
+      # The elements of this map the task is about; ids of another map are
+      # left out.
+      def linked_features
+        ids = Array(task_params[:feature_ids]).compact_blank.map(&:to_i).first(Task::MAX_FEATURES)
+        @map.features.where.not(status: "rejected").where(id: ids).to_a
       end
 
       def move

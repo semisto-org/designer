@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_100100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1411,6 +1411,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_100100) do
     t.index ["stripe_event_id"], name: "index_stripe_events_on_stripe_event_id", unique: true
   end
 
+  create_table "task_features", force: :cascade do |t|
+    t.bigint "task_id", null: false
+    t.bigint "map_feature_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["map_feature_id"], name: "index_task_features_on_map_feature_id"
+    t.index ["task_id", "map_feature_id"], name: "index_task_features_on_task_id_and_map_feature_id", unique: true
+  end
+
   create_table "task_lists", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.string "name", null: false
@@ -1648,6 +1656,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_100100) do
   add_foreign_key "storage_readings", "map_features", on_delete: :cascade
   add_foreign_key "storage_readings", "maps", on_delete: :cascade
   add_foreign_key "storage_readings", "users", on_delete: :nullify
+  add_foreign_key "task_features", "map_features", on_delete: :cascade
+  add_foreign_key "task_features", "tasks", on_delete: :cascade
   add_foreign_key "task_lists", "maps", on_delete: :cascade
   add_foreign_key "task_lists", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "tasks", "maps", on_delete: :cascade

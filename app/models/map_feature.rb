@@ -27,6 +27,8 @@ class MapFeature < ApplicationRecord
   # Changes an AI proposed to this element; the accepted ones are its history.
   has_many :storage_readings, -> { order(:measured_on, :id) }, dependent: :delete_all
   has_many :update_drafts, class_name: "FeatureUpdateDraft", dependent: :delete_all
+  has_many :task_features, dependent: :delete_all
+  has_many :tasks, through: :task_features
 
   validates :kind, presence: true
   validates :layer, inclusion: { in: LAYERS }
@@ -57,5 +59,22 @@ class MapFeature < ApplicationRecord
         "updatedAt" => updated_at&.iso8601
       )
     }
+  end
+
+  # { id => what the map calls each feature }: a plant by its number and
+  # name (or species), any other element by its name or its kind. One query
+  # for the species, whatever the number of features.
+  def self.labels_for(features)
+    species_ids = features.filter_map { |f| f.plant_species_id if f.plant? && f.name.blank? }.uniq
+    species = species_ids.empty? ? {} : PlantSpecies.where(id: species_ids).includes(:common_names).index_by(&:id)
+    features.to_h do |feature|
+      name = feature.name.to_s.strip.presence
+      if feature.plant?
+        name ||= species[feature.plant_species_id]&.then { |s| s.common_name || s.latin_name }
+        number = feature.plant_number
+        label = [ number && !name.to_s.start_with?("n°") ? "n° #{number}" : nil, name ].compact.join(" — ")
+      end
+      [ feature.id, label.presence || name || I18n.t("editor.kinds.#{feature.kind}", default: feature.kind.humanize) ]
+    end
   end
 end

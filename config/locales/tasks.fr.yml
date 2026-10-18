@@ -14,6 +14,7 @@ fr:
         assignee: "La personne assignée"
         invitee_email: "La personne invitée"
         task_list: "La liste"
+        features: "Les éléments liés"
       task_list:
         name: "Le nom de la liste"
     errors:
@@ -24,6 +25,9 @@ fr:
               not_a_participant: "doit participer à la carte"
             invitee_email:
               not_invited: "doit être invité·e à la carte ou à son équipe"
+            features:
+              too_many: "ne peuvent pas dépasser %{count}"
+              other_map: "doivent être sur la carte de la tâche"
             tags:
               too_many_tags: "ne peuvent pas dépasser %{count}"
               tag_too_long: "doivent faire %{count} caractères au plus chacune"
@@ -113,6 +117,12 @@ fr:
       mark_done: "Marquer « %{title} » comme faite"
       mark_pending: "Marquer « %{title} » comme à faire"
       open_in_map: "Ouvrir dans la carte"
+      features: "Concerne"
+      show_on_map: "Voir sur la carte"
+      unlink_feature: "Ne plus lier « %{label} » à cette tâche"
+      more_features:
+        one: "et 1 autre"
+        other: "et %{count} autres"
       map_says_done: "La carte montre que c'est fait"
       tick_now: "Cocher"
       due:
@@ -212,6 +222,20 @@ fr:
           aftercare:
             title: "Suivre et arroser la première année"
             notes: "La première année décide de tout : arrosages pendant les sécheresses, désherbage autour des jeunes plants."
+    # « À faire » on the sheet of an element in the editor: the tasks about it.
+    feature_section:
+      title: "À faire"
+      empty: "Rien à faire ici pour l'instant. Une taille, une protection à changer, un tuteur à reprendre : note-le, la tâche rejoindra la page « Tâches »."
+      add: "Ajouter une tâche"
+      title_placeholder: "Tailler, recouper les gourmands…"
+      list: "Dans la liste"
+      save: "Ajouter"
+      added: "Tâche ajoutée."
+      done_count:
+        one: "1 tâche faite"
+        other: "%{count} tâches faites"
+      also: "Concerne aussi : %{labels}"
+      open_all: "Voir toutes les tâches"
   task_mailer:
     assigned:
       subject: "%{assigner} t'a confié une tâche sur « %{map} »"
