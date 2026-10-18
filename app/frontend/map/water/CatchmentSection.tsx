@@ -38,7 +38,7 @@ export type CatchmentResult = {
 type State = { status: 'loading' } | { status: 'ready'; result: CatchmentResult } | { status: 'error'; message: string; reason?: string }
 
 const SOURCE = 'catchment'
-const LAYERS = ['catchment-fill', 'catchment-line'] as const
+const LAYERS = ['catchment-fill', 'catchment-line', 'catchment-label'] as const
 const WATER = '#3d7ea6'
 
 function install(map: MapLibreMap, geometry: Geometry) {
@@ -56,6 +56,19 @@ function install(map: MapLibreMap, geometry: Geometry) {
     id: LAYERS[1], type: 'line', source: SOURCE,
     layout: { 'line-join': 'round' },
     paint: { 'line-color': WATER, 'line-width': 2, 'line-dasharray': [2, 1.5], 'line-opacity': 0.85 },
+  }, before)
+  // Named on the map itself: a dashed outline alone reads as a selection or a drawing.
+  map.addLayer({
+    id: LAYERS[2], type: 'symbol', source: SOURCE,
+    layout: {
+      'symbol-placement': 'line',
+      'symbol-spacing': 220,
+      'text-field': t('relief.catchment.map_label'),
+      'text-font': ['Noto Sans Regular'],
+      'text-size': 13,
+      'text-offset': [0, -0.8],
+    },
+    paint: { 'text-color': WATER, 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
   }, before)
 }
 
