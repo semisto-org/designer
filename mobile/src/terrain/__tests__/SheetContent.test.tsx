@@ -103,7 +103,7 @@ describe('terrain sheet', () => {
   })
 
   it('on the planting round, leads to the plant, then says « Tu y es »', () => {
-    const target = { feature: { ...plant, properties: { ...plant.properties, planted_on: null, number: 12 } }, meters: 7.2, bearing: 45, direction: 'NE' as const }
+    const target = { feature: { ...plant, properties: { ...plant.properties, planted_on: undefined, number: 12 } }, meters: 7.2, bearing: 45, direction: 'NE' as const }
     const props = { left: 5, skippedLeft: 0, planting, accuracy: 3, heading: 0, located: true, onPlanted: jest.fn(), onPlantedHere: jest.fn(), onSkip: jest.fn(), onEnd: jest.fn() }
     let far!: ReturnType<typeof create>
     let near!: ReturnType<typeof create>
