@@ -185,7 +185,9 @@ export function HelpDrawer({ open, slug, onClose }: { open: boolean; slug?: stri
                 </details>
               )}
               <Prose html={article.html} className="mt-4 prose-sm" onClick={followInternalLink} />
-              <HelpFeedback slug={article.slug} compact />
+              <div className="mt-8">
+                <HelpFeedback slug={article.slug} compact />
+              </div>
               {article.related && article.related.length > 0 && (
                 <nav aria-label={t('help.same_category')} className="mt-6">
                   <h3 className="text-sm font-semibold text-loam-900">{t('help.same_category')}</h3>
