@@ -25,7 +25,9 @@ class CatalogueReviewsController < ApplicationController
       @species.genus = PlantGenus.for_latin_name(@species.latin_name) if @species.latin_name_changed?
       @species.assign_attributes(review_status: "reviewed", reviewed_by: Current.user, reviewed_at: Time.current)
       values = review_params.slice(:strata).compact_blank.to_h
-      names = review_params[:common_name].present? ? [ review_params[:common_name] ] : nil
+      # The chosen name comes first (the one shown everywhere); the names the
+      # species already had stay as synonyms, so a name in use is not lost.
+      names = review_params[:common_name].present? ? [ review_params[:common_name], *french_names(@species) ] : nil
       Catalog::SpeciesWriter.new(source: "semisto", status: "to_verify").write(@species, values, common_names: names)
     end
     redirect_to catalogue_reviews_path, notice: t("plants.review.flash.accepted", name: @species.latin_name), status: :see_other
@@ -75,6 +77,10 @@ class CatalogueReviewsController < ApplicationController
 
     def set_species
       @species = PlantSpecies.proposed.find(params[:id])
+    end
+
+    def french_names(species)
+      species.common_names.select { _1.language == I18n.locale.to_s }.map(&:name)
     end
 
     def review_params

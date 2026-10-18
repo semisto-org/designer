@@ -134,6 +134,9 @@ function ProposalCard({ proposal: p, strata: strataKeys }: { proposal: Proposal;
         </Field>
         <Field label={t('plants.review.common_name')}>
           <Input value={commonName} onChange={(e) => setCommonName(e.target.value)} />
+          {p.commonName && commonName.trim() && commonName.trim().toLowerCase() !== p.commonName.toLowerCase() && (
+            <p className="mt-1.5 text-sm text-loam-500">{t('plants.review.keeps_synonym', { name: p.commonName })}</p>
+          )}
           <CommonNameSuggestions check={gbif} current={commonName} onUse={setCommonName} />
         </Field>
         <Field label={t('plants.review.strata')}>

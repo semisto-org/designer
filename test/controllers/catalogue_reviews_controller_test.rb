@@ -49,6 +49,15 @@ class CatalogueReviewsControllerTest < ActionDispatch::IntegrationTest
     assert @species.visible_to?(users(:alice))
   end
 
+  test "choosing another common name keeps the one the species had as a synonym" do
+    Catalog::SpeciesWriter.new(source: "user", status: "to_verify").write(@species, {}, common_names: [ "Sauge Caradonna" ])
+    sign_in_as @reviewer
+    patch catalogue_review_path(@species), params: { review: { latin_name: "Salvia nemorosa", common_name: "Sauge des bois" } }
+    @species.reload
+    assert_equal "Sauge des bois", @species.common_name
+    assert_equal [ "Sauge des bois", "Sauge Caradonna" ], @species.common_names.select { _1.language == "fr" }.map(&:name)
+  end
+
   test "a name that already exists is not accepted twice" do
     sign_in_as @reviewer
     patch catalogue_review_path(@species), params: { review: { latin_name: "Malus domestica" } }

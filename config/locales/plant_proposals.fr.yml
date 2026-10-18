@@ -62,6 +62,7 @@ fr:
       gbif_common_names: "Noms français connus de GBIF :"
       gbif_sources: "Source : %{sources}"
       use: "Utiliser %{name}"
+      keeps_synonym: "« %{name} » restera comme autre nom."
       values: "Valeurs saisies (à vérifier)"
       no_values: "Aucune valeur saisie."
       latin_name: "Nom latin"
