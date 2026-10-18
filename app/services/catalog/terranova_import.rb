@@ -2,6 +2,9 @@ module Catalog
   # Imports the plant catalogue of Terranova (Semisto's internal app) into
   # the Designer catalogue: genera, species, varieties and French common names.
   #
+  # Hardiness never comes in: half of the audited rows say « zone-5 », a
+  # default someone filled in rather than a fact (Michael, 2026-10-18).
+  #
   # Values only, never text: descriptions, notes, toxic elements and any
   # other free text stay out (they may quote PFAF or Wikipedia). Members,
   # contributors and comments are never read. Each imported value carries
@@ -75,7 +78,6 @@ module Catalog
                  row["spread_max_cm"].present? || row["hardiness"].present?
       known = ->(field, value) { assessed || !Array(UNASSESSED_DEFAULTS[field]).include?(value.to_s) }
       single = ->(facet, field = facet.to_s) { known.(field, row[field]) ? PlantVocabulary.canonical(facet, row[field]) : nil }
-      hardiness = row["hardiness"].to_s
 
       {
         "plant_type" => single.(:plant_type),
@@ -90,8 +92,6 @@ module Catalog
         "height_max_m" => metres(row["height_max_cm"]),
         "spread_min_m" => metres(row["spread_min_cm"]),
         "spread_max_m" => metres(row["spread_max_cm"]),
-        "hardiness_zone" => PlantVocabulary.canonical_zone(hardiness),
-        "min_temperature_c" => PlantVocabulary.canonical_min_temperature(hardiness),
         "exposures" => PlantVocabulary.canonical_list(:exposures, row["exposures"]),
         "soil_moisture" => known.("soil_moisture", row["soil_moisture"]) ? PlantVocabulary.canonical_list(:soil_moisture, row["soil_moisture"]) : [],
         "soil_types" => PlantVocabulary.canonical_list(:soil_types, row["soil_types"]),

@@ -19,6 +19,13 @@ class Catalog::TerranovaTriageTest < ActiveSupport::TestCase
     assert_equal [ :inconsistent_sizes ], entry(triage, 5).reasons
   end
 
+  test "a tree layer for a plant under 2 m goes to basket B" do
+    triage = triage(row(1, "Trifolium repens", strate: "sub_canopy", height_max_cm: 40),
+                    row(2, "Cornus mas", strate: "sub_canopy", height_max_cm: 500))
+    assert_equal [ :impossible_strata ], entry(triage, 1).reasons
+    assert_equal "A", entry(triage, 2).basket
+  end
+
   test "of two twins, the best one stays a candidate" do
     triage = triage(row(1, "Mentha x piperita", audited: nil), row(2, "Mentha × piperita", usage: 2))
     assert_equal "A", entry(triage, 2).basket

@@ -29,8 +29,8 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
     assert_equal 3.0, elder.height_min_m.to_f
     assert_equal 7.0, elder.height_max_m.to_f
     assert_equal 4.0, elder.spread_max_m.to_f
-    assert_equal 4, elder.hardiness_zone
-    assert_equal(-30.0, elder.min_temperature_c.to_f)
+    assert_nil elder.hardiness_zone, "Terranova's hardiness is not trusted"
+    assert_nil elder.min_temperature_c
     assert_equal %w[sun partial-shade], elder.exposures
     assert_equal %w[flower fruit], elder.edible_parts
     assert_equal %w[mellifere birds], elder.eco_services
@@ -46,11 +46,9 @@ class Catalog::TerranovaImportTest < ActiveSupport::TestCase
     provenance = elder.provenance_for(:height_max_m)
     assert_equal "terranova", provenance.source
     assert_equal "to_verify", provenance.status
-    assert_equal "terranova", elder.provenance_for(:min_temperature_c).source
 
     goumi = PlantSpecies.find_by!(terranova_id: 102)
-    assert_equal 3, goumi.hardiness_zone
-    assert_equal(-40.0, goumi.min_temperature_c.to_f, "derived from the zone")
+    assert_nil goumi.hardiness_zone
     assert_equal [ "nitrogen" ], goumi.eco_services
     assert_equal [ "dry" ], goumi.soil_moisture
     assert_equal 2, goumi.watering_need

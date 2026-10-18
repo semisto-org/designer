@@ -6,7 +6,8 @@ module Catalog
   # - A: audited in Terranova, a clean botanical name, some values, no twin.
   #   Imported as proposed species, values « to_verify », reviewed one by one.
   # - B: worth keeping but to clean first (suspicious name, never audited,
-  #   duplicate, sizes that contradict each other).
+  #   duplicate, sizes that contradict each other, a tree layer for a plant
+  #   under 2 m).
   # - C: not migrated (no species name, or nothing known and nobody uses it).
   #
   # Each entry says why. Basket A comes first by usage in Terranova (palettes,
@@ -31,7 +32,9 @@ module Catalog
     MAX_HEIGHT_M = 120 # a coast redwood
 
     # Designer fields compared with an existing species to list conflicts.
-    COMPARED_FIELDS = %w[plant_type strata height_max_m spread_max_m hardiness_zone edible_rating].freeze
+    COMPARED_FIELDS = %w[plant_type strata height_max_m spread_max_m edible_rating].freeze
+    TREE_LAYERS = %w[canopy sub_canopy].freeze
+    MIN_TREE_LAYER_HEIGHT_M = 2
 
     attr_reader :entries
 
@@ -63,8 +66,10 @@ module Catalog
           reasons << :suspicious_name
         end
         reasons << :not_audited if row["audited_at"].blank?
-        reasons << :no_values if TerranovaImport.species_attributes(row).values.all? { blank?(_1) }
+        values = TerranovaImport.species_attributes(row)
+        reasons << :no_values if values.values.all? { blank?(_1) }
         reasons << :inconsistent_sizes if inconsistent_sizes?(row)
+        reasons << :impossible_strata if impossible_strata?(values)
         Entry.new(row: row.merge("latin_name" => name), reasons:, conflicts: [])
       end
 
@@ -74,6 +79,12 @@ module Catalog
           low, high = Float(row[min], exception: false), Float(row[max], exception: false)
           (low && high && low > high) || (high && high > MAX_HEIGHT_M * 100)
         end
+      end
+
+      # « Trifolium repens » in the sub-canopy at 40 cm.
+      def impossible_strata?(values)
+        height = values["height_max_m"]
+        values["strata"].in?(TREE_LAYERS) && height.present? && height < MIN_TREE_LAYER_HEIGHT_M
       end
 
       # The best row of a group of twins stays a candidate; the others are
