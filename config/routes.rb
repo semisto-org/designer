@@ -570,6 +570,12 @@ Rails.application.routes.draw do
   end
   get "tasks", to: "tasks#index", as: :my_tasks
   # --- end tasks ---
+  # --- site visits ---
+  # Walks on the land with the phone: closing one files its report (SiteVisit).
+  resources :maps, only: [] do
+    resources :site_visits, only: %i[index create], controller: "maps/site_visits"
+  end
+  # --- end site visits ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }

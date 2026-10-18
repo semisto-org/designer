@@ -13,6 +13,13 @@ What it does, for the maps one belongs to:
   nearest first (also the screen reader's way to the map); « Noter ici »;
   a chosen element with its age (« a passé 2 hivers ici »), its distance
   and direction, and one-tap gestures (« Planté aujourd'hui » with undo);
+- site visits (« Commencer une visite », `lib/visit.ts`, `lib/visit-core.ts`):
+  each note is a note point placed where one stands, sorted by theme in one
+  tap (wishes, water, soil, trees already there…, the themes of Semisto's
+  first visits) and carrying the visit's key; « Terminer la visite » sends
+  `POST /maps/:id/site_visits` through the outbox, and the server files the
+  report in the map's documents, with the chosen questions as tasks
+  (`SiteVisit`);
 - downloads a map for offline use (map data + base map tiles of the
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
   network is back;

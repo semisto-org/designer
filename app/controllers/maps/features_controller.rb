@@ -16,6 +16,8 @@ module Maps
     def create
       feature = @map.features.new(feature_params.merge(created_by: Current.user, updated_by: Current.user))
       if feature.save
+        # A note taken on a visit with the phone: the visit begins with it.
+        SiteVisit.for_note!(feature, by: Current.user)
         render json: feature.as_geojson, status: :created
       else
         render_errors feature

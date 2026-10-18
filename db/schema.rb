@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1352,6 +1352,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_110000) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "site_visits", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "user_id"
+    t.string "key", null: false
+    t.datetime "started_at", null: false
+    t.datetime "ended_at"
+    t.bigint "map_document_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_document_id"], name: "index_site_visits_on_map_document_id"
+    t.index ["map_id", "key"], name: "index_site_visits_on_map_id_and_key", unique: true
+    t.index ["map_id", "started_at"], name: "index_site_visits_on_map_id_and_started_at"
+    t.index ["user_id"], name: "index_site_visits_on_user_id"
+  end
+
   create_table "soil_samples", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "created_by_id"
@@ -1651,6 +1666,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_110000) do
   add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify
   add_foreign_key "sessions", "users"
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
+  add_foreign_key "site_visits", "map_documents", on_delete: :nullify
+  add_foreign_key "site_visits", "maps", on_delete: :cascade
+  add_foreign_key "site_visits", "users", on_delete: :nullify
   add_foreign_key "soil_samples", "maps"
   add_foreign_key "soil_samples", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "storage_readings", "map_features", on_delete: :cascade

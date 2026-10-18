@@ -18,11 +18,13 @@ import { outbox } from '@/lib/outbox'
 import { pickFeatureId } from '@/lib/pick'
 import { around, whereFrom } from '@/lib/terrain'
 import { canEdit, type MapFeature, type Position } from '@/lib/types'
+import { useVisit, visits } from '@/lib/visit'
+import { visitNotes } from '@/lib/visit-core'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
 import { useOnline, useOutbox } from '@/state/sync'
 import {
-  AROUND_RADIUS, FeatureBody, FeatureTop, NoteTop, RestBody, RestTop, whereLabel, type NoteChoice, type QuickAction,
+  AROUND_RADIUS, FeatureBody, FeatureTop, NoteTop, RestBody, RestTop, VisitBody, VisitTop, whereLabel, type NoteChoice, type QuickAction,
 } from '@/terrain/SheetContent'
 import { chooseMedia } from '@/ui/chooseMedia'
 import { Icon } from '@/ui/Icon'
@@ -45,6 +47,7 @@ export default function Terrain() {
   const [noting, setNoting] = useState(false)
   const [level, setLevel] = useState<SheetLevel>(0)
   const shown = useDisplay(mapId)
+  const visit = useVisit(mapId)
 
   // The blue dot's position, for distances and for placing things.
   // Every 2 m is enough for « à 12 m au nord-est », and spares the battery.
@@ -72,6 +75,7 @@ export default function Terrain() {
   )
   const selected = useMemo(() => visible.find((f) => f.id === selectedId) ?? null, [visible, selectedId])
   const nearby = useMemo(() => (me ? around(visible, me, { radius: AROUND_RADIUS }) : []), [visible, me])
+  const visitNoted = useMemo(() => (bundle && visit ? visitNotes(bundle, visit.key) : []), [bundle, visit])
 
   if (!bundle) {
     return (
@@ -104,6 +108,14 @@ export default function Terrain() {
     camera.current?.easeTo({ center: anchor(feature.geometry), duration: 400, padding: { top: 120, bottom: 360, left: 0, right: 0 } })
   }
   const unselect = () => { setSelectedId(null); setLevel(0) }
+
+  // A walk on the land: every note taken until « Terminer » joins its report.
+  const startVisit = () => {
+    visits.start(mapId)
+    setNoting(false)
+    setLevel(0)
+    toast(t('mobile.visit.start'), { body: t('mobile.visit.start_hint'), tone: 'info' })
+  }
 
   const addPhoto = async (feature: MapFeature | null) => {
     const choice = await chooseMedia()
@@ -209,16 +221,21 @@ export default function Terrain() {
             {selected
               ? <FeatureTop mapId={mapId} feature={selected} planting={bundle.planting} photo={photosOf(selected)[0] ?? null} where={where}
                   gestures={quickActions(selected)} onClose={unselect} />
-              : noting
-                ? <NoteTop onChoose={note} onClose={() => setNoting(false)} />
-                : <RestTop editable={editable} onNote={() => { setNoting(true); setLevel(0) }} />}
+              : visit && editable
+                ? <VisitTop visit={visit} count={visitNoted.length} onTheme={(theme) => go('/maps/[id]/visit-note', theme ? { theme } : {})}
+                    onEnd={() => go('/maps/[id]/visit-end')} />
+                : noting
+                  ? <NoteTop onChoose={note} onClose={() => setNoting(false)} />
+                  : <RestTop editable={editable} onNote={() => { setNoting(true); setLevel(0) }} onVisit={startVisit} />}
           </>
         }
       >
         {selected
           ? <FeatureBody mapId={mapId} feature={selected} photos={photosOf(selected)}
               onOpen={() => go('/maps/[id]/features/[featureId]', { featureId: String(selected.id) })} />
-          : <RestBody around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan} />}
+          : visit && editable
+            ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
+            : <RestBody around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan} />}
       </Sheet>
     </View>
   )
