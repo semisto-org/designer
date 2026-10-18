@@ -56,6 +56,16 @@ En haut du tableau, **Plant par plant** remplace les espèces par chaque plant d
 - **Plantation** : une année (« 2015 »), une date (« 12/03/2024 »), ou rien quand personne ne sait quand il a été planté, comme pour les vieux arbres trouvés en arrivant ;
 - l'épingle ouvre le plant sur la carte.
 
+## Plusieurs plantes d'un coup
+
+Les éditeurs cochent les plantes à gauche du tableau (la case de l'en-tête les coche toutes ; Maj + clic coche toute une plage). Une barre apparaît en bas de la page :
+
+- **Rôle** et **Strate** changent ceux des espèces cochées (en mode **Par espèce**) ;
+- **État** met leurs plants **En terre aujourd'hui**, **En terre, date inconnue** ou de nouveau **Prévu**. Les plants déjà en terre gardent leur date ;
+- **Supprimer** retire les espèces de la palette et met leurs plants dessinés à la corbeille ; en mode **Plant par plant**, seuls les plants cochés vont à la corbeille. Les massifs ne bougent pas.
+
+Après chaque action, **Annuler** (ou ⌘Z / Ctrl+Z) remet tout comme avant. La corbeille garde les plants 30 jours.
+
 ## La fiche d'une plante
 
 Touche le nom d'une plante pour ouvrir sa fiche :
