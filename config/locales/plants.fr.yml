@@ -657,6 +657,9 @@ fr:
     open: "Ouvrir la fiche du plant"
     open_photo: "Agrandir la photo"
     add_photo: "Ajouter une photo de ce plant"
+    cover: "Photo de couverture"
+    make_cover: "Mettre en couverture"
+    remove_cover: "Ne plus en faire la photo de couverture"
   plant_observations:
     title: "Suivi de reprise"
     add: "Noter une observation"

@@ -26,9 +26,12 @@ module Maps
       scope = @map.photos.includes(:uploaded_by, image_attachment: :blob)
       if params[:feature_id].present?
         feature = @map.features.find(params[:feature_id])
-        # `linked=1`: only the photos linked to the feature (a plant's gallery).
+        # `linked=1`: only the photos linked to the feature (a plant's gallery),
+        # its cover photo (`cover_photo_id`, starred in the plant's inspector) first.
         if params[:linked].present?
-          linked = scope.where(map_feature_id: feature.id).chronological
+          linked = scope.where(map_feature_id: feature.id).chronological.to_a
+          cover = linked.find { |photo| photo.id.to_s == feature.properties&.dig("cover_photo_id").to_s }
+          linked = [ cover, *(linked - [ cover ]) ] if cover
           return render json: { photos: linked.map(&:as_inertia) }
         end
         scope = MapPhoto.around_feature(feature).includes(:uploaded_by, image_attachment: :blob)

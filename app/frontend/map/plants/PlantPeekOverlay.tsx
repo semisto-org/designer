@@ -117,7 +117,7 @@ function DesktopPopup({ lngLat, featureId, children }: { lngLat: [number, number
 function PlantCard({ feature, onOpen, onClose, mobile }: { feature: MapFeature; onOpen: () => void; onClose: () => void; mobile: boolean }) {
   const editor = useEditor()
   const { data } = usePlanting(editor.map.id)
-  const photos = useLinkedPhotos(editor.map.id, feature.properties.id)
+  const photos = useLinkedPhotos(editor.map.id, feature.properties.id, numberProperty(feature, 'cover_photo_id'))
   const speciesId = numberProperty(feature, 'species_id')
   const varietyId = numberProperty(feature, 'variety_id')
   const species = speciesId != null ? data?.species[String(speciesId)] : undefined
