@@ -6,10 +6,10 @@ module Admin
   class MapStats
     COUNTS = {
       palette: "SELECT COUNT(*) FROM palette_items x WHERE x.map_id = maps.id",
-      plants: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.status = 'active' AND x.kind = 'plant'",
-      patches: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.status = 'active' AND x.kind = 'patch'",
-      features: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.status = 'active'",
-      drafts: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.status = 'draft'",
+      plants: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.deleted_at IS NULL AND x.status = 'active' AND x.kind = 'plant'",
+      patches: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.deleted_at IS NULL AND x.status = 'active' AND x.kind = 'patch'",
+      features: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.deleted_at IS NULL AND x.status = 'active'",
+      drafts: "SELECT COUNT(*) FROM map_features x WHERE x.map_id = maps.id AND x.deleted_at IS NULL AND x.status = 'draft'",
       editors: "SELECT COUNT(*) FROM map_memberships x WHERE x.map_id = maps.id AND x.role = 'editor'",
       viewers: "SELECT COUNT(*) FROM map_memberships x WHERE x.map_id = maps.id AND x.role = 'viewer'",
       comments: "SELECT COUNT(*) FROM comments x WHERE x.map_id = maps.id AND x.deleted_at IS NULL",

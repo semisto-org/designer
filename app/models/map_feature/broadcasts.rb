@@ -13,7 +13,7 @@ module MapFeature::Broadcasts
 
   private
     def broadcast_feature_change(removed: false)
-      removed ||= status == "rejected"
+      removed ||= status == "rejected" || deleted_at.present?
       MapFeaturesChannel.broadcast_to(map, {
         action: removed ? "remove" : "upsert",
         id:,

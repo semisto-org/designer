@@ -34,7 +34,8 @@ Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Exi
    - **un point** (arbre, puits, compteur) : touche la carte à l'endroit voulu ;
    - **une ligne** (haie, fossé, chemin) : clique point par point, puis double-clique ou touche **Terminer** ;
    - **une surface** (bâtiment, mare, potager) : clique le contour point par point, puis reviens au premier point ou touche **Terminer**.
-4. **Annuler**, ou la touche Échap, abandonne le tracé.
+4. Un point de trop ? **⌘Z** (Mac) ou **Ctrl+Z** (PC), ou la flèche de retour au téléphone, retire le dernier.
+5. **Annuler**, ou la touche Échap, abandonne le tracé.
 
 L'élément est ajouté à la carte et sa fiche s'ouvre.
 
@@ -50,6 +51,17 @@ Touche un élément sur la carte, ou dans le panneau **Éléments** qui les list
 - pour une surface (une mare, un massif, un bâtiment…), **Angles arrondis** : coche la case, puis glisse le curseur de **Léger** à **Fort**. Les angles s'adoucissent sur la carte, jusqu'à une forme ovale ; la surface et les estimations suivent la forme arrondie, et les points que tu as cliqués restent ceux que tu modifies.
 
 Pour corriger un tracé, touche **Modifier la forme**, fais glisser les sommets (un point au milieu d'un côté ajoute un sommet), puis **Enregistrer la forme**.
+
+## Revenir en arrière
+
+Une fausse manœuvre se rattrape : **⌘Z** sur Mac, **Ctrl+Z** sur PC. **⌘⇧Z** (ou **Ctrl+Y**) rétablit ce que tu viens d'annuler.
+
+- **En modifiant une forme**, chaque sommet glissé s'annule un par un, avant même d'enregistrer. Au téléphone, touche la flèche de retour à côté de **Enregistrer la forme**.
+- **Sur la carte**, tu annules dans l'ordre ce que tu viens de faire : un élément ajouté, déplacé, modifié ou supprimé, une proposition de ton IA acceptée ou refusée.
+- **Un élément supprimé** revient tel quel, avec son numéro, ses photos, ses relevés et ses commentaires. Juste après la suppression, le bouton **Annuler** du message le fait aussi.
+- **À plusieurs**, rien n'écrase le travail d'un autre : si quelqu'un a modifié l'élément entre-temps, Terranova te le dit et n'annule pas.
+
+L'historique dure le temps de ta visite : il repart à zéro quand tu rouvres la carte.
 
 ## Conseils de relevé
 

@@ -23,6 +23,9 @@ export type FeaturePatch = Partial<Omit<NewFeature, 'geometry'>> & { geometry?: 
 
 export type SavedFeature = MapFeature & { swapped?: MapFeature }
 
+/** A button in the editor's toast (« Annuler » after a deletion). */
+export type NotifyAction = { label: string; run: () => void }
+
 /**
  * Everything a panel, tool or inspector of the map editor needs. Panels
  * never talk to MapLibre or the server directly for features: they go
@@ -43,7 +46,12 @@ export type Editor = {
   select: (id: number | null) => void
   createFeature: (input: NewFeature) => Promise<MapFeature>
   updateFeature: (id: number, patch: FeaturePatch) => Promise<SavedFeature>
+  /** To the trash; « Annuler » (⌘Z, or the toast's button) restores it. */
   deleteFeature: (id: number) => Promise<void>
+  /** An AI draft reviewed outside updateFeature (Maps::DraftsController), so ⌘Z can put it back to review. */
+  recordDraftReview: (draft: MapFeature, verdict: 'accept' | 'reject', after?: MapFeature) => void
+  /** Every change made by `run` is undone in one ⌘Z (« Tout accepter », a group move). */
+  undoGroup: <T>(label: string, run: () => Promise<T>) => Promise<T>
   /** Replace or insert features received from elsewhere (other panels, real time). */
   upsertFeatures: (features: MapFeature[]) => void
   removeFeatures: (ids: number[]) => void
@@ -55,6 +63,8 @@ export type Editor = {
   editGeometry: (geometry: Geometry, options?: DrawOptions) => Promise<Geometry | null>
   /** Finish the current drawing now (closes a line or polygon, keeps an edit). */
   finishDraw: () => void
+  /** Step back in the shape being drawn (its last point) or edited (its last drag), like ⌘Z. */
+  undoDrawStep: () => void
   cancelDraw: () => void
   drawing: boolean
   /** What is being drawn ('edit' while reshaping), null when idle. */
@@ -65,7 +75,7 @@ export type Editor = {
   /** The step the rail and the guide card put forward: the map's stage unless the person picked another in the header. */
   focusStage: MapStage
   focusStep: (stage: MapStage | null) => void
-  notify: (message: string, tone?: 'info' | 'error') => void
+  notify: (message: string, tone?: 'info' | 'error', action?: NotifyAction) => void
 }
 
 export const EditorContext = createContext<Editor | null>(null)

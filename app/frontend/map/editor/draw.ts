@@ -8,8 +8,10 @@ import {
   TerraDrawPointMode,
   TerraDrawPolygonMode,
   TerraDrawRectangleMode,
+  TerraDrawModeUndoRedo,
   TerraDrawSelectMode,
   type GeoJSONStoreFeatures,
+  type GeoJSONStoreGeometries,
 } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
 
@@ -43,11 +45,16 @@ const SHAPE_GEOMETRY: Record<DrawShape, Geometry['type']> = {
  * null when cancelled (Escape or `cancel()`). `edit(geometry)` lets the user
  * reshape an existing geometry (select mode: drag vertices, midpoints, the
  * whole shape) until `commit()` resolves it, or `cancel()` resolves null.
+ * `undo()` / `redo()` step back through the points of a shape being drawn
+ * (Terra Draw's own history) or through the drags of a shape being edited.
  */
 export class Drawer {
   private terra: TerraDraw
   private pending: { resolve: (g: Geometry | null) => void; options: DrawOptions; shape: DrawShape | null } | null = null
   private editedId: string | number | null = null
+  // The edited shape after each drag, the first being the shape as it came.
+  private steps: Geometry[] = []
+  private undoneSteps: Geometry[] = []
 
   constructor(private map: MapLibreMap) {
     const styles = {
@@ -64,6 +71,8 @@ export class Drawer {
     }
     this.terra = new TerraDraw({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
+      // Points of the shape being drawn; the shortcuts are the editor's (show.tsx).
+      undoRedo: { modeLevel: new TerraDrawModeUndoRedo() },
       modes: [
         new TerraDrawPolygonMode({ styles }),
         new TerraDrawRectangleMode({ styles }),
@@ -103,7 +112,10 @@ export class Drawer {
     })
     this.terra.on('finish', (id) => {
       // In select mode "finish" ends a drag: the edit goes on until commit().
-      if (this.editedId != null) return this.emitChange()
+      if (this.editedId != null) {
+        this.keepStep()
+        return this.emitChange()
+      }
       const feature = this.terra.getSnapshotFeature(id)
       this.finish(feature ? (feature.geometry as Geometry) : null)
     })
@@ -148,6 +160,8 @@ export class Drawer {
     }
     this.editedId = result.id as string | number
     this.terra.selectFeature(this.editedId)
+    this.steps = [this.currentGeometry() as Geometry]
+    this.undoneSteps = []
     return new Promise((resolve) => {
       this.pending = { resolve, options, shape: null }
     })
@@ -167,6 +181,26 @@ export class Drawer {
     this.finish(null)
   }
 
+  /** Step back in the shape being drawn or edited; false when there is nothing to undo there. */
+  undo(): boolean {
+    if (!this.pending) return false
+    if (this.editedId == null) return this.terra.canUndo() && this.terra.undo()
+    if (this.steps.length < 2) return false
+    this.undoneSteps.push(this.steps.pop() as Geometry)
+    this.showStep(this.steps[this.steps.length - 1])
+    return true
+  }
+
+  redo(): boolean {
+    if (!this.pending) return false
+    if (this.editedId == null) return this.terra.canRedo() && this.terra.redo()
+    const next = this.undoneSteps.pop()
+    if (!next) return false
+    this.steps.push(next)
+    this.showStep(next)
+    return true
+  }
+
   destroy() {
     window.removeEventListener('keydown', this.onKey)
     this.finish(null)
@@ -183,6 +217,23 @@ export class Drawer {
     return (shape?.geometry as Geometry) ?? null
   }
 
+  private keepStep() {
+    const geometry = this.currentGeometry()
+    const last = this.steps[this.steps.length - 1]
+    if (!geometry || JSON.stringify(geometry) === JSON.stringify(last)) return
+    this.steps.push(geometry)
+    this.undoneSteps = []
+  }
+
+  private showStep(geometry: Geometry) {
+    const id = this.editedId as string | number
+    // Reselecting redraws the vertex handles where the shape now is.
+    this.terra.deselectFeature(id)
+    this.terra.updateFeatureGeometry(id, geometry as GeoJSONStoreGeometries)
+    this.terra.selectFeature(id)
+    this.emitChange()
+  }
+
   private emitChange() {
     this.pending?.options.onChange?.(this.currentGeometry())
   }
@@ -191,10 +242,13 @@ export class Drawer {
     const pending = this.pending
     this.pending = null
     this.editedId = null
+    this.steps = []
+    this.undoneSteps = []
     if (this.terra.enabled) {
       // Leaving the editor mid-drawing, the map may already be gone with its
       // drawing sources: there is nothing left to clear, but still stop.
       try {
+        this.terra.clearUndoRedoHistory()
         this.terra.clear()
       } catch {}
       try {

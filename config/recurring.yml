@@ -44,3 +44,7 @@ production:
     class: McpUploadPurgeJob
     queue: default
     schedule: every hour at minute 37
+  # Map elements deleted more than 30 days ago (the trash « Annuler » restores from).
+  map_feature_trash_purge:
+    command: "MapFeature.purge_trash"
+    schedule: every day at 4am

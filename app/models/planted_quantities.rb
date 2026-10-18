@@ -28,7 +28,7 @@ class PlantedQuantities
            f.properties->>'planted_on' AS planted_on,
            EXISTS (
              SELECT 1 FROM map_features p JOIN patch_items i ON i.map_feature_id = p.id
-             WHERE p.map_id = f.map_id AND p.kind = 'patch' AND p.status = 'active'
+             WHERE p.map_id = f.map_id AND p.kind = 'patch' AND p.status = 'active' AND p.deleted_at IS NULL
                AND f.properties->>'species_id' ~ '^[0-9]+$'
                AND i.species_id = (f.properties->>'species_id')::bigint
                AND i.variety_id IS NOT DISTINCT FROM
@@ -37,14 +37,14 @@ class PlantedQuantities
                AND ($2::text IS NULL OR CASE WHEN $2 = '' THEN cardinality(p.tags) = 0 ELSE EXISTS (SELECT 1 FROM unnest(p.tags) t WHERE lower(t) = lower($2)) END)
            ) AS in_patch
     FROM map_features f
-    WHERE f.map_id = $1 AND f.kind = 'plant' AND f.status = 'active'
+    WHERE f.map_id = $1 AND f.kind = 'plant' AND f.status = 'active' AND f.deleted_at IS NULL
       AND ($2::text IS NULL OR CASE WHEN $2 = '' THEN cardinality(f.tags) = 0 ELSE EXISTS (SELECT 1 FROM unnest(f.tags) t WHERE lower(t) = lower($2)) END)
     ORDER BY f.id
   SQL
 
   PATCH_AREAS_SQL = <<~SQL.squish.freeze
     SELECT id, ST_Area(geometry::geography) AS area
-    FROM map_features WHERE map_id = $1 AND kind = 'patch' AND status = 'active'
+    FROM map_features WHERE map_id = $1 AND kind = 'patch' AND status = 'active' AND deleted_at IS NULL
       AND ($2::text IS NULL OR CASE WHEN $2 = '' THEN cardinality(tags) = 0 ELSE EXISTS (SELECT 1 FROM unnest(tags) t WHERE lower(t) = lower($2)) END)
   SQL
 

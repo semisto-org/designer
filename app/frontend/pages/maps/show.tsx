@@ -15,7 +15,9 @@ import { MapView } from '@/map/MapView'
 import { featureAt, hitsAt } from '@/map/featurePick'
 import { useMapInstance } from '@/map/MapContext'
 import { Drawer, type DrawOptions, type DrawShape } from '@/map/editor/draw'
-import { EditorContext, type Editor, type FeaturePatch, type NewFeature, type SavedFeature } from '@/map/editor/EditorContext'
+import { EditorContext, type Editor, type FeaturePatch, type NewFeature, type NotifyAction, type SavedFeature } from '@/map/editor/EditorContext'
+import { featureHistory, UndoRefused } from '@/map/editor/featureHistory'
+import { historyShortcut, isTextTarget, UndoHistory } from '@/map/editor/history'
 import { Inspector } from '@/map/editor/Inspector'
 import { MapName } from '@/map/editor/MapName'
 import { RecenterControl } from '@/map/editor/controls'
@@ -25,6 +27,7 @@ import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
 import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
 import { MODAL_PANEL_QUERY } from '@/map/panels/registry'
+import { featureName } from '@/map/earthworks/model'
 import { plantPeek } from '@/map/plants/peek'
 import { isPlant } from '@/map/plants/properties'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
@@ -126,7 +129,8 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const [drawingShape, setDrawingShape] = useState<DrawShape | 'edit' | null>(null)
   const drawing = drawingShape != null
   const drawEndedAt = useRef(0)
-  const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error'; action?: NotifyAction } | null>(null)
+  const toastTimer = useRef<number | undefined>(undefined)
   const drawer = useRef<Drawer | null>(null)
   const canEdit = (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan
 
@@ -225,9 +229,10 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     }
   }, [instance])
 
-  const notify = useCallback((message: string, tone: 'info' | 'error' = 'info') => {
-    setToast({ message, tone })
-    window.setTimeout(() => setToast(null), 4000)
+  const notify = useCallback((message: string, tone: 'info' | 'error' = 'info', action?: NotifyAction) => {
+    setToast({ message, tone, action })
+    window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(null), action ? 7000 : 4000)
   }, [])
 
   const upsertFeatures = useCallback((incoming: MapFeature[]) => {
@@ -242,6 +247,47 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     setSelectedId((id) => (id != null && ids.includes(id) ? null : id))
   }, [])
 
+  // « Annuler » / « Rétablir » (⌘Z, ⌘⇧Z): one history per open map.
+  const [history] = useState(() => new UndoHistory())
+  const tracked = useMemo(() => featureHistory({
+    base: `/maps/${map.id}/features`,
+    history,
+    current: (id) => featuresRef.current.find((f) => f.properties.id === id),
+    upsert: upsertFeatures,
+    remove: removeFeatures,
+  }), [map.id, history, upsertFeatures, removeFeatures])
+  const step = useCallback(async (direction: 'undo' | 'redo') => {
+    if (history.running) return
+    if (!(direction === 'undo' ? history.canUndo : history.canRedo)) return notify(t(`undo.nothing_to_${direction}`))
+    try {
+      const entry = await history[direction]()
+      if (entry) notify(t(direction === 'undo' ? 'undo.undone' : 'undo.redone', { label: entry.label }))
+    } catch (error) {
+      notify(error instanceof UndoRefused ? error.message : t('undo.failed', { message: (error as Error).message }), 'error')
+    }
+  }, [history, notify])
+
+  // While a shape is drawn or edited, the steps are its points and drags.
+  const shapeStep = useCallback((direction: 'undo' | 'redo') => {
+    const shape = drawer.current
+    if (shape && !(direction === 'undo' ? shape.undo() : shape.redo())) notify(t(`undo.shape_nothing_to_${direction}`))
+  }, [notify])
+
+  useEffect(() => {
+    if (!canEdit) return
+    const onKey = (event: KeyboardEvent) => {
+      const direction = historyShortcut(event)
+      if (!direction || event.defaultPrevented || isTextTarget(event.target)) return
+      // A dialog over the map (photo viewer, settings…) keeps the keys.
+      if (document.querySelector('[aria-modal="true"]')) return
+      event.preventDefault()
+      if (drawer.current?.active) return shapeStep(direction)
+      void step(direction)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [canEdit, step, shapeStep])
+
   const editor: Editor = useMemo(() => {
     const base = `/maps/${map.id}/features`
     return {
@@ -253,6 +299,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       async createFeature(input: NewFeature) {
         const feature = await api<MapFeature>(base, { method: 'POST', body: { feature: input } })
         upsertFeatures([feature])
+        tracked.create(feature)
         return feature
       },
       async updateFeature(id: number, patch: FeaturePatch) {
@@ -263,12 +310,20 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
         })
         const { swapped, ...saved } = feature
         upsertFeatures(swapped ? [saved, swapped] : [saved])
+        if (current) tracked.update(current, patch, saved)
         return feature
       },
       async deleteFeature(id: number) {
+        const current = features.find((f) => f.properties.id === id)
         await api(`${base}/${id}`, { method: 'DELETE' })
         removeFeatures([id])
+        if (!current) return
+        tracked.remove(current)
+        // No keyboard on a phone: the toast offers the undo too.
+        notify(t('undo.deleted', { name: featureName(current) }), 'info', { label: t('undo.action'), run: () => void step('undo') })
       },
+      recordDraftReview: tracked.reviewed,
+      undoGroup: (label, run) => history.group(label, run),
       upsertFeatures,
       removeFeatures,
       async reloadFeatures() {
@@ -294,6 +349,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
         }
       },
       finishDraw: () => drawer.current?.commit(),
+      undoDrawStep: () => shapeStep('undo'),
       cancelDraw: () => drawer.current?.cancel(),
       drawing,
       drawingShape,
@@ -303,7 +359,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       focusStep: setPickedStage,
       notify,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep])
 
   const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'offers' ? canEdit && offerBuilder : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
@@ -330,8 +386,21 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       <HeaderSteps />
       {/* On the body and above every overlay: a message sent from the photo viewer (z-[60]) or one of its dialogs must show over it. */}
       {toast && createPortal(
-        <div role="status" className={'fixed bottom-16 left-1/2 z-[90] md:bottom-10 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
-          {toast.message}
+        <div role="status" className={'fixed bottom-16 left-1/2 z-[90] flex items-center gap-3 md:bottom-10 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
+          <span>{toast.message}</span>
+          {toast.action && (
+            <button
+              type="button"
+              className="shrink-0 rounded-full px-3 py-1 font-medium text-white ring-1 ring-white/40 hover:bg-white/10"
+              onClick={() => {
+                const action = toast.action
+                setToast(null)
+                action?.run()
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
         </div>,
         document.body,
       )}

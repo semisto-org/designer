@@ -14,7 +14,7 @@ class SpeciesPlantings
            CASE WHEN f.properties->>'variety_id' ~ '^[0-9]+$' THEN (f.properties->>'variety_id')::bigint END AS variety_id,
            EXISTS (SELECT 1 FROM plant_observations o WHERE o.map_feature_id = f.id) AS observed
     FROM map_features f
-    WHERE f.kind = 'plant' AND f.status = 'active'
+    WHERE f.kind = 'plant' AND f.status = 'active' AND f.deleted_at IS NULL
       AND f.properties->>'species_id' = $1
       AND f.map_id = ANY($2::bigint[])
     ORDER BY f.map_id, f.id
