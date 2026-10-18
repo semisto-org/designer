@@ -45,7 +45,7 @@ export default function OutboxScreen() {
           <Text style={s.meta}>{formatDate(op.createdAt)}</Text>
           {op.error
             ? <>
-                <Notice tone="error">{op.error === 'parent_failed' ? t('mobile.outbox.parent_failed') : t('mobile.outbox.refused', { reason: op.error })}</Notice>
+                <Notice tone="error">{op.error === 'parent_failed' || op.error === 'file_missing' ? t(`mobile.outbox.${op.error}`) : t('mobile.outbox.refused', { reason: op.error })}</Notice>
                 <View style={{ flexDirection: 'row', gap: space.sm }}>
                   <Button variant="secondary" style={{ flex: 1 }} label={t('mobile.outbox.retry')} disabled={!online} onPress={() => outbox.retry(op.id)} />
                   <Button variant="danger" style={{ flex: 1 }} label={t('mobile.outbox.discard')} onPress={() => discard(op)} />

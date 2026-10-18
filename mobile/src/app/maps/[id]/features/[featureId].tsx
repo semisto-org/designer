@@ -18,6 +18,7 @@ import { canEdit, type Comment, type MapFeature, type Survival } from '@/lib/typ
 import { useOnline, useOutbox } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
 import { StoreSection } from '@/storage/StoreSection'
+import { keptFile } from '@/lib/storage'
 import { chooseMedia } from '@/ui/chooseMedia'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
@@ -44,7 +45,7 @@ export default function FeatureScreen() {
   const editable = canEdit(bundle.map)
   const isPlant = feature.properties.kind === 'plant'
   const photos = bundle.photos.filter((p) => p.featureId === featureId)
-  const pendingPhotos = ops.flatMap((op) => (op.type === 'uploadPhoto' ? [op.file] : []))
+  const pendingPhotos = ops.flatMap((op) => (op.type === 'uploadPhoto' ? [keptFile(op.file) ?? op.file] : []))
 
   const addPhoto = async () => {
     const choice = await chooseMedia()

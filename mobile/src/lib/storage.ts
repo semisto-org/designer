@@ -2,7 +2,7 @@
 // documents folder: the map list, one bundle per downloaded map, the
 // outbox of changes not yet sent, and photos waiting to be uploaded.
 import { Directory, File, Paths } from 'expo-file-system'
-import { videoExtension } from './media'
+import { relocated, videoExtension } from './media'
 
 const root = () => {
   const dir = new Directory(Paths.document, 'designer')
@@ -70,7 +70,14 @@ export function keepVideo(uri: string): string {
   return target.uri
 }
 
+/** The kept photo's address today (see `relocated`); null when it is gone. */
+export function keptFile(uri: string): string | null {
+  if (new File(uri).exists) return uri
+  const moved = new File(relocated(uri, new Directory(root(), 'photos').uri))
+  return moved.exists ? moved.uri : null
+}
+
 export function deletePhoto(uri: string): void {
-  const file = new File(uri)
-  if (file.exists) file.delete()
+  const kept = keptFile(uri)
+  if (kept) new File(kept).delete()
 }

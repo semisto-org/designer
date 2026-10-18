@@ -5,7 +5,7 @@ import { storageReadingBody } from './fruitStore'
 import { harvestBody } from './harvests'
 import { emptyOutbox, filesOf, flush, nextTempId, retry, retryDelayMs, type FlushResult, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
 import { isVideo, mediaFile } from './media'
-import { deletePhoto, readJson, writeJson } from './storage'
+import { deletePhoto, keptFile, readJson, writeJson } from './storage'
 import type { MapFeature } from './types'
 
 const FILE = 'outbox.json'
@@ -104,7 +104,14 @@ export const outbox = {
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 
-const photoFile = (uri: string) => ({ uri, name: 'photo.jpg', type: 'image/jpeg' })
+// A photo the phone no longer has is set aside with its reason, instead of
+// failing like a network error and holding back every change after it.
+const present = (uri: string) => {
+  const kept = keptFile(uri)
+  if (!kept) throw { status: 410, message: 'file_missing' }
+  return kept
+}
+const photoFile = (uri: string) => ({ uri: present(uri), name: 'photo.jpg', type: 'image/jpeg' })
 // A video can weigh hundreds of megabytes on a field connection.
 const VIDEO_TIMEOUT_MS = 30 * 60_000
 
@@ -116,7 +123,7 @@ const transport: Transport = {
   async uploadPhoto(mapId, op, featureId, key) {
     const located = op.lng !== null && op.lat !== null
     await api('POST', `/maps/${mapId}/photos`, form('photo', {
-      image: mediaFile(op.file), taken_at: op.takenAt, caption: op.caption, source: 'phone',
+      image: mediaFile(present(op.file)), taken_at: op.takenAt, caption: op.caption, source: 'phone',
       lng: op.lng, lat: op.lat, location_source: located ? 'device' : null, map_feature_id: featureId,
       bioindicator_status: op.bioindicatorStatus ?? null,
     }), { ...once(key), ...(isVideo(op.file) ? { timeoutMs: VIDEO_TIMEOUT_MS } : {}) })
