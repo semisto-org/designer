@@ -1,5 +1,5 @@
-import type { Geometry, Position } from 'geojson'
-import type { Map as MapLibreMap } from 'maplibre-gl'
+import type { Feature, Geometry, LineString, Polygon, Position } from 'geojson'
+import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
 import {
   TerraDraw,
   TerraDrawFreehandLineStringMode,
@@ -12,18 +12,35 @@ import {
   type GeoJSONStoreFeatures,
 } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
+import { editableVertices, insertVertex, removeVertex, sideAt, vertexAt, type Pixel } from '@/map/editor/vertices'
 
 export type DrawShape = 'polygon' | 'linestring' | 'point' | 'rectangle' | 'freehand' | 'freehand-linestring'
+
+/**
+ * What a click does on a line or polygon being edited, as in Illustrator:
+ * move (A or V) drags points and picks one for Delete, add (+) puts a point
+ * on a side, remove (-) takes a point away. Alt held swaps add and remove.
+ */
+export type PointTool = 'move' | 'add' | 'remove'
 
 export type DrawOptions = {
   /** Called with the shape as it is being drawn or edited (live measures). */
   onChange?: (geometry: Geometry | null) => void
   /** Ink colour of the shape being drawn. */
   color?: string
+  /** Called with the tool a click now uses on an edited shape (buttons, keys, Alt held). */
+  onPointTool?: (tool: PointTool) => void
+  /** Called when a point cannot be removed: a line keeps two, a polygon three. */
+  onTooFewPoints?: () => void
 }
 
 const COLOR = '#5b5781'
+const EDIT_COLOR = '#c97b3d'
+const REMOVE_COLOR = '#b4472f'
 const SELECT_MODE = 'select'
+// The point a click would add, the point it would remove, the point Delete removes.
+const HINT_SOURCE = 'draw-vertex-hint'
+const TOOL_CLASS = { add: 'draw-tool-add', remove: 'draw-tool-remove' } as const
 // Terra Draw refuses coordinates more precise than its default (9 decimals).
 const PRECISION = 1e9
 
@@ -42,12 +59,18 @@ const SHAPE_GEOMETRY: Record<DrawShape, Geometry['type']> = {
  * back" service: `draw('polygon')` resolves with the finished geometry, or
  * null when cancelled (Escape or `cancel()`). `edit(geometry)` lets the user
  * reshape an existing geometry (select mode: drag vertices, midpoints, the
- * whole shape) until `commit()` resolves it, or `cancel()` resolves null.
+ * whole shape, add and remove points) until `commit()` resolves it, or
+ * `cancel()` resolves null.
  */
 export class Drawer {
   private terra: TerraDraw
   private pending: { resolve: (g: Geometry | null) => void; options: DrawOptions; shape: DrawShape | null } | null = null
   private editedId: string | number | null = null
+  private pointTool: PointTool = 'move'
+  private altHeld = false
+  // The point last clicked or dragged in move mode: Delete removes it.
+  private activeVertex: number | null = null
+  private pointer: Pixel | null = null
 
   constructor(private map: MapLibreMap) {
     const styles = {
@@ -77,6 +100,17 @@ export class Drawer {
         new TerraDrawPointMode({ styles: { pointColor: COLOR, pointWidth: 7, pointOutlineColor: '#ffffff', pointOutlineWidth: 2 } }),
         new TerraDrawSelectMode({
           allowManualDeselection: false,
+          // The keyboard is ours (Escape, Delete, + and -) and so are clicks
+          // outside the move tool: points are added and removed in edited().
+          keyEvents: { deselect: null, delete: null, rotate: null, scale: null },
+          pointerEvents: {
+            leftClick: () => this.tool === 'move',
+            rightClick: false,
+            contextMenu: false,
+            onDragStart: () => this.tool === 'move',
+            onDrag: true,
+            onDragEnd: true,
+          },
           flags: {
             polygon: { feature: { ...editable.feature, selfIntersectable: false } },
             linestring: editable,
@@ -101,14 +135,20 @@ export class Drawer {
         }),
       ],
     })
-    this.terra.on('finish', (id) => {
-      // In select mode "finish" ends a drag: the edit goes on until commit().
-      if (this.editedId != null) return this.emitChange()
+    this.terra.on('finish', (id, context) => {
+      // In select mode "finish" ends a drag or a midpoint click: the edit goes on until commit().
+      if (this.editedId != null) {
+        if (context.action === 'dragCoordinate' || context.action === 'insertMidpoint') this.pickVertexAtPointer()
+        return this.edited()
+      }
       const feature = this.terra.getSnapshotFeature(id)
       this.finish(feature ? (feature.geometry as Geometry) : null)
     })
     this.terra.on('change', () => this.emitChange())
-    window.addEventListener('keydown', this.onKey)
+    // Captured, so + and - reach us before MapLibre's zoom keys.
+    window.addEventListener('keydown', this.onKey, true)
+    window.addEventListener('keyup', this.onKeyUp)
+    window.addEventListener('blur', this.onBlur)
   }
 
   get active() {
@@ -148,6 +188,12 @@ export class Drawer {
     }
     this.editedId = result.id as string | number
     this.terra.selectFeature(this.editedId)
+    if (mode !== 'point') {
+      this.map.on('click', this.onMapClick)
+      this.map.on('contextmenu', this.onContextMenu)
+      this.map.on('mousemove', this.onMouseMove)
+      this.map.on('mouseout', this.onMouseOut)
+    }
     return new Promise((resolve) => {
       this.pending = { resolve, options, shape: null }
     })
@@ -167,13 +213,210 @@ export class Drawer {
     this.finish(null)
   }
 
+  /** Choose what a click does on the shape being edited (the toolbar's buttons). */
+  setPointTool(tool: PointTool) {
+    if (!this.editingPoints) return
+    if (tool !== 'move') this.activeVertex = null
+    this.pointTool = tool
+    this.refreshTool()
+  }
+
   destroy() {
-    window.removeEventListener('keydown', this.onKey)
+    window.removeEventListener('keydown', this.onKey, true)
+    window.removeEventListener('keyup', this.onKeyUp)
+    window.removeEventListener('blur', this.onBlur)
     this.finish(null)
   }
 
+  /** A line or a polygon is being edited: it has points to add and remove. */
+  private get editingPoints() {
+    const type = this.editedGeometry()?.type
+    return type === 'LineString' || type === 'Polygon'
+  }
+
+  /** The tool a click uses now: Alt swaps adding and removing, as in Illustrator. */
+  private get tool(): PointTool {
+    if (!this.altHeld || this.pointTool === 'move') return this.pointTool
+    return this.pointTool === 'add' ? 'remove' : 'add'
+  }
+
   private onKey = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && this.pending) this.cancel()
+    if (e.key === 'Alt' && this.editingPoints) {
+      this.altHeld = true
+      return this.refreshTool()
+    }
+    if (e.key === 'Escape' && this.pending) {
+      // Escape first puts the point tools down, then leaves the edit.
+      if (!this.editingPoints || this.pointTool === 'move') return this.cancel()
+      this.setPointTool('move')
+      return e.stopPropagation()
+    }
+    if (!this.editingPoints || e.metaKey || e.ctrlKey || typing(e.target)) return
+    if (e.key === '+' || e.key === '=') this.setPointTool('add')
+    else if (e.key === '-') this.setPointTool('remove')
+    else if (e.key === 'a' || e.key === 'A' || e.key === 'v' || e.key === 'V') this.setPointTool('move')
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && this.activeVertex != null) this.removePoint(this.activeVertex)
+    else return
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  private onKeyUp = (e: KeyboardEvent) => {
+    if (e.key === 'Alt' && this.altHeld) {
+      this.altHeld = false
+      this.refreshTool()
+    }
+  }
+
+  private onBlur = () => {
+    if (!this.altHeld) return
+    this.altHeld = false
+    this.refreshTool()
+  }
+
+  private onMapClick = (e: MapMouseEvent) => {
+    const geometry = this.editedGeometry()
+    if (!geometry) return
+    const tool = this.tool
+    if (tool === 'add') {
+      const side = sideAt(geometry, e.point, this.project)
+      if (side) this.applyGeometry(insertVertex(geometry, side.index, this.unproject(side.at)))
+    } else if (tool === 'remove') {
+      const index = vertexAt(geometry, e.point, this.project)
+      if (index >= 0) this.removePoint(index)
+    } else {
+      // Terra Draw may have added a point on a midpoint first: the new point is picked then.
+      this.pointer = e.point
+      this.pickVertexAtPointer()
+      this.refreshHint()
+    }
+  }
+
+  // A right click on a point removes it, whatever the tool.
+  private onContextMenu = (e: MapMouseEvent) => {
+    const geometry = this.editedGeometry()
+    const index = geometry ? vertexAt(geometry, e.point, this.project) : -1
+    if (index < 0) return
+    e.preventDefault()
+    this.removePoint(index)
+  }
+
+  private onMouseMove = (e: MapMouseEvent) => {
+    this.pointer = e.point
+    if (this.tool !== 'move') this.refreshHint()
+  }
+
+  private onMouseOut = () => {
+    this.pointer = null
+    this.refreshHint()
+  }
+
+  private removePoint(index: number) {
+    const geometry = this.editedGeometry()
+    if (!geometry) return
+    const next = removeVertex(geometry, index)
+    if (!next) return this.pending?.options.onTooFewPoints?.()
+    this.activeVertex = null
+    this.applyGeometry(next)
+  }
+
+  /** A point added or removed: the same path as a drag, so it is undone like one. */
+  private applyGeometry(geometry: LineString | Polygon) {
+    if (this.editedId == null) return
+    try {
+      this.terra.updateFeatureGeometry(this.editedId, roundGeometry(geometry) as LineString | Polygon)
+    } catch {
+      // Terra Draw refuses a polygon that would cross itself: nothing changes.
+      return
+    }
+    this.edited()
+  }
+
+  /** Every change to the edited shape ends here: a drag, a midpoint, a point added or removed. */
+  private edited() {
+    this.emitChange()
+    this.refreshHint()
+  }
+
+  private pickVertexAtPointer() {
+    const geometry = this.editedGeometry()
+    const index = geometry && this.pointer ? vertexAt(geometry, this.pointer, this.project) : -1
+    this.activeVertex = index >= 0 ? index : null
+  }
+
+  private editedGeometry(): LineString | Polygon | null {
+    if (this.editedId == null) return null
+    const geometry = this.terra.getSnapshotFeature(this.editedId)?.geometry
+    return geometry?.type === 'LineString' || geometry?.type === 'Polygon' ? (geometry as LineString | Polygon) : null
+  }
+
+  private project = (position: Position): Pixel => this.map.project(position as [number, number])
+  private unproject = (pixel: Pixel): Position => this.map.unproject([pixel.x, pixel.y]).toArray()
+
+  private refreshTool() {
+    const container = this.map.getContainer()
+    const tool = this.editingPoints ? this.tool : 'move'
+    container.classList.toggle(TOOL_CLASS.add, tool === 'add')
+    container.classList.toggle(TOOL_CLASS.remove, tool === 'remove')
+    this.refreshHint()
+    this.pending?.options.onPointTool?.(this.tool)
+  }
+
+  /** Shows the point a click would add or remove, or the one Delete would remove. */
+  private refreshHint() {
+    const geometry = this.editedGeometry()
+    const features: Feature[] = []
+    const tool = this.tool
+    if (geometry && this.pointer && tool === 'add') {
+      const side = vertexAt(geometry, this.pointer, this.project) < 0 ? sideAt(geometry, this.pointer, this.project) : null
+      if (side) features.push(hintPoint(this.unproject(side.at), 'add'))
+    } else if (geometry && this.pointer && tool === 'remove') {
+      const index = vertexAt(geometry, this.pointer, this.project)
+      if (index >= 0) features.push(hintPoint(editableVertices(geometry)[index], 'remove'))
+    } else if (geometry && tool === 'move' && this.activeVertex != null) {
+      const position = editableVertices(geometry)[this.activeVertex]
+      if (position) features.push(hintPoint(position, 'active'))
+    }
+    this.showHint(features)
+  }
+
+  private showHint(features: Feature[]) {
+    const data = { type: 'FeatureCollection' as const, features }
+    try {
+      const source = this.map.getSource(HINT_SOURCE) as GeoJSONSource | undefined
+      if (source) return source.setData(data)
+      if (!features.length) return
+      this.map.addSource(HINT_SOURCE, { type: 'geojson', data })
+      this.map.addLayer({
+        id: HINT_SOURCE,
+        type: 'circle',
+        source: HINT_SOURCE,
+        paint: {
+          'circle-radius': ['match', ['get', 'hint'], 'add', 5, 7],
+          'circle-color': ['match', ['get', 'hint'], 'add', '#ffffff', 'remove', REMOVE_COLOR, EDIT_COLOR],
+          'circle-stroke-color': ['match', ['get', 'hint'], 'add', EDIT_COLOR, '#ffffff'],
+          'circle-stroke-width': 2,
+        },
+      })
+    } catch {
+      // The map style may be reloading or gone: the hint is only a help.
+    }
+  }
+
+  private stopPointTools() {
+    this.map.off('click', this.onMapClick)
+    this.map.off('contextmenu', this.onContextMenu)
+    this.map.off('mousemove', this.onMouseMove)
+    this.map.off('mouseout', this.onMouseOut)
+    this.pointTool = 'move'
+    this.altHeld = false
+    this.activeVertex = null
+    this.pointer = null
+    try {
+      this.map.getContainer().classList.remove(TOOL_CLASS.add, TOOL_CLASS.remove)
+      if (this.map.getLayer(HINT_SOURCE)) this.map.removeLayer(HINT_SOURCE)
+      if (this.map.getSource(HINT_SOURCE)) this.map.removeSource(HINT_SOURCE)
+    } catch {}
   }
 
   private currentGeometry(): Geometry | null {
@@ -190,6 +433,7 @@ export class Drawer {
   private finish(geometry: Geometry | null) {
     const pending = this.pending
     this.pending = null
+    this.stopPointTools()
     this.editedId = null
     if (this.terra.enabled) {
       // Leaving the editor mid-drawing, the map may already be gone with its
@@ -203,6 +447,18 @@ export class Drawer {
     }
     pending?.resolve(geometry)
   }
+}
+
+const hintPoint = (position: Position, hint: 'add' | 'remove' | 'active'): Feature => ({
+  type: 'Feature',
+  geometry: { type: 'Point', coordinates: position },
+  properties: { hint },
+})
+
+// Keys typed in a field are text, not tools.
+function typing(target: EventTarget | null) {
+  const element = target as HTMLElement | null
+  return !!element && (element.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName))
 }
 
 function roundGeometry(geometry: Geometry): Geometry {

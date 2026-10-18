@@ -1,9 +1,10 @@
 import clsx from 'clsx'
 import type { Geometry } from 'geojson'
-import { Hand, LandPlot, Pencil, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
+import { Hand, LandPlot, Minus, MousePointer2, Pencil, Plus, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { formatArea, formatLength, t, translations } from '@/lib/i18n'
+import type { PointTool } from '@/map/editor/draw'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { measure } from '@/map/editor/measure'
 import { drawShapeFor, storedProperties } from '@/map/drawing/catalog'
@@ -45,6 +46,37 @@ function HintBar({ text, children }: { text: string; children?: React.ReactNode 
   )
 }
 
+const POINT_TOOLS: { tool: PointTool; icon: LucideIcon }[] = [
+  { tool: 'move', icon: MousePointer2 },
+  { tool: 'add', icon: Plus },
+  { tool: 'remove', icon: Minus },
+]
+
+/** Move, add or remove points, with their Illustrator keys in the tooltips. */
+function PointTools({ tool, onPick }: { tool: PointTool; onPick: (tool: PointTool) => void }) {
+  return (
+    <div role="group" aria-label={t('drawing.edit.points.label')} className="flex rounded-full bg-white/10 p-0.5">
+      {POINT_TOOLS.map(({ tool: value, icon: Icon }) => (
+        <button
+          key={value}
+          type="button"
+          onClick={() => onPick(value)}
+          aria-pressed={tool === value}
+          aria-label={t(`drawing.edit.points.${value}`)}
+          title={t(`drawing.edit.points.${value}_title`)}
+          className={clsx(
+            'flex h-8 w-9 items-center justify-center rounded-full transition-colors',
+            'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white',
+            tool === value ? 'bg-white text-loam-900' : 'text-white hover:bg-white/15',
+          )}
+        >
+          <Icon className="h-4 w-4" aria-hidden />
+        </button>
+      ))}
+    </div>
+  )
+}
+
 const sameGeometry = (a: Geometry, b: Geometry) => JSON.stringify(a) === JSON.stringify(b)
 
 /**
@@ -65,6 +97,7 @@ export default function DrawingToolbar() {
   const [tracing, setTracing] = useState(false)
   const switchTo = useRef<boolean | null>(null)
   const [shapeMeasure, setShapeMeasure] = useState<string | null>(null)
+  const [pointTool, setPointTool] = useState<PointTool>('move')
 
   const setTool = useCallback((next: DrawingTool) => {
     // Switching tools abandons whatever was being drawn.
@@ -148,11 +181,17 @@ export default function DrawingToolbar() {
     }
     describe(feature.geometry)
     editor.select(null)
-    void editor.editGeometry(feature.geometry, { onChange: (g) => active && describe(g) }).then(async (geometry) => {
+    setPointTool('move')
+    void editor.editGeometry(feature.geometry, {
+      onChange: (g) => active && describe(g),
+      onPointTool: (tool) => active && setPointTool(tool),
+      onTooFewPoints: () => latest.current.notify(t(feature.geometry.type === 'Polygon' ? 'drawing.edit.points.polygon_minimum' : 'drawing.edit.points.line_minimum'), 'error'),
+    }).then(async (geometry) => {
       if (!active) return
       active = false
       drawingStore.set({ shapeEditId: null, tool: null })
       setShapeMeasure(null)
+      setPointTool('move')
       const editor = latest.current
       if (!geometry) return editor.select(shapeEditId)
       const point = geometry.type === 'Point'
@@ -236,7 +275,8 @@ export default function DrawingToolbar() {
           {tool === 'measure' && <MeasureTool onClose={close} />}
           {tool === 'sketch' && editor.canEdit && <SketchTool onClose={close} />}
           {tool === 'shape' && (
-            <HintBar text={movingPoint ? t('drawing.edit.move_hint') : [t('drawing.edit.hint'), shapeMeasure].filter(Boolean).join(' · ')}>
+            <HintBar text={movingPoint ? t('drawing.edit.move_hint') : [t(`drawing.edit.points.${pointTool}_hint`), shapeMeasure].filter(Boolean).join(' · ')}>
+              {!movingPoint && <PointTools tool={pointTool} onPick={(next) => editor.setPointTool(next)} />}
               <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t(movingPoint ? 'drawing.edit.save_position' : 'drawing.edit.save')}</Button>
               <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.edit.cancel')}</Button>
             </HintBar>
