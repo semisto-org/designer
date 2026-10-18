@@ -4,7 +4,7 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { ApiError, api } from '@/lib/api'
+import { ApiError, api, photosForm } from '@/lib/api'
 import { featureTitle } from '@/lib/elements'
 import { t } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
@@ -39,9 +39,7 @@ export default function IdentifyScreen() {
   const identify = async () => {
     setBusy(true); setError(null); setResult(null)
     try {
-      const data = new FormData()
-      photos.forEach((uri, index) => data.append('images[]', { uri, name: `plant-${index + 1}.jpg`, type: 'image/jpeg' } as unknown as Blob))
-      setResult(await api<Result>('POST', `/maps/${mapId}/plant_identifications`, data))
+      setResult(await api<Result>('POST', `/maps/${mapId}/plant_identifications`, photosForm('images[]', photos)))
     } catch (e) {
       const apiError = e instanceof ApiError ? e : null
       setError(apiError?.offline ? t('plantnet.section.network_error') : String(apiError?.body?.message ?? t('plantnet.errors.unavailable')))
