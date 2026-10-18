@@ -42,6 +42,7 @@ import StorageSection, { appliesToFruitStore } from '@/map/storage/StorageSectio
 import PatchSection from '@/map/plants/PatchSection'
 import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
+import SelectionOverlay from '@/map/selection/SelectionOverlay'
 import PlantPeekOverlay from '@/map/plants/PlantPeekOverlay'
 import PlantPhotosSection from '@/map/plants/PlantPhotosSection'
 import { isPatch, isPlant } from '@/map/plants/properties'
@@ -166,6 +167,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'pending-updates', component: PendingUpdatesLayer, order: 41 },
   { id: 'plants', component: PlantsOverlay, order: 20 },
   { id: 'plant-peek', component: PlantPeekOverlay, order: 42 },
+  { id: 'selection', component: SelectionOverlay, order: 43 },
   { id: 'photos', component: PhotosOverlay, order: 70 },
   { id: 'soil', component: SoilOverlay, order: 60 },
   { id: 'weather-stations', component: WeatherStationsOverlay, order: 61 },

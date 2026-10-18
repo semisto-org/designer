@@ -1,4 +1,4 @@
-import { Trash2, X } from 'lucide-react'
+import { CopyCheck, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
@@ -68,6 +68,21 @@ export function Inspector({ feature }: { feature: MapFeature }) {
           </div>
         )}
         {sections.map((s) => <s.component key={s.id} feature={feature} />)}
+        {editor.canEdit && (
+          <Button
+            variant="ghost"
+            size="sm"
+            title={t('selection.start_hint')}
+            onClick={() => {
+              editor.select(null)
+              editor.setSelection([p.id])
+              editor.setMultiSelect(true)
+            }}
+          >
+            <CopyCheck className="h-4 w-4" aria-hidden />
+            {t('selection.start')}
+          </Button>
+        )}
         {editor.canEdit && (
           <Button
             variant="ghost"

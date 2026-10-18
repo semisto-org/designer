@@ -1,0 +1,19 @@
+fr:
+  selection:
+    count:
+      one: "1 élément sélectionné."
+      other: "%{count} éléments sélectionnés."
+    empty: "Aucun élément sélectionné."
+    shift_hint: "Maj+clic sur un élément pour l'ajouter ou le retirer, Maj+glisser pour en prendre plusieurs d'un coup."
+    tap_hint: "Touche d'autres éléments pour les ajouter ou les retirer."
+    move: "Déplacer ensemble"
+    clear: "Désélectionner"
+    move_hint: "Fais glisser la sélection orange à la bonne place : chaque élément garde sa distance aux autres. Puis enregistre."
+    save: "Enregistrer la position"
+    cancel: "Annuler"
+    moved:
+      one: "1 élément déplacé."
+      other: "%{count} éléments déplacés."
+    unmoved: "La position n'a pas changé."
+    start: "Sélectionner plusieurs éléments"
+    start_hint: "Pour les déplacer ensemble. Sur ordinateur : Maj+clic, ou Maj+glisser autour de plusieurs éléments."
