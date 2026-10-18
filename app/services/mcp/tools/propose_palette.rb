@@ -17,6 +17,7 @@ module Mcp
                 species_id: { type: "integer", minimum: 1, description: :species_id },
                 name: { type: "string", maxLength: 200, description: :plant_name },
                 variety_id: { type: "integer", minimum: 1, description: :variety_id },
+                variety_name: { type: "string", minLength: 1, maxLength: 120, description: :variety_name },
                 strata: { type: "string", enum: PaletteItem::STRATA, description: :strata },
                 role: { type: "string", enum: PaletteItem::ROLES, description: :role },
                 target_count: { type: "integer", minimum: 1, maximum: 999_999, description: :target_count },
@@ -41,7 +42,10 @@ module Mcp
           raise ToolError, t("errors.nothing_created", details:)
         end
         {
-          created: outcome.created.map { |c| { index: c[:index], id: c[:item].id, species_id: c[:item].species_id, name: c[:item].display_name } },
+          created: outcome.created.map do |c|
+            { index: c[:index], id: c[:item].id, species_id: c[:item].species_id, variety_id: c[:item].variety_id,
+              new_variety: c[:item].variety_name, name: c[:item].display_name }.compact
+          end,
           rejected: outcome.rejected,
           pending_palette_drafts: map.palette_drafts.count,
           review_url: map_url(map),

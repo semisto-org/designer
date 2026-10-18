@@ -126,6 +126,16 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     assert_equal 4, @map.palette_items.count
   end
 
+  test "accepting a draft naming a cultivar already in the palette keeps a single entry" do
+    sign_in_as users(:michael)
+    item = @map.palette_items.create!(species: plant_species(:apple), variety: plant_varieties(:reinette))
+    draft = PaletteItem.create!(map: @map, species: plant_species(:apple), variety_name: "Reinette grise", status: "draft", source: "ai", rationale: "Ligne 2.")
+    post accept_map_palette_item_path(@map, draft), as: :json
+    assert_response :success
+    refute PaletteItem.exists?(draft.id)
+    assert_equal [ item.id ], response.parsed_body["planting"]["palette"].map { |i| i["id"] }
+  end
+
   test "palette suggestions" do
     regions(:wallonia).update!(settings: { "climate" => { "hardiness_zone" => 7 } })
     sign_in_as users(:alice)

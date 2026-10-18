@@ -24,7 +24,8 @@ class PaletteItem < ApplicationRecord
   validates :unit_price, numericality: { greater_than_or_equal_to: 0, less_than: 100_000 }, allow_nil: true
   validates :supplier, length: { maximum: 120 }
   validates :size, length: { maximum: 60 }
-  validates :species_id, uniqueness: { scope: :map_id, conditions: -> { where(variety_id: nil) } }, if: -> { variety_id.nil? }
+  validates :species_id, uniqueness: { scope: :map_id, conditions: -> { where(variety_id: nil, variety_name: nil) } }, if: -> { variety_id.nil? && variety_name.nil? }
+  validates :variety_name, length: { maximum: 120 }, absence: { if: :variety_id }
   validates :variety_id, uniqueness: { scope: :map_id }, allow_nil: true
   validate :variety_of_species
 
@@ -33,6 +34,7 @@ class PaletteItem < ApplicationRecord
 
   normalizes :strata, :role, with: ->(v) { v.presence }
   normalizes :supplier, :size, with: ->(v) { v.to_s.squish.presence }
+  normalizes :variety_name, with: ->(v) { v.to_s.squish.delete_prefix("'").delete_suffix("'").squish.presence }
 
   before_create { self.position = (PaletteItem.where(map_id:).maximum(:position) || 0) + 1 if position.zero? }
 
@@ -42,14 +44,34 @@ class PaletteItem < ApplicationRecord
   def key = [ species_id, variety_id ]
 
   def display_name
+    return "#{species.common_name || species.latin_name} '#{variety_name}'" if variety_name
     variety ? (variety.common_name || "#{species.common_name || species.latin_name} '#{variety.name}'") : (species.common_name || species.latin_name)
+  end
+
+  def latin_name
+    return "#{species.latin_name} '#{variety_name}'" if variety_name
+    variety&.full_latin_name || species.latin_name
+  end
+
+  # Accepts a draft. A cultivar it names by name only enters the catalogue
+  # now (the one already there by that name, accents and case aside, else a
+  # new one); if the palette already has that cultivar, the draft goes.
+  def activate!
+    transaction do
+      if variety_name
+        self.variety = PlantVariety.find_or_create_named!(species, variety_name)
+        self.variety_name = nil
+        next destroy! if map.palette_items.where(variety_id: variety.id).where.not(id:).exists?
+      end
+      update!(status: "active")
+    end
   end
 
   def as_json(*)
     {
       id:, speciesId: species_id, varietyId: variety_id, strata:, effectiveStrata: effective_strata,
       role:, notes:, targetCount: target_count, unitPrice: unit_price&.to_f, supplier:, size:, position:, status:, source:, rationale:,
-      name: display_name, latinName: variety&.full_latin_name || species.latin_name,
+      name: display_name, latinName: latin_name, newVariety: variety_name.present?,
       species: species.summary_json, variety: variety&.summary_json
     }
   end

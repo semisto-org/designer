@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_175713) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -846,8 +846,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_160000) do
     t.decimal "unit_price", precision: 10, scale: 2
     t.string "supplier"
     t.string "size"
+    t.string "variety_name"
     t.index ["created_by_id"], name: "index_palette_items_on_created_by_id"
-    t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "(variety_id IS NULL)"
+    t.index ["map_id", "species_id"], name: "index_palette_items_unique_species", unique: true, where: "((variety_id IS NULL) AND (variety_name IS NULL))"
     t.index ["map_id", "variety_id"], name: "index_palette_items_unique_variety", unique: true, where: "(variety_id IS NOT NULL)"
     t.index ["map_id"], name: "index_palette_items_on_map_id"
     t.index ["species_id"], name: "index_palette_items_on_species_id"

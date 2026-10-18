@@ -28,9 +28,9 @@ module Maps
         existing = @map.palette_items.find_by(variety_id: variety.id)
         return render json: { item: existing, planting: PlantingState.new(@map) } if existing
       end
-      draft = @map.palette_drafts.find_by(attributes.slice("species_id", "variety_id").reverse_merge("variety_id" => nil))
+      draft = @map.palette_drafts.find_by(attributes.slice("species_id", "variety_id").reverse_merge("variety_id" => nil).merge("variety_name" => nil))
       item = draft || @map.palette_items.new(attributes.merge(created_by: Current.user))
-      if draft ? draft.update(status: "active") : item.save
+      if draft ? draft.activate! : item.save
         render json: { item:, planting: PlantingState.new(@map) }, status: :created
       else
         render_errors item
@@ -52,7 +52,7 @@ module Maps
     end
 
     def accept
-      @drafts.each { |draft| draft.update!(status: "active") }
+      @drafts.each(&:activate!)
       render json: { planting: PlantingState.new(@map) }
     end
 

@@ -484,6 +484,33 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert error, "rationale is required"
   end
 
+  test "propose_palette names a cultivar: the catalogue's, or a new one created when a human accepts it" do
+    plants = [
+      { species_id: plant_species(:apple).id, variety_name: "belle-de-boskoop", rationale: "Ligne 2 du tableur." },
+      { species_id: plant_species(:apple).id, variety_name: "'Belle fleur double'", rationale: "Ligne 3 du tableur." },
+      { species_id: plant_species(:apple).id, variety_name: "Belle fleur double", rationale: "Ligne 4, en double." }
+    ]
+    assert_no_difference "PlantVariety.count" do
+      data, error = call_tool(@owner, "propose_palette", { map_id: @map.id, plants: })
+      refute error, data
+      assert_equal [ 0, 1 ], data["created"].map { |c| c["index"] }
+      assert_equal plant_varieties(:boskoop).id, data["created"][0]["variety_id"]
+      assert data["created"][1]["new_variety"]
+      assert_equal [ 2 ], data["rejected"].map { |r| r["index"] }
+    end
+
+    draft = PaletteItem.find_by!(map: @map, variety_name: "Belle fleur double")
+    assert_nil draft.variety
+    assert draft.as_json[:newVariety]
+    assert_equal "Malus domestica 'Belle fleur double'", draft.latin_name
+
+    assert_difference "PlantVariety.count", 1 do
+      draft.activate!
+    end
+    draft.reload
+    assert_equal [ "active", nil, "Belle fleur double" ], [ draft.status, draft.variety_name, draft.variety.name ]
+  end
+
   test "get_project_sheet gives every question, its allowed answers in French and the current answers" do
     @map.update!(project: { "budget" => { "initial" => "under_500" } })
     data, error = call_tool(@viewer, "get_project_sheet", { map_id: @map.id })
