@@ -218,6 +218,16 @@ fr:
         other: "%{count} éléments"
       show_all: "Tout réafficher"
       remembered: "Ce choix est gardé sur ce téléphone, pour cette carte."
+      drone: "Vue drone"
+      drone_hint: "Pose une vue drone de la carte sur le fond, pour voir le terrain tel qu'il était ce jour-là."
+      drone_none: "Aucune"
+      drone_download: "Garder sur le téléphone"
+      drone_download_retry: "Téléchargement interrompu, réessayer"
+      drone_downloading: "Téléchargement de la vue drone… %{percent} %"
+      drone_kept: "Sur le téléphone (%{size} Mo), même sans réseau."
+      drone_remove: "Retirer"
+      drone_online: "Sans la garder, elle se charge par la connexion, au fil de tes déplacements."
+      drone_offline: "Pas de réseau : la vue drone revient dès que la connexion revient, ou garde-la sur le téléphone avant d'aller sur le terrain."
     sheet:
       label: "Feuille du terrain"
       levels:

@@ -10,13 +10,13 @@ import { Alert, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { t } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
-import { styleUrl } from '@/lib/maps'
 import { display, useDisplay } from '@/lib/display'
 import { outbox } from '@/lib/outbox'
 import { markGeometry, RAINS, stormProperties, thinStroke, type Rain, type StormMark, type StormWater } from '@/lib/storm'
 import type { Position } from '@/lib/types'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
+import { useMapStyle } from '@/state/useMapStyle'
 import { chooseMedia, type MediaChoice } from '@/ui/chooseMedia'
 import { Body, Button, Chip, IconButton, Input, Label, Notice } from '@/ui/kit'
 import { Icon, type IconName } from '@/ui/Icon'
@@ -35,6 +35,7 @@ type Pixel = { x: number; y: number }
 export default function StormScreen() {
   const mapId = Number(useLocalSearchParams<{ id: string }>().id)
   const { bundle } = useMapBundle(mapId)
+  const mapStyle = useMapStyle(mapId, bundle)
   const shown = useDisplay(mapId)
   const insets = useSafeAreaInsets()
   const mapRef = useRef<MapRef>(null)
@@ -149,7 +150,7 @@ export default function StormScreen() {
 
   return (
     <View style={s.fill}>
-      <Map ref={mapRef} style={s.fill} mapStyle={styleUrl(mapId)} logo={false} attributionPosition={{ bottom: 8, left: 8 }}>
+      <Map ref={mapRef} style={s.fill} mapStyle={mapStyle} logo={false} attributionPosition={{ bottom: 8, left: 8 }}>
         <Camera initialViewState={bbox ? { bounds: bbox, padding: { top: 120, bottom: 260, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }} />
         <FeatureLayers bundle={bundle} display={shown} selectedId={null} onSelect={() => {}} />
         <GeoJSONSource id="storm-marks" data={drawn}>

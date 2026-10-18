@@ -28,6 +28,14 @@ What it does, for the maps one belongs to:
 - downloads a map for offline use (map data + base map tiles of the
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
   network is back;
+- drone views of the map (« Affichage » › « Vue drone », `useMapStyle`):
+  one laid over the base map (`/api/v1/maps/:id/style?drone=id`), loaded
+  through the connection as one moves, or kept on the phone as its own
+  offline pack (zoom 15 up to the view's own); offline, a view not kept
+  leaves the base map alone. A PMTiles archive is read by the server, tile
+  by tile (`/api/v1/maps/:id/aerial_views/:id/tiles/:z/:x/:y`,
+  `AerialViews::PmtilesReader`), since MapLibre sends the token only to the
+  API and a signed file link expires;
 - geolocated photos, on the map or on an element, with the direction the
   camera faced;
 - a photo taken again from the same spot (« Reprendre cette photo »,
@@ -63,7 +71,8 @@ No purchase happens in the app: plans are managed on the website.
   `org.semisto.designer://oauth`, scope `app`. Tokens live in the
   keychain/keystore (expo-secure-store).
 - The bearer token reaches the app's own endpoints (`/api/v1/me`,
-  `/api/v1/maps`, `/api/v1/maps/:id`, `/api/v1/maps/:id/style`) and the map
+  `/api/v1/maps`, `/api/v1/maps/:id`, `/api/v1/maps/:id/style`, a drone
+  view's tiles) and the map
   editor's JSON endpoints, with the same roles as on the website.
 - Interface strings come from `config/locales/*.fr.yml` (mostly
   `mobile.fr.yml`) and the element library from `config/map_elements.yml`:

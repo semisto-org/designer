@@ -122,6 +122,9 @@ Rails.application.routes.draw do
       end
       resources :maps, only: %i[index show] do
         get :style, on: :member, defaults: { format: :json }
+        # A drone view's tiles, cut out of its PMTiles archive (AerialTilesController).
+        get "aerial_views/:aerial_view_id/tiles/:z/:x/:y", to: "aerial_tiles#show", as: :aerial_tile,
+          constraints: { aerial_view_id: /\d+/, z: /\d+/, x: /\d+/, y: /\d+/ }
       end
     end
   end
