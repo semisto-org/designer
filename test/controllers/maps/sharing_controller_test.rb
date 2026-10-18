@@ -45,14 +45,18 @@ class Maps::SharingControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "owner cannot make a fourth editor, the message is clear" do
+  test "owner makes a fourth and a fifth editor" do
     3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
-    membership = @map.memberships.find_by(user: @viewer)
+    fifth = add_member(@map, make_user("Fifth"), "viewer")
     sign_in_as @owner
-    patch map_membership_path(@map, membership), params: { membership: { role: "editor" } }, as: :json
-    assert_response :unprocessable_entity
-    assert_match(/3 éditeurs/, json["message"])
-    assert_equal "viewer", membership.reload.role
+    [ @viewer, fifth ].each do |user|
+      membership = @map.memberships.find_by(user:)
+      patch map_membership_path(@map, membership), params: { membership: { role: "editor" } }, as: :json
+      assert_response :success
+      assert_equal "editor", membership.reload.role
+    end
+    assert_equal 5, json["editorsCount"]
+    assert_not json.key?("maxEditors")
   end
 
   test "the owner role cannot be changed or removed" do
@@ -119,12 +123,18 @@ class Maps::SharingControllerTest < ActionDispatch::IntegrationTest
     assert_equal "viewer", @map.invitations.find_by(email_address: "y@example.org").role
   end
 
-  test "invitation errors are in French: editor limit, existing member, bad address" do
+  test "a fourth and a fifth editor can be invited, pending invitations included" do
     3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
     sign_in_as @owner
-    post map_invitations_path(@map), params: { invitation: { email_address: "x@example.org", role: "editor" } }, as: :json
-    assert_response :unprocessable_entity
-    assert_match(/3 éditeurs/, json["message"])
+    %w[x@example.org y@example.org].each do |email_address|
+      post map_invitations_path(@map), params: { invitation: { email_address:, role: "editor" } }, as: :json
+      assert_response :created
+    end
+    assert_equal 2, @map.invitations.pending.where(role: "editor").count
+  end
+
+  test "invitation errors are in French: existing member, bad address" do
+    sign_in_as @owner
     post map_invitations_path(@map), params: { invitation: { email_address: @viewer.email_address, role: "viewer" } }, as: :json
     assert_equal "Cette personne a déjà accès à la carte.", json["message"]
     post map_invitations_path(@map), params: { invitation: { email_address: "pas-un-mail", role: "viewer" } }, as: :json

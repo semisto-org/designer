@@ -87,13 +87,13 @@ function Members({ data, owner, busy, base, run, onLeft }: SectionProps & { owne
     }
   }
 
-  const seats = t('collab.share.editors_count', { count: data.editorsCount, max: data.maxEditors })
+  const editors = t('collab.share.editors_count', { count: data.editorsCount })
 
   return (
     <section aria-labelledby="share-members">
       <div className="flex items-baseline justify-between gap-2">
         <h3 id="share-members" className="flex items-center gap-1.5 text-sm font-semibold text-loam-900"><Users className="h-4 w-4 text-loam-500" />{t('collab.share.members')}</h3>
-        <span className="text-xs text-loam-500">{seats}</span>
+        <span className="text-xs text-loam-500">{editors}</span>
       </div>
       <ul className="mt-2 divide-y divide-loam-100">
         {data.members.map((member) => (
@@ -118,9 +118,8 @@ function Members({ data, owner, busy, base, run, onLeft }: SectionProps & { owne
   )
 }
 
-function MemberRow({ member, owner, busy, base, run, data }: SectionProps & { member: SharingMember; owner: boolean }) {
+function MemberRow({ member, owner, busy, base, run }: SectionProps & { member: SharingMember; owner: boolean }) {
   const canManage = owner && member.role !== 'owner'
-  const editorsFull = data.editorsCount >= data.maxEditors
   return (
     <li className="flex items-center gap-3 py-2">
       <Avatar name={member.name} url={member.avatarUrl} className="h-8 w-8" />
@@ -141,9 +140,7 @@ function MemberRow({ member, owner, busy, base, run, data }: SectionProps & { me
             onChange={(e) => void run(() => api<SharingData>(`${base}/memberships/${member.id}`, { method: 'PATCH', body: { membership: { role: e.target.value } } }))}
           >
             <option value="viewer">{t('maps.roles.viewer')}</option>
-            <option value="editor" disabled={editorsFull && member.role !== 'editor'}>
-              {t('maps.roles.editor')}{editorsFull && member.role !== 'editor' ? ` ${t('collab.share.full')}` : ''}
-            </option>
+            <option value="editor">{t('maps.roles.editor')}</option>
           </Select>
           <button
             type="button"
@@ -171,8 +168,6 @@ function Invite({ data, busy, base, run }: SectionProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'viewer' | 'editor'>('viewer')
   const invitations = data.invitations ?? []
-  const seatsTaken = data.editorsCount + invitations.filter((i) => i.role === 'editor').length
-  const editorsFull = seatsTaken >= data.maxEditors
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -198,12 +193,11 @@ function Invite({ data, busy, base, run }: SectionProps) {
         />
         <Select aria-label={t('collab.share.invite_role')} value={role} onChange={(e) => setRole(e.target.value as 'viewer' | 'editor')} style={{ width: 'auto' }}>
           <option value="viewer">{t('maps.roles.viewer')}</option>
-          <option value="editor" disabled={editorsFull}>{t('maps.roles.editor')}{editorsFull ? ` ${t('collab.share.full')}` : ''}</option>
+          <option value="editor">{t('maps.roles.editor')}</option>
         </Select>
         <Button type="submit" disabled={busy || email.trim() === ''}>{t('collab.share.invite_send')}</Button>
       </form>
       <p className="text-xs text-loam-500">{t(`collab.share.role_help_${role}`)}</p>
-      {editorsFull && <p className="text-xs text-humus-700">{t('collab.share.editors_full', { max: data.maxEditors })}</p>}
 
       {invitations.length > 0 && (
         <div>
@@ -245,8 +239,6 @@ function Invite({ data, busy, base, run }: SectionProps) {
 function ShareLink({ data, busy, base, run }: SectionProps) {
   const link = data.link ?? { enabled: false, role: 'viewer' as const, url: null }
   const [copied, setCopied] = useState(false)
-  const invitations = data.invitations ?? []
-  const editorsFull = data.editorsCount + invitations.filter((i) => i.role === 'editor').length >= data.maxEditors
 
   async function copy() {
     if (!link.url) return
@@ -299,7 +291,7 @@ function ShareLink({ data, busy, base, run }: SectionProps) {
                 onChange={(e) => void run(() => api<SharingData>(`${base}/share_link`, { method: 'PATCH', body: { share_link: { role: e.target.value } } }))}
               >
                 <option value="viewer">{t('maps.roles.viewer')}</option>
-                <option value="editor" disabled={editorsFull && link.role !== 'editor'}>{t('maps.roles.editor')}</option>
+                <option value="editor">{t('maps.roles.editor')}</option>
               </Select>
             </label>
             <Button

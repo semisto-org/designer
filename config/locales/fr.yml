@@ -67,12 +67,6 @@ fr:
         name: "Nom"
       map_membership:
         role: "Rôle"
-    errors:
-      models:
-        map_membership:
-          attributes:
-            role:
-              editor_limit: "est limité à %{count} éditeurs par carte"
   common:
     close: "Fermer"
     delete: "Supprimer"

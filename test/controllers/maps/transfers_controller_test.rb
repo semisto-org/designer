@@ -28,7 +28,7 @@ class Maps::TransfersControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ [ "Léa", false ], [ "Bob", true ] ], json["candidates"].map { |c| [ c["name"], c["viaTeam"] ] }
     assert_equal @lea.email_address, json["candidates"].first["email"]
     assert_nil json["candidates"].last["email"], "a team's addresses stay with its admins"
-    assert_equal 2, json["seatsLeft"]
+    assert_not json.key?("seatsLeft")
     assert_equal 1, json["viewersCount"]
     assert_equal "Semisto", json["team"]
     assert_equal 14, json["expiresInDays"]

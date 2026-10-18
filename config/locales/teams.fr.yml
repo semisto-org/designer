@@ -53,7 +53,7 @@ fr:
       other: "%{count} cartes"
     index:
       title: "Mes équipes"
-      intro: "Une équipe réunit les personnes qui conçoivent ensemble : bureau d'études, association, groupe en formation. Chaque membre modifie toutes les cartes de l'équipe, sans occuper l'une des 3 places d'éditeur d'une carte."
+      intro: "Une équipe réunit les personnes qui conçoivent ensemble : bureau d'études, association, groupe en formation. Chaque membre modifie toutes les cartes de l'équipe, sans avoir à y être invité."
       empty_title: "Pas encore d'équipe"
       empty_body: "Crée une équipe, invite tes collègues, puis confie-lui tes cartes depuis le bouton « Partager » de chaque carte."
       create_title: "Créer une équipe"
@@ -147,7 +147,7 @@ fr:
       remove: "Sortir de l'équipe"
       remove_confirm: "Sortir la carte de l'équipe « %{name} » ? Ses membres n'y auront plus accès, sauf ceux que tu as invités sur la carte."
       removed: "La carte n'est plus dans l'équipe."
-      hint: "Tous les membres de l'équipe pourront la modifier, sans occuper l'une des 3 places d'éditeur. Le partage reste entre tes mains."
+      hint: "Tous les membres de l'équipe pourront la modifier, sans que tu aies à les inviter un par un. Le partage reste entre tes mains."
       plan: "La carte reste à toi et suit ton forfait."
       no_team: "Tu conçois à plusieurs ? Une équipe donne à tous ses membres l'accès aux cartes que tu lui confies."
       no_team_link: "Créer une équipe"

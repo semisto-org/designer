@@ -21,7 +21,7 @@ class MapSharingTest < ActiveSupport::TestCase
     assert_includes @map.participants, users(:bob)
   end
 
-  test "team members do not take an editor seat" do
+  test "team members edit without a membership of their own" do
     team = Organization.create!(name: "Semisto")
     @map.update!(organization: team)
     3.times { |i| team.memberships.create!(user: make_user("Team #{i}"), role: "designer") }
@@ -37,28 +37,28 @@ class MapSharingTest < ActiveSupport::TestCase
     assert_equal "owner", @map.grant_access!(@owner, "viewer").role
   end
 
-  test "grant_access! upgrades a viewer to editor when a seat is free" do
+  test "grant_access! upgrades a viewer to editor" do
     @map.grant_access!(users(:alice), "editor")
     assert_equal "editor", @map.memberships.find_by(user: users(:alice)).role
   end
 
-  test "the fourth editor is refused with a French message" do
+  test "a fourth and fifth editor join by membership, invitation and share link" do
     3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
-    error = assert_raises(Map::EditorLimitReached) { @map.grant_access!(users(:bob), "editor") }
-    assert_match(/3 éditeurs/, error.message)
-    assert_nil @map.role_for(users(:bob))
-    # as a viewer, still fine
-    assert_equal "viewer", @map.grant_access!(users(:bob), "viewer").role
-  end
 
-  test "pending editor invitations hold a seat" do
-    2.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
-    @map.invitations.create!(email_address: "one@example.org", role: "editor", invited_by: @owner)
-    assert_equal 3, @map.editor_seats_taken
-    third = @map.invitations.new(email_address: "two@example.org", role: "editor", invited_by: @owner)
-    assert_not third.valid?
-    assert third.errors.of_kind?(:role, :editor_limit)
-    assert @map.invitations.new(email_address: "two@example.org", role: "viewer", invited_by: @owner).valid?
+    # By membership.
+    assert @map.memberships.create!(user: make_user("Fourth"), role: "editor").persisted?
+    assert_equal "editor", @map.grant_access!(make_user("Fifth"), "editor").role
+
+    # By invitation: pending editor invitations do not hold anything back.
+    invitations = 2.times.map { |i| @map.invitations.create!(email_address: "invited#{i}@example.org", role: "editor", invited_by: @owner) }
+    invitations.each { |invitation| assert_equal "editor", invitation.accept!(make_user("Invited #{invitation.id}")).role }
+
+    # By share link.
+    link = @map.create_share_link!(role: "editor", created_by: @owner)
+    assert_equal "editor", link.accept!(users(:bob)).role
+    assert_equal "editor", link.accept!(make_user("Linked")).role
+
+    assert_equal 9, @map.editors_count
   end
 
   test "cannot invite someone who already has access" do
@@ -87,13 +87,6 @@ class MapSharingTest < ActiveSupport::TestCase
     end
   end
 
-  test "accepting an editor invitation on a full map raises and keeps the invitation open" do
-    invitation = @map.invitations.create!(email_address: "new@example.org", role: "editor", invited_by: @owner)
-    3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
-    assert_raises(Map::EditorLimitReached) { invitation.accept!(users(:bob)) }
-    assert_not invitation.reload.accepted?
-  end
-
   test "share link: role-bound, reset gives a new token, disabled links do not accept" do
     link = @map.create_share_link!(role: "viewer", created_by: @owner)
     old = link.token
@@ -109,11 +102,5 @@ class MapSharingTest < ActiveSupport::TestCase
     assert_not link.enabled?
     assert_raises(ActiveRecord::RecordNotFound) { link.accept!(users(:alice)) }
     assert_not MapShareLink.active.exists?(link.id)
-  end
-
-  test "share link with the editor role respects the limit" do
-    link = @map.create_share_link!(role: "editor", created_by: @owner)
-    3.times { |i| add_member(@map, make_user("Editor #{i}"), "editor") }
-    assert_raises(Map::EditorLimitReached) { link.accept!(users(:bob)) }
   end
 end

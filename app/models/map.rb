@@ -1,6 +1,6 @@
 # A "carte": one terrain, its survey, its design and everything learned
-# about it. Owned by one user (counts against their plan), shared with up to
-# three editors and any number of viewers.
+# about it. Owned by one user (counts against their plan), shared with any
+# number of editors and viewers.
 class Map < ApplicationRecord
   include GeoJsonGeometry
   include Commentable
@@ -8,14 +8,6 @@ class Map < ApplicationRecord
   include MapPlanting
   include MapBoard
 
-  # Raised when a fourth editor would be added.
-  class EditorLimitReached < StandardError
-    def initialize(message = nil)
-      super(message || I18n.t("collab.sharing.errors.editor_limit", count: MAX_EDITORS))
-    end
-  end
-
-  MAX_EDITORS = 3
   STAGES = %w[observe map design plant].freeze
 
   belongs_to :owner, class_name: "User"
@@ -132,7 +124,7 @@ class Map < ApplicationRecord
   end
 
   # Everyone who can open the map: members, plus the team's members when the
-  # map belongs to an organization (they edit without taking an editor seat).
+  # map belongs to an organization (they edit without a membership of their own).
   def participants
     scope = User.where(id: memberships.select(:user_id))
     scope = scope.or(User.where(id: OrganizationMembership.where(organization_id:).select(:user_id))) if organization_id
@@ -148,31 +140,17 @@ class Map < ApplicationRecord
     emails - participants.where(email_address: emails).pluck(:email_address).map(&:downcase)
   end
 
-  # Seats held by editors, counting editor invitations still waiting to be
-  # answered (so the owner cannot over-promise).
-  def editor_seats_taken(except_invitation: nil)
-    pending = invitations.pending.where(role: "editor")
-    pending = pending.where.not(id: except_invitation.id) if except_invitation&.persisted?
-    editors_count + pending.count
-  end
-
   # Gives `user` the role through an invitation or a share link. Never
-  # downgrades; raises EditorLimitReached when no editor seat is left.
+  # downgrades.
   def grant_access!(user, role, invited_by: nil)
     current = role_for(user)
     return memberships.find_by(user:) if current == "owner" || current == "editor" || current == role
 
     membership = memberships.find_or_initialize_by(user:)
-    if role == "editor" && editors_count >= MAX_EDITORS
-      raise EditorLimitReached
-    end
     membership.role = role
     membership.invited_by ||= invited_by
     membership.save!
     membership
-  rescue ActiveRecord::RecordInvalid => e
-    raise EditorLimitReached if e.record.is_a?(MapMembership) && e.record.errors.of_kind?(:role, :editor_limit)
-    raise
   end
 
   def comment_map = self

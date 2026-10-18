@@ -1,7 +1,7 @@
 module Maps
   # Moves a map into one of its owner's teams, or takes it out (owner only).
   # The map stays the owner's and keeps following the owner's plan; the
-  # team's members edit it without taking an editor seat (Map#role_for).
+  # team's members edit it without being invited on it (Map#role_for).
   class TeamsController < ApplicationController
     include MapScoped
 

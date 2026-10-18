@@ -49,8 +49,7 @@ module Maps
       def render_invalid(invitation)
         errors = invitation.errors
         message =
-          if errors.of_kind?(:role, :editor_limit) then t("collab.sharing.errors.editor_limit_invite", count: Map::MAX_EDITORS)
-          elsif errors.of_kind?(:email_address, :already_participant) then t("collab.sharing.errors.already_participant")
+          if errors.of_kind?(:email_address, :already_participant) then t("collab.sharing.errors.already_participant")
           elsif errors.include?(:email_address) then t("collab.sharing.errors.invalid_email")
           else invitation.errors.full_messages.to_sentence
           end

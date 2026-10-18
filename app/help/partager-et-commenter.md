@@ -12,7 +12,7 @@ Un projet de jardin-forêt se construit rarement seul. Terranova permet d'invite
 ## Trois rôles par carte
 
 - **Propriétaire** (un seul) : la personne dont le forfait porte la carte. Elle gère le partage, peut archiver la carte ou la transférer.
-- **Éditeur** (jusqu'à 3, gratuits) : modifie la carte à part entière. Il travaille avec ce que permet le forfait qui couvre la carte (celui du propriétaire, ou celui de l'équipe), et n'a pas besoin de payer.
+- **Éditeur** (autant que tu veux, gratuits) : modifie la carte à part entière. Il travaille avec ce que permet le forfait qui couvre la carte (celui du propriétaire, ou celui de l'équipe), et n'a pas besoin de payer.
 - **Lecteur** (autant que tu veux) : consulte la carte et la commente, sans la modifier.
 
 Une carte à laquelle on est invité **ne compte jamais** dans la formule de l'invité : seules les cartes que l'on possède comptent.
@@ -29,7 +29,7 @@ Les commentaires sont attachés à ce dont on parle : un élément, une plante, 
 
 Une carte peut changer de propriétaire : un designer la confie à son client à la fin du projet, un proche reprend le jardin… Le propriétaire propose, la personne choisie accepte ou décline : rien ne se fait sans son accord.
 
-1. La personne doit d'abord être **éditeur** de la carte : invite-la comme éditeur, ou passe un lecteur en éditeur dans la liste des membres. Un membre de l'équipe de la carte peut aussi la recevoir, s'il reste une place d'éditeur pour l'ancien propriétaire.
+1. La personne doit d'abord être **éditeur** de la carte : invite-la comme éditeur, ou passe un lecteur en éditeur dans la liste des membres. Un membre de l'équipe de la carte peut aussi la recevoir.
 2. Dans **Partager**, section **Transférer la propriété**, choisis-la puis propose-lui la carte. Elle reçoit un e-mail, et la proposition l'attend aussi dans **Mes cartes** et en haut de la carte.
 3. Avant d'accepter, elle voit ce que cela change pour sa formule : si cette carte, ou l'une de ses cartes, passerait en lecture seule, et quelles fonctions payantes ne seraient plus disponibles.
 4. La proposition est valable 14 jours. Tu peux l'annuler d'ici là ; sans réponse, la carte reste la tienne.
