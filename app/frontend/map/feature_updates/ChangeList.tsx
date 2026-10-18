@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Trash2 } from 'lucide-react'
 import { t } from '@/lib/i18n'
 import { fieldKey, isKnownField, shownValue, type FeatureUpdateChange } from '@/map/feature_updates/diff'
 
@@ -26,7 +26,12 @@ export default function ChangeList({ changes, compact = false, hideBefore = fals
 }) {
   return (
     <dl className="space-y-1.5 text-sm">
-      {changes.map((change) => (
+      {changes.map((change) => change.field === 'delete' ? (
+        <div key={change.field} className="flex items-center gap-1.5 font-medium text-clay-600">
+          <Trash2 className="h-4 w-4 shrink-0" />
+          <dt>{t('feature_updates.deletion')}</dt>
+        </div>
+      ) : (
         <div key={change.field} className={compact ? 'flex flex-wrap items-baseline gap-x-1.5' : ''}>
           <dt className="font-medium text-loam-700">{fieldLabel(change.field)}{compact && ' :'}</dt>
           <dd className="flex flex-wrap items-baseline gap-x-1.5 text-loam-800">

@@ -40,7 +40,7 @@ module Maps
       end
 
       def update_outcomes(actions)
-        proposals = actions.select { |a| a.tool == "propose_feature_updates" && a.result["update_ids"].present? }
+        proposals = actions.select { |a| a.tool.in?(%w[propose_feature_updates propose_deletions]) && a.result["update_ids"].present? }
         statuses = @map.feature_update_drafts.where(id: proposals.flat_map { |a| a.result["update_ids"] }).pluck(:id, :status).to_h
         proposals.to_h do |action|
           counts = Hash.new(0)

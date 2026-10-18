@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react'
 import { api } from '@/lib/api'
+import { t } from '@/lib/i18n'
 import type { Editor } from '@/map/editor/EditorContext'
-import type { FeatureUpdateBatch, FeatureUpdateData, FeatureUpdatesResponse, ProposedChanges } from '@/map/feature_updates/diff'
+import { isDeletion, type FeatureUpdateBatch, type FeatureUpdateData, type FeatureUpdatesResponse, type ProposedChanges } from '@/map/feature_updates/diff'
 import type { MapFeature } from '@/types'
 
 /**
@@ -46,11 +47,19 @@ function drop(ids: number[]) {
   set({ updates, batches })
 }
 
+// An accepted deletion put the element in the trash: off the map, and ⌘Z brings it back.
+function trashed(editor: Editor, ids: number[]) {
+  const features = ids.map((id) => editor.features.find((f) => f.properties.id === id))
+  editor.removeFeatures(ids)
+  for (const feature of features) if (feature) editor.recordRemoval(feature)
+}
+
 export async function acceptUpdate(editor: Editor, id: number, changes?: ProposedChanges) {
-  const data = await api<{ id: number; feature: MapFeature }>(`${base(editor.map.id)}/${id}/accept`, {
+  const data = await api<{ id: number; feature?: MapFeature; deletedId?: number }>(`${base(editor.map.id)}/${id}/accept`, {
     method: 'POST', body: changes ? { changes } : undefined,
   })
-  editor.upsertFeatures([data.feature])
+  if (data.feature) editor.upsertFeatures([data.feature])
+  if (data.deletedId != null) trashed(editor, [data.deletedId])
   drop([id])
 }
 
@@ -61,13 +70,19 @@ export async function rejectUpdate(editor: Editor, id: number) {
 
 /** Accepts the updates of one proposal the person saw. Returns how many applied, and the first failure. */
 export async function acceptBatch(editor: Editor, batch: string, ids: number[]) {
-  const data = await api<{ features: MapFeature[]; failed: { id: number; message: string }[] }>(`${base(editor.map.id)}/accept_all`, {
-    method: 'POST', body: { batch, ids },
-  })
-  editor.upsertFeatures(data.features)
-  const failed = new Set(data.failed.map((f) => f.id))
-  drop(ids.filter((id) => !failed.has(id)))
-  return { accepted: data.features.length, failed: data.failed }
+  type Answer = { features: MapFeature[]; deletedIds?: number[]; failed: { id: number; message: string }[] }
+  const run = async () => {
+    const data = await api<Answer>(`${base(editor.map.id)}/accept_all`, { method: 'POST', body: { batch, ids } })
+    editor.upsertFeatures(data.features)
+    const deleted = data.deletedIds ?? []
+    if (deleted.length) trashed(editor, deleted)
+    const failed = new Set(data.failed.map((f) => f.id))
+    drop(ids.filter((id) => !failed.has(id)))
+    return { accepted: data.features.length + deleted.length, deleted: deleted.length, failed: data.failed }
+  }
+  // Deletions come back in one ⌘Z, like « Tout accepter » for new elements.
+  const deletions = state.updates.filter((u) => ids.includes(u.id) && isDeletion(u)).length
+  return deletions ? editor.undoGroup(t('undo.labels.delete_all', { count: deletions }), run) : run()
 }
 
 export async function rejectBatch(editor: Editor, batch: string, ids: number[]) {

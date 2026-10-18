@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Sparkles, ThermometerSnowflake, Undo2, Upload, X } from 'lucide-react'
+import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Sparkles, ThermometerSnowflake, Trash2, Undo2, Upload, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -12,6 +12,7 @@ type Page = { actions: AiActionData[]; nextBeforeId: number | null }
 const ICONS: Record<string, typeof Bot> = {
   propose_features: Sparkles,
   propose_feature_updates: PencilLine,
+  propose_deletions: Trash2,
   withdraw_draft: Undo2,
   list_features: Layers,
   get_region_layers: Layers,
@@ -59,6 +60,7 @@ function describe(action: AiActionData): string {
     case 'list_features': return t('ai_journal.actions.list_features', { count: n('features') })
     case 'propose_features': return t('ai_journal.actions.propose_features', { count: n('created') })
     case 'propose_feature_updates': return t('ai_journal.actions.propose_feature_updates', { count: n('created') })
+    case 'propose_deletions': return t('ai_journal.actions.propose_deletions', { count: n('created') })
     case 'propose_palette': return t('ai_journal.actions.propose_palette', { count: n('created') })
     case 'propose_project_sheet': return t('ai_journal.actions.propose_project_sheet', { count: n('created') })
     case 'propose_bioindicators': return t('ai_journal.actions.propose_bioindicators', { count: n('created') })
