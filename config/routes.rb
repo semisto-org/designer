@@ -544,6 +544,10 @@ Rails.application.routes.draw do
     resources :maps, only: :index
     get "tech", to: "tech#show", as: :tech
     get "catalogue", to: "catalogue#show", as: :catalogue
+    # « Codes promo »: Stripe promotion codes made and switched off here.
+    resources :promo_codes, path: "promo-codes", only: %i[index create] do
+      post :deactivate, on: :member
+    end
   end
   resource :impersonation, only: :destroy
   # --- end super-admin ---

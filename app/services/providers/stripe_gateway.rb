@@ -6,7 +6,15 @@ module Providers
   # network failure becomes Providers::StripeGateway::Error, so callers show a
   # French message instead of crashing.
   class StripeGateway
-    class Error < StandardError; end
+    # code: Stripe's error code when it gave one ("resource_already_exists"…).
+    class Error < StandardError
+      attr_reader :code
+
+      def initialize(message = nil, code: nil)
+        super(message)
+        @code = code
+      end
+    end
     class NotConfigured < Error; end
 
     SESSION_EXPAND = %w[total_details.breakdown].freeze
@@ -90,6 +98,34 @@ module Providers
       call { @client.v1.promotion_codes.retrieve(id) }
     end
 
+    # --- Promotion codes made in /admin/promo-codes ---
+
+    # A coupon is restricted to products, so a plan's product is read from its price.
+    def retrieve_price(id)
+      call { @client.v1.prices.retrieve(id) }
+    end
+
+    def create_coupon(params)
+      call { @client.v1.coupons.create(params) }
+    end
+
+    def delete_coupon(id)
+      call { @client.v1.coupons.delete(id) }
+    end
+
+    def create_promotion_code(params)
+      call { @client.v1.promotion_codes.create(params) }
+    end
+
+    def update_promotion_code(id, params)
+      call { @client.v1.promotion_codes.update(id, params) }
+    end
+
+    # Latest first (Stripe's order), with each code's coupon expanded.
+    def list_promotion_codes(limit: 100, starting_after: nil)
+      call { @client.v1.promotion_codes.list({ limit:, starting_after:, expand: [ "data.promotion.coupon" ] }.compact) }
+    end
+
     # Invoice that a payment intent paid (subscription payments carry no
     # invoice id on the charge), or nil.
     def invoice_id_for_payment_intent(payment_intent_id)
@@ -105,7 +141,7 @@ module Providers
       def call
         JSON.parse(yield.to_json)
       rescue Stripe::StripeError => e
-        raise Error, e.message
+        raise Error.new(e.message, code: e.code)
       end
   end
 end
