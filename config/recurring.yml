@@ -18,6 +18,11 @@ production:
     class: BillingDailyJob
     queue: default
     schedule: every day at 8am
+  # Billit invoices (Belgian businesses, over Peppol) that a lost job or an
+  # unreachable Billit left behind, and the delivery of those sent.
+  billit_backfill:
+    command: "BillitJob.backfill"
+    schedule: every 10 minutes
   # Copy of the day's new files to the backup bucket (BACKUP_S3_*), before the
   # database backup of 3am.
   file_backup:

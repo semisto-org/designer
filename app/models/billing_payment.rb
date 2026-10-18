@@ -6,6 +6,11 @@ class BillingPayment < ApplicationRecord
   belongs_to :plan_purchase, optional: true
   belongs_to :plan_subscription, optional: true
   belongs_to :invoice_request, optional: true
+  has_many :billit_documents, dependent: :destroy
+
+  # A Belgian business gets its legal invoice from Billit once the Stripe
+  # invoice is known, and a credit note when it is refunded.
+  after_commit :sync_billit, on: %i[create update], if: -> { saved_change_to_stripe_invoice_id? || saved_change_to_refunded_cents? }
 
   validates :plan_key, :currency, :paid_at, presence: true
   validates :amount_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
@@ -19,4 +24,9 @@ class BillingPayment < ApplicationRecord
   # Amount before VAT, what Semisto's share is usually computed on.
   def net_cents = amount_cents - tax_cents
   def fully_refunded? = refunded_cents >= amount_cents && amount_cents.positive?
+
+  private
+    def sync_billit
+      BillitJob.perform_later(self) if stripe_invoice_id.present? && Providers::Billit.configured?
+    end
 end

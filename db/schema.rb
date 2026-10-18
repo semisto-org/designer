@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_191000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_203000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -188,6 +188,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_191000) do
     t.index ["stripe_invoice_id"], name: "index_billing_payments_on_stripe_invoice_id", unique: true
     t.index ["stripe_payment_intent_id"], name: "index_billing_payments_on_stripe_payment_intent_id"
     t.index ["user_id"], name: "index_billing_payments_on_user_id"
+  end
+
+  create_table "billit_documents", force: :cascade do |t|
+    t.bigint "billing_payment_id", null: false
+    t.string "kind", null: false
+    t.string "status", default: "pending", null: false
+    t.string "idempotency_key", null: false
+    t.integer "amount_cents", null: false
+    t.integer "tax_cents", default: 0, null: false
+    t.bigint "billit_order_id"
+    t.string "order_number"
+    t.string "transport"
+    t.string "customer_vat_number"
+    t.text "last_error"
+    t.integer "attempts", default: 0, null: false
+    t.datetime "sent_at"
+    t.datetime "delivered_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["billing_payment_id"], name: "index_billit_documents_on_billing_payment_id"
+    t.index ["idempotency_key"], name: "index_billit_documents_on_idempotency_key", unique: true
+    t.index ["status"], name: "index_billit_documents_on_status"
   end
 
   create_table "bioindicator_observations", force: :cascade do |t|
@@ -1538,6 +1560,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_191000) do
   add_foreign_key "billing_payments", "plan_purchases"
   add_foreign_key "billing_payments", "plan_subscriptions"
   add_foreign_key "billing_payments", "users"
+  add_foreign_key "billit_documents", "billing_payments"
   add_foreign_key "bioindicator_observations", "map_photos", on_delete: :nullify
   add_foreign_key "bioindicator_observations", "maps"
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify

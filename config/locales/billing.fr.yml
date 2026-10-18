@@ -132,6 +132,13 @@ fr:
       hint: "Par exemple BE 0123.456.789. Pour une entreprise belge, le numéro BCE suffit."
       invalid: "Ce numéro de TVA n'est pas reconnu. Vérifie-le : en Belgique, c'est le numéro BCE à dix chiffres, comme 0123.456.789."
       saved: "Ton numéro de TVA est enregistré. Il figurera sur tes prochaines factures."
+    # Lines of the legal invoice made in Billit (Belgian businesses, sent over Peppol).
+    billit:
+      line: "Semisto Terranova, formule %{plan}"
+      drone_line: "Semisto Terranova, %{plan}"
+      period: "Du %{from} au %{to}"
+      paid: "Payée en ligne le %{date}. Référence du paiement : %{reference}."
+      refund: "Remboursement du %{date} sur la facture %{invoice}."
     storage:
       full: "Il n'y a plus de place pour ce fichier : les cartes de cette formule ont droit à %{limit}. Archive ou supprime des fichiers, ou passe à une formule plus grande."
       used: "Stockage : %{used} sur %{limit}"

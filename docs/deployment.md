@@ -62,6 +62,9 @@ On developer.apple.com (Certificates, Identifiers & Profiles): enable "Sign in w
 | `STRIPE_COUPON_MEMBER` | Coupon applied automatically to Semisto members in good standing: €20 off, once, restricted to the Home product. |
 | `STRIPE_COUPON_LAUNCH` | Coupon applied automatically to yearly Pro and Team subscriptions taken before 31 December 2026: 10 % off, once (one more free month on the first year). |
 | `SEMISTO_MEMBERSHIP_API_TOKEN` | Token of Semisto's internal app (« Mon compte › Jetons API ») with only the `asbl:standing` scope: asks whether an e-mail is a member in good standing (`POST /asbl/standing`). Without it, nobody gets the member price. Uses `TERRANOVA_API_URL`. |
+| `BILLIT_API_KEY` | Billit API key (MyBillit › « Mon profil » › API). With `BILLIT_PARTY_ID`, a payment by a Belgian business (Belgian VAT number on the Stripe invoice) gets its legal invoice in Billit, sent over Peppol, or by e-mail when the customer is not on Peppol; a refund gets a credit note. Without them, Stripe's invoice stays the only one. |
+| `BILLIT_PARTY_ID` | Semisto's company in Billit: the number after `/Manage/` in MyBillit's « Mon entreprise » address. Differs between the sandbox and production. |
+| `BILLIT_API_URL` | `https://api.billit.be` in production; defaults to the sandbox (`https://api.sandbox.billit.be`). Live Stripe payments only go to production, test payments only to the sandbox. |
 | `STRIPE_PORTAL_CONFIGURATION` | Optional: customer portal configuration. |
 | `BILLING_DISABLED` | Optional: `true` turns billing off even with a key. |
 
