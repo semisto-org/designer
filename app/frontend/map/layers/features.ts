@@ -76,17 +76,18 @@ export function zoneLabelLayout(placement: 'point' | 'line-center') {
     'text-field': ['format',
       name, { 'font-scale': 1, 'text-font': ['literal', ['Noto Sans Bold']] },
       ['case', ['all', ['!=', name, ''], ['!=', measured, '']], '\n', ''], {},
-      measured, { 'font-scale': 0.85, 'text-color': ZONE_MEASURE_COLOR },
+      measured, { 'font-scale': 0.9, 'text-color': ZONE_MEASURE_COLOR },
     ],
-    'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 17, 14, 20, 17],
+    // Small and steady, like a pencilled note: the label must not hide the zone it names.
+    'text-size': ['interpolate', ['linear'], ['zoom'], 15, 11, 18, 12, 21, 13],
     'text-font': ['Noto Sans Regular'],
-    'text-max-width': 12,
-    'text-line-height': 1.25,
+    'text-max-width': 10,
+    'text-line-height': 1.15,
     'symbol-placement': placement,
     'text-padding': 4,
     'icon-image': PAPER_LABEL_IMAGE,
     'icon-text-fit': 'both',
-    'icon-text-fit-padding': [3, 7, 3, 7],
+    'icon-text-fit-padding': [1, 4, 1, 4],
   }
 }
 
