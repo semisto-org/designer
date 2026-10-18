@@ -188,6 +188,17 @@ export async function flush(initial: OutboxState, transport: Transport, onStep?:
   return { state, sent, stopped: 'done', sentFiles }
 }
 
+/**
+ * How long to wait before sending again after a round stopped on the network
+ * or the server: 30 s, then doubling, at most 10 minutes. A round that stops
+ * is not retried by itself otherwise, and the phone can stay « online » the
+ * whole time (weak signal on the way home, then wifi), so nothing else would
+ * wake the outbox up.
+ */
+export function retryDelayMs(failures: number): number {
+  return Math.min(30_000 * 2 ** Math.max(0, failures - 1), 10 * 60_000)
+}
+
 /** The photos an op keeps on the phone until it is sent. */
 export function filesOf(op: Op): string[] {
   if (op.type === 'uploadPhoto') return [op.file]

@@ -3,14 +3,17 @@ import * as Crypto from 'expo-crypto'
 import { api, form } from './api'
 import { storageReadingBody } from './fruitStore'
 import { harvestBody } from './harvests'
-import { emptyOutbox, filesOf, flush, nextTempId, retry, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
+import { emptyOutbox, filesOf, flush, nextTempId, retry, retryDelayMs, type FlushResult, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
 import { isVideo, mediaFile } from './media'
-import { deletePhoto, readJson, writeJson } from './storage'
+import { deletePhoto, keptFile, readJson, writeJson } from './storage'
 import type { MapFeature } from './types'
 
 const FILE = 'outbox.json'
 let state: OutboxState = readJson<OutboxState>(FILE) ?? emptyOutbox()
 let flushing: Promise<number> | null = null
+// A round stopped by the network or the server is tried again on a timer.
+let retryTimer: ReturnType<typeof setTimeout> | null = null
+let failures = 0
 const listeners = new Set<(state: OutboxState) => void>()
 
 function commit(next: OutboxState) {
@@ -60,7 +63,9 @@ export const outbox = {
   flush(): Promise<number> {
     flushing ??= (async () => {
       try {
+        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null }
         let sent = 0
+        let stopped: FlushResult['stopped'] = 'done'
         // Ops added while sending go in the next round.
         for (let round = 0; round < 5 && outbox.pending() > 0; round++) {
           const snapshot = state
@@ -78,7 +83,15 @@ export const outbox = {
           const result = await flush(snapshot, transport, save)
           save(result.state, [])
           sent += result.sent
-          if (result.stopped !== 'done') break
+          stopped = result.stopped
+          if (stopped !== 'done') break
+        }
+        // An expired session waits for the next sign-in (onAuthChange).
+        if ((stopped === 'offline' || stopped === 'server') && outbox.pending() > 0) {
+          failures += 1
+          retryTimer = setTimeout(() => { retryTimer = null; void outbox.flush() }, retryDelayMs(failures))
+        } else {
+          failures = 0
         }
         return sent
       } finally {
@@ -91,7 +104,14 @@ export const outbox = {
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 
-const photoFile = (uri: string) => ({ uri, name: 'photo.jpg', type: 'image/jpeg' })
+// A photo the phone no longer has is set aside with its reason, instead of
+// failing like a network error and holding back every change after it.
+const present = (uri: string) => {
+  const kept = keptFile(uri)
+  if (!kept) throw { status: 410, message: 'file_missing' }
+  return kept
+}
+const photoFile = (uri: string) => ({ uri: present(uri), name: 'photo.jpg', type: 'image/jpeg' })
 // A video can weigh hundreds of megabytes on a field connection.
 const VIDEO_TIMEOUT_MS = 30 * 60_000
 
@@ -103,7 +123,7 @@ const transport: Transport = {
   async uploadPhoto(mapId, op, featureId, key) {
     const located = op.lng !== null && op.lat !== null
     await api('POST', `/maps/${mapId}/photos`, form('photo', {
-      image: mediaFile(op.file), taken_at: op.takenAt, caption: op.caption, source: 'phone',
+      image: mediaFile(present(op.file)), taken_at: op.takenAt, caption: op.caption, source: 'phone',
       lng: op.lng, lat: op.lat, location_source: located ? 'device' : null, map_feature_id: featureId,
       bioindicator_status: op.bioindicatorStatus ?? null,
     }), { ...once(key), ...(isVideo(op.file) ? { timeoutMs: VIDEO_TIMEOUT_MS } : {}) })

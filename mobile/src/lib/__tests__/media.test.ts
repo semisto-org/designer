@@ -1,4 +1,4 @@
-import { isVideo, mediaFile, videoExtension } from '../media'
+import { isVideo, mediaFile, relocated, videoExtension } from '../media'
 
 describe('media files', () => {
   it('tells videos from photos by their name', () => {
@@ -17,5 +17,17 @@ describe('media files', () => {
     expect(mediaFile('file:///p/1.mov')).toEqual({ uri: 'file:///p/1.mov', name: 'video.mov', type: 'video/quicktime' })
     expect(mediaFile('file:///p/1.webm').type).toBe('video/webm')
     expect(mediaFile('file:///p/1.jpg')).toEqual({ uri: 'file:///p/1.jpg', name: 'photo.jpg', type: 'image/jpeg' })
+  })
+})
+
+describe('relocated', () => {
+  it('finds a kept photo in the photos folder of the app as it is today', () => {
+    const before = 'file:///var/mobile/Containers/Data/Application/OLD-UUID/Documents/designer/photos/1760-ab12cd.jpg'
+    expect(relocated(before, 'file:///var/mobile/Containers/Data/Application/NEW-UUID/Documents/designer/photos/'))
+      .toBe('file:///var/mobile/Containers/Data/Application/NEW-UUID/Documents/designer/photos/1760-ab12cd.jpg')
+  })
+
+  it('leaves any other address alone', () => {
+    expect(relocated('file:///tmp/camera/x.jpg', 'file:///docs/designer/photos')).toBe('file:///tmp/camera/x.jpg')
   })
 })

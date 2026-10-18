@@ -16,6 +16,19 @@ export function videoExtension(uri: string): string {
   return ext === 'm4v' ? 'mp4' : ext
 }
 
+/**
+ * Where a kept photo is now. iOS moves the app's folder to a new path when
+ * the app is updated (TestFlight, store), so a full file:// address saved
+ * by an earlier version points nowhere: the file is still there, under the
+ * same name, in today's photos folder.
+ */
+export function relocated(uri: string, photosDir: string): string {
+  const marker = '/designer/photos/'
+  const at = uri.lastIndexOf(marker)
+  if (at < 0) return uri
+  return `${photosDir.replace(/\/+$/, '')}/${uri.slice(at + marker.length)}`
+}
+
 /** The multipart file for an upload: a JPEG photo, or a video with its own type. */
 export function mediaFile(uri: string): UploadFile {
   if (!isVideo(uri)) return { uri, name: 'photo.jpg', type: 'image/jpeg' }

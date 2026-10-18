@@ -319,6 +319,7 @@ fr:
       waiting: "En attente d'envoi"
       refused: "Refusé par le serveur : %{reason}"
       parent_failed: "Pas envoyé : l'élément auquel il se rapporte a été refusé."
+      file_missing: "Pas envoyé : le téléphone n'a plus ce fichier."
       retry: "Réessayer"
       discard: "Abandonner"
       discard_title: "Abandonner cette modification ?"
