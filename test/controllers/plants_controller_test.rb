@@ -52,6 +52,10 @@ class PlantsControllerTest < ActionDispatch::IntegrationTest
 
     get plants_path(native: "1", country: "BE"), as: :json
     assert_equal 3, response.parsed_body["total"]
+
+    get plants_path(q: "pommier reinette-grise"), as: :json
+    apple = response.parsed_body["results"].sole
+    assert_equal [ "Reinette grise" ], apple["namedVarieties"].map { |v| v["name"] }, "the cultivars the query names come along"
   end
 
   test "show renders a sheet with provenance and observation stats" do

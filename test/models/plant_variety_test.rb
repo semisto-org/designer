@@ -29,4 +29,21 @@ class PlantVarietyTest < ActiveSupport::TestCase
     variety.eating_until_month = nil
     assert_nil variety.keeping
   end
+
+  test "find_or_create_named! reuses a cultivar whatever its accents, case, hyphens or quotes" do
+    apple = plant_species(:apple)
+    assert_equal plant_varieties(:reinette), PlantVariety.find_or_create_named!(apple, "'reinette-GRISE'")
+    assert_difference -> { apple.varieties.count }, 1 do
+      created = PlantVariety.find_or_create_named!(apple, "  Belle fleur double ")
+      assert_equal "Belle fleur double", created.name
+      assert_equal created, PlantVariety.find_or_create_named!(apple, "Belle-Fleur double")
+    end
+  end
+
+  test "named_in: the cultivars a search says more about than the species" do
+    apple = plant_species(:apple)
+    assert_equal [ plant_varieties(:reinette) ], PlantVariety.named_in([ apple ], "pommier grise")[apple.id]
+    assert_equal [ plant_varieties(:boskoop) ], PlantVariety.named_in([ apple ], "belle")[apple.id]
+    assert_nil PlantVariety.named_in([ apple ], "pommier")[apple.id], "the species alone names no cultivar"
+  end
 end

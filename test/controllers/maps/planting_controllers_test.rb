@@ -29,6 +29,25 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     assert_empty response.parsed_body["planting"]["palette"]
   end
 
+  test "a cultivar joins the palette by name: the catalogue's, or a new one" do
+    sign_in_as users(:michael)
+    apple = plant_species(:apple)
+    post map_palette_items_path(@map), params: { palette_item: { species_id: apple.id, variety_name: "reinette grise" } }, as: :json
+    assert_response :created
+    assert_equal plant_varieties(:reinette).id, response.parsed_body["item"]["varietyId"]
+
+    post map_palette_items_path(@map), params: { palette_item: { species_id: apple.id, variety_name: "Reinette-grise" } }, as: :json
+    assert_response :success, "naming it again answers the item already there"
+    assert_equal 1, @map.palette_items.count
+
+    assert_difference -> { apple.varieties.count }, 1 do
+      post map_palette_items_path(@map), params: { palette_item: { species_id: apple.id, variety_name: "Belle fleur double" } }, as: :json
+    end
+    assert_response :created
+    assert_equal "Pommier 'Belle fleur double'", response.parsed_body["item"]["name"]
+    assert_equal 2, @map.palette_items.count
+  end
+
   test "viewer reads the planting but cannot change it" do
     sign_in_as users(:alice)
     get map_planting_path(@map), as: :json

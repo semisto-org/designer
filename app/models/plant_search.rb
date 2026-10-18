@@ -76,8 +76,13 @@ class PlantSearch
   def as_json(*)
     species = results.to_a
     counts = PlantObservation.in_ground_counts(species.map(&:id))
+    # The cultivars the query names (« belle fleur double »), so the palette
+    # can add the cultivar itself rather than only its species.
+    named = query.present? ? PlantVariety.named_in(species, query) : {}
     {
-      results: species.map { |s| s.summary_json.merge(inGround: counts.fetch(s.id, 0), photo: s.photo_json) },
+      results: species.map do |s|
+        s.summary_json.merge(inGround: counts.fetch(s.id, 0), photo: s.photo_json, namedVarieties: named.fetch(s.id, []).map(&:summary_json))
+      end,
       total:, page:, pages:, perPage: PER_PAGE, filters:
     }
   end

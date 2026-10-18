@@ -1,4 +1,4 @@
-import { Compass, ExternalLink, MapPin, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { Check, Compass, ExternalLink, MapPin, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
@@ -13,7 +13,7 @@ import { setPlacing, setPlanting, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS, StrataDot } from '@/map/plants/strata'
 import {
   STRATA, type PaletteItem, type PaletteRole, type PlantSearchResult, type PlantingState,
-  type SpeciesSummary, type Strata,
+  type SpeciesSheet, type SpeciesSummary, type Strata, type VarietySummary,
 } from '@/types/plants'
 
 const ROLES: PaletteRole[] = ['food', 'support', 'pioneer', 'hedge', 'ornamental']
@@ -36,6 +36,7 @@ export default function PalettePanel() {
   const q = query.trim()
 
   const paletteSpecies = useMemo(() => new Set(data?.palette.filter((i) => !i.varietyId).map((i) => i.speciesId)), [data])
+  const paletteVarieties = useMemo(() => new Set(data?.palette.flatMap((i) => (i.varietyId ? [i.varietyId] : []))), [data])
   const matches = useMemo(() => (data?.palette ?? []).filter((i) => matchesPalette(i, q)), [data, q])
   // The catalogue opens by itself when the palette has nothing by that name;
   // otherwise on demand (another variety of an apple already in the palette).
@@ -62,16 +63,20 @@ export default function PalettePanel() {
     setCatalogueAsked(false)
   }
 
-  async function add(species: SpeciesSummary) {
+  // A species, or one of its cultivars by name: the catalogue's, or a new one
+  // the server adds to it (a cultivar seen in the orchard, missing so far).
+  async function add(species: SpeciesSummary, varietyName?: string) {
     try {
       const r = await api<{ item: PaletteItem; planting: PlantingState }>(`/maps/${mapId}/palette_items`, {
-        method: 'POST', body: { palette_item: { species_id: species.id } },
+        method: 'POST', body: { palette_item: { species_id: species.id, ...(varietyName ? { variety_name: varietyName } : {}) } },
       })
       setPlanting(mapId, r.planting)
       setCatalogueAsked(true)
-      editor.notify(t('palette.added', { name: species.commonName ?? species.latinName }))
+      editor.notify(t('palette.added', { name: r.item.name }))
+      return true
     } catch (e) {
       editor.notify(e instanceof ApiError ? e.message : t('palette.load_error'), 'error')
+      return false
     }
   }
 
@@ -200,8 +205,8 @@ export default function PalettePanel() {
           {zone && <p className="text-sm text-loam-500">{t('palette.hardiness_hint', { zone })}</p>}
           {results && (
             results.length === 0
-              ? <p className="text-sm text-loam-500">{t('palette.results_empty')}</p>
-              : <SpeciesList items={results} zone={zone} inPalette={paletteSpecies} onAdd={add} />
+              ? <p className="text-sm text-loam-500">{t('palette.results_empty')} {t('palette.variety_hint')}</p>
+              : <SpeciesList items={results} zone={zone} inPalette={paletteSpecies} varietiesInPalette={paletteVarieties} onAdd={add} />
           )}
           {results && <ProposeSpecies key={q} query={query} inPalette={paletteSpecies} onAdd={add} onDone={() => search('')} />}
         </section>
@@ -218,39 +223,135 @@ export default function PalettePanel() {
   )
 }
 
-function SpeciesList({ items, zone, inPalette, onAdd }: {
-  items: SpeciesSummary[]; zone: number | null; inPalette: Set<number>; onAdd: (s: SpeciesSummary) => void
+type AddToPalette = (species: SpeciesSummary, varietyName?: string) => Promise<boolean>
+
+function SpeciesList({ items, zone, inPalette, varietiesInPalette, onAdd }: {
+  items: SpeciesSummary[]; zone: number | null; inPalette: Set<number>; varietiesInPalette: Set<number>; onAdd: AddToPalette
 }) {
+  const [varietyOf, setVarietyOf] = useState<number | null>(null)
   return (
-    <ul className="max-h-64 divide-y divide-loam-100 overflow-y-auto rounded-lg ring-1 ring-loam-200">
+    <ul className="max-h-96 divide-y divide-loam-100 overflow-y-auto rounded-lg ring-1 ring-loam-200">
       {items.map((s) => (
-        <li key={s.id} className="flex items-center gap-2 px-2 py-1.5">
-          <StrataDot strata={s.strata} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-loam-800">
-              {s.commonName ?? s.latinName}
-              {s.reviewStatus === 'proposed' && (
-                <span className="ml-1.5 rounded-full bg-humus-100 px-1.5 py-0.5 text-sm text-humus-800" title={t('plants.proposal.badge_title')}>
-                  {t('plants.proposal.badge')}
-                </span>
-              )}
-            </p>
-            <p className="truncate text-sm text-loam-500"><i>{s.latinName}</i></p>
-            <HardinessNote species={s} zone={zone} />
+        <li key={s.id} className="px-2 py-1.5">
+          <div className="flex items-center gap-2">
+            <StrataDot strata={s.strata} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-loam-800">
+                {s.commonName ?? s.latinName}
+                {s.reviewStatus === 'proposed' && (
+                  <span className="ml-1.5 rounded-full bg-humus-100 px-1.5 py-0.5 text-sm text-humus-800" title={t('plants.proposal.badge_title')}>
+                    {t('plants.proposal.badge')}
+                  </span>
+                )}
+              </p>
+              <p className="truncate text-sm text-loam-500"><i>{s.latinName}</i></p>
+              <HardinessNote species={s} zone={zone} />
+            </div>
+            <a href={`/plants/${s.slug}`} target="_blank" rel="noreferrer" className="rounded p-1 text-loam-400 hover:bg-loam-100" title={t('palette.open_sheet')} aria-label={t('palette.open_sheet')}>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+            {inPalette.has(s.id) ? (
+              <span className="text-sm text-leaf-700">{t('palette.in_palette')}</span>
+            ) : (
+              <button type="button" onClick={() => void onAdd(s)} className="rounded-md bg-prune-50 p-1 text-prune-700 hover:bg-prune-100" title={t('palette.add')} aria-label={t('palette.add')}>
+                <Plus className="h-4 w-4" />
+              </button>
+            )}
           </div>
-          <a href={`/plants/${s.slug}`} target="_blank" rel="noreferrer" className="rounded p-1 text-loam-400 hover:bg-loam-100" title={t('palette.open_sheet')} aria-label={t('palette.open_sheet')}>
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-          {inPalette.has(s.id) ? (
-            <span className="text-sm text-leaf-700">{t('palette.in_palette')}</span>
+          {/* The cultivars the search named, each one click away. */}
+          {s.namedVarieties && s.namedVarieties.length > 0 && (
+            <ul className="mt-1 flex flex-wrap gap-1.5 pl-4">
+              {s.namedVarieties.map((v) => (
+                <li key={v.id}>
+                  {varietiesInPalette.has(v.id) ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-leaf-50 px-2 py-0.5 text-sm text-leaf-800">
+                      <Check className="h-3.5 w-3.5" aria-hidden />'{v.name}'
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void onAdd(s, v.name)}
+                      title={t('palette.variety.add_named', { name: `'${v.name}'` })}
+                      className="inline-flex items-center gap-1 rounded-full bg-prune-50 px-2 py-0.5 text-sm text-prune-800 hover:bg-prune-100"
+                    >
+                      <Plus className="h-3.5 w-3.5" aria-hidden />'{v.name}'
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {varietyOf === s.id ? (
+            <VarietyForm species={s} onAdd={onAdd} onDone={() => setVarietyOf(null)} />
           ) : (
-            <button type="button" onClick={() => onAdd(s)} className="rounded-md bg-prune-50 p-1 text-prune-700 hover:bg-prune-100" title={t('palette.add')} aria-label={t('palette.add')}>
-              <Plus className="h-4 w-4" />
+            <button
+              type="button"
+              onClick={() => setVarietyOf(s.id)}
+              title={t('palette.variety.open_title', { name: s.commonName ?? s.latinName })}
+              className="mt-1 ml-4 inline-flex items-center gap-1 text-sm font-medium text-prune-700 underline-offset-2 hover:underline"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden />{t('palette.variety.open')}
             </button>
           )}
         </li>
       ))}
     </ul>
+  )
+}
+
+/**
+ * A cultivar of a species for the palette: pick one the catalogue knows,
+ * or write the name of the one growing in the orchard, which joins the
+ * catalogue with empty values.
+ */
+function VarietyForm({ species, onAdd, onDone }: { species: SpeciesSummary; onAdd: AddToPalette; onDone: () => void }) {
+  const [known, setKnown] = useState<VarietySummary[] | null>(null)
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const listId = `palette-varieties-${species.id}`
+  const speciesName = species.commonName ?? species.latinName
+
+  useEffect(() => {
+    const controller = new AbortController()
+    api<{ species: SpeciesSheet }>(`/plants/${species.slug}`, { signal: controller.signal })
+      .then((r) => setKnown(r.species.varieties))
+      .catch(() => setKnown([]))
+    return () => controller.abort()
+  }, [species.slug])
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!name.trim() || busy) return
+    setBusy(true)
+    const added = await onAdd(species, name.trim())
+    setBusy(false)
+    if (added) onDone()
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-2 space-y-1.5 rounded-lg bg-loam-50 p-2">
+      <label htmlFor={`${listId}-input`} className="block text-sm font-medium text-loam-700">{t('palette.variety.label', { name: speciesName })}</label>
+      <Input
+        id={`${listId}-input`}
+        list={listId}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={t('palette.variety.placeholder')}
+        autoFocus
+      />
+      <datalist id={listId}>
+        {known?.map((v) => <option key={v.id} value={v.name} />)}
+      </datalist>
+      {known && (
+        <p className="text-sm text-loam-500">
+          {known.length > 0 ? t('palette.variety.known', { count: known.length }) : t('palette.variety.none')}
+        </p>
+      )}
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="ghost" size="sm" onClick={onDone}>{t('common.cancel')}</Button>
+        <Button type="submit" size="sm" disabled={!name.trim() || busy}>{t('palette.variety.add')}</Button>
+      </div>
+    </form>
   )
 }
 

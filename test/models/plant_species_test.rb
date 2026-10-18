@@ -22,6 +22,9 @@ class PlantSpeciesTest < ActiveSupport::TestCase
     assert_equal [ plant_species(:apple) ], PlantSpecies.matching("pommier").to_a
     assert_equal [ plant_species(:apple) ], PlantSpecies.matching("reinette").to_a, "cultivar names match"
     assert_equal [ plant_species(:comfrey) ], PlantSpecies.matching("CONSOUDE").to_a
+    assert_equal [ plant_species(:apple) ], PlantSpecies.matching("reinette-grise").to_a, "hyphens split words"
+    assert_equal [ plant_species(:apple) ], PlantSpecies.matching("pommier grise reinette").to_a, "words across species and cultivar, any order"
+    assert_empty PlantSpecies.matching("pommier consoude").to_a, "every word must match"
   end
 
   test "default strata, predicates and crown" do
