@@ -19,8 +19,16 @@ module Admin
         createdAt: @user.created_at.iso8601, lastSignedInAt: @user.last_signed_in_at&.iso8601,
         mapsCount: @maps_count || Map.active.where(owner_id: @user.id).count,
         plan: @user.current_plan_key,
-        professional: @user.professional?
+        professional: @user.professional?,
+        gift:
       }
     end
+
+    private
+      # The running plan Semisto gave (no invoice behind it), if any.
+      def gift
+        grant = @user.plan_grants.active_at(Time.current).where(invoice_request_id: nil).order(ends_at: :desc).first
+        grant && { id: grant.id, planKey: grant.plan_key, endsAt: grant.ends_at.iso8601 }
+      end
   end
 end

@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { AdminNav } from '@/components/admin/AdminNav'
+import { PlanGiftAll } from '@/components/admin/PlanGift'
 import { Avatar, PlanBadge, UserActions } from '@/components/admin/UserActions'
 import { Button } from '@/components/ui/Button'
 import { Card, EmptyState } from '@/components/ui/Card'
@@ -28,6 +29,7 @@ export default function AdminUsers({ users, filters, pagination }: Props) {
       <AdminNav />
       <h1 className="text-2xl">{t('admin.users.title')}</h1>
       <p className="mt-1 text-loam-500">{t('admin.users.intro')}</p>
+      <PlanGiftAll />
 
       <form
         className="mt-6 flex flex-wrap items-center gap-2"

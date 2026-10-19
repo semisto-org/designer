@@ -292,7 +292,7 @@ function StatusCard({ billing }: { billing: BillingData }) {
   )
 }
 
-/** Plans paid on invoice: the running one (until when) and the next one. */
+/** Plans paid on invoice or given by Semisto: the running one (until when) and the next one. */
 function GrantLines({ grants }: { grants: GrantData[] }) {
   return (
     <>
@@ -306,7 +306,7 @@ function GrantLines({ grants }: { grants: GrantData[] }) {
             <p className="font-medium text-loam-800">
               {t(grant.onInvoice ? 'invoicing.billing.grant_until' : 'invoicing.billing.grant_until_manual', { plan, date: formatDate(grant.endsAt) })}
             </p>
-            <p>{t('invoicing.billing.grant_days', { count: grant.daysLeft })} {t('invoicing.billing.grant_renew_note')}</p>
+            <p>{t('invoicing.billing.grant_days', { count: grant.daysLeft })} {t(grant.onInvoice ? 'invoicing.billing.grant_renew_note' : 'invoicing.billing.grant_gift_note')}</p>
           </div>
         )
       })}

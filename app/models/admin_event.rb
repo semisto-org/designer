@@ -4,7 +4,7 @@
 # the e-mail addresses stay in `details`).
 class AdminEvent < ApplicationRecord
   ACTIONS = %w[impersonation_started impersonation_ended admin_granted admin_revoked reviewer_granted reviewer_revoked
-               promotion_code_created promotion_code_deactivated].freeze
+               promotion_code_created promotion_code_deactivated plan_gifted plans_gifted plan_gift_revoked].freeze
 
   belongs_to :admin, class_name: "User", optional: true
   belongs_to :target_user, class_name: "User", optional: true
@@ -26,7 +26,7 @@ class AdminEvent < ApplicationRecord
       id:, action:, createdAt: created_at.iso8601, ipAddress: ip_address,
       admin: admin ? { id: admin.id, name: admin.display_name } : { id: nil, name: details["admin_email"] },
       target: target_user ? { id: target_user.id, name: target_user.display_name } : (details["target_email"] && { id: nil, name: details["target_email"] }) ||
-        (details["code"] && { id: nil, name: details["code"] }),
+        (details["code"] && { id: nil, name: details["code"] }) || (details["label"] && { id: nil, name: details["label"] }),
       reason: details["reason"]
     }
   end

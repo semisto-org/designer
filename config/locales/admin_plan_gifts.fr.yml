@@ -1,0 +1,40 @@
+# « Offrir une formule »: plans Semisto gives away from the accounts list
+# (Admin::PlanGiftsController, Billing::PlanGift). Keys in English, values in
+# French; the backend and the React frontend read the same file.
+fr:
+  admin:
+    plan_gifts:
+      note: "Offerte par Semisto"
+      event_label:
+        one: "%{plan} à %{count} compte"
+        other: "%{plan} à %{count} comptes"
+      give: "Offrir une formule"
+      plan: "Formule"
+      until: "Jusqu'au"
+      submit: "Offrir"
+      cancel: "Annuler"
+      gifted_until: "offerte jusqu'au %{date}"
+      revoke: "Reprendre"
+      confirm_revoke: "Reprendre la formule offerte à %{name} ? Ses cartes au-delà de sa formule passeront en lecture seule, rien n'est effacé."
+      bulk:
+        title: "Offrir une formule aux comptes existants"
+        body: "Chaque compte créé avant la date choisie et resté en formule gratuite reçoit la formule offerte, jusqu'à la date de fin. Les comptes qui paient déjà ne changent pas. On peut le refaire sans risque : un compte qui l'a déjà ne la reçoit pas deux fois."
+        created_before: "Comptes créés avant le"
+        submit: "Offrir à ces comptes"
+        confirm: "Offrir la formule %{plan} jusqu'au %{date} à tous les comptes gratuits créés avant le %{before} ?"
+      flash:
+        given: "Formule %{plan} offerte à %{name} jusqu'au %{date}."
+        already: "%{name} a déjà la formule %{plan} jusqu'au %{date} ou plus tard."
+        given_all:
+          zero: "Aucun compte à qui offrir la formule %{plan} : tous l'ont déjà ou paient."
+          one: "Formule %{plan} offerte à 1 compte jusqu'au %{date}."
+          other: "Formule %{plan} offerte à %{count} comptes jusqu'au %{date}."
+        revoked: "La formule offerte à %{name} est reprise."
+      errors:
+        invalid: "Choisis une formule et une date de fin à venir."
+    dashboard:
+      events:
+        actions:
+          plan_gifted: "a offert une formule à"
+          plans_gifted: "a offert la formule"
+          plan_gift_revoked: "a repris la formule offerte à"

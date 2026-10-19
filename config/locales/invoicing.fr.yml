@@ -137,6 +137,7 @@ fr:
         one: "Il reste %{count} jour."
         other: "Il reste %{count} jours."
       grant_renew_note: "Rien n'est prélevé automatiquement : pour une nouvelle année, demande une nouvelle facture."
+      grant_gift_note: "Rien n'est prélevé : à la fin, tu choisis librement une formule, ou tu restes en gratuit."
     pricing:
       title: "Payer sur facture"
       body: "Commune, école, association ou entreprise : reçois une facture payable par virement."
@@ -250,3 +251,16 @@ fr:
           one: "%{count} de tes cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Demande une nouvelle facture pour la modifier à nouveau."
           other: "%{count} de tes cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Demande une nouvelle facture pour les modifier à nouveau."
         free_ok: "Ta première carte reste entièrement modifiable, comme avant."
+      # A plan Semisto gave (Billing::PlanGift): no invoice to ask for again.
+      gift:
+        cta: "Voir les formules"
+        renew: "Pour continuer après cette date, tu peux choisir une formule sur la page des tarifs, quand tu veux."
+        d30:
+          body: "Ta formule %{plan}, offerte par Semisto, est valable jusqu'au %{date}, soit dans un mois."
+        d7:
+          body: "Ta formule %{plan}, offerte par Semisto, se termine le %{date}, dans une semaine."
+        expired:
+          body: "Ta formule %{plan}, offerte par Semisto, a pris fin le %{date}."
+          read_only:
+            one: "%{count} de tes cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Choisis une formule pour la modifier à nouveau."
+            other: "%{count} de tes cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Choisis une formule pour les modifier à nouveau."
