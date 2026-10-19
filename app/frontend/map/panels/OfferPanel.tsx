@@ -36,16 +36,18 @@ export default function OfferPanel() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-loam-600">{t('offers.panel.intro')}</p>
-      {unavailable && <p className="text-xs text-loam-500">{t('offers.panel.unavailable')}</p>}
-      {data && !data.offer.persisted && <p className="text-xs text-loam-500">{t('offers.panel.not_started')}</p>}
-      {data?.offer.persisted && (
+      {unavailable && <p className="text-sm text-loam-500">{t('offers.panel.unavailable')}</p>}
+      {data && !data.offer.persisted && <p className="text-sm text-loam-500">{t('offers.panel.not_started')}</p>}
+      {/* Even before the first save, the total the map already gives is what makes the offer worth opening. */}
+      {data && (
         <dl className="grid grid-cols-2 gap-2 text-sm">
           <div className="rounded-lg bg-loam-50 px-2.5 py-2">
-            <dt className="text-[11px] leading-tight text-loam-500">{t('offers.panel.total')}</dt>
+            <dt className="text-sm leading-tight text-loam-500">{t('offers.panel.total')}</dt>
             <dd className="font-medium text-loam-900">{euros(data.totals.total_tvac)}</dd>
+            {!data.offer.persisted && <dd className="text-sm leading-tight text-loam-500">{t('offers.panel.estimate')}</dd>}
           </div>
           <div className="rounded-lg bg-loam-50 px-2.5 py-2">
-            <dt className="text-[11px] leading-tight text-loam-500">{t('offers.panel.latest')}</dt>
+            <dt className="text-sm leading-tight text-loam-500">{t('offers.panel.latest')}</dt>
             <dd className="font-medium text-loam-900">{latest ? `${latest.label} · ${t(`offers.statuses.${latest.status}`)}` : '—'}</dd>
           </div>
         </dl>

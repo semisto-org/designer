@@ -60,7 +60,7 @@ class RequestFormsController < ApplicationController
     end
 
     def form_json(form)
-      { id: form.id, slug: form.slug, active: form.active, intro: form.intro, url: public_request_form_url(form.slug) }
+      { id: form.id, slug: form.slug, active: form.active, intro: form.intro, url: public_request_form_url(form.slug), displayName: form.display_name }
     end
 
     def request_json(request)
