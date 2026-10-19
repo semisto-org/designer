@@ -291,6 +291,31 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal "get_storm_observations", AiAction.last.tool
   end
 
+  test "get_season_signs gives the season signs, their days per year and the seasons not yet observed" do
+    travel_to Time.utc(2026, 10, 19, 12) do
+      centre = @map.boundary.centroid
+      at = { "type" => "Point", "coordinates" => [ centre.x, centre.y ] }
+      frost = @map.features.create!(layer: "notes", kind: "season_sign", name: "Premier gel", notes: "Givre sur le bas de la prairie",
+        properties: { "sign" => "first_frost", "observed_at" => "2026-10-12T07:00:00Z" }, geometry: at)
+      @map.features.create!(layer: "notes", kind: "season_sign", properties: { "sign" => "first_frost", "observed_at" => "2025-10-10T07:00:00Z" }, geometry: at)
+      @map.features.create!(layer: "notes", kind: "season_sign", properties: { "sign" => "nest", "observed_at" => "2026-04-20T09:00:00Z" }, geometry: at)
+      @map.features.create!(layer: "notes", kind: "note_point", properties: { "visit" => SecureRandom.uuid, "taken_at" => "2026-02-03T10:00:00Z" }, geometry: at)
+
+      data, error = call_tool(@viewer, "get_season_signs", { map_id: @map.id })
+      refute error
+      assert_equal [ frost.id, "first_frost", "2026-10-12T07:00:00Z", "Givre sur le bas de la prairie" ], data["signs"].first.values_at("id", "sign", "observed_at", "notes")
+      frosts = data["by_sign"].find { |line| line["sign"] == "first_frost" }
+      assert_equal [ { "year" => 2025, "first" => "2025-10-10", "last" => "2025-10-10", "count" => 1 }, { "year" => 2026, "first" => "2026-10-12", "last" => "2026-10-12", "count" => 1 } ], frosts["years"]
+      assert_equal({ "winter" => 1, "spring" => 1, "summer" => 0, "autumn" => 1 }, data.dig("year", "seasons"))
+      assert_equal [ "summer" ], data.dig("year", "missing")
+      assert_equal "get_season_signs", AiAction.last.tool
+
+      data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
+      refute error
+      assert_equal [ "summer" ], data.dig("observation_year", "missing")
+    end
+  end
+
   test "plant tools search the catalogue and give a species with its provenance" do
     walnut = PlantSpecies.create!(latin_name: "Juglans regia", plant_type: "tree", height_max_m: 25)
     walnut.replace_common_names!([ "Noyer commun" ])
@@ -360,6 +385,17 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/Structures/i, data)
     assert_equal "error", AiAction.last.status
     refute_equal "internal_error", AiAction.last.error_message
+  end
+
+  test "propose_features drafts a season sign the person told, kept out of the year until accepted" do
+    make_editor(@map, users(:bob))
+    sign = { layer: "notes", kind: "season_sign", name: "Premier gel", rationale: "Michael l'a vu hier matin au bas de la prairie.",
+             properties: { sign: "first_frost", observed_at: "2026-10-18T07:00:00Z" }, geometry: point(lng: 4.905, lat: 50.3405) }
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: [ sign ] })
+    refute error, data
+    feature = MapFeature.find(data["created"].sole["id"])
+    assert_equal [ "draft", "first_frost", Time.utc(2026, 10, 18, 7) ], [ feature.status, feature.properties["sign"], feature.observed_at ]
+    assert_empty @map.features.active.where(kind: "season_sign")
   end
 
   test "propose_features drafts a named zone in its colour" do
