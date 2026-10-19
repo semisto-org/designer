@@ -89,6 +89,8 @@ export type BillingData = {
   ownedMaps: number
   /** Teams whose maps this plan also pays for (« Forfait de l'équipe »). */
   paidTeams: { id: number; name: string }[]
+  /** Once the user pays for a team, their own maps follow the free plan apart. */
+  personalMaps: { used: number; max: number; readOnly: number; storage: StorageUsageData } | null
   maxMaps: number
   readOnlyMaps: number
   drone: { paidAt: string }[]
@@ -130,6 +132,8 @@ export type AccountData = {
   ownedMaps: number
   maxMaps: number
   readOnlyMaps: number
+  /** Own maps on the free plan, apart from the teams the user pays for; null otherwise. */
+  personalMaps: { used: number; max: number } | null
 }
 
 export type HelpArticleSummary = {

@@ -4,7 +4,7 @@ fr:
     none: "Chaque carte de l'équipe suit le forfait de la personne qui l'a créée."
     none_hint: "Un admin peut prendre les cartes de l'équipe sur son forfait : elles ne comptent alors plus dans celui des designers, qui gardent leurs cartes perso à part."
     take: "Payer les cartes de l'équipe avec mon forfait"
-    take_confirm: "Toutes les cartes de l'équipe compteront dans ton forfait. Continuer ?"
+    take_confirm: "Toutes les cartes de l'équipe compteront dans ton forfait, qui ne couvrira plus que les équipes que tu paies : tes cartes perso suivront la formule gratuite (1 carte active, 1 Go). Continuer ?"
     payer: "Les cartes de l'équipe suivent le forfait de %{name} (%{plan})."
     payer_you: "Les cartes de l'équipe suivent ton forfait (%{plan})."
     usage:
@@ -14,8 +14,12 @@ fr:
       one: "%{count} carte de l'équipe, sans limite"
       other: "%{count} cartes de l'équipe, sans limite"
     billing_page:
-      one: "Ce forfait paie aussi les cartes de l'équipe :"
-      other: "Ce forfait paie aussi les cartes des équipes :"
+      one: "Ce forfait paie les cartes de l'équipe :"
+      other: "Ce forfait paie les cartes des équipes :"
+    personal_maps: "Tes cartes perso, hors équipe, suivent la formule gratuite : %{used} sur %{max} carte active."
+    personal_read_only:
+      one: "%{count} de tes cartes perso est en lecture seule. Archive-la ou déplace-la dans l'équipe pour la modifier."
+      other: "%{count} de tes cartes perso sont en lecture seule. Archive-les ou déplace-les dans l'équipe pour les modifier."
     manage: "Gérer mon forfait"
     release: "Ne plus payer pour l'équipe"
     release_confirm: "Chaque carte de l'équipe reviendra au forfait de la personne qui l'a créée. Continuer ?"

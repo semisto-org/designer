@@ -27,7 +27,7 @@ class MapsController < ApplicationController
       end,
       # The map worked on last opens large, with its next step (journey).
       resume: maps.first && { mapId: maps.first.id, next: Journey.new(maps.first).next_action },
-      canCreate: Current.user.entitlements.can_create_map?(Current.user),
+      canCreate: Billing::Scope.own(Current.user).can_create_map?,
       teams: Current.user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } },
       # My archived maps, at the bottom: readable, and brought back when the plan has room.
       archivedMaps: archived_maps_json,
@@ -42,7 +42,7 @@ class MapsController < ApplicationController
   end
 
   def create
-    unless Current.user.entitlements.can_create_map?(Current.user)
+    unless Billing::Scope.own(Current.user).can_create_map?
       return redirect_to maps_path, alert: t("maps.errors.plan_limit")
     end
     map = Current.user.owned_maps.new(map_params)

@@ -282,6 +282,17 @@ function StatusCard({ billing }: { billing: BillingData }) {
                 ))}
               </p>
             )}
+            {billing.personalMaps && (
+              <>
+                <p className="text-loam-500">
+                  {t('team_billing.personal_maps', { used: billing.personalMaps.used, max: billing.personalMaps.max })}
+                  {billing.personalMaps.storage.limitBytes !== null && ` ${t('billing.storage.used', { used: formatBytes(billing.personalMaps.storage.usedBytes), limit: formatBytes(billing.personalMaps.storage.limitBytes) })}`}
+                </p>
+                {billing.personalMaps.readOnly > 0 && (
+                  <p className="font-medium text-humus-700">{t('team_billing.personal_read_only', { count: billing.personalMaps.readOnly })}</p>
+                )}
+              </>
+            )}
           </div>
         </div>
         {billing.canManage && subscription && (subscription.active || subscription.pastDue) && (

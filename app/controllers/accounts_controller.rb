@@ -18,7 +18,10 @@ class AccountsController < ApplicationController
         planEndsAt: plan_ends_at(user, plan)&.iso8601,
         ownedMaps: user.billed_maps.count,
         maxMaps: user.entitlements.max_maps,
-        readOnlyMaps: user.read_only_maps_count
+        readOnlyMaps: user.read_only_maps_count,
+        # Once they pay for a team, the plan covers the team's maps and their
+        # own maps follow the free plan apart (Billing::Scope).
+        personalMaps: (personal_maps(Billing::Scope.own(user)) if user.pays_for_teams?)
       }
     }
   end
@@ -40,6 +43,8 @@ class AccountsController < ApplicationController
   end
 
   private
+    def personal_maps(scope) = { used: scope.maps.count, max: scope.entitlements.max_maps }
+
     def saved_notice
       return t("account.kind.saved") if params[:user].key?(:account_kind)
       return t("billing.vat_number.saved") if params[:user].key?(:vat_number)

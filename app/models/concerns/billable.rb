@@ -39,22 +39,37 @@ module Billable
   end
 
   # The active maps this user's plan pays for: their own maps (outside a team,
-  # or in a team nobody pays for) and every map of the teams they pay for.
-  # With `archived: true`, archived ones too (their files still take room).
+  # or in a team nobody pays for), or, once they pay for a team, the maps of
+  # the teams they pay for only (their own maps then follow the free plan,
+  # Billing::Scope). With `archived: true`, archived ones too (their files
+  # still take room).
   def billed_maps(archived: false)
+    pays_for_teams? ? team_billed_maps(archived:) : own_billed_maps(archived:)
+  end
+
+  # Their own maps outside the teams someone pays for.
+  def own_billed_maps(archived: false)
     maps = archived ? Map.all : Map.active
     unpaid_teams = Organization.where(billing_user_id: nil).select(:id)
-    maps.where(owner_id: id, organization_id: nil)
-      .or(maps.where(owner_id: id, organization_id: unpaid_teams))
-      .or(maps.where(organization_id: Organization.where(billing_user_id: id).select(:id)))
+    maps.where(owner_id: id, organization_id: nil).or(maps.where(owner_id: id, organization_id: unpaid_teams))
   end
+
+  # Every map of the teams they pay for, whoever owns it.
+  def team_billed_maps(archived: false)
+    maps = archived ? Map.all : Map.active
+    maps.where(organization_id: Organization.where(billing_user_id: id).select(:id))
+  end
+
+  def pays_for_teams? = paid_teams.exists?
 
   def archived_billed_maps = billed_maps(archived: true).where.not(archived_at: nil)
 
-  # Billed maps that are read-only because they exceed the plan's limit.
+  # Maps that are read-only because they exceed their plan's limit: the
+  # plan's maps, plus their own maps beyond the free plan when they pay for a team.
   def read_only_maps_count
     return 0 unless Billing.enabled?
-    [ billed_maps.count - entitlements_for_billing.max_maps, 0 ].max
+    count = [ billed_maps.count - entitlements_for_billing.max_maps, 0 ].max
+    pays_for_teams? ? count + Billing::Scope.own(self).read_only_maps_count : count
   end
 
   # The subscription to show on the billing page, even when it ran out.

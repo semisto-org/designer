@@ -31,6 +31,8 @@ class BillingController < ApplicationController
         ownedMaps: user.billed_maps.count,
         # Teams whose maps this plan also pays for (« Forfait de l'équipe »).
         paidTeams: user.paid_teams.order(:name).map { |team| { id: team.id, name: team.name } },
+        # Once they pay for a team, their own maps follow the free plan apart.
+        personalMaps: personal_maps_json(user),
         maxMaps: user.entitlements.max_maps,
         readOnlyMaps: user.read_only_maps_count,
         drone: user.plan_purchases.drone.paid.newest_first.limit(5).map { |p| { paidAt: p.starts_at.iso8601 } },
@@ -47,6 +49,15 @@ class BillingController < ApplicationController
         highlight: Billing::Catalog.find(params[:plan])&.key,
         # Pro and Team are shown yearly unless the visitor came for the monthly price.
         interval: params[:interval] == "month" ? "month" : "year"
+      }
+    end
+
+    def personal_maps_json(user)
+      return nil unless user.pays_for_teams?
+      scope = Billing::Scope.own(user)
+      {
+        used: scope.maps.count, max: scope.entitlements.max_maps,
+        readOnly: scope.read_only_maps_count, storage: scope.storage.as_json
       }
     end
 
