@@ -101,7 +101,7 @@ class AerialViewTest < ActiveSupport::TestCase
 
   test "what the editor receives and the host staff see" do
     view = aerial_view(@map, kind: "xyz", url: XYZ_URL, attribution: "© Semisto 2027", max_zoom: 22)
-    assert_equal({ "id" => view.id, "name" => "Vue drone", "capturedOn" => "2027-05-12", "kind" => "xyz", "url" => XYZ_URL,
+    assert_equal({ "id" => view.id, "name" => "Vue drone", "capturedOn" => "2027-05-12", "kind" => "xyz", "product" => "orthophoto", "url" => XYZ_URL,
                    "attribution" => "© Semisto 2027", "minZoom" => nil, "maxZoom" => 22 }, view.as_inertia.stringify_keys)
     assert_equal "tiles.example.org", view.host
     assert_equal [ @map.id, @map.name, "Michael" ], view.as_admin_json.values_at(:mapId, :mapName, :ownerName)

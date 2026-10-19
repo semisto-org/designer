@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_220100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -78,7 +78,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
     t.bigint "source_byte_size"
     t.jsonb "bounds"
     t.bigint "source_upload_id"
+    t.bigint "drone_mission_id"
+    t.string "product", default: "orthophoto", null: false
     t.index ["created_by_id"], name: "index_aerial_views_on_created_by_id"
+    t.index ["drone_mission_id"], name: "index_aerial_views_on_drone_mission_id"
     t.index ["map_id", "captured_on"], name: "index_aerial_views_on_map_id_and_captured_on"
     t.index ["plan_purchase_id"], name: "index_aerial_views_on_plan_purchase_id"
     t.index ["source_upload_id"], name: "index_aerial_views_on_source_upload_id"
@@ -274,6 +277,84 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
     t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
     t.index ["map_id", "created_at"], name: "index_comments_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_comments_on_map_id"
+  end
+
+  create_table "drone_missions", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "client_id", null: false
+    t.bigint "drone_pilot_id", null: false
+    t.string "status", default: "requested", null: false
+    t.jsonb "data_types", default: [], null: false
+    t.string "desired_period"
+    t.text "message", null: false
+    t.text "pilot_reply"
+    t.date "flight_on"
+    t.integer "price_cents", null: false
+    t.integer "travel_km", default: 0, null: false
+    t.integer "travel_cents", default: 0, null: false
+    t.integer "commission_cents", null: false
+    t.string "currency", default: "eur", null: false
+    t.string "stripe_checkout_session_id"
+    t.string "stripe_payment_intent_id"
+    t.string "stripe_charge_id"
+    t.boolean "livemode"
+    t.string "stripe_transfer_id"
+    t.string "payout_error"
+    t.text "delivery_note"
+    t.text "dispute_message"
+    t.datetime "accepted_at"
+    t.datetime "paid_at"
+    t.datetime "delivered_at"
+    t.datetime "disputed_at"
+    t.datetime "paid_out_at"
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_drone_missions_on_client_id"
+    t.index ["drone_pilot_id"], name: "index_drone_missions_on_drone_pilot_id"
+    t.index ["map_id"], name: "index_drone_missions_on_map_id"
+    t.index ["status"], name: "index_drone_missions_on_status"
+    t.index ["stripe_checkout_session_id"], name: "index_drone_missions_on_stripe_checkout_session_id", unique: true
+    t.index ["stripe_transfer_id"], name: "index_drone_missions_on_stripe_transfer_id", unique: true
+  end
+
+  create_table "drone_pilots", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "display_name", null: false
+    t.text "bio"
+    t.string "base_place", null: false
+    t.geometry "base_location", limit: {:srid=>4326, :type=>"st_point"}, null: false
+    t.integer "service_radius_km", default: 50, null: false
+    t.integer "mission_price_cents", null: false
+    t.boolean "travel_fees_enabled", default: false, null: false
+    t.jsonb "drones", default: [], null: false
+    t.jsonb "data_types", default: [], null: false
+    t.jsonb "certificates", default: [], null: false
+    t.string "operator_number", null: false
+    t.string "insurer", null: false
+    t.string "phone"
+    t.string "legal_form", null: false
+    t.string "legal_name", null: false
+    t.string "business_number"
+    t.string "vat_number"
+    t.string "tax_number"
+    t.text "address", null: false
+    t.string "country", default: "BE", null: false
+    t.date "birth_date"
+    t.string "stripe_account_id"
+    t.boolean "payouts_enabled", default: false, null: false
+    t.boolean "details_submitted", default: false, null: false
+    t.bigint "reviewed_by_id"
+    t.datetime "reviewed_at"
+    t.text "review_note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["base_location"], name: "index_drone_pilots_on_base_location", using: :gist
+    t.index ["reviewed_by_id"], name: "index_drone_pilots_on_reviewed_by_id"
+    t.index ["status"], name: "index_drone_pilots_on_status"
+    t.index ["stripe_account_id"], name: "index_drone_pilots_on_stripe_account_id", unique: true
+    t.index ["user_id"], name: "index_drone_pilots_on_user_id", unique: true
   end
 
   create_table "eco_measurements", force: :cascade do |t|
@@ -565,8 +646,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
     t.string "rendering_style"
     t.string "kind", default: "photo", null: false
     t.bigint "retake_of_id"
+    t.bigint "drone_mission_id"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
+    t.index ["drone_mission_id"], name: "index_map_photos_on_drone_mission_id"
     t.index ["location"], name: "index_map_photos_on_location", using: :gist
     t.index ["map_feature_id"], name: "index_map_photos_on_map_feature_id"
     t.index ["map_id", "bioindicator_status"], name: "index_map_photos_on_map_id_and_bioindicator_status", where: "(bioindicator_status IS NOT NULL)"
@@ -1588,6 +1671,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "admin_events", "users", column: "admin_id", on_delete: :nullify
   add_foreign_key "admin_events", "users", column: "target_user_id", on_delete: :nullify
+  add_foreign_key "aerial_views", "drone_missions", on_delete: :nullify
   add_foreign_key "aerial_views", "maps"
   add_foreign_key "aerial_views", "mcp_uploads", column: "source_upload_id", on_delete: :nullify
   add_foreign_key "aerial_views", "plan_purchases", on_delete: :nullify
@@ -1612,6 +1696,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
   add_foreign_key "comment_subscriptions", "users"
   add_foreign_key "comments", "maps"
   add_foreign_key "comments", "users", column: "author_id"
+  add_foreign_key "drone_missions", "drone_pilots", on_delete: :restrict
+  add_foreign_key "drone_missions", "maps", on_delete: :restrict
+  add_foreign_key "drone_missions", "users", column: "client_id", on_delete: :restrict
+  add_foreign_key "drone_pilots", "users", column: "reviewed_by_id", on_delete: :nullify
+  add_foreign_key "drone_pilots", "users", on_delete: :cascade
   add_foreign_key "external_forms", "form_inboxes"
   add_foreign_key "feature_update_drafts", "map_features", on_delete: :cascade
   add_foreign_key "feature_update_drafts", "maps", on_delete: :cascade
@@ -1643,6 +1732,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
   add_foreign_key "map_memberships", "maps"
   add_foreign_key "map_memberships", "users"
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
+  add_foreign_key "map_photos", "drone_missions", on_delete: :nullify
   add_foreign_key "map_photos", "map_features", on_delete: :nullify
   add_foreign_key "map_photos", "map_photos", column: "derived_from_id", on_delete: :nullify
   add_foreign_key "map_photos", "map_photos", column: "retake_of_id", on_delete: :nullify

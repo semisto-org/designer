@@ -224,7 +224,7 @@ Rails.application.routes.draw do
   # Public website (server-side meta tags, French URLs).
   get "fonctionnalites", to: "pages#features", as: :features_page
   get "tarifs", to: "pages#pricing", as: :pricing
-  get "mission-drone", to: "pages#drone", as: :drone_mission
+  get "mission-drone", to: "pages#drone", as: :drone_mission_page
   get "open-source", to: "pages#open_source", as: :open_source
   get "ecoconception", to: "pages#ecoconception", as: :ecoconception
   # Measurements of the « EcoIndex » workflow (ECOINDEX_TOKEN).
@@ -268,6 +268,27 @@ Rails.application.routes.draw do
     end
   end
   resources :plants, only: %i[index show]
+  # --- drone pilots ---
+  # The directory of drone pilots, my pilot profile, and the missions booked
+  # with a pilot (DronePilotsController, DronePilotProfilesController,
+  # DroneMissionsController); the files a pilot delivers with a mission.
+  resources :drone_pilots, path: "pilotes-drone", only: %i[index show]
+  resource :drone_pilot_profile, path: "mon-profil-pilote", only: %i[show create update] do
+    post :stripe
+    get :stripe_return
+  end
+  resources :drone_missions, path: "missions-drone", only: %i[index show create update] do
+    post :checkout, on: :member
+    resources :files, module: :drone_missions, only: %i[create show destroy] do
+      post :complete, on: :member
+    end
+  end
+  namespace :admin do
+    resources :drone_pilots, path: "drone-pilots", only: %i[index update] do
+      post "missions/:id", action: :mission, on: :collection, as: :mission
+    end
+  end
+  # --- end drone pilots ---
   # Requests for scions, cuttings or seeds between gardeners (« Multiplication »).
   resources :propagation_requests, path: "propagation", only: %i[index create update destroy]
   resources :maps, only: [] do

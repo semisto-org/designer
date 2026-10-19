@@ -8,7 +8,8 @@ module Maps
     include ActiveStorage::SetCurrent
 
     before_action :set_map
-    before_action :require_editor!, except: %i[index same_spot image]
+    before_action :set_mission, only: :create
+    before_action :require_editor!, except: %i[index same_spot image], unless: -> { @mission }
     before_action :set_bulk_photos, only: %i[bulk_update bulk_destroy]
     before_action :set_photo, only: %i[update destroy same_spot image]
 
@@ -49,7 +50,9 @@ module Maps
     end
 
     def create
-      photo = @map.photos.new(photo_params.merge(uploaded_by: Current.user))
+      photo = @map.photos.new(photo_params.merge(uploaded_by: Current.user, drone_mission: @mission))
+      # What a client paid a pilot for is never refused for lack of room.
+      photo.skip_storage_quota = @mission.present?
       # A retake belongs to what the first photo showed.
       photo.map_feature_id ||= photo.retake_of.map_feature_id if photo.retake_of&.map_id == @map.id
       if photo.save
@@ -116,6 +119,14 @@ module Maps
 
     private
       def editor? = %w[owner editor].include?(@role)
+
+      # The pilot of a paid drone mission adds its photos and videos from the
+      # mission's page (?drone_mission_id=).
+      def set_mission
+        return if params[:drone_mission_id].blank?
+        @mission = @map.drone_missions.find_by(id: params[:drone_mission_id])
+        head :not_found unless @mission&.deliverable_by?(Current.user)
+      end
 
       def set_photo
         @photo = @map.photos.find(params[:id])

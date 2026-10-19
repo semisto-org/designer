@@ -1,0 +1,552 @@
+fr:
+  admin:
+    nav:
+      drone_pilots: "Pilotes de drone"
+
+  drone_pilots:
+    directory:
+      title: "Pilotes de drone"
+      intro: "Un vol au-dessus de ton lieu, c'est une photo de départ du jardin, un relief précis et des images pour suivre sa croissance année après année. Choisis un pilote proche de chez toi : il vole, puis dépose ses données directement sur ta carte."
+      become_pilot: "Je suis pilote de drone"
+      my_profile: "Mon profil de pilote"
+      for_map: "Pour quel lieu ?"
+      any_map: "Tous les pilotes"
+      no_map: "Crée d'abord la carte de ton lieu : on te montrera les pilotes qui s'y déplacent, avec leur prix tout compris."
+      need: "Ce qu'il te faut"
+      equipment: "Matériel"
+      sort: "Trier par"
+      sort_distance: "Distance"
+      sort_price: "Prix"
+      booking_closed: "Les réservations ouvriront bientôt : tu peux déjà découvrir les pilotes."
+      empty_title: "L'annuaire se remplit"
+      empty_why: "Les premiers pilotes sont en train de rejoindre Terranova. Repasse dans quelques jours, ou parles-en à un pilote que tu connais."
+      empty_note: "Un pilote près de chez toi ? Envoie-lui ce lien."
+      no_match_title: "Aucun pilote ne correspond"
+      no_match_why: "Enlève un critère, ou choisis un autre lieu : certains pilotes se déplacent plus loin que d'autres."
+      out_of_range_note: "Les pilotes plus loin que leur rayon d'action n'apparaissent pas pour ce lieu."
+    seasons:
+      title: "Quand faire voler un drone ?"
+      winter_title: "En hiver, feuilles tombées"
+      winter: "Le sol se voit sous les arbres : c'est le moment du relief, des fossés, des sources et de l'état des lieux avant les travaux."
+      summer_title: "En été, tout en feuilles"
+      summer: "Les couronnes sont pleines : c'est le moment de mesurer l'ombre, la vigueur des plantes et, en thermique, les zones fraîches et humides."
+      note: "Un vol par an, à la même saison, et ton jardin raconte sa propre histoire."
+    card:
+      distance: "À %{km} km de %{map}"
+      missions_done:
+        one: "%{count} mission réalisée"
+        other: "%{count} missions réalisées"
+      with_travel: "déplacement compris (%{km} km)"
+      no_travel: "déplacement offert"
+      plus_travel: "frais de déplacement"
+      out_of_range: "Se déplace jusqu'à %{km} km"
+    show:
+      brings: "Ce qu'il peut te rapporter"
+      fleet: "Ses drones"
+      checked: "Profil vérifié par Semisto : numéro d'opérateur, brevets et assurance."
+      waiting: "Une demande t'attend déjà pour « %{map} »."
+      own: "C'est ton profil : voici ce que les jardiniers voient."
+      no_map: "Pour demander un vol, il faut d'abord la carte de ton lieu."
+      create_map: "Créer la carte de mon lieu"
+      request_title: "Demander un vol"
+      map: "Le lieu"
+      map_out_of_range: "%{name} (trop loin pour ce pilote)"
+      what: "Ce que tu voudrais recevoir"
+      period: "Quand ?"
+      period_hint: "Une période plutôt qu'une date : « fin février, feuilles tombées », « un matin de juin »."
+      message: "Ton message"
+      message_placeholder: "Dis-lui ce que tu veux voir de ton lieu, comment y accéder et ce qu'il faut savoir (animaux, lignes électriques, voisins…)."
+      send: "Envoyer la demande"
+      privacy: "Le pilote voit ta carte en lecture tant que la mission est ouverte. Tu ne paies qu'une fois qu'il a accepté."
+    quote:
+      flat: "Forfait du pilote"
+      travel: "Déplacement (%{km} km aller-retour)"
+      total: "Total"
+      share: "Dont %{semisto} pour Semisto et %{pilot} pour le pilote"
+    statuses:
+      pending: "En attente"
+      approved: "Validé"
+      rejected: "Refusé"
+      suspended: "Suspendu"
+    profile:
+      title: "Mon profil de pilote"
+      intro: "Tu pilotes un drone ? Rejoins l'annuaire : les jardiniers près de chez toi te demandent de survoler leur lieu, paient dans Terranova, et tu déposes tes images directement sur leur carte."
+      intro_pilot: "Ta carte de visite dans l'annuaire, ton matériel et tes tarifs."
+      public: "Ce que voient les jardiniers"
+      public_lead: "Ton nom, ta base et ce que tu sais faire : c'est ta carte de visite dans l'annuaire."
+      display_name: "Nom affiché"
+      bio: "Présentation"
+      bio_hint: "Quelques lignes : ton parcours, ce que tu aimes filmer, ce qui te lie au vivant."
+      base: "Ta base"
+      base_hint: "Une ville ou une adresse : les distances partent d'ici."
+      base_placeholder: "Ex. Yvoir, Belgique"
+      base_chosen: "Base : %{place}"
+      radius: "Rayon d'action (km)"
+      price: "Forfait par mission (€ TVAC)"
+      price_hint: "Le prix du vol et du traitement des données, pour un lieu ordinaire."
+      share: "Sur %{price}, tu reçois %{pilot} : Semisto garde %{percent} % pour faire vivre Terranova."
+      travel: "Ajouter les frais de déplacement (%{price} par km, aller-retour)"
+      travel_hint: "Calculés depuis ta base, par la route. Ils te reviennent entièrement."
+      equipment: "Ton matériel"
+      equipment_lead: "Chaque drone DJI rapporte d'autres données : choisis tes appareils, puis ce que tu sais livrer."
+      drone: "Drone"
+      drone_other: "Nom du modèle"
+      add_drone: "Ajouter un drone"
+      remove_drone: "Retirer ce drone"
+      data_types: "Ce que tu livres"
+      data_types_hint: "Seules les données que tes drones peuvent produire sont proposées."
+      rules: "Ton droit de voler"
+      rules_lead: "Semisto vérifie ces informations avant de publier ton profil."
+      operator_number: "Numéro d'opérateur UAS"
+      operator_hint: "Le numéro d'enregistrement donné par ton autorité nationale (ex. BEL… en Belgique)."
+      certificates: "Brevets et autorisations"
+      insurer: "Assurance responsabilité civile"
+      insurer_hint: "Ta compagnie et ton numéro de police."
+      legal: "Pour être payé"
+      legal_lead: "La loi (DAC7) demande à Semisto de connaître les vendeurs de sa plateforme. Ces informations ne sont jamais publiées."
+      legal_form: "Tu travailles"
+      legal_name: "Nom légal"
+      business_number: "Numéro d'entreprise"
+      business_hint: "Le numéro BCE en Belgique, SIREN en France."
+      vat_number: "Numéro de TVA"
+      vat_hint: "Si tu es assujetti."
+      tax_number: "Numéro d'identification fiscale"
+      tax_hint: "Le numéro national en Belgique, le numéro fiscal en France."
+      birth_date: "Date de naissance"
+      address: "Adresse"
+      country: "Pays"
+      phone: "Téléphone"
+      phone_hint: "Donné au jardinier seulement une fois la mission payée."
+      apply: "Envoyer ma candidature"
+      save: "Enregistrer"
+      resubmit: "Renvoyer ma candidature"
+      applied: "Candidature envoyée : Semisto la relit et te répond par e-mail."
+      saved: "Profil enregistré."
+      listed: "Tu es dans l'annuaire."
+      missions:
+        one: "%{count} mission en cours"
+        other: "%{count} missions en cours"
+      waiting:
+        one: "%{count} demande attend ta réponse"
+        other: "%{count} demandes attendent ta réponse"
+      status_pending: "Ta candidature est entre les mains de Semisto. Tu reçois un e-mail dès qu'elle est relue."
+      status_approved: "Ton profil est validé."
+      status_rejected: "Ta candidature n'a pas été retenue. Corrige ce qui est indiqué, puis renvoie-la."
+      status_suspended: "Ton profil est suspendu : il n'apparaît plus dans l'annuaire. Écris à Semisto pour en parler."
+      stripe_why: "Les jardiniers paient dans Terranova ; Stripe te verse ta part après la livraison. Il te faut un compte Stripe pour apparaître dans l'annuaire."
+      stripe_setup: "Ouvrir mon compte de paiement"
+      stripe_ok: "Ton compte de paiement est prêt."
+      stripe_dashboard: "Voir mes virements"
+      stripe_ready: "Ton compte de paiement est prêt : tu apparais dans l'annuaire."
+      stripe_pending: "Stripe vérifie encore tes informations. Tu reçois un e-mail dès que c'est bon."
+      stripe_off: "Les paiements ne sont pas encore ouverts sur Terranova."
+      stripe_not_approved: "Ton profil doit d'abord être validé par Semisto."
+      stripe_error: "Stripe ne répond pas pour l'instant. Réessaie dans quelques minutes."
+    data_types:
+      photos:
+        name: "Photos aériennes"
+        use: "Des vues de ton lieu sous tous les angles, à revoir chaque année."
+      video:
+        name: "Vidéo"
+        use: "Un survol pour présenter le lieu, raconter un chantier ou un avant-après."
+      panorama:
+        name: "Panorama 360°"
+        use: "Le paysage autour de ton lieu : vents, voisins, horizon."
+      orthophoto:
+        name: "Orthophoto"
+        use: "Une image à plat et à l'échelle, posée sous ton plan : chaque arbre au bon endroit."
+      elevation:
+        name: "Relief (modèle d'élévation)"
+        use: "Le relief au centimètre : pentes, creux, chemins de l'eau, emplacement des baissières."
+      thermal:
+        name: "Image thermique"
+        use: "Les zones fraîches et humides, les sources cachées, les poches d'air froid."
+      multispectral:
+        name: "Image multispectrale"
+        use: "La vigueur des plantes (NDVI) : ce qui pousse bien, ce qui souffre."
+      point_cloud:
+        name: "Nuage de points"
+        use: "Les arbres en trois dimensions, hauteur et volume des couronnes."
+      model_3d:
+        name: "Modèle 3D"
+        use: "Le lieu et ses bâtiments en volume, pour tourner autour."
+    features:
+      rtk:
+        name: "RTK (précision centimétrique)"
+      lidar:
+        name: "LiDAR"
+      thermal:
+        name: "Caméra thermique"
+      multispectral:
+        name: "Caméra multispectrale"
+    drones:
+      mini: "DJI Mini (2, 3, 4…)"
+      air: "DJI Air (2S, 3…)"
+      mavic_3: "DJI Mavic 3 (Classic, Pro)"
+      mavic_3_enterprise: "DJI Mavic 3 Enterprise (3E)"
+      mavic_3_thermal: "DJI Mavic 3 Thermal (3T)"
+      mavic_3_multispectral: "DJI Mavic 3 Multispectral (3M)"
+      matrice_4e: "DJI Matrice 4E"
+      matrice_4t: "DJI Matrice 4T"
+      matrice_30t: "DJI Matrice 30T"
+      matrice_350_l2: "DJI Matrice 350 RTK + Zenmuse L2 (LiDAR)"
+      matrice_350_p1: "DJI Matrice 350 RTK + Zenmuse P1"
+      matrice_350_h30t: "DJI Matrice 350 RTK + Zenmuse H30T"
+      phantom_4_rtk: "DJI Phantom 4 RTK"
+      phantom_4_multispectral: "DJI Phantom 4 Multispectral"
+      other: "Autre drone"
+    certificates:
+      a1_a3: "Catégorie ouverte A1/A3"
+      a2: "Certificat A2"
+      sts: "Scénario standard (STS)"
+      specific: "Autorisation en catégorie spécifique"
+    legal_forms:
+      individual: "en personne physique"
+      company: "en société"
+    countries:
+      BE: "Belgique"
+      FR: "France"
+      LU: "Luxembourg"
+      NL: "Pays-Bas"
+      DE: "Allemagne"
+    errors:
+      not_listed: "Ce pilote n'est pas, ou plus, dans l'annuaire."
+    admin:
+      title: "Pilotes de drone"
+      intro: "Les candidatures à relire et les missions à régler. Un pilote validé apparaît dans l'annuaire dès que son compte Stripe est prêt."
+      none: "Aucun pilote pour l'instant."
+      radius: "rayon %{km} km"
+      stripe_ready: "Stripe prêt"
+      numbers: "Numéros"
+      note_placeholder: "Note pour le pilote (obligatoire pour refuser ou suspendre)"
+      approve: "Valider"
+      reject: "Refuser"
+      suspend: "Suspendre"
+      suspend_confirm: "Suspendre %{name} ? Son profil quitte l'annuaire."
+      decision_missing: "Choisis une décision."
+      done:
+        approved: "%{name} est validé."
+        rejected: "La candidature de %{name} est refusée."
+        suspended: "%{name} est suspendu."
+        pending: "%{name} est en attente."
+      missions: "Missions"
+      no_mission: "Aucune mission pour l'instant."
+      test_mode: "mode test"
+      commission: "dont %{amount} pour Semisto"
+      paid_on: "payée le %{date}"
+      paid_out_on: "versée le %{date}"
+      payout_error: "Virement refusé : %{error}"
+      payout: "Verser au pilote"
+      payout_confirm: "Verser sa part au pilote pour la mission n° %{id} ?"
+      refund: "Rembourser"
+      refund_confirm: "Rembourser le client de la mission n° %{id} ?"
+      mission_done:
+        payout: "Mission n° %{id} : la part du pilote est versée."
+        payout_failed: "Mission n° %{id} : le virement a échoué (%{error})."
+        refund: "Mission n° %{id} : le client est remboursé."
+    mailer:
+      applied:
+        greeting: "Bonjour,"
+        subject: "Nouveau pilote de drone : %{name}"
+        body: "%{name} (%{place}, opérateur %{operator}) demande à rejoindre l'annuaire des pilotes."
+        button: "Relire la candidature"
+      approved:
+        subject: "Ton profil de pilote est validé"
+        body: |-
+          Bonne nouvelle : Semisto a validé ton profil de pilote de drone.
+
+          Dernière étape avant d'apparaître dans l'annuaire : ouvre ton compte de paiement Stripe depuis ton profil. C'est par lui que tu recevras ta part de chaque mission.
+        button: "Ouvrir mon profil"
+      rejected:
+        subject: "Ta candidature de pilote"
+        body: |-
+          Semisto a relu ta candidature et ne peut pas encore publier ton profil :
+
+          %{note}
+
+          Tu peux corriger ton profil et la renvoyer quand tu veux.
+        button: "Corriger mon profil"
+
+  drone_missions:
+    nav: "Missions drone"
+    title: "Missions drone"
+    intro: "Les vols demandés pour tes lieux, et ceux qu'on te demande si tu es pilote."
+    find_pilot: "Trouver un pilote"
+    tabs:
+      client: "Mes demandes"
+      pilot: "Mes missions de pilote"
+    empty_client_title: "Aucun vol demandé"
+    empty_client_why: "Une orthophoto et un relief précis de ton lieu, c'est le meilleur point de départ d'un design, et une mémoire pour voir le jardin grandir."
+    empty_pilot_title: "Aucune mission pour l'instant"
+    empty_pilot_why: "Les demandes des jardiniers arrivent ici et par e-mail."
+    with_pilot: "avec %{name}"
+    for_client: "pour %{name}"
+    flight_on: "vol le %{date}"
+    asked_on: "demandée le %{date}"
+    disputed: "Litige"
+    statuses:
+      requested: "Demandée"
+      accepted: "À payer"
+      declined: "Déclinée"
+      cancelled: "Annulée"
+      paid: "Payée"
+      delivered: "Livrée"
+      completed: "Terminée"
+      refunded: "Remboursée"
+    steps:
+      requested: "Demande"
+      accepted: "Accord"
+      paid: "Paiement"
+      delivered: "Livraison"
+      completed: "Terminé"
+    show:
+      title: "Mission drone · %{map}"
+      steps: "Étapes de la mission"
+      closed:
+        declined: "Le pilote a décliné cette demande. Rien n'a été payé."
+        cancelled: "Cette mission a été annulée."
+        refunded: "Cette mission a été remboursée."
+      pilot: "Pilote"
+      client: "Jardinier"
+      request: "La demande"
+      period: "Période souhaitée : %{period}"
+      reply: "Réponse de %{name}"
+      open_map: "Ouvrir la carte"
+      see_on_map: "Voir sur la carte"
+      contact_after_payment: "Vos coordonnées s'échangent une fois la mission payée."
+      your_share: "Ta part : %{amount}"
+      answer_title: "Ta réponse"
+      answer_lead: "%{client} attend ta réponse. Propose une date de vol, ou explique pourquoi tu ne peux pas."
+      answer_text: "Ton message"
+      flight_on: "Date de vol prévue"
+      flight_on_hint: "Facultative : tu pourras l'ajuster avec le jardinier, selon la météo."
+      accept: "Accepter"
+      decline: "Décliner"
+      decline_confirm: "Décliner cette demande ?"
+      waiting_title: "Demande envoyée"
+      waiting_lead: "%{pilot} a reçu ta demande par e-mail. Tu reçois sa réponse ici et dans ta boîte."
+      cancel: "Annuler la demande"
+      cancel_confirm: "Annuler cette mission ?"
+      cancel_body: "Le pilote est prévenu par e-mail."
+      pay_title: "Le pilote est d'accord"
+      pay_lead: "Il ne reste qu'à payer pour confirmer le vol. Le pilote n'est payé qu'une fois les données livrées et acceptées par toi."
+      pay_lead_date: "Vol prévu le %{date}, si la météo le permet."
+      pay: "Payer la mission"
+      pay_note: "Paiement sécurisé par Stripe."
+      awaiting_payment_title: "En attente du paiement"
+      awaiting_payment_lead: "%{client} a reçu ta réponse et doit encore payer. Tu es prévenu par e-mail dès que c'est fait."
+      paid_title: "Mission confirmée"
+      paid_lead: "%{pilot} est prévenu. Le jour du vol, il dépose ses données directement sur ta carte."
+      deliver_title: "Livrer la mission"
+      deliver_lead: "Quand tout est déposé, préviens le jardinier : il aura une semaine pour vérifier avant que ta part te soit versée."
+      deliver_note: "Un mot pour le jardinier (facultatif)"
+      deliver: "Marquer comme livrée"
+      deliver_confirm: "Tout est déposé ?"
+      deliver_body: "Le jardinier est prévenu par e-mail et a sept jours pour vérifier."
+      deliver_empty: "Dépose au moins un fichier avant de livrer."
+      delivered_title: "Les données sont arrivées"
+      delivered_pilot_title: "Mission livrée"
+      delivered_pilot_lead: "Le jardinier vérifie. Ta part te sera versée au plus tard le %{date}."
+      confirm_title: "Tout est bon ?"
+      confirm_lead: "Vérifie les données sur ta carte. Sans réponse de ta part, la mission est validée le %{date}."
+      confirm: "Valider la mission"
+      confirm_confirm: "Valider et payer le pilote ?"
+      confirm_note: "Le pilote reçoit alors sa part."
+      dispute: "Signaler un problème"
+      dispute_placeholder: "Qu'est-ce qui ne va pas ? Semisto lit chaque message et vous recontacte tous les deux."
+      dispute_send: "Envoyer à Semisto"
+      disputed_title: "Problème signalé"
+      disputed_lead: "Semisto a reçu ton message et revient vers vous deux. Le pilote n'est pas payé tant que ce n'est pas réglé."
+      disputed_pilot: "Le jardinier a signalé un problème. Semisto revient vers vous deux."
+      completed_title: "Mission terminée"
+      completed_client: "Les données restent sur ta carte. L'an prochain, à la même saison, un nouveau vol montrera ce que ton jardin a grandi."
+      completed_pilot: "Ta part t'a été versée. Merci d'avoir fait voir ce lieu d'en haut !"
+      photos_count:
+        one: "%{count} photo sur la carte"
+        other: "%{count} photos sur la carte"
+      view_status:
+        uploading: "Envoi en cours"
+        processing: "Préparation"
+        failed: "Échec"
+        ready: "Prête"
+    flight_day:
+      title: "Le jour du vol"
+      client:
+        - "Préviens tes voisins : un drone qui passe, c'est mieux quand on sait pourquoi."
+        - "Sors avec le pilote : marche le lieu ensemble, montre-lui les sources, les zones humides, les arbres à garder."
+        - "Note la date et la météo dans ton carnet : dans cinq ans, ce vol sera ton « avant »."
+      pilot:
+        - "Arrive tôt : marche le lieu avec le jardinier avant de décoller."
+        - "Vérifie la zone (géozones, lignes électriques, animaux) et préviens les voisins si besoin."
+        - "Dépose les données ici même : elles arrivent directement sur la carte du jardinier."
+    delivery:
+      title: "Déposer les données"
+      lead: "Ce que tu déposes ici arrive sur la carte du jardinier, sans compter dans son espace de stockage."
+      sending: "%{sent} sur %{total}"
+      failed: "L'envoi a échoué. Réessaie, l'envoi reprend où il s'était arrêté."
+      rasters: "Orthophoto, relief, thermique, multispectral"
+      product: "Type de données"
+      captured_on: "Date du vol"
+      product_hint:
+        orthophoto: "Un GeoTIFF géoréférencé (DJI Terra, Pix4D, WebODM…). Il s'affiche sous le plan, en vue drone."
+        elevation: "Un MNE ou MNT en GeoTIFF, une seule bande, altitudes en mètres. Il s'affiche en relief ombré."
+        thermal: "Une orthomosaïque thermique en GeoTIFF (températures ou couleurs)."
+        multispectral: "Un indice (NDVI, NDRE…) en GeoTIFF, une seule bande, ou une image en couleurs."
+      choose_raster: "Choisir un GeoTIFF"
+      raster_sent: "Fichier reçu : il apparaît sur la carte une fois préparé."
+      photos: "Photos et vidéos"
+      photos_hint: "Les photos géolocalisées se placent d'elles-mêmes sur la carte."
+      choose_photos: "Choisir des photos"
+      photos_sending:
+        one: "%{count} envoi en cours"
+        other: "%{count} envois en cours"
+      photos_failed: "Certaines photos n'ont pas pu être envoyées."
+      files: "Autres fichiers"
+      files_hint: "Nuage de points, modèle 3D, rapport : le jardinier les télécharge depuis cette page."
+      choose_file: "Choisir un fichier"
+      file_sent: "Fichier reçu."
+    files:
+      no_file: "Aucun fichier reçu."
+      format: "Formats acceptés : %{formats}"
+      too_large: "Ce fichier dépasse %{max} Go."
+      expired: "L'envoi a expiré. Recommence."
+      missing_parts: "Il manque des morceaux du fichier. Recommence l'envoi."
+      checksum: "Le fichier est arrivé abîmé. Recommence l'envoi."
+      processing: "Le fichier est en cours d'enregistrement."
+    flash:
+      requested: "Demande envoyée à %{pilot}."
+      accept: "Mission acceptée : le jardinier peut payer."
+      decline: "Demande déclinée."
+      deliver: "Mission livrée : le jardinier est prévenu."
+      cancel: "Mission annulée."
+      confirm: "Mission validée : merci !"
+      dispute: "Message envoyé à Semisto."
+      paid: "Paiement reçu : la mission est confirmée."
+    errors:
+      rate_limited: "Trop de demandes d'un coup. Réessaie dans quelques minutes."
+      map: "Choisis un de tes lieux."
+      decision: "Action inconnue."
+      state: "Cette mission a changé entre-temps. Recharge la page."
+      not_yours: "Cette action ne te revient pas."
+      payment_unavailable: "Le paiement n'est pas disponible pour l'instant."
+      payment_failed: "Stripe ne répond pas pour l'instant. Réessaie dans quelques minutes."
+    checkout:
+      mission: "Mission drone de %{pilot} pour « %{map} »"
+      travel: "Déplacement (%{km} km aller-retour)"
+      description: "Mission drone n° %{id} (%{pilot})"
+    mailer:
+      greeting: "Bonjour %{name},"
+      date_to_agree: "à convenir"
+      requested:
+        subject: "Nouvelle demande de vol de %{client}"
+        body: |-
+          %{client} aimerait que tu survoles son lieu « %{map} ».
+
+          Son message : %{message}
+
+          Réponds-lui depuis Terranova : accepte avec une date, ou décline.
+        button: "Répondre"
+      cancelled:
+        subject: "%{client} a annulé sa demande"
+        body: "%{client} a annulé la mission pour « %{map} ». Rien n'a été payé."
+        button: "Voir la mission"
+      paid:
+        subject: "Mission payée : « %{map} »"
+        body: |-
+          %{client} a payé la mission pour « %{map} ». Vol prévu : %{date}.
+
+          Le jour venu, dépose tes données depuis la page de la mission : elles arrivent directement sur sa carte.
+        button: "Voir la mission"
+      paid_out:
+        subject: "Ta part est en route : %{amount}"
+        body: "Le jardinier a validé la mission « %{map} ». Stripe te vire %{amount} dans les prochains jours."
+        button: "Voir la mission"
+      accepted:
+        subject: "%{pilot} accepte ton vol"
+        body: |-
+          %{pilot} accepte de survoler ton lieu. Vol prévu : %{date}.
+
+          %{reply}
+
+          Paie la mission (%{total}) pour la confirmer. Le pilote n'est payé qu'une fois les données livrées et acceptées par toi.
+        button: "Payer la mission"
+      declined:
+        subject: "%{pilot} ne peut pas faire ce vol"
+        body: |-
+          %{pilot} ne peut pas faire ce vol.
+
+          %{reply}
+
+          D'autres pilotes de l'annuaire se déplacent peut-être chez toi.
+        button: "Voir la mission"
+      delivered:
+        subject: "Les images de ton lieu sont arrivées"
+        body: |-
+          %{pilot} a déposé les données du vol sur ta carte « %{map} ».
+
+          %{note}
+
+          Tu as %{days} jours pour vérifier. Si tout va bien, valide la mission ; sinon, signale-le à Semisto.
+        button: "Voir les données"
+      refunded:
+        subject: "Ta mission drone est remboursée"
+        body: "Semisto t'a remboursé %{total} pour la mission avec %{pilot}. Le montant arrive sur ta carte dans les prochains jours."
+        button: "Voir la mission"
+      disputed:
+        greeting: "Bonjour,"
+        subject: "Mission drone n° %{id} : problème signalé"
+        body: |-
+          %{client} signale un problème sur la mission n° %{id} avec %{pilot} :
+
+          %{message}
+
+          La part du pilote reste bloquée tant que ce n'est pas réglé.
+        button: "Régler la mission"
+
+  activerecord:
+    errors:
+      models:
+        drone_pilot:
+          attributes:
+            drones:
+              other_unnamed: "Donne le nom de ton autre drone."
+            data_types:
+              not_with_drones: "Tes drones ne permettent pas de livrer : %{types}."
+            operator_number:
+              invalid: "Ce numéro ne ressemble pas à un numéro d’opérateur UAS (ex. BEL12a3b4c5d6e)."
+        drone_mission:
+          attributes:
+            data_types:
+              not_offered: "Ce pilote ne livre pas tout ce que tu as coché."
+            map:
+              not_editable: "Tu dois pouvoir modifier ce lieu pour y demander un vol."
+              not_located: "Place d'abord ton lieu sur la carte."
+              out_of_range: "Ce lieu est trop loin pour ce pilote."
+            drone_pilot:
+              not_listed: "Ce pilote n'est pas, ou plus, dans l'annuaire."
+              yourself: "Tu ne peux pas te réserver toi-même."
+            base:
+              too_many: "Tu as déjà 5 demandes en attente. Attends quelques réponses avant d'en envoyer d'autres."
+    attributes:
+      drone_pilot:
+        display_name: "Nom affiché"
+        base_place: "Base"
+        mission_price_cents: "Forfait"
+        drones: "Drones"
+        data_types: "Données livrées"
+        certificates: "Brevets"
+        operator_number: "Numéro d'opérateur"
+        insurer: "Assurance"
+        legal_name: "Nom légal"
+        business_number: "Numéro d'entreprise"
+        tax_number: "Numéro fiscal"
+        birth_date: "Date de naissance"
+        address: "Adresse"
+        service_radius_km: "Rayon d'action"
+        review_note: "La note pour le pilote"
+      drone_mission:
+        map: "Lieu"
+        drone_pilot: "Pilote"
+        data_types: "Données"
+        message: "Message"
+        desired_period: "Période"
