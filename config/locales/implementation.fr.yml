@@ -73,7 +73,8 @@ fr:
       progress: "%{done} sur %{count} réalisés"
       empty: "Rien dans cette phase pour l'instant."
       delete: "Supprimer la phase"
-      delete_confirm: "Supprimer « %{name} » ? Ses éléments restent sur la carte, hors phase."
+      delete_confirm: "Supprimer « %{name} » ?"
+      delete_body: "Ses éléments restent sur la carte, hors phase."
       rename: "Nom de la phase"
       details: "Dates, notes et estimations"
     groups:

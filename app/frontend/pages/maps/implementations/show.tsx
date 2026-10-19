@@ -5,6 +5,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { MapViewHeader } from '@/components/map_views/MapViews'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
+import { confirmAction } from '@/components/ui/confirm'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { phaseColor } from '@/implementation/colors'
 import type { Advice, DraftPhase, ImplementationPlan, Phase, WorkGroup } from '@/implementation/types'
@@ -79,8 +80,14 @@ export default function MapImplementation({ map, plan: initialPlan, canEdit, tod
 
   const updatePhase = (phase: Phase, attrs: Record<string, unknown>) =>
     run(api<{ plan: ImplementationPlan }>(`${base}/phases/${phase.id}`, { method: 'PATCH', body: { phase: { ...attrs, lock_version: phase.lockVersion } } }))
-  const deletePhase = (phase: Phase) => {
-    if (!window.confirm(t('implementation.phase.delete_confirm', { name: phase.name }))) return
+  const deletePhase = async (phase: Phase) => {
+    const confirmed = await confirmAction({
+      title: t('implementation.phase.delete_confirm', { name: phase.name }),
+      body: t('implementation.phase.delete_body'),
+      confirmLabel: t('implementation.phase.delete'),
+      tone: 'danger',
+    })
+    if (!confirmed) return
     void run(api<{ plan: ImplementationPlan }>(`${base}/phases/${phase.id}`, { method: 'DELETE' }))
   }
   const review = (draft: DraftPhase, verdict: 'accept' | 'reject') => void run(api<{ plan: ImplementationPlan }>(`${base}/phases/${draft.id}/${verdict}`, { method: 'POST' }))
@@ -351,9 +358,9 @@ function PhaseCard({ phase, index, phases, canEdit, busy, onUpdate, onDelete, on
 
       {canEdit && (
         <div className="mt-3 border-t border-loam-100 pt-3">
-          <button type="button" className="text-sm font-medium text-prune-700 hover:underline" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          <Button variant="ghost" size="sm" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
             {t('implementation.phase.details')}
-          </button>
+          </Button>
           {open && <PhaseForm phase={phase} busy={busy} onUpdate={onUpdate} onDelete={onDelete} />}
         </div>
       )}

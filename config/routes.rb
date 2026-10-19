@@ -563,6 +563,8 @@ Rails.application.routes.draw do
     post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
     get "tech", to: "tech#show", as: :tech
+    # « Design »: the « carnet » primitives and what remains to migrate.
+    get "design", to: "design#show", as: :design
     get "catalogue", to: "catalogue#show", as: :catalogue
     # « Codes promo »: Stripe promotion codes made and switched off here.
     resources :promo_codes, path: "promo-codes", only: %i[index create] do
