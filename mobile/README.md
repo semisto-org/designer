@@ -13,6 +13,10 @@ What it does, for the maps one belongs to:
   nearest first (also the screen reader's way to the map); « Noter ici »;
   a chosen element with its age (« a passé 2 hivers ici »), its distance
   and direction, and one-tap gestures (« Planté aujourd'hui » with undo);
+- « Il y a un an, ici » (`lib/memory.ts`): at rest, the sheet shows what
+  happened on the terrain around today's date in the latest earlier year
+  that has something (photos, plants put in the ground, elements built),
+  read from the bundle, so it shows offline too;
 - site visits (« Commencer une visite », `lib/visit.ts`, `lib/visit-core.ts`):
   each note is a note point placed where one stands, sorted by theme in one
   tap (wishes, water, soil, trees already there…, the themes of Semisto's

@@ -200,6 +200,23 @@ fr:
         other: "Il reste %{count} plants passés : tu y reviendras une autre fois."
       planted_toast: "Planté. Au suivant !"
       moved_toast: "Planté ici, à sa vraie place."
+    memory:
+      title:
+        one: "Il y a un an, ici"
+        other: "Il y a %{count} ans, ici"
+      around: "Vers le %{date}"
+      planted:
+        one: "Mis en terre : %{names}."
+        other: "%{count} plantes mises en terre : %{names}."
+      built:
+        one: "Réalisé : %{names}."
+        other: "%{count} éléments réalisés : %{names}."
+      photos:
+        one: "Une photo prise ce jour-là."
+        other: "%{count} photos prises ces jours-là."
+      and_more: "%{names} et %{count} autres"
+      photo_label: "Photo du %{date}"
+      see: "Revoir %{name}"
     display:
       open: "Affichage de la carte"
       title: "Affichage"
