@@ -305,7 +305,8 @@
       "record": "Relever",
       "identify": "Identifier",
       "storm": "Averse",
-      "measure": "Mesurer"
+      "measure": "Mesurer",
+      "season": "Un signe de saison"
     },
     "photo": {
       "saved_title": "Photo gardée",
@@ -690,6 +691,82 @@
     "trace": {
       "notification_title": "Trace en cours",
       "notification_body": "Semisto Terranova enregistre ta trace."
+    },
+    "season": {
+      "title": "Un signe de saison",
+      "intro": "Ce que ton terrain montre en ce moment, noté là où tu es. Un lieu se lit sur quatre saisons.",
+      "tile_hint": "Ce mois-ci : %{signs}",
+      "this_month": "Ce mois-ci",
+      "groups": {
+        "cold": "Le froid",
+        "water": "L'eau",
+        "sun_wind": "Le soleil et le vent",
+        "fauna": "Les animaux",
+        "plants": "Les plantes"
+      },
+      "hints": {
+        "first_frost": "Où le givre blanchit-il l'herbe en premier ? C'est là que l'air froid se pose.",
+        "frost_pocket": "Le matin, là où le givre tient le plus longtemps : une poche d'air froid, mauvaise place pour une floraison précoce.",
+        "last_frost": "La dernière gelée du printemps dit quand planter les plus frileuses.",
+        "snow_melts_first": "Où la neige fond en premier : un coin chaud, bon pour les cultures précoces.",
+        "snow_lingers": "Où la neige reste : un coin froid ou à l'ombre, pour les plantes qui l'aiment.",
+        "morning_mist": "La brume du matin suit l'air froid qui descend : regarde où elle s'accumule.",
+        "puddle": "Une flaque qui reste après la pluie : de l'eau à ralentir, ou une mare qui s'annonce.",
+        "waterlogged": "Le sol qui fait éponge sous le pied : des racines qui manquent d'air en hiver.",
+        "dries_first": "L'herbe qui jaunit en premier : un sol qui retient peu, à pailler et à ombrer.",
+        "winter_sun": "Là où le soleil d'hiver touche encore : la place d'une serre ou d'une plante frileuse.",
+        "summer_shade": "L'ombre de midi en été : un abri pour les plantes de sous-bois.",
+        "wind_exposed": "Là où le vent frappe le plus fort : la place d'une haie brise-vent.",
+        "animal_tracks": "Des traces dans la boue ou la neige : un passage de la faune, à garder ou à protéger.",
+        "nest": "Un nid : l'arbre ou la haie qui l'abrite reste, sans travaux pendant la nidification.",
+        "browsing": "Écorce rongée, pousses broutées : il faudra protéger les jeunes plants ici.",
+        "pollinators": "Là où les butineurs se rassemblent : un coin fleuri à prolonger.",
+        "amphibians": "Crapauds et grenouilles en route vers l'eau : un passage à respecter près des mares.",
+        "budburst": "Les premiers bourgeons qui s'ouvrent disent où le printemps arrive d'abord.",
+        "first_flowers": "Les premières fleurs du lieu : le calendrier de ton terrain, pas celui du livre.",
+        "wild_fruit": "Mûres, prunelles, noisettes : ce que le lieu donne déjà sans toi.",
+        "leaf_fall": "Là où les feuilles s'amassent : un paillage offert."
+      },
+      "when": "Quand l'as-tu vu ?",
+      "days": {
+        "today": "Aujourd'hui",
+        "yesterday": "Hier",
+        "two_days": "Avant-hier"
+      },
+      "text_label": "Ce que tu vois",
+      "placeholder": "Facultatif : quelques mots",
+      "add_photo": "Ajouter une photo",
+      "photos": {
+        "one": "Une photo jointe",
+        "other": "%{count} photos jointes"
+      },
+      "position": "Noté là où tu es, à %{accuracy} près.",
+      "no_position": "Position introuvable : le signe sera placé au centre de la carte.",
+      "save": "Noter ce signe",
+      "saved": "Signe noté",
+      "year": {
+        "title": "Ton année d'observation",
+        "hint": "Ce que tu as vu sur ton terrain depuis un an : signes de saison, averses, notes de visite.",
+        "count": {
+          "zero": "rien encore",
+          "one": "1 observation",
+          "other": "%{count} observations"
+        },
+        "missing": {
+          "one": "Il te manque %{seasons} : ton design ne la connaît pas encore.",
+          "other": "Il te manque %{seasons} : ton design ne les connaît pas encore."
+        },
+        "complete": "Les quatre saisons sont observées. Continue : chaque année dit autre chose.",
+        "and": " et ",
+        "seasons": {
+          "winter": "l'hiver",
+          "spring": "le printemps",
+          "summer": "l'été",
+          "autumn": "l'automne"
+        },
+        "look_for": "Ce mois-ci, va voir",
+        "noted": "Déjà noté cette saison"
+      }
     }
   },
   "plants": {
@@ -1105,13 +1182,42 @@
       "socket": "Prise",
       "tap": "Robinet",
       "note_point": "Note",
+      "season_sign": "Signe de saison",
       "sketch": "Croquis",
+      "sector": "Secteur",
       "zone": "Zone",
       "line": "Ligne",
       "point": "Point",
       "measure": "Mesure",
       "plant": "Plante",
       "patch": "Patch"
+    }
+  },
+  "drawing": {
+    "options": {
+      "sign": {
+        "first_frost": "Premier gel",
+        "frost_pocket": "Le givre reste ici",
+        "last_frost": "Dernière gelée",
+        "snow_melts_first": "La neige fond d'abord ici",
+        "snow_lingers": "La neige reste ici",
+        "morning_mist": "Brume du matin",
+        "puddle": "Flaque après la pluie",
+        "waterlogged": "Sol détrempé",
+        "dries_first": "Sèche ou jaunit d'abord ici",
+        "winter_sun": "Soleil d'hiver",
+        "summer_shade": "Ombre d'été",
+        "wind_exposed": "Le vent frappe ici",
+        "animal_tracks": "Traces d'animaux",
+        "nest": "Un nid",
+        "browsing": "Dégâts de chevreuil ou de lapin",
+        "pollinators": "Butineurs",
+        "amphibians": "Crapauds, grenouilles",
+        "budburst": "Débourrement",
+        "first_flowers": "Premières fleurs",
+        "wild_fruit": "Fruits sauvages mûrs",
+        "leaf_fall": "Chute des feuilles"
+      }
     }
   },
   "plantnet": {

@@ -1,0 +1,96 @@
+name: Journeys
+
+# Replays the six reference journeys of docs/quality/ (script/journeys.mjs) on
+# a development copy of main, on a computer and a phone, and keeps the
+# screenshots as an artifact: the material of the month's quality notebook.
+# Fails when a step could not be replayed. Runs on the first day of each
+# month, and by hand.
+
+on:
+  schedule:
+    - cron: "0 5 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Start PostGIS
+        run: |
+          nohup docker run --detach --name postgis --publish 5432:5432 \
+            --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD=postgres \
+            postgis/postgis:16-3.4 > "$RUNNER_TEMP/postgis.log" 2>&1 &
+
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libgeos-dev
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          cache-version: geos
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install JavaScript packages
+        run: npm ci && npx playwright install --with-deps chromium
+
+      - name: Wait for PostGIS
+        run: |
+          for i in $(seq 1 90); do
+            docker exec postgis pg_isready --host 127.0.0.1 --username postgres > /dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          docker logs postgis || true
+          exit 1
+
+      # Fake Stripe variables turn billing on, so the free plan's limits are
+      # real; the script never reaches Stripe.
+      - name: Prepare the copy
+        env:
+          RAILS_ENV: development
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          STRIPE_SECRET_KEY: sk_test_journeys
+          STRIPE_PRICE_YEARLY: price_journeys
+          STRIPE_PRICE_ATELIER: price_journeys
+          STRIPE_PRICE_ATELIER_YEARLY: price_journeys
+          STRIPE_PRICE_BUREAU: price_journeys
+          STRIPE_PRICE_BUREAU_YEARLY: price_journeys
+          STRIPE_PRICE_DRONE: price_journeys
+        run: |
+          bin/rails db:prepare db:seed
+          bin/rails journeys:prepare
+          bin/vite build
+          VITE_RUBY_AUTO_BUILD=false nohup bin/rails server --port 3000 > "$RUNNER_TEMP/rails.log" 2>&1 &
+          for i in $(seq 1 60); do
+            curl --silent --fail --output /dev/null http://localhost:3000/up && exit 0
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/rails.log"
+          exit 1
+
+      - name: Replay the journeys
+        run: |
+          echo "MONTH=$(date +%Y-%m)" >> "$GITHUB_ENV"
+          node script/journeys.mjs --out "$RUNNER_TEMP/journeys"
+
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journeys-${{ env.MONTH }}-${{ github.sha }}
+          path: ${{ runner.temp }}/journeys
+          if-no-files-found: ignore

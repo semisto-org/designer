@@ -407,12 +407,26 @@
         "color": "#726b9f",
         "pickable": true
       },
+      "season_sign": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#8a6d3b",
+        "pickable": true
+      },
       "sketch": {
         "geometries": [
           "LineString",
           "MultiLineString"
         ],
         "color": "#ffffff",
+        "pickable": false
+      },
+      "sector": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#9b8fb5",
         "pickable": false
       },
       "measure": {
