@@ -12,12 +12,14 @@ import { drawShapeFor, storedProperties } from '@/map/drawing/catalog'
 import { reliefReady, traceContour } from '@/map/drawing/contour'
 import { ElementPicker, rememberRecent } from '@/map/drawing/ElementPicker'
 import { MeasureTool, measureProperties } from '@/map/drawing/MeasureTool'
+import { deleteTargets, isDeleteShortcut } from '@/map/drawing/deleteShortcut'
 import { isMoveShortcut, moveTarget } from '@/map/drawing/moveShortcut'
 import { saveFeature } from '@/map/drawing/save'
 import { SketchTool } from '@/map/drawing/SketchTool'
 import { StepBackButton } from '@/map/drawing/StepBackButton'
 import { drawingStore, revealForDrawing, startShapeEdit, useDrawingState, type DrawingTool } from '@/map/drawing/store'
 import { plantPeek } from '@/map/plants/peek'
+import { selectionMove } from '@/map/selection/move'
 import { ZoneTool } from '@/map/zones/ZoneTool'
 import type { ElementSpec } from '@/types/drawing'
 
@@ -190,6 +192,55 @@ export default function DrawingToolbar() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [editor.canEdit])
+
+  // Backspace (or Delete) offers to delete the selected plants still planned;
+  // plants in the ground leave through their card. One ⌘Z puts them all back.
+  useEffect(() => {
+    if (!editor.canEdit) return
+    const onKey = (event: KeyboardEvent) => {
+      const editor = latest.current
+      if (!isDeleteShortcut(event) || event.defaultPrevented || event.repeat || isTextTarget(event.target)) return
+      // While a shape is reshaped, Delete removes its point (editor/draw.ts).
+      if (editor.drawing || drawingStore.get().tool || selectionMove.active) return
+      if (document.querySelector('[aria-modal="true"]')) return
+      const state = { peekedId: plantPeek.current(), selectedId: editor.selectedId, selection: editor.selection }
+      const targets = deleteTargets(state, editor.features)
+      if (!targets) return
+      event.preventDefault()
+      const { planned, planted } = targets
+      if (!planned.length) return editor.notify(t('selection.delete_planned.only_planted', { count: planted }))
+      const question = [
+        t('selection.delete_planned.confirm', { count: planned.length }),
+        planted ? t('selection.delete_planned.keeps_planted', { count: planted }) : null,
+        t('selection.delete_planned.undo_hint'),
+      ].filter(Boolean).join('\n\n')
+      if (!window.confirm(question)) return
+      plantPeek.close()
+      void deletePlanned(planned)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [editor.canEdit])
+
+  async function deletePlanned(ids: number[]) {
+    const editor = latest.current
+    // One plant: deleteFeature says which one and offers « Annuler » itself.
+    if (ids.length === 1) return editor.deleteFeature(ids[0]).catch((e: Error) => editor.notify(e.message, 'error'))
+    // One after the other: each deletion touches the map, whose version two at once would fight over.
+    const count = await editor.undoGroup(t('undo.labels.delete_all', { count: ids.length }), async () => {
+      let deleted = 0
+      for (const id of ids) {
+        try {
+          await latest.current.deleteFeature(id)
+          deleted += 1
+        } catch (e) {
+          latest.current.notify((e as Error).message, 'error')
+        }
+      }
+      return deleted
+    })
+    if (count) latest.current.notify(t('selection.delete_planned.done', { count }), 'info', { label: t('undo.action'), run: () => latest.current.undo() })
+  }
 
   // Shape editing, asked by the inspector (ElementSection) or by M.
   useEffect(() => {

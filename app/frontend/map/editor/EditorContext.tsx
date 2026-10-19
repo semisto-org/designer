@@ -60,6 +60,8 @@ export type Editor = {
   recordRemoval: (feature: MapFeature) => void
   /** Every change made by `run` is undone in one ⌘Z (« Tout accepter », a group move). */
   undoGroup: <T>(label: string, run: () => Promise<T>) => Promise<T>
+  /** The last change undone, like ⌘Z (the « Annuler » of a toast). */
+  undo: () => void
   /** Replace or insert features received from elsewhere (other panels, real time). */
   upsertFeatures: (features: MapFeature[]) => void
   removeFeatures: (ids: number[]) => void

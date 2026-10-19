@@ -17,3 +17,17 @@ fr:
     unmoved: "La position n'a pas changé."
     start: "Sélectionner plusieurs éléments"
     start_hint: "Pour les déplacer ensemble. Sur ordinateur : Maj+clic, ou Maj+glisser autour de plusieurs éléments."
+    delete_planned:
+      confirm:
+        one: "Supprimer cette plante en projet ?"
+        other: "Supprimer ces %{count} plantes en projet ?"
+      keeps_planted:
+        one: "La plante déjà en terre reste sur la carte."
+        other: "Les %{count} plantes déjà en terre restent sur la carte."
+      undo_hint: "Tu pourras revenir en arrière avec ⌘Z (Ctrl+Z)."
+      only_planted:
+        one: "Cette plante est déjà en terre : la touche ⌫ ne supprime que les plantes en projet. Pour la retirer, passe par sa fiche."
+        other: "Ces plantes sont déjà en terre : la touche ⌫ ne supprime que les plantes en projet. Pour en retirer une, passe par sa fiche."
+      done:
+        one: "1 plante en projet supprimée."
+        other: "%{count} plantes en projet supprimées."
