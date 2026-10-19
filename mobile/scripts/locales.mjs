@@ -24,6 +24,7 @@ const SHARED = [
   ['editor', 'layers'],
   ['editor', 'kinds'],
   ['plantnet'],
+  ['photo_sketches'],
   ['soil', 'abundances'],
   ['soil', 'indicators'],
 ]
