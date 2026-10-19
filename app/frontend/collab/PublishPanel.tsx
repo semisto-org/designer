@@ -226,6 +226,14 @@ export default function PublishPanel() {
           <p className="mt-1 text-xs text-loam-400">{t('collab.publish.privacy_hint')}</p>
         </fieldset>
 
+        <fieldset>
+          <legend className="text-sm font-medium text-loam-700">{t('collab.publish.gallery')}</legend>
+          <div className="mt-1">
+            <Toggle checked={options.in_gallery ?? false} onChange={(v) => setOptions({ ...options, in_gallery: v })} label={t('collab.publish.in_gallery')} />
+          </div>
+          <p className="mt-1 text-sm text-loam-500">{t('collab.publish.gallery_hint')}</p>
+        </fieldset>
+
         <div className="sticky -bottom-4 -mx-4 space-y-1 border-t border-loam-100 bg-white px-4 py-3">
           <Button type="submit" className="w-full" disabled={busy || title.trim() === ''}>
             <Globe className="h-4 w-4" />
