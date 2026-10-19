@@ -23,6 +23,7 @@ const SHARED = [
   ['storage_readings'],
   ['editor', 'layers'],
   ['editor', 'kinds'],
+  ['drawing', 'options', 'sign'],
   ['plantnet'],
   ['photo_sketches'],
   ['soil', 'abundances'],
