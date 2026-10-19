@@ -1,0 +1,7 @@
+fr:
+  ui:
+    confirm:
+      ok: "Confirmer"
+    usage:
+      of: "%{used} sur %{limit}"
+      unlimited: "%{used}, sans limite"
