@@ -19,8 +19,9 @@ module MapFeature::StormObservation
 
   def storm_observation? = kind == STORM_KIND
 
+  # When it was seen; season signs (MapFeature::SeasonSign) carry the same time.
   def observed_at
-    return nil unless storm_observation?
+    return nil unless storm_observation? || season_sign?
 
     Time.iso8601(properties.to_h["observed_at"].to_s)
   rescue ArgumentError
@@ -33,11 +34,11 @@ module MapFeature::StormObservation
     def complete_storm_observation
       p = (properties || {}).to_h.dup
       p["water"] = MapFeature::StormObservation.water_for(geometry) if geometry && MapFeature::StormObservation.water_for(geometry)
-      p["observed_at"] = (created_at || Time.current).utc.iso8601 unless storm_time?(p["observed_at"])
+      p["observed_at"] = (created_at || Time.current).utc.iso8601 unless observation_time?(p["observed_at"])
       self.properties = p
     end
 
-    def storm_time?(value)
+    def observation_time?(value)
       value.is_a?(String) && Time.iso8601(value).present?
     rescue ArgumentError
       false
