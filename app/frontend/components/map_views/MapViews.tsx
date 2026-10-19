@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
 import { Camera, ChevronDown, ClipboardList, Files, Leaf, ListChecks, Map as MapIcon, MessageSquareText, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useActiveTabInView } from '@/lib/activeTab'
 import { t } from '@/lib/i18n'
 
 /**
@@ -35,6 +36,8 @@ export const mapViewHref = (mapId: number, key: MapViewKey) => `/maps/${mapId}${
 
 /** The heading of a full-page view: the map's name, then the views as tabs. */
 export function MapViewHeader({ map, current }: { map: ViewMap & { id: number; name: string }; current: MapViewKey }) {
+  const row = useRef<HTMLElement>(null)
+  useActiveTabInView(row, current)
   return (
     <div className="mb-6">
       <p className="text-sm text-loam-500">
@@ -42,7 +45,7 @@ export function MapViewHeader({ map, current }: { map: ViewMap & { id: number; n
         <span aria-hidden> / </span>
         <Link href={`/maps/${map.id}`} className="hover:text-loam-800">{map.name}</Link>
       </p>
-      <nav aria-label={t('map_views.label')} className="-mx-4 mt-3 overflow-x-auto border-b border-loam-900/10 px-4">
+      <nav ref={row} aria-label={t('map_views.label')} className="-mx-4 mt-3 overflow-x-auto border-b border-loam-900/10 px-4">
         <ul className="flex gap-1">
           {viewsFor(map).map(({ key, icon: Icon }) => (
             <li key={key} className="shrink-0">
