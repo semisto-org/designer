@@ -8,6 +8,12 @@ class MapPublication < ApplicationRecord
   belongs_to :map
   belongs_to :published_by, class_name: "User", optional: true
 
+  # The link preview (og:image): the garden in year 15, painted in the
+  # owner's browser after each publication (collab/preview.ts) and served at
+  # /p/:token/preview.png. Terranova's own file: not counted in storage.
+  has_one_attached :preview_image
+  PREVIEW_MAX_BYTES = 4.megabytes
+
   validates :title, presence: true, length: { maximum: 120 }
   validates :description, length: { maximum: 2_000 }
   validates :token, presence: true, uniqueness: true, format: { with: /\A#{TOKEN_PATTERN}\z/ }
@@ -47,6 +53,8 @@ class MapPublication < ApplicationRecord
     publication.unpublished_at = nil
     publication.published_by = by
     publication.save!
+    # The old preview may show layers this snapshot no longer does.
+    publication.preview_image.purge_later if publication.preview_image.attached?
     publication
   end
 
@@ -87,10 +95,22 @@ class MapPublication < ApplicationRecord
 
   def public_path = "/p/#{token}"
 
+  # The link preview's address, versioned so that a new snapshot is fetched
+  # again by the networks that cache images.
+  def preview_path = preview_image.attached? ? "#{public_path}/preview.png?v=#{version}" : nil
+
+  # The town of the published address (« 5530 Yvoir » → « Yvoir »), only when
+  # the owner shows the address.
+  def locality
+    address = snapshot.dig("map", "address").to_s
+    return nil if address.blank?
+    address.split(",").last.to_s.sub(/\A\s*(?:[A-Z]{1,2}-?)?\d{4,5}\s*/, "").strip.presence
+  end
+
   def as_inertia
     {
       title:, description:, version:, publishedAt: published_at.iso8601, token:, path: public_path,
-      live: live?, stale: stale?, options:
+      live: live?, stale: stale?, options:, previewPath: preview_path
     }
   end
 
@@ -103,8 +123,9 @@ class MapPublication < ApplicationRecord
       map: {
         areaM2: data["area_m2"], stage: data["stage"], boundary: data["boundary"], center: data["center"],
         zoom: data["zoom"], bbox: data["bbox"], address: data["address"], parcels: data["parcels"],
-        regionName: data.dig("region", "name")
+        regionName: data.dig("region", "name"), locality:
       },
+      growth: snapshot["growth"],
       features: { type: "FeatureCollection", features: features },
       layers: region_layers.map { |layer| public_layer(layer) },
       aerialView: aerial_view&.as_inertia(archive_url: "#{public_path}/aerial-view")

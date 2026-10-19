@@ -4,6 +4,7 @@ import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { aerialViewLabel } from '@/drone/format'
 import { ApiError, api } from '@/lib/api'
+import { track } from '@/lib/analytics'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { LAYER_COLORS } from '@/map/layers/features'
@@ -38,12 +39,34 @@ export default function PublishPanel() {
     api<PublicationData>(base).then(adopt).catch(() => setError(t('collab.publish.load_error')))
   }, [base, adopt])
 
+  // After publishing: paint the link preview from what the public view
+  // shows, and send it. Silent on failure: the site's image stays.
+  async function paintPreview(next: PublicationData) {
+    if (!next.publicProps || !next.publication?.live) return
+    try {
+      const { renderPreview } = await import('@/public_maps/preview')
+      const blob = await renderPreview(next.publicProps)
+      if (!blob) return
+      const form = new FormData()
+      form.append('image', blob, 'preview.png')
+      const { previewPath } = await api<{ previewPath: string | null }>(`${base}/preview`, { method: 'POST', body: form })
+      setData((current) => current?.publication ? { ...current, publication: { ...current.publication, previewPath } } : current)
+    } catch {
+      // The generic image of the site is used instead.
+    }
+  }
+
   async function call(method: string, path = '', body?: unknown, success?: string) {
     setBusy(true)
     setError(null)
     try {
-      adopt(await api<PublicationData>(base + path, { method, body }))
+      const next = await api<PublicationData>(base + path, { method, body })
+      adopt(next)
       if (success) editor.notify(success)
+      if (next.publicProps) {
+        track('publish', { first: method === 'POST' })
+        void paintPreview(next)
+      }
     } catch (e) {
       setError(e instanceof ApiError || e instanceof Error ? e.message : t('collab.publish.error'))
     } finally {
@@ -94,6 +117,12 @@ export default function PublishPanel() {
             {t('collab.publish.version', { version: publication.version, date: formatDateTime(publication.publishedAt) })}
           </p>
           {publication.stale && <p className="rounded bg-humus-50 px-2 py-1 text-xs text-humus-700">{t('collab.publish.stale')}</p>}
+          {publication.previewPath && (
+            <figure className="space-y-1">
+              <img src={publication.previewPath} alt={t('collab.publish.preview')} width={1200} height={630} className="w-full rounded-lg ring-1 ring-loam-200" />
+              <figcaption className="text-sm text-loam-600">{t('collab.publish.preview_hint')}</figcaption>
+            </figure>
+          )}
         </div>
       ) : (
         <p className="text-sm text-loam-600">
