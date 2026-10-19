@@ -1,4 +1,4 @@
-import { Check, Copy, ExternalLink, Globe, RefreshCw, Sprout } from 'lucide-react'
+import { Check, Copy, Download, ExternalLink, Film, Globe, Loader2, RefreshCw, Sprout } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
@@ -8,7 +8,7 @@ import { track } from '@/lib/analytics'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { LAYER_COLORS } from '@/map/layers/features'
-import type { PublicationData, PublicationOptions } from '@/types/collab'
+import type { PublicMapProps, PublicationData, PublicationOptions } from '@/types/collab'
 import { formatDateTime } from './time'
 
 /**
@@ -129,6 +129,7 @@ export default function PublishPanel() {
               <figcaption className="text-sm text-loam-600">{t('collab.publish.preview_hint')}</figcaption>
             </figure>
           )}
+          <GardenVideo base={base} url={publication.url} />
         </div>
       ) : (
         <p className="text-sm text-loam-600">
@@ -281,4 +282,71 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (val
 function audience(views: number, started: number) {
   const seen = t('collab.publish.audience.views', { count: views })
   return started > 0 ? t('collab.publish.audience.both', { seen, started: t('collab.publish.audience.started', { count: started }) }) : `${seen}.`
+}
+
+type VideoState =
+  | { status: 'idle' }
+  | { status: 'painting'; percent: number }
+  | { status: 'done'; href: string; filename: string }
+  | { status: 'error'; message: string }
+
+/**
+ * « Mon jardin dans 30 ans »: the public view as a vertical video, painted
+ * and recorded here (public_maps/video.ts), then downloaded.
+ */
+function GardenVideo({ base, url }: { base: string; url: string }) {
+  const [state, setState] = useState<VideoState>({ status: 'idle' })
+  const [supported] = useState(() => typeof MediaRecorder !== 'undefined')
+
+  useEffect(() => () => {
+    if (state.status === 'done') URL.revokeObjectURL(state.href)
+  }, [state])
+
+  async function paint() {
+    setState({ status: 'painting', percent: 0 })
+    try {
+      const [{ renderGardenVideo, videoSupported }, data] = await Promise.all([
+        import('@/public_maps/video'),
+        api<PublicationData & { publicProps?: PublicMapProps }>(`${base}?public=1`),
+      ])
+      if (!videoSupported()) return setState({ status: 'error', message: t('collab.publish.video.unsupported') })
+      const props = data.publicProps
+      if (!props?.growth) return setState({ status: 'error', message: t('collab.publish.video.no_plants') })
+      const address = url.replace(/^https?:\/\//, '')
+      const video = await renderGardenVideo(props, address, (done) => setState({ status: 'painting', percent: Math.round(done * 100) }))
+      if (!video) return setState({ status: 'error', message: t('collab.publish.video.no_plants') })
+      const filename = `${props.token.replace(/-[a-z0-9]{14}$/, '')}-dans-30-ans.${video.extension}`
+      setState({ status: 'done', href: URL.createObjectURL(video.blob), filename })
+      track('video_painted', { format: video.extension })
+    } catch {
+      setState({ status: 'error', message: t('collab.publish.video.failed') })
+    }
+  }
+
+  return (
+    <section className="space-y-2 border-t border-leaf-100 pt-3">
+      <p className="flex items-center gap-1.5 text-sm font-medium text-leaf-800"><Film className="h-4 w-4" aria-hidden="true" />{t('collab.publish.video.title')}</p>
+      <p className="text-sm text-loam-600">{supported ? t('collab.publish.video.hint') : t('collab.publish.video.unsupported')}</p>
+      {state.status === 'painting' && (
+        <p className="flex items-center gap-2 text-sm text-loam-700" role="status">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          {t('collab.publish.video.painting', { percent: state.percent })}
+        </p>
+      )}
+      {state.status === 'error' && <p className="text-sm text-clay-700" role="alert">{state.message}</p>}
+      <div className="flex flex-wrap gap-2">
+        {state.status === 'done' && (
+          <a href={state.href} download={state.filename} onClick={() => track('video_download')} className={buttonClass('primary', 'sm')}>
+            <Download className="h-4 w-4" aria-hidden="true" />
+            {t('collab.publish.video.download')}
+          </a>
+        )}
+        {supported && state.status !== 'painting' && (
+          <Button variant="secondary" size="sm" onClick={() => void paint()}>
+            {state.status === 'done' ? t('collab.publish.video.again') : t('collab.publish.video.make')}
+          </Button>
+        )}
+      </div>
+    </section>
+  )
 }
