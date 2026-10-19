@@ -1,7 +1,7 @@
-import { Head } from '@inertiajs/react'
-import { ChevronDown, Drone, Eye, X } from 'lucide-react'
+import { Head, Link } from '@inertiajs/react'
+import { Box, ChevronDown, Drone, Eye, X } from 'lucide-react'
 import { area } from '@turf/turf'
-import type { MapMouseEvent } from 'maplibre-gl'
+import type { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Logo } from '@/components/Logo'
 import { LayerLegend } from '@/components/legend/LayerLegend'
@@ -23,6 +23,10 @@ import { GardenControls } from '@/public_maps/GardenControls'
 import { SEASONS, gardenAt, gardenPlants, seasonOf, yearFraction, yearNow, type GardenPlant, type SeasonKey } from '@/public_maps/garden'
 import { loadAtlases, paintGarden, removeGarden, type Atlases } from '@/public_maps/gardenLayer'
 import { previewYear } from '@/public_maps/preview'
+import { plantLegend, plantNumber, plantNumbersAt, type StrataGroup } from '@/public_maps/plantNumbers'
+import { paintPlantNumbers, removePlantNumbers, setPlantNumbersVisible } from '@/public_maps/plantNumbersLayer'
+import { strataLabel } from '@/components/plants/format'
+import { STRATA_COLORS, inkOn } from '@/map/plants/strataColors'
 import type { PublicMapProps } from '@/types/collab'
 
 /**
@@ -40,6 +44,9 @@ export default function PublicMapShow(props: PublicMapProps) {
   const season = seasonOf(yearFraction(now))
   const [moment, setMoment] = useState<{ year: number; season: SeasonKey }>({ year: today, season })
   const onMoment = useCallback((year: number, chosen: SeasonKey) => setMoment({ year, season: chosen }), [])
+  // The visitor shows or hides the plant numbers (zone names are the owner's choice, at publication).
+  const [showNumbers, setShowNumbers] = useState(true)
+  const legend = useMemo(() => (props.growth ? plantLegend(props.growth, t('public_maps.display.unnamed_plant')) : []), [props.growth])
 
   // Where the visitor came from: ?via=… on links Terranova makes, else direct.
   useEffect(() => {
@@ -56,7 +63,17 @@ export default function PublicMapShow(props: PublicMapProps) {
         <Logo className="h-7 w-7 shrink-0" />
         <h1 className="truncate text-base">{props.title}</h1>
         {map.areaM2 != null && <span className="hidden text-sm text-loam-400 sm:inline">{formatArea(map.areaM2)}</span>}
-        <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-loam-100 px-2.5 py-0.5 text-xs text-loam-600">
+        {props.reliefPath && (
+          <Link
+            href={props.reliefPath}
+            className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-prune-700 px-3 py-1 text-sm font-medium text-white hover:bg-prune-800"
+            title={t('public_maps.relief.open_hint')}
+          >
+            <Box className="h-4 w-4" aria-hidden="true" />
+            {t('public_maps.relief.open')}
+          </Link>
+        )}
+        <span className={(props.reliefPath ? 'hidden sm:inline-flex' : 'ml-auto inline-flex') + ' shrink-0 items-center gap-1.5 rounded-full bg-loam-100 px-2.5 py-0.5 text-xs text-loam-600'}>
           <Eye className="h-3.5 w-3.5" />
           {t('public_maps.read_only')}
         </span>
@@ -70,6 +87,7 @@ export default function PublicMapShow(props: PublicMapProps) {
         >
           <PublicLayers {...props} selectedId={selectedId} onSelect={setSelectedId} />
           {plants.length > 0 && <Garden plants={plants} year={moment.year} season={moment.season} latitude={map.center?.[1] ?? plants[0].lat} />}
+          {props.growth && props.growth.plants.length > 0 && <PlantNumbers growth={props.growth} year={moment.year} visible={showNumbers} />}
         </MapView>
         {props.description && <About text={props.description} />}
         {props.growth && plants.length > 0 && (
@@ -82,8 +100,14 @@ export default function PublicMapShow(props: PublicMapProps) {
             className="absolute inset-x-2 bottom-10 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-96"
           />
         )}
-        <Legend {...props} raised={plants.length > 0} />
-        {selected && <FeatureCard feature={selected} onClose={() => setSelectedId(null)} />}
+        <Legend
+          {...props}
+          raised={plants.length > 0}
+          plantGroups={legend}
+          showNumbers={showNumbers}
+          onShowNumbers={setShowNumbers}
+        />
+        {selected && <FeatureCard feature={selected} plant={props.growth?.plants.find((p) => p.id === selected.properties.id)} onClose={() => setSelectedId(null)} />}
       </div>
       <footer className="flex h-9 shrink-0 items-center justify-between gap-3 border-t border-loam-200 bg-white px-3 text-xs text-loam-500">
         <span>{t('public_maps.published_on', { date: formatDate(props.publishedAt) })}</span>
@@ -172,6 +196,43 @@ function Garden({ plants, year, season, latitude }: { plants: GardenPlant[]; yea
   return null
 }
 
+/** Each plant point's number in a pastille of its strata colour, hollow until planted. */
+function PlantNumbers({ growth, year, visible }: { growth: NonNullable<PublicMapProps['growth']>; year: number; visible: boolean }) {
+  const instance = useMapInstance()
+  // Whole years: a pastille fills the year its plant goes into the ground.
+  const shown = Math.floor(year + 1e-6)
+
+  useEffect(() => {
+    if (!instance) return
+    whenStyleReady(instance, () => {
+      paintPlantNumbers(instance, plantNumbersAt(growth, shown))
+      setPlantNumbersVisible(instance, visible)
+    })
+  }, [instance, growth, shown, visible])
+
+  useEffect(() => () => {
+    if (instance?.getStyle()) removePlantNumbers(instance)
+  }, [instance])
+
+  return null
+}
+
+/**
+ * Runs `fn` now, or once the style accepts sources. `isStyleLoaded()` is
+ * also false while tiles or crowns load, and `load` fires only once: a
+ * change made then would wait forever.
+ */
+function whenStyleReady(map: MapLibreMap, fn: () => void) {
+  const run = () => {
+    try {
+      fn()
+    } catch {
+      map.once('idle', run)
+    }
+  }
+  run()
+}
+
 function About({ text }: { text: string }) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   return (
@@ -185,7 +246,13 @@ function About({ text }: { text: string }) {
   )
 }
 
-function Legend({ features, layers, raised }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean }) {
+type DisplayProps = {
+  plantGroups: StrataGroup[]
+  showNumbers: boolean
+  onShowNumbers: (show: boolean) => void
+}
+
+function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumbers }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean } & DisplayProps) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   const counts = useMemo(() => {
     const result = new Map<string, number>()
@@ -201,7 +268,13 @@ function Legend({ features, layers, raised }: Pick<PublicMapProps, 'features' | 
         <ChevronDown className={'h-4 w-4 transition ' + (open ? 'rotate-180' : '')} aria-hidden="true" />
       </button>
       {open && (
-        <div className="mt-2 space-y-2 text-sm text-loam-700">
+        <div className="mt-2 max-h-[min(24rem,50dvh)] space-y-2 overflow-y-auto text-sm text-loam-700">
+          {plantGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              <Toggle on={showNumbers} onChange={onShowNumbers} label={t('public_maps.display.numbers')} />
+            </div>
+          )}
+          {plantGroups.length > 0 && <PlantLegend groups={plantGroups} />}
           <ul className="space-y-1">
             {counts.map(([layer, count]) => (
               <li key={layer} className="flex items-center gap-2">
@@ -229,9 +302,50 @@ function Legend({ features, layers, raised }: Pick<PublicMapProps, 'features' | 
   )
 }
 
-function FeatureCard({ feature, onClose }: { feature: MapFeature; onClose: () => void }) {
+/** A switch written as a pill: on, it is filled. */
+function Toggle({ on, onChange, label }: { on: boolean; onChange: (on: boolean) => void; label: string }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={() => onChange(!on)}
+      className={'rounded-full px-3 py-1 text-sm ring-1 transition ' + (on ? 'bg-prune-700 text-white ring-prune-700' : 'bg-white text-loam-600 ring-loam-200 hover:bg-loam-50')}
+    >
+      {label}
+    </button>
+  )
+}
+
+/** The plants by strata, each species with its numbers (« 3, 5–7 »), as a planting plan's key. */
+function PlantLegend({ groups }: { groups: StrataGroup[] }) {
+  return (
+    <ul className="space-y-1.5 border-b border-loam-100 pb-2" aria-label={t('public_maps.display.plants')}>
+      {groups.map((group) => (
+        <li key={group.strata}>
+          <p className="flex items-center gap-2 font-medium">
+            <span className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white" style={{ background: STRATA_COLORS[group.strata] }} />
+            {strataLabel(group.strata)}
+            <span className="text-sm font-normal text-loam-400">{group.count}</span>
+          </p>
+          <ul className="ml-5 mt-0.5 space-y-0.5">
+            {group.species.map((species) => (
+              <li key={species.name} className="text-sm text-loam-600">
+                {species.numbers && <span className="mr-1.5 font-medium tabular-nums text-loam-800">{species.numbers}</span>}
+                {species.name}
+                {!species.numbers && species.count > 1 && <span className="ml-1 text-loam-400">× {species.count}</span>}
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function FeatureCard({ feature, plant, onClose }: { feature: MapFeature; plant?: NonNullable<PublicMapProps['growth']>['plants'][number]; onClose: () => void }) {
   const p = feature.properties
   const m = measure(displayGeometry(feature))
+  const number = plantNumber(plant?.number)
   return (
     <aside className="absolute inset-x-2 bottom-12 z-20 rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-14 md:right-3 md:w-72" aria-live="polite">
       <div className="flex items-start justify-between gap-2">
@@ -240,7 +354,15 @@ function FeatureCard({ feature, onClose }: { feature: MapFeature; onClose: () =>
             <span className="h-2 w-2 rounded-full" style={{ background: LAYER_COLORS[p.layer] ?? '#6e6355' }} />
             {t(`editor.layers.${p.layer}`)} · {t(`editor.kinds.${p.kind}`)}
           </p>
-          <h2 className="mt-1 text-base">{p.name || t(`editor.kinds.${p.kind}`)}</h2>
+          <h2 className="mt-1 flex items-center gap-2 text-base">
+            {number && plant && (
+              <span className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full px-1.5 text-sm" style={{ background: STRATA_COLORS[plant.strata], color: inkOn(STRATA_COLORS[plant.strata]) }}>{number}</span>
+            )}
+            {p.name || plant?.name || t(`editor.kinds.${p.kind}`)}
+          </h2>
+          {plant && (
+            <p className="text-sm text-loam-500">{[p.name ? plant.name : null, strataLabel(plant.strata)].filter(Boolean).join(' · ')}</p>
+          )}
         </div>
         <button type="button" onClick={onClose} className="rounded p-1 text-loam-400 hover:bg-loam-100" aria-label={t('common.close')}>
           <X className="h-4 w-4" />

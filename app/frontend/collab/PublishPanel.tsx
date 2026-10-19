@@ -221,6 +221,7 @@ export default function PublishPanel() {
             <Toggle checked={options.hide_networks} onChange={(v) => setOptions({ ...options, hide_networks: v })} label={t('collab.publish.hide_networks')} />
             <Toggle checked={options.hide_address} onChange={(v) => setOptions({ ...options, hide_address: v })} label={t('collab.publish.hide_address')} />
             <Toggle checked={options.show_notes} onChange={(v) => setOptions({ ...options, show_notes: v })} label={t('collab.publish.show_notes')} />
+            <Toggle checked={options.show_zone_names ?? false} onChange={(v) => setOptions({ ...options, show_zone_names: v })} label={t('collab.publish.show_zone_names')} />
           </div>
           <p className="mt-1 text-xs text-loam-400">{t('collab.publish.privacy_hint')}</p>
         </fieldset>

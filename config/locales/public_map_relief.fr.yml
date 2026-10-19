@@ -1,0 +1,36 @@
+fr:
+  public_maps:
+    relief:
+      meta: "Le lieu en 3D : fais pleuvoir, laisse passer la nuit, suis l'ombre d'une journée, ou parcours-le à pied ou en voiture."
+      open: "Voir en 3D"
+      open_hint: "Pluie, nuit, ombre, parcours"
+      back: "Revenir à la carte"
+      subtitle: "Le lieu en 3D"
+      modes_label: "Simulations"
+      modes:
+        rain: "Pluie"
+        night: "Nuit"
+        shade: "Ombre"
+        tour: "Parcours"
+      rain:
+        intro: "Une averse tombe sur le lieu : regarde où l'eau court, où elle s'arrête et ce que le terrain en garde."
+        play: "Faire pleuvoir"
+        status: "Après %{time}, le terrain garde %{kept} d'eau ; %{outflow} sont partis dans la pente. Lame la plus profonde : %{deepest}."
+        held: "Les mares et baissières en retiennent %{held}."
+      night:
+        intro: "Par nuit claire et sans vent, l'air froid glisse vers les creux et s'y accumule jusqu'à l'aube : c'est là que gèlent les fleurs précoces."
+      shade:
+        intro: "L'ombre du relief, des bâtiments et des arbres, heure par heure, aux grands jours de l'année."
+        status: "%{shaded} % du terrain est à l'ombre."
+        plants: "Les plantes portent l'ombre de l'année choisie en haut."
+      tour:
+        intro: "Promène-toi dans le lieu, les yeux à 1,60 m, ou parcours-le avec la Lada Niva."
+        walk: "À pied"
+        drive: "En voiture"
+        stop: "Arrêter"
+        park: "Ranger la Niva"
+        placing: "Clique sur le terrain là où tu veux commencer"
+        placing_touch: "Touche le terrain là où tu veux commencer"
+        drive_keys: "Flèches (ou Z Q S D) pour conduire, espace pour freiner · Échap pour revenir"
+        drive_touch: "Les flèches en bas pour conduire"
+        hint: "Choisis comment parcourir le lieu, puis indique où commencer."

@@ -156,4 +156,18 @@ class MapPublicationTest < ActiveSupport::TestCase
     assert_equal 2, data[:features][:features].size
     assert_equal "Domaine d'Ahinvaux", data[:title]
   end
+
+  test "zone and path names stay private unless the owner shows them" do
+    map = maps(:ahinvaux)
+    map.features.create!(layer: "notes", kind: "zone", name: "Zone à vendre au voisin",
+                         geometry: { "type" => "Polygon", "coordinates" => [ [ [ 4.9, 50.34 ], [ 4.901, 50.34 ], [ 4.901, 50.341 ], [ 4.9, 50.34 ] ] ] })
+    names = ->(publication) { publication.features.select { |f| f.dig("properties", "kind") == "zone" }.map { |f| f.dig("properties", "name") } }
+    publication = MapPublication.publish!(map, by: users(:michael))
+    assert_equal false, publication.options["show_zone_names"]
+    assert_equal [ nil ], names.call(publication)
+    assert_not_includes publication.snapshot.to_json, "Zone à vendre"
+
+    publication = MapPublication.publish!(map, by: users(:michael), options: { "show_zone_names" => "1" })
+    assert_equal [ "Zone à vendre au voisin" ], names.call(publication)
+  end
 end
