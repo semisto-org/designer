@@ -18,7 +18,8 @@
     "check": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
     "test:relief": "node --experimental-strip-types --test test/frontend/relief/*.test.ts",
     "test:drone": "node --experimental-strip-types --test test/frontend/drone/*.test.ts",
-    "test:frontend": "node --experimental-strip-types --test test/frontend/*/*.test.ts"
+    "test:frontend": "node --experimental-strip-types --test test/frontend/*/*.test.ts",
+    "build:offline": "vite build --config vite.offline.config.ts"
   },
   "dependencies": {
     "@fontsource-variable/caveat": "^5.3.0",

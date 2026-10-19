@@ -62,6 +62,9 @@ jobs:
       - name: Unit tests (TypeScript)
         run: npm run test:frontend
 
+      - name: Build the offline site's viewer
+        run: npm run build:offline
+
   mobile:
     runs-on: ubuntu-latest
     defaults:
