@@ -546,7 +546,11 @@ Rails.application.routes.draw do
     get "/", to: "dashboard#show", as: :dashboard
     resources :users, only: %i[index update] do
       resource :impersonation, only: :create
+      # « Offrir une formule » (Billing::PlanGift).
+      resources :plan_gifts, path: "plan-gifts", only: :create
     end
+    post "plan-gifts", to: "plan_gifts#create_all", as: :plan_gifts
+    post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
     get "tech", to: "tech#show", as: :tech
     get "catalogue", to: "catalogue#show", as: :catalogue

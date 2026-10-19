@@ -17,6 +17,8 @@ export type AdminUserRow = {
   plan: PlanKey
   /** Chose « Compte pro » on the welcome page. */
   professional: boolean
+  /** The plan Semisto gave this account (Billing::PlanGift), while it runs. */
+  gift: { id: number; planKey: Exclude<PlanKey, 'free'>; endsAt: string } | null
 }
 
 export type AdminMapRow = {
@@ -30,7 +32,7 @@ export type AdminMapRow = {
 }
 
 export type AdminEventAction = 'impersonation_started' | 'impersonation_ended' | 'admin_granted' | 'admin_revoked' | 'reviewer_granted' | 'reviewer_revoked'
-  | 'promotion_code_created' | 'promotion_code_deactivated'
+  | 'promotion_code_created' | 'promotion_code_deactivated' | 'plan_gifted' | 'plans_gifted' | 'plan_gift_revoked'
 
 export type AdminEventRow = {
   id: number

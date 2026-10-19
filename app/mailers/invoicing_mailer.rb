@@ -34,7 +34,11 @@ class InvoicingMailer < ApplicationMailer
     @plan = I18n.t("billing.plans.#{grant.plan_key}.name")
     @ends_on = french_date(grant.ends_at)
     @read_only_maps = @user.read_only_maps_count
-    @renew_url = new_invoice_request_url(plan: grant.plan_key)
+    # A plan Semisto gave has no invoice to ask for again: the e-mail points
+    # to the plans instead.
+    @gift = !grant.on_invoice?
+    @copy = @gift ? "invoicing_mailer.grant_reminder.gift" : "invoicing_mailer.grant_reminder"
+    @renew_url = @gift ? pricing_url : new_invoice_request_url(plan: grant.plan_key)
     mail to: @user.email_address, subject: t(".#{kind}.subject", date: @ends_on)
   end
 

@@ -67,4 +67,12 @@ class InvoicingMailerTest < ActionMailer::TestCase
     assert_equal "Ta formule Semisto Terranova est arrivée à échéance", InvoicingMailer.grant_reminder(grant, "expired").subject
     assert_includes InvoicingMailer.grant_reminder(grant, "expired").text_part.body.to_s, "Ta première carte reste entièrement modifiable"
   end
+
+  test "grant_reminder: a plan Semisto gave points to the plans, not to an invoice" do
+    grant = users(:alice).plan_grants.create!(plan_key: "yearly", starts_at: Time.zone.local(2026, 10, 19), ends_at: Time.zone.local(2027, 4, 1))
+    text = InvoicingMailer.grant_reminder(grant, "d30").text_part.body.to_s
+    assert_includes text, "Ta formule Home, offerte par Semisto, est valable jusqu'au 1 avril 2027"
+    assert_includes text, "Voir les formules : http://example.com/tarifs"
+    assert_not_includes text, "facture"
+  end
 end

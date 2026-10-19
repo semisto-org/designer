@@ -1,11 +1,12 @@
 import { router, usePage } from '@inertiajs/react'
 import { Leaf, ShieldCheck, ShieldOff, UserRoundCheck } from 'lucide-react'
+import { PlanGift } from '@/components/admin/PlanGift'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import type { SharedProps } from '@/types'
 import type { AdminUserRow } from '@/types/admin'
 
-/** « Se connecter en tant que », the admin role and the catalogue reviewer role, for one account. */
+/** « Se connecter en tant que », the admin role, the catalogue reviewer role and « Offrir une formule », for one account. */
 export function UserActions({ user }: { user: AdminUserRow }) {
   const { currentUser } = usePage().props as unknown as SharedProps
 
@@ -24,7 +25,7 @@ export function UserActions({ user }: { user: AdminUserRow }) {
       <Leaf className="h-4 w-4" aria-hidden />
     </Button>
   )
-  if (currentUser?.id === user.id) return <div className="flex flex-wrap items-center gap-1.5">{reviewerButton}</div>
+  if (currentUser?.id === user.id) return <div className="flex flex-wrap items-center gap-1.5">{reviewerButton}<PlanGift user={user} /></div>
 
   const toggleAdmin = () => {
     const message = user.admin ? t('admin.users.confirm_revoke', { name: user.name }) : t('admin.users.confirm_grant', { name: user.name })
@@ -48,6 +49,7 @@ export function UserActions({ user }: { user: AdminUserRow }) {
         {user.admin ? <ShieldOff className="h-4 w-4" aria-hidden /> : <ShieldCheck className="h-4 w-4" aria-hidden />}
       </Button>
       {reviewerButton}
+      <PlanGift user={user} />
     </div>
   )
 }
