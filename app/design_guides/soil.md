@@ -60,7 +60,7 @@ How many: Semisto starts temperate forest gardens with roughly one support plant
 - **Year 15**: most of the pioneers are gone or coppiced low; a few fixers stay in the shrub layer and the hedges.
 - **Year 30**: the canopy is closed; support lives on in the hedges, the ground cover and the leaf litter.
 
-Each support plant on the map says what becomes of it and when: cut and dropped every year, coppiced, or removed once its neighbours need the light. When you propose support plants, give that fate in the `rationale` (for example: "alder to chop and drop from year 3, removed around year 10 when the pear next to it needs the light").
+Each support plant on the map says what becomes of it and when: cut and dropped every year, coppiced, or removed once its neighbours need the light. On the map, a plant is a support plant when its species has the role `support` or `pioneer` in the palette, or when its own `succession` property says `support` (`productive` overrides the palette); `list_features` marks it `support: true`, and the editor hatches the ground it feeds. Its `training` says how it is kept (`chop_and_drop` for a plant cut hard every year, its cuttings left at the foot of the fruit trees; `coppice`; `pollard`), and `support_until` the year after planting when it is removed (the 3D growth then takes it away). When you propose support plants with `propose_features` (layer `plants`, kind `plant`), set these properties and say the fate in the `rationale` too (for example: "alder to chop and drop from year 3, removed around year 10 when the pear next to it needs the light"); for plants already on the map, `propose_feature_updates`.
 
 ## What to propose
 
