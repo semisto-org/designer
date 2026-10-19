@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { display, useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
 import { memoryOf } from '@/lib/memory'
+import { observationYear, signsToLookFor } from '@/lib/season'
 import { anchor } from '@/lib/geo'
 import { t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
@@ -100,6 +101,7 @@ export default function Terrain() {
   const shotHere = useMemo(() => (me && bundle ? photosHere(bundle.photos, me) : []), [bundle, me])
   const week = useWeek(mapId)
   const memory = useMemo(() => (bundle ? memoryOf({ photos: bundle.photos, features: bundle.features }) : null), [bundle])
+  const seasons = useMemo(() => (bundle ? { seasons: observationYear(bundle.features), lookFor: signsToLookFor(bundle.features) } : null), [bundle])
   const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
   const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
   const here = target ? arrived(target.meters, accuracy) : false
@@ -288,7 +290,8 @@ export default function Terrain() {
           : visit && editable
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
             : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
-                mapId={mapId} photosHere={shotHere} memory={memory} week={week} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
+                mapId={mapId} photosHere={shotHere} memory={memory} week={week}
+                year={editable && seasons ? { ...seasons, onSign: (sign) => go('/maps/[id]/season', { sign }) } : null} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
       </Sheet>
     </View>
   )

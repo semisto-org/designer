@@ -49,6 +49,7 @@ function Navigator() {
       <Stack.Screen name="maps/[id]/display" options={{ title: t('mobile.display.title'), presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/outbox" options={{ title: t('mobile.outbox.title') }} />
       <Stack.Screen name="maps/[id]/visit-note" options={{ title: '', presentation: 'modal' }} />
+      <Stack.Screen name="maps/[id]/season" options={{ title: t('mobile.season.title'), presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/visit-end" options={{ title: t('mobile.visit.end_title') }} />
       <Stack.Screen name="maps/[id]/photo/[photoId]" options={{ title: '' }} />
       <Stack.Screen name="maps/[id]/sketch/[photoId]" options={{ title: '' }} />

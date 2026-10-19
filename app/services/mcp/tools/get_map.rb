@@ -40,6 +40,7 @@ module Mcp
           },
           documents: map.documents.count,
           photos: map.photos.count,
+          observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
