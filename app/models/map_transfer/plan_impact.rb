@@ -16,7 +16,9 @@ class MapTransfer
     # A map of a team someone pays for keeps the team's plan, whoever owns it.
     def billing? = Billing.enabled? && @map.organization&.billing_user.nil?
 
-    def entitlements = @entitlements ||= Entitlements.for(@recipient)
+    def scope = @scope ||= Billing::Scope.own(@recipient)
+
+    def entitlements = scope.entitlements
 
     # The map taken over would be read-only for its new owner.
     def map_read_only?
@@ -26,7 +28,7 @@ class MapTransfer
     # The recipient's maps editable today that would become read-only.
     def maps_becoming_read_only
       return Map.none unless billing?
-      @recipient.billed_maps.where(id: editable_now - editable_after).order(:created_at, :id)
+      scope.maps.where(id: editable_now - editable_after).order(:created_at, :id)
     end
 
     # Paid features available on the map today that the recipient's plan does not include.
@@ -56,11 +58,11 @@ class MapTransfer
 
     private
       def editable_now
-        @editable_now ||= @recipient.billed_maps.order(:created_at, :id).limit(entitlements.max_maps).pluck(:id)
+        @editable_now ||= scope.maps.order(:created_at, :id).limit(entitlements.max_maps).pluck(:id)
       end
 
       def editable_after
-        @editable_after ||= @recipient.billed_maps.or(Map.active.where(id: @map.id))
+        @editable_after ||= scope.maps.or(Map.active.where(id: @map.id))
           .order(:created_at, :id).limit(entitlements.max_maps).pluck(:id)
       end
   end

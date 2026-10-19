@@ -73,6 +73,9 @@ export default function AccountShow({ account }: { account: AccountData }) {
               {account.planEndsAt ? `${t('account.plan_until', { date: formatDate(account.planEndsAt) })} · ` : ''}
               {maps}
             </p>
+            {account.personalMaps !== null && (
+              <p className="mt-1 text-sm text-loam-500">{t('team_billing.personal_maps', { used: account.personalMaps.used, max: account.personalMaps.max })}</p>
+            )}
           </div>
           <ButtonLink href="/billing" variant="secondary">{t('account.manage_plan')}</ButtonLink>
         </div>

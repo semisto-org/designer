@@ -32,7 +32,34 @@ class TeamBillingTest < ActiveSupport::TestCase
       assert_not own.read_only_by_plan?
       assert team_maps.none?(&:read_only_by_plan?)
       # The designer's free map is used by their own map only.
-      assert_not Entitlements.for(@designer).can_create_map?(@designer)
+      assert_not Billing::Scope.own(@designer).can_create_map?
+    end
+  end
+
+  test "the payer's own maps follow the free plan, apart from the team's maps" do
+    with_billing do
+      team_maps = 2.times.map { |i| map_for(@payer, team: @team, name: "Semisto #{i}") }
+      first = map_for(@payer, name: "Mon jardin")
+      second = map_for(@payer, name: "Le jardin de ma sœur")
+
+      # The team's plan counts the team's maps only.
+      assert_equal team_maps.sort_by(&:id), @payer.billed_maps.order(:id).to_a
+      assert_equal [ first, second ].sort_by(&:id), @payer.own_billed_maps.order(:id).to_a
+      assert_equal "bureau", Entitlements.for_map(team_maps.first).plan
+      assert_equal "free", Entitlements.for_map(first).plan
+      assert team_maps.none?(&:read_only_by_plan?)
+      assert_not first.read_only_by_plan?
+      assert second.read_only_by_plan?
+      assert_equal 1, @payer.read_only_maps_count
+      assert_not Billing::Scope.own(@payer).can_create_map?
+      assert Billing::Scope.for_map(team_maps.first).can_create_map?
+      assert_equal 1.gigabyte, StorageUsage.for_map(first).limit_bytes
+      assert_equal 120.gigabytes, StorageUsage.for_map(team_maps.first).limit_bytes
+
+      # Once nobody's team, their plan covers their own maps again.
+      @team.update!(billing_user: nil)
+      assert_not second.reload.read_only_by_plan?
+      assert_equal "bureau", Entitlements.for_map(second).plan
     end
   end
 

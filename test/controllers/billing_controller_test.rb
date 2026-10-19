@@ -66,6 +66,23 @@ class BillingControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a team payer sees their own maps apart, on the free plan" do
+    team = Organization.create_with_admin!(@user, name: "Semisto")
+    team.update!(billing_user: @user)
+    @user.plan_subscriptions.create!(plan_key: "bureau", status: "active", stripe_subscription_id: "sub_team")
+    Map.create!(name: "Équipe", owner: @user, organization: team, region: regions(:wallonia))
+    2.times { |i| Map.create!(name: "Perso #{i}", owner: @user, region: regions(:wallonia)) }
+    sign_in_as @user
+    with_billing do
+      props = billing_props
+      assert_equal [ 1, 20 ], [ props["ownedMaps"], props["maxMaps"] ]
+      assert_equal 1, props["readOnlyMaps"]
+      personal = props["personalMaps"]
+      assert_equal [ 2, 1, 1 ], [ personal["used"], personal["max"], personal["readOnly"] ]
+      assert_equal 1.gigabyte, personal.dig("storage", "limitBytes")
+    end
+  end
+
   test "shows the subscription, a pending cancellation and a payment problem" do
     @user.plan_subscriptions.create!(plan_key: "bureau", status: "past_due", past_due_since: 1.day.ago, cancel_at_period_end: true,
       current_period_end: 20.days.from_now, stripe_subscription_id: "sub_1")

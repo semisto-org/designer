@@ -82,11 +82,11 @@ class PlanResolutionTest < ActiveSupport::TestCase
     subscription(plan_key: "bureau")
     with_billing do
       maps = 21.times.map { |i| @user.owned_maps.create!(name: "Client #{i}") }
-      refute Entitlements.for(@user).can_create_map?(@user)
+      refute Billing::Scope.own(@user).can_create_map?
       assert_equal 1, @user.read_only_maps_count
       maps.first(2).each(&:archive!)
       assert_equal 0, @user.read_only_maps_count
-      assert Entitlements.for(@user).can_create_map?(@user)
+      assert Billing::Scope.own(@user).can_create_map?
     end
   end
 

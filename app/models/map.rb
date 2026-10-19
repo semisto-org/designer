@@ -89,7 +89,7 @@ class Map < ApplicationRecord
     update!(archived_at: Time.current) unless archived?
   end
 
-  def unarchivable? = archived? && Entitlements.for(billing_user).can_create_map?(billing_user)
+  def unarchivable? = archived? && Billing::Scope.for_map(self).can_create_map?
 
   def unarchive!
     update!(archived_at: nil) if archived?
@@ -98,12 +98,11 @@ class Map < ApplicationRecord
   # After a plan ends, the payer's maps beyond the plan's limit stay readable
   # (view, export, comment) but cannot be edited: the oldest maps keep the
   # allowance, up to max_maps. Nothing is ever deleted. Never true while
-  # billing is disabled (closed beta).
+  # billing is disabled (closed beta). The own maps of someone who pays for a
+  # team count apart, under the free plan (Billing::Scope).
   def read_only_by_plan?
     return false unless Billing.enabled? && archived_at.nil?
-    payer = billing_user
-    allowed = Entitlements.for(payer).max_maps
-    payer.billed_maps.order(:created_at, :id).limit(allowed).pluck(:id).exclude?(id)
+    Billing::Scope.for_map(self).editable_map_ids.exclude?(id)
   end
 
   # The logo printed at the top of the map's documents: its team's, else its
@@ -113,8 +112,9 @@ class Map < ApplicationRecord
     holder && { logoUrl: holder.logo_url, name: holder.is_a?(Organization) ? holder.name : owner.display_name }
   end
 
-  # Whose plan this map follows: the team's billing user for a map of a team
-  # that has one (« Forfait de l'équipe »), else its owner.
+  # Who pays for this map: the team's billing user for a map of a team that
+  # has one (« Forfait de l'équipe »), else its owner (whose plan applies,
+  # unless they pay for a team: Billing::Scope).
   def billing_user
     organization&.billing_user || owner
   end

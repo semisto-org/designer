@@ -16,15 +16,18 @@ class StorageUsage
 
   attr_reader :payer
 
-  def initialize(payer)
+  # scope: which of the payer's maps count, and under which plan
+  # (Billing::Scope): a team payer's own maps have their own free allowance.
+  def initialize(payer, scope: Billing::Scope.new(payer))
     @payer = payer
+    @scope = scope
   end
 
-  def self.for_map(map) = new(map.billing_user)
+  def self.for_map(map) = Billing::Scope.for_map(map).storage
 
   def used_bytes
     @used_bytes ||= begin
-      maps = payer.billed_maps(archived: true).select(:id)
+      maps = @scope.maps(archived: true).select(:id)
       attachments = COUNTED.map do |type, (names, records)|
         ActiveStorage::Attachment.where(record_type: type, name: names, record_id: records.call.where(map_id: maps).select(:id))
       end.reduce(:or)
@@ -33,7 +36,7 @@ class StorageUsage
   end
 
   # nil: no limit (billing off).
-  def limit_bytes = Entitlements.for(payer).storage_bytes
+  def limit_bytes = @scope.entitlements.storage_bytes
 
   def allows?(incoming_bytes)
     limit_bytes.nil? || used_bytes + incoming_bytes.to_i <= limit_bytes

@@ -28,9 +28,11 @@ class Entitlements
   end
 
   # Entitlements that apply on a map: those of the user who pays for it, the
-  # team's billing user or else its owner (Map#billing_user).
+  # team's billing user or else its owner (Map#billing_user), except that the
+  # own maps of someone who pays for a team follow the free plan
+  # (Billing::Scope).
   def self.for_map(map)
-    self.for(map.billing_user)
+    Billing::Scope.for_map(map).entitlements
   end
 
   def initialize(plan, user = nil)
@@ -56,10 +58,6 @@ class Entitlements
   def ai_trial? = !PLANS[plan][:ai_drafts] && @ai_trial_ends_at.present? && Time.current < @ai_trial_ends_at
   def ai_trial_ends_at = (@ai_trial_ends_at if ai_trial?)
   def paid? = plan != "free"
-
-  def can_create_map?(user)
-    unlimited? || user.billed_maps.count < max_maps
-  end
 
   def as_json(*)
     {
