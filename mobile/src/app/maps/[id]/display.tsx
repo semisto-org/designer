@@ -1,14 +1,19 @@
 // « Affichage »: what the terrain map shows. By default the existing only,
 // since on the ground the phone records what is there; the project comes
 // back with one switch. Layers and plant strata can be hidden, like in
-// « Calques » on the website. Kept per map on the phone.
+// « Calques » on the website. A drone view of the map can be laid over the
+// base map: seen through the connection, or kept on the phone. Kept per map
+// on the phone.
 import { useLocalSearchParams } from 'expo-router'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native'
 import { display, useDisplay } from '@/lib/display'
-import { census, hidesMore, toggle, UNKNOWN_STRATA } from '@/lib/display-core'
+import { census, hidesMore, shownAerialView, toggle, UNKNOWN_STRATA } from '@/lib/display-core'
 import { LAYERS, layerLabel } from '@/lib/elements'
-import { has, t } from '@/lib/i18n'
+import { formatDate, has, t } from '@/lib/i18n'
+import { aerialDownloadState, downloadAerialView, removeAerialDownload, type DownloadState } from '@/lib/maps'
+import type { AerialView, MapSummary } from '@/lib/types'
+import { useOnline } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
 import { Body, Button, Chip, Label, styles } from '@/ui/kit'
 import { colors, fonts, space } from '@/ui/theme'
@@ -33,6 +38,22 @@ export default function DisplayScreen() {
       </View>
       <Body muted>{t('mobile.display.projected_hint')}</Body>
       <Body muted>{counts.projected ? t('mobile.display.projected_count', { count: counts.projected }) : t('mobile.display.projected_none')}</Body>
+
+      {bundle && (bundle.aerialViews?.length ?? 0) > 0 && (
+        <>
+          <Label>{t('mobile.display.drone')}</Label>
+          <Body muted>{t('mobile.display.drone_hint')}</Body>
+          <View style={s.chips}>
+            <Chip role="radio" label={t('mobile.display.drone_none')} selected={!shownAerialView(shown, bundle.aerialViews)}
+              onPress={() => display.set(mapId, { ...shown, aerialViewId: null })} />
+            {bundle.aerialViews!.map((view) => (
+              <Chip key={view.id} role="radio" label={droneLabel(view)} selected={shown.aerialViewId === view.id}
+                onPress={() => display.set(mapId, { ...shown, aerialViewId: view.id })} />
+            ))}
+          </View>
+          {shownAerialView(shown, bundle.aerialViews) && <DroneDownload map={bundle.map} view={shownAerialView(shown, bundle.aerialViews)!} />}
+        </>
+      )}
 
       {layers.length > 0 && <Label>{t('mobile.display.layers')}</Label>}
       {layers.map((layer) => (
@@ -67,6 +88,50 @@ export default function DisplayScreen() {
     </ScrollView>
   )
 }
+
+const droneLabel = (view: AerialView) => [view.name, formatDate(view.capturedOn)].filter(Boolean).join(' · ')
+
+/** Keeps the chosen drone view on the phone, for the field without network. */
+function DroneDownload({ map, view }: { map: MapSummary; view: AerialView }) {
+  const online = useOnline()
+  const [state, setState] = useState<DownloadState | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    setState(null)
+    setFailed(false)
+    aerialDownloadState(map.id, view.id).then(setState).catch(() => setState(null))
+  }, [map.id, view.id])
+
+  if (state?.state === 'complete') {
+    return (
+      <View style={s.row}>
+        <Text style={[s.rowLabel, { color: colors.leaf700, flex: 1 }]}>{t('mobile.display.drone_kept', { size: megabytes(state.bytes) })}</Text>
+        <Button variant="ghost" label={t('mobile.display.drone_remove')}
+          onPress={async () => { await removeAerialDownload(map.id, view.id); setState({ state: 'none', percentage: 0, bytes: 0 }) }} />
+      </View>
+    )
+  }
+  if (state?.state === 'active') return <Body muted>{t('mobile.display.drone_downloading', { percent: state.percentage })}</Body>
+  return (
+    <>
+      <Button variant="secondary" disabled={!online}
+        label={t(failed || state?.state === 'paused' ? 'mobile.display.drone_download_retry' : 'mobile.display.drone_download')}
+        onPress={async () => {
+          setFailed(false)
+          setState({ state: 'active', percentage: 0, bytes: 0 })
+          try {
+            await downloadAerialView(map, view, setState)
+          } catch {
+            setFailed(true)
+            setState(null)
+          }
+        }} />
+      <Body muted>{t(online ? 'mobile.display.drone_online' : 'mobile.display.drone_offline')}</Body>
+    </>
+  )
+}
+
+const megabytes = (bytes: number) => String(Math.max(1, Math.round(bytes / 1_000_000)))
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md, paddingVertical: space.xs },

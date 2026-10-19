@@ -13,7 +13,6 @@ import { display, useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
 import { anchor } from '@/lib/geo'
 import { t, todayIso } from '@/lib/i18n'
-import { styleUrl } from '@/lib/maps'
 import { outbox } from '@/lib/outbox'
 import { pickFeatureId } from '@/lib/pick'
 import { photosHere } from '@/lib/retake'
@@ -25,6 +24,7 @@ import { useVisit, visits } from '@/lib/visit'
 import { visitNotes } from '@/lib/visit-core'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
+import { useMapStyle } from '@/state/useMapStyle'
 import { useOnline, useOutbox } from '@/state/sync'
 import {
   AROUND_RADIUS, FeatureBody, FeatureTop, NoteTop, RestBody, RestTop, TourTop, VisitBody, VisitTop, whereLabel, type NoteChoice, type QuickAction,
@@ -50,6 +50,7 @@ export default function Terrain() {
   const [noting, setNoting] = useState(false)
   const [level, setLevel] = useState<SheetLevel>(0)
   const shown = useDisplay(mapId)
+  const mapStyle = useMapStyle(mapId, bundle)
   const visit = useVisit(mapId)
   const [accuracy, setAccuracy] = useState<number | null>(null)
   const [touring, setTouring] = useState(false)
@@ -215,7 +216,7 @@ export default function Terrain() {
 
   return (
     <View style={s.fill}>
-      <Map style={s.fill} mapStyle={styleUrl(mapId)} compass compassPosition={{ top: insets.top + 64, right: 12 }}
+      <Map style={s.fill} mapStyle={mapStyle} compass compassPosition={{ top: insets.top + 64, right: 12 }}
         attributionPosition={{ top: insets.top + 64, left: 8 }} logo={false}
         onPress={(e) => { if (!('features' in e.nativeEvent && pickFeatureId(e.nativeEvent.features) !== null)) unselect() }}
         onRegionWillChange={(e) => { if (e.nativeEvent.userInteraction) setFollow(false) }}>

@@ -1,4 +1,4 @@
-import { census, DEFAULT_DISPLAY, isShown, parseDisplay, reveal, toggle, UNKNOWN_STRATA, type Display } from '../display-core'
+import { census, DEFAULT_DISPLAY, isShown, parseDisplay, reveal, shownAerialView, toggle, UNKNOWN_STRATA, type Display } from '../display-core'
 import type { Planting } from '../types'
 
 const planting: Planting = {
@@ -46,8 +46,20 @@ describe('display of the terrain map', () => {
 
   it('reads stored settings safely', () => {
     expect(parseDisplay(null)).toEqual(DEFAULT_DISPLAY)
-    expect(parseDisplay({ projected: true, hiddenLayers: ['notes', 3], hiddenStrata: 'x' })).toEqual({ projected: true, hiddenLayers: ['notes'], hiddenStrata: [] })
+    expect(parseDisplay({ projected: true, hiddenLayers: ['notes', 3], hiddenStrata: 'x' })).toEqual({ projected: true, hiddenLayers: ['notes'], hiddenStrata: [], aerialViewId: null })
     expect(toggle(['a'], 'a')).toEqual([])
     expect(toggle([], 'a')).toEqual(['a'])
+  })
+
+  it('keeps the chosen drone view while the map still has it', () => {
+    const views = [{ id: 4 }, { id: 7 }]
+    expect(parseDisplay({ aerialViewId: 7 }).aerialViewId).toBe(7)
+    expect(parseDisplay({ aerialViewId: '7' }).aerialViewId).toBeNull()
+    expect(shownAerialView({ ...DEFAULT_DISPLAY, aerialViewId: 7 }, views)).toEqual({ id: 7 })
+    expect(shownAerialView({ ...DEFAULT_DISPLAY, aerialViewId: 9 }, views)).toBeNull()
+    expect(shownAerialView(DEFAULT_DISPLAY, views)).toBeNull()
+    // Showing a hidden feature again keeps the drone view.
+    const display: Display = { ...DEFAULT_DISPLAY, hiddenLayers: ['structures'], aerialViewId: 4 }
+    expect(reveal(display, shed, planting).aerialViewId).toBe(4)
   })
 })

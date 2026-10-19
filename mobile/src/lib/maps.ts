@@ -7,10 +7,12 @@ import { api } from './api'
 import { API_URL } from './config'
 import { expandBbox } from './geo'
 import { readJson, removeFile, writeJson } from './storage'
-import type { MapBundle, MapSummary } from './types'
+import type { AerialView, MapBundle, MapSummary } from './types'
 
-export const styleUrl = (mapId: number, base?: string) =>
-  `${API_URL}/api/v1/maps/${mapId}/style${base ? `?base=${encodeURIComponent(base)}` : ''}`
+export function styleUrl(mapId: number, { base, drone }: { base?: string; drone?: number | null } = {}): string {
+  const query = [base ? `base=${encodeURIComponent(base)}` : null, drone ? `drone=${drone}` : null].filter(Boolean).join('&')
+  return `${API_URL}/api/v1/maps/${mapId}/style${query ? `?${query}` : ''}`
+}
 
 /**
  * MapLibre fetches the style and tiles itself: it needs the token too. The
@@ -61,7 +63,7 @@ export type DownloadState = { state: 'none' | 'active' | 'paused' | 'complete' |
 
 export async function downloadState(mapId: number): Promise<DownloadState> {
   const packs = await OfflineManager.getPacks()
-  const pack = packs.find((p) => p.id === packId(mapId) || p.metadata?.mapId === mapId)
+  const pack = packs.find((p) => p.id === packId(mapId) || (p.metadata?.mapId === mapId && p.metadata?.aerialViewId == null))
   if (!pack) return { state: 'none', percentage: 0, bytes: 0 }
   // Read back later, an unfinished pack no longer downloads.
   return fromStatus(await pack.status(), 'paused')
@@ -101,10 +103,65 @@ export async function downloadMap(map: MapSummary, onProgress: (state: DownloadS
   })
 }
 
+/** Removes the map's download; downloading it again keeps its drone views. */
 export async function removeDownload(mapId: number, { keepBundle = false } = {}): Promise<void> {
   const packs = await OfflineManager.getPacks()
-  for (const pack of packs.filter((p) => p.id === packId(mapId) || p.metadata?.mapId === mapId)) {
+  const ours = (p: { id: string; metadata?: Record<string, unknown> }) =>
+    p.id === packId(mapId) || (p.metadata?.mapId === mapId && (!keepBundle || p.metadata?.aerialViewId == null))
+  for (const pack of packs.filter(ours)) {
     await OfflineManager.deletePack(pack.id)
   }
   if (!keepBundle) removeFile(`map-${mapId}.json`)
+}
+
+// --- Drone views offline --------------------------------------------------
+
+// MapLibre names packs itself: a drone view's pack is found by its metadata.
+const isAerialPack = (mapId: number, viewId: number) => (p: { metadata?: Record<string, unknown> }) =>
+  p.metadata?.mapId === mapId && p.metadata?.aerialViewId === viewId
+// A drone view is sharp to a few centimetres: its own zooms, at most 22.
+const AERIAL_MIN_ZOOM = 15
+const AERIAL_MAX_ZOOM = 22
+
+export async function aerialDownloadState(mapId: number, viewId: number): Promise<DownloadState> {
+  const packs = await OfflineManager.getPacks()
+  const pack = packs.find(isAerialPack(mapId, viewId))
+  if (!pack) return { state: 'none', percentage: 0, bytes: 0 }
+  return fromStatus(await pack.status(), 'paused')
+}
+
+/** Keeps one drone view of the map on the phone: its tiles over the view's area (or the terrain's). */
+export async function downloadAerialView(map: MapSummary, view: AerialView, onProgress: (state: DownloadState) => void): Promise<void> {
+  const area = view.bounds ? [view.bounds.west, view.bounds.south, view.bounds.east, view.bounds.north] as [number, number, number, number] : map.bbox
+  if (!area) return onProgress({ state: 'complete', percentage: 100, bytes: 0 })
+  await authorizeMapRequests()
+  if (!tileLimitSet) {
+    OfflineManager.setTileCountLimit(TILE_COUNT_LIMIT)
+    tileLimitSet = true
+  }
+  await removeAerialDownload(map.id, view.id)
+  const minZoom = Math.max(AERIAL_MIN_ZOOM, view.minZoom ?? AERIAL_MIN_ZOOM)
+  const maxZoom = Math.min(AERIAL_MAX_ZOOM, Math.max(minZoom, view.maxZoom ?? 21))
+  await new Promise<void>((resolve, reject) => {
+    OfflineManager.createPack(
+      {
+        mapStyle: styleUrl(map.id, { drone: view.id }), bounds: expandBbox(area, 20), minZoom, maxZoom,
+        metadata: { mapId: map.id, aerialViewId: view.id, name: view.name },
+      },
+      (_pack, status) => {
+        const state = fromStatus(status)
+        onProgress(state)
+        if (state.state === 'complete') resolve()
+      },
+      (_pack, error) => {
+        onProgress({ state: 'error', percentage: 0, bytes: 0 })
+        reject(new Error(error.message))
+      },
+    ).catch(reject)
+  })
+}
+
+export async function removeAerialDownload(mapId: number, viewId: number): Promise<void> {
+  const packs = await OfflineManager.getPacks()
+  for (const pack of packs.filter(isAerialPack(mapId, viewId))) await OfflineManager.deletePack(pack.id)
 }

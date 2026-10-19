@@ -1,11 +1,13 @@
 require "test_helper"
 require "test_helpers/mcp_test_helper"
+require "test_helpers/drone_test_helper"
 
 # Semisto's phone app: sign-in through OAuth (consent, code + PKCE, token
 # with the APP scope), then its bearer token on the app's own endpoints and
 # on the editor's JSON endpoints. No other token gets that far.
 class MobileAppTest < ActionDispatch::IntegrationTest
   include McpTestHelper
+  include DroneTestHelper
 
   setup do
     @verifier = SecureRandom.urlsafe_base64(48)
@@ -112,6 +114,48 @@ class MobileAppTest < ActionDispatch::IntegrationTest
 
     get "/api/v1/maps/#{@map.id}/style", headers: bearer(app_token(users(:bob)))
     assert_response :not_found
+  end
+
+  test "drone views: listed in the bundle, laid over the base map, tiles cut out of the archive" do
+    region = @map.region
+    region.layers.create!(key: "ortho", name: "Orthophoto", group_name: "photos", category: "base", kind: "wms",
+      url: "https://geoservices.wallonie.be/wms", layers: "0", proxied: true, enabled: true)
+    region.layers.create!(key: "plan", name: "Plan", group_name: "plan", category: "base", kind: "style",
+      url: "https://tiles.openfreemap.org/styles/positron", proxied: false, enabled: true, options: { "default" => true })
+    imported = @map.aerial_views.create!(name: "Printemps", captured_on: Date.new(2027, 5, 12), kind: "pmtiles", status: "ready",
+      source_filename: "ortho.pmtiles", source_byte_size: 4813, min_zoom: 17, max_zoom: 18,
+      bounds: { "west" => 4.874, "south" => 50.326, "east" => 4.876, "north" => 50.328 })
+    imported.archive.attach(io: file_fixture("drone-view.pmtiles").open, filename: "ortho.pmtiles", content_type: "application/octet-stream")
+    linked = aerial_view(@map, kind: "xyz", url: XYZ_URL, captured_on: Date.new(2026, 6, 1))
+    aerial_view(@map, name: "En cours", status: "processing", source_filename: "b.tif", source_byte_size: 10, url: nil)
+    token = app_token(users(:alice)) # a viewer
+
+    get "/api/v1/maps/#{@map.id}", headers: bearer(token)
+    assert_equal [ [ imported.id, "Printemps", "2027-05-12" ], [ linked.id, "Vue drone", "2026-06-01" ] ],
+      response.parsed_body["aerialViews"].map { [ _1["id"], _1["name"], _1["capturedOn"] ] }
+
+    # The default base is a whole style: the view goes over the tiled base instead.
+    get "/api/v1/maps/#{@map.id}/style", params: { drone: imported.id }, headers: bearer(token)
+    assert_response :success
+    style = response.parsed_body
+    assert_equal %w[background base drone], style["layers"].map { _1["id"] }
+    assert_equal "http://www.example.com/api/v1/maps/#{@map.id}/aerial_views/#{imported.id}/tiles/{z}/{x}/{y}", style.dig("sources", "drone", "tiles", 0)
+    assert_equal [ 17, 18, [ 4.874, 50.326, 4.876, 50.328 ] ], style.dig("sources", "drone").values_at("minzoom", "maxzoom", "bounds")
+
+    get "/api/v1/maps/#{@map.id}/style", params: { drone: linked.id, base: "ortho" }, headers: bearer(token)
+    assert_equal XYZ_URL, response.parsed_body.dig("sources", "drone", "tiles", 0)
+
+    get "/api/v1/maps/#{@map.id}/aerial_views/#{imported.id}/tiles/18/134622/88532", headers: bearer(token)
+    assert_response :success
+    assert_equal "image/webp", response.media_type
+    assert response.body.b.start_with?("RIFF")
+    get "/api/v1/maps/#{@map.id}/aerial_views/#{imported.id}/tiles/18/1/1", headers: bearer(token)
+    assert_response :no_content
+
+    get "/api/v1/maps/#{@map.id}/aerial_views/#{imported.id}/tiles/18/134622/88532", headers: bearer(app_token(users(:bob)))
+    assert_response :not_found
+    get "/api/v1/maps/#{@map.id}/aerial_views/#{imported.id}/tiles/18/134622/88532"
+    assert_response :unauthorized
   end
 
   test "the token works on the editor's JSON endpoints, roles still apply, no CSRF token needed" do

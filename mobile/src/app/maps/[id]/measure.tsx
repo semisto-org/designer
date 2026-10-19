@@ -12,11 +12,11 @@ import { useDisplay } from '@/lib/display'
 import { haptics } from '@/lib/haptics'
 import { formatArea, formatDistance, t } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
-import { styleUrl } from '@/lib/maps'
 import { canClose, encodePoints, measureGeometry, measureOf, sideLabels, type MeasureShape } from '@/lib/measure'
 import { canEdit, type Position } from '@/lib/types'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
+import { useMapStyle } from '@/state/useMapStyle'
 import { Icon } from '@/ui/Icon'
 import { Body, Button, Chip, IconButton, MAX_FONT_SCALE, Notice } from '@/ui/kit'
 import { colors, fonts, radius, shadows, space, type } from '@/ui/theme'
@@ -26,6 +26,7 @@ const FONT = ['Noto Sans Regular']
 export default function MeasureScreen() {
   const mapId = Number(useLocalSearchParams<{ id: string }>().id)
   const { bundle } = useMapBundle(mapId)
+  const mapStyle = useMapStyle(mapId, bundle)
   const shown = useDisplay(mapId)
   const insets = useSafeAreaInsets()
   const [points, setPoints] = useState<Position[]>([])
@@ -100,7 +101,7 @@ export default function MeasureScreen() {
 
   return (
     <View style={s.fill}>
-      <Map style={s.fill} mapStyle={styleUrl(mapId)} logo={false} attributionPosition={{ top: insets.top + 72, left: 8 }}
+      <Map style={s.fill} mapStyle={mapStyle} logo={false} attributionPosition={{ top: insets.top + 72, left: 8 }}
         onPress={(e) => add(e.nativeEvent.lngLat)}>
         <Camera initialViewState={bbox ? { bounds: bbox, padding: { top: 120, bottom: 300, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }} />
         <FeatureLayers bundle={bundle} display={shown} selectedId={null} />

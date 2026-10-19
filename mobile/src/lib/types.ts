@@ -82,7 +82,20 @@ export type MapBundle = {
   features: MapFeature[]
   photos: Photo[]
   planting: Planting
+  /** Dated drone views of the map, newest first (older bundles have none). */
+  aerialViews?: AerialView[]
   syncedAt: string
+}
+
+/** A drone orthophoto of the map, laid over the base map (style ?drone=id). */
+export type AerialView = {
+  id: number
+  name: string
+  capturedOn: string
+  attribution: string | null
+  minZoom: number | null
+  maxZoom: number | null
+  bounds: { west: number; south: number; east: number; north: number } | null
 }
 
 export type Comment = {

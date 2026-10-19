@@ -12,9 +12,11 @@ export type Display = {
   hiddenLayers: string[]
   /** Plant strata keys (plants.strata), plus UNKNOWN_STRATA. */
   hiddenStrata: string[]
+  /** The drone view laid over the base map, if any. */
+  aerialViewId?: number | null
 }
 
-export const DEFAULT_DISPLAY: Display = { projected: false, hiddenLayers: [], hiddenStrata: [] }
+export const DEFAULT_DISPLAY: Display = { projected: false, hiddenLayers: [], hiddenStrata: [], aerialViewId: null }
 
 /** Plants whose species (or its strata) is not known. */
 export const UNKNOWN_STRATA = 'unknown'
@@ -47,6 +49,7 @@ export function isShown(p: Properties, display: Display, planting: Planting | un
 export function reveal(display: Display, p: Properties, planting: Planting | undefined): Display {
   if (isShown(p, display, planting)) return display
   return {
+    ...display,
     projected: display.projected || isProjected(p),
     hiddenLayers: display.hiddenLayers.filter((layer) => layer !== p.layer),
     hiddenStrata: isPlant(p) ? display.hiddenStrata.filter((key) => key !== strataOf(p, planting)) : display.hiddenStrata,
@@ -63,7 +66,15 @@ export function parseDisplay(value: unknown): Display {
   if (!value || typeof value !== 'object') return DEFAULT_DISPLAY
   const v = value as Record<string, unknown>
   const strings = (list: unknown) => (Array.isArray(list) ? list.filter((x): x is string => typeof x === 'string') : [])
-  return { projected: v.projected === true, hiddenLayers: strings(v.hiddenLayers), hiddenStrata: strings(v.hiddenStrata) }
+  return {
+    projected: v.projected === true, hiddenLayers: strings(v.hiddenLayers), hiddenStrata: strings(v.hiddenStrata),
+    aerialViewId: typeof v.aerialViewId === 'number' && Number.isInteger(v.aerialViewId) ? v.aerialViewId : null,
+  }
+}
+
+/** The drone view to show: the chosen one while the map still has it. */
+export function shownAerialView<T extends { id: number }>(display: Display, views: T[] | undefined): T | null {
+  return display.aerialViewId == null ? null : views?.find((view) => view.id === display.aerialViewId) ?? null
 }
 
 /** Counts per layer and per strata of the features on the map, for the settings screen. */
