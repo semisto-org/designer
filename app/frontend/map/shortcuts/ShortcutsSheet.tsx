@@ -1,6 +1,7 @@
 import { Keyboard } from 'lucide-react'
 import { Fragment, useEffect, useState } from 'react'
 import { Dialog } from '@/components/ui/Dialog'
+import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import { isTextTarget } from '@/map/editor/history'
 import { commandKey, isShortcutsKey, SHORTCUT_GROUPS } from '@/map/shortcuts/keys'
@@ -67,14 +68,13 @@ export default function ShortcutsSheet() {
 /** The keyboard button of the header (computers only: a phone has no keys). */
 export function ShortcutsButton() {
   return (
-    <button
-      type="button"
+    <IconButton
+      size="sm"
       onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
-      title={t('editor.shortcuts.button')}
-      aria-label={t('editor.shortcuts.button')}
-      className="hidden rounded-full p-1.5 text-loam-500 hover:bg-loam-100 hover:text-loam-900 focus-visible:outline-2 focus-visible:outline-prune-600 md:inline-flex"
+      label={t('editor.shortcuts.button')}
+      className="hidden md:inline-flex"
     >
-      <Keyboard className="h-[18px] w-[18px]" aria-hidden />
-    </button>
+      <Keyboard aria-hidden />
+    </IconButton>
   )
 }
