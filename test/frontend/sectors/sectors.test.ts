@@ -1,8 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  allAround, arcPath, bearing, compassPoint, labelReversed, packRings, sectorArc, sectorDirections, sectorRange, shorterWay, sunSectors, sweep,
+  allAround, arcPath, bearing, compassPoint, labelReversed, packRings, sectorArc, sectorDirections, sectorRange, shorterWay, showsIn, sunSectors, sweep,
 } from '../../../app/frontend/map/sectors/sectors.ts'
+import { overlayData } from '../../../app/frontend/map/sectors/overlay.ts'
 
 const yvoir = [4.88, 50.33]
 
@@ -80,4 +81,28 @@ test('two picked directions join the shorter way, and a sector can go all around
   assert.ok(allAround(0, 0))
   assert.ok(!allAround(0, 90))
   assert.deepEqual(sectorRange(sectorArc(yvoir, 80, 0, 0), yvoir), { from: 0, to: 0 })
+})
+
+test('a winter sector shows in winter and over the whole year, not in summer', () => {
+  assert.ok(showsIn('winter', 'winter'))
+  assert.ok(showsIn('winter', 'all'))
+  assert.ok(!showsIn('winter', 'summer'))
+  assert.ok(showsIn('all_year', 'summer'))
+})
+
+test('the editor overlay puts overlapping arcs on separate rings, outside the terrain', () => {
+  const arcs = [
+    { key: 'a', from: 60, to: 110, color: '#000000', label: 'A', draft: false },
+    { key: 'b', from: 40, to: 100, color: '#000000', label: 'B', draft: false },
+    { key: 'c', from: 200, to: 250, color: '#000000', label: 'C', draft: true },
+  ]
+  const data = overlayData(arcs, yvoir, 50)
+  const distance = (i: number) => {
+    const [x, y] = data.features[i].geometry.coordinates[0]
+    return Math.hypot((x - yvoir[0]) * Math.cos((yvoir[1] * Math.PI) / 180), y - yvoir[1]) * 111_320
+  }
+  assert.ok(distance(0) > 50 && distance(2) > 50)
+  assert.notEqual(Math.round(distance(0)), Math.round(distance(1)))
+  assert.equal(Math.round(distance(0)), Math.round(distance(2)))
+  assert.equal(data.features[2].properties?.draft, true)
 })

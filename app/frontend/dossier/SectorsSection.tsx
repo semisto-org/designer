@@ -2,8 +2,8 @@ import type { LineString, Position } from 'geojson'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { t } from '@/lib/i18n'
 import {
-  arcLength, arcPath, farthestM, isSectorType, labelReversed, normalize, packRings, SECTOR_COLORS, sectorDirections, sectorLayout, sunSectors, sweep, toPixels,
-  type SectorType, type SunSectorType,
+  arcLength, arcPath, farthestM, isSectorSeason, isSectorType, labelReversed, normalize, packRings, SECTOR_COLORS, sectorDirections, sectorLayout, sunSectors, sweep, toPixels,
+  type SectorSeason, type SectorType, type SunSectorType,
 } from '@/map/sectors/sectors'
 import { rangeText } from '@/map/sectors/labels'
 import { renderAerial } from '@/dossier/snapshot'
@@ -14,11 +14,11 @@ import type { Dossier } from '@/types/dossier'
 const WIDTH = 820
 const HEIGHT = 794
 
-type Arc = { key: string; type: SectorType | SunSectorType; label: string; named: boolean; from: number; to: number; notes: string | null }
+type Arc = { key: string; type: SectorType | SunSectorType; label: string; named: boolean; season: SectorSeason; from: number; to: number; notes: string | null }
 
 /** The arcs of the page: the sun from the latitude, then the sectors drawn in the editor. */
 export function sectorArcs(cover: Dossier['cover'], center: Position): Arc[] {
-  const sun = sunSectors(center[1]).map((s) => ({ key: s.type, type: s.type, label: t(`sectors.page.${s.type}`), named: true, from: s.from, to: s.to, notes: null }))
+  const sun = sunSectors(center[1]).map((s) => ({ key: s.type, type: s.type, label: t(`sectors.page.${s.type}`), named: true, season: 'all_year' as const, from: s.from, to: s.to, notes: null }))
   const drawn = cover.features.features.flatMap((f): Arc[] => {
     if (f.properties.kind !== 'sector' || f.geometry.type !== 'LineString') return []
     const range = sectorDirections(f.properties, f.geometry as LineString, center)
@@ -28,6 +28,7 @@ export function sectorArcs(cover: Dossier['cover'], center: Position): Arc[] {
     return [{
       key: String(f.properties.id), type, from: range.from, to: range.to, notes: f.properties.notes?.trim() || null,
       label: name || t(`drawing.options.sector_type.${type}`), named: Boolean(name),
+      season: isSectorSeason(f.properties.sector_season) ? f.properties.sector_season : 'all_year',
     }]
   })
   return [...sun, ...drawn]
@@ -177,7 +178,7 @@ export function SectorsSection({ dossier, number }: { dossier: Dossier; number: 
             )}
             {drawn.map((arc) => (
               <div key={arc.key}>
-                <dt className="font-bold text-white"><Swatch color={SECTOR_COLORS[arc.type]} number={numbers.get(arc.key)} />{arc.label}{' '}:</dt>
+                <dt className="font-bold text-white"><Swatch color={SECTOR_COLORS[arc.type]} number={numbers.get(arc.key)} />{arc.label}{arc.season !== 'all_year' && <span className="font-normal text-white/70">{` · ${t(`sectors.page.season_${arc.season}`)}`}</span>}{' '}:</dt>
                 <dd>{arc.notes ?? fallback(arc)}</dd>
               </div>
             ))}

@@ -545,9 +545,12 @@ layers:
         color: "#9b8fb5"
         line: { width: 6 }
         pickable: false
-        defaults: { sector_type: wind }
+        defaults: { sector_type: wind, sector_season: all_year }
         fields:
           - { key: sector_type, type: select, options: [wind, cold_wind, fire, flood, frost, noise, dust, pollution, good_view, bad_view, privacy, wildlife, predators, other] }
+          - { key: sector_season, type: select, options: [all_year, winter, summer] }
+          - { key: from_deg, type: number, unit: °, min: 0, max: 360 }
+          - { key: to_deg, type: number, unit: °, min: 0, max: 360 }
       measure:
         geometry: [LineString, Polygon]
         icon: ruler

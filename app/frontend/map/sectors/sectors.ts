@@ -6,7 +6,8 @@ import type { LineString, Position } from 'geojson'
  * from a range of directions, drawn as arcs around the site. A sector is a
  * `sector` feature of the notes layer: an arc (LineString) drawn clockwise
  * around the terrain's centre, its directions saved in `properties.from_deg`
- * and `to_deg` (equal for a sector all around), its type in `properties.sector_type`, its label in `name` and what it
+ * and `to_deg` (equal for a sector all around), its type in `properties.sector_type`,
+ * when it is felt in `sector_season`, its label in `name` and what it
  * means for the design in `notes`. The summer and winter sun are not drawn:
  * they follow from the latitude.
  *
@@ -42,6 +43,17 @@ export const SECTOR_COLORS: Record<SectorType | SunSectorType, string> = {
 
 export const isSectorType = (value: unknown): value is SectorType =>
   typeof value === 'string' && (SECTOR_TYPES as readonly string[]).includes(value)
+
+/** When a sector is felt (`properties.sector_season`): a cold wind in winter, a fire risk in summer. */
+export const SECTOR_SEASONS = ['all_year', 'winter', 'summer'] as const
+export type SectorSeason = (typeof SECTOR_SEASONS)[number]
+
+export const isSectorSeason = (value: unknown): value is SectorSeason =>
+  typeof value === 'string' && (SECTOR_SEASONS as readonly string[]).includes(value)
+
+/** Whether a sector of `season` shows when the map looks at `filter` (all, winter or summer). */
+export const showsIn = (season: SectorSeason, filter: 'all' | 'winter' | 'summer') =>
+  filter === 'all' || season === 'all_year' || season === filter
 
 /** 16 compass points, from N clockwise. */
 export const COMPASS_POINTS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'] as const

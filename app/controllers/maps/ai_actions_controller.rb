@@ -28,7 +28,7 @@ module Maps
       # Current status of the drafts each proposal created: new elements,
       # and changes to existing ones (pending reads as « draft », accepted as « active »).
       def draft_outcomes(actions)
-        proposals = actions.select { |a| a.tool == "propose_features" && a.result["feature_ids"].present? }
+        proposals = actions.select { |a| a.tool.in?(%w[propose_features propose_sectors]) && a.result["feature_ids"].present? }
         ids = proposals.flat_map { |a| a.result["feature_ids"] }
         statuses = @map.features.where(id: ids).pluck(:id, :status).to_h
         outcomes = proposals.to_h do |action|
