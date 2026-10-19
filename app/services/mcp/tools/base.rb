@@ -140,7 +140,8 @@ module Mcp
 
         # pending_update: the change an AI proposed and nobody reviewed yet
         # (a FeatureUpdateDraft), false when the caller knows there is none.
-        def feature_json(feature, geometry: true, pending_update: nil)
+        # `zone`: the element's permaculture zone (PermacultureZones::Lookup), when the map has zones.
+        def feature_json(feature, geometry: true, pending_update: nil, zone: nil)
           pending_update = feature.update_drafts.pending.first if pending_update.nil?
           {
             type: "Feature",
@@ -149,7 +150,8 @@ module Mcp
             properties: feature.properties.except(*MapFeature.column_names).merge(
               "layer" => feature.layer, "kind" => feature.kind, "name" => feature.name, "notes" => feature.notes,
               "status" => feature.status, "source" => feature.source, "rationale" => feature.rationale,
-              "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601
+              "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601,
+              "permaculture_zone" => zone
             ).compact,
             pending_update: pending_update ? pending_update_json(pending_update, feature) : nil
           }.compact

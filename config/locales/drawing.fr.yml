@@ -60,6 +60,7 @@ fr:
       note_point: "Note"
       sketch: "Croquis"
       sector: "Secteur"
+      permaculture_zone: "Zone de permaculture"
 
   drawing:
     panels:
@@ -90,6 +91,8 @@ fr:
       height_m: "Hauteur"
       floors: "Niveaux"
       roof: "Toiture"
+      dwelling: "Maison habitée (zone 0)"
+      zone_number: "Numéro de zone"
       store_type: "Type de lieu"
       species: "Espèce"
       crown_diameter_m: "Diamètre de la couronne"

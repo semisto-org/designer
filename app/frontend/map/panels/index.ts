@@ -1,4 +1,4 @@
-import { Bot, Camera, Compass, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -52,6 +52,8 @@ import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
 import SectorInspector from '@/map/sectors/SectorInspector'
 import SectorsPanel, { isSector } from '@/map/sectors/SectorsPanel'
+import ZonesPanel from '@/map/zones/ZonesPanel'
+import ZoneSection, { appliesToZone } from '@/map/zones/ZoneSection'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
 import FinancesPanel from '@/map/panels/FinancesPanel'
 import PhotosPanel from '@/map/photos/PhotosPanel'
@@ -108,6 +110,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'map', component: ElementsPanel, order: 30 },
   { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'map', component: DrawingLayersPanel, order: 40 },
   // 3. Concevoir
+  { id: 'zones', label: 'permaculture_zones.panel_title', icon: Target, group: 'design', component: ZonesPanel, order: 10 },
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
@@ -140,6 +143,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
   { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },
   { id: 'sector', applies: isSector, component: SectorInspector, order: 20 },
+  { id: 'permaculture-zone', applies: appliesToZone, component: ZoneSection, order: 17 },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },

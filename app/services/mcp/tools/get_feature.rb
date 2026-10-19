@@ -16,7 +16,7 @@ module Mcp
         feature = nil if feature&.layer == "networks" && !editor?
         raise ToolError, t("errors.feature_not_found", id: feature_id) unless feature
         measures = feature.measure_geometry.transform_keys { |k| "#{k}_m#{k == 'area' ? '2' : ''}" }
-        feature_json(feature).merge(
+        feature_json(feature, zone: PermacultureZones::Lookup.new(map).for_feature(feature)).merge(
           measures: measures.reject { |_, v| v.zero? },
           created_at: feature.created_at.iso8601,
           **plant_journal(feature)
