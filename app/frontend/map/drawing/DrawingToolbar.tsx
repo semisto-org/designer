@@ -193,8 +193,8 @@ export default function DrawingToolbar() {
     return () => window.removeEventListener('keydown', onKey)
   }, [editor.canEdit])
 
-  // Backspace (or Delete) offers to delete the selected plants still planned;
-  // plants in the ground leave through their card. One ⌘Z puts them all back.
+  // Backspace (or Delete) offers to delete the selected plants and elements
+  // still planned; what is on the ground leaves through its card. One ⌘Z puts them all back.
   useEffect(() => {
     if (!editor.canEdit) return
     const onKey = (event: KeyboardEvent) => {
@@ -207,22 +207,23 @@ export default function DrawingToolbar() {
       const targets = deleteTargets(state, editor.features)
       if (!targets) return
       event.preventDefault()
-      const { planned, planted } = targets
-      if (!planned.length) return editor.notify(t('selection.delete_planned.only_planted', { count: planted }))
+      const { planned, kept } = targets
+      const words = `selection.delete_planned.${targets.plantsOnly ? 'plants' : 'elements'}`
+      if (!planned.length) return editor.notify(t(`${words}.only_kept`, { count: kept }))
       const question = [
-        t('selection.delete_planned.confirm', { count: planned.length }),
-        planted ? t('selection.delete_planned.keeps_planted', { count: planted }) : null,
+        t(`${words}.confirm`, { count: planned.length }),
+        kept ? t(`${words}.keeps`, { count: kept }) : null,
         t('selection.delete_planned.undo_hint'),
       ].filter(Boolean).join('\n\n')
       if (!window.confirm(question)) return
       plantPeek.close()
-      void deletePlanned(planned)
+      void deletePlanned(planned, words)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [editor.canEdit])
 
-  async function deletePlanned(ids: number[]) {
+  async function deletePlanned(ids: number[], words: string) {
     const editor = latest.current
     // One plant: deleteFeature says which one and offers « Annuler » itself.
     if (ids.length === 1) return editor.deleteFeature(ids[0]).catch((e: Error) => editor.notify(e.message, 'error'))
@@ -239,7 +240,7 @@ export default function DrawingToolbar() {
       }
       return deleted
     })
-    if (count) latest.current.notify(t('selection.delete_planned.done', { count }), 'info', { label: t('undo.action'), run: () => latest.current.undo() })
+    if (count) latest.current.notify(t(`${words}.done`, { count }), 'info', { label: t('undo.action'), run: () => latest.current.undo() })
   }
 
   // Shape editing, asked by the inspector (ElementSection) or by M.
