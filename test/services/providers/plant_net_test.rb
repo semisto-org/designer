@@ -113,6 +113,14 @@ class Providers::PlantNetTest < ActiveSupport::TestCase
     assert_not_requested :any, //
   end
 
+  test "each photo says which organ it shows, an unknown one is left to Pl@ntNet" do
+    stub_plantnet
+    @plantnet.identify([ plantnet_image.merge(organ: "flower"), plantnet_image.merge(organ: "root") ])
+    assert_requested(:post, PLANTNET_ENDPOINT) do |request|
+      request.body.include?(%(name="organs"\r\n\r\nflower)) && request.body.include?(%(name="organs"\r\n\r\nauto))
+    end
+  end
+
   test "five images are fine" do
     stub = stub_plantnet
     @plantnet.identify([ plantnet_image ] * 5)

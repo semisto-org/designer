@@ -1,20 +1,23 @@
 // « Identifier »: one to five photos of one plant go to Pl@ntNet through
 // Designer; the person picks the species, set on the selected plant or on
-// a new plant where they stand. Needs the network.
+// a new plant where they stand. Each photo says what it shows (leaf,
+// flower…), which helps Pl@ntNet. Needs the network.
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { ApiError, api, photosForm } from '@/lib/api'
 import { featureTitle } from '@/lib/elements'
 import { t } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
 import { pickPhotos, takePhoto } from '@/lib/photos'
 import { deletePhoto } from '@/lib/storage'
+import { inPalette, nextOrgan, type Organ } from '@/lib/survey'
 import type { IdentificationCandidate } from '@/lib/types'
 import { useOnline } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
 import { Body, Button, Card, Notice, styles } from '@/ui/kit'
-import { colors, fonts, radius, space } from '@/ui/theme'
+import { OrganChoice, OrganPhotos, organLists, type OrganPhoto } from '@/ui/OrganPhotos'
+import { colors, fonts, space } from '@/ui/theme'
 
 const MAX = 5
 
@@ -26,20 +29,23 @@ export default function IdentifyScreen() {
   const featureId = params.featureId ? Number(params.featureId) : null
   const { bundle } = useMapBundle(mapId)
   const online = useOnline()
-  const [photos, setPhotos] = useState<string[]>([])
+  const [photos, setPhotos] = useState<OrganPhoto[]>([])
+  const [organ, setOrgan] = useState<Organ>('auto')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<Result | null>(null)
   const plant = featureId ? bundle?.features.find((f) => f.id === featureId) ?? null : null
 
-  const add = (files: string[]) => setPhotos((current) => [...current, ...files].slice(0, MAX))
-  const remove = (file: string) => { deletePhoto(file); setPhotos((current) => current.filter((f) => f !== file)) }
-  const close = () => { photos.forEach(deletePhoto); router.back() }
+  const add = (files: string[]) => setPhotos((current) => [...current, ...files.map((file) => ({ file, organ }))].slice(0, MAX))
+  const remove = (file: string) => { deletePhoto(file); setPhotos((current) => current.filter((p) => p.file !== file)) }
+  const cycle = (file: string) => setPhotos((current) => current.map((p) => (p.file === file ? { ...p, organ: nextOrgan(p.organ) } : p)))
+  const forget = () => photos.forEach((p) => deletePhoto(p.file))
+  const close = () => { forget(); router.back() }
 
   const identify = async () => {
     setBusy(true); setError(null); setResult(null)
     try {
-      setResult(await api<Result>('POST', `/maps/${mapId}/plant_identifications`, photosForm('images[]', photos)))
+      setResult(await api<Result>('POST', `/maps/${mapId}/plant_identifications`, photosForm('images[]', photos.map((p) => p.file), organLists(photos))))
     } catch (e) {
       const apiError = e instanceof ApiError ? e : null
       setError(apiError?.offline ? t('plantnet.section.network_error') : String(apiError?.body?.message ?? t('plantnet.errors.unavailable')))
@@ -60,7 +66,7 @@ export default function IdentifyScreen() {
     } else {
       // Where it stands, planted or already there: the person says so on the « Planter » screen.
       router.replace({ pathname: '/maps/[id]/plant', params: { id: String(mapId), speciesId: String(species.id), speciesName: species.commonName ?? species.latinName, speciesLatin: species.latinName } })
-      photos.forEach(deletePhoto)
+      forget()
     }
   }
 
@@ -70,17 +76,9 @@ export default function IdentifyScreen() {
       <Body muted>{t('plantnet.section.intro')}</Body>
       {!online && <Notice tone="warning">{t('mobile.identify.offline')}</Notice>}
 
-      {photos.length > 0 && (
-        <View style={s.photos}>
-          {photos.map((file, index) => (
-            <Pressable key={file} onLongPress={() => remove(file)} accessibilityLabel={t('plantnet.section.photo_alt', { index: index + 1 })}
-              accessibilityHint={t('plantnet.section.remove')}>
-              <Image source={{ uri: file }} style={s.photo} />
-            </Pressable>
-          ))}
-        </View>
-      )}
-      {photos.length > 0 && <Body muted>{t('plantnet.section.count', { count: photos.length, max: MAX })} · {t('mobile.identify.remove_hint')}</Body>}
+      {!result && <OrganChoice value={organ} onChange={setOrgan} />}
+      <OrganPhotos photos={photos} onCycle={cycle} onRemove={remove} />
+      {photos.length > 0 && <Body muted>{t('plantnet.section.count', { count: photos.length, max: MAX })}</Body>}
 
       {photos.length < MAX && !result && (
         <View style={{ flexDirection: 'row', gap: space.sm }}>
@@ -98,6 +96,7 @@ export default function IdentifyScreen() {
           {result.candidates.map((candidate) => (
             <Card key={candidate.latinName} style={{ gap: space.xs }}>
               <Text style={s.latin}>{candidate.latinName}</Text>
+              {inPalette(candidate.species?.id, bundle?.planting?.palette) && <Text style={s.palette}>{t('mobile.organs.in_palette')}</Text>}
               <Text style={s.meta}>{t('plantnet.results.score', { percent: candidate.percent })}</Text>
               {candidate.commonNames.length > 0 && <Body muted>{t('plantnet.results.common_names', { names: candidate.commonNames.slice(0, 3).join(', ') })}</Body>}
               {candidate.species
@@ -106,7 +105,7 @@ export default function IdentifyScreen() {
             </Card>
           ))}
           <Body muted>{t('plantnet.results.hint')}</Body>
-          <Button variant="secondary" label={t('plantnet.results.retry')} onPress={() => { photos.forEach(deletePhoto); setPhotos([]); setResult(null) }} />
+          <Button variant="secondary" label={t('plantnet.results.retry')} onPress={() => { forget(); setPhotos([]); setResult(null) }} />
           <Button variant="ghost" label={t('plantnet.results.none')} onPress={close} />
           <Text style={s.meta}>{t('plantnet.results.credit')}{result.credit}</Text>
         </>
@@ -116,9 +115,8 @@ export default function IdentifyScreen() {
 }
 
 const s = StyleSheet.create({
-  photos: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  photo: { width: 96, height: 96, borderRadius: radius.md, backgroundColor: colors.loam100 },
   section: { fontSize: 20, fontFamily: fonts.title, color: colors.loam900, marginTop: space.md },
   latin: { fontSize: 17, fontFamily: fonts.bold, color: colors.loam900 },
   meta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
+  palette: { alignSelf: 'flex-start', fontSize: 14, fontFamily: fonts.bold, color: colors.leaf700, backgroundColor: colors.leaf50, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, overflow: 'hidden' },
 })

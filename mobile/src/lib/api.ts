@@ -108,8 +108,9 @@ export function form(root: string, fields: Record<string, string | number | Uplo
  * Several photos in one form (Pl@ntNet takes up to five), read into memory:
  * Expo's fetch sends a file part only when it can read its bytes.
  */
-export function photosForm(key: string, uris: string[]): FormData {
+export function photosForm(key: string, uris: string[], lists: Record<string, string[]> = {}): FormData {
   const data = new FormData()
   uris.forEach((uri) => data.append(key, new File(uri) as unknown as Blob))
+  Object.entries(lists).forEach(([name, values]) => values.forEach((value) => data.append(name, value)))
   return data
 }

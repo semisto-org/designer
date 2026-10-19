@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_203000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -230,6 +230,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_203000) do
     t.string "source", default: "human", null: false
     t.string "confidence"
     t.text "rationale"
+    t.integer "cover_percent", limit: 2
     t.index ["location"], name: "index_bioindicator_observations_on_location", using: :gist
     t.index ["map_id", "catalog_key"], name: "index_bioindicator_observations_on_map_id_and_catalog_key"
     t.index ["map_id"], name: "index_bioindicator_observations_on_map_id"

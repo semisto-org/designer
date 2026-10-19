@@ -39,6 +39,8 @@ export type NewBioindicator = {
   catalogKey: string | null
   plantSpeciesId: number | null
   abundance: 'rare' | 'present' | 'frequent' | 'dominant'
+  /** Share of the patch it covers (0 to 100); absent from notes queued before covers existed. */
+  coverPercent?: number | null
   notes: string | null
   lng: number | null
   lat: number | null

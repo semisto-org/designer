@@ -22,10 +22,12 @@ class BioindicatorObservation < ApplicationRecord
   belongs_to :photo, class_name: "MapPhoto", foreign_key: :map_photo_id, optional: true, inverse_of: :bioindicator_observations
 
   before_validation :fill_from_catalog
+  before_validation :abundance_from_cover
 
   validates :species_name, presence: true, length: { maximum: 120 }
   validates :latin_name, length: { maximum: 160 }
   validates :abundance, inclusion: { in: ABUNDANCES }
+  validates :cover_percent, numericality: { only_integer: true, in: 0..100 }, allow_nil: true
   validates :notes, length: { maximum: 2000 }
   validates :status, inclusion: { in: STATUSES }
   validates :source, inclusion: { in: SOURCES }
@@ -39,6 +41,17 @@ class BioindicatorObservation < ApplicationRecord
   scope :recent, -> { order(Arel.sql("COALESCE(observed_on, created_at::date) DESC"), id: :desc) }
 
   def draft? = status == "draft"
+
+  # The abundance a ground cover reads as: under 5 % rare, under 25 % present,
+  # under 50 % frequent, beyond that dominant.
+  def self.abundance_for_cover(percent)
+    return nil if percent.nil?
+    if percent < 5 then "rare"
+    elsif percent < 25 then "present"
+    elsif percent < 50 then "frequent"
+    else "dominant"
+    end
+  end
 
   # The human keeps what the AI proposed.
   def accept!
@@ -60,7 +73,7 @@ class BioindicatorObservation < ApplicationRecord
   def as_inertia
     {
       id:, speciesName: species_name, latinName: latin_name, catalogKey: catalog_key,
-      plantSpeciesId: plant_species_id, photoId: map_photo_id, abundance:, observedOn: observed_on&.iso8601,
+      plantSpeciesId: plant_species_id, photoId: map_photo_id, abundance:, coverPercent: cover_percent, observedOn: observed_on&.iso8601,
       lng:, lat:, notes:, indicators:, unverified: unverified_indicators, note: catalog_entry&.fetch("note", nil),
       provenance: catalog_entry&.fetch("provenance", nil),
       observedBy: observed_by&.display_name,
@@ -69,6 +82,11 @@ class BioindicatorObservation < ApplicationRecord
   end
 
   private
+    # A cover noted in the field says the abundance; the two never disagree.
+    def abundance_from_cover
+      self.abundance = self.class.abundance_for_cover(cover_percent) if cover_percent.is_a?(Integer) && cover_percent.between?(0, 100)
+    end
+
     def fill_from_catalog
       entry = catalog_entry or return
       self.species_name = entry["name"] if species_name.blank?

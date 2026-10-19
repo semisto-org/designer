@@ -55,6 +55,14 @@ class Maps::BioindicatorObservationsControllerTest < ActionDispatch::Integration
     assert_equal users(:michael).display_name, body["observedBy"]
   end
 
+  test "a cover percentage sets the abundance" do
+    sign_in_as users(:michael)
+    post map_bioindicator_observations_path(@map), params: { bioindicator_observation: { species_name: "Ortie", cover_percent: 30 } }, as: :json
+    assert_response :created
+    assert_equal "frequent", response.parsed_body["abundance"]
+    assert_equal 30, response.parsed_body["coverPercent"]
+  end
+
   test "an editor records a free-text species" do
     sign_in_as users(:michael)
     post map_bioindicator_observations_path(@map), params: { bioindicator_observation: { species_name: "Berce du Caucase", abundance: "present" } }, as: :json

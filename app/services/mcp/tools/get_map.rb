@@ -111,7 +111,7 @@ module Mcp
           {
             observations: observations.first(MAX_BIOINDICATORS).map do |observation|
               {
-                name: observation.species_name, latin_name: observation.latin_name, abundance: observation.abundance,
+                name: observation.species_name, latin_name: observation.latin_name, abundance: observation.abundance, cover_percent: observation.cover_percent,
                 observed_on: observation.observed_on&.iso8601, location: observation.lnglat&.map { |v| v.round(Geo::PRECISION) },
                 indicators: observation.indicators, unverified: observation.unverified_indicators,
                 photo_id: observation.map_photo_id, notes: observation.notes
