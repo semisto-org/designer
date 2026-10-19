@@ -23,7 +23,8 @@ class MapElements
     end
   end
 
-  Element = Data.define(:kind, :layer, :geometries, :defaults, :fields, :pickable) do
+  # functions is nil for kinds left out of the functions review (ElementFunctions).
+  Element = Data.define(:kind, :layer, :geometries, :defaults, :fields, :pickable, :functions, :needs, :yields) do
     def field(key) = fields.find { |f| f.key == key.to_s }
   end
 
@@ -88,7 +89,10 @@ class MapElements
               geometries: Array(spec.fetch("geometry")),
               defaults: (spec["defaults"] || {}).freeze,
               fields: fields.freeze,
-              pickable: spec.fetch("pickable", true)
+              pickable: spec.fetch("pickable", true),
+              functions: spec.key?("functions") ? Array(spec["functions"]).freeze : nil,
+              needs: Array(spec["needs"]).freeze,
+              yields: Array(spec["yields"]).freeze
             )
           end
         end.freeze

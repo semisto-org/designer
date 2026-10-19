@@ -35,6 +35,10 @@ export type ElementSpec = {
   pickable: boolean
   /** The line can follow the contour through a clicked point (« Suivre la courbe »). */
   contour?: boolean
+  /** What the element does in the design, proposed from its kind (absent: left out of the functions review). */
+  functions?: string[]
+  needs?: string[]
+  yields?: string[]
 }
 
 export type ElementLayer = { layer: FeatureLayer; color: string; elements: ElementSpec[] }

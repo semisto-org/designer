@@ -16,6 +16,7 @@ class MapFeature < ApplicationRecord
   include MapFeature::WaterCapacity
   include MapFeature::InfiltrationTest
   include MapFeature::StormObservation
+  include MapFeature::Functions
 
   LAYERS = %w[existing water access structures plants animals networks notes].freeze
   STATUSES = %w[active draft rejected].freeze

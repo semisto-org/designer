@@ -291,6 +291,17 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal "get_storm_observations", AiAction.last.tool
   end
 
+  test "get_element_functions gives what each element does and which functions only one serves" do
+    @map.features.create!(layer: "structures", kind: "compost", geometry: { type: "Point", coordinates: [ 4.9051, 50.3401 ] })
+    data, error = call_tool(@viewer, "get_element_functions", { map_id: @map.id })
+    refute error
+    compost = data["entries"].find { |e| e["kind"] == "compost" }
+    assert_equal %w[fertility], compost["functions"]
+    assert_includes data["unmet_needs"].map { |n| n["resource"] }, "organic_matter"
+    assert_equal "fragile", data["balance"].find { |b| b["function"] == "fertility" }["status"]
+    assert_equal "get_element_functions", AiAction.last.tool
+  end
+
   test "plant tools search the catalogue and give a species with its provenance" do
     walnut = PlantSpecies.create!(latin_name: "Juglans regia", plant_type: "tree", height_max_m: 25)
     walnut.replace_common_names!([ "Noyer commun" ])
