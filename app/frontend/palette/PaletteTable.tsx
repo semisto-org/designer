@@ -1,11 +1,11 @@
 import clsx from 'clsx'
 import { ArrowDown, ArrowUp, TreeDeciduous } from 'lucide-react'
-import { useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { StrataDot } from '@/map/plants/strata'
 import { SelectAll, useRangeSelect } from '@/palette/BatchBar'
-import { FitChips } from '@/palette/Fit'
+import { ExclusionFlag, FitChips } from '@/palette/Fit'
 import { columnLabel, displayTotal, displayValue, groupLabel, NUMERIC } from '@/palette/format'
 import { statusOf, totals, type Group, type PaletteRow, type PlantStatus, type ViewSettings } from '@/palette/table'
 import type { Strata } from '@/types/plants'
@@ -48,9 +48,13 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
   const order = [...new Set(all.filter(selectable).map((row) => row.key))]
   const toggle = useRangeSelect(order, selected ?? new Set<string>(), onSelect ?? (() => {}))
   const span = columns.length + (selecting ? 1 : 0)
+  // Without a fit column, an invasive or toxic plant says so under its name.
+  const flagInName = !columns.includes('fit')
+  const [frame, more] = useMoreToTheRight()
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-loam-900/10 print:overflow-visible print:shadow-none print:ring-0">
+    <div className="relative">
+    <div ref={frame} className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-loam-900/10 print:overflow-visible print:shadow-none print:ring-0">
       <table className="w-full min-w-max border-collapse text-sm">
         <thead className="sticky top-0 z-10 bg-loam-50/95 backdrop-blur">
           <tr>
@@ -120,7 +124,7 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
                       </td>
                     )}
                     {columns.map((column) => (
-                      <Cell key={column} row={row} column={column} canEdit={canEdit && row.speciesId != null} suppliers={suppliers} onOpen={onOpen} onEdit={onEdit} stickyLeft={selecting ? 'left-10 print:left-0' : 'left-0'} on={on} />
+                      <Cell key={column} row={row} column={column} canEdit={canEdit && row.speciesId != null} suppliers={suppliers} onOpen={onOpen} onEdit={onEdit} stickyLeft={selecting ? 'left-10 print:left-0' : 'left-0'} on={on} flagInName={flagInName} />
                     ))}
                   </tr>
                 )
@@ -142,11 +146,32 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
         )}
       </table>
     </div>
+      {/* More columns to the right: a fade says the table scrolls. */}
+      {more && <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-12 rounded-r-2xl bg-gradient-to-l from-white to-transparent print:hidden" />}
+    </div>
   )
 }
 
-function Cell({ row, column, canEdit, suppliers, onOpen, onEdit, stickyLeft, on }: {
-  row: PaletteRow; column: string; canEdit: boolean; suppliers: string[]; stickyLeft: string; on: boolean
+/** A ref for a scrolling frame, and whether some of its content is still hidden to the right. */
+function useMoreToTheRight() {
+  const frame = useRef<HTMLDivElement>(null)
+  const [more, setMore] = useState(false)
+  useEffect(() => {
+    const el = frame.current
+    if (!el) return
+    const measure = () => setMore(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+    measure()
+    el.addEventListener('scroll', measure, { passive: true })
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure)
+    observer?.observe(el)
+    if (el.firstElementChild) observer?.observe(el.firstElementChild)
+    return () => { el.removeEventListener('scroll', measure); observer?.disconnect() }
+  }, [])
+  return [frame, more] as const
+}
+
+function Cell({ row, column, canEdit, suppliers, onOpen, onEdit, stickyLeft, on, flagInName }: {
+  row: PaletteRow; column: string; canEdit: boolean; suppliers: string[]; stickyLeft: string; on: boolean; flagInName: boolean
   onOpen: (row: PaletteRow) => void
   onEdit: (row: PaletteRow, field: string, value: string | null) => Promise<boolean>
 }) {
@@ -157,14 +182,16 @@ function Cell({ row, column, canEdit, suppliers, onOpen, onEdit, stickyLeft, on 
     return (
       <th scope="row" className={clsx('sticky z-[1] max-w-[11rem] sm:max-w-[18rem] px-3 py-2 text-left font-normal', stickyLeft, on ? 'bg-prune-50' : 'bg-white group-hover/row:bg-loam-50')}>
         <button type="button" onClick={() => onOpen(row)} className="flex w-full min-w-0 items-center gap-2.5 text-left">
+          {/* On a phone the name gets the whole width and wraps instead of being cut. */}
           {row.photo
-            ? <img src={row.photo} alt="" loading="lazy" className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-loam-900/10 print:hidden" />
-            : <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-loam-50 ring-1 ring-loam-900/10 print:hidden">
+            ? <img src={row.photo} alt="" loading="lazy" className="hidden h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-loam-900/10 sm:block print:hidden" />
+            : <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-loam-50 ring-1 ring-loam-900/10 sm:flex print:hidden">
                 {row.speciesId == null ? <TreeDeciduous className="h-4 w-4 text-loam-500" aria-hidden /> : <StrataDot strata={row.strata as Strata} />}
               </span>}
           <span className="min-w-0">
-            <span className="block truncate font-medium text-prune-800 underline-offset-2 hover:underline">{row.name}</span>
-            {row.latinName && row.latinName !== row.name && <span className="block truncate text-sm italic text-loam-500">{row.latinName}</span>}
+            <span className="block break-words font-medium text-prune-800 underline-offset-2 hover:underline sm:truncate">{row.name}</span>
+            {row.latinName && row.latinName !== row.name && <span className="block break-words text-sm italic text-loam-500 sm:truncate">{row.latinName}</span>}
+            {flagInName && <ExclusionFlag excludedBy={row.excludedBy} className="mt-0.5" />}
           </span>
         </button>
       </th>
@@ -282,10 +309,11 @@ function EditableCell({ row, column, suppliers, onEdit }: {
       className={clsx(
         'block w-full min-w-[6rem] rounded-lg px-2 py-1.5 ring-1 ring-inset ring-transparent hover:bg-white hover:ring-loam-200',
         numeric ? 'text-right tabular-nums' : 'text-left', column === 'notes' ? 'max-w-[16rem] truncate' : 'whitespace-nowrap',
-        text ? 'text-loam-800' : 'text-loam-300',
+        // An empty cell invites to write in it: there is no hover on a phone.
+        text ? 'text-loam-800' : 'text-loam-400 outline-dashed outline-1 -outline-offset-1 outline-loam-200 hover:outline-none',
       )}
     >
-      {text || t('plant_palette.cells.empty')}
+      {text || t('plant_palette.cells.add')}
     </button>
   )
 }

@@ -30,6 +30,7 @@ module Mcp
           elements: element_counts(map),
           tags: tag_counts(map),
           palette: palette(map),
+          palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
           bioindicators: bioindicators(map),
           soil_samples: soil_samples(map),
@@ -139,16 +140,38 @@ module Mcp
           }
         end
 
-        # The species chosen for this terrain (accepted entries only).
+        # The species chosen for this terrain (accepted entries only), with
+        # what the « Palette végétale » table counts for each: plants planned
+        # on the map, in the ground, still to plant, the price noted, and a
+        # flag when it is invasive in the country or toxic for the animals.
         def palette(map)
+          rows = palette_rows(map).index_by { _1[:paletteItemId] }
           map.palette_items.includes(species: :common_names, variety: :common_names).map do |item|
+            row = rows[item.id] || {}
+            planned, planted = row[:planned].to_i, row[:planted].to_i
             {
               id: item.id, species_id: item.species_id, variety_id: item.variety_id, name: item.display_name,
               latin_name: item.variety&.full_latin_name || item.species.latin_name,
-              strata: item.effective_strata, role: item.role, target_count: item.target_count, notes: item.notes
+              strata: item.effective_strata, role: item.role, target_count: item.target_count, notes: item.notes,
+              planned:, planted:, to_plant: [ planned - planted, 0 ].max,
+              unit_price_eur: item.unit_price&.to_f, supplier: item.supplier, size: item.size,
+              excluded_by: row[:excludedBy].presence
             }.compact
           end
         end
+
+        # What the plants with a price cost: what is left to buy (not yet in
+        # the ground) and the whole, as the palette page header shows them.
+        def palette_budget(map)
+          priced = palette_rows(map).select { _1[:unitPrice] }
+          return nil if priced.empty?
+          {
+            to_buy_eur: priced.sum { _1[:unitPrice] * [ _1[:planned] - _1[:planted], 0 ].max }.round(2),
+            total_eur: priced.sum { _1[:unitPrice] * _1[:planned] }.round(2)
+          }
+        end
+
+        def palette_rows(map) = @palette_rows ||= PlantPalette.new(map).rows
 
         def centroid(map)
           point = map.center || map.boundary&.centroid
