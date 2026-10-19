@@ -19,7 +19,11 @@ class ApplicationController < ActionController::Base
       # Other accounts signed in on this browser (« Changer de compte »).
       otherAccounts: authenticated? && !impersonating? ? other_accounts_props : [],
       releaseNotes: authenticated? ? release_notes_props : nil,
-      env: { googleSignIn: GoogleSignIn.enabled?, appleSignIn: AppleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
+      env: {
+        googleSignIn: GoogleSignIn.enabled?, appleSignIn: AppleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured?,
+        # The price a locked feature points to (PlanGate): Home, or Pro for a pro account.
+        planPrices: { yearly: Billing::Catalog.find("yearly").price_cents, atelier: Billing::Catalog.find("atelier").price_cents }
+      }
     }
   end
 

@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react'
 import { Plus } from 'lucide-react'
+import { plansHref } from '@/components/billing/PlanGate'
 import { ButtonLink } from '@/components/ui/Button'
 import { WelcomeCard } from '@/components/journey/WelcomeCard'
 import { t } from '@/lib/i18n'
@@ -45,7 +46,7 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
           // The welcome card carries the call to action for a first map.
           maps.length > 0 && <ButtonLink href="/maps/new"><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>
         ) : (
-          <ButtonLink href="/billing" variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
+          <ButtonLink href={plansHref({ returnTo: '/maps/new' })} variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
         )}
       </div>
       <WhatsNewNote />
