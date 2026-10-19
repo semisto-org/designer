@@ -29,7 +29,7 @@ Si tu es membre de Semisto et que ta **cotisation est en ordre**, Terranova le r
 ## Les formules pour les professionnels
 
 - **Pro** : 49 € par mois, **6 cartes actives à la fois**, 20 Go, 30 images par mois, et les offres et barèmes pour tes clients.
-- **Team** : 129 € par mois, **20 cartes actives à la fois**, 120 Go, 120 images par mois, pour une équipe qui conçoit ensemble. C'est la formule que l'administrateur d'une [équipe](/help/travailler-en-equipe) prend pour en payer toutes les cartes.
+- **Team** : 129 € par mois, **30 cartes actives à la fois**, 120 Go, 120 images par mois, pour une équipe qui conçoit ensemble. C'est la formule que l'administrateur d'une [équipe](/help/travailler-en-equipe) prend pour en payer toutes les cartes.
 
 Dans les deux cas, les cartes archivées sont sans limite : un pro mène quelques projets à la fois, et en garde beaucoup au fil des ans.
 

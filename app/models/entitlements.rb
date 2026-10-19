@@ -14,7 +14,7 @@ class Entitlements
     "free" => { max_maps: 1, storage_gb: 1, renderings_per_month: 0, pdf_export: false, analyses: false, ai_drafts: false, offers: false },
     "yearly" => { max_maps: 3, storage_gb: 5, renderings_per_month: 10, pdf_export: true, analyses: true, ai_drafts: true, offers: false },
     "atelier" => { max_maps: 6, storage_gb: 20, renderings_per_month: 30, pdf_export: true, analyses: true, ai_drafts: true, offers: true },
-    "bureau" => { max_maps: 20, storage_gb: 120, renderings_per_month: 120, pdf_export: true, analyses: true, ai_drafts: true, offers: true }
+    "bureau" => { max_maps: 30, storage_gb: 120, renderings_per_month: 120, pdf_export: true, analyses: true, ai_drafts: true, offers: true }
   }.freeze
 
   # While billing is off (closed beta), « Mettre en image » keeps the former
