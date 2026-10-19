@@ -20,12 +20,13 @@ Les brouillons proposés par une IA ne sont pas imprimés.
 
 1. En haut de la carte, touche **Exporter**, puis **Plan PDF à l'échelle**.
 2. Vérifie le **Titre du plan** : par défaut, le nom de la carte.
-3. Choisis le **Format** (A4 ou A3) et l'**Orientation** (**Portrait** ou **Paysage**).
-4. Choisis l'**Échelle** :
+3. Choisis le **Contenu** : **Un plan**, ou un **Carnet de planches** (voir plus bas).
+4. Choisis le **Format** (A4 ou A3) et l'**Orientation** (**Portrait** ou **Paysage**).
+5. Choisis l'**Échelle** :
    - **Ajuster au terrain** cadre tout le terrain sur la feuille et indique l'échelle retenue ;
    - ou une échelle fixe : 1:100, 1:200, 1:250, 1:500, 1:1 000, 1:2 000 ou 1:2 500. Déplace alors la carte : le **cadre orange** montre ce qui sera imprimé.
-5. Lis l'**Emprise imprimée**, la taille réelle couverte par la feuille, par exemple « 60 m × 42 m ».
-6. Touche **Créer le PDF**. Le plan se met en page puis se télécharge.
+6. Lis l'**Emprise imprimée**, la taille réelle couverte par la feuille, par exemple « 60 m × 42 m ».
+7. Touche **Créer le PDF**. Le plan se met en page puis se télécharge.
 
 ## Ce que contient le plan
 
@@ -34,6 +35,15 @@ Les brouillons proposés par une IA ne sont pas imprimés.
 - un cartouche avec le titre, la **Date**, l'**Auteur** et la **Surface du terrain** ;
 - la **Légende** des éléments dessinés ;
 - les **Sources** des fonds et des couches utilisés.
+
+## Le carnet de planches
+
+Comme dans un dossier de design en permaculture, le **Carnet de planches** sépare ton design en feuilles thématiques, toutes au même cadrage et à la même échelle :
+
+- la première page est le plan d'ensemble ;
+- puis une planche par couche dessinée, dans l'ordre de la méthode : **Existant**, **Eau**, **Accès**, **Structures**, **Plantes**, **Animaux** (et **Réseaux** si tu les inclus).
+
+Sur chaque planche, la couche du sujet garde ses couleurs ; le reste du dessin et la photo aérienne passent en gris clair, pour garder le contexte sans brouiller la lecture. La légende ne montre que les éléments de la planche, et le cartouche indique son numéro, par exemple « Planche 3 / 6 ».
 
 ## Imprimer juste
 
