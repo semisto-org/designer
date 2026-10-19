@@ -22,8 +22,6 @@ function PlanSelect({ value, onChange }: { value: string; onChange: (plan: strin
 /** « Offrir une formule » to one account, or the running gift and « Reprendre ». */
 export function PlanGift({ user }: { user: AdminUserRow }) {
   const [open, setOpen] = useState(false)
-  const [plan, setPlan] = useState<string>('yearly')
-  const [endsOn, setEndsOn] = useState('')
 
   if (user.gift) {
     const revoke = () => {
@@ -46,17 +44,24 @@ export function PlanGift({ user }: { user: AdminUserRow }) {
       </Button>
     )
   }
+  return <PlanGiftForm user={user} onClose={() => setOpen(false)} />
+}
+
+/** The plan and end date to give one account; onClose once given or cancelled. */
+export function PlanGiftForm({ user, onClose, className }: { user: AdminUserRow; onClose: () => void; className?: string }) {
+  const [plan, setPlan] = useState<string>('yearly')
+  const [endsOn, setEndsOn] = useState('')
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    router.post(`/admin/users/${user.id}/plan-gifts`, { plan_key: plan, ends_on: endsOn }, { preserveScroll: true, onSuccess: () => setOpen(false) })
+    router.post(`/admin/users/${user.id}/plan-gifts`, { plan_key: plan, ends_on: endsOn }, { preserveScroll: true, onSuccess: onClose })
   }
   return (
-    <form onSubmit={submit} className="flex flex-wrap items-center gap-1.5">
-      <PlanSelect value={plan} onChange={setPlan} />
+    <form onSubmit={submit} className={className ?? 'flex flex-wrap items-center gap-1.5'}>
+      <div className="w-40"><PlanSelect value={plan} onChange={setPlan} /></div>
       <Input type="date" required min={today()} value={endsOn} onChange={(e) => setEndsOn(e.target.value)} aria-label={t('admin.plan_gifts.until')} className="w-40!" />
       <Button size="sm" type="submit">{t('admin.plan_gifts.submit')}</Button>
-      <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>{t('admin.plan_gifts.cancel')}</Button>
+      <Button size="sm" variant="ghost" onClick={onClose}>{t('admin.plan_gifts.cancel')}</Button>
     </form>
   )
 }

@@ -168,6 +168,7 @@ fr:
         maps: "Cartes"
         signed_up: "Inscription"
         last_seen: "Dernière connexion"
+        actions: "Actions"
       never: "jamais"
       admin_badge: "admin"
       reviewer_badge: "relecture du catalogue"

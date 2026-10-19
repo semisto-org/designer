@@ -15,6 +15,8 @@ fr:
       cancel: "Annuler"
       gifted_until: "offerte jusqu'au %{date}"
       revoke: "Reprendre"
+      revoke_label: "Reprendre la formule offerte"
+      give_to: "Offrir une formule à %{name}"
       confirm_revoke: "Reprendre la formule offerte à %{name} ? Ses cartes au-delà de sa formule passeront en lecture seule, rien n'est effacé."
       bulk:
         title: "Offrir une formule aux comptes existants"
