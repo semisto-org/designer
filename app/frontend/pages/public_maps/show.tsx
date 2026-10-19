@@ -24,7 +24,7 @@ import { SEASONS, gardenAt, gardenPlants, seasonOf, yearFraction, yearNow, type 
 import { loadAtlases, paintGarden, removeGarden, type Atlases } from '@/public_maps/gardenLayer'
 import { previewYear } from '@/public_maps/preview'
 import { plantLegend, plantNumber, plantNumbersAt, type StrataGroup } from '@/public_maps/plantNumbers'
-import { paintPlantNumbers, removePlantNumbers, setNamesVisible, setPlantNumbersVisible } from '@/public_maps/plantNumbersLayer'
+import { paintPlantNumbers, removePlantNumbers, setPlantNumbersVisible } from '@/public_maps/plantNumbersLayer'
 import { strataLabel } from '@/components/plants/format'
 import { STRATA_COLORS, inkOn } from '@/map/plants/strataColors'
 import type { PublicMapProps } from '@/types/collab'
@@ -44,8 +44,7 @@ export default function PublicMapShow(props: PublicMapProps) {
   const season = seasonOf(yearFraction(now))
   const [moment, setMoment] = useState<{ year: number; season: SeasonKey }>({ year: today, season })
   const onMoment = useCallback((year: number, chosen: SeasonKey) => setMoment({ year, season: chosen }), [])
-  // What the visitor writes on the map: names of zones and elements, plant numbers.
-  const [showNames, setShowNames] = useState(true)
+  // The visitor shows or hides the plant numbers (zone names are the owner's choice, at publication).
   const [showNumbers, setShowNumbers] = useState(true)
   const legend = useMemo(() => (props.growth ? plantLegend(props.growth, t('public_maps.display.unnamed_plant')) : []), [props.growth])
 
@@ -89,7 +88,6 @@ export default function PublicMapShow(props: PublicMapProps) {
           <PublicLayers {...props} selectedId={selectedId} onSelect={setSelectedId} />
           {plants.length > 0 && <Garden plants={plants} year={moment.year} season={moment.season} latitude={map.center?.[1] ?? plants[0].lat} />}
           {props.growth && props.growth.plants.length > 0 && <PlantNumbers growth={props.growth} year={moment.year} visible={showNumbers} />}
-          <Names visible={showNames} />
         </MapView>
         {props.description && <About text={props.description} />}
         {props.growth && plants.length > 0 && (
@@ -106,8 +104,6 @@ export default function PublicMapShow(props: PublicMapProps) {
           {...props}
           raised={plants.length > 0}
           plantGroups={legend}
-          showNames={showNames}
-          onShowNames={setShowNames}
           showNumbers={showNumbers}
           onShowNumbers={setShowNumbers}
         />
@@ -237,16 +233,6 @@ function whenStyleReady(map: MapLibreMap, fn: () => void) {
   run()
 }
 
-/** Shows or hides the names written on the map (zones, paths, named elements). */
-function Names({ visible }: { visible: boolean }) {
-  const instance = useMapInstance()
-  useEffect(() => {
-    if (!instance) return
-    whenStyleReady(instance, () => setNamesVisible(instance, visible))
-  }, [instance, visible])
-  return null
-}
-
 function About({ text }: { text: string }) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   return (
@@ -262,13 +248,11 @@ function About({ text }: { text: string }) {
 
 type DisplayProps = {
   plantGroups: StrataGroup[]
-  showNames: boolean
-  onShowNames: (show: boolean) => void
   showNumbers: boolean
   onShowNumbers: (show: boolean) => void
 }
 
-function Legend({ features, layers, raised, plantGroups, showNames, onShowNames, showNumbers, onShowNumbers }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean } & DisplayProps) {
+function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumbers }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean } & DisplayProps) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   const counts = useMemo(() => {
     const result = new Map<string, number>()
@@ -276,7 +260,6 @@ function Legend({ features, layers, raised, plantGroups, showNames, onShowNames,
     return [...result.entries()]
   }, [features])
   const overlays = layers.filter((l) => l.category === 'overlay')
-  const named = useMemo(() => features.features.some((f) => f.properties.name), [features])
   if (counts.length === 0 && overlays.length === 0) return null
   return (
     <section className={(raised ? 'bottom-52 md:bottom-14' : 'bottom-14') + ' absolute left-2 z-10 max-w-[min(18rem,calc(100%-1rem))] rounded-xl bg-white p-3 shadow-lg ring-1 ring-loam-200'} aria-label={t('public_maps.legend')}>
@@ -286,10 +269,9 @@ function Legend({ features, layers, raised, plantGroups, showNames, onShowNames,
       </button>
       {open && (
         <div className="mt-2 max-h-[min(24rem,50dvh)] space-y-2 overflow-y-auto text-sm text-loam-700">
-          {(named || plantGroups.length > 0) && (
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('public_maps.display.title')}>
-              {named && <Toggle on={showNames} onChange={onShowNames} label={t('public_maps.display.names')} />}
-              {plantGroups.length > 0 && <Toggle on={showNumbers} onChange={onShowNumbers} label={t('public_maps.display.numbers')} />}
+          {plantGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              <Toggle on={showNumbers} onChange={onShowNumbers} label={t('public_maps.display.numbers')} />
             </div>
           )}
           {plantGroups.length > 0 && <PlantLegend groups={plantGroups} />}

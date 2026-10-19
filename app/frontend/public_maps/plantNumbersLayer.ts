@@ -58,10 +58,3 @@ export function removePlantNumbers(map: MapLibreMap) {
   for (const id of [TEXT, DISC]) if (map.getLayer(id)) map.removeLayer(id)
   if (map.getSource(SOURCE)) map.removeSource(SOURCE)
 }
-
-/** The names written on the map: zones and paths on their paper label, and the other named elements. */
-const NAME_LAYERS = ['zone-labels', 'zone-labels-line', 'features-label']
-
-export function setNamesVisible(map: MapLibreMap, visible: boolean) {
-  for (const id of NAME_LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none')
-}

@@ -96,6 +96,8 @@ export type PublicationOptions = {
   hide_networks: boolean
   hide_address: boolean
   show_notes: boolean
+  /** Names of zones and paths; off by default (they often carry private notes). */
+  show_zone_names?: boolean
   /** The newest drone view (drone area); off by default. */
   show_aerial_view?: boolean
 }

@@ -1,8 +1,9 @@
 fr:
+  collab:
+    publish:
+      show_zone_names: "Afficher les noms des zones et des tracés"
   public_maps:
     display:
-      title: "Ce que la carte écrit"
-      names: "Noms des zones"
       numbers: "Numéros des plantes"
       plants: "Plantes par strate"
       unnamed_plant: "Plante sans espèce"

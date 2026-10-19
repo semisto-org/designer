@@ -36,6 +36,8 @@ class MapPublication < ApplicationRecord
       "hide_networks" => flag.call("hide_networks", true),
       "hide_address" => flag.call("hide_address", true),
       "show_notes" => flag.call("show_notes", false),
+      # Zone and path names often carry the designer's own notes: off unless asked.
+      "show_zone_names" => flag.call("show_zone_names", false),
       # The newest drone view (« Vues drone »), off unless the owner asks.
       "show_aerial_view" => flag.call("show_aerial_view", false)
     }

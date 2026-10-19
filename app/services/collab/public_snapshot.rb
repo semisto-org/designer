@@ -67,7 +67,7 @@ module Collab
       def serialize(feature)
         properties = {
           "id" => feature.id, "layer" => feature.layer, "kind" => feature.kind,
-          "name" => feature.name, "style" => feature.style
+          "name" => (feature.name unless zone?(feature) && !@options["show_zone_names"]), "style" => feature.style
         }
         properties.merge!(feature.properties.to_h.slice(*EARTHWORK_PROPERTIES)) if EARTHWORK_KINDS.include?(feature.kind)
         properties["notes"] = feature.notes if @options["show_notes"]
@@ -85,6 +85,10 @@ module Collab
         return nil if plants.empty? && patches.empty?
         { "today" => data[:today], "origin" => data[:origin], "plants" => plants, "patches" => patches }.deep_stringify_keys
       end
+
+      # A named zone or path drawn with the « Zone » tool: its name often
+      # carries the designer's notes, so it stays private unless shown.
+      def zone?(feature) = feature.kind == "zone" || (feature.kind == "line" && feature.layer == "notes")
 
       def region_layer_keys
         scope = @map.region.catalogue.enabled.where(key: @options["region_layers"])
