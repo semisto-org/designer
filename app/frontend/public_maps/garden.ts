@@ -16,11 +16,11 @@ import {
 /** The last year the public slider reaches: a forest garden is designed over thirty years. */
 export const GARDEN_YEARS = 30
 
-/** What a snapshot keeps of the growth data (Collab::PublicSnapshot#growth): no plant's own name or number. */
+/** What a snapshot keeps of the growth data (Collab::PublicSnapshot#growth): no plant's own name. */
 export type PublicGrowth = {
   today: string
   origin: string
-  plants: Omit<GrowingPlantData, 'ownName' | 'number'>[]
+  plants: Omit<GrowingPlantData, 'ownName'>[]
   patches: Omit<GrowingPatchData, 'name'>[]
 }
 

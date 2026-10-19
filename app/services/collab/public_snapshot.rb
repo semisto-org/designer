@@ -70,12 +70,12 @@ module Collab
       end
 
       # How the published plants grow (Relief::GrowingPlants), for the year
-      # slider and the link preview: only the plants and patches the snapshot
-      # shows, without their own names or numbers.
+      # slider, the plants' numbered pastilles and the link preview: only the
+      # plants and patches the snapshot shows, without their own names.
       def growth
         ids = features.map { |feature| feature["id"] }.to_set
         data = Relief::GrowingPlants.new(@map).as_json
-        plants = data[:plants].select { |plant| ids.include?(plant[:id]) }.map { |plant| plant.except(:ownName, :number) }
+        plants = data[:plants].select { |plant| ids.include?(plant[:id]) }.map { |plant| plant.except(:ownName) }
         patches = data[:patches].select { |patch| ids.include?(patch[:id]) }.map { |patch| patch.except(:name) }
         return nil if plants.empty? && patches.empty?
         { "today" => data[:today], "origin" => data[:origin], "plants" => plants, "patches" => patches }.deep_stringify_keys

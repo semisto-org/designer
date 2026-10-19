@@ -1,0 +1,8 @@
+fr:
+  public_maps:
+    display:
+      title: "Ce que la carte écrit"
+      names: "Noms des zones"
+      numbers: "Numéros des plantes"
+      plants: "Plantes par strate"
+      unnamed_plant: "Plante sans espèce"
