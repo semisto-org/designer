@@ -8,16 +8,18 @@ module Providers
   #
   #   normals      CLIMATE_NORMALS_PROVIDER      default "static"
   #   projections  CLIMATE_PROJECTIONS_PROVIDER  default "static"
-  #   forecast     CLIMATE_FORECAST_PROVIDER     default "open_meteo"
+  #   forecast     CLIMATE_FORECAST_PROVIDER     default "auto"
   #
   # "static" reads the region's seeded reference data, "open_meteo" calls
   # the COMMERCIAL Open-Meteo API (OPEN_METEO_API_KEY; the free API is not
-  # allowed for commercial use and is never called), "unavailable" turns
-  # the capability off. A provider that is not configured answers
+  # allowed for commercial use and is never called), "met_norway" the free
+  # MET Norway Locationforecast (commercial use allowed), "auto" Open-Meteo
+  # when its key is set and MET Norway otherwise, "unavailable" turns the
+  # capability off. A provider that is not configured answers
   # "unavailable" and the UI says so instead of failing.
   module Climate
     CAPABILITIES = %i[normals projections forecast].freeze
-    DEFAULTS = { normals: "static", projections: "static", forecast: "open_meteo" }.freeze
+    DEFAULTS = { normals: "static", projections: "static", forecast: "auto" }.freeze
 
     def self.for(region, env: ENV)
       settings = region&.setting("climate", "providers") || {}
@@ -31,6 +33,8 @@ module Providers
       case name.to_s
       when "static" then Static.new(region)
       when "open_meteo" then OpenMeteo.from_env(env)
+      when "met_norway" then MetNorway.from_env(env)
+      when "auto" then (open_meteo = OpenMeteo.from_env(env)).configured? ? open_meteo : MetNorway.from_env(env)
       when "unavailable", "none" then Unavailable.new
       else
         Rails.logger.warn("[climate] unknown provider #{name.inspect}, using unavailable")

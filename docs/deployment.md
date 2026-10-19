@@ -188,9 +188,10 @@ Used only by the one-off command `bin/rails claudy:import MAP_ID=…`, which pou
 
 | Variable | Role |
 |---|---|
-| `OPEN_METEO_API_KEY` | Weather forecasts (paid "API Standard" plan). Without it: « bientôt disponibles ». The code refuses Open-Meteo's free APIs (non-commercial use only). |
+| `OPEN_METEO_API_KEY` | Optional: weather forecasts from Open-Meteo (paid "API Standard" plan), used instead of MET Norway once set. The code refuses Open-Meteo's free APIs (non-commercial use only). |
 | `OPEN_METEO_URL` | Optional: a self-hosted instance. |
-| `CLIMATE_NORMALS_PROVIDER`, `CLIMATE_PROJECTIONS_PROVIDER`, `CLIMATE_FORECAST_PROVIDER` | Optional: `static`, `open_meteo` or `none`. |
+| `METNO_URL` | Optional: a mirror of MET Norway's API. Without any key, forecasts come from MET Norway's free Locationforecast (commercial use allowed, CC BY 4.0, cited next to the data). |
+| `CLIMATE_NORMALS_PROVIDER`, `CLIMATE_PROJECTIONS_PROVIDER`, `CLIMATE_FORECAST_PROVIDER` | Optional: `static`, `open_meteo`, `met_norway`, `auto` (forecast: Open-Meteo with a key, else MET Norway) or `none`. |
 
 ### Error tracking
 

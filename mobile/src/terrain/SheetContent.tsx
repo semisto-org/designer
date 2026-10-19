@@ -7,6 +7,7 @@ import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
 import type { Memory } from '@/lib/memory'
+import type { WeekReport } from '@/lib/week'
 import type { SpotPhotos } from '@/lib/retake'
 import { arrived, arrowAngle, type Target } from '@/lib/tour'
 import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
@@ -14,6 +15,7 @@ import type { MapFeature, Photo, Planting } from '@/lib/types'
 import { Icon, type IconName } from '@/ui/Icon'
 import { Body, Button, IconButton, MAX_FONT_SCALE } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
+import { WeekCard } from './WeekCard'
 import { colors, fonts, radius, space, touch, type } from '@/ui/theme'
 
 export const AROUND_RADIUS = 30
@@ -56,7 +58,7 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
   /** Plants of the design still to put in the ground, for the planting round. */
   toPlant?: number; onTour?: () => void
@@ -64,6 +66,8 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
   mapId?: number; photosHere?: SpotPhotos[]; onPhoto?: (photo: Photo) => void
   /** « Il y a un an, ici »: this date in an earlier year. */
   memory?: Memory | null
+  /** « Cette semaine chez toi »: frost, heat, the plants of the month, tasks due. */
+  week?: WeekReport | null
 }) {
   const card = monthCard()
   return (
@@ -76,6 +80,7 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
           <Button icon="planted" label={t('mobile.tour.start')} onPress={onTour} />
         </View>
       )}
+      {week && <WeekCard report={week} />}
       {card && <Body muted>{card.body}</Body>}
       {viewer && <Body muted>{t('mobile.terrain.viewer')}</Body>}
       {memory && mapId !== undefined && <MemoryCard memory={memory} mapId={mapId} planting={planting} onPick={onPick} onPhoto={onPhoto} />}

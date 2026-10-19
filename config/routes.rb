@@ -334,6 +334,7 @@ Rails.application.routes.draw do
       resource :climate, only: :show do
         get :forecast
       end
+      resource :week, only: :show
       resource :finances, only: %i[show update] do
         post :sync
       end
