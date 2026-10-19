@@ -1,4 +1,4 @@
-import { Bot, Camera, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, Compass, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -50,6 +50,8 @@ import OtherPropertiesSection from '@/map/plants/OtherPropertiesSection'
 import FeatureTasksSection from '@/map/tasks/FeatureTasksSection'
 import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
+import SectorInspector from '@/map/sectors/SectorInspector'
+import SectorsPanel, { isSector } from '@/map/sectors/SectorsPanel'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
 import FinancesPanel from '@/map/panels/FinancesPanel'
 import PhotosPanel from '@/map/photos/PhotosPanel'
@@ -94,6 +96,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'observe', component: LayersPanel, order: 10 },
   { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'observe', component: ReliefPanel, order: 30 },
   { id: 'sun', label: 'sun.panel_title', icon: Sun, group: 'observe', component: SunPanel, order: 35 },
+  { id: 'sectors', label: 'sectors.panel_title', icon: Compass, group: 'observe', component: SectorsPanel, order: 37 },
   { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'observe', component: ClimatePanel, order: 40 },
   { id: 'site-rules', label: 'site_rules.panel_title', icon: ShieldAlert, group: 'observe', component: SiteRulesPanel, order: 50 },
   { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: SoilPanel, order: 60 },
@@ -137,6 +140,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
   { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },
+  { id: 'sector', applies: isSector, component: SectorInspector, order: 20 },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },

@@ -4,11 +4,18 @@ import * as maplibregl from 'maplibre-gl'
 import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { DESIGN_LAYERS, elementFor, featureColor, layerColor } from '@/map/drawing/catalog'
+import { GHOST_RASTER_PAINT, ghostPaint, type ThemeTest } from '@/map/drawing/ghost'
 import { drawIcon } from '@/map/drawing/icons'
 import { applyLayerVisibility, installDrawingImages, TRANSIENT_PREFIX } from '@/map/drawing/style'
+import { BOUNDARY_SOURCE } from '@/map/layers/boundary'
+import { FEATURES_SOURCE } from '@/map/layers/features'
+import { PARCELS_SOURCE } from '@/map/layers/parcels'
 import { inVersion } from '@/map/tags/tags'
 import { isZoneKind } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
+
+type PaintProperty = Parameters<MapLibreMap['setPaintProperty']>[1]
+type PaintValue = Parameters<MapLibreMap['setPaintProperty']>[2]
 
 /**
  * Plan at scale, made in the browser: the current map (base layers, overlays
@@ -135,10 +142,46 @@ export function attributions(source: MapLibreMap): string[] {
   return [...new Set(texts.filter(Boolean))]
 }
 
-/** `hiddenKinds` and `hiddenIds` (plants of a hidden strata): what « Calques » hides inside the shown layers. */
-type RenderOptions = { center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] }
+/** Sources of the plants overlay (crowns, names, numbers): they belong to the plants layer. */
+const PLANT_SOURCES = ['plant-crowns', 'plant-labels', 'plant-numbers']
+/** Context kept as it is on every sheet. */
+const CONTEXT_SOURCES = [BOUNDARY_SOURCE, PARCELS_SOURCE]
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, version, hiddenKinds, hiddenIds }: RenderOptions): Promise<string> {
+/**
+ * On a thematic sheet, the theme layer keeps its colours; the other design
+ * layers, the overlays and the base map fade to grey (see ghost.ts).
+ */
+function applyTheme(map: MapLibreMap, theme: string) {
+  for (const layer of map.getStyle().layers) {
+    if (layer.type === 'background' || layer.type === 'hillshade') continue
+    if (layer.type === 'raster') {
+      for (const [property, value] of Object.entries(GHOST_RASTER_PAINT)) map.setPaintProperty(layer.id, property as PaintProperty, value)
+      continue
+    }
+    const source = 'source' in layer ? layer.source : null
+    if (typeof source !== 'string' || CONTEXT_SOURCES.includes(source)) continue
+    const test: ThemeTest = source === FEATURES_SOURCE
+      ? ['==', ['get', 'layer'], theme]
+      : PLANT_SOURCES.includes(source) ? theme === 'plants' : false
+    const paint = (layer as { paint?: Record<string, unknown> }).paint
+    for (const [property, value] of Object.entries(ghostPaint(layer.type, paint, test))) {
+      try {
+        map.setPaintProperty(layer.id, property as PaintProperty, value as PaintValue)
+      } catch (error) {
+        // A property this layer cannot take as an expression stays as it is.
+        console.warn(error)
+      }
+    }
+  }
+}
+
+/** `hiddenKinds` and `hiddenIds` (plants of a hidden strata): what « Calques » hides inside the shown layers; `theme`: the design layer of a thematic sheet. */
+type RenderOptions = {
+  center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[]
+  theme?: string | null
+}
+
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, version, hiddenKinds, hiddenIds, theme }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -163,6 +206,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     installDrawingImages(map, source)
     await waitFor(map, 'load')
     applyLayerVisibility(map, hiddenLayers, { activeOnly: true, version, hiddenKinds, hiddenIds })
+    if (theme) applyTheme(map, theme)
     await waitFor(map, 'idle')
     return map.getCanvas().toDataURL('image/jpeg', 0.92)
   } finally {
@@ -173,7 +217,8 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
 
 // --- Legend ------------------------------------------------------------------
 
-export type LegendEntry = { key: string; label: string; color: string; geometry: 'Point' | 'LineString' | 'Polygon'; dash?: number[]; icon?: string }
+/** `layer`: the design layer of the entry (none for the terrain boundary, shown on every sheet). */
+export type LegendEntry = { key: string; label: string; color: string; geometry: 'Point' | 'LineString' | 'Polygon'; dash?: number[]; icon?: string; layer?: string }
 
 /** One entry per kind (and per named zone) drawn on the visible layers, in design layer order. */
 export function legendEntries(
@@ -206,6 +251,7 @@ export function legendEntries(
         geometry: type,
         dash: spec?.line?.dash,
         icon: spec?.icon,
+        layer,
       })
     }
   }
@@ -318,19 +364,62 @@ export type PdfInput = {
   areaM2: number | null
   legend: LegendEntry[]
   sources: string[]
+  /** « Carnet de planches »: the overall plan, then one sheet per design layer. Without it, the single plan. */
+  sheets?: Sheet[]
 }
 
-/** Renders the map and writes the PDF; resolves with the file name. */
-export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress?: (step: 'map' | 'pdf') => void): Promise<string> {
+/** One page of the PDF: `theme` is the design layer it is about (null: the whole design). */
+export type Sheet = { theme: string | null; title: string; legend: LegendEntry[] }
+
+/** Layers that get a sheet of their own, in Semisto's design order (water before plants). */
+export const SHEET_LAYERS = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks'] as const
+
+/**
+ * The sheets of a « Carnet de planches »: the overall plan, then each design
+ * layer that has something to show on it, with only its own legend entries.
+ */
+export function bookSheets(title: string, legend: LegendEntry[], features: MapFeature[], hiddenLayers: string[], version: string | null): Sheet[] {
+  const drawn = new Set(features
+    .filter((f) => f.properties.status === 'active' && inVersion(f, version))
+    .map((f) => f.properties.layer))
+  const themes = SHEET_LAYERS.filter((layer) => drawn.has(layer) && !hiddenLayers.includes(layer))
+  return [
+    { theme: null, title, legend },
+    ...themes.map((layer) => ({
+      theme: layer,
+      title: `${title} · ${t(`editor.layers.${layer}`)}`,
+      legend: legend.filter((entry) => entry.layer == null || entry.layer === layer),
+    })),
+  ]
+}
+
+/** Renders the map and writes the PDF, one page per sheet; resolves with the file name. */
+export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress?: (step: 'map' | 'pdf', sheet?: { page: number; pages: number }) => void): Promise<string> {
   const layout = pageLayout(input.paper, input.orientation)
-  const { frame, cartouche: cart } = layout
-  onProgress?.('map')
-  const image = await renderMap(source, { center: input.center, scale: input.scale, frame, hiddenLayers: input.hiddenLayers, version: input.version, hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds })
-  onProgress?.('pdf')
+  const sheets: Sheet[] = input.sheets?.length ? input.sheets : [{ theme: null, title: input.title, legend: input.legend }]
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: input.orientation, unit: 'mm', format: input.paper.toLowerCase(), compress: true })
-  const big = input.paper === 'A3'
   doc.setProperties({ title: pdfText(input.title), creator: 'Semisto Terranova', author: pdfText(input.author ?? '') })
+  for (const [i, sheet] of sheets.entries()) {
+    onProgress?.('map', { page: i + 1, pages: sheets.length })
+    const image = await renderMap(source, {
+      center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers, version: input.version,
+      hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds, theme: sheet.theme,
+    })
+    onProgress?.('pdf', { page: i + 1, pages: sheets.length })
+    if (i > 0) doc.addPage()
+    drawSheet(doc, layout, input, sheet, image, sheets.length > 1 ? { page: i + 1, pages: sheets.length } : null)
+  }
+  const kind = sheets.length > 1 ? `-${slug(t('drawing.pdf.book_file'))}` : ''
+  const fileName = `${slug(input.title) || 'plan'}${kind}-1-${input.scale}.pdf`
+  doc.save(fileName)
+  return fileName
+}
+
+/** One page: the map in its frame, then the title block with this sheet's title and legend. */
+function drawSheet(doc: JsPDF, layout: Layout, input: PdfInput, sheet: Sheet, image: string, numbering: { page: number; pages: number } | null) {
+  const { frame, cartouche: cart } = layout
+  const big = input.paper === 'A3'
 
   // Map and frame.
   doc.addImage(image, 'JPEG', frame.x, frame.y, frame.w, frame.h, undefined, 'FAST')
@@ -366,7 +455,7 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
   doc.setTextColor('#1b1712')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(big ? 15 : 12)
-  const titleLines: string[] = doc.splitTextToSize(pdfText(input.title), c1 - 8)
+  const titleLines: string[] = doc.splitTextToSize(pdfText(sheet.title), c1 - 8)
   doc.text(titleLines.slice(0, 2), cart.x + 4, y)
   y += (big ? 6 : 5) * Math.min(titleLines.length, 2) + 0.5
   doc.setFont('helvetica', 'normal')
@@ -395,7 +484,8 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
   const rows = Math.max(1, Math.floor((cart.h - 11) / rowHeight))
   const columns = Math.max(1, Math.floor((c2 - 6) / 40))
   const capacity = rows * columns
-  const shown = input.legend.length > capacity ? input.legend.slice(0, capacity - 1) : input.legend
+  const legend = sheet.legend
+  const shown = legend.length > capacity ? legend.slice(0, capacity - 1) : legend
   const columnWidth = (c2 - 6) / columns
   shown.forEach((entry, i) => {
     const x = lx + Math.floor(i / rows) * columnWidth
@@ -405,10 +495,10 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
     const label: string[] = doc.splitTextToSize(pdfText(entry.label), columnWidth - 9)
     doc.text(label[0] ?? '', x + 8, ey)
   })
-  if (shown.length < input.legend.length) {
+  if (shown.length < legend.length) {
     const i = shown.length
     doc.setTextColor('#6e6355')
-    doc.text(pdfText(t('drawing.pdf.more', { count: input.legend.length - shown.length })), lx + Math.floor(i / rows) * columnWidth + 8, cart.y + 11 + (i % rows) * rowHeight)
+    doc.text(pdfText(t('drawing.pdf.more', { count: legend.length - shown.length })), lx + Math.floor(i / rows) * columnWidth + 8, cart.y + 11 + (i % rows) * rowHeight)
   }
 
   // Scale.
@@ -421,11 +511,8 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
   doc.setFontSize(6.5)
   doc.setTextColor('#6e6355')
   doc.text(pdfText(`${input.paper} ${t(`drawing.pdf.${input.orientation}`).toLowerCase()}`), sx, cart.y + (big ? 13 : 11.5))
+  if (numbering) doc.text(pdfText(t('drawing.pdf.sheet_number', numbering)), sx, cart.y + (big ? 17 : 15))
   drawScaleBar(doc, input.scale, sx + 1, cart.y + cart.h - (big ? 14 : 12), c3 - 12)
-
-  const fileName = `${slug(input.title) || 'plan'}-1-${input.scale}.pdf`
-  doc.save(fileName)
-  return fileName
 }
 
 function slug(text: string) {

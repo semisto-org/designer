@@ -59,6 +59,7 @@ function describe(action: AiActionData): string {
   switch (action.tool) {
     case 'list_features': return t('ai_journal.actions.list_features', { count: n('features') })
     case 'propose_features': return t('ai_journal.actions.propose_features', { count: n('created') })
+    case 'propose_sectors': return t('ai_journal.actions.propose_sectors', { count: n('created') })
     case 'propose_feature_updates': return t('ai_journal.actions.propose_feature_updates', { count: n('created') })
     case 'propose_deletions': return t('ai_journal.actions.propose_deletions', { count: n('created') })
     case 'propose_palette': return t('ai_journal.actions.propose_palette', { count: n('created') })
