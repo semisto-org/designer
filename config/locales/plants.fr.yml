@@ -470,6 +470,28 @@ fr:
     balance: "Équilibre des strates"
     balance_hint: "Plants prévus par strate, en patches et isolés."
     balance_empty: "Rien de prévu pour l'instant."
+    succession:
+      title: "Soutien et productifs"
+      hint: "Arbres et arbustes de soutien (hachurés) et productifs, de la première plantation à trente ans. Les plantes de soutien nourrissent le sol, puis laissent la place aux fruitiers."
+      year: "An %{year}"
+      counts: "%{support} de soutien, %{productive} productifs"
+      support: "Soutien"
+      productive: "Productifs"
+      outside: "Dehors cette année"
+      actions:
+        chop_and_drop:
+          one: "Couper et déposer la plante de soutien en terre, au pied des fruitiers, en juin puis à la fin de l'été."
+          other: "Couper et déposer les %{count} plantes de soutien en terre, au pied des fruitiers, en juin puis à la fin de l'été."
+        give_way:
+          one: "En %{year}, une plante de soutien laisse la place : retire-la pendant la dormance, en laissant ses racines nourrir le sol."
+          other: "En %{year}, %{count} plantes de soutien laissent la place : retire-les pendant la dormance, en laissant leurs racines nourrir le sol."
+        unscheduled:
+          one: "Une plante de soutien n'a pas encore de destin : dis sur sa fiche si elle est coupée chaque année ou quand elle laisse la place."
+          other: "%{count} plantes de soutien n'ont pas encore de destin : dis sur leur fiche si elles sont coupées chaque année ou quand elles laissent la place."
+      advice:
+        no_support: "Aucune plante de soutien pour démarrer. Des fixatrices d'azote et des pionnières entre les fruitiers nourrissent le sol et les abritent : compte une pour un ou deux fruitiers sur un sol pauvre, une pour trois à cinq sur un bon sol."
+        few_support: "Peu de plantes de soutien pour démarrer : sur un sol pauvre ou tassé, compte une fixatrice ou une pionnière pour un ou deux fruitiers."
+        support_stays: "En l'an 15, les plantes de soutien prennent encore beaucoup de place. Dis sur leur fiche quand elles la laissent aux fruitiers."
     empty: "La palette est vide. Cherche une espèce ou pars des suggestions pour ce terrain."
     draw_patch: "Dessiner un patch"
     drawing_patch: "Dessine le contour du patch sur la carte : reviens au premier point ou touche « Terminer »."
