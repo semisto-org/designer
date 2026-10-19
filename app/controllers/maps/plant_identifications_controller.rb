@@ -1,5 +1,5 @@
 # « Identify the species by photo » from a plant's inspector: one to five
-# photos (multipart `images[]`) go to Pl@ntNet and come back as candidate
+# photos (multipart `images[]`, with what each shows in `organs[]`) go to Pl@ntNet and come back as candidate
 # species, matched to the catalogue. Editors only; nothing is saved here, the
 # editor saves the species the human picks through the features endpoint.
 #
@@ -21,7 +21,7 @@ module Maps
     before_action :require_editor!
 
     def create
-      result = PlantIdentification.new(files: Array(params[:images]).grep(ActionDispatch::Http::UploadedFile)).run
+      result = PlantIdentification.new(files: Array(params[:images]).grep(ActionDispatch::Http::UploadedFile), organs: Array(params[:organs])).run
       render json: { available: true, candidates: result.candidates.map(&:as_json), credit: CREDIT }
     rescue PlantIdentification::Invalid => error
       render json: { code: "invalid", message: error.message }, status: :unprocessable_entity

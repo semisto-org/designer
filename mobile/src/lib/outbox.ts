@@ -155,7 +155,7 @@ const transport: Transport = {
     const located = o.lng !== null && o.lat !== null
     await api('POST', `/maps/${mapId}/bioindicator_observations`, form('bioindicator_observation', {
       species_name: o.speciesName, latin_name: o.latinName, catalog_key: o.catalogKey, plant_species_id: o.plantSpeciesId,
-      abundance: o.abundance, notes: o.notes, lng: o.lng, lat: o.lat, location_source: located ? 'device' : null,
+      abundance: o.abundance, cover_percent: o.coverPercent ?? null, notes: o.notes, lng: o.lng, lat: o.lat, location_source: located ? 'device' : null,
       photo_taken_at: o.takenAt, photo_source: 'phone', photo: photoFile(photo),
     }), once(key))
   },

@@ -61,7 +61,13 @@ What it does, for the maps one belongs to:
   tapped on the map or taken with « Point ici » where one stands; length,
   area in m², ares or hectares, perimeter and each side's length live on the
   map, then « Ajouter à la carte » hands the shape to the record screen;
-- species identification with Pl@ntNet (through the server);
+- species identification with Pl@ntNet (through the server), each photo
+  tagged with the organ it shows (leaf, flower, fruit, bark, whole plant),
+  and a « Déjà dans ta palette » badge on candidates the map already holds;
+- quick survey of wild plants (`app/maps/[id]/bioindicator.tsx`,
+  `lib/survey.ts`): each plant gets a cover class (sent as `cover_percent`,
+  which sets the abundance), the screen stays open for the next plant, and
+  the plants noted so far add up to a soil reading weighted by their cover;
 - comments on elements;
 - « Supprimer mon compte » (account screen): sends the deletion request to
   Semisto (`POST /api/v1/me/deletion_request`), as the stores require.

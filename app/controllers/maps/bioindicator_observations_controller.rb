@@ -74,7 +74,7 @@ module Maps
       end
 
       def observation_params
-        raw = params.require(:bioindicator_observation).permit(:species_name, :latin_name, :catalog_key, :plant_species_id, :abundance, :observed_on, :notes, :lng, :lat, :map_photo_id)
+        raw = params.require(:bioindicator_observation).permit(:species_name, :latin_name, :catalog_key, :plant_species_id, :abundance, :cover_percent, :observed_on, :notes, :lng, :lat, :map_photo_id)
         raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat]) if raw.key?(:lng) || raw.key?(:lat)
         raw[:map_photo_id] = @map.photos.find(raw[:map_photo_id]).id if raw[:map_photo_id].present?
         raw.except(:lng, :lat)

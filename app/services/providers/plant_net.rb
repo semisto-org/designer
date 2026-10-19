@@ -37,6 +37,8 @@ module Providers
     DEFAULT_URL = "https://my-api.plantnet.org".freeze
     IDENTIFY_PATH = "/v2/identify/all".freeze
     MAX_IMAGES = 5
+    # What each photo shows; « auto » lets Pl@ntNet guess.
+    ORGANS = %w[auto leaf flower fruit bark habit].freeze
     MAX_RESULTS = 5
     OPEN_TIMEOUT = 5
     TIMEOUT = 30
@@ -115,8 +117,8 @@ module Providers
       end
 
       # The multipart body is written by hand (no extra gem, and a String is
-      # easy to read back in tests). `organs=auto`: Pl@ntNet guesses the organ
-      # of each photo, nothing more is asked of someone standing at the plant.
+      # easy to read back in tests). `organs`: what each photo shows (leaf,
+      # flower…), which sharpens the answer; `auto` when the person did not say.
       def multipart(images, boundary)
         body = +"".b
         images.each do |image|
@@ -128,7 +130,7 @@ module Providers
           body << "Content-Type: #{image[:content_type]}\r\n\r\n"
           body << io.read.b << "\r\n"
           body << "--#{boundary}\r\n"
-          body << %(Content-Disposition: form-data; name="organs"\r\n\r\nauto\r\n)
+          body << %(Content-Disposition: form-data; name="organs"\r\n\r\n#{ORGANS.include?(image[:organ]) ? image[:organ] : "auto"}\r\n)
         end
         body << "--#{boundary}--\r\n"
       end

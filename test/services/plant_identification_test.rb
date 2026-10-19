@@ -124,4 +124,13 @@ class PlantIdentificationTest < ActiveSupport::TestCase
     stub_plantnet(status: 500, body: "boom")
     assert_raises(Providers::PlantNet::Unavailable) { identify(upload("terrain.jpg")) }
   end
+
+  test "says what each photo shows, and leaves an unknown organ to Pl@ntNet" do
+    stub_plantnet
+    PlantIdentification.new(files: [ upload("terrain.jpg"), upload("plant.png") ], organs: %w[flower petal], provider: @provider).run
+
+    assert_requested(:post, PLANTNET_ENDPOINT) do |request|
+      request.body.scan(/name="organs"\r\n\r\n(\w+)/).flatten == %w[flower auto]
+    end
+  end
 end

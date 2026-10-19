@@ -6,7 +6,7 @@
 # picks one (« C'est elle ») or refuses all. Nothing is saved here, and the
 # photos are not stored: they leave with the request.
 #
-#   result = PlantIdentification.new(files: params[:images]).run
+#   result = PlantIdentification.new(files: params[:images], organs: params[:organs]).run
 #   result.candidates   # => [PlantIdentification::Candidate, ...]
 #
 # Raises Invalid (user-facing French message) for photos we refuse before any
@@ -40,8 +40,11 @@ class PlantIdentification
 
   Result = Data.define(:candidates)
 
-  def initialize(files:, provider: Providers::PlantNet.new)
+  # `organs`: what each photo shows, in the order of the files (leaf, flower,
+  # fruit, bark, habit); a missing or unknown one is left to Pl@ntNet.
+  def initialize(files:, organs: [], provider: Providers::PlantNet.new)
     @files = Array(files).compact_blank
+    @organs = Array(organs).map(&:to_s)
     @provider = provider
   end
 
@@ -50,12 +53,17 @@ class PlantIdentification
     raise Invalid, I18n.t("plantnet.errors.no_images") if @files.empty?
     raise Invalid, I18n.t("plantnet.errors.too_many", max: Providers::PlantNet::MAX_IMAGES) if @files.size > Providers::PlantNet::MAX_IMAGES
 
-    candidates = @provider.identify(@files.map { |file| read(file) })
+    candidates = @provider.identify(@files.each_with_index.map { |file, index| read(file).merge(organ: organ_at(index)) })
     matcher = CatalogueMatcher.new
     Result.new(candidates: candidates.map { |candidate| candidate_for(candidate, matcher) })
   end
 
   private
+    def organ_at(index)
+      organ = @organs[index]
+      Providers::PlantNet::ORGANS.include?(organ) ? organ : "auto"
+    end
+
     # Hash for the provider; the type is read from the bytes, not trusted from
     # the browser.
     def read(file)
