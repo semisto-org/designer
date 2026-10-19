@@ -39,6 +39,10 @@ module Relief
             number: feature.properties["number"].presence,
             ownName: feature.name.presence,
             training: feature.plant_training,
+            # A support plant gives way to the productive ones: removed
+            # `supportUntil` years after it was planted, when that is set.
+            support: feature.support_plant?(@quantities.palette_role_for(key)),
+            supportUntil: feature.support_until,
             graft: feature.plant_graft,
             plantedOn: (feature.known_planted_on&.iso8601 rescue nil),
             # In the ground since an unknown date: grown already.

@@ -11,7 +11,7 @@ import { strataKey, UNKNOWN_STRATA } from '@/map/drawing/hidden'
 import { setHiddenStrata, toggled, useDrawingState } from '@/map/drawing/store'
 import { numberRanges } from '@/map/plants/labelRank'
 import { isPlant, numberProperty } from '@/map/plants/properties'
-import { drawsCrown, plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
+import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
 import { setPlantLabelStyle, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { usePlanting } from '@/map/plants/store'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, useScenario } from '@/map/scenario'
@@ -31,7 +31,7 @@ function storedOpen(): boolean | null {
 /** The plant numbers of one species (and variety) on the map, for the « Numéro » legend. */
 type NumberedGroup = { key: string; name: string; strata: Strata | null; numbers: number[] }
 
-type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; numbered: NumberedGroup[] }
+type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; support: boolean; numbered: NumberedGroup[] }
 
 /**
  * The strata of the plants on the map, from the highest down (hidden ones
@@ -45,11 +45,12 @@ function usePlantStrata(): PlantLegend {
   const scenario = useScenario()
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
-  if (hidden.includes('plants')) return { counts: [], unknown: 0, planned: false, numbered: [] }
+  if (hidden.includes('plants')) return { counts: [], unknown: 0, planned: false, support: false, numbered: [] }
   const strata: Strata[] = []
   let unknown = 0
   const groups = new Map<string, NumberedGroup>()
   let planned = false
+  let support = false
   for (const feature of features) {
     if (!isPlant(feature) || feature.properties.status === 'rejected' || !inScenario(feature.properties, scenario)) continue
     const s = plantStrata(feature, data)
@@ -73,9 +74,10 @@ function usePlantStrata(): PlantLegend {
     if (!s) continue
     strata.push(s)
     planned ||= isPlannedPlant(feature.properties)
+    support ||= drawsCrown(s) && plantIsSupport(feature, data)
   }
   const numbered = [...groups.values()].sort((a, b) => Math.min(...a.numbers) - Math.min(...b.numbers))
-  return { counts: strataCounts(strata), unknown, planned, numbered }
+  return { counts: strataCounts(strata), unknown, planned, support, numbered }
 }
 
 /**
@@ -156,7 +158,7 @@ export default function LegendOverlay() {
  * A click hides or shows that strata (crowns, points, names and numbers),
  * remembered per map like the « Calques ».
  */
-function StrataLegend({ counts, unknown, planned, numbered }: PlantLegend) {
+function StrataLegend({ counts, unknown, planned, support, numbered }: PlantLegend) {
   const style = usePlantLabelStyle()
   const hidden = useDrawingState((s) => s.hiddenStrata)
   const rows = [
@@ -199,6 +201,12 @@ function StrataLegend({ counts, unknown, planned, numbered }: PlantLegend) {
         <p className="mt-2 flex items-center gap-2 text-sm leading-tight text-loam-600">
           <CrownSwatch color="#6b665c" planned />
           {t('plants.legend.planned')}
+        </p>
+      )}
+      {support && (
+        <p className="mt-2 flex items-center gap-2 text-sm leading-tight text-loam-600">
+          <CrownSwatch color="#6b665c" support />
+          {t('plants.legend.support')}
         </p>
       )}
     </div>
@@ -253,10 +261,16 @@ function PlantLabelSwitch() {
  * A crown as the map draws it: tinted disc, white ring, outline (dashed when
  * still to plant). Climbers have no crown on the map: their point alone.
  */
-function CrownSwatch({ color, planned = false, crown = true }: { color: string; planned?: boolean; crown?: boolean }) {
+function CrownSwatch({ color, planned = false, crown = true, support = false }: { color: string; planned?: boolean; crown?: boolean; support?: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" className="shrink-0" aria-hidden="true" style={{ opacity: planned ? PLANNED_OPACITY : 1 }}>
       {crown && <circle cx="9" cy="9" r="7" fill={color} fillOpacity={planned ? 0.15 : 0.45} stroke="#ffffff" strokeWidth="3.5" />}
+      {/* Support plants: white hatching over the strata colour, as on the map. */}
+      {crown && support && (
+        <g style={{ clipPath: 'circle(6px at 9px 9px)' }} stroke="#ffffff" strokeWidth="1.2" strokeOpacity="0.9">
+          {[-8, -4, 0, 4, 8].map((d) => <line key={d} x1={2 + d} y1={16} x2={16 + d} y2={2} />)}
+        </g>
+      )}
       {crown && <circle cx="9" cy="9" r="7" fill="none" stroke={color} strokeWidth="1.75" strokeDasharray={planned ? '3 2.2' : undefined} />}
       <circle cx="9" cy="9" r={crown ? 2.2 : 4} fill={planned ? '#ffffff' : color} stroke={planned ? color : '#ffffff'} strokeWidth="1" />
     </svg>

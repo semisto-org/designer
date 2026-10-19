@@ -165,6 +165,22 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/bbox/, text)
   end
 
+  test "list_features says which plants are support plants, from their palette role or their sheet" do
+    @map.palette_items.create!(species: plant_species(:alder), role: "support")
+    alder = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906),
+                                  properties: { "species_id" => plant_species(:alder).id, "support_until" => 8, "training" => "chop_and_drop" })
+    apple = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9061),
+                                  properties: { "species_id" => plant_species(:apple).id })
+    kept = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9062),
+                                 properties: { "species_id" => plant_species(:alder).id, "succession" => "productive" })
+    data, = call_tool(@owner, "list_features", { map_id: @map.id, layer: "plants" })
+    by_id = data["features"].index_by { |f| f["id"] }
+    assert_equal true, by_id[alder.id].dig("properties", "support")
+    assert_equal 8, by_id[alder.id].dig("properties", "support_until")
+    assert_nil by_id[apple.id].dig("properties", "support")
+    assert_nil by_id[kept.id].dig("properties", "support")
+  end
+
   test "list_features paginates with after_id and can drop geometries" do
     3.times { |i| @map.features.create!(layer: "plants", kind: "tree", name: "Arbre #{i}", geometry: point(lng: 4.906 + i * 0.0001)) }
     data, = call_tool(@owner, "list_features", { map_id: @map.id, layer: "plants", limit: 2, include_geometry: false })
