@@ -75,7 +75,7 @@ class BillingControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @user
     with_billing do
       props = billing_props
-      assert_equal [ 1, 20 ], [ props["ownedMaps"], props["maxMaps"] ]
+      assert_equal [ 1, 30 ], [ props["ownedMaps"], props["maxMaps"] ]
       assert_equal 1, props["readOnlyMaps"]
       personal = props["personalMaps"]
       assert_equal [ 2, 1, 1 ], [ personal["used"], personal["max"], personal["readOnly"] ]

@@ -100,7 +100,7 @@ fr:
         price_note: "par mois"
         renewal_note: "Mensuel ou annuel, résiliable à tout moment"
         features:
-          maps: "20 cartes actives à la fois, archivées sans limite"
+          maps: "30 cartes actives à la fois, archivées sans limite"
           storage: "120 Go pour les photos et documents de l'équipe"
           team: "Toute l'équipe travaille sur les mêmes cartes"
           renderings: "120 images par mois avec « Mettre en image »"

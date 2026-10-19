@@ -78,10 +78,10 @@ class PlanResolutionTest < ActiveSupport::TestCase
     @user.plan_grants.create!(plan_key:, starts_at:, ends_at:)
   end
 
-  test "Team has 20 active maps; archived maps do not count" do
+  test "Team has 30 active maps; archived maps do not count" do
     subscription(plan_key: "bureau")
     with_billing do
-      maps = 21.times.map { |i| @user.owned_maps.create!(name: "Client #{i}") }
+      maps = 31.times.map { |i| @user.owned_maps.create!(name: "Client #{i}") }
       refute Billing::Scope.own(@user).can_create_map?
       assert_equal 1, @user.read_only_maps_count
       maps.first(2).each(&:archive!)

@@ -40,7 +40,7 @@ Ouvre la carte, clique sur **Partager**, puis dans la partie « Équipe », choi
 
 ## Le forfait de l'équipe
 
-Par défaut, chaque carte de l'équipe suit le forfait de son propriétaire. Sur la page de l'équipe, un administrateur peut choisir **Payer les cartes de l'équipe avec mon forfait** : toutes les cartes de l'équipe suivent alors son forfait (par exemple Team, avec 20 cartes actives), quel que soit leur créateur. Elles ne comptent plus dans le forfait des designers.
+Par défaut, chaque carte de l'équipe suit le forfait de son propriétaire. Sur la page de l'équipe, un administrateur peut choisir **Payer les cartes de l'équipe avec mon forfait** : toutes les cartes de l'équipe suivent alors son forfait (par exemple Team, avec 30 cartes actives), quel que soit leur créateur. Elles ne comptent plus dans le forfait des designers.
 
 C'est le cas d'un designer de Semisto qui travaille aussi à son compte : ses cartes de free-lance restent sur son abonnement pro, celles de Semisto sur le forfait de l'équipe. Si l'administrateur qui paie quitte l'équipe ou n'est plus administrateur, chaque carte revient au forfait de son propriétaire. Rien n'est jamais supprimé.
 
