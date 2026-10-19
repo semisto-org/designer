@@ -28,6 +28,7 @@ import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
+import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
 import ScenarioToggle from '@/map/panels/ScenarioToggle'
 import VersionPicker from '@/map/tags/VersionPicker'
 import PalettePanel from '@/map/plants/PalettePanel'
@@ -153,6 +154,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'share', component: ShareButton, order: 80 },
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
+  { id: 'shortcuts', component: ShortcutsButton, order: 94 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
   { id: 'scenario', component: ScenarioToggle, order: 10 },
@@ -164,6 +166,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
   { id: 'version', component: VersionPicker, order: 25 },
   { id: 'tour', component: TourOverlay, order: 100 },
+  { id: 'shortcuts', component: ShortcutsSheet, order: 101 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'layer-legend', component: LegendOverlay, order: 5 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
