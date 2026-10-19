@@ -16,6 +16,8 @@ export type TrialReading = {
 export type TrialData = {
   token: string
   address: string | null
+  /** The name the map will get: « Le terrain de Purnode ». */
+  name: string
   center: LngLat
   boundary: MultiPolygon | null
   bbox: BBox | null
@@ -35,6 +37,8 @@ export type TrialShowProps = {
   regionName: string | null
   from: { token: string; title: string; path: string } | null
   maxParcels: number
+  /** The e-mail a sign-in link was just sent to, to keep the trial. */
+  sentTo: string | null
 }
 
 export type TrialNewProps = {

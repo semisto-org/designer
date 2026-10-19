@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -668,7 +668,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_200000) do
     t.datetime "expires_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "origin", default: "direct", null: false
+    t.bigint "claimant_id"
     t.index ["adopted_map_id"], name: "index_map_trials_on_adopted_map_id"
+    t.index ["claimant_id"], name: "index_map_trials_on_claimant_id"
     t.index ["expires_at"], name: "index_map_trials_on_expires_at"
     t.index ["region_id"], name: "index_map_trials_on_region_id"
     t.index ["source_publication_id"], name: "index_map_trials_on_source_publication_id"
@@ -1684,6 +1687,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_200000) do
   add_foreign_key "map_trials", "map_publications", column: "source_publication_id", on_delete: :nullify
   add_foreign_key "map_trials", "maps", column: "adopted_map_id", on_delete: :nullify
   add_foreign_key "map_trials", "regions"
+  add_foreign_key "map_trials", "users", column: "claimant_id", on_delete: :nullify
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify

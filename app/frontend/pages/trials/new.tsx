@@ -1,36 +1,16 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import { useState } from 'react'
-import { ApiError, api } from '@/lib/api'
-import { track } from '@/lib/analytics'
 import { t } from '@/lib/i18n'
 import { AddressSearch } from '@/map/data/AddressSearch'
+import { useStartTrial } from '@/trials/start'
 import type { TrialNewProps } from '@/types/trials'
-import type { GeocodeResult } from '@/types/map_data'
 
 /**
  * « Et chez toi ? »: one question, the visitor's address. The trial starts
  * on the place found, with no account.
  */
 export default function TrialNew({ from }: TrialNewProps) {
-  const [starting, setStarting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  async function start(place: GeocodeResult) {
-    setStarting(true)
-    setError(null)
-    try {
-      const { path } = await api<{ path: string }>('/essai', {
-        method: 'POST',
-        body: { lng: place.lng, lat: place.lat, address: [place.label, place.detail].filter(Boolean).join(', '), from: from?.token },
-      })
-      track('try_address', { from: from ? 'public_map' : 'direct' })
-      router.visit(path)
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('trials.errors.invalid_place'))
-      setStarting(false)
-    }
-  }
+  const { start, starting, error } = useStartTrial({ via: from ? 'public_map' : 'direct', from: from?.token })
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10 md:py-16">
