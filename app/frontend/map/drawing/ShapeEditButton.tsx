@@ -7,16 +7,25 @@ import type { MapFeature } from '@/types'
 
 const EDITABLE_GEOMETRIES = ['Point', 'LineString', 'Polygon']
 
-/** « Déplacer » for a point, « Modifier la forme » for a line or a surface; nothing for viewers. */
+/** « Déplacer » for a point, « Modifier la forme » for a line or a surface (M, see moveShortcut.ts); nothing for viewers. */
 export default function ShapeEditButton({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
   if (!editor.canEdit || !EDITABLE_GEOMETRIES.includes(feature.geometry.type)) return null
   const point = feature.geometry.type === 'Point'
   const Icon = point ? Move : Spline
   return (
-    <Button variant="secondary" size="sm" className="w-full" disabled={editor.drawing} onClick={() => startShapeEdit(feature.properties.id)}>
+    <Button variant="secondary" size="sm" className="w-full" disabled={editor.drawing} title={t(point ? 'drawing.edit.move_title' : 'drawing.edit.start_title')}
+      onClick={() => startShapeEdit(feature.properties.id)}>
       <Icon className="h-4 w-4" />
       {t(point ? 'drawing.edit.move' : 'drawing.edit.start')}
+      <ShortcutKey />
     </Button>
+  )
+}
+
+/** The key that does the same, for keyboards only (hidden on touch screens). */
+export function ShortcutKey() {
+  return (
+    <kbd aria-hidden className="hidden rounded-md border border-current/20 px-1.5 font-sans text-sm leading-5 opacity-70 [@media(pointer:fine)]:inline">M</kbd>
   )
 }

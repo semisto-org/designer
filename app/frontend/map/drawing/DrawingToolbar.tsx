@@ -6,15 +6,18 @@ import { Button } from '@/components/ui/Button'
 import { formatArea, formatLength, t, translations } from '@/lib/i18n'
 import type { PointTool } from '@/map/editor/draw'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
+import { isTextTarget } from '@/map/editor/history'
 import { measure } from '@/map/editor/measure'
 import { drawShapeFor, storedProperties } from '@/map/drawing/catalog'
 import { reliefReady, traceContour } from '@/map/drawing/contour'
 import { ElementPicker, rememberRecent } from '@/map/drawing/ElementPicker'
 import { MeasureTool, measureProperties } from '@/map/drawing/MeasureTool'
+import { isMoveShortcut, moveTarget } from '@/map/drawing/moveShortcut'
 import { saveFeature } from '@/map/drawing/save'
 import { SketchTool } from '@/map/drawing/SketchTool'
 import { StepBackButton } from '@/map/drawing/StepBackButton'
-import { drawingStore, revealForDrawing, useDrawingState, type DrawingTool } from '@/map/drawing/store'
+import { drawingStore, revealForDrawing, startShapeEdit, useDrawingState, type DrawingTool } from '@/map/drawing/store'
+import { plantPeek } from '@/map/plants/peek'
 import { ZoneTool } from '@/map/zones/ZoneTool'
 import type { ElementSpec } from '@/types/drawing'
 
@@ -168,10 +171,33 @@ export default function DrawingToolbar() {
     latest.current.cancelDraw()
   }
 
-  // Shape editing, asked by the inspector (ElementSection).
+  // M moves the element whose card or inspector is open (Enter saves, Escape gives up).
+  useEffect(() => {
+    if (!editor.canEdit) return
+    const onKey = (event: KeyboardEvent) => {
+      const editor = latest.current
+      if (!isMoveShortcut(event) || event.defaultPrevented || event.repeat || isTextTarget(event.target)) return
+      if (editor.drawing || drawingStore.get().tool) return
+      // A dialog over the map (photo viewer, settings…) keeps the keys.
+      if (document.querySelector('[aria-modal="true"]')) return
+      const target = moveTarget({ peekedId: plantPeek.current(), selectedId: editor.selectedId, selection: editor.selection })
+      const feature = target && editor.features.find((f) => f.properties.id === target.id)
+      if (!target || !feature || !['Point', 'LineString', 'Polygon'].includes(feature.geometry.type)) return
+      event.preventDefault()
+      plantPeek.close()
+      startShapeEdit(target.id, target.from)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [editor.canEdit])
+
+  // Shape editing, asked by the inspector (ElementSection) or by M.
   useEffect(() => {
     if (shapeEditId == null) return
     const editor = latest.current
+    const fromPeek = drawingStore.get().shapeEditFrom === 'peek'
+    // Back where the move started: the plant's card, or its inspector.
+    const reopen = () => (fromPeek ? plantPeek.open(shapeEditId) : latest.current.select(shapeEditId))
     const feature = editor.features.find((f) => f.properties.id === shapeEditId)
     if (!feature) return void drawingStore.set({ shapeEditId: null, tool: null })
     let active = true
@@ -194,7 +220,7 @@ export default function DrawingToolbar() {
       setShapeMeasure(null)
       setPointTool('move')
       const editor = latest.current
-      if (!geometry) return editor.select(shapeEditId)
+      if (!geometry) return reopen()
       const point = geometry.type === 'Point'
       if (sameGeometry(geometry, feature.geometry)) {
         editor.notify(t(point ? 'drawing.edit.unmoved' : 'drawing.edit.unchanged'))
@@ -205,7 +231,7 @@ export default function DrawingToolbar() {
       })) {
         editor.notify(t(point ? 'drawing.edit.moved' : 'drawing.edit.saved'))
       }
-      editor.select(shapeEditId)
+      reopen()
     })
     const onKey = (e: KeyboardEvent) => e.key === 'Enter' && latest.current.finishDraw()
     window.addEventListener('keydown', onKey)
