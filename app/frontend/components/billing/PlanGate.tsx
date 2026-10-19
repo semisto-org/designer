@@ -3,18 +3,18 @@ import clsx from 'clsx'
 import { Lock } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { buttonClass } from '@/components/ui/Button'
+import { PlaceSketch } from '@/components/ui/PlaceSketch'
 import { t } from '@/lib/i18n'
 import { formatPrice } from '@/lib/money'
 import type { SharedProps } from '@/types'
 import type { SketchGeometry } from '@/types/myMaps'
-import { PlaceThumb } from './PlaceThumb'
 
 export type GateFeature = 'relief' | 'climate' | 'soil' | 'pdf' | 'dossier_terrain' | 'dossier_climate' | 'dossier_soil'
 
 type Props = {
   feature: GateFeature
   /** The place it would unlock: its name and outline are shown. */
-  place?: { id: number; name: string; boundary?: SketchGeometry | null } | null
+  place?: { id: number; name: string; boundary?: SketchGeometry | null; areaM2?: number | null } | null
   /** The person can change the plan that covers this map (its payer). */
   canUpgrade: boolean
   /** The editor panel to reopen after paying (else the current page). */
@@ -59,7 +59,7 @@ export function PlanGate({ feature, place, canUpgrade, panel, children, body, cl
   return (
     <section aria-label={t(`plan_gates.${feature}.title`)} className={clsx('rounded-2xl bg-loam-50 p-4 text-sm ring-1 ring-loam-900/10 print:hidden', className)}>
       <div className="flex items-start gap-3">
-        {place && <PlaceThumb boundary={place.boundary ?? null} size={48} />}
+        {place?.boundary && <PlaceSketch id={place.id} name={place.name} boundary={place.boundary} areaM2={place.areaM2} className="w-28 shrink-0 rounded-xl" />}
         <div className="min-w-0">
           {name && <p className="truncate font-hand text-xl leading-none text-prune-600">{t('plan_gates.on_place', { place: name })}</p>}
           <h3 className="mt-1 flex items-center gap-1.5 text-base font-semibold text-loam-900">

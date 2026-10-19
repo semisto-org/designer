@@ -33,7 +33,6 @@ small-text	5	app/frontend/components/climate/FutureClimate.tsx
 small-text	7	app/frontend/components/climate/PlantChecks.tsx
 small-text	1	app/frontend/components/climate/Sources.tsx
 small-text	1	app/frontend/components/climate/StatusPill.tsx
-small-text	1	app/frontend/components/climate/Upsell.tsx
 bare-button	1	app/frontend/components/CopyField.tsx
 small-text	5	app/frontend/components/finances/CashChart.tsx
 small-text	1	app/frontend/components/finances/NumberInput.tsx
@@ -111,7 +110,7 @@ small-text	7	app/frontend/dossier/Cover.tsx
 hex-color	1	app/frontend/dossier/DesignSection.tsx
 small-text	5	app/frontend/dossier/DesignSection.tsx
 small-text	2	app/frontend/dossier/FinancesSection.tsx
-small-text	7	app/frontend/dossier/parts.tsx
+small-text	6	app/frontend/dossier/parts.tsx
 small-text	2	app/frontend/dossier/PhotosSection.tsx
 small-text	5	app/frontend/dossier/PlantsSection.tsx
 small-text	2	app/frontend/dossier/ProjectSection.tsx
@@ -159,7 +158,7 @@ hex-color	3	app/frontend/map/drawing/LayersPanel.tsx
 bare-button	2	app/frontend/map/drawing/MeasureTool.tsx
 small-text	3	app/frontend/map/drawing/MeasureTool.tsx
 bare-button	2	app/frontend/map/drawing/PdfExportPanel.tsx
-small-text	2	app/frontend/map/drawing/PdfExportPanel.tsx
+small-text	1	app/frontend/map/drawing/PdfExportPanel.tsx
 bare-button	1	app/frontend/map/drawing/ProjectStateSection.tsx
 bare-button	1	app/frontend/map/drawing/SketchTool.tsx
 hex-color	12	app/frontend/map/drawing/SketchTool.tsx
@@ -295,7 +294,6 @@ bare-button	1	app/frontend/map/soil/SoilOverlay.tsx
 small-text	1	app/frontend/map/soil/SoilOverlay.tsx
 bare-button	1	app/frontend/map/soil/SoilPanel.tsx
 small-text	2	app/frontend/map/soil/SoilPanel.tsx
-small-text	1	app/frontend/map/soil/Upsell.tsx
 bare-button	1	app/frontend/map/storage/StorageSection.tsx
 native-confirm	1	app/frontend/map/storage/StorageSection.tsx
 small-text	1	app/frontend/map/storage/StorageSection.tsx

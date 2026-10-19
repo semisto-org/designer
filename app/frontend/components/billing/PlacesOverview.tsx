@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { formatArea, t } from '@/lib/i18n'
 import { formatBytes, formatDate } from '@/lib/money'
 import type { BillingData, GrantData } from '@/types/billing'
-import { PlaceThumb } from './PlaceThumb'
-import { UsageMeter } from './UsageMeter'
+import { PlaceSketch } from '@/components/ui/PlaceSketch'
+import { UsageMeter } from '@/components/ui/UsageMeter'
 
 const SHOWN = 6
 
@@ -70,27 +70,30 @@ export function PlacesOverview({ billing }: { billing: BillingData }) {
       <div className="mt-6 grid gap-6 sm:grid-cols-3">
         <UsageMeter
           label={t('billing.places.meters.maps')}
-          value={String(places.activeCount)}
-          limit={unlimited || maxMaps === null ? null : String(maxMaps)}
-          ratio={unlimited || maxMaps === null ? null : places.activeCount / maxMaps}
+          used={places.activeCount}
+          limit={unlimited ? null : maxMaps}
           hint={places.archivedCount > 0 ? t('billing.places.archived', { count: places.archivedCount }) : t('billing.places.meters.maps_hint')}
         />
         <UsageMeter
           label={t('billing.places.meters.storage')}
-          value={formatBytes(storage.usedBytes)}
-          limit={storage.limitBytes === null ? null : formatBytes(storage.limitBytes)}
-          ratio={storage.limitBytes ? storage.usedBytes / storage.limitBytes : null}
+          used={storage.usedBytes}
+          limit={storage.limitBytes}
+          format={formatBytes}
           hint={storage.limitBytes === null ? t('billing.places.meters.unlimited') : t('billing.places.meters.storage_hint')}
         />
-        <UsageMeter
-          label={t('billing.places.meters.renderings')}
-          value={String(places.renderings.used)}
-          limit={places.renderings.limit > 0 ? String(places.renderings.limit) : null}
-          ratio={places.renderings.limit > 0 ? places.renderings.used / places.renderings.limit : null}
-          hint={places.renderings.limit > 0
-            ? t('billing.places.meters.renderings_hint', { date: formatDate(nextMonth()) })
-            : t('billing.places.meters.renderings_none')}
-        />
+        {places.renderings.limit > 0 ? (
+          <UsageMeter
+            label={t('billing.places.meters.renderings')}
+            used={places.renderings.used}
+            limit={places.renderings.limit}
+            hint={t('billing.places.meters.renderings_hint', { date: formatDate(nextMonth()) })}
+          />
+        ) : (
+          <div className="space-y-1.5 text-sm">
+            <p className="font-medium text-loam-700">{t('billing.places.meters.renderings')}</p>
+            <p className="text-loam-500">{t('billing.places.meters.renderings_none')}</p>
+          </div>
+        )}
       </div>
 
       <PlaceList billing={billing} />
@@ -106,7 +109,7 @@ function PlaceList({ billing }: { billing: BillingData }) {
   if (places.maps.length === 0) {
     return (
       <div className="mt-6 flex flex-wrap items-center gap-4 rounded-xl border border-dashed border-loam-300 p-4">
-        <PlaceThumb boundary={null} />
+        <PlaceSketch id={0} name={t('billing.places.empty_cta')} boundary={null} className="w-48 shrink-0" />
         <p className="min-w-0 flex-1 text-sm text-loam-700">{t('billing.places.empty')}</p>
         <Link href="/maps/new" className="text-sm font-semibold text-prune-700 underline underline-offset-2 hover:text-prune-800">{t('billing.places.empty_cta')}</Link>
       </div>
@@ -117,12 +120,12 @@ function PlaceList({ billing }: { billing: BillingData }) {
   return (
     <div className="mt-6">
       <h3 className="text-sm font-semibold text-loam-800">{t('billing.places.maps_title')}</h3>
-      <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         {shown.map((map) => (
           <li key={map.id}>
-            <Link href={`/maps/${map.id}`} className="flex items-center gap-3 rounded-xl bg-white p-2 pr-3 ring-1 ring-loam-200 transition-colors hover:ring-prune-300">
-              <PlaceThumb boundary={map.boundary} size={48} muted={map.readOnly} />
-              <span className="min-w-0">
+            <Link href={`/maps/${map.id}`} className="block rounded-2xl bg-white p-2 ring-1 ring-loam-200 transition-colors hover:ring-prune-300">
+              <PlaceSketch id={map.id} name={map.name} boundary={map.boundary} areaM2={map.areaM2} className={map.readOnly ? 'opacity-60 grayscale' : undefined} />
+              <span className="mt-2 block min-w-0 px-1">
                 <span className="block truncate text-sm font-medium text-loam-900">{map.name}</span>
                 <span className="flex items-center gap-1 text-sm text-loam-500">
                   {map.readOnly ? <><Lock className="h-3.5 w-3.5 text-humus-700" aria-hidden="true" />{t('billing.places.read_only')}</> : map.areaM2 ? formatArea(map.areaM2) : t('billing.places.no_outline')}
@@ -135,7 +138,7 @@ function PlaceList({ billing }: { billing: BillingData }) {
       {hidden > 0 && (
         all || places.maps.length <= SHOWN
           ? <p className="mt-2 text-sm text-loam-500">{t('billing.places.more', { count: hidden })}</p>
-          : <button type="button" onClick={() => setAll(true)} className="mt-2 text-sm font-medium text-prune-700 hover:text-prune-800">{t('billing.places.show_all', { count: places.activeCount })}</button>
+          : <Button variant="ghost" size="sm" onClick={() => setAll(true)} className="mt-2">{t('billing.places.show_all', { count: places.activeCount })}</Button>
       )}
     </div>
   )
@@ -144,16 +147,16 @@ function PlaceList({ billing }: { billing: BillingData }) {
 /** « Et si j'arrête ? »: what stays, what pauses, and that nothing is deleted. */
 function StopAnswer({ billing, end }: { billing: BillingData; end: ReturnType<typeof planEnd> }) {
   const { plan, places } = billing
-  const [open, setOpen] = useState(false)
   const paying = plan !== 'free'
   const others = Math.max(places.activeCount - places.freeMaxMaps, 0)
   return (
     <div className="mt-6 border-t border-dashed border-loam-300 pt-4">
-      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="flex w-full items-center justify-between gap-3 text-left">
-        <span className="font-hand text-2xl leading-none text-loam-800">{t('billing.stop.question')}</span>
-        <ChevronDown className={`h-5 w-5 shrink-0 text-loam-500 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
-      </button>
-      {open && (
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+          <span className="font-hand text-2xl leading-none text-loam-800">{t('billing.stop.question')}</span>
+          <ChevronDown className="h-5 w-5 shrink-0 text-loam-500 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+
         <div className="mt-3 max-w-2xl space-y-2 text-sm text-loam-700">
           {!paying && <p>{t('billing.stop.free')}</p>}
           {paying && end?.kind === 'pass' && <p>{t('billing.stop.pass', { date: formatDate(end.date) })}</p>}
@@ -171,7 +174,7 @@ function StopAnswer({ billing, end }: { billing: BillingData; end: ReturnType<ty
           <p className="font-medium text-loam-900">{t('billing.stop.nothing_deleted')}</p>
           {paying && <p>{t('billing.stop.come_back')}</p>}
         </div>
-      )}
+      </details>
     </div>
   )
 }

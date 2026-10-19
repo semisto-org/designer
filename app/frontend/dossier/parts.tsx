@@ -59,7 +59,7 @@ export function LockedNote({ feature, dossier, isOwner }: { feature: 'dossier_te
   return (
     <PlanGate
       feature={feature}
-      place={{ id: dossier.map.id, name: dossier.map.name, boundary: dossier.cover.boundary }}
+      place={{ id: dossier.map.id, name: dossier.map.name, boundary: dossier.cover.boundary, areaM2: dossier.map.areaM2 }}
       canUpgrade={isOwner}
       className="max-w-xl"
     />

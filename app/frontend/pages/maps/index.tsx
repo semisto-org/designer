@@ -46,7 +46,10 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
           // The welcome card carries the call to action for a first map.
           maps.length > 0 && <ButtonLink href="/maps/new"><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>
         ) : (
-          <ButtonLink href={plansHref({ returnTo: '/maps/new' })} variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
+          <div className="flex max-w-md flex-col items-start gap-2 sm:items-end sm:text-right">
+            <ButtonLink href={plansHref({ returnTo: '/maps/new' })} variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
+            <p className="text-sm text-loam-600">{t('maps.index.limit_reason')}</p>
+          </div>
         )}
       </div>
       <WhatsNewNote />
