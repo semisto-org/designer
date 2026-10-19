@@ -1,11 +1,12 @@
-// What the terrain sheet holds: at rest, today on this place and what grows
-// around the person; with « Noter ici », what one can note; with a feature
+// What the terrain sheet holds: at rest, today on this place, what happened
+// here on this date in an earlier year and what grows around the person; with « Noter ici », what one can note; with a feature
 // chosen, that feature with its age, where it stands and the gestures it asks.
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native'
 import { featureColor, featureTitle, kindLabel, speciesName } from '@/lib/elements'
 import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '@/lib/i18n'
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
+import type { Memory } from '@/lib/memory'
 import type { SpotPhotos } from '@/lib/retake'
 import { arrived, arrowAngle, type Target } from '@/lib/tour'
 import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
@@ -55,12 +56,14 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
   /** Plants of the design still to put in the ground, for the planting round. */
   toPlant?: number; onTour?: () => void
   /** Photos already taken where one stands: what can be taken again here. */
   mapId?: number; photosHere?: SpotPhotos[]; onPhoto?: (photo: Photo) => void
+  /** « Il y a un an, ici »: this date in an earlier year. */
+  memory?: Memory | null
 }) {
   const card = monthCard()
   return (
@@ -75,6 +78,7 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
       )}
       {card && <Body muted>{card.body}</Body>}
       {viewer && <Body muted>{t('mobile.terrain.viewer')}</Body>}
+      {memory && mapId !== undefined && <MemoryCard memory={memory} mapId={mapId} planting={planting} onPick={onPick} onPhoto={onPhoto} />}
       <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.terrain.around')}</Text>
       {located === 'pending' && <Body muted>{t('mobile.terrain.around_locating')}</Body>}
       {located === 'denied' && <Body muted>{t('mobile.terrain.around_no_position')}</Body>}
@@ -96,6 +100,42 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
           </ScrollView>
         </>
       )}
+    </View>
+  )
+}
+
+const MEMORY_NAMES = 3
+
+/** « Il y a un an, ici »: the photos of that day and what went in the ground or was built. */
+function MemoryCard({ memory, mapId, planting, onPick, onPhoto }: {
+  memory: Memory; mapId: number; planting: Planting | undefined; onPick: (feature: MapFeature) => void; onPhoto?: (photo: Photo) => void
+}) {
+  const names = (features: MapFeature[]) => {
+    const shown = features.slice(0, MEMORY_NAMES).map((f) => featureTitle(f, planting))
+    return features.length > MEMORY_NAMES ? t('mobile.memory.and_more', { names: shown.join(', '), count: features.length - MEMORY_NAMES }) : shown.join(', ')
+  }
+  const lines = [
+    memory.planted.length > 0 ? t('mobile.memory.planted', { count: memory.planted.length, names: names(memory.planted) }) : null,
+    memory.built.length > 0 ? t('mobile.memory.built', { count: memory.built.length, names: names(memory.built) }) : null,
+    memory.photos.length > 0 && memory.planted.length + memory.built.length === 0 ? t('mobile.memory.photos', { count: memory.photos.length }) : null,
+  ].filter((line): line is string => !!line)
+  const first = memory.planted[0] ?? memory.built[0]
+  return (
+    <View style={s.memory}>
+      <Text accessibilityRole="header" style={s.memoryTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.memory.title', { count: memory.yearsAgo })}</Text>
+      <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.memory.around', { date: formatDate(memory.date) })}</Text>
+      {lines.map((line) => <Body key={line}>{line}</Body>)}
+      {memory.photos.length > 0 && onPhoto && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm }}>
+          {memory.photos.map((photo) => (
+            <Pressable key={photo.id} onPress={() => { haptics.tap(); onPhoto(photo) }} accessibilityRole="button" accessibilityLabel={t('mobile.memory.photo_label', { date: formatDate(photo.takenAt) })}>
+              <RemoteImage path={`/maps/${mapId}/photos/${photo.id}/image?size=thumb`} style={s.strip} />
+              <Text style={s.meta} maxFontSizeMultiplier={1.3}>{formatDate(photo.takenAt)}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+      {first && <Button variant="ghost" label={t('mobile.memory.see', { name: featureTitle(first, planting) })} onPress={() => onPick(first)} />}
     </View>
   )
 }
@@ -351,5 +391,7 @@ const s = StyleSheet.create({
   gestures: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.md },
   gesture: { flexGrow: 1 },
   notes: { ...type.hand, fontSize: 22, lineHeight: 27, color: colors.loam800 },
+  memory: { gap: space.sm, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.loam50, borderWidth: 1, borderColor: colors.loam200 },
+  memoryTitle: { ...type.mapName, color: colors.loam900 },
   strip: { width: 112, height: 112, borderRadius: radius.md },
 })

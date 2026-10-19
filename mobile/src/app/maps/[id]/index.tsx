@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { display, useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
+import { memoryOf } from '@/lib/memory'
 import { anchor } from '@/lib/geo'
 import { t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
@@ -96,6 +97,7 @@ export default function Terrain() {
   const selected = useMemo(() => visible.find((f) => f.id === selectedId) ?? null, [visible, selectedId])
   const nearby = useMemo(() => (me ? around(visible, me, { radius: AROUND_RADIUS }) : []), [visible, me])
   const shotHere = useMemo(() => (me && bundle ? photosHere(bundle.photos, me) : []), [bundle, me])
+  const memory = useMemo(() => (bundle ? memoryOf({ photos: bundle.photos, features: bundle.features }) : null), [bundle])
   const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
   const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
   const here = target ? arrived(target.meters, accuracy) : false
@@ -284,7 +286,7 @@ export default function Terrain() {
           : visit && editable
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
             : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
-                mapId={mapId} photosHere={shotHere} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
+                mapId={mapId} photosHere={shotHere} memory={memory} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
       </Sheet>
     </View>
   )
