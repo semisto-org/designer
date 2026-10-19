@@ -310,7 +310,7 @@ function StepDialog({ step, projects, defaultProject, onClose, onSaved, onDelete
       dismissOnBackdrop={false}
       title={creating ? (project ? t('team_board.season.add_title', { name: project.name }) : t('team_board.season.add')) : t('team_board.season.edit_title', { title: (step as BoardStep).title })}
       footer={<>
-        {!creating && <Button variant="ghost" className="mr-auto text-clay-700 hover:bg-clay-50" onClick={() => void remove()} disabled={busy}><Trash2 className="h-4 w-4" aria-hidden />{t('team_board.season.delete')}</Button>}
+        {!creating && <Button variant="danger-ghost" className="mr-auto" onClick={() => void remove()} disabled={busy}><Trash2 className="h-4 w-4" aria-hidden />{t('team_board.season.delete')}</Button>}
         <Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button>
         <Button onClick={() => void submit()} disabled={busy || !mapId || dueOn < startsOn}>{creating ? t('team_board.season.add_submit') : t('team_board.project.save')}</Button>
       </>}

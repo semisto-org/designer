@@ -485,7 +485,7 @@ function AlbumTools({ mapId, albums, shelf, onShelf, notify }: {
       ) : (
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="ghost" onClick={() => setRenaming(current.name)}><Pencil className="h-4 w-4" />{t('photo_pages.rename_album')}</Button>
-          <Button size="sm" variant="ghost" className="text-clay-500" onClick={destroy}><Trash2 className="h-4 w-4" />{t('photo_pages.delete_album')}</Button>
+          <Button size="sm" variant="danger-ghost" onClick={destroy}><Trash2 className="h-4 w-4" />{t('photo_pages.delete_album')}</Button>
         </div>
       ))}
       <form className="flex gap-1.5" onSubmit={(e) => { e.preventDefault(); void create() }}>
