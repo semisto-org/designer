@@ -415,6 +415,13 @@
         "color": "#ffffff",
         "pickable": false
       },
+      "sector": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#9b8fb5",
+        "pickable": false
+      },
       "measure": {
         "geometries": [
           "LineString",

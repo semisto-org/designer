@@ -9,7 +9,7 @@ import type { Rainwater, TerrainStats } from '@/types/relief'
 import type { Abundance, IndicatorTally, SoilIndicatorKey, SoilSampleData } from '@/types/soil_photos'
 
 export const DOSSIER_SECTIONS = [
-  'cover', 'project', 'terrain', 'climate', 'soil', 'design', 'plants', 'alerts', 'photos', 'finances', 'sources',
+  'cover', 'project', 'terrain', 'climate', 'sectors', 'soil', 'design', 'plants', 'alerts', 'photos', 'finances', 'sources',
 ] as const
 export type DossierSection = (typeof DOSSIER_SECTIONS)[number]
 
