@@ -20,11 +20,13 @@ export type DrawingState = {
   hiddenSoil: string[]
   tool: DrawingTool
   shapeEditId: number | null
+  /** Where the edit was asked from, and goes back to once done: a plant's card or the inspector. */
+  shapeEditFrom: 'peek' | 'inspector'
   /** The tag shown as « version » on the map (null: everything). */
   version: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, version: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, shapeEditFrom: 'inspector', version: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -134,6 +136,6 @@ export function showEverything() {
 }
 
 /** Asks the drawing toolbar to let the user reshape a feature. */
-export function startShapeEdit(featureId: number) {
-  drawingStore.set({ tool: 'shape', shapeEditId: featureId })
+export function startShapeEdit(featureId: number, from: 'peek' | 'inspector' = 'inspector') {
+  drawingStore.set({ tool: 'shape', shapeEditId: featureId, shapeEditFrom: from })
 }

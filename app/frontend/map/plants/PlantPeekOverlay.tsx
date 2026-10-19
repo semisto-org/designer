@@ -1,9 +1,11 @@
-import { ChevronRight, Shovel, X } from 'lucide-react'
+import { ChevronRight, Move, Shovel, X } from 'lucide-react'
 import * as maplibregl from 'maplibre-gl'
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { strataLabel } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
+import { ShortcutKey } from '@/map/drawing/ShapeEditButton'
+import { startShapeEdit } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { useLinkedPhotos } from '@/map/photos/linked'
@@ -70,7 +72,12 @@ export default function PlantPeekOverlay() {
     plantPeek.close()
     select(feature.properties.id)
   }
-  const card = <PlantCard feature={feature} onOpen={openDetails} onClose={plantPeek.close} mobile={mobile} />
+  // « Déplacer » (or M): once moved, the card opens again on the plant.
+  const move = () => {
+    plantPeek.close()
+    startShapeEdit(feature.properties.id, 'peek')
+  }
+  const card = <PlantCard feature={feature} onOpen={openDetails} onMove={move} onClose={plantPeek.close} mobile={mobile} />
   return mobile
     ? <div className="absolute inset-x-2 bottom-14 z-30">{card}</div>
     : <DesktopPopup lngLat={lngLat} featureId={feature.properties.id}>{card}</DesktopPopup>
@@ -114,7 +121,7 @@ function DesktopPopup({ lngLat, featureId, children }: { lngLat: [number, number
   return createPortal(children, container)
 }
 
-function PlantCard({ feature, onOpen, onClose, mobile }: { feature: MapFeature; onOpen: () => void; onClose: () => void; mobile: boolean }) {
+function PlantCard({ feature, onOpen, onMove, onClose, mobile }: { feature: MapFeature; onOpen: () => void; onMove: () => void; onClose: () => void; mobile: boolean }) {
   const editor = useEditor()
   const { data } = usePlanting(editor.map.id)
   const photos = useLinkedPhotos(editor.map.id, feature.properties.id, numberProperty(feature, 'cover_photo_id'))
@@ -168,9 +175,17 @@ function PlantCard({ feature, onOpen, onClose, mobile }: { feature: MapFeature; 
               )}
             </ul>
           )}
-          <button type="button" onClick={onOpen} className="mt-2.5 inline-flex items-center gap-0.5 text-sm font-medium text-prune-700 hover:underline">
-            {t('plant_peek.details')}<ChevronRight className="h-4 w-4" />
-          </button>
+          <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+            <button type="button" onClick={onOpen} className="inline-flex items-center gap-0.5 text-sm font-medium text-prune-700 hover:underline">
+              {t('plant_peek.details')}<ChevronRight className="h-4 w-4" />
+            </button>
+            {editor.canEdit && (
+              <button type="button" onClick={onMove} title={t('drawing.edit.move_title')}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-loam-700 hover:text-loam-900 hover:underline">
+                <Move className="h-4 w-4" aria-hidden="true" />{t('drawing.edit.move')}<ShortcutKey />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -60,6 +60,10 @@ Pour corriger un tracé, touche **Modifier la forme**, fais glisser les points (
 
 Une ligne garde au moins deux points, une surface trois.
 
+## Déplacer une plante ou un élément
+
+Une plante n'est pas à sa place ? Clique dessus, puis appuie sur **M** (ou touche **Déplacer** dans sa carte ou sa fiche). Fais glisser le point orange où elle doit être et appuie sur **Entrée** pour enregistrer ; **Échap** la laisse où elle était. **M** marche aussi sur une ligne ou une surface sélectionnée : c'est alors **Modifier la forme**.
+
 ## Déplacer plusieurs éléments ensemble
 
 Une mare a été relevée trois mètres trop au nord, avec ses berges et les plantes autour ? Déplace-les d'un seul geste :
