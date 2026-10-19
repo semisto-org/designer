@@ -39,6 +39,23 @@ jobs:
       - name: Lint Ruby
         run: bin/rubocop -f github
 
+  # docs/quality/: a journey that fails two questions of the point of view
+  # blocks new files in its domain until it is fixed.
+  journeys_gate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Journeys gate
+        env:
+          BASE: origin/${{ github.base_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: ruby script/quality_gate.rb
+
   frontend:
     runs-on: ubuntu-latest
     steps:

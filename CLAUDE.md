@@ -58,6 +58,7 @@ Why the project exists, its principles and what it refuses: @INTENT.md (imported
 - `npx tsc -p tsconfig.app.json` — TypeScript must stay clean.
 - `bin/rails s` + `RAILS_ENV=development bin/vite build` (or `bin/vite dev`); sign in locally at `/dev/login?email=dev@semisto.org&return_to=/maps` (development only).
 - `CHROMIUM_PATH=/opt/pw-browsers/chromium node script/screenshot.mjs /maps/1 tmp/shot.png [--mobile]` — screenshot as the dev user (in the cloud sandbox, external tile servers and geoservices.wallonie.be are blocked; layout still renders).
+- Quality notebook (`docs/quality/`): six reference journeys replayed monthly by `script/journeys.mjs` (after `bin/rails journeys:prepare`) and scored on the five questions of the point of view. A journey with two « fail » in `docs/quality/journeys.yml` blocks new files in its domain (CI step « Journeys gate »); a pull request fixing it carries the line `Quality: <journey id>` in its description.
 
 ## Data and licences (non-negotiable)
 
