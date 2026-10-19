@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -522,6 +522,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_110000) do
     t.datetime "updated_at", null: false
     t.datetime "expires_at"
     t.datetime "last_sent_at"
+    t.boolean "place_owner", default: false, null: false
     t.index ["invited_by_id"], name: "index_map_invitations_on_invited_by_id"
     t.index ["map_id"], name: "index_map_invitations_on_map_id"
     t.index ["token"], name: "index_map_invitations_on_token", unique: true
@@ -534,6 +535,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_110000) do
     t.bigint "invited_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "place_owner", default: false, null: false
     t.index ["invited_by_id"], name: "index_map_memberships_on_invited_by_id"
     t.index ["map_id", "user_id"], name: "index_map_memberships_on_map_id_and_user_id", unique: true
     t.index ["map_id"], name: "index_map_memberships_on_map_id"
@@ -681,11 +683,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_110000) do
     t.string "closed_reason"
     t.string "closed_note"
     t.boolean "own_place", default: false, null: false
+    t.boolean "shares_planted_palette", default: false, null: false
+    t.boolean "accepts_propagation_requests", default: false, null: false
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
     t.index ["owner_id"], name: "index_maps_on_owner_id"
     t.index ["region_id"], name: "index_maps_on_region_id"
+    t.index ["shares_planted_palette"], name: "index_maps_on_shares_planted_palette", where: "shares_planted_palette"
   end
 
   create_table "mcp_uploads", force: :cascade do |t|
@@ -1278,6 +1283,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_110000) do
     t.index ["token"], name: "index_project_sheet_links_on_token", unique: true
   end
 
+  create_table "propagation_requests", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "species_id", null: false
+    t.bigint "variety_id"
+    t.bigint "requester_id", null: false
+    t.string "material", null: false
+    t.text "message", null: false
+    t.string "status", default: "pending", null: false
+    t.text "answer"
+    t.bigint "answered_by_id"
+    t.datetime "answered_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["answered_by_id"], name: "index_propagation_requests_on_answered_by_id"
+    t.index ["map_id", "status"], name: "index_propagation_requests_on_map_id_and_status"
+    t.index ["map_id"], name: "index_propagation_requests_on_map_id"
+    t.index ["requester_id"], name: "index_propagation_requests_on_requester_id"
+    t.index ["species_id"], name: "index_propagation_requests_on_species_id"
+    t.index ["variety_id"], name: "index_propagation_requests_on_variety_id"
+  end
+
   create_table "region_layers", force: :cascade do |t|
     t.bigint "region_id", null: false
     t.string "key", null: false
@@ -1703,6 +1729,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_110000) do
   add_foreign_key "project_sheet_drafts", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "project_sheet_links", "maps", on_delete: :cascade
   add_foreign_key "project_sheet_links", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "propagation_requests", "maps", on_delete: :cascade
+  add_foreign_key "propagation_requests", "plant_species", column: "species_id", on_delete: :cascade
+  add_foreign_key "propagation_requests", "plant_varieties", column: "variety_id", on_delete: :nullify
+  add_foreign_key "propagation_requests", "users", column: "answered_by_id", on_delete: :nullify
+  add_foreign_key "propagation_requests", "users", column: "requester_id", on_delete: :cascade
   add_foreign_key "region_layers", "regions"
   add_foreign_key "regions", "regions", column: "parent_id"
   add_foreign_key "release_note_likes", "release_notes", on_delete: :cascade

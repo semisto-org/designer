@@ -7,6 +7,7 @@ class Map < ApplicationRecord
   include HasTerrain
   include MapPlanting
   include MapBoard
+  include MapPlaceOwners
 
   STAGES = %w[observe map design plant].freeze
 

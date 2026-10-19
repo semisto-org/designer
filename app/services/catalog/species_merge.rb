@@ -19,6 +19,8 @@ module Catalog
         move_map_features(varieties)
         PlantObservation.where(species_id: @source.id).update_all(species_id: @target.id)
         PlantObservation.where(variety_id: varieties.keys).find_each { |o| o.update_columns(variety_id: varieties[o.variety_id]) }
+        PropagationRequest.where(species_id: @source.id).update_all(species_id: @target.id)
+        PropagationRequest.where(variety_id: varieties.keys).find_each { |r| r.update_columns(variety_id: varieties[r.variety_id]) }
         BioindicatorObservation.where(plant_species_id: @source.id).update_all(plant_species_id: @target.id)
         keep_name_as_synonym
         @source.reload.destroy!

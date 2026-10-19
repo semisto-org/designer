@@ -54,6 +54,8 @@ export type SharingMember = {
   email?: string | null
   role: 'owner' | 'editor' | 'viewer'
   you: boolean
+  /** Owns the land the map draws (« Propriétaire du lieu »). */
+  placeOwner: boolean
 }
 
 export type SharingInvitation = {
@@ -62,6 +64,7 @@ export type SharingInvitation = {
   role: 'editor' | 'viewer'
   expiresAt: string | null
   sentAt: string | null
+  placeOwner: boolean
 }
 
 export type SharingData = {
@@ -73,6 +76,17 @@ export type SharingData = {
   link?: { enabled: boolean; role: 'editor' | 'viewer'; url: string | null }
   /** Owner only: their teams, where the map can be moved (teams area). */
   teams?: { id: number; name: string }[]
+  /** The place's owners and the choices only they make. */
+  place: SharingPlace
+}
+
+export type SharingPlace = {
+  owners: string[]
+  you: boolean
+  sharesPlantedPalette: boolean
+  acceptsPropagationRequests: boolean
+  /** Place owners only: requests waiting for an answer. */
+  pendingRequests: number | null
 }
 
 export type PublicationOptions = {

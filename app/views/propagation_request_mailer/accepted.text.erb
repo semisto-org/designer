@@ -1,0 +1,15 @@
+<%= t(".greeting", name: @request.requester.display_name) %>
+
+<%= t(".body", owner: @owner&.display_name, plant: @request.plant_name) %>
+<% if @request.answer.present? %>
+
+<%= @request.answer %>
+<% end %>
+<% if @owner %>
+
+<%= t(".contact", owner: @owner.display_name, email: @owner.email_address) %>
+<% end %>
+
+<%= t(".button") %> : <%= @url %>
+
+<%= t(".footer") %>

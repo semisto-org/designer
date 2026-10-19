@@ -37,9 +37,11 @@ Rails.application.routes.draw do
       # Archive (create) and bring back (destroy): the owner only.
       resource :archive, only: %i[create destroy]
       resources :memberships, only: %i[update destroy]
-      resources :invitations, only: %i[create destroy] do
+      resources :invitations, only: %i[create update destroy] do
         post :resend, on: :member
       end
+      # The choices of the place's owners (« Le lieu »).
+      resource :place_sharing, only: :update
       resource :share_link, only: %i[create update destroy] do
         post :reset
       end
@@ -261,6 +263,8 @@ Rails.application.routes.draw do
     end
   end
   resources :plants, only: %i[index show]
+  # Requests for scions, cuttings or seeds between gardeners (« Multiplication »).
+  resources :propagation_requests, path: "propagation", only: %i[index create update destroy]
   resources :maps, only: [] do
     scope module: :maps do
       resource :planting, only: :show

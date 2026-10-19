@@ -1,6 +1,7 @@
 module Maps
-  # Change a member's role (owner only), remove them (owner) or leave the map
-  # (anyone but the owner, on their own membership).
+  # Change a member's role or mark them as an owner of the place (owner
+  # only), remove them (owner) or leave the map (anyone but the owner, on
+  # their own membership).
   class MembershipsController < ApplicationController
     include MapScoped
 
@@ -9,11 +10,17 @@ module Maps
     before_action :require_owner!, only: :update
 
     def update
-      role = params.require(:membership).require(:role)
-      return render_message(t("collab.sharing.errors.role"), :unprocessable_entity) unless %w[editor viewer].include?(role)
-      return render_message(t("collab.sharing.errors.owner_fixed"), :unprocessable_entity) if @membership.role == "owner"
+      attrs = params.require(:membership)
+      if attrs.key?(:role)
+        role = attrs[:role].to_s
+        return render_message(t("collab.sharing.errors.role"), :unprocessable_entity) unless %w[editor viewer].include?(role)
+        return render_message(t("collab.sharing.errors.owner_fixed"), :unprocessable_entity) if @membership.role == "owner"
+        @membership.role = role
+      end
+      # The map's owner may own the place too.
+      @membership.place_owner = ActiveModel::Type::Boolean.new.cast(attrs[:place_owner]) if attrs.key?(:place_owner)
 
-      @membership.update!(role:)
+      @membership.save!
       render_sharing
     rescue ActiveRecord::RecordInvalid => e
       render_message(e.message, :unprocessable_entity)

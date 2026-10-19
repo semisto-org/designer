@@ -136,6 +136,17 @@ export type SpeciesPlantings = {
   truncated: boolean
 }
 
+/** A place whose owners show this species in the ground (« Dans d'autres jardins »). */
+export type SharedPlace = {
+  id: number
+  region: string | null
+  /** Rounded to 5 km, from the person's nearest map (`nearMap`). */
+  distanceKm: number | null
+  nearMap: string | null
+  acceptsRequests: boolean
+  plants: { varietyId: number | null; variety: string | null; count: number; since: number | null; requested: boolean }[]
+}
+
 export type PlantSearchFilters = {
   q: string | null
   zone: number | null
