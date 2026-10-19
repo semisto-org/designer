@@ -25,6 +25,15 @@ class MapElementsTest < ActiveSupport::TestCase
     end
   end
 
+  test "a sector is an arc of the notes layer with a known type" do
+    arc = { "type" => "LineString", "coordinates" => [ [ 4.9, 50.341 ], [ 4.901, 50.3405 ], [ 4.9012, 50.34 ] ] }
+    sector = maps(:ahinvaux).features.new(layer: "notes", kind: "sector", geometry: arc, properties: { "sector_type" => "wind" })
+    assert sector.valid?, sector.errors.full_messages.to_sentence
+    sector.properties = { "sector_type" => "tornado" }
+    assert_not sector.valid?
+    assert_not MapElements.find("sector").pickable
+  end
+
   test "every kind has a geometry, an icon and a colour, and valid defaults" do
     MapElements.catalog["layers"].each do |layer, config|
       assert_match(/\A#\h{6}\z/, config["color"], layer)

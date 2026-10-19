@@ -109,10 +109,20 @@ export function featureLabelFilter({ withPlants = true }: { withPlants?: boolean
   return filter
 }
 
+/**
+ * Sectors are not drawn with the other features: their arcs only make sense
+ * together, on their own rings around the terrain (the editor's « Secteurs »
+ * panel, the dossier's sector page).
+ */
+function withoutSectors(data: MapFeatureCollection): MapFeatureCollection {
+  if (!data.features.some((f) => f.properties?.kind === 'sector')) return data
+  return { ...data, features: data.features.filter((f) => f.properties?.kind !== 'sector') }
+}
+
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
 export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollection) {
   ensureLabelBackground(map)
-  data = withZones(data)
+  data = withZones(withoutSectors(data))
   if (map.getSource(FEATURES_SOURCE)) {
     ;(map.getSource(FEATURES_SOURCE) as GeoJSONSource).setData(data)
     return

@@ -15,9 +15,13 @@ module Mcp
 
     Outcome = Data.define(:created, :rejected)
 
-    def initialize(map:, user:)
+    # placed_by_terranova: the geometries were drawn by Terranova itself
+    # (the arcs of propose_sectors, which go round the terrain a little
+    # outside it), so they skip the check against the boundary.
+    def initialize(map:, user:, placed_by_terranova: false)
       @map = map
       @user = user
+      @placed_by_terranova = placed_by_terranova
     end
 
     def call(items)
@@ -70,6 +74,7 @@ module Mcp
       def parse(geometry) = GeometryCheck.parse(geometry)
 
       def spatial_check(candidates)
+        return {} if @placed_by_terranova
         GeometryCheck.spatial_errors(@map, candidates.map { |index, item| [ index, item[:geometry] ] })
       end
 
