@@ -59,6 +59,7 @@ fr:
       tap: "Robinet"
       note_point: "Note"
       sketch: "Croquis"
+      sector: "Secteur"
 
   drawing:
     panels:
@@ -85,6 +86,7 @@ fr:
       invalid_value: "%{field} de « %{kind} » n'est pas valide."
 
     fields:
+      sector_type: "Type de secteur"
       height_m: "Hauteur"
       floors: "Niveaux"
       roof: "Toiture"
@@ -97,6 +99,9 @@ fr:
       width_m: "Largeur"
       material: "Matériau"
       seasonality: "En eau"
+      sector_season: "Saison"
+      from_deg: "Commence à (degrés depuis le nord)"
+      to_deg: "Finit à (degrés depuis le nord)"
       surface: "Revêtement"
       cover: "Occupation"
       depth_m: "Profondeur"
@@ -142,6 +147,21 @@ fr:
       muddy: "Eau boueuse"
 
     options:
+      sector_type:
+        wind: "Vent dominant"
+        cold_wind: "Vent froid"
+        fire: "Incendie"
+        flood: "Inondation"
+        frost: "Air froid et gel"
+        noise: "Bruit"
+        dust: "Poussière et dérive"
+        pollution: "Pollution"
+        good_view: "Belle vue"
+        bad_view: "Vue à masquer"
+        privacy: "Vis-à-vis"
+        wildlife: "Passage de la faune"
+        predators: "Prédateurs"
+        other: "Autre"
       method: { hole: "Trou rempli d'eau", ring: "Anneau enfoncé" }
       rain: { drizzle: "Bruine", steady: "Pluie continue", heavy: "Grosse averse", storm: "Orage" }
       role: { keyline: "Keyline (par le point clé)", parallel: "Parallèle à la keyline" }
@@ -162,6 +182,7 @@ fr:
         copper: "Cuivre"
         steel: "Acier"
       seasonality: { permanent: "Toute l'année", winter: "En hiver", after_rain: "Après la pluie" }
+      sector_season: { all_year: "Toute l'année", winter: "Surtout en hiver", summer: "Surtout en été" }
       surface:
         earth: "Terre"
         grass: "Herbe"
@@ -181,7 +202,7 @@ fr:
         fallow: "Friche"
         bare: "Sol nu"
       liner: { natural: "Sol en place", clay: "Argile", epdm: "Bâche EPDM", concrete: "Béton" }
-      purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade", growing: "Butte de culture", hedge_bank: "Talus planté de haie", windbreak: "Abri du vent", noise: "Écran (bruit, vue)", play: "Jeu" }
+      purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade", treatment: "Épuration (lagunage)", growing: "Butte de culture", hedge_bank: "Talus planté de haie", windbreak: "Abri du vent", noise: "Écran (bruit, vue)", play: "Jeu" }
       tank_type: { buried: "Enterrée", above_ground: "Hors sol", ibc: "Cuve IBC" }
       gate_type: { pedestrian: "Piétons", vehicle: "Véhicules" }
       covering: { glass: "Verre", polycarbonate: "Polycarbonate", plastic: "Bâche plastique" }
@@ -438,6 +459,14 @@ fr:
       scale: "Échelle"
       fit: "Ajuster au terrain"
       plan_title: "Titre du plan"
+      content: "Contenu"
+      single: "Un plan"
+      book: "Carnet de planches"
+      book_hint: "%{count} pages : le plan d'ensemble, puis une planche par couche (%{layers}), au même cadrage. Sur chaque planche, le reste passe en gris."
+      book_empty: "Rien n'est encore dessiné : le carnet n'aura que le plan d'ensemble."
+      book_file: "carnet"
+      rendering_sheet: "Planche %{page} sur %{pages}…"
+      sheet_number: "Planche %{page} / %{pages}"
       include_networks: "Inclure les réseaux (eau, gaz, électricité, Ethernet)"
       extent: "Emprise imprimée : %{width} × %{height}"
       fit_scale: "Échelle retenue : 1:%{scale}"

@@ -15,6 +15,7 @@ import { FinancesSection } from '@/dossier/FinancesSection'
 import { PhotosSection, chosenPhotoIds } from '@/dossier/PhotosSection'
 import { PlantsSection } from '@/dossier/PlantsSection'
 import { ProjectSection } from '@/dossier/ProjectSection'
+import { SectorsSection, sectorCenter } from '@/dossier/SectorsSection'
 import { SoilSection } from '@/dossier/SoilSection'
 import { SourcesSection } from '@/dossier/SourcesSection'
 import { TerrainSection } from '@/dossier/TerrainSection'
@@ -54,6 +55,7 @@ function isEmpty(dossier: Dossier, section: DossierSection): boolean {
     case 'plants': return dossier.plants.rows.length === 0
     case 'photos': return dossier.photos.total === 0
     case 'finances': return !dossier.finances.exists
+    case 'sectors': return sectorCenter(dossier.cover) == null
     default: return false
   }
 }
@@ -186,6 +188,7 @@ function Document({ dossier, prefs, busy }: { dossier: Dossier; prefs: DossierPr
       {on.has('project') && <ProjectSection dossier={dossier} number={number('project')} canEdit={dossier.viewer.canEdit} />}
       {on.has('terrain') && <TerrainSection dossier={dossier} number={number('terrain')} isOwner={isOwner} />}
       {on.has('climate') && <ClimateSection dossier={dossier} number={number('climate')} isOwner={isOwner} />}
+      {on.has('sectors') && <SectorsSection dossier={dossier} number={number('sectors')} />}
       {on.has('soil') && <SoilSection dossier={dossier} number={number('soil')} isOwner={isOwner} />}
       {on.has('design') && <DesignSection dossier={dossier} number={number('design')} />}
       {on.has('plants') && <PlantsSection dossier={dossier} number={number('plants')} />}
@@ -333,6 +336,12 @@ function PrintStyles({ dossier }: { dossier: Dossier }) {
   @bottom-left { content: none; }
   @bottom-right { content: none; }
 }
+@page sectors {
+  size: A4 landscape;
+  margin: 0;
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
+}
 @media print {
   html, body { background: #fff !important; }
   .dossier-paper { font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -342,6 +351,8 @@ function PrintStyles({ dossier }: { dossier: Dossier }) {
   .dossier-heading { break-inside: avoid; break-after: avoid; }
   .dossier-keep-next { break-after: avoid; }
   thead { display: table-header-group; }
+  .dossier-sectors { page: sectors; break-before: page; break-after: page; }
+  .dossier-sectors-page { width: 297mm; height: 210mm; aspect-ratio: auto !important; }
   a { color: inherit; text-decoration: none; }
 }
 `}</style>

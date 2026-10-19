@@ -66,6 +66,9 @@ Rails.application.routes.draw do
     get "p/:token/tiles/:layer_key/:z/:x/:y", to: "public_maps/tiles#show", as: :public_map_tile
     get "p/:token/aerial-view", to: "public_maps/aerial_views#show", as: :public_map_aerial_view
     get "p/:token/preview.png", to: "public_maps/previews#show", as: :public_map_preview, format: false
+    get "p/:token/3d", to: "public_maps/reliefs#show", as: :public_map_relief
+    get "p/:token/3d/files/:kind", to: "public_maps/reliefs#file", as: :public_map_relief_file, constraints: { kind: /grid|surface|landcover|texture/ }
+    get "p/:token/3d/buildings", to: "public_maps/reliefs#buildings", as: :public_map_relief_buildings
   end
   # « Et chez toi ? »: a map tried from an address, without an account.
   get "essai", to: "trials#new", as: :new_trial

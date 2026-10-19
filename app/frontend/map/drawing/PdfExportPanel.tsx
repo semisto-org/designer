@@ -9,7 +9,7 @@ import { Field, Input, Select } from '@/components/ui/Field'
 import { formatLength, formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
-  attributions, exportPdf, fitScale, frameGeometry, groundSize, legendEntries, pageLayout, SCALES,
+  attributions, bookSheets, exportPdf, fitScale, frameGeometry, groundSize, legendEntries, pageLayout, SCALES,
   type Orientation, type Paper,
 } from '@/map/drawing/pdf'
 import { hiddenPlantIds } from '@/map/drawing/hidden'
@@ -19,7 +19,7 @@ import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
 import type { BBox, MapFeature, SharedProps } from '@/types'
 
-type Step = 'map' | 'pdf' | null
+type Step = { step: 'map' | 'pdf'; page: number; pages: number } | null
 
 function Segmented<T extends string>({ value, options, onChange, label }: {
   value: T; options: { value: T; label: string }[]; onChange: (value: T) => void; label: string
@@ -67,6 +67,8 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
   const [orientation, setOrientation] = useState<Orientation>('landscape')
   const [scaleChoice, setScaleChoice] = useState<number | 'fit'>('fit')
   const [withNetworks, setWithNetworks] = useState(false)
+  // « Carnet de planches »: the overall plan, then one sheet per design layer.
+  const [book, setBook] = useState(false)
   const [step, setStep] = useState<Step>(null)
   const [viewCenter, setViewCenter] = useState<[number, number]>(() => instance.getCenter().toArray() as [number, number])
 
@@ -85,6 +87,8 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
   const frame = useMemo(() => frameGeometry(center, scale, layout.frame), [center[0], center[1], scale, paper, orientation]) // eslint-disable-line react-hooks/exhaustive-deps
   const ground = groundSize(scale, layout.frame)
   const hiddenLayers = [...new Set([...hidden, ...(withNetworks && editor.canEdit ? [] : ['networks'])])]
+  const legend = legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, version, { kinds: hiddenKinds, ids: hiddenIds })
+  const sheets = bookSheets(title.trim() || editor.map.name, legend, editor.features, hiddenLayers, version)
 
   // The sheet takes the inspector's place.
   const select = editor.select
@@ -131,7 +135,7 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
   }, [onClose, step])
 
   async function generate() {
-    setStep('map')
+    setStep({ step: 'map', page: 1, pages: book ? sheets.length : 1 })
     try {
       await exportPdf(instance, {
         title: title.trim() || editor.map.name,
@@ -145,9 +149,10 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
         version,
         author: currentUser?.name ?? null,
         areaM2: editor.map.areaM2,
-        legend: legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, version, { kinds: hiddenKinds, ids: hiddenIds }),
+        legend,
         sources: attributions(instance),
-      }, setStep)
+        sheets: book ? sheets : undefined,
+      }, (next, sheet) => setStep({ step: next, page: sheet?.page ?? 1, pages: sheet?.pages ?? 1 }))
       editor.notify(t('drawing.pdf.done'))
     } catch (error) {
       console.error(error)
@@ -184,6 +189,21 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
           <Field label={t('drawing.pdf.plan_title')}>
             <Input value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
           </Field>
+          <div>
+            <Segmented
+              label={t('drawing.pdf.content')}
+              value={book ? 'book' : 'plan'}
+              onChange={(v) => setBook(v === 'book')}
+              options={[{ value: 'plan', label: t('drawing.pdf.single') }, { value: 'book', label: t('drawing.pdf.book') }]}
+            />
+            {book && (
+              <p className="mt-1 text-sm text-loam-500">
+                {sheets.length > 1
+                  ? t('drawing.pdf.book_hint', { count: sheets.length, layers: sheets.slice(1).map((s) => t(`editor.layers.${s.theme}`).toLowerCase()).join(', ') })
+                  : t('drawing.pdf.book_empty')}
+              </p>
+            )}
+          </div>
           <Segmented label={t('drawing.pdf.paper')} value={paper} onChange={setPaper} options={[{ value: 'A4', label: 'A4' }, { value: 'A3', label: 'A3' }]} />
           <Segmented
             label={t('drawing.pdf.orientation')}
@@ -212,7 +232,11 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
             </label>
           )}
           <Button className="w-full" disabled={step != null} onClick={() => void generate()}>
-            {step ? t(step === 'map' ? 'drawing.pdf.rendering' : 'drawing.pdf.writing') : t('drawing.pdf.generate')}
+            {step
+              ? step.pages > 1
+                ? t('drawing.pdf.rendering_sheet', { page: step.page, pages: step.pages })
+                : t(step.step === 'map' ? 'drawing.pdf.rendering' : 'drawing.pdf.writing')
+              : t('drawing.pdf.generate')}
           </Button>
         </div>
       )}

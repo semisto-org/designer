@@ -110,7 +110,7 @@ class PublicMapsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Yvoir", props["map"]["locality"]
   end
 
-  test "the published plants grow on the years bar, without their own names or numbers" do
+  test "the published plants grow on the years bar with their numbers, without their own names" do
     @map.features.create!(layer: "plants", kind: "plant", name: "Le pommier de Lily", geometry: point(lng: 4.9002, lat: 50.3401),
                           properties: { "species_id" => plant_species(:apple).id, "planted_on" => "2025-11-20", "number" => 4 })
     MapPublication.publish!(@map, by: @owner)
@@ -120,7 +120,7 @@ class PublicMapsControllerTest < ActionDispatch::IntegrationTest
     apple = growth["plants"].find { |plant| plant["speciesId"] == plant_species(:apple).id }
     assert_equal "sub_canopy", apple["strata"]
     assert_not apple.key?("ownName")
-    assert_not apple.key?("number")
+    assert_equal 4, apple["number"].to_i, "numbered pastilles on the public map"
     # Only in the feature itself (its name is part of the published layer).
     assert_equal 1, response.body.scan("Le pommier de Lily").size
 

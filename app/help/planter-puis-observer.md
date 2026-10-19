@@ -30,11 +30,11 @@ Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans l
 
 Le choix est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse en situation projetée, pour que tu les voies apparaître.
 
-### Retirer des plants en projet
+### Retirer ce qui est en projet
 
-Sur ordinateur, clique sur un plant en projet et appuie sur **⌫** (ou **Suppr**) : Terranova te demande s'il faut le supprimer. Pour en retirer plusieurs, sélectionne-les avec **Maj+clic** ou **Maj+glisser**, puis **⌫** : un seul accord suffit pour tout le lot. Les plants supprimés vont à la corbeille et **⌘Z** (Ctrl+Z) les remet en place.
+Sur ordinateur, clique sur un plant ou un aménagement en projet (une demi-lune, une mare à creuser…) et appuie sur **⌫** (ou **Suppr**) : Terranova te demande s'il faut le supprimer. Pour en retirer plusieurs, sélectionne-les avec **Maj+clic** ou **Maj+glisser**, puis **⌫** : un seul accord suffit pour tout le lot. Ce qui est supprimé va à la corbeille et **⌘Z** (Ctrl+Z) le remet en place.
 
-La touche ne touche jamais un plant déjà en terre : il porte une date, un journal, peut-être des récoltes. S'il faut vraiment le retirer, passe par sa fiche.
+La touche ne touche jamais ce qui est déjà sur le terrain : un plant en terre porte une date, un journal, peut-être des récoltes ; une mare creusée fait partie du lieu. S'il faut vraiment le retirer, passe par sa fiche.
 
 ## Tenir le journal du plant
 
