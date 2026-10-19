@@ -25,7 +25,7 @@ class Maps::ClimatesControllerTest < ActionDispatch::IntegrationTest
     assert json["entitled"]
     assert_equal "8a", json["current"]["zone"]["code"]
     assert json["projections"]["available"]
-    assert_equal({ "normals" => true, "projections" => true, "forecast" => false }, json["capabilities"])
+    assert_equal({ "normals" => true, "projections" => true, "forecast" => true }, json["capabilities"])
   end
 
   test "with billing on, a free owner gets the current zone only" do
@@ -38,12 +38,24 @@ class Maps::ClimatesControllerTest < ActionDispatch::IntegrationTest
     assert json["plants"]["locked"]
   end
 
-  test "forecast: unavailable without a commercial key, never calls the free API" do
+  test "forecast: from MET Norway without an Open-Meteo key, never Open-Meteo's free API" do
+    stub_request(:get, %r{api\.met\.no/weatherapi/locationforecast/2\.0/complete})
+      .to_return(status: 200, body: file_fixture("met_norway/forecast.json").read, headers: { "Content-Type" => "application/json" })
     sign_in_as users(:michael)
     get forecast_map_climate_path(@map), as: :json
     assert_response :success
-    assert_equal({ "available" => false, "reason" => "not_configured", "supported" => false }, response.parsed_body)
+    assert_equal "MET Norway", response.parsed_body["attribution"]["name"]
     assert_not_requested :any, /open-meteo\.com/
+  end
+
+  test "forecast: unavailable when it is turned off" do
+    sign_in_as users(:michael)
+    previous = ENV["CLIMATE_FORECAST_PROVIDER"]
+    ENV["CLIMATE_FORECAST_PROVIDER"] = "none"
+    get forecast_map_climate_path(@map), as: :json
+    assert_equal({ "available" => false, "reason" => "not_configured", "supported" => false }, response.parsed_body)
+  ensure
+    ENV["CLIMATE_FORECAST_PROVIDER"] = previous
   end
 
   test "forecast through the commercial API when the key is set" do

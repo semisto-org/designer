@@ -68,6 +68,12 @@ What it does, for the maps one belongs to:
   `lib/survey.ts`): each plant gets a cover class (sent as `cover_percent`,
   which sets the abundance), the screen stays open for the next plant, and
   the plants noted so far add up to a soil reading weighted by their cover;
+- « Cette semaine chez toi » at the top of the map screen
+  (`terrain/WeekCard.tsx`, `lib/week.ts`, `state/useWeek.ts`, server
+  `GET /maps/:id/week`, `WeekReport`): the frost still ahead with the
+  plants it reaches and what to do the evening before, a heat alert, the
+  week's nights and days, what the plants placed on the map do this month,
+  and the tasks due within a week; online only, kept for the session;
 - comments on elements;
 - « Supprimer mon compte » (account screen): sends the deletion request to
   Semisto (`POST /api/v1/me/deletion_request`), as the stores require.

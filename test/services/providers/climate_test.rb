@@ -4,14 +4,21 @@ require_relative "../../test_helpers/climate_test_helper"
 class Providers::ClimateTest < ActiveSupport::TestCase
   include ClimateTestHelper
 
-  test "per capability: static data for the region, forecast only with a commercial key" do
+  test "per capability: static data for the region, forecast from MET Norway until an Open-Meteo key is set" do
     region = seed_climate!
     provider = Providers::Climate.for(region, env: {})
-    assert_equal({ normals: "static", projections: "static", forecast: "open_meteo" }, provider.sources)
-    assert_equal({ normals: true, projections: true, forecast: false }, provider.capabilities)
+    assert_equal({ normals: "static", projections: "static", forecast: "met_norway" }, provider.sources)
+    assert_equal({ normals: true, projections: true, forecast: true }, provider.capabilities)
 
     with_key = Providers::Climate.for(region, env: { "OPEN_METEO_API_KEY" => "secret" })
+    assert_equal "open_meteo", with_key.sources[:forecast]
     assert with_key.supports?(:forecast)
+  end
+
+  test "Open-Meteo named on its own stays off without its key" do
+    region = seed_climate!
+    assert_not Providers::Climate.for(region, env: { "CLIMATE_FORECAST_PROVIDER" => "open_meteo" }).supports?(:forecast)
+    assert_equal "met_norway", Providers::Climate.for(region, env: { "CLIMATE_FORECAST_PROVIDER" => "met_norway", "OPEN_METEO_API_KEY" => "k" }).sources[:forecast]
   end
 
   test "ENV overrides the region's choice" do

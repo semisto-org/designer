@@ -23,7 +23,7 @@ reference_period: "1991-2020"
 providers:
   normals: static
   projections: static
-  forecast: open_meteo
+  forecast: auto
 note: >-
   Valeurs arrondies par Semisto à partir des stations de l'IRM (le détail
   est dans les sources) : un ordre de grandeur par grande région naturelle,

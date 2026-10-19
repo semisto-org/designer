@@ -25,6 +25,7 @@ import { useVisit, visits } from '@/lib/visit'
 import { visitNotes } from '@/lib/visit-core'
 import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
+import { useWeek } from '@/state/useWeek'
 import { useMapStyle } from '@/state/useMapStyle'
 import { useOnline, useOutbox } from '@/state/sync'
 import {
@@ -97,6 +98,7 @@ export default function Terrain() {
   const selected = useMemo(() => visible.find((f) => f.id === selectedId) ?? null, [visible, selectedId])
   const nearby = useMemo(() => (me ? around(visible, me, { radius: AROUND_RADIUS }) : []), [visible, me])
   const shotHere = useMemo(() => (me && bundle ? photosHere(bundle.photos, me) : []), [bundle, me])
+  const week = useWeek(mapId)
   const memory = useMemo(() => (bundle ? memoryOf({ photos: bundle.photos, features: bundle.features }) : null), [bundle])
   const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
   const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
@@ -286,7 +288,7 @@ export default function Terrain() {
           : visit && editable
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
             : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
-                mapId={mapId} photosHere={shotHere} memory={memory} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
+                mapId={mapId} photosHere={shotHere} memory={memory} week={week} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
       </Sheet>
     </View>
   )
