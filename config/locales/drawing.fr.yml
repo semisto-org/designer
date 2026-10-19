@@ -59,6 +59,7 @@ fr:
       tap: "Robinet"
       note_point: "Note"
       sketch: "Croquis"
+      sector: "Secteur"
 
   drawing:
     panels:
@@ -85,6 +86,7 @@ fr:
       invalid_value: "%{field} de « %{kind} » n'est pas valide."
 
     fields:
+      sector_type: "Type de secteur"
       height_m: "Hauteur"
       floors: "Niveaux"
       roof: "Toiture"
@@ -142,6 +144,21 @@ fr:
       muddy: "Eau boueuse"
 
     options:
+      sector_type:
+        wind: "Vent dominant"
+        cold_wind: "Vent froid"
+        fire: "Incendie"
+        flood: "Inondation"
+        frost: "Air froid et gel"
+        noise: "Bruit"
+        dust: "Poussière et dérive"
+        pollution: "Pollution"
+        good_view: "Belle vue"
+        bad_view: "Vue à masquer"
+        privacy: "Vis-à-vis"
+        wildlife: "Passage de la faune"
+        predators: "Prédateurs"
+        other: "Autre"
       method: { hole: "Trou rempli d'eau", ring: "Anneau enfoncé" }
       rain: { drizzle: "Bruine", steady: "Pluie continue", heavy: "Grosse averse", storm: "Orage" }
       role: { keyline: "Keyline (par le point clé)", parallel: "Parallèle à la keyline" }

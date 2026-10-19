@@ -538,6 +538,16 @@ layers:
         color: "#ffffff"
         line: { width: 3, casing: "#1b1712" }
         pickable: false
+      # Sector analysis: an arc around the terrain, drawn from the « Secteurs » panel.
+      sector:
+        geometry: LineString
+        icon: wind
+        color: "#9b8fb5"
+        line: { width: 6 }
+        pickable: false
+        defaults: { sector_type: wind }
+        fields:
+          - { key: sector_type, type: select, options: [wind, cold_wind, fire, flood, frost, noise, dust, pollution, good_view, bad_view, privacy, wildlife, predators, other] }
       measure:
         geometry: [LineString, Polygon]
         icon: ruler

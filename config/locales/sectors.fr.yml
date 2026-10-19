@@ -1,0 +1,33 @@
+# Sector analysis: the « Secteurs » panel of the editor and its page in the project dossier.
+fr:
+  sectors:
+    panel_title: "Secteurs"
+    intro: "Ce qui arrive sur ton terrain depuis l'extérieur, direction par direction : le soleil, les vents, le feu, le bruit, les vues, la faune. Les noter aide à placer une haie brise-vent, une mare ou un coin calme au bon endroit."
+    sun:
+      summer_sun: "Soleil d'été"
+      winter_sun: "Soleil d'hiver"
+    range: "de %{from} à %{to}"
+    empty: "Aucun autre secteur pour l'instant. Commence par le vent dominant et ce qui gêne : bruit, poussière, vis-à-vis."
+    add: "Ajouter un secteur"
+    compass: "Choisir les directions du secteur"
+    terrain: "Terrain"
+    directions: "Directions"
+    pick_from: "Touche la direction d'où il commence."
+    pick_to: "Puis celle où il s'arrête, dans le sens des aiguilles d'une montre."
+    name: "Nom sur le dossier"
+    name_hint: "Court, il s'écrit le long de l'arc."
+    notes: "Ce que ça change pour le design"
+    notes_hint: "Ce texte accompagne l'arc sur la page « Analyse des secteurs » du dossier."
+    create: "Ajouter"
+    save: "Enregistrer"
+    cancel: "Annuler"
+    save_error: "Le secteur n'a pas pu être enregistré. Réessaie dans un instant."
+    page:
+      title: "Analyse des secteurs"
+      summer_sun: "Soleil d'été"
+      winter_sun: "Soleil d'hiver"
+      sun_title: "Soleil"
+      sun_summer_sun: "en été, %{range}"
+      sun_winter_sun: "en hiver, %{range}"
+      none: "Ajoute les vents, les vues, le bruit ou la faune dans le panneau « Secteurs » de la carte : ils s'écrivent ici."
+      figure: "Les secteurs autour du terrain, sur la photo aérienne"
