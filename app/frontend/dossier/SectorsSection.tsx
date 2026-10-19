@@ -2,7 +2,7 @@ import type { LineString, Position } from 'geojson'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { t } from '@/lib/i18n'
 import {
-  arcLength, arcPath, farthestM, isSectorType, labelReversed, packRings, SECTOR_COLORS, sectorLayout, sectorRange, sunSectors, toPixels,
+  arcLength, arcPath, farthestM, isSectorType, labelReversed, normalize, packRings, SECTOR_COLORS, sectorDirections, sectorLayout, sunSectors, sweep, toPixels,
   type SectorType, type SunSectorType,
 } from '@/map/sectors/sectors'
 import { rangeText } from '@/map/sectors/labels'
@@ -14,19 +14,20 @@ import type { Dossier } from '@/types/dossier'
 const WIDTH = 820
 const HEIGHT = 794
 
-type Arc = { key: string; type: SectorType | SunSectorType; label: string; from: number; to: number; notes: string | null }
+type Arc = { key: string; type: SectorType | SunSectorType; label: string; named: boolean; from: number; to: number; notes: string | null }
 
 /** The arcs of the page: the sun from the latitude, then the sectors drawn in the editor. */
 export function sectorArcs(cover: Dossier['cover'], center: Position): Arc[] {
-  const sun = sunSectors(center[1]).map((s) => ({ key: s.type, type: s.type, label: t(`sectors.page.${s.type}`), from: s.from, to: s.to, notes: null }))
+  const sun = sunSectors(center[1]).map((s) => ({ key: s.type, type: s.type, label: t(`sectors.page.${s.type}`), named: true, from: s.from, to: s.to, notes: null }))
   const drawn = cover.features.features.flatMap((f): Arc[] => {
     if (f.properties.kind !== 'sector' || f.geometry.type !== 'LineString') return []
-    const range = sectorRange(f.geometry as LineString, center)
+    const range = sectorDirections(f.properties, f.geometry as LineString, center)
     if (!range) return []
     const type = isSectorType(f.properties.sector_type) ? f.properties.sector_type : 'other'
+    const name = f.properties.name?.trim()
     return [{
       key: String(f.properties.id), type, from: range.from, to: range.to, notes: f.properties.notes?.trim() || null,
-      label: f.properties.name?.trim() || t(`drawing.options.sector_type.${type}`),
+      label: name || t(`drawing.options.sector_type.${type}`), named: Boolean(name),
     }]
   })
   return [...sun, ...drawn]
@@ -39,12 +40,16 @@ export function sectorCenter(cover: Dossier['cover']): Position | null {
   return [(w + e) / 2, (s + n) / 2]
 }
 
-/** Label along its arc, shrunk to fit: white capitals spaced out, centred on the stroke. */
-function ArcLabel({ id, text, r, from, to, stroke }: { id: string; text: string; r: number; from: number; to: number; stroke: number }) {
-  const upper = text.toLocaleUpperCase('fr')
+/** The font size of a label along its arc, shrunk to fit, or null when it cannot fit. */
+export function labelSize(text: string, r: number, from: number, to: number, stroke: number): number | null {
   const room = arcLength(r, from, to) * 0.86
-  const size = Math.max(7, Math.min(stroke * 0.5, room / (upper.length * 0.86)))
-  if (upper.length * size * 0.6 > room) return null
+  const size = Math.max(7, Math.min(stroke * 0.5, room / (text.length * 0.86)))
+  return text.length * size * 0.6 > room ? null : size
+}
+
+/** Label along its arc: white capitals spaced out, centred on the stroke. */
+function ArcLabel({ id, text, r, from, to, size }: { id: string; text: string; r: number; from: number; to: number; size: number }) {
+  const upper = text.toLocaleUpperCase('fr')
   const reversed = labelReversed(from, to)
   return (
     <>
@@ -54,6 +59,36 @@ function ArcLabel({ id, text, r, from, to, stroke }: { id: string; text: string;
       </text>
     </>
   )
+}
+
+/** The number of an arc whose name does not fit along it, white on its middle. */
+function ArcNumber({ number, r, from, to, stroke }: { number: number; r: number; from: number; to: number; stroke: number }) {
+  const mid = (normalize(from + sweep(from, to) / 2) * Math.PI) / 180
+  return (
+    <text x={r * Math.sin(mid)} y={-r * Math.cos(mid)} fill="#ffffff" fontSize={stroke * 0.55} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+      {number}
+    </text>
+  )
+}
+
+/** The colour of an arc in the column, with its number when its name is not written along it. */
+function Swatch({ color, number }: { color: string; number?: number }) {
+  return (
+    <span
+      className="mr-[0.6cqw] inline-flex h-[1.3cqw] min-w-[2.2cqw] -translate-y-[0.1cqw] items-center justify-center rounded-full px-[0.3cqw] align-middle text-[0.85cqw] font-bold leading-none text-white"
+      style={{ background: color }}
+      aria-hidden
+    >
+      {number}
+    </span>
+  )
+}
+
+/** Without notes, the column says which way the sector comes from, and its type when its name does not. */
+function fallback(arc: Arc) {
+  const range = rangeText(arc.from, arc.to)
+  const sentence = arc.named ? `${t(`drawing.options.sector_type.${arc.type}`)}, ${range}` : range
+  return `${sentence.charAt(0).toLocaleUpperCase('fr')}${sentence.slice(1)}.`
 }
 
 /** The compass rose of the page, white on the photo. */
@@ -79,8 +114,8 @@ function ScaleBar({ metersPerPx }: { metersPerPx: number }) {
   return (
     <g>
       <path d={`M 0 -5 V 0 H ${px} V -5 M ${px / 2} -3 V 0`} fill="none" stroke="#ffffff" strokeWidth={1.4} />
-      <text x={0} y={-9} fill="#ffffff" fontSize={10} fontWeight={600}>{`${meters} m`}</text>
-      <text x={px} y={-9} fill="#ffffff" fontSize={10} fontWeight={600} textAnchor="end">0 m</text>
+      <text x={0} y={-9} fill="#ffffff" fontSize={10} fontWeight={600}>0</text>
+      <text x={px} y={-9} fill="#ffffff" fontSize={10} fontWeight={600} textAnchor="end">{`${meters} m`}</text>
     </g>
   )
 }
@@ -111,6 +146,10 @@ export function SectorsSection({ dossier, number }: { dossier: Dossier; number: 
   }).join(' ') + ' Z').join(' ')
   const sun = arcs.filter((a) => a.type === 'summer_sun' || a.type === 'winter_sun')
   const drawn = arcs.filter((a) => a.type !== 'summer_sun' && a.type !== 'winter_sun')
+  // A name too long for its arc gives way to a number, repeated in the column, so no arc is left anonymous.
+  const sizes = arcs.map((arc, i) => labelSize(arc.label.toLocaleUpperCase('fr'), layout.radius(rings[i]), arc.from, arc.to, layout.stroke))
+  const numbers = new Map<string, number>()
+  arcs.forEach((arc, i) => { if (sizes[i] == null) numbers.set(arc.key, numbers.size + 1) })
 
   return (
     <section
@@ -128,7 +167,7 @@ export function SectorsSection({ dossier, number }: { dossier: Dossier; number: 
           <dl className="mt-[2.2cqw] space-y-[1.2cqw]">
             {sun.length > 0 && (
               <div>
-                <dt className="inline font-bold text-white">{t('sectors.page.sun_title')}{' '}: </dt>
+                <dt className="inline font-bold text-white">{sun.map((s) => <Swatch key={s.key} color={SECTOR_COLORS[s.type]} number={numbers.get(s.key)} />)}{t('sectors.page.sun_title')}{' '}: </dt>
                 <dd className="inline">
                   {sun.map((s, i) => (
                     <Fragment key={s.key}>{i > 0 && ' ; '}{t(`sectors.page.sun_${s.type}`, { range: rangeText(s.from, s.to) })}</Fragment>
@@ -138,8 +177,8 @@ export function SectorsSection({ dossier, number }: { dossier: Dossier; number: 
             )}
             {drawn.map((arc) => (
               <div key={arc.key}>
-                <dt className="font-bold text-white">{arc.label}{' '}:</dt>
-                <dd>{arc.notes ?? `${t(`drawing.options.sector_type.${arc.type}`)}, ${rangeText(arc.from, arc.to)}.`}</dd>
+                <dt className="font-bold text-white"><Swatch color={SECTOR_COLORS[arc.type]} number={numbers.get(arc.key)} />{arc.label}{' '}:</dt>
+                <dd>{arc.notes ?? fallback(arc)}</dd>
               </div>
             ))}
           </dl>
@@ -156,7 +195,9 @@ export function SectorsSection({ dossier, number }: { dossier: Dossier; number: 
                 return (
                   <g key={arc.key}>
                     <path d={arcPath(0, 0, r, arc.from, arc.to)} fill="none" stroke={SECTOR_COLORS[arc.type]} strokeWidth={layout.stroke} strokeLinecap="round" />
-                    <ArcLabel id={`sector-label-${arc.key}`} text={arc.label} r={r} from={arc.from} to={arc.to} stroke={layout.stroke} />
+                    {sizes[i] != null
+                      ? <ArcLabel id={`sector-label-${arc.key}`} text={arc.label} r={r} from={arc.from} to={arc.to} size={sizes[i]} />
+                      : <ArcNumber number={numbers.get(arc.key) ?? 0} r={r} from={arc.from} to={arc.to} stroke={layout.stroke} />}
                   </g>
                 )
               })}

@@ -17,13 +17,13 @@ Le panneau montre tout de suite le **Soleil d'été** et le **Soleil d'hiver** :
 
 1. Touche **Ajouter un secteur**.
 2. Choisis le **Type de secteur** : vent dominant, vent froid, incendie, inondation, air froid et gel, bruit, poussière et dérive, pollution, belle vue, vue à masquer, vis-à-vis, passage de la faune, prédateurs, ou autre.
-3. Dans **Directions**, touche la direction d'où il commence, puis celle où il s'arrête, dans le sens des aiguilles d'une montre. L'arc se dessine sur la rose.
+3. Dans **Directions**, touche la direction où il commence, puis celle où il s'arrête : l'arc le plus court se dessine sur la rose. S'il fallait passer par l'autre côté, touche **Passer par l'autre côté**. Pour ce qui vient de partout, comme le bruit d'une ville, touche **Tout autour**.
 4. Donne-lui un **Nom sur le dossier**, court : il s'écrit le long de l'arc.
 5. Écris **Ce que ça change pour le design** : « Vents froids du nord-est en hiver : haie brise-vent persistante côté nord ».
 6. Touche **Ajouter**. L'arc apparaît autour du terrain, sur la carte.
 
-Touche un secteur de la liste pour le modifier.
+Touche un secteur de la liste, ou son arc sur la carte, pour le modifier ou le **Supprimer**. Ses directions restent les mêmes si tu redessines ensuite la limite du terrain.
 
 ## Dans le dossier du projet
 
-Le dossier du projet a une page **Analyse des secteurs**, en paysage : à gauche, tes textes ; à droite, la photo aérienne avec la limite du terrain et, autour, un arc coloré par secteur, son nom écrit le long de l'arc. Les arcs qui se chevauchent passent sur des anneaux différents, les plus courts près du terrain.
+Le dossier du projet a une page **Analyse des secteurs**, en paysage : à gauche, tes textes ; à droite, la photo aérienne avec la limite du terrain et, autour, un arc coloré par secteur, son nom écrit le long de l'arc. Une pastille de la même couleur relie chaque texte à son arc ; quand un nom est trop long pour son arc, un numéro le remplace, repris sur la pastille. Les arcs qui se chevauchent passent sur des anneaux différents, les plus courts près du terrain.

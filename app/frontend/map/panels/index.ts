@@ -50,7 +50,8 @@ import OtherPropertiesSection from '@/map/plants/OtherPropertiesSection'
 import FeatureTasksSection from '@/map/tasks/FeatureTasksSection'
 import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
-import SectorsPanel from '@/map/sectors/SectorsPanel'
+import SectorInspector from '@/map/sectors/SectorInspector'
+import SectorsPanel, { isSector } from '@/map/sectors/SectorsPanel'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
 import FinancesPanel from '@/map/panels/FinancesPanel'
 import PhotosPanel from '@/map/photos/PhotosPanel'
@@ -138,6 +139,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
   { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },
+  { id: 'sector', applies: isSector, component: SectorInspector, order: 20 },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },

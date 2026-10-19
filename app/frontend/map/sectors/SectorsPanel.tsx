@@ -1,13 +1,13 @@
 import clsx from 'clsx'
-import { Pencil, Plus, Sun } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ArrowLeftRight, Circle, Pencil, Plus, Sun, Trash2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { rangeText } from '@/map/sectors/labels'
 import {
-  arcPath, arcRadius, COMPASS_POINTS, isSectorType, SECTOR_COLORS, SECTOR_TYPES, sectorArc, sectorRange, sunSectors,
+  allAround, arcPath, arcRadius, COMPASS_POINTS, isSectorType, SECTOR_COLORS, SECTOR_TYPES, sectorArc, sectorDirections, shorterWay, sunSectors,
   type SectorType,
 } from '@/map/sectors/sectors'
 import type { MapFeature } from '@/types'
@@ -20,8 +20,8 @@ const EMPTY: Draft = { id: null, type: 'wind', from: null, to: null, name: '', n
 export const isSector = (f: MapFeature) => f.properties.kind === 'sector' && f.geometry.type === 'LineString'
 
 /**
- * The 16 compass points around a circle: a first click sets where the sector
- * starts, a second where it ends (clockwise), and the arc between them shows.
+ * The 16 compass points around a circle: a first click sets one end of the
+ * sector, a second the other, and the shorter arc between them shows.
  */
 function Compass({ from, to, color, onPick }: { from: number | null; to: number | null; color: string; onPick: (deg: number) => void }) {
   const size = 220
@@ -88,11 +88,17 @@ export default function SectorsPanel() {
     if (!d) return d
     // A third click starts again.
     if (d.from == null || d.to != null) return { ...d, from: deg, to: null }
-    return deg === d.from ? d : { ...d, to: deg }
+    return deg === d.from ? d : { ...d, ...shorterWay(d.from, deg) }
   })
 
+  // A sector chosen on the map (its inspector's « Modifier ») opens here, ready to edit.
+  const selected = editor.selected
+  useEffect(() => {
+    if (selected && isSector(selected) && selected.properties.id !== draft?.id) edit(selected)
+  }, [selected?.properties.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function edit(feature: MapFeature) {
-    const range = sectorRange(feature.geometry as LineString, center)
+    const range = sectorDirections(feature.properties, feature.geometry as LineString, center)
     const type = feature.properties.sector_type
     setDraft({
       id: feature.properties.id,
@@ -112,7 +118,8 @@ export default function SectorsPanel() {
       geometry: sectorArc(center, arcRadius(editor.map.bbox), draft.from, draft.to),
       name: draft.name.trim() || null,
       notes: draft.notes.trim() || null,
-      properties: { sector_type: draft.type },
+      // The directions are saved as such: they stay true when the outline, and so the centre, changes.
+      properties: { sector_type: draft.type, from_deg: draft.from, to_deg: draft.to },
       style: { color: SECTOR_COLORS[draft.type] },
     }
     try {
@@ -121,6 +128,19 @@ export default function SectorsPanel() {
       setDraft(null)
     } catch {
       editor.notify(t('sectors.save_error'), 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function remove() {
+    if (!draft?.id || !window.confirm(t('sectors.confirm_delete'))) return
+    setSaving(true)
+    try {
+      await editor.deleteFeature(draft.id)
+      setDraft(null)
+    } catch (e) {
+      editor.notify((e as Error).message, 'error')
     } finally {
       setSaving(false)
     }
@@ -142,7 +162,7 @@ export default function SectorsPanel() {
           </li>
         ))}
         {sectors.map((f) => {
-          const range = sectorRange(f.geometry as LineString, center)
+          const range = sectorDirections(f.properties, f.geometry as LineString, center)
           const type = isSectorType(f.properties.sector_type) ? f.properties.sector_type : 'other'
           return (
             <li key={f.properties.id}>
@@ -179,6 +199,16 @@ export default function SectorsPanel() {
               {draft.from == null ? t('sectors.pick_from') : draft.to == null ? t('sectors.pick_to') : rangeText(draft.from, draft.to)}
             </p>
             <Compass from={draft.from} to={draft.to} color={SECTOR_COLORS[draft.type]} onPick={pick} />
+            <div className="mt-1 flex flex-wrap justify-center gap-2">
+              {draft.from != null && draft.to != null && !allAround(draft.from, draft.to) && (
+                <Button size="sm" variant="ghost" onClick={() => setDraft({ ...draft, from: draft.to, to: draft.from })}>
+                  <ArrowLeftRight className="h-4 w-4" aria-hidden />{t('sectors.other_way')}
+                </Button>
+              )}
+              <Button size="sm" variant="ghost" onClick={() => setDraft({ ...draft, from: 0, to: 0 })}>
+                <Circle className="h-4 w-4" aria-hidden />{t('sectors.all_around_button')}
+              </Button>
+            </div>
           </div>
           <Field label={t('sectors.name')} hint={t('sectors.name_hint')}>
             <Input value={draft.name} maxLength={60} placeholder={t(`drawing.options.sector_type.${draft.type}`)} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
@@ -189,6 +219,11 @@ export default function SectorsPanel() {
           <div className="flex gap-2">
             <Button size="sm" disabled={!ready || saving} onClick={() => void save()}>{t(draft.id ? 'sectors.save' : 'sectors.create')}</Button>
             <Button size="sm" variant="ghost" onClick={() => setDraft(null)}>{t('sectors.cancel')}</Button>
+            {draft.id && (
+              <Button size="sm" variant="ghost" className="ml-auto text-clay-500" disabled={saving} onClick={() => void remove()}>
+                <Trash2 className="h-4 w-4" aria-hidden />{t('sectors.delete')}
+              </Button>
+            )}
           </div>
         </div>
       )}

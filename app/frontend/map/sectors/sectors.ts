@@ -5,8 +5,8 @@ import type { LineString, Position } from 'geojson'
  * from outside (sun, winds, fire, noise, views, wildlife, flooding…), each
  * from a range of directions, drawn as arcs around the site. A sector is a
  * `sector` feature of the notes layer: an arc (LineString) drawn clockwise
- * around the terrain's centre, its directions read back from its two ends,
- * its type in `properties.sector_type`, its label in `name` and what it
+ * around the terrain's centre, its directions saved in `properties.from_deg`
+ * and `to_deg` (equal for a sector all around), its type in `properties.sector_type`, its label in `name` and what it
  * means for the design in `notes`. The summer and winter sun are not drawn:
  * they follow from the latitude.
  *
@@ -91,6 +91,23 @@ export function sectorRange(geometry: LineString, center: Position): { from: num
   if (coords.length < 2) return null
   return { from: Math.round(bearing(center, coords[0])), to: Math.round(bearing(center, coords[coords.length - 1])) }
 }
+
+/**
+ * The directions of a sector: those saved with it, which stay true when the
+ * terrain's outline (and so its centre) changes, else, for a sector saved
+ * before them, read back from its arc.
+ */
+export function sectorDirections(properties: Record<string, unknown>, geometry: LineString, center: Position): { from: number; to: number } | null {
+  const { from_deg: from, to_deg: to } = properties
+  if (typeof from === 'number' && typeof to === 'number') return { from: normalize(from), to: normalize(to) }
+  return sectorRange(geometry, center)
+}
+
+/** Two directions picked on the compass, joined the shorter way round. */
+export const shorterWay = (a: number, b: number) => (sweep(a, b) <= 180 ? { from: a, to: b } : { from: b, to: a })
+
+/** Whether a sector goes all around the terrain. */
+export const allAround = (from: number, to: number) => sweep(from, to) === 360
 
 /** The radius of the arcs drawn on the map: a little outside the terrain. */
 export function arcRadius(bbox: [number, number, number, number] | null | undefined): number {

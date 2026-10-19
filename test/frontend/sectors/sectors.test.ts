@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  arcPath, bearing, compassPoint, labelReversed, packRings, sectorArc, sectorRange, sunSectors, sweep,
+  allAround, arcPath, bearing, compassPoint, labelReversed, packRings, sectorArc, sectorDirections, sectorRange, shorterWay, sunSectors, sweep,
 } from '../../../app/frontend/map/sectors/sectors.ts'
 
 const yvoir = [4.88, 50.33]
@@ -65,4 +65,19 @@ test('the sector page keeps the outer ring inside the picture and the terrain in
   assert.equal(Math.round(x), 0)
   assert.equal(Math.round(y), -111)
   assert.equal(Math.round(farthestM(yvoir, [[4.88, 50.331], [4.8801, 50.33]])), 111)
+})
+
+test('saved directions win over the arc, which follows a centre that can move', () => {
+  const arc = sectorArc(yvoir, 80, 300, 40)
+  const moved = [4.881, 50.331]
+  assert.deepEqual(sectorDirections({ from_deg: 300, to_deg: 40 }, arc, moved), { from: 300, to: 40 })
+  assert.deepEqual(sectorDirections({}, arc, yvoir), { from: 300, to: 40 })
+})
+
+test('two picked directions join the shorter way, and a sector can go all around', () => {
+  assert.deepEqual(shorterWay(315, 225), { from: 225, to: 315 })
+  assert.deepEqual(shorterWay(300, 40), { from: 300, to: 40 })
+  assert.ok(allAround(0, 0))
+  assert.ok(!allAround(0, 90))
+  assert.deepEqual(sectorRange(sectorArc(yvoir, 80, 0, 0), yvoir), { from: 0, to: 0 })
 })
