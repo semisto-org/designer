@@ -49,6 +49,12 @@ What it does, for the maps one belongs to:
   photo joins the series (`MapPhoto#retake_of`) and the photo screen wipes
   from before to after (`ui/BeforeAfter.tsx`); the sheet lists the photos
   already taken where one stands (« Déjà photographié ici »);
+- « Esquisser sur la photo » (screen `sketch/[photoId]`, `lib/sketch.ts`,
+  `ui/SketchLayer.tsx`, `state/useSketches.ts`): draw over a photo with a
+  finger, in the website's inks and widths, with handwritten notes, an
+  eraser and undo; the same `PhotoSketch` as the website's sketcher, saved
+  online (`/maps/:id/photos/:id/sketches`, a 409 brings back the other
+  person's version); the photo screen lays one sketch at a time over it;
 - plants: place a plant where one stands, mark it planted; its journal
   (`lib/journal.ts`) notes a take, flowering, pruning, damage, disease or an
   intervention in one tap, and shows the plant's life as a frieze by year

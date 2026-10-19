@@ -319,6 +319,32 @@
         "other": "Elles rejoindront les photos de la carte, placées d'après leur position quand elles en ont une."
       }
     },
+    "sketch": {
+      "start": "Esquisser sur la photo",
+      "start_hint": "Dessine du doigt une idée par-dessus : une haie ici, la mare là, le chemin qui descend. Tout le monde la verra sur la carte, sur l'ordinateur comme sur le téléphone.",
+      "edit": "Modifier cette esquisse",
+      "offline": "Il faut du réseau pour esquisser : les esquisses s'enregistrent sur la carte en ligne.",
+      "save_offline": "Pas de réseau pour l'instant : ton esquisse reste ici, réessaie dès que tu captes.",
+      "saved": "Esquisse enregistrée",
+      "full": "Cette esquisse est pleine : enregistre-la et commence-en une autre.",
+      "hint_text": "Touche la photo là où tu veux écrire, puis écris ta note.",
+      "hint_eraser": "Touche ou frotte un trait pour l'effacer.",
+      "discard_title": "Abandonner cette esquisse ?",
+      "discard_body": "Ce que tu as dessiné depuis le dernier enregistrement sera perdu.",
+      "discard": "Abandonner",
+      "keep": "Continuer à dessiner",
+      "ink_label": "Encre %{name}",
+      "inks": {
+        "ffffff": "blanche",
+        "1b1712": "noire",
+        "d64545": "rouge",
+        "ef9b0d": "orange",
+        "ffd43b": "jaune",
+        "1f6b46": "verte",
+        "2a6fdb": "bleue",
+        "5b5781": "prune"
+      }
+    },
     "retake": {
       "photo": "Photo",
       "gone": "Cette photo n'est plus sur la carte.",
@@ -1129,6 +1155,74 @@
       "hint": "Rien n'est enregistré tant que tu n'as pas choisi.",
       "saved": "Espèce enregistrée : %{name}.",
       "credit": "Identification : "
+    }
+  },
+  "photo_sketches": {
+    "default_name": "Esquisse %{number}",
+    "errors": {
+      "invalid": "Cette esquisse contient un trait illisible.",
+      "too_many": "Cette esquisse est trop chargée (%{max} traits au plus) : commence-en une autre.",
+      "photo_elsewhere": "Cette photo appartient à une autre carte.",
+      "stale": "Quelqu'un d'autre vient de modifier cette esquisse. Voici sa dernière version."
+    },
+    "open": "Esquisser",
+    "open_hint": "Dessine une idée par-dessus la photo",
+    "edit": "Modifier",
+    "title": "Esquisse sur la photo",
+    "list_label": "Esquisses de cette photo",
+    "none": "Photo seule",
+    "new": "Nouvelle esquisse",
+    "name": "Nom de l'esquisse",
+    "tools": {
+      "label": "Outils",
+      "pen": "Crayon",
+      "text": "Note",
+      "eraser": "Gomme",
+      "select": "Sélection",
+      "ink": "Encre",
+      "width": "Épaisseur",
+      "widths": {
+        "fine": "Fin",
+        "medium": "Moyen",
+        "bold": "Épais"
+      },
+      "undo": "Annuler",
+      "redo": "Refaire",
+      "clear": "Tout effacer"
+    },
+    "text_placeholder": "Écris ta note…",
+    "text_add": "Poser",
+    "hint_pen": "Dessine du doigt, du stylet ou de la souris sur la photo.",
+    "hint_text": "Touche la photo là où tu veux écrire.",
+    "hint_eraser": "Touche un trait pour l'effacer.",
+    "hint_select": "Touche un trait ou une note pour le choisir, ou entoure-en plusieurs d'un cadre. Glisse pour déplacer ; l'encre et l'épaisseur s'appliquent à la sélection.",
+    "selection": {
+      "delete": {
+        "one": "Supprimer l'élément",
+        "other": "Supprimer les %{count} éléments"
+      }
+    },
+    "saving": "Enregistrement…",
+    "saved": "Enregistrée",
+    "save_failed": "L'esquisse n'a pas pu être enregistrée.",
+    "done": "Terminer",
+    "download": "Télécharger l'image",
+    "delete": "Supprimer l'esquisse",
+    "confirm_delete": "Supprimer cette esquisse ? La photo, elle, reste intacte.",
+    "confirm_clear": "Effacer tous les traits de cette esquisse ?",
+    "by": "par %{name}",
+    "filter": "Avec esquisses (%{count})",
+    "badge": {
+      "one": "%{count} esquisse",
+      "other": "%{count} esquisses"
+    },
+    "panel": {
+      "title": {
+        "one": "%{count} photo esquissée",
+        "other": "%{count} photos esquissées"
+      },
+      "show_all": "Filtrer",
+      "open": "Voir l'esquisse"
     }
   },
   "soil": {
