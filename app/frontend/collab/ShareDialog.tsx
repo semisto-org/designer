@@ -12,6 +12,7 @@ import { MapTeamSection } from '@/teams/MapTeamSection'
 import { MapTransferSection } from '@/transfer/MapTransferSection'
 import { Avatar } from './Avatar'
 import { Dialog } from './Dialog'
+import { PlaceSection } from './PlaceSection'
 
 /**
  * Who has access to the map and how: members with their roles, invitations
@@ -55,6 +56,7 @@ export function ShareDialog({ onClose }: { onClose: () => void }) {
         <div className="space-y-6">
           {error && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm text-clay-700">{error}</p>}
           <Members data={data} owner={owner} busy={busy} base={base} run={run} onLeft={() => router.visit('/maps')} />
+          <PlaceSection data={data} manager={owner} busy={busy} base={base} run={run} />
           {data.organization && <MapProjectSection teamId={data.organization.id} mapId={editor.map.id} canEdit={editor.canEdit} notify={editor.notify} />}
           {owner && <Invite data={data} busy={busy} base={base} run={run} />}
           {owner && <ShareLink data={data} busy={busy} base={base} run={run} />}
@@ -129,6 +131,16 @@ function MemberRow({ member, owner, busy, base, run }: SectionProps & { member: 
           {member.you && <span className="ml-1.5 text-xs font-normal text-loam-400">{t('collab.share.you')}</span>}
         </p>
         {member.email && <p className="truncate text-xs text-loam-500">{member.email}</p>}
+        {owner ? (
+          <PlaceOwnerToggle
+            label={t('propagation.place.mark_of', { name: member.name })}
+            checked={member.placeOwner}
+            disabled={busy}
+            onChange={(placeOwner) => void run(() => api<SharingData>(`${base}/memberships/${member.id}`, { method: 'PATCH', body: { membership: { place_owner: placeOwner } } }))}
+          />
+        ) : member.placeOwner && (
+          <span className="mt-0.5 inline-block rounded-full bg-leaf-50 px-2 py-0.5 text-sm text-leaf-800">{t('propagation.place.badge')}</span>
+        )}
       </div>
       {canManage ? (
         <>
@@ -164,18 +176,32 @@ function MemberRow({ member, owner, busy, base, run }: SectionProps & { member: 
   )
 }
 
+/** « Propriétaire du lieu », ticked by the map's owner for a member or an invitee. */
+function PlaceOwnerToggle({ label, checked, disabled, onChange }: { label: string; checked: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="mt-1 inline-flex cursor-pointer items-center gap-1.5 text-sm text-loam-600" title={label}>
+      <input type="checkbox" className="h-4 w-4 rounded border-loam-300 text-leaf-600" checked={checked} disabled={disabled} aria-label={label} onChange={(e) => onChange(e.target.checked)} />
+      {t('propagation.place.mark')}
+    </label>
+  )
+}
+
 function Invite({ data, busy, base, run }: SectionProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'viewer' | 'editor'>('viewer')
+  const [placeOwner, setPlaceOwner] = useState(false)
   const invitations = data.invitations ?? []
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     const ok = await run(
-      () => api<SharingData>(`${base}/invitations`, { method: 'POST', body: { invitation: { email_address: email, role } } }),
+      () => api<SharingData>(`${base}/invitations`, { method: 'POST', body: { invitation: { email_address: email, role, place_owner: placeOwner } } }),
       t('collab.share.invited', { email: email.trim().toLowerCase() }),
     )
-    if (ok) setEmail('')
+    if (ok) {
+      setEmail('')
+      setPlaceOwner(false)
+    }
   }
 
   return (
@@ -197,6 +223,7 @@ function Invite({ data, busy, base, run }: SectionProps) {
         </Select>
         <Button type="submit" disabled={busy || email.trim() === ''}>{t('collab.share.invite_send')}</Button>
       </form>
+      <PlaceOwnerToggle label={t('propagation.place.mark')} checked={placeOwner} disabled={busy} onChange={setPlaceOwner} />
       <p className="text-xs text-loam-500">{t(`collab.share.role_help_${role}`)}</p>
 
       {invitations.length > 0 && (
@@ -205,7 +232,15 @@ function Invite({ data, busy, base, run }: SectionProps) {
           <ul className="mt-1 divide-y divide-loam-100">
             {invitations.map((invitation) => (
               <li key={invitation.id} className="flex items-center gap-2 py-1.5 text-sm">
-                <span className="min-w-0 flex-1 truncate">{invitation.email}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate">{invitation.email}</p>
+                  <PlaceOwnerToggle
+                    label={t('propagation.place.mark_of', { name: invitation.email })}
+                    checked={invitation.placeOwner}
+                    disabled={busy}
+                    onChange={(value) => void run(() => api<SharingData>(`${base}/invitations/${invitation.id}`, { method: 'PATCH', body: { invitation: { place_owner: value } } }))}
+                  />
+                </div>
                 <span className="rounded-full bg-loam-100 px-2 py-0.5 text-xs text-loam-600">{t(`maps.roles.${invitation.role}`)}</span>
                 <button
                   type="button"

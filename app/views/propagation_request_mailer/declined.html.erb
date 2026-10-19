@@ -1,0 +1,5 @@
+<p><%= t(".greeting", name: @request.requester.display_name) %></p>
+<p><%= t(".body", plant: @request.plant_name) %></p>
+<% if @request.answer.present? %><p style="color:#6b6257;white-space:pre-line;border-left:3px solid #d9d2c5;padding-left:12px"><%= @request.answer %></p><% end %>
+<p><%= t(".encouragement") %></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".footer") %></p>

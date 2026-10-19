@@ -19,6 +19,8 @@ class User < ApplicationRecord
   has_many :applauses, dependent: :destroy
   has_many :release_note_likes, dependent: :delete_all
   has_many :service_requests, dependent: :destroy
+  # Asked of other gardeners' places (« Multiplication »).
+  has_many :propagation_requests, foreign_key: :requester_id, inverse_of: :requester, dependent: :delete_all
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
   has_many :offer_templates, as: :owner, dependent: :destroy
   has_one :request_form, as: :owner, dependent: :destroy
@@ -143,7 +145,15 @@ class User < ApplicationRecord
     # request form, with a dot while requests wait for a first call.
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
       tourSeen: tour_seen_at.present?, accountKind: account_kind, newRequests: new_requests_count,
-      catalogueReviewer: can_review_catalogue? }
+      catalogueReviewer: can_review_catalogue?, propagation: propagation_summary }
+  end
+
+  # The « Multiplication » link shows once I own a place or asked one, with a
+  # dot while requests to my places wait for an answer; nil otherwise.
+  def propagation_summary
+    owns = map_memberships.where(place_owner: true).exists?
+    return nil unless owns || propagation_requests.exists?
+    { waiting: owns ? PropagationRequest.received_by(self).pending.count : 0 }
   end
 
   # Requests not called yet on the forms I read; nil without any form.

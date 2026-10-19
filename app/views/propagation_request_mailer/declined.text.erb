@@ -1,0 +1,11 @@
+<%= t(".greeting", name: @request.requester.display_name) %>
+
+<%= t(".body", plant: @request.plant_name) %>
+<% if @request.answer.present? %>
+
+<%= @request.answer %>
+<% end %>
+
+<%= t(".encouragement") %>
+
+<%= t(".footer") %>

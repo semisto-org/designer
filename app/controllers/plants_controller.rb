@@ -27,6 +27,9 @@ class PlantsController < ApplicationController
       observations: PlantObservation.stats_for(species),
       # Where it grows on the maps this person can open (never another's).
       plantings: SpeciesPlantings.new(species, Current.user).as_json,
+      # In the ground on other people's places, when their owners show it.
+      sharedPlantings: SharedPlantings.new(species, Current.user).as_json,
+      materials: PropagationRequest::MATERIALS,
       region: region_json
     }
   end

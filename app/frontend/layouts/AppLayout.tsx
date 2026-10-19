@@ -14,12 +14,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const unseen = releaseNotes?.unseen ?? 0
   const url = usePage().url
   const newRequests = (currentUser as TeamAwareUser | null)?.newRequests
+  const propagation = (currentUser as TeamAwareUser | null)?.propagation
   const nav = [
     { href: '/maps', label: t('nav.maps') },
     ...(currentUser ? [{ href: '/tasks', label: t('tasks.nav') }] : []),
     ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
     ...(newRequests != null ? [{ href: '/request_forms', label: t('request_forms.nav'), dot: newRequests > 0 }] : []),
     { href: '/plants', label: t('nav.plants') },
+    ...(propagation ? [{ href: '/propagation', label: t('propagation.nav'), dot: propagation.waiting > 0 }] : []),
   ]
   return (
     <div className="min-h-dvh">
@@ -42,6 +44,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 }
               >
                 {item.label}
+                {'dot' in item && item.dot && <span className="ml-1 inline-block h-2 w-2 rounded-full bg-humus-500 align-middle" aria-hidden />}
               </Link>
             ))}
           </nav>

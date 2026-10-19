@@ -8,7 +8,7 @@ module Maps
 
     before_action :set_map
     before_action :require_owner!
-    before_action :set_invitation, only: %i[destroy resend]
+    before_action :set_invitation, only: %i[update destroy resend]
 
     def create
       email = params.require(:invitation).permit(:email_address)[:email_address].to_s.strip.downcase
@@ -25,10 +25,18 @@ module Maps
         invitation = @map.invitations.new(email_address: email, invited_by: Current.user)
         invitation.role = role if role
       end
+      invitation.place_owner = place_owner_param if params[:invitation].key?(:place_owner)
       return render_invalid(invitation) unless invitation.save
 
       invitation.deliver!
       render json: Collab::SharingPayload.new(@map, Current.user, url_helpers: self), status: :created
+    end
+
+    # Marks the invited person as an owner of the place (or not): they become
+    # one when they join.
+    def update
+      @invitation.update!(place_owner: place_owner_param)
+      render json: Collab::SharingPayload.new(@map, Current.user, url_helpers: self)
     end
 
     def resend
@@ -42,6 +50,8 @@ module Maps
     end
 
     private
+      def place_owner_param = ActiveModel::Type::Boolean.new.cast(params.dig(:invitation, :place_owner)) || false
+
       def set_invitation
         @invitation = @map.invitations.pending.find(params[:id])
       end
