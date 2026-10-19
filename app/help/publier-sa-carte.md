@@ -45,6 +45,14 @@ Quoi qu'il arrive, les brouillons proposés par une IA, les éléments refusés 
 
 Tes visiteurs voient la carte avec la mention **Lecture seule** et la date de publication, la **Légende** des couches et, s'il y a une présentation, **À propos de cette carte**.
 
+## Ton jardin qui pousse
+
+Si la couche Plantes est publiée, tes visiteurs voient chaque plante en aquarelle, avec la couronne qu'elle aura. Un moment après leur arrivée, le jardin pousse tout seul jusqu'à sa quinzième année. Ils peuvent ensuite faire glisser les années jusqu'à la trentième, toucher **Laisser pousser**, et choisir la saison : branches nues en hiver, fleurs au printemps, fruits à la fin de l'été, couleurs d'automne. Les tailles sont indicatives : elles suivent la taille adulte de chaque espèce dans le catalogue.
+
+## L'aperçu du lien
+
+Quand tu envoies l'adresse dans une messagerie, sur un réseau social ou par e-mail, elle s'affiche avec une image propre à ta carte : son titre, sa surface et, si tu montres l'adresse, sa commune, avec ton terrain dessiné au crayon et ton jardin en aquarelle dans quinze ans. L'image est peinte à chaque publication et le panneau te la montre sous **Aperçu du lien**. Elle ne dessine que ce que la vue publique montre.
+
 ## Une photo, pas un direct
 
 La vue publiée est une **photo de la carte** prise au moment où tu publies. Si tu continues à dessiner, le panneau te prévient : « La carte a changé depuis la publication ». Touche **Mettre à jour la vue publiée** : l'adresse ne change pas, et le numéro de version augmente.

@@ -1,6 +1,7 @@
 import type { FeatureCollection, Geometry, MultiPolygon } from 'geojson'
 import type { BBox, LayerLegendData, LngLat, MapFeatureProperties } from '@/types'
 import type { AerialView } from '@/types/drone'
+import type { PublicGrowth } from '@/public_maps/garden'
 
 /** What a discussion can hang on (server whitelist: Commentable::TYPES). */
 export type ThreadType = 'Map' | 'MapFeature'
@@ -110,6 +111,8 @@ export type PublicationState = {
   live: boolean
   stale: boolean
   options: PublicationOptions
+  /** The link preview painted for this snapshot (collab/preview.ts), when there is one. */
+  previewPath?: string | null
 }
 
 export type PublicationData = {
@@ -119,6 +122,8 @@ export type PublicationData = {
   regionLayers: { key: string; name: string; category: 'base' | 'overlay'; group: string | null; sensitive: boolean }[]
   /** The drone view a publication would show (drone area), null without one. */
   aerialView?: Pick<AerialView, 'name' | 'capturedOn'> | null
+  /** After publishing: what the public view shows, to paint the link preview from. */
+  publicProps?: PublicMapProps
 }
 
 /** A region layer as the public view receives it: tiles come from our own proxy. */
@@ -151,7 +156,11 @@ export type PublicMapProps = {
     address?: string | null
     parcels?: string[] | null
     regionName: string | null
+    /** The town of the address, only when the owner shows it. */
+    locality?: string | null
   }
+  /** How the published plants grow, for the years bar (absent from older snapshots). */
+  growth?: PublicGrowth | null
   features: FeatureCollection<Geometry, MapFeatureProperties>
   layers: PublicLayer[]
   /** The drone view the owner chose to show (drone area): tiles straight from Semisto's host. */

@@ -16,7 +16,7 @@ module PublicMeta
       render inertia: component, props:, meta: meta_tags(title:, description:, json_ld:)
     end
 
-    def meta_tags(title:, description:, json_ld: nil)
+    def meta_tags(title:, description:, json_ld: nil, image: nil)
       url = canonical_url
       tags = [
         { title: "#{title} · #{SITE_NAME}" },
@@ -28,7 +28,7 @@ module PublicMeta
         { property: "og:title", head_key: "og:title", content: title },
         { property: "og:description", head_key: "og:description", content: description },
         { property: "og:url", head_key: "og:url", content: url },
-        { property: "og:image", head_key: "og:image", content: "#{request.base_url}/og-image.png" },
+        { property: "og:image", head_key: "og:image", content: image || "#{request.base_url}/og-image.png" },
         { name: "twitter:card", head_key: "twitter:card", content: "summary_large_image" }
       ]
       tags << { tag_name: "script", head_key: "ld-json", type: "application/ld+json", inner_content: json_ld } if json_ld

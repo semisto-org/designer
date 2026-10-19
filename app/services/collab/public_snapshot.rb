@@ -19,6 +19,7 @@ module Collab
         "map" => map_data,
         "features" => features,
         "region_layer_keys" => region_layer_keys,
+        "growth" => growth,
         # The newest drone view at publication, only when the owner shows it.
         "aerial_view_id" => (@map.aerial_views.ready.first&.id if @options["show_aerial_view"])
       }
@@ -56,8 +57,7 @@ module Collab
       end
 
       def features
-        scope = @map.features.active.where(layer: layers).order(:id)
-        scope.map { |feature| serialize(feature) }
+        @features ||= @map.features.active.where(layer: layers).order(:id).map { |feature| serialize(feature) }
       end
 
       def serialize(feature)
@@ -67,6 +67,18 @@ module Collab
         }
         properties["notes"] = feature.notes if @options["show_notes"]
         { "type" => "Feature", "id" => feature.id, "geometry" => feature.geometry_geojson, "properties" => properties }
+      end
+
+      # How the published plants grow (Relief::GrowingPlants), for the year
+      # slider and the link preview: only the plants and patches the snapshot
+      # shows, without their own names or numbers.
+      def growth
+        ids = features.map { |feature| feature["id"] }.to_set
+        data = Relief::GrowingPlants.new(@map).as_json
+        plants = data[:plants].select { |plant| ids.include?(plant[:id]) }.map { |plant| plant.except(:ownName, :number) }
+        patches = data[:patches].select { |patch| ids.include?(patch[:id]) }.map { |patch| patch.except(:name) }
+        return nil if plants.empty? && patches.empty?
+        { "today" => data[:today], "origin" => data[:origin], "plants" => plants, "patches" => patches }.deep_stringify_keys
       end
 
       def region_layer_keys

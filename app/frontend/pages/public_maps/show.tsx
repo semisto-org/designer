@@ -2,9 +2,10 @@ import { Head } from '@inertiajs/react'
 import { ChevronDown, Drone, Eye, X } from 'lucide-react'
 import { area } from '@turf/turf'
 import type { MapMouseEvent } from 'maplibre-gl'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Logo } from '@/components/Logo'
 import { LayerLegend } from '@/components/legend/LayerLegend'
+import { track } from '@/lib/analytics'
 import { formatArea, formatLength, t } from '@/lib/i18n'
 import { installPublicLayers } from '@/collab/publicLayers'
 import { formatDate } from '@/collab/time'
@@ -18,6 +19,10 @@ import { useMapInstance } from '@/map/MapContext'
 import { MapView } from '@/map/MapView'
 import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
+import { GardenControls } from '@/public_maps/GardenControls'
+import { SEASONS, gardenAt, gardenPlants, seasonOf, yearFraction, yearNow, type GardenPlant, type SeasonKey } from '@/public_maps/garden'
+import { loadAtlases, paintGarden, removeGarden, type Atlases } from '@/public_maps/gardenLayer'
+import { previewYear } from '@/public_maps/preview'
 import type { PublicMapProps } from '@/types/collab'
 
 /**
@@ -29,6 +34,18 @@ export default function PublicMapShow(props: PublicMapProps) {
   const { map } = props
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const selected = props.features.features.find((f) => f.properties.id === selectedId) ?? null
+  const plants = useMemo(() => (props.growth ? gardenPlants(props.growth) : []), [props.growth])
+  const [now] = useState(() => new Date())
+  const today = props.growth ? yearNow(props.growth, now) : 0
+  const season = seasonOf(yearFraction(now))
+  const [moment, setMoment] = useState<{ year: number; season: SeasonKey }>({ year: today, season })
+  const onMoment = useCallback((year: number, chosen: SeasonKey) => setMoment({ year, season: chosen }), [])
+
+  // Where the visitor came from: ?via=… on links Terranova makes, else direct.
+  useEffect(() => {
+    const via = new URLSearchParams(window.location.search).get('via')
+    track('public_map_view', { source: via && /^[a-z_]{1,20}$/.test(via) ? via : 'direct' })
+  }, [])
 
   return (
     <div className="flex h-dvh flex-col bg-loam-100">
@@ -52,9 +69,20 @@ export default function PublicMapShow(props: PublicMapProps) {
           bbox={map.bbox}
         >
           <PublicLayers {...props} selectedId={selectedId} onSelect={setSelectedId} />
+          {plants.length > 0 && <Garden plants={plants} year={moment.year} season={moment.season} latitude={map.center?.[1] ?? plants[0].lat} />}
         </MapView>
         {props.description && <About text={props.description} />}
-        <Legend {...props} />
+        {props.growth && plants.length > 0 && (
+          <GardenControls
+            origin={props.growth.origin}
+            today={today}
+            growTo={previewYear(today)}
+            season={season}
+            onChange={onMoment}
+            className="absolute inset-x-2 bottom-10 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-96"
+          />
+        )}
+        <Legend {...props} raised={plants.length > 0} />
         {selected && <FeatureCard feature={selected} onClose={() => setSelectedId(null)} />}
       </div>
       <footer className="flex h-9 shrink-0 items-center justify-between gap-3 border-t border-loam-200 bg-white px-3 text-xs text-loam-500">
@@ -117,6 +145,33 @@ function PublicLayers({ layers, features, map, aerialView, selectedId, onSelect 
   return null
 }
 
+/** The watercolour crowns of the published plants, at the year and season of the bar. */
+function Garden({ plants, year, season, latitude }: { plants: GardenPlant[]; year: number; season: SeasonKey; latitude: number }) {
+  const instance = useMapInstance()
+  const [atlases, setAtlases] = useState<Atlases | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    loadAtlases().then((loaded) => alive && setAtlases(loaded), () => {})
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!instance || !atlases) return
+    const paint = () => paintGarden(instance, atlases, gardenAt(plants, year, SEASONS[season]), latitude)
+    if (instance.isStyleLoaded()) paint()
+    else instance.once('load', paint)
+  }, [instance, atlases, plants, year, season, latitude])
+
+  useEffect(() => () => {
+    if (instance?.getStyle()) removeGarden(instance)
+  }, [instance])
+
+  return null
+}
+
 function About({ text }: { text: string }) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   return (
@@ -130,7 +185,7 @@ function About({ text }: { text: string }) {
   )
 }
 
-function Legend({ features, layers }: Pick<PublicMapProps, 'features' | 'layers'>) {
+function Legend({ features, layers, raised }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean }) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   const counts = useMemo(() => {
     const result = new Map<string, number>()
@@ -140,7 +195,7 @@ function Legend({ features, layers }: Pick<PublicMapProps, 'features' | 'layers'
   const overlays = layers.filter((l) => l.category === 'overlay')
   if (counts.length === 0 && overlays.length === 0) return null
   return (
-    <section className="absolute bottom-14 left-2 z-10 max-w-[min(18rem,calc(100%-1rem))] rounded-xl bg-white p-3 shadow-lg ring-1 ring-loam-200" aria-label={t('public_maps.legend')}>
+    <section className={(raised ? 'bottom-52 md:bottom-14' : 'bottom-14') + ' absolute left-2 z-10 max-w-[min(18rem,calc(100%-1rem))] rounded-xl bg-white p-3 shadow-lg ring-1 ring-loam-200'} aria-label={t('public_maps.legend')}>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-loam-500">
         {t('public_maps.legend')}
         <ChevronDown className={'h-4 w-4 transition ' + (open ? 'rotate-180' : '')} aria-hidden="true" />

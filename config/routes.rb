@@ -55,6 +55,7 @@ Rails.application.routes.draw do
       end
       resource :publication, only: %i[show create update destroy] do
         post :renew
+        resource :preview, only: :create, controller: "publication_previews"
       end
     end
   end
@@ -64,6 +65,7 @@ Rails.application.routes.draw do
     get "p/:token", to: "public_maps#show", as: :public_map
     get "p/:token/tiles/:layer_key/:z/:x/:y", to: "public_maps/tiles#show", as: :public_map_tile
     get "p/:token/aerial-view", to: "public_maps/aerial_views#show", as: :public_map_aerial_view
+    get "p/:token/preview.png", to: "public_maps/previews#show", as: :public_map_preview, format: false
   end
   # --- end collab ---
   # --- journey ---

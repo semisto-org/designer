@@ -37,7 +37,9 @@ module Maps
         attrs = params.fetch(:publication, {}).permit(:title, :description, options: {})
         options = params.dig(:publication, :options)
         MapPublication.publish!(@map, by: Current.user, title: attrs[:title], description: attrs[:description], options: options.presence)
-        render json: payload(@map.reload), status: :ok
+        map = @map.reload
+        # What the panel paints the link preview from (collab/preview.ts).
+        render json: payload(map).merge(publicProps: map.publication.as_public), status: :ok
       rescue ActiveRecord::RecordInvalid => e
         render json: { message: e.record.errors.full_messages.to_sentence, errors: e.record.errors.to_hash(true) }, status: :unprocessable_entity
       end

@@ -80,4 +80,52 @@ class PublicMapsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "public_maps/show", JSON.parse(response.body)["component"]
   end
+
+  test "the link preview: the map's own title and summary, and its painted image once there is one" do
+    get public_map_path(@publication.token), headers: inertia_headers
+    by_key = props["_inertia_meta"].index_by { |tag| tag["headKey"] }
+    assert_equal "Le projet", by_key.dig("og:title", "content")
+    assert_equal "Pour le client", by_key.dig("og:description", "content")
+    assert_equal "http://www.example.com/og-image.png", by_key.dig("og:image", "content")
+
+    @publication.preview_image.attach(io: StringIO.new("png"), filename: "p.png", content_type: "image/png")
+    get public_map_path(@publication.token), headers: inertia_headers
+    by_key = props["_inertia_meta"].index_by { |tag| tag["headKey"] }
+    assert_equal "http://www.example.com/p/#{@publication.token}/preview.png?v=1", by_key.dig("og:image", "content")
+    assert_equal "1200", by_key.dig("og:image:width", "content")
+  end
+
+  test "without a presentation, the preview says what the garden is, never the hidden address" do
+    @publication.update!(description: nil)
+    get public_map_path(@publication.token), headers: inertia_headers
+    description = props["_inertia_meta"].find { |tag| tag["headKey"] == "og:description" }["content"]
+    assert_match(/jardin-forêt/, description)
+    assert_not_includes description, "Yvoir"
+
+    MapPublication.publish!(@map, by: @owner, options: { "hide_address" => false })
+    @publication.reload.update!(description: nil)
+    get public_map_path(@publication.token), headers: inertia_headers
+    description = props["_inertia_meta"].find { |tag| tag["headKey"] == "og:description" }["content"]
+    assert_match(/\AYvoir · /, description)
+    assert_equal "Yvoir", props["map"]["locality"]
+  end
+
+  test "the published plants grow on the years bar, without their own names or numbers" do
+    @map.features.create!(layer: "plants", kind: "plant", name: "Le pommier de Lily", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:apple).id, "planted_on" => "2025-11-20", "number" => 4 })
+    MapPublication.publish!(@map, by: @owner)
+    get public_map_path(@publication.token), headers: inertia_headers
+    growth = props["growth"]
+    assert_equal "2025-11-20", growth["origin"]
+    apple = growth["plants"].find { |plant| plant["speciesId"] == plant_species(:apple).id }
+    assert_equal "sub_canopy", apple["strata"]
+    assert_not apple.key?("ownName")
+    assert_not apple.key?("number")
+    # Only in the feature itself (its name is part of the published layer).
+    assert_equal 1, response.body.scan("Le pommier de Lily").size
+
+    MapPublication.publish!(@map, by: @owner, options: { "feature_layers" => %w[water] })
+    get public_map_path(@publication.token), headers: inertia_headers
+    assert_nil props["growth"], "plants hidden: no growth either"
+  end
 end

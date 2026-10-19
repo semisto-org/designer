@@ -148,6 +148,9 @@ fr:
       republish_hint: "Règle la vue puis publie-la : la même adresse est réutilisée."
       load_error: "Impossible de charger les réglages de publication."
       error: "La publication n'a pas abouti. Réessaie."
+      preview_invalid: "L'aperçu du lien doit être une image PNG de moins de 4 Mo."
+      preview: "Aperçu du lien"
+      preview_hint: "C'est l'image que verront les personnes à qui tu envoies l'adresse (messagerie, réseaux sociaux, e-mail)."
     joining:
       sign_in_first: "Connecte-toi pour rejoindre la carte « %{map} » : un lien te sera envoyé par e-mail, sans mot de passe."
       joined: "Bienvenue sur la carte « %{map} »."
@@ -171,6 +174,37 @@ fr:
     made_with: "Fait avec Semisto Terranova"
     about: "À propos de cette carte"
     legend: "Légende"
+    garden:
+      title: "Le jardin au fil des années"
+      slider: "Année"
+      season: "Saison"
+      today: "aujourd'hui"
+      in_years:
+        one: "dans 1 an"
+        other: "dans %{count} ans"
+      years_ago:
+        one: "il y a 1 an"
+        other: "il y a %{count} ans"
+      play: "Laisser pousser"
+      pause: "Pause"
+      hint: "Indicatif : chaque couronne pousse vers la taille adulte de son espèce."
+      seasons:
+        winter: "Hiver"
+        spring: "Printemps"
+        summer: "Été"
+        autumn: "Automne"
+    preview:
+      kicker: "Un jardin-forêt sur Semisto Terranova"
+      area_place: "%{area} · %{place}"
+      in_year: "en %{year}"
+      years_later:
+        one: "dans 1 an"
+        other: "dans %{count} ans"
+    meta:
+      area_place: "%{place} · Un jardin-forêt de %{area} m² en devenir. Fais glisser les années pour le voir pousser."
+      area: "Un jardin-forêt de %{area} m² en devenir. Fais glisser les années pour le voir pousser."
+      place: "%{place} · Un jardin-forêt en devenir. Fais glisser les années pour le voir pousser."
+      plain: "Un jardin-forêt en devenir. Fais glisser les années pour le voir pousser."
     gone:
       title: "Cette carte n'est plus publiée"
       body: "La vue « %{title} » a été retirée par son propriétaire."
