@@ -67,6 +67,16 @@ Rails.application.routes.draw do
     get "p/:token/aerial-view", to: "public_maps/aerial_views#show", as: :public_map_aerial_view
     get "p/:token/preview.png", to: "public_maps/previews#show", as: :public_map_preview, format: false
   end
+  # « Et chez toi ? »: a map tried from an address, without an account.
+  get "essai", to: "trials#new", as: :new_trial
+  post "essai", to: "trials#create", as: :trials
+  get "essai/geocode", to: "trials#geocode", as: :trials_geocode
+  constraints token: /[A-Za-z0-9]{24,40}/ do
+    get "essai/:token", to: "trials#show", as: :trial
+    get "essai/:token/reading", to: "trials#reading", as: :trial_reading
+    post "essai/:token/parcel", to: "trials#parcel", as: :trial_parcel
+    post "essai/:token/keep", to: "trials#keep", as: :keep_trial
+  end
   # --- end collab ---
   # --- journey ---
   # Project sheet, journey checklists and requests sent to Semisto from a map;

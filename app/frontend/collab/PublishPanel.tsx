@@ -1,4 +1,4 @@
-import { Check, Copy, ExternalLink, Globe, RefreshCw } from 'lucide-react'
+import { Check, Copy, ExternalLink, Globe, RefreshCw, Sprout } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
@@ -116,6 +116,12 @@ export default function PublishPanel() {
           <p className="text-xs text-loam-600">
             {t('collab.publish.version', { version: publication.version, date: formatDateTime(publication.publishedAt) })}
           </p>
+          {(publication.views ?? 0) > 0 && (
+            <p className="flex items-start gap-1.5 text-sm text-leaf-800">
+              <Sprout className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              {audience(publication.views ?? 0, publication.gardensStarted ?? 0)}
+            </p>
+          )}
           {publication.stale && <p className="rounded bg-humus-50 px-2 py-1 text-xs text-humus-700">{t('collab.publish.stale')}</p>}
           {publication.previewPath && (
             <figure className="space-y-1">
@@ -269,4 +275,10 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (val
       {label}
     </label>
   )
+}
+
+/** « 31 personnes ont regardé ton jardin, 2 ont commencé le leur. » */
+function audience(views: number, started: number) {
+  const seen = t('collab.publish.audience.views', { count: views })
+  return started > 0 ? t('collab.publish.audience.both', { seen, started: t('collab.publish.audience.started', { count: started }) }) : `${seen}.`
 }

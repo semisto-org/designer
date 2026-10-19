@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react'
-import { ChevronDown, Drone, Eye, X } from 'lucide-react'
+import { ChevronDown, Drone, Eye, MapPin, X } from 'lucide-react'
 import { area } from '@turf/turf'
 import type { MapMouseEvent } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -56,10 +56,19 @@ export default function PublicMapShow(props: PublicMapProps) {
         <Logo className="h-7 w-7 shrink-0" />
         <h1 className="truncate text-base">{props.title}</h1>
         {map.areaM2 != null && <span className="hidden text-sm text-loam-400 sm:inline">{formatArea(map.areaM2)}</span>}
-        <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-loam-100 px-2.5 py-0.5 text-xs text-loam-600">
+        <span className="ml-auto hidden shrink-0 items-center gap-1.5 rounded-full bg-loam-100 px-2.5 py-0.5 text-sm text-loam-600 sm:inline-flex">
           <Eye className="h-3.5 w-3.5" />
           {t('public_maps.read_only')}
         </span>
+        <a
+          href={`/essai?from=${encodeURIComponent(props.token)}`}
+          onClick={() => track('try_address_open')}
+          title={t('public_maps.try.hint')}
+          className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-prune-700 px-3.5 py-1 text-sm font-medium text-white shadow-sm hover:bg-prune-800 sm:ml-0"
+        >
+          <MapPin className="h-4 w-4" aria-hidden="true" />
+          {t('public_maps.try.button')}
+        </a>
       </header>
       <div className="relative min-h-0 flex-1">
         <MapView

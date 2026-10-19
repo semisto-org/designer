@@ -151,6 +151,14 @@ fr:
       preview_invalid: "L'aperçu du lien doit être une image PNG de moins de 4 Mo."
       preview: "Aperçu du lien"
       preview_hint: "C'est l'image que verront les personnes à qui tu envoies l'adresse (messagerie, réseaux sociaux, e-mail)."
+      audience:
+        views:
+          one: "%{count} personne a regardé ton jardin"
+          other: "%{count} personnes ont regardé ton jardin"
+        started:
+          one: "%{count} a commencé le sien"
+          other: "%{count} ont commencé le leur"
+        both: "%{seen}, %{started}."
     joining:
       sign_in_first: "Connecte-toi pour rejoindre la carte « %{map} » : un lien te sera envoyé par e-mail, sans mot de passe."
       joined: "Bienvenue sur la carte « %{map} »."
