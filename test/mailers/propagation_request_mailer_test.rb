@@ -17,6 +17,7 @@ class PropagationRequestMailerTest < ActionMailer::TestCase
     assert_includes mail.text_part.body.to_s, "Je cherche cette reinette"
     assert_includes mail.text_part.body.to_s, "greffons"
     assert_not_includes mail.text_part.body.to_s, users(:bob).email_address
+    assert mail.attachments["lieu.png"], "the owner sees their own place"
   end
 
   test "on acceptance the requester gets the owner's address and can reply to them" do
@@ -26,6 +27,8 @@ class PropagationRequestMailerTest < ActionMailer::TestCase
     assert_equal [ users(:michael).email_address ], mail.reply_to
     assert_includes mail.html_part.body.to_s, "Viens en février."
     assert_includes mail.text_part.body.to_s, users(:michael).email_address
+    assert_empty mail.attachments, "the requester never sees the place"
+    assert_not_includes mail.text_part.body.to_s, @request.map.name
   end
 
   test "a declined request is told politely" do

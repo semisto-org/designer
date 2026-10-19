@@ -235,6 +235,9 @@ fr:
     greeting: "Bonjour %{name},"
     signature: "À bientôt sur Semisto Terranova,"
     team: "L'équipe Semisto"
+    places:
+      one: "Elle couvre ton lieu %{names}."
+      other: "Elle couvre tes lieux %{names}."
     renewal_reminder:
       cta: "Renouveler mon forfait"
       no_auto: "Rien n'est prélevé automatiquement : tu gardes la main."

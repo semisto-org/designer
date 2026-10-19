@@ -12,5 +12,5 @@
 
 <%= t("invoicing_mailer.grant_reminder.no_auto") %> <%= t("billing_mailer.renewal_reminder.readable") %>
 
-<%= t("billing_mailer.signature") %>
+<%= render "mail_places", places: (@place_names unless @kind == "expired") %><%= render "mail_supports" %><%= t("billing_mailer.signature") %>
 <%= t("billing_mailer.team") %>
