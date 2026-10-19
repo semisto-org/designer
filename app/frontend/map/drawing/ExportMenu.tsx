@@ -5,6 +5,20 @@ import { RevealLabel } from '@/components/ui/RevealLabel'
 import { useEditor } from '@/map/editor/EditorContext'
 import { PdfExportPanel } from '@/map/drawing/PdfExportPanel'
 
+/**
+ * `?export=plan` or `?export=book` (the links an AI gives through the MCP)
+ * opens the PDF plan ready to make, as one plan or as a book of sheets.
+ */
+function exportFromUrl(): 'plan' | 'book' | null {
+  if (typeof window === 'undefined') return null
+  const url = new URL(window.location.href)
+  const value = url.searchParams.get('export')
+  if (!value) return null
+  url.searchParams.delete('export')
+  window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
+  return value === 'plan' || value === 'book' ? value : null
+}
+
 function MenuItem({ icon: Icon, label, hint, badge, href, onClick }: {
   icon: typeof Download; label: string; hint: string; badge?: string; href?: string; onClick?: () => void
 }) {
@@ -35,7 +49,8 @@ function MenuItem({ icon: Icon, label, hint, badge, href, onClick }: {
 export default function ExportMenu() {
   const editor = useEditor()
   const [open, setOpen] = useState(false)
-  const [pdfOpen, setPdfOpen] = useState(false)
+  const [asked] = useState(exportFromUrl)
+  const [pdfOpen, setPdfOpen] = useState(asked != null)
   const root = useRef<HTMLDivElement>(null)
   const geojson = `/maps/${editor.map.id}/export.geojson`
 
@@ -89,7 +104,7 @@ export default function ExportMenu() {
           )}
         </div>
       )}
-      {pdfOpen && <PdfExportPanel onClose={() => setPdfOpen(false)} />}
+      {pdfOpen && <PdfExportPanel initialBook={asked === 'book'} onClose={() => setPdfOpen(false)} />}
     </div>
   )
 }

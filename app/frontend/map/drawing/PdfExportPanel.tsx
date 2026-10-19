@@ -50,7 +50,7 @@ function Segmented<T extends string>({ value, options, onChange, label }: {
  * terrain), title. The printed extent is drawn on the map; at a fixed scale
  * it follows the centre of the map, so the user frames the plan by moving it.
  */
-export function PdfExportPanel({ onClose }: { onClose: () => void }) {
+export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () => void; initialBook?: boolean }) {
   const editor = useEditor()
   const { currentUser } = usePage().props as unknown as SharedProps
   const hidden = useDrawingState((s) => s.hiddenLayers)
@@ -68,7 +68,7 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
   const [scaleChoice, setScaleChoice] = useState<number | 'fit'>('fit')
   const [withNetworks, setWithNetworks] = useState(false)
   // « Carnet de planches »: the overall plan, then one sheet per design layer.
-  const [book, setBook] = useState(false)
+  const [book, setBook] = useState(initialBook)
   const [step, setStep] = useState<Step>(null)
   const [viewCenter, setViewCenter] = useState<[number, number]>(() => instance.getCenter().toArray() as [number, number])
 

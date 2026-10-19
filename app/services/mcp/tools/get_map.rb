@@ -40,6 +40,8 @@ module Mcp
           documents: map.documents.count,
           photos: map.photos.count,
           offer: offer(map),
+          sectors: sectors(map),
+          exports: exports(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -70,6 +72,41 @@ module Mcp
         # Semisto's internal app reads it to set a design project's planned
         # budget against the hours worked. HTVA is what VAT leaves of each
         # part at its own rate (services, plants, supplies).
+        # The sector analysis: the sun at the solstices (computed from the
+        # latitude) and the sectors noted around the terrain, accepted or proposed.
+        def sectors(map)
+          center = map.center || map.boundary&.centroid
+          return nil unless center
+          range = ->(from, to) { from == to ? I18n.t("sectors.all_around") : I18n.t("sectors.range", from: Sectors::Arc.compass_point(from), to: Sectors::Arc.compass_point(to)) }
+          drawn = map.features.where(kind: "sector", status: %w[active draft]).order(:id).filter_map do |feature|
+            from, to = Sectors::Arc.directions(feature, [ center.x, center.y ])
+            next unless from
+            {
+              id: feature.id, status: feature.status, sector_type: feature.properties["sector_type"],
+              season: feature.properties["sector_season"] || "all_year", from_deg: from, to_deg: to, directions: range.(from, to),
+              name: feature.name, notes: feature.notes
+            }.compact
+          end
+          {
+            sun: Sectors::Arc.sun(center.y).map { |s| s.merge(directions: range.(s[:from_deg], s[:to_deg])) },
+            drawn:,
+            panel_url: "#{map_url(map)}?panel=sectors"
+          }
+        end
+
+        # Where the person prints the design: the project dossier (sector
+        # page included) and the PDF plan at scale, as one plan or as a book
+        # of thematic sheets. The PDF is drawn in the browser: the links open
+        # it ready to make.
+        def exports(map)
+          {
+            dossier_url: "#{map_url(map)}/dossier",
+            plan_pdf_url: "#{map_url(map)}?export=plan",
+            book_pdf_url: "#{map_url(map)}?export=book",
+            pdf_in_plan: Entitlements.for_map(map).pdf_export?
+          }
+        end
+
         def offer(map)
           return nil unless editor? && Offer.shown_to?(map, user)
           offer = map.offer or return nil
