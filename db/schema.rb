@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_220100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_230100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -475,6 +475,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_220100) do
     t.datetime "created_at", null: false
     t.index ["created_at"], name: "index_idempotent_requests_on_created_at"
     t.index ["user_id", "key"], name: "index_idempotent_requests_on_user_id_and_key", unique: true
+  end
+
+  create_table "implementation_phases", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.string "key"
+    t.integer "position", default: 0, null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.text "notes"
+    t.integer "hours_override"
+    t.integer "other_costs_cents"
+    t.string "status", default: "active", null: false
+    t.string "source", default: "human", null: false
+    t.text "rationale"
+    t.bigint "proposed_feature_ids", default: [], null: false, array: true
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "position"], name: "index_implementation_phases_on_map_id_and_position"
+    t.index ["map_id"], name: "index_implementation_phases_on_map_id"
   end
 
   create_table "import_records", force: :cascade do |t|
@@ -1714,6 +1735,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_220100) do
   add_foreign_key "form_responses", "maps", on_delete: :nullify
   add_foreign_key "help_feedbacks", "users", on_delete: :nullify
   add_foreign_key "idempotent_requests", "users", on_delete: :cascade
+  add_foreign_key "implementation_phases", "maps", on_delete: :cascade
   add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "invoice_requests", "users"
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify

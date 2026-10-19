@@ -627,6 +627,22 @@ Rails.application.routes.draw do
     resources :site_visits, only: %i[index create], controller: "maps/site_visits"
   end
   # --- end site visits ---
+  # --- implementation ---
+  # The implementation plan of a map (« Mise en œuvre »): its phases, Semisto's
+  # proposed phasing, and elements given to a phase.
+  resources :maps, only: [] do
+    resource :implementation, only: :show, controller: "maps/implementations" do
+      post :proposal
+      post :assign
+    end
+    resources :implementation_phases, path: "implementation/phases", only: %i[create update destroy], controller: "maps/implementation_phases" do
+      member do
+        post :accept
+        post :reject
+      end
+    end
+  end
+  # --- end implementation ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }

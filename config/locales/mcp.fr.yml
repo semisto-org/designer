@@ -382,6 +382,21 @@ fr:
           abundance: "Abondance sur la photo : rare, present (présente), frequent (fréquente) ou dominant (dominante)."
           confidence: "Ta confiance dans l'identification : high (sûre), medium (probable) ou low (incertaine)."
           wild_plant_rationale: "Ce qui te fait la reconnaître sur la photo (feuilles, fleurs, port…) et où elle est sur l'image. Obligatoire, 10 caractères au moins."
+      get_implementation_plan:
+        title: "Lire le plan de mise en œuvre"
+        description: "Le plan de mise en œuvre de la carte (« Mise en œuvre ») : ses phases dans l'ordre, avec leurs dates, ce que chacune construit et plante (regroupé par type d'élément ou par espèce, avec les identifiants des éléments), le travail estimé (heures à la main ; machine pour un chantier à la pelleteuse) et le coût (prix des plants de la palette et autres frais), face au temps et au budget annoncés dans la fiche projet, et les conseils du guide (season : chantier hors de sa saison ; time : plus d'heures que la personne n'en a ; machine ; availability : une saison où elle n'est pas libre ; budget). Donne aussi ce qui n'est encore dans aucune phase, les éléments dessinés comme déjà là (drawn_as_existing_ids, qui n'entrent dans le plan qu'une fois « En projet ») et les phases proposées par une IA qui attendent l'humain. Seul le travail restant entre dans le plan : une plante sans planted_on, un autre élément avec planned: true."
+      propose_phases:
+        title: "Proposer des phases de mise en œuvre"
+        description: "Propose des phases pour le plan de mise en œuvre de la carte, en brouillons que l'humain accepte ou refuse sur la page « Mise en œuvre » : chacune avec son nom, ses dates (sa saison de travail), ses notes, sa justification et les éléments qu'elle construirait ou planterait (feature_ids, voir get_implementation_plan). Accepter une phase lui donne ces éléments. Suis l'ordre de Semisto (get_design_guide, topic method) : eau, terre et accès en fin d'été et en automne ; haies, brise-vent, arbres de structure et fixatrices d'azote au premier hiver ; strates basses au printemps ; fruitiers et arbustes l'hiver suivant ; et garde chaque phase dans le temps que la personne a. Pour déplacer des éléments dans une phase existante, utilise propose_feature_updates avec la propriété phase_id. 10 phases au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        params:
+          summary: "Résumé de la proposition, par exemple le parti pris du phasage."
+          phases: "Les phases proposées, de 1 à 10."
+          phase_name: "Le nom de la phase, en français (« L'eau et la terre », « Premier hiver : la haie brise-vent »)."
+          starts_on: "Premier jour de la phase (AAAA-MM-JJ)."
+          ends_on: "Dernier jour de la phase (AAAA-MM-JJ), au plus tôt le premier."
+          phase_notes: "Notes pratiques pour la personne : qui aide, quel matériel louer, où commander les plants."
+          phase_rationale: "Pourquoi cette phase, à cette saison, avec ces éléments, en une ou deux phrases que la personne comprend (saison, temps disponible, ordre eau-structure-plantes)."
+          phase_feature_ids: "Les éléments de la carte que cette phase construirait ou planterait (identifiants de get_implementation_plan ou list_features)."
       get_project_sheet:
         title: "Lire la fiche projet"
         description: "La fiche projet de la carte avec toutes ses questions : pour chaque section et chaque champ, son type, son libellé, les réponses possibles (clé et libellé français), la réponse actuelle, l'avancement de la fiche et les réponses déjà proposées par une IA qui attendent l'humain. À lire avant propose_project_sheet, pour faire correspondre ce que dit la personne aux réponses possibles."
@@ -435,6 +450,8 @@ fr:
       plan_write: "Le forfait qui couvre la carte (celui de son équipe, sinon de son propriétaire) ne comprend pas l'écriture par l'IA, et il n'a pas d'essai en cours."
       read_only: "La carte dépasse le nombre de cartes du forfait de son propriétaire : elle est en lecture seule."
     notes:
+      implementation: "Les heures sont une estimation à la main, outillage ordinaire, préparation comprise : un ordre de grandeur à comparer au temps de la personne. Pour ranger des éléments dans une phase existante, propose phase_id avec propose_feature_updates ; pour de nouvelles phases, propose_phases."
+      review_phases: "Les phases proposées attendent sur la page « Mise en œuvre » de la carte, où l'humain les accepte ou les refuse. Accepter une phase lui donne les éléments proposés."
       help_panel_button: "un bouton du guide qui ouvre ce panneau dans l'éditeur de la carte"
       help_capture: "capture d'écran : %{alt}"
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
@@ -732,6 +749,10 @@ fr:
         one: "a proposé 1 plante pour la palette"
         other: "a proposé %{count} plantes pour la palette"
       get_project_sheet: "a lu la fiche projet"
+      get_implementation_plan: "a lu le plan de mise en œuvre"
+      propose_phases:
+        one: "a proposé 1 phase de mise en œuvre"
+        other: "a proposé %{count} phases de mise en œuvre"
       propose_project_sheet:
         one: "a proposé 1 réponse pour la fiche projet"
         other: "a proposé %{count} réponses pour la fiche projet"
