@@ -128,8 +128,15 @@ class MapPublication < ApplicationRecord
       growth: snapshot["growth"],
       features: { type: "FeatureCollection", features: features },
       layers: region_layers.map { |layer| public_layer(layer) },
-      aerialView: aerial_view&.as_inertia(archive_url: "#{public_path}/aerial-view")
+      aerialView: aerial_view&.as_inertia(archive_url: "#{public_path}/aerial-view"),
+      reliefPath: relief? ? "#{public_path}/3d" : nil
     }
+  end
+
+  # The simplified 3D view (rain, night, shade, a walk or a drive): when the
+  # terrain's relief is imported and the map's plan includes the analyses.
+  def relief?
+    map.terrain&.ready? && Entitlements.for_map(map).analyses?
   end
 
   private

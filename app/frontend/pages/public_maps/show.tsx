@@ -1,5 +1,5 @@
-import { Head } from '@inertiajs/react'
-import { ChevronDown, Drone, Eye, X } from 'lucide-react'
+import { Head, Link } from '@inertiajs/react'
+import { Box, ChevronDown, Drone, Eye, X } from 'lucide-react'
 import { area } from '@turf/turf'
 import type { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -64,7 +64,17 @@ export default function PublicMapShow(props: PublicMapProps) {
         <Logo className="h-7 w-7 shrink-0" />
         <h1 className="truncate text-base">{props.title}</h1>
         {map.areaM2 != null && <span className="hidden text-sm text-loam-400 sm:inline">{formatArea(map.areaM2)}</span>}
-        <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-loam-100 px-2.5 py-0.5 text-xs text-loam-600">
+        {props.reliefPath && (
+          <Link
+            href={props.reliefPath}
+            className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-prune-700 px-3 py-1 text-sm font-medium text-white hover:bg-prune-800"
+            title={t('public_maps.relief.open_hint')}
+          >
+            <Box className="h-4 w-4" aria-hidden="true" />
+            {t('public_maps.relief.open')}
+          </Link>
+        )}
+        <span className={(props.reliefPath ? 'hidden sm:inline-flex' : 'ml-auto inline-flex') + ' shrink-0 items-center gap-1.5 rounded-full bg-loam-100 px-2.5 py-0.5 text-xs text-loam-600'}>
           <Eye className="h-3.5 w-3.5" />
           {t('public_maps.read_only')}
         </span>

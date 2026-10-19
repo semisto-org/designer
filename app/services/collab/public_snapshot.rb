@@ -6,6 +6,10 @@ module Collab
   # dropped HERE, at publication time, and never reaches the snapshot.
   class PublicSnapshot
     FORMAT = 1
+    # The dimensions the public 3D view digs water works with (ponds,
+    # swales, dams…): sizes only, nothing about who or why.
+    EARTHWORK_KINDS = %w[pond swale keyline ditch check_dam beaver_dam_analogue fascine hedge_bank half_moon grass_strip].freeze
+    EARTHWORK_PROPERTIES = %w[depth_m depth width_m width berm height_m material spacing_m diameter_m use cover].freeze
 
     def initialize(map, options)
       @map = map
@@ -65,6 +69,7 @@ module Collab
           "id" => feature.id, "layer" => feature.layer, "kind" => feature.kind,
           "name" => feature.name, "style" => feature.style
         }
+        properties.merge!(feature.properties.to_h.slice(*EARTHWORK_PROPERTIES)) if EARTHWORK_KINDS.include?(feature.kind)
         properties["notes"] = feature.notes if @options["show_notes"]
         { "type" => "Feature", "id" => feature.id, "geometry" => feature.geometry_geojson, "properties" => properties }
       end

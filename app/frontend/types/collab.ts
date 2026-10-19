@@ -165,4 +165,6 @@ export type PublicMapProps = {
   layers: PublicLayer[]
   /** The drone view the owner chose to show (drone area): tiles straight from Semisto's host. */
   aerialView?: AerialView | null
+  /** The simplified 3D view (/p/:token/3d), when the terrain's relief is there. */
+  reliefPath?: string | null
 }
