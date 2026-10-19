@@ -67,6 +67,7 @@ import DrawingLayers from '@/map/drawing/DrawingLayers'
 import DrawingToolbar from '@/map/drawing/DrawingToolbar'
 import ElementSection, { appliesToElement } from '@/map/drawing/ElementSection'
 import ProjectStateSection, { appliesToProjectState } from '@/map/drawing/ProjectStateSection'
+import PhaseSection, { appliesToPhase } from '@/map/implementation/PhaseSection'
 import ExportMenu from '@/map/drawing/ExportMenu'
 import DrawingLayersPanel from '@/map/drawing/LayersPanel'
 import LiveSync from '@/map/drawing/LiveSync'
@@ -141,6 +142,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
   { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
   { id: 'project-state', applies: appliesToProjectState, component: ProjectStateSection, order: 16 },
+  { id: 'implementation-phase', applies: appliesToPhase, component: PhaseSection, order: 17 },
   { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
   { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
   { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
