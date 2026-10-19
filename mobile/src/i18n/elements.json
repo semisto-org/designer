@@ -422,6 +422,13 @@
         "color": "#9b8fb5",
         "pickable": false
       },
+      "permaculture_zone": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#e8b33a",
+        "pickable": false
+      },
       "measure": {
         "geometries": [
           "LineString",
