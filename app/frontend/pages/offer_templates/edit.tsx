@@ -1,12 +1,13 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
 import { ArrowLeft, Plus, Sparkles, Trash2 } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NumberInput } from '@/components/finances/NumberInput'
 import { returnToOffer } from '@/components/offers/returnTo'
 import { categoryLabel, newId, phaseLabel, PhaseMark, typeLabel } from '@/components/offers/shared'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { confirmAction } from '@/components/ui/confirm'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 import { t, translations } from '@/lib/i18n'
@@ -42,6 +43,7 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
   const [error, setError] = useState<string | null>(null)
   const backToOffer = returnToOffer(usePage().url)
   const unsaved = status === 'dirty' || status === 'error'
+  const leaving = useRef(false)
 
   // Twenty minutes of settings are not lost to a click on a link.
   useEffect(() => {
@@ -49,8 +51,19 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
     const onBeforeUnload = (event: BeforeUnloadEvent) => event.preventDefault()
     window.addEventListener('beforeunload', onBeforeUnload)
     const stop = router.on('before', (event) => {
-      if (event.detail.visit.method !== 'get') return
-      if (!window.confirm(t('offer_templates.edit.leave_unsaved'))) event.preventDefault()
+      const visit = event.detail.visit
+      if (visit.method !== 'get' || leaving.current) return
+      // The notebook's dialog answers later: hold the visit, then replay it.
+      event.preventDefault()
+      void confirmAction({
+        title: t('offer_templates.edit.leave_unsaved'),
+        confirmLabel: t('offer_templates.edit.leave_confirm'),
+        tone: 'danger',
+      }).then((confirmed) => {
+        if (!confirmed) return
+        leaving.current = true
+        router.visit(visit.url)
+      })
     })
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload)
@@ -78,8 +91,13 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
     }
   }
 
-  function destroy() {
-    if (window.confirm(t('offer_templates.edit.delete_confirm', { name: template.name }))) router.delete(`/offer_templates/${template.id}`)
+  async function destroy() {
+    const confirmed = await confirmAction({
+      title: t('offer_templates.edit.delete_confirm', { name: template.name }),
+      confirmLabel: t('offer_templates.edit.delete'),
+      tone: 'danger',
+    })
+    if (confirmed) router.delete(`/offer_templates/${template.id}`)
   }
 
   return (

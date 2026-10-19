@@ -23,6 +23,7 @@ fr:
     edit:
       back: "Revenir aux barèmes"
       leave_unsaved: "Ce barème a des modifications non enregistrées. Quitter la page sans les enregistrer ?"
+      leave_confirm: "Quitter sans enregistrer"
       per_plant: "%{supply} (%{unit}/plant)"
       untitled: "Barème sans nom"
       identity: "Nom et clients"
