@@ -383,6 +383,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       recordDraftReview: tracked.reviewed,
       recordRemoval: tracked.remove,
       undoGroup: (label, run) => history.group(label, run),
+      undo: () => void step('undo'),
       upsertFeatures,
       removeFeatures,
       async reloadFeatures() {
