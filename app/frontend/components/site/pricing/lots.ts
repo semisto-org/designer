@@ -71,3 +71,6 @@ export function lots(count: number, w: number, h: number, seed = 7): Lot[] {
   }
   return out
 }
+
+/** The theme tokens the sketches paint with, and what to paint when a token is not set. */
+export const SKETCH_INK = { ink: ['prune-900', '#2b2940'], leaf: ['leaf-600', '#6d7a00'], ground: ['loam-300', '#cfc6b3'] } as const

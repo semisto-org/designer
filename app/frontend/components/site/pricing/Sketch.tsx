@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { SpriteKey } from '@/components/site/timelapse/paint'
 import { drawSprite, loadAtlases } from '@/public_maps/gardenLayer'
-import { lots } from './lots'
+import { lots, SKETCH_INK } from './lots'
 
 const TREES: SpriteKey[] = ['fruit', 'pommier_fruit', 'noisetier', 'noyer', 'chataignier', 'poirier_fruit', 'aulne', 'cerisier_fruit']
 const SHRUBS: SpriteKey[] = ['cassis', 'sureau', 'groseillier', 'framboisier', 'argousier', 'rosier']
@@ -40,15 +40,16 @@ function usePainting(draw: (ctx: CanvasRenderingContext2D, w: number, h: number,
   return ref
 }
 
-function token(name: string, fallback: string) {
+function token(key: keyof typeof SKETCH_INK) {
+  const [name, fallback] = SKETCH_INK[key]
   return getComputedStyle(document.documentElement).getPropertyValue(`--color-${name}`).trim() || fallback
 }
 
 /** As many little places as a plan holds, seen from the air, in pencil and watercolour. */
 export function PlacesSketch({ count, className }: { count: number; className?: string }) {
   const ref = usePainting((ctx, w, h, atlases) => {
-    const ink = token('prune-900', '#2b2940')
-    const leaf = token('leaf-600', '#6d7a00')
+    const ink = token('ink')
+    const leaf = token('leaf')
     let n = 0
     for (const lot of lots(count, w, h)) {
       ctx.beginPath()
@@ -83,7 +84,7 @@ export function GrowingCrown({ age, className }: { age: number; className?: stri
   const ref = usePainting((ctx, w, h, atlases) => {
     if (!atlases) return
     const share = Math.min(1, Math.sqrt(Math.max(age, 0.4) / 30))
-    const ground = token('loam-300', '#cfc6b3')
+    const ground = token('ground')
     ctx.strokeStyle = ground
     ctx.lineWidth = 1.5
     ctx.beginPath()
