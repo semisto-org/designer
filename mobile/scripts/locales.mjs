@@ -64,6 +64,7 @@ const elements = Object.fromEntries(Object.entries(catalog.layers).map(([layer, 
     geometries: [spec.geometry].flat(),
     color: spec.color ?? config.color,
     pickable: spec.pickable ?? true,
+    ...(spec.icon ? { icon: spec.icon } : {}),
   }])),
 }]))
 

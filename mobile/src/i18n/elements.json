@@ -7,56 +7,64 @@
           "Polygon"
         ],
         "color": "#6e6355",
-        "pickable": true
+        "pickable": true,
+        "icon": "house"
       },
       "existing_tree": {
         "geometries": [
           "Point"
         ],
         "color": "#58684c",
-        "pickable": true
+        "pickable": true,
+        "icon": "tree-deciduous"
       },
       "existing_hedge": {
         "geometries": [
           "LineString"
         ],
         "color": "#58684c",
-        "pickable": true
+        "pickable": true,
+        "icon": "shrub"
       },
       "wall": {
         "geometries": [
           "LineString"
         ],
         "color": "#554c3f",
-        "pickable": true
+        "pickable": true,
+        "icon": "brick-wall"
       },
       "slope_break": {
         "geometries": [
           "LineString"
         ],
         "color": "#946614",
-        "pickable": true
+        "pickable": true,
+        "icon": "mountain"
       },
       "wet_area": {
         "geometries": [
           "Polygon"
         ],
         "color": "#3b7ea1",
-        "pickable": true
+        "pickable": true,
+        "icon": "droplets"
       },
       "path_existing": {
         "geometries": [
           "LineString"
         ],
         "color": "#8a6f47",
-        "pickable": true
+        "pickable": true,
+        "icon": "footprints"
       },
       "land_cover": {
         "geometries": [
           "Polygon"
         ],
         "color": "#899e79",
-        "pickable": true
+        "pickable": true,
+        "icon": "land-plot"
       }
     }
   },
@@ -68,91 +76,104 @@
           "Polygon"
         ],
         "color": "#2b7bb9",
-        "pickable": true
+        "pickable": true,
+        "icon": "waves"
       },
       "swale": {
         "geometries": [
           "LineString"
         ],
         "color": "#2b7bb9",
-        "pickable": true
+        "pickable": true,
+        "icon": "spline"
       },
       "keyline": {
         "geometries": [
           "LineString"
         ],
         "color": "#2b7bb9",
-        "pickable": true
+        "pickable": true,
+        "icon": "waves"
       },
       "ditch": {
         "geometries": [
           "LineString"
         ],
         "color": "#1f5f8b",
-        "pickable": true
+        "pickable": true,
+        "icon": "route"
       },
       "overflow_pipe": {
         "geometries": [
           "LineString"
         ],
         "color": "#1f5f8b",
-        "pickable": true
+        "pickable": true,
+        "icon": "move-right"
       },
       "water_tank": {
         "geometries": [
           "Point"
         ],
         "color": "#2b7bb9",
-        "pickable": true
+        "pickable": true,
+        "icon": "cylinder"
       },
       "well": {
         "geometries": [
           "Point"
         ],
         "color": "#1f5f8b",
-        "pickable": true
+        "pickable": true,
+        "icon": "circle-dot"
       },
       "spring": {
         "geometries": [
           "Point"
         ],
         "color": "#2b7bb9",
-        "pickable": true
+        "pickable": true,
+        "icon": "droplet"
       },
       "rain_garden": {
         "geometries": [
           "Polygon"
         ],
         "color": "#4a90c2",
-        "pickable": true
+        "pickable": true,
+        "icon": "cloud-rain"
       },
       "check_dam": {
         "geometries": [
           "LineString"
         ],
         "color": "#1f5f8b",
-        "pickable": true
+        "pickable": true,
+        "icon": "brick-wall"
       },
       "fascine": {
         "geometries": [
           "LineString"
         ],
         "color": "#7a5a3a",
-        "pickable": true
+        "pickable": true,
+        "icon": "logs"
       },
       "beaver_dam_analogue": {
         "geometries": [
           "LineString"
         ],
         "color": "#6b4f2f",
-        "pickable": true
+        "pickable": true,
+        "icon": "dam"
       },
       "hedge_bank": {
         "geometries": [
           "LineString"
         ],
         "color": "#3d7d42",
-        "pickable": true
+        "pickable": true,
+        "icon": "shrub"
       },
       "half_moon": {
         "geometries": [
@@ -160,21 +181,24 @@
           "LineString"
         ],
         "color": "#2b7bb9",
-        "pickable": true
+        "pickable": true,
+        "icon": "moon"
       },
       "grass_strip": {
         "geometries": [
           "Polygon"
         ],
         "color": "#6f9a4c",
-        "pickable": true
+        "pickable": true,
+        "icon": "sprout"
       },
       "infiltration_test": {
         "geometries": [
           "Point"
         ],
         "color": "#3d7ea6",
-        "pickable": true
+        "pickable": true,
+        "icon": "gauge"
       },
       "storm_observation": {
         "geometries": [
@@ -183,7 +207,8 @@
           "Point"
         ],
         "color": "#0e8fd6",
-        "pickable": true
+        "pickable": true,
+        "icon": "cloud-rain"
       }
     }
   },
@@ -195,28 +220,32 @@
           "LineString"
         ],
         "color": "#b8851a",
-        "pickable": true
+        "pickable": true,
+        "icon": "footprints"
       },
       "track": {
         "geometries": [
           "LineString"
         ],
         "color": "#946614",
-        "pickable": true
+        "pickable": true,
+        "icon": "tractor"
       },
       "gate": {
         "geometries": [
           "Point"
         ],
         "color": "#b8851a",
-        "pickable": true
+        "pickable": true,
+        "icon": "door-open"
       },
       "parking": {
         "geometries": [
           "Polygon"
         ],
         "color": "#b8851a",
-        "pickable": true
+        "pickable": true,
+        "icon": "square-parking"
       }
     }
   },
@@ -228,21 +257,24 @@
           "Polygon"
         ],
         "color": "#5b5781",
-        "pickable": true
+        "pickable": true,
+        "icon": "thermometer-sun"
       },
       "shelter": {
         "geometries": [
           "Polygon"
         ],
         "color": "#5b5781",
-        "pickable": true
+        "pickable": true,
+        "icon": "tent"
       },
       "shed": {
         "geometries": [
           "Polygon"
         ],
         "color": "#4a4668",
-        "pickable": true
+        "pickable": true,
+        "icon": "warehouse"
       },
       "fruit_store": {
         "geometries": [
@@ -250,63 +282,72 @@
           "Polygon"
         ],
         "color": "#3f6f8f",
-        "pickable": true
+        "pickable": true,
+        "icon": "thermometer-snowflake"
       },
       "compost": {
         "geometries": [
           "Point"
         ],
         "color": "#6e6355",
-        "pickable": true
+        "pickable": true,
+        "icon": "recycle"
       },
       "raised_bed": {
         "geometries": [
           "Polygon"
         ],
         "color": "#8a6f47",
-        "pickable": true
+        "pickable": true,
+        "icon": "rectangle-horizontal"
       },
       "mound": {
         "geometries": [
           "Polygon"
         ],
         "color": "#8b5e3c",
-        "pickable": true
+        "pickable": true,
+        "icon": "mountain"
       },
       "terrace": {
         "geometries": [
           "Polygon"
         ],
         "color": "#726b9f",
-        "pickable": true
+        "pickable": true,
+        "icon": "armchair"
       },
       "playground": {
         "geometries": [
           "Polygon"
         ],
         "color": "#9189b8",
-        "pickable": true
+        "pickable": true,
+        "icon": "toy-brick"
       },
       "fence": {
         "geometries": [
           "LineString"
         ],
         "color": "#5b5781",
-        "pickable": true
+        "pickable": true,
+        "icon": "fence"
       },
       "hedge": {
         "geometries": [
           "LineString"
         ],
         "color": "#3d7d42",
-        "pickable": true
+        "pickable": true,
+        "icon": "trees"
       },
       "windbreak": {
         "geometries": [
           "LineString"
         ],
         "color": "#2f6334",
-        "pickable": true
+        "pickable": true,
+        "icon": "wind"
       }
     }
   },
@@ -318,21 +359,24 @@
           "Polygon"
         ],
         "color": "#946614",
-        "pickable": true
+        "pickable": true,
+        "icon": "paw-print"
       },
       "poultry_house": {
         "geometries": [
           "Point"
         ],
         "color": "#946614",
-        "pickable": true
+        "pickable": true,
+        "icon": "egg"
       },
       "beehive": {
         "geometries": [
           "Point"
         ],
         "color": "#d9a527",
-        "pickable": true
+        "pickable": true,
+        "icon": "hexagon"
       }
     }
   },
@@ -344,56 +388,64 @@
           "LineString"
         ],
         "color": "#2563eb",
-        "pickable": true
+        "pickable": true,
+        "icon": "git-commit-horizontal"
       },
       "electric_line": {
         "geometries": [
           "LineString"
         ],
         "color": "#d97706",
-        "pickable": true
+        "pickable": true,
+        "icon": "zap"
       },
       "gas_line": {
         "geometries": [
           "LineString"
         ],
         "color": "#ca8a04",
-        "pickable": true
+        "pickable": true,
+        "icon": "flame"
       },
       "ethernet_line": {
         "geometries": [
           "LineString"
         ],
         "color": "#7c3aed",
-        "pickable": true
+        "pickable": true,
+        "icon": "ethernet-port"
       },
       "valve": {
         "geometries": [
           "Point"
         ],
         "color": "#2563eb",
-        "pickable": true
+        "pickable": true,
+        "icon": "circle-gauge"
       },
       "meter": {
         "geometries": [
           "Point"
         ],
         "color": "#2563eb",
-        "pickable": true
+        "pickable": true,
+        "icon": "gauge"
       },
       "socket": {
         "geometries": [
           "Point"
         ],
         "color": "#d97706",
-        "pickable": true
+        "pickable": true,
+        "icon": "plug-zap"
       },
       "tap": {
         "geometries": [
           "Point"
         ],
         "color": "#2563eb",
-        "pickable": true
+        "pickable": true,
+        "icon": "faucet"
       }
     }
   },
@@ -405,14 +457,16 @@
           "Point"
         ],
         "color": "#726b9f",
-        "pickable": true
+        "pickable": true,
+        "icon": "sticky-note"
       },
       "season_sign": {
         "geometries": [
           "Point"
         ],
         "color": "#8a6d3b",
-        "pickable": true
+        "pickable": true,
+        "icon": "calendar-days"
       },
       "sketch": {
         "geometries": [
@@ -420,14 +474,16 @@
           "MultiLineString"
         ],
         "color": "#ffffff",
-        "pickable": false
+        "pickable": false,
+        "icon": "signature"
       },
       "sector": {
         "geometries": [
           "LineString"
         ],
         "color": "#9b8fb5",
-        "pickable": false
+        "pickable": false,
+        "icon": "wind"
       },
       "measure": {
         "geometries": [
@@ -435,7 +491,8 @@
           "Polygon"
         ],
         "color": "#c97b3d",
-        "pickable": false
+        "pickable": false,
+        "icon": "ruler"
       }
     }
   }
