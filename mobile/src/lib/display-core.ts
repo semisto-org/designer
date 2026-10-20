@@ -3,7 +3,7 @@
 // in the ground, structures, networks… The project (plants still to plant,
 // elements marked « En projet », your AI's drafts) comes back with one switch. Layers and plant strata can
 // be hidden too, like in « Calques » on the website.
-// Same rule as the website's « Situation actuelle » (app/frontend/map/scenario.ts).
+// What counts as a project is the website's rule (isPlanned in app/frontend/map/scenario.ts).
 import type { Planting } from './types'
 
 export type Display = {

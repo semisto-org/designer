@@ -276,6 +276,8 @@ export type PlantingState = {
   strata: Record<Strata, number>
   list: PlantListData
   alerts: PlantingAlerts
+  /** Adult size and years to maturity per « speciesId:varietyId » in use (PlantGrowth), for the time strip. */
+  growth?: Record<string, { heightM: number; spreadM: number; maturityYears: number; indicative: boolean }>
 }
 
 export type FitStatus = 'fits' | 'partial' | 'misfit' | 'unknown'

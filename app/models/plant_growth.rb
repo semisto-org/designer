@@ -40,6 +40,20 @@ module PlantGrowth
     def indicative? = source != :species
   end
 
+  # What the growth model needs of a species or cultivar on a map: adult
+  # height and spread (m), years to maturity, and whether any of it is only
+  # indicative. Shared by the 3D view (Relief::GrowingPlants), the editor's
+  # time strip (PlantingState#growth) and the MCP (PlantGrowth::Curve).
+  def inputs(strata:, species: nil, variety: nil)
+    height = height(strata:, species:)
+    spread = spread(strata:, species:)
+    maturity = maturity(strata:, species:, variety:)
+    {
+      heightM: height.metres.to_f, spreadM: spread.metres.to_f, maturityYears: maturity.years.to_i,
+      indicative: height.indicative? || spread.indicative? || maturity.indicative?
+    }
+  end
+
   def maturity(strata:, species: nil, variety: nil)
     resolve(strata:, species:, variety:, attribute: :maturity_years, defaults: MATURITY_BY_STRATA)
   end

@@ -185,6 +185,8 @@ class Map < ApplicationRecord
       teamId: organization_id,
       ownerName: owner.display_name,
       archived: archived?,
+      # The land « on arrival » of the editor's time strip.
+      createdAt: created_at&.iso8601,
       updatedAt: updated_at.iso8601,
       lockVersion: lock_version
     }
