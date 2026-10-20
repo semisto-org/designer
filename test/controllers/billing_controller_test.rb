@@ -149,6 +149,45 @@ class BillingControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "names the places the plan covers, marks those beyond it, and the one kept on the free plan" do
+    @user.plan_purchases.create!(plan_key: "yearly", starts_at: 13.months.ago, expires_at: 1.month.ago, stripe_checkout_session_id: "cs_1")
+    first = Map.create!(name: "Le verger", owner: @user, region: regions(:wallonia), created_at: 2.days.ago)
+    Map.create!(name: "La mare", owner: @user, region: regions(:wallonia))
+    Map.create!(name: "Ancien lieu", owner: @user, region: regions(:wallonia), archived_at: 1.day.ago)
+    sign_in_as @user
+    with_billing do
+      places = billing_props["places"]
+      assert_equal [ "Le verger", "La mare" ], places["maps"].map { _1["name"] }
+      assert_equal [ false, true ], places["maps"].map { _1["readOnly"] }
+      assert_equal [ 2, 1 ], [ places["activeCount"], places["archivedCount"] ]
+      assert_equal({ "id" => first.id, "name" => "Le verger" }, places["keptOnFree"])
+      assert_equal({ "used" => 0, "limit" => 0 }, places["renderings"])
+      assert_equal 1.gigabyte, places["freeStorageBytes"]
+    end
+  end
+
+  test "keeps the way back to a local path only" do
+    sign_in_as @user
+    get "/billing", params: { return_to: "/maps/12?panel=relief" }, headers: inertia_headers
+    assert_equal "/maps/12?panel=relief", response.parsed_body.dig("props", "billing", "returnTo")
+    [ "https://evil.example/x", "//evil.example", "/\\evil.example" ].each do |value|
+      get "/billing", params: { return_to: value }, headers: inertia_headers
+      assert_nil response.parsed_body.dig("props", "billing", "returnTo"), value
+    end
+  end
+
+  test "POST /billing/checkout brings the person back to where they were" do
+    sign_in_as @user
+    with_billing do
+      stub_request(:post, stripe_api("customers")).to_return(body: { id: "cus_1" }.to_json, headers: { "Content-Type" => "application/json" })
+      checkout = stub_request(:post, stripe_api("checkout/sessions"))
+        .with { |request| URI.decode_www_form(request.body).to_h["success_url"].include?("return_to=%2Fmaps%2F12%3Fpanel%3Drelief") }
+        .to_return(body: { id: "cs_1", url: "https://checkout.stripe.com/c/pay/cs_1" }.to_json, headers: { "Content-Type" => "application/json" })
+      post "/billing/checkout", params: { plan: "yearly", return_to: "/maps/12?panel=relief" }, headers: inertia_headers
+      assert_requested checkout
+    end
+  end
+
   # --- checkout and portal endpoints ---
 
   test "POST /billing/checkout sends an Inertia visit to Stripe" do

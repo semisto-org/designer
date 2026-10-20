@@ -51,6 +51,19 @@ class Relief::GrowingPlantsTest < ActiveSupport::TestCase
     assert_equal "pollard", Relief::GrowingPlants.new(@map).as_json[:plants].sole[:training]
   end
 
+  test "a support plant says so, from its palette role or its sheet, and when it gives way" do
+    @map.palette_items.create!(species: plant_species(:alder), role: "support")
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:alder).id, "support_until" => 10 })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9003, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:alder).id, "succession" => "productive" })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9004, lat: 50.3401),
+                          properties: { "species_id" => plant_species(:apple).id })
+    plants = Relief::GrowingPlants.new(@map).as_json[:plants]
+    assert_equal [ true, false, false ], plants.map { |p| p[:support] }
+    assert_equal [ 10, nil, nil ], plants.map { |p| p[:supportUntil] }
+  end
+
   test "a grafted tree says its form and rootstock: the browser plants it on its trunk" do
     @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9002, lat: 50.3401),
                           properties: { "species_id" => plant_species(:alder).id, "graft_form" => "half_standard", "rootstock" => "MM106" })

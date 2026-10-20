@@ -63,3 +63,9 @@ describe('display of the terrain map', () => {
     expect(reveal(display, shed, planting).aerialViewId).toBe(4)
   })
 })
+
+describe('sectors', () => {
+  it('never show on the terrain map', () => {
+    expect(isShown({ layer: 'notes', kind: 'sector' }, DEFAULT_DISPLAY, undefined)).toBe(false)
+  })
+})

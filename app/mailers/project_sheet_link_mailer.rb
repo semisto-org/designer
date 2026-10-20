@@ -7,6 +7,7 @@ class ProjectSheetLinkMailer < ApplicationMailer
     @user = user
     @percent = @map.project_sheet.progress[:percent]
     @url = map_project_url(@map)
+    show_place(@map)
     mail to: user.email_address, subject: t(".subject", map: @map.name)
   end
 end

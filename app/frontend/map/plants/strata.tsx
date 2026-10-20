@@ -1,6 +1,6 @@
 import type { MapFeature } from '@/types'
 import type { PlantingState, Strata } from '@/types/plants'
-import { numberProperty } from '@/map/plants/properties'
+import { isSupportPlant, numberProperty } from '@/map/plants/properties'
 import { STRATA_COLORS } from '@/map/plants/strataColors'
 
 export { drawsCrown, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strataColors'
@@ -17,8 +17,19 @@ export function plantStrata(feature: MapFeature, data: PlantingState | null): St
   const speciesId = numberProperty(feature, 'species_id')
   const species = speciesId != null ? data?.species[String(speciesId)] : undefined
   if (!species) return null
+  return paletteItemOf(feature, data)?.effectiveStrata ?? species.strata
+}
+
+/** A plant's line in the palette: its cultivar's, else its species'. */
+export function paletteItemOf(feature: MapFeature, data: PlantingState | null) {
+  const speciesId = numberProperty(feature, 'species_id')
+  if (speciesId == null) return undefined
   const varietyId = numberProperty(feature, 'variety_id')
-  const item = data?.palette.find((i) => i.speciesId === speciesId && i.varietyId === varietyId) ??
+  return data?.palette.find((i) => i.speciesId === speciesId && i.varietyId === varietyId) ??
     data?.palette.find((i) => i.speciesId === speciesId && i.varietyId == null)
-  return item?.effectiveStrata ?? species.strata
+}
+
+/** Whether a plant is a support plant, from its sheet or its palette role. */
+export function plantIsSupport(feature: MapFeature, data: PlantingState | null): boolean {
+  return isSupportPlant(feature, paletteItemOf(feature, data)?.role)
 }

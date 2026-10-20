@@ -255,5 +255,9 @@ export type OfferPageProps = {
 export type OfferVersionPageProps = {
   map: OfferMap
   team: { name: string } | null
+  /** Who makes the offer: the map's team, else its owner. */
+  issuer: string
+  /** The logo printed at the top (Map#letterhead). */
+  letterhead: { logoUrl: string; name: string } | null
   version: OfferVersionSummary & { inputs: OfferInputs; measures: OfferMeasures; result: OfferResult; terms: OfferTerms }
 }

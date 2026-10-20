@@ -76,3 +76,36 @@ export function plantedInput(plant: Pick<PlantLine, 'plantedOn' | 'plantedPrecis
   const [y, m, d] = plant.plantedOn.slice(0, 10).split('-')
   return `${d}/${m}/${y}`
 }
+
+export type PlantAge = { unit: 'today' } | { unit: 'days' | 'months' | 'winters'; count: number }
+
+/**
+ * How long a plant has been in the ground, the way gardeners count it
+ * (as the phone app does, mobile/src/lib/terrain.ts): days, then months,
+ * then the winters it went through, one per 15 January since planting.
+ * A plant known by its year only counts its winters from the next one;
+ * nothing when nobody knows its date. `today` is « YYYY-MM-DD ».
+ */
+export function plantedAge(plantedOn: string | null, precision: PlantLine['plantedPrecision'], today: string): PlantAge | null {
+  if (!plantedOn || precision === 'unknown' || !/^\d{4}-\d{2}-\d{2}/.test(plantedOn)) return null
+  const [ty, tm, td] = today.slice(0, 10).split('-').map(Number)
+  const now = Date.UTC(ty, tm - 1, td)
+  const year = Number(plantedOn.slice(0, 4))
+  if (precision === 'year') {
+    const winters = ty - year - (now < Date.UTC(ty, 0, 15) ? 1 : 0)
+    return winters > 0 ? { unit: 'winters', count: winters } : null
+  }
+  const [, m, d] = plantedOn.slice(0, 10).split('-').map(Number)
+  const planted = Date.UTC(year, m - 1, d)
+  const days = Math.round((now - planted) / 86_400_000)
+  if (days <= 0) return { unit: 'today' }
+  let winters = 0
+  for (let y = year; y <= ty; y++) {
+    const heart = Date.UTC(y, 0, 15)
+    if (heart > planted && heart <= now) winters++
+  }
+  if (winters > 0) return { unit: 'winters', count: winters }
+  if (days < 31) return { unit: 'days', count: days }
+  const months = (ty - year) * 12 + tm - m - (td < d ? 1 : 0)
+  return { unit: 'months', count: Math.max(1, months) }
+}

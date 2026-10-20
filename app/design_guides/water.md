@@ -63,7 +63,7 @@ Time matters for each of them: a check dam fills with silt in a few years and be
 
 - The thirstiest trees downhill of swales and ponds; the most frugal on mounds and upper slopes.
 - Wet areas become assets (willows, alders, marginal plants), not problems to drain.
-- Paths follow contours or ridges so they do not turn into streams.
+- Paths follow contours or ridges so they do not turn into streams. Every path, track and roof is also a small catchment: lay it with a gentle fall (1 to 2 %) towards a swale, a rain garden or a pond, and say in the `rationale` where its water goes. A track that sheds its runoff into a swale waters a row of trees at every storm.
 - Trees and permanent soil cover are part of the water design: every layer of the forest garden slows the rain, shades the soil and gives water back to the air.
 
 ## Honest limits

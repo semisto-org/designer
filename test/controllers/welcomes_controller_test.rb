@@ -56,4 +56,18 @@ class WelcomesControllerTest < ActionDispatch::IntegrationTest
     get welcome_path
     assert_redirected_to new_session_path
   end
+
+  test "an account that came in with its place is asked at its second map, then goes on creating it" do
+    @newcomer.owned_maps.create!(name: "Le terrain de Purnode", region: regions(:wallonia))
+    sign_in_as @newcomer
+    get maps_path, headers: inertia_headers
+    assert_response :success
+
+    get new_map_path
+    assert_redirected_to welcome_path
+    patch welcome_path, params: { account_kind: "individual" }
+    assert_redirected_to new_map_path
+    get new_map_path, headers: inertia_headers
+    assert_response :success
+  end
 end

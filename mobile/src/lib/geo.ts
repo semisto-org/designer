@@ -31,6 +31,19 @@ export function expandBbox([w, s, e, n]: [number, number, number, number], meter
   return [w - dLng, s - dLat, e + dLng, n + dLat]
 }
 
+/** [west, south, east, north] of a geometry, or null when it has no vertex. */
+export function boundsOf(geometry: Geometry | null | undefined): [number, number, number, number] | null {
+  if (!geometry) return null
+  const flat = (geometry.type === 'Point' ? geometry.coordinates : (geometry.coordinates as unknown[]).flat(3)) as number[]
+  if (flat.length < 2) return null
+  let [w, s, e, n] = [Infinity, Infinity, -Infinity, -Infinity]
+  for (let i = 0; i + 1 < flat.length; i += 2) {
+    w = Math.min(w, flat[i]); e = Math.max(e, flat[i])
+    s = Math.min(s, flat[i + 1]); n = Math.max(n, flat[i + 1])
+  }
+  return [w, s, e, n]
+}
+
 /** A point that stands for the geometry: the point itself, else the mean of its vertices. */
 export function anchor(geometry: Geometry): Position {
   if (geometry.type === 'Point') return geometry.coordinates

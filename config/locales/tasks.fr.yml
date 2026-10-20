@@ -138,7 +138,8 @@ fr:
     mine:
       page_title: "Tâches"
       title: "Tâches"
-      intro: "Les tâches de toutes tes cartes, au même endroit."
+      intro: "Les tâches qui te sont confiées, sur toutes tes cartes."
+      intro_team: "Les tâches de toutes les cartes de l'équipe, au même endroit."
       scope_me: "À moi"
       scope_team: "Équipe %{name}"
       group_by: "Grouper par"
@@ -151,7 +152,10 @@ fr:
         later: "Plus tard"
         no_due: "Sans échéance"
       unassigned: "Sans personne"
+      empty_title_me: "Rien ne t'attend pour l'instant"
+      empty_title_team: "Rien à faire pour l'instant"
       empty_me: "Aucune tâche ne t'est assignée. Les tâches se créent dans la vue « Tâches » de chaque carte."
+      empty_to_maps: "Ouvrir mes cartes"
       empty_team: "Les cartes de cette équipe n'ont pas encore de tâche à faire."
       open_map_tasks: "Tâches de la carte"
     # Default lists, one per step of the journey (TaskList::Defaults).

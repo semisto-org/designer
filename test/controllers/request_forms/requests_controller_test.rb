@@ -22,13 +22,14 @@ class RequestForms::RequestsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "called", "Visite le 20" ], @project_request.reload.values_at(:status, :team_notes)
   end
 
-  test "« Créer la carte » opens the new map" do
+  test "« Créer la carte » moves the request on and opens the new map's offer" do
     sign_in_as users(:bob)
     assert_difference -> { Map.count } do
       post map_request_form_request_path(@form, @project_request)
     end
     map = @project_request.reload.map
-    assert_redirected_to map_path(map)
+    assert_redirected_to map_offer_path(map)
+    assert_equal "visited", @project_request.status
     assert_equal [ users(:bob), @team ], [ map.owner, map.organization ]
     assert_equal "up_to_2000", map.project_sheet.section("budget")["initial"]
   end

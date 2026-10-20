@@ -99,7 +99,13 @@ fr:
           - kicker: "et tout autour"
             title: "Ton jardin-forêt, et tous les autres."
             body: "Chaque carte dessinée dans Terranova est un jardin-forêt de plus en Europe. En route vers l'ère des forêts comestibles."
-        final_cta: "Créer ma carte gratuite"
+        where:
+          title: "Où est ton terrain ?"
+          label: "L'adresse de ton terrain"
+          placeholder: "Rue, numéro, commune"
+          hint: "Tape ton adresse : ton terrain apparaît tout de suite, avec ce que sa pente et son eau racontent. Sans compte."
+          starting: "Je cherche ton terrain…"
+        final_cta: "Ou crée ton compte d'abord"
         final_secondary: "Voir les forfaits"
         free: "ta première carte est gratuite, pour de bon"
         example: "Terrain d'exemple. Le tien, Terranova le dessine sur un vrai fond de carte."
@@ -493,6 +499,8 @@ fr:
               - "Vos contenus : les cartes, contours, dessins, notes, commentaires et photos que vous créez ou ajoutez."
               - "Vos paiements : la formule achetée, le montant, la TVA, la date et le code promotionnel éventuel. Le paiement lui-même est traité par Stripe : nous ne voyons ni ne conservons votre numéro de carte."
               - "Des données techniques : votre adresse IP et des journaux de connexion, utiles à la sécurité et au dépannage."
+              - "Un essai « Et chez toi ? », sans compte : l'adresse que vous tapez, les parcelles choisies et ce que Terranova lit du terrain (pente, orientation). Si vous créez ensuite un compte, l'essai devient votre première carte ; sinon il est effacé après 48 heures."
+              - "Si vous créez un compte après avoir regardé une carte publiée, nous notons de quelle carte vous venez. Son auteur n'en voit qu'un nombre (« 2 ont commencé le leur »), jamais votre nom ; il voit de même le nombre de visites de sa carte, sans rien qui identifie les visiteurs."
             outro: "Nous utilisons un cookie de session, nécessaire pour vous garder connecté. Nous n'utilisons ni cookies publicitaires ni traceurs tiers. Nous comptons les visites avec Plausible, installé sur nos propres serveurs : il ne pose aucun cookie, ne garde ni votre adresse IP ni aucun identifiant, et ne donne que des chiffres d'ensemble (pages vues, pays, type d'appareil)."
           - title: "Ce que nous recevons de Google"
             paragraphs:
@@ -533,6 +541,7 @@ fr:
               - "Les pièces comptables (factures, paiements) : 10 ans à partir du 1er janvier qui suit l'exercice, comme le droit belge l'exige, même après la suppression du compte."
               - "Les journaux techniques (adresses IP, connexions) : 12 mois au plus."
               - "Les liens et codes de connexion : 20 minutes, et ils ne servent qu'une fois."
+              - "Un essai « Et chez toi ? » qui n'est pas devenu une carte : 48 heures."
           - title: "Vos données quittent-elles l'Union européenne ?"
             paragraphs:
               - "Le service et vos fichiers sont hébergés en Suisse, chez Infomaniak. La Commission européenne reconnaît à la Suisse un niveau de protection des données équivalent à celui de l'Union (décision d'adéquation)."

@@ -191,6 +191,7 @@ fr:
     legend:
       title: "Strates"
       planned: "En pointillés : pas encore planté"
+      support: "Hachurées : plantes de soutien, qui nourrissent le sol puis laissent la place"
       labels: "Noms des plants sur la carte"
       labels_name: "Nom"
       labels_code: "Code"
@@ -382,6 +383,7 @@ fr:
     variety_hint: "Une variété, comme « Belle fleur double » ? Cherche l'espèce (« pommier »), puis « Une variété »."
     suggestions: "Suggestions pour ce terrain"
     suggestions_link: "Suggestions pour ce terrain, dans la palette végétale"
+    open_table: "Voir la palette en tableau : quantités, prix, liste de courses"
     fit:
       label: "Ce qui convient ici"
       site_intro: "Ce que je sais de ton terrain :"
@@ -416,7 +418,7 @@ fr:
       excluded_by:
         invasive: "Invasive ici"
         toxic: "Toxique pour tes animaux"
-      more: "Donne une exposition à tes patchs et décris ton sol dans la fiche projet : les suggestions en tiendront compte."
+      more: "Donne une exposition à tes patchs et décris ton sol dans la %{sheet} : les suggestions en tiendront compte."
     reasons:
       nitrogen: "Fixe l'azote et nourrit le sol"
       strata_sub_canopy: "Pour la strate arborée basse"
@@ -619,6 +621,7 @@ fr:
     crown_indicative: "valeur moyenne de la strate"
     crown_pollard: "en trogne"
     crown_coppice: "en cépée"
+    crown_chop_and_drop: "coupée chaque année"
     planted_on: "Planté le %{date}"
     planted_in: "Planté en %{year}"
     planted_unknown: "En terre, date de plantation inconnue"
@@ -629,12 +632,27 @@ fr:
     unmark: "Annuler"
     planted: "Plant marqué comme planté."
     training: "Conduite"
-    training_hint: "Une trogne ou une cépée reste plus petite qu'un arbre libre : la vue 3D et l'ombre en tiennent compte."
+    training_hint: "Une trogne, une cépée ou une plante coupée chaque année reste plus petite qu'un arbre libre : la vue 3D et l'ombre en tiennent compte."
     trainings:
       free: "Libre"
       pollard: "En trogne (taillé en tête)"
       coppice: "En cépée (recépé au pied)"
+      chop_and_drop: "Couper-déposer (coupée chaque année, laissée au pied des fruitiers)"
     crown_graft: "greffé, vigueur %{vigor}"
+    succession: "Rôle dans la succession"
+    succession_hint: "Une plante de soutien (fixatrice d'azote, pionnière, plante à biomasse) nourrit le sol et abrite les jeunes fruitiers, puis leur laisse la place. Sur la carte, elle est hachurée."
+    successions:
+      default_support: "Soutien (son rôle dans la palette)"
+      default_productive: "Productive (son rôle dans la palette)"
+      support: "Plante de soutien"
+      productive: "Plante productive"
+    support_until: "Laisse la place après (années)"
+    support_until_hint: "L'année où tu la retires, comptée depuis sa plantation. Vide : elle reste, coupée et déposée. La vue 3D la fait disparaître cette année-là."
+    support_until_placeholder: "elle reste"
+    support_summary: "Plante de soutien"
+    support_summary_until:
+      one: "Plante de soutien, retirée après %{count} an"
+      other: "Plante de soutien, retirée après %{count} ans"
     graft_form: "Fruitier greffé"
     graft_form_hint: "Le tronc d'un fruitier greffé est formé en pépinière et ne monte plus : seule la couronne pousse au-dessus, jusqu'à une taille que fixe le porte-greffe."
     graft_forms:

@@ -149,10 +149,20 @@ module Mcp
             properties: feature.properties.except(*MapFeature.column_names).merge(
               "layer" => feature.layer, "kind" => feature.kind, "name" => feature.name, "notes" => feature.notes,
               "status" => feature.status, "source" => feature.source, "rationale" => feature.rationale,
-              "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601
+              "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601,
+              # A support plant, from its sheet or its palette role: hatched on the map.
+              "support" => (true if feature.plant? && feature.support_plant?(palette_role(feature)))
             ).compact,
             pending_update: pending_update ? pending_update_json(pending_update, feature) : nil
           }.compact
+        end
+
+        # The palette role of a plant's species or cultivar, read once per map.
+        def palette_role(feature)
+          @palette_roles ||= {}
+          roles = @palette_roles[feature.map_id] ||= PaletteItem.active.where(map_id: feature.map_id)
+            .pluck(:species_id, :variety_id, :role).to_h { |species, variety, role| [ [ species, variety ], role ] }
+          roles[[ feature.plant_species_id, feature.plant_variety_id ]] || roles[[ feature.plant_species_id, nil ]]
         end
 
         def pending_update_json(draft, feature)

@@ -2,5 +2,5 @@
 <p><%= t(".body", requester: @request.requester.display_name, plant: @request.plant_name, map: @map.name, material: t("propagation.materials.#{@request.material}").downcase) %></p>
 <p style="color:#6b6257;white-space:pre-line;border-left:3px solid #d9d2c5;padding-left:12px"><%= @request.message %></p>
 <p><%= t(".privacy") %></p>
-<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".button") %></a></p>
+<p><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:999px;text-decoration:none;font-weight:600"><%= t(".button") %></a></p>
 <p style="color:#6b6257;font-size:13px"><%= t(".footer") %></p>

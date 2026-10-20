@@ -50,7 +50,7 @@ export function ClimateSection({ dossier, number, isOwner }: { dossier: Dossier;
       <div className={locked ? 'space-y-2 print:hidden' : 'space-y-2'}>
         <SubTitle>{t('dossier.climate.tomorrow')}<Indicative /></SubTitle>
         {locked ? (
-          <LockedNote body={t('dossier.locked.climate')} isOwner={isOwner} />
+          <LockedNote feature="dossier_climate" dossier={dossier} isOwner={isOwner} />
         ) : !projections.available ? (
           <Muted>{t(`climate.reasons.${projections.reason}`)}</Muted>
         ) : (

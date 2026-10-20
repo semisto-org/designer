@@ -25,7 +25,7 @@ export function StatusMark({ status, className }: { status: SectionStatus; class
   const label = t(`journey.project.status.${status}`)
   if (status === 'complete') {
     return (
-      <span title={label} className={clsx('grid h-5 w-5 shrink-0 place-items-center rounded-full bg-leaf-500 text-white', className)}>
+      <span title={label} className={clsx('relative grid h-5 w-5 shrink-0 place-items-center rounded-full bg-leaf-500 text-white', className)}>
         <Check className="h-3 w-3" aria-hidden /><span className="sr-only">{label}</span>
       </span>
     )
@@ -34,7 +34,7 @@ export function StatusMark({ status, className }: { status: SectionStatus; class
     <span
       title={label}
       className={clsx(
-        'h-5 w-5 shrink-0 rounded-full border-2',
+        'relative h-5 w-5 shrink-0 rounded-full border-2',
         status === 'partial' ? 'border-leaf-500 bg-gradient-to-r from-leaf-500 from-50% to-transparent to-50%' : 'border-loam-300',
         className,
       )}
@@ -46,7 +46,7 @@ export function StatusMark({ status, className }: { status: SectionStatus; class
 
 export function SaveIndicator({ status, onRetry }: { status: SaveStatus; onRetry: () => void }) {
   return (
-    <p aria-live="polite" className="flex items-center gap-1.5 text-xs text-loam-500">
+    <p aria-live="polite" className="flex items-center gap-1.5 text-sm text-loam-500">
       {status === 'saving' && <><LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden />{t('journey.project.saving')}</>}
       {status === 'dirty' && t('journey.project.unsaved')}
       {status === 'saved' && <><Check className="h-3.5 w-3.5 text-leaf-600" aria-hidden />{t('journey.project.saved')}</>}
@@ -113,7 +113,7 @@ export function DraftsBanner({ sheet, canEdit, onOpen }: {
           </>
         )}
       </div>
-      {failed && <p className="mt-2 text-xs text-clay-600">{t('journey.project.drafts.error')}</p>}
+      {failed && <p className="mt-2 text-sm text-clay-600">{t('journey.project.drafts.error')}</p>}
     </section>
   )
 }
@@ -133,12 +133,12 @@ function DraftAnswer({ draft, field, texts, current, canEdit, onReview }: {
   }
   return (
     <div className="mt-2 rounded-xl bg-humus-50 p-3 ring-1 ring-humus-200">
-      <p className="flex items-center gap-1.5 text-xs font-semibold text-humus-900">
+      <p className="flex items-center gap-1.5 text-sm font-semibold text-humus-900">
         <Sparkles className="h-3.5 w-3.5" aria-hidden />{t('journey.project.drafts.proposes', { author: authorOf(draft) })}
       </p>
       <p className="mt-1 whitespace-pre-line text-sm font-medium text-loam-900">{describeValue(field, texts, draft.value)}</p>
-      <p className="mt-1 text-xs text-loam-600">{t('journey.project.drafts.because', { rationale: draft.rationale })}</p>
-      {replaced && <p className="mt-1 text-xs text-humus-800">{t('journey.project.drafts.replaces', { value: replaced })}</p>}
+      <p className="mt-1 text-sm text-loam-600">{t('journey.project.drafts.because', { rationale: draft.rationale })}</p>
+      {replaced && <p className="mt-1 text-sm text-humus-800">{t('journey.project.drafts.replaces', { value: replaced })}</p>}
       {canEdit && (
         <div className="mt-2 flex flex-wrap gap-2">
           <Button size="sm" variant="leaf" disabled={busy} onClick={() => decide('accept')}>
@@ -149,7 +149,7 @@ function DraftAnswer({ draft, field, texts, current, canEdit, onReview }: {
           </Button>
         </div>
       )}
-      {failed && <p className="mt-2 text-xs text-clay-600">{t('journey.project.drafts.error')}</p>}
+      {failed && <p className="mt-2 text-sm text-clay-600">{t('journey.project.drafts.error')}</p>}
     </div>
   )
 }
