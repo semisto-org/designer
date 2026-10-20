@@ -563,6 +563,8 @@ Rails.application.routes.draw do
     post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
     get "tech", to: "tech#show", as: :tech
+    # « Design »: the « carnet » primitives and what remains to migrate.
+    get "design", to: "design#show", as: :design
     get "catalogue", to: "catalogue#show", as: :catalogue
     # « Codes promo »: Stripe promotion codes made and switched off here.
     resources :promo_codes, path: "promo-codes", only: %i[index create] do
@@ -612,6 +614,23 @@ Rails.application.routes.draw do
     end
   end
   # --- end offline site ---
+
+  # --- implementation ---
+  # The implementation plan of a map (« Mise en œuvre »): its phases, Semisto's
+  # proposed phasing, and elements given to a phase.
+  resources :maps, only: [] do
+    resource :implementation, only: :show, controller: "maps/implementations" do
+      post :proposal
+      post :assign
+    end
+    resources :implementation_phases, path: "implementation/phases", only: %i[create update destroy], controller: "maps/implementation_phases" do
+      member do
+        post :accept
+        post :reject
+      end
+    end
+  end
+  # --- end implementation ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }
