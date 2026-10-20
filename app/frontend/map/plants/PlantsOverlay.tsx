@@ -193,6 +193,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     type: 'line',
     source: CROWNS,
     filter: ['to-boolean', ['get', 'reach']],
+    // design-lint-ok: MapLibre paint needs a colour string
     paint: { 'line-color': '#ffffff', 'line-width': 1.5, 'line-opacity': ['case', PLANTED, 0.9, 0.5], 'line-dasharray': ['literal', [2, 2]] },
   }, before)
   map.addLayer({
