@@ -8,7 +8,7 @@ import { Letterhead } from '@/documents/markdown/Letterhead'
 import { MarkdownEditor } from '@/documents/markdown/MarkdownEditor'
 import { useAutosave, type SaveStatus } from '@/documents/markdown/useAutosave'
 import { colorFor, useCollab, type External, type Peer } from '@/documents/markdown/useCollab'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { Letterhead as LetterheadData, MapDocumentData } from '@/types/documents'
@@ -110,8 +110,13 @@ export default function MarkdownDocument({ map, document: initial, content, chec
   async function saveTitle() {
     const next = title.trim()
     if (!next || next === doc.title) return setTitle(doc.title)
-    const saved = await api<MapDocumentData>(base, { method: 'PATCH', body: { document: { title: next } } })
-    setDoc(saved)
+    try {
+      const saved = await api<MapDocumentData>(base, { method: 'PATCH', body: { document: { title: next } } })
+      setDoc(saved)
+    } catch (e) {
+      setTitle(doc.title)
+      setNotice(e instanceof ApiError ? e.message : t('documents.markdown.errors.title_failed'))
+    }
   }
 
   // Ctrl/Cmd + S saves at once instead of opening the browser's dialog.
@@ -172,15 +177,17 @@ export default function MarkdownDocument({ map, document: initial, content, chec
       </header>
 
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 px-0 py-0 sm:px-4 sm:py-8 xl:grid-cols-[13rem_minmax(0,1fr)] print:block print:p-0">
-        <div className="hidden xl:block print:hidden">{mode === 'read' && <Contents root={page} version={`${text}${version}`} />}</div>
+        <div className="hidden xl:block print:hidden"><Contents root={page} version={`${mode}${text}${version}`} /></div>
         <article className="mx-auto w-full max-w-3xl bg-[#fffdf8] px-5 py-8 shadow-[0_1px_2px_rgba(60,40,20,0.08),0_12px_40px_-12px_rgba(60,40,20,0.18)] ring-1 ring-loam-900/5 sm:rounded-2xl sm:px-12 sm:py-12 print:max-w-none print:rounded-none print:bg-white print:p-0 print:shadow-none print:ring-0">
-          <Letterhead letterhead={letterhead} mapName={map.name} />
+          <Letterhead letterhead={letterhead} mapName={map.name} writtenOn={doc.createdAt} />
 
           {mode === 'edit' && (
             <label className="mb-8 block print:hidden">
               <span className="text-sm text-loam-500">{t('documents.markdown.title_label')}</span>
               <input value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => void saveTitle()} maxLength={200}
+                aria-describedby="title-hint"
                 className="mt-1 block w-full rounded-lg border-loam-200 bg-white/60 px-3 py-1.5 text-base text-loam-800 focus:border-prune-500 focus:ring-prune-500" />
+              <span id="title-hint" className="mt-1 block text-sm text-loam-500">{t('documents.markdown.title_hint')}</span>
             </label>
           )}
           {showTitle && <h1 className={clsx('mb-6 font-serif text-4xl text-loam-900', mode === 'edit' && 'hidden print:block')}>{doc.title}</h1>}

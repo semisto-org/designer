@@ -211,7 +211,7 @@ fr:
           storage_note: "Note libre : porte ouverte, caisses rentrées, linge humide posé…"
       list_documents:
         title: "Lister les documents"
-        description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable)."
+        description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable). Une page Markdown donne aussi ses premiers mots (excerpt), sans sa mise en forme."
         params:
           document_tag: "Étiquette des documents, sans tenir compte des majuscules."
           document_kind: "Type : pdf, image, text (traitement de texte), sheet (tableur), slides (présentation), plan (DWG, KML, GPX, GeoJSON), other."

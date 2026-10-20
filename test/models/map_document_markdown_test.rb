@@ -85,4 +85,16 @@ class MapDocumentMarkdownTest < ActiveSupport::TestCase
     assert_not MapDocumentCollabUpdate.exists?(a.id)
     assert_not MapDocumentCollabUpdate.new(map_document: doc, data: "x" * (MapDocumentCollabUpdate::MAX_BYTES + 1)).valid?
   end
+
+  test "a Markdown page's tile shows its first words, without the syntax" do
+    text = "# Visite du 12 octobre\n\n**Présents :** Marie\n\n## Ce qu'on a vu\n\n- [x] Une [mare](https://example.org) qui déborde\n- ![photo](a.jpg)\n\n---\n\n> L'eau _arrive_ du nord\n"
+    assert_equal "Présents : Marie Ce qu'on a vu Une mare qui déborde L'eau arrive du nord", MapDocument.plain_excerpt(text)
+    assert_equal 30, MapDocument.plain_excerpt("mot " * 50, length: 30).length
+    assert_nil MapDocument.plain_excerpt("# Seulement un titre\n")
+
+    doc = MapDocument.build_markdown(map: @map, title: "Journal", content: "# Journal\n\nLes pommiers ont fleuri.", by: users(:michael))
+    doc.save!
+    assert_nil doc.as_inertia(url: ->(*) { "/x" })[:excerpt]
+    assert_equal "Les pommiers ont fleuri.", doc.as_inertia(url: ->(*) { "/x" }, excerpt: true)[:excerpt]
+  end
 end

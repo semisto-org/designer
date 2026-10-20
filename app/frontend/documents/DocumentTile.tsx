@@ -28,6 +28,10 @@ export function DocumentTile({ doc, onOpen, selected }: { doc: MapDocumentData; 
               </span>
             ))}
           </span>
+        ) : doc.excerpt ? ( // design-lint-ok: the same paper as the sketch preview above, until a paper token exists
+          <span className="block h-full overflow-hidden bg-[#fffdf7] px-3 pb-8 pt-3 text-left">
+            <span className="line-clamp-5 block font-serif text-sm leading-snug text-loam-700">{doc.excerpt}</span>
+          </span>
         ) : doc.thumbUrl && !broken ? (
           <img src={doc.thumbUrl} alt="" loading="lazy" decoding="async" onError={() => setBroken(true)}
             className={clsx('h-full w-full', doc.preview === 'image' ? 'object-cover' : 'object-contain object-top p-3 drop-shadow')} />
