@@ -1,10 +1,12 @@
-import { Head, Link, router } from '@inertiajs/react'
-import { ArrowRight, Droplets, Loader2, MapPin, Sprout } from 'lucide-react'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
+import { ArrowRight, Droplets, Loader2, Mail, MapPin, Sprout } from 'lucide-react'
 import * as maplibregl from 'maplibre-gl'
 import type { MapMouseEvent } from 'maplibre-gl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/Button'
+import { Field, Input } from '@/components/ui/Field'
+import { Flash } from '@/components/ui/Flash'
 import { ApiError, api } from '@/lib/api'
 import { track } from '@/lib/analytics'
 import { formatDate } from '@/collab/time'
@@ -12,9 +14,11 @@ import { formatArea, t } from '@/lib/i18n'
 import { useMapInstance } from '@/map/MapContext'
 import { MapView } from '@/map/MapView'
 import { installBoundary } from '@/map/layers/boundary'
+import { drawSketch } from '@/my_maps/sketch'
 import { syncRegionLayers } from '@/map/layers/region'
 import { readingLines, type ReadingLine } from '@/trials/reading'
-import type { LngLat, RegionLayerData } from '@/types'
+import type { LngLat, RegionLayerData, SharedProps } from '@/types'
+import type { SketchGeometry } from '@/types/myMaps'
 import type { TrialData, TrialReading, TrialShowProps } from '@/types/trials'
 
 type ReadingState = { status: 'loading' } | { status: 'done'; reading: TrialReading } | { status: 'error' }
@@ -22,8 +26,9 @@ type ReadingState = { status: 'loading' } | { status: 'done'; reading: TrialRead
 /**
  * « Et chez toi ? »: the visitor's own place, tried without an account. The
  * map shows their parcel on the aerial photo (a tap adds or drops one), the
- * card says what the relief tells and what the region knows, and « Garder
- * cette carte » makes it their first map.
+ * first page of their notebook paints it in watercolour, says what the
+ * relief tells and what the region knows, and « Garder ce carnet » makes it
+ * their first map: an e-mail typed here is enough.
  */
 export default function TrialShow(props: TrialShowProps) {
   const [trial, setTrial] = useState<TrialData>(props.trial)
@@ -61,6 +66,8 @@ export default function TrialShow(props: TrialShowProps) {
     }
   }
 
+  const signedIn = usePage<SharedProps>().props.currentUser != null
+
   function keep() {
     track('trial_keep_click')
     router.post(`${base}/keep`)
@@ -74,6 +81,8 @@ export default function TrialShow(props: TrialShowProps) {
       <Head title={t('trials.show.title')}>
         <meta name="robots" content="noindex, nofollow" />
       </Head>
+      {/* Full screen, so no layout: a refused e-mail or a rate limit is said here. */}
+      <Flash />
       <div className="relative h-[45dvh] shrink-0 md:h-auto md:min-w-0 md:flex-1">
         <MapView className="absolute inset-0" center={trial.center} zoom={trial.bbox ? undefined : 18} bbox={trial.bbox ?? undefined}>
           <TrialLayers layers={props.layers} cadastre={props.cadastreLayer} trial={trial} lowPoint={lowPoint} onTouch={touch} />
@@ -91,11 +100,13 @@ export default function TrialShow(props: TrialShowProps) {
       <aside className="min-h-0 flex-1 overflow-y-auto bg-loam-50 md:w-[26rem] md:flex-none md:border-l md:border-loam-200">
         <div className="space-y-6 p-5 md:p-6">
           <header>
-            <p className="flex items-center gap-1.5 text-sm text-loam-500">
+            <p className="font-hand text-xl text-leaf-700">{t('trials.show.kicker')}</p>
+            <h1 className="font-serif text-3xl text-loam-900">{trial.name}</h1>
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-loam-500">
               <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="truncate">{trial.address ?? t('trials.show.address_unknown')}</span>
             </p>
-            <h1 className="mt-1 font-serif text-3xl text-loam-900">{t('trials.show.title')}</h1>
+            <PlaceSketch trial={trial} />
             {trial.areaM2 != null && (
               <p className="mt-1 text-sm text-loam-600">
                 {formatArea(trial.areaM2)} · {t('trials.show.parcels', { count: trial.parcels.length })}
@@ -151,11 +162,16 @@ export default function TrialShow(props: TrialShowProps) {
                 <li key={key} className="flex gap-2"><Sprout className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />{t(`trials.show.next.${key}`)}</li>
               ))}
             </ul>
-            <Button className="mt-4 w-full justify-center" onClick={keep}>
-              {t('trials.show.keep')}
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <p className="mt-2 text-sm text-loam-600">{t('trials.show.keep_hint')}</p>
+            {signedIn ? (
+              <Button className="mt-4 w-full justify-center" onClick={keep}>
+                {t('trials.show.keep')}
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            ) : props.sentTo ? (
+              <CodeForm email={props.sentTo} base={base} />
+            ) : (
+              <KeepForm base={base} onOther={keep} />
+            )}
           </section>
 
           {props.from && (
@@ -177,6 +193,99 @@ export default function TrialShow(props: TrialShowProps) {
       </aside>
     </div>
   )
+}
+
+/**
+ * « Garder ce carnet » without an account: one e-mail, and the account, the
+ * sign-in link and the map come in one gesture. Google, Apple or a password
+ * go through the usual sign-in page, which comes back here.
+ */
+function KeepForm({ base, onOther }: { base: string; onOther: () => void }) {
+  const form = useForm({ email_address: '' })
+  return (
+    <form
+      className="mt-4 space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault()
+        track('trial_keep_click', { with: 'email' })
+        form.post(`${base}/keep`)
+      }}
+    >
+      <Field label={t('trials.show.email')}>
+        <Input type="email" required autoComplete="email" value={form.data.email_address} onChange={(e) => form.setData('email_address', e.target.value)} placeholder={t('trials.show.email_placeholder')} />
+      </Field>
+      <Button type="submit" className="w-full justify-center" disabled={form.processing}>
+        {t('trials.show.keep')}
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </Button>
+      <p className="text-sm text-loam-600">{t('trials.show.keep_hint')}</p>
+      <Button variant="ghost" size="sm" onClick={onOther} className="-ml-3">
+        {t('trials.show.keep_other')}
+      </Button>
+    </form>
+  )
+}
+
+/** The link is on its way: it opens the map on any device; the code keeps it here. */
+function CodeForm({ email, base }: { email: string; base: string }) {
+  const form = useForm({ email_address: email, code: '' })
+  return (
+    <form
+      className="mt-4 space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault()
+        form.post('/session/code', { onFinish: () => form.reset('code') })
+      }}
+    >
+      <p className="flex gap-2 rounded-lg bg-leaf-50 p-3 text-sm text-leaf-800" role="status">
+        <Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        {t('trials.show.sent', { email })}
+      </p>
+      <Field label={t('sessions.new.code')}>
+        <Input
+          required
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="[0-9 ]{6,7}"
+          maxLength={7}
+          value={form.data.code}
+          onChange={(e) => form.setData('code', e.target.value)}
+          placeholder="123456"
+          className="text-center font-mono text-2xl tracking-[0.4em]"
+        />
+      </Field>
+      <Button type="submit" className="w-full justify-center" disabled={form.processing}>
+        {t('sessions.new.code_submit')}
+      </Button>
+      <Link href={base} className="block text-sm font-medium text-prune-700 underline-offset-2 hover:underline">
+        {t('trials.show.other_email')}
+      </Link>
+    </form>
+  )
+}
+
+/**
+ * The place washed in watercolour, as on the first page of a notebook: its
+ * real outline in pencil, its area and a true scale bar (my_maps/sketch).
+ */
+function PlaceSketch({ trial }: { trial: TrialData }) {
+  const canvas = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const el = canvas.current
+    if (!el) return
+    const seed = [...trial.token].reduce((sum, c) => (sum * 31 + c.charCodeAt(0)) % 100_003, 7)
+    const paint = () => drawSketch(el, { id: seed, boundary: trial.boundary as SketchGeometry | null, areaLabel: trial.areaM2 != null ? formatArea(trial.areaM2) : '' }, 0.3, {
+      noOutline: t('trials.show.sketch_no_outline'),
+      noOutlineHint: t('trials.show.sketch_no_outline_hint'),
+      growthLabel: null,
+    })
+    paint()
+    document.fonts?.ready.then(paint)
+    const observer = new ResizeObserver(paint)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [trial.token, trial.boundary, trial.areaM2])
+  return <canvas ref={canvas} aria-hidden="true" className="mt-3 aspect-[4/3] w-full rounded-xl bg-loam-50 ring-1 ring-loam-200" />
 }
 
 const decimal = (value: number) => (Math.round(value * 10) / 10).toLocaleString('fr-BE')

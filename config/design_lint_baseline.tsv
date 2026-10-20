@@ -402,7 +402,7 @@ small-text	20	app/frontend/pages/offer_templates/edit.tsx
 bare-button	1	app/frontend/pages/offer_templates/index.tsx
 small-text	13	app/frontend/pages/pages/docs/mcp.tsx
 small-text	1	app/frontend/pages/pages/features.tsx
-small-text	2	app/frontend/pages/pages/home.tsx
+small-text	1	app/frontend/pages/pages/home.tsx
 bare-button	1	app/frontend/pages/plants/index.tsx
 small-text	4	app/frontend/pages/plants/index.tsx
 hex-color	4	app/frontend/pages/plants/show.tsx
@@ -415,7 +415,7 @@ bare-button	2	app/frontend/pages/public_maps/relief.tsx
 hex-color	1	app/frontend/pages/public_maps/relief.tsx
 bare-button	4	app/frontend/pages/public_maps/show.tsx
 hex-color	2	app/frontend/pages/public_maps/show.tsx
-small-text	9	app/frontend/pages/public_maps/show.tsx
+small-text	8	app/frontend/pages/public_maps/show.tsx
 bare-button	4	app/frontend/pages/public_request_forms/show.tsx
 hex-color	1	app/frontend/pages/public_request_forms/show.tsx
 bare-button	2	app/frontend/pages/request_forms/requests/show.tsx

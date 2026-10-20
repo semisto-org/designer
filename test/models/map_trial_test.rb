@@ -60,7 +60,7 @@ class MapTrialTest < ActiveSupport::TestCase
       trial.adopt!(user)
     end
     assert_equal user, map.owner
-    assert_equal "Mon jardin à Yvoir", map.name
+    assert_equal "Le terrain d'Yvoir", map.name
     assert_equal [ "92142B0247/00X009" ], map.parcels
     assert_equal "wallonia", map.region.key
     assert_in_delta trial.area_m2, map.reload.area_m2, 1
@@ -87,5 +87,37 @@ class MapTrialTest < ActiveSupport::TestCase
     assert_equal [ live ], MapTrial.live.to_a
     MapTrial.expired.delete_all
     assert_equal [ live ], MapTrial.all.to_a
+  end
+
+  test "the name it proposes comes from the town, with French elision" do
+    trial = MapTrial.new(address: "Rue de la Gare 3, 5530 Purnode")
+    assert_equal "Le terrain de Purnode", trial.proposed_name
+    trial.address = "Chemin des Prés, 5530 Yvoir"
+    assert_equal "Le terrain d'Yvoir", trial.proposed_name
+    trial.address = "L-9999 Église"
+    assert_equal "Le terrain d'Église", trial.proposed_name
+    trial.address = nil
+    assert_equal "Mon terrain", trial.proposed_name
+  end
+
+  test "where the address was typed: a live public map wins, else the home page or /essai" do
+    assert_equal "home", MapTrial.start(lng: 4.9055, lat: 50.3405, origin: "home").origin
+    assert_equal "direct", MapTrial.start(lng: 4.9055, lat: 50.3405, origin: "elsewhere").origin
+    publication = MapPublication.publish!(maps(:ahinvaux), by: users(:michael), title: "Le jardin des 4 Sources")
+    assert_equal "public_map", MapTrial.start(lng: 4.9055, lat: 50.3405, origin: "home", source_publication: publication).origin
+  end
+
+  test "claimed by an e-mail: the account exists at once and the trial waits for it" do
+    trial = MapTrial.start(lng: 4.9055, lat: 50.3405)
+    user = assert_difference -> { User.count }, 1 do
+      trial.claim!("  Nouvelle@Example.org ")
+    end
+    assert_equal "nouvelle@example.org", user.email_address
+    assert trial.claimed_by?(user)
+    assert_not trial.claimed_by?(users(:alice))
+    assert_no_difference -> { User.count } do
+      assert_equal users(:alice), trial.claim!(users(:alice).email_address)
+    end
+    assert_raises(ActiveRecord::RecordInvalid) { trial.claim!("not an e-mail") }
   end
 end
