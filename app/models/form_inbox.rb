@@ -5,7 +5,8 @@
 # Tally posts every answer to /webhooks/tally/:token, signed with
 # `signing_secret` (Tally-Signature: Base64 HMAC-SHA256 of the body). A
 # hidden field « carte » carries the map's id; the link that fills it comes
-# from the map's Documents page (ExternalForm#link_for).
+# from the map's « Formulaires » view (Maps::FormsController,
+# ExternalForm#link_for).
 class FormInbox < ApplicationRecord
   belongs_to :organization
   has_many :forms, class_name: "ExternalForm", dependent: :destroy

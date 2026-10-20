@@ -74,6 +74,29 @@ class PlantingTest < ActiveSupport::TestCase
     assert_not plant.valid?
   end
 
+  test "a support plant: its palette role says so, its sheet can override it, and it gives way after some years" do
+    plant = plant!(plant_species(:alder))
+    assert_not plant.support_plant?
+    assert plant.support_plant?("support")
+    assert plant.support_plant?("pioneer")
+    assert_not plant.support_plant?("food")
+    plant.update!(properties: plant.properties.merge("succession" => "productive", "support_until" => "8", "training" => "chop_and_drop"))
+    plant.reload
+    assert_not plant.support_plant?("support"), "the sheet wins over the palette"
+    assert_equal 8, plant.support_until, "years are kept as a number"
+    assert_equal "chop_and_drop", plant.plant_training
+    plant.update!(properties: plant.properties.merge("succession" => "support"))
+    assert plant.reload.support_plant?("food")
+    plant.update!(properties: plant.properties.merge("succession" => "", "support_until" => ""))
+    assert_not plant.reload.properties.key?("succession")
+    assert_nil plant.support_until
+    [ { "succession" => "nurse" }, { "support_until" => 0 }, { "support_until" => 61 }, { "support_until" => "soon" } ].each do |bad|
+      plant.properties = plant.properties.merge(bad)
+      assert_not plant.valid?, bad.inspect
+      plant.reload
+    end
+  end
+
   test "a grafted fruit tree: its form, trunk, rootstock vigour and rootstock, all optional" do
     plant = plant!(plant_species(:apple))
     assert_nil plant.plant_graft

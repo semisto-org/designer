@@ -1,0 +1,4 @@
+<%# The places a plan covers, by name. %>
+<% if local_assigns[:places].present? %>
+  <p><%= t("billing_mailer.places", count: places.size, names: mail_place_names(places)) %></p>
+<% end %>

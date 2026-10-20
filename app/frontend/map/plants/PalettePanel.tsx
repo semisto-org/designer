@@ -1,4 +1,4 @@
-import { Check, Compass, ExternalLink, MapPin, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { Check, Compass, ExternalLink, MapPin, Pencil, Plus, Search, Table2, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
@@ -11,6 +11,7 @@ import { byHardiness, hardinessHere, matchesPalette, type Hardiness } from '@/ma
 import { ProposeSpecies } from '@/map/plants/ProposeSpecies'
 import { setPlacing, setPlanting, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS, StrataDot } from '@/map/plants/strata'
+import { SuccessionBalance } from '@/map/plants/SuccessionBalance'
 import {
   STRATA, type PaletteItem, type PaletteRole, type PlantSearchResult, type PlantingState,
   type SpeciesSheet, type SpeciesSummary, type Strata, type VarietySummary,
@@ -213,12 +214,18 @@ export default function PalettePanel() {
       )}
 
       {!q && <StrataBalance totals={data.strata} />}
+      {!q && <SuccessionBalance data={data.succession} />}
 
       {editor.canEdit && !q && (
         <Button variant="secondary" size="sm" className="w-full" onClick={drawPatch} disabled={editor.drawing}>
           <Plus className="h-4 w-4" />{t('palette.draw_patch')}
         </Button>
       )}
+
+      {/* The same palette, counted, priced and ordered, on its own page. */}
+      <a href={`/maps/${mapId}/palette`} className="inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline">
+        <Table2 className="h-4 w-4" aria-hidden />{t('palette.open_table')}
+      </a>
     </div>
   )
 }

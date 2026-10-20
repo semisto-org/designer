@@ -38,12 +38,19 @@ export default function RequestShow({ request: initial, account, schema, statuse
   const [notes, setNotes] = useState(initial.teamNotes ?? '')
   const [saved, setSaved] = useState(false)
   const [making, setMaking] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function save(patch: { status?: RequestStatus; team_notes?: string }) {
-    const data = await api<{ request: RequestDetail }>(`/request_forms/${request.formId}/requests/${request.id}`, { method: 'PATCH', body: { request: patch } })
-    setRequest(data.request)
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 2000)
+    setError(null)
+    try {
+      const data = await api<{ request: RequestDetail }>(`/request_forms/${request.formId}/requests/${request.id}`, { method: 'PATCH', body: { request: patch } })
+      setRequest(data.request)
+      setSaved(true)
+      window.setTimeout(() => setSaved(false), 2000)
+    } catch (failure) {
+      // The notes stay in the field: nothing typed is lost.
+      setError((failure as Error).message || t('request_forms.index.save_error'))
+    }
   }
 
   const hectares = request.areaM2 ? (request.areaM2 / 10_000).toLocaleString('fr-BE', { maximumFractionDigits: 2 }) : null
@@ -159,6 +166,7 @@ export default function RequestShow({ request: initial, account, schema, statuse
               {t('request_forms.statuses.declined')}
             </button>
             <p className="text-sm text-loam-600">{t(`request_forms.status_hints.${request.status}`)}</p>
+            {error && <p role="alert" className="text-sm text-clay-700">{error}</p>}
           </Card>
 
           <Card className="space-y-3">
@@ -188,6 +196,7 @@ export default function RequestShow({ request: initial, account, schema, statuse
                 onChange={(e) => setNotes(e.target.value)} onBlur={() => notes !== (request.teamNotes ?? '') && save({ team_notes: notes })} />
             </Field>
             {saved && <p className="mt-2 text-sm text-leaf-700">{t('request_forms.index.saved')}</p>}
+            {error && <p role="alert" className="mt-2 text-sm text-clay-700">{error}</p>}
           </Card>
         </aside>
       </div>

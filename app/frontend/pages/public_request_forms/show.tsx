@@ -240,6 +240,7 @@ export default function PublicRequestForm({ slug, account, intro, region: baseRe
             {schema.fields.map((field) => (
               <fieldset key={field.key}>
                 <legend className="font-medium text-loam-800">{t(`request_forms.public.questions.${field.key}`)}</legend>
+                {field.type !== 'enum' && <p className="text-sm text-loam-500">{t('request_forms.public.several')}</p>}
                 <div className="mt-2 flex flex-wrap gap-2">
                   {field.values.map((value) => {
                     const current = answers[field.key]
@@ -328,9 +329,9 @@ export default function PublicRequestForm({ slug, account, intro, region: baseRe
 /** After sending: what happens next, as the seasons of a project start. */
 function Thanks({ account, email, title }: { account: string; email: string; title: string }) {
   const steps: { icon: ReactNode; label: string }[] = [
-    { icon: <Phone className="h-4 w-4" aria-hidden />, label: t('request_forms.statuses.called') },
-    { icon: <MapPin className="h-4 w-4" aria-hidden />, label: t('request_forms.statuses.visited') },
-    { icon: <Sprout className="h-4 w-4" aria-hidden />, label: t('request_forms.statuses.offer_sent') },
+    { icon: <Phone className="h-4 w-4" aria-hidden />, label: t('request_forms.public.thanks.steps.call') },
+    { icon: <MapPin className="h-4 w-4" aria-hidden />, label: t('request_forms.public.thanks.steps.visit') },
+    { icon: <Sprout className="h-4 w-4" aria-hidden />, label: t('request_forms.public.thanks.steps.offer') },
   ]
   return (
     <div className="mx-auto max-w-2xl px-4 pb-16 pt-10">
@@ -340,7 +341,7 @@ function Thanks({ account, email, title }: { account: string; email: string; tit
         <h1 className="mt-4 text-3xl">{t('request_forms.public.thanks.title')}</h1>
         <p className="mt-3 text-loam-700">{t('request_forms.public.thanks.body', { account, email })}</p>
         <p className="mt-4 text-loam-600">{t('request_forms.public.thanks.next')}</p>
-        <ol className="mt-5 flex items-center gap-2 text-sm text-loam-700">
+        <ol className="mt-5 flex flex-wrap items-center gap-2 text-sm text-loam-700">
           {steps.map((s, i) => (
             <li key={s.label} className="flex items-center gap-2">
               {i > 0 && <span className="h-px w-6 bg-loam-300" aria-hidden />}

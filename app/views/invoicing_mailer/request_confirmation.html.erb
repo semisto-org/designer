@@ -4,5 +4,5 @@
 <p><%= t(".invoice", email: @request.billing_email) %>
 <% if @request.purchase_order %><%= t(".purchase_order", number: @request.purchase_order) %><% end %></p>
 <p><%= t(".activation") %></p>
-<p><a href="<%= @billing_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".follow") %></a></p>
+<p><a href="<%= @billing_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:999px;text-decoration:none;font-weight:600"><%= t(".follow") %></a></p>
 <p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

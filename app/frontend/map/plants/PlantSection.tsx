@@ -7,14 +7,14 @@ import { ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { useEditor } from '@/map/editor/EditorContext'
-import { GRAFTABLE_STRATA, graftProperties, graftProperty, numberProperty, ownProperties, TRAINABLE_STRATA, trainedCrown, trainingProperty } from '@/map/plants/properties'
+import { GRAFTABLE_STRATA, graftProperties, graftProperty, isSupportPlant, numberProperty, ownProperties, SUPPORT_ROLES, TRAINABLE_STRATA, trainedCrown, trainingProperty } from '@/map/plants/properties'
 import { knownRootstock, rootstocksFor } from '@/map/plants/rootstocks'
 import { GRAFT_FORMS, GRAFT_TRUNK, ROOTSTOCK_VIGORS, TRUNK_RANGE, type GraftForm } from '@/relief/growth'
 import { usePlanting } from '@/map/plants/store'
-import { StrataDot } from '@/map/plants/strata'
+import { paletteItemOf, StrataDot } from '@/map/plants/strata'
 import type { MapFeature } from '@/types'
 
-const TRAININGS = ['free', 'pollard', 'coppice'] as const
+const TRAININGS = ['free', 'pollard', 'coppice', 'chop_and_drop'] as const
 
 /** Inspector section of a plant: its species (from the palette), crown, training and planting date. */
 export default function PlantSection({ feature }: { feature: MapFeature }) {
@@ -38,6 +38,11 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
   const graftData = graftProperties(feature)
   const graft = graftable ? graftProperty(feature, strata) : null
   const graftForm = GRAFT_FORMS.includes(graftData.form as GraftForm) ? (graftData.form as GraftForm) : null
+  const paletteRole = paletteItemOf(feature, data ?? null)?.role
+  const roleSupport = paletteRole != null && SUPPORT_ROLES.includes(paletteRole)
+  const succession = feature.properties.succession === 'support' || feature.properties.succession === 'productive' ? feature.properties.succession : ''
+  const support = isSupportPlant(feature, paletteRole)
+  const supportUntil = numberProperty(feature, 'support_until')
 
   async function save(patch: Record<string, unknown>) {
     const properties = { ...ownProperties(feature), ...patch }
@@ -147,6 +152,44 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
         </Field>
       ) : training !== 'free' ? (
         <p className="text-loam-600">{t('plant_feature.training')} : <span className="font-medium text-loam-900">{t(`plant_feature.trainings.${training}`)}</span></p>
+      ) : null)}
+
+      {speciesId != null && (editor.canEdit ? (
+        <div className="space-y-3">
+          <Field label={t('plant_feature.succession')} hint={t('plant_feature.succession_hint')}>
+            <Select value={succession} onChange={(e) => void save({ succession: e.target.value || null })}>
+              <option value="">{t(roleSupport ? 'plant_feature.successions.default_support' : 'plant_feature.successions.default_productive')}</option>
+              <option value="support">{t('plant_feature.successions.support')}</option>
+              <option value="productive">{t('plant_feature.successions.productive')}</option>
+            </Select>
+          </Field>
+          {support && (
+            <Field label={t('plant_feature.support_until')} hint={t('plant_feature.support_until_hint')}>
+              <Input
+                key={`${feature.properties.id}:until:${supportUntil ?? ''}`}
+                type="number"
+                min={1}
+                max={60}
+                inputMode="numeric"
+                className="w-28"
+                defaultValue={supportUntil ?? ''}
+                placeholder={t('plant_feature.support_until_placeholder')}
+                onBlur={(e) => {
+                  const raw = e.target.value.trim()
+                  const value = raw === '' ? null : Number(raw)
+                  if (value === supportUntil) return
+                  if (value === null || (Number.isInteger(value) && value >= 1 && value <= 60)) void save({ support_until: value })
+                  else e.target.value = supportUntil != null ? String(supportUntil) : ''
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+              />
+            </Field>
+          )}
+        </div>
+      ) : support ? (
+        <p className="text-loam-600">
+          {supportUntil != null ? t('plant_feature.support_summary_until', { count: supportUntil }) : t('plant_feature.support_summary')}
+        </p>
       ) : null)}
 
       {graftable && (editor.canEdit ? (

@@ -119,8 +119,11 @@ export type PlantInfo = {
   adultHeight: number
   adultSpread: number
   maturityYears: number
-  /** Kept free, pollarded or coppiced: the adult size is then what it reaches between two cuts. */
+  /** Kept free, pollarded, coppiced or chopped and dropped: the adult size is then what it reaches between two cuts. */
   training: PlantTraining
+  /** A support plant, and the year it gives way to the productive ones (null: it stays). */
+  support: boolean
+  givesWayIn: number | null
   /** A grafted fruit tree: its form, trunk (m), rootstock vigour and rootstock as drawn, or null. */
   graft: { form: GraftForm | null; trunk: number; vigor: RootstockVigor; rootstock: string | null } | null
   indicative: boolean
@@ -437,6 +440,8 @@ export class ReliefController {
       height: size?.height ?? null, spread: size?.spread ?? null,
       adultHeight: adult.height, adultSpread: adult.spread, maturityYears: adult.maturityYears,
       training: plant.training,
+      support: !!plant.support,
+      givesWayIn: plant.until != null ? calendarYear(data.origin, plant.start + plant.until) : null,
       graft: plant.graft && point?.graft ? {
         ...plant.graft,
         form: GRAFT_FORMS.includes(point.graft.form as GraftForm) ? (point.graft.form as GraftForm) : null,

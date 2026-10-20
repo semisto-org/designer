@@ -1,4 +1,4 @@
-import { anchor, bearing, cleanTrace, distance, expandBbox, gpsProperties, lineLength, ringArea } from '../geo'
+import { boundsOf, anchor, bearing, cleanTrace, distance, expandBbox, gpsProperties, lineLength, ringArea } from '../geo'
 
 describe('geo', () => {
   const a: [number, number] = [4.95, 50.32]
@@ -62,5 +62,13 @@ describe('geo', () => {
     expect(gpsProperties(14.237)).toEqual({ gps_accuracy_m: 14.2 })
     expect(gpsProperties(null)).toEqual({})
     expect(gpsProperties(0)).toEqual({})
+  })
+})
+
+describe('boundsOf', () => {
+  it('frames a polygon by its vertices, a point by itself, nothing by null', () => {
+    expect(boundsOf({ type: 'Polygon', coordinates: [[[4.9, 50.3], [4.92, 50.31], [4.91, 50.29], [4.9, 50.3]]] })).toEqual([4.9, 50.29, 4.92, 50.31])
+    expect(boundsOf({ type: 'Point', coordinates: [4.9, 50.3] })).toEqual([4.9, 50.3, 4.9, 50.3])
+    expect(boundsOf(null)).toBeNull()
   })
 })

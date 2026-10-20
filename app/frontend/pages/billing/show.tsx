@@ -1,17 +1,18 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
-import { CircleCheck, FlaskConical, Info, Landmark, Receipt } from 'lucide-react'
+import { ArrowLeft, CircleCheck, HeartHandshake, Info, Landmark, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { CheckoutButton } from '@/components/billing/CheckoutButton'
 import { IntervalToggle } from '@/components/billing/IntervalToggle'
 import { PlanCard } from '@/components/billing/PlanCard'
+import { PlacesOverview, PortalButton } from '@/components/billing/PlacesOverview'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
-import { formatBytes, formatDate, formatMoney, formatPrice } from '@/lib/money'
+import { formatDate, formatMoney, formatPrice } from '@/lib/money'
 import type { SharedProps } from '@/types'
-import type { BillingData, BillingInterval, CatalogKey, CatalogPlan, GrantData, InvoiceRequestStatus, InvoiceRequestSummary } from '@/types/billing'
+import type { BillingData, BillingInterval, CatalogKey, CatalogPlan, InvoiceRequestStatus, InvoiceRequestSummary } from '@/types/billing'
 
 const PLAN_ORDER: CatalogKey[] = ['free', 'yearly', 'atelier', 'bureau']
 // A pro account sees its plans first; nothing is hidden.
@@ -52,38 +53,31 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
         <HelpButton slug="formules-et-forfait" className="shrink-0" />
       </div>
 
+      {!billing.checkout && billing.returnTo && (
+        <ReturnLink href={billing.returnTo} className="mt-4" />
+      )}
+
       {billing.checkout === 'success' && (
         <div role="status" className="mt-6 flex gap-3 rounded-xl bg-leaf-50 p-4 text-leaf-800 ring-1 ring-leaf-200">
           <CircleCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <div>
             <p className="font-semibold">{t('billing.checkout.success_title')}</p>
             <p className="mt-0.5 text-sm">{waiting ? t('billing.checkout.success_waiting') : t('billing.checkout.success_body')}</p>
+            {billing.returnTo && !waiting && <ReturnLink href={billing.returnTo} className="mt-3" />}
           </div>
         </div>
       )}
       {billing.checkout === 'cancelled' && (
         <div role="status" className="mt-6 flex gap-3 rounded-xl bg-white p-4 text-loam-700 ring-1 ring-loam-200">
           <Info className="mt-0.5 h-5 w-5 shrink-0 text-loam-400" aria-hidden="true" />
-          <p className="text-sm">{t('billing.checkout.cancelled')}</p>
-        </div>
-      )}
-
-      {!billing.enabled && (
-        <div className="mt-6 flex gap-3 rounded-xl bg-humus-50 p-5 text-humus-700 ring-1 ring-humus-200">
-          <FlaskConical className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <div>
-            <p className="font-semibold">{t('billing.status.beta_title')}</p>
-            <p className="mt-1 text-sm">{t('billing.status.beta_body')}</p>
+            <p className="text-sm">{t('billing.checkout.cancelled')}</p>
+            {billing.returnTo && <ReturnLink href={billing.returnTo} className="mt-2" />}
           </div>
         </div>
       )}
-      {billing.enabled && <StatusCard billing={billing} />}
-      {!billing.enabled && billing.grants.length > 0 && (
-        <Card className="mt-6">
-          <p className="text-sm font-semibold uppercase tracking-wide text-leaf-600">{t('invoicing.billing.grant_title')}</p>
-          <div className="mt-2 space-y-1.5 text-sm text-loam-600"><GrantLines grants={billing.grants} /></div>
-        </Card>
-      )}
+
+      <PlacesOverview billing={billing} />
 
       <div className="mt-12 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg">{t('billing.plans_title')}</h2>
@@ -112,7 +106,7 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
             <p className="mt-2 text-sm text-loam-700">{formatPrice(catalog('drone').priceCents)} · {t('billing.plans.drone.price_note')}</p>
           </div>
           {billing.enabled && catalog('drone').purchasable ? (
-            <CheckoutButton plan="drone" variant="secondary" className="shrink-0">{t('billing.actions.buy_drone')}</CheckoutButton>
+            <CheckoutButton plan="drone" variant="secondary" className="shrink-0" returnTo={billing.returnTo}>{t('billing.actions.buy_drone')}</CheckoutButton>
           ) : (
             <Button variant="secondary" disabled className="shrink-0">{t('billing.actions.unavailable')}</Button>
           )}
@@ -146,6 +140,10 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
             <h2 id="payments-title" className="text-lg">{t('billing.payments.title')}</h2>
             {billing.canManage && <PortalButton label={t('billing.actions.invoices')} />}
           </div>
+          <p className="mt-2 flex max-w-2xl gap-2 text-sm text-loam-600">
+            <HeartHandshake className="mt-0.5 h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+            {t('billing.supports')}
+          </p>
           {billing.payments.length === 0 ? (
             <p className="mt-4 text-sm text-loam-500">{t('billing.payments.empty')}</p>
           ) : (
@@ -178,22 +176,6 @@ export default function BillingShow({ billing }: { billing: BillingData }) {
   )
 }
 
-function PortalButton({ label, variant = 'secondary' }: { label: string; variant?: 'primary' | 'secondary' }) {
-  const [busy, setBusy] = useState(false)
-  return (
-    <Button
-      variant={variant}
-      disabled={busy}
-      onClick={() => {
-        setBusy(true)
-        router.post('/billing/portal', {}, { onFinish: () => setBusy(false) })
-      }}
-    >
-      {busy ? t('billing.actions.redirecting') : label}
-    </Button>
-  )
-}
-
 /** The button of a plan card: buy, renew, manage in the portal, or "your current plan". */
 function PlanAction({ billing, plan, interval }: { billing: BillingData; plan: CatalogPlan; interval: BillingInterval }) {
   const subscribed = billing.subscription?.active ? billing.subscription : null
@@ -217,111 +199,9 @@ function PlanAction({ billing, plan, interval }: { billing: BillingData; plan: C
   }
   const renewing = plan.key === 'yearly' && Boolean(billing.pass || billing.expiredPass)
   return (
-    <CheckoutButton plan={plan.key} interval={plan.kind === 'subscription' ? interval : undefined} variant={plan.key === 'yearly' ? 'primary' : 'secondary'} className="w-full">
+    <CheckoutButton plan={plan.key} interval={plan.kind === 'subscription' ? interval : undefined} returnTo={billing.returnTo} variant={plan.key === 'yearly' ? 'primary' : 'secondary'} className="w-full">
       {renewing ? t('billing.actions.renew') : t('billing.actions.choose')}
     </CheckoutButton>
-  )
-}
-
-/** Where the user stands: plan, expiry, maps used, and what happens next. */
-function StatusCard({ billing }: { billing: BillingData }) {
-  const { plan, pass, expiredPass, subscription } = billing
-  const maps = Number.isFinite(billing.maxMaps) && billing.maxMaps < 1000
-    ? t('billing.status.maps_used', { used: billing.ownedMaps, max: billing.maxMaps })
-    : t('billing.status.maps_used_unlimited', { used: billing.ownedMaps })
-  const expired = plan === 'free' && expiredPass
-
-  let title = t('billing.status.free_title')
-  if (plan === 'yearly') title = t('billing.status.yearly_title')
-  else if (plan === 'atelier' || plan === 'bureau') title = t(`billing.plans.${plan}.name`)
-  else if (expired) title = t('billing.status.expired_title')
-
-  return (
-    <Card className="mt-6">
-      <p className="text-sm font-semibold uppercase tracking-wide text-leaf-600">{t('billing.status.current')}</p>
-      <div className="mt-1 flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="text-xl">{title}</h2>
-          <div className="mt-2 space-y-1.5 text-sm text-loam-600">
-            {plan === 'free' && !expired && <p>{t('billing.status.free_body')}</p>}
-            {expired && (
-              <>
-                <p>{t('billing.status.expired_on', { date: formatDate(expiredPass.expiresAt) })} {t('billing.status.expired_body')}</p>
-                {billing.readOnlyMaps > 0 && <p className="font-medium text-humus-700">{t('billing.status.read_only_maps', { count: billing.readOnlyMaps })}</p>}
-              </>
-            )}
-            {pass && plan === 'yearly' && (
-              <>
-                <p className="font-medium text-loam-800">{t('billing.status.yearly_until', { date: formatDate(pass.expiresAt) })}</p>
-                <p>{t('billing.status.yearly_days', { count: pass.daysLeft })}</p>
-                <p className="text-loam-500">{t('billing.status.yearly_renew_note')}</p>
-              </>
-            )}
-            <GrantLines grants={billing.grants} />
-            {subscription && (
-              <>
-                {subscription.active && subscription.currentPeriodEnd && !subscription.cancelAtPeriodEnd && (
-                  <p>{t('billing.status.subscription_next', { date: formatDate(subscription.currentPeriodEnd) })}</p>
-                )}
-                {subscription.active && subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd && (
-                  <p className="font-medium text-humus-700">{t('billing.status.subscription_canceling', { date: formatDate(subscription.currentPeriodEnd) })}</p>
-                )}
-                {subscription.pastDue && <p className="font-medium text-clay-700">{t('billing.status.subscription_past_due')}</p>}
-                {!subscription.active && !subscription.pastDue && <p>{t('billing.status.subscription_ended')}</p>}
-              </>
-            )}
-            <p className="text-loam-500">{maps}</p>
-            {billing.storage.limitBytes !== null && (
-              <p className="text-loam-500">{t('billing.storage.used', { used: formatBytes(billing.storage.usedBytes), limit: formatBytes(billing.storage.limitBytes) })}</p>
-            )}
-            {billing.paidTeams.length > 0 && (
-              <p className="text-loam-500">
-                {t('team_billing.billing_page', { count: billing.paidTeams.length })}{' '}
-                {billing.paidTeams.map((team, index) => (
-                  <span key={team.id}>{index > 0 && ', '}<Link href={`/teams/${team.id}`} className="font-medium text-prune-700 underline underline-offset-2">{team.name}</Link></span>
-                ))}
-              </p>
-            )}
-            {billing.personalMaps && (
-              <>
-                <p className="text-loam-500">
-                  {t('team_billing.personal_maps', { used: billing.personalMaps.used, max: billing.personalMaps.max })}
-                  {billing.personalMaps.storage.limitBytes !== null && ` ${t('billing.storage.used', { used: formatBytes(billing.personalMaps.storage.usedBytes), limit: formatBytes(billing.personalMaps.storage.limitBytes) })}`}
-                </p>
-                {billing.personalMaps.readOnly > 0 && (
-                  <p className="font-medium text-humus-700">{t('team_billing.personal_read_only', { count: billing.personalMaps.readOnly })}</p>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-        {billing.canManage && subscription && (subscription.active || subscription.pastDue) && (
-          <PortalButton label={subscription.pastDue ? t('billing.actions.invoices') : t('billing.actions.manage')} />
-        )}
-      </div>
-    </Card>
-  )
-}
-
-/** Plans paid on invoice or given by Semisto: the running one (until when) and the next one. */
-function GrantLines({ grants }: { grants: GrantData[] }) {
-  return (
-    <>
-      {grants.map((grant) => {
-        const plan = t(`billing.plans.${grant.planKey}.name`)
-        if (!grant.active) {
-          return <p key={grant.id}>{t('invoicing.billing.grant_upcoming', { plan, start: formatDate(grant.startsAt), end: formatDate(grant.endsAt) })}</p>
-        }
-        return (
-          <div key={grant.id} className="space-y-1.5">
-            <p className="font-medium text-loam-800">
-              {t(grant.onInvoice ? 'invoicing.billing.grant_until' : 'invoicing.billing.grant_until_manual', { plan, date: formatDate(grant.endsAt) })}
-            </p>
-            <p>{t('invoicing.billing.grant_days', { count: grant.daysLeft })} {t(grant.onInvoice ? 'invoicing.billing.grant_renew_note' : 'invoicing.billing.grant_gift_note')}</p>
-          </div>
-        )
-      })}
-    </>
   )
 }
 
@@ -372,5 +252,15 @@ function InvoiceCard({ requests }: { requests: InvoiceRequestSummary[] }) {
         </div>
       )}
     </Card>
+  )
+}
+
+/** Back to where the person left (a locked panel, a read-only map). */
+function ReturnLink({ href, className }: { href: string; className?: string }) {
+  return (
+    <Link href={href} className={`inline-flex items-center gap-1.5 text-sm font-semibold text-prune-700 underline underline-offset-2 hover:text-prune-800 ${className ?? ''}`}>
+      <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+      {t('billing.return')}
+    </Link>
   )
 }

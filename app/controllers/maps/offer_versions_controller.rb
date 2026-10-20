@@ -12,6 +12,9 @@ module Maps
       render inertia: "maps/offers/version", props: {
         map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2),
         team: @map.organization && { name: @map.organization.name },
+        # Who makes the offer, at the top of the page the client reads.
+        issuer: @map.organization&.name || @map.owner.display_name,
+        letterhead: @map.letterhead,
         version: version_json(@version).merge(
           inputs: @version.inputs, measures: @version.measures, result: @version.result,
           terms: Offer::Pricing.new(@version.pricing.presence || Offer::Pricing::SEMISTO).terms
