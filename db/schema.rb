@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -697,9 +697,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_100000) do
     t.bigint "published_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "gallery_position"
+    t.boolean "site_tour", default: false, null: false
     t.integer "views_count", default: 0, null: false
+    t.index ["gallery_position"], name: "index_map_publications_on_gallery_position"
     t.index ["map_id"], name: "index_map_publications_on_map_id", unique: true
     t.index ["published_by_id"], name: "index_map_publications_on_published_by_id"
+    t.index ["site_tour"], name: "index_map_publications_on_site_tour", unique: true, where: "site_tour"
     t.index ["token"], name: "index_map_publications_on_token", unique: true
   end
 
