@@ -490,7 +490,8 @@
           "Polygon"
         ],
         "color": "#e8b33a",
-        "pickable": false
+        "pickable": false,
+        "icon": "target"
       },
       "measure": {
         "geometries": [
