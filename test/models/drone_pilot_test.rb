@@ -51,13 +51,37 @@ class DronePilotTest < ActiveSupport::TestCase
     assert_equal 0, pilot.travel_km_to(@map)
   end
 
-  test "the quote: Semisto keeps 20 % of the flat price, never of the travel fees" do
+  test "the quote: Semisto keeps 20 % of the flat price before VAT, never of the travel fees, plus Belgian VAT" do
     pilot = create_pilot(users(:bob))
     quote = pilot.quote_for(@map)
     assert_equal 350_00, quote.price_cents
     assert_equal quote.travel_km * 50, quote.travel_cents
-    assert_equal 70_00, quote.commission_cents
-    assert_equal quote.price_cents + quote.travel_cents - 70_00, quote.pilot_share_cents
+    assert_equal 70_00, quote.commission_cents, "VAT exempt: the price has no VAT in it"
+    assert_equal 14_70, quote.commission_vat_cents, "Belgian pilot: 21 % on the commission"
+    assert_equal 84_70, quote.semisto_cents
+    assert_equal quote.price_cents + quote.travel_cents - 84_70, quote.pilot_share_cents
+
+    pilot.update!(charges_vat: true, vat_number: "BE0123456789")
+    quote = pilot.quote_for(@map)
+    assert_equal 57_85, quote.commission_cents, "20 % of 350 / 1.21"
+    assert_equal 12_15, quote.commission_vat_cents
+
+    pilot.update!(country: "FR", vat_number: "FR12345678901")
+    quote = pilot.quote_for(@map)
+    assert_equal 58_33, quote.commission_cents, "20 % of 350 / 1.20"
+    assert_equal 0, quote.commission_vat_cents, "reverse charge outside Belgium"
+  end
+
+  test "charging VAT or working outside Belgium needs a VAT number" do
+    pilot = create_pilot(users(:bob))
+    pilot.charges_vat = true
+    refute pilot.valid?
+    assert pilot.errors.of_kind?(:vat_number, :blank)
+    pilot.charges_vat = false
+    pilot.country = "LU"
+    refute pilot.valid?
+    pilot.vat_number = "LU12345678"
+    assert pilot.valid?, pilot.errors.full_messages.to_sentence
   end
 
   test "listed once approved, and with payments on, only once Stripe can pay them" do

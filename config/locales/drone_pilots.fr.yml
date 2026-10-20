@@ -83,8 +83,9 @@ fr:
       base_chosen: "Base : %{place}"
       radius: "Rayon d'action (km)"
       price: "Forfait par mission (€ TVAC)"
-      price_hint: "Le prix du vol et du traitement des données, pour un lieu ordinaire."
-      share: "Sur %{price}, tu reçois %{pilot} : Semisto garde %{percent} % pour faire vivre Terranova."
+      price_hint: "Le prix du vol et du traitement des données, pour un lieu ordinaire, TVA comprise si tu la factures."
+      share: "Sur %{price}, tu reçois %{pilot} : Semisto garde %{percent} % de ton forfait hors TVA (%{semisto}) pour faire vivre Terranova."
+      share_vat: "Sur %{price}, tu reçois %{pilot} : Semisto garde %{percent} % de ton forfait hors TVA, plus la TVA belge sur cette part (%{semisto} en tout), pour faire vivre Terranova."
       travel: "Ajouter les frais de déplacement (%{price} par km, aller-retour)"
       travel_hint: "Calculés depuis ta base, par la route. Ils te reviennent entièrement."
       equipment: "Ton matériel"
@@ -109,7 +110,9 @@ fr:
       business_number: "Numéro d'entreprise"
       business_hint: "Le numéro BCE en Belgique, SIREN en France, RCS au Luxembourg."
       vat_number: "Numéro de TVA"
-      vat_hint: "Si tu es assujetti."
+      vat_hint: "Ton numéro de TVA intracommunautaire. Obligatoire hors de Belgique."
+      charges_vat: "Je facture la TVA à mes clients"
+      charges_vat_hint: "Ton forfait s'entend alors TVA comprise. Laisse décoché si tu es en franchise de TVA."
       tax_number: "Numéro d'identification fiscale"
       tax_hint: "Le numéro national en Belgique, le numéro fiscal en France."
       birth_date: "Date de naissance"
@@ -508,6 +511,8 @@ fr:
       models:
         drone_pilot:
           attributes:
+            vat_number:
+              required_for_vat: "Donne ton numéro de TVA : il est nécessaire quand tu factures la TVA ou que tu travailles hors de Belgique."
             drones:
               other_unnamed: "Donne le nom de ton autre drone."
             data_types:

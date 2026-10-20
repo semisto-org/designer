@@ -11,7 +11,9 @@
 # A delivered mission the client disputes waits for Semisto, who pays the
 # pilot or refunds the client. The amounts are frozen when the mission is
 # requested (Quote): the pilot's flat price, the travel fees and Semisto's
-# share (COMMISSION_RATE of the flat price only).
+# share: COMMISSION_RATE of the flat price before VAT (never of the travel
+# fees), plus Belgian VAT on it for a Belgian pilot. A pilot elsewhere in the
+# EU accounts for that VAT themselves (reverse charge). Michael, 2026-10-20.
 #
 # From the request until the mission is closed, the pilot reads the map
 # (Map#role_for) and, once it is paid, imports drone views, photos and files
@@ -20,26 +22,32 @@ class DroneMission < ApplicationRecord
   STATUSES = %w[requested accepted declined cancelled paid delivered completed refunded].freeze
   OPEN_STATUSES = %w[requested accepted paid delivered].freeze
   COMMISSION_RATE = 0.20
+  # VAT Semisto charges on its commission, by the pilot's country.
+  COMMISSION_VAT_RATES = { "BE" => 0.21 }.freeze
   CONFIRMATION_DELAY = 7.days
   # How many missions a client can have waiting for a pilot's answer.
   MAX_WAITING = 5
 
-  Quote = Data.define(:price_cents, :travel_km, :travel_cents, :commission_cents) do
+  Quote = Data.define(:price_cents, :travel_km, :travel_cents, :commission_cents, :commission_vat_cents) do
     def self.for(pilot, map)
       km = pilot.travel_km_to(map)
-      new(
-        price_cents: pilot.mission_price_cents, travel_km: km,
-        travel_cents: km * DronePilot::TRAVEL_CENTS_PER_KM,
-        commission_cents: (pilot.mission_price_cents * COMMISSION_RATE).round
-      )
+      commission = commission_for(pilot)
+      new(price_cents: pilot.mission_price_cents, travel_km: km, travel_cents: km * DronePilot::TRAVEL_CENTS_PER_KM, **commission)
+    end
+
+    # Semisto's share of a pilot's flat price, before VAT and its VAT.
+    def self.commission_for(pilot, price_cents = pilot.mission_price_cents)
+      commission = (price_cents / (1 + pilot.vat_rate) * COMMISSION_RATE).round
+      { commission_cents: commission, commission_vat_cents: (commission * COMMISSION_VAT_RATES.fetch(pilot.country, 0)).round }
     end
 
     def total_cents = price_cents + travel_cents
-    def pilot_share_cents = total_cents - commission_cents
+    def semisto_cents = commission_cents + commission_vat_cents
+    def pilot_share_cents = total_cents - semisto_cents
 
     def as_json(*)
       { priceCents: price_cents, travelKm: travel_km, travelCents: travel_cents, commissionCents: commission_cents,
-        totalCents: total_cents, pilotShareCents: pilot_share_cents }
+        commissionVatCents: commission_vat_cents, semistoCents: semisto_cents, totalCents: total_cents, pilotShareCents: pilot_share_cents }
     end
   end
 
@@ -59,7 +67,7 @@ class DroneMission < ApplicationRecord
   validates :desired_period, length: { maximum: 120 }
   validates :pilot_reply, :delivery_note, :dispute_message, length: { maximum: 3000 }
   validates :price_cents, :commission_cents, numericality: { only_integer: true, greater_than: 0 }
-  validates :travel_km, :travel_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :travel_km, :travel_cents, :commission_vat_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :data_types_offered
   validate :client_edits_map, :pilot_bookable, :map_located, :pilot_serves_map, :not_own_pilot, :not_too_many_waiting, on: :create
 
@@ -75,12 +83,12 @@ class DroneMission < ApplicationRecord
   def self.request!(client:, pilot:, map:, **attrs)
     quote = pilot.quote_for(map)
     create!(attrs.merge(client:, drone_pilot: pilot, map:, price_cents: quote.price_cents, travel_km: quote.travel_km,
-      travel_cents: quote.travel_cents, commission_cents: quote.commission_cents))
+      travel_cents: quote.travel_cents, commission_cents: quote.commission_cents, commission_vat_cents: quote.commission_vat_cents))
   end
 
   STATUSES.each { |name| define_method(:"#{name}?") { status == name } }
 
-  def quote = Quote.new(price_cents:, travel_km:, travel_cents:, commission_cents:)
+  def quote = Quote.new(price_cents:, travel_km:, travel_cents:, commission_cents:, commission_vat_cents:)
   def total_cents = quote.total_cents
   def pilot_share_cents = quote.pilot_share_cents
   def open? = OPEN_STATUSES.include?(status)

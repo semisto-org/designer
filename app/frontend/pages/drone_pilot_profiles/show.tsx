@@ -36,6 +36,7 @@ type Profile = {
   legalName: string
   businessNumber: string | null
   vatNumber: string | null
+  chargesVat: boolean
   taxNumber: string | null
   address: string
   country: string
@@ -57,6 +58,9 @@ type Props = {
   }
   defaults: { displayName: string; legalName: string | null }
   commissionPercent: number
+  /** VAT a pilot who charges it applies, and VAT Semisto adds to its commission, by country. */
+  vatRates: Record<string, number>
+  commissionVatRates: Record<string, number>
   travelCentsPerKm: number
   paymentsOpen: boolean
 }
@@ -76,7 +80,7 @@ function possibleTypes(drones: Drone[], catalogue: Props['catalogue']): DroneDat
  * profile clients see (fleet, price, area) and the private details Semisto
  * needs to pay the pilot and declare it.
  */
-export default function PilotProfile({ pilot, catalogue, defaults, commissionPercent, travelCentsPerKm, paymentsOpen }: Props) {
+export default function PilotProfile({ pilot, catalogue, defaults, commissionPercent, vatRates, commissionVatRates, travelCentsPerKm, paymentsOpen }: Props) {
   const { errors } = usePage().props as unknown as { errors: Record<string, string> }
   const form = useForm({
     display_name: pilot?.displayName ?? defaults.displayName,
@@ -97,6 +101,7 @@ export default function PilotProfile({ pilot, catalogue, defaults, commissionPer
     legal_name: pilot?.legalName ?? defaults.legalName ?? '',
     business_number: pilot?.businessNumber ?? '',
     vat_number: pilot?.vatNumber ?? '',
+    charges_vat: pilot?.chargesVat ?? false,
     tax_number: pilot?.taxNumber ?? '',
     address: pilot?.address ?? '',
     country: pilot?.country ?? 'BE',
@@ -120,6 +125,11 @@ export default function PilotProfile({ pilot, catalogue, defaults, commissionPer
     form.setData(key, (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]) as never)
   }
   const price = Number(form.data.mission_price.replace(',', '.'))
+  // Mirrors DroneMission::Quote.commission_for, so the pilot sees their share while typing.
+  const priceCents = Math.round(price * 100)
+  const commissionCents = Math.round((priceCents / (1 + (form.data.charges_vat ? vatRates[form.data.country] ?? 0 : 0))) * (commissionPercent / 100))
+  const commissionVatCents = Math.round(commissionCents * (commissionVatRates[form.data.country] ?? 0))
+  const semistoCents = commissionCents + commissionVatCents
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -159,7 +169,9 @@ export default function PilotProfile({ pilot, catalogue, defaults, commissionPer
           </div>
           {price > 0 && (
             <p className="text-sm text-loam-600">
-              {t('drone_pilots.profile.share', { percent: commissionPercent, pilot: formatPrice(Math.round(price * 100 * (1 - commissionPercent / 100))), price: formatPrice(Math.round(price * 100)) })}
+              {t(commissionVatCents > 0 ? 'drone_pilots.profile.share_vat' : 'drone_pilots.profile.share', {
+                percent: commissionPercent, semisto: formatPrice(semistoCents), pilot: formatPrice(priceCents - semistoCents), price: formatPrice(priceCents),
+              })}
             </p>
           )}
           <label className="flex items-start gap-3 rounded-xl bg-loam-50 px-4 py-3">
@@ -244,6 +256,14 @@ export default function PilotProfile({ pilot, catalogue, defaults, commissionPer
                 {catalogue.countries.map((c) => <option key={c} value={c}>{t(`drone_pilots.countries.${c}`)}</option>)}
               </Select>
             </Field>
+            <label className="flex items-start gap-3 rounded-xl bg-loam-50 px-4 py-3 sm:col-span-2">
+              <input type="checkbox" className="mt-1 h-4 w-4 rounded border-loam-300 text-prune-600" checked={form.data.charges_vat}
+                onChange={(e) => form.setData('charges_vat', e.target.checked)} />
+              <span>
+                <span className="block font-medium text-loam-900">{t('drone_pilots.profile.charges_vat')}</span>
+                <span className="block text-sm text-loam-600">{t('drone_pilots.profile.charges_vat_hint')}</span>
+              </span>
+            </label>
             <Field label={t('drone_pilots.profile.phone')} hint={t('drone_pilots.profile.phone_hint')} error={err('phone')}>
               <Input type="tel" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
             </Field>

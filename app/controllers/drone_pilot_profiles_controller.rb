@@ -15,6 +15,7 @@ class DronePilotProfilesController < ApplicationController
                    legalForms: DronePilot::LEGAL_FORMS, countries: DronePilot::COUNTRIES },
       defaults: { displayName: Current.user.display_name, legalName: Current.user.name },
       commissionPercent: (DroneMission::COMMISSION_RATE * 100).round,
+      vatRates: DronePilot::VAT_RATES, commissionVatRates: DroneMission::COMMISSION_VAT_RATES,
       travelCentsPerKm: DronePilot::TRAVEL_CENTS_PER_KM,
       paymentsOpen: Billing.enabled?
     }
@@ -71,7 +72,7 @@ class DronePilotProfilesController < ApplicationController
     def pilot_params
       raw = params.require(:drone_pilot).permit(
         :display_name, :bio, :base_place, :lng, :lat, :service_radius_km, :mission_price, :travel_fees_enabled,
-        :operator_number, :insurer, :phone, :legal_form, :legal_name, :business_number, :vat_number, :tax_number,
+        :operator_number, :insurer, :phone, :legal_form, :legal_name, :business_number, :vat_number, :charges_vat, :tax_number,
         :address, :country, :birth_date, data_types: [], certificates: [], drones: %i[model name]
       )
       raw[:mission_price_cents] = (BigDecimal(raw.delete(:mission_price).to_s.tr(",", ".")) * 100).round if raw[:mission_price].present?
@@ -89,7 +90,7 @@ class DronePilotProfilesController < ApplicationController
         drones: pilot.drones, dataTypes: pilot.data_types, certificates: pilot.certificates,
         operatorNumber: pilot.operator_number, insurer: pilot.insurer, phone: pilot.phone,
         legalForm: pilot.legal_form, legalName: pilot.legal_name, businessNumber: pilot.business_number, vatNumber: pilot.vat_number,
-        taxNumber: pilot.tax_number, address: pilot.address, country: pilot.country, birthDate: pilot.birth_date&.iso8601,
+        chargesVat: pilot.charges_vat, taxNumber: pilot.tax_number, address: pilot.address, country: pilot.country, birthDate: pilot.birth_date&.iso8601,
         stripeConnected: pilot.stripe_account_id.present?, payoutsEnabled: pilot.payouts_enabled, detailsSubmitted: pilot.details_submitted,
         missions: { waiting: pilot.missions.where(status: "requested").count, open: pilot.missions.open.count }
       }

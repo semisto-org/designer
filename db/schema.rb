@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_230100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -310,6 +310,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230100) do
     t.datetime "closed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "commission_vat_cents", default: 0, null: false
     t.index ["client_id"], name: "index_drone_missions_on_client_id"
     t.index ["drone_pilot_id"], name: "index_drone_missions_on_drone_pilot_id"
     t.index ["map_id"], name: "index_drone_missions_on_map_id"
@@ -350,6 +351,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230100) do
     t.text "review_note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "charges_vat", default: false, null: false
     t.index ["base_location"], name: "index_drone_pilots_on_base_location", using: :gist
     t.index ["reviewed_by_id"], name: "index_drone_pilots_on_reviewed_by_id"
     t.index ["status"], name: "index_drone_pilots_on_status"

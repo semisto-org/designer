@@ -7,7 +7,10 @@ export type DroneQuote = {
   priceCents: number
   travelKm: number
   travelCents: number
+  /** Semisto's commission before VAT, the VAT on it, and both together. */
   commissionCents: number
+  commissionVatCents: number
+  semistoCents: number
   totalCents: number
   pilotShareCents: number
 }

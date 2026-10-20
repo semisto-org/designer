@@ -63,7 +63,7 @@ module Admin
 
       def mission_json(mission)
         { id: mission.id, status: mission.status, mapId: mission.map_id, mapName: mission.map.name, pilotName: mission.drone_pilot.display_name,
-          clientName: mission.client.display_name, totalCents: mission.total_cents, commissionCents: mission.commission_cents,
+          clientName: mission.client.display_name, totalCents: mission.total_cents, commissionCents: mission.quote.semisto_cents,
           pilotShareCents: mission.pilot_share_cents, paidAt: mission.paid_at&.iso8601, deliveredAt: mission.delivered_at&.iso8601,
           paidOutAt: mission.paid_out_at&.iso8601, disputed: mission.disputed?, disputeMessage: mission.dispute_message,
           payoutError: mission.payout_error, livemode: mission.livemode }

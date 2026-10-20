@@ -4,10 +4,11 @@
 # they can be paid: their Stripe Connect account (Express) is ready to
 # receive transfers, or always while billing is off (beta).
 #
-# The pilot sets one flat mission price (what the client pays, VAT included)
-# and may add travel fees (TRAVEL_CENTS_PER_KM per km, there and back, from
-# their base to the map). Semisto keeps COMMISSION_RATE of the flat price,
-# never of the travel fees (DroneMission::Quote).
+# The pilot sets one flat mission price (what the client pays, VAT included
+# when the pilot charges VAT) and may add travel fees (TRAVEL_CENTS_PER_KM per
+# km, there and back, from their base to the map). Semisto keeps
+# COMMISSION_RATE of the flat price before VAT, never of the travel fees, plus
+# VAT on it when due (DroneMission::Quote).
 #
 # The legal fields (legal form, name, address, numbers, birth date) are what
 # a platform owes the tax authority once a year (DAC7) and are never shown
@@ -18,6 +19,8 @@ class DronePilot < ApplicationRecord
   # commission between two businesses and DAC7 reporting simple.
   LEGAL_FORMS = %w[company].freeze
   COUNTRIES = %w[BE FR LU NL DE].freeze
+  # Standard VAT rate a pilot who charges VAT applies to a mission, by country.
+  VAT_RATES = { "BE" => 0.21, "FR" => 0.20, "LU" => 0.17, "NL" => 0.21, "DE" => 0.19 }.freeze
   TRAVEL_CENTS_PER_KM = 50
   # Straight-line distance times this gives a fair road distance.
   ROAD_FACTOR = 1.3
@@ -51,6 +54,9 @@ class DronePilot < ApplicationRecord
   validates :business_number, presence: true, length: { maximum: 40 }
   validates :tax_number, length: { maximum: 40 }
   validates :vat_number, length: { maximum: 40 }
+  # Charging VAT, or being paid from outside Belgium (Semisto's commission is
+  # then reverse-charged), needs a VAT number.
+  validates :vat_number, presence: { message: :required_for_vat }, if: -> { charges_vat || country != "BE" }
   # A refusal or a suspension always says why.
   validates :review_note, presence: true, if: -> { %w[rejected suspended].include?(status) && will_save_change_to_status? }
   validate :drones_known
@@ -103,6 +109,7 @@ class DronePilot < ApplicationRecord
   end
 
   def quote_for(map) = DroneMission::Quote.for(self, map)
+  def vat_rate = charges_vat ? VAT_RATES.fetch(country, 0) : 0
 
   def approve!(by:)
     update!(status: "approved", reviewed_by: by, reviewed_at: Time.current, review_note: nil)

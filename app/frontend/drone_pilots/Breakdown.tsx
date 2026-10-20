@@ -11,7 +11,7 @@ export function Breakdown({ quote }: { quote: DroneQuote }) {
         <div className="flex justify-between gap-2"><dt className="text-loam-600">{t('drone_pilots.quote.travel', { km: quote.travelKm })}</dt><dd>{formatPrice(quote.travelCents)}</dd></div>
       )}
       <div className="flex justify-between gap-2 border-t border-loam-200 pt-1 font-semibold text-loam-900"><dt>{t('drone_pilots.quote.total')}</dt><dd>{formatPrice(quote.totalCents)}</dd></div>
-      <p className="pt-1 text-loam-500">{t('drone_pilots.quote.share', { semisto: formatPrice(quote.commissionCents), pilot: formatPrice(quote.pilotShareCents) })}</p>
+      <p className="pt-1 text-loam-500">{t('drone_pilots.quote.share', { semisto: formatPrice(quote.semistoCents), pilot: formatPrice(quote.pilotShareCents) })}</p>
     </dl>
   )
 }
