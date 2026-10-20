@@ -1,5 +1,7 @@
 # /billing — the current plan, its expiry, and how to buy, renew or upgrade.
 class BillingController < ApplicationController
+  include SafeReturnPath
+
   CHECKOUT_RESULTS = %w[success cancelled].freeze
 
   def show
@@ -45,6 +47,11 @@ class BillingController < ApplicationController
         # Asked of Semisto's internal app only once payments are open.
         member: Billing.enabled? && Billing::MemberStanding.in_good_standing?(user),
         storage: StorageUsage.new(user).as_json,
+        # What the plan does for their places, in names and counters.
+        places: BillingPlaces.new(user).as_json,
+        # Where the person came from (a locked panel, a read-only map): the
+        # way back after paying.
+        returnTo: safe_return_path,
         checkout: CHECKOUT_RESULTS.include?(params[:checkout]) ? params[:checkout] : nil,
         highlight: Billing::Catalog.find(params[:plan])&.key,
         # Pro and Team are shown yearly unless the visitor came for the monthly price.

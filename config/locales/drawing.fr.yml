@@ -472,10 +472,6 @@ fr:
     pdf:
       title: "Plan PDF à l'échelle"
       intro: "Le plan reprend la vue de la carte et les couches affichées, à l'échelle exacte."
-      upsell_title: "Le plan à l'échelle fait partie du forfait"
-      upsell: "Imprime ton design en A4 ou A3, à l'échelle exacte, avec cartouche, légende et flèche du nord, pour le terrain, le pépiniériste ou un dossier de subside."
-      upsell_editor: "Cette carte suit la formule de son propriétaire : c'est lui qui peut débloquer le plan à l'échelle."
-      upgrade: "Voir les formules"
       paper: "Format"
       orientation: "Orientation"
       portrait: "Portrait"

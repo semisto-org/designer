@@ -9,6 +9,7 @@ class TaskMailer < ApplicationMailer
     @invitation_url = invitation_link(task) unless task.assignee
     return if task.assignee.nil? && @invitation_url.nil?
     @url = @invitation_url || map_tasks_url(@map)
+    show_place(@map)
     mail to: task.assignee&.email_address || task.invitee_email,
          subject: t(".subject", assigner: assigner.display_name, map: @map.name)
   end
