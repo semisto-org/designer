@@ -332,7 +332,7 @@ export default function SectorsPanel() {
             <Button size="sm" disabled={!ready || saving} onClick={() => void save()}>{t(draft.id ? 'sectors.save' : 'sectors.create')}</Button>
             <Button size="sm" variant="ghost" onClick={() => setDraft(null)}>{t('sectors.cancel')}</Button>
             {draft.id && (
-              <Button size="sm" variant="ghost" className="ml-auto text-clay-500" disabled={saving} onClick={() => void remove()}>
+              <Button size="sm" variant="danger-ghost" className="ml-auto" disabled={saving} onClick={() => void remove()}>
                 <Trash2 className="h-4 w-4" aria-hidden />{t('sectors.delete')}
               </Button>
             )}

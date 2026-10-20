@@ -6,8 +6,10 @@ class MapsController < ApplicationController
   before_action :require_owner!, only: :destroy
 
   def index
-    # A new account first says who it designs for (welcome page).
-    return redirect_to welcome_path if request.format.html? && !Current.user.account_kind_chosen? && !impersonating?
+    # A new account first says who it designs for (welcome page), unless it
+    # came in with its place already (a trial kept): then the question waits
+    # for its second map (#new).
+    return redirect_to welcome_path if request.format.html? && ask_account_kind? && Current.user.owned_maps.none?
 
     maps = Map.active.where(id: Current.user.map_memberships.select(:map_id))
       .or(Map.active.where(organization_id: Current.user.organization_memberships.select(:organization_id)))
@@ -37,6 +39,10 @@ class MapsController < ApplicationController
   end
 
   def new
+    if ask_account_kind? && Current.user.owned_maps.exists?
+      session[:after_welcome] = new_map_path
+      return redirect_to welcome_path
+    end
     region = Region.europe || Region.default
     render inertia: "maps/new", props: { region: region.as_inertia, layers: region.catalogue.enabled.bases.map(&:as_inertia) }
   end
@@ -137,4 +143,6 @@ class MapsController < ApplicationController
       lng, lat = Array(coords).map(&:to_f)
       GeoJsonGeometry::FACTORY.point(lng, lat)
     end
+
+    def ask_account_kind? = !Current.user.account_kind_chosen? && !impersonating?
 end

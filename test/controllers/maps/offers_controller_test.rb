@@ -142,5 +142,7 @@ class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
     get map_offer_version_path(@map, 1), headers: inertia_headers
     assert_equal "maps/offers/version", response.parsed_body["component"]
     assert_equal v1_total, response.parsed_body["props"]["version"]["result"]["totals"]["total_tvac"]
+    assert_equal "Semisto", response.parsed_body["props"]["issuer"], "the client reads who makes the offer"
+    assert_nil response.parsed_body["props"]["letterhead"]
   end
 end

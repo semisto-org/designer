@@ -5,8 +5,10 @@ import { useState } from 'react'
 import { CopyField } from '@/components/CopyField'
 import { HelpButton } from '@/components/help/HelpButton'
 import { MapViewHeader } from '@/components/map_views/MapViews'
+import { ButtonLink } from '@/components/ui/Button'
 import { Card, EmptyState } from '@/components/ui/Card'
 import { FormAnswers } from '@/documents/FormAnswers'
+import { tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { MapFormLink, MapFormResponse, MapFormsPageProps } from '@/types/forms'
@@ -34,10 +36,27 @@ export default function MapForms({ map, team, connected, canEdit, forms, respons
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-2xl">
           <h1 className="text-3xl">{t('forms.map.title')}</h1>
-          <p className="mt-1 text-loam-600">{team ? t('forms.map.intro', { team: team.name }) : t('forms.map.no_team')}</p>
+          {team && <p className="mt-1 text-loam-600">{tf('forms.map.intro', { team: team.name })}</p>}
         </div>
         <HelpButton slug="brancher-ses-formulaires-tally" />
       </div>
+
+      {/* Reached from an old link or the help: say how to get forms here, never a dead end. */}
+      {!team && (
+        <div className="mt-6">
+          <EmptyState
+            title={t('forms.map.no_team_title')}
+            action={(
+              <div className="flex flex-wrap justify-center gap-2">
+                {map.role === 'owner' && <ButtonLink href={`/maps/${map.id}`}>{t('forms.map.no_team_open_map')}</ButtonLink>}
+                <ButtonLink href="/teams" variant="secondary">{t('forms.map.no_team_teams')}</ButtonLink>
+              </div>
+            )}
+          >
+            {tf(map.role === 'owner' ? 'forms.map.no_team_owner' : 'forms.map.no_team')}
+          </EmptyState>
+        </div>
+      )}
 
       {team && (
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -98,7 +117,7 @@ function SendPanel({ connected, admin, forms, manage }: { connected: boolean; ad
                     {t('forms.map.preview')}<ExternalLink className="h-3.5 w-3.5" aria-hidden />
                   </a>
                 </div>
-                <CopyField value={form.link} />
+                <CopyField value={form.link} end />
                 <p className="mt-1 text-sm text-loam-500">{t('forms.map.received_here', { count: form.responsesCount })}</p>
               </li>
             ))}

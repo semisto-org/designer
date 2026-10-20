@@ -126,7 +126,6 @@ fr:
       name: "Nom"
       notes: "Notes"
       rationale: "Pourquoi cette proposition"
-      confirm_delete: "Supprimer cet élément ?"
     measure:
       area: "Surface"
       length: "Longueur"

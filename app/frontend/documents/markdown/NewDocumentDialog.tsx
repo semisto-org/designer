@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react'
 import { BookOpenText, FilePen, Footprints } from 'lucide-react'
 import { useState } from 'react'
 import { Dialog } from '@/components/ui/Dialog'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { formatDate } from '@/lib/money'
 import type { MapDocumentData } from '@/types/documents'
@@ -43,7 +43,7 @@ export function NewDocumentDialog({ open, onClose, endpoint, tags }: { open: boo
       })
       router.visit(`${endpoint}/${doc.id}?edit=1&new=1`)
     } catch (e) {
-      setError((e as Error).message)
+      setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
       setBusy(null)
     }
   }

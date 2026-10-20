@@ -53,13 +53,10 @@ export function newId(): string {
 export function SaveIndicator({ status }: { status: SaveStatus }) {
   const label = {
     new: t('offers.page.not_saved'), pending: t('offers.page.pending'), saving: t('offers.page.saving'),
-    saved: t('offers.page.saved'), error: t('offers.page.save_error'),
+    saved: t('offers.page.saved'), error: t('offers.page.save_error_short'),
   }[status]
-  return (
-    <span role="status" className={clsx('text-xs', status === 'error' ? 'text-clay-600' : 'text-loam-500')}>
-      {status === 'error' ? t('offers.page.save_error') : label}
-    </span>
-  )
+  // The whole explanation of an error is in the page's banner; here, a word.
+  return <span role="status" className={clsx('text-sm', status === 'error' ? 'font-medium text-clay-600' : 'text-loam-500')}>{label}</span>
 }
 
 /** A section heading in the field-notebook voice: serif title, small help. */

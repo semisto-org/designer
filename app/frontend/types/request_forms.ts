@@ -18,7 +18,7 @@ export type PublicRequestFormProps = {
 
 export type RequestStatus = 'new' | 'called' | 'visited' | 'offer_sent' | 'accepted' | 'declined'
 
-export type RequestFormData = { id: number; slug: string; active: boolean; intro: string | null; url: string }
+export type RequestFormData = { id: number; slug: string; active: boolean; intro: string | null; url: string; displayName: string }
 
 export type RequestSummary = {
   id: number

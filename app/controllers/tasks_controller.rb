@@ -30,8 +30,10 @@ class TasksController < ApplicationController
     end
 
     def pending_in(maps)
+      # A task's position counts within its list: order by the list first,
+      # so the method's order (water before plants) survives.
       Task.pending.where(map_id: maps.select(:id))
-          .includes(:map, :task_list, :assignee)
-          .order(Arel.sql("tasks.due_on ASC NULLS LAST"), :map_id, :position, :id)
+          .joins(:task_list).includes(:map, :task_list, :assignee)
+          .order(Arel.sql("tasks.due_on ASC NULLS LAST"), "tasks.map_id", "task_lists.position", "tasks.position", "tasks.id")
     end
 end

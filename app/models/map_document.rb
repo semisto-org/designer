@@ -28,6 +28,8 @@ class MapDocument < ApplicationRecord
   MARKDOWN_EXTENSIONS = %w[md markdown].freeze
   # Larger Markdown files are only downloaded: nobody writes a megabyte of text.
   MAX_MARKDOWN_BYTES = 1.megabyte
+  # The first characters of a Markdown page shown on its library tile.
+  EXCERPT_LENGTH = 200
   # Raised when the text changed since the editor read it.
   class StaleContent < StandardError; end
   KINDS = {
@@ -83,6 +85,29 @@ class MapDocument < ApplicationRecord
   def markdown_content
     return nil unless editable_markdown?
     file.download.dup.force_encoding(Encoding::UTF_8).scrub
+  end
+
+  # The first words of a Markdown page, without its syntax, for its tile in
+  # the library. A form's answer shows its own fields instead. Cached by the
+  # file's checksum, so the file is read once per version.
+  def markdown_excerpt
+    return nil unless editable_markdown? && origin != "form"
+    Rails.cache.fetch([ "map_document_excerpt", file.blob.checksum ]) { self.class.plain_excerpt(markdown_content) }
+  end
+
+  # Markdown as plain words: the page's own heading (the tile shows the
+  # title already), list and task marks, emphasis, links and images go.
+  def self.plain_excerpt(markdown, length: EXCERPT_LENGTH)
+    markdown.to_s
+      .sub(/\A\s*#\s[^\n]*\n?/, "")
+      .gsub(/^```.*?^```/m, " ")
+      .gsub(/!\[[^\]]*\]\([^)]*\)/, " ")
+      .gsub(/\[([^\]]*)\]\([^)]*\)/, '\1')
+      .gsub(/^\s*([-*_])\s*(\1\s*){2,}$/, " ")
+      .gsub(/^[ \t]*(\#{1,6}|>|[-*+]|\d+[.)])[ \t]+/, "")
+      .gsub(/\[[ xX]\][ \t]*/, "")
+      .gsub(/[*_`~|]+/, "")
+      .squish.truncate(length, separator: " ").presence
   end
 
   # Fingerprint of the stored text: the editor sends back the one it read,
@@ -164,7 +189,7 @@ class MapDocument < ApplicationRecord
   # browser; everything else, web pages and SVG included, is downloaded.
   # JSON for the library and the project sheet. `url` builds the file's
   # address (the map's authenticated route, or the private link's).
-  def as_inertia(url:)
+  def as_inertia(url:, excerpt: false)
     blob = file.attached? ? file.blob : nil
     {
       id:, title:, description:, tags:, origin:, kind:, preview:,
@@ -174,6 +199,7 @@ class MapDocument < ApplicationRecord
       uploadedBy: uploaded_by&.display_name, fromProjectLink: project_sheet_link_id.present?,
       form: (form_response&.as_inertia if origin == "form"),
       markdown: editable_markdown?,
+      excerpt: (markdown_excerpt if excerpt),
       contentEditedAt: content_edited_at&.iso8601, contentEditedBy: content_edited_by&.display_name,
       thumbUrl: thumb_available? ? url.call(self, "thumb") : nil,
       previewUrl: preview ? url.call(self, preview == "image" ? "large" : "original") : nil,

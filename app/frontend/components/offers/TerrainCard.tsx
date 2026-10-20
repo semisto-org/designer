@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Input, Select } from '@/components/ui/Field'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
 import type { Candidate, OfferInputs, OfferMap, OfferMeasures, PricingInfo, ScopeInput } from '@/types/offers'
+import { addableCandidates, itemMeasure } from './scope'
 import { euros, newId, SectionTitle, typeLabel } from './shared'
 
 type Props = {
@@ -25,8 +26,8 @@ const measureText = (kind: 'area' | 'length', value: number) => (kind === 'area'
  * plants each becomes.
  */
 export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange }: Props) {
-  const inScope = new Set(inputs.scope.map((item) => item.feature_id).filter(Boolean))
-  const available = (measures.candidates ?? []).filter((feature) => !inScope.has(feature.id))
+  const groups = addableCandidates(measures.candidates, inputs.scope)
+  const available = groups.flatMap(([, features]) => features)
   const types = pricing.plantingTypes
   const firstOf = (measure: 'area' | 'length') => types.find((candidate) => candidate.measure === measure && Object.keys(candidate.mix).length > 0) ?? types[0]
 
@@ -47,7 +48,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
   function addManual() {
     onChange({
       ...inputs,
-      scope: [...inputs.scope, { id: newId(), feature_id: null, label: t('offers.scope.manual_label'), planting_type: firstOf('area')?.key ?? '', measure: null, plants_override: null, option: false }],
+      scope: [...inputs.scope, { id: newId(), feature_id: null, label: null, planting_type: firstOf('area')?.key ?? '', measure: null, plants_override: null, option: false }],
     })
   }
 
@@ -74,7 +75,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
 
       <div>
         <h3 className="text-sm font-semibold text-loam-900">{t('offers.scope.title')}</h3>
-        <p className="mt-0.5 text-xs text-loam-500">{t('offers.scope.help')}</p>
+        <p className="mt-0.5 text-sm text-loam-500">{t('offers.scope.help')}</p>
 
         {inputs.scope.length === 0 ? (
           <p className="mt-3 rounded-xl border border-dashed border-loam-300 px-4 py-6 text-center text-sm text-loam-500">{t('offers.scope.empty')}</p>
@@ -83,7 +84,8 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
             {inputs.scope.map((item) => {
               const measure = measures.scope.find((resolved) => resolved.id === item.id)
               const type = types.find((candidate) => candidate.key === item.planting_type)
-              const fromMap = item.feature_id != null && !measure?.missing
+              // Until the server answers, a line just picked from the map is measured from its candidate.
+              const { fromMap, kind, value } = itemMeasure(item, measure, measures.candidates)
               return (
                 <li key={item.id} className={clsx('rounded-xl p-3 ring-1 ring-inset', item.option ? 'bg-loam-50 ring-dashed ring-loam-300' : 'bg-leaf-50/60 ring-leaf-200')}>
                   <div className="flex flex-wrap items-center gap-2">
@@ -115,7 +117,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                     <label className="block">
                       <span className="sr-only">{t('offers.scope.type')}</span>
                       <Select value={item.planting_type} disabled={readOnly} onChange={(e) => setItem(item.id, { planting_type: e.target.value })}>
-                        {types.filter((candidate) => !fromMap || candidate.measure === measure?.measure_kind).map((candidate) => (
+                        {types.filter((candidate) => !fromMap || candidate.measure === kind).map((candidate) => (
                           <option key={candidate.key} value={candidate.key}>{typeLabel(candidate)}</option>
                         ))}
                       </Select>
@@ -123,7 +125,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                     {fromMap ? (
                       <p className="flex items-center gap-1 text-sm tabular-nums text-loam-800" title={t('offers.scope.measure_from_map')}>
                         <Ruler className="h-3.5 w-3.5 text-leaf-600" aria-hidden />
-                        {measureText(measure!.measure_kind, measure!.measure)}
+                        {measureText(kind!, value!)}
                       </p>
                     ) : (
                       <NumberInput
@@ -150,7 +152,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                       )}
                     </div>
                   </div>
-                  <p className="mt-1.5 text-xs text-loam-500">
+                  <p className="mt-1.5 text-sm text-loam-500">
                     {measure?.missing
                       ? <span className="text-clay-600">{t('offers.scope.missing')}</span>
                       : <>{type && !type.label && `${t(`offers.planting_type_rules.${item.planting_type}`)} · `}{formatNumber(measure?.plants_total ?? 0)} {t('offers.scope.plants').toLowerCase()}</>}
@@ -174,10 +176,14 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                 }}
               >
                 <option value="">{available.length === 0 ? t('offers.scope.add_feature_none') : t('offers.scope.add_feature')}</option>
-                {available.map((feature) => (
-                  <option key={feature.id} value={feature.id}>
-                    {(feature.name || t(`editor.kinds.${feature.kind}`))} · {measureText(feature.measure_kind, feature.measure)}
-                  </option>
+                {groups.map(([layer, features]) => (
+                  <optgroup key={layer} label={t(`editor.layers.${layer}`)}>
+                    {features.map((feature) => (
+                      <option key={feature.id} value={feature.id}>
+                        {(feature.name || t(`editor.kinds.${feature.kind}`))} · {measureText(feature.measure_kind, feature.measure)}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </Select>
             </label>

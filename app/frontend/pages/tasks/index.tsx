@@ -1,9 +1,12 @@
 import { Head, Link, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
 import { ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
+import { useActiveTabInView } from '@/lib/activeTab'
 import { api, ApiError } from '@/lib/api'
+import { tf } from '@/lib/content'
 import { t } from '@/lib/i18n'
 import { BUCKETS, bucketOf } from '@/tasks/dates'
 import { AssigneeBadge, assigneeKey, assigneeName, CheckButton, DueBadge, TagChip } from '@/tasks/parts'
@@ -24,6 +27,8 @@ export default function Tasks({ scope, teams, tasks: initial, today }: Props) {
   const [tasks, setTasks] = useState(initial)
   const [grouping, setGrouping] = useState<Grouping>('due')
   const [error, setError] = useState<string | null>(null)
+  const tabs = useRef<HTMLElement>(null)
+  useActiveTabInView(tabs, scope.type === 'team' ? scope.id : 'me')
 
   async function toggle(task: TaskWithMap) {
     const done = !task.completedAt
@@ -60,14 +65,14 @@ export default function Tasks({ scope, teams, tasks: initial, today }: Props) {
   return (
     <div className="mx-auto max-w-4xl">
       <Head title={t('tasks.mine.page_title')} />
-      <h1 className="text-2xl">{t('tasks.mine.title')}</h1>
-      <p className="mt-1 text-loam-600">{t('tasks.mine.intro')}</p>
+      <h1 className="text-3xl">{t('tasks.mine.title')}</h1>
+      <p className="mt-1 text-loam-600">{tf(scope.type === 'me' ? 'tasks.mine.intro' : 'tasks.mine.intro_team')}</p>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-        <nav className="-mx-1 flex gap-1.5 overflow-x-auto px-1" aria-label={t('tasks.mine.title')}>
-          <Link href="/tasks" className={tab(scope.type === 'me')} preserveScroll>{t('tasks.mine.scope_me')}</Link>
+        <nav ref={tabs} className="-mx-1 flex gap-1.5 overflow-x-auto px-1" aria-label={t('tasks.mine.title')}>
+          <Link href="/tasks" className={tab(scope.type === 'me')} aria-current={scope.type === 'me' ? 'page' : undefined} preserveScroll>{t('tasks.mine.scope_me')}</Link>
           {teams.map((team) => (
-            <Link key={team.id} href={`/tasks?team_id=${team.id}`} className={tab(scope.type === 'team' && scope.id === team.id)} preserveScroll>
+            <Link key={team.id} href={`/tasks?team_id=${team.id}`} className={tab(scope.type === 'team' && scope.id === team.id)} aria-current={scope.type === 'team' && scope.id === team.id ? 'page' : undefined} preserveScroll>
               {t('tasks.mine.scope_team', { name: team.name })}
             </Link>
           ))}
@@ -86,7 +91,12 @@ export default function Tasks({ scope, teams, tasks: initial, today }: Props) {
 
       {tasks.length === 0 ? (
         <div className="mt-6">
-          <EmptyState title={t('tasks.mine.title')}>{t(scope.type === 'me' ? 'tasks.mine.empty_me' : 'tasks.mine.empty_team')}</EmptyState>
+          <EmptyState
+            title={tf(scope.type === 'me' ? 'tasks.mine.empty_title_me' : 'tasks.mine.empty_title_team')}
+            action={scope.type === 'me' && <ButtonLink href="/maps" variant="secondary">{t('tasks.mine.empty_to_maps')}</ButtonLink>}
+          >
+            {tf(scope.type === 'me' ? 'tasks.mine.empty_me' : 'tasks.mine.empty_team')}
+          </EmptyState>
         </div>
       ) : (
         <div className="mt-6 space-y-5">
@@ -111,7 +121,7 @@ export default function Tasks({ scope, teams, tasks: initial, today }: Props) {
                         <CheckButton done={done} onToggle={() => void toggle(task)} label={t(done ? 'tasks.task.mark_pending' : 'tasks.task.mark_done', { title: task.title })} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <Link href={`/maps/${task.map.id}/tasks`} className={clsx('text-[15px] leading-snug hover:text-prune-800', done ? 'text-loam-400 line-through' : 'text-loam-900')}>
+                        <Link href={`/maps/${task.map.id}/tasks?open=${task.id}`} className={clsx('text-[15px] leading-snug hover:text-prune-800', done ? 'text-loam-400 line-through' : 'text-loam-900')}>
                           {task.title}
                         </Link>
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-loam-500">

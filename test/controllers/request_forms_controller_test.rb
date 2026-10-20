@@ -24,6 +24,7 @@ class RequestFormsControllerTest < ActionDispatch::IntegrationTest
     team = accounts.find { _1["key"] == "team-#{@team.id}" }
     assert_not team["canEdit"]
     assert_equal "http://www.example.com/demande/semisto", team["form"]["url"]
+    assert_equal @team.name, team["form"]["displayName"], "the welcome shown by default names the team"
     assert_equal [ "Marie" ], team["requests"].map { _1["name"] }
     assert_equal 1, @member.as_inertia[:newRequests]
 

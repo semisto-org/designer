@@ -81,7 +81,7 @@ fr:
         description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passe ensuite l'identifiant d'une carte à get_map."
       get_map:
         title: "Lire une carte"
-        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), tâches du projet (à faire, en retard, faites), nombre de documents et de photos, l'année d'observation (observation_year : ce que la personne a vu sur son terrain à chaque saison des douze derniers mois, et les saisons manquantes ; le détail avec get_season_signs), nombre d'éléments par couche, étiquettes de la carte (tags, avec leur nombre d'éléments), types d'éléments connus de l'éditeur, l'offre (ses versions et le budget de la dernière version acceptée : TVAC, HTVA, heures prévues ; seulement pour l'équipe qui la prépare) et ce que cette connexion a le droit de faire sur la carte."
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies), tâches du projet (à faire, en retard, faites), nombre de documents et de photos, l'année d'observation (observation_year : ce que la personne a vu sur son terrain à chaque saison des douze derniers mois, et les saisons manquantes ; le détail avec get_season_signs), nombre d'éléments par couche, étiquettes de la carte (tags, avec leur nombre d'éléments), types d'éléments connus de l'éditeur, l'offre (ses versions et le budget de la dernière version acceptée : TVAC, HTVA, heures prévues ; seulement pour l'équipe qui la prépare), la vue publique (adresse, à jour ou non, visites, essais « Et chez toi ? » et jardins commencés ; seulement pour le propriétaire) et ce que cette connexion a le droit de faire sur la carte."
       list_features:
         title: "Lister les éléments"
         description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), étiquette (tag), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
@@ -214,7 +214,7 @@ fr:
           storage_note: "Note libre : porte ouverte, caisses rentrées, linge humide posé…"
       list_documents:
         title: "Lister les documents"
-        description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable)."
+        description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable). Une page Markdown donne aussi ses premiers mots (excerpt), sans sa mise en forme."
         params:
           document_tag: "Étiquette des documents, sans tenir compte des majuscules."
           document_kind: "Type : pdf, image, text (traitement de texte), sheet (tableur), slides (présentation), plan (DWG, KML, GPX, GeoJSON), other."
@@ -448,6 +448,8 @@ fr:
       help_capture: "capture d'écran : %{alt}"
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
       networks_on_request: "Les réseaux sont masqués par défaut : passe include_networks à true dans list_features pour les lire."
+      publication: "La vue publique (panneau « Publier ») : stale = la carte a changé depuis la publication ; views = visites hors membres de la carte et robots ; places_tried = personnes qui ont essayé leur propre adresse depuis « Et chez toi ? » ; gardens_started = comptes ouverts après l'avoir vue. Des nombres, jamais des noms. Seul le propriétaire publie, met à jour ou dépublie, dans le panneau : tu peux lui dire quand la mettre à jour et lui donner l'adresse à partager (get_help, slug publier-sa-carte)."
+      publication_none: "La carte n'est pas publiée. Le propriétaire peut en publier une vue en lecture seule, sans compte pour les visiteurs, depuis le panneau « Publier » (get_help, slug publier-sa-carte)."
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
       drafts_trial: "Le propriétaire de cette carte essaie les brouillons de l'IA jusqu'au %{date} (essai offert de 14 jours). Après cette date, sans forfait, tu ne pourras plus que lire la carte : dis-le à l'utilisateur quand tu poses tes premiers brouillons, pour qu'il ne soit pas surpris."
       review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
