@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
+import { Flash } from '@/components/ui/Flash'
 import { ApiError, api } from '@/lib/api'
 import { track } from '@/lib/analytics'
 import { formatDate } from '@/collab/time'
@@ -80,6 +81,8 @@ export default function TrialShow(props: TrialShowProps) {
       <Head title={t('trials.show.title')}>
         <meta name="robots" content="noindex, nofollow" />
       </Head>
+      {/* Full screen, so no layout: a refused e-mail or a rate limit is said here. */}
+      <Flash />
       <div className="relative h-[45dvh] shrink-0 md:h-auto md:min-w-0 md:flex-1">
         <MapView className="absolute inset-0" center={trial.center} zoom={trial.bbox ? undefined : 18} bbox={trial.bbox ?? undefined}>
           <TrialLayers layers={props.layers} cadastre={props.cadastreLayer} trial={trial} lowPoint={lowPoint} onTouch={touch} />
