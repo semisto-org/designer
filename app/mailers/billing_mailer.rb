@@ -6,6 +6,7 @@ class BillingMailer < ApplicationMailer
     @expires_on = french_date(purchase.expires_at)
     @read_only_maps = @user.read_only_maps_count
     @billing_url = billing_url(plan: "yearly")
+    show_places(@user)
     mail to: @user.email_address, subject: t(".#{kind}.subject", date: @expires_on)
   end
 

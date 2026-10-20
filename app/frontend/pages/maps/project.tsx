@@ -60,10 +60,12 @@ export default function MapProject({ map, project, progress: initialProgress, sc
       <p className="mt-4 max-w-3xl text-sm text-loam-600">{t('journey.project.intro')}</p>
       {!canEdit && <p className="mt-3 rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-700">{t('journey.project.read_only')}</p>}
       <div className="mt-4 max-w-3xl empty:hidden"><DraftsBanner sheet={sheet} canEdit={canEdit} onOpen={setActive} /></div>
-      {canEdit && <ProjectFormLink mapId={map.id} initial={formLink} className="mt-4 max-w-3xl" />}
-
       <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        <nav aria-label={t('journey.project.sections_nav')} className="-mx-4 overflow-x-auto px-4 lg:sticky lg:top-4 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">
+        {/* The sections, then the private link: the sheet comes first, inviting someone else second.
+            On a phone the link goes under the form (`contents` lets it be reordered). */}
+        <div className="contents lg:sticky lg:top-4 lg:block lg:space-y-4 lg:self-start">
+        {/* `relative` keeps the status marks' screen-reader text inside the scrolling list on a phone. */}
+        <nav aria-label={t('journey.project.sections_nav')} className="relative -mx-4 overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
           <ol className="flex gap-2 lg:flex-col lg:gap-1">
             {sections.map((section) => {
               const p = progress.sections[section]
@@ -87,6 +89,8 @@ export default function MapProject({ map, project, progress: initialProgress, sc
             })}
           </ol>
         </nav>
+        {canEdit && <ProjectFormLink mapId={map.id} initial={formLink} compact className="order-last lg:order-none" />}
+        </div>
 
         <Card className="min-w-0 p-5! sm:p-7!">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -95,7 +99,7 @@ export default function MapProject({ map, project, progress: initialProgress, sc
                 {index + 1} / {sections.length}
               </p>
               <h2 className="text-xl">{sectionTitle(active)}</h2>
-              <p className="mt-0.5 text-xs text-loam-500">
+              <p className="mt-0.5 text-sm text-loam-500">
                 {current?.touchedAt ? t('journey.project.touched', { when: relativeTime(current.touchedAt) }) : t('journey.project.untouched')}
               </p>
             </div>

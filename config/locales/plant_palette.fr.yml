@@ -10,14 +10,15 @@ fr:
       planned: { one: "%{count} plant prévu", other: "%{count} plants prévus" }
       planted: { one: "%{count} en terre", other: "%{count} en terre" }
       existing: { one: "%{count} arbre existant", other: "%{count} arbres existants" }
-      budget: "Budget prévu : %{amount}"
+      to_buy: "Reste à acheter : %{amount}"
+      to_buy_of: "Reste à acheter : %{amount} (%{total} avec ce qui est déjà en terre)"
     growth:
       title: "Ce jardin dans le temps"
-      short: "Sous les houppiers :"
+      short: "Ton jardin dans le temps, part du terrain à l'ombre des houppiers :"
       years: "An %{years}"
       now: "Aujourd'hui"
       caption: "Part du terrain sous les houppiers des arbres et arbustes"
-      hint: "Envergure cumulée des plants prévus, à l'âge adulte, comparée à la surface du terrain."
+      hint: "Part du terrain que couvriront les houppiers des arbres et arbustes prévus, an après an, d'après leur croissance."
       canopy: "%{percent} % du terrain sous les houppiers"
     views:
       label: "Vues"
@@ -85,7 +86,7 @@ fr:
       chosen: "Choisie"
       planned: "Prévue"
       planting: "En cours de plantation"
-      planted: "Plantée"
+      planted: "En terre"
     columns:
       name: "Plante"
       latin_name: "Nom latin"
@@ -136,12 +137,14 @@ fr:
       editable: "Cliquer pour modifier"
       price_placeholder: "0,00"
       empty: "—"
+      add: "Ajouter"
     totals: "Total"
     group_count: { one: "%{count} espèce", other: "%{count} espèces" }
     empty:
       title: "La palette est encore vide"
       text: "Commence par lire ton terrain sur la carte, puis pars des suggestions pour ce terrain, choisis tes espèces dans le panneau Palette ou dessine tes premiers plants : ils apparaîtront ici, prêts à être comptés, chiffrés et commandés."
       action: "Ouvrir la palette sur la carte"
+      suggestions: "Voir les suggestions pour ce terrain"
       filtered: "Aucune plante ne répond à ces filtres."
     sheet:
       close: "Fermer la fiche"
@@ -212,7 +215,7 @@ fr:
       columns:
         number: "N°"
         plant: "Plant"
-        status: "Statut"
+        status: "État"
         planted: "Plantation"
         tags: "Étiquettes"
       statuses:
@@ -221,6 +224,11 @@ fr:
       no_species: "Sans espèce"
       show_on_map: "Voir sur la carte"
       date_unknown: "date inconnue"
+      age:
+        today: "aujourd'hui"
+        days: { one: "hier", other: "il y a %{count} jours" }
+        months: { one: "il y a %{count} mois", other: "il y a %{count} mois" }
+        winters: { one: "un hiver déjà", other: "%{count} hivers déjà" }
       date_placeholder: "2015, 12/03/2024 ou vide"
       date_hint: "Une année, une date, ou rien si tu ne sais pas quand il a été planté."
       date_invalid: "Je n'ai pas compris cette date : tape une année (2015) ou une date (12/03/2024)."

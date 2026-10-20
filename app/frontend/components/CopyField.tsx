@@ -1,10 +1,17 @@
 import { Check, Copy } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 
-/** A value to copy (URL, command, token) with its copy button. */
-export function CopyField({ value, className, mono }: { value: string; className?: string; mono?: boolean }) {
+/**
+ * A value to copy (URL, command, token) with its copy button. `end` shows the
+ * end of a value too long for its box (a link's « ?carte=12 ») instead of its start.
+ */
+export function CopyField({ value, className, mono, end }: { value: string; className?: string; mono?: boolean; end?: boolean }) {
   const [copied, setCopied] = useState(false)
+  const box = useRef<HTMLElement>(null)
+  useEffect(() => {
+    if (end && box.current) box.current.scrollLeft = box.current.scrollWidth
+  }, [end, value])
   async function copy() {
     try {
       await navigator.clipboard.writeText(value)
@@ -16,7 +23,7 @@ export function CopyField({ value, className, mono }: { value: string; className
   }
   return (
     <div className={'flex min-w-0 items-stretch overflow-hidden rounded-lg ring-1 ring-loam-200 ' + (className ?? '')}>
-      <code tabIndex={0} className={'min-w-0 flex-1 overflow-x-auto whitespace-nowrap bg-loam-50 px-3 py-2 text-sm text-loam-800 ' + (mono ? 'font-mono' : '')}>{value}</code>
+      <code ref={box} tabIndex={0} className={'min-w-0 flex-1 overflow-x-auto whitespace-nowrap bg-loam-50 px-3 py-2 text-sm text-loam-800 ' + (mono ? 'font-mono' : '')}>{value}</code>
       <button
         type="button"
         onClick={copy}

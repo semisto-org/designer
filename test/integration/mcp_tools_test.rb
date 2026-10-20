@@ -107,6 +107,22 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil data["offer"], "a viewer (maybe the client) never sees the offer"
   end
 
+  test "get_map counts the palette like its table: planted, still to plant, its price and what is left to buy" do
+    apple = plant_species(:apple)
+    apple.update!(invasive_countries: [ "BE" ])
+    @map.palette_items.create!(species: apple, unit_price: 10)
+    spot = { "type" => "Point", "coordinates" => [ 4.905, 50.3402 ] }
+    @map.features.create!(layer: "plants", kind: "plant", geometry: spot, properties: { "species_id" => apple.id })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: spot, properties: { "species_id" => apple.id, "planted_on" => "2025-11-15" })
+
+    data, error = call_tool(@owner, "get_map", { map_id: @map.id })
+    refute error
+    entry = data["palette"].find { _1["species_id"] == apple.id }
+    assert_equal [ 2, 1, 1, 10.0 ], entry.values_at("planned", "planted", "to_plant", "unit_price_eur")
+    assert_equal "invasive", entry["excluded_by"]
+    assert_equal({ "to_buy_eur" => 10.0, "total_eur" => 20.0 }, data["palette_budget"])
+  end
+
   test "get_map gives the bio-indicator plants noted on the terrain and what they point to" do
     @map.bioindicator_observations.create!(catalog_key: "ortie", abundance: "dominant", location: [ 4.906, 50.341 ])
     data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
@@ -187,6 +203,22 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     text, error = call_tool(@owner, "list_features", { map_id: @map.id, bbox: [ 5.1, 50.0, 5.0, 50.1 ] })
     assert error
     assert_match(/bbox/, text)
+  end
+
+  test "list_features says which plants are support plants, from their palette role or their sheet" do
+    @map.palette_items.create!(species: plant_species(:alder), role: "support")
+    alder = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906),
+                                  properties: { "species_id" => plant_species(:alder).id, "support_until" => 8, "training" => "chop_and_drop" })
+    apple = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9061),
+                                  properties: { "species_id" => plant_species(:apple).id })
+    kept = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.9062),
+                                 properties: { "species_id" => plant_species(:alder).id, "succession" => "productive" })
+    data, = call_tool(@owner, "list_features", { map_id: @map.id, layer: "plants" })
+    by_id = data["features"].index_by { |f| f["id"] }
+    assert_equal true, by_id[alder.id].dig("properties", "support")
+    assert_equal 8, by_id[alder.id].dig("properties", "support_until")
+    assert_nil by_id[apple.id].dig("properties", "support")
+    assert_nil by_id[kept.id].dig("properties", "support")
   end
 
   test "list_features paginates with after_id and can drop geometries" do

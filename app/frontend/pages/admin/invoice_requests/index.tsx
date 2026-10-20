@@ -186,7 +186,7 @@ function RequestCard({ request, stripeEnabled }: { request: AdminInvoiceRequest;
                   {t('invoicing.admin.actions.mark_paid')}
                 </Button>
                 <Button
-                  variant="ghost" disabled={busy} className="text-clay-700"
+                  variant="danger-ghost" disabled={busy}
                   onClick={() => act('cancel', t(throughStripe ? 'invoicing.admin.confirm.cancel_stripe' : 'invoicing.admin.confirm.cancel'))}
                 >
                   {t('invoicing.admin.actions.cancel')}

@@ -1,0 +1,30 @@
+# PlanGate: the one door to every paid feature, said about the place it would unlock.
+fr:
+  plan_gates:
+    on_place: "Pour « %{place} »"
+    cta: "Voir les formules"
+    price_home: "Avec Home, %{price} par an, sans reconduction."
+    price_pro: "Avec Pro, dès %{price} par mois."
+    kept: "Rien de ce que tu as déjà fait ne se perd, et tu reviens ici après le paiement."
+    owner_only: "Cette carte suit la formule de la personne qui la possède : elle seule peut la débloquer."
+    relief:
+      title: "L'eau et le relief de ton terrain"
+      body: "Le relief exact en 3D, la pluie et le ruissellement simulés sur ta pente, l'ombre du soleil et l'eau de pluie que tes toits peuvent récolter."
+    climate:
+      title: "Le climat qui vient sur ton terrain"
+      body: "Vois comment le climat de ton terrain évoluera d'ici 2050 et 2080, et quelles plantes de ta palette risquent de souffrir du froid, de la chaleur ou de la sécheresse."
+    soil:
+      title: "Comprendre les analyses de ton sol"
+      body: "Tes mesures restent enregistrées et visibles. Le forfait ajoute leur lecture : repères bas, correct et élevé pour chaque valeur, classe de texture, pistes concrètes, et tes points comparés côte à côte."
+    pdf:
+      title: "Le plan à l'échelle de ton lieu"
+      body: "Imprime ton design en A4 ou A3, à l'échelle exacte, avec cartouche, légende et flèche du nord, pour le terrain, le pépiniériste ou un dossier de subside."
+    dossier_terrain:
+      title: "Le relief et l'eau dans ton dossier"
+      body: "Le relief, la pente et l'eau de pluie des toitures sont des analyses incluses dans la formule du propriétaire de la carte."
+    dossier_climate:
+      title: "Le climat futur dans ton dossier"
+      body: "Le climat de 2050 et 2080 et la vérification des plantes sont des analyses incluses dans la formule du propriétaire de la carte."
+    dossier_soil:
+      title: "La lecture du sol dans ton dossier"
+      body: "La lecture des résultats (repères bas, correct, élevé et texture) est une analyse incluse dans la formule du propriétaire de la carte. Les mesures restent visibles."

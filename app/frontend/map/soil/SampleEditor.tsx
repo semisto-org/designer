@@ -261,7 +261,7 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
         <div className="flex items-center gap-1">
           <Button size="sm" variant="ghost" onClick={onClose}>{t('soil.sample.close')}</Button>
           {canEdit && (
-            <Button size="sm" variant="ghost" className="text-clay-500" onClick={destroy}>
+            <Button size="sm" variant="danger-ghost" onClick={destroy}>
               <Trash2 className="h-4 w-4" aria-hidden />
               <span className="sr-only">{t('soil.sample.delete')}</span>
             </Button>

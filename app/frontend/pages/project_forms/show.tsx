@@ -76,14 +76,14 @@ export default function ProjectForm({ token, mapName, invitedBy, project, progre
         <Card className="mt-8 max-w-2xl p-6! sm:p-8!">
           <span className="grid h-10 w-10 place-items-center rounded-full bg-leaf-500 text-white"><Check className="h-5 w-5" aria-hidden /></span>
           <h2 className="mt-4 font-serif text-2xl">{t('journey.form.thanks_title')}</h2>
-          <p className="mt-2 text-loam-700">{t('journey.form.thanks_body')}</p>
+          <p className="mt-2 text-loam-700">{t('journey.form.thanks_body', { name: invitedBy })}</p>
           <p className="mt-2 text-sm text-loam-500">{t('journey.form.finish_hint')}</p>
           <Button variant="secondary" className="mt-6" onClick={() => setThanks(false)}>{t('journey.form.thanks_back')}</Button>
         </Card>
       ) : (
         <>
-          <p className="mt-5 max-w-3xl text-sm text-loam-700">{t('journey.form.intro')}</p>
-          <p className="mt-2 flex max-w-3xl items-start gap-1.5 text-xs text-loam-500">
+          <p className="mt-5 max-w-3xl text-sm text-loam-700">{t('journey.form.intro', { name: invitedBy })}</p>
+          <p className="mt-2 flex max-w-3xl items-start gap-1.5 text-sm text-loam-500">
             <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />{t('journey.form.private_note')}
           </p>
           {!canEdit && <p className="mt-3 max-w-3xl rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-700">{t('journey.form.read_only')}</p>}
@@ -94,7 +94,7 @@ export default function ProjectForm({ token, mapName, invitedBy, project, progre
           )}
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-            <nav aria-label={t('journey.project.sections_nav')} className="-mx-4 overflow-x-auto px-4 lg:sticky lg:top-4 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">
+            <nav aria-label={t('journey.project.sections_nav')} className="relative -mx-4 overflow-x-auto px-4 lg:sticky lg:top-4 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">
               <ol className="flex gap-2 lg:flex-col lg:gap-1">
                 {sections.map((section) => {
                   const p = progress.sections[section]
@@ -140,7 +140,7 @@ export default function ProjectForm({ token, mapName, invitedBy, project, progre
                 )}
               </div>
               {last && canEdit && (
-                <p className="mt-2 text-right text-xs text-loam-500">{t('journey.form.finish_hint')}</p>
+                <p className="mt-2 text-right text-sm text-loam-500">{t('journey.form.finish_hint')}</p>
               )}
               {sendFailed && <p className="mt-2 text-right text-sm text-clay-600">{t('journey.form.errors.submit')}</p>}
             </Card>

@@ -59,7 +59,7 @@ function FieldBlock({ field, texts, value, onChange, disabled, aside }: {
   const grouped = field.type === 'multi' || field.type === 'enum' || field.type === 'list'
   const hint = (texts.hint || field.teamOnly) && (
     <>
-      {texts.hint && <p id={`${id}-hint`} className="mt-0.5 text-xs text-loam-500">{texts.hint}</p>}
+      {texts.hint && <p id={`${id}-hint`} className="mt-0.5 text-sm text-loam-500">{texts.hint}</p>}
       {field.teamOnly && (
         <p className="mt-0.5 flex items-center gap-1 text-sm text-loam-500">
           <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />{t('journey.project.team_only')}

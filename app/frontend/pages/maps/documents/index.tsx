@@ -11,7 +11,7 @@ import { DocumentViewer } from '@/documents/DocumentViewer'
 import { NewDocumentDialog } from '@/documents/markdown/NewDocumentDialog'
 import { UploadList } from '@/documents/ProjectDocuments'
 import { useDocumentUploads } from '@/documents/upload'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useFileDrag } from '@/lib/useFileDrag'
 import { formatMegabytes } from '@/map/photos/format'
@@ -100,7 +100,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
       const saved = await api<MapDocumentData>(`${endpoint}/${doc.id}`, { method: 'PATCH', body: { document: patch } })
       setDocs((list) => list.map((d) => (d.id === saved.id ? saved : d)))
     } catch (e) {
-      setError((e as Error).message)
+      setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
     }
   }
 
@@ -110,7 +110,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
       await api(`${endpoint}/${doc.id}`, { method: 'DELETE' })
       setDocs((list) => list.filter((d) => d.id !== doc.id))
     } catch (e) {
-      setError((e as Error).message)
+      setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
     }
   }
 
@@ -128,38 +128,40 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
     </button>
   )
 
+  const empty = docs.length === 0 && uploads.length === 0
+
   return (
     <div onDragOver={(e) => { if (canEdit) e.preventDefault() }} onDrop={onDrop}>
       <Head title={t('documents.page_title', { map: map.name })} />
       <MapViewHeader map={map} current="documents" />
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="max-w-2xl">
-          <h1 className="text-3xl">{t('documents.title')}</h1>
-          <p className="mt-1 text-loam-600">{t('documents.intro')}</p>
-        </div>
-        {canEdit && (
-          <div className="flex max-w-md flex-col items-start gap-1.5 sm:ml-auto sm:items-end sm:text-right">
-            <div className="flex flex-wrap gap-2 sm:justify-end">
-              <Button variant="secondary" onClick={() => setWriting(true)}>
-                <FilePen className="h-4 w-4" />{t('documents.markdown.new')}
-              </Button>
-              <Button onClick={() => input.current?.click()}>
-                <FilePlus2 className="h-4 w-4" />{t('documents.add')}
-              </Button>
-            </div>
-            <p className="text-sm text-loam-500">{t('documents.drop_hint', { max: formatMegabytes(limits.maxBytes) })}</p>
-            <input ref={input} type="file" multiple className="sr-only" aria-label={t('documents.add')}
-              onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <h1 className="text-3xl">{t('documents.title')}</h1>
+        {/* The empty library has its own buttons, in the same order. */}
+        {canEdit && !empty && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => input.current?.click()}>
+              <FilePlus2 className="h-4 w-4" />{t('documents.add')}
+            </Button>
+            <Button variant="secondary" onClick={() => setWriting(true)}>
+              <FilePen className="h-4 w-4" />{t('documents.markdown.new')}
+            </Button>
           </div>
         )}
       </div>
+      <p className="mt-1 max-w-2xl text-loam-600">{t('documents.intro')}</p>
+      {/* Dropping files only makes sense with a mouse. */}
+      {canEdit && <p className="mt-1 hidden max-w-2xl text-sm text-loam-500 sm:block">{t('documents.drop_hint', { max: formatMegabytes(limits.maxBytes) })}</p>}
+      {canEdit && (
+        <input ref={input} type="file" multiple className="sr-only" aria-label={t('documents.add')}
+          onChange={(e) => { addFiles(e.target.files); e.target.value = '' }} />
+      )}
       {!canEdit && <p className="mt-3 rounded-lg bg-loam-100 px-3 py-2 text-sm text-loam-600">{t('documents.read_only')}</p>}
 
       <UploadList uploads={uploads} onDismiss={dismiss} />
       {error && <p className="mt-3 text-sm text-clay-600" role="alert">{error}</p>}
 
-      {docs.length === 0 && uploads.length === 0 ? (
+      {empty ? (
         <EmptyLibrary canEdit={canEdit} onAdd={() => input.current?.click()} onWrite={() => setWriting(true)} />
       ) : (
         <div className="mt-6 grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">

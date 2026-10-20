@@ -6,5 +6,5 @@
 
 <%= t(".cta") %> : <%= @maps_url %>
 
-<%= t("billing_mailer.signature") %>
+<%= render "mail_places", places: @place_names %><%= render "mail_supports" %><%= t("billing_mailer.signature") %>
 <%= t("billing_mailer.team") %>

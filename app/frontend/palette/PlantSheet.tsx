@@ -8,7 +8,8 @@ import { formatDate, formatDecimal, metres, plantedLabel, plantedPrecision, stra
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { StrataDot } from '@/map/plants/strata'
-import { displayValue, formatEuro } from '@/palette/format'
+import { ExclusionFlag } from '@/palette/Fit'
+import { displayValue, formatEuro, plantedAgeLabel } from '@/palette/format'
 import { toPlant, type PaletteRow } from '@/palette/table'
 import type { SpeciesSheet, Strata } from '@/types/plants'
 
@@ -69,6 +70,7 @@ export function PlantSheet({ mapId, row, country, onClose }: { mapId: number; ro
           <div className="min-w-0 flex-1">
             <h2 className="font-serif text-2xl font-semibold text-prune-800">{row.name}</h2>
             {row.latinName && <p className="text-base italic text-loam-600">{row.latinName}</p>}
+            <ExclusionFlag excludedBy={row.excludedBy} className="mt-1" />
           </div>
           <button type="button" onClick={onClose} className="rounded-full p-2 text-loam-600 hover:bg-loam-200/60" aria-label={t('plant_palette.sheet.close')}>
             <X className="h-5 w-5" />
@@ -110,7 +112,7 @@ export function PlantSheet({ mapId, row, country, onClose }: { mapId: number; ro
                   <div>
                     <p className="font-medium">{t('plant_palette.sheet.time.title')}</p>
                     <ul className="mt-1 space-y-0.5">
-                      {firstPlanted && <li>{t('plant_palette.sheet.time.planted_since', { date: formatDate(firstPlanted) })}</li>}
+                      {firstPlanted && <li>{t('plant_palette.sheet.time.planted_since', { date: formatDate(firstPlanted) })}<Age plantedOn={firstPlanted} precision={null} /></li>}
                       {species?.productionStartYear && <li>{t('plant_palette.sheet.time.production', { years: species.productionStartYear })}</li>}
                       {species?.maturityYears && <li>{t('plant_palette.sheet.time.maturity', { years: species.maturityYears })}</li>}
                     </ul>
@@ -135,7 +137,7 @@ export function PlantSheet({ mapId, row, country, onClose }: { mapId: number; ro
                       key={plant.id} mapId={mapId} featureId={plant.id} title={plant.name || t('plant_palette.sheet.plant_number', { number: plant.number ?? i + 1 })} tags={plant.tags}
                       icon={<Shovel className={clsx('h-4 w-4', plant.plantedOn ? 'text-leaf-600' : 'text-loam-300')} />}
                     >
-                      <span>{plant.plantedOn ? plantedLabel(plant.plantedOn, plantedPrecision(plant.plantedPrecision)) : t('plant_palette.sheet.not_planted')}</span>
+                      <span>{plant.plantedOn ? plantedLabel(plant.plantedOn, plantedPrecision(plant.plantedPrecision)) : t('plant_palette.sheet.not_planted')}<Age plantedOn={plant.plantedOn} precision={plantedPrecision(plant.plantedPrecision)} /></span>
                       {plant.survival && (
                         <span className={clsx('ml-2 inline-flex rounded-full px-2 py-px ring-1 ring-inset', SURVIVAL_TONES[plant.survival])} title={plant.observedOn ? t('plant_palette.sheet.observed', { date: formatDate(plant.observedOn) }) : undefined}>
                           {t(`plant_palette.sheet.survival.${plant.survival}`)}
@@ -250,4 +252,10 @@ function FeatureLine({ mapId, featureId, icon, title, tags, children }: { mapId:
       </a>
     </li>
   )
+}
+
+/** « · un hiver déjà » after a planting date, quiet. */
+function Age({ plantedOn, precision }: { plantedOn: string | null; precision: 'year' | 'unknown' | null }) {
+  const age = plantedAgeLabel(plantedOn, precision)
+  return age ? <span className="text-loam-500"> · {age}</span> : null
 }

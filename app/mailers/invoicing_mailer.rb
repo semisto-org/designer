@@ -23,6 +23,7 @@ class InvoicingMailer < ApplicationMailer
     @user = grant.user
     @plan = I18n.t("billing.plans.#{grant.plan_key}.name")
     @maps_url = maps_url
+    show_places(@user)
     mail to: @user.email_address, subject: t(".subject", plan: @plan)
   end
 
@@ -39,6 +40,7 @@ class InvoicingMailer < ApplicationMailer
     @gift = !grant.on_invoice?
     @copy = @gift ? "invoicing_mailer.grant_reminder.gift" : "invoicing_mailer.grant_reminder"
     @renew_url = @gift ? pricing_url : new_invoice_request_url(plan: grant.plan_key)
+    show_places(@user)
     mail to: @user.email_address, subject: t(".#{kind}.subject", date: @ends_on)
   end
 

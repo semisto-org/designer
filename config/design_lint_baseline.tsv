@@ -33,7 +33,6 @@ small-text	5	app/frontend/components/climate/FutureClimate.tsx
 small-text	7	app/frontend/components/climate/PlantChecks.tsx
 small-text	1	app/frontend/components/climate/Sources.tsx
 small-text	1	app/frontend/components/climate/StatusPill.tsx
-small-text	1	app/frontend/components/climate/Upsell.tsx
 bare-button	1	app/frontend/components/CopyField.tsx
 small-text	5	app/frontend/components/finances/CashChart.tsx
 small-text	1	app/frontend/components/finances/NumberInput.tsx
@@ -67,15 +66,13 @@ small-text	4	app/frontend/components/observed_climate/ObservedClimate.tsx
 bare-button	1	app/frontend/components/observed_climate/WaterBalance.tsx
 hex-color	1	app/frontend/components/observed_climate/WaterBalance.tsx
 bare-button	7	app/frontend/components/offers/InternalCard.tsx
-small-text	13	app/frontend/components/offers/InternalCard.tsx
+small-text	8	app/frontend/components/offers/InternalCard.tsx
 bare-button	6	app/frontend/components/offers/PhaseCard.tsx
-small-text	8	app/frontend/components/offers/PhaseCard.tsx
+small-text	5	app/frontend/components/offers/PhaseCard.tsx
 small-text	5	app/frontend/components/offers/PlantsCard.tsx
 small-text	1	app/frontend/components/offers/PrecisionCard.tsx
-small-text	1	app/frontend/components/offers/shared.tsx
 bare-button	3	app/frontend/components/offers/TerrainCard.tsx
-small-text	4	app/frontend/components/offers/TerrainCard.tsx
-small-text	4	app/frontend/components/offers/TotalsCard.tsx
+small-text	2	app/frontend/components/offers/TerrainCard.tsx
 bare-button	1	app/frontend/components/offers/VersionsCard.tsx
 native-confirm	1	app/frontend/components/offers/VersionsCard.tsx
 small-text	1	app/frontend/components/offers/VersionsCard.tsx
@@ -111,7 +108,7 @@ small-text	7	app/frontend/dossier/Cover.tsx
 hex-color	1	app/frontend/dossier/DesignSection.tsx
 small-text	5	app/frontend/dossier/DesignSection.tsx
 small-text	2	app/frontend/dossier/FinancesSection.tsx
-small-text	7	app/frontend/dossier/parts.tsx
+small-text	6	app/frontend/dossier/parts.tsx
 small-text	2	app/frontend/dossier/PhotosSection.tsx
 small-text	5	app/frontend/dossier/PlantsSection.tsx
 small-text	2	app/frontend/dossier/ProjectSection.tsx
@@ -159,7 +156,7 @@ hex-color	3	app/frontend/map/drawing/LayersPanel.tsx
 bare-button	2	app/frontend/map/drawing/MeasureTool.tsx
 small-text	3	app/frontend/map/drawing/MeasureTool.tsx
 bare-button	2	app/frontend/map/drawing/PdfExportPanel.tsx
-small-text	2	app/frontend/map/drawing/PdfExportPanel.tsx
+small-text	1	app/frontend/map/drawing/PdfExportPanel.tsx
 bare-button	1	app/frontend/map/drawing/ProjectStateSection.tsx
 bare-button	1	app/frontend/map/drawing/SketchTool.tsx
 hex-color	12	app/frontend/map/drawing/SketchTool.tsx
@@ -168,7 +165,6 @@ hex-color	4	app/frontend/map/earthworks/EarthworksOverlay.tsx
 bare-button	2	app/frontend/map/earthworks/EarthworksPanel.tsx
 hex-color	4	app/frontend/map/earthworks/EarthworksPanel.tsx
 bare-button	1	app/frontend/map/editor/Inspector.tsx
-native-confirm	1	app/frontend/map/editor/Inspector.tsx
 small-text	5	app/frontend/map/editor/Inspector.tsx
 bare-button	1	app/frontend/map/editor/MapName.tsx
 bare-button	3	app/frontend/map/editor/Rail.tsx
@@ -195,12 +191,11 @@ small-text	2	app/frontend/map/panels/ElementsPanel.tsx
 small-text	4	app/frontend/map/panels/FinancesPanel.tsx
 bare-button	5	app/frontend/map/panels/JourneyOverlay.tsx
 hex-color	2	app/frontend/map/panels/JourneyOverlay.tsx
-small-text	3	app/frontend/map/panels/JourneyOverlay.tsx
+small-text	1	app/frontend/map/panels/JourneyOverlay.tsx
 bare-button	5	app/frontend/map/panels/JourneyPanel.tsx
 small-text	8	app/frontend/map/panels/JourneyPanel.tsx
 bare-button	2	app/frontend/map/panels/LayersPanel.tsx
 small-text	11	app/frontend/map/panels/LayersPanel.tsx
-small-text	4	app/frontend/map/panels/OfferPanel.tsx
 bare-button	2	app/frontend/map/panels/ProjectPanel.tsx
 small-text	7	app/frontend/map/panels/ProjectPanel.tsx
 bare-button	1	app/frontend/map/panels/ReadOnlyNotice.tsx
@@ -295,7 +290,6 @@ bare-button	1	app/frontend/map/soil/SoilOverlay.tsx
 small-text	1	app/frontend/map/soil/SoilOverlay.tsx
 bare-button	1	app/frontend/map/soil/SoilPanel.tsx
 small-text	2	app/frontend/map/soil/SoilPanel.tsx
-small-text	1	app/frontend/map/soil/Upsell.tsx
 bare-button	1	app/frontend/map/storage/StorageSection.tsx
 native-confirm	1	app/frontend/map/storage/StorageSection.tsx
 small-text	1	app/frontend/map/storage/StorageSection.tsx
@@ -376,8 +370,7 @@ bare-button	1	app/frontend/pages/maps/forms/index.tsx
 hex-color	1	app/frontend/pages/maps/new.tsx
 small-text	3	app/frontend/pages/maps/new.tsx
 bare-button	1	app/frontend/pages/maps/offers/show.tsx
-small-text	1	app/frontend/pages/maps/offers/show.tsx
-small-text	3	app/frontend/pages/maps/offers/version.tsx
+small-text	2	app/frontend/pages/maps/offers/version.tsx
 bare-button	9	app/frontend/pages/maps/photos/index.tsx
 hex-color	1	app/frontend/pages/maps/photos/index.tsx
 native-confirm	2	app/frontend/pages/maps/photos/index.tsx
@@ -397,8 +390,7 @@ native-confirm	1	app/frontend/pages/maps/transfers/show.tsx
 small-text	2	app/frontend/pages/maps/transfers/show.tsx
 small-text	3	app/frontend/pages/oauth/authorize.tsx
 bare-button	12	app/frontend/pages/offer_templates/edit.tsx
-native-confirm	1	app/frontend/pages/offer_templates/edit.tsx
-small-text	20	app/frontend/pages/offer_templates/edit.tsx
+small-text	9	app/frontend/pages/offer_templates/edit.tsx
 bare-button	1	app/frontend/pages/offer_templates/index.tsx
 small-text	13	app/frontend/pages/pages/docs/mcp.tsx
 small-text	1	app/frontend/pages/pages/features.tsx

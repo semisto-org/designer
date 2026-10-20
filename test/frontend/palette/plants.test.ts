@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { filterPlants, parsePlanted, plantedInput, type PlantLine } from '../../../app/frontend/palette/plants.ts'
+import { filterPlants, parsePlanted, plantedAge, plantedInput, type PlantLine } from '../../../app/frontend/palette/plants.ts'
 
 const line = (over: Partial<PlantLine>): PlantLine => ({
   id: 1, number: 1, name: null, key: '1-', species: 'Pommier', plantedOn: null, plantedPrecision: null, tags: [], lockVersion: 0, ...over,
@@ -35,4 +35,19 @@ test('filters by number, words, status and tag', () => {
   assert.deepEqual(ids('', 'planned'), [2, 3])
   assert.deepEqual(ids('', 'planted'), [1])
   assert.deepEqual(ids('', '', 'verger'), [1])
+})
+
+test('a planted plant tells its age: days, months, then the winters it went through', () => {
+  const today = '2026-10-19'
+  assert.deepEqual(plantedAge('2026-10-19', null, today), { unit: 'today' })
+  assert.deepEqual(plantedAge('2026-10-18', null, today), { unit: 'days', count: 1 })
+  assert.deepEqual(plantedAge('2026-03-20', null, today), { unit: 'months', count: 6 })
+  assert.deepEqual(plantedAge('2025-11-15', null, today), { unit: 'winters', count: 1 })
+  assert.deepEqual(plantedAge('2024-11-15', null, today), { unit: 'winters', count: 2 })
+  // Known by its year only: its winters count from the next one.
+  assert.deepEqual(plantedAge('2015-01-01', 'year', today), { unit: 'winters', count: 11 })
+  assert.equal(plantedAge('2026-01-01', 'year', today), null)
+  assert.equal(plantedAge('2025-01-01', 'year', '2026-01-10'), null)
+  assert.equal(plantedAge('2020-05-01', 'unknown', today), null)
+  assert.equal(plantedAge(null, null, today), null)
 })

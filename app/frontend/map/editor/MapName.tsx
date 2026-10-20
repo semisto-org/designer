@@ -76,13 +76,14 @@ export function MapName({ map, setMap }: { map: MapData; setMap: (map: MapData) 
     )
   }
 
+  // max-w gives back the 0.375rem that -ml-1.5 takes from the h1's width, so a name that fits is never cut.
   return (
     <h1 className="min-w-0 text-xl leading-none">
       <button
         type="button"
         onClick={start}
         title={t('maps.show.rename')}
-        className="group -my-1 -ml-1.5 flex max-w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-loam-900 hover:bg-loam-100 focus-visible:outline-2 focus-visible:outline-prune-600"
+        className="group -my-1 -ml-1.5 flex max-w-[calc(100%+0.375rem)] items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-loam-900 hover:bg-loam-100 focus-visible:outline-2 focus-visible:outline-prune-600"
       >
         <span className="truncate">{map.name}</span>
         <Pencil aria-hidden className="h-3.5 w-3.5 shrink-0 text-loam-300 transition group-hover:text-loam-600 group-focus-visible:text-loam-600" />
