@@ -293,6 +293,7 @@ export default function ZonesPanel() {
               const proposed = z.properties.status === 'draft'
               return (
                 <li key={z.properties.id}>
+                  {/* design-lint-ok: a row of the zone list, selected like a map element, not a pill action */}
                   <button
                     type="button"
                     onClick={() => editor.select(z.properties.id)}
@@ -349,7 +350,7 @@ export default function ZonesPanel() {
       {withSectors && sectors.length === 0 && (
         <p className="text-sm text-loam-500">
           {t('permaculture_zones.sectors_none')}{' '}
-          <button type="button" className="font-medium text-prune-700 hover:underline" onClick={() => editor.openPanel('sectors')}>{t('permaculture_zones.open_sectors')}</button>
+          <Button variant="ghost" size="sm" onClick={() => editor.openPanel('sectors')}>{t('permaculture_zones.open_sectors')}</Button>
         </p>
       )}
 
@@ -362,9 +363,9 @@ export default function ZonesPanel() {
                 <li key={i} className="rounded-lg p-3 text-sm text-loam-700 ring-1 ring-loam-200">
                   <p className="flex gap-2"><TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-humus-600" aria-hidden />{adviceText(a)}</p>
                   {(a.kind === 'placement' || a.kind === 'wind_unsheltered' || a.kind === 'fire_side') && (
-                    <button type="button" onClick={() => focus(a)} className="mt-1.5 inline-flex items-center gap-1 font-medium text-prune-700 hover:underline">
+                    <Button variant="ghost" size="sm" onClick={() => focus(a)} className="mt-1.5 -ml-3">
                       <LocateFixed className="h-3.5 w-3.5" aria-hidden />{t(a.kind === 'placement' ? 'permaculture_zones.show' : 'permaculture_zones.open_sectors')}
-                    </button>
+                    </Button>
                   )}
                 </li>
               ))}

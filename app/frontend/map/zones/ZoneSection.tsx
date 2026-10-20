@@ -38,6 +38,7 @@ export default function ZoneSection({ feature }: { feature: MapFeature }) {
         <p className="font-medium text-loam-700">{t('permaculture_zones.inspector.choose')}</p>
         <div className="flex gap-1" role="radiogroup" aria-label={t('permaculture_zones.inspector.choose')}>
           {ZONE_NUMBERS.map((n) => (
+            // design-lint-ok: a radio pill painted in its zone's own colour, as the map draws it
             <button
               key={n}
               type="button"
@@ -69,7 +70,7 @@ export default function ZoneSection({ feature }: { feature: MapFeature }) {
   return (
     <div className="space-y-1.5 text-sm">
       <p className="flex items-center gap-2 text-loam-700">
-        <span className="h-2.5 w-5 shrink-0 rounded-full" style={{ background: zone == null ? '#d9d1c3' : PERMACULTURE_ZONE_COLORS[zone] }} aria-hidden />
+        <span className={clsx('h-2.5 w-5 shrink-0 rounded-full', zone == null && 'bg-loam-200')} style={zone == null ? undefined : { background: PERMACULTURE_ZONE_COLORS[zone] }} aria-hidden />
         {zone == null ? t('permaculture_zones.inspector.outside') : t('permaculture_zones.inspector.zone', { number: zone, frequency: t(`permaculture_zones.frequency.${zone}`) })}
       </p>
       {mine.map((a, i) => (
