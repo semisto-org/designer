@@ -79,15 +79,13 @@ jobs:
       - name: Unit tests (TypeScript)
         run: npm run test:frontend
 
-<<<<<<< HEAD
       - name: Build the offline site's viewer
         run: npm run build:offline
-=======
+
       # No new hand-made button, browser confirm(), hard-coded colour or text
       # under text-sm: the « carnet » primitives of components/ui (/admin/design).
       - name: Design guard
         run: npm run design:lint
->>>>>>> origin/main
 
   mobile:
     runs-on: ubuntu-latest
