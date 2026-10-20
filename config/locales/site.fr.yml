@@ -570,6 +570,7 @@ fr:
         cta_signed_out: "Commander la mission"
         cta_signed_in: "Commander la mission"
         needs_account: "Un compte gratuit suffit : tu seras invité à te connecter avant le paiement."
+        directory: "Tu préfères un pilote près de chez toi, avec son propre matériel (thermique, multispectral, LiDAR) ? Choisis-le dans l'annuaire des pilotes de drone."
       how:
         title: "Comment ça se passe"
         steps:

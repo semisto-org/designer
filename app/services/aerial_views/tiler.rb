@@ -8,6 +8,12 @@
 # - an MBTiles of raster tiles: packed as it is (PNG tiles go to WebP first);
 # - a PMTiles archive of raster tiles: kept as it is.
 #
+# A single-band GeoTIFF (a drone's elevation model, a thermal mosaic in
+# degrees, a vegetation index such as NDVI) is coloured first with
+# `gdaldem color-relief`, along a ramp chosen by the view's `product`
+# (AerialView::PRODUCTS) and stretched between the file's own lowest and
+# highest values, its no-data left transparent.
+#
 # Everything happens in `workdir`, which the caller removes. The tools are
 # command-line programs of the server image (gdal-bin and go-pmtiles, see the
 # Dockerfile); PMTILES_BIN names another pmtiles binary.
@@ -31,9 +37,18 @@ module AerialViews
 
     def self.pmtiles_bin = ENV.fetch("PMTILES_BIN", "pmtiles")
 
-    def initialize(source, workdir)
+    # Colour ramps for one-band rasters, from the lowest value to the
+    # highest (percentages of the file's range, as gdaldem reads them).
+    RAMPS = {
+      "elevation" => [ [ 0, "45 94 62" ], [ 25, "122 154 92" ], [ 50, "214 196 132" ], [ 75, "166 120 78" ], [ 100, "245 240 230" ] ],
+      "thermal" => [ [ 0, "20 24 82" ], [ 25, "84 40 140" ], [ 50, "190 54 104" ], [ 75, "240 128 40" ], [ 100, "252 238 120" ] ],
+      "multispectral" => [ [ 0, "165 38 38" ], [ 25, "228 140 60" ], [ 50, "246 228 140" ], [ 75, "128 186 84" ], [ 100, "30 110 50" ] ]
+    }.freeze
+
+    def initialize(source, workdir, product: nil)
       @source = source.to_s
       @workdir = workdir.to_s
+      @product = product.to_s
     end
 
     # The path of the archive, ready to be stored.
@@ -64,12 +79,28 @@ module AerialViews
       def tile_geotiff
         info = gdalinfo
         raise Failure.new("not_georeferenced") if info.dig("coordinateSystem", "wkt").blank? || info["geoTransform"].blank?
-        bands = photo_bands(info.fetch("bands", []))
+        source = @source
+        if info.fetch("bands", []).size == 1
+          source = colour_relief
+          bands = [ 1, 2, 3, 4 ]
+        else
+          bands = photo_bands(info.fetch("bands", []))
+        end
         mbtiles = File.join(@workdir, "tiles.mbtiles")
         run!("gdal_translate", "-q", "-of", "MBTILES", *bands.flat_map { [ "-b", _1.to_s ] },
-          "-co", "TILE_FORMAT=PNG", "-co", "RESAMPLING=BILINEAR", @source, mbtiles)
+          "-co", "TILE_FORMAT=PNG", "-co", "RESAMPLING=BILINEAR", source, mbtiles)
         run!("gdaladdo", "-q", "-r", "average", mbtiles)
         prepare_mbtiles(mbtiles)
+      end
+
+      # The one band in colours, along the product's ramp (relief by default).
+      def colour_relief
+        ramp = File.join(@workdir, "ramp.txt")
+        steps = RAMPS.fetch(@product, RAMPS["elevation"])
+        File.write(ramp, (steps.map { |percent, rgb| "#{percent}% #{rgb}" } + [ "nv 0 0 0 0" ]).join("\n") + "\n")
+        coloured = File.join(@workdir, "coloured.tif")
+        run!("gdaldem", "color-relief", "-q", "-alpha", "-of", "GTiff", @source, ramp, coloured)
+        coloured
       end
 
       def gdalinfo
