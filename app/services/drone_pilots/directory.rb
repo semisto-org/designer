@@ -23,6 +23,8 @@ module DronePilots
         missionsDone: pilot.missions.where(status: "completed").count,
         distanceKm: distance&.round,
         serves: map ? pilot.serves?(map) : nil,
+        sameCountry: map ? pilot.same_country?(map) : nil,
+        country: pilot.country,
         quote: (pilot.quote_for(map).as_json if map && distance)
       }
     end

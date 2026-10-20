@@ -96,10 +96,15 @@ class DronePilot < ApplicationRecord
     6371.0 * 2 * Math.asin(Math.sqrt(a))
   end
 
+  # A pilot flies only in their own country in v1 (Michael, 2026-10-20): a
+  # survey of land may be taxed where the land is, which would make a pilot
+  # register for VAT abroad. A map outside every region has no country.
   def serves?(map)
     distance = distance_km_to(map)
-    distance.present? && distance <= service_radius_km
+    same_country?(map) && distance.present? && distance <= service_radius_km
   end
+
+  def same_country?(map) = map.region&.country_code == country
 
   # Kilometres billed for a mission on this map: there and back, by road.
   def travel_km_to(map)

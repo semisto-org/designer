@@ -251,7 +251,7 @@ export default function PilotProfile({ pilot, catalogue, defaults, commissionPer
             <Field label={t('drone_pilots.profile.vat_number')} hint={t('drone_pilots.profile.vat_hint')} error={err('vat_number')}>
               <Input value={form.data.vat_number} onChange={(e) => form.setData('vat_number', e.target.value)} />
             </Field>
-            <Field label={t('drone_pilots.profile.country')} error={err('country')}>
+            <Field label={t('drone_pilots.profile.country')} hint={t('drone_pilots.profile.country_hint')} error={err('country')}>
               <Select value={form.data.country} onChange={(e) => form.setData('country', e.target.value)}>
                 {catalogue.countries.map((c) => <option key={c} value={c}>{t(`drone_pilots.countries.${c}`)}</option>)}
               </Select>

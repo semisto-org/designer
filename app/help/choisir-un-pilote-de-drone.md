@@ -37,3 +37,5 @@ Semisto garde 20 % du forfait du pilote hors TVA (jamais des frais de déplaceme
 ## Tu es pilote ?
 
 Envoie ta candidature depuis l'annuaire (« Je suis pilote de drone ») : ton matériel, ce que tu livres, ton tarif, ton numéro d'opérateur, tes brevets et ton assurance. Semisto relit chaque candidature. Une fois validé, tu ouvres ton compte de paiement Stripe et tu apparais dans l'annuaire.
+
+Pour l'instant, l'annuaire accueille les pilotes qui ont un numéro d'entreprise, et chacun vole pour les lieux de son pays.

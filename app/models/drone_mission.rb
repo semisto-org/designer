@@ -199,7 +199,9 @@ class DroneMission < ApplicationRecord
 
     def pilot_serves_map
       return if map.nil? || drone_pilot.nil? || map.center.nil?
-      errors.add(:map, :out_of_range) unless drone_pilot.serves?(map)
+      if !drone_pilot.same_country?(map) then errors.add(:map, :other_country)
+      elsif !drone_pilot.serves?(map) then errors.add(:map, :out_of_range)
+      end
     end
 
     def not_own_pilot

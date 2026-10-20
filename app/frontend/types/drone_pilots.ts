@@ -33,6 +33,9 @@ export type PilotCard = {
   /** For the chosen map: straight-line distance, whether they fly there, the full price. */
   distanceKm: number | null
   serves: boolean | null
+  /** False: the pilot flies only in their own country (country), not this map's. */
+  sameCountry: boolean | null
+  country: string
   quote: DroneQuote | null
 }
 

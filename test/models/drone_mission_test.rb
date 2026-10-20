@@ -30,6 +30,11 @@ class DroneMissionTest < ActiveSupport::TestCase
     refute far.valid?
     assert far.errors.of_kind?(:map, :out_of_range)
     assert far.errors.of_kind?(:data_types, :not_offered)
+
+    @pilot.update!(service_radius_km: 500, country: "FR", vat_number: "FR12345678901")
+    abroad = DroneMission.new(client: @client, drone_pilot: @pilot, map: @map, data_types: %w[orthophoto], message: "Bonjour")
+    refute abroad.valid?
+    assert abroad.errors.of_kind?(:map, :other_country)
   end
 
   test "a pilot cannot book themselves, nor a pilot who is not listed" do

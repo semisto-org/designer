@@ -45,7 +45,9 @@ export function PilotSummary({ pilot, mapName }: { pilot: PilotCard; mapName: st
             <p className="text-sm text-loam-500">{pilot.travelFeesEnabled ? t('drone_pilots.card.plus_travel') : t('drone_pilots.card.no_travel')}</p>
           </>
         )}
-        {pilot.serves === false && <Pill tone="humus" className="mt-1.5">{t('drone_pilots.card.out_of_range', { km: pilot.radiusKm })}</Pill>}
+        {pilot.sameCountry === false ? (
+          <Pill tone="humus" className="mt-1.5">{t('drone_pilots.card.other_country', { country: t(`drone_pilots.countries.${pilot.country}`) })}</Pill>
+        ) : pilot.serves === false && <Pill tone="humus" className="mt-1.5">{t('drone_pilots.card.out_of_range', { km: pilot.radiusKm })}</Pill>}
       </div>
     </div>
   )

@@ -23,7 +23,7 @@ fr:
       empty_note: "Un pilote près de chez toi ? Envoie-lui ce lien."
       no_match_title: "Aucun pilote ne correspond"
       no_match_why: "Enlève un critère, ou choisis un autre lieu : certains pilotes se déplacent plus loin que d'autres."
-      out_of_range_note: "Les pilotes plus loin que leur rayon d'action n'apparaissent pas pour ce lieu."
+      out_of_range_note: "Les pilotes plus loin que leur rayon d'action, ou d'un autre pays, n'apparaissent pas pour ce lieu : pour l'instant, chaque pilote vole dans son pays."
     seasons:
       title: "Quand faire voler un drone ?"
       winter_title: "En hiver, feuilles tombées"
@@ -40,6 +40,7 @@ fr:
       no_travel: "déplacement offert"
       plus_travel: "frais de déplacement"
       out_of_range: "Se déplace jusqu'à %{km} km"
+      other_country: "Vole seulement dans son pays (%{country})"
     show:
       brings: "Ce qu'il peut te rapporter"
       fleet: "Ses drones"
@@ -50,7 +51,7 @@ fr:
       create_map: "Créer la carte de mon lieu"
       request_title: "Demander un vol"
       map: "Le lieu"
-      map_out_of_range: "%{name} (trop loin pour ce pilote)"
+      map_out_of_range: "%{name} (hors de portée de ce pilote)"
       what: "Ce que tu voudrais recevoir"
       period: "Quand ?"
       period_hint: "Une période plutôt qu'une date : « fin février, feuilles tombées », « un matin de juin »."
@@ -118,6 +119,7 @@ fr:
       birth_date: "Date de naissance"
       address: "Adresse"
       country: "Pays"
+      country_hint: "Pour l'instant, tu voles pour les lieux de ce pays."
       phone: "Téléphone"
       phone_hint: "Donné au jardinier seulement une fois la mission payée."
       apply: "Envoyer ma candidature"
@@ -527,6 +529,7 @@ fr:
               not_editable: "Tu dois pouvoir modifier ce lieu pour y demander un vol."
               not_located: "Place d'abord ton lieu sur la carte."
               out_of_range: "Ce lieu est trop loin pour ce pilote."
+              other_country: "Ce pilote vole seulement dans son pays pour l'instant."
             drone_pilot:
               not_listed: "Ce pilote n'est pas, ou plus, dans l'annuaire."
               yourself: "Tu ne peux pas te réserver toi-même."

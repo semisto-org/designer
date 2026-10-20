@@ -51,6 +51,14 @@ class DronePilotTest < ActiveSupport::TestCase
     assert_equal 0, pilot.travel_km_to(@map)
   end
 
+  test "a pilot flies only in their own country" do
+    pilot = create_pilot(users(:bob), country: "FR", vat_number: "FR12345678901")
+    refute pilot.same_country?(@map)
+    refute pilot.serves?(@map), "close enough, but the map is in Belgium"
+    @map.region = Region.new(key: "europe", country_code: "EU")
+    refute pilot.serves?(@map), "a map outside every region has no country"
+  end
+
   test "the quote: Semisto keeps 20 % of the flat price before VAT, never of the travel fees, plus Belgian VAT" do
     pilot = create_pilot(users(:bob))
     quote = pilot.quote_for(@map)
