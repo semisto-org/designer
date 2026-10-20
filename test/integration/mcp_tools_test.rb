@@ -107,6 +107,22 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil data["offer"], "a viewer (maybe the client) never sees the offer"
   end
 
+  test "get_map counts the palette like its table: planted, still to plant, its price and what is left to buy" do
+    apple = plant_species(:apple)
+    apple.update!(invasive_countries: [ "BE" ])
+    @map.palette_items.create!(species: apple, unit_price: 10)
+    spot = { "type" => "Point", "coordinates" => [ 4.905, 50.3402 ] }
+    @map.features.create!(layer: "plants", kind: "plant", geometry: spot, properties: { "species_id" => apple.id })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: spot, properties: { "species_id" => apple.id, "planted_on" => "2025-11-15" })
+
+    data, error = call_tool(@owner, "get_map", { map_id: @map.id })
+    refute error
+    entry = data["palette"].find { _1["species_id"] == apple.id }
+    assert_equal [ 2, 1, 1, 10.0 ], entry.values_at("planned", "planted", "to_plant", "unit_price_eur")
+    assert_equal "invasive", entry["excluded_by"]
+    assert_equal({ "to_buy_eur" => 10.0, "total_eur" => 20.0 }, data["palette_budget"])
+  end
+
   test "get_map gives the bio-indicator plants noted on the terrain and what they point to" do
     @map.bioindicator_observations.create!(catalog_key: "ortie", abundance: "dominant", location: [ 4.906, 50.341 ])
     data, error = call_tool(@viewer, "get_map", { map_id: @map.id })

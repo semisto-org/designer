@@ -24,6 +24,10 @@ class PlantPaletteViewTest < ActiveSupport::TestCase
     assert_equal "Liste de courses chantier", presets[2][:name]
     presets.each { |preset| assert_equal PlantPaletteView.clean_settings(preset[:settings]), preset[:settings] }
     assert_equal "supplier", presets[2][:settings]["group_by"]
+    # Every preset sorts by a column it shows, so the « Trier par » menu tells the truth.
+    presets.each { |preset| assert_includes preset[:settings]["columns"], preset[:settings]["sort"]["key"], preset[:key] }
+    # « Base » is grouped by strata: a strata column would only repeat the group.
+    assert_not_includes presets[0][:settings]["columns"], "strata"
   end
 
   test "a map keeps a bounded number of views" do

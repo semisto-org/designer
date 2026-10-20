@@ -1,0 +1,4 @@
+<% if local_assigns[:places].present? -%>
+<%= t("billing_mailer.places", count: places.size, names: mail_place_names(places)) %>
+
+<% end -%>

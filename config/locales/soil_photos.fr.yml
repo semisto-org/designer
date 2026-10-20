@@ -448,11 +448,6 @@ fr:
       texture_title: "Texture de %{point}"
       texture_parts: "%{sand} % de sable, %{silt} % de limon, %{clay} % d'argile"
       missing: "—"
-    upsell:
-      title: "Comprendre tes résultats"
-      body: "Tes mesures sont enregistrées et restent visibles. Le forfait ajoute leur lecture : repères bas, correct et élevé pour chaque valeur, classe de texture du sol, explications avec des pistes concrètes, et la comparaison de tes points côte à côte."
-      cta: "Voir les formules"
-      owner_only: "Seul le propriétaire de la carte peut changer de forfait."
     plants:
       intro: "Les plantes qui s'installent seules racontent le sol : le rumex et le plantain parlent de tassement, l'ortie d'azote, la prêle d'eau qui stagne. Note celles que tu vois."
       form_title: "Noter une plante"

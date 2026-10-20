@@ -84,7 +84,7 @@ export function SoilSection({ dossier, number, isOwner }: { dossier: Dossier; nu
           {analyses ? (
             <p className="text-xs text-loam-500">{t('dossier.soil.legend', { provenance })}</p>
           ) : (
-            columns.length > 0 && <LockedNote body={t('dossier.locked.soil')} isOwner={isOwner} />
+            columns.length > 0 && <LockedNote feature="dossier_soil" dossier={dossier} isOwner={isOwner} />
           )}
         </div>
       )}

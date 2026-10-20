@@ -1,5 +1,6 @@
-import { formatDate, formatDecimal, MONTH_KEYS, strataLabel, vocab } from '@/components/plants/format'
+import { formatDate, formatDecimal, MONTH_KEYS, strataLabel, todayIso, vocab } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
+import { plantedAge, type PlantLine } from '@/palette/plants'
 import { cellValue, statusOf, type PaletteRow } from '@/palette/table'
 
 const euro = new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' })
@@ -12,6 +13,13 @@ export const NUMERIC = new Set([
 ])
 
 export const MONEY = new Set(['unit_price', 'amount', 'amount_to_plant'])
+
+/** « il y a 3 mois », « 2 hivers déjà » after a planting date; empty when nobody knows it. */
+export function plantedAgeLabel(plantedOn: string | null, precision: PlantLine['plantedPrecision']): string {
+  const age = plantedAge(plantedOn, precision, todayIso())
+  if (!age) return ''
+  return age.unit === 'today' ? t('plant_palette.plants.age.today') : t(`plant_palette.plants.age.${age.unit}`, { count: age.count })
+}
 
 export const columnLabel = (column: string) => t(`plant_palette.columns.${column}`)
 

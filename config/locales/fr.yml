@@ -11,6 +11,7 @@ fr:
     account: "Mon compte"
     sign_out: "Se déconnecter"
   mailer:
+    place_alt: "Le contour de « %{name} », dessiné comme une page de carnet"
     footer: "Semisto Terranova, l'atelier en ligne de Semisto pour cartographier son terrain et concevoir son jardin-forêt."
   maps:
     created: "Carte créée. Délimitons maintenant ton terrain."
@@ -41,6 +42,7 @@ fr:
       title: "Mes cartes"
       new: "Nouvelle carte"
       upgrade: "Passer au forfait"
+      limit_reason: "Tes lieux occupent toutes les cartes actives de ta formule. Archive-en une pour en ouvrir une nouvelle, ou passe au forfait : rien de ce que tu as fait ne se perd."
       empty_title: "Ta première carte"
       empty_body: "Pars d'une adresse ou d'une parcelle cadastrale : le fond de carte, le relief et les couches du Géoportail sont prêts en quelques minutes."
     new:
