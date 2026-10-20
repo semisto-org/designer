@@ -128,4 +128,28 @@ class PublicMapsControllerTest < ActionDispatch::IntegrationTest
     get public_map_path(@publication.token), headers: inertia_headers
     assert_nil props["growth"], "plants hidden: no growth either"
   end
+
+  test "visits are counted once per browser, never the map's people nor link preview robots" do
+    get public_map_path(@publication.token), headers: inertia_headers
+    get public_map_path(@publication.token), headers: inertia_headers
+    assert_equal 1, @publication.reload.views_count
+    assert_equal @publication.token, props["token"]
+
+    get public_map_path(@publication.token), headers: { "User-Agent" => "WhatsApp/2.23" }
+    assert_equal 1, @publication.reload.views_count
+
+    sign_in_as @owner
+    get public_map_path(@publication.token)
+    assert_equal 1, @publication.reload.views_count
+  end
+
+  test "an account made after a visit remembers the map; the owner sees the numbers" do
+    get public_map_path(@publication.token)
+    user = User.create!(email_address: "curieuse@example.org")
+    post magic_link_path(user.generate_token_for(:magic_link))
+    assert_equal @publication, user.reload.source_publication
+    assert_equal [ { "event" => "signup", "props" => { "via" => "public_map" } } ], flash[:inertia]["track"]
+
+    assert_equal({ views: 1, gardensStarted: 1 }, @publication.reload.as_inertia.slice(:views, :gardensStarted))
+  end
 end

@@ -1,5 +1,7 @@
-import { Head, Link, router } from '@inertiajs/react'
-import { Copy, Inbox, Pencil, Plus } from 'lucide-react'
+import { Head, Link, router, usePage } from '@inertiajs/react'
+import { ArrowLeft, Copy, Inbox, Pencil, Plus } from 'lucide-react'
+import { HelpButton } from '@/components/help/HelpButton'
+import { returnToOffer } from '@/components/offers/returnTo'
 import { Button } from '@/components/ui/Button'
 import { Card, EmptyState } from '@/components/ui/Card'
 import { t } from '@/lib/i18n'
@@ -11,10 +13,20 @@ import type { TemplateAccount } from '@/types/offer_templates'
  */
 export default function OfferTemplatesIndex({ accounts }: { accounts: TemplateAccount[] }) {
   const create = (account: string, from?: number) => router.post('/offer_templates', { account, from: from ?? null })
+  const backToOffer = returnToOffer(usePage().url)
+  const editQuery = backToOffer ? `?return_to=${encodeURIComponent(backToOffer)}` : ''
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <Head title={t('offer_templates.index.title')} />
-      <h1 className="text-2xl">{t('offer_templates.index.title')}</h1>
+      {backToOffer && (
+        <Link href={backToOffer} className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
+          <ArrowLeft className="h-4 w-4" aria-hidden />{t('offer_templates.back_to_offer')}
+        </Link>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl">{t('offer_templates.index.title')}</h1>
+        <HelpButton slug="chiffrer-une-offre" />
+      </div>
       <p className="max-w-2xl text-sm text-loam-600">{t('offer_templates.index.intro')}</p>
       {accounts.length > 0 && (
         <Link href="/request_forms" className="flex items-start gap-3 rounded-2xl bg-leaf-50 p-4 ring-1 ring-leaf-200 hover:bg-leaf-100">
@@ -56,7 +68,7 @@ export default function OfferTemplatesIndex({ accounts }: { accounts: TemplateAc
                   </div>
                   {account.canEdit && (
                     <span className="flex gap-1">
-                      <Link href={`/offer_templates/${template.id}/edit`} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium text-prune-700 hover:bg-prune-50">
+                      <Link href={`/offer_templates/${template.id}/edit${editQuery}`} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium text-prune-700 hover:bg-prune-50">
                         <Pencil className="h-3.5 w-3.5" aria-hidden />{t('offer_templates.index.edit')}
                       </Link>
                       <button type="button" onClick={() => create(account.key, template.id)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm text-loam-600 hover:bg-loam-100">
@@ -68,7 +80,7 @@ export default function OfferTemplatesIndex({ accounts }: { accounts: TemplateAc
               ))}
             </ul>
           )}
-          <p className="text-sm text-loam-500">{t('offer_templates.index.default_note')}</p>
+          {account.templates.length > 1 && <p className="text-sm text-loam-500">{t('offer_templates.index.default_note')}</p>}
         </Card>
       ))}
     </div>

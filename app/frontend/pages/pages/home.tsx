@@ -1,11 +1,13 @@
 import { Link } from '@inertiajs/react'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Standouts } from '@/components/site/Standouts'
 import { Timelapse } from '@/components/site/timelapse/Timelapse'
 import { ButtonLink } from '@/components/ui/Button'
 import { content, tf } from '@/lib/content'
 import { formatPrice } from '@/lib/money'
+import { AddressSearch } from '@/map/data/AddressSearch'
+import { useStartTrial } from '@/trials/start'
 import type { CatalogPlan } from '@/types/billing'
 
 type Source = { name: string; detail: string }
@@ -20,12 +22,13 @@ export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
   return (
     <>
       <Timelapse>
-        <div className="mt-3 flex flex-wrap gap-2.5">
-          <ButtonLink href="/session/new">{tf('site.home.story.final_cta')}</ButtonLink>
-          <ButtonLink href="/tarifs" variant="secondary">{tf('site.home.story.final_secondary')}</ButtonLink>
+        <WhereIsYourPlace />
+        <div className="flex flex-wrap gap-2.5">
+          <ButtonLink href="/session/new" variant="secondary">{tf('site.home.story.final_cta')}</ButtonLink>
+          <ButtonLink href="/tarifs" variant="ghost">{tf('site.home.story.final_secondary')}</ButtonLink>
         </div>
         <p className="font-hand text-[1.4rem] leading-tight text-leaf-600">{tf('site.home.story.free')}</p>
-        <p className="text-xs text-loam-400">{tf('site.home.story.example')}</p>
+        <p className="text-sm text-loam-400">{tf('site.home.story.example')}</p>
       </Timelapse>
 
       <Standouts />
@@ -66,6 +69,34 @@ export default function Home({ catalog }: { catalog: CatalogPlan[] }) {
         </div>
       </section>
     </>
+  )
+}
+
+/**
+ * The time-lapse ends on a question: « Où est ton terrain ? ». The address
+ * opens the visitor's own place at once, without an account (a trial).
+ */
+function WhereIsYourPlace() {
+  const { start, starting, error } = useStartTrial({ via: 'home' })
+  return (
+    <div className="mt-3 rounded-2xl bg-loam-50/90 p-4 ring-1 ring-loam-200 backdrop-blur-sm">
+      <p className="font-hand text-[1.75rem] leading-tight text-prune-700">{tf('site.home.story.where.title')}</p>
+      <p className="mt-1 text-sm text-loam-600">{tf('site.home.story.where.hint')}</p>
+      <AddressSearch
+        className="mt-3"
+        endpoint="/essai/geocode"
+        label={tf('site.home.story.where.label')}
+        placeholder={tf('site.home.story.where.placeholder')}
+        onSelect={(place) => void start(place)}
+      />
+      {starting && (
+        <p className="mt-2 inline-flex items-center gap-2 text-sm text-loam-600" role="status">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          {tf('site.home.story.where.starting')}
+        </p>
+      )}
+      {error && <p className="mt-2 text-sm text-clay-600" role="alert">{error}</p>}
+    </div>
   )
 }
 

@@ -85,7 +85,7 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
             <FormAnswers fields={doc.form.fields} title={doc.form.formName} className="!px-6 !py-5" />
           </div>
         )}
-        {page && <MarkdownPreview key={doc.id} url={page} title={doc.title} />}
+        {page && !doc.form && <MarkdownPreview key={doc.id} url={page} title={doc.title} />}
         {!doc.preview && !doc.form && !page && (
           <div className="max-w-sm text-center">
             <DocumentIcon kind={doc.kind} filename={doc.filename} className="mx-auto h-24 w-24" />
@@ -174,7 +174,7 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           )}
         </div>
         {canEdit && onDelete && (
-          <Button size="sm" variant="ghost" className="text-clay-500" onClick={() => {
+          <Button size="sm" variant="danger-ghost" onClick={() => {
             if (!window.confirm(t('documents.viewer.confirm_delete'))) return
             const next = docs[index + 1] ?? docs[index - 1]
             void onDelete(doc).then(() => onOpen(next ? next.id : null))

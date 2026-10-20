@@ -53,6 +53,18 @@ Si la couche Plantes est publiée, tes visiteurs voient chaque plante en aquarel
 
 Quand tu envoies l'adresse dans une messagerie, sur un réseau social ou par e-mail, elle s'affiche avec une image propre à ta carte : son titre, sa surface et, si tu montres l'adresse, sa commune, avec ton terrain dessiné au crayon et ton jardin en aquarelle dans quinze ans. L'image est peinte à chaque publication et le panneau te la montre sous **Aperçu du lien**. Elle ne dessine que ce que la vue publique montre.
 
+## La vidéo « Mon jardin dans 30 ans »
+
+Sous l'aperçu du lien, **Peindre la vidéo** prépare une vidéo verticale de 15 secondes : ton jardin de sa plantation à ses trente ans, pendant que les saisons tournent, avec l'année écrite à la main et l'adresse de ta vue. Elle se peint dans ton navigateur, en temps réel : garde l'onglet ouvert pendant ces quinze secondes. Touche ensuite **Télécharger la vidéo** et partage-la en story ou sur WhatsApp. Elle ne montre que ce que la vue publique montre, et il faut que la couche Plantes soit publiée.
+
+## « Et chez toi ? »
+
+En haut de la vue publique, le bouton **Et chez toi ?** invite tes visiteurs à essayer avec leur propre adresse, sans compte. Terranova trouve leur parcelle sur le cadastre, lit sa pente et leur dit vers où file l'eau de pluie, ce que leur orientation promet aux plantes et ce que la région sait déjà. L'essai reste 48 heures ; s'ils créent un compte, il devient leur première carte.
+
+Le panneau **Publier** te dit combien de personnes ont regardé ton jardin, et combien ont commencé le leur après l'avoir vu. Ce sont des nombres, jamais des noms : tu ne sais pas qui, et eux ne savent rien de toi de plus que ce que la vue montre. Les visites des personnes de ta carte et des robots qui fabriquent les aperçus de lien ne comptent pas.
+
+Ton IA connectée à Terranova les lit aussi : demande-lui si ta vue est à jour, combien de personnes l'ont regardée, ou l'adresse à partager. Elle ne publie jamais à ta place.
+
 ## Une photo, pas un direct
 
 La vue publiée est une **photo de la carte** prise au moment où tu publies. Si tu continues à dessiner, le panneau te prévient : « La carte a changé depuis la publication ». Touche **Mettre à jour la vue publiée** : l'adresse ne change pas, et le numéro de version augmente.

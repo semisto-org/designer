@@ -85,6 +85,12 @@ class PlantedQuantities
     end
   end
 
+  # Role of a key in the palette: its cultivar's line, else its species'.
+  def palette_role_for(key)
+    @palette_roles ||= palette.reject(&:draft?).to_h { |item| [ item.key, item.role ] }
+    @palette_roles[key] || @palette_roles[[ key.first, nil ]]
+  end
+
   # A cultivar not in the palette takes its species' palette strata.
   def palette_strata_for(key) = @palette_strata[key] || @palette_strata[[ key.first, nil ]]
 
