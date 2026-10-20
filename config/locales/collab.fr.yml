@@ -189,7 +189,7 @@ fr:
   public_maps:
     read_only: "Lecture seule"
     published_on: "Vue publiée le %{date}"
-    made_with: "Fait avec Semisto Terranova"
+    made_with: "Conçu avec Semisto Terranova"
     about: "À propos de cette carte"
     legend: "Légende"
     garden:
