@@ -60,8 +60,14 @@ function GuideCard() {
   const guide = useGuide()
   const setStage = useStageSetter()
   const desktop = useMediaQuery('(min-width: 768px)')
-  const [stored, setCollapsed] = useGuideCollapsed(editor.map.id)
-  const collapsed = stored ?? !desktop
+  const [stored, setStored] = useGuideCollapsed(editor.map.id)
+  // An open panel already takes the left of the map: the card folds to one
+  // line beside it, unfolds on demand, and folds again with the next panel.
+  const crowded = desktop && editor.activePanel != null
+  const [unfolded, setUnfolded] = useState(false)
+  useEffect(() => setUnfolded(false), [editor.activePanel])
+  const collapsed = crowded ? !unfolded : stored ?? !desktop
+  const setCollapsed = (value: boolean) => (crowded ? setUnfolded(!value) : setStored(value))
   if (!guide.data || !guide.target) return null
 
   const target = guide.target
@@ -126,7 +132,7 @@ function GuideCard() {
               <span className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-prune-600 text-[10px] text-white">{STAGES.indexOf(focus) + 1}</span>
               {t(`editor.guide.step_title.${focus}`)}
             </p>
-            <p className="text-[12.5px] leading-[1.45] text-loam-600">{bodyFor(target, guide.data.steps.find((s) => s.key === focus)?.items.find((i) => target.kind === 'item' && i.key === target.item)?.target)}</p>
+            <p className="text-sm leading-[1.45] text-loam-600">{bodyFor(target, guide.data.steps.find((s) => s.key === focus)?.items.find((i) => target.kind === 'item' && i.key === target.item)?.target)}</p>
             {action && (
               <button
                 type="button" onClick={run}
@@ -136,7 +142,7 @@ function GuideCard() {
               </button>
             )}
           </div>
-          <button type="button" onClick={() => editor.openPanel('journey')} className="self-start text-xs font-medium text-prune-700 hover:underline">
+          <button type="button" onClick={() => editor.openPanel('journey')} className="self-start text-sm font-medium text-prune-700 hover:underline">
             {t('editor.guide.all_steps')}
           </button>
         </div>
