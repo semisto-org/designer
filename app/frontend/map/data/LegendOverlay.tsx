@@ -205,7 +205,7 @@ function StrataLegend({ counts, unknown, planned, support, numbered }: PlantLege
       )}
       {support && (
         <p className="mt-2 flex items-center gap-2 text-sm leading-tight text-loam-600">
-          <CrownSwatch color="#6b665c" support />
+          <CrownSwatch color="#6b665c" support />{/* design-lint-ok: the neutral swatch the map paints */}
           {t('plants.legend.support')}
         </p>
       )}
@@ -267,7 +267,7 @@ function CrownSwatch({ color, planned = false, crown = true, support = false }: 
       {crown && <circle cx="9" cy="9" r="7" fill={color} fillOpacity={planned ? 0.15 : 0.45} stroke="#ffffff" strokeWidth="3.5" />}
       {/* Support plants: white hatching over the strata colour, as on the map. */}
       {crown && support && (
-        <g style={{ clipPath: 'circle(6px at 9px 9px)' }} stroke="#ffffff" strokeWidth="1.2" strokeOpacity="0.9">
+        <g style={{ clipPath: 'circle(6px at 9px 9px)' }} stroke="#ffffff" strokeWidth="1.2" strokeOpacity="0.9">{/* design-lint-ok: the same hatching as the map */}
           {[-8, -4, 0, 4, 8].map((d) => <line key={d} x1={2 + d} y1={16} x2={16 + d} y2={2} />)}
         </g>
       )}

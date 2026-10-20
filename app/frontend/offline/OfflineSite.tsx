@@ -1,6 +1,7 @@
 import { Camera, Database, FileText, Map as MapIcon, ShieldAlert, WifiOff } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { formatDate } from '@/collab/time'
+import { Button } from '@/components/ui/Button'
 import { formatArea, t } from '@/lib/i18n'
 import { formatBytes } from '@/lib/money'
 import { PublicMapView } from '@/public_maps/PublicMapView'
@@ -91,18 +92,18 @@ export function OfflineSite({ data }: { data: OfflineData }) {
             const Icon = ICONS[key]
             const count = counts[key]
             return (
-              <button
+              <Button
                 key={key}
-                type="button"
+                variant={tab === key ? 'primary' : 'ghost'}
+                size="sm"
                 onClick={() => setTab(key)}
                 aria-current={tab === key ? 'page' : undefined}
-                className={'inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition ' +
-                  (tab === key ? 'bg-prune-700 text-white' : 'text-loam-600 hover:bg-loam-100')}
+                className="shrink-0"
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 {t(`offline_site.viewer.tabs.${key}`)}
                 {count != null && count > 0 && <span className={tab === key ? 'text-prune-100' : 'text-loam-400'}>{count}</span>}
-              </button>
+              </Button>
             )
           })}
         </nav>

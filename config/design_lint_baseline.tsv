@@ -407,9 +407,10 @@ bare-button	2	app/frontend/pages/propagation_requests/index.tsx
 native-confirm	2	app/frontend/pages/propagation_requests/index.tsx
 bare-button	2	app/frontend/pages/public_maps/relief.tsx
 hex-color	1	app/frontend/pages/public_maps/relief.tsx
-bare-button	4	app/frontend/pages/public_maps/show.tsx
-hex-color	2	app/frontend/pages/public_maps/show.tsx
-small-text	8	app/frontend/pages/public_maps/show.tsx
+bare-button	4	app/frontend/public_maps/PublicMapView.tsx
+hex-color	2	app/frontend/public_maps/PublicMapView.tsx
+small-text	1	app/frontend/pages/public_maps/show.tsx
+small-text	7	app/frontend/public_maps/PublicMapView.tsx
 bare-button	4	app/frontend/pages/public_request_forms/show.tsx
 hex-color	1	app/frontend/pages/public_request_forms/show.tsx
 bare-button	2	app/frontend/pages/request_forms/requests/show.tsx
