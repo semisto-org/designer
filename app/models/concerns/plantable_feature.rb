@@ -1,7 +1,10 @@
 # Plants and patches drawn on a map are MapFeatures of the "plants" layer:
 #   - kind "plant": a Point, properties { species_id, variety_id, planted_on,
-#     planted_on_precision, training } (pollard | coppice, optional: how a tree or a bush is kept,
-#     left free when absent), and for a grafted fruit tree graft_form
+#     planted_on_precision, training } (pollard | coppice | chop_and_drop, optional: how a tree or a
+#     bush is kept, left free when absent), succession (support | productive, optional: what the
+#     plant is for in the forest garden's succession, else its palette role says), support_until
+#     (optional: the year after planting when a support plant gives way and is removed), and for
+#     a grafted fruit tree graft_form
 #     (standard | half_standard | bush), trunk_height (m), rootstock_vigor
 #     (ROOTSTOCK_VIGORS) and rootstock (free text, « MM106 »), all optional;
 #   - kind "patch": a Polygon whose composition lives in `patch_items`,
@@ -13,8 +16,16 @@ module PlantableFeature
   PLANT = "plant"
   PATCH = "patch"
   # How a tree or a bush is kept when it is not left free: cut back to a head
-  # on its trunk (« trogne ») or to the ground (« cépée »).
-  TRAININGS = %w[pollard coppice].freeze
+  # on its trunk (« trogne »), to the ground (« cépée »), or hard every year
+  # and left at its foot as mulch (« couper-déposer », a support plant).
+  TRAININGS = %w[pollard coppice chop_and_drop].freeze
+  # What a plant is for as the forest garden grows: a support plant (nitrogen
+  # fixer, pioneer, biomass) builds the soil and shelters, then gives way to
+  # the productive ones.
+  SUCCESSIONS = %w[support productive].freeze
+  # Palette roles whose plants are support plants unless their sheet says otherwise.
+  SUPPORT_ROLES = %w[support pioneer].freeze
+  SUPPORT_YEARS = (1..60)
   # A grafted fruit tree's form, named after its trunk: « haute-tige »
   # (standard), « demi-tige » (half_standard), « basse-tige » (bush).
   GRAFT_FORMS = %w[standard half_standard bush].freeze
@@ -50,6 +61,15 @@ module PlantableFeature
   def plant_variety_id = integer_property("variety_id")
 
   def plant_training = properties["training"].presence
+
+  # A support plant: its sheet says so, else its species' palette role does.
+  def support_plant?(palette_role = nil)
+    succession = properties["succession"].presence
+    succession ? succession == "support" : SUPPORT_ROLES.include?(palette_role)
+  end
+
+  # Years after planting when a support plant is removed, or nil when it stays.
+  def support_until = properties["support_until"].is_a?(Integer) ? properties["support_until"] : nil
 
   # A grafted fruit tree: what its sheet says, or nil when it says nothing.
   def plant_graft
@@ -101,6 +121,12 @@ module PlantableFeature
       props.delete("planted_on_precision") if props["planted_on"].blank? || props["planted_on_precision"].blank?
       # Free is the default: no key.
       props.delete("training") if props["training"].blank? || props["training"] == "free"
+      props.delete("succession") if props["succession"].blank?
+      if props["support_until"].blank?
+        props.delete("support_until")
+      elsif props["support_until"].to_s.match?(/\A\d+\z/)
+        props["support_until"] = props["support_until"].to_i
+      end
       %w[graft_form rootstock_vigor].each { |key| props.delete(key) if props[key].blank? }
       props["rootstock"] = props["rootstock"].to_s.squish
       props.delete("rootstock") if props["rootstock"].blank?
@@ -121,6 +147,10 @@ module PlantableFeature
         errors.add(:properties, :invalid)
       end
       errors.add(:properties, :invalid) if plant_training && !TRAININGS.include?(plant_training)
+      errors.add(:properties, :invalid) if properties["succession"] && !SUCCESSIONS.include?(properties["succession"])
+      if properties.key?("support_until")
+        errors.add(:properties, :invalid) unless properties["support_until"].is_a?(Integer) && SUPPORT_YEARS.cover?(properties["support_until"])
+      end
       errors.add(:properties, :invalid) if properties["graft_form"] && !GRAFT_FORMS.include?(properties["graft_form"])
       errors.add(:properties, :invalid) if properties["rootstock_vigor"] && !ROOTSTOCK_VIGORS.include?(properties["rootstock_vigor"])
       errors.add(:properties, :invalid) if properties["rootstock"].to_s.length > ROOTSTOCK_LENGTH

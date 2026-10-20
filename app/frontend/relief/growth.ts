@@ -28,8 +28,12 @@ export type GrowthInputs = {
 
 export type GrowingPlantData = GrowthInputs & {
   id: number
-  /** How the gardener keeps it: left free, pollarded or coppiced. */
+  /** How the gardener keeps it: left free, pollarded, coppiced or chopped and dropped. */
   training: PlantTraining | null
+  /** A support plant (nitrogen fixer, pioneer, biomass) that builds the soil, then gives way. */
+  support?: boolean
+  /** Years after its planting when the support plant is removed, or null when it stays. */
+  supportUntil?: number | null
   /** A grafted fruit tree: its form, trunk height (m), rootstock vigour and rootstock, as the gardener gave them. */
   graft: GraftData | null
   lng: number
@@ -58,10 +62,12 @@ export type GrowingPlantsData = {
 
 /**
  * How a tree or a bush is kept: free (as nature grows it), pollarded (a
- * trunk cut back to a head every few years, « trogne ») or coppiced (cut
- * back to the ground, regrowing as many stems, « cépée »).
+ * trunk cut back to a head every few years, « trogne »), coppiced (cut
+ * back to the ground, regrowing as many stems, « cépée ») or chopped and
+ * dropped (a support plant cut hard every year, its cuttings left at the
+ * foot of the fruit trees as mulch, « couper-déposer »).
  */
-export type PlantTraining = 'free' | 'pollard' | 'coppice'
+export type PlantTraining = 'free' | 'pollard' | 'coppice' | 'chop_and_drop'
 
 /**
  * The form a grafted fruit tree is sold with, named after its trunk: a
@@ -149,6 +155,9 @@ export type ScenePlant = {
   graft?: Graft | null
   /** Years after year 0 when it goes into the ground. */
   start: number
+  /** A support plant, removed `until` years after its planting when that is set. */
+  support?: boolean
+  until?: number | null
   /** Index in `GrowingPlantsData.plants`, or null for a plant of a patch. */
   plant: number | null
   /** The patch it belongs to (index in `patches`) and its line, for a plant of a patch. */
@@ -205,6 +214,8 @@ export const POLLARD_HEAD = 2
 export const MANAGED_SIZE: Record<Exclude<PlantTraining, 'free'>, { height: number; spread: number }> = {
   pollard: { height: POLLARD_HEAD + 3.5, spread: 4 },
   coppice: { height: 5, spread: 4 },
+  // One summer's regrowth: it is cut every year.
+  chop_and_drop: { height: 2.2, spread: 1.8 },
 }
 
 /** Whether a plant drawn with `form` can be pollarded or coppiced (a tree or a bush). */
@@ -218,6 +229,9 @@ export function trainable(form: PlantForm): boolean {
  */
 export const MANAGED_MATURITY = 10
 
+/** A plant chopped and dropped every year has its stool after about three years. */
+export const CHOP_MATURITY = 3
+
 type Kept = { training?: PlantTraining; graft?: Graft | null }
 
 /**
@@ -227,7 +241,10 @@ type Kept = { training?: PlantTraining; graft?: Graft | null }
  */
 export function managedSize(plant: Pick<ScenePlant, 'heightM' | 'spreadM' | 'maturityYears'> & Kept): { height: number; spread: number; maturityYears: number } {
   const cap = plant.training && plant.training !== 'free' ? MANAGED_SIZE[plant.training] : null
-  if (cap) return { height: Math.min(plant.heightM, cap.height), spread: Math.min(plant.spreadM, cap.spread), maturityYears: Math.min(plant.maturityYears, MANAGED_MATURITY) }
+  if (cap) {
+    const maturity = plant.training === 'chop_and_drop' ? CHOP_MATURITY : MANAGED_MATURITY
+    return { height: Math.min(plant.heightM, cap.height), spread: Math.min(plant.spreadM, cap.spread), maturityYears: Math.min(plant.maturityYears, maturity) }
+  }
   const graft = plant.graft
   if (graft) {
     const vigor = graft.vigor === 'vigorous' ? null : VIGOR_SIZE[graft.vigor]
@@ -243,9 +260,10 @@ export function managedSize(plant: Pick<ScenePlant, 'heightM' | 'spreadM' | 'mat
 /** A grafted tree leaves the nursery with its trunk formed and the start of a crown (m). */
 export const GRAFTED_CROWN_AT_PLANTING = { height: 0.6, spread: 0.6 }
 
-/** Height and spread `age` years after planting, or null before it is planted. */
-export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'> & Kept, age: number): { height: number; spread: number } | null {
+/** Height and spread `age` years after planting, or null before it is planted and once a support plant gave way. */
+export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' | 'maturityYears'> & Kept & { until?: number | null }, age: number): { height: number; spread: number } | null {
   if (age < 0) return null
+  if (plant.until != null && age >= plant.until) return null
   const graft = plant.training && plant.training !== 'free' ? null : plant.graft
   const start = graft
     ? { height: graft.trunk + GRAFTED_CROWN_AT_PLANTING.height, spread: GRAFTED_CROWN_AT_PLANTING.spread }
@@ -261,7 +279,7 @@ export function sizeAt(plant: Pick<ScenePlant, 'strata' | 'heightM' | 'spreadM' 
 
 /** A training the server sent, or free when it is unknown or the form cannot take it. */
 export function trainingOf(form: PlantForm, value: string | null | undefined): PlantTraining {
-  return trainable(form) && (value === 'pollard' || value === 'coppice') ? value : 'free'
+  return trainable(form) && (value === 'pollard' || value === 'coppice' || value === 'chop_and_drop') ? value : 'free'
 }
 
 /** The form a plant is drawn with, from its strata and its type. */
@@ -295,7 +313,7 @@ export function plantShape(form: PlantForm, strata: PlantStrata, height: number,
     const half = (height - trunk) / 2
     return { kind: 'crown', trunk, centre: trunk + half, half, radius: spread / 2 }
   }
-  if (trainable(form) && training === 'coppice') {
+  if (trainable(form) && (training === 'coppice' || training === 'chop_and_drop')) {
     // Many stems from the stool: a crown resting on the ground, a little lifted.
     return { kind: 'crown', trunk: 0, centre: height * 0.52, half: height * 0.48, radius: spread / 2 }
   }
@@ -455,6 +473,7 @@ export function scenePlants(meta: GridMeta, data: GrowingPlantsData): ScenePlant
     plants.push({
       x, y, form, strata: p.strata, heightM: p.heightM, spreadM: p.spreadM,
       maturityYears: p.maturityYears, training, graft: training === 'free' ? graftOf(form, p.graft) : null, start: p.plantedLongAgo ? -p.maturityYears : startOf(p.plantedOn), plant: index, patch: null, seed: p.id * 7919,
+      support: !!p.support, until: p.support && !p.plantedLongAgo ? p.supportUntil ?? null : null,
     })
   })
   const patchStart = startOf(null)
