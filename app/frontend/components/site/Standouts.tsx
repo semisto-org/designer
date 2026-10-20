@@ -124,7 +124,7 @@ function StandoutEntry({ entry, index }: { entry: Entry; index: number }) {
 }
 
 /** A strip of paper tape holding a print to the page. */
-function Tape({ className }: { className: string }) {
+export function Tape({ className }: { className: string }) {
   return <span aria-hidden="true" className={clsx('absolute h-6 w-20 bg-humus-200/70 shadow-sm mix-blend-multiply', className)} />
 }
 

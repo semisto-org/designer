@@ -19,6 +19,7 @@ export function PublicFooter() {
           <ul className="mt-3 space-y-2 text-sm text-loam-500">
             <li><Link href="/fonctionnalites" className="hover:text-loam-900">{t('public.nav.features')}</Link></li>
             <li><Link href="/tarifs" className="hover:text-loam-900">{t('public.nav.pricing')}</Link></li>
+            <li><Link href="/carnets-ouverts" className="hover:text-loam-900">{t('site.footer.gallery')}</Link></li>
             <li><Link href="/mission-drone" className="hover:text-loam-900">{t('site.footer.drone')}</Link></li>
             <li><Link href="/help" className="hover:text-loam-900">{t('public.nav.help')}</Link></li>
           </ul>

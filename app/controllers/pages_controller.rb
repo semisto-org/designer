@@ -19,7 +19,17 @@ class PagesController < ApplicationController
     }
   end
 
-  def features = render_public("pages/features", page: :features)
+  # A visit of a real notebook (the map Semisto chose in « Carnets ouverts »),
+  # then the gallery.
+  def features
+    tour = MapPublication.site_tour
+    render_public "pages/features", page: :features, props: {
+      tour: tour && tour.as_public.merge(path: tour.public_path),
+      gallery: gallery_cards
+    }
+  end
+
+  def gallery = render_public("pages/gallery", page: :gallery, props: { gallery: gallery_cards })
 
   def pricing
     render_public "pages/pricing", page: :pricing, json_ld: faq_json_ld, props: {
@@ -47,13 +57,17 @@ class PagesController < ApplicationController
 
   # The public pages and every help article, for search engines.
   def sitemap
-    @urls = [ [ "/", 1.0 ], [ "/fonctionnalites", 0.9 ], [ "/tarifs", 0.9 ], [ "/mission-drone", 0.6 ], [ "/open-source", 0.5 ], [ "/ecoconception", 0.4 ],
+    @urls = [ [ "/", 1.0 ], [ "/fonctionnalites", 0.9 ], [ "/tarifs", 0.9 ], [ "/carnets-ouverts", 0.6 ], [ "/mission-drone", 0.6 ], [ "/open-source", 0.5 ], [ "/ecoconception", 0.4 ],
               [ "/help", 0.7 ], [ "/confidentialite", 0.2 ], [ "/conditions", 0.2 ] ]
     @urls += HelpArticle.all.map { |article| [ "/help/#{article.slug}", 0.6 ] }
     render formats: :xml
   end
 
   private
+    def gallery_cards
+      MapPublication.in_gallery.includes(:map).with_attached_preview_image.map(&:as_gallery_card)
+    end
+
     # The legal texts are also written into the HTML (layouts/application),
     # so readers without JavaScript see them: Google checks the privacy
     # policy that way before it shows the app's name on its sign-in screen.

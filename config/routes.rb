@@ -234,6 +234,7 @@ Rails.application.routes.draw do
   # Public website (server-side meta tags, French URLs).
   get "fonctionnalites", to: "pages#features", as: :features_page
   get "tarifs", to: "pages#pricing", as: :pricing
+  get "carnets-ouverts", to: "pages#gallery", as: :gallery_page
   get "mission-drone", to: "pages#drone", as: :drone_mission
   get "open-source", to: "pages#open_source", as: :open_source
   get "ecoconception", to: "pages#ecoconception", as: :ecoconception
@@ -573,6 +574,8 @@ Rails.application.routes.draw do
     post "plan-gifts", to: "plan_gifts#create_all", as: :plan_gifts
     post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
+    # « Carnets ouverts »: the maps the public site's gallery shows.
+    resources :gallery, only: %i[index update]
     get "tech", to: "tech#show", as: :tech
     # « Design »: the « carnet » primitives and what remains to migrate.
     get "design", to: "design#show", as: :design
