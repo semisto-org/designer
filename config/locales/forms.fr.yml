@@ -10,7 +10,7 @@ fr:
     flash:
       connected: "Tally peut maintenant t'envoyer les réponses : colle l'adresse et la clé dans ton formulaire."
       reset: "Nouvelle adresse et nouvelle clé : remplace-les dans chacun de tes formulaires Tally."
-      added: "« %{name} » est prêt à partir depuis l'onglet « Formulaires » de vos cartes."
+      added: "« %{name} » est prêt à partir depuis l'onglet « Formulaires » des cartes de l'équipe."
       removed: "« %{name} » est retiré. Ses réponses déjà rangées restent dans les cartes."
       filed: "Réponse rangée dans « %{map} »."
       deleted: "Réponse supprimée."
@@ -19,12 +19,12 @@ fr:
       map: "Choisis une carte de l'équipe."
     team_card:
       title: "Formulaires"
-      hint: "Les réponses à vos formulaires Tally, rangées dans les cartes."
+      hint: "Les réponses aux formulaires Tally de l'équipe, rangées dans ses cartes."
     page:
       title: "Formulaires"
       page_title: "Formulaires · %{team}"
       back: "%{team}"
-      intro: "Vos formulaires restent dans Tally. Terranova reçoit chaque réponse et la range dans la carte concernée, sous « Formulaires » et dans ses documents, où toute l'équipe et ton IA la retrouvent."
+      intro: "Tes formulaires restent dans Tally. Terranova reçoit chaque réponse et la range dans la carte concernée, sous « Formulaires » et dans ses documents, où toute l'équipe et ton IA la retrouvent."
     connect:
       title: "Brancher Tally"
       body: "Un retour en fin de projet, un suivi à un an, une inscription à une visite… Chaque formulaire Tally peut envoyer ses réponses ici. Il suffit d'une adresse de réception, une fois pour toute l'équipe."
@@ -37,8 +37,9 @@ fr:
       show_secret: "Afficher la clé"
       step_1: "Dans Tally, ouvre le formulaire, puis « Integrations » › « Webhooks » : colle l'adresse ci-dessus et active « Signing secret » avec la clé."
       step_2: "Ajoute au formulaire un champ caché nommé « %{field} » : c'est lui qui dit à quelle carte appartient la réponse."
-      step_3: "Ajoute le formulaire ci-dessous. Dans l'onglet « Formulaires » d'une carte, tu trouveras son lien déjà rempli pour ce client."
+      step_3: "Ajoute le formulaire ci-dessous. Dans l'onglet « Formulaires » d'une carte, tu trouveras son lien déjà rempli pour ce lieu."
       reset: "Nouvelle adresse"
+      settings: "Réglages de Tally"
       reset_confirm: "L'adresse et la clé actuelles cesseront de fonctionner tout de suite. Il faudra les remplacer dans chaque formulaire Tally. Continuer ?"
     list:
       title: "Formulaires de l'équipe"
@@ -80,7 +81,11 @@ fr:
       title: "Formulaires"
       page_title: "Formulaires · %{map}"
       intro: "Un retour en fin de projet, un suivi à un an… Envoie à ton client le formulaire de l'équipe %{team} : ses réponses arrivent ici, datées, et restent avec ce lieu."
-      no_team: "Les formulaires appartiennent à une équipe. Range cette carte dans une équipe pour en envoyer depuis ici."
+      no_team_title: "Cette carte n'est dans aucune équipe"
+      no_team: "Les formulaires appartiennent à une équipe. Seul le propriétaire de la carte peut la ranger dans l'une de ses équipes."
+      no_team_owner: "Les formulaires appartiennent à une équipe. Ouvre la carte, puis « Partager », pour la ranger dans l'une de tes équipes : l'onglet « Formulaires » apparaîtra."
+      no_team_open_map: "Ouvrir la carte"
+      no_team_teams: "Mes équipes"
       send_title: "Envoyer un formulaire"
       send_hint: "Le lien est déjà rempli pour ce lieu : copie-le dans ton e-mail. Ton client n'a besoin d'aucun compte."
       preview: "Aperçu"

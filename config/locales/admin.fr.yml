@@ -14,6 +14,7 @@ fr:
       release_notes: "Nouveautés"
       help: "Aide"
       tech: "Tech"
+      design: "Design"
       catalogue: "Catalogue"
     catalogue:
       title: "Catalogue"

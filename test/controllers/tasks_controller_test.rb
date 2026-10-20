@@ -37,4 +37,14 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     get my_tasks_path(team_id: team.id), headers: inertia_headers
     assert_equal({ "type" => "me" }, response.parsed_body["props"]["scope"])
   end
+
+  test "tasks without a date follow their lists' order, then their own" do
+    second = @map.task_lists.create!(name: "Planter")
+    second.tasks.create!(title: "Planter", assignee: users(:alice))
+    @list.tasks.create!(title: "Repérer l'eau", assignee: users(:alice))
+    @list.tasks.create!(title: "Dessiner le contour", assignee: users(:alice))
+    sign_in_as users(:alice)
+    get my_tasks_path, headers: inertia_headers
+    assert_equal [ "Repérer l'eau", "Dessiner le contour", "Planter" ], response.parsed_body["props"]["tasks"].pluck("title")
+  end
 end

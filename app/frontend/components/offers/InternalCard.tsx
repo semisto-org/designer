@@ -9,6 +9,7 @@ import type { AdjustmentInput, AdjustmentPhase, OfferCatalog, OfferInputs, Offer
 import { categoryLabel, newId, SectionTitle } from './shared'
 
 type Props = {
+  mapId: number
   inputs: OfferInputs
   measures: OfferMeasures
   result: OfferResult
@@ -28,7 +29,7 @@ const ADJUSTMENT_PHASES: AdjustmentPhase[] = ['all', 'pre_design', 'design', 'im
  * never reads. Services bring tasks in, adjustments move the fees up or
  * down, trips and rates finish the picture.
  */
-export function InternalCard({ inputs, measures, result, catalog, pricing, templates, templateId, onTemplate, readOnly, onChange }: Props) {
+export function InternalCard({ mapId, inputs, measures, result, catalog, pricing, templates, templateId, onTemplate, readOnly, onChange }: Props) {
   const patchSettings = (patch: Partial<OfferSettings>) => onChange({ ...inputs, settings: { ...inputs.settings, ...patch } })
   const setService = (key: string, on: boolean) => onChange({ ...inputs, services: { ...inputs.services, [key]: on } })
   const setAdjustment = (id: string, patch: Partial<AdjustmentInput>) =>
@@ -64,11 +65,11 @@ export function InternalCard({ inputs, measures, result, catalog, pricing, templ
             <option value="">{t('offers.pricing.semisto')}</option>
             {templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
           </Select>
-          <Link href="/offer_templates" className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
+          <Link href={`/offer_templates?return_to=${encodeURIComponent(`/maps/${mapId}/offer`)}`} className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
             <Settings2 className="h-4 w-4" aria-hidden />{t('offers.pricing.manage')}
           </Link>
         </div>
-        <p className="text-xs text-loam-500">
+        <p className="text-sm text-loam-500">
           {measures.client_type
             ? t('offers.pricing.client_type', { type: t(`offers.client_types.${measures.client_type}`) })
             : t('offers.pricing.client_type_missing')}
@@ -114,8 +115,8 @@ export function InternalCard({ inputs, measures, result, catalog, pricing, templ
                   <span>
                     {t(`offers.services.${key}`)}
                     {reason && (
-                      <span className="mt-0.5 flex items-center gap-1 text-xs text-leaf-700">
-                        <Lightbulb className="h-3 w-3 shrink-0" aria-hidden />{t('offers.internal.suggested', { reason: t(`offers.suggestions.${reason}`) })}
+                      <span className="mt-0.5 flex items-center gap-1 text-sm text-leaf-700">
+                        <Lightbulb className="h-3.5 w-3.5 shrink-0" aria-hidden />{t('offers.internal.suggested', { reason: t(`offers.suggestions.${reason}`) })}
                       </span>
                     )}
                   </span>
@@ -128,7 +129,7 @@ export function InternalCard({ inputs, measures, result, catalog, pricing, templ
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-semibold text-loam-900">{t('offers.internal.adjustments')}</legend>
-        <p className="text-xs text-loam-500">{t('offers.internal.adjustments_help')}</p>
+        <p className="text-sm text-loam-500">{t('offers.internal.adjustments_help')}</p>
         {inputs.adjustments.map((adjustment) => (
           <div key={adjustment.id} className="grid grid-cols-[minmax(0,1fr)_5.5rem_auto] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_5.5rem_10rem_auto]">
             {adjustment.preset ? (
@@ -194,8 +195,15 @@ function Trips({ inputs, result, readOnly, onChange }: { inputs: OfferInputs; re
             {(['pre_design', 'design', 'implementation'] as Phase[]).map((phase) => <option key={phase} value={phase}>{t(`offers.phases.${phase}`)}</option>)}
           </Select>
           <Input aria-label={t('offers.trips.label')} placeholder={t('offers.trips.label')} value={trip.label ?? ''} disabled={readOnly} onChange={(e) => setTrip(trip.id, { label: e.target.value })} />
-          <NumberInput aria-label={t('offers.trips.trips')} title={t('offers.trips.trips')} value={trip.trips} unit="AR" disabled={readOnly} onValue={(value) => setTrip(trip.id, { trips: value })} />
-          <NumberInput aria-label={t('offers.trips.one_way_km')} title={t('offers.trips.one_way_km')} value={trip.one_way_km} unit="km" disabled={readOnly} className={clsx(trip.trips && trip.one_way_km == null && 'ring-humus-400')} onValue={(value) => setTrip(trip.id, { one_way_km: value })} />
+          {/* On a phone the two numbers wrap under the trip: they say what they count. */}
+          <label className="block">
+            <span className="block text-sm text-loam-500 sm:sr-only">{t('offers.trips.trips')}</span>
+            <NumberInput title={t('offers.trips.trips')} value={trip.trips} unit="AR" disabled={readOnly} onValue={(value) => setTrip(trip.id, { trips: value })} />
+          </label>
+          <label className="block">
+            <span className="block text-sm text-loam-500 sm:sr-only">{t('offers.trips.one_way_km')}</span>
+            <NumberInput title={t('offers.trips.one_way_km')} value={trip.one_way_km} unit="km" disabled={readOnly} className={clsx(trip.trips && trip.one_way_km == null && 'ring-humus-400')} onValue={(value) => setTrip(trip.id, { one_way_km: value })} />
+          </label>
           <span className="flex items-center justify-end gap-1 text-xs tabular-nums text-loam-500">
             {t('offers.trips.total_km', { km: Math.round(kmOf(trip.id)) })}
             {!readOnly && (
@@ -234,7 +242,7 @@ function Rates({ inputs, pricing, readOnly, onChange }: { inputs: OfferInputs; p
   return (
     <details className="group rounded-xl bg-white/70 ring-1 ring-loam-200">
       <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-loam-900 marker:hidden">
-        {t('offers.rates.title')} <span className="font-normal text-loam-500">· {t('offers.rates.help')}</span>
+        {t('offers.rates.title')} <span className="font-normal text-loam-500">· {t('offers.rates.help', { name: pricing.name || t('offers.templates.semisto_name') })}</span>
       </summary>
       <div className="grid gap-3 border-t border-loam-200 p-3 sm:grid-cols-2">
         {RATE_FIELDS.map(({ key, unit }) => (
@@ -286,17 +294,17 @@ function Complexity({ inputs, pricing, result, readOnly, onChange }: { inputs: O
   return (
     <fieldset className="space-y-2">
       <legend className="text-sm font-semibold text-loam-900">{t('offers.complexity.title')}</legend>
-      <p className="text-xs text-loam-500">{t('offers.complexity.help')}</p>
+      <p className="text-sm text-loam-500">{t('offers.complexity.help')}</p>
       <ul className="space-y-2">
         {criteria.map((criterion) => {
           const value = inputs.complexity[criterion.key]
           return (
-            <li key={criterion.key} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+            <li key={criterion.key} className="grid grid-cols-1 items-center gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-2">
               <span className="text-sm text-loam-800">
                 {criterion.label || t(`offers.complexity.criteria.${criterion.key}`)}
-                {!criterion.label && <span className="block text-xs text-loam-500">{t(`offers.complexity.criteria_help.${criterion.key}`)}</span>}
+                {!criterion.label && <span className="block text-sm text-loam-500">{t(`offers.complexity.criteria_help.${criterion.key}`)}</span>}
               </span>
-              <span className="flex items-center gap-1" role="radiogroup" aria-label={criterion.label || t(`offers.complexity.criteria.${criterion.key}`)}>
+              <span className="flex flex-wrap items-center gap-1" role="radiogroup" aria-label={criterion.label || t(`offers.complexity.criteria.${criterion.key}`)}>
                 {Array.from({ length: criterion.max + 1 }, (_, points) => (
                   <button
                     key={points}
@@ -306,7 +314,8 @@ function Complexity({ inputs, pricing, result, readOnly, onChange }: { inputs: O
                     disabled={readOnly}
                     onClick={() => set(criterion.key, value === points ? null : points)}
                     className={clsx(
-                      'h-6 w-6 rounded-full text-xs tabular-nums ring-1 ring-inset',
+                      // 32 px under the finger, smaller beside the mouse.
+                      'h-8 w-8 rounded-full text-sm tabular-nums ring-1 ring-inset sm:h-6 sm:w-6 sm:text-xs',
                       value != null && points <= value ? 'bg-prune-600 text-white ring-prune-600' : 'bg-white text-loam-500 ring-loam-200 hover:bg-prune-50',
                     )}
                   >

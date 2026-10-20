@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -396,6 +396,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
     t.index ["user_id", "key"], name: "index_idempotent_requests_on_user_id_and_key", unique: true
   end
 
+  create_table "implementation_phases", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.string "key"
+    t.integer "position", default: 0, null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.text "notes"
+    t.integer "hours_override"
+    t.integer "other_costs_cents"
+    t.string "status", default: "active", null: false
+    t.string "source", default: "human", null: false
+    t.text "rationale"
+    t.bigint "proposed_feature_ids", default: [], null: false, array: true
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "position"], name: "index_implementation_phases_on_map_id_and_position"
+    t.index ["map_id"], name: "index_implementation_phases_on_map_id"
+  end
+
   create_table "import_records", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.string "source", null: false
@@ -591,6 +612,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
     t.bigint "published_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "views_count", default: 0, null: false
     t.index ["map_id"], name: "index_map_publications_on_map_id", unique: true
     t.index ["published_by_id"], name: "index_map_publications_on_published_by_id"
     t.index ["token"], name: "index_map_publications_on_token", unique: true
@@ -651,6 +673,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
     t.index ["map_id"], name: "index_map_transfers_on_map_id"
     t.index ["map_id"], name: "index_map_transfers_one_pending_per_map", unique: true, where: "((status)::text = 'pending'::text)"
     t.index ["to_user_id", "status"], name: "index_map_transfers_on_to_user_id_and_status"
+  end
+
+  create_table "map_trials", force: :cascade do |t|
+    t.string "token", null: false
+    t.string "address"
+    t.geometry "center", limit: {:srid=>4326, :type=>"st_point"}, null: false
+    t.geometry "boundary", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.jsonb "parcels", default: [], null: false
+    t.float "area_m2"
+    t.jsonb "reading", default: {}, null: false
+    t.bigint "region_id"
+    t.bigint "source_publication_id"
+    t.bigint "adopted_map_id"
+    t.datetime "expires_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "origin", default: "direct", null: false
+    t.bigint "claimant_id"
+    t.index ["adopted_map_id"], name: "index_map_trials_on_adopted_map_id"
+    t.index ["claimant_id"], name: "index_map_trials_on_claimant_id"
+    t.index ["expires_at"], name: "index_map_trials_on_expires_at"
+    t.index ["region_id"], name: "index_map_trials_on_region_id"
+    t.index ["source_publication_id"], name: "index_map_trials_on_source_publication_id"
+    t.index ["token"], name: "index_map_trials_on_token", unique: true
   end
 
   create_table "maps", force: :cascade do |t|
@@ -1566,9 +1612,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
     t.boolean "catalogue_reviewer", default: false, null: false
     t.string "apple_uid"
     t.string "vat_number"
+    t.bigint "source_publication_id"
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
+    t.index ["source_publication_id"], name: "index_users_on_source_publication_id"
     t.check_constraint "account_kind::text = ANY (ARRAY['individual'::character varying::text, 'professional'::character varying::text])", name: "users_account_kind_check"
   end
 
@@ -1625,6 +1673,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
   add_foreign_key "form_responses", "maps", on_delete: :nullify
   add_foreign_key "help_feedbacks", "users", on_delete: :nullify
   add_foreign_key "idempotent_requests", "users", on_delete: :cascade
+  add_foreign_key "implementation_phases", "maps", on_delete: :cascade
   add_foreign_key "import_records", "maps", on_delete: :cascade
   add_foreign_key "invoice_requests", "users"
   add_foreign_key "invoice_requests", "users", column: "handled_by_id", on_delete: :nullify
@@ -1657,6 +1706,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
   add_foreign_key "map_transfers", "maps", on_delete: :cascade
   add_foreign_key "map_transfers", "users", column: "from_user_id", on_delete: :cascade
   add_foreign_key "map_transfers", "users", column: "to_user_id", on_delete: :cascade
+  add_foreign_key "map_trials", "map_publications", column: "source_publication_id", on_delete: :nullify
+  add_foreign_key "map_trials", "maps", column: "adopted_map_id", on_delete: :nullify
+  add_foreign_key "map_trials", "regions"
+  add_foreign_key "map_trials", "users", column: "claimant_id", on_delete: :nullify
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify
@@ -1761,5 +1814,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_180100) do
   add_foreign_key "tasks", "users", column: "assignee_id", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "completed_by_id", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "users", "map_publications", column: "source_publication_id", on_delete: :nullify
   add_foreign_key "water_sources", "maps"
 end

@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import { Check, RotateCcw } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { storedProperties } from '@/map/drawing/catalog'
 import { saveFeature } from '@/map/drawing/save'
@@ -42,17 +43,13 @@ export default function FunctionsSection({ feature }: { feature: MapFeature }) {
         {shown.map((fn) => {
           const on = selected.includes(fn)
           return (
-            <button
-              key={fn} type="button" disabled={!editor.canEdit} aria-pressed={on} onClick={() => toggle(fn)}
-              className={clsx(
-                'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm transition-colors',
-                on ? 'bg-leaf-100 font-medium text-leaf-800' : 'text-loam-500 ring-1 ring-loam-200 hover:bg-loam-50',
-                !editor.canEdit && 'cursor-default',
-              )}
+            <Button
+              key={fn} size="sm" variant={on ? 'leaf' : 'ghost'} disabled={!editor.canEdit} aria-pressed={on} onClick={() => toggle(fn)}
+              className={clsx('gap-1 px-2.5 py-0.5', !on && 'font-normal ring-1 ring-inset ring-loam-200')}
             >
               {on && <Check className="h-3.5 w-3.5" aria-hidden />}
               {t(`element_functions.names.${fn}`)}
-            </button>
+            </Button>
           )
         })}
       </div>
@@ -60,10 +57,10 @@ export default function FunctionsSection({ feature }: { feature: MapFeature }) {
         <p className="mt-1.5 flex flex-wrap items-center gap-x-2 text-sm text-loam-500">
           {own ? t('element_functions.section.own') : t(`element_functions.section.proposed_${entry.origin === 'species' ? 'species' : 'kind'}`)}
           {own && (
-            <button type="button" onClick={() => save(null)} className="inline-flex items-center gap-1 font-medium text-prune-700 hover:underline">
+            <Button variant="ghost" size="sm" onClick={() => save(null)} className="-ml-3">
               <RotateCcw className="h-3.5 w-3.5" aria-hidden />
               {t('element_functions.section.reset')}
-            </button>
+            </Button>
           )}
         </p>
       )}

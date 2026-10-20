@@ -1,6 +1,7 @@
 import { bbox as turfBbox } from '@turf/turf'
 import { Footprints, LocateFixed } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
+import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { useElementFunctions, type FunctionBalance, type FunctionEntry } from '@/map/functions/store'
@@ -65,10 +66,10 @@ export default function FunctionsPanel() {
                       <p className="text-sm font-semibold text-loam-900">{name(b)}</p>
                       <p className="mt-0.5 text-sm text-loam-600">{t('element_functions.fragile_one', { name: entries[0]?.label ?? '' })}</p>
                       {look(b)}
-                      <button type="button" onClick={() => focus(entries)} className="mt-1.5 inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:underline">
+                      <Button variant="ghost" size="sm" onClick={() => focus(entries)} className="-ml-3 mt-1">
                         <LocateFixed className="h-3.5 w-3.5" aria-hidden />
                         {t('element_functions.show')}
-                      </button>
+                      </Button>
                     </li>
                   )
                 })}
@@ -96,13 +97,13 @@ export default function FunctionsPanel() {
               <ul className="divide-y divide-loam-100">
                 {covered.map((b) => (
                   <li key={b.function}>
-                    <button type="button" onClick={() => focus(entriesOf(b.entries))} className="flex w-full items-baseline justify-between gap-3 py-1.5 text-left text-sm hover:text-prune-700">
+                    <Button variant="ghost" size="sm" onClick={() => focus(entriesOf(b.entries))} className="w-full justify-between font-normal">
                       <span className="text-loam-800">{name(b)}</span>
                       <span className="text-loam-500">
                         {t('element_functions.covered_count', { count: b.count })}
                         {b.existingOnly && <span className="ml-1.5 text-humus-700">{t('element_functions.existing_only')}</span>}
                       </span>
-                    </button>
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -118,9 +119,9 @@ export default function FunctionsPanel() {
                   const entries = entriesOf(need.entries)
                   return (
                     <li key={need.resource}>
-                      <button type="button" onClick={() => focus(entries)} className="text-left text-sm text-loam-800 hover:text-prune-700">
+                      <Button variant="ghost" size="sm" onClick={() => focus(entries)} className="-ml-3 h-auto text-left font-normal">
                         {t('element_functions.unmet_row', { resource: t(`element_functions.resources.${need.resource}`), names: entries.map((e) => e.label).join(', ') })}
-                      </button>
+                      </Button>
                     </li>
                   )
                 })}

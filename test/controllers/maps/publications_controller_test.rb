@@ -37,6 +37,20 @@ class Maps::PublicationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal({ "ortho" => false, "gaz" => true }, json["regionLayers"].to_h { |l| [ l["key"], l["sensitive"] ] })
   end
 
+  test "?public=1 adds what the public view shows, to paint the video from, while it is live" do
+    sign_in_as @owner
+    get map_publication_path(@map, public: 1), as: :json
+    assert_nil json["publicProps"]
+    publication = MapPublication.publish!(@map, by: @owner, title: "Le projet")
+    get map_publication_path(@map), as: :json
+    assert_nil json["publicProps"]
+    get map_publication_path(@map, public: 1), as: :json
+    assert_equal publication.token, json["publicProps"]["token"]
+    publication.unpublish!
+    get map_publication_path(@map, public: 1), as: :json
+    assert_nil json["publicProps"]
+  end
+
   test "publish, refresh, renew the address, unpublish" do
     sign_in_as @owner
     post map_publication_path(@map), params: { publication: {

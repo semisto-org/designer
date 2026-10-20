@@ -70,6 +70,16 @@ Rails.application.routes.draw do
     get "p/:token/3d/files/:kind", to: "public_maps/reliefs#file", as: :public_map_relief_file, constraints: { kind: /grid|surface|landcover|texture/ }
     get "p/:token/3d/buildings", to: "public_maps/reliefs#buildings", as: :public_map_relief_buildings
   end
+  # « Et chez toi ? »: a map tried from an address, without an account.
+  get "essai", to: "trials#new", as: :new_trial
+  post "essai", to: "trials#create", as: :trials
+  get "essai/geocode", to: "trials#geocode", as: :trials_geocode
+  constraints token: /[A-Za-z0-9]{24,40}/ do
+    get "essai/:token", to: "trials#show", as: :trial
+    get "essai/:token/reading", to: "trials#reading", as: :trial_reading
+    post "essai/:token/parcel", to: "trials#parcel", as: :trial_parcel
+    post "essai/:token/keep", to: "trials#keep", as: :keep_trial
+  end
   # --- end collab ---
   # --- journey ---
   # Project sheet, journey checklists and requests sent to Semisto from a map;
@@ -564,6 +574,8 @@ Rails.application.routes.draw do
     post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
     get "tech", to: "tech#show", as: :tech
+    # « Design »: the « carnet » primitives and what remains to migrate.
+    get "design", to: "design#show", as: :design
     get "catalogue", to: "catalogue#show", as: :catalogue
     # « Codes promo »: Stripe promotion codes made and switched off here.
     resources :promo_codes, path: "promo-codes", only: %i[index create] do
@@ -605,6 +617,22 @@ Rails.application.routes.draw do
     resources :site_visits, only: %i[index create], controller: "maps/site_visits"
   end
   # --- end site visits ---
+  # --- implementation ---
+  # The implementation plan of a map (« Mise en œuvre »): its phases, Semisto's
+  # proposed phasing, and elements given to a phase.
+  resources :maps, only: [] do
+    resource :implementation, only: :show, controller: "maps/implementations" do
+      post :proposal
+      post :assign
+    end
+    resources :implementation_phases, path: "implementation/phases", only: %i[create update destroy], controller: "maps/implementation_phases" do
+      member do
+        post :accept
+        post :reject
+      end
+    end
+  end
+  # --- end implementation ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }

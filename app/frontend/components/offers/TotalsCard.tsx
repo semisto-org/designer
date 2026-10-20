@@ -1,7 +1,8 @@
 import { TriangleAlert } from 'lucide-react'
 import { t } from '@/lib/i18n'
-import type { OfferResult, OfferWarning } from '@/types/offers'
+import type { OfferResult } from '@/types/offers'
 import { euros, phaseLabel, PhaseMark } from './shared'
+import { groupWarnings, type ShownWarning } from './warnings'
 
 /**
  * The offer as the client will add it up: each phase's price, plants and
@@ -29,15 +30,16 @@ export function TotalsCard({ result }: { result: OfferResult }) {
         <span className="font-semibold text-prune-900">{t('offers.totals.total')}</span>
         <span className="font-serif text-2xl font-semibold tabular-nums text-prune-900">{euros(totals.total_tvac)}</span>
       </div>
-      <DesignShare result={result} />
+      {/* Without a scope, design is always most of the total: the share would only frighten. */}
+      {!result.warnings.some((warning) => warning.code === 'no_scope') && <DesignShare result={result} />}
       {totals.total_max_tvac > totals.total_tvac && (
-        <p className="text-xs text-loam-500">{t('offers.totals.max', { amount: euros(totals.total_max_tvac) })}</p>
+        <p className="text-sm text-loam-500">{t('offers.totals.max', { amount: euros(totals.total_max_tvac) })}</p>
       )}
       <p className="text-sm text-loam-600">
         <strong className="font-medium text-loam-800">{t('offers.co_management.title')}.</strong>{' '}
         {t('offers.co_management.text', { half_days: coManagement.half_days, hours: coManagement.hours, amount: euros(coManagement.amount_tvac) })}
       </p>
-      <p className="text-xs text-loam-500">{t('offers.totals.regie', { rate: euros(result.regie_rate_tvac) })}</p>
+      <p className="text-sm text-loam-500">{t('offers.totals.regie', { rate: euros(result.regie_rate_tvac) })}</p>
     </section>
   )
 }
@@ -57,17 +59,18 @@ function DesignShare({ result }: { result: OfferResult }) {
         <div className={share > target ? 'bg-humus-500' : 'bg-prune-500'} style={{ width: `${Math.min(share, 100)}%` }} />
         {target > 0 && <div className="absolute inset-y-0 w-0.5 bg-prune-900/60" style={{ left: `${target}%` }} />}
       </div>
-      <p className="text-xs text-loam-600">
+      <p className="text-sm text-loam-600">
         {t('offers.totals.share', { design: euros(totals.design_tvac), share: Math.round(share), implementation: euros(totals.implementation_tvac) })}
         {' '}{t('offers.totals.share_target', { target })}
       </p>
-      {totals.saved_tvac > 0 && <p className="text-xs text-leaf-800">{t('offers.totals.saved', { amount: euros(totals.saved_tvac) })}</p>}
+      {totals.saved_tvac > 0 && <p className="text-sm text-leaf-800">{t('offers.totals.saved', { amount: euros(totals.saved_tvac) })}</p>}
     </div>
   )
 }
 
-export function warningText(warning: OfferWarning): string {
+export function warningText(warning: ShownWarning): string {
   return t(`offers.warnings.${warning.code}`, {
+    phases: (warning.phases ?? []).map(phaseLabel).join(', ').toLowerCase(),
     label: warning.label ?? '',
     phase: warning.phase ? phaseLabel(warning.phase) : '',
     ceiling: warning.ceiling != null ? euros(warning.ceiling) : '',
@@ -76,7 +79,8 @@ export function warningText(warning: OfferWarning): string {
   })
 }
 
-export function Warnings({ warnings }: { warnings: OfferWarning[] }) {
+export function Warnings({ warnings: all }: { warnings: ShownWarning[] }) {
+  const warnings = groupWarnings(all)
   if (warnings.length === 0) return null
   return (
     <ul className="space-y-2" aria-live="polite">
