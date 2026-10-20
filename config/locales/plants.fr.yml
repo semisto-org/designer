@@ -383,6 +383,7 @@ fr:
     variety_hint: "Une variété, comme « Belle fleur double » ? Cherche l'espèce (« pommier »), puis « Une variété »."
     suggestions: "Suggestions pour ce terrain"
     suggestions_link: "Suggestions pour ce terrain, dans la palette végétale"
+    open_table: "Voir la palette en tableau : quantités, prix, liste de courses"
     fit:
       label: "Ce qui convient ici"
       site_intro: "Ce que je sais de ton terrain :"
@@ -417,7 +418,7 @@ fr:
       excluded_by:
         invasive: "Invasive ici"
         toxic: "Toxique pour tes animaux"
-      more: "Donne une exposition à tes patchs et décris ton sol dans la fiche projet : les suggestions en tiendront compte."
+      more: "Donne une exposition à tes patchs et décris ton sol dans la %{sheet} : les suggestions en tiendront compte."
     reasons:
       nitrogen: "Fixe l'azote et nourrit le sol"
       strata_sub_canopy: "Pour la strate arborée basse"

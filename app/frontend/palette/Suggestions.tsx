@@ -72,7 +72,7 @@ export function SuggestionsSheet({ mapId, canEdit, inPalette, onAdded, onClose }
 
           {data?.site && (
             <div className="rounded-2xl bg-white p-4 ring-1 ring-loam-900/10">
-              <SiteSummary data={{ site: data.site, excluded: data.excluded }} />
+              <SiteSummary data={{ site: data.site, excluded: data.excluded }} mapId={mapId} />
               <p className="text-sm text-loam-500">{t('plant_palette.suggestions.legend')}</p>
             </div>
           )}
