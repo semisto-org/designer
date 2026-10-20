@@ -23,10 +23,13 @@ module RequestForms
       end
     end
 
-    # « Créer la carte »: a map of the place, then its offer.
+    # « Créer la carte »: a map of the place, then straight to its offer.
+    # The map is made after the call and the visit (« Créer la carte et
+    # chiffrer l'offre »): a request still earlier moves on to « Visitée ».
     def map
       map = ProjectRequests::MakeMap.new(@request, Current.user).call
-      redirect_to map_path(map), notice: t("request_forms.requests.map_made"), status: :see_other
+      @request.update!(status: "visited") if %w[new called].include?(@request.status)
+      redirect_to map_offer_path(map), notice: t("request_forms.requests.map_made"), status: :see_other
     rescue ProjectRequests::MakeMap::Refused => error
       redirect_to request_form_request_path(@form, @request), alert: error.message, status: :see_other
     end

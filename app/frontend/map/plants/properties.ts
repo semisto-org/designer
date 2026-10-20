@@ -18,13 +18,27 @@ export function numberProperty(feature: MapFeature, key: string): number | null 
   return Number.isFinite(n) ? n : null
 }
 
-/** Strata whose plants can be pollarded or coppiced (trees and bushes). */
+/** Strata whose plants can be pollarded, coppiced or chopped and dropped (trees and bushes). */
 export const TRAINABLE_STRATA: readonly string[] = ['canopy', 'sub_canopy', 'shrub']
 
 /** How a plant is kept, from its properties: free when absent or unknown. */
 export function trainingProperty(feature: MapFeature): PlantTraining {
   const value = feature.properties.training
-  return value === 'pollard' || value === 'coppice' ? value : 'free'
+  return value === 'pollard' || value === 'coppice' || value === 'chop_and_drop' ? value : 'free'
+}
+
+/** Palette roles whose plants are support plants unless their sheet says otherwise (PlantableFeature::SUPPORT_ROLES). */
+export const SUPPORT_ROLES: readonly string[] = ['support', 'pioneer']
+
+/**
+ * A support plant (nitrogen fixer, pioneer, biomass), which builds the soil
+ * and shelters, then gives way to the productive ones: its sheet says so,
+ * else its species' role in the palette.
+ */
+export function isSupportPlant(feature: MapFeature, paletteRole: string | null | undefined): boolean {
+  const succession = feature.properties.succession
+  if (succession === 'support' || succession === 'productive') return succession === 'support'
+  return paletteRole != null && SUPPORT_ROLES.includes(paletteRole)
 }
 
 /** Strata whose plants can be grafted fruit trees on a trunk (trees). */

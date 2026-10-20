@@ -1,6 +1,7 @@
 # /welcome — asked once, after the first sign-in: does the person design
 # their own place or for clients? « Mes cartes » sends here until they have
-# answered; the answer can be changed later in « Mon compte ».
+# answered, or « Nouvelle carte » for an account that came in with its place
+# already (a trial kept); the answer can be changed later in « Mon compte ».
 class WelcomesController < ApplicationController
   forbid_while_impersonating only: :update
 
@@ -14,7 +15,7 @@ class WelcomesController < ApplicationController
 
   def update
     if Current.user.update(account_kind: params.require(:account_kind).to_s)
-      redirect_to maps_path
+      redirect_to session.delete(:after_welcome) || maps_path
     else
       redirect_to welcome_path, alert: t("welcome.invalid")
     end

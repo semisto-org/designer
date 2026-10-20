@@ -7,7 +7,11 @@ module Maps
     before_action :set_map
     before_action :require_owner!
 
+    # `?public=1` adds what the public view shows, to paint the video from
+    # (public_maps/video.ts).
     def show
+      publication = @map.publication
+      return render json: payload.merge(publicProps: publication.as_public) if params[:public].present? && publication&.live?
       render json: payload
     end
 

@@ -194,6 +194,13 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     assert error
   end
 
+  test "list_documents gives the first words of a Markdown page" do
+    MapDocument.build_markdown(map: @map, title: "Journal", content: "# Journal\n\n- Les **pommiers** ont fleuri.", by: users(:michael)).save!
+    data, error = call_tool(@viewer, "list_documents", { map_id: @map.id })
+    refute error
+    assert_equal "Les pommiers ont fleuri.", data["documents"].find { _1["title"] == "Journal" }["excerpt"]
+  end
+
   test "get_document gives an image to look at, pages long texts, and says why a file cannot be read" do
     photo = create_document("drone_dji.jpg", "image/jpeg")
     body = mcp_request(@viewer, "tools/call", { name: "get_document", arguments: { map_id: @map.id, document_id: photo.id } })

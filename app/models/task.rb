@@ -115,8 +115,10 @@ class Task < ApplicationRecord
   end
 
   # The elements the task is about, with the label the map shows them by.
+  # Sorted here too: right after `feature_ids=` the association holds the
+  # records in whatever order the database returned them, not `order(:id)`.
   def features_json(labels = nil)
-    linked = features.to_a
+    linked = features.sort_by(&:id)
     labels ||= MapFeature.labels_for(linked)
     linked.map { |feature| { id: feature.id, kind: feature.kind, label: labels[feature.id] } }
   end

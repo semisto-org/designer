@@ -123,7 +123,7 @@ function RequestCard({ request, onStatus, onQualify, onDecline }: {
         <a href={`mailto:${request.email}?subject=${subject}`} className={buttonClass('secondary', 'md', 'lg:w-full')}>
           <Mail className="h-4 w-4" aria-hidden />{t('team_board.requests.reply')}
         </a>
-        <Button variant="ghost" onClick={onDecline} className="text-clay-700 hover:bg-clay-50 lg:w-full"><X className="h-4 w-4" aria-hidden />{t('team_board.requests.decline')}</Button>
+        <Button variant="danger-ghost" onClick={onDecline} className="lg:w-full"><X className="h-4 w-4" aria-hidden />{t('team_board.requests.decline')}</Button>
         <label className="flex items-center gap-2 text-sm text-loam-600 lg:mt-1">
           <span className="sr-only lg:not-sr-only lg:shrink-0">{t('team_board.requests.status_label')}</span>
           <Select value={request.status} onChange={(e) => onStatus(e.target.value as RequestStatus)} className="w-auto py-1.5 lg:flex-1">

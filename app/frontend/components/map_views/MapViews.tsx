@@ -1,22 +1,24 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Camera, ChevronDown, ClipboardList, Files, Leaf, ListChecks, Map as MapIcon, MessageSquareText, Receipt } from 'lucide-react'
+import { CalendarRange, Camera, ChevronDown, ClipboardList, Files, Leaf, ListChecks, Map as MapIcon, MessageSquareText, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useActiveTabInView } from '@/lib/activeTab'
 import { t } from '@/lib/i18n'
 
 /**
  * A project is seen through several views of the same place: the map, the
- * project sheet, its plant palette, its tasks, its photos, its documents and, for a team's map,
+ * project sheet, its plant palette, its implementation plan, its tasks, its photos, its documents and, for a team's map,
  * its forms and, for whoever prices the project, its offer. The full pages
  * show them as tabs; the editor's header as a
  * small menu next to the map's name.
  */
-export type MapViewKey = 'map' | 'project' | 'palette' | 'tasks' | 'photos' | 'documents' | 'offer' | 'forms'
+export type MapViewKey = 'map' | 'project' | 'palette' | 'implementation' | 'tasks' | 'photos' | 'documents' | 'offer' | 'forms'
 
 const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'map', icon: MapIcon, path: '' },
   { key: 'project', icon: ClipboardList, path: '/project' },
   { key: 'palette', icon: Leaf, path: '/palette' },
+  { key: 'implementation', icon: CalendarRange, path: '/implementation' },
   { key: 'tasks', icon: ListChecks, path: '/tasks' },
   { key: 'photos', icon: Camera, path: '/photos' },
   { key: 'documents', icon: Files, path: '/documents' },
@@ -35,6 +37,8 @@ export const mapViewHref = (mapId: number, key: MapViewKey) => `/maps/${mapId}${
 
 /** The heading of a full-page view: the map's name, then the views as tabs. */
 export function MapViewHeader({ map, current }: { map: ViewMap & { id: number; name: string }; current: MapViewKey }) {
+  const row = useRef<HTMLElement>(null)
+  useActiveTabInView(row, current)
   return (
     <div className="mb-6">
       <p className="text-sm text-loam-500">
@@ -42,7 +46,7 @@ export function MapViewHeader({ map, current }: { map: ViewMap & { id: number; n
         <span aria-hidden> / </span>
         <Link href={`/maps/${map.id}`} className="hover:text-loam-800">{map.name}</Link>
       </p>
-      <nav aria-label={t('map_views.label')} className="-mx-4 mt-3 overflow-x-auto border-b border-loam-900/10 px-4">
+      <nav ref={row} aria-label={t('map_views.label')} className="-mx-4 mt-3 overflow-x-auto border-b border-loam-900/10 px-4">
         <ul className="flex gap-1">
           {viewsFor(map).map(({ key, icon: Icon }) => (
             <li key={key} className="shrink-0">
