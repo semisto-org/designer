@@ -1,4 +1,4 @@
-import { Bot, Camera, Compass, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, Waypoints, Compass, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -28,6 +28,7 @@ import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
+import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
 import ScenarioToggle from '@/map/panels/ScenarioToggle'
 import VersionPicker from '@/map/tags/VersionPicker'
 import PalettePanel from '@/map/plants/PalettePanel'
@@ -87,6 +88,9 @@ import TagsSection from '@/map/tags/TagsSection'
 import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
 import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
 import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
+import FunctionsPanel from '@/map/functions/FunctionsPanel'
+import FunctionsSection from '@/map/functions/FunctionsSection'
+import { appliesToFunctions } from '@/map/functions/store'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -112,6 +116,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
+  { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: FunctionsPanel, order: 60 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
   // 4. Planter
   { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: PlantListPanel, order: 10 },
@@ -152,6 +157,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
   { id: 'keyline', applies: appliesToKeyline, component: KeylineSection, order: 23 },
   { id: 'storm', applies: appliesToStorm, component: StormSection, order: 18 },
+  { id: 'functions', applies: appliesToFunctions, component: FunctionsSection, order: 26 },
 ]
 
 // Top bar actions (right side), e.g. share, export.
@@ -159,6 +165,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'share', component: ShareButton, order: 80 },
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
+  { id: 'shortcuts', component: ShortcutsButton, order: 94 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
   { id: 'scenario', component: ScenarioToggle, order: 10 },
@@ -170,6 +177,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
   { id: 'version', component: VersionPicker, order: 25 },
   { id: 'tour', component: TourOverlay, order: 100 },
+  { id: 'shortcuts', component: ShortcutsSheet, order: 101 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'layer-legend', component: LegendOverlay, order: 5 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },

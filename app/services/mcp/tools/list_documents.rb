@@ -24,7 +24,9 @@ module Mcp
         documents = documents.select { _1.kind == kind } if kind
         blockers = write_blockers(map)
         {
-          documents: documents.map { document_json(_1) },
+          # A Markdown page's first words, as on its library tile, so the AI
+          # picks the right page before reading it whole with get_document.
+          documents: documents.map { document_json(_1).merge(excerpt: _1.markdown_excerpt).compact },
           count: documents.size,
           tags: map.documents.tag_counts,
           url: documents_url(map),

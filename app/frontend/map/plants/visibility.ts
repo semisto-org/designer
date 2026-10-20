@@ -2,7 +2,7 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { PlantLabelStyle } from './labelRank.ts'
 
 /** Layers the plants overlay draws from its own sources (crowns and names). */
-export const PLANT_OVERLAY_LAYERS = ['plant-crowns-fill', 'plant-crowns-casing', 'plant-crowns-line', 'plant-labels-text']
+export const PLANT_OVERLAY_LAYERS = ['plant-crowns-fill', 'plant-crowns-reach', 'plant-crowns-support', 'plant-crowns-reach-line', 'plant-crowns-casing', 'plant-crowns-line', 'plant-labels-text']
 
 /** The numbered pastilles, shown instead of the names in « Numéro » mode. */
 export const PLANT_NUMBER_LAYERS = ['plant-numbers-disc', 'plant-numbers-text']

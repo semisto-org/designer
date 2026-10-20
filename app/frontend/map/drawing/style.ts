@@ -12,6 +12,7 @@ import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, scenarioFilter, type Scenario } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
+import { ensureSupportHatch } from '@/map/plants/supportHatch'
 
 /**
  * Per-kind styling of the element library on a MapLibre map: fills,
@@ -342,6 +343,8 @@ const patternWatched = new WeakSet<MapLibreMap>()
  * modules added to the editor map (`copyFrom`).
  */
 export function installDrawingImages(map: MapLibreMap, copyFrom?: MapLibreMap) {
+  // The plants overlay's hatching, for a printed copy of the map.
+  ensureSupportHatch(map)
   for (const id of DRAWING_IMAGES) {
     if (map.hasImage(id)) continue
     const image = imageFor(id)

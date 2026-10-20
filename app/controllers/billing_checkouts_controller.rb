@@ -1,13 +1,15 @@
 # POST /billing/checkout — creates the Stripe Checkout Session and sends the
 # customer there.
 class BillingCheckoutsController < ApplicationController
+  include SafeReturnPath
+
   forbid_while_impersonating
 
   def create
     url = Billing::Checkout.call(
       user: Current.user, plan_key: params[:plan].to_s, interval: params[:interval].presence,
-      success_url: "#{billing_url(checkout: 'success')}&session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: billing_url(checkout: "cancelled"),
+      success_url: "#{billing_url(checkout: 'success', return_to: safe_return_path)}&session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: billing_url(checkout: "cancelled", return_to: safe_return_path),
       terms_url: terms_url
     )
     leave_for url

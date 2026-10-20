@@ -117,6 +117,10 @@ export type PublicationState = {
   options: PublicationOptions
   /** The link preview painted for this snapshot (collab/preview.ts), when there is one. */
   previewPath?: string | null
+  /** Visits of the public view (one per browser session, robots and the map's people left out). */
+  views?: number
+  /** Accounts this view brought (users.source_publication_id). */
+  gardensStarted?: number
 }
 
 export type PublicationData = {
@@ -146,6 +150,7 @@ export type PublicLayer = {
 }
 
 export type PublicMapProps = {
+  token: string
   title: string
   description: string | null
   version: number

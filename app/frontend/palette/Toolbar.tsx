@@ -118,7 +118,8 @@ export function Toolbar({ settings, schema, tags, suppliers, onChange, onExport 
           value={settings.sort.key} onChange={(e) => onChange({ ...settings, sort: { ...settings.sort, key: e.target.value } })}
           className="max-w-[10rem] rounded-full border-0 bg-transparent py-1 pl-1 pr-7 text-sm font-medium text-loam-900 focus:ring-2 focus:ring-prune-600"
         >
-          {settings.columns.map((c) => <option key={c} value={c}>{columnLabel(c)}</option>)}
+          {/* The sort key may be a column the view hides (a preset sorted by latin name): show it, not the first option. */}
+          {[...new Set([settings.sort.key, ...settings.columns])].map((c) => <option key={c} value={c}>{columnLabel(c)}</option>)}
         </select>
         <button
           type="button"

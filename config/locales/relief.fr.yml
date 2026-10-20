@@ -2,10 +2,6 @@
 fr:
   relief:
     panel: "Eau et relief"
-    upsell:
-      title: "Comprendre l'eau et le relief"
-      body: "Le relief en 3D, la pluie et le ruissellement simulés, l'ombre du soleil et l'eau de pluie récupérable sur les toits font partie des analyses du forfait."
-      cta: "Voir les formules"
     errors:
       unavailable: "Le relief n'est pas encore disponible pour cette région."
       no_boundary: "Dessine d'abord le contour du terrain : le relief se télécharge autour de lui."
@@ -249,6 +245,9 @@ fr:
           adult: "Adulte : %{height} m × %{spread} m, vers %{years} ans."
           pollard: "Conduite en trogne : jusqu'à %{height} m × %{spread} m entre deux tailles de la tête."
           coppice: "Conduite en cépée : jusqu'à %{height} m × %{spread} m entre deux recépages."
+          chop_and_drop: "Coupée et déposée chaque année : jusqu'à %{height} m × %{spread} m entre deux coupes, et ses branches nourrissent le sol au pied des fruitiers."
+          support: "Plante de soutien : elle nourrit le sol et abrite les jeunes fruitiers."
+          support_until: "Plante de soutien : elle laisse la place aux fruitiers en %{year}."
           graft: "Fruitier greffé : %{details}."
           trunk: "tronc de %{value} m"
           vigor: "vigueur %{value}"

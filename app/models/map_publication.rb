@@ -7,6 +7,10 @@ class MapPublication < ApplicationRecord
 
   belongs_to :map
   belongs_to :published_by, class_name: "User", optional: true
+  # Who came through this view: the accounts it brought (users.source_publication_id)
+  # and the trials started from it (« Et chez toi ? »).
+  has_many :sourced_users, class_name: "User", foreign_key: :source_publication_id, inverse_of: :source_publication, dependent: :nullify
+  has_many :trials, class_name: "MapTrial", foreign_key: :source_publication_id, inverse_of: :source_publication, dependent: :nullify
 
   # The link preview (og:image): the garden in year 15, painted in the
   # owner's browser after each publication (collab/preview.ts) and served at
@@ -158,7 +162,9 @@ class MapPublication < ApplicationRecord
   def as_inertia
     {
       title:, description:, version:, publishedAt: published_at.iso8601, token:, path: public_path,
-      live: live?, stale: stale?, options:, previewPath: preview_path
+      live: live?, stale: stale?, options:, previewPath: preview_path,
+      # « 31 personnes ont regardé ton jardin, 2 ont commencé le leur ».
+      views: views_count, gardensStarted: sourced_users.count
     }
   end
 
@@ -167,7 +173,7 @@ class MapPublication < ApplicationRecord
   def as_public
     data = snapshot.fetch("map")
     {
-      title:, description:, version:, publishedAt: published_at.iso8601,
+      token:, title:, description:, version:, publishedAt: published_at.iso8601,
       map: {
         areaM2: data["area_m2"], stage: data["stage"], boundary: data["boundary"], center: data["center"],
         zoom: data["zoom"], bbox: data["bbox"], address: data["address"], parcels: data["parcels"],

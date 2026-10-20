@@ -28,6 +28,19 @@ function criterionTitle(c: FitCriterion) {
 }
 
 /**
+ * « ✗ Invasive ici » or « ✗ Toxique pour tes animaux » on its own, for the
+ * places that show no fit chips: the name of a plant in any view, its sheet.
+ */
+export function ExclusionFlag({ excludedBy, className = '' }: { excludedBy?: FitExclusion | null; className?: string }) {
+  if (excludedBy !== 'invasive' && excludedBy !== 'toxic') return null
+  return (
+    <span className={`inline-flex whitespace-nowrap rounded-full border px-1.5 text-sm not-italic font-normal ${TONE.misfit} ${className}`}>
+      <span aria-hidden>✗&nbsp;</span>{t(`palette.fit.excluded_by.${excludedBy}`)}
+    </span>
+  )
+}
+
+/**
  * The verdicts of one species, one chip per criterion the site can judge.
  * A verdict resting on a value nobody checked yet has a dashed outline.
  */
@@ -57,7 +70,7 @@ export function FitChips({ fit, excludedBy, className = 'mt-1' }: { fit: PlantFi
  * What the suggestions know of this terrain and where it comes from, what
  * known facts left aside, and what to fill in for finer suggestions.
  */
-export function SiteSummary({ data }: { data: Pick<PaletteSuggestions, 'site' | 'excluded'> }) {
+export function SiteSummary({ data, mapId }: { data: Pick<PaletteSuggestions, 'site' | 'excluded'>; mapId: number }) {
   const signals = Object.entries(data.site.signals) as [FitCriterionKey, NonNullable<SiteProfile['signals'][FitCriterionKey]>][]
   const excluded = (['hardiness', 'invasive', 'toxic'] as const)
     .filter((key) => data.excluded[key] > 0)
@@ -78,7 +91,20 @@ export function SiteSummary({ data }: { data: Pick<PaletteSuggestions, 'site' | 
         </p>
       )}
       {excluded.length > 0 && <p>{t('palette.fit.excluded', { list: excluded.join(', ') })}</p>}
-      {missing && <p className="text-loam-500">{t('palette.fit.more')}</p>}
+      {missing && <p className="text-loam-500"><MoreToFill mapId={mapId} /></p>}
     </div>
+  )
+}
+
+/** « … décris ton sol dans la fiche projet … », with « fiche projet » opening its constraints. */
+function MoreToFill({ mapId }: { mapId: number }) {
+  const [before, after = ''] = t('palette.fit.more', { sheet: '\u0000' }).split('\u0000')
+  return (
+    <>
+      {before}
+      {/* A full load, so the project page opens on the section its hash names. */}
+      <a href={`/maps/${mapId}/project#constraints`} className="text-prune-700 underline underline-offset-2 hover:text-prune-900">{t('palette.fit.origins.sheet')}</a>
+      {after}
+    </>
   )
 }

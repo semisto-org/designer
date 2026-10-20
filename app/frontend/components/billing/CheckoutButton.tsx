@@ -13,6 +13,8 @@ type Props = {
   variant?: 'primary' | 'secondary' | 'leaf'
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  /** Where to come back after paying (a locked panel, a read-only map). */
+  returnTo?: string | null
 }
 
 /**
@@ -20,13 +22,13 @@ type Props = {
  * Signed out: goes through sign-in and lands on /billing with the plan
  * highlighted. Billing not configured (beta): /billing explains it.
  */
-export function CheckoutButton({ plan, interval, children, variant = 'primary', size = 'md', className }: Props) {
+export function CheckoutButton({ plan, interval, children, variant = 'primary', size = 'md', className, returnTo }: Props) {
   const { currentUser, env } = usePage().props as unknown as SharedProps
   const [busy, setBusy] = useState(false)
 
   if (!currentUser || !env.billing) {
     return (
-      <Link href={`/billing?plan=${plan}${interval ? `&interval=${interval}` : ''}`} className={buttonClass(variant, size, className)}>
+      <Link href={`/billing?plan=${plan}${interval ? `&interval=${interval}` : ''}${returnTo ? `&return_to=${encodeURIComponent(returnTo)}` : ''}`} className={buttonClass(variant, size, className)}>
         {children}
       </Link>
     )
@@ -39,7 +41,7 @@ export function CheckoutButton({ plan, interval, children, variant = 'primary', 
       disabled={busy}
       onClick={() => {
         setBusy(true)
-        router.post('/billing/checkout', interval ? { plan, interval } : { plan }, { onFinish: () => setBusy(false) })
+        router.post('/billing/checkout', { plan, ...(interval && { interval }), ...(returnTo && { return_to: returnTo }) }, { onFinish: () => setBusy(false) })
       }}
     >
       {busy ? t('billing.actions.redirecting') : children}

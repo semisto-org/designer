@@ -9,6 +9,7 @@ class PublicMapsController < ApplicationController
   def show
     publication = MapPublication.includes(:map).find_by!(token: params[:token])
     if publication.live?
+      count_visit(publication)
       render inertia: "public_maps/show", props: publication.as_public, meta: public_meta(publication)
     else
       render inertia: "public_maps/gone", props: { title: publication.title }, status: :gone
@@ -16,6 +17,20 @@ class PublicMapsController < ApplicationController
   end
 
   private
+    BOTS = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|discord|embedly|headless/i
+
+    # One visit per browser session, never the map's own people or a link
+    # preview robot. It also remembers the map for a sign-up that follows.
+    def count_visit(publication)
+      return if request.user_agent.to_s.match?(BOTS)
+      return if authenticated? && publication.map.role_for(Current.user)
+      session[:source_publication_id] = publication.id
+      seen = Array(session[:seen_publications])
+      return if seen.include?(publication.id)
+      session[:seen_publications] = (seen << publication.id).last(20)
+      MapPublication.update_counters(publication.id, views_count: 1)
+    end
+
     # The link preview: the map's own title, a sentence on the garden and
     # its painted image (the site's generic one until it is painted).
     def public_meta(publication)

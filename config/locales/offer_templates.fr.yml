@@ -3,6 +3,7 @@ fr:
     copy_name: "%{name} (copie)"
     deleted: "Barème « %{name} » supprimé. Les offres qui l’utilisaient repassent au barème Semisto."
     admins_only: "Seuls les admins de l’équipe modifient ses barèmes."
+    back_to_offer: "Revenir à l’offre"
     index:
       title: "Barèmes d’offre"
       requests_link: "Recevoir des demandes de projet"
@@ -21,6 +22,9 @@ fr:
       default_note: "Sans barème pour le type de client, l’offre s’ouvre avec le premier de la liste."
     edit:
       back: "Revenir aux barèmes"
+      leave_unsaved: "Ce barème a des modifications non enregistrées. Quitter la page sans les enregistrer ?"
+      leave_confirm: "Quitter sans enregistrer"
+      per_plant: "%{supply} (%{unit}/plant)"
       untitled: "Barème sans nom"
       identity: "Nom et clients"
       name: "Nom du barème"

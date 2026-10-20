@@ -1,4 +1,5 @@
 // Types for billing, the account page, the help center and public site meta.
+import type { SketchGeometry } from '@/types/myMaps'
 export type PlanKey = 'free' | 'yearly' | 'atelier' | 'bureau'
 export type CatalogKey = PlanKey | 'drone'
 
@@ -80,6 +81,28 @@ export type InvoiceRequestSummary = {
   invoiceNumber: string | null
 }
 
+/** A place (active map) a plan covers, for « Formule et facturation ». */
+export type BilledPlace = {
+  id: number
+  name: string
+  areaM2: number | null
+  /** Beyond the plan's active maps: readable, not editable. */
+  readOnly: boolean
+  boundary: SketchGeometry | null
+}
+
+/** What the plan does for the payer's places. */
+export type PlacesData = {
+  maps: BilledPlace[]
+  activeCount: number
+  archivedCount: number
+  renderings: { used: number; limit: number }
+  /** The map that would stay editable on the free plan; null for a team payer. */
+  keptOnFree: { id: number; name: string } | null
+  freeMaxMaps: number
+  freeStorageBytes: number
+}
+
 export type BillingData = {
   enabled: boolean
   plan: PlanKey
@@ -103,6 +126,9 @@ export type BillingData = {
   /** Semisto membership fee up to date: Home is discounted automatically at checkout. */
   member: boolean
   storage: StorageUsageData
+  places: PlacesData
+  /** Where the person came from (a locked panel, a read-only map), to go back after paying. */
+  returnTo: string | null
   checkout: 'success' | 'cancelled' | null
   highlight: CatalogKey | null
   interval: BillingInterval

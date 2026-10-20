@@ -30,7 +30,9 @@ module Mcp
           elements: element_counts(map),
           tags: tag_counts(map),
           palette: palette(map),
+          palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
+          succession: SuccessionBalance.new(map).as_json,
           bioindicators: bioindicators(map),
           soil_samples: soil_samples(map),
           tasks: {
@@ -41,6 +43,7 @@ module Mcp
           photos: map.photos.count,
           observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
+          publication: publication(map),
           implementation: implementation(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
@@ -66,6 +69,24 @@ module Mcp
 
       private
         MAX_BIOINDICATORS = 100
+
+        # The public view (« Publier »), for the owner only, as in the editor:
+        # its address, whether the map changed since the snapshot, and what
+        # it brought (views, trials started from « Et chez toi ? », accounts
+        # opened after it). Numbers, never names. Publishing stays a gesture
+        # of the owner in the panel.
+        def publication(map)
+          return nil unless @role == "owner"
+          publication = map.publication or return { published: false, note: t("notes.publication_none") }
+          {
+            published: publication.live?, url: "#{origin}#{publication.public_path}", title: publication.title,
+            version: publication.version, published_at: publication.published_at.iso8601,
+            unpublished_at: publication.unpublished_at&.iso8601, stale: publication.stale?,
+            shown_layers: publication.options["feature_layers"], hides_address: publication.options["hide_address"],
+            views: publication.views_count, places_tried: publication.trials.count, gardens_started: publication.sourced_users.count,
+            note: t("notes.publication")
+          }.compact
+        end
 
         # The implementation plan (« Mise en œuvre »): its phases in order,
         # with their season, workload and cost, and how much work is still
@@ -160,16 +181,38 @@ module Mcp
           }
         end
 
-        # The species chosen for this terrain (accepted entries only).
+        # The species chosen for this terrain (accepted entries only), with
+        # what the « Palette végétale » table counts for each: plants planned
+        # on the map, in the ground, still to plant, the price noted, and a
+        # flag when it is invasive in the country or toxic for the animals.
         def palette(map)
+          rows = palette_rows(map).index_by { _1[:paletteItemId] }
           map.palette_items.includes(species: :common_names, variety: :common_names).map do |item|
+            row = rows[item.id] || {}
+            planned, planted = row[:planned].to_i, row[:planted].to_i
             {
               id: item.id, species_id: item.species_id, variety_id: item.variety_id, name: item.display_name,
               latin_name: item.variety&.full_latin_name || item.species.latin_name,
-              strata: item.effective_strata, role: item.role, target_count: item.target_count, notes: item.notes
+              strata: item.effective_strata, role: item.role, target_count: item.target_count, notes: item.notes,
+              planned:, planted:, to_plant: [ planned - planted, 0 ].max,
+              unit_price_eur: item.unit_price&.to_f, supplier: item.supplier, size: item.size,
+              excluded_by: row[:excludedBy].presence
             }.compact
           end
         end
+
+        # What the plants with a price cost: what is left to buy (not yet in
+        # the ground) and the whole, as the palette page header shows them.
+        def palette_budget(map)
+          priced = palette_rows(map).select { _1[:unitPrice] }
+          return nil if priced.empty?
+          {
+            to_buy_eur: priced.sum { _1[:unitPrice] * [ _1[:planned] - _1[:planted], 0 ].max }.round(2),
+            total_eur: priced.sum { _1[:unitPrice] * _1[:planned] }.round(2)
+          }
+        end
+
+        def palette_rows(map) = @palette_rows ||= PlantPalette.new(map).rows
 
         def centroid(map)
           point = map.center || map.boundary&.centroid

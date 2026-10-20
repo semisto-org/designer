@@ -381,7 +381,7 @@ export function PhotoLightbox({ order }: { order?: MapPhotoData[] } = {}) {
         )}
 
         {canEdit && (
-          <Button size="sm" variant="ghost" className="text-clay-500" onClick={destroy}>
+          <Button size="sm" variant="danger-ghost" onClick={destroy}>
             <Trash2 className="h-4 w-4" />
             {t('common.delete')}
           </Button>

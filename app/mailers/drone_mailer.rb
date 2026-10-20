@@ -10,6 +10,7 @@ class DroneMailer < ApplicationMailer
     @user = @map.owner
     @map_url = map_url(@map)
     @help_url = help_article_url("la-vue-drone")
+    show_place(@map)
     mail to: @user.email_address, subject: t(".subject")
   end
 
@@ -19,6 +20,7 @@ class DroneMailer < ApplicationMailer
     @user = aerial_view.created_by
     @map_url = map_url(@map)
     @help_url = help_article_url("la-vue-drone")
+    show_place(@map)
     mail to: @user.email_address, subject: t(".subject")
   end
 

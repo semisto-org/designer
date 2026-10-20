@@ -7,6 +7,7 @@ import { inputClass } from '@/components/ui/Field'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { SelectAll, useRangeSelect } from '@/palette/BatchBar'
+import { plantedAgeLabel } from '@/palette/format'
 import { filterPlants, parsePlanted, plantedInput, type PlantFilters, type PlantLine, type PlantedPatch } from '@/palette/plants'
 import type { MapFeature } from '@/types'
 
@@ -204,7 +205,7 @@ export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedCh
                     {plant.plantedOn ? (
                       canEdit
                         ? <PlantedField plant={plant} onCommit={setPlanted} onInvalid={() => onStatus(t('plant_palette.plants.date_invalid'), true)} />
-                        : <span className="px-2 text-loam-700">{plantedText(plant)}</span>
+                        : <span className="px-2 text-loam-700">{plantedText(plant)}<PlantAge plant={plant} /></span>
                     ) : (
                       <span className="px-2 text-loam-300">{t('plant_palette.cells.empty')}</span>
                     )}
@@ -222,6 +223,12 @@ export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedCh
       )}
     </div>
   )
+}
+
+/** « · il y a 3 mois » after the date: the time this plant has had to grow. */
+function PlantAge({ plant }: { plant: PlantLine }) {
+  const age = plantedAgeLabel(plant.plantedOn, plant.plantedPrecision)
+  return age ? <span className="text-loam-500"> · {age}</span> : null
 }
 
 const plantedText = (plant: PlantLine) => {
@@ -296,7 +303,7 @@ function PlantedField({ plant, onCommit, onInvalid }: {
         plant.plantedPrecision === 'unknown' ? 'text-loam-500' : 'text-loam-800',
       )}
     >
-      {plantedText(plant)}
+      {plantedText(plant)}<PlantAge plant={plant} />
     </button>
   )
 }

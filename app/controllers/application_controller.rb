@@ -19,11 +19,23 @@ class ApplicationController < ActionController::Base
       # Other accounts signed in on this browser (« Changer de compte »).
       otherAccounts: authenticated? && !impersonating? ? other_accounts_props : [],
       releaseNotes: authenticated? ? release_notes_props : nil,
-      env: { googleSignIn: GoogleSignIn.enabled?, appleSignIn: AppleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured? }
+      env: {
+        googleSignIn: GoogleSignIn.enabled?, appleSignIn: AppleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured?,
+        # The price a locked feature points to (PlanGate): Home, or Pro for a pro account.
+        planPrices: { yearly: Billing::Catalog.find("yearly").price_cents, atelier: Billing::Catalog.find("atelier").price_cents }
+      }
     }
   end
 
   private
+    # A Plausible event for the next page (lib/analytics.ts reads
+    # `flash.track`): events of a request that only redirects are kept.
+    def track_event(event, **props)
+      data = flash[:inertia].is_a?(Hash) ? flash[:inertia].dup : {}
+      data["track"] = Array(data["track"]) + [ { "event" => event, "props" => props.stringify_keys.presence }.compact ]
+      flash[:inertia] = data
+    end
+
     def other_accounts_props
       other_sessions.map do |s|
         { sessionId: s.id, name: s.user.display_name, email: s.user.email_address, avatarUrl: s.user.avatar_url }

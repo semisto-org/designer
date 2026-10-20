@@ -1,5 +1,6 @@
 import '@/lib/sentry'
-import { createInertiaApp } from '@inertiajs/react'
+import { createInertiaApp, router } from '@inertiajs/react'
+import { track } from '@/lib/analytics'
 import AppLayout from '@/layouts/AppLayout'
 import PublicLayout from '@/layouts/PublicLayout'
 import HomeLayout from '@/layouts/HomeLayout'
@@ -11,7 +12,13 @@ import ImpersonationFrame from '@/components/admin/ImpersonationBanner'
 // the home page has its own full-screen header (HomeLayout), everything
 // else uses AppLayout. A page can still set `Page.layout`.
 // ImpersonationFrame wraps them all: the « connecté en tant que » banner.
-const FULL_SCREEN = ['maps/show', 'public_maps/show', 'public_maps/relief', 'maps/reliefs/show', 'maps/documents/show']
+const FULL_SCREEN = ['maps/show', 'public_maps/show', 'public_maps/relief', 'maps/reliefs/show', 'maps/documents/show', 'trials/show']
+
+// Events the server measured on the way here (ApplicationController#track_event).
+router.on('navigate', (event) => {
+  const flash = (event.detail.page as unknown as { flash?: { track?: { event: string; props?: Record<string, string> }[] } }).flash
+  flash?.track?.forEach((item) => track(item.event, item.props))
+})
 
 void createInertiaApp({
   pages: '../pages',
@@ -20,7 +27,7 @@ void createInertiaApp({
   layout: (name) => {
     if (FULL_SCREEN.includes(name)) return ImpersonationFrame
     if (name === 'pages/home') return [ImpersonationFrame, HomeLayout]
-    if (name.startsWith('pages/') || name.startsWith('sessions/') || name.startsWith('magic_links/') || name.startsWith('help/')) return [ImpersonationFrame, PublicLayout]
+    if (name.startsWith('pages/') || name.startsWith('sessions/') || name.startsWith('magic_links/') || name.startsWith('help/') || name.startsWith('trials/')) return [ImpersonationFrame, PublicLayout]
     return [ImpersonationFrame, AppLayout]
   },
   progress: { color: '#5b5781' },
