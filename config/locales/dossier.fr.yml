@@ -62,15 +62,6 @@ fr:
       finances: "Finances"
       sources: "Sources et licences"
 
-    # ----- Locked sections (shown on screen, never printed) -----
-    locked:
-      title: "Inclus dans les formules payantes"
-      screen_only: "Cette mention n'apparaît pas à l'impression."
-      terrain: "Le relief, la pente et l'eau de pluie des toitures sont des analyses incluses dans la formule du propriétaire de la carte."
-      climate: "Le climat de 2050 et 2080 et la vérification des plantes sont des analyses incluses dans la formule du propriétaire de la carte."
-      soil: "La lecture des résultats (repères bas, correct, élevé et texture) est une analyse incluse dans la formule du propriétaire de la carte. Les mesures restent visibles."
-      cta: "Voir les formules"
-
     # ----- Cover -----
     cover:
       eyebrow: "Dossier du projet"

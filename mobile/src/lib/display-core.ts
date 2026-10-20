@@ -38,7 +38,15 @@ export function strataOf(p: Properties, planting: Planting | undefined): string 
   return planting?.species[String(p.species_id)]?.strata ?? UNKNOWN_STRATA
 }
 
+/**
+ * Sectors (wind, fire, view… around the terrain) are arcs that only make
+ * sense together on their own rings, as on the website: never on the
+ * terrain's map nor in what is around.
+ */
+const OFF_MAP_KINDS: ReadonlySet<string> = new Set(['sector'])
+
 export function isShown(p: Properties, display: Display, planting: Planting | undefined): boolean {
+  if (OFF_MAP_KINDS.has(p.kind)) return false
   if (!display.projected && isProjected(p)) return false
   if (display.hiddenLayers.includes(p.layer)) return false
   if (isPlant(p) && display.hiddenStrata.length > 0 && display.hiddenStrata.includes(strataOf(p, planting))) return false

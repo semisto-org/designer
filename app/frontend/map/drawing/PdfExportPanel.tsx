@@ -1,10 +1,11 @@
 import { usePage } from '@inertiajs/react'
 import { bbox as turfBbox } from '@turf/turf'
 import clsx from 'clsx'
-import { FileText, Lock, X } from 'lucide-react'
+import { FileText, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Button, buttonClass } from '@/components/ui/Button'
+import { PlanGate } from '@/components/billing/PlanGate'
+import { Button } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatLength, formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -176,13 +177,7 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
       </div>
 
       {!editor.entitlements.pdfExport ? (
-        <div className="mt-3 space-y-3 rounded-lg bg-humus-50 p-3">
-          <p className="flex items-center gap-2 text-sm font-semibold text-loam-900"><Lock className="h-4 w-4 text-humus-700" />{t('drawing.pdf.upsell_title')}</p>
-          <p className="text-sm text-loam-700">{t('drawing.pdf.upsell')}</p>
-          {editor.isOwner
-            ? <a href="/billing" className={buttonClass('primary', 'sm', 'w-full')}>{t('drawing.pdf.upgrade')}</a>
-            : <p className="text-xs text-loam-500">{t('drawing.pdf.upsell_editor')}</p>}
-        </div>
+        <PlanGate feature="pdf" place={editor.map} canUpgrade={editor.isOwner} className="mt-3" />
       ) : (
         <div className="mt-3 space-y-3">
           <p className="text-sm text-loam-500">{t('drawing.pdf.intro')}</p>

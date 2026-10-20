@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { MapViewHeader } from '@/components/map_views/MapViews'
 import { formatDecimal } from '@/components/plants/format'
-import { ButtonLink } from '@/components/ui/Button'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
 import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
@@ -17,7 +17,7 @@ import type { PlantLine } from '@/palette/plants'
 import { PlantsTable } from '@/palette/PlantsTable'
 import { SuggestionsSheet } from '@/palette/Suggestions'
 import {
-  cellValue, crownArea, GROWTH_YEARS, normalizeSettings, sameSettings, scopeOf, toCsv, UNTAGGED, viewGroups,
+  cellValue, crownArea, GROWTH_YEARS, normalizeSettings, sameSettings, scopeOf, toCsv, toPlant, UNTAGGED, viewGroups,
   type PaletteRow, type ViewSettings,
 } from '@/palette/table'
 import { Popover, Toolbar } from '@/palette/Toolbar'
@@ -320,7 +320,12 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
       {rows.length === 0 && plants.length === 0 ? (
         <EmptyState
           title={t('plant_palette.empty.title')}
-          action={<ButtonLink href={`/maps/${map.id}?panel=palette`} variant="secondary"><Sprout className="h-4 w-4" />{t('plant_palette.empty.action')}</ButtonLink>}
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button type="button" onClick={() => setSuggesting(true)}><Compass className="h-4 w-4" />{t('plant_palette.empty.suggestions')}</Button>
+              <ButtonLink href={`/maps/${map.id}?panel=palette`} variant="secondary"><Sprout className="h-4 w-4" />{t('plant_palette.empty.action')}</ButtonLink>
+            </div>
+          }
         >
           {t('plant_palette.empty.text')}
         </EmptyState>
@@ -483,7 +488,9 @@ function Summary({ rows, areaM2 }: { rows: PaletteRow[]; areaM2: number | null }
   const planned = rows.reduce((s, r) => s + r.planned, 0)
   const planted = rows.reduce((s, r) => s + r.planted, 0)
   const existing = rows.reduce((s, r) => s + r.existing, 0)
+  // What is left to buy leads, as in the Budget view; the full cost, plants in the ground included, follows.
   const budget = rows.reduce((s, r) => s + (r.unitPrice == null ? 0 : r.unitPrice * r.planned), 0)
+  const toBuy = rows.reduce((s, r) => s + (r.unitPrice == null ? 0 : r.unitPrice * toPlant(r)), 0)
   const stages = GROWTH_YEARS.map((years) => ({ years, area: crownArea(rows, years) }))
   const largest = Math.max(1, ...stages.map((s) => s.area))
   const showGrowth = areaM2 != null && areaM2 > 0 && largest > 1
@@ -492,17 +499,14 @@ function Summary({ rows, areaM2 }: { rows: PaletteRow[]; areaM2: number | null }
     t('plant_palette.summary.planned', { count: planned }),
     t('plant_palette.summary.planted', { count: planted }),
     existing > 0 ? t('plant_palette.summary.existing', { count: existing }) : null,
-    budget > 0 ? t('plant_palette.summary.budget', { amount: formatEuro(budget) }) : null,
+    budget > 0 ? t(toBuy === budget ? 'plant_palette.summary.to_buy' : 'plant_palette.summary.to_buy_of', { amount: formatEuro(toBuy), total: formatEuro(budget) }) : null,
   ].filter(Boolean)
 
   return (
     <>
       <p className="text-sm text-loam-700">{facts.join(' · ')}</p>
       {showGrowth && (
-        <figure
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm lg:ml-auto print:hidden"
-          title={`${t('plant_palette.growth.caption')}. ${t('plant_palette.growth.hint')}`}
-        >
+        <figure className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm lg:ml-auto print:hidden" title={t('plant_palette.growth.hint')}>
           <figcaption className="font-medium text-leaf-800">{t('plant_palette.growth.short')}</figcaption>
           <ol className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {stages.map(({ years, area }) => {
@@ -518,6 +522,8 @@ function Summary({ rows, areaM2 }: { rows: PaletteRow[]; areaM2: number | null }
               )
             })}
           </ol>
+          {/* No hover on a phone: the explanation is written out there. */}
+          <p className="basis-full text-sm text-loam-500 sm:hidden">{t('plant_palette.growth.hint')}</p>
         </figure>
       )}
     </>

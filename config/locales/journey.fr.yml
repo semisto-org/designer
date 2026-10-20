@@ -558,8 +558,10 @@ fr:
     # The private link to the project sheet (editors), and the form it opens
     # for the people behind the project (no account, no map).
     link:
-      title: "Faire remplir la fiche par le porteur de projet"
-      intro: "Un lien privé ouvre uniquement ce formulaire, sans compte et sans accès à la carte. Tu reçois un e-mail quand la personne a terminé."
+      title: "Inviter quelqu'un à remplir la fiche"
+      intro: "Un lien privé ouvre uniquement ce formulaire, sans compte et sans accès à la carte : idéal pour le porteur de projet, ou pour que chacun note ses goûts dans la palette gustative. Tu reçois un e-mail quand la personne a terminé."
+      copy: "Copier le lien"
+      copied: "Lien copié"
       create: "Créer le lien privé"
       reset: "Nouveau lien"
       confirm_reset: "Créer un nouveau lien ? L'ancien cessera de fonctionner."
@@ -575,13 +577,13 @@ fr:
       page_title: "Fiche projet · %{map}"
       eyebrow: "Fiche projet"
       invited_by: "%{name} t'invite à décrire ton projet."
-      intro: "Prends le temps qu'il faut : tes réponses s'enregistrent au fil de l'eau et tu peux revenir plus tard avec ce même lien. Elles nous aident à concevoir un lieu qui te ressemble. Laisse vide ce que tu ne sais pas encore."
+      intro: "Prends le temps qu'il faut : tes réponses s'enregistrent au fil de l'eau et tu peux revenir plus tard avec ce même lien. Elles aident %{name} à concevoir un lieu qui te ressemble. Laisse vide ce que tu ne sais pas encore."
       private_note: "Ce lien est personnel : garde-le pour toi et les personnes qui portent le projet avec toi."
       finish: "J'ai terminé"
       finish_hint: "Tu peux encore modifier tes réponses ensuite, avec le même lien."
       finishing: "Envoi…"
       thanks_title: "Merci !"
-      thanks_body: "Ta fiche est bien arrivée. Nous la lisons avant de poursuivre la conception de ton lieu."
+      thanks_body: "Ta fiche est bien arrivée. %{name} la lira avant de poursuivre la conception."
       thanks_back: "Revoir mes réponses"
       submitted_on: "Fiche envoyée %{when}. Tu peux encore la compléter."
       read_only: "Cette fiche ne peut plus être modifiée pour le moment."

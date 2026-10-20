@@ -63,7 +63,7 @@ Le propriétaire et les éditeurs de la carte, qui sont aussi les seuls à accep
 
 ## La faire remplir par le porteur de projet
 
-Tu conçois le lieu de quelqu'un d'autre ? Sous « Faire remplir la fiche par le porteur de projet », **Créer le lien privé** donne une adresse à lui envoyer. Elle ouvre uniquement le formulaire de la fiche, sans compte et sans accès à la carte : la personne avance à son rythme, ses réponses s'enregistrent au fil de l'eau dans la fiche de ta carte.
+Tu conçois le lieu de quelqu'un d'autre, ou tu veux que chacun chez toi note ses goûts dans la palette gustative ? Sous « Inviter quelqu'un à remplir la fiche », à gauche sous les sections (sous le formulaire sur un téléphone), **Créer le lien privé** donne une adresse à envoyer. Elle ouvre uniquement le formulaire de la fiche, sans compte et sans accès à la carte : la personne avance à son rythme, ses réponses s'enregistrent au fil de l'eau dans la fiche de ta carte.
 
 Le formulaire montre toutes les sections, sauf les champs réservés à l'équipe (dans la palette gustative). Quand elle clique sur **J'ai terminé**, tu reçois un e-mail. Elle peut encore compléter ses réponses tant que le lien est actif. **Nouveau lien** remplace l'adresse (l'ancienne cesse de fonctionner) et **Désactiver** la ferme.
 

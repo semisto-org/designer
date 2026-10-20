@@ -1,15 +1,19 @@
 // The design drawn over the base map: zones, lines, points and plants,
 // coloured like on the website, as the display settings filter them.
+// Plants are small discs in their strata's colour, so a planted orchard
+// reads tree by tree over the aerial photo; other points are discs with
+// the glyph of what they are. Sectors stay off the map (isShown).
 // Tapping a feature selects it (the closest point first, see pickFeatureId).
-import { GeoJSONSource, Layer } from '@maplibre/maplibre-react-native'
+import { GeoJSONSource, Images, Layer } from '@maplibre/maplibre-react-native'
 import { useMemo } from 'react'
 import { isShown, type Display } from '@/lib/display-core'
-import { featureColor, featureTitle } from '@/lib/elements'
+import { featureColor, featureTitle, pointIcon, strataColor } from '@/lib/elements'
 import { pickFeatureId } from '@/lib/pick'
 import type { MapBundle } from '@/lib/types'
 import { colors } from '@/ui/theme'
+import { POINT_ICON_IMAGES } from './pointIcons'
 
-export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-line-dashed', 'features-point', 'features-plant']
+export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-line-dashed', 'features-point', 'features-point-icon', 'features-plant']
 const FONT = ['Noto Sans Regular']
 
 export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundle: MapBundle; display: Display; selectedId: number | null; onSelect?: (id: number) => void }) {
@@ -22,7 +26,8 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
       properties: {
         fid: feature.id,
         kind: feature.properties.kind,
-        color: featureColor(feature),
+        color: feature.properties.kind === 'plant' ? strataColor(feature, bundle.planting) : featureColor(feature),
+        icon: feature.geometry.type === 'Point' && feature.properties.kind !== 'plant' ? pointIcon(feature) : '',
         label: feature.properties.kind === 'plant' ? '' : featureTitle(feature, bundle.planting),
         planted: feature.properties.planted_on ? 1 : 0,
         selected: feature.id === selectedId ? 1 : 0,
@@ -37,6 +42,7 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
 
   return (
     <>
+      <Images images={POINT_ICON_IMAGES} />
       {boundary && (
         <GeoJSONSource id="boundary" data={{ type: 'Feature', geometry: boundary as GeoJSON.Geometry, properties: {} }}>
           {/* As on the website (map/layers/boundary.ts): a plum wash, a white casing, a plum line. */}
@@ -66,16 +72,23 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
           paint={{ 'line-color': ['get', 'color'], 'line-width': ['case', ['==', ['get', 'selected'], 1], 5, 2.5], 'line-dasharray': [3, 2] }} />
         <Layer id="features-point" type="circle" filter={['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'plant']]}
           paint={{
-            'circle-color': ['get', 'color'], 'circle-radius': ['case', ['==', ['get', 'selected'], 1], 10, 7], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2,
-            'circle-opacity': ['case', ['==', ['get', 'dashed'], 1], 0.6, 1],
+            'circle-color': ['get', 'color'],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 7, 18, ['case', ['==', ['get', 'selected'], 1], 13, 10]],
+            'circle-stroke-color': '#ffffff', 'circle-stroke-width': ['case', ['==', ['get', 'selected'], 1], 3, 1.5],
+            'circle-opacity': ['case', ['==', ['get', 'dashed'], 1], 0.6, 0.92],
           }} />
+        {/* The glyph only once the disc is big enough to hold it. */}
+        <Layer id="features-point-icon" type="symbol" minzoom={16} filter={['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'plant']]}
+          layout={{ 'icon-image': ['get', 'icon'], 'icon-size': ['interpolate', ['linear'], ['zoom'], 16, 0.24, 18, 0.33], 'icon-allow-overlap': true, 'icon-ignore-placement': true }} />
+        {/* A plant: a small disc in its strata's colour, light enough to see the ground through, with a white edge; not planted yet, a ring. */}
         <Layer id="features-plant" type="circle" filter={['==', ['get', 'kind'], 'plant']}
           paint={{
             'circle-color': ['case', ['==', ['get', 'planted'], 1], ['get', 'color'], '#ffffff'],
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 16, 6, 20, ['case', ['==', ['get', 'selected'], 1], 14, 10]],
-            'circle-stroke-color': ['get', 'color'],
-            'circle-stroke-width': ['case', ['==', ['get', 'selected'], 1], 4, 3],
-            'circle-opacity': ['case', ['==', ['get', 'pending'], 1], 0.7, 1],
+            'circle-opacity': ['case', ['==', ['get', 'planted'], 1], 0.7, 0.55],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 2, 17, 3.5, 19, ['case', ['==', ['get', 'selected'], 1], 9, 6], 21, ['case', ['==', ['get', 'selected'], 1], 14, 10]],
+            'circle-stroke-color': ['case', ['==', ['get', 'planted'], 1], '#ffffff', ['get', 'color']],
+            'circle-stroke-width': ['case', ['==', ['get', 'selected'], 1], 3, ['==', ['get', 'planted'], 1], 1, 2],
+            'circle-stroke-opacity': ['case', ['==', ['get', 'pending'], 1], 0.6, 0.9],
           }} />
         <Layer id="features-label" type="symbol" minzoom={17}
           layout={{ 'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 14, 'text-offset': [0, 1.2], 'text-anchor': 'top', 'text-optional': true }}

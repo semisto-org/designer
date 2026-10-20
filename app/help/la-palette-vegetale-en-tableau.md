@@ -16,13 +16,13 @@ Une ligne par espèce ou variété du projet :
 - les plants **prévus** sur la carte, isolés ou dans les massifs ;
 - les plants **en terre**, qui ont une date de plantation.
 
-La colonne **État** résume où en est chaque plante : Existante, Choisie, Prévue, En cours de plantation ou Plantée.
+La colonne **État** résume où en est chaque plante : Existante, Choisie, Prévue, En cours de plantation ou En terre.
 
-En haut, **Ce jardin dans le temps** montre la part du terrain que couvriront les houppiers des arbres et arbustes après 1, 5, 15 et 30 ans.
+En haut, **Ton jardin dans le temps** montre la part du terrain que couvriront les houppiers des arbres et arbustes après 1, 5, 15 et 30 ans. À côté, **Reste à acheter** additionne le prix des plants pas encore en terre, comme la vue **Budget**.
 
 ## Ce qui convient à ton terrain
 
-La colonne **Convient ici ?** (dans la vue **Base**) juge chaque plante sur ton terrain, une pastille par critère : **✓** elle convient, **~** elle tolère, **✗** elle ne convient pas, **?** le catalogue ne le dit pas encore. Une pastille en pointillé repose sur une valeur que Semisto n'a pas encore vérifiée. Les critères viennent de ce que Terranova sait du lieu : le climat (rusticité), l'exposition que tu donnes à tes patchs, le sol décrit dans ta fiche projet et tes analyses de sol (pH, texture). Plus tu en renseignes, plus le jugement est fin. Une plante invasive dans ton pays ou toxique pour les animaux de ta fiche projet le dit aussi.
+La colonne **Convient ici ?** (dans la vue **Base**) juge chaque plante sur ton terrain, une pastille par critère : **✓** elle convient, **~** elle tolère, **✗** elle ne convient pas, **?** le catalogue ne le dit pas encore. Une pastille en pointillé repose sur une valeur que Semisto n'a pas encore vérifiée. Les critères viennent de ce que Terranova sait du lieu : le climat (rusticité), l'exposition que tu donnes à tes patchs, le sol décrit dans ta fiche projet et tes analyses de sol (pH, texture). Plus tu en renseignes, plus le jugement est fin. Une plante invasive dans ton pays ou toxique pour les animaux de ta fiche projet le dit aussi, sous son nom, dans toutes les vues.
 
 Touche **Suggestions pour ce terrain**, à côté du titre, pour voir ce que Terranova sait de ton lieu et des espèces qui y conviennent, les plus sûres d'abord : fixateurs d'azote, strates manquantes, plantes mellifères, chacune avec sa raison et ses pastilles. Les plantes trop frileuses pour ton climat, invasives ou toxiques pour tes animaux sont écartées d'office. **Ajouter** la met dans la palette ; rien n'y entre sans toi.
 
@@ -45,14 +45,14 @@ Change les **filtres**, le **groupement**, les **colonnes** ou le **tri** à ta 
 
 ## Noter prix, calibre et fournisseur
 
-Les éditeurs de la carte cliquent dans une cellule **Prix unitaire**, **Calibre**, **Fournisseur**, **Objectif** ou **Notes** pour la remplir ; Entrée enregistre, Échap annule. Le tableau calcule le **Total prévu** et le **Reste à acheter**. Une plante dessinée mais pas encore dans la palette y entre à ce moment-là.
+Les éditeurs de la carte cliquent dans une cellule **Prix unitaire**, **Calibre**, **Fournisseur**, **Objectif** ou **Notes** pour la remplir (une cellule vide affiche **Ajouter**) ; Entrée enregistre, Échap annule. Le tableau calcule le **Total prévu** et le **Reste à acheter**. Une plante dessinée mais pas encore dans la palette y entre à ce moment-là.
 
 ## Plant par plant
 
 En haut du tableau, **Plant par plant** remplace les espèces par chaque plant de la carte, rangés par numéro :
 
 - **N°** : tape un numéro, Entrée enregistre et passe au plant suivant, si bien qu'un plan entier se renumérote au clavier. Si un autre plant porte déjà ce numéro, les deux échangent leurs numéros ;
-- **Statut** : **Prévu** ou **En terre**. Un plant mis en terre ici a d'abord une date inconnue ;
+- **État** : **Prévu** ou **En terre**. Un plant mis en terre ici a d'abord une date inconnue ;
 - **Plantation** : une année (« 2015 »), une date (« 12/03/2024 »), ou rien quand personne ne sait quand il a été planté, comme pour les vieux arbres trouvés en arrivant ;
 - l'épingle ouvre le plant sur la carte.
 

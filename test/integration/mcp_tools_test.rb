@@ -107,6 +107,22 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil data["offer"], "a viewer (maybe the client) never sees the offer"
   end
 
+  test "get_map counts the palette like its table: planted, still to plant, its price and what is left to buy" do
+    apple = plant_species(:apple)
+    apple.update!(invasive_countries: [ "BE" ])
+    @map.palette_items.create!(species: apple, unit_price: 10)
+    spot = { "type" => "Point", "coordinates" => [ 4.905, 50.3402 ] }
+    @map.features.create!(layer: "plants", kind: "plant", geometry: spot, properties: { "species_id" => apple.id })
+    @map.features.create!(layer: "plants", kind: "plant", geometry: spot, properties: { "species_id" => apple.id, "planted_on" => "2025-11-15" })
+
+    data, error = call_tool(@owner, "get_map", { map_id: @map.id })
+    refute error
+    entry = data["palette"].find { _1["species_id"] == apple.id }
+    assert_equal [ 2, 1, 1, 10.0 ], entry.values_at("planned", "planted", "to_plant", "unit_price_eur")
+    assert_equal "invasive", entry["excluded_by"]
+    assert_equal({ "to_buy_eur" => 10.0, "total_eur" => 20.0 }, data["palette_budget"])
+  end
+
   test "get_map gives the bio-indicator plants noted on the terrain and what they point to" do
     @map.bioindicator_observations.create!(catalog_key: "ortie", abundance: "dominant", location: [ 4.906, 50.341 ])
     data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
@@ -329,6 +345,17 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal [ flow.id, "flows", "storm", true, "2026-02-03T14:20:00Z" ], observation.values_at("id", "water", "rain", "muddy", "observed_at")
     assert_includes %w[follows diverges], observation.dig("relief", "verdict")
     assert_equal "get_storm_observations", AiAction.last.tool
+  end
+
+  test "get_element_functions gives what each element does and which functions only one serves" do
+    @map.features.create!(layer: "structures", kind: "compost", geometry: { type: "Point", coordinates: [ 4.9051, 50.3401 ] })
+    data, error = call_tool(@viewer, "get_element_functions", { map_id: @map.id })
+    refute error
+    compost = data["entries"].find { |e| e["kind"] == "compost" }
+    assert_equal %w[fertility], compost["functions"]
+    assert_includes data["unmet_needs"].map { |n| n["resource"] }, "organic_matter"
+    assert_equal "fragile", data["balance"].find { |b| b["function"] == "fertility" }["status"]
+    assert_equal "get_element_functions", AiAction.last.tool
   end
 
   test "get_season_signs gives the season signs, their days per year and the seasons not yet observed" do

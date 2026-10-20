@@ -1,7 +1,8 @@
 import { Link } from '@inertiajs/react'
 import { area as turfArea } from '@turf/turf'
-import { Box, Download, Loader2, Lock, RotateCcw } from 'lucide-react'
+import { Box, Download, Loader2, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { PlanGate } from '@/components/billing/PlanGate'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { api, ApiError } from '@/lib/api'
@@ -28,16 +29,8 @@ export default function ReliefPanel() {
 }
 
 function Upsell() {
-  return (
-    <div className="space-y-3 rounded-xl bg-prune-50 p-4 text-sm">
-      <p className="flex items-center gap-2 font-semibold text-prune-800">
-        <Lock className="h-4 w-4" />
-        {t('relief.upsell.title')}
-      </p>
-      <p className="text-loam-600">{t('relief.upsell.body')}</p>
-      <a href="/billing" className={buttonClass('primary', 'sm')}>{t('relief.upsell.cta')}</a>
-    </div>
-  )
+  const editor = useEditor()
+  return <PlanGate feature="relief" place={editor.map} canUpgrade={editor.isOwner} panel="relief" />
 }
 
 function ReliefPanelContent() {

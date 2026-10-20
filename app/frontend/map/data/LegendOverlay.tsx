@@ -205,7 +205,7 @@ function StrataLegend({ counts, unknown, planned, support, numbered }: PlantLege
       )}
       {support && (
         <p className="mt-2 flex items-center gap-2 text-sm leading-tight text-loam-600">
-          {/* design-lint-ok: mirrors the support plants' map paint (MapLibre needs a colour string) */}
+          {/* design-lint-ok: the swatch takes the same colour as the support-plant crowns drawn on the map */}
           <CrownSwatch color="#6b665c" support />
           {t('plants.legend.support')}
         </p>
@@ -267,7 +267,7 @@ function CrownSwatch({ color, planned = false, crown = true, support = false }: 
     <svg width="18" height="18" viewBox="0 0 18 18" className="shrink-0" aria-hidden="true" style={{ opacity: planned ? PLANNED_OPACITY : 1 }}>
       {crown && <circle cx="9" cy="9" r="7" fill={color} fillOpacity={planned ? 0.15 : 0.45} stroke="#ffffff" strokeWidth="3.5" />}
       {/* Support plants: white hatching over the strata colour, as on the map. */}
-      {crown && support && ( // design-lint-ok: mirrors the support plants' map paint, a MapLibre colour string
+      {crown && support && ( // design-lint-ok: SVG stroke attribute, white hatching as on the map
         <g style={{ clipPath: 'circle(6px at 9px 9px)' }} stroke="#ffffff" strokeWidth="1.2" strokeOpacity="0.9">
           {[-8, -4, 0, 4, 8].map((d) => <line key={d} x1={2 + d} y1={16} x2={16 + d} y2={2} />)}
         </g>

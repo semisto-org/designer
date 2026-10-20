@@ -58,7 +58,7 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
         <ProgressBar percent={progress.percent} label={t('journey.project.overall', { percent: progress.percent })} className="mt-1.5" />
         {payload.canEdit
           ? <div className="mt-2 min-h-4"><SaveIndicator status={sheet.status} onRetry={sheet.retry} /></div>
-          : <p className="mt-2 text-xs text-humus-700">{t('journey.project.read_only')}</p>}
+          : <p className="mt-2 text-sm text-humus-700">{t('journey.project.read_only')}</p>}
       </div>
 
       <DraftsBanner sheet={sheet} canEdit={payload.canEdit} onOpen={setOpen} />
@@ -128,7 +128,7 @@ function ModalBody({ payload }: { payload: ProjectPayload }) {
           <ProgressBar percent={progress.percent} label={t('journey.project.overall', { percent: progress.percent })} className="mt-1.5" />
           {payload.canEdit
             ? <div className="mt-2 min-h-4"><SaveIndicator status={sheet.status} onRetry={sheet.retry} /></div>
-            : <p className="mt-2 text-xs text-humus-700">{t('journey.project.read_only')}</p>}
+            : <p className="mt-2 text-sm text-humus-700">{t('journey.project.read_only')}</p>}
         </div>
         <nav aria-label={t('journey.project.sections_nav')}>
           <ol className="space-y-1">
@@ -154,7 +154,7 @@ function ModalBody({ payload }: { payload: ProjectPayload }) {
             })}
           </ol>
         </nav>
-        {payload.canEdit && <ProjectFormLink mapId={payload.map.id} initial={payload.formLink} className="p-3!" />}
+        {payload.canEdit && <ProjectFormLink mapId={payload.map.id} initial={payload.formLink} compact className="p-3!" />}
         <a
           href={`/maps/${payload.map.id}/project#${active}`}
           className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline"
@@ -168,7 +168,7 @@ function ModalBody({ payload }: { payload: ProjectPayload }) {
           <div className="mb-6 empty:hidden"><DraftsBanner sheet={sheet} canEdit={payload.canEdit} onOpen={setActive} /></div>
           <p className="text-xs font-medium uppercase tracking-wide text-loam-500">{index + 1} / {sections.length}</p>
           <h2 className="text-2xl">{sectionTitle(active)}</h2>
-          <p className="mt-0.5 text-xs text-loam-500">
+          <p className="mt-0.5 text-sm text-loam-500">
             {current?.touchedAt ? t('journey.project.touched', { when: relativeTime(current.touchedAt) }) : t('journey.project.untouched')}
           </p>
           <div className="mt-6">

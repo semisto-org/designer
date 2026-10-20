@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react'
 import { Archive, Lock } from 'lucide-react'
 import { useEditor } from '@/map/editor/EditorContext'
 import { t } from '@/lib/i18n'
+import { plansHref } from '@/components/billing/PlanGate'
 
 const classes = 'inline-flex items-center gap-1.5 rounded-full bg-humus-100 px-3 py-1 text-sm font-medium text-humus-700'
 
@@ -39,7 +40,7 @@ export default function ReadOnlyNotice() {
     )
   }
   return (
-    <a href="/billing" className={`${classes} hover:bg-humus-200`} title={t('billing.read_only_hint')}>
+    <a href={plansHref({ returnTo: `/maps/${map.id}` })} className={`${classes} hover:bg-humus-200`} title={t('billing.read_only_hint')}>
       <Lock className="h-3.5 w-3.5" aria-hidden="true" />
       {t('billing.read_only_badge')}
     </a>

@@ -1,8 +1,8 @@
 import clsx from 'clsx'
-import { Lock } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { buttonClass } from '@/components/ui/Button'
+import { PlanGate } from '@/components/billing/PlanGate'
 import { t } from '@/lib/i18n'
+import type { Dossier } from '@/types/dossier'
 
 /**
  * One numbered section of the document. The title and its short intro stay
@@ -55,16 +55,14 @@ export function Indicative() {
 }
 
 /** Shown instead of a paid block: on screen only, never on paper. */
-export function LockedNote({ body, isOwner }: { body: string; isOwner: boolean }) {
+export function LockedNote({ feature, dossier, isOwner }: { feature: 'dossier_terrain' | 'dossier_climate' | 'dossier_soil'; dossier: Dossier; isOwner: boolean }) {
   return (
-    <div className="rounded-xl border border-dashed border-humus-300 bg-humus-50 p-4 print:hidden" role="note">
-      <p className="flex items-center gap-2 font-semibold text-loam-900"><Lock className="h-4 w-4 text-humus-700" aria-hidden />{t('dossier.locked.title')}</p>
-      <p className="mt-1 text-loam-700">{body}</p>
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        {isOwner && <a href="/billing" className={buttonClass('primary', 'sm')}>{t('dossier.locked.cta')}</a>}
-        <span className="text-xs text-loam-500">{t('dossier.locked.screen_only')}</span>
-      </div>
-    </div>
+    <PlanGate
+      feature={feature}
+      place={{ id: dossier.map.id, name: dossier.map.name, boundary: dossier.cover.boundary, areaM2: dossier.map.areaM2 }}
+      canUpgrade={isOwner}
+      className="max-w-xl"
+    />
   )
 }
 

@@ -1,4 +1,4 @@
-import { Check, Compass, ExternalLink, MapPin, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { Check, Compass, ExternalLink, MapPin, Pencil, Plus, Search, Table2, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
@@ -219,6 +219,11 @@ export default function PalettePanel() {
           <Plus className="h-4 w-4" />{t('palette.draw_patch')}
         </Button>
       )}
+
+      {/* The same palette, counted, priced and ordered, on its own page. */}
+      <a href={`/maps/${mapId}/palette`} className="inline-flex items-center gap-1.5 text-sm font-medium text-prune-700 hover:underline">
+        <Table2 className="h-4 w-4" aria-hidden />{t('palette.open_table')}
+      </a>
     </div>
   )
 }
