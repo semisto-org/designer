@@ -230,28 +230,12 @@ export default function PilotProfile({ pilot, catalogue, defaults, commissionPer
 
         <Section title={t('drone_pilots.profile.legal')} lead={t('drone_pilots.profile.legal_lead')}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t('drone_pilots.profile.legal_form')} error={err('legal_form')}>
-              <Select value={form.data.legal_form} onChange={(e) => form.setData('legal_form', e.target.value as 'individual' | 'company')}>
-                {catalogue.legalForms.map((f) => <option key={f} value={f}>{t(`drone_pilots.legal_forms.${f}`)}</option>)}
-              </Select>
-            </Field>
             <Field label={t('drone_pilots.profile.legal_name')} error={err('legal_name')}>
               <Input required value={form.data.legal_name} onChange={(e) => form.setData('legal_name', e.target.value)} />
             </Field>
-            {form.data.legal_form === 'company' ? (
-              <Field label={t('drone_pilots.profile.business_number')} hint={t('drone_pilots.profile.business_hint')} error={err('business_number')}>
-                <Input required value={form.data.business_number} onChange={(e) => form.setData('business_number', e.target.value)} />
-              </Field>
-            ) : (
-              <>
-                <Field label={t('drone_pilots.profile.tax_number')} hint={t('drone_pilots.profile.tax_hint')} error={err('tax_number')}>
-                  <Input required value={form.data.tax_number} onChange={(e) => form.setData('tax_number', e.target.value)} />
-                </Field>
-                <Field label={t('drone_pilots.profile.birth_date')} error={err('birth_date')}>
-                  <Input type="date" required value={form.data.birth_date} onChange={(e) => form.setData('birth_date', e.target.value)} />
-                </Field>
-              </>
-            )}
+            <Field label={t('drone_pilots.profile.business_number')} hint={t('drone_pilots.profile.business_hint')} error={err('business_number')}>
+              <Input required value={form.data.business_number} onChange={(e) => form.setData('business_number', e.target.value)} />
+            </Field>
             <Field label={t('drone_pilots.profile.vat_number')} hint={t('drone_pilots.profile.vat_hint')} error={err('vat_number')}>
               <Input value={form.data.vat_number} onChange={(e) => form.setData('vat_number', e.target.value)} />
             </Field>

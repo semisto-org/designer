@@ -30,11 +30,13 @@ class DronePilotTest < ActiveSupport::TestCase
     assert_equal "BEL12A3B4C5D6E", DronePilot.new(operator_number: "bel 12a3 b4c5 d6e").operator_number
   end
 
-  test "an individual gives a tax number and a birth date, a company its business number" do
-    pilot = DronePilot.new(legal_form: "company")
+  test "only businesses are listed: a business number is always required" do
+    pilot = DronePilot.new(legal_form: "individual")
     pilot.valid?
     assert pilot.errors.of_kind?(:business_number, :blank)
+    assert pilot.errors.of_kind?(:legal_form, :inclusion)
     assert_empty pilot.errors[:tax_number]
+    assert_empty pilot.errors[:birth_date]
   end
 
   test "distance, range and travel fees from the base to a map" do

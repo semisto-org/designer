@@ -10,7 +10,7 @@ module DronePilotsTestHelper
       service_radius_km: 60, mission_price_cents: 350_00, travel_fees_enabled: true,
       drones: [ { "model" => "mavic_3_thermal" } ], data_types: %w[photos orthophoto thermal],
       certificates: %w[a1_a3 a2], operator_number: "BEL12a3b4c5d6e", insurer: "Ethias 123456",
-      legal_form: "individual", legal_name: user.name, tax_number: "83.02.01-123.45", birth_date: Date.new(1983, 2, 1),
+      legal_form: "company", legal_name: "#{user.name} SRL", business_number: "BE0123.456.789",
       address: "Rue de la Gare 1, 5000 Namur", country: "BE", stripe_account_id: "acct_#{user.name.downcase}", payouts_enabled: true
     }.merge(attrs)).tap { _1.place_at!(*NAMUR) }.tap(&:save!)
   end

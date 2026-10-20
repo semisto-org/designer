@@ -14,7 +14,9 @@
 # to clients.
 class DronePilot < ApplicationRecord
   STATUSES = %w[pending approved rejected suspended].freeze
-  LEGAL_FORMS = %w[individual company].freeze
+  # Companies only in v1 (Michael, 2026-10-20): a business number keeps the
+  # commission between two businesses and DAC7 reporting simple.
+  LEGAL_FORMS = %w[company].freeze
   COUNTRIES = %w[BE FR LU NL DE].freeze
   TRAVEL_CENTS_PER_KM = 50
   # Straight-line distance times this gives a fair road distance.
@@ -46,9 +48,8 @@ class DronePilot < ApplicationRecord
   validates :legal_name, presence: true, length: { maximum: 160 }
   validates :address, presence: true, length: { maximum: 500 }
   validates :country, inclusion: { in: COUNTRIES }
-  validates :business_number, presence: true, length: { maximum: 40 }, if: -> { legal_form == "company" }
-  validates :tax_number, presence: true, length: { maximum: 40 }, if: -> { legal_form == "individual" }
-  validates :birth_date, presence: true, if: -> { legal_form == "individual" }
+  validates :business_number, presence: true, length: { maximum: 40 }
+  validates :tax_number, length: { maximum: 40 }
   validates :vat_number, length: { maximum: 40 }
   # A refusal or a suspension always says why.
   validates :review_note, presence: true, if: -> { %w[rejected suspended].include?(status) && will_save_change_to_status? }

@@ -20,7 +20,7 @@ class McpDronePilotsTest < ActionDispatch::IntegrationTest
     assert_equal @pilot.id, pilot["id"]
     assert_equal 70_00, pilot.dig("quote", "commissionCents")
     assert_includes pilot["url"], "/pilotes-drone/#{@pilot.id}"
-    refute pilot.key?("taxNumber")
+    refute pilot.key?("businessNumber")
 
     data, = call_tool(personal_token(users(:michael)), "list_drone_pilots", { map_id: @map.id, include_out_of_range: true, data_types: %w[thermal] })
     assert_equal 2, data["pilots"].size

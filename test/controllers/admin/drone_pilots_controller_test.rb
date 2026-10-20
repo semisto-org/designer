@@ -19,7 +19,7 @@ class Admin::DronePilotsControllerTest < ActionDispatch::IntegrationTest
 
     sign_in_as users(:michael)
     get admin_drone_pilots_path, headers: inertia_headers
-    assert_equal "83.02.01-123.45", response.parsed_body.dig("props", "pilots").sole["taxNumber"]
+    assert_equal "BE0123.456.789", response.parsed_body.dig("props", "pilots").sole["businessNumber"]
   end
 
   test "approving tells the pilot; refusing needs a note" do

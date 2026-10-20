@@ -19,8 +19,8 @@ class DronePilotsControllerTest < ActionDispatch::IntegrationTest
     card = props["pilots"].sole
     assert card["serves"]
     assert_equal 70_00, card.dig("quote", "commissionCents")
-    refute card.key?("taxNumber")
-    refute_includes response.body, "83.02.01"
+    refute card.key?("businessNumber")
+    refute_includes response.body, "BE0123.456.789"
     assert_equal @map.id, props["mapId"]
   end
 
