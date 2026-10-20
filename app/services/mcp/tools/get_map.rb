@@ -39,8 +39,10 @@ module Mcp
           },
           documents: map.documents.count,
           photos: map.photos.count,
+          observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
           publication: publication(map),
+          implementation: implementation(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -82,6 +84,25 @@ module Mcp
             views: publication.views_count, places_tried: publication.trials.count, gardens_started: publication.sourced_users.count,
             note: t("notes.publication")
           }.compact
+        end
+
+        # The implementation plan (« Mise en œuvre »): its phases in order,
+        # with their season, workload and cost, and how much work is still
+        # in no phase. An element joins a phase through its `phase_id`
+        # property (propose_feature_updates); get_implementation_plan has the detail.
+        def implementation(map)
+          plan = Implementation::Plan.new(map, networks: editor?).as_json
+          {
+            phases: plan[:phases].map do |phase|
+              { id: phase[:id], name: phase[:name], starts_on: phase[:startsOn], ends_on: phase[:endsOn], notes: phase[:notes],
+                hours: phase[:hours][:total], hours_available: phase.dig(:available, :hours), cost_cents: phase[:costCents],
+                done: phase[:done], count: phase[:count], advice: phase[:advice].map { _1[:code] } }
+            end,
+            proposed_phases_pending: plan[:drafts].size,
+            not_in_a_phase: plan[:unassigned][:groups].sum { _1[:count] },
+            drawn_as_existing: plan[:drawnAsExisting].size,
+            hours_total: plan[:totals][:hours], cost_cents_total: plan[:totals][:costCents]
+          }
         end
 
         # The offer's versions and the budget of the last accepted one, for

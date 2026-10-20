@@ -7,6 +7,7 @@ import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
 import type { Memory } from '@/lib/memory'
+import { missingSeasons, signLabel, signsOfMonth, type SeasonCount, type Sign } from '@/lib/season'
 import type { WeekReport } from '@/lib/week'
 import type { SpotPhotos } from '@/lib/retake'
 import { arrived, arrowAngle, type Target } from '@/lib/tour'
@@ -58,7 +59,7 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week, year }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
   /** Plants of the design still to put in the ground, for the planting round. */
   toPlant?: number; onTour?: () => void
@@ -68,6 +69,8 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
   memory?: Memory | null
   /** « Cette semaine chez toi »: frost, heat, the plants of the month, tasks due. */
   week?: WeekReport | null
+  /** « Ton année d'observation »: what was seen in each season, and the signs to go out for this month. */
+  year?: { seasons: SeasonCount[]; lookFor: { sign: Sign; noted: boolean }[]; onSign: (sign: Sign) => void } | null
 }) {
   const card = monthCard()
   return (
@@ -81,6 +84,7 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
         </View>
       )}
       {week && <WeekCard report={week} />}
+      {year && <YearCard {...year} />}
       {card && <Body muted>{card.body}</Body>}
       {viewer && <Body muted>{t('mobile.terrain.viewer')}</Body>}
       {memory && mapId !== undefined && <MemoryCard memory={memory} mapId={mapId} planting={planting} onPick={onPick} onPhoto={onPhoto} />}
@@ -103,6 +107,45 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
               </Pressable>
             ))}
           </ScrollView>
+        </>
+      )}
+    </View>
+  )
+}
+
+/** « Ton année d'observation »: the four seasons and what was seen in each, then this month's signs. */
+function YearCard({ seasons, lookFor, onSign }: { seasons: SeasonCount[]; lookFor: { sign: Sign; noted: boolean }[]; onSign: (sign: Sign) => void }) {
+  const missing = missingSeasons(seasons)
+  const names = missing.map((season) => t(`mobile.season.year.seasons.${season}`)).join(t('mobile.season.year.and'))
+  return (
+    <View style={s.memory}>
+      <Text accessibilityRole="header" style={s.memoryTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.season.year.title')}</Text>
+      <Body muted>{t('mobile.season.year.hint')}</Body>
+      <View style={s.seasons}>
+        {seasons.map(({ season, count }) => (
+          <View key={season} style={[s.season, count > 0 && s.seasonSeen]} accessible
+            accessibilityLabel={`${t(`mobile.terrain.seasons.${season}`)}, ${t('mobile.season.year.count', { count })}`}>
+            <Text style={s.seasonName} numberOfLines={1} maxFontSizeMultiplier={1.3}>{t(`mobile.terrain.seasons.${season}`)}</Text>
+            <Text style={[s.seasonCount, count > 0 && { color: colors.leaf700 }]} maxFontSizeMultiplier={1.3}>{count > 0 ? count : '·'}</Text>
+          </View>
+        ))}
+      </View>
+      <Body>{missing.length > 0 ? t('mobile.season.year.missing', { count: missing.length, seasons: names }) : t('mobile.season.year.complete')}</Body>
+      {lookFor.length > 0 && (
+        <>
+          <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.season.year.look_for')}</Text>
+          {lookFor.map(({ sign, noted }) => (
+            <Pressable key={sign} onPress={() => { haptics.tap(); onSign(sign) }} accessibilityRole="button"
+              accessibilityLabel={[signLabel(sign), noted ? t('mobile.season.year.noted') : null].filter(Boolean).join(', ')} accessibilityHint={t(`mobile.season.hints.${sign}`)}
+              style={({ pressed }) => [s.row, pressed && { backgroundColor: colors.loam100 }]}>
+              <Icon name={noted ? 'ticked' : 'season'} size={22} color={noted ? colors.leaf700 : colors.prune700} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{signLabel(sign)}</Text>
+                <Text style={s.meta} numberOfLines={2} maxFontSizeMultiplier={MAX_FONT_SCALE}>{noted ? t('mobile.season.year.noted') : t(`mobile.season.hints.${sign}`)}</Text>
+              </View>
+              <Icon name="next" size={20} color={colors.loam500} />
+            </Pressable>
+          ))}
         </>
       )}
     </View>
@@ -164,7 +207,7 @@ function AroundRow({ item, planting, onPress }: { item: Nearby; planting: Planti
 
 // ── « Noter ici » ──────────────────────────────────────────────────────
 
-export type NoteChoice = 'photo' | 'plant' | 'record' | 'measure' | 'identify' | 'storm'
+export type NoteChoice = 'photo' | 'plant' | 'record' | 'measure' | 'identify' | 'storm' | 'season'
 const NOTES: { choice: NoteChoice; icon: IconName; label: string }[] = [
   { choice: 'photo', icon: 'photo', label: 'mobile.actions.photo' },
   { choice: 'plant', icon: 'plant', label: 'mobile.actions.plant' },
@@ -175,12 +218,22 @@ const NOTES: { choice: NoteChoice; icon: IconName; label: string }[] = [
 ]
 
 export function NoteTop({ onChoose, onClose }: { onChoose: (choice: NoteChoice) => void; onClose: () => void }) {
+  const monthSigns = signsOfMonth().slice(0, 3).map(signLabel).join(', ').toLowerCase()
   return (
     <View style={s.top}>
       <View style={s.titleRow}>
         <Text accessibilityRole="header" style={[s.monthTitle, { flex: 1 }]} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.terrain.note_title')}</Text>
         <IconButton icon="close" label={t('mobile.common.close')} onPress={onClose} size={touch.min} />
       </View>
+      <Pressable onPress={() => { haptics.tap(); onChoose('season') }} accessibilityRole="button" accessibilityLabel={t('mobile.actions.season')}
+        accessibilityHint={t('mobile.season.tile_hint', { signs: monthSigns })}
+        style={({ pressed }) => [s.tile, s.wideTile, pressed && { transform: [{ scale: 0.98 }] }]}>
+        <Icon name="season" size={26} color={colors.prune700} />
+        <View style={{ flex: 1 }}>
+          <Text style={[s.tileLabel, { textAlign: 'left' }]} maxFontSizeMultiplier={1.3}>{t('mobile.actions.season')}</Text>
+          <Text style={s.meta} numberOfLines={1} maxFontSizeMultiplier={1.3}>{t('mobile.season.tile_hint', { signs: monthSigns })}</Text>
+        </View>
+      </Pressable>
       <View style={s.tiles}>
         {NOTES.map((note) => (
           <Pressable key={note.choice} onPress={() => { haptics.tap(); onChoose(note.choice) }} accessibilityRole="button" accessibilityLabel={t(note.label)}
@@ -385,6 +438,12 @@ const s = StyleSheet.create({
   },
   tileLabel: { ...type.label, color: colors.loam800, textAlign: 'center' },
   themeTile: { flexBasis: '22%', minHeight: 72, paddingHorizontal: 4 },
+  wideTile: { flexDirection: 'row', justifyContent: 'flex-start', gap: space.md, paddingHorizontal: space.md, marginTop: space.sm, minHeight: 64 },
+  seasons: { flexDirection: 'row', gap: space.xs },
+  season: { flex: 1, alignItems: 'center', paddingVertical: space.sm, borderRadius: radius.md, borderWidth: 1, borderColor: colors.loam200, borderStyle: 'dashed' },
+  seasonSeen: { borderStyle: 'solid', borderColor: colors.leaf700, backgroundColor: colors.leaf50 },
+  seasonName: { ...type.label, color: colors.loam800 },
+  seasonCount: { fontFamily: fonts.display, fontSize: 24, lineHeight: 30, color: colors.loam400 },
   photo: { width: 64, height: 64, borderRadius: radius.md },
   photoEmpty: { backgroundColor: colors.loam100, alignItems: 'center', justifyContent: 'center' },
   bigDot: { width: 22, height: 22, borderRadius: 11, borderWidth: 3, borderColor: colors.white },

@@ -123,7 +123,7 @@ export function TagEditor({ tags, suggestions, onChange }: { tags: string[]; sug
   )
 }
 
-const SEASON_TINT: Record<Season, string> = {
+export const SEASON_TINT: Record<Season, string> = {
   winter: 'bg-loam-100/70',
   spring: 'bg-leaf-50',
   summer: 'bg-humus-50',

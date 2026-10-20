@@ -1,0 +1,85 @@
+# Workload of building a design (« Mise en œuvre »), read by
+# Implementation::WorkEstimate.
+#
+# Indicative hours for one person working by hand with ordinary tools, all
+# preparation included (marking out, digging, mulching, tidying up). They
+# only give an order of magnitude to set against the time the person has;
+# a phase's estimate can always be replaced by their own figure.
+#
+# For each kind: per (each | m | m2) and hours per unit. `machine: true`
+# marks a job done with a digger or a contractor: no hours are counted, the
+# plan says to book it instead. A kind missing here is listed as « à
+# estimer ».
+#
+# `season` says when the job is best done, for the plan's advice:
+#   dry      end of summer and autumn, when the soil carries machines and
+#            dug earth does not smear (August to October)
+#   dormant  the dormant season, for woody plants (November to March)
+#   spring   herbaceous plants and ground covers (March to May, or
+#            September to October)
+#   any      no particular season
+kinds:
+  # Water and earthworks.
+  pond: { machine: true, season: dry }
+  swale: { per: m, hours: 1.0, season: dry }
+  keyline: { per: m, hours: 1.0, season: dry }
+  ditch: { per: m, hours: 0.8, season: dry }
+  overflow_pipe: { per: m, hours: 0.5, season: dry }
+  water_tank: { per: each, hours: 6, season: any }
+  well: { machine: true, season: dry }
+  rain_garden: { per: m2, hours: 0.8, season: dry }
+  check_dam: { per: each, hours: 4, season: dry }
+  fascine: { per: m, hours: 1.0, season: dormant }
+  beaver_dam_analogue: { per: each, hours: 12, season: dry }
+  hedge_bank: { per: m, hours: 1.5, season: dormant }
+  half_moon: { per: each, hours: 1.0, season: dry }
+  grass_strip: { per: m, hours: 0.1, season: spring }
+  # Access.
+  path: { per: m, hours: 0.3, season: any }
+  track: { machine: true, season: dry }
+  gate: { per: each, hours: 4, season: any }
+  parking: { machine: true, season: dry }
+  # Structures.
+  greenhouse: { per: each, hours: 24, season: any }
+  shelter: { per: each, hours: 16, season: any }
+  shed: { per: each, hours: 24, season: any }
+  fruit_store: { per: each, hours: 24, season: any }
+  compost: { per: each, hours: 3, season: any }
+  raised_bed: { per: m2, hours: 0.6, season: any }
+  mound: { per: m2, hours: 0.8, season: dry }
+  terrace: { machine: true, season: dry }
+  playground: { per: m2, hours: 0.2, season: any }
+  fence: { per: m, hours: 0.3, season: any }
+  hedge: { per: m, hours: 0.6, season: dormant }
+  windbreak: { per: m, hours: 0.6, season: dormant }
+  # Animals.
+  paddock: { per: m2, hours: 0.01, season: any }
+  poultry_house: { per: each, hours: 8, season: any }
+  beehive: { per: each, hours: 2, season: any }
+  # Networks.
+  water_pipe: { per: m, hours: 0.4, season: dry }
+  electric_line: { per: m, hours: 0.4, season: dry }
+  gas_line: { machine: true, season: dry }
+  ethernet_line: { per: m, hours: 0.4, season: dry }
+  valve: { per: each, hours: 1, season: any }
+  meter: { per: each, hours: 1, season: any }
+  socket: { per: each, hours: 1, season: any }
+  tap: { per: each, hours: 1, season: any }
+
+# Planting, per plant, by strata (PlantVocabulary::STRATA): a hole, a
+# stake and a guard for a tree, mulch around each plant.
+plants:
+  canopy: { hours: 1.0, season: dormant }
+  sub_canopy: { hours: 0.8, season: dormant }
+  shrub: { hours: 0.4, season: dormant }
+  vine: { hours: 0.4, season: dormant }
+  herbaceous: { hours: 0.1, season: spring }
+  ground_cover: { hours: 0.05, season: spring }
+  root: { hours: 0.05, season: spring }
+  aquatic: { hours: 0.1, season: spring }
+
+# Months (1-12) of each season, for the advice.
+seasons:
+  dry: [8, 9, 10]
+  dormant: [11, 12, 1, 2, 3]
+  spring: [3, 4, 5, 9, 10]

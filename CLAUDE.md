@@ -29,7 +29,7 @@ Why the project exists, its principles and what it refuses: @INTENT.md (imported
 ## Layout
 
 - Pages: `app/frontend/pages/<controller_path>/<action>.tsx` (Inertia component name = `"#{controller_path}/#{action}"`). Default layout is chosen in `app/frontend/entrypoints/inertia.tsx` (AppLayout, PublicLayout, or none for full-screen pages).
-- UI primitives: `app/frontend/components/ui/*` (Button, Field/Input/Select/Textarea, Card, EmptyState, Flash). Reuse them.
+- UI primitives (« carnet »): `app/frontend/components/ui/*`, shown live with their states at `/admin/design`: Button/ButtonLink, IconButton, Field/Input/Select/Textarea, Card, Dialog, Sheet, `confirmAction()` (never the browser's `confirm()`), `toast()`, Tooltip, Pill, CompanionEmpty, HandNote, Skeleton, UsageMeter, PlaceSketch. Reuse them. The CI design guard (`npm run design:lint`, `script/design_lint.mjs`) refuses new `text-xs` (or any size under `text-sm`), `confirm(`, hex colours in `.tsx` and bare `<button>` outside `components/ui`; older departures are frozen in `config/design_lint_baseline.tsv`, lowered with `npm run design:lint -- --update` after a clean-up.
 - Shared props (`ApplicationController#inertia_share`): `currentUser`, `entitlements`, `env`. Types in `app/frontend/types/index.ts`.
 - JSON endpoints for the map editor live next to the pages (`respond_to :json` or dedicated `Maps::*Controller`), called with `api()` from `app/frontend/lib/api.ts` (CSRF handled).
 - **Map editor** (`pages/maps/show.tsx`): full-screen MapLibre (`map/MapView.tsx`) + `EditorContext` (`map/editor/EditorContext.tsx`). Panels and tools go through `useEditor()`: `features`, `createFeature`, `updateFeature` (optimistic locking with `lockVersion`), `deleteFeature`, `select`, `draw(shape)` (Terra Draw, resolves a GeoJSON geometry or null), `notify`, `regionLayers`, `entitlements`, `canEdit`.
@@ -58,6 +58,7 @@ Why the project exists, its principles and what it refuses: @INTENT.md (imported
 - `npx tsc -p tsconfig.app.json` — TypeScript must stay clean.
 - `bin/rails s` + `RAILS_ENV=development bin/vite build` (or `bin/vite dev`); sign in locally at `/dev/login?email=dev@semisto.org&return_to=/maps` (development only).
 - `CHROMIUM_PATH=/opt/pw-browsers/chromium node script/screenshot.mjs /maps/1 tmp/shot.png [--mobile]` — screenshot as the dev user (in the cloud sandbox, external tile servers and geoservices.wallonie.be are blocked; layout still renders).
+- Quality notebook (`docs/quality/`): six reference journeys replayed monthly by `script/journeys.mjs` (after `bin/rails journeys:prepare`) and scored on the five questions of the point of view. A journey with two « fail » in `docs/quality/journeys.yml` blocks new files in its domain (CI step « Journeys gate »); a pull request fixing it carries the line `Quality: <journey id>` in its description.
 
 ## Data and licences (non-negotiable)
 
