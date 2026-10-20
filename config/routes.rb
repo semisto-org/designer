@@ -70,6 +70,16 @@ Rails.application.routes.draw do
     get "p/:token/3d/files/:kind", to: "public_maps/reliefs#file", as: :public_map_relief_file, constraints: { kind: /grid|surface|landcover|texture/ }
     get "p/:token/3d/buildings", to: "public_maps/reliefs#buildings", as: :public_map_relief_buildings
   end
+  # « Et chez toi ? »: a map tried from an address, without an account.
+  get "essai", to: "trials#new", as: :new_trial
+  post "essai", to: "trials#create", as: :trials
+  get "essai/geocode", to: "trials#geocode", as: :trials_geocode
+  constraints token: /[A-Za-z0-9]{24,40}/ do
+    get "essai/:token", to: "trials#show", as: :trial
+    get "essai/:token/reading", to: "trials#reading", as: :trial_reading
+    post "essai/:token/parcel", to: "trials#parcel", as: :trial_parcel
+    post "essai/:token/keep", to: "trials#keep", as: :keep_trial
+  end
   # --- end collab ---
   # --- journey ---
   # Project sheet, journey checklists and requests sent to Semisto from a map;

@@ -41,6 +41,7 @@ module Mcp
           photos: map.photos.count,
           observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
+          publication: publication(map),
           implementation: implementation(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
@@ -66,6 +67,24 @@ module Mcp
 
       private
         MAX_BIOINDICATORS = 100
+
+        # The public view (« Publier »), for the owner only, as in the editor:
+        # its address, whether the map changed since the snapshot, and what
+        # it brought (views, trials started from « Et chez toi ? », accounts
+        # opened after it). Numbers, never names. Publishing stays a gesture
+        # of the owner in the panel.
+        def publication(map)
+          return nil unless @role == "owner"
+          publication = map.publication or return { published: false, note: t("notes.publication_none") }
+          {
+            published: publication.live?, url: "#{origin}#{publication.public_path}", title: publication.title,
+            version: publication.version, published_at: publication.published_at.iso8601,
+            unpublished_at: publication.unpublished_at&.iso8601, stale: publication.stale?,
+            shown_layers: publication.options["feature_layers"], hides_address: publication.options["hide_address"],
+            views: publication.views_count, places_tried: publication.trials.count, gardens_started: publication.sourced_users.count,
+            note: t("notes.publication")
+          }.compact
+        end
 
         # The implementation plan (« Mise en œuvre »): its phases in order,
         # with their season, workload and cost, and how much work is still

@@ -9,6 +9,8 @@ class User < ApplicationRecord
   AVATAR_SIZE = 256
 
   has_many :sessions, dependent: :destroy
+  # The public map that brought this account (a visit, or « Et chez toi ? » from it).
+  belongs_to :source_publication, class_name: "MapPublication", optional: true, inverse_of: :sourced_users
   has_many :organization_memberships, dependent: :destroy
   has_many :organizations, through: :organization_memberships
   has_many :map_memberships, dependent: :destroy

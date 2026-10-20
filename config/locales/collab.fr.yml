@@ -151,6 +151,24 @@ fr:
       preview_invalid: "L'aperçu du lien doit être une image PNG de moins de 4 Mo."
       preview: "Aperçu du lien"
       preview_hint: "C'est l'image que verront les personnes à qui tu envoies l'adresse (messagerie, réseaux sociaux, e-mail)."
+      audience:
+        views:
+          one: "%{count} personne a regardé ton jardin"
+          other: "%{count} personnes ont regardé ton jardin"
+        started:
+          one: "%{count} a commencé le sien"
+          other: "%{count} ont commencé le leur"
+        both: "%{seen}, %{started}."
+      video:
+        title: "Mon jardin dans 30 ans"
+        hint: "Une vidéo verticale de 15 secondes, pour une story ou WhatsApp : ton jardin de sa plantation à ses trente ans, saison après saison."
+        make: "Peindre la vidéo"
+        painting: "Je peins ton jardin… %{percent} %"
+        download: "Télécharger la vidéo"
+        again: "La repeindre"
+        unsupported: "Ce navigateur ne sait pas enregistrer de vidéo. Essaie avec Chrome, Edge ou Safari."
+        failed: "La vidéo n'a pas pu être peinte. Réessaie dans un instant."
+        no_plants: "La vidéo montre tes plantes qui poussent : publie la couche Plantes pour la peindre."
     joining:
       sign_in_first: "Connecte-toi pour rejoindre la carte « %{map} » : un lien te sera envoyé par e-mail, sans mot de passe."
       joined: "Bienvenue sur la carte « %{map} »."
@@ -200,6 +218,13 @@ fr:
       years_later:
         one: "dans 1 an"
         other: "dans %{count} ans"
+    video:
+      title: "Mon jardin dans 30 ans"
+      planted: "plantation"
+      year_n:
+        one: "%{count} an"
+        other: "%{count} ans"
+      cta: "Et chez toi ?"
     meta:
       area_place: "%{place} · Un jardin-forêt de %{area} m² en devenir. Fais glisser les années pour le voir pousser."
       area: "Un jardin-forêt de %{area} m² en devenir. Fais glisser les années pour le voir pousser."
