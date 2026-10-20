@@ -90,6 +90,7 @@ fr:
       count: "Nombre de plants"
       number: "Numéro"
       planted_on_precision: "Précision de la date"
+      functions: "Fonctions"
     precisions:
       year: "Année seulement"
       unknown: "Date inconnue"
