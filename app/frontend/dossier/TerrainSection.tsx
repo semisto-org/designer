@@ -23,7 +23,7 @@ export function TerrainSection({ dossier, number, isOwner }: { dossier: Dossier;
         <p><span className="text-loam-500">{t('dossier.terrain.parcels')}{'\u00a0: '}</span>{terrain.parcels.join(' · ')}</p>
       )}
       {terrain.identify && point && <LayerReadings mapId={dossier.map.id} point={point} identify={terrain.identify} />}
-      <Relief relief={terrain.relief} isOwner={isOwner} />
+      <Relief relief={terrain.relief} dossier={dossier} isOwner={isOwner} />
     </Section>
   )
 }
@@ -91,12 +91,12 @@ function LayerReadings({ mapId, point, identify }: {
   )
 }
 
-function Relief({ relief, isOwner }: { relief: Dossier['terrain']['relief']; isOwner: boolean }) {
+function Relief({ relief, dossier, isOwner }: { relief: Dossier['terrain']['relief']; dossier: Dossier; isOwner: boolean }) {
   if ('locked' in relief) {
     return (
       <div className="space-y-2 print:hidden">
         <SubTitle>{t('dossier.terrain.relief_title')}</SubTitle>
-        <LockedNote body={t('dossier.locked.terrain')} isOwner={isOwner} />
+        <LockedNote feature="dossier_terrain" dossier={dossier} isOwner={isOwner} />
       </div>
     )
   }

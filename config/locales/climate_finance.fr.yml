@@ -92,13 +92,9 @@ fr:
         heat: "chaleur"
         drought: "sécheresse"
     locked:
-      title: "Climat futur et vérification des plantes"
-      body: "Vois comment le climat de ton terrain évoluera d'ici 2050 et 2080, et quelles plantes de ta palette risquent de souffrir du froid, de la chaleur ou de la sécheresse."
       plants_count:
         one: "%{count} espèce de ta carte attend sa vérification."
         other: "%{count} espèces de ta carte attendent leur vérification."
-      included: "Inclus dans le forfait, avec les autres analyses du terrain."
-      cta: "Voir les formules"
     forecast:
       title: "Prévisions météo"
       soon: "Prévisions météo : bientôt disponibles."

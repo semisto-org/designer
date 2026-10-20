@@ -1,4 +1,7 @@
-<%= yield %>
+<% if @place %>« <%= @place[:name] %> »<% caption = mail_place_caption(@place) %><%= " (#{caption})" if caption.present? %>
+<%= @place[:url] %>
+
+<% end %><%= yield %>
 
 --
 <%= t("mailer.footer") %> <%= root_url %>

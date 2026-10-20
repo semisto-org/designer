@@ -2,10 +2,6 @@
 fr:
   relief:
     panel: "Eau et relief"
-    upsell:
-      title: "Comprendre l'eau et le relief"
-      body: "Le relief en 3D, la pluie et le ruissellement simulés, l'ombre du soleil et l'eau de pluie récupérable sur les toits font partie des analyses du forfait."
-      cta: "Voir les formules"
     errors:
       unavailable: "Le relief n'est pas encore disponible pour cette région."
       no_boundary: "Dessine d'abord le contour du terrain : le relief se télécharge autour de lui."

@@ -24,5 +24,6 @@ class MapTransferMailer < ApplicationMailer
       @from = transfer.from_user
       @to = transfer.to_user
       @url = map_url(@map)
+      show_place(@map)
     end
 end

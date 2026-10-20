@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Send } from 'lucide-react'
+import { Check, Copy, Send } from 'lucide-react'
 import { useState } from 'react'
 import { CopyField } from '@/components/CopyField'
 import { Button } from '@/components/ui/Button'
@@ -12,11 +12,14 @@ import type { ProjectFormLink as Link } from '@/types/journey'
  * The private link editors send to the people behind the project: it opens
  * the sheet's form only, without an account or the map. Create, copy,
  * reset (new address) or switch off; shows whether it was opened and sent.
+ * `compact` fits a narrow column: a copy button instead
+ * of the address, which would be cut there.
  */
-export function ProjectFormLink({ mapId, initial, className }: { mapId: number; initial: Link | null; className?: string }) {
+export function ProjectFormLink({ mapId, initial, className, compact = false }: { mapId: number; initial: Link | null; className?: string; compact?: boolean }) {
   const [link, setLink] = useState<Link | null>(initial)
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [copied, setCopied] = useState(false)
   const endpoint = `/maps/${mapId}/project/link`
 
   async function run(method: 'POST' | 'DELETE', path = '', confirmText?: string) {
@@ -33,6 +36,16 @@ export function ProjectFormLink({ mapId, initial, className }: { mapId: number; 
     }
   }
 
+  async function copy(url: string) {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
+
   const enabled = link?.enabled ?? false
   const status = link?.submittedAt
     ? t('journey.link.submitted', { when: relativeTime(link.submittedAt) })
@@ -46,8 +59,15 @@ export function ProjectFormLink({ mapId, initial, className }: { mapId: number; 
       <p className="mt-1 text-sm text-loam-600">{t('journey.link.intro')}</p>
       {link && enabled ? (
         <>
-          <CopyField value={link.url} className="mt-3" />
-          <p className={clsx('mt-2 text-xs', link.submittedAt ? 'font-medium text-leaf-700' : 'text-loam-500')}>{status}</p>
+          {compact ? (
+            <Button size="sm" variant="secondary" className="mt-3" onClick={() => void copy(link.url)}>
+              {copied ? <Check className="h-4 w-4 text-leaf-600" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
+              {t(copied ? 'journey.link.copied' : 'journey.link.copy')}
+            </Button>
+          ) : (
+            <CopyField value={link.url} className="mt-3" />
+          )}
+          <p className={clsx('mt-2 text-sm', link.submittedAt ? 'font-medium text-leaf-700' : 'text-loam-500')}>{status}</p>
           <div className="mt-2 flex flex-wrap gap-1">
             <Button size="sm" variant="ghost" disabled={busy} onClick={() => run('POST', '/reset', t('journey.link.confirm_reset'))}>
               {t('journey.link.reset')}
@@ -59,13 +79,13 @@ export function ProjectFormLink({ mapId, initial, className }: { mapId: number; 
         </>
       ) : (
         <div className="mt-3">
-          {link && <p className="mb-2 text-xs text-humus-700">{t('journey.link.disabled')}</p>}
+          {link && <p className="mb-2 text-sm text-humus-700">{t('journey.link.disabled')}</p>}
           <Button size="sm" variant="secondary" disabled={busy} onClick={() => run('POST')}>
             {t(link ? 'journey.link.enable' : 'journey.link.create')}
           </Button>
         </div>
       )}
-      {failed && <p className="mt-2 text-xs text-clay-600">{t('journey.link.error')}</p>}
+      {failed && <p className="mt-2 text-sm text-clay-600">{t('journey.link.error')}</p>}
     </section>
   )
 }

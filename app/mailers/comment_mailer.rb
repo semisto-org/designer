@@ -5,12 +5,14 @@ class CommentMailer < ApplicationMailer
   def mentioned(comment, user)
     prepare(comment, user)
     return if comment.deleted?
+    show_place(@map)
     mail to: user.email_address, subject: t(".subject", author: @author.display_name, title: @title)
   end
 
   def new_comment(comment, user)
     prepare(comment, user)
     return if comment.deleted?
+    show_place(@map)
     mail to: user.email_address, subject: t(".subject", author: @author.display_name, title: @title)
   end
 

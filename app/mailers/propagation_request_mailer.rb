@@ -10,6 +10,8 @@ class PropagationRequestMailer < ApplicationMailer
 
   def received
     @owner = params[:owner]
+    # Only to the place's owners: the requester never sees the place.
+    show_place(@map)
     mail to: @owner.email_address,
          subject: t(".subject", requester: @request.requester.display_name, plant: @request.plant_name)
   end
