@@ -6,6 +6,10 @@ module Collab
   # dropped HERE, at publication time, and never reaches the snapshot.
   class PublicSnapshot
     FORMAT = 1
+    # The dimensions the public 3D view digs water works with (ponds,
+    # swales, dams…): sizes only, nothing about who or why.
+    EARTHWORK_KINDS = %w[pond swale keyline ditch check_dam beaver_dam_analogue fascine hedge_bank half_moon grass_strip].freeze
+    EARTHWORK_PROPERTIES = %w[depth_m depth width_m width berm height_m material spacing_m diameter_m use cover].freeze
 
     def initialize(map, options)
       @map = map
@@ -63,23 +67,28 @@ module Collab
       def serialize(feature)
         properties = {
           "id" => feature.id, "layer" => feature.layer, "kind" => feature.kind,
-          "name" => feature.name, "style" => feature.style
+          "name" => (feature.name unless zone?(feature) && !@options["show_zone_names"]), "style" => feature.style
         }
+        properties.merge!(feature.properties.to_h.slice(*EARTHWORK_PROPERTIES)) if EARTHWORK_KINDS.include?(feature.kind)
         properties["notes"] = feature.notes if @options["show_notes"]
         { "type" => "Feature", "id" => feature.id, "geometry" => feature.geometry_geojson, "properties" => properties }
       end
 
       # How the published plants grow (Relief::GrowingPlants), for the year
-      # slider and the link preview: only the plants and patches the snapshot
-      # shows, without their own names or numbers.
+      # slider, the plants' numbered pastilles and the link preview: only the
+      # plants and patches the snapshot shows, without their own names.
       def growth
         ids = features.map { |feature| feature["id"] }.to_set
         data = Relief::GrowingPlants.new(@map).as_json
-        plants = data[:plants].select { |plant| ids.include?(plant[:id]) }.map { |plant| plant.except(:ownName, :number) }
+        plants = data[:plants].select { |plant| ids.include?(plant[:id]) }.map { |plant| plant.except(:ownName) }
         patches = data[:patches].select { |patch| ids.include?(patch[:id]) }.map { |patch| patch.except(:name) }
         return nil if plants.empty? && patches.empty?
         { "today" => data[:today], "origin" => data[:origin], "plants" => plants, "patches" => patches }.deep_stringify_keys
       end
+
+      # A named zone or path drawn with the « Zone » tool: its name often
+      # carries the designer's notes, so it stays private unless shown.
+      def zone?(feature) = feature.kind == "zone" || (feature.kind == "line" && feature.layer == "notes")
 
       def region_layer_keys
         scope = @map.region.catalogue.enabled.where(key: @options["region_layers"])

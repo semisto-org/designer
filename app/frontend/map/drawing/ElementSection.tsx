@@ -15,6 +15,8 @@ import type { ElementField } from '@/types/drawing'
 
 /** Library elements and generic shapes get this inspector section. */
 export function appliesToElement(feature: MapFeature): boolean {
+  // A sector is edited in its own panel, which keeps its arc and colour in step with its type.
+  if (feature.properties.kind === 'sector') return false
   return elementFor(feature.properties.kind) != null || GENERIC_KINDS.includes(feature.properties.kind)
 }
 

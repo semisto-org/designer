@@ -136,7 +136,8 @@ export async function renderPlan(cover: Dossier['cover'], { width, height, cadas
       window.setTimeout(resolve, RENDER_TIMEOUT_MS)
     })
     installBoundary(map, cover.boundary)
-    installFeatureLayers(map, cover.features)
+    // Sectors are drawn on their own page, around the terrain.
+    installFeatureLayers(map, { ...cover.features, features: cover.features.features.filter((f) => f.properties.kind !== 'sector') })
     installDrawingLayers(map)
     applyLayerVisibility(map, [], { activeOnly: true })
     installCrowns(map, crowns(cover))
@@ -157,4 +158,45 @@ export function scaleBar(image: PlanImage): { meters: number; percent: number } 
   const imageMeters = image.metersPerPx * image.widthPx
   const meters = steps.filter((m) => m <= imageMeters / 4).pop() ?? steps[0]
   return { meters, percent: (meters / imageMeters) * 100 }
+}
+
+/**
+ * The aerial photo alone (no drawing), centred on `center` at `metersPerPx`
+ * ground metres per CSS pixel: the background of the sector analysis, whose
+ * arcs and outline are drawn over it at known distances from the centre.
+ */
+export async function renderAerial(cover: Dossier['cover'], { width, height, center, metersPerPx }: {
+  width: number; height: number; center: [number, number]; metersPerPx: number
+}): Promise<string | null> {
+  if (!cover.base) return null
+  const container = document.createElement('div')
+  Object.assign(container.style, { position: 'fixed', left: '-20000px', top: '0', width: `${width}px`, height: `${height}px` })
+  document.body.appendChild(container)
+  const zoom = Math.log2((EARTH_CIRCUMFERENCE * Math.cos((center[1] * Math.PI) / 180)) / (512 * metersPerPx))
+  const map = new maplibregl.Map({
+    container,
+    style: baseStyle(cover, false),
+    center,
+    zoom,
+    interactive: false,
+    attributionControl: false,
+    pixelRatio: 2,
+    fadeDuration: 0,
+    maxZoom: 22,
+    canvasContextAttributes: { preserveDrawingBuffer: true },
+  })
+  const deadline = performance.now() + RENDER_TIMEOUT_MS
+  try {
+    await new Promise<void>((resolve) => {
+      if (map.style?._loaded) return resolve()
+      map.once('style.load', () => resolve())
+      window.setTimeout(resolve, RENDER_TIMEOUT_MS)
+    })
+    await until(map, () => map.loaded(), deadline)
+    await nextRender(map)
+    return map.getCanvas().toDataURL('image/jpeg', 0.88)
+  } finally {
+    map.remove()
+    container.remove()
+  }
 }

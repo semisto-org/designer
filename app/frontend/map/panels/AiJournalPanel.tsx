@@ -59,10 +59,12 @@ function describe(action: AiActionData): string {
   switch (action.tool) {
     case 'list_features': return t('ai_journal.actions.list_features', { count: n('features') })
     case 'propose_features': return t('ai_journal.actions.propose_features', { count: n('created') })
+    case 'propose_sectors': return t('ai_journal.actions.propose_sectors', { count: n('created') })
     case 'propose_feature_updates': return t('ai_journal.actions.propose_feature_updates', { count: n('created') })
     case 'propose_deletions': return t('ai_journal.actions.propose_deletions', { count: n('created') })
     case 'propose_palette': return t('ai_journal.actions.propose_palette', { count: n('created') })
     case 'propose_project_sheet': return t('ai_journal.actions.propose_project_sheet', { count: n('created') })
+    case 'propose_phases': return t('ai_journal.actions.propose_phases', { count: n('created') })
     case 'propose_bioindicators': return t('ai_journal.actions.propose_bioindicators', { count: n('created') })
     case 'propose_soil_results': return t('ai_journal.actions.propose_soil_results', { count: n('created') })
     case 'withdraw_draft': return t('ai_journal.actions.withdraw_draft', { count: n('withdrawn') })

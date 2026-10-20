@@ -96,6 +96,8 @@ export type PublicationOptions = {
   hide_networks: boolean
   hide_address: boolean
   show_notes: boolean
+  /** Names of zones and paths; off by default (they often carry private notes). */
+  show_zone_names?: boolean
   /** The newest drone view (drone area); off by default. */
   show_aerial_view?: boolean
 }
@@ -170,4 +172,6 @@ export type PublicMapProps = {
   layers: PublicLayer[]
   /** The drone view the owner chose to show (drone area): tiles straight from Semisto's host. */
   aerialView?: AerialView | null
+  /** The simplified 3D view (/p/:token/3d), when the terrain's relief is there. */
+  reliefPath?: string | null
 }

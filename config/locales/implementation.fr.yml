@@ -1,0 +1,131 @@
+fr:
+  activerecord:
+    models:
+      implementation_phase: "Phase"
+    attributes:
+      implementation_phase:
+        name: "Le nom de la phase"
+        starts_on: "Le début"
+        ends_on: "La fin"
+        notes: "Les notes"
+        hours_override: "Les heures"
+        other_costs_cents: "Les autres frais"
+    errors:
+      models:
+        implementation_phase:
+          attributes:
+            ends_on:
+              after_start: "doit venir après le début"
+          too_many: "Une carte compte au plus 20 phases."
+  implementation:
+    page_title: "Mise en œuvre · %{map}"
+    title: "Mise en œuvre"
+    intro: "Un jardin-forêt se construit par étapes, chacune à sa saison : l'eau et la terre quand le sol est sec, les haies et les arbres pendant le repos de la végétation, en commençant près de la maison. Range ici ce qu'il reste à faire, phase par phase, et vois si c'est tenable avec ton temps et ton budget."
+    read_only: "Tu peux lire ce plan. Pour le modifier, demande à un éditeur de la carte."
+    errors:
+      generic: "Ça n'a pas marché. Réessaie dans un instant."
+      stale: "Quelqu'un vient de modifier cette phase. Voici sa dernière version."
+    totals:
+      hours: "≈ %{hours} h de travail"
+      cost: "%{cost} prévus"
+      progress: "%{done} sur %{count} réalisés"
+    sheet:
+      hours_per_week: "Ta fiche projet annonce %{hours} h par semaine."
+      seasons: "Disponible : %{seasons}."
+      missing: "Dis dans la fiche projet combien d'heures par semaine tu peux donner, et quand : le plan te dira si chaque phase est tenable."
+      open: "Ouvrir la fiche projet"
+      budget: "Budget de départ annoncé : jusqu'à %{cap}"
+    seasons:
+      winter: "hiver"
+      spring: "printemps"
+      summer: "été"
+      autumn: "automne"
+    empty:
+      title: "Pas encore de phases"
+      body: "Terranova peut ranger ton design dans l'ordre d'un permaculteur : l'eau, la terre et les accès d'abord, puis les haies, les arbres de structure et leurs plantes de soutien, les strates basses au printemps, et les fruitiers l'hiver suivant, quand l'abri est en place."
+      nothing: "Il n'y a encore rien « En projet » sur la carte. Dessine ton design, ou marque « En projet » ce qui reste à faire."
+      propose: "Proposer un phasage"
+      add: "Créer une phase moi-même"
+    propose_again: "Ranger le reste"
+    add_phase: "Ajouter une phase"
+    new_phase_name: "Nouvelle phase"
+    proposed: "%{assigned} éléments rangés dans %{created} nouvelles phases."
+    proposed_none: "%{assigned} éléments rangés dans les phases existantes."
+    timeline:
+      title: "Le calendrier des travaux"
+      planting_window: "Plantation à racines nues (novembre à mars)"
+    phase:
+      from_to: "%{from} → %{to}"
+      starts_on: "Début"
+      ends_on: "Fin"
+      notes: "Notes"
+      notes_placeholder: "Qui aide, quel matériel louer, où commander les plants…"
+      hours: "Travail"
+      hours_estimate: "≈ %{hours} h estimées"
+      hours_override: "Mon estimation (h)"
+      hours_override_hint: "Remplace l'estimation de Terranova, qui compte le travail à la main."
+      available: "%{hours} h disponibles sur la période"
+      cost: "Budget"
+      plants_cost: "Plants : %{cost}"
+      unpriced: "%{count} plants sans prix dans la palette"
+      other_costs: "Autres frais (€)"
+      other_costs_hint: "Location de pelleteuse, piquets, paillage, clôture…"
+      progress: "%{done} sur %{count} réalisés"
+      empty: "Rien dans cette phase pour l'instant."
+      delete: "Supprimer la phase"
+      delete_confirm: "Supprimer « %{name} » ?"
+      delete_body: "Ses éléments restent sur la carte, hors phase."
+      rename: "Nom de la phase"
+      details: "Dates, notes et estimations"
+    groups:
+      done: "%{done} faits"
+      machine: "À la machine"
+      unknown: "À estimer"
+      hours: "≈ %{hours} h"
+      move: "Déplacer vers…"
+      put: "Mettre dans…"
+      none: "Hors phase"
+      unknown_plant: "Plante sans espèce"
+      per:
+        m: "%{quantity} m"
+        m2: "%{quantity} m²"
+    unassigned:
+      title: "Pas encore dans une phase"
+      body: "Ce qu'il reste à faire et qui n'a pas encore sa saison."
+    advice:
+      season:
+        dry: "%{count} chantiers de terre ou d'eau tombent hors de la fin d'été et de l'automne. Creuse quand le sol est sec : il porte les engins, et la terre ne se tasse pas."
+        dormant: "%{count} haies, arbres ou arbustes tombent hors du repos de la végétation. Plante-les de novembre à mars : à racines nues, ils reprennent mieux et coûtent moins cher."
+        spring: "%{count} vivaces ou couvre-sols tombent hors du printemps et du début d'automne, quand le sol est encore chaud et humide."
+      machine:
+        one: "Un chantier se fait à la machine : réserve la pelleteuse ou l'entrepreneur tôt, pour la fin d'été."
+        other: "%{count} chantiers se font à la machine : réserve la pelleteuse ou l'entrepreneur tôt, pour la fin d'été."
+      time: "Cette phase demande environ %{weeks} semaines à ton rythme, plus que la période ne le permet (%{available} h disponibles). Étale-la, fais-toi aider, ou commence par un coin plus petit près de la maison."
+      availability: "Cette phase tombe à une saison où tu as dit ne pas être disponible (%{seasons})."
+      drawn_as_existing:
+        one: "Un élément de ton design est dessiné comme s'il était déjà là. Ce qui reste à faire doit être « En projet » pour entrer dans le plan."
+        other: "%{count} éléments de ton design sont dessinés comme s'ils étaient déjà là. Ce qui reste à faire doit être « En projet » pour entrer dans le plan."
+      drawn_as_existing_action: "Les passer « En projet »"
+      budget: "La première année coûte environ %{cost}, plus que le budget de départ de ta fiche projet (%{cap}). Tu peux reporter une partie à l'année suivante."
+    proposal:
+      phases:
+        earth: "L'eau, la terre et les accès"
+        structure: "Haies, brise-vent et arbres de structure"
+        understory: "Couvre-sols et vivaces"
+        fruit: "Fruitiers et arbustes"
+      notes:
+        earth: "Fin d'été et automne : le sol est sec, il porte les engins et se travaille sans se tasser. Mares, baissières, chemins, buttes et abris d'abord, pour que l'eau soit en place avant les plantes."
+        structure: "Premier hiver : les haies, les brise-vent et les grands arbres prennent le plus de temps à pousser. Les fixatrices d'azote et les pionnières plantées avec eux abriteront et nourriront les fruitiers."
+        understory: "Printemps : les vivaces et les couvre-sols ferment le sol au pied des haies et des arbres, avant les chaleurs."
+        fruit: "Hiver suivant : les fruitiers et les arbustes arrivent sous l'abri des plantes de soutien, qui ont eu un an pour s'installer."
+    drafts:
+      title: "Proposé par ton IA"
+      why: "Pourquoi :"
+      accept: "Accepter la phase"
+      reject: "Refuser"
+    section:
+      title: "Mise en œuvre"
+      phase: "Phase de travaux"
+      none: "Pas encore de phase"
+      open: "Voir le plan de mise en œuvre"
+      no_phases: "Aucune phase pour l'instant."

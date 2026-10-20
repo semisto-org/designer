@@ -63,6 +63,8 @@ En haut de la vue publique, le bouton **Et chez toi ?** invite tes visiteurs à 
 
 Le panneau **Publier** te dit combien de personnes ont regardé ton jardin, et combien ont commencé le leur après l'avoir vu. Ce sont des nombres, jamais des noms : tu ne sais pas qui, et eux ne savent rien de toi de plus que ce que la vue montre. Les visites des personnes de ta carte et des robots qui fabriquent les aperçus de lien ne comptent pas.
 
+Ton IA connectée à Terranova les lit aussi : demande-lui si ta vue est à jour, combien de personnes l'ont regardée, ou l'adresse à partager. Elle ne publie jamais à ta place.
+
 ## Une photo, pas un direct
 
 La vue publiée est une **photo de la carte** prise au moment où tu publies. Si tu continues à dessiner, le panneau te prévient : « La carte a changé depuis la publication ». Touche **Mettre à jour la vue publiée** : l'adresse ne change pas, et le numéro de version augmente.
