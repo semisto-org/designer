@@ -16,6 +16,11 @@
 #   fields    editable properties: key, type (number | integer | select | boolean | text),
 #             unit, min, max, step, options (select)
 #   computed  derived values shown in the inspector (formulas in map/drawing/computed.ts)
+#   functions what the element does in the design (ElementFunctions::FUNCTIONS),
+#             proposed for a new element; a feature's `properties.functions` overrides them.
+#             Kinds without this key (paths, networks, notes) are left out of the functions review
+#   needs     what it asks of the rest of the place (ElementFunctions::RESOURCES)
+#   yields    what it gives the rest of the place (a roof gives water, a hedge wood and mulch)
 #   pickable  false when the kind is created by a tool, not from the library
 #   contour   true when the line can follow the contour through a clicked point
 #             (« Suivre la courbe », from the map's relief)
@@ -29,6 +34,8 @@ layers:
     elements:
       building:
         geometry: Polygon
+        functions: [microclimate]
+        yields: [water]
         icon: house
         color: "#6e6355"
         fill: { opacity: 0.55 }
@@ -41,6 +48,8 @@ layers:
           - { key: dwelling, type: boolean }
       existing_tree:
         geometry: Point
+        functions: [shade, habitat, wood]
+        yields: [wood, organic_matter]
         icon: tree-deciduous
         color: "#58684c"
         crown: crown_diameter_m
@@ -54,6 +63,8 @@ layers:
           - { key: keep, type: boolean }
       existing_hedge:
         geometry: LineString
+        functions: [windbreak, habitat, wood]
+        yields: [wood, organic_matter]
         icon: shrub
         color: "#58684c"
         line: { width: 6, opacity: 0.85 }
@@ -64,6 +75,8 @@ layers:
           - { key: width_m, type: number, unit: m, min: 0, max: 20, step: 0.5 }
       wall:
         geometry: LineString
+        functions: [microclimate, windbreak]
+        yields: [heat]
         icon: brick-wall
         color: "#554c3f"
         line: { width: 4 }
@@ -80,6 +93,8 @@ layers:
           - { key: height_m, type: number, unit: m, min: 0, max: 50, step: 0.1 }
       wet_area:
         geometry: Polygon
+        functions: [water, habitat]
+        yields: [water]
         icon: droplets
         color: "#3b7ea1"
         fill: { opacity: 0.18, pattern: hatch }
@@ -107,6 +122,8 @@ layers:
     elements:
       pond:
         geometry: Polygon
+        functions: [water, habitat, microclimate, fire_protection]
+        yields: [water, heat]
         icon: waves
         color: "#2b7bb9"
         fill: { opacity: 0.45 }
@@ -118,6 +135,8 @@ layers:
         computed: [pond_volume]
       swale:
         geometry: LineString
+        functions: [water, soil_protection]
+        yields: [water]
         contour: true
         icon: spline
         color: "#2b7bb9"
@@ -129,6 +148,8 @@ layers:
         computed: [swale_volume]
       keyline:
         geometry: LineString
+        functions: [water, soil_protection]
+        yields: [water]
         contour: true
         icon: waves
         color: "#2b7bb9"
@@ -142,6 +163,8 @@ layers:
         computed: [swale_volume]
       ditch:
         geometry: LineString
+        functions: [water]
+        yields: [water]
         icon: route
         color: "#1f5f8b"
         line: { width: 3, dash: [3, 1] }
@@ -162,6 +185,9 @@ layers:
           - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
       water_tank:
         geometry: Point
+        functions: [water, fire_protection]
+        needs: [water]
+        yields: [water]
         icon: cylinder
         color: "#2b7bb9"
         defaults: { capacity_l: 5000, tank_type: buried }
@@ -170,6 +196,8 @@ layers:
           - { key: tank_type, type: select, options: [buried, above_ground, ibc] }
       well:
         geometry: Point
+        functions: [water]
+        yields: [water]
         icon: circle-dot
         color: "#1f5f8b"
         fields:
@@ -177,6 +205,8 @@ layers:
           - { key: potable, type: boolean }
       spring:
         geometry: Point
+        functions: [water, habitat]
+        yields: [water]
         icon: droplet
         color: "#2b7bb9"
         defaults: { permanent: true }
@@ -185,6 +215,8 @@ layers:
           - { key: permanent, type: boolean }
       rain_garden:
         geometry: Polygon
+        functions: [water, habitat]
+        needs: [water]
         icon: cloud-rain
         color: "#4a90c2"
         fill: { opacity: 0.2, pattern: dots }
@@ -195,6 +227,7 @@ layers:
         computed: [rain_garden_volume]
       check_dam:
         geometry: LineString
+        functions: [water, soil_protection]
         icon: brick-wall
         color: "#1f5f8b"
         line: { width: 6, casing: "#ffffff" }
@@ -204,6 +237,8 @@ layers:
           - { key: material, type: select, options: [dry_stone, gabion, wood, brush] }
       fascine:
         geometry: LineString
+        functions: [soil_protection, water]
+        needs: [wood]
         contour: true
         icon: logs
         color: "#7a5a3a"
@@ -213,6 +248,8 @@ layers:
           - { key: height_m, type: number, unit: m, min: 0.1, max: 1, step: 0.05 }
       beaver_dam_analogue:
         geometry: LineString
+        functions: [water, habitat]
+        needs: [wood]
         icon: dam
         color: "#6b4f2f"
         line: { width: 7, casing: "#ffffff" }
@@ -221,6 +258,8 @@ layers:
           - { key: height_m, type: number, unit: m, min: 0.2, max: 1.5, step: 0.05 }
       hedge_bank:
         geometry: LineString
+        functions: [water, windbreak, habitat, soil_protection]
+        yields: [wood, organic_matter]
         contour: true
         icon: shrub
         color: "#3d7d42"
@@ -234,6 +273,7 @@ layers:
         computed: [bank_soil, hedge_plants]
       half_moon:
         geometry: [Point, LineString]
+        functions: [water, soil_protection]
         contour: true
         icon: moon
         color: "#2b7bb9"
@@ -246,6 +286,8 @@ layers:
         computed: [half_moon_count, half_moon_volume]
       grass_strip:
         geometry: Polygon
+        functions: [soil_protection, water]
+        yields: [organic_matter]
         icon: sprout
         color: "#6f9a4c"
         fill: { opacity: 0.3, pattern: dots }
@@ -318,6 +360,9 @@ layers:
     elements:
       greenhouse:
         geometry: Polygon
+        functions: [food, microclimate]
+        needs: [water, compost]
+        yields: [food, heat]
         icon: thermometer-sun
         color: "#5b5781"
         fill: { opacity: 0.3, pattern: hatch }
@@ -352,6 +397,9 @@ layers:
           - { key: store_type, type: select, options: [cellar, cold_room, barn, shed, fridge, other] }
       compost:
         geometry: Point
+        functions: [fertility]
+        needs: [organic_matter, water]
+        yields: [compost, heat]
         icon: recycle
         color: "#6e6355"
         defaults: { compost_type: bins, bins: 3 }
@@ -360,6 +408,9 @@ layers:
           - { key: bins, type: integer, min: 0, max: 20 }
       raised_bed:
         geometry: Polygon
+        functions: [food]
+        needs: [water, compost]
+        yields: [food]
         icon: rectangle-horizontal
         color: "#8a6f47"
         fill: { opacity: 0.4 }
@@ -369,6 +420,9 @@ layers:
         computed: [raised_bed_soil]
       mound:
         geometry: Polygon
+        functions: [food, fertility, microclimate]
+        needs: [wood, organic_matter]
+        yields: [food]
         icon: mountain
         color: "#8b5e3c"
         fill: { opacity: 0.35, pattern: dots }
@@ -378,6 +432,8 @@ layers:
           - { key: purpose, type: select, options: [growing, hedge_bank, windbreak, noise, play] }
       terrace:
         geometry: Polygon
+        functions: [soil_protection, food, microclimate]
+        yields: [heat]
         icon: armchair
         color: "#726b9f"
         fill: { opacity: 0.3, pattern: dots }
@@ -399,6 +455,8 @@ layers:
           - { key: fence_type, type: select, options: [wire_mesh, electric, wood, chestnut_paling, wire] }
       hedge:
         geometry: LineString
+        functions: [windbreak, habitat, food, pollination]
+        yields: [food, wood, organic_matter]
         contour: true
         icon: trees
         color: "#3d7d42"
@@ -411,6 +469,8 @@ layers:
         computed: [hedge_plants]
       windbreak:
         geometry: LineString
+        functions: [windbreak, habitat, wood, microclimate]
+        yields: [wood, organic_matter]
         contour: true
         icon: wind
         color: "#2f6334"
@@ -427,6 +487,9 @@ layers:
     elements:
       paddock:
         geometry: Polygon
+        functions: [food, fertility]
+        needs: [water, food]
+        yields: [food, compost]
         icon: paw-print
         color: "#946614"
         fill: { opacity: 0.18, pattern: hatch }
@@ -439,6 +502,9 @@ layers:
         computed: [paddock_density]
       poultry_house:
         geometry: Point
+        functions: [food, fertility]
+        needs: [water, food]
+        yields: [food, compost]
         icon: egg
         color: "#946614"
         defaults: { species: chickens, capacity: 6 }
@@ -447,6 +513,8 @@ layers:
           - { key: capacity, type: integer, min: 0, max: 1000 }
       beehive:
         geometry: Point
+        functions: [pollination, food]
+        yields: [food]
         icon: hexagon
         color: "#d9a527"
         defaults: { hives: 1 }

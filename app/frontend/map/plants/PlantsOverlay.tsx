@@ -14,7 +14,8 @@ import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
 import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
 import { plantLabelStyleStore, usePlantLabelStyle } from '@/map/plants/labelStyle'
-import { drawsCrown, plantStrata, STRATA_COLORS } from '@/map/plants/strata'
+import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/plants/strata'
+import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
 import { inkOn } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
@@ -24,7 +25,8 @@ const CROWNS = 'plant-crowns'
 const LABELS = 'plant-labels'
 const NUMBERS = 'plant-numbers'
 
-type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean }
+// `reach`: the hatched disc of a support plant, the ground it feeds (not a crown).
+type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean; support: boolean; reach?: boolean }
 // `featureId` makes crowns and names select their plant (see map/featurePick).
 type LabelProps = { featureId: number; label: string; planted: boolean; minZoom: number; rank: number }
 // A plant's number written inside its point (« Numéro » mode).
@@ -33,6 +35,14 @@ type NumberProps = { featureId: number; number: string; color: string; ink: stri
 type PointColors = Map<number, string>
 
 const PLANTED = ['get', 'planted'] as unknown as boolean
+const NOT_REACH = ['!', ['to-boolean', ['get', 'reach']]] as never
+
+/**
+ * The ground a support plant feeds (m, radius): its cuttings are dropped and
+ * its roots shed nitrogen around it, further than its crown when it is cut
+ * back every year.
+ */
+const SUPPORT_REACH_M = 2
 
 /**
  * Adult crowns as real-size circles (metres), from each plant's species.
@@ -97,6 +107,14 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     if (!drawsCrown(strata)) continue
     const radiusM = Math.max(trainedCrown(species.crownM, trainingProperty(feature), strata, graftProperty(feature, strata)) / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
+    const support = plantIsSupport(feature, data)
+    if (support) {
+      const reach = circle(feature.geometry.coordinates, Math.max(radiusM, SUPPORT_REACH_M) / 1000, { steps: 40, units: 'kilometers' })
+      crowns.push({
+        ...reach,
+        properties: { featureId: feature.properties.id, color: STRATA_COLORS[strata], planted: !isPlannedPlant(feature.properties), selected: false, support, reach: true },
+      })
+    }
     crowns.push({
       ...polygon,
       properties: {
@@ -104,6 +122,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
         color: STRATA_COLORS[strata],
         planted: !isPlannedPlant(feature.properties),
         selected: editor.selectedId === feature.properties.id || editor.selection.includes(feature.properties.id),
+        support,
       },
     })
   }
@@ -125,6 +144,7 @@ const plantLabel = (() => {
 
 function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   ensureLabelBackground(map)
+  ensureSupportHatch(map)
   colorPoints(map, data.points)
   // Plants are named here, by crown size: not a second time by the features layer.
   setBaseFilter(map, 'features-label', featureLabelFilter({ withPlants: false }))
@@ -148,12 +168,39 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-fill`,
     type: 'fill',
     source: CROWNS,
+    filter: NOT_REACH,
     paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, 0.45, 0.15] },
+  }, before)
+  // Support plants: the ground they feed is hatched in their strata colour,
+  // as a planting plan marks what is there for a while: they build the
+  // soil around the fruit trees, then give way.
+  map.addLayer({
+    id: `${CROWNS}-reach`,
+    type: 'fill',
+    source: CROWNS,
+    filter: ['to-boolean', ['get', 'reach']],
+    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, 0.3, 0.12] },
+  }, before)
+  map.addLayer({
+    id: `${CROWNS}-support`,
+    type: 'fill',
+    source: CROWNS,
+    filter: ['to-boolean', ['get', 'reach']],
+    paint: { 'fill-pattern': SUPPORT_HATCH, 'fill-opacity': ['case', PLANTED, 0.9, 0.5] },
+  }, before)
+  map.addLayer({
+    id: `${CROWNS}-reach-line`,
+    type: 'line',
+    source: CROWNS,
+    filter: ['to-boolean', ['get', 'reach']],
+    // design-lint-ok: MapLibre paint takes colour values, not theme classes
+    paint: { 'line-color': '#ffffff', 'line-width': 1.5, 'line-opacity': ['case', PLANTED, 0.9, 0.5], 'line-dasharray': ['literal', [2, 2]] },
   }, before)
   map.addLayer({
     id: `${CROWNS}-casing`,
     type: 'line',
     source: CROWNS,
+    filter: NOT_REACH,
     paint: {
       'line-color': '#ffffff',
       'line-width': ['case', ['get', 'selected'], 5.5, 4],
@@ -164,6 +211,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-line`,
     type: 'line',
     source: CROWNS,
+    filter: NOT_REACH,
     paint: {
       'line-color': ['get', 'color'],
       'line-width': ['case', ['get', 'selected'], 3, 2],

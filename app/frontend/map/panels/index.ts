@@ -1,4 +1,4 @@
-import { Bot, Camera, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -90,6 +90,9 @@ import TagsSection from '@/map/tags/TagsSection'
 import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
 import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
 import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
+import FunctionsPanel from '@/map/functions/FunctionsPanel'
+import FunctionsSection from '@/map/functions/FunctionsSection'
+import { appliesToFunctions } from '@/map/functions/store'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
@@ -116,6 +119,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
+  { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: FunctionsPanel, order: 60 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
   // 4. Planter
   { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: PlantListPanel, order: 10 },
@@ -157,6 +161,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
   { id: 'keyline', applies: appliesToKeyline, component: KeylineSection, order: 23 },
   { id: 'storm', applies: appliesToStorm, component: StormSection, order: 18 },
+  { id: 'functions', applies: appliesToFunctions, component: FunctionsSection, order: 26 },
 ]
 
 // Top bar actions (right side), e.g. share, export.

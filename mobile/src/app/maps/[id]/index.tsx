@@ -3,7 +3,7 @@
 // month asks and what grows around; « Noter ici » opens what one can note;
 // a feature tapped on the map or in the list fills it with that feature.
 // The map itself works offline from the downloaded copy.
-import { Camera, Map, UserLocation, type CameraRef } from '@maplibre/maplibre-react-native'
+import { Camera, Map, UserLocation, type CameraRef, type MapRef } from '@maplibre/maplibre-react-native'
 import * as Location from 'expo-location'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -13,7 +13,7 @@ import { display, useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
 import { memoryOf } from '@/lib/memory'
 import { observationYear, signsToLookFor } from '@/lib/season'
-import { anchor } from '@/lib/geo'
+import { anchor, boundsOf } from '@/lib/geo'
 import { t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
 import { pickFeatureId } from '@/lib/pick'
@@ -46,6 +46,7 @@ export default function Terrain() {
   const pending = useOutbox().ops.filter((op) => op.mapId === mapId)
   const insets = useSafeAreaInsets()
   const camera = useRef<CameraRef>(null)
+  const mapRef = useRef<MapRef>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [me, setMe] = useState<Position | null>(null)
   const [located, setLocated] = useState<'yes' | 'pending' | 'denied'>('pending')
@@ -127,7 +128,8 @@ export default function Terrain() {
   const editable = canEdit(bundle.map)
   const failed = pending.filter((op) => op.error).length
   const waiting = pending.length - failed
-  const bbox = bundle.map.bbox
+  // On arrival the place fills the screen: its outline, else everything drawn on it.
+  const bbox = boundsOf(bundle.map.boundary) ?? bundle.map.bbox
   // Online first: a quiet « à jour » most of the time; the outbox speaks only when it holds something.
   const sync = failed > 0
     ? { icon: 'error' as const, color: colors.clay700, label: t('mobile.terrain.failed', { count: failed }) }
@@ -222,13 +224,13 @@ export default function Terrain() {
 
   return (
     <View style={s.fill}>
-      <Map style={s.fill} mapStyle={mapStyle} compass compassPosition={{ top: insets.top + 64, right: 12 }}
-        attributionPosition={{ top: insets.top + 64, left: 8 }} logo={false}
+      <Map ref={mapRef} style={s.fill} mapStyle={mapStyle} compass compassPosition={{ top: insets.top + 72, right: 12 }}
+        attribution={false} logo={false}
         onPress={(e) => { if (!('features' in e.nativeEvent && pickFeatureId(e.nativeEvent.features) !== null)) unselect() }}
         onRegionWillChange={(e) => { if (e.nativeEvent.userInteraction) setFollow(false) }}>
         <Camera
           ref={camera}
-          initialViewState={bbox ? { bounds: bbox, padding: { top: 80, bottom: 220, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }}
+          initialViewState={bbox ? { bounds: bbox, padding: { top: insets.top + 88, bottom: 200, left: 24, right: 24 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }}
           trackUserLocation={follow ? 'heading' : undefined}
           onTrackUserLocationChange={(e) => setFollow(!!e.nativeEvent.trackUserLocation)}
         />
@@ -256,6 +258,12 @@ export default function Terrain() {
           onPress={() => go('/maps/[id]/display')} />
         <IconButton icon="follow" label={t('mobile.terrain.follow')} active={follow} onPress={() => setFollow((v) => !v)} />
       </View>
+
+      {/* The map's sources (aerial photo, base map), on paper like the rest, under the back button. */}
+      <Pressable style={[s.credits, { top: insets.top + 72 }]} onPress={() => mapRef.current?.showAttribution()} hitSlop={6}
+        accessibilityRole="button" accessibilityLabel={t('mobile.terrain.credits')}>
+        <Icon name="info" size={18} color={colors.loam600} />
+      </Pressable>
 
       <Sheet
         level={level}
@@ -300,6 +308,10 @@ export default function Terrain() {
 const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.loam50 },
   center: { alignItems: 'center', justifyContent: 'center' },
+  credits: {
+    position: 'absolute', left: space.md, width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.loam200, ...shadows.xs,
+  },
   header: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md },
   titleChip: {
     flex: 1, minHeight: touch.field, justifyContent: 'center', paddingHorizontal: space.md, paddingVertical: 6,

@@ -151,6 +151,7 @@ class FeatureUpdateDraft < ApplicationRecord
       when "properties.graft_form" then I18n.t("plant_feature.graft_form_names.#{value}", default: nil)
       when "properties.rootstock_vigor" then I18n.t("plant_feature.vigor_names.#{value}", default: nil)
       when "properties.planted_on_precision" then I18n.t("feature_updates.precisions.#{value}", default: nil)
+      when "properties.functions" then Array(value).map { |f| I18n.t("element_functions.names.#{f}", default: f.to_s) }.join(", ").presence
       end
     end
     diff.map { |c| c.merge({ beforeLabel: name.(c[:field], c[:before]), afterLabel: name.(c[:field], c[:after]) }.compact) }

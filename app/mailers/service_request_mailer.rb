@@ -24,6 +24,7 @@ class ServiceRequestMailer < ApplicationMailer
       @map = service_request.map
       @map_url = map_url(@map)
       @summary = ServiceRequest::Summary.new(service_request).lines
+      show_place(@map)
     end
 
     # "Label : value", with multi-line values (plant lists) indented below the label.

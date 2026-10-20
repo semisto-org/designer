@@ -1,5 +1,7 @@
 <p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
 <p><%= t(".body", plan: @plan, start: french_date(@grant.starts_at), end: french_date(@grant.ends_at)) %></p>
+<%= render "mail_places", places: @place_names %>
 <p><%= t(".payment") %></p>
-<p><a href="<%= @maps_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:8px;text-decoration:none"><%= t(".cta") %></a></p>
+<p><a href="<%= @maps_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:999px;text-decoration:none;font-weight:600"><%= t(".cta") %></a></p>
+<%= render "mail_supports" %>
 <p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

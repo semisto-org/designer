@@ -155,6 +155,48 @@ fr:
     drone:
       title: "Missions drone commandées"
       body: "Commandée le %{date}. Semisto te contacte pour organiser la prise de vue."
+    return: "Revenir là où tu étais"
+    supports: "Semisto est une ASBL. Ce que tu paies fait vivre Terranova et son code ouvert à tous, et soutient le travail de Semisto pour que des jardins-forêts poussent partout en Europe."
+    places:
+      kicker: "Ce que %{plan} fait pour tes lieux"
+      kicker_free: "Ce que la formule gratuite fait pour ton lieu"
+      title: "Ta formule : %{plan}"
+      maps_title: "Tes lieux actifs"
+      empty: "Pas encore de lieu dessiné. Ta première carte est gratuite, et elle le reste."
+      empty_cta: "Commencer ma première carte"
+      read_only: "En lecture seule"
+      no_outline: "Contour à tracer"
+      more:
+        one: "Et %{count} autre carte active."
+        other: "Et %{count} autres cartes actives."
+      show_all: "Voir les %{count} cartes actives"
+      archived:
+        one: "Plus %{count} carte archivée, lisible quand tu veux et hors compte."
+        other: "Plus %{count} cartes archivées, lisibles quand tu veux et hors compte."
+      meters:
+        maps: "Cartes actives"
+        maps_hint: "Les cartes archivées ne comptent pas."
+        storage: "Photos et documents"
+        storage_hint: "Sur toutes les cartes de ta formule."
+        renderings: "« Mettre en image » ce mois-ci"
+        renderings_hint: "Le compteur repart à zéro le %{date}."
+        renderings_none: "Compris dans Home, Pro et Team."
+        unlimited: "Sans limite pendant la bêta."
+    stop:
+      question: "Et si j'arrête ?"
+      free: "Ta carte gratuite reste à toi, sans date de fin : rien n'expire."
+      pass: "Rien n'est prélevé : Home s'arrête d'elle-même le %{date} si tu ne la renouvelles pas."
+      subscription: "Tu résilies quand tu veux dans « Gérer l'abonnement » ; tout reste ouvert jusqu'au %{date}."
+      grant: "Ta formule s'arrête le %{date} si elle n'est pas renouvelée."
+      kept: "« %{name} », ta carte la plus ancienne, reste modifiable comme aujourd'hui."
+      others_read_only:
+        one: "L'autre passe en lecture seule : lisible, exportable et commentable."
+        other: "Les %{count} autres passent en lecture seule : lisibles, exportables et commentables."
+      team: "Les cartes des équipes que tu paies reviennent à la formule de leur propriétaire."
+      paused: "Le PDF à l'échelle, les analyses, « Mettre en image » et les nouveaux brouillons de ton IA se mettent en pause ; tout ce que tu as accepté reste sur la carte."
+      storage: "Tes fichiers restent tous ; tu en ajoutes de nouveaux une fois sous %{limit}."
+      nothing_deleted: "Rien n'est jamais supprimé : contours, plantes, photos, documents et commentaires restent là, et tu peux tout exporter."
+      come_back: "Tu reviens quand tu veux : tout se rouvre là où tu l'avais laissé."
     per_month: "%{price} par mois"
     per_year: "%{price} par an"
   account:
@@ -193,6 +235,9 @@ fr:
     greeting: "Bonjour %{name},"
     signature: "À bientôt sur Semisto Terranova,"
     team: "L'équipe Semisto"
+    places:
+      one: "Elle couvre ton lieu %{names}."
+      other: "Elle couvre tes lieux %{names}."
     renewal_reminder:
       cta: "Renouveler mon forfait"
       no_auto: "Rien n'est prélevé automatiquement : tu gardes la main."

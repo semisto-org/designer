@@ -52,6 +52,18 @@ class McpFeatureUpdatesTest < ActionDispatch::IntegrationTest
     assert_equal [ @tree.id ], action.result["feature_ids"]
   end
 
+  test "the functions of an element, named in words for the review, and applied once accepted" do
+    data, error = call_tool(@owner, "propose_feature_updates", {
+      map_id: @map.id, updates: [ { feature_id: @tree.id, changes: { properties: { functions: %w[food shade] } }, rationale: "Gardé aussi pour son ombre sur la terrasse." } ]
+    })
+    refute error, data
+    draft = FeatureUpdateDraft.find(data["created"].sole["id"])
+    change = draft.as_review_json[:changes].sole
+    assert_equal [ "properties.functions", "Nourriture, Ombre" ], change.values_at(:field, :afterLabel)
+    draft.accept!(users(:michael))
+    assert_equal %w[food shade], @tree.reload.properties["functions"]
+  end
+
   test "a batch by ids and a batch by filter" do
     ids = @herbs.map(&:id)
     data, error = call_tool(@owner, "propose_feature_updates", {
