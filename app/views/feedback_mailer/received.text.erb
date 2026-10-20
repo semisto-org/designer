@@ -1,0 +1,17 @@
+<%= t(".body", name: @user.display_name, email: @user.email_address, page: @page_url) %>
+
+<%= @feedback.message %>
+<% if @map %>
+
+<%= t(".map", name: @map.name, url: map_url(@map)) %>
+<% end %>
+<% if @feedback.wants_call %>
+
+<%= t(".wants_call") %>
+<% end %>
+<% if @replay_url %>
+
+<%= t(".replay", url: @replay_url) %>
+<% end %>
+
+<%= t(".admin", url: @admin_url) %>

@@ -3,6 +3,7 @@ class User < ApplicationRecord
   include AiTrial
   include HeicAttachment
   include HasLogo
+  include SessionReplayConsent
 
   AVATAR_MAX_BYTES = 10.megabytes
   AVATAR_TYPES = %w[image/jpeg image/png image/webp].freeze
@@ -26,6 +27,8 @@ class User < ApplicationRecord
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
   has_many :offer_templates, as: :owner, dependent: :destroy
   has_one :request_form, as: :owner, dependent: :destroy
+  # « Un retour ? » (FeedbacksController).
+  has_many :feedbacks, dependent: :delete_all
 
   # A picture chosen in « Mon compte »; it wins over the Google one.
   has_one_attached :avatar do |attachable|

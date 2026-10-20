@@ -6,6 +6,7 @@ import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/Button'
 import { formatDate } from '@/components/plants/format'
 import { api } from '@/lib/api'
+import { notePrint } from '@/lib/prints'
 import { t } from '@/lib/i18n'
 import { AlertsSection } from '@/dossier/AlertsSection'
 import { ClimateSection } from '@/dossier/ClimateSection'
@@ -88,7 +89,7 @@ export default function DossierShow({ map, canEdit }: DossierPageProps) {
           <Button variant="secondary" size="sm" className="lg:hidden" aria-label={t('dossier.picker.toggle')} title={t('dossier.picker.toggle')} aria-expanded={pickerOpen} aria-controls="dossier-picker" onClick={() => setPickerOpen((open) => !open)}>
             <SlidersHorizontal className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">{t('dossier.picker.toggle')}</span>
           </Button>
-          <Button size="sm" onClick={() => window.print()} disabled={!dossier}>
+          <Button size="sm" onClick={() => { notePrint(map.id, 'dossier'); window.print() }} disabled={!dossier}>
             <Printer className="h-4 w-4" aria-hidden />
             <span className="hidden sm:inline">{t('dossier.print')}</span>
             <span className="sm:hidden">{t('dossier.print_short')}</span>

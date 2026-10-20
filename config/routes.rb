@@ -634,6 +634,25 @@ Rails.application.routes.draw do
   end
   # --- end implementation ---
 
+  # --- first-hours ---
+  # The beta's « Premières heures »: « Un retour ? » from any page, the answer
+  # to the session recording question and the replays it starts, the plan's
+  # first print, and the staff page that reads them all.
+  post "feedback", to: "feedbacks#create", as: :feedback
+  namespace :account do
+    resource :replay_consent, only: :update
+    resources :session_replays, only: :create
+  end
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :print, only: :create
+    end
+  end
+  namespace :admin do
+    get "first-hours", to: "first_hours#show", as: :first_hours
+  end
+  # --- end first-hours ---
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

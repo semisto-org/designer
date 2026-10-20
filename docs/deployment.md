@@ -199,6 +199,8 @@ Used only by the one-off command `bin/rails claudy:import MAP_ID=…`, which pou
 |---|---|
 | `SENTRY_DSN` | Optional: sends errors to Sentry, both the server's (Rails) and the browser's (React). The DSN is read at boot and passed to the page: nothing to set at build time. |
 | `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | Optional. |
+| `SENTRY_REPLAY_SESSIONS` | Optional (default `2`): with `SENTRY_DSN`, every signed-in person is asked once whether Sentry Session Replay may record their first sessions, and this many sessions are recorded for each person who says yes (typed text, rich text, photos, names and e-mail addresses masked). `0` stops the question and the recording. Read in « Premières heures » (`/admin/first-hours`). |
+| `SENTRY_ORG` | Optional: the Sentry organisation's slug (`marco-vespucci-sprl`), so that « Premières heures » and the feedback e-mails link straight to each replay. |
 
 ### Audience measurement
 
