@@ -52,6 +52,7 @@
       "delete_failed": "La demande n'est pas partie. Vérifie ta connexion et réessaie."
     },
     "terrain": {
+      "credits": "Sources de la carte (photo aérienne, fond de plan)",
       "loading": "Chargement de la carte…",
       "not_found": "Cette carte n'existe plus, ou tu n'y as plus accès.",
       "offline_not_downloaded": "Pas de réseau, et cette carte n'a pas été téléchargée. Télécharge-la avant d'aller sur le terrain.",
