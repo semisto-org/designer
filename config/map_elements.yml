@@ -534,6 +534,13 @@ layers:
         geometry: Point
         icon: sticky-note
         color: "#726b9f"
+      # « Le carnet des saisons » of the phone app: a sign of the season seen where one stood.
+      season_sign:
+        geometry: Point
+        icon: calendar-days
+        color: "#8a6d3b"
+        fields:
+          - { key: sign, type: select, options: [first_frost, frost_pocket, last_frost, snow_melts_first, snow_lingers, morning_mist, puddle, waterlogged, dries_first, winter_sun, summer_shade, wind_exposed, animal_tracks, nest, browsing, pollinators, amphibians, budburst, first_flowers, wild_fruit, leaf_fall] }
       sketch:
         geometry: [LineString, MultiLineString]
         icon: signature

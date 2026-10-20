@@ -134,6 +134,12 @@
 h1.text-base, h2.text-base { font-size: 1.2rem; line-height: 1.5rem; letter-spacing: 0; }
 h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 
+/* Motion of the « carnet » primitives (components/ui): like the wind, short
+   and eased, never a bounce. */
+@keyframes notebook-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes sheet-left { from { transform: translateX(100%); } to { transform: none; } }
+
 /* Home page time-lapse: text set straight on the watercolour keeps a paper halo. */
 .timelapse-halo { text-shadow: 0 0 22px var(--color-loam-50), 0 0 8px var(--color-loam-50), 0 0 3px var(--color-loam-50); }
 

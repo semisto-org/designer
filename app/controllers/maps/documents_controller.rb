@@ -130,7 +130,7 @@ module Maps
       end
 
       def as_json(document)
-        document.as_inertia(url: ->(doc, size) { file_map_document_path(@map, doc, size:) })
+        document.as_inertia(url: ->(doc, size) { file_map_document_path(@map, doc, size:) }, excerpt: true)
       end
   end
 end

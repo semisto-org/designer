@@ -201,7 +201,7 @@ function ViewRow({ view, showOwner = false }: { view: AdminAerialView; showOwner
             <Copy className="h-4 w-4" aria-hidden />{t('drone.admin.copy')}
           </Button>
         )}
-        <Button variant="ghost" size="sm" disabled={busy} onClick={remove} className="text-clay-700">
+        <Button variant="danger-ghost" size="sm" disabled={busy} onClick={remove}>
           <Trash2 className="h-4 w-4" aria-hidden />{t('drone.admin.remove')}
         </Button>
       </div>

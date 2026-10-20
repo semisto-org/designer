@@ -1,6 +1,7 @@
 import { createLucideIcon, type LucideIcon, type LucideIconData } from 'lucide-react'
 import { __iconData as armchair } from 'lucide-react/dist/esm/icons/armchair.mjs'
 import { __iconData as brickWall } from 'lucide-react/dist/esm/icons/brick-wall.mjs'
+import { __iconData as calendarDays } from 'lucide-react/dist/esm/icons/calendar-days.mjs'
 import { __iconData as circleDot } from 'lucide-react/dist/esm/icons/circle-dot.mjs'
 import { __iconData as circleGauge } from 'lucide-react/dist/esm/icons/circle-gauge.mjs'
 import { __iconData as cloudRain } from 'lucide-react/dist/esm/icons/cloud-rain.mjs'
@@ -55,6 +56,7 @@ import { __iconData as zap } from 'lucide-react/dist/esm/icons/zap.mjs'
 const ICON_DATA: Record<string, LucideIconData> = {
   'armchair': armchair,
   'brick-wall': brickWall,
+  'calendar-days': calendarDays,
   'circle-dot': circleDot,
   'circle-gauge': circleGauge,
   'cloud-rain': cloudRain,

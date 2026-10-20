@@ -58,6 +58,7 @@ fr:
       socket: "Prise"
       tap: "Robinet"
       note_point: "Note"
+      season_sign: "Signe de saison"
       sketch: "Croquis"
       sector: "Secteur"
       permaculture_zone: "Zone de permaculture"
@@ -148,6 +149,7 @@ fr:
       rain: "Pluie"
       rain_mm: "Pluviomètre"
       muddy: "Eau boueuse"
+      sign: "Signe"
 
     options:
       sector_type:
@@ -167,6 +169,28 @@ fr:
         other: "Autre"
       method: { hole: "Trou rempli d'eau", ring: "Anneau enfoncé" }
       rain: { drizzle: "Bruine", steady: "Pluie continue", heavy: "Grosse averse", storm: "Orage" }
+      sign:
+        first_frost: "Premier gel"
+        frost_pocket: "Le givre reste ici"
+        last_frost: "Dernière gelée"
+        snow_melts_first: "La neige fond d'abord ici"
+        snow_lingers: "La neige reste ici"
+        morning_mist: "Brume du matin"
+        puddle: "Flaque après la pluie"
+        waterlogged: "Sol détrempé"
+        dries_first: "Sèche ou jaunit d'abord ici"
+        winter_sun: "Soleil d'hiver"
+        summer_shade: "Ombre d'été"
+        wind_exposed: "Le vent frappe ici"
+        animal_tracks: "Traces d'animaux"
+        nest: "Un nid"
+        browsing: "Dégâts de chevreuil ou de lapin"
+        pollinators: "Butineurs"
+        amphibians: "Crapauds, grenouilles"
+        budburst: "Débourrement"
+        first_flowers: "Premières fleurs"
+        wild_fruit: "Fruits sauvages mûrs"
+        leaf_fall: "Chute des feuilles"
       role: { keyline: "Keyline (par le point clé)", parallel: "Parallèle à la keyline" }
       use: { swale: "Baissière", trees: "Ligne d'arbres", subsoiling: "Décompactage" }
       roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }

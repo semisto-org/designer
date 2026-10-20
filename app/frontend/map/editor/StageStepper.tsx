@@ -30,6 +30,7 @@ export function StageStepper() {
                 type="button"
                 aria-current={focused ? 'step' : undefined}
                 onClick={() => editor.focusStep(stage)}
+                title={focused ? undefined : stageLabel(stage)}
                 className={clsx(
                   'flex items-center gap-1.5 rounded-full py-[5px] pl-1.5 pr-3 transition-colors active:scale-[0.98]',
                   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600',
@@ -45,7 +46,7 @@ export function StageStepper() {
                 >
                   {finished ? <Check className="h-2.5 w-2.5" strokeWidth={3} /> : index + 1}
                 </span>
-                <span className={clsx(!focused && 'sr-only xl:not-sr-only')}>{stageLabel(stage)}</span>
+                <span className={clsx(!focused && 'sr-only 2xl:not-sr-only')}>{stageLabel(stage)}</span>
                 {(current || finished) && (
                   <span className="sr-only">{` (${finished ? t('editor.steps.done') : t('editor.steps.current')})`}</span>
                 )}

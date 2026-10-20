@@ -88,11 +88,8 @@ export function Inspector({ feature }: { feature: MapFeature }) {
             variant="ghost"
             size="sm"
             className="text-clay-500"
-            onClick={() => {
-              if (window.confirm(t('editor.inspector.confirm_delete'))) {
-                editor.deleteFeature(p.id).catch((e: Error) => editor.notify(e.message, 'error'))
-              }
-            }}
+            // No « are you sure? »: the toast that follows offers « Annuler », and ⌘Z too.
+            onClick={() => editor.deleteFeature(p.id).catch((e: Error) => editor.notify(e.message, 'error'))}
           >
             <Trash2 className="h-4 w-4" />
             {t('common.delete')}

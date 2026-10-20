@@ -45,7 +45,8 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
   const [month, setMonth] = useState<string | null>(null)
   const [showDone, setShowDone] = useState(false)
   const [overdueOnly, setOverdueOnly] = useState(false)
-  const [openId, setOpenId] = useState<number | null>(null)
+  // ?open=ID (from « Tâches » across maps) opens that task at once.
+  const [openId, setOpenId] = useState<number | null>(() => (typeof window === 'undefined' ? null : Number(new URLSearchParams(window.location.search).get('open')) || null))
   const [newList, setNewList] = useState(false)
   const [dragId, setDragId] = useState<number | null>(null)
 
@@ -66,10 +67,11 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
   const updateTask = (task: TaskData, attrs: Record<string, unknown>) =>
     run(api(`${base}/tasks/${task.id}`, { method: 'PATCH', body: { task: attrs } }))
 
-  function toggle(task: TaskData) {
+  async function toggle(task: TaskData) {
     const done = !task.completedAt
     setBoard((b) => ({ ...b, tasks: b.tasks.map((x) => (x.id === task.id ? { ...x, completedAt: done ? new Date().toISOString() : undefined, completedBy: done ? currentUser.name : undefined } : x)) }))
-    void updateTask(task, { completed: done })
+    // Refused (offline, right withdrawn): the box goes back to what the server knows.
+    if (!(await updateTask(task, { completed: done }))) setBoard((b) => ({ ...b, tasks: b.tasks.map((x) => (x.id === task.id ? task : x)) }))
   }
 
   const createTask = (list: TaskListData, title: string) =>
@@ -126,7 +128,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
       <MapViewHeader map={map} current="tasks" />
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div>
-          <h1 className="text-2xl">{t('tasks.title')}</h1>
+          <h1 className="text-3xl">{t('tasks.title')}</h1>
         </div>
         {board.tasks.length > 0 && (
           <p className="text-sm font-medium text-loam-700">{t('tasks.progress', { done, total: board.tasks.length })}</p>
@@ -163,7 +165,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
               <select
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
-                className={inputClass + ' w-auto py-1.5'}
+                className={inputClass + ' w-auto py-1.5 pr-9'}
               >
                 <option value="all">{t('tasks.filters.everyone')}</option>
                 <option value="me">{t('tasks.filters.me')}</option>
@@ -211,7 +213,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
                   key={list.id} list={list} mapId={map.id} all={all} shown={shown} today={today} canEdit={canEdit}
                   filtering={filtering} first={index === 0} last={index === board.lists.length - 1} hiddenDone={showDone ? 0 : all.filter((x) => x.completedAt && matches(x)).length}
                   openId={openId} setOpenId={setOpenId} currentUserId={currentUser.id}
-                  onToggle={toggle} onCreate={(title) => createTask(list, title)}
+                  onToggle={(task) => void toggle(task)} onCreate={(title) => createTask(list, title)}
                   onRename={(name) => updateList(list, { name })} onMove={(delta) => void updateList(list, { position: index + delta })}
                   onDelete={() => deleteList(list, all.length)}
                   dragId={dragId} setDragId={setDragId} onDrop={(e, i) => onDrop(e, list, i)}
@@ -257,6 +259,20 @@ function ListSection({
 }) {
   const [renaming, setRenaming] = useState(false)
   const [menu, setMenu] = useState(false)
+  const menuBox = useRef<HTMLDivElement>(null)
+  // The ⋯ menu closes on Escape or a click elsewhere, as MapViewMenu does.
+  useEffect(() => {
+    if (!menu) return
+    const close = (event: MouseEvent | KeyboardEvent) => {
+      if (event instanceof KeyboardEvent ? event.key === 'Escape' : !menuBox.current?.contains(event.target as Node)) setMenu(false)
+    }
+    window.addEventListener('mousedown', close)
+    window.addEventListener('keydown', close)
+    return () => {
+      window.removeEventListener('mousedown', close)
+      window.removeEventListener('keydown', close)
+    }
+  }, [menu])
   const done = all.filter((x) => x.completedAt).length
   const percent = all.length ? Math.round((done / all.length) * 100) : 0
   const complete = all.length > 0 && done === all.length
@@ -298,12 +314,12 @@ function ListSection({
           </div>
         </div>
         {canEdit && (
-          <div className="relative">
+          <div ref={menuBox} className="relative">
             <button type="button" onClick={() => setMenu((m) => !m)} aria-expanded={menu} aria-label={t('tasks.lists.menu')} className="rounded-full p-1.5 text-loam-500 hover:bg-loam-100 hover:text-loam-800">
               <MoreHorizontal className="h-5 w-5" />
             </button>
             {menu && (
-              <div className="absolute right-0 z-10 mt-1 w-52 rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-loam-900/10" onMouseLeave={() => setMenu(false)}>
+              <div className="absolute right-0 z-10 mt-1 w-52 rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-loam-900/10">
                 <MenuItem icon={Pencil} label={t('tasks.lists.rename')} onClick={() => { setMenu(false); setRenaming(true) }} />
                 {!first && <MenuItem icon={ArrowUp} label={t('tasks.lists.move_up')} onClick={() => { setMenu(false); onMove(-1) }} />}
                 {!last && <MenuItem icon={ArrowDown} label={t('tasks.lists.move_down')} onClick={() => { setMenu(false); onMove(1) }} />}
@@ -342,7 +358,7 @@ function ListSection({
       </ul>
       )}
       {all.length === 0 && <p className="py-2 text-sm text-loam-500">{t('tasks.lists.empty')}</p>}
-      {hiddenDone > 0 && !complete && <p className="pt-2 text-sm text-loam-400">{t('tasks.lists.done_hidden', { count: hiddenDone })}</p>}
+      {hiddenDone > 0 && !complete && <p className="pt-2 text-sm text-loam-500">{t('tasks.lists.done_hidden', { count: hiddenDone })}</p>}
       {canEdit && !folded && <NewTaskInput onCreate={onCreate} />}
     </section>
   )
@@ -494,7 +510,7 @@ function TaskDetail({ task, lists, participants, suggestions, mapId, today, onSa
               <ExternalLink className="h-4 w-4" />{t('tasks.task.open_in_map')}
             </Link>
           )}
-          <Button variant="ghost" size="sm" onClick={onDelete} className="text-clay-700 hover:bg-clay-50"><Trash2 className="h-4 w-4" />{t('tasks.task.delete')}</Button>
+          <Button variant="danger-ghost" size="sm" onClick={onDelete}><Trash2 className="h-4 w-4" />{t('tasks.task.delete')}</Button>
         </div>
         <Button variant="secondary" size="sm" onClick={onClose}>{t('tasks.task.close')}</Button>
       </div>
@@ -530,7 +546,7 @@ function NewListForm({ onCreate, onCancel }: { onCreate: (name: string) => Promi
     <form onSubmit={(e) => { e.preventDefault(); if (name.trim()) void onCreate(name) }} className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
       <input value={name} onChange={(e) => setName(e.target.value)} autoFocus maxLength={80} placeholder={t('tasks.lists.new_placeholder')} aria-label={t('tasks.lists.new')} className={inputClass + ' sm:w-80'} />
       <Button type="submit" disabled={!name.trim()}>{t('tasks.lists.create')}</Button>
-      <Button variant="ghost" onClick={onCancel}>{t('tasks.task.close')}</Button>
+      <Button variant="ghost" onClick={onCancel}>{t('common.cancel')}</Button>
     </form>
   )
 }
