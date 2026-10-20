@@ -404,6 +404,7 @@ Rails.application.routes.draw do
   # --- map-drawing ---
   scope "maps/:map_id", module: :maps, as: :map, constraints: { map_id: /\d+/ } do
     get "alerts", to: "alerts#index", as: :alerts, defaults: { format: :json }
+    get "functions", to: "functions#show", as: :functions, defaults: { format: :json }
     get "export.geojson", to: "exports#show", as: :geojson_export, format: false
   end
   # --- end map-drawing ---
