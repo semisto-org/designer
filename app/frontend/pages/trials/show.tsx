@@ -120,7 +120,7 @@ export default function TrialShow(props: TrialShowProps) {
             {reading.status !== 'loading' && (
               <div className="mt-2 space-y-2 text-loam-800" aria-live="polite">
                 {sentences.map((sentence, i) => (
-                  <p key={sentence} className={i === 0 ? 'font-hand text-2xl leading-snug text-loam-900' : 'text-[0.95rem]'}>{sentence}</p>
+                  <p key={sentence} className={i === 0 ? 'font-hand text-2xl leading-snug text-loam-900' : 'text-base'}>{sentence}</p>
                 ))}
                 {!trial.relief && <p className="text-sm text-loam-500">{t('trials.reading.no_relief')}</p>}
                 {trial.relief && (reading.status === 'error' || (reading.status === 'done' && reading.reading.slope_pct == null)) && (
@@ -247,6 +247,7 @@ function TrialLayers({ layers, cadastre, trial, lowPoint, onTouch }: {
       const element = document.createElement('div')
       element.className = 'flex items-center gap-1 rounded-full bg-white/95 py-0.5 pl-1 pr-2.5 text-sm font-medium text-loam-800 shadow ring-1 ring-loam-200'
       // Pond water's blue, as in the time-lapse (no token for it).
+      // design-lint-ok: pond water has no theme token (as in public_maps/notebook.ts)
       element.innerHTML = '<span class="h-3 w-3 rounded-full ring-2 ring-white" style="background:#5f8fb0"></span>'
       element.append(document.createTextNode(t('trials.show.low_point')))
       marker.current = new maplibregl.Marker({ element, anchor: 'left', offset: [-6, 0] }).setLngLat(lowPoint).addTo(instance)
