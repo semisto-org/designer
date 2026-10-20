@@ -227,6 +227,9 @@ export function PlantCard({ info, onClose }: { info: PlantInfo; onClose: () => v
       ) : (
         <p>{t(`relief.page.growth.card.${info.training}`, { height: m(info.adultHeight), spread: m(info.adultSpread) })}</p>
       )}
+      {info.support && (
+        <p className="text-leaf-800">{info.givesWayIn != null ? t('relief.page.growth.card.support_until', { year: info.givesWayIn }) : t('relief.page.growth.card.support')}</p>
+      )}
       {info.graft && (
         <p>{t('relief.page.growth.card.graft', {
           details: [

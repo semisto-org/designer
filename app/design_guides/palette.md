@@ -15,7 +15,7 @@ A forest garden fills space vertically like a woodland edge: **canopy** (large t
 
 A guild is a small group of species around a central tree that help one another:
 
-- a **nitrogen fixer** (alder, elaeagnus, sea buckthorn, pea shrub, clover… `ecoServices` contains `nitrogen`) for about three to five fruit trees at the start;
+- a **nitrogen fixer** (alder, elaeagnus, sea buckthorn, pea shrub, clover… `ecoServices` contains `nitrogen`) for about three to five fruit trees at the start, more on a poor or compacted soil (chapter `soil`, for how support plants come and go);
 - **accumulators** and biomass plants (comfrey) for mulching on the spot (`minerals`, `organic-matter`);
 - **bee plants** and plants for **beneficial insects** (`mellifere`, `beneficial-insects`), flowering from February to October;
 - a **ground cover** so the soil is never bare (`ground-cover`);

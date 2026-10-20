@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
+  CHOP_MATURITY, GRAFT_CROWN, GRAFT_TRUNK, MANAGED_MATURITY, MANAGED_SIZE, PLANTING_SIZE, VIGOR_SIZE, calendarYear, graftOf, growthShare, insideRing, managedSize, plantForm, plantShade, plantShape, scatter, scenePlants, sizeAt, trainingOf, yearsBetween,
   type GrowingPlantsData, type GrowthInputs, type ScenePlant,
 } from '../../../app/frontend/relief/growth.ts'
 import type { GridMeta } from '../../../app/frontend/relief/grid.ts'
@@ -252,4 +252,37 @@ test('scene plants: a grafted tree takes its graft, unless it is pollarded', () 
   const [grafted, pollard] = scenePlants(meta, data)
   assert.deepEqual(grafted.graft, { trunk: 1.8, vigor: 'vigorous' })
   assert.equal(pollard.graft, null)
+})
+
+test('a support plant chopped and dropped stays small, and leaves the scene the year it gives way', () => {
+  const alder = { strata: 'canopy' as const, heightM: 20, spreadM: 10, maturityYears: 20, training: 'chop_and_drop' as const }
+  assert.deepEqual(managedSize(alder), { ...MANAGED_SIZE.chop_and_drop, maturityYears: CHOP_MATURITY })
+  assert.ok(sizeAt(alder, 4)!.height > 0.9 * MANAGED_SIZE.chop_and_drop.height)
+  assert.equal(trainingOf('tree', 'chop_and_drop'), 'chop_and_drop')
+  assert.equal(trainingOf('clump', 'chop_and_drop'), 'free', 'a perennial is not drawn smaller')
+  // Stems from the ground, like a coppice.
+  assert.equal((plantShape('tree', 'canopy', 2, 1.8, 'chop_and_drop') as { trunk: number }).trunk, 0)
+  const gives = { ...alder, until: 8 }
+  assert.ok(sizeAt(gives, 7.9))
+  assert.equal(sizeAt(gives, 8), null)
+
+  const [lng, lat] = lngLat(525_000 + 15, 6_590_000 - 15)
+  const data: GrowingPlantsData = {
+    today: '2028-06-01',
+    origin: '2026-06-01',
+    plants: [
+      { ...inputs({ strata: 'canopy', plantType: 'tree' }), id: 1, lng, lat, number: null, ownName: null, training: 'chop_and_drop', support: true, supportUntil: 8, plantedOn: '2027-06-01' },
+      { ...inputs(), id: 2, lng, lat, number: null, ownName: null, training: null, support: false, supportUntil: 8, plantedOn: '2026-06-01' },
+      { ...inputs(), id: 3, lng, lat, number: null, ownName: null, training: null, support: true, supportUntil: 3, plantedOn: '2020-01-01', plantedLongAgo: true },
+    ],
+    patches: [],
+  }
+  const [support, productive, old] = scenePlants(meta, data)
+  assert.equal(support.support, true)
+  assert.equal(support.until, 8)
+  // Planted a year after year 0, gone in year 9.
+  assert.ok(sizeAt(support, 8.5 - support.start))
+  assert.equal(sizeAt(support, 9.5 - support.start), null)
+  assert.equal(productive.until, null, 'only a support plant gives way')
+  assert.equal(old.until, null, 'a plant of unknown age has no year to count from')
 })
