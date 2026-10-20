@@ -112,11 +112,14 @@ export function featureLabelFilter({ withPlants = true }: { withPlants?: boolean
 /**
  * Sectors are not drawn with the other features: their arcs only make sense
  * together, on their own rings around the terrain (the editor's « Secteurs »
- * panel, the dossier's sector page).
+ * panel, the dossier's sector page). Nor are the permaculture zones, which
+ * would cover the whole plan: the « Zones » panel shows them.
  */
+const OWN_PANEL_KINDS = ['sector', 'permaculture_zone']
+
 function withoutSectors(data: MapFeatureCollection): MapFeatureCollection {
-  if (!data.features.some((f) => f.properties?.kind === 'sector')) return data
-  return { ...data, features: data.features.filter((f) => f.properties?.kind !== 'sector') }
+  if (!data.features.some((f) => OWN_PANEL_KINDS.includes(f.properties?.kind as string))) return data
+  return { ...data, features: data.features.filter((f) => !OWN_PANEL_KINDS.includes(f.properties?.kind as string)) }
 }
 
 /** Adds (once) the GeoJSON source and the fill/line/point layers for features. */
