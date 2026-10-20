@@ -15,6 +15,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   relief: 'lire-le-relief-et-l-eau',
   sun: 'le-soleil-et-l-horizon',
   sectors: 'les-secteurs-du-terrain',
+  zones: 'les-zones-de-permaculture',
   climate: 'le-climat-d-aujourd-hui-et-de-demain',
   'site-rules': 'regles-et-risques-du-terrain',
   soil: 'analyser-son-sol',

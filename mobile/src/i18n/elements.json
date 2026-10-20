@@ -485,6 +485,14 @@
         "pickable": false,
         "icon": "wind"
       },
+      "permaculture_zone": {
+        "geometries": [
+          "Polygon"
+        ],
+        "color": "#e8b33a",
+        "pickable": false,
+        "icon": "target"
+      },
       "measure": {
         "geometries": [
           "LineString",

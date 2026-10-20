@@ -11,6 +11,7 @@ import { byHardiness, hardinessHere, matchesPalette, type Hardiness } from '@/ma
 import { ProposeSpecies } from '@/map/plants/ProposeSpecies'
 import { setPlacing, setPlanting, usePlanting } from '@/map/plants/store'
 import { STRATA_COLORS, StrataDot } from '@/map/plants/strata'
+import { SuccessionBalance } from '@/map/plants/SuccessionBalance'
 import {
   STRATA, type PaletteItem, type PaletteRole, type PlantSearchResult, type PlantingState,
   type SpeciesSheet, type SpeciesSummary, type Strata, type VarietySummary,
@@ -213,6 +214,7 @@ export default function PalettePanel() {
       )}
 
       {!q && <StrataBalance totals={data.strata} />}
+      {!q && <SuccessionBalance data={data.succession} />}
 
       {editor.canEdit && !q && (
         <Button variant="secondary" size="sm" className="w-full" onClick={drawPatch} disabled={editor.drawing}>
