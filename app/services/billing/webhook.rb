@@ -12,6 +12,7 @@ module Billing
       invoice.paid
       customer.subscription.created customer.subscription.updated customer.subscription.deleted
       charge.refunded
+      account.updated
     ].freeze
 
     module_function
@@ -35,6 +36,8 @@ module Billing
         SubscriptionSync.call(object, synced_at: created)
       when "charge.refunded"
         RefundRecorder.call(object, event_at: created)
+      when "account.updated"
+        DronePilots::StripeOnboarding.sync(object)
       else
         "ignored event type"
       end

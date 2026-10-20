@@ -140,7 +140,8 @@ module Mcp
 
         # pending_update: the change an AI proposed and nobody reviewed yet
         # (a FeatureUpdateDraft), false when the caller knows there is none.
-        def feature_json(feature, geometry: true, pending_update: nil)
+        # `zone`: the element's permaculture zone (PermacultureZones::Lookup), when the map has zones.
+        def feature_json(feature, geometry: true, pending_update: nil, zone: nil)
           pending_update = feature.update_drafts.pending.first if pending_update.nil?
           {
             type: "Feature",
@@ -150,6 +151,7 @@ module Mcp
               "layer" => feature.layer, "kind" => feature.kind, "name" => feature.name, "notes" => feature.notes,
               "status" => feature.status, "source" => feature.source, "rationale" => feature.rationale,
               "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601,
+              "permaculture_zone" => zone,
               # A support plant, from its sheet or its palette role: hatched on the map.
               "support" => (true if feature.plant? && feature.support_plant?(palette_role(feature)))
             ).compact,

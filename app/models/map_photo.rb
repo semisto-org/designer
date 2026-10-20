@@ -38,6 +38,8 @@ class MapPhoto < ApplicationRecord
   SAME_SPOT_METERS = 20
   SAME_SPOT_HEADING_DEGREES = 60
 
+  # Delivered by the pilot of a drone mission booked in the directory.
+  belongs_to :drone_mission, optional: true
   belongs_to :map
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :album, class_name: "PhotoAlbum", foreign_key: :photo_album_id, inverse_of: :photos, optional: true

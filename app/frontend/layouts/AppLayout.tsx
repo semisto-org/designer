@@ -16,6 +16,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const url = usePage().url
   const newRequests = (currentUser as TeamAwareUser | null)?.newRequests
   const propagation = (currentUser as TeamAwareUser | null)?.propagation
+  const droneMissions = (currentUser as TeamAwareUser | null)?.droneMissions
   const nav = [
     { href: '/maps', label: t('nav.maps') },
     ...(currentUser ? [{ href: '/tasks', label: t('tasks.nav') }] : []),
@@ -23,6 +24,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     ...(newRequests != null ? [{ href: '/request_forms', label: t('request_forms.nav'), dot: newRequests > 0 }] : []),
     { href: '/plants', label: t('nav.plants') },
     ...(propagation ? [{ href: '/propagation', label: t('propagation.nav'), dot: propagation.waiting > 0 }] : []),
+    ...(droneMissions ? [{ href: '/missions-drone', label: t('drone_missions.nav'), dot: droneMissions.waiting > 0 }] : []),
   ]
   return (
     <div className="min-h-dvh">
