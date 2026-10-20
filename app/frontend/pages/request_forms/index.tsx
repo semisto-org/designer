@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import clsx from 'clsx'
 import { Check, Copy, ExternalLink, Map as MapIcon, Phone, Plus } from 'lucide-react'
 import { useState } from 'react'
+import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Card, EmptyState } from '@/components/ui/Card'
 import { Field, Textarea } from '@/components/ui/Field'
@@ -28,7 +29,10 @@ export default function RequestFormsIndex({ accounts }: { accounts: RequestAccou
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <Head title={t('request_forms.index.title')} />
-      <h1 className="text-2xl">{t('request_forms.index.title')}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl">{t('request_forms.index.title')}</h1>
+        <HelpButton slug="formulaire-de-demande" />
+      </div>
       <p className="max-w-2xl text-sm text-loam-600">{t('request_forms.index.intro')}</p>
       {accounts.length === 0 && <EmptyState title={t('request_forms.index.title')}>{t('request_forms.index.none')}</EmptyState>}
       {accounts.map((account) => <AccountCard key={account.key} account={account} />)}
@@ -105,13 +109,20 @@ function FormSettings({ form: initial, canEdit }: { form: RequestFormData; canEd
   const [intro, setIntro] = useState(initial.intro ?? '')
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function save(patch: { active?: boolean; intro?: string }) {
-    const data = await api<{ form: RequestFormData }>(`/request_forms/${form.id}`, { method: 'PATCH', body: { form: patch } })
-    setForm(data.form)
-    if (patch.intro !== undefined) {
-      setSaved(true)
-      window.setTimeout(() => setSaved(false), 2000)
+    setError(null)
+    try {
+      const data = await api<{ form: RequestFormData }>(`/request_forms/${form.id}`, { method: 'PATCH', body: { form: patch } })
+      setForm(data.form)
+      if (patch.intro !== undefined) {
+        setSaved(true)
+        window.setTimeout(() => setSaved(false), 2000)
+      }
+    } catch (failure) {
+      // The text stays in the field: nothing typed is lost.
+      setError((failure as Error).message || t('request_forms.index.save_error'))
     }
   }
 
@@ -151,9 +162,13 @@ function FormSettings({ form: initial, canEdit }: { form: RequestFormData; canEd
         <Field label={t('request_forms.index.intro_label')} hint={t('request_forms.index.intro_help')}>
           <Textarea rows={3} maxLength={1500} value={intro} placeholder={t('request_forms.index.intro_placeholder')}
             onChange={(e) => setIntro(e.target.value)} onBlur={() => intro !== (form.intro ?? '') && save({ intro })} />
+          {!intro.trim() && (
+            <p className="mt-1 text-sm text-loam-500">{t('request_forms.index.intro_default', { text: t('request_forms.public.default_intro', { account: form.displayName }) })}</p>
+          )}
         </Field>
       )}
       {saved && <p className="text-sm text-leaf-700">{t('request_forms.index.saved')}</p>}
+      {error && <p role="alert" className="text-sm text-clay-700">{error}</p>}
     </div>
   )
 }

@@ -30,6 +30,8 @@ export type MapDocumentData = {
   form?: FormResponseData | null
   /** A Markdown file small enough to open as a page and edit in place. */
   markdown: boolean
+  /** The first words of a Markdown page, for its tile (the map's library only). */
+  excerpt?: string | null
   contentEditedAt: string | null
   contentEditedBy: string | null
   thumbUrl: string | null

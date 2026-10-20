@@ -1,6 +1,7 @@
-import { Head } from '@inertiajs/react'
-import { Lock, Printer, X } from 'lucide-react'
-import { useState } from 'react'
+import { Head, Link } from '@inertiajs/react'
+import { Eye, Printer, X } from 'lucide-react'
+import { Component, useState, type ReactNode } from 'react'
+import { HelpButton } from '@/components/help/HelpButton'
 import { MapViewHeader } from '@/components/map_views/MapViews'
 import { InternalCard } from '@/components/offers/InternalCard'
 import { PhaseCard } from '@/components/offers/PhaseCard'
@@ -9,7 +10,7 @@ import { PrecisionCard } from '@/components/offers/PrecisionCard'
 import { TerrainCard } from '@/components/offers/TerrainCard'
 import { TotalsCard, Warnings } from '@/components/offers/TotalsCard'
 import { VersionsCard } from '@/components/offers/VersionsCard'
-import { SaveIndicator } from '@/components/offers/shared'
+import { euros, SaveIndicator } from '@/components/offers/shared'
 import { useOfferAutosave } from '@/components/offers/useOfferAutosave'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
@@ -39,7 +40,25 @@ export default function OffersShow(props: OfferPageProps) {
       </div>
     )
   }
-  return <Builder {...props} offer={props.offer} measures={props.measures} result={props.result} catalog={props.catalog} />
+  return (
+    <BuilderGuard>
+      <Builder {...props} offer={props.offer} measures={props.measures} result={props.result} catalog={props.catalog} />
+    </BuilderGuard>
+  )
+}
+
+/** A rendering error must not blank the whole builder without a word. */
+class BuilderGuard extends Component<{ children: ReactNode }, { crashed: boolean }> {
+  state = { crashed: false }
+  static getDerivedStateFromError() { return { crashed: true } }
+  render() {
+    if (!this.state.crashed) return this.props.children
+    return (
+      <EmptyState title={t('offers.page.title')} action={<Button variant="secondary" onClick={() => window.location.reload()}>{t('offers.page.reload')}</Button>}>
+        {t('offers.page.crashed')}
+      </EmptyState>
+    )
+  }
 }
 
 function Builder({ map, team, offer, measures: initialMeasures, result: initialResult, versions: initialVersions, catalog, templates, canEdit }: OfferPageProps & Required<Pick<OfferPageProps, 'offer' | 'measures' | 'result' | 'catalog'>>) {
@@ -48,6 +67,7 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
   const { inputs, setInputs, measures, result, status } = autosave
   const [versions, setVersions] = useState<OfferVersionSummary[]>(initialVersions ?? [])
   const [notice, setNotice] = useState<string | null>(null)
+  const latest = versions.reduce<OfferVersionSummary | null>((best, version) => (!best || version.number > best.number ? version : best), null)
 
   async function restore(number: number) {
     await autosave.save()
@@ -61,7 +81,7 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 lg:pb-0">
       <Head title={`${t('offers.page.title')} · ${map.name}`} />
 
       <div className="print:hidden"><MapViewHeader map={map} current="offer" /></div>
@@ -73,16 +93,22 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
           <p className="hidden truncate text-loam-500 print:block">{map.name}{team && ` · ${team.name}`}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
-          <span className="inline-flex items-center gap-1 rounded-full bg-humus-50 px-2.5 py-1 text-xs font-medium text-humus-700 ring-1 ring-inset ring-humus-200">
-            <Lock className="h-3 w-3" aria-hidden />{t('offers.page.internal_badge')}
-          </span>
-          {!readOnly && <SaveIndicator status={status} />}
-          <Button variant="ghost" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" />{t('offers.page.print')}</Button>
+          {latest && (
+            <Link href={`/maps/${map.id}/offer/versions/${latest.number}`} className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
+              <Eye className="h-4 w-4" aria-hidden />{t('offers.page.client_view', { label: latest.label })}
+            </Link>
+          )}
+          {!readOnly && <span className="hidden lg:inline"><SaveIndicator status={status} /></span>}
+          <Button variant="ghost" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" />{t('offers.page.print_internal')}</Button>
+          <HelpButton slug="chiffrer-une-offre" />
         </div>
       </header>
 
       <p className="max-w-3xl text-sm text-loam-600">{t('offers.page.intro')}</p>
       {readOnly && <p className="text-sm text-loam-500">{t('offers.page.read_only')}</p>}
+      {status === 'error' && !readOnly && (
+        <p role="alert" className="rounded-xl bg-clay-50 p-3 text-sm text-clay-700 ring-1 ring-inset ring-clay-200">{t('offers.page.save_error')}</p>
+      )}
       {(autosave.conflict || notice) && (
         <div role="status" className="flex items-start justify-between gap-3 rounded-xl bg-loam-50 p-3 text-sm text-loam-800 ring-1 ring-inset ring-loam-200">
           <span>{autosave.conflict ?? notice}</span>
@@ -99,7 +125,7 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
           <TerrainCard map={map} inputs={inputs} measures={measures} pricing={autosave.pricing} readOnly={readOnly} onChange={setInputs} />
           <div id="internal" className="scroll-mt-6">
             <InternalCard
-              inputs={inputs} measures={measures} result={result} catalog={catalog} pricing={autosave.pricing}
+              mapId={map.id} inputs={inputs} measures={measures} result={result} catalog={catalog} pricing={autosave.pricing}
               templates={templates ?? []} templateId={autosave.templateId} onTemplate={autosave.setTemplate}
               readOnly={readOnly} onChange={setInputs}
             />
@@ -113,16 +139,32 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
           <div className="hidden lg:block"><PrecisionCard mapId={map.id} precision={result.precision} /></div>
           <Warnings warnings={result.warnings} />
           <TotalsCard result={result} />
-          <VersionsCard
-            mapId={map.id}
-            versions={versions}
-            readOnly={readOnly}
-            beforeSave={autosave.flush}
-            onVersions={setVersions}
-            onRestore={restore}
-            notify={setNotice}
-          />
+          <div id="versions" className="scroll-mt-6">
+            <VersionsCard
+              mapId={map.id}
+              versions={versions}
+              readOnly={readOnly}
+              beforeSave={autosave.flush}
+              onVersions={setVersions}
+              onRestore={restore}
+              notify={setNotice}
+            />
+          </div>
         </aside>
+      </div>
+
+      {/* On a phone the total sits at the end of a long page: keep it in sight. */}
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-loam-200 bg-white/95 px-4 py-2.5 backdrop-blur lg:hidden print:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <span className="min-w-0">
+            <span className="block text-sm text-loam-500">{t('offers.totals.total')}</span>
+            <span className="font-serif text-xl font-semibold tabular-nums text-prune-900">{euros(result.totals.total_tvac)}</span>
+          </span>
+          <span className="flex items-center gap-3">
+            {!readOnly && <SaveIndicator status={status} />}
+            <a href="#versions" className="rounded-full px-3 py-1.5 text-sm font-medium text-prune-700 ring-1 ring-inset ring-prune-200 hover:bg-prune-50">{t('offers.page.versions_link')}</a>
+          </span>
+        </div>
       </div>
     </div>
   )

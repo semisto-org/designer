@@ -20,6 +20,8 @@ import type { TeamForm, TeamFormResponse, TeamFormsPageProps } from '@/types/for
 export default function TeamForms({ team, inbox, forms, responses, maps, mapField }: TeamFormsPageProps) {
   const base = `/teams/${team.id}`
   const toFile = responses.filter((r) => r.mapId == null).length
+  // Once Tally is in service, its technical card folds away below the daily work.
+  const inService = forms.length > 0 && responses.length > 0
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -41,9 +43,16 @@ export default function TeamForms({ team, inbox, forms, responses, maps, mapFiel
         <Connect admin={team.admin} base={base} />
       ) : (
         <>
-          {team.admin && inbox.url && inbox.secret && <InboxCard url={inbox.url} secret={inbox.secret} mapField={mapField} base={base} />}
+          {!inService && team.admin && inbox.url && inbox.secret && <InboxCard url={inbox.url} secret={inbox.secret} mapField={mapField} base={base} />}
+          {toFile > 0 && <Responses responses={responses} maps={maps} admin={team.admin} base={base} toFile={toFile} />}
           <Forms forms={forms} admin={team.admin} base={base} />
-          <Responses responses={responses} maps={maps} admin={team.admin} base={base} toFile={toFile} />
+          {toFile === 0 && <Responses responses={responses} maps={maps} admin={team.admin} base={base} toFile={toFile} />}
+          {inService && team.admin && inbox.url && inbox.secret && (
+            <details>
+              <summary className="cursor-pointer text-sm font-medium text-loam-600 hover:text-loam-900">{t('forms.inbox.settings')}</summary>
+              <div className="mt-3"><InboxCard url={inbox.url} secret={inbox.secret} mapField={mapField} base={base} /></div>
+            </details>
+          )}
         </>
       )}
     </div>

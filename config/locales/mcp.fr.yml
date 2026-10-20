@@ -81,7 +81,7 @@ fr:
         description: "Liste les cartes auxquelles l'utilisateur a accès (propriétaire, éditeur ou lecteur) : nom, rôle, étape, région, surface et brouillons en attente. Point de départ : passe ensuite l'identifiant d'une carte à get_map."
       get_map:
         title: "Lire une carte"
-        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies, avec leurs plants prévus, en terre et à planter, leur prix, et « invasive » ou « toxique » quand elles le sont ici), budget de la palette (reste à acheter et total, en euros), tâches du projet (à faire, en retard, faites), nombre de documents et de photos, l'année d'observation (observation_year : ce que la personne a vu sur son terrain à chaque saison des douze derniers mois, et les saisons manquantes ; le détail avec get_season_signs), nombre d'éléments par couche, étiquettes de la carte (tags, avec leur nombre d'éléments), types d'éléments connus de l'éditeur, l'offre (ses versions et le budget de la dernière version acceptée : TVAC, HTVA, heures prévues ; seulement pour l'équipe qui la prépare) et ce que cette connexion a le droit de faire sur la carte."
+        description: "Fiche complète d'une carte : nom, adresse, région, surface (m²), contour du terrain en GeoJSON, centroïde [lng, lat], parcelles cadastrales, étape du projet, fiche projet (objectifs, usages, contraintes…), palette (espèces choisies, avec leurs plants prévus, en terre et à planter, leur prix, et « invasive » ou « toxique » quand elles le sont ici), budget de la palette (reste à acheter et total, en euros), tâches du projet (à faire, en retard, faites), nombre de documents et de photos, l'année d'observation (observation_year : ce que la personne a vu sur son terrain à chaque saison des douze derniers mois, et les saisons manquantes ; le détail avec get_season_signs), nombre d'éléments par couche, étiquettes de la carte (tags, avec leur nombre d'éléments), types d'éléments connus de l'éditeur, l'offre (ses versions et le budget de la dernière version acceptée : TVAC, HTVA, heures prévues ; seulement pour l'équipe qui la prépare), la vue publique (adresse, à jour ou non, visites, essais « Et chez toi ? » et jardins commencés ; seulement pour le propriétaire) et ce que cette connexion a le droit de faire sur la carte."
       list_features:
         title: "Lister les éléments"
         description: "Éléments dessinés sur la carte, en GeoJSON (FeatureCollection) : existants, eau, accès, structures, plantes, animaux, notes, et brouillons en attente. Filtres par couche, type (kind), étiquette (tag), emprise (bbox) et statut. Les réseaux restent masqués sauf demande explicite d'un éditeur. Paginé : passe next_after_id dans after_id pour la page suivante."
@@ -211,7 +211,7 @@ fr:
           storage_note: "Note libre : porte ouverte, caisses rentrées, linge humide posé…"
       list_documents:
         title: "Lister les documents"
-        description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable)."
+        description: "La bibliothèque « Documents » de la carte : plans, relevés, analyses de sol, permis, photos anciennes, tableurs… rassemblés par l'équipe ou envoyés avec la fiche projet. Pour chacun : titre, description, étiquettes, type, nom et taille du fichier, qui l'a déposé, et si get_document peut le lire (readable). Une page Markdown donne aussi ses premiers mots (excerpt), sans sa mise en forme."
         params:
           document_tag: "Étiquette des documents, sans tenir compte des majuscules."
           document_kind: "Type : pdf, image, text (traitement de texte), sheet (tableur), slides (présentation), plan (DWG, KML, GPX, GeoJSON), other."
@@ -371,6 +371,21 @@ fr:
           abundance: "Abondance sur la photo : rare, present (présente), frequent (fréquente) ou dominant (dominante)."
           confidence: "Ta confiance dans l'identification : high (sûre), medium (probable) ou low (incertaine)."
           wild_plant_rationale: "Ce qui te fait la reconnaître sur la photo (feuilles, fleurs, port…) et où elle est sur l'image. Obligatoire, 10 caractères au moins."
+      get_implementation_plan:
+        title: "Lire le plan de mise en œuvre"
+        description: "Le plan de mise en œuvre de la carte (« Mise en œuvre ») : ses phases dans l'ordre, avec leurs dates, ce que chacune construit et plante (regroupé par type d'élément ou par espèce, avec les identifiants des éléments), le travail estimé (heures à la main ; machine pour un chantier à la pelleteuse) et le coût (prix des plants de la palette et autres frais), face au temps et au budget annoncés dans la fiche projet, et les conseils du guide (season : chantier hors de sa saison ; time : plus d'heures que la personne n'en a ; machine ; availability : une saison où elle n'est pas libre ; budget). Donne aussi ce qui n'est encore dans aucune phase, les éléments dessinés comme déjà là (drawn_as_existing_ids, qui n'entrent dans le plan qu'une fois « En projet ») et les phases proposées par une IA qui attendent l'humain. Seul le travail restant entre dans le plan : une plante sans planted_on, un autre élément avec planned: true."
+      propose_phases:
+        title: "Proposer des phases de mise en œuvre"
+        description: "Propose des phases pour le plan de mise en œuvre de la carte, en brouillons que l'humain accepte ou refuse sur la page « Mise en œuvre » : chacune avec son nom, ses dates (sa saison de travail), ses notes, sa justification et les éléments qu'elle construirait ou planterait (feature_ids, voir get_implementation_plan). Accepter une phase lui donne ces éléments. Suis l'ordre de Semisto (get_design_guide, topic method) : eau, terre et accès en fin d'été et en automne ; haies, brise-vent, arbres de structure et fixatrices d'azote au premier hiver ; strates basses au printemps ; fruitiers et arbustes l'hiver suivant ; et garde chaque phase dans le temps que la personne a. Pour déplacer des éléments dans une phase existante, utilise propose_feature_updates avec la propriété phase_id. 10 phases au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        params:
+          summary: "Résumé de la proposition, par exemple le parti pris du phasage."
+          phases: "Les phases proposées, de 1 à 10."
+          phase_name: "Le nom de la phase, en français (« L'eau et la terre », « Premier hiver : la haie brise-vent »)."
+          starts_on: "Premier jour de la phase (AAAA-MM-JJ)."
+          ends_on: "Dernier jour de la phase (AAAA-MM-JJ), au plus tôt le premier."
+          phase_notes: "Notes pratiques pour la personne : qui aide, quel matériel louer, où commander les plants."
+          phase_rationale: "Pourquoi cette phase, à cette saison, avec ces éléments, en une ou deux phrases que la personne comprend (saison, temps disponible, ordre eau-structure-plantes)."
+          phase_feature_ids: "Les éléments de la carte que cette phase construirait ou planterait (identifiants de get_implementation_plan ou list_features)."
       get_project_sheet:
         title: "Lire la fiche projet"
         description: "La fiche projet de la carte avec toutes ses questions : pour chaque section et chaque champ, son type, son libellé, les réponses possibles (clé et libellé français), la réponse actuelle, l'avancement de la fiche et les réponses déjà proposées par une IA qui attendent l'humain. À lire avant propose_project_sheet, pour faire correspondre ce que dit la personne aux réponses possibles."
@@ -424,10 +439,14 @@ fr:
       plan_write: "Le forfait qui couvre la carte (celui de son équipe, sinon de son propriétaire) ne comprend pas l'écriture par l'IA, et il n'a pas d'essai en cours."
       read_only: "La carte dépasse le nombre de cartes du forfait de son propriétaire : elle est en lecture seule."
     notes:
+      implementation: "Les heures sont une estimation à la main, outillage ordinaire, préparation comprise : un ordre de grandeur à comparer au temps de la personne. Pour ranger des éléments dans une phase existante, propose phase_id avec propose_feature_updates ; pour de nouvelles phases, propose_phases."
+      review_phases: "Les phases proposées attendent sur la page « Mise en œuvre » de la carte, où l'humain les accepte ou les refuse. Accepter une phase lui donne les éléments proposés."
       help_panel_button: "un bouton du guide qui ouvre ce panneau dans l'éditeur de la carte"
       help_capture: "capture d'écran : %{alt}"
       networks_hidden: "Les réseaux (eau, gaz, électricité, câbles) sont masqués."
       networks_on_request: "Les réseaux sont masqués par défaut : passe include_networks à true dans list_features pour les lire."
+      publication: "La vue publique (panneau « Publier ») : stale = la carte a changé depuis la publication ; views = visites hors membres de la carte et robots ; places_tried = personnes qui ont essayé leur propre adresse depuis « Et chez toi ? » ; gardens_started = comptes ouverts après l'avoir vue. Des nombres, jamais des noms. Seul le propriétaire publie, met à jour ou dépublie, dans le panneau : tu peux lui dire quand la mettre à jour et lui donner l'adresse à partager (get_help, slug publier-sa-carte)."
+      publication_none: "La carte n'est pas publiée. Le propriétaire peut en publier une vue en lecture seule, sans compte pour les visiteurs, depuis le panneau « Publier » (get_help, slug publier-sa-carte)."
       networks_editor_only: "Les réseaux ne sont visibles que du propriétaire et des éditeurs de la carte."
       drafts_trial: "Le propriétaire de cette carte essaie les brouillons de l'IA jusqu'au %{date} (essai offert de 14 jours). Après cette date, sans forfait, tu ne pourras plus que lire la carte : dis-le à l'utilisateur quand tu poses tes premiers brouillons, pour qu'il ne soit pas surpris."
       review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
@@ -721,6 +740,10 @@ fr:
         one: "a proposé 1 plante pour la palette"
         other: "a proposé %{count} plantes pour la palette"
       get_project_sheet: "a lu la fiche projet"
+      get_implementation_plan: "a lu le plan de mise en œuvre"
+      propose_phases:
+        one: "a proposé 1 phase de mise en œuvre"
+        other: "a proposé %{count} phases de mise en œuvre"
       propose_project_sheet:
         one: "a proposé 1 réponse pour la fiche projet"
         other: "a proposé %{count} réponses pour la fiche projet"

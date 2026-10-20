@@ -1,14 +1,16 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, Link, router, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
 import { ArrowLeft, Plus, Sparkles, Trash2 } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NumberInput } from '@/components/finances/NumberInput'
+import { returnToOffer } from '@/components/offers/returnTo'
 import { categoryLabel, newId, phaseLabel, PhaseMark, typeLabel } from '@/components/offers/shared'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { confirmAction } from '@/components/ui/confirm'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
-import { t } from '@/lib/i18n'
+import { t, translations } from '@/lib/i18n'
 import type { PricingData, PricingExpense, PricingTask, TemplateEditProps } from '@/types/offer_templates'
 import type { ComplexityCriterion, ComplexityLevel, OfferSettings, PlantCategory, PlantingType } from '@/types/offers'
 
@@ -20,6 +22,11 @@ const RATE_UNITS: Record<keyof OfferSettings, string> = {
 
 const slug = (prefix: string) => `${prefix}_${newId().replace(/[^a-z0-9]/g, '').slice(0, 8)}`
 const taskLabel = (task: { key: string; label: string | null }) => task.label || t(`offers.tasks.${task.key}`)
+/** « Toile de jute (m²/plant) »: the column says what one plant takes. */
+const supplyHeading = (supply: string) => {
+  const unit = translations('offers.supply_units')[supply]
+  return typeof unit === 'string' ? t('offer_templates.edit.per_plant', { supply: t(`offers.supplies.${supply}`), unit }) : t(`offers.supplies.${supply}`)
+}
 
 /**
  * A pricing template, whole: who it is for, rates, the tasks of each phase
@@ -34,6 +41,35 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
   const [data, setData] = useState<PricingData>(template.data)
   const [status, setStatus] = useState<'clean' | 'dirty' | 'saving' | 'saved' | 'error'>('clean')
   const [error, setError] = useState<string | null>(null)
+  const backToOffer = returnToOffer(usePage().url)
+  const unsaved = status === 'dirty' || status === 'error'
+  const leaving = useRef(false)
+
+  // Twenty minutes of settings are not lost to a click on a link.
+  useEffect(() => {
+    if (!unsaved) return
+    const onBeforeUnload = (event: BeforeUnloadEvent) => event.preventDefault()
+    window.addEventListener('beforeunload', onBeforeUnload)
+    const stop = router.on('before', (event) => {
+      const visit = event.detail.visit
+      if (visit.method !== 'get' || leaving.current) return
+      // The notebook's dialog answers later: hold the visit, then replay it.
+      event.preventDefault()
+      void confirmAction({
+        title: t('offer_templates.edit.leave_unsaved'),
+        confirmLabel: t('offer_templates.edit.leave_confirm'),
+        tone: 'danger',
+      }).then((confirmed) => {
+        if (!confirmed) return
+        leaving.current = true
+        router.visit(visit.url)
+      })
+    })
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload)
+      stop()
+    }
+  }, [unsaved])
 
   const change = (next: Partial<PricingData>) => {
     setData({ ...data, ...next })
@@ -55,17 +91,29 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
     }
   }
 
-  function destroy() {
-    if (window.confirm(t('offer_templates.edit.delete_confirm', { name: template.name }))) router.delete(`/offer_templates/${template.id}`)
+  async function destroy() {
+    const confirmed = await confirmAction({
+      title: t('offer_templates.edit.delete_confirm', { name: template.name }),
+      confirmLabel: t('offer_templates.edit.delete'),
+      tone: 'danger',
+    })
+    if (confirmed) router.delete(`/offer_templates/${template.id}`)
   }
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-24">
       <Head title={`${name} · ${t('offer_templates.index.title')}`} />
       <header className="space-y-1">
-        <Link href="/offer_templates" className="inline-flex items-center gap-1 text-sm text-loam-500 hover:text-loam-900">
-          <ArrowLeft className="h-4 w-4" />{t('offer_templates.edit.back')}
-        </Link>
+        <span className="flex flex-wrap gap-x-4 gap-y-1">
+          <Link href={backToOffer ? `/offer_templates?return_to=${encodeURIComponent(backToOffer)}` : '/offer_templates'} className="inline-flex items-center gap-1 text-sm text-loam-500 hover:text-loam-900">
+            <ArrowLeft className="h-4 w-4" />{t('offer_templates.edit.back')}
+          </Link>
+          {backToOffer && (
+            <Link href={backToOffer} className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
+              <ArrowLeft className="h-4 w-4" />{t('offer_templates.back_to_offer')}
+            </Link>
+          )}
+        </span>
         <h1 className="text-2xl">{name || t('offer_templates.edit.untitled')}</h1>
         <p className="text-loam-500">{account.name ? t('offer_templates.index.team', { name: account.name }) : t('offer_templates.index.mine')}</p>
       </header>
@@ -77,7 +125,7 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
         </label>
         <fieldset>
           <legend className="text-sm font-medium text-loam-800">{t('offer_templates.edit.client_types')}</legend>
-          <p className="text-xs text-loam-500">{t('offer_templates.edit.client_types_help')}</p>
+          <p className="text-sm text-loam-500">{t('offer_templates.edit.client_types_help')}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {vocabulary.clientTypes.map((type) => {
               const on = clientTypes.includes(type)
@@ -101,7 +149,7 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
         <div className="grid gap-3 sm:grid-cols-3">
           {(Object.keys(RATE_UNITS) as (keyof OfferSettings)[]).filter((key) => key !== 'designers').map((key) => (
             <label key={key} className="block space-y-1">
-              <span className="block text-xs text-loam-600">{t(`offers.rates.${key}`)}</span>
+              <span className="block text-sm text-loam-600">{t(`offers.rates.${key}`)}</span>
               <NumberInput value={data.settings[key]} unit={RATE_UNITS[key]} onValue={(value) => value != null && change({ settings: { ...data.settings, [key]: value } })} />
             </label>
           ))}
@@ -136,29 +184,29 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
       <Section title={t('offer_templates.edit.terms')} help={t('offer_templates.edit.terms_help')}>
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="block space-y-1">
-            <span className="block text-xs text-loam-600">{t('offer_templates.edit.revisions')}</span>
+            <span className="block text-sm text-loam-600">{t('offer_templates.edit.revisions')}</span>
             <NumberInput integer value={data.terms.revisions} onValue={(value) => change({ terms: { ...data.terms, revisions: value } })} />
           </label>
           <label className="block space-y-1">
-            <span className="block text-xs text-loam-600">{t('offer_templates.edit.validity_days')}</span>
+            <span className="block text-sm text-loam-600">{t('offer_templates.edit.validity_days')}</span>
             <NumberInput integer value={data.terms.validity_days} unit="j" onValue={(value) => change({ terms: { ...data.terms, validity_days: value } })} />
           </label>
           <label className="block space-y-1">
-            <span className="block text-xs text-loam-600">{t('offer_templates.edit.deposit_pct')}</span>
+            <span className="block text-sm text-loam-600">{t('offer_templates.edit.deposit_pct')}</span>
             <NumberInput value={data.terms.deposit_pct} unit="%" onValue={(value) => change({ terms: { ...data.terms, deposit_pct: value } })} />
           </label>
         </div>
         <label className="block space-y-1">
-          <span className="block text-xs text-loam-600">{t('offer_templates.edit.markup_label')}</span>
+          <span className="block text-sm text-loam-600">{t('offer_templates.edit.markup_label')}</span>
           <Input value={data.terms.markup_label ?? ''} maxLength={120} placeholder={t('offer_templates.edit.markup_label_placeholder')} onChange={(e) => change({ terms: { ...data.terms, markup_label: e.target.value } })} />
-          <span className="block text-xs text-loam-500">{t('offer_templates.edit.markup_label_help')}</span>
+          <span className="block text-sm text-loam-500">{t('offer_templates.edit.markup_label_help')}</span>
         </label>
         <label className="block space-y-1">
-          <span className="block text-xs text-loam-600">{t('offer_templates.edit.assumptions')}</span>
+          <span className="block text-sm text-loam-600">{t('offer_templates.edit.assumptions')}</span>
           <Textarea rows={3} value={data.terms.assumptions ?? ''} placeholder={t('offer_templates.edit.assumptions_placeholder')} onChange={(e) => change({ terms: { ...data.terms, assumptions: e.target.value } })} />
         </label>
         <label className="block space-y-1">
-          <span className="block text-xs text-loam-600">{t('offer_templates.edit.exclusions')}</span>
+          <span className="block text-sm text-loam-600">{t('offer_templates.edit.exclusions')}</span>
           <Textarea rows={3} value={data.terms.exclusions ?? ''} placeholder={t('offer_templates.edit.exclusions_placeholder')} onChange={(e) => change({ terms: { ...data.terms, exclusions: e.target.value } })} />
         </label>
       </Section>
@@ -312,7 +360,7 @@ function Categories({ data, vocabulary, onChange }: Editor) {
             <tr className="text-left text-xs text-loam-500">
               <th className="pb-1 font-medium">{t('offers.plants.category')}</th>
               <th className="w-24 pb-1 font-medium">{t('offers.plants.price')}</th>
-              {vocabulary.supplies.map((supply) => <th key={supply} className="w-20 pb-1 font-medium">{t(`offers.supplies.${supply}`)}</th>)}
+              {vocabulary.supplies.map((supply) => <th key={supply} className="w-20 pb-1 font-medium">{supplyHeading(supply)}</th>)}
               <th />
             </tr>
           </thead>
@@ -351,7 +399,7 @@ function PlantingTypes({ data, onChange }: Omit<Editor, 'vocabulary'>) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold text-loam-900">{t('offer_templates.edit.planting_types')}</h3>
-      <p className="text-xs text-loam-500">{t('offer_templates.edit.planting_types_help')}</p>
+      <p className="text-sm text-loam-500">{t('offer_templates.edit.planting_types_help')}</p>
       <ul className="space-y-3">
         {data.planting_types.map((type) => (
           <li key={type.key} className="rounded-xl bg-loam-50 p-3">
@@ -426,7 +474,7 @@ function Complexity({ data, onChange }: Omit<Editor, 'vocabulary'>) {
             <NumberInput aria-label={t('offer_templates.edit.factor')} title={t('offer_templates.edit.factor')} value={level.factor} unit="×" onValue={(value) => setLevel(level, { factor: value ?? 1 })} />
           </div>
         ))}
-        <p className="text-xs text-loam-500">{t('offer_templates.edit.levels_help')}</p>
+        <p className="text-sm text-loam-500">{t('offer_templates.edit.levels_help')}</p>
       </div>
     </div>
   )

@@ -42,6 +42,8 @@ module Mcp
           photos: map.photos.count,
           observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
+          publication: publication(map),
+          implementation: implementation(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -66,6 +68,43 @@ module Mcp
 
       private
         MAX_BIOINDICATORS = 100
+
+        # The public view (« Publier »), for the owner only, as in the editor:
+        # its address, whether the map changed since the snapshot, and what
+        # it brought (views, trials started from « Et chez toi ? », accounts
+        # opened after it). Numbers, never names. Publishing stays a gesture
+        # of the owner in the panel.
+        def publication(map)
+          return nil unless @role == "owner"
+          publication = map.publication or return { published: false, note: t("notes.publication_none") }
+          {
+            published: publication.live?, url: "#{origin}#{publication.public_path}", title: publication.title,
+            version: publication.version, published_at: publication.published_at.iso8601,
+            unpublished_at: publication.unpublished_at&.iso8601, stale: publication.stale?,
+            shown_layers: publication.options["feature_layers"], hides_address: publication.options["hide_address"],
+            views: publication.views_count, places_tried: publication.trials.count, gardens_started: publication.sourced_users.count,
+            note: t("notes.publication")
+          }.compact
+        end
+
+        # The implementation plan (« Mise en œuvre »): its phases in order,
+        # with their season, workload and cost, and how much work is still
+        # in no phase. An element joins a phase through its `phase_id`
+        # property (propose_feature_updates); get_implementation_plan has the detail.
+        def implementation(map)
+          plan = Implementation::Plan.new(map, networks: editor?).as_json
+          {
+            phases: plan[:phases].map do |phase|
+              { id: phase[:id], name: phase[:name], starts_on: phase[:startsOn], ends_on: phase[:endsOn], notes: phase[:notes],
+                hours: phase[:hours][:total], hours_available: phase.dig(:available, :hours), cost_cents: phase[:costCents],
+                done: phase[:done], count: phase[:count], advice: phase[:advice].map { _1[:code] } }
+            end,
+            proposed_phases_pending: plan[:drafts].size,
+            not_in_a_phase: plan[:unassigned][:groups].sum { _1[:count] },
+            drawn_as_existing: plan[:drawnAsExisting].size,
+            hours_total: plan[:totals][:hours], cost_cents_total: plan[:totals][:costCents]
+          }
+        end
 
         # The offer's versions and the budget of the last accepted one, for
         # the team that priced it (never a viewer: the client may be one).

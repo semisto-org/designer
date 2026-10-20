@@ -210,3 +210,18 @@ export function gardenGeoJson(painted: PaintedPlant[]): FeatureCollection<Point>
     })),
   }
 }
+
+/** « Mon jardin dans 30 ans » (video.ts): 1 s at planting, 12 s of growth, 2 s on year 30. */
+export const VIDEO_SECONDS = { still: 1, grow: 12, hold: 2 } as const
+export const VIDEO_DURATION = VIDEO_SECONDS.still + VIDEO_SECONDS.grow + VIDEO_SECONDS.hold
+
+/**
+ * The year and the time of the year at `seconds` into the video. The years
+ * ease in and out; the seasons turn slowly, two and a half times, so the
+ * video ends on year 30 in summer.
+ */
+export function videoMoment(seconds: number): { year: number; f: number } {
+  const p = Math.min(1, Math.max(0, (seconds - VIDEO_SECONDS.still) / VIDEO_SECONDS.grow))
+  const eased = p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2
+  return { year: eased * GARDEN_YEARS, f: (SEASONS.winter + p * (2 + SEASONS.summer - SEASONS.winter)) % 1 }
+}

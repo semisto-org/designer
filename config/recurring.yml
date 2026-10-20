@@ -53,3 +53,7 @@ production:
   map_feature_trash_purge:
     command: "MapFeature.purge_trash"
     schedule: every day at 4am
+  # « Et chez toi ? »: trials not kept within 48 hours.
+  map_trials_sweep:
+    command: "MapTrial.expired.delete_all"
+    schedule: every day at 4:30am

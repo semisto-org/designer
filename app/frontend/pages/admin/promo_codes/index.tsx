@@ -310,7 +310,7 @@ function PromoCodeCard({ code }: { code: AdminPromoCode }) {
           </p>
         </div>
         {code.active && (
-          <Button size="sm" variant="ghost" className="text-clay-700" disabled={busy} onClick={deactivate}>
+          <Button size="sm" variant="danger-ghost" disabled={busy} onClick={deactivate}>
             {t('admin_promo_codes.list.deactivate')}
           </Button>
         )}

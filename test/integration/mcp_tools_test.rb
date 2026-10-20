@@ -41,6 +41,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert data.dig("permissions", "propose_drafts")
     assert_equal 1, data.dig("elements", "by_layer", "networks", "active")
     assert_equal "Zone", data.dig("known_kinds", "zone")
+    assert_equal [], data.dig("implementation", "phases")
     assert_equal AiAction.last.map, @map
 
     data, = call_tool(@viewer, "get_map", { map_id: @map.id })
@@ -51,6 +52,29 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert error
     assert_match(/introuvable/, text)
     assert_nil AiAction.last.map, "no journal entry on a map the user cannot open"
+  end
+
+  test "get_map tells the owner about the public view and what it brought, never the others" do
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    refute data.dig("publication", "published")
+    assert_match(/Publier/, data.dig("publication", "note"))
+
+    publication = MapPublication.publish!(@map, by: users(:michael), title: "Le verger")
+    publication.update!(views_count: 31)
+    MapTrial.create!(center: "POINT(4.9 50.3)", source_publication: publication)
+    users(:bob).update!(source_publication: publication)
+    @map.touch
+
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    shown = data["publication"]
+    assert shown["published"]
+    assert shown["stale"], "the map changed since the snapshot"
+    assert_equal "http://www.example.com#{publication.public_path}", shown["url"]
+    assert_equal [ 31, 1, 1 ], shown.values_at("views", "places_tried", "gardens_started")
+    refute shown.to_s.include?("bob"), "numbers, never names"
+
+    data, = call_tool(@viewer, "get_map", { map_id: @map.id })
+    assert_nil data["publication"]
   end
 
   test "get_map gives the offer's versions and the accepted budget, to the team only" do
