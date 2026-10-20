@@ -554,7 +554,7 @@ fr:
               - "Nous faisons appel à des prestataires (sous-traitants), qui ne traitent vos données que pour notre compte et selon nos instructions :"
             items:
               - "Infomaniak (Suisse) : stockage de vos photos, vidéos et documents (Public Cloud, à Genève) et de leurs copies de sauvegarde (Swiss Backup)."
-              - "Le serveur qui fait tourner le service et sa base de données est un serveur privé virtuel réservé à Semisto et administré par elle."
+              - "Infomaniak (Suisse) : le serveur qui fait tourner le service et sa base de données, un serveur privé virtuel réservé à Semisto et administré par elle."
               - "Cloudflare : réseau qui protège le site contre les attaques et achemine les échanges entre votre navigateur et notre serveur ; il voit passer votre adresse IP et les pages demandées."
               - "Amazon Web Services (Amazon Simple Email Service) : envoi des e-mails du service (liens de connexion, invitations, commentaires, factures, rappels)."
               - "Sentry : suivi des erreurs du serveur, du navigateur et de l'application mobile. Il reçoit la description technique d'une erreur (page, navigateur, message), configurée pour ne pas inclure votre nom ni votre adresse e-mail."
@@ -567,7 +567,7 @@ fr:
             outro: "Reçoivent aussi vos données, en tant que responsables de leur propre traitement : Google ou Apple, si vous vous connectez par leur intermédiaire ; votre assistant IA, si vous le connectez ; les personnes avec qui vous partagez une carte. Au sein de Semisto, seules les personnes qui en ont besoin y ont accès : l'équipe peut se connecter à votre compte pour résoudre un problème que vous lui signalez ou un abus, pour une heure au plus, et chaque accès est journalisé. Pendant la phase de lancement, l'équipe reçoit aussi une copie des e-mails que le service vous envoie, jamais celle des liens et codes de connexion, pour vérifier qu'ils sont justes et utiles (notre intérêt légitime) ; ces copies suivent la durée de conservation de vos échanges avec nous. Nous ne communiquons des données aux autorités que si la loi nous y oblige."
           - title: "Vos données quittent-elles l'Union européenne ?"
             paragraphs:
-              - "Vos photos, vidéos et documents sont stockés en Suisse, chez Infomaniak. La Commission européenne reconnaît à la Suisse un niveau de protection des données adéquat (décision d'adéquation)."
+              - "Le service, sa base de données, vos photos, vidéos et documents sont hébergés en Suisse, chez Infomaniak. La Commission européenne reconnaît à la Suisse un niveau de protection des données adéquat (décision d'adéquation)."
               - "Certains prestataires sont établis aux États-Unis ou peuvent y traiter des données : Sentry (dont les données sont hébergées aux États-Unis), Cloudflare, Stripe, Amazon Web Services, Google et Apple. Ces transferts reposent sur la décision d'adéquation de la Commission pour les entreprises certifiées au cadre de protection des données UE-États-Unis, ou à défaut sur les clauses contractuelles types de la Commission européenne. Vous pouvez nous demander une copie de ces garanties à %{email}."
           - title: "Combien de temps les conservons-nous ?"
             items:
