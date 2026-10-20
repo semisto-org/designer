@@ -67,7 +67,19 @@ module Authentication
         others = other_sessions.reject { |s| s.user_id == user.id }
         others.unshift(previous) if previous && previous.user_id != user.id && others.none? { |s| s.user_id == previous.user_id }
         store_other_sessions(others)
+        note_signup(user)
       end
+    end
+
+    # A new account remembers the public map that brought it (a visit to
+    # /p/:token or a trial started from it, kept in this browser's session),
+    # and the page counts the sign-up (Plausible `signup`, with how).
+    def note_signup(user)
+      return unless user.created_at > 1.day.ago && user.sessions.count == 1
+      source_id = session.delete(:source_publication_id)
+      user.update_columns(source_publication_id: source_id) if source_id && user.source_publication_id.nil? && MapPublication.exists?(source_id)
+      via = session.delete(:signup_via) || (source_id ? "public_map" : "direct")
+      track_event("signup", via:)
     end
 
     # Signs out the current account only. Returns the account signed in on

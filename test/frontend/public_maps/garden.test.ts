@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  GARDEN_YEARS, SEASONS, gardenAt, gardenGeoJson, gardenPlants, lookOf, seasonOf, spriteOf, yearFraction, yearNow,
+  GARDEN_YEARS, SEASONS, VIDEO_DURATION, VIDEO_SECONDS, gardenAt, gardenGeoJson, gardenPlants, lookOf, seasonOf, spriteOf, videoMoment, yearFraction, yearNow,
   type PublicGrowth,
 } from '../../../app/frontend/public_maps/garden.ts'
 
@@ -89,4 +89,13 @@ test('the painted garden as GeoJSON: tallest last, sized from the sprite side', 
   assert.ok(high.height > low.height)
   assert.equal(high.sprite, 'garden-noyer')
   assert.ok(high.scale > 0)
+})
+
+test('the video starts at planting in winter and ends on year 30 in summer', () => {
+  assert.deepEqual(videoMoment(0), { year: 0, f: SEASONS.winter })
+  const end = videoMoment(VIDEO_DURATION)
+  assert.equal(end.year, GARDEN_YEARS)
+  assert.ok(Math.abs(end.f - SEASONS.summer) < 1e-9)
+  assert.equal(seasonOf(videoMoment(VIDEO_SECONDS.still + VIDEO_SECONDS.grow / 2).f), seasonOf((SEASONS.winter + (2 + SEASONS.summer - SEASONS.winter) / 2) % 1))
+  assert.ok(videoMoment(5).year < videoMoment(8).year)
 })

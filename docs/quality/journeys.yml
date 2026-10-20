@@ -1,0 +1,70 @@
+# The six reference journeys of docs/quality/ and their latest scores.
+# Each month's notebook (docs/quality/YYYY-MM.md) explains the scores; this
+# file is what CI reads (script/quality_gate.rb): a journey with two « fail »
+# blocks new files under its paths until a new score lifts it.
+#
+# scores: place, time, companion, notebook, further — the five questions of
+# docs/point-of-view.md — each pass | partial | fail.
+journeys:
+  - id: discover
+    title: Découvrir le site
+    month: 2026-10
+    scores: { place: fail, time: pass, companion: partial, notebook: partial, further: pass }
+    paths:
+      - app/frontend/pages/pages/**/*
+      - app/frontend/components/site/**/*
+      - app/controllers/pages_controller.rb
+
+  - id: first_map
+    title: Créer sa première carte
+    month: 2026-10
+    scores: { place: partial, time: pass, companion: pass, notebook: partial, further: partial }
+    paths:
+      - app/frontend/pages/sessions/**/*
+      - app/frontend/pages/welcomes/**/*
+      - app/frontend/pages/maps/new.tsx
+      - app/frontend/map/tour/**/*
+      - app/controllers/sessions_controller.rb
+      - app/controllers/welcomes_controller.rb
+
+  - id: invite
+    title: Inviter quelqu’un
+    month: 2026-10
+    scores: { place: partial, time: fail, companion: partial, notebook: fail, further: partial }
+    paths:
+      - app/frontend/collab/**/*
+      - app/frontend/pages/invitations/**/*
+      - app/controllers/invitations_controller.rb
+      - app/controllers/maps/invitations_controller.rb
+      - app/controllers/maps/sharings_controller.rb
+      - app/controllers/maps/share_links_controller.rb
+      - app/controllers/maps/memberships_controller.rb
+      - app/services/collab/**/*
+
+  - id: pay
+    title: Payer
+    month: 2026-10
+    scores: { place: fail, time: fail, companion: partial, notebook: fail, further: partial }
+    paths:
+      - app/frontend/pages/billing/**/*
+      - app/controllers/billing*_controller.rb
+      - app/models/billing*.rb
+      - app/services/billing/**/*
+
+  - id: plant
+    title: Planter au jardin
+    month: 2026-10
+    scores: { place: pass, time: pass, companion: partial, notebook: partial, further: partial }
+    paths:
+      - app/frontend/map/plants/**/*
+      - mobile/src/**/*
+
+  - id: return
+    title: Revenir après trois mois
+    month: 2026-10
+    scores: { place: pass, time: partial, companion: fail, notebook: partial, further: fail }
+    paths:
+      - app/frontend/pages/maps/index.tsx
+      - app/frontend/map/panels/Journey*.tsx
+      - app/frontend/map/editor/StageStepper.tsx
+      - app/models/journey.rb
