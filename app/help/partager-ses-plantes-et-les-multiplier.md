@@ -29,3 +29,7 @@ Ouvre la fiche de la plante dans **Plantes**, puis la rubrique « Dans d'autres 
 Chaque demande arrive par e-mail aux propriétaires du lieu et dans **Multiplication**, dans le menu. Tu peux l'accepter ou la décliner, avec un mot si tu veux. Les adresses e-mail ne s'échangent que si tu acceptes : vous recevez alors chacun celle de l'autre pour vous organiser.
 
 Si plus personne n'est propriétaire du lieu, ses plantes cessent d'être montrées.
+
+## Avec ton IA
+
+Ton IA connectée à Terranova lit les mêmes choses que toi : qui est propriétaire du lieu et ce qu'il partage, les jardins qui ont une plante en terre (toujours sans leur nom ni leur adresse) et tes demandes reçues ou envoyées. Elle peut t'aider à trouver une variété près de chez toi ou à écrire ta réponse ; c'est toi qui envoies la demande ou qui réponds, ici.

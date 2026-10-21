@@ -697,9 +697,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
     t.bigint "published_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "views_count", default: 0, null: false
     t.integer "gallery_position"
     t.boolean "site_tour", default: false, null: false
-    t.integer "views_count", default: 0, null: false
     t.index ["gallery_position"], name: "index_map_publications_on_gallery_position"
     t.index ["map_id"], name: "index_map_publications_on_map_id", unique: true
     t.index ["published_by_id"], name: "index_map_publications_on_published_by_id"
