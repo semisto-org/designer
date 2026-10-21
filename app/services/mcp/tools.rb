@@ -8,7 +8,7 @@ module Mcp
         ListTasks, ListHarvests, ListPlantObservations, ListStorageReadings, ListDocuments, GetDocument, ListPhotos, GetPhoto, ListDronePilots, ListDroneMissions, ListPropagationRequests,
         ProposeFeatures, ProposeSectors, ProposeZones, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposeBioindicators, ProposeSoilResults, WithdrawDraft,
         CreateTasks, UpdateTasks, RecordHarvests, RecordPlantObservations, RecordStorageReadings, AddDocument, UpdateDocument, AddPhoto, UpdatePhotos, DeletePhotos,
-        CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments
+        CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments, PrepareOfflineSite
       ]
     end
   end

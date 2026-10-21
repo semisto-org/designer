@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Plane, Sparkles, ThermometerSnowflake, Trash2, Undo2, Upload, X } from 'lucide-react'
+import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Plane, Sparkles, ThermometerSnowflake, Trash2, Undo2, Upload, WifiOff, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -42,6 +42,7 @@ const ICONS: Record<string, typeof Bot> = {
   attach_documents: FileText,
   import_from_url: Upload,
   delete_documents: FileText,
+  prepare_offline_site: WifiOff,
 }
 
 const relative = new Intl.RelativeTimeFormat('fr', { numeric: 'auto' })
