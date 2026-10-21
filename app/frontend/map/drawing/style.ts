@@ -10,7 +10,7 @@ import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
 import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
-import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, scenarioFilter, type Scenario } from '@/map/scenario'
+import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 import { ensureSupportHatch } from '@/map/plants/supportHatch'
 
@@ -463,22 +463,22 @@ const visibilityState = new WeakMap<MapLibreMap, Map<string, VisibilityEntry>>()
 /**
  * Hides the given design layers (`existing`, `water`…) on every map layer
  * drawn from the features source, whoever added it, by combining its own
- * filter with a test on the feature's `layer`. With `scenario: 'current'`,
- * what is still a project (planned plants and elements, drafts) is hidden too. With a
+ * filter with a test on the feature's `layer`. With `moment` (the time
+ * strip's filter, map/time/moment), what that moment leaves out is hidden too. With a
  * `version` (a tag), only elements carrying it, or no tag at all, show.
  */
 export function applyLayerVisibility(
   map: MapLibreMap,
   hidden: string[],
-  options: { activeOnly?: boolean; scenario?: Scenario; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] } = {},
+  options: { activeOnly?: boolean; moment?: unknown[] | null; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] } = {},
 ) {
   const hiddenKinds = options.hiddenKinds ?? []
   const hiddenIds = options.hiddenIds ?? []
   const store = visibilityState.get(map) ?? new Map<string, VisibilityEntry>()
   visibilityState.set(map, store)
-  const scenario = options.scenario ? scenarioFilter(options.scenario) : null
+  const moment = options.moment ?? null
   const version = options.version ? versionFilter(options.version) : null
-  const key = `${options.activeOnly ? 'active:' : ''}${scenario ? 'current:' : ''}${options.version ? `v=${options.version}:` : ''}${[...hidden].sort().join(',')}|${[...hiddenKinds].sort().join(',')}|${hiddenIds.join(',')}`
+  const key = `${options.activeOnly ? 'active:' : ''}${moment ? `m=${JSON.stringify(moment)}:` : ''}${options.version ? `v=${options.version}:` : ''}${[...hidden].sort().join(',')}|${[...hiddenKinds].sort().join(',')}|${hiddenIds.join(',')}`
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
@@ -493,7 +493,7 @@ export function applyLayerVisibility(
     if (hidden.length) tests.push(['!', ['in', ['get', 'layer'], ['literal', hidden]]])
     // Printed plans leave out drafts (AI proposals) and rejected features.
     if (options.activeOnly) tests.push(['==', ['coalesce', ['get', 'status'], 'active'], 'active'])
-    if (scenario) tests.push(scenario)
+    if (moment) tests.push(moment)
     if (version) tests.push(version)
     tests.push(...hiddenTests(hiddenKinds, hiddenIds))
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]

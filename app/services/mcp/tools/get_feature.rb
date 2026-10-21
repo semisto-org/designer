@@ -19,7 +19,8 @@ module Mcp
         feature_json(feature, zone: PermacultureZones::Lookup.new(map).for_feature(feature)).merge(
           measures: measures.reject { |_, v| v.zero? },
           created_at: feature.created_at.iso8601,
-          **plant_journal(feature)
+          **plant_journal(feature),
+          **plant_growth(feature)
         )
       end
 
@@ -37,6 +38,14 @@ module Mcp
             journal_total: feature.plant_observations.count,
             state: state && { survival: state.survival, vigor: state.vigor, observed_on: state.observed_on.iso8601 }
           }
+        end
+
+        # For a plant: its size over the years (PlantGrowth::Projection), the
+        # same as the editor's time strip and the 3D view draw it.
+        def plant_growth(feature)
+          return {} unless feature.plant?
+          growth = PlantGrowth::Projection.new(feature).as_json
+          growth ? { growth: } : {}
         end
 
         def summarize_result(data) = { feature_id: data[:id], layer: data.dig(:properties, "layer") }

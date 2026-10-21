@@ -119,6 +119,8 @@ export type MapData = {
   /** The team the map belongs to, if any. */
   teamId?: number | null
   ownerName: string
+  /** When the map was made: the land « on arrival » of the time strip. */
+  createdAt?: string
   updatedAt: string
   lockVersion: number
   /** The owner's plan no longer covers this map: it stays readable but cannot be edited. */

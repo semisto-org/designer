@@ -3,7 +3,7 @@ import type { Geometry } from 'geojson'
 import { ArrowLeft } from 'lucide-react'
 import { area, polygon, bbox as turfBbox } from '@turf/turf'
 import type { MapMouseEvent, Map as MapLibreMap } from 'maplibre-gl'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { MapViewMenu } from '@/components/map_views/MapViews'
 import { Dialog } from '@/components/ui/Dialog'
@@ -32,6 +32,8 @@ import { featureName } from '@/map/earthworks/model'
 import { plantPeek } from '@/map/plants/peek'
 import { isPlant } from '@/map/plants/properties'
 import { idsWithin, selectionMove, toggled } from '@/map/selection/move'
+import { DEFAULT_MOMENT, shownMoment, timeline as timelineOf } from '@/map/time/moment'
+import { initTime, setMoment, setSeason, useTime } from '@/map/time/store'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
 import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
 
@@ -99,6 +101,12 @@ function panelFromUrl(): string | null {
   return PANELS.some((p) => p.id === id) ? id : null
 }
 
+/** Today in the viewer's time zone (ISO day). */
+function localDay(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
+
 /** `?feature=12` (a plant from the catalogue's map) selects that element on arrival. */
 function featureFromUrl(features: MapFeature[]): MapFeature | null {
   if (typeof window === 'undefined') return null
@@ -117,6 +125,14 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const [selectedId, setSelectedId] = useState<number | null>(arrival?.properties.id ?? null)
   const [selection, setSelection] = useState<number[]>([])
   const [multiSelect, setMultiSelect] = useState(false)
+  // The time strip (map/time): the moment is remembered per map and read by
+  // the layers through the editor; a moment already behind the garden falls back to today.
+  useLayoutEffect(() => initTime(map.id), [map.id])
+  const time = useTime()
+  const [today] = useState(localDay)
+  const timeline = useMemo(() => timelineOf(features.map((f) => f.properties), today, map.createdAt ?? today), [features, today, map.createdAt])
+  const moment = time.mapId === map.id ? shownMoment(time.moment, timeline) : DEFAULT_MOMENT
+  const shade = time.mapId === map.id ? time.season : null
   // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
   const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
   // A guide's « Ouvrir le panneau… » button asks for a panel (components/help/actions).
@@ -419,8 +435,13 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       focusStage,
       focusStep: setPickedStage,
       notify,
+      moment,
+      timeline,
+      setMoment,
+      shade,
+      setShade: setSeason,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade])
 
   const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'offers' ? canEdit && offerBuilder : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)

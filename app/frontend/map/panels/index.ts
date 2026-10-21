@@ -29,8 +29,9 @@ import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
 import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
-import ScenarioToggle from '@/map/panels/ScenarioToggle'
 import VersionPicker from '@/map/tags/VersionPicker'
+import TimeStrip from '@/map/time/TimeStrip'
+import ShadeOverlay from '@/map/time/ShadeOverlay'
 import PalettePanel from '@/map/plants/PalettePanel'
 import OfferPanel from '@/map/panels/OfferPanel'
 import PlantListPanel from '@/map/plants/PlantListPanel'
@@ -172,7 +173,6 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'shortcuts', component: ShortcutsButton, order: 94 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
-  { id: 'scenario', component: ScenarioToggle, order: 10 },
 ]
 
 // Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.
@@ -180,6 +180,8 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'collab', component: CollabOverlay, order: 90 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
   { id: 'version', component: VersionPicker, order: 25 },
+  { id: 'time-strip', component: TimeStrip, order: 24 },
+  { id: 'time-shade', component: ShadeOverlay, order: 19 },
   { id: 'tour', component: TourOverlay, order: 100 },
   { id: 'shortcuts', component: ShortcutsSheet, order: 101 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },

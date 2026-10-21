@@ -22,6 +22,7 @@ class PlantingState
       strata: strata_json,
       list: PlantList.new(quantities).as_json,
       alerts: PlantingAlerts.new(quantities).as_json,
+      growth: growth_json,
       # Support plants against productive ones, years 1, 5, 15 and 30.
       succession: SuccessionBalance.new(map, quantities).as_json
     }
@@ -46,6 +47,23 @@ class PlantingState
         end
         [ patch.feature.id.to_s, { areaM2: patch.area_m2, total: patch.lines.sum(&:quantity), items: lines } ]
       end
+    end
+
+    # Adult size and years to maturity of each species/cultivar on the map,
+    # keyed "speciesId:varietyId": the editor's time strip grows the crowns
+    # from them (map/time, with the 3D view's curve).
+    # An AI's draft plants count too: the strip shows them in the future.
+    def growth_json
+      drafts = map.features.where(kind: PlantableFeature::PLANT, status: "draft").map { |f| [ f.plant_species_id, f.plant_variety_id ] }
+      keys = quantities.by_key.keys | quantities.palette.map(&:key) | drafts
+      others = PlantSpecies.where(id: keys.map(&:first) - quantities.species_index.keys).index_by(&:id)
+      varieties = PlantVariety.where(id: keys.filter_map(&:last) - quantities.variety_index.keys).index_by(&:id)
+      keys.filter_map do |species_id, variety_id|
+        species = quantities.species_index[species_id] || others[species_id]
+        next unless species
+        variety = variety_id && (quantities.variety_index[variety_id] || varieties[variety_id])
+        [ "#{species_id}:#{variety_id}", PlantGrowth.inputs(strata: quantities.strata_for([ species_id, variety_id ]) || species.default_strata, species:, variety:) ]
+      end.to_h
     end
 
     # Plants planned per strata, every strata listed (the palette balance).

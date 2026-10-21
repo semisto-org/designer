@@ -6,7 +6,6 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { arrowsToGeoJSON, type ArrowInput } from '@/map/earthworks/arrows'
 import { SOIL_PARTS } from '@/map/earthworks/earthworks'
 import { m3, useArrowsShown, useEarthworks } from '@/map/earthworks/model'
-import { useScenario } from '@/map/scenario'
 import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
@@ -88,11 +87,12 @@ export default function EarthworksOverlay() {
   const map = editor.instance
   const { balance, byId } = useEarthworks()
   const shown = useArrowsShown()
-  const scenario = useScenario()
+  // The land on arrival has no earthworks yet: no arrows.
+  const arrival = editor.moment === 'arrival'
   const hiddenLayers = useDrawingState((s) => s.hiddenLayers)
 
   const data = useMemo(() => {
-    if (!shown || scenario === 'current') return arrowsToGeoJSON([])
+    if (!shown || arrival) return arrowsToGeoJSON([])
     const arrows: ArrowInput[] = []
     for (const dig of balance.digs) {
       const from = byId.get(dig.id)
@@ -109,7 +109,7 @@ export default function EarthworksOverlay() {
       }
     }
     return arrowsToGeoJSON(arrows)
-  }, [balance, byId, shown, scenario, hiddenLayers])
+  }, [balance, byId, shown, arrival, hiddenLayers])
 
   useEffect(() => {
     // After the editor's own layers, so the arrows sit on top of the shapes.

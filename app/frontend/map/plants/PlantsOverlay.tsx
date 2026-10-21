@@ -18,7 +18,9 @@ import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/pl
 import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
 import { inkOn } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
-import { inScenario, isPlannedPlant, PLANNED_OPACITY, setScenario, useScenario, type Scenario } from '@/map/scenario'
+import { isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
+import { inMoment } from '@/map/time/moment'
+import { growingPlant, sizeAtMoment } from '@/map/time/plants'
 import type { PlantingState } from '@/types/plants'
 
 const CROWNS = 'plant-crowns'
@@ -45,18 +47,21 @@ const NOT_REACH = ['!', ['to-boolean', ['get', 'reach']]] as never
 const SUPPORT_REACH_M = 2
 
 /**
- * Adult crowns as real-size circles (metres), from each plant's species.
- * Planned plants (not planted yet) are left out of the current situation,
+ * Crowns as real-size circles (metres), at the moment of the time strip:
+ * each plant's spread at its age then, from its species' adult size and
+ * years to maturity (the 3D view's growth model, map/time); the adult crown
+ * while that is unknown. What the moment leaves out (the plan on arrival,
+ * drafts until the future, a support plant that gave way) has no crown,
  * and plants of a hidden strata are left out altogether.
  */
-function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario, labelStyle: PlantLabelStyle, hiddenStrata: string[]) {
+function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantLabelStyle, hiddenStrata: string[]) {
   const crowns: Feature<Polygon, CrownProps>[] = []
   const labels: Feature<Point, LabelProps>[] = []
   const points: PointColors = new Map()
   const numbers: Feature<Point, NumberProps>[] = []
   for (const feature of editor.features) {
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
-    if (!inScenario(feature.properties, scenario)) continue
+    if (!inMoment(feature.properties, editor.moment, editor.timeline.arrival)) continue
     const strata = plantStrata(feature, data)
     // « Calques » or the legend hid this strata: no crown, name or number.
     if (data && hiddenStrata.includes(strataKey(strata))) continue
@@ -105,7 +110,10 @@ function crownsOf(editor: Editor, data: PlantingState | null, scenario: Scenario
     if (!strata || !species) continue
     points.set(feature.properties.id, STRATA_COLORS[strata])
     if (!drawsCrown(strata)) continue
-    const radiusM = Math.max(trainedCrown(species.crownM, trainingProperty(feature), strata, graftProperty(feature, strata)) / 2, 0.15)
+    const size = sizeAtMoment(feature, growingPlant(feature, data, strata), editor.moment, editor.timeline)
+    if (size === null) continue
+    const crownM = size ? size.spread : trainedCrown(species.crownM, trainingProperty(feature), strata, graftProperty(feature, strata))
+    const radiusM = Math.max(crownM / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
     const support = plantIsSupport(feature, data)
     if (support) {
@@ -297,7 +305,6 @@ export default function PlantsOverlay() {
   const editor = useEditor()
   const mapId = editor.map.id
   const { data, placing } = usePlanting(mapId)
-  const scenario = useScenario()
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   const editorRef = useRef(editor)
@@ -305,7 +312,7 @@ export default function PlantsOverlay() {
   const map = editor.instance
 
   const labelStyle = usePlantLabelStyle()
-  const layers = useMemo(() => crownsOf(editor, data, scenario, labelStyle, hiddenStrata), [editor.features, editor.selectedId, editor.selection, data, scenario, labelStyle, hiddenStrata]) // eslint-disable-line react-hooks/exhaustive-deps
+  const layers = useMemo(() => crownsOf(editor, data, labelStyle, hiddenStrata), [editor.features, editor.selectedId, editor.selection, data, editor.moment, editor.timeline, labelStyle, hiddenStrata]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Install the crowns, and again after a basemap style change.
   const latest = useRef(layers)
@@ -340,10 +347,10 @@ export default function PlantsOverlay() {
   }, [signature, mapId])
 
   // Click-to-place loop: one plant per click until Escape or « Terminer ».
-  // New plants are planned ones: show the projected situation to see them.
+  // New plants are planned ones: the land on arrival would hide them, today shows the plan.
   useEffect(() => {
     if (!placing || !editorRef.current.canEdit) return
-    setScenario('projected')
+    if (editorRef.current.moment === 'arrival') editorRef.current.setMoment('today')
     // A distinct cursor while placing (application.css, .placing-plant).
     const container = editorRef.current.instance.getContainer()
     container.classList.add('placing-plant')

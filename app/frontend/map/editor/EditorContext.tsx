@@ -2,6 +2,8 @@ import type { Geometry } from 'geojson'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import { createContext, useContext } from 'react'
 import type { DrawOptions, DrawShape, PointTool } from '@/map/editor/draw'
+import type { Season } from '@/map/time/growth'
+import type { Moment, Timeline } from '@/map/time/moment'
 import type {
   EntitlementsData, FeatureLayer, MapData, MapFeature, MapFeatureProperties, MapStage, RegionLayerData,
 } from '@/types'
@@ -88,6 +90,17 @@ export type Editor = {
   focusStage: MapStage
   focusStep: (stage: MapStage | null) => void
   notify: (message: string, tone?: 'info' | 'error', action?: NotifyAction) => void
+
+  /**
+   * The time strip at the foot of the map (map/time): the moment shown
+   * (arrival, today, years 5, 15 and 30), the dates it is read from, and
+   * the noon shade of June or December drawn under the crowns (or none).
+   */
+  moment: Moment
+  timeline: Timeline
+  setMoment: (moment: Moment) => void
+  shade: Season | null
+  setShade: (season: Season | null) => void
 }
 
 export const EditorContext = createContext<Editor | null>(null)
