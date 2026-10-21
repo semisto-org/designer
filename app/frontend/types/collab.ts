@@ -100,6 +100,8 @@ export type PublicationOptions = {
   show_zone_names?: boolean
   /** The newest drone view (drone area); off by default. */
   show_aerial_view?: boolean
+  /** The owner's consent to « Carnets ouverts » on the public site; off by default. */
+  in_gallery?: boolean
 }
 
 export type PublicationState = {

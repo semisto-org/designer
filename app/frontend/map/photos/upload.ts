@@ -30,6 +30,8 @@ export type UploadOptions = {
   useDevicePosition?: boolean
   /** Left for the AI to read the wild plants in it (« Sol » panel). */
   bioindicatorStatus?: 'to_analyze'
+  /** Delivered by the pilot of this drone mission, from the mission's page. */
+  droneMissionId?: number
 }
 
 const CONCURRENCY = 3
@@ -105,10 +107,10 @@ function csrfToken(): string {
 }
 
 /** POST with upload progress (fetch has none): a phone on 4G needs to see it move. */
-function send(mapId: number, form: FormData, onProgress: (percent: number) => void): Promise<{ status: number; body: Record<string, unknown> }> {
+function send(url: string, form: FormData, onProgress: (percent: number) => void): Promise<{ status: number; body: Record<string, unknown> }> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', `/maps/${mapId}/photos`)
+    xhr.open('POST', url)
     xhr.setRequestHeader('Accept', 'application/json')
     xhr.setRequestHeader('X-CSRF-Token', csrfToken())
     xhr.upload.onprogress = (event) => event.lengthComputable && onProgress(Math.round((event.loaded / event.total) * 100))
@@ -160,7 +162,8 @@ async function process(key: string) {
     if (options.featureId) form.append('photo[map_feature_id]', String(options.featureId))
     if (options.bioindicatorStatus) form.append('photo[bioindicator_status]', options.bioindicatorStatus)
 
-    const { status, body } = await send(mapId, form, (progress) => patch(key, { progress }))
+    const url = `/maps/${mapId}/photos${options.droneMissionId ? `?drone_mission_id=${options.droneMissionId}` : ''}`
+    const { status, body } = await send(url, form, (progress) => patch(key, { progress }))
     // 200: a photo already on the map, sent again for the AI, comes back marked.
     if (status === 201 || status === 200) {
       const photo = body as unknown as MapPhotoData

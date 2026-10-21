@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Sparkles, ThermometerSnowflake, Trash2, Undo2, Upload, WifiOff, X } from 'lucide-react'
+import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Plane, Sparkles, ThermometerSnowflake, Trash2, Undo2, Upload, WifiOff, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -26,6 +26,8 @@ const ICONS: Record<string, typeof Bot> = {
   record_plant_observations: NotebookPen,
   list_storage_readings: ThermometerSnowflake,
   record_storage_readings: ThermometerSnowflake,
+  list_drone_pilots: Plane,
+  list_drone_missions: Plane,
   list_documents: FileText,
   get_document: FileText,
   add_document: FileText,

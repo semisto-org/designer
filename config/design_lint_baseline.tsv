@@ -393,7 +393,6 @@ bare-button	12	app/frontend/pages/offer_templates/edit.tsx
 small-text	9	app/frontend/pages/offer_templates/edit.tsx
 bare-button	1	app/frontend/pages/offer_templates/index.tsx
 small-text	13	app/frontend/pages/pages/docs/mcp.tsx
-small-text	1	app/frontend/pages/pages/features.tsx
 small-text	1	app/frontend/pages/pages/home.tsx
 bare-button	1	app/frontend/pages/plants/index.tsx
 small-text	4	app/frontend/pages/plants/index.tsx

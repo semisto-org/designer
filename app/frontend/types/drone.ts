@@ -8,6 +8,8 @@ export type AerialView = {
   /** ISO date of the flight ("2027-05-12"). */
   capturedOn: string
   kind: AerialViewKind
+  /** What the raster shows (AerialView::PRODUCTS): one-band rasters are coloured on import. */
+  product: 'orthophoto' | 'elevation' | 'thermal' | 'multispectral'
   /** An XYZ template ({z}/{x}/{y}) or one .pmtiles archive (for an imported view, a path of the app). */
   url: string
   attribution: string | null

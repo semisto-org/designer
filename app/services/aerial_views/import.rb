@@ -26,7 +26,7 @@ module AerialViews
       @view.update!(status: "processing", failure: nil)
       Dir.mktmpdir("view-#{@view.id}-", self.class.work_root) do |dir|
         source = copy ? XyzCopy.new(@view, dir).call : upload.download_parts_to(File.join(dir, "source#{File.extname(@view.source_filename.to_s).downcase}"))
-        archive = Tiler.new(source, dir).call
+        archive = Tiler.new(source, dir, product: @view.product).call
         store(archive) if @view.reload
       end
       upload&.discard!
