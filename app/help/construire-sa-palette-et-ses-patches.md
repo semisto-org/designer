@@ -28,6 +28,8 @@ Un pommier 'Belle fleur double', une poire 'Saint-Mathieu' : chaque variété a 
 
 Si l'espèce est déjà dans ta palette, touche **Ajouter un autre « pommier » depuis le catalogue** sous tes résultats pour retrouver l'espèce et sa ligne **Une variété**.
 
+Un arbre déjà sur la carte, noté « pommier » sans plus ? Touche-le, ouvre sa fiche : le champ **Variété**, juste sous l'espèce, se remplit de la même façon (une variété du catalogue ou le nom de la tienne). Elle rejoint ta palette toute seule. Vide le champ pour revenir à l'espèce seule. Le nom de la variété est souvent sur l'étiquette de la pépinière, encore accrochée à une branche : va voir.
+
 Pour chercher plus largement, le catalogue **Plantes** se filtre par strate, port, rusticité, exposition, humidité du sol, usages, plantes comestibles, fixatrices d'azote, mellifères ou indigènes, et peut écarter les invasives.
 
 Pour chaque espèce de la palette, **Modifier** permet de préciser sa strate sur ce terrain, son rôle (nourricière, fertilité, pionnière, haie…), un objectif de nombre de plants et tes notes. L'**Équilibre des strates** montre combien de plants sont prévus à chaque étage.
