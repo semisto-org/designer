@@ -73,16 +73,12 @@ module Relief
           species = @quantities.species_index[key.first] || (key.first && PlantSpecies.find_by(id: key.first))
           variety = key.last && (@quantities.variety_index[key.last] || PlantVariety.find_by(id: key.last))
           strata ||= (species && @quantities.strata_for(key)) || "shrub"
-          height = PlantGrowth.height(strata:, species:)
-          spread = PlantGrowth.spread(strata:, species:)
-          maturity = PlantGrowth.maturity(strata:, species:, variety:)
           {
             speciesId: species&.id, varietyId: variety&.id, strata:,
             name: [ species&.common_name || species&.latin_name, variety && "'#{variety.name}'" ].compact.join(" ").presence,
             latinName: variety&.full_latin_name || species&.latin_name,
             foliage: species&.foliage_type, plantType: species&.plant_type,
-            heightM: height.metres.to_f, spreadM: spread.metres.to_f, maturityYears: maturity.years.to_i,
-            indicative: height.indicative? || spread.indicative? || maturity.indicative?
+            **PlantGrowth.inputs(strata:, species:, variety:)
           }
         end
       end

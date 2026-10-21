@@ -11,11 +11,11 @@ import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
 import { useSoil } from '@/map/soil/store'
 import type { MapFeature } from '@/types'
-import { initScenario, scenarioStore, useScenario } from '@/map/scenario'
+import { momentFilter } from '@/map/time/moment'
 
 /**
  * Overlay without UI: styles the library elements on the editor map, keeps
- * the "Calques" visibility (layers, kinds, plant strata) and the current / projected scenario applied to
+ * the "Calques" visibility (layers, kinds, plant strata), the moment of the time strip (map/time)
  * and the version shown (a tag) to every feature layer (including ones other modules add later) and hides a feature while its shape is edited.
  */
 export default function DrawingLayers() {
@@ -23,7 +23,7 @@ export default function DrawingLayers() {
   const map = editor.instance
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const editingId = useDrawingState((s) => s.shapeEditId)
-  const scenario = useScenario()
+  const moment = useMemo(() => momentFilter(editor.moment, editor.timeline.arrival), [editor.moment, editor.timeline.arrival])
   const version = useDrawingState((s) => s.version)
   const hiddenKinds = useDrawingState((s) => s.hiddenKinds)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
@@ -33,20 +33,19 @@ export default function DrawingLayers() {
     () => (planting ? hiddenPlantIds(editor.features, hiddenStrata, (f) => plantStrata(f as MapFeature, planting)) : []),
     [editor.features, hiddenStrata, planting],
   )
-  const options = { scenario, version, hiddenKinds, hiddenIds }
+  const options = { moment, version, hiddenKinds, hiddenIds }
   const latest = useRef(options)
   latest.current = options
 
   useLayoutEffect(() => {
     initDrawingState(editor.map.id)
-    initScenario(editor.map.id)
   }, [editor.map.id])
 
   useEffect(() => {
     // The generic feature layers are installed by the editor after its
     // children mount: wait for them, then follow any later style change.
     const ensure = () => {
-      if (installDrawingLayers(map)) applyLayerVisibility(map, drawingStore.get().hiddenLayers, { ...latest.current, scenario: scenarioStore.get() })
+      if (installDrawingLayers(map)) applyLayerVisibility(map, drawingStore.get().hiddenLayers, latest.current)
     }
     ensure()
     map.on('styledata', ensure)
@@ -55,7 +54,7 @@ export default function DrawingLayers() {
     }
   }, [map])
 
-  useEffect(() => applyLayerVisibility(map, hidden, { scenario, version, hiddenKinds, hiddenIds }), [map, hidden, scenario, version, hiddenKinds, hiddenIds])
+  useEffect(() => applyLayerVisibility(map, hidden, { moment, version, hiddenKinds, hiddenIds }), [map, hidden, moment, version, hiddenKinds, hiddenIds])
 
   // « Calques » from the map, in the column of map controls; the photos button joins it below.
   const openPanel = useRef(editor.openPanel)
