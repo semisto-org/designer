@@ -796,6 +796,8 @@
     "species": "Espèce",
     "variety": "Variété",
     "variety_none": "Espèce type (sans variété)",
+    "variety_placeholder": "Pas encore précisée (%{name})",
+    "variety_hint": "Choisis-la dans la liste ou écris son nom : une variété inconnue rejoint le catalogue et ta palette.",
     "choose": "Choisir l'espèce",
     "choose_placeholder": "Choisir dans la palette…",
     "no_species": "Aucune espèce : ce plant n'est pas compté dans la liste.",

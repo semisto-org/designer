@@ -12,6 +12,7 @@ import { knownRootstock, rootstocksFor } from '@/map/plants/rootstocks'
 import { GRAFT_FORMS, GRAFT_TRUNK, ROOTSTOCK_VIGORS, TRUNK_RANGE, type GraftForm } from '@/relief/growth'
 import { usePlanting } from '@/map/plants/store'
 import { paletteItemOf, StrataDot } from '@/map/plants/strata'
+import { VarietyField } from '@/map/plants/VarietyField'
 import type { MapFeature } from '@/types'
 
 const TRAININGS = ['free', 'pollard', 'coppice', 'chop_and_drop'] as const
@@ -98,6 +99,8 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
       ) : (
         <p className="rounded-lg bg-humus-50 p-2 text-xs text-humus-700">{t('plant_feature.no_species')}</p>
       )}
+
+      {editor.canEdit && species && <VarietyField species={species} variety={variety} onSave={save} />}
 
       <ShapeEditButton feature={feature} />
 

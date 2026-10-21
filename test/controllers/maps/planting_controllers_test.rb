@@ -48,6 +48,24 @@ class Maps::PlantingControllersTest < ActionDispatch::IntegrationTest
     assert_equal 2, @map.palette_items.count
   end
 
+  # The plant's sheet (« Variété ») names the cultivar, then sets it on the plant.
+  test "a plant placed as its species alone gets its cultivar from its sheet" do
+    sign_in_as users(:michael)
+    apple = plant_species(:apple)
+    tree = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906, lat: 50.341), properties: { "species_id" => apple.id, "number" => 3 })
+
+    post map_palette_items_path(@map), params: { palette_item: { species_id: apple.id, variety_name: "Belle fleur double" } }, as: :json
+    variety_id = response.parsed_body["item"]["varietyId"]
+    patch map_feature_path(@map, tree), params: { feature: { properties: { species_id: apple.id, variety_id:, number: 3 }, lock_version: tree.lock_version } }, as: :json
+    assert_response :success
+    assert_equal variety_id, tree.reload.plant_variety_id
+    assert_equal "Belle fleur double", PlantVariety.find(variety_id).name
+
+    patch map_feature_path(@map, tree), params: { feature: { properties: { species_id: apple.id, number: 3 }, lock_version: tree.lock_version } }, as: :json
+    assert_response :success
+    assert_nil tree.reload.plant_variety_id, "an empty name brings it back to the species alone"
+  end
+
   test "viewer reads the planting but cannot change it" do
     sign_in_as users(:alice)
     get map_planting_path(@map), as: :json
