@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { ArrowRight, ChevronDown, ChevronUp, Footprints } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { openHelp } from '@/components/help/openHelp'
+import { Button } from '@/components/ui/Button'
 import { itemLabel, stageLabel } from '@/components/journey/JourneyParts'
 import { JOURNEY_REFRESH, useGuideCollapsed, useSeen } from '@/lib/journeyFlags'
 import { isLayersPanel } from '@/lib/journeyPanels'
@@ -187,9 +188,9 @@ function SeasonInvite({ season, year }: { season: Season; year: JourneySeason })
           )
         })}
       </ol>
-      <button type="button" onClick={() => openHelp('le-carnet-des-saisons')} className="self-start text-sm font-medium text-leaf-800 hover:underline">
+      <Button variant="leaf" size="sm" onClick={() => openHelp('le-carnet-des-saisons')} className="self-start">
         {t('journey.season.how')}
-      </button>
+      </Button>
     </div>
   )
 }
