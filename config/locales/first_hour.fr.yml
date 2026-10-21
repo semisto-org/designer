@@ -1,0 +1,113 @@
+# The beta's « Premières heures »: « Un retour ? », the question about
+# recording the first sessions, and the staff page that reads them.
+fr:
+  feedback:
+    button: "Un retour ?"
+    title: "Ton retour sur Terranova"
+    intro: "Ce qui t'a aidé, gêné ou surpris : tout nous sert, même un détail. Michael et l'équipe de Semisto lisent chaque message."
+    label: "Ce que tu veux nous dire"
+    placeholder: "Par exemple : je n'ai pas trouvé comment tracer le contour de mon terrain…"
+    note: "trois mots suffisent"
+    wants_call: "Je veux bien qu'on m'appelle pour en parler (on t'écrira pour fixer un moment)."
+    context: "On joint la page où tu es, pour comprendre sans te reposer la question."
+    send: "Envoyer"
+    sending: "Envoi…"
+    cancel: "Annuler"
+    sent: "Merci ! Ton retour est bien arrivé chez Semisto."
+    error: "Ton retour n'est pas parti. Réessaie dans un instant."
+    rate_limited: "Tu nous as déjà beaucoup écrit cette heure-ci : réessaie un peu plus tard."
+  feedback_mailer:
+    received:
+      subject: "Un retour sur Terranova de %{name}"
+      body: "%{name} (%{email}) a écrit depuis %{page} :"
+      body_html: "%{name} (%{email}) a écrit depuis %{page} :"
+      map: "Carte : %{name} (%{url})"
+      wants_call: "Cette personne veut bien qu'on l'appelle : réponds à ce message pour fixer un moment."
+      replay: "Sa séance est enregistrée : %{url}"
+      admin: "Tous les retours et les premières heures des testeurs : %{url}"
+  first_hour:
+    consent:
+      title: "Tu fais partie des premiers à essayer Terranova"
+      body:
+        one: "Pour voir où l'outil te fait hésiter, nous aimerions enregistrer ta première séance : les écrans et les clics. Ce que tu tapes et tes photos restent masqués."
+        other: "Pour voir où l'outil te fait hésiter, nous aimerions enregistrer tes %{count} premières séances : les écrans et les clics. Ce que tu tapes et tes photos restent masqués."
+      detail: "Seule l'équipe de Semisto les regarde. Elles sont gardées chez Sentry, aux États-Unis, et effacées au plus tard après 90 jours. Tu peux changer d'avis dans « Mon compte »."
+      "yes": "Oui, d'accord"
+      "no": "Non merci"
+      thanks_yes: "Merci ! Tes premières séances nous aideront à améliorer Terranova."
+      thanks_no: "C'est noté : aucune séance ne sera enregistrée."
+      error: "Ta réponse n'est pas partie. Réessaie dans un instant."
+      invalid: "Réponse non comprise."
+    account:
+      title: "Aider à améliorer Terranova"
+      "on":
+        one: "Tu nous as permis d'enregistrer ta première séance (les écrans et les clics ; ce que tu tapes et tes photos restent masqués)."
+        other: "Tu nous as permis d'enregistrer tes %{count} premières séances (les écrans et les clics ; ce que tu tapes et tes photos restent masqués)."
+      "off": "Tes séances ne sont pas enregistrées. Pendant la bêta, les enregistrer nous aide à voir où Terranova fait hésiter."
+      recorded:
+        zero: "Aucune n'est encore enregistrée."
+        one: "%{count} séance enregistrée sur %{max}."
+        other: "%{count} séances enregistrées sur %{max}."
+      erase: "Les séances enregistrées sont gardées chez Sentry, aux États-Unis, et s'effacent au plus tard après 90 jours ; pour les effacer plus tôt, écris-nous."
+      allow: "Accepter l'enregistrement"
+      stop: "Ne plus enregistrer"
+  admin:
+    nav:
+      first_hours: "Premières heures"
+    first_hours:
+      title: "Premières heures"
+      intro: "Comment les personnes inscrites récemment ont commencé : leur première carte, le contour, la première plante et le plan imprimé, comptés depuis l'inscription. Avec leurs retours et les séances qu'elles nous ont permis d'enregistrer."
+      period:
+        label: "Inscrites depuis"
+        days: "%{count} jours"
+      summary:
+        people:
+          one: "%{count} personne inscrite"
+          other: "%{count} personnes inscrites"
+        consented:
+          zero: "aucune n'accepte l'enregistrement"
+          one: "%{count} accepte l'enregistrement"
+          other: "%{count} acceptent l'enregistrement"
+        replays:
+          zero: "aucune séance enregistrée"
+          one: "%{count} séance enregistrée"
+          other: "%{count} séances enregistrées"
+        feedbacks:
+          zero: "aucun retour"
+          one: "%{count} retour"
+          other: "%{count} retours"
+        reached: "%{count} sur %{total}"
+        first_hour: "dont %{count} dans la première heure"
+      milestones:
+        map: "Première carte"
+        outline: "Contour tracé"
+        plant: "Première plante"
+        print: "Plan imprimé"
+      minutes: "+%{count} min"
+      hours: "+%{count} h"
+      days: "+%{count} j"
+      undated: "fait, avant le suivi"
+      not_yet: "pas encore"
+      signed_up: "Inscription %{time}"
+      last_seen: "dernière visite %{time}"
+      consent:
+        "yes": "Enregistrement accepté"
+        "no": "Enregistrement refusé"
+        unasked: "Pas encore répondu"
+      replay: "Séance %{number}"
+      replay_unlinked: "Séance %{number} (%{id})"
+      feedbacks:
+        one: "%{count} retour"
+        other: "%{count} retours"
+      people_title: "Les personnes"
+      people_empty: "Personne ne s'est inscrit sur cette période."
+      feedbacks_title: "Les retours"
+      feedbacks_intro: "Les 50 derniers messages envoyés avec « Un retour ? »."
+      feedbacks_empty: "Aucun retour pour l'instant."
+      wants_call: "Veut bien un appel"
+      watch: "Voir la séance"
+      replay_off: "L'enregistrement des séances est coupé : il faut SENTRY_DSN, et SENTRY_REPLAY_SESSIONS au-dessus de 0."
+      replay_settings:
+        one: "Chaque personne qui accepte est enregistrée pendant sa première séance."
+        other: "Chaque personne qui accepte est enregistrée pendant ses %{count} premières séances."
+      replay_unlinked_hint: "Ajoute SENTRY_ORG (le nom court de l'organisation Sentry) pour ouvrir les séances d'un clic."

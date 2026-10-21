@@ -19,10 +19,14 @@ class ApplicationController < ActionController::Base
       # Other accounts signed in on this browser (« Changer de compte »).
       otherAccounts: authenticated? && !impersonating? ? other_accounts_props : [],
       releaseNotes: authenticated? ? release_notes_props : nil,
+      # Sentry Session Replay during the beta (SessionReplayConsent); never while impersonating.
+      sessionReplay: authenticated? && !impersonating? ? Current.user.session_replay_state : "off",
       env: {
         googleSignIn: GoogleSignIn.enabled?, appleSignIn: AppleSignIn.enabled?, billing: Billing.enabled?, plantnet: Providers::PlantNet.configured?,
         # The price a locked feature points to (PlanGate): Home, or Pro for a pro account.
-        planPrices: { yearly: Billing::Catalog.find("yearly").price_cents, atelier: Billing::Catalog.find("atelier").price_cents }
+        planPrices: { yearly: Billing::Catalog.find("yearly").price_cents, atelier: Billing::Catalog.find("atelier").price_cents },
+        # How many first sessions a tester who says yes lets Sentry record.
+        replaySessions: SessionReplay.per_user
       }
     }
   end

@@ -1,0 +1,12 @@
+<p><%= t(".body_html", name: @user.display_name, email: @user.email_address, page: link_to(@feedback.path.presence || "/", @page_url)) %></p>
+<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #5b5781;background:#f7f4ee;white-space:pre-line"><%= @feedback.message %></blockquote>
+<% if @map %>
+  <p><%= t(".map", name: @map.name, url: map_url(@map)) %></p>
+<% end %>
+<% if @feedback.wants_call %>
+  <p><strong><%= t(".wants_call") %></strong></p>
+<% end %>
+<% if @replay_url %>
+  <p><%= t(".replay", url: @replay_url) %></p>
+<% end %>
+<p style="color:#6b6257;font-size:13px"><%= t(".admin", url: @admin_url) %></p>

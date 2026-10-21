@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n'
 
 const ITEMS = [
   { href: '/admin', key: 'dashboard', exact: true },
+  { href: '/admin/first-hours', key: 'first_hours' },
   { href: '/admin/users', key: 'users' },
   { href: '/admin/maps', key: 'maps' },
   { href: '/admin/gallery', key: 'gallery' },

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -409,6 +409,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
     t.index ["map_feature_id"], name: "index_feature_update_drafts_one_pending", unique: true, where: "((status)::text = 'pending'::text)"
     t.index ["map_id", "status"], name: "index_feature_update_drafts_on_map_id_and_status"
     t.index ["reviewed_by_id"], name: "index_feature_update_drafts_on_reviewed_by_id"
+  end
+
+  create_table "feedbacks", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "map_id"
+    t.text "message", null: false
+    t.string "path"
+    t.boolean "wants_call", default: false, null: false
+    t.string "sentry_replay_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_feedbacks_on_created_at"
+    t.index ["map_id"], name: "index_feedbacks_on_map_id"
+    t.index ["user_id"], name: "index_feedbacks_on_user_id"
   end
 
   create_table "financial_plans", force: :cascade do |t|
@@ -834,6 +848,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
     t.boolean "own_place", default: false, null: false
     t.boolean "shares_planted_palette", default: false, null: false
     t.boolean "accepts_propagation_requests", default: false, null: false
+    t.datetime "outlined_at"
+    t.datetime "plan_printed_at"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
@@ -1559,6 +1575,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
     t.index ["user_id"], name: "index_service_requests_on_user_id"
   end
 
+  create_table "session_replays", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "replay_id", null: false
+    t.string "path"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "replay_id"], name: "index_session_replays_on_user_id_and_replay_id", unique: true
+    t.index ["user_id"], name: "index_session_replays_on_user_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "ip_address"
@@ -1716,6 +1742,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
     t.string "apple_uid"
     t.string "vat_number"
     t.bigint "source_publication_id"
+    t.boolean "replay_consent"
+    t.datetime "replay_consent_at"
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
@@ -1774,6 +1802,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
   add_foreign_key "feature_update_drafts", "maps", on_delete: :cascade
   add_foreign_key "feature_update_drafts", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "feature_update_drafts", "users", column: "reviewed_by_id", on_delete: :nullify
+  add_foreign_key "feedbacks", "maps", on_delete: :nullify
+  add_foreign_key "feedbacks", "users", on_delete: :cascade
   add_foreign_key "financial_plans", "maps"
   add_foreign_key "financial_plans", "users", column: "updated_by_id"
   add_foreign_key "form_inboxes", "organizations"
@@ -1907,6 +1937,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_210000) do
   add_foreign_key "service_requests", "maps"
   add_foreign_key "service_requests", "users"
   add_foreign_key "service_requests", "users", column: "handled_by_id", on_delete: :nullify
+  add_foreign_key "session_replays", "users", on_delete: :cascade
   add_foreign_key "sessions", "users"
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
   add_foreign_key "site_visits", "map_documents", on_delete: :nullify

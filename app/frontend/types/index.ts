@@ -41,8 +41,12 @@ export type SharedProps = {
   otherAccounts?: OtherAccount[]
   /** Signed in: entries of « Nouveautés » not seen yet. */
   releaseNotes: import('./releaseNotes').ReleaseNotesStatus | null
-  env: { googleSignIn: boolean; appleSignIn: boolean; billing: boolean; plantnet: boolean; planPrices: { yearly: number; atelier: number } }
+  /** Sentry Session Replay during the beta (SessionReplayConsent): ask the question, record, finish the session, or nothing. */
+  sessionReplay: ReplayState
+  env: { googleSignIn: boolean; appleSignIn: boolean; billing: boolean; plantnet: boolean; planPrices: { yearly: number; atelier: number }; replaySessions: number }
 }
+
+export type ReplayState = 'ask' | 'record' | 'keep' | 'off'
 
 export type LngLat = [number, number]
 export type BBox = [number, number, number, number]

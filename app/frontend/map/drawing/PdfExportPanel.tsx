@@ -18,6 +18,7 @@ import { useDrawingState } from '@/map/drawing/store'
 import { showPrintFrame } from '@/map/drawing/style'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
+import { notePrint } from '@/lib/prints'
 import type { BBox, MapFeature, SharedProps } from '@/types'
 
 type Step = { step: 'map' | 'pdf'; page: number; pages: number } | null
@@ -155,6 +156,7 @@ export function PdfExportPanel({ onClose }: { onClose: () => void }) {
         sheets: book ? sheets : undefined,
       }, (next, sheet) => setStep({ step: next, page: sheet?.page ?? 1, pages: sheet?.pages ?? 1 }))
       editor.notify(t('drawing.pdf.done'))
+      notePrint(editor.map.id, book ? 'book' : 'pdf')
     } catch (error) {
       console.error(error)
       editor.notify(t('drawing.pdf.error'), 'error')

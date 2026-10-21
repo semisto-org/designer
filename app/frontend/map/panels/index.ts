@@ -28,6 +28,7 @@ import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
+import { FeedbackButton } from '@/components/feedback/FeedbackButton'
 import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
 import VersionPicker from '@/map/tags/VersionPicker'
 import TimeStrip from '@/map/time/TimeStrip'
@@ -171,6 +172,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'shortcuts', component: ShortcutsButton, order: 94 },
+  { id: 'feedback', component: FeedbackButton, order: 93 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
 ]

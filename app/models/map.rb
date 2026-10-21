@@ -68,6 +68,9 @@ class Map < ApplicationRecord
 
   after_create :add_owner_membership
   after_save :refresh_area, if: :saved_change_to_boundary?
+  # « Premières heures » (admin): when the place first got its outline. Its
+  # plan's first print is noted by Maps::PrintsController.
+  before_save -> { self.outlined_at ||= Time.current }, if: -> { boundary.present? && will_save_change_to_boundary? }
 
   def role_for(user)
     return nil unless user
