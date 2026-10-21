@@ -35,6 +35,7 @@ class MapFeatureSeasonSignTest < ActiveSupport::TestCase
       year = MapFeature::SeasonSign.observation_year(@map)
       assert_equal({ "winter" => 1, "spring" => 2, "summer" => 0, "autumn" => 1 }, year[:seasons])
       assert_equal %w[summer], year[:missing]
+      assert_equal "autumn", year[:current]
     end
   end
 end

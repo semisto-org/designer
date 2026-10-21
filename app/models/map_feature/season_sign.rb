@@ -12,7 +12,8 @@ module MapFeature::SeasonSign
 
   # The year of observation: what was seen on the land in each season of the
   # last twelve months (season signs, downpours, visit notes), and the seasons
-  # never looked at, which a design should not take for granted.
+  # never looked at, which a design should not take for granted; `current`
+  # is the season one can go out and observe today.
   def self.observation_year(map, now: Time.current)
     features = map.features.active
     times = features.where(kind: [ SIGN_KIND, MapFeature::StormObservation::STORM_KIND ]).filter_map(&:observed_at) +
@@ -20,7 +21,7 @@ module MapFeature::SeasonSign
         .pluck(Arel.sql("properties->>'taken_at'")).filter_map { |value| Time.iso8601(value.to_s) rescue nil }
     counts = times.select { |time| time.between?(now - 1.year, now + 1.day) }.map { |time| season_of(time) }.tally
     seasons = SEASONS.index_with { |season| counts[season].to_i }
-    { seasons:, missing: seasons.select { |_season, count| count.zero? }.keys }
+    { seasons:, missing: seasons.select { |_season, count| count.zero? }.keys, current: season_of(now) }
   end
 
   def self.season_of(time) = SEASONS[(time.month % 12) / 3]
