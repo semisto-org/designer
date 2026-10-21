@@ -4,6 +4,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   PAGES = {
     "/fonctionnalites" => "pages/features",
     "/tarifs" => "pages/pricing",
+    "/carnets-ouverts" => "pages/gallery",
     "/mission-drone" => "pages/drone",
     "/open-source" => "pages/open_source",
     "/ecoconception" => "pages/ecoconception",
@@ -141,6 +142,37 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     end
     standouts[:entries].each do |entry|
       assert Rails.root.join("app/frontend/components/site/standouts/#{entry[:image]}.webp").exist?, "#{entry[:image]}.webp is missing"
+    end
+  end
+
+  test "the features page visits the notebook Semisto chose and shows the gallery" do
+    page = inertia_page("/fonctionnalites")
+    assert_nil page.dig("props", "tour"), "nothing chosen yet: the visit has no map"
+    assert_equal [], page.dig("props", "gallery")
+
+    map = maps(:ahinvaux)
+    publication = MapPublication.publish!(map, by: map.owner, title: "Les 4 Sources", options: { "in_gallery" => true })
+    publication.choose_for_tour!
+    props = inertia_page("/fonctionnalites")["props"]
+    assert_equal "Les 4 Sources", props.dig("tour", "title")
+    assert_equal publication.public_path, props.dig("tour", "path")
+    assert props.dig("tour", "features", "features")
+    assert_equal [ publication.token ], props["gallery"].map { |card| card["token"] }
+    assert_equal [ publication.token ], inertia_page("/carnets-ouverts").dig("props", "gallery").map { |card| card["token"] }
+  end
+
+  test "the features copy has a scene the canvas knows for every station" do
+    scenes = %w[place layers climate existing field water drafts structure palette growth share]
+    stations = I18n.t("site.features.chapters").flat_map { |chapter| chapter[:stations] }
+    assert_operator stations.size, :>=, 12
+    stations.each { |station| assert_includes scenes, station[:scene], station[:title] }
+  end
+
+  test "the stations link to help articles that exist" do
+    slugs = HelpArticle.all.map(&:slug)
+    I18n.t("site.features.chapters").flat_map { |chapter| chapter[:stations] }.filter_map { |s| s[:link] }.each do |link|
+      next unless link.start_with?("/help/")
+      assert_includes slugs, link.delete_prefix("/help/"), link
     end
   end
 end
