@@ -482,6 +482,18 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_empty @map.features.active.where(kind: "season_sign")
   end
 
+  test "propose_features keeps the day a season sign was seen, even given as a day alone" do
+    make_editor(@map, users(:bob))
+    signs = [ "2025-01-12", "12/01/2025" ].map do |day|
+      { layer: "notes", kind: "season_sign", name: "La neige fond d'abord ici", rationale: "Noté le 12 janvier 2025.",
+        properties: { sign: "snow_melts_first", observed_at: day }, geometry: point(lng: 4.905, lat: 50.3405) }
+    end
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: signs })
+    refute error, data
+    days = data["created"].map { MapFeature.find(_1["id"]).observed_at }
+    assert_equal [ Time.utc(2025, 1, 12, 8) ] * 2, days
+  end
+
   test "propose_features drafts a named zone in its colour" do
     make_editor(@map, users(:bob))
     zone = { layer: "notes", kind: "zone", name: "Forêt-jardin en strates hautes", color: "#7FA650", rationale: "Plein sud, à l'abri de la haie.",

@@ -1,5 +1,5 @@
 import type { MapStage } from '@/types'
-import type { JourneyData } from '@/types/journey'
+import type { JourneyData, Season } from '@/types/journey'
 
 export const STAGES: MapStage[] = ['observe', 'map', 'design', 'plant']
 
@@ -31,4 +31,16 @@ export function journeyPercent(data: JourneyData): number {
   const total = data.steps.reduce((sum, s) => sum + s.total, 0)
   const done = data.steps.reduce((sum, s) => sum + s.completed, 0)
   return total > 0 ? Math.round((done / total) * 100) : 0
+}
+
+export const SEASONS: Season[] = ['winter', 'spring', 'summer', 'autumn']
+
+/**
+ * The season to go out and observe now: today's, while it has never been
+ * looked at over the last twelve months. It never replaces the next action:
+ * a place is read over four seasons, and nobody waits a year to start.
+ */
+export function seasonToObserve(data: JourneyData): Season | null {
+  const season = data.season
+  return season && season.missing.includes(season.current) ? season.current : null
 }

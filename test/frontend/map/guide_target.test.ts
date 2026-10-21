@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { guideTarget, journeyPercent } from '../../../app/frontend/map/editor/guideTarget.ts'
+import { guideTarget, journeyPercent, seasonToObserve } from '../../../app/frontend/map/editor/guideTarget.ts'
 import type { JourneyData } from '../../../app/frontend/types/journey.ts'
 
 const journey = (overrides: Partial<JourneyData> = {}): JourneyData => ({
@@ -45,4 +45,11 @@ test('no button when this person has no such panel', () => {
 test('the progress counts every item of every step', () => {
   assert.equal(journeyPercent(journey()), 50)
   assert.equal(journeyPercent(journey({ steps: [] })), 0)
+})
+
+test('today’s season, while never observed, invites the person outside', () => {
+  assert.equal(seasonToObserve(journey({ season: { current: 'autumn', missing: ['summer', 'autumn'], observed: 2 } })), 'autumn')
+  assert.equal(seasonToObserve(journey({ season: { current: 'autumn', missing: ['summer'], observed: 3 } })), null)
+  assert.equal(seasonToObserve(journey({ season: null })), null)
+  assert.equal(seasonToObserve(journey()), null)
 })
