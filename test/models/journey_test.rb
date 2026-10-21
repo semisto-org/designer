@@ -133,11 +133,45 @@ class JourneyTest < ActiveSupport::TestCase
 
   test "as_json is what the frontend reads" do
     json = Journey.new(@map).as_json
-    assert_equal %i[stage stageIndex steps next], json.keys
+    assert_equal %i[stage stageIndex steps next season], json.keys
     assert_equal 0, json[:stageIndex]
     first_item = json[:steps].first[:items].first
     assert_equal "project_sheet", first_item[:key]
     assert_equal "observe", first_item[:step]
+  end
+
+  test "the season of today, while never observed, sits beside the checklist and never blocks a step" do
+    travel_to Time.zone.local(2026, 10, 21, 12) do
+      @map.update!(project: { "meta" => { "done" => ProjectSheet::SECTIONS.keys } })
+      journey = Journey.new(@map, seen: "layers_seen")
+      assert_equal({ current: "autumn", missing: %w[winter spring summer autumn], observed: 0 }, journey.season)
+      assert_equal({ type: "advance", stage: "map" }, journey.next_action, "a missing season never holds the journey back")
+      assert_equal journey.items.size, Journey.new(@map).items.size, "the seasons are not a checklist item"
+
+      @map.features.create!(layer: "notes", kind: "season_sign", geometry: point,
+        properties: { "sign" => "first_frost", "observed_at" => "2026-10-20T07:00:00Z" })
+      season = Journey.new(@map).season
+      assert_equal %w[winter spring summer], season[:missing]
+      assert_equal 1, season[:observed]
+    end
+  end
+
+  test "unreadable observations never break the journey" do
+    original = MapFeature::SeasonSign.method(:observation_year)
+    MapFeature::SeasonSign.define_singleton_method(:observation_year) { |*| raise "boom" }
+    json = Journey.new(@map).as_json
+    assert_nil json[:season]
+    assert_equal "observe", json[:stage]
+  ensure
+    MapFeature::SeasonSign.define_singleton_method(:observation_year, original)
+  end
+
+  test "every season has its invitation in French" do
+    MapFeature::SeasonSign::SEASONS.each do |s|
+      assert I18n.exists?("journey.season.title.#{s}"), s
+      assert I18n.exists?("journey.season.body.#{s}"), s
+      assert I18n.exists?("journey.season.names.#{s}"), s
+    end
   end
 
   test "every item and step has French labels" do

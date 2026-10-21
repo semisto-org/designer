@@ -9,6 +9,11 @@
 #
 # Items whose data lives in another area (palette, plant list) are read
 # defensively and omitted when that area is absent.
+#
+# `season` is the year of observation (see MapFeature::SeasonSign): when
+# the season of today has never been looked at, the guide card invites the
+# person outside. It sits beside the checklist and never blocks a step: a
+# place is read over four seasons, and nobody waits a year to start.
 class Journey
   STEPS = Map::STAGES
   MIN_EXISTING_ELEMENTS = 3
@@ -64,8 +69,21 @@ class Journey
     following ? { type: "advance", stage: following } : { type: "complete" }
   end
 
+  # The seasons observed over the last twelve months, the ones missing and
+  # today's; nil when the map's observations cannot be read.
+  def season
+    return @season if defined?(@season)
+    @season = begin
+      year = MapFeature::SeasonSign.observation_year(map)
+      { current: year[:current], missing: year[:missing], observed: year[:seasons].count { |_season, count| count.positive? } }
+    rescue StandardError => error
+      Rails.logger.warn("Journey: observations unreadable (#{error.class}: #{error.message})")
+      nil
+    end
+  end
+
   def as_json(*)
-    { stage: map.stage, stageIndex: STEPS.index(map.stage), steps:, next: next_action }
+    { stage: map.stage, stageIndex: STEPS.index(map.stage), steps:, next: next_action, season: }
   end
 
   private

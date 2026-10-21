@@ -32,6 +32,7 @@ module Mcp
           palette: palette(map),
           palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
+          place: place(map),
           succession: SuccessionBalance.new(map).as_json,
           bioindicators: bioindicators(map),
           soil_samples: soil_samples(map),
@@ -179,6 +180,19 @@ module Mcp
             with_reports: samples.count { |s| s.lab_reports.attached? },
             drafts_pending: samples.count { |s| s.draft.pending? }
           }
+        end
+
+        # Who owns the place and what they chose to share with other
+        # gardeners (MapPlaceOwners); only they change it, in « Partager ».
+        def place(map)
+          owners = map.memberships.where(place_owner: true).includes(:user).order(:created_at).map(&:user)
+          you = owners.any? { _1.id == user.id }
+          {
+            owners: owners.map(&:display_name), you:,
+            shares_planted_palette: map.shares_planted_palette,
+            accepts_propagation_requests: map.accepts_propagation_requests,
+            pending_requests: (map.propagation_requests.pending.count if you)
+          }.compact
         end
 
         # The species chosen for this terrain (accepted entries only), with

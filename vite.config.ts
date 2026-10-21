@@ -11,7 +11,7 @@ import { parse } from 'yaml'
 // Rails locale files (config/locales/*.yml) are the single source of the
 // interface strings: the frontend imports them as JSON.
 // Server-only subtrees are left out (browserLocales).
-function railsLocales(): Plugin {
+export function railsLocales(): Plugin {
   return {
     name: 'rails-locales',
     transform(code, id) {

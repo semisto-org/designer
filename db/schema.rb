@@ -660,6 +660,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.index ["user_id"], name: "index_map_memberships_on_user_id"
   end
 
+  create_table "map_offline_sites", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "requested_by_id"
+    t.string "status", default: "pending", null: false
+    t.boolean "include_networks", default: false, null: false
+    t.jsonb "summary", default: {}, null: false
+    t.string "error"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_map_offline_sites_on_map_id", unique: true
+    t.index ["requested_by_id"], name: "index_map_offline_sites_on_requested_by_id"
+  end
+
   create_table "map_photos", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "uploaded_by_id"
@@ -711,9 +725,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.bigint "published_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "views_count", default: 0, null: false
     t.integer "gallery_position"
     t.boolean "site_tour", default: false, null: false
-    t.integer "views_count", default: 0, null: false
     t.index ["gallery_position"], name: "index_map_publications_on_gallery_position"
     t.index ["map_id"], name: "index_map_publications_on_map_id", unique: true
     t.index ["published_by_id"], name: "index_map_publications_on_published_by_id"
@@ -1817,6 +1831,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
   add_foreign_key "map_memberships", "maps"
   add_foreign_key "map_memberships", "users"
   add_foreign_key "map_memberships", "users", column: "invited_by_id"
+  add_foreign_key "map_offline_sites", "maps", on_delete: :cascade
+  add_foreign_key "map_offline_sites", "users", column: "requested_by_id", on_delete: :nullify
   add_foreign_key "map_photos", "drone_missions", on_delete: :nullify
   add_foreign_key "map_photos", "map_features", on_delete: :nullify
   add_foreign_key "map_photos", "map_photos", column: "derived_from_id", on_delete: :nullify

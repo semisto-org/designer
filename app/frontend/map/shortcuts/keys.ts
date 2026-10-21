@@ -43,6 +43,7 @@ export const SHORTCUT_GROUPS: { key: string; rows: { keys: string[]; label: stri
       { keys: ['a'], label: 'points_move' },
       { keys: ['+'], label: 'points_add' },
       { keys: ['-'], label: 'points_remove' },
+      { keys: ['p'], label: 'points_extend' },
     ],
   },
   {

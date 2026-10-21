@@ -44,9 +44,11 @@ type Props = {
   onReady?: (map: MapLibreMap) => void
   /** Where the scale bar sits (the editor keeps the bottom left for its guide card). */
   scalePosition?: 'bottom-left' | 'bottom-right'
+  /** A small map in a sheet: zoom buttons only, no compass nor « locate me ». */
+  compact?: boolean
 }
 
-export function MapView({ center, zoom, bbox, style, className, children, onReady, scalePosition = 'bottom-left' }: Props) {
+export function MapView({ center, zoom, bbox, style, className, children, onReady, scalePosition = 'bottom-left', compact = false }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<MapLibreMap | null>(null)
   const [unsupported, setUnsupported] = useState(false)
@@ -88,12 +90,14 @@ export function MapView({ center, zoom, bbox, style, className, children, onRead
       setUnsupported(true)
       return
     }
-    instance.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right')
+    instance.addControl(new maplibregl.NavigationControl(compact ? { showCompass: false } : { visualizePitch: true }), 'top-right')
     instance.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), scalePosition)
-    instance.addControl(
-      new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }),
-      'top-right',
-    )
+    if (!compact) {
+      instance.addControl(
+        new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }),
+        'top-right',
+      )
+    }
     // 'style.load', not 'load': 'load' waits for the first tiles, so a slow
     // tile server would hold back the whole editor (and its own base maps).
     instance.once('style.load', () => {

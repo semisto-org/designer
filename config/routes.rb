@@ -641,6 +641,15 @@ Rails.application.routes.draw do
     resources :site_visits, only: %i[index create], controller: "maps/site_visits"
   end
   # --- end site visits ---
+  # --- offline site ---
+  # The map packed as a website that opens without Terranova (MapOfflineSite).
+  resources :maps, only: [] do
+    resource :offline_site, only: %i[show create], controller: "maps/offline_sites" do
+      get :download
+    end
+  end
+  # --- end offline site ---
+
   # --- implementation ---
   # The implementation plan of a map (« Mise en œuvre »): its phases, Semisto's
   # proposed phasing, and elements given to a phase.

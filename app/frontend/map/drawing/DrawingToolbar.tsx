@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import type { Geometry } from 'geojson'
-import { Hand, LandPlot, Minus, MousePointer2, Pencil, Plus, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
+import { Hand, LandPlot, Minus, MousePointer2, PenLine, Pencil, Plus, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { formatArea, formatLength, t, translations } from '@/lib/i18n'
@@ -47,7 +47,8 @@ function HintBar({ text, children }: { text: string; children?: React.ReactNode 
   return (
     <div className="pointer-events-auto flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-loam-900/90 px-3 py-2 text-sm text-white shadow-lg" role="status">
       <span className="min-w-[14rem] flex-1">{text}</span>
-      <div className="flex shrink-0 gap-2">{children}</div>
+      {/* Its own line when the text leaves no room, and wrapping on a phone. */}
+      <div className="flex max-w-full flex-wrap gap-2">{children}</div>
     </div>
   )
 }
@@ -56,13 +57,14 @@ const POINT_TOOLS: { tool: PointTool; icon: LucideIcon }[] = [
   { tool: 'move', icon: MousePointer2 },
   { tool: 'add', icon: Plus },
   { tool: 'remove', icon: Minus },
+  { tool: 'extend', icon: PenLine },
 ]
 
-/** Move, add or remove points, with their Illustrator keys in the tooltips. */
-function PointTools({ tool, onPick }: { tool: PointTool; onPick: (tool: PointTool) => void }) {
+/** Move, add or remove points, and on a line draw on from an end, with their Illustrator keys in the tooltips. */
+function PointTools({ tool, line, onPick }: { tool: PointTool; line: boolean; onPick: (tool: PointTool) => void }) {
   return (
     <div role="group" aria-label={t('drawing.edit.points.label')} className="flex rounded-full bg-white/10 p-0.5">
-      {POINT_TOOLS.map(({ tool: value, icon: Icon }) => (
+      {POINT_TOOLS.filter(({ tool: value }) => line || value !== 'extend').map(({ tool: value, icon: Icon }) => (
         <button
           key={value}
           type="button"
@@ -162,7 +164,11 @@ export default function DrawingToolbar() {
       const version = drawingStore.get().version
       const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties: { ...spec.defaults }, ...(version ? { tags: [version] } : {}) })
       latest.current.select(feature.properties.id)
-      latest.current.notify(created ?? t('drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }))
+      // A line finished too early (a double click, Enter) goes on from where it stopped.
+      const extend = geometry.type === 'LineString' && !created
+        ? { label: t('drawing.edit.extend'), run: () => startShapeEdit(feature.properties.id, 'inspector', 'extend') }
+        : undefined
+      latest.current.notify(created ?? t('drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }), 'info', extend)
     } catch (error) {
       latest.current.notify((error as Error).message, 'error')
     }
@@ -247,7 +253,8 @@ export default function DrawingToolbar() {
   useEffect(() => {
     if (shapeEditId == null) return
     const editor = latest.current
-    const fromPeek = drawingStore.get().shapeEditFrom === 'peek'
+    const { shapeEditFrom, shapeEditTool } = drawingStore.get()
+    const fromPeek = shapeEditFrom === 'peek'
     // Back where the move started: the plant's card, or its inspector.
     const reopen = () => (fromPeek ? plantPeek.open(shapeEditId) : latest.current.select(shapeEditId))
     const feature = editor.features.find((f) => f.properties.id === shapeEditId)
@@ -265,6 +272,7 @@ export default function DrawingToolbar() {
       onChange: (g) => active && describe(g),
       onPointTool: (tool) => active && setPointTool(tool),
       onTooFewPoints: () => latest.current.notify(t(feature.geometry.type === 'Polygon' ? 'drawing.edit.points.polygon_minimum' : 'drawing.edit.points.line_minimum'), 'error'),
+      pointTool: shapeEditTool,
     }).then(async (geometry) => {
       if (!active) return
       active = false
@@ -294,7 +302,8 @@ export default function DrawingToolbar() {
     }
   }, [shapeEditId])
 
-  const movingPoint = shapeEditId != null && editor.features.find((f) => f.properties.id === shapeEditId)?.geometry.type === 'Point'
+  const shapeType = shapeEditId != null ? editor.features.find((f) => f.properties.id === shapeEditId)?.geometry.type : null
+  const movingPoint = shapeType === 'Point'
   const kindLabel = drawingSpec ? t(`editor.kinds.${drawingSpec.kind}`) : ''
   const geometry = drawingSpec?.geometries[0]
 
@@ -358,7 +367,7 @@ export default function DrawingToolbar() {
           {tool === 'shape' && (
             <HintBar text={movingPoint ? t('drawing.edit.move_hint') : [t(`drawing.edit.points.${pointTool}_hint`), shapeMeasure].filter(Boolean).join(' · ')}>
               <StepBackButton editor={editor} />
-              {!movingPoint && <PointTools tool={pointTool} onPick={(next) => editor.setPointTool(next)} />}
+              {!movingPoint && <PointTools tool={pointTool} line={shapeType === 'LineString'} onPick={(next) => editor.setPointTool(next)} />}
               <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t(movingPoint ? 'drawing.edit.save_position' : 'drawing.edit.save')}</Button>
               <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.edit.cancel')}</Button>
             </HintBar>
