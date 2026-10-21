@@ -26,6 +26,8 @@ type Props = {
   /** Plants chosen for an action on the selection (editors only), by id. */
   selected?: Set<number>
   onSelect?: (next: Set<number>) => void
+  /** A plant's name opens its sheet (the editor's, see palette/PlantFeatureSheet). */
+  onOpen?: (id: number) => void
 }
 
 const lineOf = (feature: MapFeature): Partial<PlantLine> => {
@@ -45,7 +47,7 @@ const lineOf = (feature: MapFeature): Partial<PlantLine> => {
  * number and Enter jumps to the next plant, so a whole plan is renumbered
  * from the keyboard; a number another plant holds swaps the two.
  */
-export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedChanged, onStatus, selected, onSelect }: Props) {
+export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedChanged, onStatus, selected, onSelect, onOpen }: Props) {
   const [filters, setFilters] = useState<PlantFilters>({ search: '', status: '', tag: '' })
   const shown = useMemo(() => filterPlants(plants, filters), [plants, filters])
   const table = useRef<HTMLTableElement>(null)
@@ -171,10 +173,20 @@ export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedCh
                   </td>
                   <th scope="row" className="px-3 py-2 text-left font-normal">
                     <span className="flex items-center gap-2">
-                      <span className="min-w-0">
-                        <span className={clsx('block font-medium', plant.species ? 'text-loam-900' : 'text-loam-500')}>{plant.species ?? t('plant_palette.plants.no_species')}</span>
+                      {/* A link to the plant on the map; a plain click opens its sheet here. */}
+                      <a
+                        href={`/maps/${mapId}?feature=${plant.id}`}
+                        onClick={(e) => {
+                          if (!onOpen || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+                          e.preventDefault()
+                          onOpen(plant.id)
+                        }}
+                        title={t('plant_palette.plants.open_sheet')}
+                        className="group min-w-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600"
+                      >
+                        <span className={clsx('block font-medium group-hover:text-prune-700 group-hover:underline', plant.species ? 'text-loam-900' : 'text-loam-500')}>{plant.species ?? t('plant_palette.plants.no_species')}</span>
                         {plant.name && plant.name !== plant.species && <span className="block text-loam-500">{plant.name}</span>}
-                      </span>
+                      </a>
                       <Link
                         href={`/maps/${mapId}?feature=${plant.id}`} title={t('plant_palette.plants.show_on_map')} aria-label={t('plant_palette.plants.show_on_map')}
                         className="ml-auto shrink-0 rounded-full p-1.5 text-loam-400 hover:bg-loam-100 hover:text-prune-700 print:hidden"

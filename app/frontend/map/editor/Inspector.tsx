@@ -1,5 +1,6 @@
 import { CopyCheck, Trash2, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import clsx from 'clsx'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { formatArea, formatLength, t } from '@/lib/i18n'
@@ -11,8 +12,12 @@ import { isPlant } from '@/map/plants/properties'
 import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
-/** Details of the selected feature: name, notes, measures, extra sections. */
-export function Inspector({ feature }: { feature: MapFeature }) {
+/**
+ * Details of the selected feature: name, notes, measures, extra sections.
+ * `frame="page"` fills a side sheet outside the map (the « Palette végétale »
+ * opens a plant with it); `lead` comes first, under the heading.
+ */
+export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeature; frame?: 'map' | 'page'; lead?: ReactNode }) {
   const editor = useEditor()
   const p = feature.properties
   const [name, setName] = useState(p.name ?? '')
@@ -34,7 +39,9 @@ export function Inspector({ feature }: { feature: MapFeature }) {
   }
 
   return (
-    <aside className="absolute inset-x-2 bottom-14 z-20 max-h-[60%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]">
+    <aside className={clsx('overflow-y-auto bg-white', frame === 'map'
+      ? 'absolute inset-x-2 bottom-14 z-20 max-h-[60%] rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]'
+      : 'h-full w-full p-5')}>
       <div className="flex items-start justify-between gap-2">
         <div>
           {/* A plant is named by its number and species, not « Plantes · Plante ». */}
@@ -50,6 +57,7 @@ export function Inspector({ feature }: { feature: MapFeature }) {
         </button>
       </div>
       <div className="mt-3 space-y-3">
+        {lead}
         {topSections.map((s) => <s.component key={s.id} feature={feature} />)}
         <Field label={t('editor.inspector.name')}>
           <Input value={name} disabled={!editor.canEdit} onChange={(e) => setName(e.target.value)} onBlur={() => save({ name })} />
@@ -68,7 +76,8 @@ export function Inspector({ feature }: { feature: MapFeature }) {
           </div>
         )}
         {sections.map((s) => <s.component key={s.id} feature={feature} />)}
-        {editor.canEdit && (
+        {/* Picking several to move them together needs the map. */}
+        {editor.canEdit && frame === 'map' && (
           <Button
             variant="ghost"
             size="sm"

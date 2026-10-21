@@ -20,7 +20,10 @@ module Maps
             views: @map.plant_palette_views.map(&:as_json),
             presets: PlantPaletteView.presets_json,
             schema: { columns: PlantPaletteView::COLUMNS, groups: PlantPaletteView::GROUPS },
-            canEdit: can_edit?
+            canEdit: can_edit?,
+            # A plant's name opens the editor's own sheet of it (palette/PlantFeatureSheet).
+            editorMap: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?),
+            mapEntitlements: map_entitlements.as_json
           )
         end
         format.json { render json: palette }
