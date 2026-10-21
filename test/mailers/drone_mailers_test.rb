@@ -20,7 +20,7 @@ class DroneMailersTest < ActionMailer::TestCase
   end
 
   test "the mission e-mails" do
-    { requested: "bob", cancelled: "bob", paid: "bob", paid_out: "bob",
+    { requested: "bob", cancelled: "bob", paid: "bob", paid_out: "bob", expired: "bob",
       accepted: "michael", declined: "michael", delivered: "michael", refunded: "michael" }.each do |name, who|
       check(DroneMissionMailer.with(mission: @mission).public_send(name), to: users(who).email_address)
     end

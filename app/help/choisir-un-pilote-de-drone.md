@@ -29,7 +29,7 @@ En hiver, feuilles tombées, le sol se voit sous les arbres : c'est le moment du
 2. Le pilote accepte, avec une date de vol, ou décline.
 3. Tu paies dans Terranova. Le prix est celui du pilote (son forfait, plus ses frais de déplacement s'il les compte), rien de plus.
 4. Le jour du vol, sors avec lui : marchez le lieu ensemble, montre-lui les sources, les zones humides, les arbres à garder.
-5. Le pilote dépose ses données directement sur ta carte : vues drone, photos, fichiers à télécharger. Elles ne comptent pas dans ton espace de stockage.
+5. Le pilote dépose ses données directement sur ta carte : vues drone, photos, fichiers à télécharger. Elles ne comptent pas dans ton espace de stockage. S'il n'a rien livré 60 jours après ton paiement, Semisto te rembourse automatiquement.
 6. Tu as sept jours pour vérifier. Si tout va bien, valide la mission ; sinon, signale le problème : Semisto revient vers vous deux, et le pilote n'est payé qu'une fois que c'est réglé.
 
 Semisto garde 20 % du forfait du pilote hors TVA (jamais des frais de déplacement) pour faire vivre Terranova. Ce que tu paies ne change pas : cette part est prise sur le prix du pilote.
