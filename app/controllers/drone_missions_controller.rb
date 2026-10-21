@@ -119,6 +119,7 @@ class DroneMissionsController < ApplicationController
         quote: mission.quote.as_json,
         createdAt: mission.created_at.iso8601, acceptedAt: mission.accepted_at&.iso8601, paidAt: mission.paid_at&.iso8601,
         deliveredAt: mission.delivered_at&.iso8601, paidOutAt: mission.paid_out_at&.iso8601,
+        deliverBy: mission.deliver_by&.iso8601,
         confirmBy: mission.delivered_at && (mission.delivered_at + DroneMission::CONFIRMATION_DELAY).iso8601,
         canDeliver: mission.deliverable_by?(Current.user),
         paymentOpen: Billing.enabled?,

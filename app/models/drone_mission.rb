@@ -7,6 +7,7 @@
 #   requested → accepted → paid → delivered → completed (paid out)
 #   requested → declined;  requested | accepted → cancelled
 #   paid | delivered → refunded (by Semisto)
+#   paid → refunded (automatically, DELIVERY_DEADLINE after payment)
 #
 # A delivered mission the client disputes waits for Semisto, who pays the
 # pilot or refunds the client. The amounts are frozen when the mission is
@@ -25,6 +26,10 @@ class DroneMission < ApplicationRecord
   # VAT Semisto charges on its commission, by the pilot's country.
   COMMISSION_VAT_RATES = { "BE" => 0.21 }.freeze
   CONFIRMATION_DELAY = 7.days
+  # A paid mission nothing was delivered for is refunded on its own after
+  # this, well within the 90 days Stripe allows for a transfer tied to the
+  # charge (Michael, 2026-10-21).
+  DELIVERY_DEADLINE = 60.days
   # How many missions a client can have waiting for a pilot's answer.
   MAX_WAITING = 5
 
@@ -74,6 +79,7 @@ class DroneMission < ApplicationRecord
   scope :newest_first, -> { order(created_at: :desc, id: :desc) }
   scope :open, -> { where(status: OPEN_STATUSES) }
   scope :for_pilot_user, ->(user) { where(drone_pilot_id: DronePilot.where(user:).select(:id)) }
+  scope :refund_due, ->(now = Time.current) { where(status: "paid", paid_out_at: nil).where(paid_at: ...(now - DELIVERY_DEADLINE)) }
   scope :payout_due, ->(now = Time.current) {
     where(status: "delivered", disputed_at: nil, paid_out_at: nil).where(delivered_at: ...(now - CONFIRMATION_DELAY))
   }
@@ -104,6 +110,7 @@ class DroneMission < ApplicationRecord
   # Once paid, the pilot puts the data on the map until the mission is closed.
   def deliverable_by?(user) = (paid? || delivered?) && pilot_user?(user)
 
+  def deliver_by = paid_at && paid_at + DELIVERY_DEADLINE
   def payout_due?(now = Time.current) = delivered? && !disputed? && paid_out_at.nil? && delivered_at <= now - CONFIRMATION_DELAY
 
   def accept!(flight_on:, reply: nil)
@@ -165,6 +172,17 @@ class DroneMission < ApplicationRecord
   def self.release_due_payouts!(now = Time.current)
     payout_due(now).find_each do |mission|
       DroneMissions::Payout.call(mission)
+    rescue StandardError => e
+      Rails.error.report(e, handled: true, context: { drone_mission_id: mission.id })
+    end
+  end
+
+  # Gives the client their money back for every paid mission the pilot did
+  # not deliver in time, and tells the pilot why.
+  def self.refund_undelivered!(now = Time.current)
+    refund_due(now).find_each do |mission|
+      DroneMissions::Refund.call(mission)
+      DroneMissionMailer.with(mission:).expired.deliver_later
     rescue StandardError => e
       Rails.error.report(e, handled: true, context: { drone_mission_id: mission.id })
     end

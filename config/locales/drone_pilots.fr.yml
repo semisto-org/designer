@@ -342,12 +342,14 @@ fr:
       awaiting_payment_lead: "%{client} a reçu ta réponse et doit encore payer. Tu es prévenu par e-mail dès que c'est fait."
       paid_title: "Mission confirmée"
       paid_lead: "%{pilot} est prévenu. Le jour du vol, il dépose ses données directement sur ta carte."
+      paid_deadline: "Si rien n'est livré d'ici le %{date}, Semisto te rembourse automatiquement."
       deliver_title: "Livrer la mission"
       deliver_lead: "Quand tout est déposé, préviens le jardinier : il aura une semaine pour vérifier avant que ta part te soit versée."
       deliver_note: "Un mot pour le jardinier (facultatif)"
       deliver: "Marquer comme livrée"
       deliver_confirm: "Tout est déposé ?"
       deliver_body: "Le jardinier est prévenu par e-mail et a sept jours pour vérifier."
+      deliver_deadline: "Livre avant le %{date} : passé cette date, le jardinier est remboursé automatiquement."
       deliver_empty: "Dépose au moins un fichier avant de livrer."
       delivered_title: "Les données sont arrivées"
       delivered_pilot_title: "Mission livrée"
@@ -461,6 +463,13 @@ fr:
           %{client} a payé la mission pour « %{map} ». Vol prévu : %{date}.
 
           Le jour venu, dépose tes données depuis la page de la mission : elles arrivent directement sur sa carte.
+        button: "Voir la mission"
+      expired:
+        subject: "Mission remboursée : « %{map} »"
+        body: |-
+          Rien n'a été livré pour la mission de %{client} sur « %{map} » dans les %{days} jours qui ont suivi le paiement : Semisto l'a remboursé.
+
+          Si le vol a eu lieu malgré tout, réponds à ce message et Semisto voit avec vous deux.
         button: "Voir la mission"
       paid_out:
         subject: "Ta part est en route : %{amount}"

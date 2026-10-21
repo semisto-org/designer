@@ -76,6 +76,8 @@ export type MissionDetail = {
   paidAt: string | null
   deliveredAt: string | null
   paidOutAt: string | null
+  /** Past this, a paid mission with nothing delivered is refunded on its own. */
+  deliverBy: string | null
   confirmBy: string | null
   canDeliver: boolean
   paymentOpen: boolean

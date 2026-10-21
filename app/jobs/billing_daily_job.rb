@@ -10,6 +10,7 @@ class BillingDailyJob < ApplicationJob
     Billing::RenewalReminders.call
     Billing::AiTrialReminders.call
     DroneMission.release_due_payouts!
+    DroneMission.refund_undelivered!
     StripeEvent.purge_old!
   end
 end
