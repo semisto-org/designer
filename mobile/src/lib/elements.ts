@@ -34,6 +34,15 @@ export function strataColor(feature: MapFeature, planting?: Planting): string {
   return (strata && STRATA_COLORS[strata]) || PLANTED_COLOR
 }
 
+/** Ink for a number written on a strata colour: white on dark hues, ink on light ones (as the website's inkOn). */
+export function inkOn(color: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(color.slice(i, i + 2), 16) / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.3 ? '#1b1712' : '#ffffff'
+}
+
 /** Glyphs drawn on point discs (assets/map-icons, scripts/map-icons.mjs). */
 export const POINT_ICON_NAMES = [
   'calendar-days', 'circle-dot', 'circle-gauge', 'cloud-rain', 'cylinder', 'door-open', 'droplet', 'egg', 'faucet', 'gauge',

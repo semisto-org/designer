@@ -11,13 +11,18 @@
 # and, for everyone who sees the map, `archive`: a short-lived link to the
 # view's PMTiles archive. Views staff set up by their address stay on
 # /admin/drone-views.
+#
+# The pilot of a paid drone mission on the map imports too (from the
+# mission's page, ?drone_mission_id=): the view is tied to the mission, and
+# the pilot sees and removes only the views of their mission.
 module Maps
   class AerialViewsController < ApplicationController
     include MapScoped
     include ActiveStorage::SetCurrent
 
     before_action :set_map
-    before_action :require_editor!, except: :archive
+    before_action :set_mission, except: :archive
+    before_action :require_editor!, except: :archive, unless: -> { @mission }
     before_action :set_view, only: %i[complete destroy archive]
     before_action :require_import!, only: %i[complete destroy]
 
@@ -42,10 +47,12 @@ module Maps
         )
         upload = McpUpload.create!(blob:, map: @map, user: Current.user, kind: McpUpload::AERIAL_VIEW, part_size: McpUpload.part_size_for_new)
         view = @map.aerial_views.new(view_params.merge(
-          kind: "pmtiles", status: "uploading", created_by: Current.user, source_upload: upload,
+          kind: "pmtiles", status: "uploading", created_by: Current.user, source_upload: upload, drone_mission: @mission,
           attribution: t("drone.attribution_imported", name: Current.user.display_name),
           source_filename: file[:filename], source_byte_size: file[:byte_size]
         ))
+        # What a client paid a pilot for is never refused for lack of room.
+        view.skip_storage_quota = @mission.present?
         view.save!
       end
       render json: {
@@ -90,7 +97,14 @@ module Maps
 
     private
       def set_view
-        @view = @map.aerial_views.find(params[:id])
+        @view = (@mission ? @mission.aerial_views : @map.aerial_views).find(params[:id])
+      end
+
+      # The pilot delivering a mission on this map, through its page.
+      def set_mission
+        return if params[:drone_mission_id].blank?
+        @mission = @map.drone_missions.find_by(id: params[:drone_mission_id])
+        head :not_found unless @mission&.deliverable_by?(Current.user)
       end
 
       # Only views imported on the map: the ones Semisto set up stay with staff.
@@ -98,12 +112,12 @@ module Maps
         head :not_found unless @view.imported?
       end
 
-      def list = @map.aerial_views.imported.includes(:created_by).map { json(_1) }
+      def list = (@mission ? @mission.aerial_views : @map.aerial_views).imported.includes(:created_by).map { json(_1) }
 
       def json(view) = view.as_inertia(archive_url: archive_map_aerial_view_path(@map, view))
 
       def view_params
-        params.require(:aerial_view).permit(:name, :captured_on)
+        params.require(:aerial_view).permit(:name, :captured_on, :product)
       end
 
       def file_params

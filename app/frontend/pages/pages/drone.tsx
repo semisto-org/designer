@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 import { Check } from 'lucide-react'
 import { CheckoutButton } from '@/components/billing/CheckoutButton'
 import { Faq, type FaqItem } from '@/components/site/Faq'
@@ -26,6 +26,7 @@ export default function Drone({ priceCents }: { priceCents: number }) {
           <CheckoutButton plan="drone" size="lg">{tf('site.drone.hero.cta_signed_in')}</CheckoutButton>
         </div>
         {!currentUser && <p className="mt-3 text-sm text-loam-500">{tf('site.drone.hero.needs_account')}</p>}
+        <p className="mt-4 max-w-xl text-sm"><Link href="/pilotes-drone" className="text-prune-700 underline decoration-prune-300 underline-offset-4 hover:text-prune-900">{tf('site.drone.hero.directory')}</Link></p>
       </PageHero>
 
       <Section>

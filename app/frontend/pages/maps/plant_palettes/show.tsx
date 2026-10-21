@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n'
 import { BatchBar, BatchToast, type BatchChange } from '@/palette/BatchBar'
 import { columnLabel, displayValue, formatEuro } from '@/palette/format'
 import { PaletteTable, selectable } from '@/palette/PaletteTable'
+import { PlantFeatureSheet } from '@/palette/PlantFeatureSheet'
 import { PlantSheet } from '@/palette/PlantSheet'
 import type { PlantLine } from '@/palette/plants'
 import { PlantsTable } from '@/palette/PlantsTable'
@@ -21,6 +22,7 @@ import {
   type PaletteRow, type ViewSettings,
 } from '@/palette/table'
 import { Popover, Toolbar } from '@/palette/Toolbar'
+import type { EntitlementsData, MapData } from '@/types'
 
 type SavedView = { id: number; name: string; settings: ViewSettings; position: number }
 type Preset = { key: string; name: string; settings: ViewSettings }
@@ -35,6 +37,9 @@ type Props = {
   presets: Preset[]
   schema: { columns: string[]; groups: string[] }
   canEdit: boolean
+  /** What the editor's sheet of a plant needs (« Plant par plant »). */
+  editorMap: MapData
+  mapEntitlements: EntitlementsData
 }
 
 type Mode = 'species' | 'plants'
@@ -67,7 +72,7 @@ const forServer = (s: ViewSettings): ViewSettings => ({ ...s, filters: { ...s.fi
  * and the ones editors save for the map, Notion-like): budget, shopping list
  * for a planting day, follow-up… A plant's name opens its sheet.
  */
-export default function PlantPalettePage({ map, rows: initialRows, plants: initialPlants, tags: initialTags, views: initialViews, presets, schema, canEdit }: Props) {
+export default function PlantPalettePage({ map, rows: initialRows, plants: initialPlants, tags: initialTags, views: initialViews, presets, schema, canEdit, editorMap, mapEntitlements }: Props) {
   const [rows, setRows] = useState(initialRows)
   const [plants, setPlants] = useState(initialPlants)
   const [mode, setMode] = useState<Mode>(() => (typeof window === 'undefined' ? 'species' : readMode(map.id)))
@@ -85,6 +90,7 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
   }, [current, presets, views])
   const [settings, setSettings] = useState<ViewSettings>(baseline)
   const [open, setOpen] = useState<PaletteRow | null>(null)
+  const [openPlant, setOpenPlant] = useState<number | null>(null)
   const [suggesting, setSuggesting] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('suggestions'))
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -339,6 +345,7 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
               <PlantsTable
                 mapId={map.id} plants={plants} tags={tags} canEdit={canEdit} onSaved={plantSaved} onPlantedChanged={() => void reload()} onStatus={plantStatus}
                 selected={canEdit ? selectedPlants : undefined} onSelect={canEdit ? setSelectedPlants : undefined}
+                onOpen={setOpenPlant}
               />
             </>
           ) : (
@@ -444,6 +451,12 @@ export default function PlantPalettePage({ map, rows: initialRows, plants: initi
       {canEdit && <div aria-hidden className="h-20 print:hidden" />}
 
       {suggesting && <SuggestionsSheet mapId={map.id} canEdit={canEdit} inPalette={inPalette} onAdded={suggestionAdded} onClose={closeSuggestions} />}
+      {openPlant != null && (
+        <PlantFeatureSheet
+          map={editorMap} entitlements={mapEntitlements} canEdit={canEdit} featureId={openPlant}
+          onClose={() => setOpenPlant(null)} onChanged={() => void reload()}
+        />
+      )}
       {open && <PlantSheet mapId={map.id} row={rows.find((r) => r.key === open.key) ?? open} country={map.country} onClose={() => setOpen(null)} />}
     </>
   )

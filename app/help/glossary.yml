@@ -95,3 +95,6 @@
 - term: Bio-indicatrice
   forms: [bio-indicatrices, bioindicatrice, bioindicatrices]
   definition: "Plante sauvage dont la présence dit quelque chose du sol : son humidité, son tassement, sa richesse, son acidité."
+- term: Zones de permaculture
+  forms: [zone de permaculture]
+  definition: "Le terrain rangé selon le nombre de fois où l'on y passe : zone 0 la maison, zone 1 chaque jour, jusqu'à la zone 5, la part sauvage. Ce qu'on soigne souvent va près de la porte, ce qu'on visite rarement va au fond."

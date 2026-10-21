@@ -26,6 +26,11 @@ module Billing
 
   def self.webhook_secret = ENV["STRIPE_WEBHOOK_SECRET"].presence
 
+  # Events of the drone pilots' connected accounts (account.updated) come
+  # from a second Stripe endpoint « for connected accounts », signed with
+  # its own secret, to the same URL.
+  def self.connect_webhook_secret = ENV["STRIPE_CONNECT_WEBHOOK_SECRET"].presence
+
   # The Stripe Price id configured for a plan key, or nil. Without an
   # interval: the plan's main price (monthly for a subscription).
   def self.price_id(plan_key, interval = nil)

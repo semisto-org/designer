@@ -223,6 +223,9 @@ fr:
         planted: "En terre"
       no_species: "Sans espèce"
       show_on_map: "Voir sur la carte"
+      open_sheet: "Ouvrir la fiche du plant"
+      sheet_label: "Fiche du plant"
+      sheet_gone: "Ce plant n'est plus sur la carte."
       date_unknown: "date inconnue"
       age:
         today: "aujourd'hui"

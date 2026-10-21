@@ -4,7 +4,7 @@ import type { MapSketchData } from '@/types/myMaps'
 export type TeamRole = 'admin' | 'member'
 
 /** The shared `currentUser` prop, with the number of teams the user belongs to. */
-export type TeamAwareUser = CurrentUser & { teamsCount?: number; newRequests?: number | null; propagation?: { waiting: number } | null }
+export type TeamAwareUser = CurrentUser & { teamsCount?: number; newRequests?: number | null; propagation?: { waiting: number } | null; droneMissions?: { waiting: number } | null }
 
 /** A team in the "Mes équipes" list. */
 export type TeamSummary = {

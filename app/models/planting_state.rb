@@ -22,7 +22,9 @@ class PlantingState
       strata: strata_json,
       list: PlantList.new(quantities).as_json,
       alerts: PlantingAlerts.new(quantities).as_json,
-      growth: growth_json
+      growth: growth_json,
+      # Support plants against productive ones, years 1, 5, 15 and 30.
+      succession: SuccessionBalance.new(map, quantities).as_json
     }
   end
 

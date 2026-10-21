@@ -30,6 +30,7 @@ class Map < ApplicationRecord
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
   has_many :service_requests, dependent: :destroy
+  has_many :drone_missions, dependent: :restrict_with_error
   has_one :financial_plan, dependent: :destroy
   has_one :offer, dependent: :destroy
   has_many :implementation_phases, -> { ordered }, dependent: :delete_all, inverse_of: :map
@@ -200,8 +201,11 @@ class Map < ApplicationRecord
 
     # Semisto staff can read a map while a request sent from it is open: the
     # owner consented to that when sending it (see ServiceRequest).
+    # Semisto staff answering a request, and the pilot of an open drone
+    # mission, read the map.
     def support_role_for(user)
-      "viewer" if user.admin? && service_requests.pending.where(contact_consent: true).exists?
+      return "viewer" if user.admin? && service_requests.pending.where(contact_consent: true).exists?
+      "viewer" if drone_missions.open.for_pilot_user(user).exists?
     end
 
     def project_matches_schema
