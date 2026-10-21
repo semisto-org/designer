@@ -258,6 +258,23 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     refute error
   end
 
+  test "list_features and get_feature tell each element's permaculture zone" do
+    data, = call_tool(@owner, "list_features", { map_id: @map.id })
+    assert_nil data["features"].sole.dig("properties", "permaculture_zone"), "no zone before any is drawn"
+
+    pond = map_features(:pond)
+    ring = [ [ 4.9, 50.336 ], [ 4.91, 50.336 ], [ 4.91, 50.344 ], [ 4.9, 50.344 ], [ 4.9, 50.336 ] ]
+    zone = @map.features.create!(layer: "notes", kind: "permaculture_zone", properties: { "zone_number" => 3 }, geometry: { "type" => "Polygon", "coordinates" => [ ring ] })
+    data, = call_tool(@owner, "list_features", { map_id: @map.id })
+    by_id = data["features"].index_by { |f| f["id"] }
+    assert_equal 3, by_id[pond.id].dig("properties", "permaculture_zone")
+    assert_equal 3, by_id[zone.id].dig("properties", "zone_number")
+    assert_nil by_id[zone.id].dig("properties", "permaculture_zone")
+
+    data, = call_tool(@viewer, "get_feature", { map_id: @map.id, feature_id: pond.id })
+    assert_equal 3, data.dig("properties", "permaculture_zone")
+  end
+
   test "get_region_layers lists the region catalogue" do
     regions(:wallonia).layers.create!(key: "sols", name: "Carte des sols", url: "https://geoservices.example/sols", identify_url: "https://geoservices.example/sols/identify",
                                       options: { legend: { items: [ { label: "Ravin", color: "#000000", shape: "line" } ] } })

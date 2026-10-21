@@ -20,6 +20,16 @@ class Maps::PlantPalettesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, props["rows"].find { _1["speciesId"] == @apple.id }["planned"]
   end
 
+  test "the page carries what the editor's sheet of a plant needs" do
+    sign_in_as users(:alice)
+    get map_plant_palette_path(@map), headers: inertia_headers
+    props = response.parsed_body["props"]
+    assert_equal @map.id, props.dig("editorMap", "id")
+    assert_equal "viewer", props.dig("editorMap", "role")
+    assert props["editorMap"].key?("boundary")
+    assert props["mapEntitlements"].is_a?(Hash)
+  end
+
   test "strangers see nothing" do
     sign_in_as users(:bob)
     get map_plant_palette_path(@map), as: :json

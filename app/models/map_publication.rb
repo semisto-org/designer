@@ -43,7 +43,9 @@ class MapPublication < ApplicationRecord
       # Zone and path names often carry the designer's own notes: off unless asked.
       "show_zone_names" => flag.call("show_zone_names", false),
       # The newest drone view (« Vues drone »), off unless the owner asks.
-      "show_aerial_view" => flag.call("show_aerial_view", false)
+      "show_aerial_view" => flag.call("show_aerial_view", false),
+      # The owner's consent to « Carnets ouverts » on the public site.
+      "in_gallery" => flag.call("in_gallery", false)
     }
   end
 
@@ -65,6 +67,50 @@ class MapPublication < ApplicationRecord
   end
 
   def live? = unpublished_at.nil? && map.archived_at.nil?
+
+  # « Carnets ouverts »: live publications whose owner offered them…
+  scope :offered_to_gallery, -> {
+    joins(:map).where(unpublished_at: nil, maps: { archived_at: nil }).where("map_publications.options ->> 'in_gallery' = 'true'")
+  }
+  # …and that Semisto chose to show, in its order.
+  scope :in_gallery, -> { offered_to_gallery.where.not(gallery_position: nil).order(:gallery_position, :id) }
+
+  # The map the features page visits: the one Semisto chose, else the first
+  # of the gallery. Nil until a publication is in the gallery.
+  def self.site_tour
+    in_gallery.where(site_tour: true).first || in_gallery.first
+  end
+
+  def offered_to_gallery? = options["in_gallery"] == true
+
+  # Semisto's choice: shown at the end of the gallery, or taken out of it.
+  def choose_for_gallery!
+    update!(gallery_position: (self.class.maximum(:gallery_position) || 0) + 1)
+  end
+
+  def remove_from_gallery!
+    update!(gallery_position: nil, site_tour: false)
+  end
+
+  def choose_for_tour!
+    transaction do
+      self.class.where(site_tour: true).where.not(id:).update_all(site_tour: false)
+      update!(site_tour: true, gallery_position: gallery_position || (self.class.maximum(:gallery_position) || 0) + 1)
+    end
+  end
+
+  # A card of the gallery: the painted preview, the place in a few words and
+  # how old the garden is. Built from the snapshot, like the public page.
+  def as_gallery_card
+    data = snapshot.fetch("map")
+    growth = snapshot["growth"] || {}
+    {
+      token:, title:, path: public_path, previewPath: preview_path,
+      regionName: data.dig("region", "name"), locality:, areaM2: data["area_m2"], boundary: data["boundary"],
+      origin: growth["origin"], today: growth["today"],
+      plants: Array(growth["plants"]).size + Array(growth["patches"]).sum { |patch| Array(patch["lines"]).sum { |line| line["quantity"].to_i } }
+    }
+  end
 
   def unpublish!
     update!(unpublished_at: Time.current)

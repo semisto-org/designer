@@ -106,7 +106,7 @@ fr:
         upload_expired: "L'envoi s'est arrêté avant la fin. Envoie le fichier à nouveau."
         unsupported_format: "Ce fichier n'est ni un GeoTIFF, ni un MBTiles, ni un PMTiles lisible."
         not_georeferenced: "Cette image n'est pas géoréférencée : exporte l'orthophoto en GeoTIFF depuis ton logiciel de drone (une simple photo JPEG ne suffit pas)."
-        not_raster: "Ce fichier ne contient pas d'image en couleurs (par exemple un modèle de relief ou des tuiles vectorielles)."
+        not_raster: "Ce fichier ne contient pas d'image lisible (deux bandes, ou des tuiles vectorielles). Une orthophoto en couleurs ou un raster à une seule bande (relief, thermique, NDVI) conviennent."
         empty: "Ce fichier ne contient aucune tuile."
         source_unreachable: "L'adresse d'origine des tuiles ne répond pas, ou refuse l'accès."
         conversion_failed: "La préparation a échoué. Réessaie ; si cela recommence, écris à Semisto."

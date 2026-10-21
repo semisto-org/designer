@@ -10,7 +10,8 @@ const EDITABLE_GEOMETRIES = ['Point', 'LineString', 'Polygon']
 /** « Déplacer » for a point, « Modifier la forme » for a line or a surface (M, see moveShortcut.ts); nothing for viewers. */
 export default function ShapeEditButton({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
-  if (!editor.canEdit || !EDITABLE_GEOMETRIES.includes(feature.geometry.type)) return null
+  // Off the map (a plant's sheet opened from the « Palette végétale »), there is nothing to drag on.
+  if (!editor.canEdit || !editor.instance || !EDITABLE_GEOMETRIES.includes(feature.geometry.type)) return null
   const point = feature.geometry.type === 'Point'
   const Icon = point ? Move : Spline
   return (

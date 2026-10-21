@@ -21,6 +21,10 @@ class AerialView < ApplicationRecord
   MAX_ZOOM = 24
   PLACEHOLDERS = %w[{z} {x} {y}].freeze
   STATUSES = %w[uploading processing ready failed].freeze
+  # What the raster shows: an orthophoto in colours, or one band coloured on
+  # import (AerialViews::Tiler::RAMPS) — a DJI elevation model, a thermal
+  # mosaic, a vegetation index from a multispectral camera.
+  PRODUCTS = %w[orthophoto elevation thermal multispectral].freeze
   # What a person may import: a drone orthomosaic covers a few hectares in
   # a few hundred megabytes; this leaves room for a large estate at 3 cm.
   MAX_UPLOAD_BYTES = 10.gigabytes
@@ -32,6 +36,8 @@ class AerialView < ApplicationRecord
 
   belongs_to :map
   belongs_to :plan_purchase, optional: true
+  # Delivered by the pilot of a drone mission booked in the directory.
+  belongs_to :drone_mission, optional: true
   belongs_to :created_by, class_name: "User", optional: true
   belongs_to :source_upload, class_name: "McpUpload", optional: true
   has_one_attached :archive
@@ -46,6 +52,7 @@ class AerialView < ApplicationRecord
   validates :captured_on, presence: true
   validates :kind, inclusion: { in: KINDS }
   validates :status, inclusion: { in: STATUSES }
+  validates :product, inclusion: { in: PRODUCTS }
   validates :failure, inclusion: { in: FAILURES }, allow_nil: true
   validates :url, presence: true, unless: :imported?
   validates :url, length: { maximum: 2048 }
@@ -90,7 +97,7 @@ class AerialView < ApplicationRecord
   # checks who asks (the caller builds it: the map's or the public page's).
   def as_inertia(archive_url: nil)
     json = {
-      id:, name:, capturedOn: captured_on.iso8601, kind:, url: imported? ? archive_url : url, attribution:,
+      id:, name:, capturedOn: captured_on.iso8601, kind:, product:, url: imported? ? archive_url : url, attribution:,
       minZoom: min_zoom, maxZoom: max_zoom
     }
     return json unless imported?

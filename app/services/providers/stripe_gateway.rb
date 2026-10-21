@@ -126,6 +126,48 @@ module Providers
       call { @client.v1.promotion_codes.list({ limit:, starting_after:, expand: [ "data.promotion.coupon" ] }.compact) }
     end
 
+    # --- Drone pilots: Stripe Connect (Express accounts) ---
+
+    # A pilot's connected account: Stripe collects their identity and bank
+    # account. The pilot is the seller of the mission (the client's payment
+    # is made on their behalf), Terranova sends them their share.
+    def create_account(email:, country:, metadata: {})
+      call do
+        @client.v1.accounts.create({
+          type: "express", email:, country:, metadata:,
+          capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
+          business_profile: { product_description: "Drone missions booked on Semisto Terranova" }
+        })
+      end
+    end
+
+    def retrieve_account(id)
+      call { @client.v1.accounts.retrieve(id) }
+    end
+
+    # The Stripe-hosted page where the pilot completes their account.
+    def create_account_link(account:, refresh_url:, return_url:)
+      call { @client.v1.account_links.create({ account:, refresh_url:, return_url:, type: "account_onboarding" }) }
+    end
+
+    # The pilot's Express dashboard (payouts, bank account).
+    def create_login_link(account)
+      call { @client.v1.accounts.login_links.create(account) }
+    end
+
+    def retrieve_payment_intent(id)
+      call { @client.v1.payment_intents.retrieve(id) }
+    end
+
+    # Sends a pilot their share; the idempotency key makes a retry harmless.
+    def create_transfer(params, idempotency_key:)
+      call { @client.v1.transfers.create(params, { idempotency_key: }) }
+    end
+
+    def create_refund(params, idempotency_key:)
+      call { @client.v1.refunds.create(params, { idempotency_key: }) }
+    end
+
     # Invoice that a payment intent paid (subscription payments carry no
     # invoice id on the charge), or nil.
     def invoice_id_for_payment_intent(payment_intent_id)

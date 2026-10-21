@@ -19,7 +19,7 @@ class Maps::AerialViewsPropsTest < ActionDispatch::IntegrationTest
     get map_path(@map), headers: inertia_headers
     assert_response :success
     assert_equal [ @newer.id, @older.id ], aerial_views.map { _1["id"] }
-    assert_equal({ "id" => @older.id, "name" => "Vue drone", "capturedOn" => "2026-09-03", "kind" => "xyz", "url" => XYZ_URL,
+    assert_equal({ "id" => @older.id, "name" => "Vue drone", "capturedOn" => "2026-09-03", "kind" => "xyz", "product" => "orthophoto", "url" => XYZ_URL,
                    "attribution" => nil, "minZoom" => nil, "maxZoom" => 21 }, aerial_views.last)
   end
 

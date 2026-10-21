@@ -1,10 +1,11 @@
 # What Semisto staff did from the admin screens: impersonations (start and
 # end), role changes, and the promotion codes made or switched off (« Codes
-# promo »). Kept when either user is deleted (ids nullified,
+# promo »), and the drone pilots and missions settled (« Pilotes de drone »). Kept when either user is deleted (ids nullified,
 # the e-mail addresses stay in `details`).
 class AdminEvent < ApplicationRecord
   ACTIONS = %w[impersonation_started impersonation_ended admin_granted admin_revoked reviewer_granted reviewer_revoked
-               promotion_code_created promotion_code_deactivated plan_gifted plans_gifted plan_gift_revoked].freeze
+               promotion_code_created promotion_code_deactivated plan_gifted plans_gifted plan_gift_revoked
+               drone_pilot_approved drone_pilot_rejected drone_pilot_suspended drone_mission_payout drone_mission_refund].freeze
 
   belongs_to :admin, class_name: "User", optional: true
   belongs_to :target_user, class_name: "User", optional: true

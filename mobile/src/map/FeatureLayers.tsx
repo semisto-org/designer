@@ -1,32 +1,43 @@
 // The design drawn over the base map: zones, lines, points and plants,
 // coloured like on the website, as the display settings filter them.
 // Plants are small discs in their strata's colour, so a planted orchard
-// reads tree by tree over the aerial photo; other points are discs with
+// reads tree by tree over the aerial photo; close up, a numbered plant's
+// disc grows to hold its number, as on a hand-drawn planting plan (the
+// website's « Numéro » mode); other points are discs with
 // the glyph of what they are. Sectors stay off the map (isShown).
 // Tapping a feature selects it (the closest point first, see pickFeatureId).
 import { GeoJSONSource, Images, Layer } from '@maplibre/maplibre-react-native'
 import { useMemo } from 'react'
 import { isShown, type Display } from '@/lib/display-core'
-import { featureColor, featureTitle, pointIcon, strataColor } from '@/lib/elements'
+import { featureColor, featureTitle, inkOn, pointIcon, strataColor } from '@/lib/elements'
 import { pickFeatureId } from '@/lib/pick'
 import type { MapBundle } from '@/lib/types'
 import { colors } from '@/ui/theme'
 import { POINT_ICON_IMAGES } from './pointIcons'
 
-export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-line-dashed', 'features-point', 'features-point-icon', 'features-plant']
+export const FEATURE_LAYER_IDS = ['features-fill', 'features-line', 'features-line-dashed', 'features-point', 'features-point-icon', 'features-plant', 'features-plant-number']
 const FONT = ['Noto Sans Regular']
+// From this zoom a numbered plant's disc is big enough to write its number in.
+const NUMBER_ZOOM = 19
+const NUMBERED: ['!=', ['get', 'number'], ''] = ['!=', ['get', 'number'], '']
 
 export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundle: MapBundle; display: Display; selectedId: number | null; onSelect?: (id: number) => void }) {
   const data = useMemo<GeoJSON.FeatureCollection>(() => ({
     type: 'FeatureCollection',
-    features: bundle.features.filter((feature) => isShown(feature.properties, display, bundle.planting)).map((feature) => ({
+    features: bundle.features.filter((feature) => isShown(feature.properties, display, bundle.planting)).map((feature) => {
+      const plant = feature.properties.kind === 'plant'
+      const color = plant ? strataColor(feature, bundle.planting) : featureColor(feature)
+      const number = plant && Number(feature.properties.number) > 0 ? String(feature.properties.number) : ''
+      return {
       type: 'Feature',
       id: feature.id,
       geometry: feature.geometry as GeoJSON.Geometry,
       properties: {
         fid: feature.id,
         kind: feature.properties.kind,
-        color: feature.properties.kind === 'plant' ? strataColor(feature, bundle.planting) : featureColor(feature),
+        color,
+        number,
+        ink: inkOn(color),
         icon: feature.geometry.type === 'Point' && feature.properties.kind !== 'plant' ? pointIcon(feature) : '',
         label: feature.properties.kind === 'plant' ? '' : featureTitle(feature, bundle.planting),
         planted: feature.properties.planted_on ? 1 : 0,
@@ -35,7 +46,8 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
         // Not on the ground yet: an AI draft, or a structure still in project.
         dashed: feature.properties.status === 'draft' || feature.properties.planned === true ? 1 : 0,
       },
-    })),
+    }
+    }),
   }), [bundle, display, selectedId])
 
   const boundary = bundle.map.boundary
@@ -84,12 +96,21 @@ export function FeatureLayers({ bundle, display, selectedId, onSelect }: { bundl
         <Layer id="features-plant" type="circle" filter={['==', ['get', 'kind'], 'plant']}
           paint={{
             'circle-color': ['case', ['==', ['get', 'planted'], 1], ['get', 'color'], '#ffffff'],
-            'circle-opacity': ['case', ['==', ['get', 'planted'], 1], 0.7, 0.55],
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 2, 17, 3.5, 19, ['case', ['==', ['get', 'selected'], 1], 9, 6], 21, ['case', ['==', ['get', 'selected'], 1], 14, 10]],
+            // Holding a number, the disc is denser so the figure stays readable over the photo.
+            'circle-opacity': ['step', ['zoom'], ['case', ['==', ['get', 'planted'], 1], 0.7, 0.55],
+              NUMBER_ZOOM, ['case', ['==', ['get', 'planted'], 1], ['case', NUMBERED, 0.92, 0.7], ['case', NUMBERED, 0.9, 0.55]]],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 2, 17, 3.5,
+              NUMBER_ZOOM - 0.01, ['case', ['==', ['get', 'selected'], 1], 8, 5.5],
+              NUMBER_ZOOM, ['case', NUMBERED, ['case', ['==', ['get', 'selected'], 1], 15, 12], ['==', ['get', 'selected'], 1], 8, 5.5],
+              21, ['case', NUMBERED, ['case', ['==', ['get', 'selected'], 1], 19, 16], ['==', ['get', 'selected'], 1], 14, 10]],
             'circle-stroke-color': ['case', ['==', ['get', 'planted'], 1], '#ffffff', ['get', 'color']],
             'circle-stroke-width': ['case', ['==', ['get', 'selected'], 1], 3, ['==', ['get', 'planted'], 1], 1, 2],
             'circle-stroke-opacity': ['case', ['==', ['get', 'pending'], 1], 0.6, 0.9],
           }} />
+        {/* The plant's number inside its disc, in white or ink depending on the strata colour (ink on a ring not planted yet). */}
+        <Layer id="features-plant-number" type="symbol" minzoom={NUMBER_ZOOM} filter={['all', ['==', ['get', 'kind'], 'plant'], NUMBERED]}
+          layout={{ 'text-field': ['get', 'number'], 'text-font': ['Noto Sans Bold'], 'text-size': 14, 'text-allow-overlap': true, 'text-ignore-placement': true }}
+          paint={{ 'text-color': ['case', ['==', ['get', 'planted'], 1], ['get', 'ink'], '#1b1712'] }} />
         <Layer id="features-label" type="symbol" minzoom={17}
           layout={{ 'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 14, 'text-offset': [0, 1.2], 'text-anchor': 'top', 'text-optional': true }}
           paint={{ 'text-color': '#1b1712', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }} />
