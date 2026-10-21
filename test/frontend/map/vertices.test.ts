@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { LineString, Polygon, Position } from 'geojson'
-import { editableVertices, insertVertex, removeVertex, sideAt, vertexAt } from '../../../app/frontend/map/editor/vertices.ts'
+import { editableVertices, extendClick, extendLine, insertVertex, removeVertex, sideAt, vertexAt } from '../../../app/frontend/map/editor/vertices.ts'
 
 // One degree is one hundred pixels, y down like the screen.
 const project = ([x, y]: Position) => ({ x: x * 100, y: -y * 100 })
@@ -47,4 +47,22 @@ test('a line keeps two points and a polygon three', () => {
 test('holes are kept as they are', () => {
   const holed: Polygon = { type: 'Polygon', coordinates: [...square.coordinates, [[0.2, 0.2], [0.4, 0.2], [0.4, 0.4], [0.2, 0.2]]] }
   assert.deepEqual((insertVertex(holed, 0, [0.5, 0]) as Polygon).coordinates[1], holed.coordinates[1])
+})
+
+test('a line goes on from its end, or from its start, one point at a time', () => {
+  assert.deepEqual(extendLine(line, 'end', [3, 1]).coordinates, [[0, 0], [1, 0], [2, 0], [3, 1]])
+  assert.deepEqual(extendLine(line, 'start', [-1, 1]).coordinates, [[-1, 1], [0, 0], [1, 0], [2, 0]])
+})
+
+test('while continuing a line, a click on its ends stops, switches or closes the loop', () => {
+  // On the end being continued: done, as the click that ends a line being drawn.
+  assert.equal(extendClick(line, 'end', 2, 0), 'stop')
+  assert.equal(extendClick(line, 'start', 0, 3), 'stop')
+  // On the other end before any point: go on from there instead.
+  assert.equal(extendClick(line, 'end', 0, 0), 'switch')
+  // On the other end after some points: the fence joins where it began.
+  assert.equal(extendClick(line, 'end', 0, 2), 'close')
+  // Anywhere else, a middle point included: one more point.
+  assert.equal(extendClick(line, 'end', -1, 0), 'add')
+  assert.equal(extendClick(line, 'end', 1, 4), 'add')
 })
