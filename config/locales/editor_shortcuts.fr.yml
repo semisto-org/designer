@@ -21,6 +21,7 @@ fr:
         points_move: "Déplacer les points"
         points_add: "Ajouter des points"
         points_remove: "Retirer des points"
+        points_extend: "Continuer une ligne depuis un bout"
         search: "Chercher une page, une carte ou un guide"
         sheet: "Ouvrir cette fiche"
       keys:
@@ -34,6 +35,7 @@ fr:
         j: "J"
         enter: "Entrée"
         a: "A"
+        p: "P"
         "+": "+"
         "-": "−"
         "?": "?"
