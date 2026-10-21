@@ -16,6 +16,15 @@ class MapFeatureSeasonSignTest < ActiveSupport::TestCase
     end
   end
 
+  test "a day alone is that morning; what is not a day falls back to now" do
+    assert_equal "2025-01-12T08:00:00Z", create_sign("sign" => "puddle", "observed_at" => "2025-01-12").properties["observed_at"]
+    assert_equal "2025-01-12T08:00:00Z", create_sign("sign" => "puddle", "observed_at" => " 12/01/2025 ").properties["observed_at"]
+    travel_to Time.utc(2026, 10, 21, 12) do
+      assert_equal "2026-10-21T12:00:00Z", create_sign("sign" => "puddle", "observed_at" => "hier").properties["observed_at"]
+      assert_equal "2026-10-21T12:00:00Z", create_sign("sign" => "puddle", "observed_at" => "2025-13-45").properties["observed_at"]
+    end
+  end
+
   test "only the signs of the library are accepted" do
     assert_raises(ActiveRecord::RecordInvalid) { create_sign("sign" => "rainbow") }
   end

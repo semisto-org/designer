@@ -36,7 +36,7 @@ module MapFeature::SeasonSign
     # Seen now, unless the phone said when (a frost noticed at noon was the morning's).
     def complete_season_sign
       p = (properties || {}).to_h.dup
-      p["observed_at"] = (created_at || Time.current).utc.iso8601 unless observation_time?(p["observed_at"])
+      p["observed_at"] = observation_time(p["observed_at"]) || (created_at || Time.current).utc.iso8601
       self.properties = p
     end
 end
