@@ -189,7 +189,7 @@ function PlantLocation({ map, features, featureId, point }: { map: MapData; feat
   return (
     <figure className="space-y-1.5">
       <div className="relative h-44 overflow-hidden rounded-xl ring-1 ring-loam-200">
-        <MapView className="absolute inset-0" center={point} zoom={18.5} scalePosition="bottom-left" compact>
+        <MapView className="absolute inset-0" center={point} zoom={16.5} scalePosition="bottom-left" compact>
           <LocationLayers map={map} features={features} point={point} />
         </MapView>
       </div>
