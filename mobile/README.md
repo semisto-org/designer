@@ -31,7 +31,8 @@ What it does, for the maps one belongs to:
   really went in) or « Passer »;
 - the map opens framed on the place's outline (`boundsOf`); plants are
   small discs in their strata's colour (`STRATA_COLORS`, as on the
-  website), other points carry the glyph of what they are (`pointIcon`,
+  website) that, from zoom 19, grow to carry the plant's number (white or
+  ink, `inkOn`), other points carry the glyph of what they are (`pointIcon`,
   white PNGs in `assets/map-icons/` drawn by `scripts/map-icons.mjs`);
   sectors stay off the phone's map, and the map's sources open from a
   paper « i » under the back button;
