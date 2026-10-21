@@ -1,0 +1,35 @@
+fr:
+  time_strip:
+    label: "Frise du temps"
+    stops:
+      arrival: "Arrivée"
+      today: "Aujourd’hui"
+      year5: "An 5"
+      year15: "An 15"
+      year30: "An 30"
+    stop_hints:
+      arrival: "Le terrain le %{date}, quand tu as ouvert la carte"
+      today: "Ce qui est en terre aujourd’hui, à son âge réel"
+      future: "Le jardin en %{year}"
+    title:
+      arrival: "Arrivée · %{date}"
+      today: "Aujourd’hui · %{date}"
+      future: "An %{years} · %{year}"
+    hints:
+      arrival: "Le terrain à ton arrivée, avant ce que tu y as planté et construit."
+      today: "Ce qui est en terre, à son âge réel. Le projet, en pointillés, à sa taille adulte."
+      today_drafts: "Ce qui est en terre, à son âge réel. Les propositions de l’IA t’attendent dans le futur."
+      future: "Ton jardin %{years} ans après sa première plantation : les plants prévus mis en terre à partir de %{season}."
+      future_drafts: "Ton jardin %{years} ans après sa première plantation, avec les propositions de l’IA à revoir."
+    shade:
+      label: "Ombre à midi"
+      june: "Juin"
+      december: "Décembre"
+      june_hint: "L’ombre des plants à midi le 21 juin, le soleil au plus haut (%{angle}°). Touche à nouveau pour l’enlever."
+      december_hint: "L’ombre des plants à midi le 21 décembre, le soleil au plus bas (%{angle}°). Touche à nouveau pour l’enlever."
+      note:
+        june: "En gris-prune, l’ombre de midi le 21 juin, sur un terrain plat."
+        december: "En gris-prune, l’ombre de midi le 21 décembre, sur un terrain plat : elle s’étire vers le nord."
+    open: "Changer de moment"
+    close: "Refermer la frise"
+    draft_shown: "Ce brouillon de l’IA est un projet : la carte passe à l’an %{years} pour te le montrer."

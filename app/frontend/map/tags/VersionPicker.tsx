@@ -24,11 +24,11 @@ export default function VersionPicker() {
 
   if (tags.length === 0) return null
   return (
-    // Phone: above the scale bar. Larger screens: top left, where a side
+    // Phone: above the time strip and the legend. Larger screens: top left, where a side
     // panel opens, so it steps aside while one is open.
     <label
       title={t('tags.version_hint')}
-      className={`pointer-events-auto absolute bottom-28 left-2 z-10 items-center gap-1.5 rounded-full bg-white py-1 pl-2.5 pr-1 text-sm text-loam-600 shadow-[0_6px_16px_rgb(26_26_26/0.14)] focus-within:ring-2 focus-within:ring-prune-600 md:bottom-auto md:left-3 md:top-3.5 ${activePanel ? 'hidden' : 'inline-flex'}`}
+      className={`pointer-events-auto absolute bottom-[14.75rem] left-2 z-10 items-center gap-1.5 rounded-full bg-white py-1 pl-2.5 pr-1 text-sm text-loam-600 shadow-[0_6px_16px_rgb(26_26_26/0.14)] focus-within:ring-2 focus-within:ring-prune-600 md:bottom-auto md:left-3 md:top-3.5 ${activePanel ? 'hidden' : 'inline-flex'}`}
     >
       <Layers2 className="h-4 w-4 shrink-0" aria-hidden />
       <select

@@ -39,7 +39,7 @@ Sur la carte, une flèche couleur de terre part de chaque trou vers ce qui reço
 
 Le panneau **Terres**, à l'étape **Concevoir**, fait les comptes : ce qui sort, ce qui va sur la carte, sur place, hors du terrain, et surtout ce qui n'a pas encore de destination. Il liste ce qui se creuse et ce qui reçoit, et rappelle les conseils de Semisto avant de creuser. Le bilan suit la version affichée sur la carte, si tu en compares plusieurs.
 
-Tu peux masquer les flèches dans ce panneau (**Montrer sur la carte où va la terre**). Elles se cachent aussi en « situation actuelle », puisqu'il s'agit d'un projet.
+Tu peux masquer les flèches dans ce panneau (**Montrer sur la carte où va la terre**). Elles se cachent aussi à l'**Arrivée** de la frise du temps, puisqu'il s'agit d'un projet.
 
 ## Ton IA
 

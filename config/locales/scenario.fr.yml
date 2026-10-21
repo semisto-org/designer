@@ -1,16 +1,11 @@
 fr:
   scenario:
-    label: "Situation affichée"
-    current: "Actuelle"
-    projected: "Projetée"
-    current_hint: "Ce qui est sur le terrain aujourd’hui : les plantes plantées et les aménagements réalisés, sans les projets ni les brouillons."
-    projected_hint: "Tout le design : ce qui est sur le terrain, et ce qui est en projet en pointillés."
     element:
       title: "Sur le terrain"
-      planned: "En projet : pas encore réalisé. Il n’apparaît qu’en situation projetée, en pointillés."
+      planned: "En projet : pas encore réalisé. Il apparaît en pointillés, et pas sur le terrain « Arrivée » de la frise du temps."
       existing: "Déjà sur le terrain."
       built_on: "Réalisé le %{date}"
       built_date: "Réalisé le"
       mark_built: "Marquer comme réalisé"
-      built: "C’est fait : il apparaît maintenant en situation actuelle."
+      built: "C’est fait : il est maintenant sur le terrain, à partir de cette date sur la frise du temps."
       mark_planned: "C’est un projet"

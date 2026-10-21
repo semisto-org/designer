@@ -17,18 +17,27 @@ La fiche affiche alors « Planté le … ». Une erreur ? **Annuler** retire la 
 
 Un arbre planté avant ton arrivée, dont personne ne connaît l'année ? Touche plutôt **Déjà en terre, date inconnue** : il compte comme planté, et la vue 3D le montre déjà adulte. Si tu ne connais que l'année, tape-la dans la vue **Plant par plant** de la [palette végétale](/help/la-palette-vegetale-en-tableau). Dans la [liste de plants](/help/la-liste-de-plants-et-la-commande), le nombre de plants plantés se met à jour.
 
-## Situation actuelle ou projetée
+## La frise du temps
 
 Sur la carte, un plant planté a une couronne pleine ; un plant encore **en projet** est un peu transparent : couronne en pointillés, à peine teintée, et point creux en son centre.
 
-En haut de l'éditeur, le sélecteur **Actuelle | Projetée** change ce que tu vois :
+Au pied de la carte, la **frise du temps** te fait voyager dans la vie de ton jardin : **Arrivée · Aujourd'hui · An 5 · An 15 · An 30**. Les couronnes grandissent d'un arrêt à l'autre, avec la même courbe que la vue 3D : un départ lent, le temps que les racines s'installent, puis une belle poussée, jusqu'à la taille adulte de l'espèce (ou moins pour une trogne, une cépée ou un fruitier greffé sur un porte-greffe faible).
 
-- **Projetée** montre tout le design : ce qui est planté et ce qui est en projet ;
-- **Actuelle** montre le terrain tel qu'il est aujourd'hui : les plants en projet, les aménagements en projet et les brouillons de l'IA disparaissent.
+- **Arrivée** montre le terrain tel qu'il était quand tu as ouvert la carte : ce que tu y as planté ou construit depuis disparaît, tout comme les projets et les brouillons de l'IA. Les vieux arbres **déjà en terre, date inconnue** restent là, adultes.
+- **Aujourd'hui** (le choix par défaut) montre ce qui est en terre, chaque couronne à son âge réel d'après sa date de plantation. Ton projet reste visible en pointillés, à sa taille adulte : c'est la place qu'il prendra.
+- **An 5**, **An 15** et **An 30** comptent à partir de la première plantation du jardin (ou de la prochaine saison de plantation si rien n'est encore planté). Les plants en projet y sont supposés mis en terre à la prochaine saison, de novembre à mars. Une plante de soutien disparaît l'année où elle laisse la place. Les propositions de l'IA n'apparaissent que dans ces années à venir : ouvrir un brouillon depuis le bandeau de l'IA y emmène la carte.
 
-Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans leur fiche, la section **Sur le terrain** dit s'ils sont déjà là ou **en projet**. Touche **C'est un projet** pour une mare encore à creuser : elle passe en pointillés et ne se voit plus qu'en situation projetée. Une fois creusée, **Marquer comme réalisé** garde la date et la fait apparaître en situation actuelle.
+Sous chaque arrêt, la date exacte s'affiche en survolant. Les années déjà derrière un vieux jardin ne sont pas proposées.
 
-Le choix est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse en situation projetée, pour que tu les voies apparaître.
+### L'ombre de midi, en juin et en décembre
+
+À droite de la frise, **Juin** et **Décembre** dessinent sous les couronnes l'ombre qu'elles portent à midi le 21 juin (le soleil au plus haut) ou le 21 décembre (au plus bas), à la taille qu'ont les plants au moment choisi. Compare An 5 et An 30 en décembre : tu vois où le potager ou la serre passeront à l'ombre quand les arbres auront grandi. Touche à nouveau le mois pour enlever l'ombre. C'est l'ombre sur un terrain plat, sans le relief ni les bâtiments : la vue 3D, depuis le [panneau Eau et relief](action:panel/relief), montre l'ombre heure par heure avec le relief.
+
+### Les autres éléments
+
+Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans leur fiche, la section **Sur le terrain** dit s'ils sont déjà là ou **en projet**. Touche **C'est un projet** pour une mare encore à creuser : elle passe en pointillés et disparaît du terrain à l'arrivée. Une fois creusée, **Marquer comme réalisé** garde la date : la frise la montre à partir de ce jour-là.
+
+Le moment choisi est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse à **Aujourd'hui** si tu regardais l'arrivée, pour que tu les voies apparaître.
 
 ### Retirer ce qui est en projet
 
