@@ -81,6 +81,18 @@ class FileStorage::BackupTest < ActiveSupport::TestCase
     assert_equal [ record.id ], run_backup.missing
   end
 
+  test "names the cause of the files it could not copy" do
+    record = blob
+    source = record.service
+    source.define_singleton_method(:exist?) { |*| raise Errno::EACCES, "refused" }
+    result = run_backup
+    assert_equal [ record.id ], result.failed
+    assert_match "1 failed", result.to_s
+    assert_match "failures: 1 × Errno::EACCES: Permission denied - refused", result.to_s
+  ensure
+    source.singleton_class.remove_method(:exist?) if source&.singleton_methods&.include?(:exist?)
+  end
+
   test "is configured only when its bucket is set" do
     assert FileStorage::Backup.configured?(:test_backup)
     assert_not FileStorage::Backup.configured?(:nowhere)
