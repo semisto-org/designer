@@ -35,7 +35,7 @@ async function pdfThumbnail(file: File): Promise<Blob | null> {
     context.fillRect(0, 0, canvas.width, canvas.height)
     await page.render({ canvas, canvasContext: context, viewport }).promise
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8))
-    void pdf.destroy()
+    void pdf.loadingTask.destroy()
     return blob
   } catch {
     // A protected or broken PDF just has no thumbnail.
