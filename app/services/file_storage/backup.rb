@@ -17,11 +17,23 @@ module FileStorage
     MAX_ORPHAN_SHARE = 0.25
     ORPHAN_ALARM_FLOOR = 100
 
-    Result = Struct.new(:copied, :already_there, :missing, :failed, :erased, :awaiting_erasure, keyword_init: true) do
+    # `reasons` counts the failures by error, so the report names the cause
+    # (a source refusing every request reads differently from one bad file).
+    Result = Struct.new(:copied, :already_there, :missing, :failed, :erased, :awaiting_erasure, :reasons, keyword_init: true) do
       def to_s
         "#{copied} copied, #{already_there} already there, #{missing.size} missing at the source, #{failed.size} failed, " \
-          "#{erased} erased after #{RETENTION.in_days.round} days, #{awaiting_erasure} deleted from the app and kept for now"
+          "#{erased} erased after #{RETENTION.in_days.round} days, #{awaiting_erasure} deleted from the app and kept for now" \
+          "#{"; failures: #{failure_reasons}" if failed.any? && reasons.present?}"
       end
+
+      def record_failure(id, error)
+        failed << id
+        (self.reasons ||= Hash.new(0))[[ error.class.name, error.message.presence ].compact.join(": ").first(200)] += 1
+      end
+
+      private
+
+      def failure_reasons = reasons.sort_by { -_2 }.first(3).map { |reason, count| "#{count} × #{reason}" }.join(", ")
     end
 
     def self.configured?(target = :backup) = FileStorage.configured?(target)
@@ -49,7 +61,7 @@ module FileStorage
     def run(now: Time.current)
       target = @service || FileStorage.service(@target)
       keys = FileStorage.keys_of(target)
-      result = Result.new(copied: 0, already_there: 0, missing: [], failed: [], erased: 0, awaiting_erasure: 0)
+      result = Result.new(copied: 0, already_there: 0, missing: [], failed: [], erased: 0, awaiting_erasure: 0, reasons: Hash.new(0))
 
       ActiveStorage::Blob.where.not(service_name: @target).find_each do |blob|
         if FileStorage.holds?(target, keys, blob.key)
@@ -61,7 +73,7 @@ module FileStorage
           result.copied += 1
         end
       rescue StandardError => e
-        result.failed << blob.id
+        result.record_failure(blob.id, e)
         @logger.error("[storage:backup] blob #{blob.id}: #{e.class}: #{e.message}")
       end
 
@@ -87,7 +99,7 @@ module FileStorage
         orphan.delete
         result.erased += 1
       rescue StandardError => e
-        result.failed << orphan.key
+        result.record_failure(orphan.key, e)
         @logger.error("[storage:backup] erasing #{orphan.key}: #{e.class}: #{e.message}")
       end
       result.awaiting_erasure = known.count
