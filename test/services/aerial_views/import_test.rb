@@ -68,7 +68,9 @@ class AerialViews::ImportTest < ActiveSupport::TestCase
       McpUploadPurgeJob.perform_now
       assert_equal "uploading", view.reload.status, "a slow connection gets time"
     end
-    travel(McpUpload::AERIAL_LIFETIME + 1.hour) do
+    # A day past the lifetime, not an hour: in late October the purge counts
+    # back three Brussels days across the clock change, which eats an hour.
+    travel(McpUpload::AERIAL_LIFETIME + 1.day) do
       McpUploadPurgeJob.perform_now
     end
     assert_equal [ "failed", "upload_expired" ], [ view.reload.status, view.failure ]
