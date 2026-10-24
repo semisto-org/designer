@@ -64,7 +64,7 @@ gem "image_processing", "~> 1.2"
 gem "sqlite3", "~> 2.1"
 
 # S3-compatible object storage (Hetzner, Scaleway…) for Active Storage in production
-gem "aws-sdk-s3", "~> 1.233", require: false
+gem "aws-sdk-s3", "~> 1.235", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
