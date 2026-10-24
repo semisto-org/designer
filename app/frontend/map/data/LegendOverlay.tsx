@@ -14,7 +14,8 @@ import { isPlant, numberProperty } from '@/map/plants/properties'
 import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
 import { setPlantLabelStyle, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { usePlanting } from '@/map/plants/store'
-import { inScenario, isPlannedPlant, PLANNED_OPACITY, useScenario } from '@/map/scenario'
+import { isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
+import { inMoment } from '@/map/time/moment'
 import type { Strata } from '@/types/plants'
 
 const OPEN_KEY = 'designer.legend.open'
@@ -40,9 +41,8 @@ type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; s
  * numbers by species, first number first.
  */
 function usePlantStrata(): PlantLegend {
-  const { features, map } = useEditor()
+  const { features, map, moment, timeline } = useEditor()
   const { data } = usePlanting(map.id)
-  const scenario = useScenario()
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   if (hidden.includes('plants')) return { counts: [], unknown: 0, planned: false, support: false, numbered: [] }
@@ -52,7 +52,7 @@ function usePlantStrata(): PlantLegend {
   let planned = false
   let support = false
   for (const feature of features) {
-    if (!isPlant(feature) || feature.properties.status === 'rejected' || !inScenario(feature.properties, scenario)) continue
+    if (!isPlant(feature) || feature.properties.status === 'rejected' || !inMoment(feature.properties, moment, timeline.arrival)) continue
     const s = plantStrata(feature, data)
     if (data && !s) unknown += 1
     if (hiddenStrata.includes(strataKey(s))) {
@@ -89,7 +89,7 @@ function usePlantStrata(): PlantLegend {
  * bottom of the screen to any open panel or selection.
  */
 export default function LegendOverlay() {
-  const { regionLayers, activePanel, selected } = useEditor()
+  const { regionLayers, activePanel, selected, features } = useEditor()
   const state = useLayerState()
   const wide = useMediaQuery('(min-width: 768px)')
   const [choice, setChoice] = useState<boolean | null>(storedOpen)
@@ -118,7 +118,9 @@ export default function LegendOverlay() {
     <section
       aria-label={t('map_data.legend.title')}
       className={clsx(
-        'absolute bottom-[5.5rem] left-2 z-10 md:bottom-11 md:left-auto md:right-2',
+        'absolute left-2 z-10 md:bottom-11 md:left-auto md:right-2',
+        // Phone: above the time strip (map/time), which shows once the map holds something.
+        features.length > 0 ? 'bottom-[11.75rem]' : 'bottom-[5.5rem]',
         open && 'right-2 md:w-72',
       )}
     >

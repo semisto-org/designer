@@ -3,12 +3,14 @@ module Mcp
   # checked on its own (layer, kind, valid geometry lying within BUFFER_M
   # of the terrain boundary, reasonable size); valid ones become MapFeature
   # rows with status "draft" and source "ai", the others are reported back
-  # with the reason, so the AI can fix and resend only those.
+  # with the reason, so the AI can fix and resend only those. A draft read
+  # from photos of the terrain (photo_ids) is linked to them.
   class DraftProposal
     MAX_FEATURES = 200
     MAX_PENDING = 1000
     BUFFER_M = GeometryCheck::BUFFER_M
     MAX_PROPERTIES_BYTES = 4000
+    MAX_PHOTOS = 10
     # Sensitive networks are never proposed by an AI.
     LAYERS = (MapFeature::LAYERS - %w[networks]).freeze
     KIND_FORMAT = /\A[a-z][a-z0-9_]{0,59}\z/
@@ -62,6 +64,7 @@ module Mcp
         return geometry_error if geometry_error
         return err(:tags, max: MapFeature::Tags::MAX_TAGS, length: MapFeature::Tags::MAX_LENGTH) unless valid_tags?(item[:tags])
         return err(:properties, max: MAX_PROPERTIES_BYTES) if item[:properties] && (!item[:properties].is_a?(Hash) || item[:properties].to_json.bytesize > MAX_PROPERTIES_BYTES)
+        return err(:photo_ids, max: MAX_PHOTOS) unless valid_photo_ids?(item[:photo_ids])
         nil
       end
 
@@ -69,6 +72,25 @@ module Mcp
         return true if tags.nil?
         tags.is_a?(Array) && tags.size <= MapFeature::Tags::MAX_TAGS &&
           tags.all? { |tag| tag.is_a?(String) && MapFeature.normalize_tag(tag).length <= MapFeature::Tags::MAX_LENGTH }
+      end
+
+      def valid_photo_ids?(ids)
+        return true if ids.nil?
+        ids.is_a?(Array) && ids.size <= MAX_PHOTOS && ids.all? { |id| id.is_a?(Integer) && id.positive? }
+      end
+
+      # The photos a draft was read from, linked to it so the reviewer sees
+      # them next to the draft. A photo of another map, or already linked to
+      # another element, refuses the draft with its reason.
+      def photos_for(ids)
+        ids = Array(ids).uniq
+        return [ nil, nil ] if ids.empty?
+        photos = @map.photos.where(id: ids)
+        missing = ids - photos.pluck(:id)
+        return [ nil, err(:photo_missing, ids: missing.join(", ")) ] if missing.any?
+        linked = photos.where.not(map_feature_id: nil).first
+        return [ nil, err(:photo_linked, id: linked.id, feature_id: linked.map_feature_id) ] if linked
+        [ photos, nil ]
       end
 
       def parse(geometry) = GeometryCheck.parse(geometry)
@@ -88,8 +110,11 @@ module Mcp
         MapFeature.transaction do
           MapFeature.no_touching do
             valid.each do |index, item|
+              photos, photo_error = photos_for(item[:photo_ids])
+              next refused << { index:, error: photo_error } if photo_error
               feature = build(item)
               if feature.save
+                photos&.update_all(map_feature_id: feature.id, updated_at: Time.current)
                 created << { index:, feature: }
               else
                 refused << { index:, error: err(:element, kind: feature.kind, errors: feature.errors.full_messages.to_sentence) }

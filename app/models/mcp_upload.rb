@@ -17,9 +17,14 @@
 # storage. Such a file can be large and the connection slow, so it is kept
 # longer (AERIAL_LIFETIME) and its blob is marked composed: its MD5 is only
 # known once the browser has read the whole file (AerialViewsController).
+# The files a drone pilot delivers with a mission (point clouds, 3D
+# models…, kind "mission_file") travel the same way and are put together
+# by DroneMissionFileJob.
 class McpUpload < ApplicationRecord
   KINDS = %w[photo document].freeze
   AERIAL_VIEW = "aerial_view".freeze
+  MISSION_FILE = "mission_file".freeze
+  LONG_LIVED = [ AERIAL_VIEW, MISSION_FILE ].freeze
   UNATTACHED_LIFETIME = 24.hours
   AERIAL_LIFETIME = 3.days
   URL_LIFETIME = 15.minutes
@@ -44,13 +49,13 @@ class McpUpload < ApplicationRecord
   belongs_to :map
   belongs_to :user
 
-  validates :kind, inclusion: { in: KINDS + [ AERIAL_VIEW ] }
+  validates :kind, inclusion: { in: KINDS + LONG_LIVED }
   validates :part_size, numericality: { greater_than: 0 }, allow_nil: true
 
   scope :unattached, -> { where(attached_at: nil) }
   scope :stale, ->(now = Time.current) {
-    unattached.where.not(kind: AERIAL_VIEW).where(created_at: ...(now - UNATTACHED_LIFETIME))
-      .or(unattached.where(kind: AERIAL_VIEW, created_at: ...(now - AERIAL_LIFETIME)))
+    unattached.where.not(kind: LONG_LIVED).where(created_at: ...(now - UNATTACHED_LIFETIME))
+      .or(unattached.where(kind: LONG_LIVED, created_at: ...(now - AERIAL_LIFETIME)))
   }
 
   def self.multipart?(byte_size) = byte_size > part_size_for_new
@@ -66,7 +71,7 @@ class McpUpload < ApplicationRecord
   # for parts, once put together).
   def received? = blob.service.exist?(blob.key)
 
-  def part_token = signed_id(purpose: PART_PURPOSE, expires_in: aerial_view? ? AERIAL_LIFETIME : PARTS_URL_LIFETIME)
+  def part_token = signed_id(purpose: PART_PURPOSE, expires_in: LONG_LIVED.include?(kind) ? AERIAL_LIFETIME : PARTS_URL_LIFETIME)
 
   def aerial_view? = kind == AERIAL_VIEW
 

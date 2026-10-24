@@ -1,4 +1,4 @@
-import { Bot, Camera, Waypoints, Compass, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
+import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Trees } from 'lucide-react'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -28,9 +28,11 @@ import DraftReviewSection from '@/map/drafts/DraftReviewSection'
 import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
+import { FeedbackButton } from '@/components/feedback/FeedbackButton'
 import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
-import ScenarioToggle from '@/map/panels/ScenarioToggle'
 import VersionPicker from '@/map/tags/VersionPicker'
+import TimeStrip from '@/map/time/TimeStrip'
+import ShadeOverlay from '@/map/time/ShadeOverlay'
 import PalettePanel from '@/map/plants/PalettePanel'
 import OfferPanel from '@/map/panels/OfferPanel'
 import PlantListPanel from '@/map/plants/PlantListPanel'
@@ -53,6 +55,8 @@ import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
 import SectorInspector from '@/map/sectors/SectorInspector'
 import SectorsPanel, { isSector } from '@/map/sectors/SectorsPanel'
+import ZonesPanel from '@/map/zones/ZonesPanel'
+import ZoneSection, { appliesToZone } from '@/map/zones/ZoneSection'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
 import FinancesPanel from '@/map/panels/FinancesPanel'
 import PhotosPanel from '@/map/photos/PhotosPanel'
@@ -113,6 +117,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'map', component: ElementsPanel, order: 30 },
   { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'map', component: DrawingLayersPanel, order: 40 },
   // 3. Concevoir
+  { id: 'zones', label: 'permaculture_zones.panel_title', icon: Target, group: 'design', component: ZonesPanel, order: 10 },
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20 },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
@@ -146,6 +151,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
   { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },
   { id: 'sector', applies: isSector, component: SectorInspector, order: 20 },
+  { id: 'permaculture-zone', applies: appliesToZone, component: ZoneSection, order: 17 },
   { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
   { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
@@ -166,9 +172,9 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'read-only-notice', component: ReadOnlyNotice, order: 5 },
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'shortcuts', component: ShortcutsButton, order: 94 },
+  { id: 'feedback', component: FeedbackButton, order: 93 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
-  { id: 'scenario', component: ScenarioToggle, order: 10 },
 ]
 
 // Overlays over the map, e.g. drawing toolbar, identify popup, drafts review bar.
@@ -176,6 +182,8 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'collab', component: CollabOverlay, order: 90 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
   { id: 'version', component: VersionPicker, order: 25 },
+  { id: 'time-strip', component: TimeStrip, order: 24 },
+  { id: 'time-shade', component: ShadeOverlay, order: 19 },
   { id: 'tour', component: TourOverlay, order: 100 },
   { id: 'shortcuts', component: ShortcutsSheet, order: 101 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },

@@ -58,9 +58,9 @@
       "offline_not_downloaded": "Pas de réseau, et cette carte n'a pas été téléchargée. Télécharge-la avant d'aller sur le terrain.",
       "synced": "Tout est enregistré",
       "offline": "Hors ligne",
-      "sending": {
-        "one": "Envoi de %{count} modification…",
-        "other": "Envoi de %{count} modifications…"
+      "to_send": {
+        "one": "%{count} modification à envoyer",
+        "other": "%{count} modifications à envoyer"
       },
       "waiting": {
         "one": "%{count} modification en attente du réseau",
@@ -659,13 +659,16 @@
       "offline": "Hors ligne : tes modifications sont gardées sur le téléphone et partiront au retour du réseau.",
       "empty": "Rien en attente : tout est enregistré.",
       "send_now": "Envoyer maintenant",
-      "sending": "Envoi en cours…",
+      "sending_this": "En cours d'envoi…",
+      "progress": "Envoi %{done} sur %{total}…",
+      "progress_current": "En ce moment : %{what}",
       "blocked_here": "L'envoi s'arrête ici : %{reason}. Il sera réessayé tout seul ; si ça se répète, tu peux abandonner cette modification pour laisser partir les suivantes.",
       "run": {
         "sent": {
-          "one": "1 modification envoyée.",
-          "other": "%{count} modifications envoyées."
+          "one": "Terminé à %{time} : 1 modification envoyée.",
+          "other": "Terminé à %{time} : %{count} modifications envoyées."
         },
+        "nothing": "Vérifié à %{time} : tout était déjà envoyé.",
         "offline": "L'envoi n'a pas abouti (%{reason}). Nouvel essai tout seul dans quelques instants.",
         "server": "Le serveur ne répond pas pour l'instant (%{reason}). Nouvel essai tout seul dans quelques instants.",
         "auth": "Ta session a expiré : reconnecte-toi depuis ton compte, tes envois partiront ensuite."
@@ -796,6 +799,8 @@
     "species": "Espèce",
     "variety": "Variété",
     "variety_none": "Espèce type (sans variété)",
+    "variety_placeholder": "Pas encore précisée (%{name})",
+    "variety_hint": "Choisis-la dans la liste ou écris son nom : une variété inconnue rejoint le catalogue et ta palette.",
     "choose": "Choisir l'espèce",
     "choose_placeholder": "Choisir dans la palette…",
     "no_species": "Aucune espèce : ce plant n'est pas compté dans la liste.",
@@ -1204,6 +1209,7 @@
       "season_sign": "Signe de saison",
       "sketch": "Croquis",
       "sector": "Secteur",
+      "permaculture_zone": "Zone de permaculture",
       "zone": "Zone",
       "line": "Ligne",
       "point": "Point",

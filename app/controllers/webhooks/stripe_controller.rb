@@ -9,7 +9,7 @@ module Webhooks
       return head :service_unavailable if secret.nil?
 
       payload = request.raw_post
-      event = verified_event(payload, secret)
+      event = verified_event(payload, secret) || (Billing.connect_webhook_secret && verified_event(payload, Billing.connect_webhook_secret))
       return head :bad_request if event.nil?
 
       result = Billing::Webhook.process(event)

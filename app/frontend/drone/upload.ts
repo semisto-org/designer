@@ -54,23 +54,15 @@ async function sendPart(url: string, data: ArrayBuffer, md5: string, signal?: Ab
 }
 
 /**
- * Announces the file, sends it and asks for the view to be prepared.
- * Resolves the import (status "processing"); `onCreated` gets it as soon
- * as the server knows it, so the panel can list it while it travels.
+ * Sends a file announced to the server in parts (its parts URL, part size
+ * and count) and resolves the whole file's MD5, in base64, for the call
+ * that completes it. Also used for the files of a drone mission.
  */
-export async function uploadAerialView(
-  mapId: number,
+export async function sendInParts(
   file: File,
-  meta: { name: string; capturedOn: string },
-  { onCreated, onProgress, signal }: { onCreated?: (view: AerialImport) => void; onProgress?: (p: UploadProgress) => void; signal?: AbortSignal } = {},
-): Promise<AerialImport> {
-  const created = await api<Created>(`/maps/${mapId}/aerial_views`, {
-    method: 'POST',
-    body: { aerial_view: { name: meta.name, captured_on: meta.capturedOn }, file: { filename: file.name, byte_size: file.size } },
-    signal,
-  })
-  onCreated?.(created.aerialView)
-  const { partsUrl, partSize, partCount } = created.upload
+  { partsUrl, partSize, partCount }: { partsUrl: string; partSize: number; partCount: number },
+  { onProgress, signal }: { onProgress?: (p: UploadProgress) => void; signal?: AbortSignal } = {},
+): Promise<string> {
   const whole = new SparkMD5.ArrayBuffer()
   const inFlight = new Set<Promise<void>>()
   let sent = 0
@@ -90,10 +82,32 @@ export async function uploadAerialView(
     if (inFlight.size >= PARALLEL) await Promise.race(inFlight)
   }
   await Promise.all(inFlight)
+  return base64(whole.end(true))
+}
 
-  const done = await api<{ aerialView: AerialImport }>(`/maps/${mapId}/aerial_views/${created.aerialView.id}/complete`, {
+/**
+ * Announces the file, sends it and asks for the view to be prepared.
+ * Resolves the import (status "processing"); `onCreated` gets it as soon
+ * as the server knows it, so the panel can list it while it travels.
+ * `missionId`: the pilot of a drone mission delivers it on the client's map.
+ */
+export async function uploadAerialView(
+  mapId: number,
+  file: File,
+  meta: { name: string; capturedOn: string; product?: string },
+  { onCreated, onProgress, signal, missionId }: { onCreated?: (view: AerialImport) => void; onProgress?: (p: UploadProgress) => void; signal?: AbortSignal; missionId?: number } = {},
+): Promise<AerialImport> {
+  const query = missionId ? `?drone_mission_id=${missionId}` : ''
+  const created = await api<Created>(`/maps/${mapId}/aerial_views${query}`, {
     method: 'POST',
-    body: { checksum: base64(whole.end(true)) },
+    body: { aerial_view: { name: meta.name, captured_on: meta.capturedOn, ...(meta.product ? { product: meta.product } : {}) }, file: { filename: file.name, byte_size: file.size } },
+    signal,
+  })
+  onCreated?.(created.aerialView)
+  const checksum = await sendInParts(file, created.upload, { onProgress, signal })
+  const done = await api<{ aerialView: AerialImport }>(`/maps/${mapId}/aerial_views/${created.aerialView.id}/complete${query}`, {
+    method: 'POST',
+    body: { checksum },
     signal,
   })
   return done.aerialView

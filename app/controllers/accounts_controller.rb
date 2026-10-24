@@ -21,7 +21,9 @@ class AccountsController < ApplicationController
         readOnlyMaps: user.read_only_maps_count,
         # Once they pay for a team, the plan covers the team's maps and their
         # own maps follow the free plan apart (Billing::Scope).
-        personalMaps: (personal_maps(Billing::Scope.own(user)) if user.pays_for_teams?)
+        personalMaps: (personal_maps(Billing::Scope.own(user)) if user.pays_for_teams?),
+        # « Aider à améliorer Terranova »: the beta's session recording (SessionReplayConsent).
+        replay: { enabled: SessionReplay.enabled?, consent: user.replay_consent, sessions: user.session_replays.count, perUser: SessionReplay.per_user }
       }
     }
   end

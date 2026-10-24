@@ -1,0 +1,63 @@
+fr:
+  offline_site:
+    noscript: "Ce site a besoin de JavaScript pour afficher le plan. Les photos, les documents et les données sont dans les dossiers « photos », « documents » et « donnees »."
+    csv:
+      headers: ["Plante", "Nom latin", "Quantité", "Quantité prévue", "Plants sur la carte"]
+    readme:
+      body: |
+        %{name}, exportée de Semisto Terranova le %{date}
+
+        Ce dossier est ta carte, à toi, qui s'ouvre sans Terranova, sans compte et sans connexion.
+
+        Pour l'ouvrir : double-clique sur index.html. Il s'ouvre dans ton navigateur (Firefox, Chrome, Safari ou Edge, dans une version récente).
+
+        Ce qu'il contient :
+        - index.html : le plan sur sa photo aérienne, le jardin au fil des années, les photos (%{photos}) et les documents (%{documents}) ;
+        - photos/ et documents/ : les fichiers eux-mêmes ;
+        - donnees/carte.geojson : tous les éléments de la carte avec leurs mesures, pour QGIS ou un autre SIG ;
+        - donnees/plantes.csv : la liste des plantes, pour un tableur.
+
+        Garde ce dossier sur ton ordinateur, une clé USB ou ton téléphone : il reste lisible même si tu quittes Terranova.
+      networks: "Attention : ce dossier contient les réseaux du terrain (eau, gaz, électricité, Ethernet). Ne le partage qu'en confiance."
+      skipped: "Ces fichiers étaient trop lourds pour le dossier ; ils restent dans Terranova :"
+    menu:
+      label: "Site hors ligne"
+      hint: "Ta carte, ses photos et ses documents, à ouvrir sans connexion ni compte."
+    dialog:
+      title: "Emporter ta carte hors ligne"
+      intro: "Terranova prépare un dossier qui s'ouvre dans n'importe quel navigateur, sans connexion ni compte : le plan sur sa photo aérienne, le jardin au fil des années, les photos, les documents et les données brutes. Pour le terrain, une clé USB, ou pour garder ton travail quoi qu'il arrive."
+      prepare: "Préparer le site"
+      prepare_again: "Préparer à nouveau"
+      preparing: "Préparation en cours… Tu peux fermer cette fenêtre, le site sera prêt ici dans quelques minutes."
+      ready: "Prêt le %{date}"
+      download: "Télécharger (%{size})"
+      contents: "%{photos} photos et %{documents} documents, avec le plan sur sa photo aérienne."
+      skipped: "%{count} fichiers trop lourds sont restés dans Terranova."
+      failed: "La préparation a échoué. Réessaie ; si ça recommence, écris-nous."
+      networks: "Inclure les réseaux (eau, gaz, électricité, Ethernet)"
+      networks_hint: "À ne partager qu'en confiance."
+      with_networks: "Avec les réseaux"
+      how: "Dézippe le fichier puis double-clique sur index.html."
+      error: "Impossible de joindre Terranova. Réessaie dans un instant."
+    viewer:
+      tabs:
+        plan: "Le plan"
+        photos: "Photos"
+        documents: "Documents"
+        data: "Données"
+      exported: "Exportée de Semisto Terranova le %{date}"
+      offline_badge: "Hors ligne"
+      photos_empty: "Aucune photo dans cette carte."
+      documents_empty: "Aucun document dans cette carte."
+      photo_undated: "date d'envoi"
+      original: "Fichier original"
+      open: "Ouvrir"
+      data_intro: "Les données brutes de ta carte, à ouvrir dans d'autres logiciels."
+      geojson: "Tous les éléments de la carte"
+      geojson_hint: "GeoJSON, avec leurs mesures : pour QGIS ou un autre SIG."
+      plants: "La liste des plantes"
+      plants_hint: "CSV : pour un tableur."
+      skipped: "Restés dans Terranova (trop lourds)"
+      networks: "Ce dossier contient les réseaux du terrain : ne le partage qu'en confiance."
+      no_tiles: "La photo aérienne n'a pas pu être emportée : le plan s'affiche sur fond neutre."
+      made_with: "Fait avec Semisto Terranova"

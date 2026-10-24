@@ -40,9 +40,10 @@ module Mcp
         more = page.size > limit
         page = page.first(limit)
         pending = map.feature_update_drafts.pending.where(map_feature_id: page.map(&:id)).index_by(&:map_feature_id)
+        zones = PermacultureZones::Lookup.new(map).for_features(page)
         {
           type: "FeatureCollection",
-          features: page.map { |f| feature_json(f, geometry: include_geometry, pending_update: pending[f.id] || false) },
+          features: page.map { |f| feature_json(f, geometry: include_geometry, pending_update: pending[f.id] || false, zone: zones[f.id]) },
           count: page.size,
           total:,
           next_after_id: more ? page.last.id : nil,

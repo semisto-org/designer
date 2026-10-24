@@ -3,6 +3,7 @@ class User < ApplicationRecord
   include AiTrial
   include HeicAttachment
   include HasLogo
+  include SessionReplayConsent
 
   AVATAR_MAX_BYTES = 10.megabytes
   AVATAR_TYPES = %w[image/jpeg image/png image/webp].freeze
@@ -21,11 +22,16 @@ class User < ApplicationRecord
   has_many :applauses, dependent: :destroy
   has_many :release_note_likes, dependent: :delete_all
   has_many :service_requests, dependent: :destroy
+  # The directory of drone pilots: my pilot profile, and the missions I booked.
+  has_one :drone_pilot, dependent: :restrict_with_error
+  has_many :drone_missions, foreign_key: :client_id, inverse_of: :client, dependent: :restrict_with_error
   # Asked of other gardeners' places (« Multiplication »).
   has_many :propagation_requests, foreign_key: :requester_id, inverse_of: :requester, dependent: :delete_all
   has_many :owned_maps, class_name: "Map", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_error
   has_many :offer_templates, as: :owner, dependent: :destroy
   has_one :request_form, as: :owner, dependent: :destroy
+  # « Un retour ? » (FeedbacksController).
+  has_many :feedbacks, dependent: :delete_all
 
   # A picture chosen in « Mon compte »; it wins over the Google one.
   has_one_attached :avatar do |attachable|
@@ -147,7 +153,15 @@ class User < ApplicationRecord
     # request form, with a dot while requests wait for a first call.
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
       tourSeen: tour_seen_at.present?, accountKind: account_kind, newRequests: new_requests_count,
-      catalogueReviewer: can_review_catalogue?, propagation: propagation_summary }
+      catalogueReviewer: can_review_catalogue?, propagation: propagation_summary, droneMissions: drone_missions_summary }
+  end
+
+  # The « Missions drone » link shows once I booked a mission or I am a
+  # pilot, with a dot while a mission waits for my answer; nil otherwise.
+  def drone_missions_summary
+    pilot = drone_pilot
+    return nil unless pilot || drone_missions.exists?
+    { waiting: pilot ? pilot.missions.where(status: "requested").count : 0 }
   end
 
   # The « Multiplication » link shows once I own a place or asked one, with a

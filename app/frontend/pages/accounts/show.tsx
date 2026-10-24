@@ -1,11 +1,13 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
 import { type ReactNode, useRef, useState } from 'react'
-import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Receipt, Sprout, Sparkles, Trash2 } from 'lucide-react'
+import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Receipt, Sprout, Sparkles, Trash2, Video } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { LogoCard } from '@/components/LogoCard'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input } from '@/components/ui/Field'
+import { toast } from '@/components/ui/toast'
+import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { formatDate } from '@/lib/money'
 import { TeamsCard } from '@/teams/TeamsCard'
@@ -98,6 +100,8 @@ export default function AccountShow({ account }: { account: AccountData }) {
         </div>
       </Card>
 
+      {account.replay.enabled && <ReplayCard replay={account.replay} />}
+
       <Card className="border border-clay-100">
         <h2 className="flex items-center gap-2 text-base"><Trash2 className="h-4 w-4 text-clay-500" aria-hidden="true" />{t('account.danger_title')}</h2>
         <p className="mt-2 text-sm text-loam-600">{t('account.danger_body')}</p>
@@ -112,6 +116,44 @@ export default function AccountShow({ account }: { account: AccountData }) {
         </Button>
       </Card>
     </div>
+  )
+}
+
+// « Aider à améliorer Terranova »: the answer to the beta's question (may
+// Sentry record my first sessions?), changed here at any time.
+function ReplayCard({ replay }: { replay: AccountData['replay'] }) {
+  const [busy, setBusy] = useState(false)
+  const on = replay.consent === true
+
+  async function change(consent: boolean) {
+    setBusy(true)
+    try {
+      await api('/account/replay_consent', { method: 'PATCH', body: { consent } })
+      router.reload({ only: ['account', 'sessionReplay'] })
+      toast(t(consent ? 'first_hour.consent.thanks_yes' : 'first_hour.consent.thanks_no'), { tone: 'success' })
+    } catch {
+      toast(t('first_hour.consent.error'), { tone: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Card>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 max-w-xl flex-1">
+          <h2 className="flex items-center gap-2 text-base"><Video className="h-4 w-4 text-prune-500" aria-hidden="true" />{t('first_hour.account.title')}</h2>
+          <p className="mt-2 text-sm text-loam-600">
+            {on ? t('first_hour.account.on', { count: replay.perUser }) : t('first_hour.account.off')}
+            {on && ` ${t('first_hour.account.recorded', { count: replay.sessions, max: replay.perUser })}`}
+          </p>
+          <p className="mt-2 text-sm text-loam-500">{t('first_hour.account.erase')}</p>
+        </div>
+        <Button variant={on ? 'secondary' : 'primary'} size="sm" className="shrink-0" disabled={busy} onClick={() => void change(!on)}>
+          {on ? t('first_hour.account.stop') : t('first_hour.account.allow')}
+        </Button>
+      </div>
+    </Card>
   )
 }
 

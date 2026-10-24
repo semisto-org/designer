@@ -160,6 +160,8 @@ export type AccountData = {
   readOnlyMaps: number
   /** Own maps on the free plan, apart from the teams the user pays for; null otherwise. */
   personalMaps: { used: number; max: number } | null
+  /** The beta's session recording (Sentry Session Replay): the person's answer and the sessions recorded so far. */
+  replay: { enabled: boolean; consent: boolean | null; sessions: number; perUser: number }
 }
 
 export type HelpArticleSummary = {

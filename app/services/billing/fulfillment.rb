@@ -16,6 +16,8 @@ module Billing
 
     def call
       return "session not paid" unless PAID.include?(@session["payment_status"])
+      # A drone mission of the pilot directory, not a plan.
+      return DroneMissions::Payment.call(@session, paid_at: @paid_at) if @session.dig("metadata", "drone_mission_id").present?
       user = Identity.user_for(@session)
       return "unknown user" unless user
       Identity.link_customer(user, Payload.id_of(@session["customer"]))

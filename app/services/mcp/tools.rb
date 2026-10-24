@@ -5,10 +5,10 @@ module Mcp
       [
         ListMaps, GetMap, ListFeatures, GetFeature, GetRegionLayers, IdentifyAtPoint, GetSiteData, TraceContour, GetCatchment, FindKeypoints, TraceParallels, GetStormObservations, GetSeasonSigns, GetElementFunctions,
         SearchPlants, GetPlant, GetDesignGuide, GetHelp, GetMyPlan, GetProjectSheet, GetImplementationPlan, GetBioindicatorPhoto, GetSoilSamples, GetSoilReport,
-        ListTasks, ListHarvests, ListPlantObservations, ListStorageReadings, ListDocuments, GetDocument, ListPhotos, GetPhoto,
-        ProposeFeatures, ProposeSectors, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposeBioindicators, ProposeSoilResults, WithdrawDraft,
+        ListTasks, ListHarvests, ListPlantObservations, ListStorageReadings, ListDocuments, GetDocument, ListPhotos, GetPhoto, ListDronePilots, ListDroneMissions, ListPropagationRequests,
+        ProposeFeatures, ProposeSectors, ProposeZones, ProposeFeatureUpdates, ProposeDeletions, ProposePalette, ProposeProjectSheet, ProposePhases, ProposeBioindicators, ProposeSoilResults, WithdrawDraft,
         CreateTasks, UpdateTasks, RecordHarvests, RecordPlantObservations, RecordStorageReadings, AddDocument, UpdateDocument, AddPhoto, UpdatePhotos, DeletePhotos,
-        CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments
+        CreateUpload, AttachPhotos, AttachDocuments, ImportFromUrl, DeleteDocuments, PrepareOfflineSite
       ]
     end
   end

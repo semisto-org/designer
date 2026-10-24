@@ -12,7 +12,7 @@ class FileBackupJobTest < ActiveJob::TestCase
     object.define_singleton_method(name, original)
   end
 
-  def perform_with(result: nil, error: nil, configured: true)
+  def perform_with(result: nil, error: nil, configured: true, **arguments)
     backup = Object.new
     backup.define_singleton_method(:run) { error ? raise(error) : result }
     check_ins = []
@@ -20,7 +20,7 @@ class FileBackupJobTest < ActiveJob::TestCase
     swap(FileStorage::Backup, :configured?, ->(*) { configured }) do
       swap(FileStorage::Backup, :new, ->(*) { backup }) do
         swap(Sentry, :capture_check_in, capture) do
-          FileBackupJob.perform_now
+          FileBackupJob.perform_now(**arguments)
         rescue RuntimeError
         end
       end
@@ -33,9 +33,21 @@ class FileBackupJobTest < ActiveJob::TestCase
     assert_equal [ [ "file-backup", :in_progress, nil ], [ "file-backup", :ok, "check-in-1" ] ], check_ins
   end
 
-  test "a file it could not copy reports the run as failed" do
+  test "a file it could not copy is tried again later, under the same check-in" do
     check_ins = perform_with(result: result(failed: [ 42 ]))
-    assert_equal [ :in_progress, :error ], check_ins.map(&:second)
+    assert_equal [ :in_progress ], check_ins.map(&:second)
+    assert_enqueued_with(job: FileBackupJob, args: [ { attempt: 2, check_in_id: "check-in-1" } ])
+  end
+
+  test "a retry that copies everything closes the night's check-in" do
+    check_ins = perform_with(result: result, attempt: 2, check_in_id: "night-1")
+    assert_equal [ [ "file-backup", :ok, "night-1" ] ], check_ins
+  end
+
+  test "a file still failing after the last retry reports the run as failed" do
+    check_ins = perform_with(result: result(failed: [ 42 ]), attempt: FileBackupJob::RETRIES + 1, check_in_id: "night-1")
+    assert_equal [ [ "file-backup", :error, "night-1" ] ], check_ins
+    assert_no_enqueued_jobs
   end
 
   test "a crash reports the run as failed and still raises" do

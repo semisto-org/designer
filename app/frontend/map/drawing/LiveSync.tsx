@@ -36,7 +36,8 @@ function apply(editor: Editor, message: FeatureBroadcast, userId: number | null)
   if (message.action === 'upsert') {
     if (current && current.properties.lockVersion >= message.feature.properties.lockVersion) return
     editor.upsertFeatures([message.feature])
-    if (current && editor.selectedId === message.id) editor.notify(t('drawing.live.changed_selected'))
+    // Our own change can echo back before its response, too.
+    if (current && editor.selectedId === message.id && message.actorId !== userId) editor.notify(t('drawing.live.changed_selected'))
   } else if (current) {
     editor.removeFeatures([message.id])
     // Our own deletion can echo back before its response: no « someone else » then.

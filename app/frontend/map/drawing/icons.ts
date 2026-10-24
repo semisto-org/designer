@@ -40,6 +40,7 @@ import { __iconData as stickyNote } from 'lucide-react/dist/esm/icons/sticky-not
 import { __iconData as tent } from 'lucide-react/dist/esm/icons/tent.mjs'
 import { __iconData as thermometerSnowflake } from 'lucide-react/dist/esm/icons/thermometer-snowflake.mjs'
 import { __iconData as thermometerSun } from 'lucide-react/dist/esm/icons/thermometer-sun.mjs'
+import { __iconData as target } from 'lucide-react/dist/esm/icons/target.mjs'
 import { __iconData as toyBrick } from 'lucide-react/dist/esm/icons/toy-brick.mjs'
 import { __iconData as tractor } from 'lucide-react/dist/esm/icons/tractor.mjs'
 import { __iconData as treeDeciduous } from 'lucide-react/dist/esm/icons/tree-deciduous.mjs'
@@ -94,6 +95,7 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'tent': tent,
   'thermometer-snowflake': thermometerSnowflake,
   'thermometer-sun': thermometerSun,
+  'target': target,
   'toy-brick': toyBrick,
   'tractor': tractor,
   'tree-deciduous': treeDeciduous,

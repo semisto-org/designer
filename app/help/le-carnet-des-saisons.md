@@ -25,6 +25,10 @@ Sur l'écran de ton terrain, la carte **Ton année d'observation** montre les qu
 
 La même carte te dit **ce qui vaut la peine d'aller voir ce mois-ci** : le premier gel en octobre, la neige qui fond en janvier, les nids au printemps, les coins qui sèchent en été. Touche un signe pour le noter dès que tu l'as vu.
 
+## Dans l'éditeur, sur ordinateur
+
+Tant que la saison du moment n'a pas encore été observée, la carte **À faire maintenant** de l'éditeur t'invite à aller voir ton terrain, avec les quatre saisons de ton année d'observation. Elle ne bloque rien : tu avances dans ton parcours à ton rythme, et ton design apprend chaque saison quand elle vient.
+
 ## Ce que ton IA en fait
 
 Ton IA lit ton carnet des saisons (outil `get_season_signs`) et s'en sert dans ses justifications : pas de fruitier à floraison précoce là où le givre reste, des cultures précoces là où la neige fond d'abord, une mare ou une baissière là où l'eau stagne, une haie à garder là où niche un oiseau. Quand une saison manque, elle te le dit, et te propose d'aller la voir avant de figer ce qui en dépend.

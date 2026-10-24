@@ -27,9 +27,11 @@ class Map < ApplicationRecord
   # The private link to the project sheet, for the people behind the project.
   has_one :project_sheet_link, dependent: :destroy
   has_one :publication, class_name: "MapPublication", dependent: :destroy
+  has_one :offline_site, class_name: "MapOfflineSite", dependent: :destroy
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
   has_many :service_requests, dependent: :destroy
+  has_many :drone_missions, dependent: :restrict_with_error
   has_one :financial_plan, dependent: :destroy
   has_one :offer, dependent: :destroy
   has_many :implementation_phases, -> { ordered }, dependent: :delete_all, inverse_of: :map
@@ -66,6 +68,9 @@ class Map < ApplicationRecord
 
   after_create :add_owner_membership
   after_save :refresh_area, if: :saved_change_to_boundary?
+  # « Premières heures » (admin): when the place first got its outline. Its
+  # plan's first print is noted by Maps::PrintsController.
+  before_save -> { self.outlined_at ||= Time.current }, if: -> { boundary.present? && will_save_change_to_boundary? }
 
   def role_for(user)
     return nil unless user
@@ -185,6 +190,8 @@ class Map < ApplicationRecord
       teamId: organization_id,
       ownerName: owner.display_name,
       archived: archived?,
+      # The land « on arrival » of the editor's time strip.
+      createdAt: created_at&.iso8601,
       updatedAt: updated_at.iso8601,
       lockVersion: lock_version
     }
@@ -198,8 +205,11 @@ class Map < ApplicationRecord
 
     # Semisto staff can read a map while a request sent from it is open: the
     # owner consented to that when sending it (see ServiceRequest).
+    # Semisto staff answering a request, and the pilot of an open drone
+    # mission, read the map.
     def support_role_for(user)
-      "viewer" if user.admin? && service_requests.pending.where(contact_consent: true).exists?
+      return "viewer" if user.admin? && service_requests.pending.where(contact_consent: true).exists?
+      "viewer" if drone_missions.open.for_pilot_user(user).exists?
     end
 
     def project_matches_schema

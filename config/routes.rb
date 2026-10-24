@@ -234,7 +234,8 @@ Rails.application.routes.draw do
   # Public website (server-side meta tags, French URLs).
   get "fonctionnalites", to: "pages#features", as: :features_page
   get "tarifs", to: "pages#pricing", as: :pricing
-  get "mission-drone", to: "pages#drone", as: :drone_mission
+  get "carnets-ouverts", to: "pages#gallery", as: :gallery_page
+  get "mission-drone", to: "pages#drone", as: :drone_mission_page
   get "open-source", to: "pages#open_source", as: :open_source
   get "ecoconception", to: "pages#ecoconception", as: :ecoconception
   # Measurements of the « EcoIndex » workflow (ECOINDEX_TOKEN).
@@ -278,6 +279,27 @@ Rails.application.routes.draw do
     end
   end
   resources :plants, only: %i[index show]
+  # --- drone pilots ---
+  # The directory of drone pilots, my pilot profile, and the missions booked
+  # with a pilot (DronePilotsController, DronePilotProfilesController,
+  # DroneMissionsController); the files a pilot delivers with a mission.
+  resources :drone_pilots, path: "pilotes-drone", only: %i[index show]
+  resource :drone_pilot_profile, path: "mon-profil-pilote", only: %i[show create update] do
+    post :stripe
+    get :stripe_return
+  end
+  resources :drone_missions, path: "missions-drone", only: %i[index show create update] do
+    post :checkout, on: :member
+    resources :files, module: :drone_missions, only: %i[create show destroy] do
+      post :complete, on: :member
+    end
+  end
+  namespace :admin do
+    resources :drone_pilots, path: "drone-pilots", only: %i[index update] do
+      post "missions/:id", action: :mission, on: :collection, as: :mission
+    end
+  end
+  # --- end drone pilots ---
   # Requests for scions, cuttings or seeds between gardeners (« Multiplication »).
   resources :propagation_requests, path: "propagation", only: %i[index create update destroy]
   resources :maps, only: [] do
@@ -573,6 +595,8 @@ Rails.application.routes.draw do
     post "plan-gifts", to: "plan_gifts#create_all", as: :plan_gifts
     post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
+    # « Carnets ouverts »: the maps the public site's gallery shows.
+    resources :gallery, only: %i[index update]
     get "tech", to: "tech#show", as: :tech
     # « Design »: the « carnet » primitives and what remains to migrate.
     get "design", to: "design#show", as: :design
@@ -617,6 +641,15 @@ Rails.application.routes.draw do
     resources :site_visits, only: %i[index create], controller: "maps/site_visits"
   end
   # --- end site visits ---
+  # --- offline site ---
+  # The map packed as a website that opens without Terranova (MapOfflineSite).
+  resources :maps, only: [] do
+    resource :offline_site, only: %i[show create], controller: "maps/offline_sites" do
+      get :download
+    end
+  end
+  # --- end offline site ---
+
   # --- implementation ---
   # The implementation plan of a map (« Mise en œuvre »): its phases, Semisto's
   # proposed phasing, and elements given to a phase.
@@ -633,6 +666,25 @@ Rails.application.routes.draw do
     end
   end
   # --- end implementation ---
+
+  # --- first-hours ---
+  # The beta's « Premières heures »: « Un retour ? » from any page, the answer
+  # to the session recording question and the replays it starts, the plan's
+  # first print, and the staff page that reads them all.
+  post "feedback", to: "feedbacks#create", as: :feedback
+  namespace :account do
+    resource :replay_consent, only: :update
+    resources :session_replays, only: :create
+  end
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :print, only: :create
+    end
+  end
+  namespace :admin do
+    get "first-hours", to: "first_hours#show", as: :first_hours
+  end
+  # --- end first-hours ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }

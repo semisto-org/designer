@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Sparkles, ThermometerSnowflake, Trash2, Undo2, Upload, X } from 'lucide-react'
+import { AlertTriangle, Apple, Bot, Camera, Check, Eye, FileText, Layers, ListChecks, MapPin, NotebookPen, PencilLine, Plane, Sparkles, ThermometerSnowflake, Trash2, Undo2, Upload, WifiOff, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
@@ -26,6 +26,8 @@ const ICONS: Record<string, typeof Bot> = {
   record_plant_observations: NotebookPen,
   list_storage_readings: ThermometerSnowflake,
   record_storage_readings: ThermometerSnowflake,
+  list_drone_pilots: Plane,
+  list_drone_missions: Plane,
   list_documents: FileText,
   get_document: FileText,
   add_document: FileText,
@@ -40,6 +42,7 @@ const ICONS: Record<string, typeof Bot> = {
   attach_documents: FileText,
   import_from_url: Upload,
   delete_documents: FileText,
+  prepare_offline_site: WifiOff,
 }
 
 const relative = new Intl.RelativeTimeFormat('fr', { numeric: 'auto' })
@@ -60,6 +63,7 @@ function describe(action: AiActionData): string {
     case 'list_features': return t('ai_journal.actions.list_features', { count: n('features') })
     case 'propose_features': return t('ai_journal.actions.propose_features', { count: n('created') })
     case 'propose_sectors': return t('ai_journal.actions.propose_sectors', { count: n('created') })
+    case 'propose_zones': return t('ai_journal.actions.propose_zones', { count: n('created') })
     case 'propose_feature_updates': return t('ai_journal.actions.propose_feature_updates', { count: n('created') })
     case 'propose_deletions': return t('ai_journal.actions.propose_deletions', { count: n('created') })
     case 'propose_palette': return t('ai_journal.actions.propose_palette', { count: n('created') })

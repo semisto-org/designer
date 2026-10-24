@@ -127,7 +127,7 @@ export default function PlanImagesPanel() {
       await importFile(image)
     } finally {
       setPicking(null)
-      void pdf.destroy()
+      void pdf.loadingTask.destroy()
     }
   }
 

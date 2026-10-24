@@ -129,7 +129,7 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
   const isNew = (c: CommentData) => lastRead.current != null && !c.canEdit && new Date(c.createdAt) > new Date(lastRead.current)
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-private>
       {thread.comments.length === 0 ? (
         <p className="text-sm text-loam-500">{emptyHint ?? t('collab.comments.empty')}</p>
       ) : (

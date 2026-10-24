@@ -31,13 +31,16 @@ What it does, for the maps one belongs to:
   really went in) or « Passer »;
 - the map opens framed on the place's outline (`boundsOf`); plants are
   small discs in their strata's colour (`STRATA_COLORS`, as on the
-  website), other points carry the glyph of what they are (`pointIcon`,
+  website) that, from zoom 19, grow to carry the plant's number (white or
+  ink, `inkOn`), other points carry the glyph of what they are (`pointIcon`,
   white PNGs in `assets/map-icons/` drawn by `scripts/map-icons.mjs`);
   sectors stay off the phone's map, and the map's sources open from a
   paper « i » under the back button;
 - downloads a map for offline use (map data + base map tiles of the
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
-  network is back;
+  network is back; while a round goes out, « Envois » and the map's status
+  say « Envoi 2 sur 5… » with the change being sent (`outbox.progress()`,
+  `useSendProgress`), and each round ends with its time and count;
 - drone views of the map (« Affichage » › « Vue drone », `useMapStyle`):
   one laid over the base map (`/api/v1/maps/:id/style?drone=id`), loaded
   through the connection as one moves, or kept on the phone as its own
