@@ -3,7 +3,7 @@ import * as Network from 'expo-network'
 import { useEffect, useSyncExternalStore } from 'react'
 import { AppState } from 'react-native'
 import { onAuthChange } from '@/lib/auth'
-import { outbox } from '@/lib/outbox'
+import { outbox, type SendProgress } from '@/lib/outbox'
 import type { OutboxState } from '@/lib/outbox-core'
 
 export function useOnline(): boolean {
@@ -33,4 +33,9 @@ export function useAutoSync(): void {
 
 export function useOutbox(): OutboxState {
   return useSyncExternalStore(outbox.subscribe, outbox.get)
+}
+
+/** The round being sent right now (n of N, which change), or null. */
+export function useSendProgress(): SendProgress | null {
+  return useSyncExternalStore(outbox.subscribeProgress, outbox.progress)
 }

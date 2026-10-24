@@ -13,7 +13,15 @@ const FILE = 'outbox.json'
 let state: OutboxState = readJson<OutboxState>(FILE) ?? emptyOutbox()
 /** How the last round of sending ended, for « Envois ». */
 export type SendRun = { at: string; sent: number; stopped: FlushResult['stopped']; blocked?: FlushResult['blocked'] }
+/** The round being sent, for « Envois » and the map's status: n of N, and which change. */
+export type SendProgress = { total: number; done: number; current: Op | null }
 let flushing: Promise<SendRun> | null = null
+let progress: SendProgress | null = null
+const progressListeners = new Set<() => void>()
+function setProgress(next: SendProgress | null) {
+  progress = next
+  progressListeners.forEach((listener) => listener())
+}
 let lastRun: SendRun | null = null
 // A round stopped by the network or the server is tried again on a timer.
 let retryTimer: ReturnType<typeof setTimeout> | null = null
@@ -64,6 +72,11 @@ export const outbox = {
   failed: (mapId?: number) => state.ops.filter((op) => op.error && (mapId === undefined || op.mapId === mapId)),
 
   lastRun: () => lastRun,
+  progress: () => progress,
+  subscribeProgress(listener: () => void) {
+    progressListeners.add(listener)
+    return () => { progressListeners.delete(listener) }
+  },
 
   /** Sends what is waiting; resolves with how the round ended. */
   flush(): Promise<SendRun> {
@@ -73,21 +86,27 @@ export const outbox = {
         let sent = 0
         let stopped: FlushResult['stopped'] = 'done'
         let blocked: FlushResult['blocked']
+        if (outbox.pending() > 0) setProgress({ total: outbox.pending(), done: 0, current: null })
         // Ops added while sending go in the next round.
         for (let round = 0; round < 5 && outbox.pending() > 0; round++) {
           const snapshot = state
           const inRun = new Set(snapshot.ops.map((o) => o.id))
           // Saved after every change sent: if the app is killed mid-round,
           // nothing already sent goes out twice.
-          const save = (progress: OutboxState, files: string[]) => {
+          const save = (next: OutboxState, files: string[]) => {
             // Ops queued while sending stay after the ones of this run.
             commit({
-              ids: { ...state.ids, ...progress.ids },
-              ops: [...progress.ops, ...state.ops.filter((o) => !inRun.has(o.id))],
+              ids: { ...state.ids, ...next.ids },
+              ops: [...next.ops, ...state.ops.filter((o) => !inRun.has(o.id))],
             })
             files.forEach(deletePhoto)
           }
-          const result = await flush(snapshot, transport, save)
+          // n of N: the changes already gone out, then this one; queued ones join N.
+          let processed = 0
+          const result = await flush(snapshot, transport, save, (op) => {
+            const done = sent + processed++
+            setProgress({ total: done + outbox.pending(), done, current: op })
+          })
           save(result.state, [])
           sent += result.sent
           stopped = result.stopped
@@ -102,10 +121,12 @@ export const outbox = {
           failures = 0
         }
         if (blocked) report(new Error(`outbox stopped (${stopped}): ${blocked.reason}`), { op: state.ops.find((o) => o.id === blocked.id)?.type })
+        setProgress(null)
         lastRun = { at: new Date().toISOString(), sent, stopped, blocked }
         listeners.forEach((listener) => listener(state))
         return lastRun
       } finally {
+        if (progress) setProgress(null)
         flushing = null
       }
     })()

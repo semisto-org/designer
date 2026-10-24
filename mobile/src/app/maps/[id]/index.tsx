@@ -28,7 +28,7 @@ import { FeatureLayers } from '@/map/FeatureLayers'
 import { useMapBundle } from '@/state/useMapBundle'
 import { useWeek } from '@/state/useWeek'
 import { useMapStyle } from '@/state/useMapStyle'
-import { useOnline, useOutbox } from '@/state/sync'
+import { useOnline, useOutbox, useSendProgress } from '@/state/sync'
 import {
   AROUND_RADIUS, FeatureBody, FeatureTop, NoteTop, RestBody, RestTop, TourTop, VisitBody, VisitTop, whereLabel, type NoteChoice, type QuickAction,
 } from '@/terrain/SheetContent'
@@ -44,6 +44,7 @@ export default function Terrain() {
   const { bundle, error } = useMapBundle(mapId)
   const online = useOnline()
   const pending = useOutbox().ops.filter((op) => op.mapId === mapId)
+  const progress = useSendProgress()
   const insets = useSafeAreaInsets()
   const camera = useRef<CameraRef>(null)
   const mapRef = useRef<MapRef>(null)
@@ -134,7 +135,10 @@ export default function Terrain() {
   const sync = failed > 0
     ? { icon: 'error' as const, color: colors.clay700, label: t('mobile.terrain.failed', { count: failed }) }
     : waiting > 0
-      ? { icon: online ? 'sending' as const : 'offline' as const, color: colors.humus700, label: t(online ? 'mobile.terrain.sending' : 'mobile.terrain.waiting', { count: waiting }) }
+      // « Envoi 2 sur 5… » only while a round really goes out; otherwise what waits, and why.
+      ? { icon: online ? 'sending' as const : 'offline' as const, color: colors.humus700, label: progress
+          ? t('mobile.outbox.progress', { done: String(Math.min(progress.done + 1, progress.total)), total: String(progress.total) })
+          : t(online ? 'mobile.terrain.to_send' : 'mobile.terrain.waiting', { count: waiting }) }
       : { icon: online ? 'synced' as const : 'offline' as const, color: online ? colors.leaf700 : colors.loam600, label: online ? t('mobile.terrain.synced') : t('mobile.terrain.offline') }
 
   const go = (pathname: string, params: Record<string, string> = {}) =>

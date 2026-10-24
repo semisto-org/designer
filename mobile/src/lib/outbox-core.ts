@@ -158,6 +158,8 @@ export type FlushResult = {
 
 /** Called after each op sent or refused, so a crash mid-round loses nothing and sends nothing twice. */
 export type OnStep = (state: OutboxState, sentFiles: string[]) => void
+/** Called just before an op goes out, so the screen can say what is being sent. */
+export type OnSend = (op: Op) => void
 
 /**
  * Sends the ops in order. Stops at the first network or server failure
@@ -166,7 +168,7 @@ export type OnStep = (state: OutboxState, sentFiles: string[]) => void
  * refuses (other 4xx) is kept with its error for the person to see, and
  * the next ones go on.
  */
-export async function flush(initial: OutboxState, transport: Transport, onStep?: OnStep): Promise<FlushResult> {
+export async function flush(initial: OutboxState, transport: Transport, onStep?: OnStep, onSend?: OnSend): Promise<FlushResult> {
   let state: OutboxState = { ops: initial.ops.slice(), ids: { ...initial.ids } }
   let sent = 0
   const sentFiles: string[] = []
@@ -182,6 +184,7 @@ export async function flush(initial: OutboxState, transport: Transport, onStep?:
       continue
     }
     try {
+      onSend?.(op)
       await send(state, op, transport, versions, (tempId, realId) => { state = { ...state, ids: { ...state.ids, [String(tempId)]: realId } } })
       state = { ...state, ops: state.ops.filter((o) => o.id !== op.id) }
       sent += 1
