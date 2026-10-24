@@ -41,6 +41,10 @@ class MapFeature < ApplicationRecord
   scope :active, -> { where(status: "active") }
   scope :drafts, -> { where(status: "draft") }
 
+  # A rejected draft lets go of the photos it was proposed from, so they go
+  # back to the photo library instead of pointing at a hidden element.
+  after_update :release_photos, if: -> { saved_change_to_status?(to: "rejected") }
+
   def geometry=(value)
     value = self.class.parse_geojson(value) unless value.nil? || value.is_a?(RGeo::Feature::Instance)
     super(value)
@@ -79,4 +83,9 @@ class MapFeature < ApplicationRecord
       [ feature.id, label.presence || name || I18n.t("editor.kinds.#{feature.kind}", default: feature.kind.humanize) ]
     end
   end
+
+  private
+    def release_photos
+      MapPhoto.where(map_feature_id: id).update_all(map_feature_id: nil, updated_at: Time.current)
+    end
 end
