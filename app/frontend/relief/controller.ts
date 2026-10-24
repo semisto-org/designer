@@ -280,6 +280,9 @@ export class ReliefController {
   async load(): Promise<void> {
     const { terrain, container } = this.options
     this.options.onLoading?.('download')
+    // The buildings are asked for now, alongside the grids, and laid out
+    // once the relief stands: their answer can take a while to come.
+    const buildings = this.fetchBuildings()
     const fetchBinary = (url: string | null) => url
       ? fetch(url, { credentials: 'same-origin' }).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null)
       : Promise.resolve(null)
@@ -324,7 +327,7 @@ export class ReliefController {
     this.drawOverlay()
     this.setupPlants()
     this.options.onLoading?.(null)
-    void this.loadBuildings()
+    void this.loadBuildings(buildings)
   }
 
   // ---- The map's plants, year after year -------------------------------------
@@ -512,17 +515,21 @@ export class ReliefController {
     this.options.onWalk?.(mode)
   }
 
+  private fetchBuildings(): Promise<BuildingsResponse | null> {
+    const url = this.options.buildingsUrl
+    if (!url) return Promise.resolve(null)
+    return fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then((r) => (r.ok ? (r.json() as Promise<BuildingsResponse>) : null))
+      .catch(() => null)
+  }
+
   /**
    * The buildings arrive after the relief (the footprints come from
    * OpenStreetMap, a few seconds away): the relief is usable meanwhile, and
    * stays so if they never come.
    */
-  private async loadBuildings() {
-    const url = this.options.buildingsUrl
-    if (!url) return
-    const response = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
-      .then((r) => (r.ok ? (r.json() as Promise<BuildingsResponse>) : null))
-      .catch(() => null)
+  private async loadBuildings(request: Promise<BuildingsResponse | null>) {
+    const response = await request
     if (this.disposed || !response?.available || !response.buildings.length) return
     this.buildingsData = response.buildings
     this.layoutBuildings()

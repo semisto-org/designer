@@ -1,29 +1,34 @@
 // What is waiting to be sent for this map, and what the server refused
 // (with the reason), which the person can send again or drop. After a
 // round of sending, it says how it went, and on which change and why it
-// stopped: a send that never ends is never silent.
+// stopped: a send that never ends is never silent. While a round goes
+// out (from the button or by itself), a bar says « 2 sur 5 » and the
+// change being sent shows it on its card.
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native'
-import { formatDate, t } from '@/lib/i18n'
-import { outbox, type SendRun } from '@/lib/outbox'
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from 'react-native'
+import { formatDate, formatTime, t } from '@/lib/i18n'
+import { outbox, type SendProgress, type SendRun } from '@/lib/outbox'
 import type { Op } from '@/lib/outbox-core'
-import { useOnline, useOutbox } from '@/state/sync'
+import { useOnline, useOutbox, useSendProgress } from '@/state/sync'
 import { Body, Button, Card, Notice, styles } from '@/ui/kit'
-import { colors, fonts, space } from '@/ui/theme'
+import { colors, fonts, radius, space } from '@/ui/theme'
 
 export default function OutboxScreen() {
   const mapId = Number(useLocalSearchParams<{ id: string }>().id)
   const ops = useOutbox().ops.filter((op) => op.mapId === mapId)
   const online = useOnline()
-  const [sending, setSending] = useState(false)
+  const progress = useSendProgress()
+  const [tapped, setTapped] = useState(false)
+  // A round started by the app itself shows the same way as one started here.
+  const sending = tapped || progress !== null
   const [run, setRun] = useState<SendRun | null>(outbox.lastRun())
   useEffect(() => outbox.subscribe(() => setRun(outbox.lastRun())), [])
   const blocked = run && run.stopped !== 'done' ? run.blocked : undefined
 
   const sendNow = async () => {
-    setSending(true)
-    try { setRun(await outbox.flush()) } finally { setSending(false) }
+    setTapped(true)
+    try { setRun(await outbox.flush()) } finally { setTapped(false) }
   }
 
   const discard = (op: Op) => Alert.alert(t('mobile.outbox.discard_title'), t('mobile.outbox.discard_body'), [
@@ -40,7 +45,8 @@ export default function OutboxScreen() {
       ListHeaderComponent={
         <View style={{ gap: space.md }}>
           <Notice tone={online ? 'info' : 'warning'}>{online ? t('mobile.outbox.online') : t('mobile.outbox.offline')}</Notice>
-          {online && ops.some((op) => !op.error) && <Button variant="secondary" label={sending ? t('mobile.outbox.sending') : t('mobile.outbox.send_now')} busy={sending} onPress={sendNow} />}
+          {progress && <ProgressCard progress={progress} />}
+          {online && !sending && ops.some((op) => !op.error) && <Button variant="secondary" label={t('mobile.outbox.send_now')} onPress={sendNow} />}
           {!sending && run && <RunNotice run={run} />}
         </View>
       }
@@ -57,6 +63,8 @@ export default function OutboxScreen() {
                   <Button variant="danger" style={{ flex: 1 }} label={t('mobile.outbox.discard')} onPress={() => discard(op)} />
                 </View>
               </>
+            : progress?.current?.id === op.id
+              ? <View style={s.row}><ActivityIndicator color={colors.prune600} /><Text style={s.sendingNow}>{t('mobile.outbox.sending_this')}</Text></View>
             : blocked?.id === op.id
               ? <>
                   <Notice tone="warning">{t('mobile.outbox.blocked_here', { reason: blocked.reason })}</Notice>
@@ -69,13 +77,35 @@ export default function OutboxScreen() {
   )
 }
 
-/** How the last round went, in words. */
+/** « Envoi 2 sur 5 », a bar, and what is going out now. */
+function ProgressCard({ progress }: { progress: SendProgress }) {
+  const step = Math.min(progress.done + 1, progress.total)
+  const label = t('mobile.outbox.progress', { done: String(step), total: String(progress.total) })
+  return (
+    <Card style={{ gap: space.sm, padding: space.md }}>
+      <View style={s.row} accessible accessibilityLiveRegion="polite" accessibilityLabel={label}>
+        <ActivityIndicator color={colors.prune600} />
+        <Text style={s.title}>{label}</Text>
+      </View>
+      <View style={s.track} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: progress.total, now: progress.done }}>
+        <View style={[s.bar, { width: `${Math.round((progress.done / Math.max(progress.total, 1)) * 100)}%` }]} />
+      </View>
+      {progress.current && <Text style={s.meta}>{t('mobile.outbox.progress_current', { what: t(`mobile.outbox.ops.${progress.current.type}`) })}</Text>}
+    </Card>
+  )
+}
+
+/** How the last round went, in words, with its time: a tap always gets an answer. */
 function RunNotice({ run }: { run: SendRun }) {
-  if (run.stopped === 'done') return run.sent > 0 ? <Notice tone="info">{t('mobile.outbox.run.sent', { count: run.sent })}</Notice> : null
+  if (run.stopped === 'done') return <Notice tone="info">{run.sent > 0 ? t('mobile.outbox.run.sent', { count: run.sent, time: formatTime(run.at) }) : t('mobile.outbox.run.nothing', { time: formatTime(run.at) })}</Notice>
   return <Notice tone={run.stopped === 'auth' ? 'error' : 'warning'}>{t(`mobile.outbox.run.${run.stopped}`, { count: run.sent, reason: run.blocked?.reason ?? '' })}</Notice>
 }
 
 const s = StyleSheet.create({
   title: { fontSize: 16, fontFamily: fonts.bold, color: colors.loam900 },
   meta: { fontSize: 14, fontFamily: fonts.body, color: colors.loam600 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  sendingNow: { fontSize: 14, fontFamily: fonts.bold, color: colors.prune700 },
+  track: { height: 6, borderRadius: radius.pill, backgroundColor: colors.loam200, overflow: 'hidden' },
+  bar: { height: 6, borderRadius: radius.pill, backgroundColor: colors.prune600 },
 })

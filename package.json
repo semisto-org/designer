@@ -19,6 +19,7 @@
     "test:relief": "node --experimental-strip-types --test test/frontend/relief/*.test.ts",
     "test:drone": "node --experimental-strip-types --test test/frontend/drone/*.test.ts",
     "test:frontend": "node --experimental-strip-types --test test/frontend/*/*.test.ts",
+    "build:offline": "vite build --config vite.offline.config.ts",
     "design:lint": "node script/design_lint.mjs"
   },
   "dependencies": {
@@ -52,7 +53,7 @@
     "lib0": "^0.2.119",
     "lucide-react": "^1.51.0",
     "maplibre-gl": "^6.12.0",
-    "pdfjs-dist": "^5.7.284",
+    "pdfjs-dist": "^6.4.299",
     "pmtiles": "^4.5.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

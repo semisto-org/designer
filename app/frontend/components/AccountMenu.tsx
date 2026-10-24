@@ -32,7 +32,8 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
   const item = 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-loam-700 hover:bg-prune-50 hover:text-prune-800'
 
   return (
-    <div ref={ref} className="relative">
+    // data-private: masked in session replays (lib/replay.ts).
+    <div ref={ref} className="relative" data-private>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}

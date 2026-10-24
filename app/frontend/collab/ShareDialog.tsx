@@ -53,7 +53,8 @@ export function ShareDialog({ onClose }: { onClose: () => void }) {
       {!data ? (
         <p className="text-sm text-loam-500">{error ?? t('common.loading')}</p>
       ) : (
-        <div className="space-y-6">
+        // data-private: people's names and addresses stay masked in session replays (lib/replay.ts).
+        <div className="space-y-6" data-private>
           {error && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm text-clay-700">{error}</p>}
           <Members data={data} owner={owner} busy={busy} base={base} run={run} onLeft={() => router.visit('/maps')} />
           <PlaceSection data={data} manager={owner} busy={busy} base={base} run={run} />

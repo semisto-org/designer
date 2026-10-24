@@ -41,8 +41,12 @@ export type SharedProps = {
   otherAccounts?: OtherAccount[]
   /** Signed in: entries of « Nouveautés » not seen yet. */
   releaseNotes: import('./releaseNotes').ReleaseNotesStatus | null
-  env: { googleSignIn: boolean; appleSignIn: boolean; billing: boolean; plantnet: boolean; planPrices: { yearly: number; atelier: number } }
+  /** Sentry Session Replay during the beta (SessionReplayConsent): ask the question, record, finish the session, or nothing. */
+  sessionReplay: ReplayState
+  env: { googleSignIn: boolean; appleSignIn: boolean; billing: boolean; plantnet: boolean; planPrices: { yearly: number; atelier: number }; replaySessions: number }
 }
+
+export type ReplayState = 'ask' | 'record' | 'keep' | 'off'
 
 export type LngLat = [number, number]
 export type BBox = [number, number, number, number]
@@ -119,6 +123,8 @@ export type MapData = {
   /** The team the map belongs to, if any. */
   teamId?: number | null
   ownerName: string
+  /** When the map was made: the land « on arrival » of the time strip. */
+  createdAt?: string
   updatedAt: string
   lockVersion: number
   /** The owner's plan no longer covers this map: it stays readable but cannot be edited. */

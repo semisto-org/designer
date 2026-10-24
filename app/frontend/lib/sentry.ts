@@ -13,5 +13,11 @@ if (dsn) {
   Sentry.init({
     dsn,
     environment: meta('sentry-environment'),
+    // Session Replay is added later, only for people who said yes
+    // (lib/replay.ts), and started by hand: nothing is sampled.
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
   })
 }
+
+export const sentryEnabled = Boolean(dsn)

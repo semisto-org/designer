@@ -1,6 +1,6 @@
 # The e-mails of a drone mission booked in the pilot directory, each with a
 # link to the mission's page: to the pilot when a mission is asked, paid or
-# cancelled, and when they are paid; to the client when the pilot answers or
+# cancelled, when they are paid, and when an undelivered mission is refunded; to the client when the pilot answers or
 # delivers, and when Semisto refunds; to Semisto when a client disputes a
 # delivery. One template (message) for all: a greeting, a few paragraphs, a
 # button.
@@ -16,6 +16,7 @@ class DroneMissionMailer < ApplicationMailer
   def cancelled = to_pilot(:cancelled, client: @client.display_name, map: @mission.map.name)
   def paid = to_pilot(:paid, client: @client.display_name, map: @mission.map.name, date: date(@mission.flight_on))
   def paid_out = to_pilot(:paid_out, amount: euros(@mission.pilot_share_cents), map: @mission.map.name)
+  def expired = compose(:expired, @pilot.user, reply_to: Billing.contact_email, client: @client.display_name, map: @mission.map.name, days: DroneMission::DELIVERY_DEADLINE.in_days.to_i)
 
   def accepted = to_client(:accepted, pilot: @pilot.display_name, date: date(@mission.flight_on), total: euros(@mission.total_cents), reply: @mission.pilot_reply.to_s)
   def declined = to_client(:declined, pilot: @pilot.display_name, reply: @mission.pilot_reply.to_s)

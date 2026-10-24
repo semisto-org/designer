@@ -67,6 +67,32 @@ export function removeVertex(geometry: LineString | Polygon, index: number): Lin
   return withVertices(geometry, vertices.filter((_, i) => i !== index))
 }
 
+/** Which end of a line is being continued. */
+export type LineEnd = 'start' | 'end'
+
+/** The index of a line's first or last point. */
+export const endIndex = (line: LineString, end: LineEnd) => (end === 'start' ? 0 : line.coordinates.length - 1)
+
+/** The line continued by one point beyond its start or its end, as if it had been drawn on. */
+export function extendLine(line: LineString, end: LineEnd, position: Position): LineString {
+  const coordinates = end === 'start' ? [position, ...line.coordinates] : [...line.coordinates, position]
+  return { ...line, coordinates }
+}
+
+/**
+ * What a click near the line does while continuing it from `end`: on that
+ * end it stops (the click that ends a line being drawn), on the other end it
+ * starts from there instead while nothing was added yet, or else joins it
+ * (a fence that goes all the way round); anywhere else it adds a point.
+ */
+export function extendClick(line: LineString, end: LineEnd, vertex: number, added: number): 'stop' | 'switch' | 'close' | 'add' {
+  if (vertex < 0) return 'add'
+  if (vertex === endIndex(line, end)) return 'stop'
+  const other = endIndex(line, end === 'start' ? 'end' : 'start')
+  if (vertex !== other) return 'add'
+  return added > 0 ? 'close' : 'switch'
+}
+
 function withVertices(geometry: LineString | Polygon, vertices: Position[]): LineString | Polygon {
   if (geometry.type === 'LineString') return { ...geometry, coordinates: vertices }
   // Holes stay as they are: only the outline is edited.

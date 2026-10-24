@@ -123,11 +123,18 @@ export type JourneyNext =
   | { type: 'advance'; stage: MapStage }
   | { type: 'complete' }
 
+export type Season = 'winter' | 'spring' | 'summer' | 'autumn'
+
+/** The year of observation: seasons looked at over the last twelve months, the ones missing and today's. */
+export type JourneySeason = { current: Season; missing: Season[]; observed: number }
+
 export type JourneyData = {
   stage: MapStage
   stageIndex: number
   steps: JourneyStep[]
   next: JourneyNext
+  /** Beside the checklist, never blocking; null when the observations cannot be read. */
+  season?: JourneySeason | null
 }
 
 // ----- Requests to Semisto -----

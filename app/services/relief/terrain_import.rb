@@ -61,6 +61,7 @@ module Relief
           "texture" => texture && { "width" => texture[:width], "height" => texture[:height] }
         }.compact
       )
+      BuildingsWarmJob.perform_later(@map)
       @terrain
     rescue GridPolicy::TooLarge, Failure => e
       fail!(e.message)

@@ -69,6 +69,28 @@ fr:
       progress: "%{percent} %"
       count: "%{count} sur %{target}"
 
+    # ----- The season of today, while never observed (guide card) -----
+    season:
+      title:
+        winter: "Va voir ton terrain cet hiver"
+        spring: "Va voir ton terrain ce printemps"
+        summer: "Va voir ton terrain cet été"
+        autumn: "Va voir ton terrain cet automne"
+      body:
+        winter: "Où la neige fond d'abord, où le givre reste, où l'eau stagne, par où passent les chevreuils : l'hiver montre ce que les feuilles cachent. Ton design ne le connaît pas encore."
+        spring: "Les dernières gelées, les nids, les premières fleurs, le débourrement : le printemps dit où la vie repart en premier. Ton design ne le connaît pas encore."
+        summer: "Les coins qui sèchent d'abord, l'ombre des grands arbres, les butineurs : l'été dit où l'eau manquera. Ton design ne le connaît pas encore."
+        autumn: "Le premier gel, la brume du matin, les flaques après la pluie, les fruits sauvages : l'automne dit où le froid s'installe. Ton design ne le connaît pas encore."
+      observed: "Saisons observées depuis un an : %{count} sur 4"
+      names:
+        winter: "Hiver"
+        spring: "Printemps"
+        summer: "Été"
+        autumn: "Automne"
+      seen: "observé"
+      unseen: "pas encore observé"
+      how: "Comment noter un signe de saison"
+
     # ----- Journey panel and chip -----
     panel:
       title: "Parcours"

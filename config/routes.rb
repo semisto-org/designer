@@ -641,6 +641,15 @@ Rails.application.routes.draw do
     resources :site_visits, only: %i[index create], controller: "maps/site_visits"
   end
   # --- end site visits ---
+  # --- offline site ---
+  # The map packed as a website that opens without Terranova (MapOfflineSite).
+  resources :maps, only: [] do
+    resource :offline_site, only: %i[show create], controller: "maps/offline_sites" do
+      get :download
+    end
+  end
+  # --- end offline site ---
+
   # --- implementation ---
   # The implementation plan of a map (« Mise en œuvre »): its phases, Semisto's
   # proposed phasing, and elements given to a phase.
@@ -657,6 +666,25 @@ Rails.application.routes.draw do
     end
   end
   # --- end implementation ---
+
+  # --- first-hours ---
+  # The beta's « Premières heures »: « Un retour ? » from any page, the answer
+  # to the session recording question and the replays it starts, the plan's
+  # first print, and the staff page that reads them all.
+  post "feedback", to: "feedbacks#create", as: :feedback
+  namespace :account do
+    resource :replay_consent, only: :update
+    resources :session_replays, only: :create
+  end
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :print, only: :create
+    end
+  end
+  namespace :admin do
+    get "first-hours", to: "first_hours#show", as: :first_hours
+  end
+  # --- end first-hours ---
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "version", to: "app_versions#show", as: :app_version, defaults: { format: :json }

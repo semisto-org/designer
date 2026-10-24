@@ -157,10 +157,14 @@ function NextStep({ mission, decide }: { mission: MissionDetail; decide: (decisi
     return <Card title={t('drone_missions.show.awaiting_payment_title')} lead={t('drone_missions.show.awaiting_payment_lead', { client: mission.client.name })} />
   }
   if (pilotSide && mission.status === 'paid') {
-    return <DeliverCard onDeliver={(note) => decide('deliver', { text: note })} empty={mission.delivered.views.length + mission.delivered.photosCount + mission.delivered.files.length === 0} />
+    return <DeliverCard onDeliver={(note) => decide('deliver', { text: note })} deliverBy={mission.deliverBy} empty={mission.delivered.views.length + mission.delivered.photosCount + mission.delivered.files.length === 0} />
   }
   if (!pilotSide && mission.status === 'paid') {
-    return <Card title={t('drone_missions.show.paid_title')} lead={t('drone_missions.show.paid_lead', { pilot: mission.pilot.name })} />
+    return (
+      <Card title={t('drone_missions.show.paid_title')} lead={t('drone_missions.show.paid_lead', { pilot: mission.pilot.name })}>
+        {mission.deliverBy && <p className="text-sm text-loam-500">{t('drone_missions.show.paid_deadline', { date: formatDate(mission.deliverBy) })}</p>}
+      </Card>
+    )
   }
   if (mission.status === 'delivered' && !pilotSide) return <ConfirmCard mission={mission} decide={decide} />
   if (mission.status === 'delivered' && pilotSide) {
@@ -172,7 +176,7 @@ function NextStep({ mission, decide }: { mission: MissionDetail; decide: (decisi
   return null
 }
 
-function DeliverCard({ onDeliver, empty }: { onDeliver: (note: string) => void; empty: boolean }) {
+function DeliverCard({ onDeliver, empty, deliverBy }: { onDeliver: (note: string) => void; empty: boolean; deliverBy: string | null }) {
   const form = useForm({ note: '' })
   return (
     <Card title={t('drone_missions.show.deliver_title')} lead={t('drone_missions.show.deliver_lead')}>
@@ -183,6 +187,7 @@ function DeliverCard({ onDeliver, empty }: { onDeliver: (note: string) => void; 
         if (await confirmAction({ title: t('drone_missions.show.deliver_confirm'), body: t('drone_missions.show.deliver_body'), confirmLabel: t('drone_missions.show.deliver') })) onDeliver(form.data.note)
       }}>{t('drone_missions.show.deliver')}</Button>
       {empty && <p className="text-sm text-loam-500">{t('drone_missions.show.deliver_empty')}</p>}
+      {deliverBy && <p className="text-sm text-loam-500">{t('drone_missions.show.deliver_deadline', { date: formatDate(deliverBy) })}</p>}
     </Card>
   )
 }

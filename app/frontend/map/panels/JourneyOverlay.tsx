@@ -1,6 +1,8 @@
 import clsx from 'clsx'
-import { ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowRight, ChevronDown, ChevronUp, Footprints } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { openHelp } from '@/components/help/openHelp'
+import { Button } from '@/components/ui/Button'
 import { itemLabel, stageLabel } from '@/components/journey/JourneyParts'
 import { JOURNEY_REFRESH, useGuideCollapsed, useSeen } from '@/lib/journeyFlags'
 import { isLayersPanel } from '@/lib/journeyPanels'
@@ -9,7 +11,9 @@ import { t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
 import { STAGES, useGuide, type GuideTarget } from '@/map/editor/guide'
+import { SEASONS, seasonToObserve } from '@/map/editor/guideTarget'
 import { useStageSetter } from '@/map/panels/JourneyPanel'
+import type { JourneySeason, Season } from '@/types/journey'
 
 /**
  * Always mounted in the editor: keeps the journey fresh (recomputed when
@@ -72,6 +76,7 @@ function GuideCard() {
 
   const target = guide.target
   const focus = guide.focus
+  const season = seasonToObserve(guide.data)
   const action = actionFor(target, focus, editor.map.stage, editor.canEdit)
   const run = () => {
     if (target.kind === 'item' && target.panel) editor.openPanel(target.panel)
@@ -142,12 +147,51 @@ function GuideCard() {
               </button>
             )}
           </div>
+          {season && guide.data.season && <SeasonInvite season={season} year={guide.data.season} />}
           <button type="button" onClick={() => editor.openPanel('journey')} className="self-start text-sm font-medium text-prune-700 hover:underline">
             {t('editor.guide.all_steps')}
           </button>
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * Today's season, never observed yet: an invitation to go out, beside the
+ * next action and never instead of it. The four seasons show the year of
+ * observation; the signs themselves are noted from the phone.
+ */
+function SeasonInvite({ season, year }: { season: Season; year: JourneySeason }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-[10px] border border-dashed border-leaf-300 bg-leaf-50 px-3 py-2.5">
+      <p className="flex items-center gap-2 text-sm font-semibold text-leaf-800">
+        <Footprints className="h-4 w-4 shrink-0" aria-hidden />
+        {t(`journey.season.title.${season}`)}
+      </p>
+      <p className="text-sm leading-[1.45] text-loam-600">{t(`journey.season.body.${season}`)}</p>
+      <ol className="flex gap-1" aria-label={t('journey.season.observed', { count: year.observed })} title={t('journey.season.observed', { count: year.observed })}>
+        {SEASONS.map((s) => {
+          const seen = !year.missing.includes(s)
+          return (
+            <li
+              key={s}
+              aria-label={`${t(`journey.season.names.${s}`)} : ${t(seen ? 'journey.season.seen' : 'journey.season.unseen')}`}
+              className={clsx(
+                'flex-1 rounded-full px-1.5 py-0.5 text-center text-sm',
+                seen ? 'bg-leaf-600 text-white' : 'border border-leaf-300 text-leaf-800',
+                s === season && 'font-semibold',
+              )}
+            >
+              {t(`journey.season.names.${s}`)}
+            </li>
+          )
+        })}
+      </ol>
+      <Button variant="leaf" size="sm" onClick={() => openHelp('le-carnet-des-saisons')} className="self-start">
+        {t('journey.season.how')}
+      </Button>
+    </div>
   )
 }
 

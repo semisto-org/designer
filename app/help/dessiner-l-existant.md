@@ -58,6 +58,8 @@ Pour corriger un tracé, touche **Modifier la forme**, fais glisser les points (
 - **A** (ou **V**) revient à la flèche ; là, clique un point puis **Suppr** pour le retirer, ou fais un clic droit dessus ;
 - **Échap** repose l'outil, un second **Échap** abandonne la modification.
 
+Une ligne terminée trop tôt (une clôture dont tu n'as pas encore fait tout le tour, un chemin, une haie) ? Touche **Continuer le tracé** dans sa fiche, ou dans le message qui suit son tracé, ou **P** pendant **Modifier la forme**. La ligne repart de son dernier point, marqué en orange : chaque clic ajoute un point, comme pendant le tracé. Touche d'abord son autre bout pour repartir de là ; touche-le à la fin pour fermer la boucle, la clôture rejoint alors son point de départ. Re-clique le dernier point (ou double-clique) pour reposer l'outil, puis **Enregistrer la forme**. **⌘Z** retire le dernier point ajouté.
+
 Une ligne garde au moins deux points, une surface trois.
 
 ## Déplacer une plante ou un élément

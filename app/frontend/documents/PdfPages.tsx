@@ -23,13 +23,13 @@ export function PdfPages({ url, title }: { url: string; title: string }) {
       .then(({ openPdfUrl }) => openPdfUrl(url))
       .then((doc) => {
         loaded = doc
-        if (cancelled) void doc.destroy()
+        if (cancelled) void doc.loadingTask.destroy()
         else setPdf(doc)
       })
       .catch(() => !cancelled && setFailed(true))
     return () => {
       cancelled = true
-      void loaded?.destroy()
+      void loaded?.loadingTask.destroy()
     }
   }, [url])
 

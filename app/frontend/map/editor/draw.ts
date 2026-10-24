@@ -14,7 +14,7 @@ import {
   type GeoJSONStoreGeometries,
 } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
-import { editableVertices, insertVertex, removeVertex, sideAt, vertexAt, type Pixel } from '@/map/editor/vertices'
+import { editableVertices, endIndex, extendClick, extendLine, insertVertex, removeVertex, sideAt, vertexAt, type LineEnd, type Pixel } from '@/map/editor/vertices'
 
 export type DrawShape = 'polygon' | 'linestring' | 'point' | 'rectangle' | 'freehand' | 'freehand-linestring'
 
@@ -22,8 +22,10 @@ export type DrawShape = 'polygon' | 'linestring' | 'point' | 'rectangle' | 'free
  * What a click does on a line or polygon being edited, as in Illustrator:
  * move (A or V) drags points and picks one for Delete, add (+) puts a point
  * on a side, remove (-) takes a point away. Alt held swaps add and remove.
+ * On a line, extend (P, Illustrator's pen on an end point) draws on from
+ * one of its ends, a point per click, as if it had never been finished.
  */
-export type PointTool = 'move' | 'add' | 'remove'
+export type PointTool = 'move' | 'add' | 'remove' | 'extend'
 
 export type DrawOptions = {
   /** Called with the shape as it is being drawn or edited (live measures). */
@@ -34,6 +36,8 @@ export type DrawOptions = {
   onPointTool?: (tool: PointTool) => void
   /** Called when a point cannot be removed: a line keeps two, a polygon three. */
   onTooFewPoints?: () => void
+  /** The tool the edit starts with (« Continuer le tracé » starts with extend). */
+  pointTool?: PointTool
 }
 
 const COLOR = '#5b5781'
@@ -42,7 +46,9 @@ const REMOVE_COLOR = '#b4472f'
 const SELECT_MODE = 'select'
 // The point a click would add, the point it would remove, the point Delete removes.
 const HINT_SOURCE = 'draw-vertex-hint'
-const TOOL_CLASS = { add: 'draw-tool-add', remove: 'draw-tool-remove' } as const
+// The dashed stretch from the end being continued to the pointer.
+const HINT_LINE_LAYER = 'draw-vertex-hint-line'
+const TOOL_CLASS = { add: 'draw-tool-add', remove: 'draw-tool-remove', extend: 'draw-tool-extend' } as const
 // Terra Draw refuses coordinates more precise than its default (9 decimals).
 const PRECISION = 1e9
 
@@ -75,6 +81,10 @@ export class Drawer {
   // The point last clicked or dragged in move mode: Delete removes it.
   private activeVertex: number | null = null
   private pointer: Pixel | null = null
+  // The end a line is continued from, and how many points it had then.
+  private extendEnd: LineEnd = 'end'
+  private extendBase = 0
+  private doubleClickZoom = false
   // The edited shape after each change, the first being the shape as it came.
   private steps: Geometry[] = []
   private undoneSteps: Geometry[] = []
@@ -205,9 +215,11 @@ export class Drawer {
       this.map.on('mousemove', this.onMouseMove)
       this.map.on('mouseout', this.onMouseOut)
     }
-    return new Promise((resolve) => {
+    const promise = new Promise<Geometry | null>((resolve) => {
       this.pending = { resolve, options, shape: null }
     })
+    if (options.pointTool && options.pointTool !== 'move') this.setPointTool(options.pointTool)
+    return promise
   }
 
   /**
@@ -247,7 +259,10 @@ export class Drawer {
   /** Choose what a click does on the shape being edited (the toolbar's buttons). */
   setPointTool(tool: PointTool) {
     if (!this.editingPoints) return
+    if (tool === 'extend' && !this.editingLine) return
     if (tool !== 'move') this.activeVertex = null
+    if (tool === 'extend' && this.pointTool !== 'extend') this.startExtending()
+    else if (tool !== 'extend' && this.pointTool === 'extend') this.stopExtending()
     this.pointTool = tool
     this.refreshTool()
   }
@@ -265,9 +280,13 @@ export class Drawer {
     return type === 'LineString' || type === 'Polygon'
   }
 
+  private get editingLine() {
+    return this.editedGeometry()?.type === 'LineString'
+  }
+
   /** The tool a click uses now: Alt swaps adding and removing, as in Illustrator. */
   private get tool(): PointTool {
-    if (!this.altHeld || this.pointTool === 'move') return this.pointTool
+    if (!this.altHeld || this.pointTool === 'move' || this.pointTool === 'extend') return this.pointTool
     return this.pointTool === 'add' ? 'remove' : 'add'
   }
 
@@ -285,6 +304,7 @@ export class Drawer {
     if (!this.editingPoints || e.metaKey || e.ctrlKey || typing(e.target)) return
     if (e.key === '+' || e.key === '=') this.setPointTool('add')
     else if (e.key === '-') this.setPointTool('remove')
+    else if ((e.key === 'p' || e.key === 'P') && this.editingLine) this.setPointTool('extend')
     else if (e.key === 'a' || e.key === 'A' || e.key === 'v' || e.key === 'V') this.setPointTool('move')
     else if ((e.key === 'Delete' || e.key === 'Backspace') && this.activeVertex != null) this.removePoint(this.activeVertex)
     else return
@@ -315,6 +335,8 @@ export class Drawer {
     } else if (tool === 'remove') {
       const index = vertexAt(geometry, e.point, this.project)
       if (index >= 0) this.removePoint(index)
+    } else if (tool === 'extend' && geometry.type === 'LineString') {
+      this.extendAt(geometry, e)
     } else {
       // Terra Draw may have added a point on a midpoint first: the new point is picked then.
       this.pointer = e.point
@@ -340,6 +362,38 @@ export class Drawer {
   private onMouseOut = () => {
     this.pointer = null
     this.refreshHint()
+  }
+
+  /** Continuing a line: the end it goes on from is the one it was finished at, unless the person picks the other. */
+  private startExtending() {
+    const line = this.editedGeometry()
+    if (line?.type !== 'LineString') return
+    this.extendEnd = 'end'
+    this.extendBase = line.coordinates.length
+    // A double click ends the line, as when drawing it, instead of zooming in.
+    this.doubleClickZoom = this.map.doubleClickZoom.isEnabled()
+    this.map.doubleClickZoom.disable()
+  }
+
+  private stopExtending() {
+    if (this.doubleClickZoom) this.map.doubleClickZoom.enable()
+    this.doubleClickZoom = false
+  }
+
+  private extendAt(line: LineString, e: MapMouseEvent) {
+    const added = Math.max(0, line.coordinates.length - this.extendBase)
+    const vertex = vertexAt(line, e.point, this.project)
+    const action = extendClick(line, this.extendEnd, vertex, added)
+    if (action === 'stop') return this.setPointTool('move')
+    if (action === 'switch') {
+      this.extendEnd = this.extendEnd === 'end' ? 'start' : 'end'
+      return this.refreshHint()
+    }
+    const other = line.coordinates[endIndex(line, this.extendEnd === 'end' ? 'start' : 'end')]
+    const position = action === 'close' ? other : e.lngLat.toArray()
+    this.applyGeometry(extendLine(line, this.extendEnd, position))
+    // Joined to its other end, the fence goes all the way round: the pen is put down.
+    if (action === 'close') this.setPointTool('move')
   }
 
   private removePoint(index: number) {
@@ -409,6 +463,7 @@ export class Drawer {
     const tool = this.editingPoints ? this.tool : 'move'
     container.classList.toggle(TOOL_CLASS.add, tool === 'add')
     container.classList.toggle(TOOL_CLASS.remove, tool === 'remove')
+    container.classList.toggle(TOOL_CLASS.extend, tool === 'extend')
     this.refreshHint()
     this.pending?.options.onPointTool?.(this.tool)
   }
@@ -424,6 +479,16 @@ export class Drawer {
     } else if (geometry && this.pointer && tool === 'remove') {
       const index = vertexAt(geometry, this.pointer, this.project)
       if (index >= 0) features.push(hintPoint(editableVertices(geometry)[index], 'remove'))
+    } else if (geometry?.type === 'LineString' && tool === 'extend') {
+      const end = geometry.coordinates[endIndex(geometry, this.extendEnd)]
+      if (this.pointer) {
+        const over = vertexAt(geometry, this.pointer, this.project)
+        const to = over >= 0 ? editableVertices(geometry)[over] : this.unproject(this.pointer)
+        if (over !== endIndex(geometry, this.extendEnd)) {
+          features.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [end, to] }, properties: { hint: 'stretch' } })
+        }
+      }
+      features.push(hintPoint(end, 'active'))
     } else if (geometry && tool === 'move' && this.activeVertex != null) {
       const position = editableVertices(geometry)[this.activeVertex]
       if (position) features.push(hintPoint(position, 'active'))
@@ -439,9 +504,17 @@ export class Drawer {
       if (!features.length) return
       this.map.addSource(HINT_SOURCE, { type: 'geojson', data })
       this.map.addLayer({
+        id: HINT_LINE_LAYER,
+        type: 'line',
+        source: HINT_SOURCE,
+        filter: ['==', ['geometry-type'], 'LineString'],
+        paint: { 'line-color': EDIT_COLOR, 'line-width': 2, 'line-dasharray': [2, 2] },
+      })
+      this.map.addLayer({
         id: HINT_SOURCE,
         type: 'circle',
         source: HINT_SOURCE,
+        filter: ['==', ['geometry-type'], 'Point'],
         paint: {
           'circle-radius': ['match', ['get', 'hint'], 'add', 5, 7],
           'circle-color': ['match', ['get', 'hint'], 'add', '#ffffff', 'remove', REMOVE_COLOR, EDIT_COLOR],
@@ -459,12 +532,14 @@ export class Drawer {
     this.map.off('contextmenu', this.onContextMenu)
     this.map.off('mousemove', this.onMouseMove)
     this.map.off('mouseout', this.onMouseOut)
+    if (this.pointTool === 'extend') this.stopExtending()
     this.pointTool = 'move'
     this.altHeld = false
     this.activeVertex = null
     this.pointer = null
     try {
-      this.map.getContainer().classList.remove(TOOL_CLASS.add, TOOL_CLASS.remove)
+      this.map.getContainer().classList.remove(TOOL_CLASS.add, TOOL_CLASS.remove, TOOL_CLASS.extend)
+      if (this.map.getLayer(HINT_LINE_LAYER)) this.map.removeLayer(HINT_LINE_LAYER)
       if (this.map.getLayer(HINT_SOURCE)) this.map.removeLayer(HINT_SOURCE)
       if (this.map.getSource(HINT_SOURCE)) this.map.removeSource(HINT_SOURCE)
     } catch {}

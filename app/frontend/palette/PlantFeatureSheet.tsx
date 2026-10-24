@@ -15,6 +15,7 @@ import { MapView } from '@/map/MapView'
 import { PhotoHostContext, type PhotoHost } from '@/map/photos/host'
 import { PhotoLightbox } from '@/map/photos/PhotoLightbox'
 import { photoActions } from '@/map/photos/store'
+import { timeline as timelineOf } from '@/map/time/moment'
 import { installPlantFocus } from '@/palette/plantFocus'
 import type { EntitlementsData, MapData, MapFeature } from '@/types'
 
@@ -68,6 +69,10 @@ export function PlantFeatureSheet({ map, entitlements, canEdit, featureId, onClo
   }, [])
 
   const feature = features?.find((f) => f.properties.id === featureId) ?? null
+  const [today] = useState(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  })
 
   const editor: Editor = useMemo(() => {
     const upsert = (incoming: MapFeature[]) => setFeatures((current) => {
@@ -135,6 +140,12 @@ export function PlantFeatureSheet({ map, entitlements, canEdit, featureId, onClo
       openPanel: () => {},
       focusStage: map.stage, focusStep: () => {},
       notify,
+      // No time strip here: the sheet speaks of the plant today.
+      moment: 'today',
+      timeline: timelineOf((features ?? []).map((f) => f.properties), today, map.createdAt ?? today),
+      setMoment: () => {},
+      shade: null,
+      setShade: () => {},
     }
 
     // « Annuler » after a deletion: the feature comes back from the trash.

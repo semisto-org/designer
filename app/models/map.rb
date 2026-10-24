@@ -27,6 +27,7 @@ class Map < ApplicationRecord
   # The private link to the project sheet, for the people behind the project.
   has_one :project_sheet_link, dependent: :destroy
   has_one :publication, class_name: "MapPublication", dependent: :destroy
+  has_one :offline_site, class_name: "MapOfflineSite", dependent: :destroy
   # Every comment of the map, whatever it hangs on (`comments` is the map's own thread).
   has_many :discussion_comments, class_name: "Comment", dependent: :destroy
   has_many :service_requests, dependent: :destroy
@@ -67,6 +68,9 @@ class Map < ApplicationRecord
 
   after_create :add_owner_membership
   after_save :refresh_area, if: :saved_change_to_boundary?
+  # « Premières heures » (admin): when the place first got its outline. Its
+  # plan's first print is noted by Maps::PrintsController.
+  before_save -> { self.outlined_at ||= Time.current }, if: -> { boundary.present? && will_save_change_to_boundary? }
 
   def role_for(user)
     return nil unless user
@@ -186,6 +190,8 @@ class Map < ApplicationRecord
       teamId: organization_id,
       ownerName: owner.display_name,
       archived: archived?,
+      # The land « on arrival » of the editor's time strip.
+      createdAt: created_at&.iso8601,
       updatedAt: updated_at.iso8601,
       lockVersion: lock_version
     }

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import type { PointTool } from '@/map/editor/draw'
 
 /**
  * Small shared state of the drawing tools: which design layers, kinds of
@@ -22,11 +23,13 @@ export type DrawingState = {
   shapeEditId: number | null
   /** Where the edit was asked from, and goes back to once done: a plant's card or the inspector. */
   shapeEditFrom: 'peek' | 'inspector'
+  /** The tool the edit starts with: `extend` for « Continuer le tracé ». */
+  shapeEditTool: PointTool
   /** The tag shown as « version » on the map (null: everything). */
   version: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, shapeEditFrom: 'inspector', version: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', version: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -136,6 +139,6 @@ export function showEverything() {
 }
 
 /** Asks the drawing toolbar to let the user reshape a feature. */
-export function startShapeEdit(featureId: number, from: 'peek' | 'inspector' = 'inspector') {
-  drawingStore.set({ tool: 'shape', shapeEditId: featureId, shapeEditFrom: from })
+export function startShapeEdit(featureId: number, from: 'peek' | 'inspector' = 'inspector', pointTool: PointTool = 'move') {
+  drawingStore.set({ tool: 'shape', shapeEditId: featureId, shapeEditFrom: from, shapeEditTool: pointTool })
 }

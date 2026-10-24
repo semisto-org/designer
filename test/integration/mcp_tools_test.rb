@@ -2,10 +2,12 @@ require "test_helper"
 require_relative "../support/map_data_test_helper"
 require "test_helpers/mcp_test_helper"
 require "test_helpers/synthetic_terrain_helper"
+require "test_helpers/soil_photos_helper"
 
 class McpToolsTest < ActionDispatch::IntegrationTest
   include MapDataTestHelper
   include SyntheticTerrainHelper
+  include SoilPhotosHelper
 
   setup do
     @map = maps(:ahinvaux)
@@ -461,6 +463,34 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil action.arguments["features"].try(:first), "geometries are not copied in the journal"
   end
 
+  test "propose_features links each draft to the photos it was read from, and a rejected draft lets them go" do
+    make_editor(@map, users(:bob))
+    gate = create_photo(salt: "portail", location: MapPhoto.point_from(4.906, 50.341))
+    burrow = create_photo(salt: "terrier", location: MapPhoto.point_from(4.9062, 50.3411))
+    other_map = create_photo(map: Map.create!(name: "Ailleurs", owner: users(:bob), region: regions(:wallonia)), salt: "ailleurs")
+    features = [
+      { layer: "access", kind: "gate", rationale: "Portail en bois vu sur la photo, à l'entrée nord.", geometry: point(lng: 4.906, lat: 50.341), photo_ids: [ gate.id ] },
+      { layer: "notes", kind: "note", name: "Terrier", rationale: "Entrée de terrier de blaireau sur la photo.", geometry: point(lng: 4.9062, lat: 50.3411), photo_ids: [ burrow.id ] },
+      { layer: "access", kind: "gate", rationale: "Le même portail, proposé deux fois.", geometry: point(lng: 4.906, lat: 50.341), photo_ids: [ gate.id ] },
+      { layer: "notes", kind: "note", rationale: "Une photo d'une autre carte.", geometry: point(lng: 4.906, lat: 50.341), photo_ids: [ other_map.id ] }
+    ]
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: })
+    refute error, data
+    assert_equal [ 0, 1 ], data["created"].map { |c| c["index"] }
+    assert_match(/déjà reliée/, data["rejected"][0]["error"])
+    assert_match(/introuvable/, data["rejected"][1]["error"])
+
+    gate_draft, burrow_draft = data["created"].map { |c| MapFeature.find(c["id"]) }
+    assert_equal gate_draft.id, gate.reload.map_feature_id
+    assert_equal burrow_draft.id, burrow.reload.map_feature_id
+    assert_nil other_map.reload.map_feature_id
+
+    gate_draft.update!(status: "active")
+    burrow_draft.update!(status: "rejected")
+    assert_equal gate_draft.id, gate.reload.map_feature_id, "an accepted element keeps its photo"
+    assert_nil burrow.reload.map_feature_id, "a rejected draft gives its photo back to the library"
+  end
+
   test "propose_features reports an element the library refuses instead of failing" do
     make_editor(@map, users(:bob))
     line = { type: "LineString", coordinates: [ [ 4.905, 50.3405 ], [ 4.907, 50.3406 ] ] }
@@ -494,6 +524,18 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     feature = MapFeature.find(data["created"].sole["id"])
     assert_equal [ "draft", "first_frost", Time.utc(2026, 10, 18, 7) ], [ feature.status, feature.properties["sign"], feature.observed_at ]
     assert_empty @map.features.active.where(kind: "season_sign")
+  end
+
+  test "propose_features keeps the day a season sign was seen, even given as a day alone" do
+    make_editor(@map, users(:bob))
+    signs = [ "2025-01-12", "12/01/2025" ].map do |day|
+      { layer: "notes", kind: "season_sign", name: "La neige fond d'abord ici", rationale: "Noté le 12 janvier 2025.",
+        properties: { sign: "snow_melts_first", observed_at: day }, geometry: point(lng: 4.905, lat: 50.3405) }
+    end
+    data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: signs })
+    refute error, data
+    days = data["created"].map { MapFeature.find(_1["id"]).observed_at }
+    assert_equal [ Time.utc(2025, 1, 12, 8) ] * 2, days
   end
 
   test "propose_features drafts a named zone in its colour" do

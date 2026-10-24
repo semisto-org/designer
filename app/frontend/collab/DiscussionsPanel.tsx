@@ -40,7 +40,7 @@ export default function DiscussionsPanel() {
 
   if (general) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3" data-private>
         <button type="button" onClick={() => setGeneral(false)} className="inline-flex items-center gap-1.5 text-sm text-loam-600 hover:text-loam-900">
           <ArrowLeft className="h-4 w-4" />
           {t('collab.discussions.back')}
@@ -52,7 +52,7 @@ export default function DiscussionsPanel() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-private>
       <p className="text-sm text-loam-600">{t('collab.discussions.intro')}</p>
 
       <button

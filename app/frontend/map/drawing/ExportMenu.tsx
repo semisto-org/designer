@@ -1,8 +1,9 @@
-import { BookOpen, Download, FileJson, FileText, Network } from 'lucide-react'
+import { BookOpen, Download, FileJson, FileText, Network, WifiOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import { RevealLabel } from '@/components/ui/RevealLabel'
 import { useEditor } from '@/map/editor/EditorContext'
+import { OfflineSiteDialog } from '@/map/drawing/OfflineSiteDialog'
 import { PdfExportPanel } from '@/map/drawing/PdfExportPanel'
 
 /**
@@ -42,15 +43,17 @@ function MenuItem({ icon: Icon, label, hint, badge, href, onClick }: {
 }
 
 /**
- * "Exporter" in the editor's top bar: the plan at scale (PDF, paid plans)
- * and the GeoJSON of the design. Sensitive networks stay out unless an
- * editor asks for them explicitly.
+ * "Exporter" in the editor's top bar: the plan at scale (PDF, paid plans),
+ * the map as an offline website (every plan: nothing is taken hostage) and
+ * the GeoJSON of the design. Sensitive networks stay out unless an editor
+ * asks for them explicitly.
  */
 export default function ExportMenu() {
   const editor = useEditor()
   const [open, setOpen] = useState(false)
   const [asked] = useState(exportFromUrl)
   const [pdfOpen, setPdfOpen] = useState(asked != null)
+  const [offlineOpen, setOfflineOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const geojson = `/maps/${editor.map.id}/export.geojson`
 
@@ -92,6 +95,15 @@ export default function ExportMenu() {
               setPdfOpen(true)
             }}
           />
+          <MenuItem
+            icon={WifiOff}
+            label={t('offline_site.menu.label')}
+            hint={t('offline_site.menu.hint')}
+            onClick={() => {
+              setOpen(false)
+              setOfflineOpen(true)
+            }}
+          />
           <MenuItem icon={FileJson} label={t('drawing.export.geojson')} hint={t('drawing.export.geojson_hint')} href={geojson} onClick={() => setOpen(false)} />
           {editor.canEdit && (
             <MenuItem
@@ -105,6 +117,7 @@ export default function ExportMenu() {
         </div>
       )}
       {pdfOpen && <PdfExportPanel initialBook={asked === 'book'} onClose={() => setPdfOpen(false)} />}
+      {offlineOpen && <OfflineSiteDialog mapId={editor.map.id} onClose={() => setOfflineOpen(false)} />}
     </div>
   )
 }
