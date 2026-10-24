@@ -330,7 +330,7 @@ fr:
           document_new_content: "Le nouveau texte complet d'un document Markdown (.md), qui remplace l'ancien."
       propose_features:
         title: "Proposer des brouillons"
-        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. properties.functions (liste parmi les fonctions de get_element_functions) dit ce que l'élément fait dans le design quand ce n'est pas ce que son type propose. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Pose des éléments en brouillon sur la carte ; l'humain les accepte, les ajuste ou les refuse un par un dans l'éditeur : l'IA ne modifie jamais la carte directement. Chaque élément exige une justification (rationale) qui dit pourquoi et avec quelles données. Géométries GeoJSON en WGS84 ([longitude, latitude]), à moins de 200 m du contour du terrain, 200 éléments au plus par appel. Les éléments refusés à la validation sont renvoyés avec leur raison : corrige et renvoie seulement ceux-là. properties.functions (liste parmi les fonctions de get_element_functions) dit ce que l'élément fait dans le design quand ce n'est pas ce que son type propose. Pour un élément que tu reconnais sur une photo du terrain (un arbre en place, un portail, un terrier, un bâtiment, une mare), pose-le à la position de la photo (list_photos, get_photo) en tenant compte de sa direction, donne ses photo_ids et dis dans la justification ce que tu y vois ; les plantes sauvages d'une photo passent par propose_bioindicators. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           summary: "Résumé de la proposition dans son ensemble, montré à l'humain au-dessus des brouillons."
           features: "Les éléments proposés, de 1 à 200."
@@ -342,6 +342,7 @@ fr:
           feature_notes: "Notes complémentaires : variétés, entretien, phasage…"
           feature_rationale: "Pourquoi cet élément, ici, et avec quelles données (fiche projet, couches, relief, existant…). Obligatoire, 10 caractères au moins."
           feature_properties: "Attributs libres, par exemple species, height_m, spacing_m."
+          feature_photo_ids: "Les photos du terrain d'où tu tires cet élément (identifiants de list_photos, 10 au plus) : elles lui sont reliées, l'humain les voit à côté du brouillon pendant la revue, elles restent avec l'élément s'il l'accepte et retournent à la photothèque s'il le refuse. Une photo ne se relie qu'à un seul élément."
           feature_tags: "Étiquettes de l'élément, de préférence parmi celles que la carte utilise déjà (tags dans get_map), par exemple « phase 1 » ou « zone nord ». 20 au plus, 40 caractères chacune."
       propose_sectors:
         title: "Proposer une analyse des secteurs"
@@ -652,6 +653,9 @@ fr:
       coordinates: "coordonnées hors limites : [longitude, latitude] en degrés WGS84."
       too_complex: "géométrie trop détaillée (%{max} sommets au plus)."
       properties: "properties doit être un objet de moins de %{max} octets."
+      photo_ids: "photo_ids doit être une liste de %{max} identifiants de photos au plus."
+      photo_missing: "photo introuvable sur cette carte (%{ids}) : prends les identifiants de list_photos."
+      photo_linked: "la photo %{id} est déjà reliée à l'élément %{feature_id} : ne la relie qu'à un seul élément."
       tags: "tags doit être une liste de %{max} étiquettes au plus, de %{length} caractères au plus chacune."
       empty: "géométrie vide."
       invalid: "géométrie invalide (%{reason})."

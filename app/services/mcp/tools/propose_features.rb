@@ -33,7 +33,11 @@ module Mcp
                   type: "array", maxItems: MapFeature::Tags::MAX_TAGS, description: :feature_tags,
                   items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
                 },
-                properties: { type: "object", maxProperties: 30, description: :feature_properties }
+                properties: { type: "object", maxProperties: 30, description: :feature_properties },
+                photo_ids: {
+                  type: "array", maxItems: DraftProposal::MAX_PHOTOS, uniqueItems: true, description: :feature_photo_ids,
+                  items: { type: "integer", minimum: 1 }
+                }
               }
             }
           }
