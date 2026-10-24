@@ -56,7 +56,7 @@ class MapPublicationTest < ActiveSupport::TestCase
     assert_not_includes json, @owner.email_address
   end
 
-  test "privacy: nothing « En projet » and nothing taken away enters the snapshot; the plants of the design and what stands do" do
+  test "privacy: nothing « En projet » and nothing taken away enters the snapshot; what stands does" do
     house = with_feature(@map, layer: "existing", kind: "building", name: "Maison à construire", geometry: square)
     house.update!(properties: { "planned" => true, "height_m" => 7 })
     greenhouse = with_feature(@map, layer: "structures", kind: "greenhouse", name: "Serre de l'an prochain", geometry: square(lng: 4.91))
@@ -70,11 +70,17 @@ class MapPublicationTest < ActiveSupport::TestCase
     published = names(publish(options: { "feature_layers" => MapFeature::LAYERS - %w[networks] }))
     assert_includes published, "Grange"
     assert_includes published, "Cabane à démonter", "still standing today"
-    assert_includes published, "Pommier à planter", "the plants of the design are published"
+    assert_not_includes published, "Pommier à planter", "a plant not planted yet is a project too"
     assert_not_includes published, "Mare à creuser"
     assert_not_includes published, "Maison à construire"
     assert_not_includes published, "Serre de l'an prochain"
     assert_not_includes published, "Cabane démontée"
+
+    shown = names(publish(options: { "feature_layers" => MapFeature::LAYERS - %w[networks], "show_planned" => true }))
+    assert_includes shown, "Mare à creuser", "the owner chose to show the project"
+    assert_includes shown, "Pommier à planter"
+    assert_includes shown, "Maison à construire"
+    assert_not_includes shown, "Cabane démontée", "what was taken away never"
 
     house.update!(properties: { "built_on" => "2027-06-01", "height_m" => 7 })
     assert_includes names(publish), "Maison à construire", "once built, it is on the land like any other"

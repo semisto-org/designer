@@ -2,7 +2,7 @@ fr:
   scenario:
     element:
       title: "Sur le terrain"
-      planned: "En projet : pas encore réalisé. Il apparaît en pointillés, pas sur le terrain « Arrivée » de la frise du temps, et jamais sur la carte publique."
+      planned: "En projet : pas encore réalisé. Il apparaît en pointillés, pas sur le terrain « Arrivée » de la frise du temps, ni sur la carte publique, sauf si tu y montres aussi le projet."
       existing: "Déjà sur le terrain."
       built_on: "Réalisé le %{date}"
       built_date: "Réalisé le"
@@ -26,6 +26,6 @@ fr:
       existing: "Sur le terrain"
       planned: "En projet"
       existing_hint: "Ce qui est déjà là aujourd’hui."
-      planned_hint: "Pas encore réalisé : dessiné en pointillés, jamais publié, à marquer « réalisé » le jour venu. Un bâtiment en projet compte déjà dans la 3D."
+      planned_hint: "Pas encore réalisé : dessiné en pointillés, à marquer « réalisé » le jour venu. Un bâtiment en projet compte déjà dans la 3D."
       drawing: "En projet."
       created: "Ajouté à la carte, en projet : %{kind}."
