@@ -12,7 +12,7 @@
 // instant (~30 ms) or the sun hours of a day (~1-3 s).
 
 import type { Geometry } from 'geojson'
-import { buildingLayer, type BuildingData, type BuildingLayer, type BuildingsResponse } from './buildings.ts'
+import { buildingLayer, drawnBuildings, mergeBuildings, type BuildingData, type BuildingLayer, type BuildingsResponse } from './buildings.ts'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
 import { applyDesigns, downsampleCrest, downsampleDesigned, pointsAlong, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
@@ -160,7 +160,8 @@ export type ControllerOptions = {
   onWalk?: (mode: WalkMode) => void
 }
 
-export type BuildingsInfo = { count: number; measured: number; attribution: string | null }
+/** `count` and `measured` are OpenStreetMap's; `drawn` the map's own, `planned` of them still a project. */
+export type BuildingsInfo = { count: number; measured: number; attribution: string | null; drawn: number; planned: number }
 
 const AXIS_FRAME_BUDGET_MS = 11
 const POND_KINDS = new Set(['pond'])
@@ -261,6 +262,7 @@ export class ReliefController {
   plantsView = { on: true, strataColors: false }
   private plantAltitudes: Float32Array | null = null
   /** The plants raised onto the sun's heights, for the year (to a tenth) they were raised at. */
+  private sunBaseCache: { surface: Float32Array; roofs: Float32Array; heights: Float32Array } | null = null
   private plantShadeCache: { base: ArrayLike<number>; altitudes: Float32Array; year: number; heights: Float32Array; cover: Uint8Array } | null = null
   private sunReplay: { frame: number; timer: ReturnType<typeof setTimeout> | null } = { frame: 0, timer: null }
   walkMode: WalkMode = 'off'
@@ -377,7 +379,7 @@ export class ReliefController {
    */
   private sunSurface(): { heights: ArrayLike<number>; cover: Uint8Array | null; plantYear: number | null } {
     const full = this.full as NonNullable<typeof this.full>
-    const base = this.surface ?? this.buildings?.roofs ?? full.heights
+    const base = this.sunBase(full.heights)
     const altitudes = this.plantAltitudes
     if (!this.plantsView.on || !this.plants.length || !altitudes) return { heights: base, cover: null, plantYear: null }
     const year = Math.round(this.plantYear * 10) / 10
@@ -389,6 +391,25 @@ export class ReliefController {
     const { heights, cover } = plantShade(base, cols, rows, this.cell, this.plants, altitudes, year)
     this.plantShadeCache = { base, altitudes, year, heights, cover }
     return { heights, cover, plantYear: year }
+  }
+
+  /**
+   * The heights the sun reads before the plants: the surface model (trees
+   * and roofs as they are), else the relief with the buildings' volumes. A
+   * building drawn on the map, « En projet » above all, is not in the
+   * surface model: its volume is raised on it, so its shadow counts.
+   */
+  private sunBase(heights: Float32Array): Float32Array {
+    const buildings = this.buildings
+    if (!this.surface) return buildings?.roofs ?? heights
+    const drawn = buildings?.volumes.some((v) => v.id.startsWith('drawn-')) ? buildings : null
+    if (!drawn) return this.surface
+    const cached = this.sunBaseCache
+    if (cached?.surface === this.surface && cached.roofs === drawn.roofs) return cached.heights
+    const out = Float32Array.from(this.surface)
+    for (let i = 0; i < out.length; i++) if (drawn.roofs[i] > out[i]) out[i] = drawn.roofs[i]
+    this.sunBaseCache = { surface: this.surface, roofs: drawn.roofs, heights: out }
+    return out
   }
 
   /**
@@ -530,16 +551,23 @@ export class ReliefController {
    */
   private async loadBuildings(request: Promise<BuildingsResponse | null>) {
     const response = await request
-    if (this.disposed || !response?.available || !response.buildings.length) return
-    this.buildingsData = response.buildings
+    if (this.disposed) return
+    const mapped = response?.available ? response.buildings : []
+    // The buildings drawn on the map stand too, without a provider.
+    const drawn = drawnBuildings(this.options.features as never)
+    if (!mapped.length && !drawn.length) return
+    this.buildingsData = mergeBuildings(mapped, drawn)
     this.layoutBuildings()
-    const volumes = this.buildings?.volumes ?? []
+    const volumes = (this.buildings?.volumes ?? []).filter((v) => !v.id.startsWith('drawn-'))
     this.options.onBuildings?.({
-      count: volumes.length, measured: volumes.filter((v) => v.source === 'surface').length, attribution: response.attribution,
+      count: volumes.length, measured: volumes.filter((v) => v.source === 'surface').length,
+      attribution: mapped.length ? response?.attribution ?? null : null,
+      drawn: drawn.length, planned: drawn.filter((d) => d.planned).length,
     })
     if (this.view.surfaceOn) this.applySurfaceHeights()
-    // Without a surface model, the shadows now fall from the buildings too.
-    if (!this.surface) {
+    // The shadows now fall from the buildings too: without a surface model
+    // from all of them, with one from those it cannot see (drawn ones).
+    if (!this.surface || drawn.length) {
       this.dayHours = null
       if (this.sun.mode !== 'off') void this.renderSun()
     }

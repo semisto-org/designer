@@ -15,6 +15,7 @@ import { MapView } from '@/map/MapView'
 import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 import { GardenControls } from '@/public_maps/GardenControls'
+import { featuresIn, growthIn, hasProject, type Situation } from '@/public_maps/situation'
 import { SEASONS, gardenAt, gardenPlants, seasonOf, yearFraction, yearNow, type GardenPlant, type SeasonKey } from '@/public_maps/garden'
 import { loadAtlases, paintGarden, removeGarden, type Atlases } from '@/public_maps/gardenLayer'
 import { previewYear } from '@/public_maps/preview'
@@ -30,8 +31,16 @@ import type { PublicMapProps } from '@/types/collab'
  * card per element. Shared by the public view (/p/:token) and the offline
  * site (app/frontend/offline), which each add their own header and footer.
  */
-export function PublicMapView({ className, mapStyle, ...props }: PublicMapProps & { className?: string; mapStyle?: StyleSpecification }) {
-  const { map } = props
+export function PublicMapView({ className, mapStyle, ...published }: PublicMapProps & { className?: string; mapStyle?: StyleSpecification }) {
+  const { map } = published
+  // When the owner shows the project, the visitor switches between the land today and the project (project first).
+  const project = useMemo(() => hasProject(published.features as never), [published.features])
+  const [situation, setSituation] = useState<Situation>('project')
+  const props = useMemo(() => {
+    if (!project) return published
+    const features = featuresIn(published.features as never, situation) as PublicMapProps['features']
+    return { ...published, features, growth: published.growth ? growthIn(published.growth, features as never) : published.growth }
+  }, [published, project, situation])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const selected = props.features.features.find((f) => f.properties.id === selectedId) ?? null
   const plants = useMemo(() => (props.growth ? gardenPlants(props.growth) : []), [props.growth])
@@ -74,6 +83,8 @@ export function PublicMapView({ className, mapStyle, ...props }: PublicMapProps 
         plantGroups={legend}
         showNumbers={showNumbers}
         onShowNumbers={setShowNumbers}
+        situation={project ? situation : null}
+        onSituation={setSituation}
       />
       {selected && <FeatureCard feature={selected} plant={props.growth?.plants.find((p) => p.id === selected.properties.id)} onClose={() => setSelectedId(null)} />}
     </div>
@@ -210,9 +221,12 @@ type DisplayProps = {
   plantGroups: StrataGroup[]
   showNumbers: boolean
   onShowNumbers: (show: boolean) => void
+  /** Null when the snapshot holds no project to switch to. */
+  situation: Situation | null
+  onSituation: (situation: Situation) => void
 }
 
-function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumbers }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean } & DisplayProps) {
+function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumbers, situation, onSituation }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean } & DisplayProps) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   const counts = useMemo(() => {
     const result = new Map<string, number>()
@@ -220,13 +234,19 @@ function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumb
     return [...result.entries()]
   }, [features])
   const overlays = layers.filter((l) => l.category === 'overlay')
-  if (counts.length === 0 && overlays.length === 0) return null
+  if (counts.length === 0 && overlays.length === 0 && !situation) return null
   return (
     <section className={(raised ? 'bottom-52 md:bottom-14' : 'bottom-14') + ' absolute left-2 z-10 max-w-[min(18rem,calc(100%-1rem))] rounded-xl bg-white p-3 shadow-lg ring-1 ring-loam-200'} aria-label={t('public_maps.legend')}>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-loam-500">
         {t('public_maps.legend')}
         <ChevronDown className={'h-4 w-4 transition ' + (open ? 'rotate-180' : '')} aria-hidden="true" />
       </button>
+      {situation && (
+        <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label={t('public_maps.display.situation')}>
+          <Toggle on={situation === 'today'} onChange={() => onSituation('today')} label={t('public_maps.display.today')} />
+          <Toggle on={situation === 'project'} onChange={() => onSituation('project')} label={t('public_maps.display.project')} />
+        </div>
+      )}
       {open && (
         <div className="mt-2 max-h-[min(24rem,50dvh)] space-y-2 overflow-y-auto text-sm text-loam-700">
           {plantGroups.length > 0 && (
