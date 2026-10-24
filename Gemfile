@@ -14,7 +14,7 @@ gem "activerecord-postgis-adapter", "~> 11.1"
 gem "rgeo-geojson"
 
 # Frontend: React + TypeScript pages served through Inertia, bundled by Vite
-gem "inertia_rails", "~> 3.22"
+gem "inertia_rails", "~> 3.23"
 gem "vite_rails", "~> 3.11"
 
 # Sign in with Google; magic links and one-time codes are built in
