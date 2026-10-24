@@ -2,6 +2,7 @@
 # It serves the snapshot taken at publication, never the live map.
 class PublicMapsController < ApplicationController
   include PublicMeta
+  include EmbeddablePublicView
 
   allow_unauthenticated_access
   before_action { response.set_header("X-Robots-Tag", "noindex, nofollow") }
