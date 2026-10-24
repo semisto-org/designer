@@ -56,6 +56,20 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil AiAction.last.map, "no journal entry on a map the user cannot open"
   end
 
+  test "get_map gives the sector analysis, sun included, and the links to print the design" do
+    @map.features.create!(layer: "notes", kind: "sector", geometry: Sectors::Arc.for_map(@map, from_deg: 300, to_deg: 40),
+      name: "Bise", properties: { "sector_type" => "cold_wind", "sector_season" => "winter", "from_deg" => 300, "to_deg" => 40 })
+    data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
+    refute error
+    sun = data.dig("sectors", "sun").to_h { [ _1["type"], _1 ] }
+    assert_operator sun.dig("summer_sun", "from_deg"), :<, 90
+    assert_match(/\Ade (NE|ENE) à (NO|ONO)\z/, sun.dig("summer_sun", "directions"))
+    sector = data.dig("sectors", "drawn").sole
+    assert_equal [ "cold_wind", "winter", 300.0, 40.0, "de ONO à NE", "Bise" ], sector.values_at("sector_type", "season", "from_deg", "to_deg", "directions", "name")
+    assert_equal "http://www.example.com/maps/#{@map.id}?export=book", data.dig("exports", "book_pdf_url")
+    assert_equal "http://www.example.com/maps/#{@map.id}/dossier", data.dig("exports", "dossier_url")
+  end
+
   test "get_map tells the owner about the public view and what it brought, never the others" do
     data, = call_tool(@owner, "get_map", { map_id: @map.id })
     refute data.dig("publication", "published")
