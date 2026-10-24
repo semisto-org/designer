@@ -106,7 +106,7 @@ module OfflineSite
             "feature_layers" => MapFeature::LAYERS,
             "region_layers" => region_layers.map(&:key),
             "hide_networks" => !@include_networks, "hide_address" => false,
-            "show_notes" => true, "show_zone_names" => true, "show_aerial_view" => false
+            "show_notes" => true, "show_zone_names" => true, "show_planned" => true, "show_aerial_view" => false
           }, map)
           MapPublication.new(map:, title: map.name, description: map.description.to_s, options:,
             snapshot: Collab::PublicSnapshot.new(map, options).build, version: 1, published_at: Time.current, token: "hors-ligne")

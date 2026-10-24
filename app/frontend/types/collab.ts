@@ -98,6 +98,8 @@ export type PublicationOptions = {
   show_notes: boolean
   /** Names of zones and paths; off by default (they often carry private notes). */
   show_zone_names?: boolean
+  /** What is still a project (planned elements, plants not planted yet); off by default. */
+  show_planned?: boolean
   /** The newest drone view (drone area); off by default. */
   show_aerial_view?: boolean
   /** The owner's consent to « Carnets ouverts » on the public site; off by default. */

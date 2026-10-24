@@ -29,7 +29,7 @@ Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Exi
 ## Dessiner un élément
 
 1. En haut de la carte, touche **Éléments**.
-2. Dans « Que veux-tu dessiner ? », choisis la couche, puis l'élément. Tes éléments **Récents** sont proposés en premier.
+2. Dans « Que veux-tu dessiner ? », dis d'abord si l'élément est **Sur le terrain** ou **En projet**, puis choisis la couche et l'élément. Tes éléments **Récents** sont proposés en premier.
 3. Suis l'indication affichée, selon la forme de l'élément :
    - **un point** (arbre, puits, compteur) : touche la carte à l'endroit voulu ;
    - **une ligne** (haie, fossé, chemin) : clique point par point, puis double-clique ou touche **Terminer** ;
@@ -38,6 +38,20 @@ Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Exi
 5. **Annuler**, ou la touche Échap, abandonne le tracé.
 
 L'élément est ajouté à la carte et sa fiche s'ouvre.
+
+## Placer ce qui n'existe pas encore
+
+Une maison à construire, une serre prévue l'an prochain, une mare à creuser : choisis **En projet** en haut de « Que veux-tu dessiner ? ». Seuls les éléments qui peuvent encore se construire sont proposés (dans la couche Existant, le **Bâtiment** et le **Mur ou muret**). Terranova retient ton choix pour le prochain élément.
+
+Un élément en projet se dessine en pointillés et n'apparaît pas sur le terrain « Arrivée » de la frise du temps. Il n'est **pas montré sur la carte publique**, sauf si tu choisis d'y [montrer aussi le projet](/help/publier-sa-carte). Un bâtiment en projet (bâtiment, abri, cabane ou remise, serre, stockage des fruits, poulailler) se lève aussi dans la [vue 3D](/help/la-vue-3d-du-terrain), avec un toit mauve, à la hauteur notée dans sa fiche : son ombre compte déjà, pour concevoir autour de lui avant qu'il soit là.
+
+Une fois construit, ouvre sa fiche et touche **Marquer comme réalisé** dans la section **Sur le terrain**. Dessiné par erreur comme déjà là ? Touche **C'est un projet** dans la même section.
+
+## Retirer un élément existant du projet
+
+Le projet déplace une clôture, démonte une cabane, abat un arbre ? Ne supprime pas ce qui est encore là : ouvre sa fiche et touche **À retirer**, dans la section **Sur le terrain**. Il reste sur le terrain d'aujourd'hui, pâli et en pointillés serrés, et disparaît des années à venir (**An 5**, **An 15**, **An 30**), où tu dessines à sa place les nouvelles clôtures **En projet**.
+
+Une fois le travail fait, touche **Marquer comme retiré** : la date est gardée, et l'élément ne se voit plus que sur le terrain **Arrivée**, la mémoire du lieu. Changé d'avis ? **Finalement, on le garde**.
 
 ## La fiche d'un élément
 

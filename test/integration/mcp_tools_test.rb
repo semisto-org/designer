@@ -221,6 +221,16 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/bbox/, text)
   end
 
+  test "list_features separates what is on the land from what is still a project" do
+    house = @map.features.create!(layer: "existing", kind: "building", name: "Maison à construire", geometry: square(lng: 4.91),
+                                  properties: { "planned" => true, "height_m" => 7 })
+    data, = call_tool(@owner, "list_features", { map_id: @map.id, situation: "planned" })
+    assert_equal [ house.id ], data["features"].map { |f| f["id"] }
+    assert_equal true, data["features"].first.dig("properties", "planned")
+    data, = call_tool(@owner, "list_features", { map_id: @map.id, situation: "on_the_ground" })
+    assert_equal [ "pond" ], data["features"].map { |f| f.dig("properties", "kind") }
+  end
+
   test "list_features says which plants are support plants, from their palette role or their sheet" do
     @map.palette_items.create!(species: plant_species(:alder), role: "support")
     alder = @map.features.create!(layer: "plants", kind: "plant", geometry: point(lng: 4.906),

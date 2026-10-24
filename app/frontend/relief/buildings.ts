@@ -4,8 +4,11 @@
 // measured on the surface model when the region has one (median of what
 // stands above the ground inside the footprint), else read from the tags
 // (`height`, `building:levels`), else guessed from the kind of building.
+// The buildings drawn on the map (existing or « En projet ») join them, at
+// the height the person gave, and replace the OpenStreetMap one they cover.
 // No import of three.js: the scene turns the volumes into a mesh.
 
+import { BUILDING_KINDS } from '../map/scenario.ts'
 import { toGrid, type GridMeta } from './grid.ts'
 import { fitRoof, roofHeight, shell, type RoofSample, type RoofShape, type Shell } from './roofs.ts'
 
@@ -17,6 +20,10 @@ export type BuildingData = {
   height: number | null
   minHeight: number | null
   levels: number | null
+  /** Drawn on the map: its height is the person's, never measured on the surface model. */
+  drawn?: boolean
+  /** Drawn « En projet »: not built yet (no surface model or ortho can see it). */
+  planned?: boolean
 }
 
 export type BuildingsResponse = { available: boolean; attribution: string | null; buildings: BuildingData[] }
@@ -38,6 +45,8 @@ export type BuildingVolume = {
   /** Height of the bottom above the base (a roof on posts), in real metres. */
   bottom: number
   source: HeightSource
+  /** Not built yet: its roof is plain, the ortho shows the ground there. */
+  planned: boolean
 }
 
 export type BuildingLayer = {
@@ -55,7 +64,7 @@ const STOREY = 3
 const ROOF = 1.5
 const MIN_HEIGHT = 2.2
 const MAX_HEIGHT = 150
-const LOW_KINDS = new Set(['shed', 'garage', 'garages', 'carport', 'hut', 'cabin', 'greenhouse', 'roof', 'kiosk', 'container', 'shelter', 'toilets'])
+const LOW_KINDS = new Set(['shed', 'fruit_store', 'poultry_house', 'garage', 'garages', 'carport', 'hut', 'cabin', 'greenhouse', 'roof', 'kiosk', 'container', 'shelter', 'toilets'])
 const TALL_KINDS = new Set(['church', 'cathedral', 'chapel', 'industrial', 'warehouse', 'hangar', 'barn', 'farm_auxiliary', 'riding_hall', 'sports_hall'])
 
 /** A height from the tags or the kind of building, in metres. */
@@ -65,6 +74,71 @@ export function taggedHeight(building: BuildingData): { height: number; source: 
   if (LOW_KINDS.has(building.kind)) return { height: 3, source: 'guess' }
   if (TALL_KINDS.has(building.kind)) return { height: 9, source: 'guess' }
   return { height: 7, source: 'guess' }
+}
+
+type DrawnFeature = { geometry?: { type: string; coordinates: unknown } | null; properties?: Record<string, unknown> | null }
+
+function positiveNumber(value: unknown): number | null {
+  const n = typeof value === 'string' ? Number(value) : value
+  return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : null
+}
+
+/**
+ * The buildings drawn on the map (house, shed, greenhouse…, accepted, on
+ * the ground or « En projet », not taken away), as footprints for the 3D view: the height
+ * typed in their card, else their storeys, else a guess by kind.
+ */
+export function drawnBuildings(features: readonly DrawnFeature[]): BuildingData[] {
+  const out: BuildingData[] = []
+  for (const feature of features) {
+    const props = feature.properties ?? {}
+    const kind = String(props.kind ?? '')
+    if (!BUILDING_KINDS.has(kind) || (props.status && props.status !== 'active') || typeof props.removed_on === 'string') continue
+    const geometry = feature.geometry
+    const polygons = geometry?.type === 'Polygon' ? [geometry.coordinates] : geometry?.type === 'MultiPolygon' ? (geometry.coordinates as unknown[]) : []
+    polygons.forEach((rings, k) => {
+      out.push({
+        id: `drawn-${props.id ?? out.length}${k ? `-${k}` : ''}`, kind, rings: rings as Array<Array<[number, number]>>,
+        height: positiveNumber(props.height_m), minHeight: null, levels: positiveNumber(props.floors),
+        drawn: true, planned: props.planned === true,
+      })
+    })
+  }
+  return out
+}
+
+function insideRing(ring: Array<[number, number]>, [x, y]: [number, number]): boolean {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+
+function centroid(ring: Array<[number, number]>): [number, number] {
+  const last = ring[ring.length - 1]
+  const points = ring.length > 1 && ring[0][0] === last[0] && ring[0][1] === last[1] ? ring.slice(0, -1) : ring
+  const x = points.reduce((sum, p) => sum + p[0], 0) / points.length
+  const y = points.reduce((sum, p) => sum + p[1], 0) / points.length
+  return [x, y]
+}
+
+/**
+ * OpenStreetMap's buildings plus the drawn ones: a drawn building replaces
+ * the OpenStreetMap footprint whose centre it covers (the same house traced
+ * by hand, a barn about to be rebuilt), so that nothing stands twice.
+ */
+export function mergeBuildings(mapped: readonly BuildingData[], drawn: readonly BuildingData[]): BuildingData[] {
+  if (!drawn.length) return [...mapped]
+  const kept = mapped.filter((building) => {
+    const ring = building.rings[0]
+    if (!ring?.length) return true
+    const centre = centroid(ring)
+    return !drawn.some((d) => d.rings[0] && insideRing(d.rings[0], centre))
+  })
+  return [...kept, ...drawn]
 }
 
 function median(values: number[]): number {
@@ -158,7 +232,7 @@ export function buildingLayer(
 
     let { height, source } = taggedHeight(building)
     let roof: RoofShape = { type: 'flat', height }
-    if (surface && cells.length >= 4) {
+    if (surface && cells.length >= 4 && !building.drawn) {
       const measured = median(cells.map((i) => surface[i] - original[i]))
       // Lower than a garden shed: the model predates the building, or the
       // footprint misses it. Keep the tags.
@@ -171,7 +245,7 @@ export function buildingLayer(
     const shells = rings.map((ring) => shell(ring, roof, MIN_HEIGHT, MAX_HEIGHT))
     height = Math.max(...shells.flatMap((s) => s.ring.map((p) => p.top)))
     const bottom = building.minHeight && building.minHeight < height ? building.minHeight : 0
-    volumes.push({ id: building.id, rings, base, height, roof, shells, bottom, source })
+    volumes.push({ id: building.id, rings, base, height, roof, shells, bottom, source, planned: building.planned === true })
     const eave = Math.min(...shells.flatMap((s) => s.ring.map((p) => p.top)))
     for (const i of cells) {
       inside[i] = 1

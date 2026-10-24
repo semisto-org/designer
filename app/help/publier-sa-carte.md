@@ -35,7 +35,15 @@ Trois réglages protègent ton terrain :
 - **Masquer l'adresse et les parcelles** est activé d'office : le contour du terrain reste visible, mais ni l'adresse ni les numéros de parcelles.
 - **Afficher les notes des éléments** est désactivé d'office : les visiteurs voient le nom des éléments, pas tes notes.
 
-Quoi qu'il arrive, les brouillons proposés par une IA, les éléments refusés et les noms des collaborateurs ne sont **jamais** publiés.
+Quoi qu'il arrive, les brouillons proposés par une IA, les éléments refusés, ce qui a été retiré du terrain et les noms des collaborateurs ne sont **jamais** publiés.
+
+## L'existant seul, ou aussi le projet
+
+Par défaut, la carte publiée montre **seulement ce qui est sur le terrain aujourd'hui** : les bâtiments à construire, les mares à creuser, les clôtures à poser et les plantes pas encore plantées restent dans ton éditeur. Un projet de construction, souvent avant tout permis, reste ainsi entre toi et ceux qui éditent la carte. Une plante apparaît dès que tu la marques plantée ; republie la carte pour la montrer.
+
+Pour montrer ton design, coche **Montrer aussi le projet** dans « Ce que la carte montre » : les éléments en projet s'ajoutent en pointillés, les plantes à planter en pastilles creuses.
+
+Le visiteur passe alors d'une vue à l'autre avec **Aujourd'hui** et **Avec le projet**, en haut de la légende. La carte s'ouvre sur le projet ; « Aujourd'hui » montre le terrain tel qu'il est, avec ce que le projet retirera (une clôture à déplacer, une cabane à démonter).
 
 ## Publier et partager l'adresse
 
