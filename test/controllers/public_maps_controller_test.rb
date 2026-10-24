@@ -152,4 +152,34 @@ class PublicMapsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal({ views: 1, gardensStarted: 1 }, @publication.reload.as_inertia.slice(:views, :gardensStarted))
   end
+
+  test "the public view may be framed by the allowed sites only, the editor never" do
+    get public_map_path(@publication.token)
+    assert_nil response.headers["X-Frame-Options"]
+    assert_equal "frame-ancestors 'self' https://app.les4sources.be", response.headers["Content-Security-Policy"]
+
+    with_frame_ancestors("https://app.les4sources.be https://example.org javascript:alert(1)") do
+      get public_map_path(@publication.token)
+      assert_equal "frame-ancestors 'self' https://app.les4sources.be https://example.org",
+                   response.headers["Content-Security-Policy"]
+    end
+
+    with_frame_ancestors("") do
+      get public_map_path(@publication.token)
+      assert_equal "SAMEORIGIN", response.headers["X-Frame-Options"]
+      assert_nil response.headers["Content-Security-Policy"]
+    end
+
+    get "/"
+    assert_equal "SAMEORIGIN", response.headers["X-Frame-Options"]
+  end
+
+  private
+    def with_frame_ancestors(value)
+      saved = ENV["PUBLIC_MAP_FRAME_ANCESTORS"]
+      ENV["PUBLIC_MAP_FRAME_ANCESTORS"] = value
+      yield
+    ensure
+      saved.nil? ? ENV.delete("PUBLIC_MAP_FRAME_ANCESTORS") : ENV["PUBLIC_MAP_FRAME_ANCESTORS"] = saved
+    end
 end
