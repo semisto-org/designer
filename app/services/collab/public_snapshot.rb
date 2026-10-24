@@ -82,7 +82,23 @@ module Collab
         }
         properties.merge!(feature.properties.to_h.slice(*EARTHWORK_PROPERTIES)) if EARTHWORK_KINDS.include?(feature.kind)
         properties["notes"] = feature.notes if @options["show_notes"]
+        properties.merge!(situation(feature)) if @options["show_planned"] == true
         { "type" => "Feature", "id" => feature.id, "geometry" => feature.geometry_geojson, "properties" => properties }
+      end
+
+      # When the project is shown, the visitor switches between the land
+      # today and the project: each feature says where it stands, with the
+      # same properties the editor reads (map/scenario.ts).
+      def situation(feature)
+        if feature.plant?
+          feature.planted? ? { "planted_on" => feature.planted_on.iso8601 } : {}
+        elsif feature.planned?
+          { "planned" => true }
+        elsif feature.to_remove?
+          { "to_remove" => true }
+        else
+          {}
+        end
       end
 
       # How the published plants grow (Relief::GrowingPlants), for the year

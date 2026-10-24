@@ -75,9 +75,16 @@ class MapPublicationTest < ActiveSupport::TestCase
     assert_not_includes published, "Maison à construire"
     assert_not_includes published, "Serre de l'an prochain"
     assert_not_includes published, "Cabane démontée"
+    assert_not_includes publish.snapshot.to_json, "to_remove", "without the project, no intention shows"
 
-    shown = names(publish(options: { "feature_layers" => MapFeature::LAYERS - %w[networks], "show_planned" => true }))
+    published = publish(options: { "feature_layers" => MapFeature::LAYERS - %w[networks], "show_planned" => true })
+    shown = names(published)
     assert_includes shown, "Mare à creuser", "the owner chose to show the project"
+    situation = published.features.to_h { |f| [ f["properties"]["name"], f["properties"].slice("planned", "to_remove", "planted_on") ] }
+    assert_equal({ "planned" => true }, situation["Mare à creuser"], "the visitor can switch between today and the project")
+    assert_equal({ "to_remove" => true }, situation["Cabane à démonter"])
+    assert_equal({}, situation["Grange"])
+    assert_equal({}, situation["Pommier à planter"])
     assert_includes shown, "Pommier à planter"
     assert_includes shown, "Maison à construire"
     assert_not_includes shown, "Cabane démontée", "what was taken away never"

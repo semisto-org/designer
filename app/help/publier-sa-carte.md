@@ -43,6 +43,8 @@ Par défaut, la carte publiée montre **seulement ce qui est sur le terrain aujo
 
 Pour montrer ton design, coche **Montrer aussi le projet** dans « Ce que la carte montre » : les éléments en projet s'ajoutent en pointillés, les plantes à planter en pastilles creuses.
 
+Le visiteur passe alors d'une vue à l'autre avec **Aujourd'hui** et **Avec le projet**, en haut de la légende. La carte s'ouvre sur le projet ; « Aujourd'hui » montre le terrain tel qu'il est, avec ce que le projet retirera (une clôture à déplacer, une cabane à démonter).
+
 ## Publier et partager l'adresse
 
 1. Touche **Publier la vue**.
