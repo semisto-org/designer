@@ -38,7 +38,9 @@ What it does, for the maps one belongs to:
   paper « i » under the back button;
 - downloads a map for offline use (map data + base map tiles of the
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
-  network is back;
+  network is back; while a round goes out, « Envois » and the map's status
+  say « Envoi 2 sur 5… » with the change being sent (`outbox.progress()`,
+  `useSendProgress`), and each round ends with its time and count;
 - drone views of the map (« Affichage » › « Vue drone », `useMapStyle`):
   one laid over the base map (`/api/v1/maps/:id/style?drone=id`), loaded
   through the connection as one moves, or kept on the phone as its own

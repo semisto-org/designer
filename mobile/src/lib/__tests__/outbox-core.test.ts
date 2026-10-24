@@ -84,6 +84,18 @@ describe('flush', () => {
     expect(result.sentFiles).toEqual(['file:///obs.jpg', 'file:///p.jpg'])
   })
 
+  it('says which change goes out before sending it, so the screen can show n of N', async () => {
+    const order: string[] = []
+    const { t } = transport({ createComment: async () => { order.push('sent comment') } })
+    const ops: Op[] = [
+      create('a', -1),
+      { id: 'b', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Belle reprise' },
+      { id: 'c', mapId: 1, createdAt: at, type: 'createComment', featureId: null, body: 'Refusé', error: 'nope' },
+    ]
+    await flush(state(ops), t, undefined, (op) => order.push(`sending ${op.id}`))
+    expect(order).toEqual(['sending a', 'sending b', 'sent comment'])
+  })
+
   it('sends a bio-indicator plant with its photo, then lets the photo go', async () => {
     const { t, calls } = transport()
     const observation = {
