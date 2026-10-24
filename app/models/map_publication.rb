@@ -63,6 +63,8 @@ class MapPublication < ApplicationRecord
     publication.save!
     # The old preview may show layers this snapshot no longer does.
     publication.preview_image.purge_later if publication.preview_image.attached?
+    # Visitors of the 3D view should not wait on OpenStreetMap.
+    BuildingsWarmJob.perform_later(map) if publication.relief?
     publication
   end
 
