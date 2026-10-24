@@ -35,7 +35,7 @@ Sous chaque arrêt, la date exacte s'affiche en survolant. Les années déjà de
 
 ### Les autres éléments
 
-Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans leur fiche, la section **Sur le terrain** dit s'ils sont déjà là ou **en projet**. Touche **C'est un projet** pour une mare encore à creuser : elle passe en pointillés et disparaît du terrain à l'arrivée. Une fois creusée, **Marquer comme réalisé** garde la date : la frise la montre à partir de ce jour-là.
+Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans leur fiche, la section **Sur le terrain** dit s'ils sont déjà là ou **en projet**. Pour dessiner directement un élément à venir, choisis **En projet** en haut de « Que veux-tu dessiner ? ». Sinon, touche **C'est un projet** pour une mare encore à creuser : elle passe en pointillés et disparaît du terrain à l'arrivée. Une fois creusée, **Marquer comme réalisé** garde la date : la frise la montre à partir de ce jour-là.
 
 Le moment choisi est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse à **Aujourd'hui** si tu regardais l'arrivée, pour que tu les voies apparaître.
 

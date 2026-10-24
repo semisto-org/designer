@@ -9,3 +9,12 @@ fr:
       mark_built: "Marquer comme réalisé"
       built: "C’est fait : il est maintenant sur le terrain, à partir de cette date sur la frise du temps."
       mark_planned: "C’est un projet"
+      planned_building: "Un bâtiment en projet compte dans la vue 3D (son volume, son ombre) mais n’est jamais montré sur la carte publique."
+    picker:
+      label: "Sur le terrain ou en projet"
+      existing: "Sur le terrain"
+      planned: "En projet"
+      existing_hint: "Ce qui est déjà là aujourd’hui."
+      planned_hint: "Pas encore réalisé : dessiné en pointillés, à marquer « réalisé » le jour venu. Un bâtiment en projet compte dans la 3D mais n’est jamais publié."
+      drawing: "En projet."
+      created: "Ajouté à la carte, en projet : %{kind}."

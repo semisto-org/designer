@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { featureFilter } from '@maplibre/maplibre-gl-style-spec'
-import { isPlanned, isPlannedElement, isPlannedPlant, PLANNED_EXPR, PLANNED_PLANT_EXPR } from '../../../app/frontend/map/scenario.ts'
+import { canBePlanned, isPlanned, isPlannedElement, isPlannedPlant, PLANNED_EXPR, PLANNED_PLANT_EXPR } from '../../../app/frontend/map/scenario.ts'
 
 const planned = { layer: 'plants', kind: 'plant', status: 'active', species_id: 3 }
 const planted = { ...planned, planted_on: '2025-11-20' }
@@ -32,4 +32,15 @@ test('the MapLibre expressions agree with the JavaScript tests', () => {
     assert.equal(evaluate(PLANNED_PLANT_EXPR, f), isPlannedPlant(f), JSON.stringify(f))
     assert.equal(evaluate(PLANNED_EXPR, f), isPlanned(f), JSON.stringify(f))
   }
+})
+
+test('what can be « En projet »: works on the land, a building or a wall of the existing layer, never a note or a plant', () => {
+  assert.equal(canBePlanned('water', 'pond'), true)
+  assert.equal(canBePlanned('structures', 'greenhouse'), true)
+  assert.equal(canBePlanned('plants', 'patch'), true)
+  assert.equal(canBePlanned('existing', 'building'), true)
+  assert.equal(canBePlanned('existing', 'wall'), true)
+  assert.equal(canBePlanned('existing', 'existing_tree'), false)
+  assert.equal(canBePlanned('notes', 'note_point'), false)
+  assert.equal(canBePlanned('plants', 'plant'), false)
 })

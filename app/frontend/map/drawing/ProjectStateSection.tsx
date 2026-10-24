@@ -7,17 +7,13 @@ import { t } from '@/lib/i18n'
 import { storedProperties } from '@/map/drawing/catalog'
 import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
-import { isPlannedElement } from '@/map/scenario'
+import { BUILDING_KINDS, canBePlanned, isPlannedElement } from '@/map/scenario'
 import type { MapFeature } from '@/types'
 
-// What is drawn there is already on the ground by definition (existing) or
-// is not a work on the land (notes); plants have their planting date.
-const NOT_BUILT = new Set(['existing', 'notes'])
-
-/** Accepted elements other than plants: ponds, hedges, paths, sheds… */
+/** Accepted elements other than plants: ponds, hedges, paths, buildings… (see canBePlanned) */
 export function appliesToProjectState(feature: MapFeature): boolean {
   const p = feature.properties
-  return p.status === 'active' && !NOT_BUILT.has(p.layer) && !(p.layer === 'plants' && p.kind === 'plant')
+  return p.status === 'active' && canBePlanned(p.layer, p.kind)
 }
 
 /**
@@ -44,6 +40,7 @@ export default function ProjectStateSection({ feature }: { feature: MapFeature }
       {planned ? (
         <>
           <p className="text-sm text-loam-600">{t('scenario.element.planned')}</p>
+          {BUILDING_KINDS.has(feature.properties.kind) && <p className="text-sm text-loam-600">{t('scenario.element.planned_building')}</p>}
           {editor.canEdit && (
             <div className="space-y-2">
               <Field label={t('scenario.element.built_date')}>

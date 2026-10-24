@@ -56,6 +56,24 @@ class MapPublicationTest < ActiveSupport::TestCase
     assert_not_includes json, @owner.email_address
   end
 
+  test "privacy: a building still in project never enters the snapshot, a planned pond and an existing building do" do
+    house = with_feature(@map, layer: "existing", kind: "building", name: "Maison à construire", geometry: square)
+    house.update!(properties: { "planned" => true, "height_m" => 7 })
+    greenhouse = with_feature(@map, layer: "structures", kind: "greenhouse", name: "Serre de l'an prochain", geometry: square(lng: 4.91))
+    greenhouse.update!(properties: { "planned" => true })
+    with_feature(@map, layer: "existing", kind: "building", name: "Grange", geometry: square(lng: 4.92))
+    with_feature(@map, layer: "water", kind: "pond", name: "Mare à creuser", geometry: square(lng: 4.93)).update!(properties: { "planned" => true })
+
+    published = names(publish(options: { "feature_layers" => MapFeature::LAYERS - %w[networks] }))
+    assert_includes published, "Grange"
+    assert_includes published, "Mare à creuser"
+    assert_not_includes published, "Maison à construire"
+    assert_not_includes published, "Serre de l'an prochain"
+
+    house.update!(properties: { "built_on" => "2027-06-01", "height_m" => 7 })
+    assert_includes names(publish), "Maison à construire", "once built, it is on the land like any other"
+  end
+
   test "address and notes are included only on request" do
     publication = publish(options: { "hide_address" => false, "show_notes" => true })
     assert_equal "Rue du Verger 12, 5530 Yvoir", publication.snapshot["map"]["address"]

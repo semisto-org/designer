@@ -2,8 +2,9 @@ module Collab
   # Builds the frozen copy of a map that a public view serves: the terrain
   # outline, the chosen layers' features and the keys of the region layers.
   # This is the privacy boundary of the public view: everything that must not
-  # leave (networks, address, parcels, notes, drafts, who made what) is
-  # dropped HERE, at publication time, and never reaches the snapshot.
+  # leave (networks, address, parcels, notes, drafts, planned buildings, who
+  # made what) is dropped HERE, at publication time, and never reaches the
+  # snapshot.
   class PublicSnapshot
     FORMAT = 1
     # The dimensions the public 3D view digs water works with (ponds,
@@ -61,7 +62,9 @@ module Collab
       end
 
       def features
-        @features ||= @map.features.active.where(layer: layers).order(:id).map { |feature| serialize(feature) }
+        # A building still in project (a house to come, a greenhouse) is a
+        # private intention, often before any permit: it stays in the editor.
+        @features ||= @map.features.active.where(layer: layers).order(:id).reject(&:planned_building?).map { |feature| serialize(feature) }
       end
 
       def serialize(feature)
