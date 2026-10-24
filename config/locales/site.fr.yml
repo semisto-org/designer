@@ -490,7 +490,7 @@ fr:
           - title: "Qui est responsable de vos données ?"
             paragraphs:
               - "Le responsable du traitement est Semisto ASBL, l'association qui édite le service Semisto Terranova (terranova.semisto.org, anciennement designer.semisto.org)."
-              - "Siège : Fonds d'Ahinvaux 1, 5530 Yvoir, Belgique. Numéro d'entreprise (BCE) et de TVA : BE 0790.631.657."
+              - "Siège : Fonds d'Ahinvaux 1, 5530 Yvoir, Belgique. Numéro d'entreprise (BCE) et de TVA : BE 0790.631.657, RPM Liège, division Namur."
               - "Pour toute question sur vos données ou pour exercer vos droits : %{email}, ou par courrier à l'adresse du siège."
               - "Semisto n'a pas désigné de délégué à la protection des données : la loi ne l'y oblige pas, parce que l'association n'est pas une autorité publique et que son activité principale ne consiste ni à suivre des personnes à grande échelle ni à traiter des données sensibles. Les demandes sont traitées par l'équipe de Semisto à l'adresse ci-dessus."
               - "Quand un professionnel ou une équipe utilise Terranova pour recueillir les données de ses propres clients (formulaire de demande de projet, fiche projet partagée, réponses à ses formulaires), c'est lui qui est responsable de ces données et Semisto agit pour son compte (voir « Les données que des professionnels recueillent avec Terranova »)."
@@ -625,7 +625,7 @@ fr:
           - title: "Qui sommes-nous ?"
             paragraphs:
               - "Semisto Terranova est un service en ligne de cartographie et de conception de jardins-forêts, accessible à l'adresse terranova.semisto.org, édité par Semisto ASBL, association sans but lucratif de droit belge."
-              - "Siège : Fonds d'Ahinvaux 1, 5530 Yvoir, Belgique. Numéro d'entreprise (BCE) et de TVA : BE 0790.631.657. Contact : %{email}."
+              - "Siège : Fonds d'Ahinvaux 1, 5530 Yvoir, Belgique. Numéro d'entreprise (BCE) et de TVA : BE 0790.631.657, RPM Liège, division Namur. Contact : %{email}."
           - title: "Objet et acceptation de ces conditions"
             paragraphs:
               - "Ces conditions forment le contrat entre vous et Semisto pour l'utilisation de Terranova, gratuite ou payante. Vous les acceptez en créant un compte, et à nouveau lors de chaque achat. Elles sont complétées par notre politique de confidentialité et, pour un achat, par le récapitulatif de la commande. Vous pouvez les enregistrer ou les imprimer depuis cette page ; la version en vigueur au moment de votre achat vous reste applicable pour la période payée, sous réserve de la section « Évolution du service et de ces conditions »."
