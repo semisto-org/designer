@@ -43,9 +43,15 @@ L'élément est ajouté à la carte et sa fiche s'ouvre.
 
 Une maison à construire, une serre prévue l'an prochain, une mare à creuser : choisis **En projet** en haut de « Que veux-tu dessiner ? ». Seuls les éléments qui peuvent encore se construire sont proposés (dans la couche Existant, le **Bâtiment** et le **Mur ou muret**). Terranova retient ton choix pour le prochain élément.
 
-Un élément en projet se dessine en pointillés et n'apparaît pas sur le terrain « Arrivée » de la frise du temps. Un bâtiment en projet (bâtiment, abri, cabane ou remise, serre, stockage des fruits, poulailler) se lève aussi dans la [vue 3D](/help/la-vue-3d-du-terrain), avec un toit mauve, à la hauteur notée dans sa fiche : son ombre compte déjà, pour concevoir autour de lui avant qu'il soit là. Il n'est **jamais montré sur la carte publique** ni dans l'export hors ligne : un projet de construction reste entre toi et ceux qui éditent la carte.
+Un élément en projet se dessine en pointillés et n'apparaît pas sur le terrain « Arrivée » de la frise du temps. Il n'est **jamais montré sur la carte publique** ni dans l'export hors ligne : un projet reste entre toi et ceux qui éditent la carte (seules les plantes du design sont publiées). Un bâtiment en projet (bâtiment, abri, cabane ou remise, serre, stockage des fruits, poulailler) se lève aussi dans la [vue 3D](/help/la-vue-3d-du-terrain), avec un toit mauve, à la hauteur notée dans sa fiche : son ombre compte déjà, pour concevoir autour de lui avant qu'il soit là.
 
 Une fois construit, ouvre sa fiche et touche **Marquer comme réalisé** dans la section **Sur le terrain**. Dessiné par erreur comme déjà là ? Touche **C'est un projet** dans la même section.
+
+## Retirer un élément existant du projet
+
+Le projet déplace une clôture, démonte une cabane, abat un arbre ? Ne supprime pas ce qui est encore là : ouvre sa fiche et touche **À retirer**, dans la section **Sur le terrain**. Il reste sur le terrain d'aujourd'hui, pâli et en pointillés serrés, et disparaît des années à venir (**An 5**, **An 15**, **An 30**), où tu dessines à sa place les nouvelles clôtures **En projet**.
+
+Une fois le travail fait, touche **Marquer comme retiré** : la date est gardée, et l'élément ne se voit plus que sur le terrain **Arrivée**, la mémoire du lieu. Changé d'avis ? **Finalement, on le garde**.
 
 ## La fiche d'un élément
 

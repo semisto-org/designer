@@ -85,7 +85,7 @@ function positiveNumber(value: unknown): number | null {
 
 /**
  * The buildings drawn on the map (house, shed, greenhouse…, accepted, on
- * the ground or « En projet »), as footprints for the 3D view: the height
+ * the ground or « En projet », not taken away), as footprints for the 3D view: the height
  * typed in their card, else their storeys, else a guess by kind.
  */
 export function drawnBuildings(features: readonly DrawnFeature[]): BuildingData[] {
@@ -93,7 +93,7 @@ export function drawnBuildings(features: readonly DrawnFeature[]): BuildingData[
   for (const feature of features) {
     const props = feature.properties ?? {}
     const kind = String(props.kind ?? '')
-    if (!BUILDING_KINDS.has(kind) || (props.status && props.status !== 'active')) continue
+    if (!BUILDING_KINDS.has(kind) || (props.status && props.status !== 'active') || typeof props.removed_on === 'string') continue
     const geometry = feature.geometry
     const polygons = geometry?.type === 'Polygon' ? [geometry.coordinates] : geometry?.type === 'MultiPolygon' ? (geometry.coordinates as unknown[]) : []
     polygons.forEach((rings, k) => {

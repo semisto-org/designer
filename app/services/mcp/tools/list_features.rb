@@ -14,7 +14,7 @@ module Mcp
             type: "array", items: { type: "number" }, minItems: 4, maxItems: 4, description: :bbox
           },
           status: { type: "string", enum: %w[active draft all], default: "all", description: :status },
-          situation: { type: "string", enum: %w[all on_the_ground planned], default: "all", description: :situation },
+          situation: { type: "string", enum: %w[all on_the_ground planned to_remove removed], default: "all", description: :situation },
           include_networks: { type: "boolean", default: false, description: :include_networks },
           include_geometry: { type: "boolean", default: true, description: :include_geometry },
           limit: { type: "integer", minimum: 1, maximum: MAX_LIMIT, default: DEFAULT_LIMIT, description: :limit },

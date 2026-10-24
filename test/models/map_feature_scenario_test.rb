@@ -26,6 +26,20 @@ class MapFeatureScenarioTest < ActiveSupport::TestCase
     assert_not feature!("water", "pond", { "planned" => true }).planned_building?
   end
 
+  test "to_remove: still on the land, taken away by the project, until removed_on" do
+    fence = feature!("structures", "shed", { "to_remove" => true })
+    gone = feature!("structures", "shed", { "removed_on" => "2026-03-01" })
+    note = feature!("notes", "note_point", { "to_remove" => true }, geometry: point)
+    assert fence.to_remove?
+    assert_not gone.to_remove?
+    assert gone.removed?
+    assert_not note.to_remove?
+    ids = [ fence, gone, note ].map(&:id)
+    assert_equal [ fence.id ], @map.features.where(id: ids).to_remove.ids
+    assert_equal [ gone.id ], @map.features.where(id: ids).removed.ids
+    assert_not_includes @map.features.where(id: ids).on_the_ground.ids, gone.id
+  end
+
   test "planned and on_the_ground split the map like the editor does" do
     plant = feature!("plants", "plant", {}, geometry: point)
     planted = feature!("plants", "plant", { "planted_on" => "2025-11-20" }, geometry: point)

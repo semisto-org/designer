@@ -56,19 +56,25 @@ class MapPublicationTest < ActiveSupport::TestCase
     assert_not_includes json, @owner.email_address
   end
 
-  test "privacy: a building still in project never enters the snapshot, a planned pond and an existing building do" do
+  test "privacy: nothing « En projet » and nothing taken away enters the snapshot; the plants of the design and what stands do" do
     house = with_feature(@map, layer: "existing", kind: "building", name: "Maison à construire", geometry: square)
     house.update!(properties: { "planned" => true, "height_m" => 7 })
     greenhouse = with_feature(@map, layer: "structures", kind: "greenhouse", name: "Serre de l'an prochain", geometry: square(lng: 4.91))
     greenhouse.update!(properties: { "planned" => true })
     with_feature(@map, layer: "existing", kind: "building", name: "Grange", geometry: square(lng: 4.92))
     with_feature(@map, layer: "water", kind: "pond", name: "Mare à creuser", geometry: square(lng: 4.93)).update!(properties: { "planned" => true })
+    with_feature(@map, layer: "structures", kind: "shed", name: "Cabane à démonter", geometry: square(lng: 4.94)).update!(properties: { "to_remove" => true })
+    with_feature(@map, layer: "structures", kind: "shed", name: "Cabane démontée", geometry: square(lng: 4.95)).update!(properties: { "removed_on" => "2026-03-01" })
+    with_feature(@map, layer: "plants", kind: "plant", name: "Pommier à planter", geometry: point(lng: 4.96))
 
     published = names(publish(options: { "feature_layers" => MapFeature::LAYERS - %w[networks] }))
     assert_includes published, "Grange"
-    assert_includes published, "Mare à creuser"
+    assert_includes published, "Cabane à démonter", "still standing today"
+    assert_includes published, "Pommier à planter", "the plants of the design are published"
+    assert_not_includes published, "Mare à creuser"
     assert_not_includes published, "Maison à construire"
     assert_not_includes published, "Serre de l'an prochain"
+    assert_not_includes published, "Cabane démontée"
 
     house.update!(properties: { "built_on" => "2027-06-01", "height_m" => 7 })
     assert_includes names(publish), "Maison à construire", "once built, it is on the land like any other"

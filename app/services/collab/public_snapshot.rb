@@ -2,8 +2,8 @@ module Collab
   # Builds the frozen copy of a map that a public view serves: the terrain
   # outline, the chosen layers' features and the keys of the region layers.
   # This is the privacy boundary of the public view: everything that must not
-  # leave (networks, address, parcels, notes, drafts, planned buildings, who
-  # made what) is dropped HERE, at publication time, and never reaches the
+  # leave (networks, address, parcels, notes, drafts, planned or removed
+  # elements, who made what) is dropped HERE, at publication time, and never reaches the
   # snapshot.
   class PublicSnapshot
     FORMAT = 1
@@ -62,9 +62,16 @@ module Collab
       end
 
       def features
-        # A building still in project (a house to come, a greenhouse) is a
-        # private intention, often before any permit: it stays in the editor.
-        @features ||= @map.features.active.where(layer: layers).order(:id).reject(&:planned_building?).map { |feature| serialize(feature) }
+        @features ||= @map.features.active.where(layer: layers).order(:id).select { |feature| published?(feature) }.map { |feature| serialize(feature) }
+      end
+
+      # What stands on the land, and the plants of the design: an element
+      # still « En projet » (a house to come, a pond to dig, a new fence) is
+      # a private intention, often before any permit, and an element taken
+      # away (`removed_on`) is no longer there. Both stay in the editor.
+      def published?(feature)
+        return false if feature.removed?
+        feature.plant? || !feature.planned?
       end
 
       def serialize(feature)
