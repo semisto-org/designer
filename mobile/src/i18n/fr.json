@@ -701,6 +701,19 @@
       "intro": "Ce que ton terrain montre en ce moment, noté là où tu es. Un lieu se lit sur quatre saisons.",
       "tile_hint": "Ce mois-ci : %{signs}",
       "this_month": "Ce mois-ci",
+      "seen": {
+        "today": "vu aujourd'hui",
+        "yesterday": "vu hier, le %{date}",
+        "days": "vu il y a %{count} jours, le %{date}",
+        "months": {
+          "one": "vu il y a %{count} mois, le %{date}",
+          "other": "vu il y a %{count} mois, le %{date}"
+        },
+        "years": {
+          "one": "vu il y a un an, le %{date}",
+          "other": "vu il y a %{count} ans, le %{date}"
+        }
+      },
       "groups": {
         "cold": "Le froid",
         "water": "L'eau",
