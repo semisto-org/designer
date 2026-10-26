@@ -7,7 +7,7 @@ import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
 import type { Memory } from '@/lib/memory'
-import { missingSeasons, signLabel, signsOfMonth, type SeasonCount, type Sign } from '@/lib/season'
+import { missingSeasons, observationTime, seenLabel, signLabel, signsOfMonth, type SeasonCount, type Sign } from '@/lib/season'
 import type { WeekReport } from '@/lib/week'
 import type { SpotPhotos } from '@/lib/retake'
 import { arrived, arrowAngle, type Target } from '@/lib/tour'
@@ -26,9 +26,11 @@ export function whereLabel(meters: number, direction: Direction): string {
   return t('mobile.terrain.distance', { distance: formatDistance(meters), direction: t(`mobile.terrain.directions.${direction}`) })
 }
 
-/** One line about a feature: its age or « À planter » for a plant, else its kind. */
-export function featureLine(feature: MapFeature, planting: Planting | undefined): string {
+/** One line about a feature: its age or « À planter » for a plant, when it was seen for an observation, else its kind. */
+export function featureLine(feature: MapFeature, planting: Planting | undefined, now = new Date()): string {
   const isPlant = feature.properties.kind === 'plant'
+  const seen = observationTime(feature)
+  if (seen) return [feature.properties.name ? kindLabel(feature.properties.kind) : null, seenLabel(seen, now)].filter(Boolean).join(' · ')
   if (!isPlant) return feature.properties.name ? kindLabel(feature.properties.kind) : ''
   // In the ground since a date nobody knows: no age to tell.
   const unknown = !!feature.properties.planted_on && feature.properties.planted_on_precision === 'unknown'
