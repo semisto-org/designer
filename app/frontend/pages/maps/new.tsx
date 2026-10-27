@@ -12,6 +12,7 @@ import { MapView } from '@/map/MapView'
 import { useMapInstance } from '@/map/MapContext'
 import { AddressSearch } from '@/map/data/AddressSearch'
 import { syncRegionLayers } from '@/map/layers/region'
+import { elides, townOf } from '@/lib/placeName'
 import type { LngLat, RegionData, RegionLayerData } from '@/types'
 import type { GeocodeResult } from '@/types/map_data'
 
@@ -25,10 +26,18 @@ type FormData = {
   next: NextStep
 }
 
+/** The name the server gives a map left unnamed (Map.name_for_address). */
+function proposedName(address: string): string {
+  const town = townOf(address)
+  if (!town) return t('trials.map_name')
+  return t(elides(town) ? 'trials.map_name_elided' : 'trials.map_name_in', { town })
+}
+
 /**
- * "Nouvelle carte": a name, the terrain's address (the map opens there,
- * on the aerial photo), and what to do next — pick the cadastral parcels,
- * draw the outline or import a file.
+ * "Nouvelle carte": the terrain's address first (the map opens there, on the
+ * aerial photo), then a name, which the place gives when left empty
+ * (« Le terrain de Purnode »), and what to do next — pick the cadastral
+ * parcels, draw the outline or import a file.
  */
 export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }: { region: RegionData; layers?: RegionLayerData[] }) {
   const form = useForm<FormData>({
@@ -76,15 +85,6 @@ export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }:
             form.post('/maps')
           }}
         >
-          <Field label={t('maps.fields.name')} error={form.errors['map.name' as keyof typeof form.errors]}>
-            <Input
-              required
-              value={map.name}
-              onChange={(e) => setMap({ name: e.target.value })}
-              placeholder={t('maps.new.name_placeholder')}
-            />
-          </Field>
-
           <div className="space-y-2">
             <AddressSearch
               regionId={baseRegion.id}
@@ -108,6 +108,18 @@ export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }:
               </MapView>
             </div>
           </div>
+
+          <Field
+            label={t('maps.fields.name')}
+            hint={t('maps.new.name_hint')}
+            error={form.errors['map.name' as keyof typeof form.errors]}
+          >
+            <Input
+              value={map.name}
+              onChange={(e) => setMap({ name: e.target.value })}
+              placeholder={map.address ? proposedName(map.address) : t('maps.new.name_placeholder')}
+            />
+          </Field>
 
           <fieldset>
             <legend className="text-sm font-medium text-loam-700">{t('map_data.new.next_label')}</legend>

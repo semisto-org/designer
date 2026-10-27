@@ -11,6 +11,15 @@ class Map < ApplicationRecord
 
   STAGES = %w[observe map design plant].freeze
 
+  # The name a place gives a map: « Le terrain de Purnode », « Le terrain
+  # d'Yvoir », or « Mon terrain » without an address. The town is the last
+  # part of the address, without its postcode.
+  def self.name_for_address(address)
+    town = address.to_s.split(",").last.to_s.sub(/\A\s*(?:[A-Z]{1,2}-?)?\d{4,5}\s*/, "").strip
+    return I18n.t("trials.map_name") if town.blank?
+    I18n.t(town.match?(/\A[aeiouyàâéèêëîïôûüAEIOUYÀÂÉÈÊËÎÏÔÛÜ]/) ? "trials.map_name_elided" : "trials.map_name_in", town:)
+  end
+
   belongs_to :owner, class_name: "User"
   belongs_to :organization, optional: true
   belongs_to :region
@@ -46,6 +55,8 @@ class Map < ApplicationRecord
   has_many :transfers, class_name: "MapTransfer", dependent: :delete_all
 
   normalizes :name, with: ->(name) { name.strip }
+  # A new map needs no name typed: its place gives one (« Le terrain de Purnode »).
+  before_validation -> { self.name = self.class.name_for_address(address) }, on: :create, if: -> { name.blank? }
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }
 
