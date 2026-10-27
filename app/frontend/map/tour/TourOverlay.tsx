@@ -15,16 +15,28 @@ export function openTour() {
 }
 
 /**
- * Always mounted in the editor: opens the « carnet de route » by itself on
- * the person's first arrival on a map they can edit, and again on request.
- * Closing it the first time is remembered on the account, for all devices.
+ * Always mounted in the editor: opens the « carnet de route » by itself the
+ * first time the person is on a map they can edit whose terrain is outlined,
+ * and again on request. Not before: on a new map the person first sees their
+ * own place and outlines it; the carnet (told on an example terrain) then
+ * comes as the next step, not in front of their land. Closing it the first
+ * time is remembered on the account, for all devices.
  */
 export default function TourOverlay() {
   const editor = useEditor()
   const { props } = usePage<SharedProps & { aiConnected?: boolean }>()
   const firstVisit = editor.canEdit && props.currentUser != null && !props.currentUser.tourSeen
-  const [open, setOpen] = useState(firstVisit)
+  const outlined = editor.map.boundary != null
+  const [open, setOpen] = useState(false)
   const remembered = useRef(!firstVisit)
+
+  // The terrain outlined on a first visit: once the person leaves the
+  // « Terrain » panel (more parcels may still come), the carnet tells what
+  // comes next.
+  const outlining = editor.activePanel === 'terrain'
+  useEffect(() => {
+    if (outlined && !outlining && !remembered.current) setOpen(true)
+  }, [outlined, outlining])
 
   useEffect(() => {
     const onOpen = () => setOpen(true)

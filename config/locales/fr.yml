@@ -49,6 +49,7 @@ fr:
       title: "Nouvelle carte"
       intro: "Région : %{region}. Tu dessineras ou importeras le contour du terrain à l'étape suivante."
       name_placeholder: "Le jardin-forêt de la Ferme du Bois"
+      name_hint: "Facultatif : sans nom, ta carte prend celui du lieu. Tu pourras le changer."
       address_hint: "Facultatif : aide à centrer la carte."
       submit: "Créer la carte"
     show:
@@ -83,6 +84,10 @@ fr:
       collapse: "Réduire en icônes"
       expand: "Afficher les libellés"
       todo: "À faire maintenant"
+      more:
+        one: "1 autre outil"
+        other: "%{count} autres outils"
+      less: "Moins d'outils"
     steps:
       label: "Les quatre étapes du projet"
       done: "étape terminée"
