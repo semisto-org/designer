@@ -29,8 +29,10 @@ class MapsController < ApplicationController
       end,
       # The map worked on last opens large, with its next step (journey).
       resume: maps.first && { mapId: maps.first.id, next: Journey.new(maps.first).next_action },
-      canCreate: Billing::Scope.own(Current.user).can_create_map?,
-      teams: Current.user.organizations.order(:name, :id).map { |team| { id: team.id, name: team.name } },
+      # Room for a new map among my own maps, and in each of my teams (a team
+      # someone pays for has its own room, whatever my own plan).
+      canCreate: new_map_spaces.find(nil).can_create?,
+      teams: new_map_spaces.all.filter_map { |space| space.team && { id: space.team.id, name: space.team.name, canCreate: space.can_create? } },
       # My archived maps, at the bottom: readable, and brought back when the plan has room.
       archivedMaps: archived_maps_json,
       # Ownership transfers waiting for my answer (transfer area).
@@ -44,14 +46,19 @@ class MapsController < ApplicationController
       return redirect_to welcome_path
     end
     region = Region.europe || Region.default
-    render inertia: "maps/new", props: { region: region.as_inertia, layers: region.catalogue.enabled.bases.map(&:as_inertia) }
+    render inertia: "maps/new", props: {
+      region: region.as_inertia, layers: region.catalogue.enabled.bases.map(&:as_inertia),
+      # Where the map can go: my own maps or one of my teams, with their room.
+      spaces: new_map_spaces.as_json
+    }
   end
 
   def create
-    unless Billing::Scope.own(Current.user).can_create_map?
-      return redirect_to maps_path, alert: t("maps.errors.plan_limit")
-    end
-    map = Current.user.owned_maps.new(map_params)
+    space = new_map_spaces.find(params.dig(:map, :team_id))
+    return redirect_to maps_path, alert: t("teams.map.errors.not_member") unless space
+    return redirect_to maps_path, alert: t("maps.errors.plan_limit") unless space.can_create?
+
+    map = Current.user.owned_maps.new(map_params.merge(organization: space.team))
     if map.save
       # `next`: what the editor starts with (pick parcels, draw, import).
       redirect_to map_path(map, terrain: params[:next].presence_in(%w[parcels draw import])), notice: t("maps.created")
@@ -103,6 +110,8 @@ class MapsController < ApplicationController
   end
 
   private
+    def new_map_spaces = @new_map_spaces ||= Billing::NewMapSpaces.new(Current.user)
+
     def renaming?
       params[:map].respond_to?(:key?) && params[:map].key?(:name) && params[:map][:name].to_s.strip != @map.name
     end

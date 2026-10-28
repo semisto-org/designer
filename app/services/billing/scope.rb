@@ -18,6 +18,13 @@ module Billing
     # The scope of a user's own maps (outside teams someone pays for).
     def self.own(user) = new(user, personal: user.pays_for_teams?)
 
+    # The scope a new map of `user` would fall in: the team's plan when it
+    # goes into a team someone pays for, else the user's own maps.
+    def self.for_new_map(user, team: nil)
+      team_payer = team&.billing_user
+      team_payer ? new(team_payer) : own(user)
+    end
+
     # personal: the payer's own maps under the free plan, apart from the
     # teams their plan pays for.
     def initialize(payer, personal: false)

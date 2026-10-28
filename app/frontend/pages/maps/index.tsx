@@ -18,8 +18,8 @@ import type { IncomingTransfer } from '@/types/transfer'
 type Props = {
   maps: ListedMap[]
   canCreate: boolean
-  /** The teams I belong to: their maps get a section each. */
-  teams?: { id: number; name: string }[]
+  /** The teams I belong to: their maps get a section each; canCreate = room for a new map there. */
+  teams?: { id: number; name: string; canCreate?: boolean }[]
   /** Maps someone proposes me to take over (transfer area). */
   incomingTransfers?: IncomingTransfer[]
   /** The map worked on last and its next step: it opens large, first. */
@@ -34,6 +34,8 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
   const resumed = resume ? maps.find((map) => map.id === resume.mapId) : undefined
   const { own, byTeam } = groupMapsByTeam(maps.filter((map) => map !== resumed), teams)
   const resumedIsOwn = resumed != null && !byTeam.some(({ team }) => team.id === resumed.teamId)
+  // My own plan is full, but a team I belong to still has room: the new map goes there.
+  const roomyTeam = canCreate ? undefined : teams.find((team) => team.canCreate)
   return (
     <div>
       <Head title={t('maps.index.title')} />
@@ -45,6 +47,11 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
         {canCreate ? (
           // The welcome card carries the call to action for a first map.
           maps.length > 0 && <ButtonLink href="/maps/new"><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>
+        ) : roomyTeam ? (
+          <div className="flex max-w-md flex-col items-start gap-2 sm:items-end sm:text-right">
+            <ButtonLink href={`/maps/new?team=${roomyTeam.id}`}><Plus className="h-4 w-4" />{t('maps.index.new')}</ButtonLink>
+            <p className="text-sm text-loam-600">{t('teams.maps_index.team_room', { name: roomyTeam.name })}</p>
+          </div>
         ) : (
           <div className="flex max-w-md flex-col items-start gap-2 sm:items-end sm:text-right">
             <ButtonLink href={plansHref({ returnTo: '/maps/new' })} variant="secondary">{t('maps.index.upgrade')}</ButtonLink>
@@ -56,7 +63,7 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
       <IncomingTransfers transfers={incomingTransfers} />
       {maps.length === 0 ? (
         <div className="mt-8">
-          <WelcomeCard canCreate={canCreate} />
+          <WelcomeCard canCreate={canCreate || roomyTeam != null} />
         </div>
       ) : (
         <>

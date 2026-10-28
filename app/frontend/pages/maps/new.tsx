@@ -22,8 +22,18 @@ const NEXT_STEPS: NextStep[] = ['parcels', 'draw', 'import', 'later']
 type Focus = { center: LngLat; zoom: number; key: number }
 
 type FormData = {
-  map: { name: string; address: string; description: string; center: LngLat | null; zoom: number | null }
+  map: { name: string; address: string; description: string; center: LngLat | null; zoom: number | null; team_id: number | null }
   next: NextStep
+}
+
+/** Where the new map can go: my own maps (teamId null) or one of my teams, with their room. */
+type Space = { teamId: number | null; name: string | null; canCreate: boolean; teamPaid: boolean }
+
+/** ?team= when that space has room, else the first space with room (my own maps first). */
+function initialSpace(spaces: Space[]): number | null {
+  const asked = Number(new URLSearchParams(window.location.search).get('team')) || null
+  const open = spaces.filter((space) => space.canCreate)
+  return (open.find((space) => space.teamId === asked) ?? open[0])?.teamId ?? null
 }
 
 /** The name the server gives a map left unnamed (Map.name_for_address). */
@@ -39,10 +49,13 @@ function proposedName(address: string): string {
  * (« Le terrain de Purnode »), and what to do next — pick the cadastral
  * parcels, draw the outline or import a file.
  */
-export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }: { region: RegionData; layers?: RegionLayerData[] }) {
+export default function MapsNew({ region: baseRegion, layers: baseLayers = [], spaces = [] }: { region: RegionData; layers?: RegionLayerData[]; spaces?: Space[] }) {
   const form = useForm<FormData>({
     // ?name=: the quick switcher's « Créer la carte « … » » writes it in.
-    map: { name: new URLSearchParams(window.location.search).get('name')?.slice(0, 120) ?? '', address: '', description: '', center: null, zoom: null },
+    map: {
+      name: new URLSearchParams(window.location.search).get('name')?.slice(0, 120) ?? '',
+      address: '', description: '', center: null, zoom: null, team_id: initialSpace(spaces),
+    },
     next: 'parcels',
   })
   const { map } = form.data
@@ -149,6 +162,10 @@ export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }:
             </div>
           </fieldset>
 
+          {spaces.length > 1 && (
+            <SpacePicker spaces={spaces} value={map.team_id} onChange={(team_id) => setMap({ team_id })} />
+          )}
+
           <Field label={t('maps.fields.description')}>
             <Textarea rows={3} value={map.description} onChange={(e) => setMap({ description: e.target.value })} />
           </Field>
@@ -159,6 +176,52 @@ export default function MapsNew({ region: baseRegion, layers: baseLayers = [] }:
         </form>
       </Card>
     </div>
+  )
+}
+
+/**
+ * « Où ranger cette carte ? »: my own maps or one of my teams. A team someone
+ * pays for has its own room, so a member whose own plan is full still adds
+ * maps there; a full space stays listed, greyed, with why.
+ */
+function SpacePicker({ spaces, value, onChange }: { spaces: Space[]; value: number | null; onChange: (teamId: number | null) => void }) {
+  return (
+    <fieldset>
+      <legend className="text-sm font-medium text-loam-700">{t('teams.new_map.label')}</legend>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        {spaces.map((space) => {
+          const own = space.teamId === null
+          const hint = !space.canCreate
+            ? t(own ? 'teams.new_map.full_own' : 'teams.new_map.full_team')
+            : t(own ? 'teams.new_map.own_hint' : space.teamPaid ? 'teams.new_map.team_hint_paid' : 'teams.new_map.team_hint')
+          return (
+            <label
+              key={space.teamId ?? 'own'}
+              className={clsx(
+                'flex items-start gap-2.5 rounded-lg p-3 ring-1 ring-inset transition-colors',
+                !space.canCreate ? 'cursor-not-allowed opacity-60 ring-loam-200'
+                  : value === space.teamId ? 'cursor-pointer bg-prune-50 ring-prune-400' : 'cursor-pointer ring-loam-200 hover:bg-loam-50',
+              )}
+            >
+              <input
+                type="radio"
+                name="space"
+                checked={value === space.teamId}
+                disabled={!space.canCreate}
+                onChange={() => onChange(space.teamId)}
+                className="mt-0.5 h-4 w-4 border-loam-300 text-prune-600 focus:ring-prune-500"
+              />
+              <span>
+                <span className="block text-sm font-medium text-loam-800">
+                  {own ? t('teams.new_map.own') : t('teams.new_map.team', { name: space.name ?? '' })}
+                </span>
+                <span className="block text-sm text-loam-500">{hint}</span>
+              </span>
+            </label>
+          )
+        })}
+      </div>
+    </fieldset>
   )
 }
 
