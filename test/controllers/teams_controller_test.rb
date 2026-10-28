@@ -135,6 +135,6 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     maps = props["maps"].to_h { |m| [ m["id"], m ] }
     assert_equal [ @team.id, "editor" ], maps[@map.id].values_at("teamId", "role")
     assert_nil maps[own.id]["teamId"]
-    assert_equal [ { "id" => @team.id, "name" => "Semisto" } ], props["teams"]
+    assert_equal [ { "id" => @team.id, "name" => "Semisto", "canCreate" => true } ], props["teams"]
   end
 end

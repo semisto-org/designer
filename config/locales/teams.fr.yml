@@ -166,8 +166,20 @@ fr:
     maps_index:
       section: "Équipe « %{name} »"
       open_team: "Voir l'équipe"
-      empty: "Aucune carte dans cette équipe pour l'instant. Ouvre une de tes cartes puis « Partager » pour la lui confier."
+      empty: "Aucune carte dans cette équipe pour l'instant. Crée-en une ici, ou ouvre une de tes cartes puis « Partager » pour la lui confier."
       owner: "Carte de %{name}"
+      new_map: "Nouvelle carte dans l'équipe"
+      team_room: "Tes propres cartes occupent toute ta formule, mais l'équipe « %{name} » a encore de la place : ta nouvelle carte peut y aller."
+    # « Nouvelle carte »: where the map goes, my own maps or one of my teams.
+    new_map:
+      label: "Où ranger cette carte ?"
+      own: "Mes cartes"
+      own_hint: "Elle compte dans ta formule."
+      team: "Équipe « %{name} »"
+      team_hint_paid: "Tous les membres de l'équipe la modifient. Elle compte dans le forfait de l'équipe."
+      team_hint: "Tous les membres de l'équipe la modifient. Elle compte dans ta formule."
+      full_own: "Ta formule est complète : archive une carte ou passe au forfait."
+      full_team: "Le forfait de l'équipe est complet."
   team_invitation_mailer:
     invite:
       subject: "%{inviter} t'invite dans l'équipe « %{team} »"

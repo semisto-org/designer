@@ -37,8 +37,7 @@ module ProjectRequests
       # A team's map counts in the team's plan when someone pays for it.
       def scope
         form = @request.request_form
-        team_payer = form.team? && form.owner.billing_user
-        team_payer ? Billing::Scope.new(team_payer) : Billing::Scope.own(@user)
+        Billing::Scope.for_new_map(@user, team: (form.owner if form.team?))
       end
 
       # A photo the map refuses (a twin, a file it cannot read) is skipped.
