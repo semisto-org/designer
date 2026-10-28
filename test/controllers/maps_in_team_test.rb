@@ -45,6 +45,11 @@ class MapsInTeamTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "while billing is off (beta), every space has room" do
+    sign_in_as @member
+    assert props(new_map_path)["spaces"].all? { _1["canCreate"] }
+  end
+
   test "a member creates a map in the paid team although their own plan is full" do
     with_billing do
       sign_in_as @member
