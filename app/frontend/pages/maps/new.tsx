@@ -3,7 +3,8 @@ import clsx from 'clsx'
 import * as maplibregl from 'maplibre-gl'
 import type { MapMouseEvent } from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
-import { Button } from '@/components/ui/Button'
+import { plansHref } from '@/components/billing/PlanGate'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { api } from '@/lib/api'
@@ -59,6 +60,9 @@ export default function MapsNew({ region: baseRegion, layers: baseLayers = [], s
     next: 'parcels',
   })
   const { map } = form.data
+  // Every space is full: say so before the person types anything, rather
+  // than refusing the map once the form is filled in.
+  const full = spaces.length > 0 && !spaces.some((space) => space.canCreate)
   const setMap = (patch: Partial<FormData['map']>) => form.setData('map', { ...form.data.map, ...patch })
   const [focus, setFocus] = useState<Focus | null>(null)
   // The region of the chosen place (its base maps: the aerial photo where
@@ -89,6 +93,12 @@ export default function MapsNew({ region: baseRegion, layers: baseLayers = [], s
       <Head title={t('maps.new.title')} />
       <h1 className="text-2xl">{t('maps.new.title')}</h1>
       <p className="mt-2 text-loam-500">{t('map_data.new.intro')}</p>
+      {full && (
+        <div role="status" className="mt-6 flex flex-col items-start gap-3 rounded-2xl bg-humus-50 p-4 ring-1 ring-inset ring-humus-200">
+          <p className="text-sm text-loam-700">{t('maps.index.limit_reason')}</p>
+          <ButtonLink href={plansHref({ returnTo: '/maps/new' })} variant="secondary" size="sm">{t('maps.index.upgrade')}</ButtonLink>
+        </div>
+      )}
       <Card className="mt-6">
         <form
           className="space-y-5"
@@ -170,7 +180,7 @@ export default function MapsNew({ region: baseRegion, layers: baseLayers = [], s
             <Textarea rows={3} value={map.description} onChange={(e) => setMap({ description: e.target.value })} />
           </Field>
 
-          <Button type="submit" disabled={form.processing} size="lg" className="w-full sm:w-auto">
+          <Button type="submit" disabled={form.processing || full} size="lg" className="w-full sm:w-auto">
             {t('maps.new.submit')}
           </Button>
         </form>
