@@ -83,6 +83,20 @@ class Map < ApplicationRecord
   # plan's first print is noted by Maps::PrintsController.
   before_save -> { self.outlined_at ||= Time.current }, if: -> { boundary.present? && will_save_change_to_boundary? }
 
+  # Everything added on a map touches it (`belongs_to :map, touch: true`,
+  # `map.touch`) to date its last change. That is no edit of the map itself, so
+  # it neither checks nor bumps lock_version: otherwise a feature saved against
+  # an in-memory map that another request had touched failed with a 409, and
+  # renaming the map after drawing on it did too (SEMISTO-DESIGNER-11).
+  def touch(*, **)
+    @touching = true
+    super
+  ensure
+    @touching = false
+  end
+
+  def locking_enabled? = !@touching && super
+
   def role_for(user)
     return nil unless user
     return "owner" if owner_id == user.id
