@@ -183,6 +183,29 @@ layers:
           - { key: diameter_mm, type: integer, unit: mm, min: 20, max: 1000 }
           - { key: material, type: select, options: [pvc, pe] }
           - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
+      irrigation_line:
+        geometry: LineString
+        needs: [water]
+        icon: shower-head
+        color: "#3b8fc4"
+        line: { width: 2, dash: [1, 1.5] }
+        defaults: { irrigation_type: drip, diameter_mm: 16 }
+        fields:
+          - { key: irrigation_type, type: select, options: [drip, soaker, micro_sprinkler, sprinkler] }
+          - { key: diameter_mm, type: integer, unit: mm, min: 4, max: 200 }
+          - { key: emitter_spacing_cm, type: integer, unit: cm, min: 5, max: 500 }
+          - { key: buried, type: boolean }
+      pump:
+        geometry: Point
+        functions: [water]
+        needs: [water]
+        icon: waves-arrow-up
+        color: "#1f5f8b"
+        defaults: { pump_power: electric }
+        fields:
+          - { key: pump_power, type: select, options: [manual, electric, solar, wind, ram] }
+          - { key: flow_l_min, type: number, unit: L/min, min: 0, max: 10000, step: 0.5 }
+          - { key: head_m, type: number, unit: m, min: 0, max: 500, step: 0.5 }
       water_tank:
         geometry: Point
         functions: [water, fire_protection]
