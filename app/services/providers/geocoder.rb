@@ -14,6 +14,13 @@
 #   d'Ahinvaux"); Photon tolerates typos and plurals.
 # - GEOCODER_FALLBACK_URL: base URL of the fallback
 #
+# Per region (settings, read through `region.setting`):
+# - geocoder.provider = ban: France's national address base answers first
+#   (every house number), the providers above after it.
+# - geocoder.house_numbers = ban: on the European base, a query with a
+#   number first asks the same base for an exact French house number, so a
+#   new map in France finds its house before its region is known.
+#
 # The public Nominatim allows low volume only (1 request/s, no
 # search-as-you-type): the UI searches on Enter, results are cached a day
 # and calls are throttled to one per second for the whole app.
@@ -62,7 +69,7 @@ module Providers
       query = query.to_s.squish.first(MAX_LENGTH)
       return [] if query.length < MIN_LENGTH
 
-      adapters = [ @adapter, @fallback ].compact
+      adapters = [ *regional_adapters(query, region), @adapter, @fallback ].compact
       key = [ "map_data/geocode", adapters.map { |a| a.class.name.demodulize }.join("+"), region&.id, Digest::SHA1.hexdigest(query.downcase) ].join("/")
       rows = Rails.cache.fetch(key, expires_in: CACHE_TTL) do
         first_found(adapters, query, region).first(LIMIT).map(&:to_h)
@@ -88,6 +95,13 @@ module Providers
     end
 
     private
+      def regional_adapters(query, region)
+        return [] unless region
+        return [ Ban.new ] if region.setting("geocoder", "provider") == "ban"
+        return [ Ban.new(min_score: 0.8, house_numbers_only: true) ] if region.setting("geocoder", "house_numbers") == "ban" && query.match?(/\d/)
+        []
+      end
+
       # The first adapter with results wins. Unavailable only when no
       # adapter answered at all: "nothing found" is a normal answer.
       def first_found(adapters, query, region)
