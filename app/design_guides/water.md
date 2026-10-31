@@ -31,6 +31,8 @@ This is the approach now called **regenerative hydrology**. Its principles are o
 - **Tank** (`water_tank`): at the foot of a downpipe, sized on the roof area and the watering needs of the first years.
 - **Ditch** (`ditch`): only to drain excess water that cannot be infiltrated. Where a ditch already exists, consider slowing it rather than deepening it.
 - **Overflow pipe** (`overflow_pipe`): a pipe, usually buried, that carries a pond's overflow to another pond, a swale or a rain garden. Draw it from the pond that overflows to the one that receives: the map shows arrows in that direction. Prefer an open overflow (a swale) when the slope allows: water seen is water that waters on its way.
+- **Pump** (`pump`): lifts water from a well, a pond or a tank. Its `pump_power` is `manual`, `electric`, `solar`, `wind` or `ram` (a hydraulic ram, which needs a fall of water and no power). Prefer gravity first: a tank set uphill of the plants waters without a pump.
+- **Irrigation line** (`irrigation_line`): drip, soaker hose, micro-sprinklers or a sprinkler (`irrigation_type`), drawn from the pump, tank or tap along the row it waters. In a forest garden it only bridges the first two or three summers of young trees, at their foot, until roots and mulch take over; say so when proposing one, and never plan permanent watering of the whole soil.
 
 Each water element says where its water comes from, where its overflow goes, and why it sits there.
 
