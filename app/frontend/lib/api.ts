@@ -1,4 +1,6 @@
 // Small JSON client for the map editor's endpoints (Inertia handles pages).
+import { trackWrite } from './saveStatus'
+
 export class ApiError extends Error {
   status: number
   data: Record<string, unknown>
@@ -17,6 +19,21 @@ export async function api<T = unknown>(
   path: string,
   { method = 'GET', body, signal }: { method?: string; body?: unknown; signal?: AbortSignal } = {},
 ): Promise<T> {
+  if (method.toUpperCase() === 'GET') return request<T>(path, method, body, signal)
+  const finish = trackWrite()
+  try {
+    const data = await request<T>(path, method, body, signal)
+    finish('ok')
+    return data
+  } catch (error) {
+    // An aborted write was abandoned on purpose; a 4xx was refused and said so.
+    if (signal?.aborted || (error instanceof ApiError && error.status < 500)) finish('rejected')
+    else finish('lost')
+    throw error
+  }
+}
+
+async function request<T>(path: string, method: string, body: unknown, signal: AbortSignal | undefined): Promise<T> {
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData
   const response = await fetch(path, {
     method,

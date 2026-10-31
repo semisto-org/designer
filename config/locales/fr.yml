@@ -61,6 +61,13 @@ fr:
       area_ares:
         one: "%{count} are"
         other: "%{count} ares"
+      save:
+        idle: "Enregistré au fil de l’eau"
+        saving: "Enregistrement…"
+        saved_at: "Enregistré à %{time}"
+        failed: "Pas enregistré"
+        help: "Pas besoin de bouton : chaque changement est gardé dès que tu le fais. Tu peux fermer la page quand tu veux."
+        failed_help: "Ton dernier changement n’est pas arrivé jusqu’à Terranova, sans doute faute de connexion. Vérifie-la, puis refais-le."
   activerecord:
     models:
       map: "Carte"
