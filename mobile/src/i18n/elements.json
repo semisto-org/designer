@@ -111,6 +111,22 @@
         "pickable": true,
         "icon": "move-right"
       },
+      "irrigation_line": {
+        "geometries": [
+          "LineString"
+        ],
+        "color": "#3b8fc4",
+        "pickable": true,
+        "icon": "shower-head"
+      },
+      "pump": {
+        "geometries": [
+          "Point"
+        ],
+        "color": "#1f5f8b",
+        "pickable": true,
+        "icon": "waves-arrow-up"
+      },
       "water_tank": {
         "geometries": [
           "Point"

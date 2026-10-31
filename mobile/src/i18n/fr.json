@@ -1179,6 +1179,8 @@
       "keyline": "Keyline",
       "ditch": "Fossé",
       "overflow_pipe": "Tuyau de trop-plein",
+      "irrigation_line": "Ligne d’irrigation",
+      "pump": "Pompe",
       "water_tank": "Citerne",
       "well": "Puits",
       "spring": "Source",
