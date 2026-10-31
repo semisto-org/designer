@@ -80,6 +80,10 @@ Une ligne garde au moins deux points, une surface trois.
 
 Une plante n'est pas à sa place ? Clique dessus, puis appuie sur **M** (ou touche **Déplacer** dans sa carte ou sa fiche). Fais glisser le point orange où elle doit être et appuie sur **Entrée** pour enregistrer ; **Échap** la laisse où elle était. **M** marche aussi sur une ligne ou une surface sélectionnée : c'est alors **Modifier la forme**.
 
+## Dupliquer un élément
+
+Trente chênes déjà sur le terrain, dix nichoirs du même modèle ? Remplis la fiche du premier, puis touche **Dupliquer** au bas de sa fiche. Pour un arbre ou tout autre point, chaque clic sur la carte pose une copie, jusqu'à **Échap**. Une ligne ou une surface (une haie, un bac) se pose à côté de l'original : fais-la glisser à sa place avec **M**. La copie garde l'espèce, les mesures, les étiquettes et les notes ; une plante prend le numéro suivant. **⌘Z** retire la dernière copie posée.
+
 ## Déplacer plusieurs éléments ensemble
 
 Une mare a été relevée trois mètres trop au nord, avec ses berges et les plantes autour ? Déplace-les d'un seul geste :

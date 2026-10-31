@@ -1,10 +1,13 @@
-import { CopyCheck, Trash2, X } from 'lucide-react'
+import { Copy, CopyCheck, Trash2, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { formatArea, formatLength, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { besideGeometry, duplicateInput, placesByClick } from '@/map/editor/duplicate'
+import { elementFor } from '@/map/drawing/catalog'
+import { featureName } from '@/map/earthworks/model'
 import { measure } from '@/map/editor/measure'
 import { INSPECTOR_SECTIONS } from '@/map/panels'
 import PlantHeading from '@/map/plants/PlantHeading'
@@ -31,6 +34,38 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
   const applicable = INSPECTOR_SECTIONS.filter((s) => s.applies(feature)).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
   const topSections = applicable.filter((s) => s.placement === 'top')
   const sections = applicable.filter((s) => s.placement !== 'top')
+
+  // A sector, a zone or a sketch is made by its own tool, not copied.
+  const duplicable = editor.canEdit && frame === 'map' && p.status === 'active' && elementFor(p.kind)?.pickable !== false
+  const [duplicating, setDuplicating] = useState(false)
+
+  // Clémence's test (October 2026): thirty oaks already on the land should
+  // not mean typing the same sheet thirty times. A tree is copied where each
+  // click lands, until Échap; a line or a surface lands beside the original.
+  async function duplicate() {
+    setDuplicating(true)
+    try {
+      if (!placesByClick(feature)) {
+        const copy = await editor.createFeature(duplicateInput(feature, besideGeometry(feature.geometry)))
+        editor.select(copy.properties.id)
+        editor.notify(t('selection.duplicate.beside'))
+        return
+      }
+      editor.notify(t('selection.duplicate.placing', { name: featureName(feature) }))
+      let count = 0
+      for (;;) {
+        const at = await editor.draw('point')
+        if (!at) break
+        await editor.createFeature(duplicateInput(feature, at))
+        count += 1
+      }
+      if (count > 0) editor.notify(t('selection.duplicate.placed', { count }))
+    } catch (e) {
+      editor.notify((e as Error).message, 'error')
+    } finally {
+      setDuplicating(false)
+    }
+  }
 
   function save(patch: { name?: string; notes?: string }) {
     if (!editor.canEdit) return
@@ -90,6 +125,12 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
           >
             <CopyCheck className="h-4 w-4" aria-hidden />
             {t('selection.start')}
+          </Button>
+        )}
+        {duplicable && (
+          <Button variant="ghost" size="sm" title={t('selection.duplicate.hint')} disabled={duplicating} onClick={() => void duplicate()}>
+            <Copy className="h-4 w-4" aria-hidden />
+            {t('selection.duplicate.action')}
           </Button>
         )}
         {editor.canEdit && (
