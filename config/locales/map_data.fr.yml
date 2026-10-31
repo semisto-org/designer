@@ -4,6 +4,12 @@ fr:
   map_data:
     panels:
       layers: "Couches"
+    # Zoomed in past the aerial photo's last level (PhotoLimitOverlay).
+    photo_limit:
+      title: "La photo aérienne s’arrête ici."
+      body: "Plus près, elle devient floue : c’est la limite de la photo prise d’avion, pas de ton écran. Pour placer chaque arbre au plus juste, va le voir sur place, ou ajoute une vue drone de ton terrain."
+      drone: "Ajouter une vue drone"
+      dismiss: "Fermer"
     groups:
       plan: "Plan"
       photos: "Photos aériennes"

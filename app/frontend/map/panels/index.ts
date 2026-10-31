@@ -18,6 +18,7 @@ import ProjectPanel from '@/map/panels/ProjectPanel'
 import ActionsPanel from '@/map/panels/ActionsPanel'
 import LayersPanel from '@/map/panels/LayersPanel'
 import RegionLayersOverlay from '@/map/data/RegionLayersOverlay'
+import PhotoLimitOverlay from '@/map/data/PhotoLimitOverlay'
 import IdentifyOverlay from '@/map/data/IdentifyOverlay'
 import LegendOverlay from '@/map/data/LegendOverlay'
 import AiJournalPanel from '@/map/panels/AiJournalPanel'
@@ -187,6 +188,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'tour', component: TourOverlay, order: 100 },
   { id: 'shortcuts', component: ShortcutsSheet, order: 101 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
+  { id: 'photo-limit', component: PhotoLimitOverlay, order: 6 },
   { id: 'layer-legend', component: LegendOverlay, order: 5 },
   { id: 'identify', component: IdentifyOverlay, order: 40 },
   { id: 'ai-proposals', component: AiProposalsOverlay, order: 40 },
