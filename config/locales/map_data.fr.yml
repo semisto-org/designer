@@ -8,6 +8,7 @@ fr:
     photo_limit:
       title: "La photo aérienne s’arrête ici."
       body: "Plus près, elle devient floue : c’est la limite de la photo prise d’avion, pas de ton écran. Pour placer chaque arbre au plus juste, va le voir sur place, ou ajoute une vue drone de ton terrain."
+      body_reader: "Plus près, elle devient floue : c’est la limite de la photo prise d’avion, pas de ton écran. Pour voir chaque arbre au plus juste, va le voir sur place."
       drone: "Ajouter une vue drone"
       dismiss: "Fermer"
     groups:

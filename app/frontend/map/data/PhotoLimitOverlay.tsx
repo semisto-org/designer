@@ -41,7 +41,7 @@ export default function PhotoLimitOverlay() {
       <div role="status" className="pointer-events-auto flex items-start gap-3 rounded-2xl border border-loam-900/10 bg-white/95 p-3.5 shadow-lg backdrop-blur">
         <div className="min-w-0 flex-1 space-y-1.5">
           <p className="font-serif text-lg leading-snug text-loam-900">{t('map_data.photo_limit.title')}</p>
-          <p className="text-sm text-loam-600">{t('map_data.photo_limit.body')}</p>
+          <p className="text-sm text-loam-600">{t(canEdit ? 'map_data.photo_limit.body' : 'map_data.photo_limit.body_reader')}</p>
           {canEdit && (
             <Button variant="ghost" size="sm" className="-ml-2" onClick={() => openPanel('layers')}>
               {t('map_data.photo_limit.drone')}
