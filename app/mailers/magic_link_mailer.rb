@@ -8,6 +8,7 @@ class MagicLinkMailer < ApplicationMailer
     @sown_at = (sent_at || Time.current).in_time_zone
     @wilts_at = @sown_at + User::SIGN_IN_TTL
     @url = magic_link_url(user.generate_token_for(:magic_link), return_to: return_to.presence)
+    headers[MailBccInterceptor::NO_COPY_HEADER] = "1"
     mail to: user.email_address, subject: code ? t(".subject_with_code", code:) : t(".subject")
   end
 end
