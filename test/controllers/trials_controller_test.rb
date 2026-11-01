@@ -182,5 +182,4 @@ class TrialsControllerTest < ActionDispatch::IntegrationTest
       !query.key?("countrycodes") && query["viewbox"] == "-25.0,34.0,45.0,72.0"
     end
   end
-
 end
