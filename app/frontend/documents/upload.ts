@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
+import { trackWrite, writeOutcome } from '@/lib/saveStatus'
 import { formatMegabytes } from '@/map/photos/format'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
 
@@ -48,14 +49,20 @@ function csrfToken(): string {
 }
 
 function send(endpoint: string, form: FormData, onProgress: (percent: number) => void): Promise<MapDocumentData> {
+  // Counted by the editor header's « Enregistré » until the file has arrived.
+  const finish = trackWrite()
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', endpoint)
     xhr.setRequestHeader('Accept', 'application/json')
     xhr.setRequestHeader('X-CSRF-Token', csrfToken())
     xhr.upload.onprogress = (event) => event.lengthComputable && onProgress(Math.round((event.loaded / event.total) * 100))
-    xhr.onerror = () => reject(new Error(t('documents.errors.upload_failed')))
+    xhr.onerror = () => {
+      finish('lost')
+      reject(new Error(t('documents.errors.upload_failed')))
+    }
     xhr.onload = () => {
+      finish(writeOutcome(xhr.status))
       let body: Record<string, unknown> = {}
       try {
         body = JSON.parse(xhr.responseText)

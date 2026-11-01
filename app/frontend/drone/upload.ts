@@ -1,5 +1,6 @@
 import SparkMD5 from 'spark-md5'
 import { api, ApiError } from '@/lib/api'
+import { trackWrite, writeOutcome } from '@/lib/saveStatus'
 import type { AerialImport } from '@/types/drone'
 
 // Sends a drone view's file to the map, in parts: a GeoTIFF of a large
@@ -96,6 +97,24 @@ export async function uploadAerialView(
   file: File,
   meta: { name: string; capturedOn: string; product?: string },
   { onCreated, onProgress, signal, missionId }: { onCreated?: (view: AerialImport) => void; onProgress?: (p: UploadProgress) => void; signal?: AbortSignal; missionId?: number } = {},
+): Promise<AerialImport> {
+  // One write for the header's « Enregistré », from the announce to the last part.
+  const finish = trackWrite()
+  try {
+    const view = await sendAerialView(mapId, file, meta, { onCreated, onProgress, signal, missionId })
+    finish('ok')
+    return view
+  } catch (error) {
+    finish(signal?.aborted || error instanceof UploadAborted ? 'rejected' : error instanceof ApiError ? writeOutcome(error.status) : 'lost')
+    throw error
+  }
+}
+
+async function sendAerialView(
+  mapId: number,
+  file: File,
+  meta: { name: string; capturedOn: string; product?: string },
+  { onCreated, onProgress, signal, missionId }: { onCreated?: (view: AerialImport) => void; onProgress?: (p: UploadProgress) => void; signal?: AbortSignal; missionId?: number },
 ): Promise<AerialImport> {
   const query = missionId ? `?drone_mission_id=${missionId}` : ''
   const created = await api<Created>(`/maps/${mapId}/aerial_views${query}`, {

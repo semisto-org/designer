@@ -40,6 +40,12 @@ export function trackWrite(): (outcome: 'ok' | 'rejected' | 'lost') => void {
   }
 }
 
+/** How a finished request counts: received (2xx), refused with a reason (4xx), or lost. */
+export function writeOutcome(status: number): 'ok' | 'rejected' | 'lost' {
+  if (status >= 200 && status < 300) return 'ok'
+  return status >= 400 && status < 500 ? 'rejected' : 'lost'
+}
+
 export function saveSnapshot(): SaveSnapshot {
   return snapshot
 }
