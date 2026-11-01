@@ -170,4 +170,17 @@ class TrialsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_nil trial.reload.adopted_map
   end
+
+  test "the address search of a trial covers all of Europe" do
+    load Rails.root.join("db/seeds/01_regions.rb").to_s
+    stub_request(:get, %r{nominatim\.openstreetmap\.org/search}).to_return(json_response("nominatim_search.json"))
+    stub_request(:get, %r{data\.geopf\.fr/geocodage/search}).to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: { features: [] }.to_json)
+    get trials_geocode_path, params: { q: "Rue de Lille 3 Paris" }, as: :json
+    assert_response :success
+    assert_requested(:get, %r{nominatim\.openstreetmap\.org/search}) do |request|
+      query = request.uri.query_values
+      !query.key?("countrycodes") && query["viewbox"] == "-25.0,34.0,45.0,72.0"
+    end
+  end
+
 end
