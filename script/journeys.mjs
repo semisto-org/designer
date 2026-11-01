@@ -136,12 +136,15 @@ const JOURNEYS = [
     steps: [
       ['Mes cartes', (page) => page.goto(`${base}/maps`)],
       ['Une deuxième carte', (page) => page.goto(`${base}/maps/new`)],
+      // Since #306 « Nouvelle carte » says the plan is full before anything
+      // is typed, and its submit stays off: the way on is « Passer au forfait ».
       ['La limite de la formule', async (page) => {
-        await page.getByLabel(t('maps.fields.name')).fill('Le terrain de ma sœur')
-        await page.getByRole('button', { name: t('maps.new.submit') }).click()
-        await page.waitForURL((url) => url.pathname === '/maps' || url.pathname === '/billing')
+        await page.getByRole('status').filter({ hasText: t('maps.index.limit_reason') }).waitFor()
       }],
-      ['Formules', (page) => page.goto(`${base}/billing`)],
+      ['Formules', async (page) => {
+        await page.getByRole('link', { name: t('maps.index.upgrade') }).first().click()
+        await page.waitForURL((url) => url.pathname === '/billing')
+      }],
       // Stripe's own page is not replayed: the request that would leave for it
       // comes straight back, as after a payment.
       ['Vers le paiement', async (page) => {
