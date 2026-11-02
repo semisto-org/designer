@@ -7,7 +7,8 @@ test('a property field is named by its key', () => {
   assert.equal(fieldKey('properties.planted_on'), 'planted_on')
   assert.equal(fieldKey('name'), 'name')
   assert.ok(isKnownField('planted_on'))
-  assert.ok(!isKnownField('height_m'))
+  assert.ok(isKnownField('eaves_m'), 'a roof is named in words')
+  assert.ok(!isKnownField('spacing_m'))
 })
 
 test('values read the French way: dates, lists, catalogue names, positions, nothing', () => {

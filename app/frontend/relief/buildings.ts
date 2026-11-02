@@ -10,7 +10,7 @@
 
 import { BUILDING_KINDS } from '../map/scenario.ts'
 import { toGrid, type GridMeta } from './grid.ts'
-import { fitRoof, roofHeight, shell, type RoofSample, type RoofShape, type Shell } from './roofs.ts'
+import { designedRoof, fitRoof, roofHeight, shell, type RoofSample, type RoofShape, type RoofSpec, type Shell } from './roofs.ts'
 
 /** One building as the server sends it: WGS84 rings, tagged heights. */
 export type BuildingData = {
@@ -24,6 +24,8 @@ export type BuildingData = {
   drawn?: boolean
   /** Drawn « En projet »: not built yet (no surface model or ortho can see it). */
   planned?: boolean
+  /** Drawn with a roof chosen in its card: its shape, gutters and ridge (the top is `height`). */
+  roof?: Omit<RoofSpec, 'height'>
 }
 
 export type BuildingsResponse = { available: boolean; attribution: string | null; buildings: BuildingData[] }
@@ -47,6 +49,10 @@ export type BuildingVolume = {
   source: HeightSource
   /** Not built yet: its roof is plain, the ortho shows the ground there. */
   planned: boolean
+  /** Drawn on the map (its roof is the person's), not read from OpenStreetMap. */
+  drawn: boolean
+  /** Height of the lowest gutter above the base, in real metres. */
+  eaves: number
 }
 
 export type BuildingLayer = {
@@ -63,6 +69,8 @@ export type BuildingLayer = {
 const STOREY = 3
 const ROOF = 1.5
 const MIN_HEIGHT = 2.2
+// A drawn shed or hen house may be lower than a guessed building.
+const DRAWN_MIN_HEIGHT = 0.3
 const MAX_HEIGHT = 150
 const LOW_KINDS = new Set(['shed', 'fruit_store', 'poultry_house', 'garage', 'garages', 'carport', 'hut', 'cabin', 'greenhouse', 'roof', 'kiosk', 'container', 'shelter', 'toilets'])
 const TALL_KINDS = new Set(['church', 'cathedral', 'chapel', 'industrial', 'warehouse', 'hangar', 'barn', 'farm_auxiliary', 'riding_hall', 'sports_hall'])
@@ -83,6 +91,19 @@ function positiveNumber(value: unknown): number | null {
   return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : null
 }
 
+/** The `roof` choices of a building's card, as roof shapes (`green` is flat). */
+const ROOF_SHAPES: Record<string, RoofSpec['shape']> = { pitched: 'gable', hip: 'hip', shed: 'shed', flat: 'flat', green: 'flat' }
+
+/** The roof a drawn building's card describes, or undefined when it says nothing of it. */
+export function roofFromProperties(props: Record<string, unknown>): Omit<RoofSpec, 'height'> | undefined {
+  const shape = ROOF_SHAPES[String(props.roof ?? '')]
+  if (!shape) return undefined
+  return {
+    shape, eaves: positiveNumber(props.eaves_m), ridge: props.ridge === 'short' ? 'short' : 'long',
+    flip: props.roof_flip === true || props.roof_flip === 'true',
+  }
+}
+
 /**
  * The buildings drawn on the map (house, shed, greenhouse…, accepted, on
  * the ground or « En projet », not taken away), as footprints for the 3D view: the height
@@ -100,7 +121,7 @@ export function drawnBuildings(features: readonly DrawnFeature[]): BuildingData[
       out.push({
         id: `drawn-${props.id ?? out.length}${k ? `-${k}` : ''}`, kind, rings: rings as Array<Array<[number, number]>>,
         height: positiveNumber(props.height_m), minHeight: null, levels: positiveNumber(props.floors),
-        drawn: true, planned: props.planned === true,
+        drawn: true, planned: props.planned === true, roof: roofFromProperties(props),
       })
     })
   }
@@ -241,17 +262,19 @@ export function buildingLayer(
         roof = fitRoof(rings[0], roofSamples(meta, cells, base, { original, ground, surface }), measured)
       }
     }
-    if (roof.type === 'flat') roof = { type: 'flat', height: Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, roof.height)) }
-    const shells = rings.map((ring) => shell(ring, roof, MIN_HEIGHT, MAX_HEIGHT))
+    const min = building.drawn ? DRAWN_MIN_HEIGHT : MIN_HEIGHT
+    if (building.drawn && building.roof) roof = designedRoof(rings[0], { ...building.roof, height: Math.min(MAX_HEIGHT, Math.max(min, height)) }, min)
+    if (roof.type === 'flat') roof = { type: 'flat', height: Math.min(MAX_HEIGHT, Math.max(min, roof.height)) }
+    const shells = rings.map((ring) => shell(ring, roof, min, MAX_HEIGHT))
     height = Math.max(...shells.flatMap((s) => s.ring.map((p) => p.top)))
     const bottom = building.minHeight && building.minHeight < height ? building.minHeight : 0
-    volumes.push({ id: building.id, rings, base, height, roof, shells, bottom, source, planned: building.planned === true })
     const eave = Math.min(...shells.flatMap((s) => s.ring.map((p) => p.top)))
+    volumes.push({ id: building.id, rings, base, height, roof, shells, bottom, source, planned: building.planned === true, drawn: building.drawn === true, eaves: eave })
     for (const i of cells) {
       inside[i] = 1
       if (bottom) continue
       const p = { x: (i % cols) * meta.cellSizeM, y: Math.floor(i / cols) * meta.cellSizeM }
-      const top = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, roofHeight(roof, p)))
+      const top = Math.min(MAX_HEIGHT, Math.max(min, roofHeight(roof, p)))
       roofs[i] = Math.max(roofs[i], base + top)
       tops[i] = Math.max(tops[i], base + top - ground[i])
       eaves[i] = Math.max(eaves[i], base + eave - ground[i])
