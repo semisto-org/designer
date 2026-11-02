@@ -4,8 +4,8 @@
 # does not need a deploy) as long as they look like keys.
 #
 # A cross-check-only source (PFAF, whose licence is non-commercial) never
-# becomes the source of a value in this paid service (roadmap, 2026-11): it
-# only says « recoupée avec PFAF » next to the value's own source. Values
+# becomes the source of a value in this paid service (Michael, 2026-11-02):
+# it only says « recoupée avec PFAF » next to the value's own source. Values
 # that already cite it stay shown (decision of 2026-10-03).
 module PlantSource
   FORMAT = /\A[a-z0-9][a-z0-9_.-]{1,39}\z/
