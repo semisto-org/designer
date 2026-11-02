@@ -48,7 +48,7 @@ export default function OfferVersion(props: OfferVersionPageProps) {
         <p className="rounded-xl bg-humus-50 p-3 text-sm text-humus-900 ring-1 ring-inset ring-humus-200 print:hidden">{t('offers.document.preview_banner')}</p>
       )}
 
-      <div style={themeStyle(theme)} className="space-y-6 font-doc-body text-doc-text">
+      <div style={themeStyle(theme)} className="space-y-6 font-doc-body text-lg text-doc-text">
         {document.sections.map((section, index) => (
           <Page key={section.key} first={index === 0}>
             <Section section={section} {...props} />
@@ -104,11 +104,11 @@ function Section({ section, ...props }: OfferVersionPageProps & { section: Clien
 }
 
 function Title({ children }: { children: ReactNode }) {
-  return <h2 className="font-doc-heading text-2xl font-semibold text-doc-heading">{children}</h2>
+  return <h2 className="font-doc-heading text-3xl font-semibold text-doc-heading">{children}</h2>
 }
 
 function Text({ html }: { html?: string }) {
-  return html ? <Prose html={html} colors={THEMED_PROSE_COLORS} className="prose-headings:font-doc-heading" /> : null
+  return html ? <Prose html={html} colors={THEMED_PROSE_COLORS} className="text-lg! prose-headings:font-doc-heading prose-h2:text-2xl! prose-h3:text-xl!" /> : null
 }
 
 /** A step's number (« 1 · », « ∞ »…), in the charter's accent. */
@@ -122,7 +122,7 @@ function StepMark({ step }: { step: DocumentStep }) {
 
 /** The charter's footer: the team's contacts, on the cover and at the end. */
 function Footer({ text }: { text?: string | null }) {
-  return text ? <p className="whitespace-pre-line border-t border-loam-100 pt-3 text-sm text-loam-500">{text}</p> : null
+  return text ? <p className="whitespace-pre-line border-t border-loam-100 pt-3 text-base text-loam-500">{text}</p> : null
 }
 
 function stepLabel(step: DocumentStep) {
@@ -135,7 +135,7 @@ function Steps({ steps }: { steps: NonNullable<ClientSection['phases']> }) {
     <div className="space-y-4">
       {steps.filter((step) => step.html).map((step) => (
         <section key={step.key} className="space-y-1">
-          <h3 className="font-semibold text-loam-900"><StepMark step={step.key} /> {stepLabel(step.key)}</h3>
+          <h3 className="text-xl font-semibold text-loam-900"><StepMark step={step.key} /> {stepLabel(step.key)}</h3>
           <Text html={step.html} />
         </section>
       ))}
@@ -163,7 +163,7 @@ function Cover({ section, map, version, issuer, letterhead, theme }: OfferVersio
     <div className="space-y-6 py-6 print:flex print:min-h-[85vh] print:flex-col print:justify-center">
       {theme?.coverUrl && <img src={theme.coverUrl} alt="" className="max-h-80 w-full rounded-xl object-cover print:max-h-[45vh]" />}
       {letterhead && <img src={letterhead.logoUrl} alt="" className="max-h-48 max-w-full object-contain object-left" />}
-      <h1 className="font-doc-heading text-4xl text-doc-heading">{section.title}</h1>
+      <h1 className="font-doc-heading text-5xl text-doc-heading">{section.title}</h1>
       <div className="space-y-1">
         <p className="font-medium text-loam-900">{issuer}</p>
         <Text html={section.html} />
@@ -203,14 +203,14 @@ function Scope({ section, version }: OfferVersionPageProps & { section: ClientSe
       <ul className="space-y-1 text-loam-800">{base.map(item)}</ul>
       {options.length > 0 && (
         <>
-          <p className="font-medium uppercase tracking-wide text-sm text-doc-accent">{t('offers.document.scope_options')}</p>
+          <p className="font-medium uppercase tracking-wide text-base text-doc-accent">{t('offers.document.scope_options')}</p>
           <ul className="space-y-1 text-loam-800">{options.map(item)}</ul>
         </>
       )}
       {optionLines.length > 0 && (
         <>
           <p className="font-medium text-loam-800">{t('offers.version_page.option_work')}</p>
-          <ul className="space-y-1 text-sm text-loam-700">
+          <ul className="space-y-1 text-base text-loam-700">
             {optionLines.map(({ line, phase }) => (
               <li key={`${phase}-${line.key}`}>{lineLabel(line)} <span className="text-loam-500">· {phaseLabel(phase)}</span></li>
             ))}
@@ -279,10 +279,10 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
 
         <div className="flex items-baseline justify-between gap-2 border-t border-doc-heading/30 pt-3">
           <span className="font-semibold text-doc-heading">{t('offers.version_page.total')}</span>
-          <span className="font-doc-heading text-2xl font-semibold tabular-nums text-doc-heading">{euros(result.totals.total_tvac)}</span>
+          <span className="font-doc-heading text-3xl font-semibold tabular-nums text-doc-heading">{euros(result.totals.total_tvac)}</span>
         </div>
         {result.totals.total_max_tvac > result.totals.total_tvac && (
-          <p className="text-sm text-loam-700">{t('offers.version_page.total_max', { amount: euros(result.totals.total_max_tvac) })}</p>
+          <p className="text-base text-loam-700">{t('offers.version_page.total_max', { amount: euros(result.totals.total_max_tvac) })}</p>
         )}
 
         {result.totals.design_share_pct != null && (
@@ -290,7 +290,7 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
             <div className="flex h-2.5 overflow-hidden rounded-full bg-doc-accent/40" aria-hidden>
               <div className="bg-doc-heading" style={{ width: `${Math.min(result.totals.design_share_pct, 100)}%` }} />
             </div>
-            <p className="text-sm text-loam-700">
+            <p className="text-base text-loam-700">
               {t('offers.version_page.share', { design: euros(result.totals.design_tvac), share: Math.round(result.totals.design_share_pct), implementation: euros(result.totals.implementation_tvac) })}
             </p>
           </section>
@@ -298,7 +298,7 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
 
         {/* Versions saved before co-management could be offered carry only the yearly estimate. */}
         {coManagement.enabled == null && (
-          <section className="space-y-1 text-sm text-loam-700">
+          <section className="space-y-1 text-base text-loam-700">
             <h3 className="font-semibold text-loam-900">{t('offers.version_page.co_management')}</h3>
             <p>{t('offers.version_page.co_management_text', { ...rates, half_days: coManagement.half_days })}</p>
           </section>
@@ -306,7 +306,7 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
       </div>
 
       <Text html={section.html} />
-      <div className="space-y-4 border-t border-loam-100 pt-4 text-sm text-loam-700">
+      <div className="space-y-4 border-t border-loam-100 pt-4 text-base text-loam-700">
         <section>
           <h3 className="font-semibold text-loam-900">{t('offers.version_page.billing_title')}</h3>
           <p>{t('offers.version_page.billing')}</p>
@@ -358,9 +358,9 @@ function InternalDetails({ version }: OfferVersionPageProps) {
 
 function Row({ label, hint, value, strong }: { label: string; hint?: string; value: number; strong?: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 text-sm">
+    <div className="flex items-baseline justify-between gap-3 text-base">
       <span className={strong ? 'font-semibold text-loam-900' : 'text-loam-700'}>
-        {label}{hint && <span className="block text-xs text-loam-500">{hint}</span>}
+        {label}{hint && <span className="block text-sm text-loam-500">{hint}</span>}
       </span>
       <span className={strong ? 'font-semibold tabular-nums' : 'tabular-nums'}>{euros(value)}</span>
     </div>
