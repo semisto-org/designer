@@ -41,6 +41,7 @@ module Mcp
             mine_pending: map.tasks.pending.where(assignee: user).count
           },
           documents: map.documents.count,
+          site_visits: site_visits(map),
           photos: map.photos.count,
           observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
@@ -71,6 +72,16 @@ module Mcp
       end
 
       private
+      # The walks made with the phone; list_site_visits gives each one.
+      def site_visits(map)
+        last = map.site_visits.reorder(started_at: :desc).first
+        {
+          count: map.site_visits.count,
+          with_audio: map.site_visits.where.not(audio_document_id: nil).count,
+          last_started_at: last&.started_at&.iso8601
+        }.compact
+      end
+
         MAX_BIOINDICATORS = 100
 
         # The public view (« Publier »), for the owner only, as in the editor:

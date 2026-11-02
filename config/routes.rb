@@ -643,7 +643,10 @@ Rails.application.routes.draw do
   # --- site visits ---
   # Walks on the land with the phone: closing one files its report (SiteVisit).
   resources :maps, only: [] do
-    resources :site_visits, only: %i[index create], controller: "maps/site_visits"
+    resources :site_visits, only: %i[index create], controller: "maps/site_visits", param: :key do
+      # The recording of the walk, filed in the documents.
+      member { post :audio }
+    end
   end
   # --- end site visits ---
   # --- offline site ---

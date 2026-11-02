@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1605,6 +1605,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.bigint "map_document_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "audio_document_id"
+    t.integer "audio_seconds"
+    t.geometry "track", limit: {:srid=>4326, :type=>"line_string"}
+    t.integer "track_m"
+    t.index ["audio_document_id"], name: "index_site_visits_on_audio_document_id"
     t.index ["map_document_id"], name: "index_site_visits_on_map_document_id"
     t.index ["map_id", "key"], name: "index_site_visits_on_map_id_and_key", unique: true
     t.index ["map_id", "started_at"], name: "index_site_visits_on_map_id_and_started_at"
@@ -1940,6 +1945,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
   add_foreign_key "session_replays", "users", on_delete: :cascade
   add_foreign_key "sessions", "users"
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
+  add_foreign_key "site_visits", "map_documents", column: "audio_document_id", on_delete: :nullify
   add_foreign_key "site_visits", "map_documents", on_delete: :nullify
   add_foreign_key "site_visits", "maps", on_delete: :cascade
   add_foreign_key "site_visits", "users", on_delete: :nullify

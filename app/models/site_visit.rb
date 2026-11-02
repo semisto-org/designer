@@ -10,21 +10,35 @@
 # page grouped by theme (`report_markdown`), and turns the questions one
 # chose into tasks about their note. The report is then the visit's: closing
 # again never rewrites what someone has edited since.
+#
+# The phone can also record the walk: what was said on the way (an audio
+# file, filed in the documents as « Enregistrement audio de la visite du
+# dd/mm/yyyy », `attach_audio!`) and where the walk went (`track`, a line
+# of the GPS fixes, sent when the visit closes). Both are optional and
+# independent; the report mentions them.
 class SiteVisit < ApplicationRecord
+  include GeoJsonGeometry
+
   THEMES = %w[wish water soil tree fauna climate neighbours history question].freeze
   NOTE_LAYER = "notes"
   NOTE_KIND = "note_point"
   KEY_FORMAT = /\A[0-9A-Za-z-]{8,64}\z/
   # Where the questions turned into tasks go (TaskList#key).
   TASK_LIST_KEY = "site_visits"
+  # A walk of a few hours, one fix every few metres, stays far below this.
+  MAX_TRACK_POINTS = 20_000
+  # The phone records speech in AAC (.m4a); the other sound formats are kept as sent.
+  AUDIO_EXTENSIONS = MapDocument::KINDS.fetch("audio")
 
   belongs_to :map
   belongs_to :user, optional: true
   belongs_to :map_document, optional: true
+  belongs_to :audio_document, class_name: "MapDocument", optional: true
 
   validates :key, format: { with: KEY_FORMAT }, uniqueness: { scope: :map_id }
   validates :started_at, presence: true
   validate :ends_after_it_starts
+  validates :audio_seconds, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
 
   scope :chronological, -> { order(:started_at, :id) }
 
@@ -59,10 +73,11 @@ class SiteVisit < ApplicationRecord
 
   # Ends the visit: its report in the documents (made once), and a task for
   # each question in `question_ids` that has none yet.
-  def close!(ended_at:, by:, started_at: nil, question_ids: [])
+  def close!(ended_at:, by:, started_at: nil, question_ids: [], track: nil)
     transaction do
       self.started_at = [ self.started_at, started_at ].compact.min if started_at
       self.ended_at = [ ended_at, self.started_at ].compact.max
+      self.track_coordinates = track if track.present? && self.track.nil?
       save!
       turn_into_tasks!(question_ids, by:)
       file_report!(by:) unless map_document
@@ -74,12 +89,58 @@ class SiteVisit < ApplicationRecord
     I18n.t("site_visits.report.title", date: I18n.l(started_at.to_date, format: :long))
   end
 
+  # « Enregistrement audio de la visite du 02/11/2026 »
+  def audio_title
+    I18n.t("site_visits.audio.title", date: I18n.l(started_at.to_date, format: :site_visit_numeric))
+  end
+
+  # Files the recording of the walk in the map's documents, once: a second
+  # send (a lost answer, a retry) returns the document already filed.
+  # `seconds` is how long the phone recorded.
+  def attach_audio!(upload, by:, seconds: nil)
+    with_lock { audio_document || file_audio!(upload, by:, seconds:) }
+  end
+
+  # The walk as GeoJSON coordinates [[lng, lat], …]; fewer than two
+  # usable points leave no track.
+  def track_coordinates=(coordinates)
+    points = Array(coordinates).first(MAX_TRACK_POINTS).filter_map do |pair|
+      lng, lat = Array(pair).first(2).map { Float(_1, exception: false) }
+      [ lng, lat ] if lng&.between?(-180, 180) && lat&.between?(-90, 90)
+    end
+    points = points.chunk_while { _1 == _2 }.map(&:first)
+    if points.size < 2
+      self.track = nil
+      self.track_m = nil
+    else
+      self.track = FACTORY.line_string(points.map { |lng, lat| FACTORY.point(lng, lat) })
+      self.track_m = self.class.walked_m(points).round
+    end
+  end
+
+  # The length of a walk in metres, point to point on the sphere.
+  def self.walked_m(points)
+    points.each_cons(2).sum do |(lng1, lat1), (lng2, lat2)|
+      rad = Math::PI / 180
+      a = Math.sin((lat2 - lat1) * rad / 2)**2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin((lng2 - lng1) * rad / 2)**2
+      2 * 6_371_000 * Math.asin(Math.sqrt(a))
+    end
+  end
+
+  # « 42 min », « 1 h 05 »
+  def self.duration_text(seconds)
+    minutes = (seconds.to_i / 60.0).round
+    return I18n.t("site_visits.audio.minutes", count: [ minutes, 1 ].max) if minutes < 60
+    I18n.t("site_visits.audio.hours", hours: minutes / 60, minutes: format("%02d", minutes % 60))
+  end
+
   # The report as Markdown: who walked and when, then the notes by theme in
   # the order of THEMES (questions last, as a checklist), then the others.
   def report_markdown(notes = self.notes)
     photos = MapPhoto.where(map_feature_id: notes.map(&:id)).group(:map_feature_id).count
     by_theme = notes.group_by { |note| THEMES.include?(theme_of(note)) ? theme_of(note) : "other" }
     lines = [ "# #{title}", "", summary_line(notes, photos.values.sum), "" ]
+    lines << I18n.t("site_visits.report.audio", title: audio_document.title) << "" if audio_document
     (THEMES + [ "other" ]).each do |theme|
       next if by_theme[theme].blank?
       lines << "## #{I18n.t("site_visits.themes.#{theme}")}" << ""
@@ -93,11 +154,26 @@ class SiteVisit < ApplicationRecord
   def as_json(*)
     {
       key:, startedAt: started_at.iso8601, endedAt: ended_at&.iso8601, by: user&.display_name,
-      notes: notes.size, documentId: map_document_id
+      notes: notes.size, documentId: map_document_id,
+      audioDocumentId: audio_document_id, audioSeconds: audio_seconds, trackM: track_m
     }.compact
   end
 
   private
+    def file_audio!(upload, by:, seconds:)
+      extension = File.extname(upload.original_filename.to_s).delete(".").downcase
+      extension = "m4a" unless AUDIO_EXTENSIONS.include?(extension)
+      document = map.documents.new(
+        title: audio_title, tags: [ I18n.t("site_visits.report.tag") ], origin: "library", uploaded_by: by,
+        description: (I18n.t("site_visits.audio.description", duration: self.class.duration_text(seconds)) if seconds.to_i.positive?)
+      )
+      document.file.attach(io: upload.tempfile.tap(&:rewind), filename: "visite-#{started_at.to_date.iso8601}.#{extension}",
+                           content_type: upload.content_type.presence)
+      document.save!
+      update!(audio_document: document, audio_seconds: seconds.presence&.to_i)
+      document
+    end
+
     def theme_of(note) = note.properties.is_a?(Hash) ? note.properties["theme"].to_s : ""
 
     def text_of(note) = [ note.name, note.notes ].compact_blank.uniq.join(" — ").presence || I18n.t("site_visits.report.no_text")
@@ -106,7 +182,13 @@ class SiteVisit < ApplicationRecord
       parts = [ user&.display_name, time_range ].compact
       parts << I18n.t("site_visits.report.notes", count: notes.size)
       parts << I18n.t("site_visits.report.photos", count: photo_count) if photo_count.positive?
+      parts << I18n.t("site_visits.report.walked", distance: walked_text) if track_m
       parts.join(" · ")
+    end
+
+    def walked_text
+      return I18n.t("site_visits.report.metres", count: track_m) if track_m < 1000
+      I18n.t("site_visits.report.kilometres", km: ActiveSupport::NumberHelper.number_to_rounded(track_m / 1000.0, precision: 1, separator: ","))
     end
 
     def time_range

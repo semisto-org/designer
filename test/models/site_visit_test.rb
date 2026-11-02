@@ -85,4 +85,20 @@ class SiteVisitTest < ActiveSupport::TestCase
     feature.update!(properties: feature.properties.merge("taken_at" => 3.days.from_now.iso8601))
     assert_in_delta feature.created_at, SiteVisit.taken_at(feature), 1
   end
+
+  test "a track keeps the usable points, without repeats, and measures the walk" do
+    visit = maps(:ahinvaux).site_visits.new(key: "track-#{SecureRandom.hex(4)}", started_at: Time.current)
+    visit.track_coordinates = [ [ 4.906, 50.341 ], [ 4.906, 50.341 ], [ "x", 50 ], [ 4.906, 95 ], [ 4.906, 50.342 ] ]
+    assert_equal 2, visit.track.num_points
+    assert_in_delta 111, visit.track_m, 1
+    visit.track_coordinates = [ [ 4.906, 50.341 ] ]
+    assert_nil visit.track
+    assert_nil visit.track_m
+  end
+
+  test "a recording's length reads in minutes, then hours" do
+    assert_equal "1 min", SiteVisit.duration_text(20)
+    assert_equal "42 min", SiteVisit.duration_text(2520)
+    assert_equal "1 h 05", SiteVisit.duration_text(3900)
+  end
 end

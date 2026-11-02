@@ -1,6 +1,7 @@
 // What the terrain sheet holds: at rest, today on this place, what happened
 // here on this date in an earlier year and what grows around the person; with « Noter ici », what one can note; with a feature
 // chosen, that feature with its age, where it stands and the gestures it asks.
+import type { ReactNode } from 'react'
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native'
 import { featureColor, featureTitle, kindLabel, speciesName } from '@/lib/elements'
 import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '@/lib/i18n'
@@ -252,7 +253,7 @@ export function NoteTop({ onChoose, onClose }: { onChoose: (choice: NoteChoice) 
 // ── A site visit ───────────────────────────────────────────────────────
 
 /** The visit under way: since when, how many notes, a tile per theme and « Terminer ». */
-export function VisitTop({ visit, count, onTheme, onEnd }: { visit: Visit; count: number; onTheme: (theme: Theme | null) => void; onEnd: () => void }) {
+export function VisitTop({ visit, count, onTheme, onEnd, recorder }: { visit: Visit; count: number; onTheme: (theme: Theme | null) => void; onEnd: () => void; recorder?: ReactNode }) {
   const minutes = minutesSince(visit.startedAt)
   return (
     <View style={s.top}>
@@ -264,6 +265,7 @@ export function VisitTop({ visit, count, onTheme, onEnd }: { visit: Visit; count
           <Text accessibilityRole="header" style={s.monthTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.what')}</Text>
         </View>
       </View>
+      {recorder}
       <View style={s.tiles}>
         {[...THEMES, null].map((theme) => (
           <Pressable key={theme ?? 'other'} onPress={() => { haptics.tap(); onTheme(theme) }} accessibilityRole="button"

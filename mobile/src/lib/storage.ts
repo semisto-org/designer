@@ -70,6 +70,17 @@ export function keepVideo(uri: string): string {
   return target.uri
 }
 
+/** Moves a visit's sound recording beside the photos waiting to be sent (same rules: kept until sent). */
+export function keepAudio(uri: string): string {
+  const dir = new Directory(root(), 'photos')
+  if (!dir.exists) dir.create({ intermediates: true })
+  const target = new File(dir, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.m4a`)
+  const source = new File(uri)
+  if (!source.exists) throw new Error('audio file missing')
+  source.moveSync(target)
+  return target.uri
+}
+
 /** The kept photo's address today (see `relocated`); null when it is gone. */
 export function keptFile(uri: string): string | null {
   if (new File(uri).exists) return uri
