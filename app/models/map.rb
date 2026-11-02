@@ -30,6 +30,8 @@ class Map < ApplicationRecord
   has_many :trashed_features, -> { trashed }, class_name: "MapFeature", dependent: :destroy
   has_many :feature_update_drafts, dependent: :delete_all
   has_many :project_sheet_drafts, -> { ordered }, dependent: :delete_all, inverse_of: :map
+  # The team's (or the pro's) own notes on the sheet, never shown to the client (ProjectSheetNote).
+  has_many :project_sheet_notes, dependent: :delete_all
   has_many :water_sources, -> { ordered }, dependent: :delete_all, inverse_of: :map
   has_many :plan_images, -> { ordered }, dependent: :destroy, inverse_of: :map
   has_one :share_link, class_name: "MapShareLink", dependent: :destroy

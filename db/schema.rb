@@ -1448,6 +1448,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.index ["token"], name: "index_project_sheet_links_on_token", unique: true
   end
 
+  create_table "project_sheet_notes", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "section", null: false
+    t.text "body", null: false
+    t.bigint "updated_by_id"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "section"], name: "index_project_sheet_notes_on_map_id_and_section", unique: true
+    t.index ["updated_by_id"], name: "index_project_sheet_notes_on_updated_by_id"
+  end
+
   create_table "propagation_requests", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "species_id", null: false
@@ -1925,6 +1937,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
   add_foreign_key "project_sheet_drafts", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "project_sheet_links", "maps", on_delete: :cascade
   add_foreign_key "project_sheet_links", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "project_sheet_notes", "maps", on_delete: :cascade
+  add_foreign_key "project_sheet_notes", "users", column: "updated_by_id", on_delete: :nullify
   add_foreign_key "propagation_requests", "maps", on_delete: :cascade
   add_foreign_key "propagation_requests", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "propagation_requests", "plant_varieties", column: "variety_id", on_delete: :nullify

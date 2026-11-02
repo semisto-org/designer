@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useProjectSheet } from '@/lib/projectSheet'
+import { useTeamNotes } from '@/lib/teamNotes'
 import { relativeTime } from '@/lib/relativeTime'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -45,6 +46,7 @@ export default function ProjectPanel() {
 
 function PanelBody({ payload }: { payload: ProjectPayload }) {
   const sheet = useProjectSheet(`/maps/${payload.map.id}/project`, payload.project, payload.progress, payload.canEdit, payload.drafts)
+  const teamNotes = useTeamNotes(payload.map.id, payload.teamNotes)
   const sections = payload.schema.sections.map((s) => s.key)
   const [open, setOpen] = useState<string | null>(payload.progress.nextSection ?? sections[0])
   const { progress } = sheet
@@ -84,7 +86,7 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
               </h3>
               {isOpen && (
                 <div id={`panel-section-${section}`} className="border-t border-loam-100 px-3 pb-4 pt-3">
-                  <SectionBody sheet={sheet} schema={payload.schema} section={section} canEdit={payload.canEdit} />
+                  <SectionBody sheet={sheet} schema={payload.schema} section={section} canEdit={payload.canEdit} teamNotes={teamNotes} />
                 </div>
               )}
             </li>
@@ -111,6 +113,7 @@ function PanelBody({ payload }: { payload: ProjectPayload }) {
  */
 function ModalBody({ payload }: { payload: ProjectPayload }) {
   const sheet = useProjectSheet(`/maps/${payload.map.id}/project`, payload.project, payload.progress, payload.canEdit, payload.drafts)
+  const teamNotes = useTeamNotes(payload.map.id, payload.teamNotes)
   const sections = payload.schema.sections.map((s) => s.key)
   const [active, setActive] = useState<string>(payload.progress.nextSection ?? sections[0])
   const content = useRef<HTMLDivElement>(null)
@@ -172,7 +175,7 @@ function ModalBody({ payload }: { payload: ProjectPayload }) {
             {current?.touchedAt ? t('journey.project.touched', { when: relativeTime(current.touchedAt) }) : t('journey.project.untouched')}
           </p>
           <div className="mt-6">
-            <SectionBody sheet={sheet} schema={payload.schema} section={active} canEdit={payload.canEdit} />
+            <SectionBody sheet={sheet} schema={payload.schema} section={active} canEdit={payload.canEdit} teamNotes={teamNotes} />
           </div>
           <div className="mt-10 flex items-center justify-between gap-3 border-t border-loam-100 pt-4">
             <Button variant="secondary" disabled={index === 0} onClick={() => setActive(sections[index - 1])}>
