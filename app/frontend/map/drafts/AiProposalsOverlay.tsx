@@ -1,29 +1,24 @@
-import clsx from 'clsx'
 import { useEditor } from '@/map/editor/EditorContext'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 import DraftsBar from '@/map/drafts/DraftsBar'
 import FeatureUpdatesBar from '@/map/feature_updates/FeatureUpdatesBar'
+import { useFeatureUpdates } from '@/map/feature_updates/store'
 
 /**
- * Under the drawing toolbar, what an AI proposed and waits for a person:
- * new elements (drafts) and changes to existing ones, one card each,
- * stacked so they never cover each other.
+ * In the messages under the toolbar, what an AI proposed and waits for a
+ * person: new elements (drafts) and changes to existing ones, one card each,
+ * stacked so they never cover each other. An action in progress (drawing,
+ * placing) goes first; on a phone it waits behind it (map/layout/zones).
  */
 export default function AiProposalsOverlay() {
   const editor = useEditor()
-  const panelOpen = editor.activePanel != null
-  const inspectorOpen = editor.selected != null
+  const { updates } = useFeatureUpdates()
+  const waiting = updates.length > 0 || editor.features.some((f) => f.properties.status === 'draft')
   return (
-    <div
-      className={clsx(
-        'pointer-events-none absolute top-14 z-20 flex flex-col items-center gap-2 md:items-start',
-        // Clear of an open panel (left, from md up) and the zoom controls (right).
-        'left-2 right-12',
-        panelOpen ? 'md:left-[21.5rem]' : 'md:left-4',
-        inspectorOpen ? 'md:right-[21.5rem]' : 'md:right-14',
-      )}
-    >
+    <ZoneCard id="ai-proposals" zone="top" priority={PRIORITY.aiProposals} active={waiting} passThrough className="w-full max-w-md items-stretch gap-2">
       <DraftsBar />
       <FeatureUpdatesBar />
-    </div>
+    </ZoneCard>
   )
 }

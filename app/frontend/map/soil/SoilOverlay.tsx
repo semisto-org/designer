@@ -10,6 +10,8 @@ import {
 } from '@/map/soil/layers'
 import { soilVisibility } from '@/map/soil/visibility'
 import { getSoilState, soilActions, useSoil, type SoilPlacing } from '@/map/soil/store'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 /**
  * Always mounted in the editor: loads the soil points and plant observations,
@@ -141,13 +143,15 @@ export default function SoilOverlay() {
   }, [placing])
 
   return placing ? (
-    <div role="status" className="absolute inset-x-14 top-3 z-30 mx-auto flex w-fit flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-xl bg-leaf-700 px-4 py-2 text-center text-sm text-white shadow-lg md:max-w-md">
+    <ZoneCard id="soil-placing" zone="top" priority={PRIORITY.activeTool} passThrough className="items-center">
+    <div role="status" className="pointer-events-auto flex w-fit flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-xl bg-leaf-700 px-4 py-2 text-center text-sm text-white shadow-lg md:max-w-md">
       <span>{bannerText(placing, samples.find((s) => placing.kind === 'sample' && s.id === placing.id)?.label, observations.find((o) => placing.kind === 'observation' && o.id === placing.id)?.speciesName)}</span>
       <button type="button" onClick={() => soilActions.cancelPlacing()} className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/15 px-2 py-1 text-xs hover:bg-white/25">
         <X className="h-3.5 w-3.5" />
         {t('common.cancel')}
       </button>
     </div>
+    </ZoneCard>
   ) : null
 }
 

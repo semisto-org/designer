@@ -1,10 +1,11 @@
 import clsx from 'clsx'
 import { ChevronDown, Hourglass, Sun } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { formatDate } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { noonElevation, SEASONS, type Season } from '@/map/time/growth'
 import { availableMoments, FUTURE_YEARS, isFuture, momentDate, type Moment, type Timeline } from '@/map/time/moment'
 
@@ -73,17 +74,18 @@ function hint(moment: Moment, line: Timeline, drafts: boolean): string {
 export default function TimeStrip() {
   const editor = useEditor()
   const { moment, timeline, features, activePanel, selected } = editor
-  const container = useRef<HTMLDivElement>(null)
+  // A state, not a ref: the zone mounts the strip once its slot exists, after the first render.
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [width, setWidth] = useState(Infinity)
   const [unfolded, setUnfolded] = useState(false)
 
   useEffect(() => {
-    const element = container.current
+    const element = container
     if (!element || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width))
     observer.observe(element)
     return () => observer.disconnect()
-  }, [])
+  }, [container])
 
   // Back to observing, the strip starts folded again.
   const observing = editor.focusStage === 'observe'
@@ -121,18 +123,9 @@ export default function TimeStrip() {
   )
 
   return (
-    <div
-      ref={container}
-      className={clsx(
-        'pointer-events-none absolute z-10 flex justify-center',
-        // Phone: above the scale and the tool bar, out of the way of an open panel or selection.
-        'inset-x-2 bottom-[5.25rem] md:bottom-4',
-        beside && 'hidden md:flex',
-        // From md up: clear of the guide card (bottom left, beside an open panel) and of the legend or the inspector (right).
-        activePanel ? 'md:left-[calc(21.5rem+300px+1.5rem)]' : 'md:left-[calc(300px+2rem)]',
-        selected ? 'md:right-[21.5rem]' : 'md:right-[19rem]',
-      )}
-    >
+    // The middle of the foot of the map (map/layout/zones): the row's free width decides whether it folds.
+    <ZoneCard id="time-strip" zone="bottom" order={1} passThrough className="min-w-0 flex-1 basis-full md:basis-auto">
+    <div ref={setContainer} className="pointer-events-none flex w-full justify-center">
       {folded ? (
         <div className="pointer-events-auto relative">
           {unfolded && (
@@ -146,6 +139,7 @@ export default function TimeStrip() {
         </div>
       ) : card}
     </div>
+    </ZoneCard>
   )
 }
 

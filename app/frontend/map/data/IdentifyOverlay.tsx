@@ -11,6 +11,8 @@ import { onSingleClick } from '@/map/singleClick'
 import { useLayerState, visibleOverlays } from '@/map/data/store'
 import type { RegionLayerData } from '@/types'
 import type { IdentifyLayerResult, IdentifyResponse } from '@/types/map_data'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 const MOBILE = '(max-width: 767px)'
 
@@ -132,9 +134,11 @@ function MobileSheet({ query, children }: { query: Query; children: ReactNode })
     }
   }, [instance, query.lngLat])
   return (
-    <div className="absolute inset-x-2 bottom-14 z-30 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-loam-200">
-      {children}
-    </div>
+    <ZoneCard id="identify" zone="sheet" priority={PRIORITY.identify}>
+      <div className="min-h-0 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-loam-200">
+        {children}
+      </div>
+    </ZoneCard>
   )
 }
 

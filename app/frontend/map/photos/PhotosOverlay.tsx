@@ -19,6 +19,8 @@ import { PhotoLightbox } from '@/map/photos/PhotoLightbox'
 import { photoMarkersVisible } from '@/map/photos/shown'
 import { getPhotosState, photoActions, usePhotos } from '@/map/photos/store'
 import type { MapPhotoData } from '@/types/soil_photos'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 /**
  * Always mounted in the editor: loads the photos, draws their markers on the
@@ -239,13 +241,15 @@ export default function PhotosOverlay() {
   return (
     <>
       {placing && (
-        <div role="status" className="absolute inset-x-14 top-3 z-30 mx-auto flex w-fit flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-xl bg-prune-700 px-4 py-2 text-center text-sm text-white shadow-lg md:max-w-md">
+        <ZoneCard id="photo-placing" zone="top" priority={PRIORITY.activeTool} passThrough className="items-center">
+        <div role="status" className="pointer-events-auto flex w-fit flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-xl bg-prune-700 px-4 py-2 text-center text-sm text-white shadow-lg md:max-w-md">
           <span>{t('soil_photos.placing.banner', { name: photoLabel(placing) })}</span>
           <button type="button" onClick={() => photoActions.cancelPlacing()} className="inline-flex shrink-0 items-center gap-1 rounded-md bg-white/15 px-2 py-1 text-xs hover:bg-white/25">
             <X className="h-3.5 w-3.5" />
             {t('common.cancel')}
           </button>
         </div>
+        </ZoneCard>
       )}
       <PhotoHostContext.Provider value={host}>
         <PhotoLightbox order={group} />

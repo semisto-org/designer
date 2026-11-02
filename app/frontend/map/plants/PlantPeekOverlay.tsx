@@ -17,6 +17,8 @@ import { plantStrata, STRATA_COLORS, StrataDot } from '@/map/plants/strata'
 import { inkOn } from '@/map/plants/strataColors'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import type { MapFeature } from '@/types'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 const MOBILE = '(max-width: 767px)'
 
@@ -79,7 +81,7 @@ export default function PlantPeekOverlay() {
   }
   const card = <PlantCard feature={feature} onOpen={openDetails} onMove={move} onClose={plantPeek.close} mobile={mobile} />
   return mobile
-    ? <div className="absolute inset-x-2 bottom-14 z-30">{card}</div>
+    ? <ZoneCard id="plant-peek" zone="sheet" priority={PRIORITY.plantPeek}>{card}</ZoneCard>
     : <DesktopPopup lngLat={lngLat} featureId={feature.properties.id}>{card}</DesktopPopup>
 }
 
