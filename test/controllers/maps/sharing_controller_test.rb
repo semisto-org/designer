@@ -78,7 +78,7 @@ class Maps::SharingControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
     assert_nil @map.role_for(@viewer)
-    assert_not CommentSubscription.subscribed?(@viewer, @map), "their thread subscriptions go with them"
+    assert_not CommentSubscription.exists?(user: @viewer, commentable: @map), "their thread subscriptions go with them"
   end
 
   test "a member leaves the map on their own; nobody else can remove them" do
@@ -188,5 +188,40 @@ class Maps::SharingControllerTest < ActionDispatch::IntegrationTest
     sign_in_as @viewer
     post map_share_link_path(@map), as: :json
     assert_response :forbidden
+  end
+
+  test "the owner lets a viewer into the map's discussion, person by person" do
+    membership = @map.memberships.find_by(user: @viewer)
+    sign_in_as @owner
+    get map_sharing_path(@map), as: :json
+    assert_equal false, json["members"].find { |m| m["userId"] == @viewer.id }["chat"]
+    assert_equal true, json["members"].find { |m| m["userId"] == @owner.id }["chat"], "the owner is always in it"
+
+    patch map_membership_path(@map, membership), params: { membership: { chat_access: true } }, as: :json
+    assert_response :success
+    assert membership.reload.chat_access
+    assert @map.chat_member?(@viewer)
+    assert_equal true, json["members"].find { |m| m["userId"] == @viewer.id }["chat"]
+
+    sign_in_as @viewer
+    patch map_membership_path(@map, membership), params: { membership: { chat_access: false } }, as: :json
+    assert_response :forbidden
+    assert membership.reload.chat_access, "only the owner decides"
+  end
+
+  test "an invitation can open the discussion; the person joins it on accepting" do
+    sign_in_as @owner
+    post map_invitations_path(@map), params: { invitation: { email_address: "cliente@example.org", role: "viewer", chat_access: true } }, as: :json
+    assert_response :created
+    assert_equal true, json["invitations"].first["chat"]
+    invitation = @map.invitations.last
+    assert invitation.chat_access
+    patch map_invitation_path(@map, invitation), params: { invitation: { chat_access: false } }, as: :json
+    assert_not invitation.reload.chat_access
+    invitation.update!(chat_access: true)
+
+    client = make_user("Cliente", email: "cliente@example.org")
+    invitation.accept!(client)
+    assert @map.chat_member?(client)
   end
 end

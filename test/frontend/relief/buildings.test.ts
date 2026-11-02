@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildingLayer, taggedHeight, type BuildingData } from '../../../app/frontend/relief/buildings.ts'
+import { buildingLayer, drawnBuildings, mergeBuildings, taggedHeight, type BuildingData } from '../../../app/frontend/relief/buildings.ts'
 import { fromMercator, type GridMeta } from '../../../app/frontend/relief/grid.ts'
 
 // A 20 × 20 grid of 1 m cells (at the equator a Mercator metre is a metre).
@@ -49,4 +49,33 @@ test('buildings off the grid are left out', () => {
   const ground = new Float32Array(400).fill(50)
   const layer = buildingLayer(meta, [building({ rings: [far] })], { original: ground, ground, surface: null })
   assert.equal(layer.volumes.length, 0)
+})
+
+test('drawn buildings: active ones of a building kind, at the height of their card, planned or not', () => {
+  const ring = building().rings[0]
+  const drawn = drawnBuildings([
+    { geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 7, kind: 'building', status: 'active', height_m: 9, planned: true } },
+    { geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 8, kind: 'greenhouse', status: 'active' } },
+    { geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 9, kind: 'pond', status: 'active' } },
+    { geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 10, kind: 'shed', status: 'draft' } },
+  ])
+  assert.deepEqual(drawn.map((b) => [b.id, b.kind, b.height, b.planned]), [['drawn-7', 'building', 9, true], ['drawn-8', 'greenhouse', null, false]])
+  assert.equal(taggedHeight(drawn[1]).height, 3)
+})
+
+test('a drawn building replaces the OpenStreetMap footprint it covers, and keeps its own height whatever the surface model says', () => {
+  const ring = building().rings[0]
+  const far = [[14, 14], [18, 14], [18, 18], [14, 18], [14, 14]].map(([x, y]) => lngLat(x, y))
+  const [drawn] = drawnBuildings([{ geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 1, kind: 'building', height_m: 5, planned: true } }])
+  const merged = mergeBuildings([building({ id: 'osm-same' }), building({ id: 'osm-far', rings: [far] })], [drawn])
+  assert.deepEqual(merged.map((b) => b.id), ['osm-far', 'drawn-1'])
+
+  const ground = new Float32Array(400).fill(50)
+  const surface = Float32Array.from(ground)
+  for (let r = 5; r <= 9; r++) for (let c = 5; c <= 11; c++) surface[r * 20 + c] += 12
+  const layer = buildingLayer(meta, [drawn], { original: ground, ground, surface })
+  assert.equal(layer.volumes[0].height, 5)
+  assert.equal(layer.volumes[0].planned, true)
+  assert.equal(layer.volumes[0].source, 'tags')
+  assert.ok(layer.roofs[7 * 20 + 8] >= 55, 'its roof is there for the shadows')
 })

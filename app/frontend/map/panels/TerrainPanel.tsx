@@ -161,7 +161,7 @@ export default function TerrainPanel() {
           <p className="text-xs text-loam-500">{t('map_data.terrain.import_hint')}</p>
         </section>
       ))}
-      {editor.drawing && <p className="text-xs text-loam-500">{t('editor.draw_hint')}</p>}
+      {(editor.drawingShape === 'polygon' || editor.drawingShape === 'rectangle' || editor.drawingShape === 'freehand') && <p className="text-xs text-loam-500">{t('editor.draw_hint')}</p>}
     </div>
   )
 }

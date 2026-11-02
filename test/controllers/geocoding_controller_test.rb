@@ -18,9 +18,12 @@ class GeocodingControllerTest < ActionDispatch::IntegrationTest
   test "on the European base, searches every country" do
     load Rails.root.join("db/seeds/01_regions.rb").to_s
     stub_request(:get, %r{nominatim\.openstreetmap\.org/search}).to_return(json_response("nominatim_search.json"))
+    # No exact French house number: the national address base gives way.
+    ban = stub_request(:get, %r{data\.geopf\.fr/geocodage/search}).to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: { features: [] }.to_json)
     sign_in_as users(:michael)
     get geocode_path, params: { q: "Rue de Lille 3 Paris", region_id: Region.europe.id }, as: :json
     assert_response :success
+    assert_requested ban
     assert_requested(:get, %r{nominatim\.openstreetmap\.org/search}) { |request| !request.uri.query_values.key?("countrycodes") }
   end
 

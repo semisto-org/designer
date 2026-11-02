@@ -3,6 +3,7 @@ class User < ApplicationRecord
   include AiTrial
   include HeicAttachment
   include HasLogo
+  include HasDocumentTheme
   include SessionReplayConsent
 
   AVATAR_MAX_BYTES = 10.megabytes

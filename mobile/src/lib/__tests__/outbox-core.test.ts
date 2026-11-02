@@ -1,4 +1,4 @@
-import { applyPending, emptyOutbox, flush, nextTempId, ownProperties, retry, retryDelayMs, type Op, type OutboxState, type Transport } from '../outbox-core'
+import { applyPending, emptyOutbox, filesOf, flush, nextTempId, ownProperties, retry, retryDelayMs, type Op, type OutboxState, type Transport } from '../outbox-core'
 import type { MapBundle, MapFeature } from '../types'
 
 const at = '2026-10-04T10:00:00Z'
@@ -29,6 +29,7 @@ function transport(overrides: Partial<Transport> = {}) {
     createStorageReading: async (_m, featureId, reading) => { calls.push(`storage ${featureId} ${reading.humidityPct}`) },
     createBioindicator: async (_m, op) => { calls.push(`bioindicator ${op.observation.speciesName}`) },
     closeVisit: async (_m, op, questionIds) => { calls.push(`visit ${op.key} [${questionIds.join(',')}]`) },
+    uploadVisitAudio: async (_m, op) => { calls.push(`audio ${op.key}`) },
     ...overrides,
   }
   return { t, calls }
@@ -263,5 +264,19 @@ describe('closeVisit', () => {
     const result = await flush(state([note('a', -1, 'one'), note('b', -2, 'refused'), close]), t)
     expect(calls).toContain('visit visit-1234abcd [501,77]')
     expect(result.state.ops.map((op) => op.id)).toEqual(['b'])
+  })
+})
+
+describe('uploadVisitAudio', () => {
+  it('sends the sound of the walk before the visit closes, then lets its file go', async () => {
+    const { t, calls } = transport()
+    const audio: Op = { id: 'a', mapId: 1, createdAt: at, type: 'uploadVisitAudio', key: 'visit-1234abcd', startedAt: at, file: 'file:///visit.m4a', seconds: 60 }
+    const close: Op = { id: 'c', mapId: 1, createdAt: at, type: 'closeVisit', key: 'visit-1234abcd', startedAt: at, endedAt: at, questionIds: [], track: [[4.9, 50.3], [4.91, 50.3]] }
+    const sent: string[] = []
+    const result = await flush(state([audio, close]), t, (_state, files) => sent.push(...files))
+    expect(calls).toEqual(['audio visit-1234abcd', 'visit visit-1234abcd []'])
+    expect(sent).toEqual(['file:///visit.m4a'])
+    expect(result.state.ops).toEqual([])
+    expect(filesOf(audio)).toEqual(['file:///visit.m4a'])
   })
 })

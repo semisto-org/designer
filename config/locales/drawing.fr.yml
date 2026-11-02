@@ -18,6 +18,8 @@ fr:
       keyline: "Keyline"
       ditch: "Fossé"
       overflow_pipe: "Tuyau de trop-plein"
+      irrigation_line: "Ligne d’irrigation"
+      pump: "Pompe"
       water_tank: "Citerne"
       well: "Puits"
       spring: "Source"
@@ -115,6 +117,10 @@ fr:
       use: "Aménagement"
       capacity_l: "Capacité"
       tank_type: "Type de citerne"
+      irrigation_type: "Arrosage"
+      emitter_spacing_cm: "Écart entre goutteurs"
+      pump_power: "Énergie"
+      head_m: "Hauteur de refoulement"
       potable: "Eau potable"
       flow_l_min: "Débit"
       permanent: "Coule toute l'année"
@@ -231,6 +237,8 @@ fr:
       liner: { natural: "Sol en place", clay: "Argile", epdm: "Bâche EPDM", concrete: "Béton" }
       purpose: { wildlife: "Biodiversité", irrigation: "Réserve d'arrosage", ornamental: "Agrément", swimming: "Baignade", treatment: "Épuration (lagunage)", growing: "Butte de culture", hedge_bank: "Talus planté de haie", windbreak: "Abri du vent", noise: "Écran (bruit, vue)", play: "Jeu" }
       tank_type: { buried: "Enterrée", above_ground: "Hors sol", ibc: "Cuve IBC" }
+      irrigation_type: { drip: "Goutte-à-goutte", soaker: "Tuyau poreux", micro_sprinkler: "Micro-asperseurs", sprinkler: "Arroseur" }
+      pump_power: { manual: "À bras", electric: "Électrique", solar: "Solaire", wind: "Éolienne", ram: "Bélier hydraulique" }
       gate_type: { pedestrian: "Piétons", vehicle: "Véhicules" }
       covering: { glass: "Verre", polycarbonate: "Polycarbonate", plastic: "Bâche plastique" }
       compost_type: { heap: "En tas", bins: "En bacs", worm: "Lombricompost" }
@@ -309,6 +317,7 @@ fr:
       # Said after the generic hint when one draws these kinds.
       kind_hints:
         overflow_pipe: "Pars de la mare qui déborde et finis dans celle qui reçoit l'eau : les flèches suivront le sens de l'eau."
+        irrigation_line: "Pars de la pompe, de la citerne ou du robinet, et suis le rang à arroser. Pense à arroser au pied des jeunes arbres, pas sur tout le sol."
       hint_polygon: "Clique point par point le contour de « %{kind} ». Reviens au premier point ou touche « Terminer »."
       hint_outline: "Clique point par point le contour sur la carte. Reviens au premier point ou touche « Terminer » ; Échap pour annuler."
       hint_path: "Clique point par point le tracé sur la carte. Double-clique ou touche « Terminer » ; Échap pour annuler."

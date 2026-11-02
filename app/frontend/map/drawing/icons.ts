@@ -45,8 +45,10 @@ import { __iconData as toyBrick } from 'lucide-react/dist/esm/icons/toy-brick.mj
 import { __iconData as tractor } from 'lucide-react/dist/esm/icons/tractor.mjs'
 import { __iconData as treeDeciduous } from 'lucide-react/dist/esm/icons/tree-deciduous.mjs'
 import { __iconData as trees } from 'lucide-react/dist/esm/icons/trees.mjs'
+import { __iconData as showerHead } from 'lucide-react/dist/esm/icons/shower-head.mjs'
 import { __iconData as warehouse } from 'lucide-react/dist/esm/icons/warehouse.mjs'
 import { __iconData as waves } from 'lucide-react/dist/esm/icons/waves-horizontal.mjs'
+import { __iconData as wavesArrowUp } from 'lucide-react/dist/esm/icons/waves-arrow-up.mjs'
 import { __iconData as wind } from 'lucide-react/dist/esm/icons/wind.mjs'
 import { __iconData as zap } from 'lucide-react/dist/esm/icons/zap.mjs'
 
@@ -100,8 +102,10 @@ const ICON_DATA: Record<string, LucideIconData> = {
   'tractor': tractor,
   'tree-deciduous': treeDeciduous,
   'trees': trees,
+  'shower-head': showerHead,
   'warehouse': warehouse,
   'waves': waves,
+  'waves-arrow-up': wavesArrowUp,
   'wind': wind,
   'zap': zap,
 }

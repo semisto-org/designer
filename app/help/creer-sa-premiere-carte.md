@@ -18,7 +18,7 @@ Pour la garder, tape ton adresse e-mail sous **Garder ce carnet** : ton compte e
 ![« Mes cartes » : chaque terrain avec son étape et sa prochaine action](/help/captures/mes-cartes.webp)
 
 1. **Connecte-toi.** Continue avec Google, ou reçois un e-mail (valable 20 minutes) : ouvre son lien, ou tape son code à six chiffres sur l'appareil où tu te connectes, pratique quand ta messagerie est sur un autre appareil. Si tu préfères, choisis un mot de passe dans « Mon compte ».
-2. **Crée la carte.** Dans « Mes cartes », choisis « Nouvelle carte », donne-lui un nom parlant (« Le jardin-forêt de la Ferme du Bois ») et, si tu le souhaites, une adresse : elle sert à centrer la carte au bon endroit.
+2. **Crée la carte.** Dans « Mes cartes », choisis « Nouvelle carte » et commence par l'adresse du terrain : la carte s'ouvrira dessus. Le nom est facultatif : sans nom, elle prend celui du lieu (« Le terrain de Purnode »), et tu pourras le changer.
 3. **Trace le contour du terrain.** Ouvre le panneau **Terrain** et choisis **Dessiner le contour**. Clique à chaque angle, puis double-clique (ou reviens au premier point) pour terminer. Tu peux aussi partir des parcelles du cadastre : voir [Choisir ses parcelles](/help/choisir-ses-parcelles).
 4. **Regarde ce que dit le terrain.** Dès que le contour existe, la surface est calculée et les couches du géoportail de ta région (relief, sols, eau…) sont prêtes à être consultées : voir [Lire les couches du Géoportail](/help/lire-les-couches-du-geoportail).
 
@@ -32,6 +32,12 @@ Une carte avance au rythme d'un vrai projet. Tu peux indiquer où tu en es :
 - **Planter** : passer à l'action, puis suivre la reprise des plantes.
 
 Rien n'est obligatoire ni linéaire : on revient souvent en arrière, et c'est très bien ainsi. Le panneau **Parcours** de la carte suit ces étapes avec toi et propose la prochaine action utile : voir [Le parcours en quatre étapes](/help/le-parcours-en-quatre-etapes).
+
+## Les outils, étape par étape
+
+À gauche de la carte (en bas sur un téléphone), chaque étape montre d'abord ses outils essentiels : la fiche projet, les couches, le relief, le soleil et les photos pour observer, le terrain et les éléments pour cartographier, et ainsi de suite. Les autres attendent derrière **N autres outils** : touche-le pour les déplier, **Moins d'outils** pour les replier. Ton choix est gardé sur cet appareil. L'outil que propose « À faire maintenant » reste toujours visible.
+
+Le **carnet de route** s'ouvre une fois ton terrain délimité : il raconte la suite du chemin sur un terrain d'exemple. Tu le retrouves dans le panneau **Parcours**.
 
 ## Un conseil pour bien démarrer
 

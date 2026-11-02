@@ -8,6 +8,19 @@ class MapTest < ActiveSupport::TestCase
     assert map.center.present?
   end
 
+  test "a new map without a name takes the name of its place, an existing one keeps needing a name" do
+    map = Map.create!(name: " ", address: "Rue du Bois 3, 5530 Yvoir", owner: users(:bob), region: regions(:wallonia))
+    assert_equal "Le terrain d'Yvoir", map.name
+    assert_equal "Mon terrain", Map.create!(owner: users(:bob), region: regions(:wallonia)).name
+    assert_not map.update(name: "")
+  end
+
+  test "the name a place gives a map" do
+    assert_equal "Le terrain de Purnode", Map.name_for_address("Rue du Bois 3, 5530 Purnode")
+    assert_equal "Le terrain d'Église", Map.name_for_address("Église")
+    assert_equal "Mon terrain", Map.name_for_address(nil)
+  end
+
   test "roles" do
     map = maps(:ahinvaux)
     assert map.editable_by?(users(:michael))

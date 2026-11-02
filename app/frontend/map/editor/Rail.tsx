@@ -1,13 +1,17 @@
 import clsx from 'clsx'
-import { Check, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Check, ChevronUp, Ellipsis, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { STAGES, useGuide } from '@/map/editor/guide'
+import { parseExpanded, railItems } from '@/map/editor/railItems'
 import type { EditorPanel, PanelGroup } from '@/map/panels/registry'
 
 const GROUPS: PanelGroup[] = [...STAGES, 'share']
 const COLLAPSED_KEY = 'designer.editor.rail-collapsed'
+const EXPANDED_KEY = 'designer.editor.rail-expanded'
 
 function readCollapsed(): boolean {
   try {
@@ -31,13 +35,49 @@ function useRailCollapsed(): [boolean, (value: boolean) => void] {
   return [collapsed, update]
 }
 
+/** The steps the person unfolded beyond their essential tools, kept in this browser for every map. */
+function useExpandedGroups(): [Set<string>, (group: string) => void] {
+  const [expanded, setExpanded] = useState(() => {
+    try {
+      return new Set(parseExpanded(window.localStorage.getItem(EXPANDED_KEY)))
+    } catch {
+      return new Set<string>()
+    }
+  })
+  const toggle = useCallback((group: string) => {
+    setExpanded((current) => {
+      const next = new Set(current)
+      if (next.has(group)) next.delete(group)
+      else next.add(group)
+      try {
+        window.localStorage.setItem(EXPANDED_KEY, JSON.stringify([...next]))
+      } catch {
+        /* private window: this visit only */
+      }
+      return next
+    })
+  }, [])
+  return [expanded, toggle]
+}
+
 type RailProps = { panels: EditorPanel[] }
 
-function groupsOf(panels: EditorPanel[]) {
-  return GROUPS.map((group) => ({
-    group,
-    items: panels.filter((p) => p.group === group && !p.hiddenFromRail).sort((a, b) => (a.order ?? 50) - (b.order ?? 50)),
-  })).filter((g) => g.items.length > 0)
+/**
+ * The rail's steps with the tools they list now: every tool of a step the
+ * person unfolded, the essential ones elsewhere (see railItems).
+ */
+function useRailGroups(panels: EditorPanel[]) {
+  const editor = useEditor()
+  const guide = useGuide()
+  const [expanded, toggle] = useExpandedGroups()
+  const todoPanel = guide.target?.kind === 'item' ? guide.target.panel : null
+  const groups = GROUPS.map((group) => {
+    const all = panels.filter((p) => p.group === group && !p.hiddenFromRail).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
+    const { shown, hidden } = railItems(all, { expanded: expanded.has(group), pinned: [editor.activePanel, todoPanel] })
+    const foldable = expanded.has(group) && all.some((p) => p.essential)
+    return { group, items: shown, hidden, foldable }
+  }).filter((g) => g.items.length > 0)
+  return { groups, toggle, todoPanel }
 }
 
 /** Numbered circle of a step in the rail: filled for the step in focus, a check once done. */
@@ -66,8 +106,7 @@ export function EditorRail({ panels }: RailProps) {
   const [collapsed, setCollapsed] = useRailCollapsed()
   const [tip, setTip] = useState<{ label: string; top: number; left: number } | null>(null)
   const root = useRef<HTMLElement>(null)
-  const groups = groupsOf(panels)
-  const todoPanel = guide.target?.kind === 'item' ? guide.target.panel : null
+  const { groups, toggle, todoPanel } = useRailGroups(panels)
   const doneSteps = new Set(guide.data?.steps.filter((s) => s.done).map((s) => s.key) ?? [])
 
   // A step picked in the header: bring its group into view.
@@ -91,7 +130,7 @@ export function EditorRail({ panels }: RailProps) {
       )}
     >
       <div className={clsx('flex min-h-0 flex-1 flex-col overflow-y-auto', collapsed ? 'items-center gap-1 py-3' : 'gap-3.5 px-2.5 py-3.5')}>
-        {groups.map(({ group, items }) => {
+        {groups.map(({ group, items, hidden, foldable }) => {
           const index = STAGES.indexOf(group as never)
           const numbered = index >= 0
           const active = group === editor.focusStage
@@ -150,6 +189,9 @@ export function EditorRail({ panels }: RailProps) {
                   </button>
                 )
               })}
+              {(hidden > 0 || foldable) && (
+                <MoreTools collapsed={collapsed} hidden={hidden} onToggle={() => { setTip(null); toggle(group) }} />
+              )}
             </section>
           )
         })}
@@ -185,9 +227,8 @@ export function EditorRail({ panels }: RailProps) {
 /** On a phone: the same tools, icons only, in a bar along the bottom of the map. */
 export function EditorBar({ panels }: RailProps) {
   const editor = useEditor()
-  const guide = useGuide()
   const nav = useRef<HTMLElement>(null)
-  const todoPanel = guide.target?.kind === 'item' ? guide.target.panel : null
+  const { groups, toggle, todoPanel } = useRailGroups(panels)
 
   // Keep the open panel's button in view in the scrolling bar.
   useEffect(() => {
@@ -200,7 +241,7 @@ export function EditorBar({ panels }: RailProps) {
       className="absolute inset-x-2 bottom-2 z-20 flex gap-1 overflow-x-auto rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-200"
       aria-label={t('editor.panels_nav')}
     >
-      {groupsOf(panels).map(({ group, items }, gi) => (
+      {groups.map(({ group, items, hidden, foldable }, gi) => (
         <div key={group} className={clsx('flex shrink-0', gi > 0 && 'border-l border-loam-100 pl-1')}>
           {items.map((p) => (
             <button
@@ -219,8 +260,39 @@ export function EditorBar({ panels }: RailProps) {
               {p.id === todoPanel && <span aria-hidden className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-humus-400" />}
             </button>
           ))}
+          {(hidden > 0 || foldable) && (
+            <IconButton
+              size="sm"
+              className="mt-0.5 rounded-lg"
+              label={hidden > 0 ? t('editor.rail.more', { count: hidden }) : t('editor.rail.less')}
+              onClick={() => toggle(group)}
+            >
+              {hidden > 0 ? <Ellipsis /> : <ChevronUp />}
+            </IconButton>
+          )}
         </div>
       ))}
     </nav>
+  )
+}
+
+/**
+ * « 6 autres outils »: unfolds the step's other tools; « Moins d'outils »
+ * folds a step the person unfolded back to its essential ones.
+ */
+function MoreTools({ collapsed, hidden, onToggle }: { collapsed: boolean; hidden: number; onToggle: () => void }) {
+  const label = hidden > 0 ? t('editor.rail.more', { count: hidden }) : t('editor.rail.less')
+  if (collapsed) {
+    return (
+      <IconButton size="sm" className="rounded-lg" label={label} onClick={onToggle}>
+        {hidden > 0 ? <Ellipsis /> : <ChevronUp />}
+      </IconButton>
+    )
+  }
+  return (
+    <Button variant="ghost" size="sm" className="mt-0.5 self-start" onClick={onToggle}>
+      {hidden > 0 ? <Ellipsis className="h-4 w-4" aria-hidden /> : <ChevronUp className="h-4 w-4" aria-hidden />}
+      {label}
+    </Button>
   )
 }

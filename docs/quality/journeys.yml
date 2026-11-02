@@ -8,8 +8,8 @@
 journeys:
   - id: discover
     title: Découvrir le site
-    month: 2026-10
-    scores: { place: fail, time: pass, companion: partial, notebook: partial, further: pass }
+    month: 2026-11
+    scores: { place: partial, time: pass, companion: pass, notebook: partial, further: pass }
     paths:
       - app/frontend/pages/pages/**/*
       - app/frontend/components/site/**/*
@@ -17,8 +17,8 @@ journeys:
 
   - id: first_map
     title: Créer sa première carte
-    month: 2026-10
-    scores: { place: partial, time: pass, companion: pass, notebook: partial, further: partial }
+    month: 2026-11
+    scores: { place: pass, time: pass, companion: pass, notebook: partial, further: partial }
     paths:
       - app/frontend/pages/sessions/**/*
       - app/frontend/pages/welcomes/**/*
@@ -29,7 +29,7 @@ journeys:
 
   - id: invite
     title: Inviter quelqu’un
-    month: 2026-10
+    month: 2026-11
     scores: { place: partial, time: fail, companion: partial, notebook: fail, further: partial }
     paths:
       - app/frontend/collab/**/*
@@ -43,8 +43,8 @@ journeys:
 
   - id: pay
     title: Payer
-    month: 2026-10
-    scores: { place: fail, time: fail, companion: partial, notebook: fail, further: partial }
+    month: 2026-11
+    scores: { place: partial, time: partial, companion: pass, notebook: partial, further: partial }
     paths:
       - app/frontend/pages/billing/**/*
       - app/controllers/billing*_controller.rb
@@ -53,7 +53,7 @@ journeys:
 
   - id: plant
     title: Planter au jardin
-    month: 2026-10
+    month: 2026-11
     scores: { place: pass, time: pass, companion: partial, notebook: partial, further: partial }
     paths:
       - app/frontend/map/plants/**/*
@@ -61,8 +61,8 @@ journeys:
 
   - id: return
     title: Revenir après trois mois
-    month: 2026-10
-    scores: { place: pass, time: partial, companion: fail, notebook: partial, further: fail }
+    month: 2026-11
+    scores: { place: pass, time: pass, companion: partial, notebook: partial, further: fail }
     paths:
       - app/frontend/pages/maps/index.tsx
       - app/frontend/map/panels/Journey*.tsx

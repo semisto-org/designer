@@ -25,6 +25,8 @@ kinds:
   keyline: { per: m, hours: 1.0, season: dry }
   ditch: { per: m, hours: 0.8, season: dry }
   overflow_pipe: { per: m, hours: 0.5, season: dry }
+  irrigation_line: { per: m, hours: 0.1, season: any }
+  pump: { per: each, hours: 3, season: any }
   water_tank: { per: each, hours: 6, season: any }
   well: { machine: true, season: dry }
   rain_garden: { per: m2, hours: 0.8, season: dry }

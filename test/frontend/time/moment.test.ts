@@ -17,7 +17,11 @@ const pond = { layer: 'water', kind: 'pond', status: 'active' }
 const plannedPond = { ...pond, planned: true }
 const shed = { layer: 'structures', kind: 'shed', status: 'active', built_on: '2025-06-01' }
 const oldShed = { ...shed, built_on: '2010-06-01' }
+const fence = { layer: 'structures', kind: 'fence', status: 'active', to_remove: true }
+const felled = { layer: 'existing', kind: 'existing_tree', status: 'active', removed_on: '2025-02-10' }
+const goneLongAgo = { layer: 'existing', kind: 'wall', status: 'active', removed_on: '2020-02-10' }
 const ALL = [oldOak, beforeArrival, apple, planned, draft, pond, plannedPond, shed, oldShed]
+const REMOVALS = [fence, felled, goneLongAgo]
 
 test('the next planting season: now from November to March, else the coming 1 November', () => {
   assert.equal(nextPlantingSeason('2026-10-20'), '2026-11-01')
@@ -56,11 +60,19 @@ test('what shows at each moment', () => {
   for (const moment of ['year5', 'year15', 'year30'] as Moment[]) assert.deepEqual(at(moment), ALL.map(() => true))
 })
 
+test('what the project takes away: there today, gone from the years to come; once taken away, only on arrival', () => {
+  const at = (moment: Moment) => REMOVALS.map((f) => inMoment(f, moment, ARRIVAL))
+  // fence to remove, tree felled in 2025, wall gone before the map was made
+  assert.deepEqual(at('arrival'), [true, true, false])
+  assert.deepEqual(at('today'), [true, false, false])
+  for (const moment of ['year5', 'year15', 'year30'] as Moment[]) assert.deepEqual(at(moment), [false, false, false])
+})
+
 test('the MapLibre filters agree with inMoment', () => {
   const evaluate = (filter: unknown, properties: Record<string, unknown>) =>
     filter == null || featureFilter(filter as never, 'layers[0].filter').filter({ zoom: 18 }, { type: 1, properties, geometry: [] } as never)
   for (const moment of ['arrival', 'today', 'year5', 'year30'] as Moment[]) {
-    for (const f of ALL) assert.equal(evaluate(momentFilter(moment, ARRIVAL), f), inMoment(f, moment, ARRIVAL), `${moment} ${JSON.stringify(f)}`)
+    for (const f of [...ALL, ...REMOVALS]) assert.equal(evaluate(momentFilter(moment, ARRIVAL), f), inMoment(f, moment, ARRIVAL), `${moment} ${JSON.stringify(f)}`)
   }
 })
 

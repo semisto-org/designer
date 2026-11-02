@@ -21,7 +21,12 @@ europe.assign_attributes(
   center: factory.point(4.5, 48.5),
   bounds: factory.parse_wkt("POLYGON((-25 34, 45 34, 45 72, -25 72, -25 34))"),
   outline: nil,
-  settings: europe.settings.merge("attribution" => "Copernicus, Agence européenne pour l'environnement, ISRIC, OpenStreetMap")
+  settings: europe.settings.merge(
+    "attribution" => "Copernicus, Agence européenne pour l'environnement, ISRIC, OpenStreetMap",
+    # A new map does not know its region yet: an exact French house number
+    # comes from the national address base (see Providers::Geocoder).
+    "geocoder" => { "house_numbers" => "ban" }
+  )
 )
 europe.save!
 
@@ -39,7 +44,7 @@ regions = {
   "france" => {
     name: "France", country_code: "FR", default_zoom: 6, center: factory.point(2.5, 46.6),
     bounds: "POLYGON((-5.3 41.3, 9.6 41.3, 9.6 51.1, -5.3 51.1, -5.3 41.3))",
-    settings: { "attribution" => "IGN, Géoplateforme", "crs" => "EPSG:2154" }
+    settings: { "attribution" => "IGN, Géoplateforme", "crs" => "EPSG:2154", "geocoder" => { "provider" => "ban" } }
   },
   "brussels" => {
     name: "Bruxelles", country_code: "BE", default_zoom: 11, center: factory.point(4.36, 50.84),

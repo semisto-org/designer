@@ -1,4 +1,4 @@
-import { inkOn, pointIcon, STRATA_COLORS, strataColor, PLANTED_COLOR } from '../elements'
+import { featureTitle, inkOn, pointIcon, STRATA_COLORS, strataColor, PLANTED_COLOR } from '../elements'
 import type { MapFeature, Planting } from '../types'
 
 const feature = (properties: Record<string, unknown>): MapFeature =>
@@ -28,5 +28,15 @@ describe('inkOn', () => {
     expect(inkOn(STRATA_COLORS.canopy)).toBe('#ffffff')
     expect(inkOn(STRATA_COLORS.sub_canopy)).toBe('#1b1712')
     expect(inkOn(STRATA_COLORS.herbaceous)).toBe('#1b1712')
+  })
+})
+
+describe('featureTitle for a season sign', () => {
+  const sign = (properties: Record<string, unknown>) =>
+    ({ type: 'Feature', id: 1, geometry: { type: 'Point', coordinates: [0, 0] }, properties: { layer: 'notes', kind: 'season_sign', ...properties } }) as unknown as MapFeature
+
+  it('names the sign when nobody gave it a name', () => {
+    expect(featureTitle(sign({ sign: 'snow_melts_first' }))).not.toBe(featureTitle(sign({})))
+    expect(featureTitle(sign({ name: 'Bande sans neige', sign: 'snow_melts_first' }))).toBe('Bande sans neige')
   })
 })

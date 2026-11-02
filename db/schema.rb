@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -248,6 +248,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.datetime "last_read_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "emailed_until"
     t.index ["user_id", "commentable_type", "commentable_id"], name: "index_comment_reads_unique", unique: true
     t.index ["user_id"], name: "index_comment_reads_on_user_id"
   end
@@ -258,6 +259,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.bigint "commentable_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "muted", default: false, null: false
     t.index ["commentable_type", "commentable_id", "user_id"], name: "index_comment_subscriptions_unique", unique: true
     t.index ["user_id"], name: "index_comment_subscriptions_on_user_id"
   end
@@ -273,10 +275,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "feature_ids", default: [], null: false, array: true
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.bigint "map_photo_id"
     t.index ["author_id"], name: "index_comments_on_author_id"
     t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
     t.index ["map_id", "created_at"], name: "index_comments_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_comments_on_map_id"
+    t.index ["map_photo_id"], name: "index_comments_on_map_photo_id"
   end
 
   create_table "drone_missions", force: :cascade do |t|
@@ -641,6 +647,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.datetime "expires_at"
     t.datetime "last_sent_at"
     t.boolean "place_owner", default: false, null: false
+    t.boolean "chat_access", default: false, null: false
     t.index ["invited_by_id"], name: "index_map_invitations_on_invited_by_id"
     t.index ["map_id"], name: "index_map_invitations_on_map_id"
     t.index ["token"], name: "index_map_invitations_on_token", unique: true
@@ -654,6 +661,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "place_owner", default: false, null: false
+    t.boolean "chat_access", default: false, null: false
     t.index ["invited_by_id"], name: "index_map_memberships_on_invited_by_id"
     t.index ["map_id", "user_id"], name: "index_map_memberships_on_map_id_and_user_id", unique: true
     t.index ["map_id"], name: "index_map_memberships_on_map_id"
@@ -850,6 +858,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.boolean "accepts_propagation_requests", default: false, null: false
     t.datetime "outlined_at"
     t.datetime "plan_printed_at"
+    t.datetime "chat_digest_at"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
@@ -1019,6 +1028,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "billing_user_id"
+    t.jsonb "document_theme", default: {}, null: false
+    t.jsonb "document_theme_draft"
     t.index ["billing_user_id"], name: "index_organizations_on_billing_user_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
@@ -1448,6 +1459,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.index ["token"], name: "index_project_sheet_links_on_token", unique: true
   end
 
+  create_table "project_sheet_notes", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "section", null: false
+    t.text "body", null: false
+    t.bigint "updated_by_id"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "section"], name: "index_project_sheet_notes_on_map_id_and_section", unique: true
+    t.index ["updated_by_id"], name: "index_project_sheet_notes_on_updated_by_id"
+  end
+
   create_table "propagation_requests", force: :cascade do |t|
     t.bigint "map_id", null: false
     t.bigint "species_id", null: false
@@ -1605,6 +1628,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.bigint "map_document_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "audio_document_id"
+    t.integer "audio_seconds"
+    t.geometry "track", limit: {:srid=>4326, :type=>"line_string"}
+    t.integer "track_m"
+    t.index ["audio_document_id"], name: "index_site_visits_on_audio_document_id"
     t.index ["map_document_id"], name: "index_site_visits_on_map_document_id"
     t.index ["map_id", "key"], name: "index_site_visits_on_map_id_and_key", unique: true
     t.index ["map_id", "started_at"], name: "index_site_visits_on_map_id_and_started_at"
@@ -1708,6 +1736,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.date "starts_on"
     t.string "step_kind"
     t.citext "invitee_email"
+    t.boolean "forecast", default: false, null: false
     t.index ["assignee_id", "completed_at"], name: "index_tasks_on_assignee_id_and_completed_at"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"
@@ -1744,6 +1773,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
     t.bigint "source_publication_id"
     t.boolean "replay_consent"
     t.datetime "replay_consent_at"
+    t.jsonb "document_theme", default: {}, null: false
+    t.jsonb "document_theme_draft"
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
@@ -1790,6 +1821,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
   add_foreign_key "comment_reads", "users"
   add_foreign_key "comment_subscriptions", "users"
+  add_foreign_key "comments", "map_photos", on_delete: :nullify
   add_foreign_key "comments", "maps"
   add_foreign_key "comments", "users", column: "author_id"
   add_foreign_key "drone_missions", "drone_pilots", on_delete: :restrict
@@ -1924,6 +1956,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
   add_foreign_key "project_sheet_drafts", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "project_sheet_links", "maps", on_delete: :cascade
   add_foreign_key "project_sheet_links", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "project_sheet_notes", "maps", on_delete: :cascade
+  add_foreign_key "project_sheet_notes", "users", column: "updated_by_id", on_delete: :nullify
   add_foreign_key "propagation_requests", "maps", on_delete: :cascade
   add_foreign_key "propagation_requests", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "propagation_requests", "plant_varieties", column: "variety_id", on_delete: :nullify
@@ -1940,6 +1974,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_220000) do
   add_foreign_key "session_replays", "users", on_delete: :cascade
   add_foreign_key "sessions", "users"
   add_foreign_key "sessions", "users", column: "impersonator_id", on_delete: :cascade
+  add_foreign_key "site_visits", "map_documents", column: "audio_document_id", on_delete: :nullify
   add_foreign_key "site_visits", "map_documents", on_delete: :nullify
   add_foreign_key "site_visits", "maps", on_delete: :cascade
   add_foreign_key "site_visits", "users", on_delete: :nullify

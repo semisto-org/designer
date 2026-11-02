@@ -839,9 +839,13 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, o
             checked={view.buildingsOn}
             onChange={(buildingsOn) => update({ buildingsOn })}
             label={t('relief.page.view.buildings')}
-            hint={buildings.measured
-              ? t('relief.page.view.buildings_measured', { count: buildings.count, measured: buildings.measured })
-              : t('relief.page.view.buildings_hint', { count: buildings.count })}
+            hint={[
+              buildings.count ? (buildings.measured
+                ? t('relief.page.view.buildings_measured', { count: buildings.count, measured: buildings.measured })
+                : t('relief.page.view.buildings_hint', { count: buildings.count })) : null,
+              buildings.drawn ? t('relief.page.view.buildings_drawn', { count: buildings.drawn }) : null,
+              buildings.planned ? t('relief.page.view.buildings_planned', { count: buildings.planned }) : null,
+            ].filter(Boolean).join(' ')}
           />
         )}
         {terrain.surface && (

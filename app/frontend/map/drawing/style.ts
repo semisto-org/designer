@@ -10,7 +10,7 @@ import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
 import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
-import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY } from '@/map/scenario'
+import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 import { ensureSupportHatch } from '@/map/plants/supportHatch'
 
@@ -41,6 +41,7 @@ const expr = (value: unknown) => value as Expr
 const isLibrary = expr(['in', ['get', 'kind'], ['literal', KINDS]])
 const isDraft = expr(['==', ['get', 'status'], 'draft'])
 const isPlannedElement = expr(PLANNED_ELEMENT_EXPR)
+const isToRemove = expr(TO_REMOVE_EXPR)
 const selected = expr(['boolean', ['feature-state', 'selected'], false])
 const editing = expr(['boolean', ['feature-state', 'editing'], false])
 
@@ -89,10 +90,16 @@ const crowned = LIBRARY.filter((e) => e.crown)
 const arrowed = LIBRARY.filter((e) => e.line?.arrows)
 const pointKinds = LIBRARY.filter((e) => e.geometries.includes('Point'))
 
-/** Opacity factor: hidden while its shape is edited, faded when a draft or still a project. */
-const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, isPlannedElement, PLANNED_OPACITY, 1])
-/** A planned element keeps its own dash if it has one, else draws dashed: « not there yet ». */
-const plannedDash = expr(['case', ['all', isPlannedElement, ['!', ['in', ['get', 'kind'], ['literal', LIBRARY.filter((e) => e.line?.dash).map((e) => e.kind)]]]], ['literal', [3, 2]], lineDash])
+/** Opacity factor: hidden while its shape is edited, faded when a draft, still a project or to be taken away. */
+const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, isPlannedElement, PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1])
+/**
+ * A planned element keeps its own dash if it has one, else draws dashed:
+ * « not there yet ». What the project takes away draws dotted: « on its way out ».
+ */
+const plannedDash = expr(['case',
+  isToRemove, ['literal', [0.6, 1.6]],
+  ['all', isPlannedElement, ['!', ['in', ['get', 'kind'], ['literal', LIBRARY.filter((e) => e.line?.dash).map((e) => e.kind)]]]], ['literal', [3, 2]],
+  lineDash])
 
 function zoomScaled(base: Expr, stops: [number, number][], extraSelected = 0): Expr {
   return expr(['interpolate', ['linear'], ['zoom'],

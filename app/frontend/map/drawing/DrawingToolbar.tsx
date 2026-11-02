@@ -99,6 +99,8 @@ export default function DrawingToolbar() {
   const tool = useDrawingState((s) => s.tool)
   const shapeEditId = useDrawingState((s) => s.shapeEditId)
   const [drawingSpec, setDrawingSpec] = useState<ElementSpec | null>(null)
+  // Chosen in the picker: the element is drawn « En projet » (`planned: true`).
+  const [drawingPlanned, setDrawingPlanned] = useState(false)
   // « Suivre la courbe »: the line follows the contour through a clicked point.
   const [contourAvailable, setContourAvailable] = useState(false)
   const [contourMode, setContourMode] = useState(false)
@@ -114,11 +116,12 @@ export default function DrawingToolbar() {
   }, [])
   const close = useCallback(() => setTool(null), [setTool])
 
-  async function drawElement(spec: ElementSpec) {
+  async function drawElement(spec: ElementSpec, planned: boolean) {
     const editor = latest.current
     revealForDrawing(spec.layer, spec.kind)
     rememberRecent(spec.kind)
     setDrawingSpec(spec)
+    setDrawingPlanned(planned)
     // A swale or a keyline belongs on the contour: it starts there whenever the relief allows it.
     const available = !!spec.contour && editor.entitlements.analyses && (await reliefReady(editor.map.id))
     setContourAvailable(available)
@@ -162,13 +165,14 @@ export default function DrawingToolbar() {
     try {
       // Drawn while a version is shown: it belongs to that version.
       const version = drawingStore.get().version
-      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties: { ...spec.defaults }, ...(version ? { tags: [version] } : {}) })
+      const properties = { ...spec.defaults, ...(planned ? { planned: true } : {}) }
+      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties, ...(version ? { tags: [version] } : {}) })
       latest.current.select(feature.properties.id)
       // A line finished too early (a double click, Enter) goes on from where it stopped.
       const extend = geometry.type === 'LineString' && !created
         ? { label: t('drawing.edit.extend'), run: () => startShapeEdit(feature.properties.id, 'inspector', 'extend') }
         : undefined
-      latest.current.notify(created ?? t('drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }), 'info', extend)
+      latest.current.notify(created ?? t(planned ? 'scenario.picker.created' : 'drawing.toolbar.created', { kind: t(`editor.kinds.${spec.kind}`) }), 'info', extend)
     } catch (error) {
       latest.current.notify((error as Error).message, 'error')
     }
@@ -338,14 +342,14 @@ export default function DrawingToolbar() {
       {tool && (
         <div className="pointer-events-none absolute inset-x-2 top-14 z-30 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
           {tool === 'draw' && !drawingSpec && (
-            <ElementPicker onPick={(spec) => void drawElement(spec)} onClose={close} />
+            <ElementPicker onPick={(spec, planned) => void drawElement(spec, planned)} onClose={close} />
           )}
           {tool === 'draw' && drawingSpec && (
             <HintBar
               text={
                 tracing ? t('relief.contour.tracing')
                 : contourMode ? t('relief.contour.hint', { kind: kindLabel })
-                : [t(geometry === 'Point' ? 'drawing.toolbar.hint_point' : geometry === 'Polygon' ? 'drawing.toolbar.hint_polygon' : 'drawing.toolbar.hint_line', { kind: kindLabel }), translations('drawing.toolbar.kind_hints')[drawingSpec.kind]].filter(Boolean).join(' ')
+                : [drawingPlanned ? t('scenario.picker.drawing') : null, t(geometry === 'Point' ? 'drawing.toolbar.hint_point' : geometry === 'Polygon' ? 'drawing.toolbar.hint_polygon' : 'drawing.toolbar.hint_line', { kind: kindLabel }), translations('drawing.toolbar.kind_hints')[drawingSpec.kind]].filter(Boolean).join(' ')
               }
             >
               {contourAvailable && (

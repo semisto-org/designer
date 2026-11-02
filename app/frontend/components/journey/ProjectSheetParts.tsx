@@ -1,11 +1,16 @@
 import clsx from 'clsx'
 import { Check, CircleAlert, LoaderCircle, Sparkles, X } from 'lucide-react'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { describeValue, SchemaFields, type Texts } from '@/components/journey/SchemaFields'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import type { ProjectSheetApi, SaveStatus } from '@/lib/projectSheet'
+import type { TeamNotesApi } from '@/lib/teamNotes'
 import type { ProjectDraft, ProjectSchema, SchemaField, SectionStatus } from '@/types/journey'
+
+// The rich text editor loads only for the people who get the team's notes:
+// the private link of the sheet never downloads it.
+const TeamNote = lazy(() => import('@/components/journey/TeamNote').then((m) => ({ default: m.TeamNote })))
 
 export const sectionTitle = (section: string) => t(`journey.project.sections.${section}.title`)
 
@@ -154,9 +159,12 @@ function DraftAnswer({ draft, field, texts, current, canEdit, onReview }: {
   )
 }
 
-/** Hint, fields and the "section finished" toggle of one section. */
-export function SectionBody({ sheet, schema, section, canEdit }: {
-  sheet: ProjectSheetApi; schema: ProjectSchema; section: string; canEdit: boolean
+/**
+ * Hint, fields and the "section finished" toggle of one section, then the
+ * team's own note when the viewer is in the team (or the map's pro owner).
+ */
+export function SectionBody({ sheet, schema, section, canEdit, teamNotes }: {
+  sheet: ProjectSheetApi; schema: ProjectSchema; section: string; canEdit: boolean; teamNotes?: TeamNotesApi | null
 }) {
   const definition = schema.sections.find((s) => s.key === section)
   if (!definition) return null
@@ -193,6 +201,7 @@ export function SectionBody({ sheet, schema, section, canEdit }: {
           <span>{done ? t('journey.project.unmark_done') : t('journey.project.mark_done')}</span>
         </label>
       )}
+      {teamNotes && <Suspense fallback={null}><TeamNote key={section} notes={teamNotes} section={section} /></Suspense>}
     </div>
   )
 }

@@ -67,7 +67,7 @@ class Teams::MembershipsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to teams_path
     assert_equal I18n.t("teams.members.left", name: @team.name), flash[:notice]
     assert_nil map.role_for(@member)
-    assert_not CommentSubscription.subscribed?(@member, map)
+    assert_not CommentSubscription.exists?(user: @member, commentable: map)
 
     get team_path(@team)
     assert_response :not_found

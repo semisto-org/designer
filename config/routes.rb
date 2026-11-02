@@ -45,9 +45,10 @@ Rails.application.routes.draw do
       resource :share_link, only: %i[create update destroy] do
         post :reset
       end
-      resources :comments, only: %i[index create update destroy] do
+      resources :comments, only: %i[index show create update destroy] do
         collection do
           get :threads
+          post :read
           post :subscribe, to: "comment_subscriptions#create"
           delete :subscribe, to: "comment_subscriptions#destroy"
         end
@@ -95,6 +96,8 @@ Rails.application.routes.draw do
         post :reject
       end
     end
+    # The team's own notes, one per section of the sheet (ProjectSheetNote).
+    resources :project_notes, path: "project/notes", param: :section, only: :update, controller: "maps/project_notes"
     resource :journey, only: :show, controller: "maps/journeys"
     resources :service_requests, path: "requests", only: %i[index create], controller: "maps/service_requests"
   end
@@ -177,6 +180,11 @@ Rails.application.routes.draw do
     resource :password, only: %i[update destroy]
     resource :avatar, only: %i[update destroy]
     resource :logo, only: %i[update destroy]
+    # « Charte graphique »: colours, fonts, cover and footer of the account's documents.
+    resource :document_theme, path: "charte", only: %i[show update] do
+      post :accept_draft
+      delete :reject_draft
+    end
   end
   # A person's uploaded picture, by its blob's signed id (User#avatar_url).
   get "avatars/:key", to: "avatars#show", as: :avatar
@@ -467,6 +475,11 @@ Rails.application.routes.draw do
       resource :billing, only: %i[update destroy]
       # The logo printed at the top of the team maps' documents.
       resource :logo, only: %i[update destroy]
+      # « Charte graphique » of the team's documents (admins change it).
+      resource :document_theme, path: "charte", only: %i[show update] do
+        post :accept_draft
+        delete :reject_draft
+      end
       resources :invitations, only: %i[create destroy] do
         post :resend, on: :member
       end
@@ -505,6 +518,11 @@ Rails.application.routes.draw do
   # The offer builder of a team map: the working offer and its versions.
   resources :maps, only: [] do
     resource :offer, only: %i[show update], controller: "maps/offers" do
+      # The client document of the working offer, before it is saved as a version.
+      get :preview, on: :member
+      # The team accepts or refuses the letter its AI proposed.
+      post :letter_draft, on: :member, action: :accept_letter
+      delete :letter_draft, on: :member, action: :reject_letter
       resources :versions, only: %i[create show update], param: :number, controller: "maps/offer_versions" do
         post :restore, on: :member
       end
@@ -638,7 +656,10 @@ Rails.application.routes.draw do
   # --- site visits ---
   # Walks on the land with the phone: closing one files its report (SiteVisit).
   resources :maps, only: [] do
-    resources :site_visits, only: %i[index create], controller: "maps/site_visits"
+    resources :site_visits, only: %i[index create], controller: "maps/site_visits", param: :key do
+      # The recording of the walk, filed in the documents.
+      member { post :audio }
+    end
   end
   # --- end site visits ---
   # --- offline site ---

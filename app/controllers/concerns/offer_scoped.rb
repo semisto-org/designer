@@ -61,12 +61,34 @@ module OfferScoped
       }
     end
 
+    # Who makes the offer, at the top of the document the client reads.
+    def offer_issuer = @map.organization&.name || @map.owner.display_name
+
+    # The page of the client document, for a version or the working offer.
+    def client_document_props(document)
+      {
+        map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2),
+        team: @map.organization && { name: @map.organization.name },
+        issuer: offer_issuer, letterhead: @map.letterhead,
+        # The « charte graphique » of the team, else of the owner (DocumentTheme).
+        theme: DocumentTheme.for_map(@map).as_json,
+        document: document.to_h.except(:letterDraft)
+      }
+    end
+
+    def send_docx(document, label:, date:)
+      export = Offer::DocxExport.new(document, label:, date:, theme: DocumentTheme.for_map(@map))
+      send_data export.to_s, filename: export.filename, type: Mime[:docx], disposition: "attachment"
+    end
+
     # What the page needs of a pricing to label and edit an offer.
     def pricing_json(pricing, name)
       {
         name:, settings: pricing.settings, categories: pricing.data["categories"],
         plantingTypes: pricing.data["planting_types"], complexity: pricing.complexity,
-        targetDesignSharePct: pricing.target_design_share_pct, terms: pricing.terms
+        targetDesignSharePct: pricing.target_design_share_pct, terms: pricing.terms,
+        # The template's document blocks as they apply, before this offer's own changes.
+        documentBlocks: Offer::Document.resolve(pricing.document)
       }
     end
 end

@@ -23,6 +23,7 @@ module Maps
       private
         def set_comment
           @comment = @map.discussion_comments.visible.find(params[:comment_id])
+          require_chat_member_for(@comment)
         end
 
         def render_comment(status = :ok)

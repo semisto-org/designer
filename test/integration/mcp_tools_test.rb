@@ -56,6 +56,20 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil AiAction.last.map, "no journal entry on a map the user cannot open"
   end
 
+  test "get_map gives the sector analysis, sun included, and the links to print the design" do
+    @map.features.create!(layer: "notes", kind: "sector", geometry: Sectors::Arc.for_map(@map, from_deg: 300, to_deg: 40),
+      name: "Bise", properties: { "sector_type" => "cold_wind", "sector_season" => "winter", "from_deg" => 300, "to_deg" => 40 })
+    data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
+    refute error
+    sun = data.dig("sectors", "sun").to_h { [ _1["type"], _1 ] }
+    assert_operator sun.dig("summer_sun", "from_deg"), :<, 90
+    assert_match(/\Ade (NE|ENE) à (NO|ONO)\z/, sun.dig("summer_sun", "directions"))
+    sector = data.dig("sectors", "drawn").sole
+    assert_equal [ "cold_wind", "winter", 300.0, 40.0, "de ONO à NE", "Bise" ], sector.values_at("sector_type", "season", "from_deg", "to_deg", "directions", "name")
+    assert_equal "http://www.example.com/maps/#{@map.id}?export=book", data.dig("exports", "book_pdf_url")
+    assert_equal "http://www.example.com/maps/#{@map.id}/dossier", data.dig("exports", "dossier_url")
+  end
+
   test "get_map tells the owner about the public view and what it brought, never the others" do
     data, = call_tool(@owner, "get_map", { map_id: @map.id })
     refute data.dig("publication", "published")
@@ -85,7 +99,10 @@ class McpToolsTest < ActionDispatch::IntegrationTest
 
     users(:michael).update!(account_kind: "professional")
     offer = Offer.build_for(@map)
-    offer.inputs = offer.inputs.merge("scope" => [ { "label" => "Jardin-forêt", "planting_type" => "forest_garden", "measure" => 2_000 } ])
+    offer.inputs = offer.inputs.merge(
+      "scope" => [ { "label" => "Jardin-forêt", "planting_type" => "forest_garden", "measure" => 2_000 } ],
+      "co_management" => { "enabled" => true, "years" => [ 4, 2 ], "one_way_km" => 10 }
+    )
     offer.save!
     offer.save_version!(user: users(:michael)).update!(status: "sent")
     accepted = offer.save_version!(user: users(:michael), note: "Signée")
@@ -100,13 +117,73 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal [ 2, "Signée", totals["total_tvac"] ], budget.values_at("number", "note", "total_tvac")
     assert budget["total_htva"].positive?
     assert_operator budget["total_htva"], :<, budget["total_tvac"]
-    assert_in_delta budget["total_htva"], budget["services_htva"] + budget["plants_supplies_htva"], 0.02
+    co_management = budget["co_management"]
+    assert_equal [ 4, 2 ], co_management["years"].map { _1["half_days"] }
+    assert_in_delta budget["total_htva"], budget["services_htva"] + budget["plants_supplies_htva"] + accepted.result["co_management"]["amount_htva"], 0.02
+    assert budget["phases"].all? { _1["enabled"] }
     assert_in_delta totals["services_price_tvac"] / 1.21, budget["services_htva"], 0.01
     assert budget["hours_max"] >= budget["hours_min"]
     assert budget["hours_min"].positive?
 
     data, = call_tool(@viewer, "get_map", { map_id: @map.id })
     assert_nil data["offer"], "a viewer (maybe the client) never sees the offer"
+  end
+
+  test "get_offer reads the offer and its client document; propose_offer_letter leaves a draft for the team" do
+    error_text, error = call_tool(@owner, "get_offer", { map_id: @map.id })
+    assert error, "a personal account prices nothing"
+    assert_match(/réservée/, error_text)
+
+    users(:michael).update!(account_kind: "professional")
+    data, error = call_tool(@owner, "get_offer", { map_id: @map.id })
+    refute error
+    assert_equal "http://www.example.com/maps/#{@map.id}/offer/preview", data["preview_url"]
+    assert_equal "cover", data["sections"].first["key"]
+    assert_nil data["letter"]
+    assert data["budget"]["total_tvac"]
+
+    letter = "Bonjour {client},\n\n" + ("En descendant vers le bois, nous avons vu tout ce que la parcelle peut devenir. " * 4)
+    data, error = call_tool(@owner, "propose_offer_letter", { map_id: @map.id, body: letter, rationale: "Fiche projet et notes de la visite du 2 novembre." })
+    refute error, data
+    assert_equal "http://www.example.com/maps/#{@map.id}/offer#document", data["review_url"]
+    draft = @map.reload.offer.inputs.dig("document", "letter_draft")
+    assert_equal letter.strip, draft["body"]
+    assert_nil @map.offer.inputs.dig("document", "letter"), "the letter only changes when the team takes the draft"
+
+    data, = call_tool(@owner, "get_offer", { map_id: @map.id })
+    assert data["letter_draft"]["body"].start_with?("Bonjour")
+
+    _, error = call_tool(@viewer, "propose_offer_letter", { map_id: @map.id, body: letter, rationale: "Fiche projet et notes." })
+    assert error, "a viewer (maybe the client) proposes nothing"
+  end
+
+  test "get_document_theme reads a charter; propose_document_theme leaves it as a proposal on the page" do
+    data, error = call_tool(@owner, "get_document_theme")
+    refute error, data
+    assert_equal DocumentTheme::DEFAULTS["heading_font"], data["applies"]["heading_font"]
+    assert_equal "http://www.example.com/account/charte", data["url"]
+    assert_includes data["fonts"].map { _1["key"] }, "lora"
+
+    data, error = call_tool(@owner, "propose_document_theme", { heading_color: "#5B5781", body_font: "inter", rationale: "Le Design System Semisto (colors_and_type.css)." })
+    refute error, data
+    assert_equal({ "heading_color" => "#5b5781", "body_font" => "inter" }, data["proposed"])
+    user = users(:michael).reload
+    assert_equal({}, user.document_theme, "nothing changes before the person takes it")
+    assert_equal "#5b5781", user.document_theme_draft.dig("theme", "heading_color")
+    assert_equal "#5b5781", call_tool(@owner, "get_document_theme").first.dig("pending_proposal", "fields", "heading_color")
+
+    _, error = call_tool(@owner, "propose_document_theme", { footer: "  ", rationale: "Rien de neuf à proposer." })
+    assert error, "an empty proposal is refused"
+
+    team = Organization.create_with_admin!(users(:bob), name: "Autre équipe")
+    error_text, error = call_tool(@owner, "propose_document_theme", { team_id: team.id, accent_color: "#afbd00", rationale: "Le Design System de l'équipe." })
+    assert error, "not a member of that team"
+    assert_match(/introuvable/, error_text)
+    team.memberships.create!(user: users(:michael), role: "member")
+    data, error = call_tool(@owner, "propose_document_theme", { team_id: team.id, accent_color: "#afbd00", rationale: "Le Design System de l'équipe." })
+    refute error, data
+    assert_equal "http://www.example.com/teams/#{team.id}/charte", data["review_url"]
+    assert_equal false, call_tool(@owner, "get_document_theme", { team_id: team.id }).first["can_change"]
   end
 
   test "get_map counts the palette like its table: planted, still to plant, its price and what is left to buy" do
@@ -205,6 +282,16 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     text, error = call_tool(@owner, "list_features", { map_id: @map.id, bbox: [ 5.1, 50.0, 5.0, 50.1 ] })
     assert error
     assert_match(/bbox/, text)
+  end
+
+  test "list_features separates what is on the land from what is still a project" do
+    house = @map.features.create!(layer: "existing", kind: "building", name: "Maison à construire", geometry: square(lng: 4.91),
+                                  properties: { "planned" => true, "height_m" => 7 })
+    data, = call_tool(@owner, "list_features", { map_id: @map.id, situation: "planned" })
+    assert_equal [ house.id ], data["features"].map { |f| f["id"] }
+    assert_equal true, data["features"].first.dig("properties", "planned")
+    data, = call_tool(@owner, "list_features", { map_id: @map.id, situation: "on_the_ground" })
+    assert_equal [ "pond" ], data["features"].map { |f| f.dig("properties", "kind") }
   end
 
   test "list_features says which plants are support plants, from their palette role or their sheet" do
@@ -687,6 +774,27 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal 33, budget["percent"]
     assert_empty data["pending_drafts"]
     assert_equal({ "percent" => 3 }, AiAction.last.result)
+  end
+
+  test "the team's notes on the sheet go to the team only, never to a guest of the map" do
+    owner = users(:michael)
+    owner.update!(account_kind: "professional")
+    ProjectSheetNote.write!(@map, "budget", "Le voisin financera la haie", user: owner, lock_version: nil)
+
+    data, error = call_tool(@owner, "get_project_sheet", { map_id: @map.id })
+    refute error, data
+    budget = data["sections"].find { |s| s["key"] == "budget" }
+    assert_equal [ "Le voisin financera la haie", owner.display_name ], budget["team_note"].values_at("body", "updated_by")
+    assert data["team_notes_shown"]
+    assert_includes data["note"], "team_note"
+    map, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal [ "budget" ], map.dig("project_team_notes", "sections")
+
+    data, = call_tool(@viewer, "get_project_sheet", { map_id: @map.id })
+    assert_not data.to_json.include?("voisin financera"), "a viewer, maybe the client"
+    assert_nil data["team_notes_shown"]
+    map, = call_tool(@viewer, "get_map", { map_id: @map.id })
+    assert_nil map["project_team_notes"]
   end
 
   test "propose_project_sheet turns what the person said into answers waiting on the sheet" do

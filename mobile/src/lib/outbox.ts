@@ -187,7 +187,13 @@ const transport: Transport = {
   },
   async closeVisit(mapId, op, questionIds, key) {
     await api('POST', `/maps/${mapId}/site_visits`, {
-      site_visit: { key: op.key, started_at: op.startedAt, ended_at: op.endedAt, question_ids: questionIds },
+      site_visit: { key: op.key, started_at: op.startedAt, ended_at: op.endedAt, question_ids: questionIds, ...(op.track?.length ? { track: op.track } : {}) },
     }, once(key))
+  },
+  // An hour of speech weighs about 30 MB: as long as a video to send.
+  async uploadVisitAudio(mapId, op, key) {
+    await api('POST', `/maps/${mapId}/site_visits/${encodeURIComponent(op.key)}/audio`, form('site_visit', {
+      audio: { uri: present(op.file), name: 'visite.m4a', type: 'audio/mp4' }, started_at: op.startedAt, seconds: op.seconds,
+    }), { ...once(key), timeoutMs: VIDEO_TIMEOUT_MS })
   },
 }

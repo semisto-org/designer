@@ -2,7 +2,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
 import { type ReactNode, useRef, useState } from 'react'
 import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Receipt, Sprout, Sparkles, Trash2, Video } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
-import { LogoCard } from '@/components/LogoCard'
+import { DocumentThemeLink } from '@/components/documents/DocumentThemeLink'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field, Input } from '@/components/ui/Field'
@@ -60,7 +60,7 @@ export default function AccountShow({ account }: { account: AccountData }) {
       <AccountKindCard kind={account.accountKind} />
 
       {account.accountKind === 'professional' && (
-        <LogoCard logoUrl={account.logoUrl} endpoint="/account/logo" param="user" intro={t('logos.account_intro')} />
+        <DocumentThemeLink href="/account/charte" />
       )}
       {(account.accountKind === 'professional' || account.vatNumber) && <VatNumberCard vatNumber={account.vatNumber} />}
 

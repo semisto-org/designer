@@ -29,6 +29,12 @@ export type EditorPanel = {
   modal?: boolean
   /** Opened from elsewhere (the guide card, the steps), not listed in the rail. */
   hiddenFromRail?: boolean
+  /**
+   * Listed in its step even when that step is not in focus. The other tools
+   * wait behind « N autres outils » until the person reaches or unfolds the
+   * step, so a first visit does not meet every panel at once.
+   */
+  essential?: boolean
 }
 
 /** Screens wide enough for modal panels (Tailwind's `lg`). */

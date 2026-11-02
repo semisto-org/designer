@@ -1,0 +1,154 @@
+fr:
+  # Semisto's texts for the client document of an offer (Offer::Document).
+  # An account changes them in its price scale, a team for one client in the
+  # offer. Markdown; {client}, {lieu} and {equipe} are replaced.
+  offer_documents:
+    blocks:
+      cover:
+        title: "Votre jardin-forêt à {lieu}"
+        body: "Concepteurs et accompagnateurs de forêts comestibles"
+      letter:
+        title: "Votre projet"
+        # What closes every letter, after the text written for this client.
+        body: "Au plaisir de construire ce projet avec vous,"
+      approach:
+        title: "Un jardin-forêt adapté à vos besoins"
+        body: "Nous vous accompagnons dans vos démarches, réflexions et choix en élaborant votre jardin-forêt en trois étapes distinctes."
+        phases:
+          pre_design: "Rêver le projet ensemble de manière holistique, définir sa raison d’être, étudier le terrain et arrêter des objectifs et un plan d’ensemble cohérent."
+          design: "Concevoir votre jardin-forêt en détail et préparer la mise en œuvre. Zoom sur des éléments spécifiques tels que l’aménagement d’une mare, les plans de plantation, etc."
+          implementation: "Préparer les espaces et implanter les végétaux ensemble, en plusieurs phases maîtrisables."
+      scope:
+        title: "Périmètre d’intervention"
+        body: ""
+      phases:
+        title: "Les étapes du projet"
+        body: ""
+        phases:
+          pre_design: |-
+            Explorer ensemble les éléments, les espaces et les zones qui composeront votre jardin-forêt.
+
+            - **Interview et collecte de données** : étude de terrain (microclimats, eau, sol, flore, faune…) et compilation de données externes complémentaires ; interview : intentions, rêves, objectifs, contraintes, disponibilités.
+            - **Création conceptuelle du projet** : évaluation et tri des données recueillies, positionnement du projet par sa raison d’être, analyse et recherche en fonction des objectifs, conception fonctionnelle et propositions.
+            - **Esquisses non détaillées** : plan des zones et des flux, illustrations d’exemples sur photos.
+            - **Consolidation du projet** : affinement du projet par les retours des autres membres du bureau d’études, en relecture croisée.
+
+            **→ Présentation du pré-design**
+
+            Validation des objectifs et des éléments qui composeront votre jardin-forêt.
+          design: |-
+            Transformer le rêve de votre jardin-forêt en un plan précis, prêt à être mis en œuvre.
+
+            - **Élaboration d’un plan détaillé** : sélection des plantes adaptées à votre jardin-forêt et à votre terrain, plan de plantation précis pour les arbres et les arbustes, nombre de plants par zone pour les arbrisseaux et les herbacées.
+            - **Consolidation du projet** : affinement du projet par les retours des autres membres du bureau d’études, en relecture croisée.
+
+            **→ Présentation du design**
+
+            Validation du phasage, du choix des végétaux à implanter et des solutions techniques.
+          implementation: |-
+            Du plan à la réalité, étape par étape, en donnant toutes les chances aux végétaux de s’implanter avec succès.
+
+            - **Plants et matériaux** : fourniture des plantes et des matériaux de plantation, rassemblés par notre pépinière au sein de notre réseau.
+            - **Chantiers collectifs** : encadrement des plantations collectives des différentes strates.
+
+            **→ Chantiers de plantation**
+
+            Validation de la mise en œuvre sur le terrain et des premières actions de gestion.
+      co_management:
+        title: "Co-gestion"
+        body: |-
+          Vous accompagner dans le développement d’un jardin-forêt résilient et productif.
+
+          La co-gestion consiste en plusieurs demi-journées de travail par an, pour vous soutenir dans la gestion des espaces aménagés ensemble. Elle consiste surtout à :
+
+          - veiller aux jeunes plants par le paillage et l’amendement ;
+          - remplacer les plants morts ou ajouter des végétaux (coût des plants non compris) ;
+          - tailler, si besoin ;
+          - maintenir, tailler ou retirer les plantes auxiliaires ;
+          - former les trognes éventuelles ;
+          - documenter le travail réalisé.
+
+          Ce travail est réalisé avec vous par une personne formée et suivie par {equipe}.
+      software:
+        title: "Un logiciel pour votre projet"
+        body: |-
+          Votre jardin-forêt est conçu dans Semisto Terranova, l’outil en ligne pour concevoir sur un terrain réel.
+
+          - **Votre terrain lu avec précision** : photos aériennes, cadastre, sols, relief, climat observé, relevés de biodiversité et course du soleil.
+          - **L’eau avant les plantes** : une averse simulée sur le relief en 3D montre où poser mare et baissières.
+          - **Un projet que vous suivez** : vous commentez la carte là où ça compte, et voyez le projet en image, de l’avant à l’après.
+          - **De quoi passer à l’action** : liste de plants, plan PDF à l’échelle, budget.
+          - **Une carte qui vous reste** : elle suit vos plantations et vos observations, et n’est jamais supprimée.
+      deliverables:
+        title: "Livrables"
+        body: "Vous recevrez différents documents au fur et à mesure de l’avancement du projet."
+        phases:
+          pre_design: |-
+            - Accès à toutes les photos et vidéos
+            - Plan des zones et des flux
+            - Esquisses sur photos
+          design: |-
+            - Palette végétale
+            - Plan de plantation
+          implementation: "- Plan de plantation mis à jour"
+          co_management: "- Rapport de visite"
+      budget:
+        title: "Prix"
+        body: "Si nous constatons que le budget des plantes et des consommables doit être dépassé, nous vous préviendrons avant de poursuivre, pour décider ensemble de la suite à donner."
+      conclusion:
+        title: "En route vers l’abondance !"
+        body: |-
+          Nous espérons que cette offre correspond à vos attentes et vous donne envie d’aller plus loin dans ce projet.
+
+          N’hésitez pas à nous contacter pour toute question, remarque ou envie d’ajustement : nous serons ravis d’en discuter avec vous.
+  offers:
+    document:
+      title: "Document client"
+      intro: "Ce que ton client lira, bloc par bloc. Les textes viennent de ton barème ; change-les ici pour ce client seulement, ou dans le barème pour toutes tes offres."
+      template_intro: "Les blocs de tes offres et leurs textes, au vouvoiement. Un texte laissé vide reprend celui de Semisto. Chaque offre peut encore les changer pour son client."
+      placeholders: "Dans les textes, {client} devient le nom du client, {lieu} le nom de la carte et {equipe} ton équipe."
+      in_document: "Dans le document"
+      reset: "Reprendre le texte du barème"
+      reset_template: "Reprendre le texte de Semisto"
+      title_label: "Titre"
+      body_label: "Texte"
+      changed: "Modifié pour ce client"
+      changed_template: "Texte de ton barème"
+      generated:
+        cover: "La page de garde : ton logo, le titre et la date."
+        scope: "La liste des éléments du périmètre suit ce texte, avec les extensions à part."
+        budget: "Le budget phase par phase, les sous-totaux, la facturation, la régie et tes conditions suivent ce texte."
+      letter_body_label: "Ce qui termine chaque lettre (formule et signature)"
+      letter:
+        label: "La lettre « Votre projet »"
+        help: "Écrite pour ce client : ce que vous avez vu sur place, ce que le lieu peut devenir, comment vous proposez d’avancer. Sans lettre, le document s’ouvre sur l’approche."
+        ai_hint: "Ton IA peut la rédiger d’après la fiche projet, la carte et les documents de la visite : demande-lui « Rédige la lettre de l’offre de cette carte »."
+        draft_title: "Lettre proposée par %{client}"
+        draft_title_ai: "Lettre proposée par ton IA"
+        draft_replaces: "Elle remplacera la lettre actuelle."
+        accept: "Prendre cette lettre"
+        reject: "Refuser"
+        accepted: "Lettre reprise. Relis-la et ajuste-la à ta façon."
+        rejected: "Proposition refusée."
+      preview: "Aperçu du document"
+      preview_label: "Aperçu"
+      preview_banner: "Aperçu de l’offre en cours : ce n’est pas encore une version. Enregistre une version pour l’envoyer."
+      download_word: "Word"
+      download_pdf: "PDF"
+      pdf_hint: "Dans la fenêtre d’impression, choisis « Enregistrer en PDF »."
+      file_name: "offre-%{map}-%{label}"
+      client_fallback: "Madame, Monsieur"
+      scope_options: "Extension possible du périmètre, à valider au terme du pré-design"
+      plants_count: "%{count} plants"
+      no_draft: "Aucune lettre proposée pour cette offre."
+      blocks:
+        cover: "Page de garde"
+        letter: "Lettre « Votre projet »"
+        approach: "L’approche en trois étapes"
+        scope: "Périmètre"
+        phases: "Une page par étape"
+        co_management: "Co-gestion"
+        software: "Le logiciel"
+        deliverables: "Livrables"
+        budget: "Prix"
+        conclusion: "Conclusion et contacts"

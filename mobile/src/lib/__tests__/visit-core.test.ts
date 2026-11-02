@@ -1,4 +1,4 @@
-import { countByTheme, minutesSince, noteFeature, questionsOf, TITLE_MAX, visitNotes } from '../visit-core'
+import { clock, countByTheme, minutesSince, noteFeature, questionsOf, TITLE_MAX, visitDay, visitNotes, walked } from '../visit-core'
 import type { MapBundle, MapFeature } from '../types'
 
 const visit = { key: 'visit-1234abcd', startedAt: '2026-10-18T14:00:00Z' }
@@ -47,5 +47,19 @@ describe('visit notes', () => {
   it('counts the minutes of the walk', () => {
     expect(minutesSince('2026-10-18T14:00:00Z', new Date('2026-10-18T14:42:30Z'))).toBe(42)
     expect(minutesSince('2026-10-18T14:00:00Z', new Date('2026-10-18T13:00:00Z'))).toBe(0)
+  })
+})
+
+describe('what the phone records of the walk', () => {
+  it('names the day like the recording filed in the documents', () => {
+    expect(visitDay('2026-11-02T10:15:00')).toBe('02/11/2026')
+  })
+
+  it('shows the sound as a clock and the walk in metres, then kilometres', () => {
+    expect(clock(42)).toBe('0:42')
+    expect(clock(725)).toBe('12:05')
+    expect(clock(3729)).toBe('1:02:09')
+    expect(walked(349.6)).toBe('350 m')
+    expect(walked(1234)).toBe('1,2 km')
   })
 })

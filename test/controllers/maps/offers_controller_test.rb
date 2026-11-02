@@ -145,4 +145,54 @@ class Maps::OffersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Semisto", response.parsed_body["props"]["issuer"], "the client reads who makes the offer"
     assert_nil response.parsed_body["props"]["letterhead"]
   end
+
+  test "the client document: preview of the working offer, a version's page and its Word file" do
+    @map.update!(organization: @team)
+    sign_in_as @colleague
+    patch map_offer_path(@map), params: { offer: { inputs: inputs.merge(document: { letter: "Bonjour {client}, voici votre projet." }), lock_version: 0 } }, as: :json
+    assert_response :success
+
+    get preview_map_offer_path(@map), headers: inertia_headers
+    assert_response :success
+    props = response.parsed_body["props"]
+    assert props["preview"]
+    assert_equal "letter", props["document"]["sections"].second["key"]
+    assert_includes props["document"]["sections"].second["html"], "voici votre projet"
+
+    get preview_map_offer_path(@map, format: :docx)
+    assert_response :success
+    assert_equal Mime[:docx].to_s, response.media_type
+    assert_match(/attachment; filename="offre-/, response.headers["Content-Disposition"])
+
+    post map_offer_versions_path(@map), as: :json
+    get map_offer_version_path(@map, 1), headers: inertia_headers
+    assert_equal %w[cover letter approach], response.parsed_body["props"]["document"]["sections"].first(3).pluck("key")
+    get map_offer_version_path(@map, 1, format: :docx)
+    assert_response :success
+    assert response.body.start_with?("PK"), "a zip"
+  end
+
+  test "the letter an AI proposed is taken or refused by the team" do
+    @map.update!(organization: @team)
+    offer = Offer.build_for(@map)
+    offer.inputs = offer.inputs.merge("document" => { "letter_draft" => { "body" => "Une lettre de l'IA.", "client_name" => "Claude" } })
+    offer.save!
+    sign_in_as @colleague
+
+    get map_offer_path(@map), headers: inertia_headers
+    assert_equal "Claude", response.parsed_body["props"]["offer"]["inputs"]["document"]["letter_draft"]["client_name"]
+    get preview_map_offer_path(@map), headers: inertia_headers
+    assert_nil response.parsed_body["props"]["document"]["letterDraft"], "never on the client's page"
+
+    post letter_draft_map_offer_path(@map), as: :json
+    assert_response :success
+    document = offer.reload.inputs["document"]
+    assert_equal "Une lettre de l'IA.", document["letter"]
+    assert_nil document["letter_draft"]
+
+    delete letter_draft_map_offer_path(@map), as: :json
+    assert_response :success
+    post letter_draft_map_offer_path(@map), as: :json
+    assert_response :not_found
+  end
 end

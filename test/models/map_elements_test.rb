@@ -25,6 +25,16 @@ class MapElementsTest < ActiveSupport::TestCase
     end
   end
 
+  test "a pump and its irrigation line live in the water layer, not in the hidden networks" do
+    # Clémence's test (October 2026): she wanted to place a pump and its watering.
+    pump = feature(kind: "pump", geometry: { "type" => "Point", "coordinates" => [ 4.9, 50.34 ] }, properties: { "pump_power" => "solar", "head_m" => 4 })
+    assert pump.valid?, pump.errors.full_messages.to_sentence
+    line = feature(kind: "irrigation_line", geometry: { "type" => "LineString", "coordinates" => [ [ 4.9, 50.34 ], [ 4.9005, 50.3402 ] ] },
+                   properties: { "irrigation_type" => "drip", "emitter_spacing_cm" => 30 })
+    assert line.valid?, line.errors.full_messages.to_sentence
+    assert_not feature(kind: "pump", geometry: { "type" => "Point", "coordinates" => [ 4.9, 50.34 ] }, properties: { "pump_power" => "nuclear" }).valid?
+  end
+
   test "a sector is an arc of the notes layer with a known type" do
     arc = { "type" => "LineString", "coordinates" => [ [ 4.9, 50.341 ], [ 4.901, 50.3405 ], [ 4.9012, 50.34 ] ] }
     sector = maps(:ahinvaux).features.new(layer: "notes", kind: "sector", geometry: arc, properties: { "sector_type" => "wind" })

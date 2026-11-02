@@ -19,6 +19,53 @@ export function isPlannedElement(properties: Properties): boolean {
   return properties?.planned === true && !(properties?.kind === 'plant' && properties?.layer === 'plants')
 }
 
+/**
+ * Constructions with a roof: drawn, they stand as volumes in the 3D view
+ * (and cast their shadow); planned, they never leave in a public view.
+ * Twin of MapFeature::BUILDING_KINDS.
+ */
+export const BUILDING_KINDS: ReadonlySet<string> = new Set(['building', 'shed', 'shelter', 'greenhouse', 'fruit_store', 'poultry_house'])
+
+/** What the « Existant » layer holds that can still be a project: a building, a wall. */
+const PLANNABLE_EXISTING = new Set(['building', 'wall'])
+
+/**
+ * Whether an element of this layer and kind can be « En projet ». Notes are
+ * not works on the land, a plant has its planting date, and what the
+ * « Existant » layer holds is there by definition, except a building or a
+ * wall that is yet to be built. Twin of MapFeature#plannable?.
+ */
+export function canBePlanned(layer: unknown, kind: unknown): boolean {
+  if (layer === 'notes' || (layer === 'plants' && kind === 'plant')) return false
+  if (layer === 'existing') return PLANNABLE_EXISTING.has(String(kind))
+  return typeof layer === 'string'
+}
+
+/**
+ * Whether an element on the ground can be marked « À retirer » for the
+ * project (a fence to move, a shed to take down, a tree to fell): anything
+ * but a note or a plant of the plan (a plant has its own life: dead, moved).
+ * Twin of MapFeature.removable?.
+ */
+export function canBeRemoved(layer: unknown, kind: unknown): boolean {
+  return typeof layer === 'string' && layer !== 'notes' && !(layer === 'plants' && kind === 'plant')
+}
+
+/** The day an element was taken away (`removed_on`, ISO day), or null. */
+export function removedOn(properties: Properties): string | null {
+  const value = properties?.removed_on
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : null
+}
+
+/**
+ * On the ground today, gone from the project: `to_remove: true` until it is
+ * marked as taken away (`removed_on`). It shows on arrival and today, drawn
+ * faded and dotted, and leaves the years to come.
+ */
+export function isToRemove(properties: Properties): boolean {
+  return properties?.to_remove === true && !removedOn(properties) && !isPlanned(properties) && canBeRemoved(properties?.layer, properties?.kind)
+}
+
 /** What is not on the ground yet: a planned plant or a planned element. */
 export function isPlanned(properties: Properties): boolean {
   return isPlannedPlant(properties) || isPlannedElement(properties)
@@ -44,3 +91,19 @@ export const PLANNED_ELEMENT_EXPR = [
 
 /** MapLibre expression twin of isPlanned. */
 export const PLANNED_EXPR = ['any', PLANNED_PLANT_EXPR, PLANNED_ELEMENT_EXPR] as const
+
+/** Opacity of what is to be taken away: still there, but on its way out. */
+export const TO_REMOVE_OPACITY = 0.55
+
+/** A `removed_on` day is set (the element was taken away). */
+export const REMOVED_EXPR = ['==', ['typeof', ['get', 'removed_on']], 'string'] as const
+
+/** MapLibre expression twin of isToRemove. */
+export const TO_REMOVE_EXPR = [
+  'all',
+  ['==', ['get', 'to_remove'], true],
+  ['!', REMOVED_EXPR],
+  ['!', PLANNED_EXPR],
+  ['!=', ['get', 'layer'], 'notes'],
+  ['!', ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]],
+] as const

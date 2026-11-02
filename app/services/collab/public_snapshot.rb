@@ -2,8 +2,9 @@ module Collab
   # Builds the frozen copy of a map that a public view serves: the terrain
   # outline, the chosen layers' features and the keys of the region layers.
   # This is the privacy boundary of the public view: everything that must not
-  # leave (networks, address, parcels, notes, drafts, who made what) is
-  # dropped HERE, at publication time, and never reaches the snapshot.
+  # leave (networks, address, parcels, notes, drafts, planned or removed
+  # elements, who made what) is dropped HERE, at publication time, and never reaches the
+  # snapshot.
   class PublicSnapshot
     FORMAT = 1
     # The dimensions the public 3D view digs water works with (ponds,
@@ -61,7 +62,17 @@ module Collab
       end
 
       def features
-        @features ||= @map.features.active.where(layer: layers).order(:id).map { |feature| serialize(feature) }
+        @features ||= @map.features.active.where(layer: layers).order(:id).select { |feature| published?(feature) }.map { |feature| serialize(feature) }
+      end
+
+      # What stands on the land today (Michael, 2026-10-24): anything still
+      # a project (a house to come, a pond to dig, a plant not planted yet)
+      # is a private intention, often before any permit, and leaves only
+      # when the owner chooses to show the project (`show_planned`). An
+      # element taken away (`removed_on`) is no longer there: never.
+      def published?(feature)
+        return false if feature.removed?
+        @options["show_planned"] == true || !feature.planned?
       end
 
       def serialize(feature)
@@ -71,7 +82,23 @@ module Collab
         }
         properties.merge!(feature.properties.to_h.slice(*EARTHWORK_PROPERTIES)) if EARTHWORK_KINDS.include?(feature.kind)
         properties["notes"] = feature.notes if @options["show_notes"]
+        properties.merge!(situation(feature)) if @options["show_planned"] == true
         { "type" => "Feature", "id" => feature.id, "geometry" => feature.geometry_geojson, "properties" => properties }
+      end
+
+      # When the project is shown, the visitor switches between the land
+      # today and the project: each feature says where it stands, with the
+      # same properties the editor reads (map/scenario.ts).
+      def situation(feature)
+        if feature.plant?
+          feature.planted? ? { "planted_on" => feature.planted_on.iso8601 } : {}
+        elsif feature.planned?
+          { "planned" => true }
+        elsif feature.to_remove?
+          { "to_remove" => true }
+        else
+          {}
+        end
       end
 
       # How the published plants grow (Relief::GrowingPlants), for the year

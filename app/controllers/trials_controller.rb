@@ -97,10 +97,12 @@ class TrialsController < ApplicationController
     redirect_to trial_path(@trial.token), alert: t("sessions.invalid_email")
   end
 
+  # Searched across Europe, as the trial's map is: a visitor from France or
+  # Luxembourg finds their own address, not a Belgian homonym.
   def geocode
     geocoder = Providers::Geocoder.build
     return render json: { available: false, results: [] } unless geocoder.available?
-    render json: { available: true, results: geocoder.search(params[:q].to_s.first(200), region: Region.default).map(&:as_json) }
+    render json: { available: true, results: geocoder.search(params[:q].to_s.first(200), region: Region.europe || Region.default).map(&:as_json) }
   rescue Providers::Geocoder::Unavailable => error
     Rails.logger.info("[geocode] #{error.message}")
     render json: { available: true, message: t("map_data.geocode.unavailable"), results: [] }, status: :service_unavailable

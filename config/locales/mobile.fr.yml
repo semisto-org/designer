@@ -117,7 +117,7 @@ fr:
           other: "a passé %{count} hivers ici"
     visit:
       start: "Commencer une visite"
-      start_hint: "Tu marches le terrain : chaque note se pose là où tu es, classée par thème. À la fin, le compte rendu est prêt."
+      start_hint: "Tu marches le terrain : chaque note se pose là où tu es, classée par thème. Tu peux aussi enregistrer le son et ton tracé. À la fin, le compte rendu est prêt."
       under_way: "Visite commencée à %{time}"
       lasted:
         one: "depuis %{count} minute"
@@ -172,6 +172,28 @@ fr:
       close: "Clore la visite"
       closed_title: "Visite close"
       closed: "Le compte rendu sera dans les documents de la carte dès que le téléphone l'aura envoyé."
+      closed_with_sound: "Le compte rendu et l'« Enregistrement audio de la visite du %{date} » seront dans les documents de la carte dès que le téléphone les aura envoyés."
+      recorded: "Ce que le téléphone a enregistré"
+      end_sound: "Rejoindra les documents : « Enregistrement audio de la visite du %{date} »."
+      end_walk: "Ton tracé est joint au compte rendu de la visite."
+      record:
+        sound: "Le son"
+        sound_hint: "Enregistre ce qui se dit pendant la marche, même écran éteint. À la fin de la visite, l'audio rejoint les documents de la carte."
+        sound_off: "Enregistrer"
+        sound_on: "%{time}"
+        sound_paused: "En pause · %{time}"
+        sound_lost: "Interrompu, sera envoyé"
+        walk: "Le tracé"
+        walk_hint: "Enregistre par où tu passes, même écran éteint. Il est joint au compte rendu."
+        walk_off: "Enregistrer"
+        walk_on: "%{distance}"
+        walk_paused: "En pause · %{distance}"
+        no_permission_sound: "Sans accès au micro, le son ne peut pas être enregistré. Autorise-le dans les réglages du téléphone."
+        no_permission_walk: "Sans accès à ta position, le tracé ne peut pas être enregistré. Autorise-la dans les réglages du téléphone."
+        failed: "L'enregistrement n'a pas pu commencer. Réessaie dans un instant."
+        lost: "L'app s'est fermée pendant l'enregistrement : ce qui a été enregistré jusque-là sera envoyé tel quel à la fin de la visite."
+        notification_title: "Visite en cours"
+        notification_body: "Semisto Terranova enregistre le tracé de ta visite."
       keep_going: "Continuer la visite"
     tour:
       title: "Tournée de plantation"
@@ -619,6 +641,7 @@ fr:
         createBioindicator: "Plante bio-indicatrice"
         createComment: "Commentaire"
         closeVisit: "Fin de visite et compte rendu"
+        uploadVisitAudio: "Enregistrement audio de la visite"
     trace:
       notification_title: "Trace en cours"
       notification_body: "Semisto Terranova enregistre ta trace."
@@ -627,6 +650,16 @@ fr:
       intro: "Ce que ton terrain montre en ce moment, noté là où tu es. Un lieu se lit sur quatre saisons."
       tile_hint: "Ce mois-ci : %{signs}"
       this_month: "Ce mois-ci"
+      seen:
+        today: "vu aujourd'hui"
+        yesterday: "vu hier, le %{date}"
+        days: "vu il y a %{count} jours, le %{date}"
+        months:
+          one: "vu il y a %{count} mois, le %{date}"
+          other: "vu il y a %{count} mois, le %{date}"
+        years:
+          one: "vu il y a un an, le %{date}"
+          other: "vu il y a %{count} ans, le %{date}"
       groups:
         cold: "Le froid"
         water: "L'eau"

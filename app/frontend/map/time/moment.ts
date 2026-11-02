@@ -10,9 +10,11 @@
 //   the future;
 // - year5 / year15 / year30: the garden that many years after its first
 //   planting, planned plants put in the ground at the next planting season,
-//   drafts included.
+//   drafts included, and without what the project takes away (`to_remove`).
+// An element taken away (`removed_on`) shows only on arrival, if it was
+// there then.
 
-import { isPlanned, isPlannedPlant, PLANNED_EXPR } from '../scenario.ts'
+import { isPlanned, isPlannedPlant, isToRemove, PLANNED_EXPR, REMOVED_EXPR, removedOn, TO_REMOVE_EXPR } from '../scenario.ts'
 
 export type Moment = 'arrival' | 'today' | 'year5' | 'year15' | 'year30'
 export type FutureMoment = 'year5' | 'year15' | 'year30'
@@ -123,7 +125,9 @@ export function shownMoment(moment: Moment, line: Timeline): Moment {
 /** Whether a feature is on the map at this moment (rejected features are the caller's business). */
 export function inMoment(properties: Properties, moment: Moment, arrival: string): boolean {
   if (properties?.status === 'draft') return isFuture(moment)
-  if (moment !== 'arrival') return true
+  const removed = removedOn(properties)
+  if (moment !== 'arrival') return !removed && !(isFuture(moment) && isToRemove(properties))
+  if (removed && removed < arrival) return false
   if (isPlanned(properties)) return false
   const planted = plantedOn(properties)
   if (isPlantPoint(properties) && planted && planted >= arrival) return false
@@ -135,9 +139,10 @@ const DATE_EXPR = (key: string) => ['slice', ['to-string', ['coalesce', ['get', 
 
 /** MapLibre filter twin of inMoment, or null when the moment shows everything. */
 export function momentFilter(moment: Moment, arrival: string): unknown[] | null {
-  if (isFuture(moment)) return null
+  const notRemoved = ['!', REMOVED_EXPR]
+  if (isFuture(moment)) return ['all', notRemoved, ['!', TO_REMOVE_EXPR]]
   const notDraft = ['!=', ['coalesce', ['get', 'status'], 'active'], 'draft']
-  if (moment === 'today') return notDraft
+  if (moment === 'today') return ['all', notDraft, notRemoved]
   const plantedSince = [
     'all',
     ['==', ['get', 'layer'], 'plants'],
@@ -146,7 +151,8 @@ export function momentFilter(moment: Moment, arrival: string): unknown[] | null 
     ['>=', DATE_EXPR('planted_on'), arrival],
   ]
   const builtSince = ['>=', DATE_EXPR('built_on'), arrival]
-  return ['all', notDraft, ['!', PLANNED_EXPR], ['!', plantedSince], ['!', builtSince]]
+  const removedBefore = ['all', REMOVED_EXPR, ['<', DATE_EXPR('removed_on'), arrival]]
+  return ['all', notDraft, ['!', PLANNED_EXPR], ['!', plantedSince], ['!', builtSince], ['!', removedBefore]]
 }
 
 /**

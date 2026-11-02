@@ -8,7 +8,7 @@ class PublicMaps::ReliefsControllerTest < ActionDispatch::IntegrationTest
     configure_relief_region
     @map = small_map
     @map.features.create!(layer: "plants", kind: "plant", name: "Le pommier de Lily", geometry: point(lng: 4.9001, lat: 50.3401),
-                          properties: { "species_id" => plant_species(:apple).id, "number" => 7 })
+                          properties: { "species_id" => plant_species(:apple).id, "number" => 7, "planted_on" => "2020-03-01" })
     @map.features.create!(layer: "water", kind: "pond", name: "Mare", geometry: square(lng: 4.9002, lat: 50.3402, size: 0.00005),
                           properties: { "depth_m" => 1.4, "secret" => "x" })
   end

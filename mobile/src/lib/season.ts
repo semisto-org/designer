@@ -6,7 +6,7 @@
 // going out for. Saved as the map's `season_sign` notes. Pure logic,
 // unit-tested.
 import type { MapFeature } from './types'
-import { seasonOf, t, type Season } from './i18n'
+import { formatDate, seasonOf, t, type Season } from './i18n'
 
 export type SignGroup = 'cold' | 'water' | 'sun_wind' | 'fauna' | 'plants'
 export const SIGN_GROUPS: SignGroup[] = ['cold', 'water', 'sun_wind', 'fauna', 'plants']
@@ -66,6 +66,27 @@ export function signFeature({ sign, label, text, position, observedAt, accuracy 
 export function observedOn(daysAgo: number, now = new Date()): string {
   const day = new Date(now.getTime() - daysAgo * DAY)
   return daysAgo === 0 ? day.toISOString() : `${isoDay(day)}T08:00:00.000Z`
+}
+
+/**
+ * « vu il y a 3 jours, le 23 octobre 2026 »: when something was seen, near
+ * (to feel the season) and exact (to compare years). Counted in calendar
+ * days on the phone, like a plant's age.
+ */
+export function seenLabel(iso: string, now = new Date()): string {
+  const seen = new Date(iso)
+  if (Number.isNaN(seen.getTime())) return ''
+  const date = formatDate(iso)
+  const day = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const days = Math.round((day(now) - day(seen)) / DAY)
+  if (days <= 0) return days < 0 ? date : t('mobile.season.seen.today')
+  if (days === 1) return t('mobile.season.seen.yesterday', { date })
+  if (days < 31) return t('mobile.season.seen.days', { count: days, date })
+  let months = (now.getFullYear() - seen.getFullYear()) * 12 + now.getMonth() - seen.getMonth()
+  if (now.getDate() < seen.getDate()) months--
+  months = Math.max(months, 1)
+  if (months < 12) return t('mobile.season.seen.months', { count: months, date })
+  return t('mobile.season.seen.years', { count: Math.floor(months / 12), date })
 }
 
 /** When something was seen on the land, for the kinds that are observations; null for the rest. */

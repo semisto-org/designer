@@ -30,7 +30,7 @@ Astuce : si une étagère est ouverte quand tu ajoutes des fichiers, ils reçoiv
 
 ## Regarder sans télécharger
 
-Touche un document : les **images** et les **PDF** s'affichent directement, avec toutes leurs pages. Les autres fichiers (un plan DWG, un tableur) se **téléchargent** pour être ouverts dans leur logiciel. Les flèches du clavier passent au document suivant.
+Touche un document : les **images** et les **PDF** s'affichent directement, avec toutes leurs pages, et un **enregistrement audio** s'écoute sur place. Les autres fichiers (un plan DWG, un tableur) se **téléchargent** pour être ouverts dans leur logiciel. Les flèches du clavier passent au document suivant.
 
 ## Écrire un document dans Terranova
 
@@ -50,6 +50,10 @@ Un document Markdown (un fichier `.md`, celui que tu écris ici ou que tu dépos
 Sur la page d'un document Markdown, **Exporter en PDF** ouvre la fenêtre d'impression : choisis **Enregistrer au format PDF**. En tête de page figure le **logo de l'équipe** de la carte, sinon celui de ton **compte pro**, sinon un en-tête sobre avec le nom de la carte et la date.
 
 Le logo se choisit sur la page de l'équipe (par un de ses administrateurs) ou dans **Mon compte** pour un compte pro.
+
+## Les visites de terrain
+
+Une visite faite avec l'app mobile range ici son **compte rendu**, classé par thème. Pendant la visite, les boutons **Le son** et **Le tracé** enregistrent ce qui se dit et par où tu passes, même écran éteint ; touche-les à nouveau pour faire une pause. À la fin, l'audio arrive dans la bibliothèque sous le nom « Enregistrement audio de la visite du jj/mm/aaaa », avec l'étiquette **Visite de terrain**, et le compte rendu dit la distance parcourue. Ton IA lit ces visites ; elle ne transcrit pas encore l'audio : raconte-lui ce qui s'est dit, ou confie-lui une transcription.
 
 ## Les documents de la fiche projet
 

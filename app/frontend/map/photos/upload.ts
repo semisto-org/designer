@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { t } from '@/lib/i18n'
+import { trackWrite, writeOutcome } from '@/lib/saveStatus'
 import { readPhotoMeta } from '@/map/photos/exif'
 import { formatMegabytes } from '@/map/photos/format'
 import { getPhotosState, photoActions } from '@/map/photos/store'
@@ -108,13 +109,18 @@ function csrfToken(): string {
 
 /** POST with upload progress (fetch has none): a phone on 4G needs to see it move. */
 function send(url: string, form: FormData, onProgress: (percent: number) => void): Promise<{ status: number; body: Record<string, unknown> }> {
+  // Counted by the header's « Enregistré »: a photo still on its way is not saved yet.
+  const finish = trackWrite()
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', url)
     xhr.setRequestHeader('Accept', 'application/json')
     xhr.setRequestHeader('X-CSRF-Token', csrfToken())
     xhr.upload.onprogress = (event) => event.lengthComputable && onProgress(Math.round((event.loaded / event.total) * 100))
-    xhr.onerror = () => reject(new Error(t('soil_photos.errors.upload_failed')))
+    xhr.onerror = () => {
+      finish('lost')
+      reject(new Error(t('soil_photos.errors.upload_failed')))
+    }
     xhr.ontimeout = xhr.onerror
     xhr.onload = () => {
       let body: Record<string, unknown> = {}
@@ -123,6 +129,7 @@ function send(url: string, form: FormData, onProgress: (percent: number) => void
       } catch {
         // Not JSON (proxy error page): handled below through the status.
       }
+      finish(writeOutcome(xhr.status))
       resolve({ status: xhr.status, body })
     }
     xhr.send(form)

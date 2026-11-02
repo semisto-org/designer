@@ -27,6 +27,7 @@ module Mcp
           project: map.project,
           project_percent: map.project_sheet.progress[:percent],
           project_drafts_pending: map.project_sheet_drafts.count,
+          project_team_notes: project_team_notes(map),
           elements: element_counts(map),
           tags: tag_counts(map),
           palette: palette(map),
@@ -41,11 +42,16 @@ module Mcp
             mine_pending: map.tasks.pending.where(assignee: user).count
           },
           documents: map.documents.count,
+          site_visits: site_visits(map),
           photos: map.photos.count,
+          discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
+          sectors: sectors(map),
+          exports: exports(map),
           publication: publication(map),
           implementation: implementation(map),
+          team_season: team_season(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -69,7 +75,25 @@ module Mcp
       end
 
       private
+      # The walks made with the phone; list_site_visits gives each one.
+      def site_visits(map)
+        last = map.site_visits.reorder(started_at: :desc).first
+        {
+          count: map.site_visits.count,
+          with_audio: map.site_visits.where.not(audio_document_id: nil).count,
+          last_started_at: last&.started_at&.iso8601
+        }.compact
+      end
+
         MAX_BIOINDICATORS = 100
+
+        # The team's internal notes on the sheet, for the team (or the map's
+        # pro owner) only: which sections have one. The text is in
+        # get_project_sheet. Nil for anyone else, who is not told they exist.
+        def project_team_notes(map)
+          return nil unless ProjectSheetNote.audience?(map, user)
+          { sections: map.project_sheet_notes.order(:section).pluck(:section), note: t("notes.project_team_notes") }
+        end
 
         # The public view (« Publier »), for the owner only, as in the editor:
         # its address, whether the map changed since the snapshot, and what
@@ -113,6 +137,72 @@ module Mcp
         # Semisto's internal app reads it to set a design project's planned
         # budget against the hours worked. HTVA is what VAT leaves of each
         # part at its own rate (services, plants, supplies).
+        # The sector analysis: the sun at the solstices (computed from the
+        # latitude) and the sectors noted around the terrain, accepted or proposed.
+        # The map's live discussion at a glance (list_discussion reads it), for its members only.
+        def discussion(map)
+          return { member: false } unless map.chat_member?(user)
+          messages = map.comments.visible
+          read = CommentRead.find_by(user:, commentable: map)&.last_read_at
+          unread = messages.where.not(author_id: user.id)
+          unread = unread.where(created_at: read..) if read
+          {
+            member: true, messages: messages.count, unread: unread.count,
+            pinned: messages.where.not(location: nil).count,
+            last_message_at: messages.maximum(:created_at)&.iso8601
+          }
+        end
+
+        def sectors(map)
+          center = map.center || map.boundary&.centroid
+          return nil unless center
+          range = ->(from, to) { from == to ? I18n.t("sectors.all_around") : I18n.t("sectors.range", from: Sectors::Arc.compass_point(from), to: Sectors::Arc.compass_point(to)) }
+          drawn = map.features.where(kind: "sector", status: %w[active draft]).order(:id).filter_map do |feature|
+            from, to = Sectors::Arc.directions(feature, [ center.x, center.y ])
+            next unless from
+            {
+              id: feature.id, status: feature.status, sector_type: feature.properties["sector_type"],
+              season: feature.properties["sector_season"] || "all_year", from_deg: from, to_deg: to, directions: range.(from, to),
+              name: feature.name, notes: feature.notes
+            }.compact
+          end
+          {
+            sun: Sectors::Arc.sun(center.y).map { |s| s.merge(directions: range.(s[:from_deg], s[:to_deg])) },
+            drawn:,
+            panel_url: "#{map_url(map)}?panel=sectors"
+          }
+        end
+
+        # Where the person prints the design: the project dossier (sector
+        # page included) and the PDF plan at scale, as one plan or as a book
+        # of thematic sheets. The PDF is drawn in the browser: the links open
+        # it ready to make.
+        def exports(map)
+          {
+            dossier_url: "#{map_url(map)}/dossier",
+            plan_pdf_url: "#{map_url(map)}?export=plan",
+            book_pdf_url: "#{map_url(map)}?export=book",
+            pdf_in_plan: Entitlements.for_map(map).pdf_export?
+          }
+        end
+
+        # A team project on the team board: its stage and the steps of
+        # « La saison qui vient » from the start of this month, forecasts
+        # (an offer not signed yet) included. nil off a team or for its places.
+        def team_season(map)
+          return nil unless map.organization_id && !map.own_place
+          from = Date.current.beginning_of_month
+          steps = map.tasks.steps.where(due_on: from..).order(:starts_on)
+          {
+            stage: map.board_phase, promised_on: map.promised_on&.iso8601,
+            board_url: "#{origin}/teams/#{map.organization_id}/board",
+            steps: steps.map do |task|
+              { task_id: task.id, kind: task.step_kind, title: task.title, starts_on: task.starts_on.iso8601,
+                ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
+            end
+          }
+        end
+
         def offer(map)
           return nil unless editor? && Offer.shown_to?(map, user)
           offer = map.offer or return nil
@@ -136,13 +226,24 @@ module Mcp
           {
             number: version.number, label: version.label, note: version.note, pricing_name: version.pricing_name,
             accepted_at: version.updated_at.iso8601,
-            total_tvac: totals["total_tvac"], total_htva: (services_htva + plants_htva).round(2),
+            total_tvac: totals["total_tvac"], total_htva: (services_htva + plants_htva + co_management_htva(version.result["co_management"])).round(2),
             services_tvac: totals["services_price_tvac"], services_htva: services_htva.round(2),
             plants_supplies_tvac: totals["plants_supplies_base_tvac"], plants_supplies_htva: plants_htva.round(2),
             design_tvac: totals["design_tvac"], implementation_tvac: totals["implementation_tvac"],
             hours_min: phases.sum { _1["hours_min"].to_f }.round(1), hours_max: phases.sum { _1["hours_max"].to_f }.round(1),
-            phases: phases.map { { key: _1["key"], price_tvac: _1["price_tvac"], hours_min: _1["hours_min"], hours_max: _1["hours_max"] } }
+            # A phase the team left out of the offer (enabled: false) counts nowhere.
+            phases: phases.map { { key: _1["key"], enabled: _1.fetch("enabled", true), price_tvac: _1["price_tvac"], hours_min: _1["hours_min"], hours_max: _1["hours_max"] } },
+            co_management: co_management_budget(version.result["co_management"])
           }
+        end
+
+        def co_management_htva(spec) = spec.is_a?(Hash) && spec["enabled"] ? spec["amount_htva"].to_f : 0
+
+        # Co-management after planting, when the offer includes it: half-days
+        # and price year by year. Older versions only estimated it.
+        def co_management_budget(spec)
+          return nil unless spec.is_a?(Hash) && spec["enabled"]
+          { total_tvac: spec["amount_tvac"], years: Array(spec["years"]).map { _1.slice("year", "half_days", "hours", "amount_tvac") } }
         end
 
         # Wild plants noted on the terrain (by hand, from a photo identified by

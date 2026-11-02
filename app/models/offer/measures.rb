@@ -66,7 +66,9 @@ class Offer
           feature = by_id[item["feature_id"]]
           type = pricing.planting_types[item["planting_type"]] || pricing.planting_types.fetch(pricing.fallback_type)
           measure = feature ? feature["measure"] : item["measure"].to_f
-          plants = type["mix"].transform_values { (_1 * measure).round }
+          # The team's densities replace the type's, category by category.
+          mix = type["mix"].merge(item["mix"].to_h.slice(*type["mix"].keys))
+          plants = mix.transform_values { (_1 * measure).round }
           if (override = item["plants_override"])
             plants = scale(plants, override)
           end
@@ -75,6 +77,7 @@ class Offer
             "label" => item["label"].presence || feature&.dig("name").presence,
             "kind" => feature&.dig("kind"), "planting_type" => type["key"],
             "measure_kind" => type["measure"], "measure" => measure.round(1),
+            "mix" => mix, "type_mix" => type["mix"],
             "plants" => plants, "plants_total" => plants.values.sum, "option" => item["option"]
           }
         end

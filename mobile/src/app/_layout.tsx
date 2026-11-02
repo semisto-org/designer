@@ -6,8 +6,9 @@ import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-// Defines the background task of GPS traces: must load with the bundle.
+// Define the background tasks of GPS traces and of visit tracks: must load with the bundle.
 import '@/lib/trace'
+import '@/lib/visitTrack'
 import { t } from '@/lib/i18n'
 import { Sentry } from '@/lib/monitoring'
 import { SessionProvider, useSession } from '@/state/session'

@@ -1,10 +1,10 @@
 import { Link } from '@inertiajs/react'
-import { UsersRound } from 'lucide-react'
+import { Plus, UsersRound } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { t } from '@/lib/i18n'
 import type { ListedMap } from '@/types/teams'
 
-type Team = { id: number; name: string }
+type Team = { id: number; name: string; canCreate?: boolean }
 
 /**
  * Splits the maps list: maps of my teams go to their team's section (every
@@ -28,9 +28,16 @@ export function TeamMapsSection({ team, empty, children }: { team: Team; empty: 
           <UsersRound className="h-5 w-5 shrink-0 text-prune-500" aria-hidden="true" />
           <span className="min-w-0 break-words">{t('teams.maps_index.section', { name: team.name })}</span>
         </h2>
-        <Link href={`/teams/${team.id}`} className="text-sm font-medium text-prune-700 hover:text-prune-800">
-          {t('teams.maps_index.open_team')}
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          {team.canCreate && (
+            <Link href={`/maps/new?team=${team.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-800">
+              <Plus className="h-4 w-4" aria-hidden="true" />{t('teams.maps_index.new_map')}
+            </Link>
+          )}
+          <Link href={`/teams/${team.id}`} className="text-sm font-medium text-prune-700 hover:text-prune-800">
+            {t('teams.maps_index.open_team')}
+          </Link>
+        </div>
       </div>
       {empty ? <p className="mt-4 text-sm text-loam-500">{t('teams.maps_index.empty')}</p> : children}
     </section>

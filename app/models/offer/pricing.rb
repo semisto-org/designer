@@ -16,7 +16,9 @@ class Offer
   #   option_plants  plants of the optional scope
   #   planting_days  days of collective planting (plants ÷ plants per day)
   #
-  # Hours of a task = (base + per × driver) × (1 − gain), to the half hour.
+  # Hours of a task = base + per × driver, to the half hour. Each task still
+  # carries a `gain_pct` (the time Terranova would save on it), kept for
+  # when that gain is measured on real projects; the estimator ignores it.
   # `persons` is a number, or "designers" for the tasks the whole design
   # team does together. `when` names the service or the condition that
   # brings the task in; `option` tasks are in the maximum only.
@@ -27,6 +29,8 @@ class Offer
     PHASES = %w[pre_design design implementation].freeze
     SERVICES = %w[co_author soil_analysis existing_trees sun_study expert_opinion wildlife pond mushrooms harvest_table].freeze
     DRIVERS = %w[site_ha items plants option_plants planting_days].freeze
+    # The line every design phase ends with (Estimator#project_management_line).
+    PROJECT_MANAGEMENT = "project_management"
     CONDITIONS = [ "two_designers", "option_scope", *SERVICES ].freeze
     SUPPLY_KEYS = %w[mulch_m2 compost_l guard stake].freeze
     MEASURES = %w[area length].freeze
@@ -49,7 +53,9 @@ class Offer
       "vat_supplies_pct" => [ 21, 0, 100 ],
       "rounding" => [ 5, 1, 1_000 ],
       "co_management_half_days" => [ 10, 0, 365 ],
-      "half_day_hours" => [ 4, 1, 12 ]
+      "half_day_hours" => [ 4, 1, 12 ],
+      # Project management, as a share of the phase's working hours.
+      "project_management_pct" => [ 10, 0, 50 ]
     }.freeze
 
     task = ->(key, phase, base: 0, per: 0, driver: nil, persons: 1, when: nil, option: false, gain: 0) do
@@ -62,9 +68,9 @@ class Offer
     type = ->(key, measure, mix) { { "key" => key, "label" => nil, "measure" => measure, "mix" => mix } }
 
     # Semisto's pricing. Hours come from the Erpent spreadsheet (made before
-    # the Designer). Gains are what the Designer saves on a task: the place
-    # read from its layers, relief and data, sketches on photos, the plant
-    # list and the harvest calendar from the palette, the offer itself.
+    # the Designer). Gains are what the Designer could save on a task (the
+    # place read from its layers, sketches on photos, the plant list and the
+    # harvest calendar from the palette): estimates, not applied yet.
     SEMISTO = JSON.parse({
       "settings" => SETTINGS.transform_values(&:first),
       "tasks" => [
@@ -83,7 +89,6 @@ class Offer
         task.("presentation", "pre_design", base: 2, persons: "designers"),
         task.("co_author_coaching", "pre_design", base: 3, when: "co_author"),
         task.("validation_document", "pre_design", base: 1.5, persons: "designers", gain: 25),
-        task.("project_management", "pre_design", base: 5),
         # Design: the plant palette and the planting plan, ready to plant.
         task.("existing_trees_survey", "design", base: 5, when: "existing_trees", gain: 40),
         task.("sun_study", "design", base: 5, when: "sun_study", gain: 60),
@@ -98,7 +103,6 @@ class Offer
         task.("co_author_coaching", "design", base: 3, when: "co_author"),
         task.("peer_review", "design", base: 1),
         task.("presentation", "design", base: 2),
-        task.("project_management", "design", base: 3),
         # Mise en œuvre: collective plantings with the people of the place.
         task.("planting_days", "implementation", base: 8, per: 6, driver: "planting_days"),
         task.("staking", "implementation", base: 1, per: 0.004, driver: "plants", persons: 2),
@@ -182,6 +186,7 @@ class Offer
     def complexity = data["complexity"]
     def target_design_share_pct = data["target_design_share_pct"]
     def terms = data["terms"]
+    def document = data["document"]
 
     # The type a drawn feature starts with, when this pricing has it.
     def default_type_for(kind, measure_kind)
@@ -228,14 +233,18 @@ class Offer
           "default_trips" => PHASES.index_with { (number(Offer::Inputs.hash(raw["default_trips"])[_1]) || base["default_trips"][_1]).clamp(0, 100) },
           "complexity" => complexity(raw.fetch("complexity", base["complexity"])),
           "target_design_share_pct" => (number(raw["target_design_share_pct"]) || base["target_design_share_pct"]).clamp(0, 100),
-          "terms" => terms(raw.fetch("terms", base["terms"]))
+          "terms" => terms(raw.fetch("terms", base["terms"])),
+          # The client document's blocks and texts (Offer::Document): only the account's changes.
+          "document" => Offer::Document.normalize(raw["document"])
         }
       end
 
       def task(raw)
         key = raw["key"].to_s
         phase = raw["phase"].to_s
-        return nil unless key.match?(KEY) && PHASES.include?(phase)
+        # Project management is no longer a task: the estimator adds it to
+        # each design phase as a share of its hours. Old templates kept it.
+        return nil unless key.match?(KEY) && PHASES.include?(phase) && key != PROJECT_MANAGEMENT
         persons = raw["persons"] == "designers" ? "designers" : (number(raw["persons"]) || 1).clamp(0, 20)
         {
           "key" => key, "phase" => phase, "label" => string(raw["label"]), "persons" => persons,

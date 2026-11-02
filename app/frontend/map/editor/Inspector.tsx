@@ -1,12 +1,16 @@
-import { CopyCheck, Trash2, X } from 'lucide-react'
+import { Copy, CopyCheck, Trash2, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { formatArea, formatLength, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { besideGeometry, duplicateInput, placesByClick } from '@/map/editor/duplicate'
+import { elementFor } from '@/map/drawing/catalog'
+import { featureName } from '@/map/earthworks/model'
 import { measure } from '@/map/editor/measure'
 import { INSPECTOR_SECTIONS } from '@/map/panels'
+import { useChat } from '@/collab/chat/chatStore'
 import PlantHeading from '@/map/plants/PlantHeading'
 import { isPlant } from '@/map/plants/properties'
 import { displayGeometry } from '@/map/zones/zones'
@@ -19,6 +23,7 @@ import type { MapFeature } from '@/types'
  */
 export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeature; frame?: 'map' | 'page'; lead?: ReactNode }) {
   const editor = useEditor()
+  const chat = useChat()
   const p = feature.properties
   const [name, setName] = useState(p.name ?? '')
   const [notes, setNotes] = useState(p.notes ?? '')
@@ -32,6 +37,38 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
   const topSections = applicable.filter((s) => s.placement === 'top')
   const sections = applicable.filter((s) => s.placement !== 'top')
 
+  // A sector, a zone or a sketch is made by its own tool, not copied.
+  const duplicable = editor.canEdit && frame === 'map' && p.status === 'active' && elementFor(p.kind)?.pickable !== false
+  const [duplicating, setDuplicating] = useState(false)
+
+  // Clémence's test (October 2026): thirty oaks already on the land should
+  // not mean typing the same sheet thirty times. A tree is copied where each
+  // click lands, until Échap; a line or a surface lands beside the original.
+  async function duplicate() {
+    setDuplicating(true)
+    try {
+      if (!placesByClick(feature)) {
+        const copy = await editor.createFeature(duplicateInput(feature, besideGeometry(feature.geometry)))
+        editor.select(copy.properties.id)
+        editor.notify(t('selection.duplicate.beside'))
+        return
+      }
+      editor.notify(t('selection.duplicate.placing', { name: featureName(feature) }))
+      let count = 0
+      for (;;) {
+        const at = await editor.draw('point')
+        if (!at) break
+        await editor.createFeature(duplicateInput(feature, at))
+        count += 1
+      }
+      if (count > 0) editor.notify(t('selection.duplicate.placed', { count }))
+    } catch (e) {
+      editor.notify((e as Error).message, 'error')
+    } finally {
+      setDuplicating(false)
+    }
+  }
+
   function save(patch: { name?: string; notes?: string }) {
     if (!editor.canEdit) return
     if ((patch.name ?? p.name ?? '') === (p.name ?? '') && (patch.notes ?? p.notes ?? '') === (p.notes ?? '')) return
@@ -40,7 +77,9 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
 
   return (
     <aside className={clsx('overflow-y-auto bg-white', frame === 'map'
-      ? 'absolute inset-x-2 bottom-14 z-20 max-h-[60%] rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]'
+      ? clsx('absolute inset-x-2 bottom-14 z-20 max-h-[60%] rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]',
+        // The map's discussion takes the right edge while it shows: the inspector steps beside it.
+        chat.open && !chat.picking ? 'md:right-[25rem]' : 'md:right-3')
       : 'h-full w-full p-5')}>
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -90,6 +129,12 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
           >
             <CopyCheck className="h-4 w-4" aria-hidden />
             {t('selection.start')}
+          </Button>
+        )}
+        {duplicable && (
+          <Button variant="ghost" size="sm" title={t('selection.duplicate.hint')} disabled={duplicating} onClick={() => void duplicate()}>
+            <Copy className="h-4 w-4" aria-hidden />
+            {t('selection.duplicate.action')}
           </Button>
         )}
         {editor.canEdit && (

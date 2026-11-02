@@ -11,6 +11,7 @@ import { ProjectFormLink } from '@/components/journey/ProjectFormLink'
 import { DraftCount, DraftsBanner, ProgressBar, SaveIndicator, SectionBody, StatusMark, sectionTitle } from '@/components/journey/ProjectSheetParts'
 import { t } from '@/lib/i18n'
 import { useProjectSheet } from '@/lib/projectSheet'
+import { useTeamNotes } from '@/lib/teamNotes'
 import { relativeTime } from '@/lib/relativeTime'
 import type { ProjectPayload } from '@/types/journey'
 
@@ -18,8 +19,9 @@ import type { ProjectPayload } from '@/types/journey'
  * The project sheet on a full page: one section at a time, a list of
  * sections with their progress, autosave. Comfortable on desktop and phone.
  */
-export default function MapProject({ map, project, progress: initialProgress, schema, drafts, canEdit, formLink, documents, documentLimits }: ProjectPayload) {
+export default function MapProject({ map, project, progress: initialProgress, schema, drafts, canEdit, formLink, teamNotes: initialTeamNotes, documents, documentLimits }: ProjectPayload) {
   const sheet = useProjectSheet(`/maps/${map.id}/project`, project, initialProgress, canEdit, drafts)
+  const teamNotes = useTeamNotes(map.id, initialTeamNotes)
   const sections = useMemo(() => schema.sections.map((s) => s.key), [schema])
   const [active, setActive] = useState<string>(() => {
     const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) : ''
@@ -111,7 +113,7 @@ export default function MapProject({ map, project, progress: initialProgress, sc
             </button>
           )}
           <div className="mt-5">
-            <SectionBody sheet={sheet} schema={schema} section={active} canEdit={canEdit} />
+            <SectionBody sheet={sheet} schema={schema} section={active} canEdit={canEdit} teamNotes={teamNotes} />
           </div>
           <div className="mt-8 flex items-center justify-between gap-3 border-t border-loam-100 pt-4">
             <Button variant="secondary" disabled={index === 0} onClick={() => setActive(sections[index - 1])}>

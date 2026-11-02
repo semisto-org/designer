@@ -146,9 +146,11 @@ function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSett
         <CardMenu project={project} onMove={onMove} onSettings={onSettings} />
       </div>
       <div className="flex items-center gap-2">
-        <button type="button" onClick={onSettings} className="min-w-0 rounded-full focus-visible:outline-2 focus-visible:outline-prune-600" aria-label={t('team_board.frieze.settings')}>
-          {project.lead || project.crew.length ? <Faces lead={project.lead} crew={project.crew} /> : <span className="text-sm text-loam-400">{t('team_board.project.no_lead')}</span>}
-        </button>
+        {(project.lead || project.crew.length > 0) && (
+          <button type="button" onClick={onSettings} className="min-w-0 rounded-full focus-visible:outline-2 focus-visible:outline-prune-600" aria-label={t('team_board.frieze.settings')}>
+            <Faces lead={project.lead} crew={project.crew} />
+          </button>
+        )}
         <span
           title={t('team_board.frieze.in_column_since', { count: days })}
           className={clsx('ml-auto shrink-0 text-sm tabular-nums', stuck ? 'rounded-full bg-humus-50 px-2 font-semibold text-humus-800' : 'text-loam-500')}

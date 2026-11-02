@@ -60,7 +60,7 @@ export function MapProjectSection({ teamId, mapId, canEdit, notify }: { teamId: 
           </Link>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-          {project.lead || project.crew.length ? <Faces lead={project.lead} crew={project.crew} /> : <span className="text-sm text-loam-500">{t('team_board.project.no_lead')}</span>}
+          {(project.lead || project.crew.length > 0) && <Faces lead={project.lead} crew={project.crew} />}
           {project.ownPlace ? (
             <span className="inline-flex items-center gap-1 text-sm text-loam-700">
               <Trees className="h-5 w-5 text-leaf-700" aria-hidden />{t('team_board.project.place_summary')}

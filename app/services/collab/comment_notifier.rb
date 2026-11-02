@@ -3,6 +3,9 @@ module Collab
   # (`deliver_later`): mentioned people get a "mention" mail, other
   # subscribers of the thread a "new comment" mail, never the author, never
   # someone who left the map, never someone who turned discussion e-mails off.
+  #
+  # The map's own discussion is live: a mention is still e-mailed at once,
+  # the other messages wait for the digest (Collab::ChatDigest).
   class CommentNotifier
     def initialize(comment)
       @comment = comment
@@ -14,6 +17,11 @@ module Collab
       mentioned.each { |user| CommentMailer.mentioned(@comment, user).deliver_later }
       return mentioned if only_mentions
 
+      if @comment.chat?
+        ChatDigest.schedule(@comment.map)
+        return mentioned
+      end
+
       subscriber_recipients(excluding: mentioned.map(&:id)).each do |user|
         CommentMailer.new_comment(@comment, user).deliver_later
       end
@@ -22,7 +30,7 @@ module Collab
 
     private
       def audience
-        @audience ||= @comment.map.participants.where(comment_emails: true).where.not(id: @comment.author_id).to_a
+        @audience ||= @comment.mention_pool.where(comment_emails: true).where.not(id: @comment.author_id).to_a
       end
 
       def mentioned_recipients(only_mentions)

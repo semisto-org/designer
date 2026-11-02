@@ -166,6 +166,12 @@ fr:
         buildings_measured:
           one: "Un bâtiment d'OpenStreetMap, à la hauteur mesurée sur le modèle de surface."
           other: "%{count} bâtiments d'OpenStreetMap, dont %{measured} à la hauteur mesurée sur le modèle de surface."
+        buildings_drawn:
+          one: "Un bâtiment dessiné sur ta carte, à la hauteur notée dans sa fiche."
+          other: "%{count} bâtiments dessinés sur ta carte, à la hauteur notée dans leur fiche."
+        buildings_planned:
+          one: "Celui en projet a un toit mauve : son ombre compte déjà."
+          other: "%{count} en projet, au toit mauve : leur ombre compte déjà."
         trees: "Arbres en relief"
         trees_hint: "La canopée du modèle de surface, à sa vraie hauteur."
         reset: "Recentrer la vue"

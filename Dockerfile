@@ -7,7 +7,7 @@
 # The database server needs the PostGIS extension (e.g. image postgis/postgis:16-3.4).
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-ARG RUBY_VERSION=3.3.6
+ARG RUBY_VERSION=3.3.13
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here

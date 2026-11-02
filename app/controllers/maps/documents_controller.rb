@@ -37,7 +37,8 @@ module Maps
         content: @document.markdown_content,
         checksum: @document.content_checksum,
         canEdit: editor?,
-        letterhead: @map.letterhead
+        letterhead: @map.letterhead,
+        theme: DocumentTheme.for_map(@map).as_json
       }
     end
 

@@ -14,6 +14,7 @@ module Mcp
             type: "array", items: { type: "number" }, minItems: 4, maxItems: 4, description: :bbox
           },
           status: { type: "string", enum: %w[active draft all], default: "all", description: :status },
+          situation: { type: "string", enum: %w[all on_the_ground planned to_remove removed], default: "all", description: :situation },
           include_networks: { type: "boolean", default: false, description: :include_networks },
           include_geometry: { type: "boolean", default: true, description: :include_geometry },
           limit: { type: "integer", minimum: 1, maximum: MAX_LIMIT, default: DEFAULT_LIMIT, description: :limit },
@@ -23,12 +24,13 @@ module Mcp
       )
       hints
 
-      def perform(map_id:, layer: nil, kind: nil, tag: nil, bbox: nil, status: "all", include_networks: false,
+      def perform(map_id:, layer: nil, kind: nil, tag: nil, bbox: nil, status: "all", situation: "all", include_networks: false,
         include_geometry: true, limit: DEFAULT_LIMIT, after_id: nil)
         map = find_map!(map_id)
         networks = networks_visible?(include_networks)
         scope = map.features.where.not(status: "rejected")
         scope = scope.where(status:) unless status == "all"
+        scope = scope.public_send(situation) unless situation == "all"
         scope = scope.where.not(layer: "networks") unless networks
         scope = scope.where(layer:) if layer
         scope = scope.where(kind:) if kind

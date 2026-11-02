@@ -8,7 +8,14 @@ export const THEMES = ['wish', 'water', 'soil', 'tree', 'fauna', 'climate', 'nei
 export type Theme = (typeof THEMES)[number]
 export const isTheme = (value: unknown): value is Theme => THEMES.includes(value as Theme)
 
-export type Visit = { key: string; startedAt: string }
+/**
+ * What the phone records of the walk, besides the notes, when the person
+ * asks for it: the sound (`audio`: where the file is, and when it began)
+ * and the GPS track (`tracking`: whether it is on). Both are optional and
+ * can be paused; they end with the visit.
+ */
+export type VisitAudio = { file: string | null; startedAt: string }
+export type Visit = { key: string; startedAt: string; audio?: VisitAudio | null; tracking?: boolean }
 
 /** A note's title fits on one line of the map's lists; the full text goes in its notes. */
 export const TITLE_MAX = 80
@@ -52,4 +59,26 @@ export const questionsOf = (notes: MapFeature[]) => notes.filter((note) => theme
 /** How long the walk has lasted, in whole minutes. */
 export function minutesSince(startedAt: string, now = new Date()): number {
   return Math.max(0, Math.floor((now.getTime() - new Date(startedAt).getTime()) / 60_000))
+}
+
+/** « 02/11/2026 »: the day the visit began, as its recording is titled in the documents. */
+export function visitDay(startedAt: string): string {
+  const day = new Date(startedAt)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(day.getDate())}/${pad(day.getMonth() + 1)}/${day.getFullYear()}`
+}
+
+/** « 0:42 », « 12:05 », « 1:02:09 »: how long the sound has been recording. */
+export function clock(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const sec = String(total % 60).padStart(2, '0')
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`
+}
+
+/** « 350 m », « 1,2 km »: how far the walk has gone. */
+export function walked(meters: number): string {
+  if (meters < 1000) return `${Math.round(meters)} m`
+  return `${(meters / 1000).toFixed(1).replace('.', ',')} km`
 }

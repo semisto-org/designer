@@ -21,6 +21,7 @@ import { featureHistory, UndoRefused } from '@/map/editor/featureHistory'
 import { historyShortcut, isTextTarget, UndoHistory } from '@/map/editor/history'
 import { Inspector } from '@/map/editor/Inspector'
 import { MapName } from '@/map/editor/MapName'
+import { SaveIndicator } from '@/map/editor/SaveIndicator'
 import { RecenterControl } from '@/map/editor/controls'
 import { EditorBar, EditorRail } from '@/map/editor/Rail'
 import { StageStepper } from '@/map/editor/StageStepper'
@@ -62,6 +63,7 @@ export default function MapShow(props: Props) {
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
         <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} />
+        {(map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived && <SaveIndicator />}
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
         <div className="flex-1" />

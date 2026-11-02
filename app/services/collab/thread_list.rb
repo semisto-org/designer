@@ -1,6 +1,7 @@
 module Collab
   # The map's discussions at a glance: one row per thread that has comments
-  # (plus the map's own thread, always), newest activity first.
+  # (plus the map's own thread, the live discussion, for its members only),
+  # newest activity first.
   class ThreadList
     PREVIEW = 120
 
@@ -11,6 +12,7 @@ module Collab
 
     def call
       comments = @map.discussion_comments.visible
+      comments = comments.where.not(commentable_type: "Map") unless chat_member?
       counts = comments.group(:commentable_type, :commentable_id).count
       latest = comments.select("DISTINCT ON (comments.commentable_type, comments.commentable_id) comments.*")
         .order(:commentable_type, :commentable_id, created_at: :desc, id: :desc).includes(:author)
@@ -19,7 +21,8 @@ module Collab
       reads = CommentRead.where(user: @user).index_by { |r| [ r.commentable_type, r.commentable_id ] }
       subscribed = CommentSubscription.where(user: @user).pluck(:commentable_type, :commentable_id).to_set
 
-      keys = counts.keys | [ [ "Map", @map.id ] ]
+      keys = counts.keys
+      keys |= [ [ "Map", @map.id ] ] if chat_member?
       commentables = load_commentables(keys)
       rows = keys.filter_map do |key|
         record = commentables[key] or next
@@ -42,6 +45,8 @@ module Collab
     end
 
     private
+      def chat_member? = @chat_member ||= @map.chat_member?(@user)
+
       def load_commentables(keys)
         keys.group_by(&:first).flat_map do |type, pairs|
           next [] unless Commentable::TYPES.include?(type)

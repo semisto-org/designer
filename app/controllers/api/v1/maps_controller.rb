@@ -20,7 +20,7 @@ module Api
 
       def show
         render json: {
-          map: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?),
+          map: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?, chat: @map.chat_member?(Current.user)),
           mapEntitlements: map_entitlements.as_json,
           layers: @map.region.catalogue.enabled.map(&:as_inertia),
           features: @map.features.where.not(status: "rejected").map(&:as_geojson),

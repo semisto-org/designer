@@ -53,6 +53,12 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:bob), Map.last.owner
   end
 
+  test "a map left unnamed takes the name of its place" do
+    sign_in_as users(:bob)
+    post maps_path, params: { map: { name: "", address: "Rue du Bois 3, 5530 Purnode", center: [ 4.95, 50.32 ] } }
+    assert_equal "Le terrain de Purnode", Map.last.name
+  end
+
   test "creates a map in the region of its place" do
     load Rails.root.join("db/seeds/01_regions.rb").to_s
     sign_in_as users(:bob)

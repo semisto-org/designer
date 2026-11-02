@@ -1,8 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowLeft, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NumberInput } from '@/components/finances/NumberInput'
+import { DocumentBlocksEditor } from '@/components/offers/DocumentBlocksEditor'
 import { returnToOffer } from '@/components/offers/returnTo'
 import { categoryLabel, newId, phaseLabel, PhaseMark, typeLabel } from '@/components/offers/shared'
 import { Button } from '@/components/ui/Button'
@@ -17,7 +18,7 @@ import type { ComplexityCriterion, ComplexityLevel, OfferSettings, PlantCategory
 const RATE_UNITS: Record<keyof OfferSettings, string> = {
   designers: '', hourly_rate: '€/h', contribution_pct: '%', buffer_pct: '%', km_rate: '€/km', plants_per_day: '/j',
   plants_margin_pct: '%', vat_services_pct: '%', vat_plants_pct: '%', vat_supplies_pct: '%', rounding: '€',
-  co_management_half_days: '/an', half_day_hours: 'h',
+  co_management_half_days: '/an', half_day_hours: 'h', project_management_pct: '%',
 }
 
 const slug = (prefix: string) => `${prefix}_${newId().replace(/[^a-z0-9]/g, '').slice(0, 8)}`
@@ -35,7 +36,7 @@ const supplyHeading = (supply: string) => {
  * Saved with one button; an offer priced with it follows it until a
  * version is saved.
  */
-export default function OfferTemplateEdit({ template, account, vocabulary }: TemplateEditProps) {
+export default function OfferTemplateEdit({ template, account, vocabulary, documentDefaults }: TemplateEditProps) {
   const [name, setName] = useState(template.name)
   const [clientTypes, setClientTypes] = useState(template.clientTypes)
   const [data, setData] = useState<PricingData>(template.data)
@@ -211,6 +212,18 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
         </label>
       </Section>
 
+      <Section title={t('offers.document.title')} help={t('offers.document.template_intro')}>
+        <p className="text-sm text-loam-500">{t('offers.document.placeholders')}</p>
+        <DocumentBlocksEditor
+          base={documentDefaults}
+          own={data.document?.blocks ?? {}}
+          readOnly={false}
+          resetLabel={t('offers.document.reset_template')}
+          changedLabel={t('offers.document.changed_template')}
+          onChange={(blocks) => change({ document: { blocks } })}
+        />
+      </Section>
+
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-loam-200 bg-white/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2">
           <button type="button" onClick={destroy} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm text-clay-600 hover:bg-clay-50">
@@ -261,7 +274,7 @@ function TaskTable({ phase, data, vocabulary, onChange }: Editor & { phase: Pric
       <h3 className="font-serif text-lg font-semibold text-loam-900"><PhaseMark phase={phase} /> {phaseLabel(phase)}</h3>
       <ul className="mt-2 divide-y divide-loam-100">
         {tasks.map((task) => (
-          <li key={`${task.phase}.${task.key}`} className="grid grid-cols-2 gap-2 py-2.5 sm:grid-cols-[minmax(0,1.6fr)_6rem_5rem_5rem_8rem_5.5rem_auto]">
+          <li key={`${task.phase}.${task.key}`} className="grid grid-cols-2 gap-2 py-2.5 sm:grid-cols-[minmax(0,1.6fr)_6rem_5rem_5rem_8rem_auto]">
             <div className="col-span-2 sm:col-span-1">
               {task.label != null ? (
                 <Input aria-label={t('offer_templates.edit.task')} value={task.label ?? ''} onChange={(e) => set(task, { label: e.target.value })} />
@@ -297,10 +310,6 @@ function TaskTable({ phase, data, vocabulary, onChange }: Editor & { phase: Pric
                 <option value="">—</option>
                 {vocabulary.drivers.map((driver) => <option key={driver} value={driver}>{t(`offer_templates.drivers.${driver}`)}</option>)}
               </Select>
-            </label>
-            <label className="block">
-              <span className="flex items-center gap-0.5 text-[11px] text-leaf-700"><Sparkles className="h-3 w-3" aria-hidden />{t('offer_templates.edit.gain')}</span>
-              <NumberInput value={task.gain_pct} unit="%" onValue={(value) => set(task, { gain_pct: value ?? 0 })} />
             </label>
             <button type="button" onClick={() => remove(task)} className="self-end justify-self-end rounded-full p-1.5 text-loam-400 hover:bg-clay-50 hover:text-clay-600" aria-label={t('offer_templates.edit.remove')} title={t('offer_templates.edit.remove')}>
               <Trash2 className="h-4 w-4" aria-hidden />

@@ -11,6 +11,15 @@ class Map < ApplicationRecord
 
   STAGES = %w[observe map design plant].freeze
 
+  # The name a place gives a map: « Le terrain de Purnode », « Le terrain
+  # d'Yvoir », or « Mon terrain » without an address. The town is the last
+  # part of the address, without its postcode.
+  def self.name_for_address(address)
+    town = address.to_s.split(",").last.to_s.sub(/\A\s*(?:[A-Z]{1,2}-?)?\d{4,5}\s*/, "").strip
+    return I18n.t("trials.map_name") if town.blank?
+    I18n.t(town.match?(/\A[aeiouyàâéèêëîïôûüAEIOUYÀÂÉÈÊËÎÏÔÛÜ]/) ? "trials.map_name_elided" : "trials.map_name_in", town:)
+  end
+
   belongs_to :owner, class_name: "User"
   belongs_to :organization, optional: true
   belongs_to :region
@@ -21,6 +30,8 @@ class Map < ApplicationRecord
   has_many :trashed_features, -> { trashed }, class_name: "MapFeature", dependent: :destroy
   has_many :feature_update_drafts, dependent: :delete_all
   has_many :project_sheet_drafts, -> { ordered }, dependent: :delete_all, inverse_of: :map
+  # The team's (or the pro's) own notes on the sheet, never shown to the client (ProjectSheetNote).
+  has_many :project_sheet_notes, dependent: :delete_all
   has_many :water_sources, -> { ordered }, dependent: :delete_all, inverse_of: :map
   has_many :plan_images, -> { ordered }, dependent: :destroy, inverse_of: :map
   has_one :share_link, class_name: "MapShareLink", dependent: :destroy
@@ -46,6 +57,8 @@ class Map < ApplicationRecord
   has_many :transfers, class_name: "MapTransfer", dependent: :delete_all
 
   normalizes :name, with: ->(name) { name.strip }
+  # A new map needs no name typed: its place gives one (« Le terrain de Purnode »).
+  before_validation -> { self.name = self.class.name_for_address(address) }, on: :create, if: -> { name.blank? }
   validates :name, presence: true
   validates :stage, inclusion: { in: STAGES }
 
@@ -72,6 +85,20 @@ class Map < ApplicationRecord
   # plan's first print is noted by Maps::PrintsController.
   before_save -> { self.outlined_at ||= Time.current }, if: -> { boundary.present? && will_save_change_to_boundary? }
 
+  # Everything added on a map touches it (`belongs_to :map, touch: true`,
+  # `map.touch`) to date its last change. That is no edit of the map itself, so
+  # it neither checks nor bumps lock_version: otherwise a feature saved against
+  # an in-memory map that another request had touched failed with a 409, and
+  # renaming the map after drawing on it did too (SEMISTO-DESIGNER-11).
+  def touch(*, **)
+    @touching = true
+    super
+  ensure
+    @touching = false
+  end
+
+  def locking_enabled? = !@touching && super
+
   def role_for(user)
     return nil unless user
     return "owner" if owner_id == user.id
@@ -83,6 +110,26 @@ class Map < ApplicationRecord
   def project_sheet = ProjectSheet.parse(project, strict: false)
 
   def viewable_by?(user) = role_for(user).present?
+
+  # The map's live discussion (« Discussion de la carte », the comments on
+  # the map itself): its owner, editors and team, plus the viewers the owner
+  # let in one by one (`chat_access` on their membership). Support roles
+  # (a drone pilot, Semisto answering a request) stay out of it.
+  def chat_member?(user)
+    case role_for(user)
+    when "owner", "editor" then true
+    when "viewer" then memberships.where(user:, chat_access: true).exists?
+    else false
+    end
+  end
+
+  # Everyone in the map's discussion (see #chat_member?).
+  def chat_participants
+    in_chat = memberships.where(role: %w[owner editor]).or(memberships.where(chat_access: true)).select(:user_id)
+    scope = User.where(id: in_chat)
+    scope = scope.or(User.where(id: OrganizationMembership.where(organization_id:).select(:user_id))) if organization_id
+    scope
+  end
   def editable_by?(user) = %w[owner editor].include?(role_for(user))
   def manageable_by?(user) = role_for(user) == "owner"
 
@@ -149,13 +196,18 @@ class Map < ApplicationRecord
 
   # Gives `user` the role through an invitation or a share link. Never
   # downgrades.
-  def grant_access!(user, role, invited_by: nil)
+  def grant_access!(user, role, invited_by: nil, chat_access: false)
     current = role_for(user)
-    return memberships.find_by(user:) if current == "owner" || current == "editor" || current == role
+    if current == "owner" || current == "editor" || current == role
+      membership = memberships.find_by(user:)
+      membership.update!(chat_access: true) if chat_access && membership && !membership.chat_access
+      return membership
+    end
 
     membership = memberships.find_or_initialize_by(user:)
     membership.role = role
     membership.invited_by ||= invited_by
+    membership.chat_access ||= chat_access
     membership.save!
     membership
   end

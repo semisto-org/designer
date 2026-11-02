@@ -6,6 +6,7 @@ module PublicMaps
   # drawn on it comes from the snapshot, never from the live map.
   class ReliefsController < ApplicationController
     include PublicMeta
+    include EmbeddablePublicView
     allow_unauthenticated_access
 
     before_action { response.set_header("X-Robots-Tag", "noindex, nofollow") }

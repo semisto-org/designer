@@ -92,7 +92,13 @@ export function speciesName(planting: Planting | undefined, speciesId: unknown):
   return species.commonName ? `${species.commonName} (${species.latinName})` : species.latinName
 }
 
-/** What a person reads for a feature: its name, else its species, else its kind. */
+/** What a person reads for a feature: its name, else its species, else its sign (a season sign), else its kind. */
 export function featureTitle(feature: MapFeature, planting?: Planting): string {
-  return feature.properties.name || speciesName(planting, feature.properties.species_id) || kindLabel(feature.properties.kind)
+  return feature.properties.name || speciesName(planting, feature.properties.species_id) || signName(feature) || kindLabel(feature.properties.kind)
+}
+
+/** « Neige qui fond d'abord » for a season sign noted without a name (by an AI, say). */
+function signName(feature: MapFeature): string | null {
+  const sign = feature.properties.sign
+  return feature.properties.kind === 'season_sign' && typeof sign === 'string' && has(`drawing.options.sign.${sign}`) ? t(`drawing.options.sign.${sign}`) : null
 }

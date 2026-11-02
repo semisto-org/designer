@@ -1,5 +1,5 @@
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
-import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, PLANNED_PLANT_EXPR } from '@/map/scenario'
+import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, PLANNED_PLANT_EXPR, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import { ensureLabelBackground, markerLabel, PAPER_LABEL_IMAGE } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
 import { displayGeometry, isRounded, isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
@@ -136,6 +136,8 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
   const planned = PLANNED_PLANT_EXPR as never
   // A planned element (pond, hedge…) is a dashed outline over a fainter fill.
   const plannedElement = PLANNED_ELEMENT_EXPR as never
+  // What the project takes away is still there: dotted and faded.
+  const toRemove = TO_REMOVE_EXPR as never
   map.addLayer({
     id: 'features-fill',
     type: 'fill',
@@ -152,8 +154,8 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     paint: {
       'line-color': color,
       'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, ['==', ['get', 'kind'], 'line'], 3, 2],
-      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], plannedElement, ['literal', [3, 2]], ['literal', [1, 0]]] as never,
-      'line-opacity': ['case', plannedElement, PLANNED_OPACITY, 1] as never,
+      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], plannedElement, ['literal', [3, 2]], toRemove, ['literal', [0.6, 1.6]], ['literal', [1, 0]]] as never,
+      'line-opacity': ['case', plannedElement, PLANNED_OPACITY, toRemove, TO_REMOVE_OPACITY, 1] as never,
     },
   })
   map.addLayer({

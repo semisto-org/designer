@@ -65,13 +65,7 @@ class MapTrial < ApplicationRecord
   def claimed_by?(user) = user.present? && claimant_id == user.id
 
   # The name the map will get, shown on the trial: « Le terrain de Purnode ».
-  # The town is the last part of the address, without its postcode.
-  def proposed_name
-    town = address.to_s.split(",").last.to_s.sub(/\A\s*(?:[A-Z]{1,2}-?)?\d{4,5}\s*/, "").strip
-    return I18n.t("trials.map_name") if town.blank?
-    # « Le terrain d'Yvoir », « Le terrain de Purnode ».
-    I18n.t(town.match?(/\A[aeiouyàâéèêëîïôûüAEIOUYÀÂÉÈÊËÎÏÔÛÜ]/) ? "trials.map_name_elided" : "trials.map_name_in", town:)
-  end
+  def proposed_name = Map.name_for_address(address)
 
   def cadastre = @cadastre ||= Providers::Cadastre.for(region)
 

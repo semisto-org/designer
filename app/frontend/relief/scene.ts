@@ -33,6 +33,8 @@ import type { SunPosition } from './sun.ts'
 export const OVERLAY_SCALE = 2
 const OVERLAY_MAX_PX = 4096
 const PARTICLES = 5000
+// The roof of a building « En projet »: the plum of the brand, lightened.
+const PLANNED_ROOF_COLOR = '#b9a9c9'
 const WALL_COLOR = '#d8cfc0'
 const DAY_SKY = '#e3e9e4'
 const NIGHT_SKY = '#0a1220'
@@ -645,6 +647,7 @@ ${OVERLAY_MIX}`)
     const foot: number[] = []
     const rise: number[] = []
     const roofIndices: number[] = []
+    const plannedRoofIndices: number[] = []
     const wallIndices: number[] = []
     const vertex = (x: number, y: number, base: number, up: number) => {
       positions.push(x - x0, 0, y - z0)
@@ -663,6 +666,8 @@ ${OVERLAY_MIX}`)
       return area
     }
     for (const volume of volumes) {
+      // A building still in project: the ortho shows the ground there, so its roof is plain.
+      const roofs = volume.planned ? plannedRoofIndices : roofIndices
       for (const shell of volume.shells) {
         if (shell.ring.length < 3) continue
         // Roof: planar faces (one, or two along a ridge), facing up.
@@ -675,8 +680,8 @@ ${OVERLAY_MIX}`)
             // Facing up: (b − a) × (c − a) points to +y.
             const [p, q, r] = [face[a], face[b], face[c]]
             const up = (q.y - p.y) * (r.x - p.x) - (q.x - p.x) * (r.y - p.y)
-            if (up > 0) roofIndices.push(first + a, first + b, first + c)
-            else roofIndices.push(first + a, first + c, first + b)
+            if (up > 0) roofs.push(first + a, first + b, first + c)
+            else roofs.push(first + a, first + c, first + b)
           }
         }
         // Walls up to the roof at each corner (gable ends included), one
@@ -696,12 +701,14 @@ ${OVERLAY_MIX}`)
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
     geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2))
-    geometry.setIndex([...roofIndices, ...wallIndices])
+    geometry.setIndex([...roofIndices, ...wallIndices, ...plannedRoofIndices])
     geometry.addGroup(0, roofIndices.length, 0)
     geometry.addGroup(roofIndices.length, wallIndices.length, 1)
+    geometry.addGroup(roofIndices.length + wallIndices.length, plannedRoofIndices.length, 2)
     const roof = new THREE.MeshStandardMaterial({ map: this.material.map, roughness: 1, metalness: 0, side: THREE.DoubleSide })
     const walls = new THREE.MeshStandardMaterial({ color: WALL_COLOR, roughness: 1, metalness: 0, side: THREE.DoubleSide })
-    this.buildings = new THREE.Mesh(geometry, [roof, walls])
+    const plannedRoof = new THREE.MeshStandardMaterial({ color: PLANNED_ROOF_COLOR, roughness: 1, metalness: 0, side: THREE.DoubleSide })
+    this.buildings = new THREE.Mesh(geometry, [roof, walls, plannedRoof])
     this.buildingFoot = new Float32Array(foot)
     this.buildingRise = new Float32Array(rise)
     this.buildings.visible = this.buildingsOn && this.terrain.visible

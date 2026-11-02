@@ -223,6 +223,14 @@ export default function PublishPanel() {
         )}
 
         <fieldset>
+          <legend className="text-sm font-medium text-loam-700">{t('collab.publish.situation')}</legend>
+          <div className="mt-1">
+            <Toggle checked={options.show_planned ?? false} onChange={(v) => setOptions({ ...options, show_planned: v })} label={t('collab.publish.show_planned')} />
+          </div>
+          <p className="mt-1 text-sm text-loam-500">{t(options.show_planned ? 'collab.publish.show_planned_on' : 'collab.publish.show_planned_off')}</p>
+        </fieldset>
+
+        <fieldset>
           <legend className="text-sm font-medium text-loam-700">{t('collab.publish.privacy')}</legend>
           <div className="mt-1 space-y-1.5">
             <Toggle checked={options.hide_networks} onChange={(v) => setOptions({ ...options, hide_networks: v })} label={t('collab.publish.hide_networks')} />

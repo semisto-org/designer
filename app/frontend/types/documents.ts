@@ -2,7 +2,7 @@ import type { FormResponseData } from '@/types/forms'
 
 // The map's « Documents » library (Maps::DocumentsController, MapDocument#as_inertia).
 
-export type DocumentKind = 'pdf' | 'image' | 'text' | 'sheet' | 'slides' | 'plan' | 'other'
+export type DocumentKind = 'pdf' | 'image' | 'text' | 'sheet' | 'slides' | 'plan' | 'audio' | 'other'
 
 export type MapDocumentData = {
   id: number
@@ -12,8 +12,8 @@ export type MapDocumentData = {
   /** « library »: added in Documents; « project_sheet »: sent with the project sheet; « form »: an answer to a team's form. */
   origin: 'library' | 'project_sheet' | 'form'
   kind: DocumentKind
-  /** What the browser shows as is. */
-  preview: 'image' | 'pdf' | null
+  /** What the browser shows as is (« audio »: the visit recorded with the phone, played in place). */
+  preview: 'image' | 'pdf' | 'audio' | null
   filename: string | null
   contentType: string | null
   byteSize: number | null

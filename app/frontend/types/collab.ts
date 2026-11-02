@@ -8,6 +8,8 @@ export type ThreadType = 'Map' | 'MapFeature'
 
 export type Mention = { id: number; handle: string }
 
+export type CitedFeature = { id: number; name: string; layer: string; kind: string }
+
 export type CommentData = {
   id: number
   body: string
@@ -16,6 +18,12 @@ export type CommentData = {
   editedAt: string | null
   mentions: Mention[]
   applause: { count: number; mine: boolean; names: string[] }
+  /** Elements of the map the message cites (« # »), each with its label. */
+  features?: CitedFeature[]
+  /** The spot the message is pinned to, [lng, lat]. */
+  location?: [number, number] | null
+  /** A photo of the map joined to the message. */
+  photo?: { id: number; caption: string | null; video: boolean } | null
   canEdit: boolean
   canDelete: boolean
 }
@@ -57,6 +65,8 @@ export type SharingMember = {
   you: boolean
   /** Owns the land the map draws (« Propriétaire du lieu »). */
   placeOwner: boolean
+  /** Takes part in the map's discussion (always for the owner and editors). */
+  chat: boolean
 }
 
 export type SharingInvitation = {
@@ -66,6 +76,8 @@ export type SharingInvitation = {
   expiresAt: string | null
   sentAt: string | null
   placeOwner: boolean
+  /** Joins the map's discussion on accepting (always for an editor). */
+  chat: boolean
 }
 
 export type SharingData = {
@@ -98,6 +110,8 @@ export type PublicationOptions = {
   show_notes: boolean
   /** Names of zones and paths; off by default (they often carry private notes). */
   show_zone_names?: boolean
+  /** What is still a project (planned elements, plants not planted yet); off by default. */
+  show_planned?: boolean
   /** The newest drone view (drone area); off by default. */
   show_aerial_view?: boolean
   /** The owner's consent to « Carnets ouverts » on the public site; off by default. */
@@ -176,4 +190,19 @@ export type PublicMapProps = {
   aerialView?: AerialView | null
   /** The simplified 3D view (/p/:token/3d), when the terrain's relief is there. */
   reliefPath?: string | null
+}
+
+/** What a person invited to a map sees before signing in, and once on the map. */
+export type InvitationWelcome = {
+  mapId: number
+  mapName: string
+  boundary: import('geojson').Geometry | null
+  areaM2: number | null
+  inviterName: string | null
+  role: 'editor' | 'viewer'
+  chat: boolean
+  /** The day the map was started (ISO date). */
+  since: string
+  plants: number
+  plantsInGround: number
 }

@@ -42,6 +42,9 @@ class MapPublication < ApplicationRecord
       "show_notes" => flag.call("show_notes", false),
       # Zone and path names often carry the designer's own notes: off unless asked.
       "show_zone_names" => flag.call("show_zone_names", false),
+      # What is still a project (buildings to come, plants not planted yet):
+      # off, the map shows the land as it is today, unless the owner asks.
+      "show_planned" => flag.call("show_planned", false),
       # The newest drone view (« Vues drone »), off unless the owner asks.
       "show_aerial_view" => flag.call("show_aerial_view", false),
       # The owner's consent to « Carnets ouverts » on the public site.

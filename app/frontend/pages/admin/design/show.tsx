@@ -9,6 +9,7 @@ import { confirmAction } from '@/components/ui/confirm'
 import { Field, Input } from '@/components/ui/Field'
 import { HandNote } from '@/components/ui/HandNote'
 import { IconButton } from '@/components/ui/IconButton'
+import { ChipButton } from '@/components/ui/ChipButton'
 import { Pill, type PillTone } from '@/components/ui/Pill'
 import { PlaceSketch } from '@/components/ui/PlaceSketch'
 import { Sheet } from '@/components/ui/Sheet'
@@ -144,6 +145,15 @@ export default function AdminDesignPage({ guard }: { guard: Guard }) {
           <div className="flex flex-wrap gap-2">
             {PILLS.map((tone) => <Pill key={tone} tone={tone}>{k(`sections.pill.${tone}`)}</Pill>)}
             <Pill tone="leaf" icon={<Sprout />}>{k('sections.pill.leaf')}</Pill>
+          </div>
+        </Specimen>
+
+        <Specimen id="chip" code="ChipButton">
+          <div className="flex flex-wrap items-center gap-2">
+            <ChipButton tone="prune" icon={<Sprout />}>{k('sections.chip.place')}</ChipButton>
+            <ChipButton>{k('sections.chip.element')}</ChipButton>
+            <ChipButton pressed>👏 2</ChipButton>
+            <p className="text-sm text-loam-800">{k('sections.chip.before')} <ChipButton inline tone="leaf">{k('sections.chip.inline')}</ChipButton> {k('sections.chip.after')}</p>
           </div>
         </Specimen>
 

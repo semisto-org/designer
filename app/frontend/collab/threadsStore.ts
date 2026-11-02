@@ -31,14 +31,6 @@ export function setCommentEmails(value: boolean) {
   set({ ...state, commentEmails: value })
 }
 
-/** A request from outside the panel (e-mail deep link) to open the map's own discussion. */
-let wantsGeneral = false
-export const requestGeneralDiscussion = () => { wantsGeneral = true }
-/** Pure read (safe in a state initializer, even run twice by StrictMode)... */
-export const peekGeneralDiscussionRequest = () => wantsGeneral
-/** ...cleared once the panel has shown it. */
-export const clearGeneralDiscussionRequest = () => { wantsGeneral = false }
-
 const subscribe = (listener: () => void) => {
   listeners.add(listener)
   return () => { listeners.delete(listener) }

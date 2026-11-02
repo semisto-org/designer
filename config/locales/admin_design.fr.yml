@@ -83,6 +83,14 @@ fr:
           humus: "En projet"
           clay: "Refusé"
           lichen: "Brouillon de ton IA"
+        chip:
+          title: "Pastilles à presser"
+          use: "Un endroit ou un élément nommé dans un message, une réaction : petit, dans le fil du texte."
+          place: "Voir l'endroit"
+          element: "Mare du bas"
+          before: "La"
+          inline: "#Haie fruitière"
+          after: "a bien repris."
         empty:
           title: "État vide du compagnon"
           use: "Un écran vide dit quoi regarder d'abord, et pourquoi."

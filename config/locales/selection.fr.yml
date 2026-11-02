@@ -17,6 +17,14 @@ fr:
     unmoved: "La position n'a pas changé."
     start: "Sélectionner plusieurs éléments"
     start_hint: "Pour les déplacer ensemble. Sur ordinateur : Maj+clic, ou Maj+glisser autour de plusieurs éléments."
+    duplicate:
+      action: "Dupliquer"
+      hint: "La copie garde l’espèce, les mesures, les étiquettes et les notes : seule la place change."
+      placing: "Touche la carte pour poser chaque copie de « %{name} ». Échap quand tu as fini."
+      placed:
+        one: "1 copie posée. ⌘Z (Ctrl+Z) la retire."
+        other: "%{count} copies posées. ⌘Z (Ctrl+Z) retire la dernière."
+      beside: "Copie posée à côté de l’original : fais-la glisser à sa place avec « Déplacer » (touche M)."
     delete_planned:
       undo_hint: "Tu pourras revenir en arrière avec ⌘Z (Ctrl+Z)."
       plants:

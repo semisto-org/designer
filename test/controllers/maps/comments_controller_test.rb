@@ -14,8 +14,15 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     post map_comments_path(@map), params: { comment: { commentable_type: on.class.name, commentable_id: on.id, body: } }, as: :json
   end
 
-  test "a viewer can comment on a feature and on the map" do
+  test "a viewer comments on a feature; the map's discussion waits for the owner to let them in" do
     sign_in_as @viewer
+    post_comment "Bravo", on: @map
+    assert_response :forbidden
+    assert_equal "chat_closed", json["code"]
+    get map_comments_path(@map), as: :json
+    assert_response :forbidden
+
+    @map.memberships.find_by(user: @viewer).update!(chat_access: true)
     assert_difference -> { Comment.count }, 2 do
       post_comment "Beau projet"
       assert_response :created
@@ -84,6 +91,7 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
 
   test "the thread defaults to the map's own" do
     Comment.create!(commentable: @map, author: @owner, body: "Général")
+    @map.memberships.find_by(user: @viewer).update!(chat_access: true)
     sign_in_as @viewer
     get map_comments_path(@map), as: :json
     assert_equal "Map", json["commentable"]["type"]
@@ -186,6 +194,7 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     Comment.create!(commentable: @feature, author: @owner, body: "Deux")
     travel 1.minute
     Comment.create!(commentable: other_feature, author: @viewer, body: "Mon pommier")
+    @map.memberships.find_by(user: @viewer).update!(chat_access: true)
     sign_in_as @viewer
     get threads_map_comments_path(@map), as: :json
     assert_response :success
@@ -198,7 +207,7 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     assert noyer["unread"], "comments by others I have not opened"
     pommier = threads.find { |t| t["title"] == "Pommier" }
     assert_not pommier["unread"], "my own comment is not unread"
-    assert_equal 0, threads.last["count"], "the map's own thread is always listed"
+    assert_equal 0, threads.last["count"], "the map's own thread is always listed for its members"
 
     get map_comments_path(@map), params: { commentable_type: "MapFeature", commentable_id: @feature.id }, as: :json
     get threads_map_comments_path(@map), as: :json
@@ -212,9 +221,17 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
 
   test "deleted comments do not count in threads" do
     Comment.create!(commentable: @feature, author: @owner, body: "Un").soft_delete!
-    sign_in_as @viewer
+    sign_in_as @owner
     get threads_map_comments_path(@map), as: :json
     assert_equal [ "Domaine d'Ahinvaux" ], json["threads"].map { |t| t["title"] }
+  end
+
+  test "threads: a viewer outside the map's discussion does not see it" do
+    Comment.create!(commentable: @map, author: @owner, body: "Entre nous")
+    Comment.create!(commentable: @feature, author: @owner, body: "Noyer")
+    sign_in_as @viewer
+    get threads_map_comments_path(@map), as: :json
+    assert_equal [ "MapFeature" ], json["threads"].map { |t| t["type"] }
   end
 
   test "e-mail preference can be turned off and on" do
@@ -225,5 +242,50 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     assert_not @viewer.reload.comment_emails
     patch comment_preference_path, params: { comment_emails: true }, as: :json
     assert @viewer.reload.comment_emails
+  end
+
+  test "a message points at the map: cited elements of this map only, a spot, a photo" do
+    other = Map.create!(name: "Autre", owner: @outsider, region: regions(:wallonia))
+    foreign = with_feature(other)
+    photo = @map.photos.new(location: [ 4.9, 50.34 ], uploaded_by: @owner)
+    photo.image.attach(io: file_fixture("plant.png").open, filename: "flaque.png", content_type: "image/png")
+    photo.save!
+    sign_in_as @owner
+    post map_comments_path(@map), params: { comment: {
+      commentable_type: "Map", commentable_id: @map.id, body: "Regarde #Noyer, ici",
+      feature_ids: [ @feature.id, foreign.id, @feature.id ], lng: 4.91, lat: 50.35, map_photo_id: photo.id
+    } }, as: :json
+    assert_response :created
+    assert_equal [ { "id" => @feature.id, "name" => "Noyer", "layer" => "plants", "kind" => "tree" } ], json["features"]
+    assert_equal [ 4.91, 50.35 ], json["location"]
+    assert_equal photo.id, json["photo"]["id"]
+  end
+
+  test "show reads one message as the person sees it; read marks the discussion read" do
+    comment = Comment.create!(commentable: @map, author: @owner, body: "Bonjour")
+    sign_in_as @owner
+    get map_comment_path(@map, comment), as: :json
+    assert_response :success
+    assert_equal "Bonjour", json["body"]
+    assert json["canEdit"]
+    post read_map_comments_path(@map), params: { commentable_type: "Map", commentable_id: @map.id }, as: :json
+    assert_response :no_content
+    assert CommentRead.find_by(user: @owner, commentable: @map)
+
+    sign_in_as @viewer
+    get map_comment_path(@map, comment), as: :json
+    assert_response :forbidden, "a viewer outside the discussion cannot read its messages one by one either"
+  end
+
+  test "the digest of the map's discussion can be muted and turned back on" do
+    sign_in_as @owner
+    delete subscribe_map_comments_path(@map), params: { commentable_type: "Map", commentable_id: @map.id }, as: :json
+    assert_equal false, json["subscribed"]
+    assert_not CommentSubscription.subscribed?(@owner, @map)
+    get map_comments_path(@map), as: :json
+    assert_equal false, json["subscribed"]
+    post subscribe_map_comments_path(@map), params: { commentable_type: "Map", commentable_id: @map.id }, as: :json
+    assert_equal true, json["subscribed"]
+    assert CommentSubscription.subscribed?(@owner, @map)
   end
 end

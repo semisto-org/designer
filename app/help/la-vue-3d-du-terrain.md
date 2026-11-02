@@ -18,6 +18,10 @@ La vue 3D montre ton terrain en relief, à partir du relief téléchargé dans l
 
 La **rose des vents**, en haut à droite, tourne avec la caméra et montre toujours le nord ; un clic dessus remet la vue face au nord.
 
+### Les bâtiments, ceux d'aujourd'hui et ceux à venir
+
+**Bâtiments en volume** (onglet **Vue**) lève les bâtiments autour du terrain, d'après OpenStreetMap. Ceux que tu as dessinés sur ta carte (bâtiment, abri, cabane ou remise, serre, stockage des fruits, poulailler) se lèvent aussi, à la hauteur notée dans leur fiche, et remplacent celui d'OpenStreetMap qu'ils recouvrent. Un bâtiment **en projet** a un toit mauve : il n'existe pas encore, mais son ombre compte déjà dans l'onglet **Soleil**. Regarde-la en décembre avant de placer le potager ou les fruitiers à son pied. Pour le dessiner, voir [Dessiner l'existant](/help/dessiner-l-existant).
+
 ### Les blocs et la Niva
 
 Le fond **Blocs** montre le terrain en cubes d'environ 2 m, comme un jeu de construction : herbe, chemins, eau et sous-bois d'après l'occupation du sol, arbres et bâtiments à leur vraie hauteur. La pluie, le soleil et tes éléments s'y posent comme sur le relief.

@@ -2,6 +2,9 @@ fr:
   time:
     formats:
       site_visit_hour: "%-H h %M"
+  date:
+    formats:
+      site_visit_numeric: "%d/%m/%Y"
   site_visits:
     themes:
       wish: "Envies du porteur"
@@ -29,5 +32,20 @@ fr:
         other: "(%{count} photos)"
       no_text: "Note sans texte"
       empty: "Aucune note pendant cette visite."
+      audio: "L'enregistrement audio de la visite est dans les documents : « %{title} »."
+      walked: "%{distance} parcourus"
+      metres:
+        one: "1 m"
+        other: "%{count} m"
+      kilometres: "%{km} km"
+    audio:
+      title: "Enregistrement audio de la visite du %{date}"
+      description: "Enregistré au téléphone pendant la visite (%{duration})."
+      minutes:
+        one: "1 min"
+        other: "%{count} min"
+      hours: "%{hours} h %{minutes}"
     task_list: "Questions des visites"
     task_notes: "Question notée pendant la %{title}."
+    errors:
+      no_audio: "L'enregistrement audio n'est pas arrivé : renvoie-le depuis le téléphone."

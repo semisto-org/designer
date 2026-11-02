@@ -12,6 +12,7 @@ import { isHarvestable } from '@/lib/harvests'
 import { formatDate, t, todayIso } from '@/lib/i18n'
 import { entryReady, journalOf, OBSERVATION_KINDS, type JournalEntry, type JournalHarvest, type ObservationKind } from '@/lib/journal'
 import { isVideo } from '@/lib/media'
+import { observationTime, seenLabel } from '@/lib/season'
 import { outbox } from '@/lib/outbox'
 import type { Op } from '@/lib/outbox-core'
 import { takePhoto } from '@/lib/photos'
@@ -46,6 +47,7 @@ export default function FeatureScreen() {
   }
   const editable = canEdit(bundle.map)
   const isPlant = feature.properties.kind === 'plant'
+  const seen = observationTime(feature)
   const photos = bundle.photos.filter((p) => p.featureId === featureId)
   const pendingPhotos = ops.flatMap((op) => (op.type === 'uploadPhoto' ? [keptFile(op.file) ?? op.file] : []))
 
@@ -62,6 +64,7 @@ export default function FeatureScreen() {
       <Card style={{ gap: space.xs }}>
         <Text style={s.kicker}>{layerLabel(feature.properties.layer)} · {kindLabel(feature.properties.kind)}</Text>
         {isPlant && <Body>{speciesName(bundle.planting, feature.properties.species_id) ?? t('plant_feature.no_species')}</Body>}
+        {seen ? <Body>{sentence(seenLabel(seen))}</Body> : null}
         {feature.properties.notes ? <Body muted>{feature.properties.notes}</Body> : null}
         {feature.id < 0 && <Notice>{t('mobile.feature.not_sent')}</Notice>}
       </Card>
@@ -349,3 +352,5 @@ const s = StyleSheet.create({
   entryNote: { ...type.hand, fontSize: 19, lineHeight: 24, color: colors.loam800 },
 })
 
+/** « Vu hier… »: the sheet's line starts a sentence. */
+const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)

@@ -39,6 +39,46 @@ class Maps::SiteVisitsControllerTest < ActionDispatch::IntegrationTest
     assert_includes MapDocument.find(response.parsed_body.dig("visit", "documentId")).markdown_content, "Aucune note"
   end
 
+  test "the recording of the walk lands in the documents, once, and the report and the track follow" do
+    sign_in_as users(:michael)
+    started = Time.zone.parse("2026-11-02 10:15")
+    audio = fixture_file_upload("visit.m4a", "audio/mp4")
+    post audio_map_site_visit_path(@map, @key), params: { site_visit: { audio:, started_at: started.iso8601, seconds: 2520 } }
+    assert_response :created
+    document = MapDocument.find(response.parsed_body["documentId"])
+    assert_equal "Enregistrement audio de la visite du 02/11/2026", document.title
+    assert_equal [ "Visite de terrain" ], document.tags
+    assert_equal "audio", document.kind
+    assert_equal "audio", document.preview
+    assert_equal "visite-2026-11-02.m4a", document.file.filename.to_s
+    assert_includes document.description, "42 min"
+
+    # A second send (the answer was lost) files nothing more.
+    post audio_map_site_visit_path(@map, @key), params: { site_visit: { audio: fixture_file_upload("visit.m4a", "audio/mp4"), started_at: started.iso8601 } }
+    assert_response :created
+    assert_equal document.id, response.parsed_body["documentId"]
+    assert_equal 1, @map.documents.where(title: document.title).count
+
+    track = [ [ 4.9060, 50.3410 ], [ 4.9070, 50.3410 ], [ 4.9070, 50.3420 ] ]
+    post map_site_visits_path(@map), params: { site_visit: { key: @key, started_at: started.iso8601, ended_at: (started + 45.minutes).iso8601, track: } }, as: :json
+    assert_response :created
+    visit = @map.site_visits.find_by!(key: @key)
+    assert_equal document, visit.audio_document
+    assert_equal 3, visit.track.num_points
+    assert_in_delta 182, visit.track_m, 3
+    report = visit.map_document.markdown_content
+    assert_includes report, "« Enregistrement audio de la visite du 02/11/2026 »"
+    assert_includes report, "182 m parcourus"
+    assert_equal visit.track_m, response.parsed_body.dig("visit", "trackM")
+  end
+
+  test "a viewer cannot send a recording" do
+    sign_in_as users(:alice)
+    post audio_map_site_visit_path(@map, @key), params: { site_visit: { audio: fixture_file_upload("visit.m4a", "audio/mp4") } }, headers: { "Accept" => "application/json" }
+    assert_response :forbidden
+    assert_not @map.site_visits.exists?(key: @key)
+  end
+
   test "a viewer reads the visits but cannot close one" do
     @map.site_visits.create!(key: @key, started_at: 1.hour.ago, user: users(:michael))
     sign_in_as users(:alice)

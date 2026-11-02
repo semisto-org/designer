@@ -1,4 +1,4 @@
-import { SIGNS, SIGN_KEYS, missingSeasons, observationYear, observedOn, signFeature, signsOfMonth, signsToLookFor } from '../season'
+import { SIGNS, SIGN_KEYS, missingSeasons, observationYear, observedOn, seenLabel, signFeature, signsOfMonth, signsToLookFor } from '../season'
 import type { MapFeature } from '../types'
 
 const feature = (id: number, properties: Record<string, unknown>): MapFeature =>
@@ -55,5 +55,20 @@ describe('Le carnet des saisons', () => {
     expect(noted[0].noted).toBe(false)
     // A frost of last autumn does not count for this one.
     expect(signsToLookFor([feature(1, { sign: 'first_frost', observed_at: '2025-10-12T07:00:00Z' })], now)[0]).toEqual({ sign: 'first_frost', noted: false })
+  })
+})
+
+describe('seenLabel', () => {
+  it('says when a sign was seen, near and exact', () => {
+    expect(seenLabel(new Date(2026, 9, 19, 7).toISOString(), now)).toBe("vu aujourd'hui")
+    expect(seenLabel('2026-10-18T08:00:00.000Z', now)).toBe('vu hier, le 18 octobre 2026')
+    expect(seenLabel('2026-10-16T08:00:00.000Z', now)).toBe('vu il y a 3 jours, le 16 octobre 2026')
+    expect(seenLabel('2026-02-14T08:00:00.000Z', now)).toBe('vu il y a 8 mois, le 14 février 2026')
+    expect(seenLabel('2025-10-01T08:00:00.000Z', now)).toBe('vu il y a un an, le 1 octobre 2025')
+    expect(seenLabel('2023-01-10T08:00:00.000Z', now)).toBe('vu il y a 3 ans, le 10 janvier 2023')
+  })
+
+  it('keeps quiet on a broken date', () => {
+    expect(seenLabel('pas une date', now)).toBe('')
   })
 })

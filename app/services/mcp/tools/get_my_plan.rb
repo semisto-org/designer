@@ -31,6 +31,10 @@ module Mcp
           },
           places: places[:maps].map { |map| { id: map[:id], name: map[:name], read_only: map[:readOnly], area_m2: map[:areaM2], url: "#{origin}/maps/#{map[:id]}" } },
           paid_teams: user.paid_teams.order(:name).map { |team| { id: team.id, name: team.name } },
+          # Where a new map fits now: own maps, or a team (a paid team has its own room).
+          new_map_room: Billing::NewMapSpaces.new(user).all.map do |space|
+            { space: space.team ? "team" : "own", team_id: space.team_id, team_name: space.team&.name, can_create: space.can_create? }
+          end,
           if_i_stop: plan == "free" ? nil : {
             stays_editable: places[:keptOnFree],
             become_read_only: [ places[:activeCount] - places[:freeMaxMaps], 0 ].max,

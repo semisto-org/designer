@@ -25,6 +25,8 @@ class OfferTemplatesController < ApplicationController
     render inertia: "offer_templates/edit", props: {
       template: template_json(@template).merge(data: @template.data),
       account: { key: account_key(@template.owner), name: account_name(@template.owner) },
+      # Semisto's document blocks: what a blank text of the template falls back to.
+      documentDefaults: Offer::Document.defaults,
       vocabulary: {
         phases: Offer::Pricing::PHASES, drivers: Offer::Pricing::DRIVERS, conditions: Offer::Pricing::CONDITIONS,
         clientTypes: Offer::Pricing::CLIENT_TYPES, supplies: Offer::Pricing::SUPPLY_KEYS,
