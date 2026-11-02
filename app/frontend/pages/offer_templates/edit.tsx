@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowLeft, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NumberInput } from '@/components/finances/NumberInput'
 import { returnToOffer } from '@/components/offers/returnTo'
@@ -17,7 +17,7 @@ import type { ComplexityCriterion, ComplexityLevel, OfferSettings, PlantCategory
 const RATE_UNITS: Record<keyof OfferSettings, string> = {
   designers: '', hourly_rate: '€/h', contribution_pct: '%', buffer_pct: '%', km_rate: '€/km', plants_per_day: '/j',
   plants_margin_pct: '%', vat_services_pct: '%', vat_plants_pct: '%', vat_supplies_pct: '%', rounding: '€',
-  co_management_half_days: '/an', half_day_hours: 'h',
+  co_management_half_days: '/an', half_day_hours: 'h', project_management_pct: '%',
 }
 
 const slug = (prefix: string) => `${prefix}_${newId().replace(/[^a-z0-9]/g, '').slice(0, 8)}`
@@ -261,7 +261,7 @@ function TaskTable({ phase, data, vocabulary, onChange }: Editor & { phase: Pric
       <h3 className="font-serif text-lg font-semibold text-loam-900"><PhaseMark phase={phase} /> {phaseLabel(phase)}</h3>
       <ul className="mt-2 divide-y divide-loam-100">
         {tasks.map((task) => (
-          <li key={`${task.phase}.${task.key}`} className="grid grid-cols-2 gap-2 py-2.5 sm:grid-cols-[minmax(0,1.6fr)_6rem_5rem_5rem_8rem_5.5rem_auto]">
+          <li key={`${task.phase}.${task.key}`} className="grid grid-cols-2 gap-2 py-2.5 sm:grid-cols-[minmax(0,1.6fr)_6rem_5rem_5rem_8rem_auto]">
             <div className="col-span-2 sm:col-span-1">
               {task.label != null ? (
                 <Input aria-label={t('offer_templates.edit.task')} value={task.label ?? ''} onChange={(e) => set(task, { label: e.target.value })} />
@@ -297,10 +297,6 @@ function TaskTable({ phase, data, vocabulary, onChange }: Editor & { phase: Pric
                 <option value="">—</option>
                 {vocabulary.drivers.map((driver) => <option key={driver} value={driver}>{t(`offer_templates.drivers.${driver}`)}</option>)}
               </Select>
-            </label>
-            <label className="block">
-              <span className="flex items-center gap-0.5 text-[11px] text-leaf-700"><Sparkles className="h-3 w-3" aria-hidden />{t('offer_templates.edit.gain')}</span>
-              <NumberInput value={task.gain_pct} unit="%" onValue={(value) => set(task, { gain_pct: value ?? 0 })} />
             </label>
             <button type="button" onClick={() => remove(task)} className="self-end justify-self-end rounded-full p-1.5 text-loam-400 hover:bg-clay-50 hover:text-clay-600" aria-label={t('offer_templates.edit.remove')} title={t('offer_templates.edit.remove')}>
               <Trash2 className="h-4 w-4" aria-hidden />

@@ -193,18 +193,99 @@ class OfferTest < ActiveSupport::TestCase
     assert_equal 2, offer.reload.inputs["settings"]["designers"]
   end
 
-  test "the Designer saves hours on the tasks it speeds up, and the offer says how much" do
-    before = erpent(ERPENT)
-    with = Offer.new(map: @map, inputs: ERPENT) # Semisto's pricing, with the Designer
+  test "the time Terranova could save stays in the pricing but no longer takes hours off" do
+    with = Offer.new(map: @map, inputs: ERPENT) # Semisto's pricing, gains and all
     analysis = phase(with, "pre_design")["lines"].find { _1["task"] == "site_analysis" }
-    assert_equal 40, analysis["gain_pct"]
-    assert_equal 3, analysis["computed_hours_without"] # 2 h + 0.33 h × 3.09 ha, to the half hour
-    assert_equal 2, analysis["hours"] # 3.02 h × 60 %
-    assert_operator phase(with, "pre_design")["fees_min"], :<, phase(before, "pre_design")["fees_min"]
-    assert_equal 0, phase(with, "implementation")["hours_saved"], "planting is not sped up"
-    assert phase(with, "pre_design")["hours_saved"].positive?
-    assert with.result["totals"]["saved_tvac"].positive?
-    assert_operator with.result["totals"]["design_share_pct"], :<, before.result["totals"]["design_share_pct"]
+    assert_equal 3, analysis["hours"] # 2 h + 0.33 h × 3.09 ha, to the half hour, nothing taken off
+    assert_equal phase(erpent(ERPENT), "pre_design")["fees_min"], phase(with, "pre_design")["fees_min"]
+    assert_not analysis.key?("gain_pct")
+    assert_not with.result["totals"].key?("saved_tvac")
+    assert_equal 40, Offer::Pricing.semisto.tasks_for("pre_design").find { _1["key"] == "site_analysis" }["gain_pct"]
+  end
+
+  test "project management is a tenth of the phase's hours, rounded up when several people work" do
+    pre = phase(erpent(ERPENT), "pre_design")
+    management = pre["lines"].last
+    assert_equal [ "project_management", "project_management", 5.0 ], [ management["kind"], management["task"], management["hours"] ]
+    assert_equal({ "pct" => 10, "of_hours" => 49.0 }, management["formula"]) # 4.9 h, up: two designers
+    design = phase(erpent(ERPENT), "design")
+    assert_equal 3.0, design["lines"].last["hours"] # 3.6 h, down: one designer
+    assert_nil phase(erpent(ERPENT), "implementation")["lines"].find { _1["task"] == "project_management" }
+
+    # After the team's own lines, following its corrections, set by hand like any line.
+    inputs = ERPENT.merge(
+      "custom_lines" => [ { "phase" => "design", "kind" => "hours", "label" => "Visite", "hours" => 14 } ],
+      "settings" => ERPENT["settings"].merge("project_management_pct" => 20)
+    )
+    design = phase(erpent(inputs), "design")
+    assert_equal [ "custom", "project_management" ], design["lines"].last(2).map { _1["kind"] }
+    assert_equal 10.0, design["lines"].last["hours"] # 20 % of 50 h
+    fixed = phase(erpent(ERPENT.merge("lines" => [ { "key" => "design.project_management", "hours" => 8 } ])), "design")["lines"].last
+    assert_equal [ 8, 3.0, true ], [ fixed["hours"], fixed["computed_hours"], fixed["overridden"] ]
+  end
+
+  test "an old template's project management task gives way to the computed line" do
+    data = Offer::Pricing::SEMISTO.deep_dup
+    data["tasks"] << { "key" => "project_management", "phase" => "pre_design", "base" => 5 }
+    pricing = Offer::Pricing.new(data)
+    assert_not pricing.tasks.any? { _1["key"] == "project_management" }
+  end
+
+  test "an element's densities are the team's when the place already has trees" do
+    item = { "label" => "Jardin-forêt", "planting_type" => "forest_garden", "measure" => 750, "mix" => { "fruit_tree" => 0.0025, "unknown" => 3 } }
+    scope = erpent(ERPENT.merge("scope" => [ item ])).measures.scope.first
+    assert_equal({ "shrub" => 188, "fruit_tree" => 2 }, scope["plants"]) # 750 m² ÷ 4, then 750 m² ÷ 400
+    assert_equal({ "shrub" => 0.25, "fruit_tree" => 0.0025 }, scope["mix"])
+    assert_equal 0.005, scope["type_mix"]["fruit_tree"]
+  end
+
+  test "the team leaves out a supply, changes another and adds its own" do
+    inputs = ERPENT.merge(
+      "supplies" => [ { "key" => "guard", "disabled" => true }, { "key" => "mulch_m2", "quantity" => 100, "unit_price" => 4 } ],
+      "custom_supplies" => [ { "label" => "Cages contre les campagnols", "quantity" => 20, "unit_price" => 3.5 } ]
+    )
+    plants = erpent(inputs).result["plants"]
+    rows = plants["supplies"].index_by { _1["key"] }
+    assert_equal [ true, 0 ], [ rows["guard"]["disabled"], rows["guard"]["amount_base"] ]
+    assert_equal [ 100, 400.0, true ], [ rows["mulch_m2"]["base"], rows["mulch_m2"]["amount_base"], rows["mulch_m2"]["overridden"] ]
+    custom = plants["supplies"].find { _1["kind"] == "custom" }
+    assert_equal [ "Cages contre les campagnols", 70.0 ], [ custom["label"], custom["amount_base"] ]
+    assert_in_delta plants["supplies"].sum { _1["amount_base"] } * 1.3, plants["supplies_base"], 0.01
+  end
+
+  test "a phase left out of the offer counts nowhere, and plants come with the implementation" do
+    full = erpent(ERPENT).result["totals"]
+    pre_only = erpent(ERPENT.merge("phases_off" => %w[design implementation bogus]))
+    assert_equal %w[design implementation], pre_only.inputs["phases_off"]
+    totals = pre_only.result["totals"]
+    assert_equal phase(pre_only, "pre_design")["price_tvac"], totals["total_tvac"]
+    assert_equal [ 0, false ], [ totals["plants_supplies_base_tvac"], totals["planting_included"] ]
+    assert_not phase(pre_only, "design")["enabled"]
+    assert_operator full["total_tvac"], :>, totals["total_tvac"]
+  end
+
+  test "co-management, when offered, is priced year by year with its trips" do
+    off = erpent(ERPENT).result
+    assert_not off["co_management"]["enabled"]
+    assert_equal 0, off["totals"]["co_management_tvac"]
+
+    inputs = ERPENT.merge("co_management" => { "enabled" => true, "years" => [ 6, 4, 2 ] })
+    offer = erpent(inputs)
+    co = offer.result["co_management"]
+    assert_equal [ 6, 4, 2 ], co["years"].map { _1["half_days"] }
+    assert_equal 6, co["one_way_km"] # the offer's first trip with a distance
+    first = co["years"].first
+    assert_equal 24, first["hours"]
+    assert_in_delta 6 * 6 * 2 * 0.47, first["trips_htva"], 0.01
+    assert_in_delta (24 * 60 + first["trips_htva"]) * 1.21, first["amount_tvac"], 0.01
+    assert_in_delta off["totals"]["total_tvac"] + co["amount_tvac"], offer.result["totals"]["total_tvac"], 0.01
+  end
+
+  test "each phase says how its fees are built" do
+    pre = phase(erpent(ERPENT.merge("complexity" => { "slope_access" => 1 })), "pre_design")
+    assert_equal [ 15, 0.9, 5 ], [ pre["contribution_pct"], pre["complexity_factor"], pre["rounding"] ]
+    assert_in_delta pre["labour_base"] * 1.15 * 0.9, pre["fees_min"], 0.01
+    assert_in_delta pre["fees_min"] * 1.21, pre["fees_min_tvac"], 0.01
   end
 
   test "design beyond its target share of the client's total is flagged" do

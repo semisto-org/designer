@@ -99,7 +99,10 @@ class McpToolsTest < ActionDispatch::IntegrationTest
 
     users(:michael).update!(account_kind: "professional")
     offer = Offer.build_for(@map)
-    offer.inputs = offer.inputs.merge("scope" => [ { "label" => "Jardin-forêt", "planting_type" => "forest_garden", "measure" => 2_000 } ])
+    offer.inputs = offer.inputs.merge(
+      "scope" => [ { "label" => "Jardin-forêt", "planting_type" => "forest_garden", "measure" => 2_000 } ],
+      "co_management" => { "enabled" => true, "years" => [ 4, 2 ], "one_way_km" => 10 }
+    )
     offer.save!
     offer.save_version!(user: users(:michael)).update!(status: "sent")
     accepted = offer.save_version!(user: users(:michael), note: "Signée")
@@ -114,7 +117,10 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal [ 2, "Signée", totals["total_tvac"] ], budget.values_at("number", "note", "total_tvac")
     assert budget["total_htva"].positive?
     assert_operator budget["total_htva"], :<, budget["total_tvac"]
-    assert_in_delta budget["total_htva"], budget["services_htva"] + budget["plants_supplies_htva"], 0.02
+    co_management = budget["co_management"]
+    assert_equal [ 4, 2 ], co_management["years"].map { _1["half_days"] }
+    assert_in_delta budget["total_htva"], budget["services_htva"] + budget["plants_supplies_htva"] + accepted.result["co_management"]["amount_htva"], 0.02
+    assert budget["phases"].all? { _1["enabled"] }
     assert_in_delta totals["services_price_tvac"] / 1.21, budget["services_htva"], 0.01
     assert budget["hours_max"] >= budget["hours_min"]
     assert budget["hours_min"].positive?

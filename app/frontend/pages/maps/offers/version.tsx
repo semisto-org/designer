@@ -20,10 +20,14 @@ export default function OfferVersion({ map, version, issuer, letterhead }: Offer
   const vatServices = settings.vat_services_pct
   const regieHtva = settings.hourly_rate
   const plants = result.plants
-  const servicesTotal = result.phases.reduce((sum, phase) => sum + phase.price_tvac, 0)
+  // Phases the team left out of the offer are not the client's business.
+  const phases = result.phases.filter((phase) => phase.enabled !== false)
+  const servicesTotal = phases.reduce((sum, phase) => sum + phase.price_tvac, 0)
+  const coManagement = result.co_management
+  const planting = result.totals.planting_included !== false
   const scope = measures.scope.filter((item) => !item.missing)
   // Work that only comes with an extension (the pond, its supplies…): the client sees it before agreeing to it.
-  const optionLines = result.phases.flatMap((phase) => [...phase.lines, ...phase.expenses].filter((line) => line.option && !line.disabled).map((line) => ({ line, phase: phase.key })))
+  const optionLines = phases.flatMap((phase) => [...phase.lines, ...phase.expenses].filter((line) => line.option && !line.disabled).map((line) => ({ line, phase: phase.key })))
   const recipient = [measures.lead_name, map.address].filter(Boolean).join(' · ')
   const rates = { rate: euros(regieHtva), rate_tvac: euros(result.regie_rate_tvac) }
   // The markup on the fees is named by the account's price scale, or not at all.
@@ -51,7 +55,7 @@ export default function OfferVersion({ map, version, issuer, letterhead }: Offer
 
       <Card className="space-y-5 print:shadow-none print:ring-0">
         <h2 className="font-serif text-xl font-semibold text-prune-800">{t('offers.version_page.budget_title')}</h2>
-        {result.phases.map((phase) => (
+        {phases.map((phase) => (
           <section key={phase.key} className="space-y-1.5">
             <h3 className="flex items-baseline justify-between gap-2 font-semibold text-loam-900">
               <span><PhaseMark phase={phase.key} /> {phaseLabel(phase.key)}</span>
@@ -63,11 +67,28 @@ export default function OfferVersion({ map, version, issuer, letterhead }: Offer
         ))}
         <Row strong label={t('offers.version_page.subtotal_services')} hint={t('offers.version_page.vat', { pct: vatServices })} value={servicesTotal} />
 
-        {plants.count_base > 0 && (
+        {planting && plants.count_base > 0 && (
           <section className="space-y-1.5 border-t border-loam-100 pt-4">
             <Row label={t('offers.version_page.plants', { count: formatNumber(plants.count_base) })} hint={t('offers.version_page.vat', { pct: settings.vat_plants_pct })} value={plants.plants_base_tvac} />
             <Row label={t('offers.version_page.supplies')} hint={t('offers.version_page.vat', { pct: settings.vat_supplies_pct })} value={plants.supplies_base_tvac} />
             <p className="text-sm text-loam-600">{t('offers.version_page.plants_note')}</p>
+          </section>
+        )}
+
+        {coManagement.enabled && coManagement.years && (
+          <section className="space-y-1.5 border-t border-loam-100 pt-4">
+            <h3 className="flex items-baseline justify-between gap-2 font-semibold text-loam-900">
+              <span><span className="font-serif text-leaf-700">{t('offers.co_management.number')}</span> {t('offers.co_management.title')}</span>
+              <span className="tabular-nums">{euros(coManagement.amount_tvac)}</span>
+            </h3>
+            {coManagement.years.map((year) => (
+              <Row
+                key={year.year}
+                label={t('offers.version_page.co_management_year', { year: year.year, half_days: formatNumber(year.half_days) })}
+                hint={t('offers.version_page.co_management_year_hint')}
+                value={year.amount_tvac}
+              />
+            ))}
           </section>
         )}
 
@@ -87,14 +108,16 @@ export default function OfferVersion({ map, version, issuer, letterhead }: Offer
             <p className="text-sm text-loam-700">
               {t('offers.version_page.share', { design: euros(result.totals.design_tvac), share: Math.round(result.totals.design_share_pct), implementation: euros(result.totals.implementation_tvac) })}
             </p>
-            {result.totals.saved_tvac > 0 && <p className="text-xs text-loam-500">{t('offers.version_page.saved', { amount: euros(result.totals.saved_tvac) })}</p>}
           </section>
         )}
 
-        <section className="space-y-1 text-sm text-loam-700">
-          <h3 className="font-semibold text-loam-900">{t('offers.version_page.co_management')}</h3>
-          <p>{t('offers.version_page.co_management_text', { ...rates, half_days: result.co_management.half_days })}</p>
-        </section>
+        {/* Versions saved before co-management could be offered carry only the yearly estimate. */}
+        {coManagement.enabled == null && (
+          <section className="space-y-1 text-sm text-loam-700">
+            <h3 className="font-semibold text-loam-900">{t('offers.version_page.co_management')}</h3>
+            <p>{t('offers.version_page.co_management_text', { ...rates, half_days: coManagement.half_days })}</p>
+          </section>
+        )}
       </Card>
 
       <Card className="space-y-4 text-sm text-loam-700 print:shadow-none print:ring-0">

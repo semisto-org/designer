@@ -1,8 +1,9 @@
-import { Head, Link } from '@inertiajs/react'
-import { Eye, Printer, X } from 'lucide-react'
+import { Head } from '@inertiajs/react'
+import { Eye, X } from 'lucide-react'
 import { Component, useState, type ReactNode } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { MapViewHeader } from '@/components/map_views/MapViews'
+import { CoManagementCard } from '@/components/offers/CoManagementCard'
 import { InternalCard } from '@/components/offers/InternalCard'
 import { PhaseCard } from '@/components/offers/PhaseCard'
 import { PlantsCard } from '@/components/offers/PlantsCard'
@@ -93,13 +94,17 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
           <p className="hidden truncate text-loam-500 print:block">{map.name}{team && ` · ${team.name}`}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
-          {latest && (
-            <Link href={`/maps/${map.id}/offer/versions/${latest.number}`} className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
-              <Eye className="h-4 w-4" aria-hidden />{t('offers.page.client_view', { label: latest.label })}
-            </Link>
-          )}
           {!readOnly && <span className="hidden lg:inline"><SaveIndicator status={status} /></span>}
-          <Button variant="ghost" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" />{t('offers.page.print_internal')}</Button>
+          {/* The client's document is a saved version: the working page is not what they read. */}
+          {latest ? (
+            <ButtonLink href={`/maps/${map.id}/offer/versions/${latest.number}`} variant="secondary" size="sm">
+              <Eye className="h-4 w-4" aria-hidden />{t('offers.page.client_view', { label: latest.label })}
+            </ButtonLink>
+          ) : (
+            <a href="#versions" className="inline-flex items-center gap-1 text-sm font-medium text-prune-700 hover:text-prune-900">
+              <Eye className="h-4 w-4" aria-hidden />{t('offers.page.client_view_none')}
+            </a>
+          )}
           <HelpButton slug="chiffrer-une-offre" />
         </div>
       </header>
@@ -131,9 +136,10 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
             />
           </div>
           {result.phases.map((phase) => (
-            <PhaseCard key={phase.key} phase={phase} inputs={inputs} readOnly={readOnly} onChange={setInputs} />
+            <PhaseCard key={phase.key} phase={phase} complexity={result.complexity} inputs={inputs} readOnly={readOnly} onChange={setInputs} />
           ))}
-          <PlantsCard inputs={inputs} result={result} readOnly={readOnly} onChange={setInputs} />
+          {result.totals.planting_included !== false && <PlantsCard inputs={inputs} result={result} readOnly={readOnly} onChange={setInputs} />}
+          <CoManagementCard inputs={inputs} result={result} readOnly={readOnly} onChange={setInputs} />
         </div>
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <div className="hidden lg:block"><PrecisionCard mapId={map.id} precision={result.precision} /></div>
