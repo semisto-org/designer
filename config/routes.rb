@@ -95,6 +95,8 @@ Rails.application.routes.draw do
         post :reject
       end
     end
+    # The team's own notes, one per section of the sheet (ProjectSheetNote).
+    resources :project_notes, path: "project/notes", param: :section, only: :update, controller: "maps/project_notes"
     resource :journey, only: :show, controller: "maps/journeys"
     resources :service_requests, path: "requests", only: %i[index create], controller: "maps/service_requests"
   end

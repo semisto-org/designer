@@ -67,6 +67,12 @@ Tu conçois le lieu de quelqu'un d'autre, ou tu veux que chacun chez toi note se
 
 Le formulaire montre toutes les sections, sauf les champs réservés à l'équipe (dans la palette gustative). Quand elle clique sur **J'ai terminé**, tu reçois un e-mail. Elle peut encore compléter ses réponses tant que le lien est actif. **Nouveau lien** remplace l'adresse (l'ancienne cesse de fonctionner) et **Désactiver** la ferme.
 
+## Garder ses notes de pro
+
+Sur une carte d'équipe ou sur ta carte de pro (formules Pro et Team), chaque section se termine par **Notes de l'équipe** (ou **Tes notes de pro** quand tu travailles sans équipe). Écris-y ce que tu as vu sur place, ce que le porteur de projet n'a pas encore dit, ce qu'il faudra vérifier au prochain passage : gras, listes et cases à cocher, tout s'enregistre au fil de l'eau.
+
+Ces notes ne sont lues que par les membres de l'équipe de la carte, ou par toi uniquement sur ta carte de pro. Le porteur de projet, les personnes invitées sur la carte, le lien privé, la carte publiée et le dossier imprimé ne les montrent jamais. Ton IA les lit pour concevoir, sans les citer dans ce qu'elle écrit pour ton client. Si la formule s'arrête, les notes restent lisibles.
+
 ## Joindre des documents
 
 Sous la fiche, **Documents du projet** accueille les plans d'architecte, un relevé de géomètre, une analyse de sol… Le porteur de projet a la même section dans son formulaire et peut y déposer ses fichiers lui-même. Tous ces documents se retrouvent dans la bibliothèque de la carte : voir [Rassembler ses documents](/help/rassembler-ses-documents).
