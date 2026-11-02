@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_190100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -278,8 +278,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_190100) do
     t.bigint "feature_ids", default: [], null: false, array: true
     t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
     t.bigint "map_photo_id"
+    t.bigint "map_document_id"
     t.index ["author_id"], name: "index_comments_on_author_id"
     t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
+    t.index ["map_document_id"], name: "index_comments_on_map_document_id"
     t.index ["map_id", "created_at"], name: "index_comments_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_comments_on_map_id"
     t.index ["map_photo_id"], name: "index_comments_on_map_photo_id"
@@ -599,6 +601,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_190100) do
     t.bigint "content_edited_by_id"
     t.datetime "content_edited_at"
     t.integer "collab_epoch", default: 0, null: false
+    t.boolean "in_library", default: true, null: false
     t.index ["content_edited_by_id"], name: "index_map_documents_on_content_edited_by_id"
     t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_map_documents_on_map_id"
@@ -1823,6 +1826,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_190100) do
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
   add_foreign_key "comment_reads", "users"
   add_foreign_key "comment_subscriptions", "users"
+  add_foreign_key "comments", "map_documents", on_delete: :nullify
   add_foreign_key "comments", "map_photos", on_delete: :nullify
   add_foreign_key "comments", "maps"
   add_foreign_key "comments", "users", column: "author_id"

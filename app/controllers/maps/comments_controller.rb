@@ -19,7 +19,7 @@ module Maps
     # phone app reads the discussion when the map opens, for its pins and
     # its unread count, before anyone has looked at it.
     def index
-      comments = @commentable.comments.visible.chronological.includes(:author, :map_photo, applauses: :user)
+      comments = @commentable.comments.visible.chronological.includes(:author, :map_photo, { map_document: { file_attachment: :blob } }, applauses: :user)
       last_read = CommentRead.find_by(user: Current.user, commentable: @commentable)&.last_read_at
       payload = {
         commentable: { type: @commentable.class.name, id: @commentable.id, key: @commentable.comment_key, title: @commentable.comment_title },
@@ -88,13 +88,14 @@ module Maps
       end
 
       # What a message points at on the map: cited elements, a pinned spot
-      # (lng, lat), a photo of the map (one an editor uploaded).
+      # (lng, lat), a photo of the map (one an editor uploaded), a document.
       def pointers
-        attrs = params.require(:comment).permit(:lng, :lat, :map_photo_id, feature_ids: [])
+        attrs = params.require(:comment).permit(:lng, :lat, :map_photo_id, :map_document_id, feature_ids: [])
         pointers = {}
         pointers[:feature_ids] = Array(attrs[:feature_ids]).map(&:to_i) if attrs.key?(:feature_ids)
         pointers[:location] = [ attrs[:lng], attrs[:lat] ] if attrs[:lng].present? && attrs[:lat].present?
         pointers[:map_photo] = @map.photos.find_by(id: attrs[:map_photo_id]) if attrs[:map_photo_id].present?
+        pointers[:map_document] = @map.all_documents.find_by(id: attrs[:map_document_id]) if attrs[:map_document_id].present?
         pointers
       end
   end

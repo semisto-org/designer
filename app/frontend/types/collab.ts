@@ -24,6 +24,8 @@ export type CommentData = {
   location?: [number, number] | null
   /** A photo of the map joined to the message. */
   photo?: { id: number; caption: string | null; video: boolean } | null
+  /** A document of any kind joined to the message; out of the map's library until someone adds it. */
+  document?: ChatDocument | null
   canEdit: boolean
   canDelete: boolean
 }
@@ -207,4 +209,16 @@ export type InvitationWelcome = {
   since: string
   plants: number
   plantsInGround: number
+}
+
+/** A document joined to a message of the map's discussion. */
+export type ChatDocument = {
+  id: number
+  title: string
+  filename: string | null
+  kind: import('./documents').DocumentKind
+  byteSize: number | null
+  inLibrary: boolean
+  previewUrl: string | null
+  downloadUrl: string
 }

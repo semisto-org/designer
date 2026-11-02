@@ -34,6 +34,25 @@ class McpDiscussionTest < ActionDispatch::IntegrationTest
     assert_equal({ "member" => true, "messages" => 2, "unread" => 1, "pinned" => 1 }, map["discussion"].except("last_message_at"))
   end
 
+  test "a document joined to a message is listed with it and read by the discussion's members only" do
+    doc = @map.all_documents.new(uploaded_by: users(:michael), origin: "chat", in_library: false)
+    doc.file.attach(io: StringIO.new("Devis : 120 arbres"), filename: "devis.txt", content_type: "text/plain")
+    doc.save!
+    Comment.create!(commentable: @map, author: users(:michael), body: "Le devis", map_document: doc)
+
+    data, error = call_tool(@owner, "list_discussion", { map_id: @map.id })
+    refute error, data
+    assert_equal({ "id" => doc.id, "title" => "devis", "in_library" => false }, data["messages"].sole["document"])
+    read, error = call_tool(@owner, "get_document", { map_id: @map.id, document_id: doc.id })
+    refute error, read
+    assert read["in_discussion_only"]
+    listed, = call_tool(@owner, "list_documents", { map_id: @map.id })
+    assert_not_includes listed["documents"].map { _1["id"] }, doc.id
+
+    _, error = call_tool(@viewer, "get_document", { map_id: @map.id, document_id: doc.id })
+    assert error
+  end
+
   test "a viewer outside the discussion cannot read it" do
     Comment.create!(commentable: @map, author: users(:michael), body: "Entre nous")
     data, error = call_tool(@viewer, "list_discussion", { map_id: @map.id })

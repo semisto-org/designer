@@ -11,6 +11,10 @@
 # in the background (CompressMapDocumentJob) and the lighter copy replaces
 # the original, to spare storage.
 #
+# A file joined to a message of the map's discussion is a document too, out of
+# the library (`in_library: false`, origin « chat ») until someone adds it
+# there in one click; only the discussion's members open it until then.
+#
 # A Markdown file (.md) is read as a page and edited in place
 # (`replace_markdown!`): the file stays plain Markdown, so it downloads, and
 # the MCP reads and writes it, like any other.
@@ -24,7 +28,7 @@ class MapDocument < ApplicationRecord
   MAX_THUMBNAIL_BYTES = 2.megabytes
   class_attribute :compress_pdf_above, default: 5.megabytes
   PREVIEW_IMAGE_TYPES = %w[image/jpeg image/png image/webp image/gif].freeze
-  ORIGINS = %w[library project_sheet form].freeze
+  ORIGINS = %w[library project_sheet form chat].freeze
   MARKDOWN_EXTENSIONS = %w[md markdown].freeze
   # Larger Markdown files are only downloaded: nobody writes a megabyte of text.
   MAX_MARKDOWN_BYTES = 1.megabyte
@@ -196,7 +200,7 @@ class MapDocument < ApplicationRecord
   def as_inertia(url:, excerpt: false)
     blob = file.attached? ? file.blob : nil
     {
-      id:, title:, description:, tags:, origin:, kind:, preview:,
+      id:, title:, description:, tags:, origin:, kind:, preview:, inLibrary: in_library,
       filename: blob&.filename&.to_s, contentType: blob&.content_type, byteSize: blob&.byte_size,
       compression:, originalByteSize: original_byte_size,
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601,
