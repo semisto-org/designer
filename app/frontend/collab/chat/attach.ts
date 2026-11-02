@@ -14,3 +14,10 @@ export function isImage(file: { type: string; name: string }): boolean {
 export function firstImage<T extends { type: string; name: string }>(files: ArrayLike<T> | null | undefined): T | null {
   return Array.from(files ?? []).find(isImage) ?? null
 }
+
+/** What a drop or a paste joins: its first picture as the photo, else its first file as a document. */
+export function splitDrop<T extends { type: string; name: string }>(files: ArrayLike<T> | null | undefined): { photo: T | null; document: T | null } {
+  const list = Array.from(files ?? [])
+  const photo = list.find(isImage) ?? null
+  return { photo, document: photo ? null : list[0] ?? null }
+}

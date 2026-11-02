@@ -143,7 +143,7 @@ export default function MapChat() {
     try {
       const comment = await api<CommentData>(base, {
         method: 'POST',
-        body: { comment: { commentable_type: 'Map', commentable_id: mapId, body: draft.body, feature_ids: draft.featureIds, lng: draft.location?.[0], lat: draft.location?.[1], map_photo_id: draft.photoId } },
+        body: { comment: { commentable_type: 'Map', commentable_id: mapId, body: draft.body, feature_ids: draft.featureIds, lng: draft.location?.[0], lat: draft.location?.[1], map_photo_id: draft.photoId, map_document_id: draft.documentId } },
       })
       setThread((current) => current && (current.comments.some((c) => c.id === comment.id) ? current : { ...current, comments: [...current.comments, comment] }))
       void refreshThreads(mapId)
@@ -201,7 +201,7 @@ export default function MapChat() {
   const replace = (updated: CommentData) =>
     setThread((current) => current && { ...current, comments: current.comments.map((c) => (c.id === updated.id ? updated : c)) })
 
-  // A picture dragged from the computer can be dropped anywhere on the panel.
+  // A picture or any file dragged from the computer can be dropped anywhere on the panel.
   const fileDrag = useFileDrag(member && chat.open && !chat.picking && editor.canEdit)
   if (!member) return null
 
@@ -226,13 +226,13 @@ export default function MapChat() {
           onDrop={(e) => {
             if (!fileDrag) return
             e.preventDefault()
-            if (!composer.current?.attachFiles(e.dataTransfer.files)) editor.notify(t('collab.chat.photo_drop_none'), 'error')
+            if (!composer.current?.attachFiles(e.dataTransfer.files)) editor.notify(t('collab.chat.drop_busy'), 'error')
           }}
         >
           {fileDrag && composer.current?.canAttach && (
             <div aria-hidden className="pointer-events-none absolute inset-2 z-20 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-prune-400 bg-prune-50/90 p-6 text-center text-sm font-medium text-prune-800">
               <ImagePlus className="h-6 w-6" />
-              {t('collab.chat.photo_drop')}
+              {t('collab.chat.drop')}
             </div>
           )}
           <header className="flex items-start gap-2 border-b border-loam-100 px-4 py-3">

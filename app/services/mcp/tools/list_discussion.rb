@@ -3,7 +3,7 @@ module Mcp
     # The map's live discussion (« Discussion de la carte »), for its members:
     # what the team said while working, in the office or on the land, with
     # the elements each message cites, the spot it is pinned to and its
-    # photo. Read only: the AI summarizes, finds what was decided, links a
+    # photo or document (read with get_document). Read only: the AI summarizes, finds what was decided, links a
     # remark to the map; it does not speak in the discussion.
     class ListDiscussion < Base
       MAX = 200
@@ -23,7 +23,7 @@ module Mcp
         map = find_map!(map_id)
         raise ToolError, t("errors.discussion_closed") unless map.chat_member?(user)
 
-        scope = map.comments.visible.includes(:author, :map_photo)
+        scope = map.comments.visible.includes(:author, :map_photo, :map_document)
         scope = scope.where(comments: { id: ...before_id }) if before_id
         scope = scope.where(created_at: Date.iso8601(since).beginning_of_day..) if since
         page = scope.order(created_at: :desc, id: :desc).limit(limit.clamp(1, MAX)).to_a
@@ -55,7 +55,8 @@ module Mcp
               { id: f.id, name: Collab::CommentSerializer.feature_label(f), layer: f.layer, kind: f.kind }
             end,
             location: comment.lnglat,
-            photo_id: comment.map_photo_id
+            photo_id: comment.map_photo_id,
+            document: comment.map_document && { id: comment.map_document_id, title: comment.map_document.title, in_library: comment.map_document.in_library? }
           }.compact
         end
 

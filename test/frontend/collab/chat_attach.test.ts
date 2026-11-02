@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { firstImage, isImage } from '../../../app/frontend/collab/chat/attach.ts'
+import { firstImage, isImage, splitDrop } from '../../../app/frontend/collab/chat/attach.ts'
 
 const file = (name: string, type: string) => ({ name, type })
 
@@ -19,4 +19,12 @@ test('the first picture among dropped files is joined, the rest left out', () =>
   assert.equal(firstImage([file('plan.pdf', 'application/pdf')]), null)
   assert.equal(firstImage(null), null)
   assert.equal(firstImage([]), null)
+})
+
+test('a drop joins its picture as the photo, else its first file as a document', () => {
+  const pdf = file('devis.pdf', 'application/pdf')
+  const jpg = file('mare.jpg', 'image/jpeg')
+  assert.deepEqual(splitDrop([pdf, jpg]), { photo: jpg, document: null })
+  assert.deepEqual(splitDrop([pdf, file('plan.dwg', '')]), { photo: null, document: pdf })
+  assert.deepEqual(splitDrop([]), { photo: null, document: null })
 })

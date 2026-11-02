@@ -74,6 +74,41 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert doc.thumbnail.attached?
   end
 
+  test "a file joined to a message stays out of the library, for the discussion's members, until added" do
+    sign_in_as users(:michael)
+    assert_no_difference -> { @map.documents.count } do
+      post map_documents_path(@map), headers: json_headers, params: { document: { file: upload("rapport_labo.pdf", "application/pdf"), origin: "chat" } }
+    end
+    assert_response :created
+    assert_equal false, response.parsed_body["inLibrary"]
+    doc = @map.all_documents.find(response.parsed_body["id"])
+    assert_equal "chat", doc.origin
+
+    get map_documents_path(@map), headers: json_headers
+    assert_not_includes response.parsed_body["documents"].map { _1["id"] }, doc.id
+
+    # A viewer outside the discussion does not open it.
+    sign_in_as users(:alice)
+    get file_map_document_path(@map, doc, size: "download")
+    assert_response :not_found
+    @map.memberships.find_by(user: users(:alice)).update!(chat_access: true)
+    get file_map_document_path(@map, doc, size: "download")
+    assert_response :redirect
+
+    sign_in_as users(:michael)
+    patch map_document_path(@map, doc), headers: json_headers, params: { document: { in_library: true } }
+    assert_response :success
+    assert doc.reload.in_library?
+    assert_equal "rapport_labo", doc.title.tr(" ", "_")
+    get map_documents_path(@map), headers: json_headers
+    assert_includes response.parsed_body["documents"].map { _1["id"] }, doc.id
+
+    # Never taken out again by an update.
+    patch map_document_path(@map, doc), headers: json_headers, params: { document: { in_library: false, title: "Rapport" } }
+    assert doc.reload.in_library?
+    assert_equal "Rapport", doc.title
+  end
+
   test "a document added from the project sheet says so" do
     sign_in_as users(:michael)
     post map_documents_path(@map), params: { document: { file: upload("notes.txt", "text/plain"), origin: "project_sheet" } }, headers: json_headers

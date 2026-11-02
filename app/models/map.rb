@@ -73,7 +73,10 @@ class Map < ApplicationRecord
   has_many :photo_sketches, dependent: :destroy
   has_many :photo_renderings, dependent: :destroy
   has_many :photo_albums, dependent: :destroy
-  has_many :documents, class_name: "MapDocument", dependent: :destroy
+  # The library, and every document of the map: those joined to a message of
+  # the discussion stay out of the library until someone adds them there.
+  has_many :all_documents, class_name: "MapDocument", dependent: :destroy
+  has_many :documents, -> { where(in_library: true) }, class_name: "MapDocument"
   has_many :soil_samples, dependent: :destroy
   has_many :bioindicator_observations, dependent: :destroy
 
