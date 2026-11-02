@@ -26,16 +26,20 @@ module Maps
         invitation.role = role if role
       end
       invitation.place_owner = place_owner_param if params[:invitation].key?(:place_owner)
+      invitation.chat_access = chat_access_param if params[:invitation].key?(:chat_access)
       return render_invalid(invitation) unless invitation.save
 
       invitation.deliver!
       render json: Collab::SharingPayload.new(@map, Current.user, url_helpers: self), status: :created
     end
 
-    # Marks the invited person as an owner of the place (or not): they become
-    # one when they join.
+    # Marks the invited person as an owner of the place, or lets them into the
+    # map's discussion (or not): it applies when they join.
     def update
-      @invitation.update!(place_owner: place_owner_param)
+      attrs = {}
+      attrs[:place_owner] = place_owner_param if params[:invitation].key?(:place_owner)
+      attrs[:chat_access] = chat_access_param if params[:invitation].key?(:chat_access)
+      @invitation.update!(attrs)
       render json: Collab::SharingPayload.new(@map, Current.user, url_helpers: self)
     end
 
@@ -51,6 +55,7 @@ module Maps
 
     private
       def place_owner_param = ActiveModel::Type::Boolean.new.cast(params.dig(:invitation, :place_owner)) || false
+      def chat_access_param = ActiveModel::Type::Boolean.new.cast(params.dig(:invitation, :chat_access)) || false
 
       def set_invitation
         @invitation = @map.invitations.pending.find(params[:id])

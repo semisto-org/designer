@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -248,6 +248,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.datetime "last_read_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "emailed_until"
     t.index ["user_id", "commentable_type", "commentable_id"], name: "index_comment_reads_unique", unique: true
     t.index ["user_id"], name: "index_comment_reads_on_user_id"
   end
@@ -258,6 +259,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.bigint "commentable_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "muted", default: false, null: false
     t.index ["commentable_type", "commentable_id", "user_id"], name: "index_comment_subscriptions_unique", unique: true
     t.index ["user_id"], name: "index_comment_subscriptions_on_user_id"
   end
@@ -273,10 +275,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "feature_ids", default: [], null: false, array: true
+    t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
+    t.bigint "map_photo_id"
     t.index ["author_id"], name: "index_comments_on_author_id"
     t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
     t.index ["map_id", "created_at"], name: "index_comments_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_comments_on_map_id"
+    t.index ["map_photo_id"], name: "index_comments_on_map_photo_id"
   end
 
   create_table "drone_missions", force: :cascade do |t|
@@ -641,6 +647,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.datetime "expires_at"
     t.datetime "last_sent_at"
     t.boolean "place_owner", default: false, null: false
+    t.boolean "chat_access", default: false, null: false
     t.index ["invited_by_id"], name: "index_map_invitations_on_invited_by_id"
     t.index ["map_id"], name: "index_map_invitations_on_map_id"
     t.index ["token"], name: "index_map_invitations_on_token", unique: true
@@ -654,6 +661,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "place_owner", default: false, null: false
+    t.boolean "chat_access", default: false, null: false
     t.index ["invited_by_id"], name: "index_map_memberships_on_invited_by_id"
     t.index ["map_id", "user_id"], name: "index_map_memberships_on_map_id_and_user_id", unique: true
     t.index ["map_id"], name: "index_map_memberships_on_map_id"
@@ -850,6 +858,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.boolean "accepts_propagation_requests", default: false, null: false
     t.datetime "outlined_at"
     t.datetime "plan_printed_at"
+    t.datetime "chat_digest_at"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
@@ -1808,6 +1817,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
   add_foreign_key "comment_reads", "users"
   add_foreign_key "comment_subscriptions", "users"
+  add_foreign_key "comments", "map_photos", on_delete: :nullify
   add_foreign_key "comments", "maps"
   add_foreign_key "comments", "users", column: "author_id"
   add_foreign_key "drone_missions", "drone_pilots", on_delete: :restrict

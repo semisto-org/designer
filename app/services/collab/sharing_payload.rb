@@ -30,7 +30,8 @@ module Collab
         @map.memberships.includes(:user).sort_by { |m| [ m.role == "owner" ? 0 : 1, m.created_at ] }.map do |m|
           {
             id: m.id, userId: m.user_id, name: m.user.display_name, avatarUrl: m.user.avatar_url,
-            email: (m.user.email_address if owner), role: m.role, you: m.user_id == @user.id, placeOwner: m.place_owner
+            email: (m.user.email_address if owner), role: m.role, you: m.user_id == @user.id, placeOwner: m.place_owner,
+            chat: m.role != "viewer" || m.chat_access
           }
         end
       end
@@ -59,7 +60,7 @@ module Collab
 
       def invitations
         @map.invitations.pending.order(:created_at).map do |i|
-          { id: i.id, email: i.email_address, role: i.role, expiresAt: i.expires_at&.iso8601, sentAt: i.last_sent_at&.iso8601, placeOwner: i.place_owner }
+          { id: i.id, email: i.email_address, role: i.role, expiresAt: i.expires_at&.iso8601, sentAt: i.last_sent_at&.iso8601, placeOwner: i.place_owner, chat: i.role != "viewer" || i.chat_access }
         end
       end
 

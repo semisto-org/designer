@@ -22,7 +22,17 @@ class CommentSubscription < ApplicationRecord
       .destroy_all
   end
 
+  # The map's live discussion is e-mailed to all its members as a digest:
+  # following it means not having muted it.
   def self.subscribed?(user, commentable)
-    exists?(user:, commentable:)
+    return commentable.chat_member?(user) && !exists?(user:, commentable:, muted: true) if commentable.is_a?(Map)
+    exists?(user:, commentable:, muted: false)
+  end
+
+  # Mutes (or unmutes) the digest of a map's discussion for one person.
+  def self.mute(user, map, muted)
+    subscription = subscribe(user, map)
+    subscription.update!(muted:)
+    subscription
   end
 end
