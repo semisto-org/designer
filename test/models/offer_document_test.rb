@@ -55,7 +55,7 @@ class OfferDocumentTest < ActiveSupport::TestCase
     keys = document.sections.pluck(:key)
     assert_includes keys, "co_management"
     assert_equal %w[pre_design design], document.sections.find { _1[:key] == "phases" }[:phases].pluck(:key)
-    assert_equal %w[pre_design design co_management], document.sections.find { _1[:key] == "approach" }[:phases].pluck(:key)
+    assert_equal %w[pre_design design], document.sections.find { _1[:key] == "approach" }[:phases].pluck(:key), "co-management is not a step"
   end
 
   test "only real changes are kept, and raw HTML never reaches the page" do
