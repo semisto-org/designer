@@ -4,7 +4,7 @@ import { api, form } from './api'
 import { storageReadingBody } from './fruitStore'
 import { harvestBody } from './harvests'
 import { emptyOutbox, filesOf, flush, nextTempId, retry, retryDelayMs, type FlushResult, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
-import { isVideo, mediaFile } from './media'
+import { mediaFile } from './media'
 import { report } from './monitoring'
 import { deletePhoto, keptFile, readJson, writeJson } from './storage'
 import type { MapFeature } from './types'
@@ -14,7 +14,15 @@ let state: OutboxState = readJson<OutboxState>(FILE) ?? emptyOutbox()
 /** How the last round of sending ended, for « Envois ». */
 export type SendRun = { at: string; sent: number; stopped: FlushResult['stopped']; blocked?: FlushResult['blocked'] }
 /** The round being sent, for « Envois » and the map's status: n of N, and which change. */
-export type SendProgress = { total: number; done: number; current: Op | null }
+export type SendProgress = {
+  total: number
+  done: number
+  current: Op | null
+  /** The file of the current change, as it leaves the phone. */
+  bytes?: { sent: number; total: number }
+  /** Last sign of life (a change started, bytes sent): « Envois » offers to start again when it is old. */
+  activeAt: number
+}
 let flushing: Promise<SendRun> | null = null
 let progress: SendProgress | null = null
 const progressListeners = new Set<() => void>()
@@ -78,6 +86,18 @@ export const outbox = {
     return () => { progressListeners.delete(listener) }
   },
 
+  /**
+   * « Relancer l'envoi »: cancels a file that stopped moving and sends again
+   * at once (the server answers a resend of the same change with its first
+   * answer, so nothing arrives twice).
+   */
+  async restart(): Promise<SendRun> {
+    activeUpload?.abort()
+    if (flushing) await flushing.catch(() => undefined)
+    failures = 0
+    return outbox.flush()
+  },
+
   /** Sends what is waiting; resolves with how the round ended. */
   flush(): Promise<SendRun> {
     flushing ??= (async () => {
@@ -86,7 +106,7 @@ export const outbox = {
         let sent = 0
         let stopped: FlushResult['stopped'] = 'done'
         let blocked: FlushResult['blocked']
-        if (outbox.pending() > 0) setProgress({ total: outbox.pending(), done: 0, current: null })
+        if (outbox.pending() > 0) setProgress({ total: outbox.pending(), done: 0, current: null, activeAt: Date.now() })
         // Ops added while sending go in the next round.
         for (let round = 0; round < 5 && outbox.pending() > 0; round++) {
           const snapshot = state
@@ -105,7 +125,7 @@ export const outbox = {
           let processed = 0
           const result = await flush(snapshot, transport, save, (op) => {
             const done = sent + processed++
-            setProgress({ total: done + outbox.pending(), done, current: op })
+            setProgress({ total: done + outbox.pending(), done, current: op, activeAt: Date.now() })
           })
           save(result.state, [])
           sent += result.sent
@@ -144,10 +164,20 @@ const present = (uri: string) => {
   return kept
 }
 const photoFile = (uri: string) => ({ uri: present(uri), name: 'photo.jpg', type: 'image/jpeg' })
-// A video can weigh hundreds of megabytes on a field connection.
-const VIDEO_TIMEOUT_MS = 30 * 60_000
-
 const once = (key: string) => ({ idempotencyKey: key })
+
+// The file being sent: its bytes feed « Envois », and « Relancer l'envoi » cancels it.
+let activeUpload: AbortController | null = null
+const upload = (key: string) => {
+  const controller = new AbortController()
+  activeUpload = controller
+  return {
+    ...once(key), signal: controller.signal,
+    onProgress: (sent: number, total: number) => {
+      if (progress) setProgress({ ...progress, bytes: { sent, total }, activeAt: Date.now() })
+    },
+  }
+}
 
 const transport: Transport = {
   createFeature: (mapId, feature, key) => api<MapFeature>('POST', `/maps/${mapId}/features`, { feature }, once(key)),
@@ -158,13 +188,13 @@ const transport: Transport = {
       image: mediaFile(present(op.file)), taken_at: op.takenAt, caption: op.caption, source: 'phone',
       lng: op.lng, lat: op.lat, location_source: located ? 'device' : null, map_feature_id: featureId,
       bioindicator_status: op.bioindicatorStatus ?? null, heading: op.heading ?? null, retake_of_id: op.retakeOf ?? null,
-    }), { ...once(key), ...(isVideo(op.file) ? { timeoutMs: VIDEO_TIMEOUT_MS } : {}) })
+    }), upload(key))
   },
   async createObservation(mapId, featureId, op, key) {
     await api('POST', `/maps/${mapId}/features/${featureId}/plant_observations`, form('plant_observation', {
       observed_on: op.observedOn, kind: op.kind ?? 'follow_up', survival: op.survival, vigor: op.vigor, note: op.note,
       photo: op.photo ? photoFile(op.photo) : null,
-    }), once(key))
+    }), op.photo ? upload(key) : once(key))
   },
   async createHarvest(mapId, featureId, harvest, key) {
     await api('POST', `/maps/${mapId}/features/${featureId}/plant_harvests`, harvestBody(harvest), once(key))
@@ -178,7 +208,7 @@ const transport: Transport = {
       species_name: o.speciesName, latin_name: o.latinName, catalog_key: o.catalogKey, plant_species_id: o.plantSpeciesId,
       abundance: o.abundance, cover_percent: o.coverPercent ?? null, notes: o.notes, lng: o.lng, lat: o.lat, location_source: located ? 'device' : null,
       photo_taken_at: o.takenAt, photo_source: 'phone', photo: photoFile(photo),
-    }), once(key))
+    }), upload(key))
   },
   async createComment(mapId, featureId, body, key) {
     await api('POST', `/maps/${mapId}/comments`, {
@@ -190,10 +220,10 @@ const transport: Transport = {
       site_visit: { key: op.key, started_at: op.startedAt, ended_at: op.endedAt, question_ids: questionIds, ...(op.track?.length ? { track: op.track } : {}) },
     }, once(key))
   },
-  // An hour of speech weighs about 30 MB: as long as a video to send.
+  // An hour of speech weighs about 30 MB: like a video, it is given up only when it stops moving.
   async uploadVisitAudio(mapId, op, key) {
     await api('POST', `/maps/${mapId}/site_visits/${encodeURIComponent(op.key)}/audio`, form('site_visit', {
       audio: { uri: present(op.file), name: 'visite.m4a', type: 'audio/mp4' }, started_at: op.startedAt, seconds: op.seconds,
-    }), { ...once(key), timeoutMs: VIDEO_TIMEOUT_MS })
+    }), upload(key))
   },
 }
