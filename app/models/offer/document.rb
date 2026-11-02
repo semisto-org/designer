@@ -1,6 +1,6 @@
 class Offer
   # The client's document of an offer, as blocks the account chooses and
-  # writes: a cover, the letter « Votre projet », the approach in four
+  # writes: a cover, the letter « Votre projet », the approach in three
   # steps, the scope, one page per phase, co-management, the software,
   # the deliverables, the budget and a conclusion with the team's contacts.
   #
@@ -15,9 +15,10 @@ class Offer
   module Document
     # In the order the client reads them.
     BLOCKS = %w[cover letter approach scope phases co_management software deliverables budget conclusion].freeze
-    # Blocks whose text is written phase by phase (co-management is the fourth step).
+    # Blocks whose text is written phase by phase. The approach tells the three
+    # steps only: co-management follows them, it is not a step of its own.
     STEPS = [ *Pricing::PHASES, "co_management" ].freeze
-    PHASED = { "approach" => STEPS, "phases" => Pricing::PHASES, "deliverables" => STEPS }.freeze
+    PHASED = { "approach" => Pricing::PHASES, "phases" => Pricing::PHASES, "deliverables" => STEPS }.freeze
     MAX_TITLE = 120
     MAX_BODY = 8_000
     MAX_LETTER = 12_000

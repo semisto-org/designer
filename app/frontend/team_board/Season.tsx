@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Plus, Trash2 } from 'lucide-react'
+import { Check, Plus, Trash2 } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -16,6 +16,16 @@ const KIND_STYLE: Record<StepKind, string> = {
   site: 'bg-humus-500 text-white',
   plant: 'bg-leaf-600 text-white',
 }
+// A forecast step (an offer not signed yet): pencilled in, hatched paper
+// inside a dashed outline of its kind's colour, so it never reads as booked.
+const FORECAST_STYLE: Record<StepKind, string> = {
+  design: 'border-2 border-dashed border-prune-500 text-prune-800 bg-[repeating-linear-gradient(135deg,var(--color-prune-200)_0_4px,var(--color-prune-50)_4px_9px)]',
+  site: 'border-2 border-dashed border-humus-500 text-humus-800 bg-[repeating-linear-gradient(135deg,var(--color-humus-200)_0_4px,var(--color-humus-50)_4px_9px)]',
+  plant: 'border-2 border-dashed border-leaf-600 text-leaf-800 bg-[repeating-linear-gradient(135deg,var(--color-leaf-200)_0_4px,var(--color-leaf-50)_4px_9px)]',
+}
+const stepStyle = (step: { kind: StepKind; forecast?: boolean }) => (step.forecast ? FORECAST_STYLE[step.kind] : KIND_STYLE[step.kind])
+// Projects whose offer is not signed yet: their new steps start as forecasts.
+const unsigned = (project?: BoardProject) => project?.phase === 'request' || project?.phase === 'offer'
 const monthName = new Intl.DateTimeFormat('fr-BE', { month: 'short' })
 
 type Drag = { id: number; mode: 'move' | 'start' | 'end'; x0: number; dayWidth: number; startsOn: string; dueOn: string; moved: boolean }
@@ -25,6 +35,8 @@ type Drag = { id: number; mode: 'move' | 'start' | 'end'; x0: number; dayWidth: 
  * planting steps on a calendar with the bare-root planting window. A step
  * is dragged to move it and stretched by either edge, a week at a time,
  * and the arrow keys do the same. Each step is a dated task of its map.
+ * A step of a project still at the offer stage is a forecast
+ * (« prévisionnel »): hatched and dashed until someone confirms it.
  */
 export function Season({ steps: initial, projects, season, onChanged }: {
   steps: BoardStep[]
@@ -130,6 +142,8 @@ export function Season({ steps: initial, projects, season, onChanged }: {
   const todayAt = pct(today)
   // Under five weeks, a bar is too short for its name.
   const narrow = (step: BoardStep) => daysBetween(step.startsOn, step.dueOn) < 35
+  const label = (step: BoardStep) => (step.forecast ? t('team_board.season.forecast_label', { title: step.title }) : step.title)
+  const anyForecast = rows.some((row) => row.steps.some((s) => s.forecast))
 
   return (
     <BoardSection
@@ -176,8 +190,8 @@ export function Season({ steps: initial, projects, season, onChanged }: {
                           data-step
                           role="button"
                           tabIndex={0}
-                          aria-label={`${step.title} : ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
-                          title={`${step.title} · ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
+                          aria-label={`${label(step)} : ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
+                          title={`${label(step)} · ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
                           onPointerDown={(e) => down(e, step, 'move')}
                           onPointerMove={move}
                           onPointerUp={() => up(step)}
@@ -185,8 +199,9 @@ export function Season({ steps: initial, projects, season, onChanged }: {
                           onKeyDown={(e) => key(e, step)}
                           style={{ left: pct(step.startsOn), width: span(step.startsOn, step.dueOn) }}
                           className={clsx(
-                            'group absolute inset-y-0.5 flex cursor-grab touch-none items-center overflow-hidden rounded-full px-3 text-sm font-semibold whitespace-nowrap shadow-sm select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600',
-                            KIND_STYLE[step.kind],
+                            'group absolute inset-y-0.5 flex cursor-grab touch-none items-center overflow-hidden rounded-full px-3 text-sm font-semibold whitespace-nowrap select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600',
+                            stepStyle(step),
+                            !step.forecast && 'shadow-sm',
                             step.done && 'opacity-50',
                             dragId === step.id && 'cursor-grabbing ring-2 ring-loam-900/30',
                           )}
@@ -213,6 +228,9 @@ export function Season({ steps: initial, projects, season, onChanged }: {
             {(['design', 'site', 'plant'] as StepKind[]).map((kind) => (
               <span key={kind} className="inline-flex items-center gap-1.5"><span className={clsx('h-3 w-5 rounded-full', KIND_STYLE[kind])} />{t(`team_board.steps.${kind}`)}</span>
             ))}
+            {anyForecast && (
+              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-5 rounded-full border border-dashed border-loam-500 bg-[repeating-linear-gradient(135deg,var(--color-loam-200)_0_3px,transparent_3px_6px)]" />{t('team_board.season.forecast_legend')}</span>
+            )}
             <span className="inline-flex items-center gap-1.5"><span className="h-3 w-5 rounded-sm bg-leaf-100" />{t('team_board.season.window')}</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-3 border-l-2 border-clay-400" />{t('team_board.season.today')}</span>
           </p>
@@ -246,6 +264,7 @@ function StepDialog({ step, projects, defaultProject, onClose, onSaved, onDelete
   const [title, setTitle] = useState('')
   const [startsOn, setStartsOn] = useState(today)
   const [dueOn, setDueOn] = useState(addDays(today, 6))
+  const [forecast, setForecast] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -256,7 +275,9 @@ function StepDialog({ step, projects, defaultProject, onClose, onSaved, onDelete
     if (step === 'new') {
       // The coming Monday, for a week.
       const monday = addDays(today, (8 - toDate(today).getDay()) % 7 || 7)
-      setMapId(String(defaultProject ?? projects[0]?.id ?? ''))
+      const id = defaultProject ?? projects[0]?.id
+      setMapId(String(id ?? ''))
+      setForecast(unsigned(projects.find((p) => p.id === id)))
       setKind('design')
       setTitle('')
       setStartsOn(monday)
@@ -267,22 +288,23 @@ function StepDialog({ step, projects, defaultProject, onClose, onSaved, onDelete
       setTitle(step.title)
       setStartsOn(step.startsOn)
       setDueOn(step.dueOn)
+      setForecast(Boolean(step.forecast))
     }
   }, [step, defaultProject]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!step) return <Dialog open={false} onClose={onClose} title="">{null}</Dialog>
   const project = projects.find((p) => String(p.id) === mapId)
 
-  async function submit() {
+  async function submit(confirm = false) {
     setBusy(true)
     setError(null)
     try {
-      const body = { step: { map_id: Number(mapId), step_kind: kind, title: title.trim(), starts_on: startsOn, due_on: dueOn } }
+      const body = { step: { map_id: Number(mapId), step_kind: kind, title: title.trim(), starts_on: startsOn, due_on: dueOn, forecast: confirm ? false : forecast } }
       const { step: saved } = creating
         ? await api<{ step: BoardStep }>(`${boardBase(teamId)}/steps`, { method: 'POST', body })
         : await api<{ step: BoardStep }>(`${boardBase(teamId)}/steps/${(step as BoardStep).id}`, { method: 'PATCH', body })
       onSaved(saved)
-      notify(t('team_board.frieze.saved'))
+      notify(t(confirm ? 'team_board.season.confirmed' : 'team_board.frieze.saved'))
       onClose()
     } catch (e) {
       setError((e as Error).message || t('team_board.frieze.error'))
@@ -312,14 +334,17 @@ function StepDialog({ step, projects, defaultProject, onClose, onSaved, onDelete
       footer={<>
         {!creating && <Button variant="danger-ghost" className="mr-auto" onClick={() => void remove()} disabled={busy}><Trash2 className="h-4 w-4" aria-hidden />{t('team_board.season.delete')}</Button>}
         <Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button>
-        <Button onClick={() => void submit()} disabled={busy || !mapId || dueOn < startsOn}>{creating ? t('team_board.season.add_submit') : t('team_board.project.save')}</Button>
+        {!creating && (step as BoardStep).forecast && (
+          <Button variant="leaf" onClick={() => void submit(true)} disabled={busy || dueOn < startsOn}><Check className="h-4 w-4" aria-hidden />{t('team_board.season.confirm')}</Button>
+        )}
+        <Button variant={!creating && (step as BoardStep).forecast ? 'secondary' : undefined} onClick={() => void submit()} disabled={busy || !mapId || dueOn < startsOn}>{creating ? t('team_board.season.add_submit') : t('team_board.project.save')}</Button>
       </>}
     >
       <div className="space-y-4">
         {error && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm text-clay-700">{error}</p>}
         {creating && defaultProject == null && (
           <Field label={t('team_board.season.project')}>
-            <Select value={mapId} onChange={(e) => setMapId(e.target.value)}>
+            <Select value={mapId} onChange={(e) => { setMapId(e.target.value); setForecast(unsigned(projects.find((p) => String(p.id) === e.target.value))) }}>
               {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </Select>
           </Field>
@@ -335,6 +360,13 @@ function StepDialog({ step, projects, defaultProject, onClose, onSaved, onDelete
             ))}
           </div>
         </fieldset>
+        <label className={clsx('flex cursor-pointer items-start gap-3 rounded-xl border-2 px-3 py-2', forecast ? 'border-dashed border-loam-400 bg-loam-50' : 'border-transparent ring-1 ring-inset ring-loam-200')}>
+          <input type="checkbox" checked={forecast} onChange={(e) => setForecast(e.target.checked)} className="mt-1 h-4 w-4 accent-prune-600" />
+          <span className="text-sm">
+            <span className="block font-medium text-loam-800">{t('team_board.season.forecast')}</span>
+            <span className="block text-loam-500">{t('team_board.season.forecast_hint')}</span>
+          </span>
+        </label>
         <Field label={t('team_board.season.name')} hint={t('team_board.season.name_hint')}>
           <Input value={title} maxLength={200} onChange={(e) => setTitle(e.target.value)} placeholder={t(`team_board.steps.${kind}`)} />
         </Field>

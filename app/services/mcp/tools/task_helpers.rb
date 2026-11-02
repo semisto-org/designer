@@ -20,6 +20,7 @@ module Mcp
             id: task.id, list_id: task.task_list_id, list: task.task_list.name,
             title: task.title, notes: task.notes, tags: task.tags.presence,
             due_on: task.due_on&.iso8601, overdue: task.overdue? || nil,
+            season_step: season_step_json(task),
             assignee: (task.assignee && { id: task.assignee.id, name: task.assignee.display_name }) ||
                       (task.invitee_email && { email: task.invitee_email, invited: true }),
             done: task.done?, completed_at: task.completed_at&.iso8601, completed_by: task.completed_by&.display_name,
@@ -28,6 +29,20 @@ module Mcp
             open_in_map: panel && "#{map_url(task.map)}?panel=#{panel}",
             features: task.features.any? ? task.features_json.map { |f| f.merge(url: "#{map_url(task.map)}?feature=#{f[:id]}") } : nil
           }.compact
+        end
+
+        # A season step of the team board (design, site, plant) spans
+        # starts_on to due_on; forecast: pencilled in, not confirmed yet.
+        def season_step_json(task)
+          return nil unless task.step_kind
+          { kind: task.step_kind, starts_on: task.starts_on&.iso8601, ends_on: task.due_on&.iso8601, forecast: task.forecast }
+        end
+
+        # A date given as YYYY-MM-DD for a season step's start, or an error.
+        def parse_starts_on(value)
+          Date.iso8601(value.to_s)
+        rescue Date::Error
+          raise Invalid, t("task_errors.starts_on", value:)
         end
 
         # The elements a task line is about: any element of the map by id

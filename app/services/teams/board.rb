@@ -50,7 +50,7 @@ module Teams
 
     def self.step_json(task)
       { id: task.id, mapId: task.map_id, kind: task.step_kind, title: task.title,
-        startsOn: task.starts_on.iso8601, dueOn: task.due_on.iso8601, done: task.done? }
+        startsOn: task.starts_on.iso8601, dueOn: task.due_on.iso8601, done: task.done?, forecast: task.forecast }
     end
 
     private

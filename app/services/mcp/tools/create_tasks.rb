@@ -6,6 +6,10 @@ module Mcp
     # teammate, and the journal keeps the trace. A task given to someone
     # else e-mails them, as on the page. A task may be about elements of the
     # map (« Tailler les pommiers 7 et 9 »): feature_ids, or plant numbers.
+    # A task may also be a season step of the team board (season_step:
+    # design, site or plant from starts_on to due_on), in the season list by
+    # default; written by an AI it is a forecast unless told otherwise, for
+    # the team to confirm.
     class CreateTasks < Base
       include TaskHelpers
 
@@ -27,6 +31,14 @@ module Mcp
                 assignee_email: { type: "string", format: "email", description: :assignee_email },
                 feature_ids: { type: "array", maxItems: Task::MAX_FEATURES, uniqueItems: true, items: { type: "integer", minimum: 1 }, description: :task_feature_ids },
                 numbers: { type: "array", maxItems: Task::MAX_FEATURES, items: { type: "string", minLength: 1, maxLength: 20 }, description: :task_numbers },
+                season_step: {
+                  type: "object", additionalProperties: false, required: %w[kind starts_on], description: :season_step,
+                  properties: {
+                    kind: { type: "string", enum: Task::STEP_KINDS, description: :season_step_kind },
+                    starts_on: { type: "string", format: "date", description: :season_step_starts_on },
+                    forecast: { type: "boolean", description: :season_step_forecast }
+                  }
+                },
                 tags: {
                   type: "array", maxItems: MapFeature::Tags::MAX_TAGS, uniqueItems: true, description: :task_tags,
                   items: { type: "string", minLength: 1, maxLength: MapFeature::Tags::MAX_LENGTH }
@@ -77,6 +89,12 @@ module Mcp
             assignee_id: line["assignee_id"], invitee_email: line["assignee_email"], tags: Array(line["tags"])
           )
           task.features = features if features
+          if (step = line["season_step"])
+            step = step.to_h.transform_keys(&:to_s)
+            task.step_kind = step["kind"]
+            task.starts_on = parse_starts_on(step["starts_on"])
+            task.forecast = step.fetch("forecast", true)
+          end
           task
         end
 
@@ -87,6 +105,8 @@ module Mcp
             map.task_lists.find_by(id: line["list_id"]) or raise Invalid, t("errors.task_list_not_found", id: line["list_id"])
           elsif (name = line["list_name"].to_s.squish).present?
             map.task_lists.find_by("lower(name) = lower(?)", name) || map.task_lists.create!(name:, created_by: user)
+          elsif line["season_step"]
+            TaskList.season!(map, by: user)
           else
             raise Invalid, t("task_errors.no_list")
           end

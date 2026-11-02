@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1720,6 +1720,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
     t.date "starts_on"
     t.string "step_kind"
     t.citext "invitee_email"
+    t.boolean "forecast", default: false, null: false
     t.index ["assignee_id", "completed_at"], name: "index_tasks_on_assignee_id_and_completed_at"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"

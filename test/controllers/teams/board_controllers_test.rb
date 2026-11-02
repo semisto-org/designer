@@ -110,6 +110,27 @@ class Teams::BoardControllersTest < ActionDispatch::IntegrationTest
     assert_not Task.exists?(task.id)
   end
 
+  test "a forecast step of a project at the offer stage is drawn apart, then confirmed" do
+    sign_in_as users(:bob)
+    @map.update!(phase: "offer")
+    post team_board_steps_path(@team), as: :json,
+      params: { step: { map_id: @map.id, step_kind: "design", title: "", starts_on: "2026-12-01", due_on: "2027-01-31", forecast: true } }
+    assert_response :created
+    step = response.parsed_body["step"]
+    assert step["forecast"]
+    task = Task.find(step["id"])
+    assert task.forecast
+    assert_includes Task.forecast, task
+
+    get team_board_path(@team), headers: inertia_headers
+    assert response.parsed_body.dig("props", "steps").find { _1["id"] == task.id }["forecast"]
+
+    patch team_board_step_path(@team, task), params: { step: { forecast: false } }, as: :json
+    assert_response :success
+    refute response.parsed_body.dig("step", "forecast")
+    refute task.reload.forecast
+  end
+
   test "a request is followed, declined with a note, or qualified into a team map" do
     sign_in_as users(:bob)
     patch team_board_request_path(@team, @project_request), params: { request: { status: "called" } }, as: :json

@@ -50,7 +50,7 @@ Un **barème** rassemble ta façon de chiffrer : taux, tâches et heures, part d
 
 ## Le document client
 
-Ton client ne lit pas la page de calcul : il reçoit un **document**, bloc par bloc. Une page de garde, la lettre « Votre projet », l'approche en quatre étapes, le périmètre, une page par étape, la co-gestion, le logiciel, les livrables, le prix avec la facturation et tes conditions, puis une conclusion avec vos contacts.
+Ton client ne lit pas la page de calcul : il reçoit un **document**, bloc par bloc. Une page de garde, la lettre « Votre projet », l'approche en trois étapes, le périmètre, une page par étape, la co-gestion, le logiciel, les livrables, le prix avec la facturation et tes conditions, puis une conclusion avec vos contacts.
 
 - **Les blocs et leurs textes** viennent de ton barème. Semisto propose les siens ; dans ton barème, décoche ce que tu n'envoies jamais, réécris un texte à ta façon, ajoute vos noms et téléphones dans la conclusion. Chaque offre peut encore changer un bloc pour son client, depuis la carte « Document client » de l'offre.
 - **La lettre « Votre projet »** s'écrit pour chaque client : ce que vous avez vu sur place, ce que le lieu peut devenir, comment vous proposez d'avancer. Ton IA peut la rédiger d'après la fiche projet, la carte et les documents de la visite (par exemple la transcription de l'entretien) : demande-lui « Rédige la lettre de l'offre de cette carte ». Elle arrive en proposition ; tu la prends ou la refuses, puis tu la retouches.

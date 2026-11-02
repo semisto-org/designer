@@ -44,6 +44,12 @@ Les douze mois à venir, projet par projet, avec la fenêtre de plantation à ra
 - Au clavier, les flèches déplacent l'étape d'une semaine ; avec Maj, elles l'allongent ou la raccourcissent.
 - Clique sur une étape pour la renommer, changer ses dates ou la retirer ; « Ajouter une étape » en pose une nouvelle.
 
+### Le prévisionnel
+
+Un projet encore au stade de l'offre peut déjà prendre sa place dans la saison, pour calibrer le planning de l'équipe. Ajoute-lui ses étapes de design et de plantation : pour un projet en « Demande » ou en « Offre », la case **Prévisionnel** est cochée d'office. Une étape prévisionnelle se dessine **hachurée, en pointillés** : on voit d'un coup d'œil ce qui est signé et ce qui ne l'est pas encore. Elle se déplace et s'étire comme les autres.
+
+Quand l'offre est signée, clique sur l'étape et choisis **Confirmer l'étape** : elle prend sa couleur pleine. Ton IA peut aussi poser ces étapes prévisionnelles pour toi, et les confirmer quand tu le lui dis.
+
 Chaque étape est aussi une tâche datée de sa carte, dans « Tâches ».
 
 ## La charge de chacun
