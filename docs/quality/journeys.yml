@@ -30,7 +30,7 @@ journeys:
   - id: invite
     title: Inviter quelqu’un
     month: 2026-11
-    scores: { place: partial, time: fail, companion: partial, notebook: fail, further: partial }
+    scores: { place: pass, time: pass, companion: pass, notebook: partial, further: pass }
     paths:
       - app/frontend/collab/**/*
       - app/frontend/pages/invitations/**/*
