@@ -12,7 +12,11 @@ class BuildingsWarmJob < ApplicationJob
     return unless bounds && provider.available?
 
     provider.within(**bounds)
+  rescue Providers::Buildings::Busy
+    # OpenStreetMap was busy, or the page was asking at the same moment:
+    # try again a little later, a few times.
+    retry_job(wait: 1.minute) if executions < 3
   rescue Providers::Buildings::Unavailable
-    # The page asks again on its own; nothing is lost.
+    # Switched off or too large: nothing to warm.
   end
 end
