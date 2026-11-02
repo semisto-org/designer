@@ -1,10 +1,11 @@
 import clsx from 'clsx'
 import { Camera, Crosshair, LocateFixed, Send, X } from 'lucide-react'
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { forwardRef, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
 import { ChipButton } from '@/components/ui/ChipButton'
 import { inputClass } from '@/components/ui/Field'
 import { IconButton } from '@/components/ui/IconButton'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -13,6 +14,7 @@ import { devicePosition, uploadActions, useUploads } from '@/map/photos/upload'
 import type { Mentionable } from '@/types/collab'
 import { Avatar } from '../Avatar'
 import { matchMembers, mentionQuery } from '../CommentComposer'
+import { firstImage } from './attach'
 import { chatFeatureLabel, citedIds, citeQuery, matchCitables, type Citable } from './cite'
 import { chatActions } from './chatStore'
 
@@ -24,6 +26,14 @@ export type ChatDraft = {
   photoId: number | null
 }
 
+/** What the discussion panel can ask of its message box: join a picture dropped anywhere on it. */
+export type ChatComposerHandle = {
+  /** Joins the first picture among the files; false when none can be joined (no picture, not an editor, one still sending). */
+  attachFiles: (files: ArrayLike<File> | null | undefined) => boolean
+  /** Whether a dropped picture would be joined. */
+  canAttach: boolean
+}
+
 type Suggestion =
   | { kind: 'member'; key: string; member: Mentionable }
   | { kind: 'feature'; key: string; item: Citable }
@@ -31,11 +41,12 @@ type Suggestion =
 /**
  * The discussion's message box: « @ » mentions a member, « # » cites an
  * element of the map; the pin button pins the message where you stand (or
- * where you point on the map), the camera joins a photo taken on the spot.
+ * where you point on the map), the camera joins a photo taken on the spot;
+ * a picture can also be pasted into the box or dropped on the panel.
  * Enter sends on a computer (Shift+Enter for a new line); a phone keeps
  * Enter for new lines and sends with the button.
  */
-export function ChatComposer({ members, initial = '', initialFeatures = [], submitLabel, busy, autoFocus, editOnly, onSubmit, onCancel }: {
+export const ChatComposer = forwardRef<ChatComposerHandle, {
   members: Mentionable[]
   initial?: string
   initialFeatures?: { id: number; name: string }[]
@@ -46,7 +57,7 @@ export function ChatComposer({ members, initial = '', initialFeatures = [], subm
   editOnly?: boolean
   onSubmit: (draft: ChatDraft) => Promise<void> | void
   onCancel?: () => void
-}) {
+}>(function ChatComposer({ members, initial = '', initialFeatures = [], submitLabel, busy, autoFocus, editOnly, onSubmit, onCancel }, ref) {
   const editor = useEditor()
   const wide = useMediaQuery('(min-width: 768px)')
   const [text, setText] = useState(initial)
@@ -89,7 +100,8 @@ export function ChatComposer({ members, initial = '', initialFeatures = [], subm
       editor.notify(sending.message ?? t('collab.chat.photo_failed'), 'error')
       setUpload(null)
     }
-    if (photo && !location && photo.lng != null && photo.lat != null) setLocation([photo.lng, photo.lat])
+    // The photo pins the message only where it was really taken (its GPS, or the phone on the spot).
+    if (photo && !location && photo.lng != null && photo.lat != null && (photo.locationSource === 'exif' || photo.locationSource === 'device')) setLocation([photo.lng, photo.lat])
   }, [sending?.status, sending?.message, photo, location, editor])
 
   function insert(choice: Suggestion) {
@@ -145,15 +157,28 @@ export function ChatComposer({ members, initial = '', initialFeatures = [], subm
     }
   }
 
-  function attach(files: FileList | null) {
-    const chosen = files?.[0]
-    if (!chosen) return
+  const canAttach = !editOnly && editor.canEdit && !(upload && !photo)
+
+  /** Joins the first picture among the files (the camera, a paste or a drop). */
+  function attach(files: ArrayLike<File> | null | undefined): boolean {
+    const chosen = firstImage(files)
+    if (!chosen || !canAttach) return false
     const [key] = uploadActions.add(editor.map.id, [chosen], {
       source: wide ? 'web' : 'phone',
-      useDevicePosition: true,
+      // Only a phone knows where it stands: a computer's position comes from its
+      // internet line, often far from the place, and would pin a screenshot there.
+      useDevicePosition: !wide,
       fallbackPosition: location ? { lng: location[0], lat: location[1] } : undefined,
     })
     setUpload(key ?? null)
+    return true
+  }
+
+  useImperativeHandle(ref, () => ({ attachFiles: attach, canAttach }))
+
+  function onPaste(e: ClipboardEvent<HTMLTextAreaElement>) {
+    // A copied screenshot or photo joins the message; pasted text stays text.
+    if (firstImage(e.clipboardData.files) && attach(e.clipboardData.files)) e.preventDefault()
   }
 
   const activeId = suggestions[active] ? `${listId}-${suggestions[active].key}` : undefined
@@ -174,6 +199,7 @@ export function ChatComposer({ members, initial = '', initialFeatures = [], subm
         onChange={(e) => { setText(e.target.value); setCursor(e.target.selectionStart); setDismissed(false); setActive(0) }}
         onSelect={(e) => setCursor(e.currentTarget.selectionStart)}
         onKeyDown={onKeyDown}
+        onPaste={onPaste}
       />
       {suggestions.length > 0 && (
         <ul id={listId} role="listbox" className="absolute inset-x-0 bottom-full z-10 mb-1 max-h-64 overflow-y-auto rounded-xl bg-white py-1 shadow-lg ring-1 ring-loam-200">
@@ -215,17 +241,23 @@ export function ChatComposer({ members, initial = '', initialFeatures = [], subm
       <div className="mt-2 flex items-center gap-1">
         {!editOnly && (
           <>
-            <IconButton size="sm" label={t('collab.chat.pin_here')} onClick={() => void pinHere()} disabled={locating} pressed={locating}>
-              <LocateFixed />
-            </IconButton>
-            <IconButton size="sm" label={t('collab.chat.pin_on_map')} onClick={() => void pinOnMap()} disabled={!!editor.drawing}>
-              <Crosshair />
-            </IconButton>
+            <ComposerTip title={t('collab.chat.pin_here')} text={t('collab.chat.pin_here_tip')}>
+              <IconButton size="sm" label={t('collab.chat.pin_here')} title={undefined} onClick={() => void pinHere()} disabled={locating} pressed={locating}>
+                <LocateFixed />
+              </IconButton>
+            </ComposerTip>
+            <ComposerTip title={t('collab.chat.pin_on_map')} text={t('collab.chat.pin_on_map_tip')}>
+              <IconButton size="sm" label={t('collab.chat.pin_on_map')} title={undefined} onClick={() => void pinOnMap()} disabled={!!editor.drawing}>
+                <Crosshair />
+              </IconButton>
+            </ComposerTip>
             {editor.canEdit && (
               <>
-                <IconButton size="sm" label={t('collab.chat.photo')} onClick={() => file.current?.click()} disabled={!!upload && !photo}>
-                  <Camera />
-                </IconButton>
+                <ComposerTip title={t('collab.chat.photo')} text={t(wide ? 'collab.chat.photo_tip' : 'collab.chat.photo_tip_phone')}>
+                  <IconButton size="sm" label={t('collab.chat.photo')} title={undefined} onClick={() => file.current?.click()} disabled={!!upload && !photo}>
+                    <Camera />
+                  </IconButton>
+                </ComposerTip>
                 <input ref={file} type="file" accept="image/*" className="hidden" onChange={(e) => { attach(e.target.files); e.target.value = '' }} />
               </>
             )}
@@ -239,5 +271,14 @@ export function ChatComposer({ members, initial = '', initialFeatures = [], subm
         </Button>
       </div>
     </div>
+  )
+})
+
+/** A composer button's tooltip: what it is, then what it does. Lined up left so it stays inside the panel. */
+function ComposerTip({ title, text, children }: { title: string; text: string; children: ReactNode }) {
+  return (
+    <Tooltip align="start" content={<><span className="block font-medium">{title}</span><span className="block text-white/80">{text}</span></>}>
+      {children}
+    </Tooltip>
   )
 }

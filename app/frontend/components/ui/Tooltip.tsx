@@ -6,10 +6,12 @@ import { useId, useRef, useState, type ReactNode } from 'react'
  * focus. For a word or an icon whose meaning is not obvious; never for
  * something the person must read to go on.
  */
-export function Tooltip({ content, children, side = 'top', className }: {
+export function Tooltip({ content, children, side = 'top', align = 'center', className }: {
   content: ReactNode
   children: ReactNode
   side?: 'top' | 'bottom'
+  /** `start` lines the bubble up with the trigger's left edge, for a trigger near the left of a clipped box. */
+  align?: 'center' | 'start'
   className?: string
 }) {
   const id = useId()
@@ -33,9 +35,10 @@ export function Tooltip({ content, children, side = 'top', className }: {
           id={id}
           role="tooltip"
           className={clsx(
-            'pointer-events-none absolute left-1/2 z-[80] w-max max-w-64 -translate-x-1/2 rounded-lg bg-loam-900 px-3 py-1.5 text-sm text-white shadow-lg',
+            'pointer-events-none absolute z-[80] w-max max-w-64 rounded-lg bg-loam-900 px-3 py-1.5 text-sm text-white shadow-lg',
             'animate-[notebook-in_180ms_ease-out] motion-reduce:animate-none',
             side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
+            align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2',
           )}
         >
           {content}
