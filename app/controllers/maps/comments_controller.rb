@@ -15,7 +15,9 @@ module Maps
     # One thread: its comments, whether I follow it, who I can mention, who
     # my next comment will e-mail.
     # Opening a thread marks it as read (the previous read time is returned
-    # so the client can show what is new).
+    # so the client can show what is new), unless the client only peeks: the
+    # phone app reads the discussion when the map opens, for its pins and
+    # its unread count, before anyone has looked at it.
     def index
       comments = @commentable.comments.visible.chronological.includes(:author, :map_photo, applauses: :user)
       last_read = CommentRead.find_by(user: Current.user, commentable: @commentable)&.last_read_at
@@ -28,7 +30,7 @@ module Maps
         notified: Collab::CommentNotifier.recipients_for(@commentable, Current.user)&.map(&:display_name),
         commentEmails: Current.user.comment_emails
       }
-      CommentRead.mark!(Current.user, @commentable)
+      CommentRead.mark!(Current.user, @commentable) unless params[:peek].present?
       render json: payload
     end
 

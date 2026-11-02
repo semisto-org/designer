@@ -49,6 +49,17 @@ What it does, for the maps one belongs to:
   by tile (`/api/v1/maps/:id/aerial_views/:id/tiles/:z/:x/:y`,
   `AerialViews::PmtilesReader`), since MapLibre sends the token only to the
   API and a signed file link expires;
+- the map's live discussion (« Discussion », `app/maps/[id]/chat.tsx`,
+  `lib/chat.ts`, `lib/chat-core.ts`), for the members the website lets in
+  (`map.chat` in the bundle): a modal over the terrain that hides with a
+  swipe and comes back without reloading, since the store and its Action
+  Cable subscription (`lib/cable.ts`, bearer token on `/cable`) live as long
+  as the terrain screen. « Ici » pins a message where one stands, the
+  camera joins a photo (editors), « # » offers the elements nearest first,
+  « @ » the people; messages leave through the outbox (`chatMessage`: the
+  photo, then the message, each with its own key). Pinned messages show on
+  the map (`map/ChatPins.tsx`) and under « Dit ici » in the sheet; a pin or
+  a cited element tapped in the discussion is shown on the map;
 - geolocated photos, on the map or on an element, with the direction the
   camera faced;
 - a photo taken again from the same spot (« Reprendre cette photo »,

@@ -35,6 +35,23 @@ describe('terrain sheet', () => {
     expect(row.props.accessibilityLabel).toBe('Groseillier (Ribes rubrum), a passé son premier hiver ici, à 7 m au nord-est')
   })
 
+  it('shows what the team said where one stands, and opens the discussion on it', () => {
+    const opened: number[] = []
+    const said = {
+      id: 42, body: 'Le paillage a tenu', author: { id: 2, name: 'Lucie', avatarUrl: null }, createdAt: '2026-11-02T10:00:00Z', editedAt: null,
+      mentions: [], applause: { count: 0, mine: false, names: [] }, location: [4.95, 50.32] as [number, number], canEdit: false, canDelete: false,
+    }
+    let tree!: ReturnType<typeof create>
+    act(() => {
+      tree = create(<RestBody located="yes" planting={planting} viewer={false} onPick={() => {}} around={[]}
+        saidHere={[{ message: said, meters: 4 }]} onSaid={(id) => opened.push(id)} />)
+    })
+    expect(texts(tree)).toContain('Dit ici')
+    expect(texts(tree)).toContain('Le paillage a tenu')
+    act(() => { tree.root.find((node) => node.props.accessibilityHint === 'Ouvre la discussion sur ce message').props.onPress() })
+    expect(opened).toEqual([42])
+  })
+
   it('says why the list is empty', () => {
     let tree!: ReturnType<typeof create>
     act(() => { tree = create(<RestBody located="denied" planting={planting} viewer={false} onPick={() => {}} around={[]} />) })

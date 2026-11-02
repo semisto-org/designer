@@ -1,6 +1,8 @@
 // The outbox bound to the phone: saved in outbox.json, sent through api().
 import * as Crypto from 'expo-crypto'
 import { api, form } from './api'
+import { chat } from './chat'
+import type { ChatMessage } from './chat-core'
 import { storageReadingBody } from './fruitStore'
 import { harvestBody } from './harvests'
 import { emptyOutbox, filesOf, flush, nextTempId, retry, retryDelayMs, type FlushResult, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
@@ -184,6 +186,27 @@ const transport: Transport = {
     await api('POST', `/maps/${mapId}/comments`, {
       comment: { body, ...(featureId ? { commentable_type: 'MapFeature', commentable_id: featureId } : {}) },
     }, once(key))
+  },
+  // The photo first (the server takes it among the map's photos), then the
+  // message pointing at it; each step has its own key, so a retry after a
+  // lost answer gets the first photo back instead of a second one.
+  async chatMessage(mapId, op, featureIds, key) {
+    let photoId: number | null = null
+    if (op.photo) {
+      const located = op.lng !== null && op.lat !== null
+      const photo = await api<{ id: number }>('POST', `/maps/${mapId}/photos`, form('photo', {
+        image: mediaFile(present(op.photo)), taken_at: op.takenAt, source: 'phone',
+        lng: op.lng, lat: op.lat, location_source: located ? 'device' : null, heading: op.heading ?? null,
+      }), once(`${key}:photo`))
+      photoId = photo.id
+    }
+    const message = await api<ChatMessage>('POST', `/maps/${mapId}/comments`, {
+      comment: {
+        body: op.body, commentable_type: 'Map', commentable_id: mapId, feature_ids: featureIds,
+        ...(op.lng !== null && op.lat !== null ? { lng: op.lng, lat: op.lat } : {}), ...(photoId ? { map_photo_id: photoId } : {}),
+      },
+    }, once(key))
+    if (message?.id) chat.received(mapId, message)
   },
   async closeVisit(mapId, op, questionIds, key) {
     await api('POST', `/maps/${mapId}/site_visits`, {
