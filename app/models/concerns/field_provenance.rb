@@ -39,6 +39,7 @@ module FieldProvenance
   end
 
   # Upserts the provenance of `fields` (status « empty » for blank values).
+  # A new provenance drops the cross-check the value had.
   def record_provenance!(fields, source:, upstream_source: nil, license: nil, url: nil, status: "to_verify")
     fields = Array(fields).map(&:to_s)
     return if fields.empty?
@@ -46,14 +47,22 @@ module FieldProvenance
       {
         record_type: self.class.polymorphic_name, record_id: id, field:,
         source: source.to_s, upstream_source: upstream_source.presence, license: license.presence,
-        url: url.presence, status: field_value_present?(field) ? status : "empty"
+        url: url.presence, status: field_value_present?(field) ? status : "empty", cross_checked_with: nil
       }
     end
     PlantFieldSource.upsert_all(rows, unique_by: :index_plant_field_sources_uniqueness)
     field_sources.reset
   end
 
-  # { "height_max_m" => { source:, upstreamSource:, license:, url:, status:, updatedAt: } }
+  # « Recoupée avec PFAF »: `source` says the same as the value, which keeps
+  # its own source and status. A value with no provenance yet gets `fallback`.
+  def mark_cross_checked!(field, source, fallback:)
+    record_provenance!(field, source: fallback) unless provenance_for(field)
+    field_sources.where(field: field.to_s).update_all(cross_checked_with: source.to_s, updated_at: Time.current)
+    field_sources.reset
+  end
+
+  # { "height_max_m" => { source:, upstreamSource:, license:, url:, status:, crossCheckedWith:, updatedAt: } }
   def provenance_json
     self.class.provenanced_fields.each_with_object({}) do |field, json|
       row = provenance_for(field)

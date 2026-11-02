@@ -12,6 +12,8 @@ class PlantValueCheck < ApplicationRecord
   validates :verdict, inclusion: { in: VERDICTS }
 
   def as_json(*)
-    { field:, verdict:, sourceValue: source_value, confidence:, source:, url:, excerpt: }
+    { field:, verdict:, sourceValue: source_value, confidence:, source:, url:, excerpt:,
+      # PFAF only cross-checks: the reviewer cannot take its value.
+      citable: !PlantSource.cross_check_only?(source) }
   end
 end

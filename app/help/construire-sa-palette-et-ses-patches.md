@@ -46,7 +46,7 @@ La plante rejoint ta palette tout de suite. L'équipe de Semisto relit ensuite c
 
 ## D'où viennent les informations
 
-Chaque fiche d'espèce dit **d'où vient chaque valeur** : sa source, et un statut **vérifiée**, **à vérifier** ou **non renseignée**. « À vérifier » veut dire que la valeur a été reprise d'un catalogue sans être contrôlée par une personne : jettes-y un œil avant de planter. Quand une valeur vient de PFAF, la fiche cite PFAF comme source.
+Chaque fiche d'espèce dit **d'où vient chaque valeur** : sa source, et un statut **vérifiée**, **à vérifier** ou **non renseignée**. « À vérifier » veut dire que la valeur a été reprise d'un catalogue sans être contrôlée par une personne : jettes-y un œil avant de planter. Quand une valeur vient de PFAF, la fiche cite PFAF comme source. Quand PFAF dit seulement la même chose qu'une autre source, la valeur garde sa source et la fiche ajoute « recoupée avec PFAF » : PFAF sert à recouper, il ne vérifie pas une valeur à lui seul.
 
 ## Placer des plants isolés
 

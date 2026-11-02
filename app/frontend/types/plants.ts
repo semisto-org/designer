@@ -17,6 +17,8 @@ export type Provenance = {
   license: string | null
   url: string | null
   status: ProvenanceStatus
+  /** A source that says the same without being cited (« recoupée avec PFAF »). */
+  crossCheckedWith?: string | null
   updatedAt: string | null
 }
 
