@@ -685,6 +685,10 @@
       "sending_this": "En cours d'envoi…",
       "progress": "Envoi %{done} sur %{total}…",
       "progress_current": "En ce moment : %{what}",
+      "progress_bytes": "%{sent} sur %{total} (%{percent} %)",
+      "stalled": "Ça n'avance plus depuis un moment : le réseau est sans doute faible ici. Tu peux relancer l'envoi, rien ne partira en double.",
+      "restart": "Relancer l'envoi",
+      "reason_timeout": "réseau trop lent",
       "blocked_here": "L'envoi s'arrête ici : %{reason}. Il sera réessayé tout seul ; si ça se répète, tu peux abandonner cette modification pour laisser partir les suivantes.",
       "run": {
         "sent": {

@@ -40,7 +40,12 @@ What it does, for the maps one belongs to:
   terrain, zoom 12–19) and keeps every change in an outbox sent when the
   network is back; while a round goes out, « Envois » and the map's status
   say « Envoi 2 sur 5… » with the change being sent (`outbox.progress()`,
-  `useSendProgress`), and each round ends with its time and count;
+  `useSendProgress`), the megabytes of the file going out, and each round
+  ends with its time and count. Files leave through an iOS background
+  session (they keep going with the phone in the pocket) and are given up
+  only after a minute without a byte moving (`UPLOAD_IDLE_MS`), never after
+  a fixed total; past 30 s without news, « Relancer l'envoi » cancels and
+  sends again (`outbox.restart()`, safe thanks to the idempotency key);
 - drone views of the map (« Affichage » › « Vue drone », `useMapStyle`):
   one laid over the base map (`/api/v1/maps/:id/style?drone=id`), loaded
   through the connection as one moves, or kept on the phone as its own
