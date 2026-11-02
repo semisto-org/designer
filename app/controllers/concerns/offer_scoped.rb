@@ -70,12 +70,14 @@ module OfferScoped
         map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2),
         team: @map.organization && { name: @map.organization.name },
         issuer: offer_issuer, letterhead: @map.letterhead,
+        # The « charte graphique » of the team, else of the owner (DocumentTheme).
+        theme: DocumentTheme.for_map(@map).as_json,
         document: document.to_h.except(:letterDraft)
       }
     end
 
     def send_docx(document, label:, date:)
-      export = Offer::DocxExport.new(document, label:, date:)
+      export = Offer::DocxExport.new(document, label:, date:, theme: DocumentTheme.for_map(@map))
       send_data export.to_s, filename: export.filename, type: Mime[:docx], disposition: "attachment"
     end
 

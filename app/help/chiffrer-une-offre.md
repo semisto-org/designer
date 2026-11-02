@@ -56,6 +56,7 @@ Ton client ne lit pas la page de calcul : il reçoit un **document**, bloc par b
 - **La lettre « Votre projet »** s'écrit pour chaque client : ce que vous avez vu sur place, ce que le lieu peut devenir, comment vous proposez d'avancer. Ton IA peut la rédiger d'après la fiche projet, la carte et les documents de la visite (le compte rendu de la visite faite avec l'app mobile, son enregistrement audio, la transcription de l'entretien) : demande-lui « Rédige la lettre de l'offre de cette carte ». Elle arrive en proposition ; tu la prends ou la refuses, puis tu la retouches.
 - Dans les textes, `{client}`, `{lieu}` et `{equipe}` deviennent le nom du client, celui de la carte et celui de ton équipe.
 - **Aperçu du document** montre l'offre en cours telle que ton client la lira. Le bouton **PDF** ouvre l'impression (choisis « Enregistrer en PDF ») ; **Word** télécharge un fichier .docx à finir dans ton traitement de texte.
+- **La charte graphique** habille le document : logo, couleurs, polices, image de page de garde et coordonnées en pied de page. Elle se règle dans **Mon compte › Charte graphique** pour un compte Pro, ou sur la page de l'équipe pour ses offres. Ton IA peut la remplir d'après ton Design System ; tu prends ou refuses sa proposition sur la même page. Sans réglage, c'est la charte Semisto.
 
 ## Les versions
 

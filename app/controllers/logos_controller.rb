@@ -1,4 +1,5 @@
-# /logos/:key — a team's or a pro account's logo (HasLogo#logo_url), sized for
+# /logos/:key — a team's or a pro account's logo (HasLogo#logo_url) or the cover
+# image of its documents (HasDocumentTheme#document_cover_url), sized for
 # print. The key is the blob's signed id, so it opens without a session, like
 # an avatar: a document's print page and its PDF show it.
 class LogosController < ApplicationController
@@ -8,7 +9,7 @@ class LogosController < ApplicationController
 
   def show
     blob = ActiveStorage::Blob.find_signed(params[:key])
-    attachment = blob && ActiveStorage::Attachment.find_by(blob:, record_type: %w[User Organization], name: "logo")
+    attachment = blob && ActiveStorage::Attachment.find_by(blob:, record_type: %w[User Organization], name: %w[logo document_cover])
     return head :not_found unless attachment
 
     target = begin

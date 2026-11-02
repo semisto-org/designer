@@ -6,14 +6,17 @@ class Offer
   # (Offer::ClientDocument), their Markdown turned into Word paragraphs,
   # lists and emphasis, and the budget as a table. Plain WordprocessingML
   # written by hand (a few hundred lines of XML, no gem): headings use
-  # Word's own styles, so the team's template can restyle them.
+  # Word's own styles, so the team's template can restyle them. Fonts and
+  # colours come from the account's « charte graphique » (DocumentTheme),
+  # and its footer runs at the bottom of every page.
   class DocxExport
     PAGE_BREAK = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
 
-    def initialize(document, label:, date:)
+    def initialize(document, label:, date:, theme: DocumentTheme.new(nil))
       @document = document
       @label = label
       @date = date
+      @theme = theme
     end
 
     def filename = "#{I18n.t('offers.document.file_name', map: @document.map.name.parameterize, label: @label.downcase)}.docx"
@@ -37,8 +40,29 @@ class Offer
         {
           "[Content_Types].xml" => content_types, "_rels/.rels" => root_rels,
           "word/document.xml" => document_xml, "word/styles.xml" => styles_xml,
-          "word/numbering.xml" => numbering_xml, "word/_rels/document.xml.rels" => document_rels
-        }
+          "word/numbering.xml" => numbering_xml, "word/_rels/document.xml.rels" => document_rels,
+          "word/footer1.xml" => (footer_xml if footer?)
+        }.compact
+      end
+
+      def footer? = @theme["footer"].present?
+
+      # The footer of the charter, small and grey, on every page.
+      def footer_xml
+        lines = @theme["footer"].to_s.split("\n").map { |line| run(line) }.join("<w:r><w:br/></w:r>")
+        <<~XML
+          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+          <w:p><w:pPr><w:pStyle w:val="Footer"/></w:pPr>#{lines}</w:p>
+          </w:ftr>
+        XML
+      end
+
+      def color(field) = @theme[field].to_s.delete("#").upcase
+
+      def fonts(field)
+        family = escape(@theme.docx_family(field))
+        %(<w:rFonts w:ascii="#{family}" w:hAnsi="#{family}" w:cs="#{family}"/>)
       end
 
       def section_xml(section, first:)
@@ -225,26 +249,28 @@ class Offer
         <<~XML
           <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
           <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-          <w:body>#{body_xml}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1418" w:bottom="1418" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/></w:sectPr></w:body>
+          <w:body>#{body_xml}<w:sectPr>#{'<w:footerReference w:type="default" r:id="rId3"/>' if footer?}<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1418" w:bottom="1418" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/></w:sectPr></w:body>
           </w:document>
         XML
       end
 
       def styles_xml
-        font = %(<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>)
-        serif = %(<w:rFonts w:ascii="Georgia" w:hAnsi="Georgia" w:cs="Georgia"/>)
+        font = fonts(:body_font)
+        serif = fonts(:heading_font)
+        heading, accent, text = color(:heading_color), color(:accent_color), color(:text_color)
         style = ->(id, name, rpr, ppr = "") { %(<w:style w:type="paragraph" w:styleId="#{id}"><w:name w:val="#{name}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr>#{ppr}</w:pPr><w:rPr>#{rpr}</w:rPr></w:style>) }
         <<~XML
           <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
           <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-          <w:docDefaults><w:rPrDefault><w:rPr>#{font}<w:sz w:val="22"/><w:lang w:val="fr-BE"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+          <w:docDefaults><w:rPrDefault><w:rPr>#{font}<w:color w:val="#{text}"/><w:sz w:val="22"/><w:lang w:val="fr-BE"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
           <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
-          #{style.('Title', 'Title', "#{serif}<w:color w:val=\"5B2C4F\"/><w:sz w:val=\"56\"/>", '<w:spacing w:before="2400" w:after="240"/>')}
-          #{style.('Subtitle', 'Subtitle', '<w:color w:val="6B5E52"/><w:sz w:val="28"/>')}
-          #{style.('Heading1', 'heading 1', "#{serif}<w:b/><w:color w:val=\"5B2C4F\"/><w:sz w:val=\"36\"/>", '<w:keepNext/><w:spacing w:before="240" w:after="160"/><w:outlineLvl w:val="0"/>')}
-          #{style.('Heading2', 'heading 2', '<w:b/><w:color w:val="3F5A2E"/><w:sz w:val="26"/>', '<w:keepNext/><w:spacing w:before="200" w:after="80"/><w:outlineLvl w:val="1"/>')}
+          #{style.('Title', 'Title', "#{serif}<w:color w:val=\"#{heading}\"/><w:sz w:val=\"56\"/>", '<w:spacing w:before="2400" w:after="240"/>')}
+          #{style.('Subtitle', 'Subtitle', "<w:color w:val=\"#{text}\"/><w:sz w:val=\"28\"/>")}
+          #{style.('Heading1', 'heading 1', "#{serif}<w:b/><w:color w:val=\"#{heading}\"/><w:sz w:val=\"36\"/>", '<w:keepNext/><w:spacing w:before="240" w:after="160"/><w:outlineLvl w:val="0"/>')}
+          #{style.('Heading2', 'heading 2', "<w:b/><w:color w:val=\"#{accent}\"/><w:sz w:val=\"26\"/>", '<w:keepNext/><w:spacing w:before="200" w:after="80"/><w:outlineLvl w:val="1"/>')}
           #{style.('Heading3', 'heading 3', '<w:b/><w:sz w:val="22"/>', '<w:keepNext/><w:outlineLvl w:val="2"/>')}
           #{style.('ListParagraph', 'List Paragraph', '', '<w:spacing w:after="60"/><w:ind w:left="720"/>')}
+          #{style.('Footer', 'footer', '<w:color w:val="7A756C"/><w:sz w:val="16"/>', '<w:spacing w:after="0"/>')}
           </w:styles>
         XML
       end
@@ -271,6 +297,7 @@ class Offer
           <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
           <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
           <Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>
+          #{'<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>' if footer?}
           </Types>
         XML
       end
@@ -290,6 +317,7 @@ class Offer
           <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
           <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
           <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>
+          #{'<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' if footer?}
           </Relationships>
         XML
       end

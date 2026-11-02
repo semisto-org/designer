@@ -180,6 +180,11 @@ Rails.application.routes.draw do
     resource :password, only: %i[update destroy]
     resource :avatar, only: %i[update destroy]
     resource :logo, only: %i[update destroy]
+    # « Charte graphique »: colours, fonts, cover and footer of the account's documents.
+    resource :document_theme, path: "charte", only: %i[show update] do
+      post :accept_draft
+      delete :reject_draft
+    end
   end
   # A person's uploaded picture, by its blob's signed id (User#avatar_url).
   get "avatars/:key", to: "avatars#show", as: :avatar
@@ -470,6 +475,11 @@ Rails.application.routes.draw do
       resource :billing, only: %i[update destroy]
       # The logo printed at the top of the team maps' documents.
       resource :logo, only: %i[update destroy]
+      # « Charte graphique » of the team's documents (admins change it).
+      resource :document_theme, path: "charte", only: %i[show update] do
+        post :accept_draft
+        delete :reject_draft
+      end
       resources :invitations, only: %i[create destroy] do
         post :resend, on: :member
       end

@@ -3,9 +3,10 @@ import clsx from 'clsx'
 import { ArrowLeft, FileText, Printer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Prose } from '@/components/help/Prose'
-import { phaseLabel, PhaseMark, euros, lineLabel } from '@/components/offers/shared'
+import { phaseLabel, euros, lineLabel } from '@/components/offers/shared'
 import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { THEMED_PROSE_COLORS, themeStyle } from '@/lib/documentTheme'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
 import type { ClientSection, DocumentStep, OfferTerms, OfferVersionPageProps } from '@/types/offers'
 
@@ -18,10 +19,12 @@ const dateFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'lo
  * per phase, co-management, the software, deliverables, the budget and a
  * conclusion. A saved version is frozen: it shows its own numbers,
  * whatever the map has become since. Printed (or saved as PDF) one block
- * per page; also downloadable as a Word file.
+ * per page; also downloadable as a Word file. It wears the « charte
+ * graphique » of the team or the pro (DocumentTheme): colours, fonts,
+ * cover image and footer.
  */
 export default function OfferVersion(props: OfferVersionPageProps) {
-  const { map, version, document, preview } = props
+  const { map, version, document, preview, theme } = props
   const docxUrl = preview ? `/maps/${map.id}/offer/preview.docx` : `/maps/${map.id}/offer/versions/${version.number}.docx`
 
   return (
@@ -45,11 +48,13 @@ export default function OfferVersion(props: OfferVersionPageProps) {
         <p className="rounded-xl bg-humus-50 p-3 text-sm text-humus-900 ring-1 ring-inset ring-humus-200 print:hidden">{t('offers.document.preview_banner')}</p>
       )}
 
-      {document.sections.map((section, index) => (
-        <Page key={section.key} first={index === 0}>
-          <Section section={section} {...props} />
-        </Page>
-      ))}
+      <div style={themeStyle(theme)} className="space-y-6 font-doc-body text-doc-text">
+        {document.sections.map((section, index) => (
+          <Page key={section.key} first={index === 0}>
+            <Section section={section} {...props} />
+          </Page>
+        ))}
+      </div>
 
       <InternalDetails {...props} />
     </div>
@@ -74,7 +79,7 @@ function Section({ section, ...props }: OfferVersionPageProps & { section: Clien
     case 'co_management':
       return (
         <>
-          <Title><span className="text-leaf-700">{t('offers.co_management.number')}</span> {section.title}</Title>
+          <Title><Mark>{t('offers.co_management.number')}</Mark> {section.title}</Title>
           <Text html={section.html} />
         </>
       )
@@ -92,21 +97,32 @@ function Section({ section, ...props }: OfferVersionPageProps & { section: Clien
           <Title>{section.title}</Title>
           <Text html={section.html} />
           {section.phases && <Steps steps={section.phases} />}
+          {section.key === 'conclusion' && <Footer text={props.theme?.footer} />}
         </>
       )
   }
 }
 
 function Title({ children }: { children: ReactNode }) {
-  return <h2 className="font-serif text-2xl font-semibold text-prune-800">{children}</h2>
+  return <h2 className="font-doc-heading text-2xl font-semibold text-doc-heading">{children}</h2>
 }
 
 function Text({ html }: { html?: string }) {
-  return html ? <Prose html={html} /> : null
+  return html ? <Prose html={html} colors={THEMED_PROSE_COLORS} className="prose-headings:font-doc-heading" /> : null
+}
+
+/** A step's number (« 1 · », « ∞ »…), in the charter's accent. */
+function Mark({ children }: { children: ReactNode }) {
+  return <span className="font-doc-heading text-doc-accent">{children}</span>
 }
 
 function StepMark({ step }: { step: DocumentStep }) {
-  return step === 'co_management' ? <span className="font-serif text-leaf-700">{t('offers.co_management.number')}</span> : <PhaseMark phase={step} />
+  return <Mark>{step === 'co_management' ? t('offers.co_management.number') : t(`offers.phase_numbers.${step}`)}</Mark>
+}
+
+/** The charter's footer: the team's contacts, on the cover and at the end. */
+function Footer({ text }: { text?: string | null }) {
+  return text ? <p className="whitespace-pre-line border-t border-loam-100 pt-3 text-sm text-loam-500">{text}</p> : null
 }
 
 function stepLabel(step: DocumentStep) {
@@ -141,12 +157,13 @@ function Phases({ section }: { section: ClientSection }) {
   )
 }
 
-function Cover({ section, map, version, issuer, letterhead }: OfferVersionPageProps & { section: ClientSection }) {
+function Cover({ section, map, version, issuer, letterhead, theme }: OfferVersionPageProps & { section: ClientSection }) {
   const recipient = [version.measures.lead_name, map.address].filter(Boolean).join(' · ')
   return (
     <div className="space-y-6 py-6 print:flex print:min-h-[85vh] print:flex-col print:justify-center">
+      {theme?.coverUrl && <img src={theme.coverUrl} alt="" className="max-h-80 w-full rounded-xl object-cover print:max-h-[45vh]" />}
       {letterhead && <img src={letterhead.logoUrl} alt="" className="max-h-16 max-w-[12rem] object-contain object-left" />}
-      <h1 className="text-4xl text-prune-900">{section.title}</h1>
+      <h1 className="font-doc-heading text-4xl text-doc-heading">{section.title}</h1>
       <div className="space-y-1">
         <p className="font-medium text-loam-900">{issuer}</p>
         <Text html={section.html} />
@@ -155,6 +172,7 @@ function Cover({ section, map, version, issuer, letterhead }: OfferVersionPagePr
         {recipient && <p>{t('offers.version_page.recipient', { recipient })}</p>}
         <p>{t('offers.version_page.subtitle', { map: map.name, date: dateFormat.format(new Date(version.createdAt)) })} · {version.label}</p>
       </div>
+      <Footer text={theme?.footer} />
     </div>
   )
 }
@@ -185,7 +203,7 @@ function Scope({ section, version }: OfferVersionPageProps & { section: ClientSe
       <ul className="space-y-1 text-loam-800">{base.map(item)}</ul>
       {options.length > 0 && (
         <>
-          <p className="font-medium uppercase tracking-wide text-sm text-leaf-700">{t('offers.document.scope_options')}</p>
+          <p className="font-medium uppercase tracking-wide text-sm text-doc-accent">{t('offers.document.scope_options')}</p>
           <ul className="space-y-1 text-loam-800">{options.map(item)}</ul>
         </>
       )}
@@ -226,7 +244,7 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
         {phases.map((phase) => (
           <section key={phase.key} className="space-y-1.5">
             <h3 className="flex items-baseline justify-between gap-2 font-semibold text-loam-900">
-              <span><PhaseMark phase={phase.key} /> {phaseLabel(phase.key)}</span>
+              <span><StepMark step={phase.key} /> {phaseLabel(phase.key)}</span>
               <span className="tabular-nums">{euros(phase.price_tvac)}</span>
             </h3>
             <Row label={t('offers.version_page.fees')} hint={feesDetail} value={phase.prices.fees} />
@@ -245,7 +263,7 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
         {coManagement.enabled && coManagement.years && (
           <section className="space-y-1.5 border-t border-loam-100 pt-4">
             <h3 className="flex items-baseline justify-between gap-2 font-semibold text-loam-900">
-              <span><span className="font-serif text-leaf-700">{t('offers.co_management.number')}</span> {t('offers.co_management.title')}</span>
+              <span><Mark>{t('offers.co_management.number')}</Mark> {t('offers.co_management.title')}</span>
               <span className="tabular-nums">{euros(coManagement.amount_tvac)}</span>
             </h3>
             {coManagement.years.map((year) => (
@@ -259,9 +277,9 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
           </section>
         )}
 
-        <div className="flex items-baseline justify-between gap-2 border-t border-prune-200 pt-3">
-          <span className="font-semibold text-prune-900">{t('offers.version_page.total')}</span>
-          <span className="font-serif text-2xl font-semibold tabular-nums text-prune-900">{euros(result.totals.total_tvac)}</span>
+        <div className="flex items-baseline justify-between gap-2 border-t border-doc-heading/30 pt-3">
+          <span className="font-semibold text-doc-heading">{t('offers.version_page.total')}</span>
+          <span className="font-doc-heading text-2xl font-semibold tabular-nums text-doc-heading">{euros(result.totals.total_tvac)}</span>
         </div>
         {result.totals.total_max_tvac > result.totals.total_tvac && (
           <p className="text-sm text-loam-700">{t('offers.version_page.total_max', { amount: euros(result.totals.total_max_tvac) })}</p>
@@ -269,8 +287,8 @@ function Budget({ section, version }: OfferVersionPageProps & { section: ClientS
 
         {result.totals.design_share_pct != null && (
           <section className="space-y-1.5">
-            <div className="flex h-2.5 overflow-hidden rounded-full bg-leaf-300" aria-hidden>
-              <div className="bg-prune-500" style={{ width: `${Math.min(result.totals.design_share_pct, 100)}%` }} />
+            <div className="flex h-2.5 overflow-hidden rounded-full bg-doc-accent/40" aria-hidden>
+              <div className="bg-doc-heading" style={{ width: `${Math.min(result.totals.design_share_pct, 100)}%` }} />
             </div>
             <p className="text-sm text-loam-700">
               {t('offers.version_page.share', { design: euros(result.totals.design_tvac), share: Math.round(result.totals.design_share_pct), implementation: euros(result.totals.implementation_tvac) })}

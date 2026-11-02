@@ -10,20 +10,20 @@ module Teams
     def update
       file = params.dig(:team, :logo)
       unless file.is_a?(ActionDispatch::Http::UploadedFile)
-        return redirect_to team_path(@team), inertia: { errors: { logo: t("logos.errors.missing") } }, status: :see_other
+        return redirect_back_or_to team_path(@team), inertia: { errors: { logo: t("logos.errors.missing") } }, status: :see_other
       end
 
       @team.logo = file
       if @team.save
-        redirect_to team_path(@team), notice: t("logos.saved"), status: :see_other
+        redirect_back_or_to team_path(@team), notice: t("logos.saved"), status: :see_other
       else
-        redirect_to team_path(@team), inertia: { errors: { logo: @team.errors[:logo].first || @team.errors.full_messages.first } }, status: :see_other
+        redirect_back_or_to team_path(@team), inertia: { errors: { logo: @team.errors[:logo].first || @team.errors.full_messages.first } }, status: :see_other
       end
     end
 
     def destroy
       @team.logo.purge
-      redirect_to team_path(@team), notice: t("logos.removed"), status: :see_other
+      redirect_back_or_to team_path(@team), notice: t("logos.removed"), status: :see_other
     end
   end
 end

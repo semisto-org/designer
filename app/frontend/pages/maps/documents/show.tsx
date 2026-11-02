@@ -12,6 +12,8 @@ import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import type { Letterhead as LetterheadData, MapDocumentData } from '@/types/documents'
+import type { DocumentTheme } from '@/types/documentThemes'
+import { themeStyle } from '@/lib/documentTheme'
 import type { SharedProps } from '@/types'
 
 type Props = {
@@ -21,6 +23,8 @@ type Props = {
   checksum: string | null
   canEdit: boolean
   letterhead: LetterheadData
+  /** The « charte graphique » of the map's team, else of its owner (DocumentTheme). */
+  theme?: DocumentTheme
 }
 
 type Mode = 'read' | 'edit'
@@ -35,7 +39,7 @@ const SOLO_AFTER = 8000
  * saved as they go; printed or saved as PDF under the team's (or the
  * pro's) logo. Readers see the page change when the writers save.
  */
-export default function MarkdownDocument({ map, document: initial, content, checksum, canEdit, letterhead }: Props) {
+export default function MarkdownDocument({ map, document: initial, content, checksum, canEdit, letterhead, theme }: Props) {
   const [doc, setDoc] = useState(initial)
   const [text, setText] = useState(content)
   const latest = useRef(content)
@@ -178,7 +182,7 @@ export default function MarkdownDocument({ map, document: initial, content, chec
 
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 px-0 py-0 sm:px-4 sm:py-8 xl:grid-cols-[13rem_minmax(0,1fr)] print:block print:p-0">
         <div className="hidden xl:block print:hidden"><Contents root={page} version={`${mode}${text}${version}`} /></div>
-        <article className="mx-auto w-full max-w-3xl bg-[#fffdf8] px-5 py-8 shadow-[0_1px_2px_rgba(60,40,20,0.08),0_12px_40px_-12px_rgba(60,40,20,0.18)] ring-1 ring-loam-900/5 sm:rounded-2xl sm:px-12 sm:py-12 print:max-w-none print:rounded-none print:bg-white print:p-0 print:shadow-none print:ring-0">
+        <article style={themeStyle(theme)} className="doc-themed mx-auto w-full max-w-3xl bg-[#fffdf8] px-5 py-8 shadow-[0_1px_2px_rgba(60,40,20,0.08),0_12px_40px_-12px_rgba(60,40,20,0.18)] ring-1 ring-loam-900/5 sm:rounded-2xl sm:px-12 sm:py-12 print:max-w-none print:rounded-none print:bg-white print:p-0 print:shadow-none print:ring-0">
           <Letterhead letterhead={letterhead} mapName={map.name} writtenOn={doc.createdAt} />
 
           {mode === 'edit' && (
@@ -190,7 +194,7 @@ export default function MarkdownDocument({ map, document: initial, content, chec
               <span id="title-hint" className="mt-1 block text-sm text-loam-500">{t('documents.markdown.title_hint')}</span>
             </label>
           )}
-          {showTitle && <h1 className={clsx('mb-6 font-serif text-4xl text-loam-900', mode === 'edit' && 'hidden print:block')}>{doc.title}</h1>}
+          {showTitle && <h1 className={clsx('mb-6 font-doc-heading text-4xl text-doc-heading', mode === 'edit' && 'hidden print:block')}>{doc.title}</h1>}
 
           {notice && (
             <p role="status" className="mb-6 rounded-xl bg-loam-100 px-4 py-3 text-sm text-loam-700 print:hidden">{notice}</p>
@@ -217,6 +221,7 @@ export default function MarkdownDocument({ map, document: initial, content, chec
           )}
           {edited && <p className="mt-12 border-t border-dashed border-loam-300 pt-3 text-sm text-loam-500 print:hidden">{edited}</p>}
           {!canEdit && <p className="mt-6 rounded-lg bg-loam-100 px-3 py-2 text-sm text-loam-600 print:hidden">{t('documents.markdown.read_only')}</p>}
+          {theme?.footer && <p className="mt-12 hidden whitespace-pre-line border-t border-loam-200 pt-3 text-sm text-loam-500 print:block">{theme.footer}</p>}
         </article>
       </div>
     </div>
