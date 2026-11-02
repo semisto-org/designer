@@ -55,7 +55,7 @@ class OfferDocumentTest < ActiveSupport::TestCase
     keys = document.sections.pluck(:key)
     assert_includes keys, "co_management"
     assert_equal %w[pre_design design], document.sections.find { _1[:key] == "phases" }[:phases].pluck(:key)
-    assert_equal %w[pre_design design co_management], document.sections.find { _1[:key] == "approach" }[:phases].pluck(:key)
+    assert_equal %w[pre_design design], document.sections.find { _1[:key] == "approach" }[:phases].pluck(:key), "co-management is not a step"
   end
 
   test "only real changes are kept, and raw HTML never reaches the page" do
@@ -86,5 +86,18 @@ class OfferDocumentTest < ActiveSupport::TestCase
     assert_includes xml, %(<w:numId w:val="1"/>)
     assert_includes xml, "Total TVAC"
     assert_match(/\Aoffre-.+-v1\.docx\z/, export.filename)
+  end
+
+  test "an offer saved before the newest keys still opens (project management, co-management, document)" do
+    built = offer
+    built.save!
+    old = built.inputs.except("co_management", "document", "supplies", "custom_supplies", "phases_off")
+    old["settings"] = old["settings"].except("project_management_pct")
+    built.update_column(:inputs, old)
+    reloaded = Offer.find(built.id)
+    assert_equal 10, reloaded.inputs.dig("settings", "project_management_pct")
+    assert reloaded.result["totals"]["total_tvac"].positive?
+    assert_equal false, reloaded.inputs.dig("co_management", "enabled")
+    assert document_of(reloaded).sections.any?
   end
 end

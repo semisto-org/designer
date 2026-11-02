@@ -8,7 +8,7 @@ module Mcp
     class UpdateTasks < Base
       include TaskHelpers
 
-      FIELDS = %w[title notes due_on assignee_id assignee_email tags completed list_id feature_ids numbers].freeze
+      FIELDS = %w[title notes due_on starts_on forecast assignee_id assignee_email tags completed list_id feature_ids numbers].freeze
 
       requirement :write
       arguments(
@@ -25,6 +25,8 @@ module Mcp
                 notes: { type: [ "string", "null" ], maxLength: Task::NOTES_MAX_LENGTH, description: :task_notes },
                 list_id: { type: "integer", minimum: 1, description: :move_to_list },
                 due_on: { type: [ "string", "null" ], format: "date", description: :due_on_change },
+                starts_on: { type: "string", format: "date", description: :starts_on_change },
+                forecast: { type: "boolean", description: :forecast_change },
                 assignee_id: { type: [ "integer", "null" ], minimum: 1, description: :assignee_change },
                 assignee_email: { type: [ "string", "null" ], format: "email", description: :assignee_email_change },
                 feature_ids: { type: "array", maxItems: Task::MAX_FEATURES, uniqueItems: true, items: { type: "integer", minimum: 1 }, description: :task_feature_ids_change },
@@ -76,6 +78,11 @@ module Mcp
             task.title = changes["title"] if changes.key?("title")
             task.notes = changes["notes"] if changes.key?("notes")
             task.due_on = parse_due_on(changes["due_on"]) if changes.key?("due_on")
+            if changes.key?("starts_on") || changes.key?("forecast")
+              raise Invalid, t("task_errors.not_a_season_step") unless task.step_kind
+              task.starts_on = parse_starts_on(changes["starts_on"]) if changes.key?("starts_on")
+              task.forecast = changes["forecast"] if changes.key?("forecast")
+            end
             if changes.key?("assignee_email")
               task.invitee_email = changes["assignee_email"]
               task.assignee_id = nil if changes["assignee_email"].nil? && !changes.key?("assignee_id")

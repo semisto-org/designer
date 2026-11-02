@@ -1,5 +1,6 @@
 require "test_helper"
 require "test_helpers/mcp_test_helper"
+require "test_helpers/teams_test_helper"
 
 # The user's AI reads and keeps the project's tasks and its library of
 # documents, with the user's role on the map.
@@ -34,6 +35,37 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
 
     _, error = call_tool(@stranger, "list_tasks", { map_id: @map.id })
     assert error
+  end
+
+  test "an AI pencils in season steps of a team project as forecasts, reads them back and confirms one" do
+    team = make_team("Design Labs", admin: users(:michael))
+    @map.update!(organization: team, phase: "offer")
+    data, error = call_tool(@owner, "create_tasks", { map_id: @map.id, tasks: [
+      { title: "Design", due_on: "2027-01-31", season_step: { kind: "design", starts_on: "2026-12-01" } },
+      { title: "Plantation", due_on: "2027-02-14", season_step: { kind: "plant", starts_on: "2027-02-01", forecast: false } },
+      { title: "Sans fin", season_step: { kind: "plant", starts_on: "2027-02-01" } },
+      { title: "Mauvais début", due_on: "2027-02-14", season_step: { kind: "plant", starts_on: "1er février" } }
+    ] })
+    refute error
+    assert_equal 2, data["created"].size
+    design, plant = data["created"]
+    assert_equal({ "kind" => "design", "starts_on" => "2026-12-01", "ends_on" => "2027-01-31", "forecast" => true }, design["season_step"])
+    refute plant.dig("season_step", "forecast")
+    assert_equal [ 2, 3 ], data["rejected"].map { _1["index"] }
+    assert_equal TaskList::SEASON_KEY, Task.find(design["id"]).task_list.key
+
+    map_data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    season = map_data["team_season"]
+    assert_equal "offer", season["stage"]
+    assert_equal [ [ "design", true ], [ "plant", false ] ], season["steps"].map { _1.values_at("kind", "forecast") }
+
+    data, error = call_tool(@owner, "update_tasks", { map_id: @map.id, tasks: [
+      { task_id: design["id"], forecast: false, starts_on: "2026-12-08" },
+      { task_id: @map.tasks.where(step_kind: nil).first&.id || 0, forecast: false }
+    ] })
+    refute error
+    assert_equal({ "kind" => "design", "starts_on" => "2026-12-08", "ends_on" => "2027-01-31", "forecast" => false }, data["updated"].sole["season_step"])
+    assert_equal 1, data["rejected"].size
   end
 
   test "list_tasks filters by status, person and tag" do

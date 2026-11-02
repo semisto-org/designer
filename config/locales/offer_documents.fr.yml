@@ -13,12 +13,11 @@ fr:
         body: "Au plaisir de construire ce projet avec vous,"
       approach:
         title: "Un jardin-forêt adapté à vos besoins"
-        body: "Nous vous accompagnons dans vos démarches, réflexions et choix en élaborant votre jardin-forêt en quatre étapes distinctes."
+        body: "Nous vous accompagnons dans vos démarches, réflexions et choix en élaborant votre jardin-forêt en trois étapes distinctes."
         phases:
           pre_design: "Rêver le projet ensemble de manière holistique, définir sa raison d’être, étudier le terrain et arrêter des objectifs et un plan d’ensemble cohérent."
           design: "Concevoir votre jardin-forêt en détail et préparer la mise en œuvre. Zoom sur des éléments spécifiques tels que l’aménagement d’une mare, les plans de plantation, etc."
           implementation: "Préparer les espaces et implanter les végétaux ensemble, en plusieurs phases maîtrisables."
-          co_management: "Assurer, avec vous, le suivi régulier de votre jardin-forêt pour lui donner toutes les chances de réussite."
       scope:
         title: "Périmètre d’intervention"
         body: ""
@@ -145,7 +144,7 @@ fr:
       blocks:
         cover: "Page de garde"
         letter: "Lettre « Votre projet »"
-        approach: "L’approche en quatre étapes"
+        approach: "L’approche en trois étapes"
         scope: "Périmètre"
         phases: "Une page par étape"
         co_management: "Co-gestion"

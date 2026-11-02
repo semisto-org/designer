@@ -49,6 +49,7 @@ module Mcp
           exports: exports(map),
           publication: publication(map),
           implementation: implementation(map),
+          team_season: team_season(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           permissions: {
@@ -158,6 +159,23 @@ module Mcp
             plan_pdf_url: "#{map_url(map)}?export=plan",
             book_pdf_url: "#{map_url(map)}?export=book",
             pdf_in_plan: Entitlements.for_map(map).pdf_export?
+          }
+        end
+
+        # A team project on the team board: its stage and the steps of
+        # « La saison qui vient » from the start of this month, forecasts
+        # (an offer not signed yet) included. nil off a team or for its places.
+        def team_season(map)
+          return nil unless map.organization_id && !map.own_place
+          from = Date.current.beginning_of_month
+          steps = map.tasks.steps.where(due_on: from..).order(:starts_on)
+          {
+            stage: map.board_phase, promised_on: map.promised_on&.iso8601,
+            board_url: "#{origin}/teams/#{map.organization_id}/board",
+            steps: steps.map do |task|
+              { task_id: task.id, kind: task.step_kind, title: task.title, starts_on: task.starts_on.iso8601,
+                ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
+            end
           }
         end
 

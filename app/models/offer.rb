@@ -62,11 +62,22 @@ class Offer < ApplicationRecord
     super(Inputs.normalize(value, pricing))
   end
 
+  # Always read through Offer::Inputs: an offer saved before a key existed
+  # (project_management_pct, co_management, document…) gets its default,
+  # instead of a nil deep in the estimator.
+  def inputs
+    raw = super
+    @normalized_inputs = nil unless @normalized_raw.equal?(raw)
+    @normalized_raw = raw
+    @normalized_inputs ||= Inputs.normalize(raw, pricing)
+  end
+
   # Another pricing: rates start again from it (the team keeps its number
   # of designers), everything else the team did stays.
   def offer_template=(template)
     super
-    return if new_record? && inputs.blank?
+    @normalized_inputs = nil
+    return if new_record? && self[:inputs].blank?
     kept = inputs.to_h
     designers = kept.dig("settings", "designers")
     self.inputs = kept.merge("settings" => { "designers" => designers })

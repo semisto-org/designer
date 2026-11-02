@@ -113,7 +113,7 @@ function stepLabel(step: DocumentStep) {
   return step === 'co_management' ? t('offers.co_management.title') : phaseLabel(step)
 }
 
-/** The four steps, or the deliverables step by step. */
+/** The three steps, or the deliverables step by step. */
 function Steps({ steps }: { steps: NonNullable<ClientSection['phases']> }) {
   return (
     <div className="space-y-4">
@@ -308,14 +308,31 @@ function InternalDetails({ version }: OfferVersionPageProps) {
   return (
     <details className="rounded-2xl bg-loam-50 p-4 text-sm ring-1 ring-inset ring-loam-200 print:hidden">
       <summary className="cursor-pointer font-medium text-loam-800">{t('offers.version_page.internal_title')}</summary>
-      <ul className="mt-2 space-y-1 text-loam-700">
-        {version.result.phases.map((phase) => (
-          <li key={phase.key} className="flex justify-between gap-2">
-            <span>{phaseLabel(phase.key)} · {formatNumber(phase.hours_min)} h → {formatNumber(phase.hours_max)} h</span>
-            <span className="tabular-nums">{euros(phase.total_min)} → {euros(phase.total_max)} HTVA</span>
-          </li>
-        ))}
-      </ul>
+      <p className="mt-2 text-loam-600">{t('offers.version_page.internal_help')}</p>
+      <table className="mt-2 w-full text-left text-loam-700">
+        <thead className="text-loam-500">
+          <tr>
+            <th className="py-1 font-normal">{t('offers.version_page.internal_step')}</th>
+            <th className="py-1 font-normal">{t('offers.version_page.internal_hours')}</th>
+            <th className="py-1 text-right font-normal">{t('offers.version_page.internal_min')}</th>
+            <th className="py-1 text-right font-normal">{t('offers.version_page.internal_max')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {version.result.phases.map((phase) => (
+            <tr key={phase.key} className="border-t border-loam-200">
+              <td className="py-1">{phaseLabel(phase.key)}</td>
+              <td className="py-1 tabular-nums">
+                {phase.hours_max > phase.hours_min
+                  ? t('offers.version_page.internal_hours_range', { min: formatNumber(phase.hours_min), max: formatNumber(phase.hours_max) })
+                  : `${formatNumber(phase.hours_min)} h`}
+              </td>
+              <td className="py-1 text-right tabular-nums">{euros(phase.total_min)}</td>
+              <td className="py-1 text-right tabular-nums">{euros(phase.total_max)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       {version.inputs.notes && <p className="mt-2 whitespace-pre-line text-loam-600">{version.inputs.notes}</p>}
     </details>
   )
