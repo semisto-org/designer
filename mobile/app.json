@@ -52,7 +52,7 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "Semisto Terranova montre où tu es sur le plan de ton terrain et place tes photos, relevés et plantations.",
-          "locationAlwaysAndWhenInUsePermission": "Semisto Terranova continue d'enregistrer ta trace quand l'écran est éteint, pendant que tu marches le long d'une haie ou d'une limite.",
+          "locationAlwaysAndWhenInUsePermission": "Semisto Terranova continue d'enregistrer ta trace quand l'écran est éteint, pendant que tu marches le long d'une haie, d'une limite ou pendant une visite de terrain.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
@@ -71,6 +71,14 @@
         {
           "cameraPermission": "Semisto Terranova photographie et filme ton terrain et tes plantes pour les rattacher à la carte.",
           "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Semisto Terranova enregistre ce qui se dit pendant ta visite de terrain, quand tu le lui demandes, et le range dans les documents de ta carte.",
+          "enableBackgroundRecording": true,
+          "enableBackgroundPlayback": false
         }
       ],
       "expo-font",

@@ -1,7 +1,8 @@
 // The end of a site visit: what was noted, theme by theme, and the open
 // questions, ticked to become tasks about their note. Closing sends the
 // visit through the outbox; the server files its report in the map's
-// documents (SiteVisit), grouped like this screen.
+// documents (SiteVisit), grouped like this screen, with the sound of the
+// walk beside it when it was recorded, and its track.
 import { router, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -10,7 +11,9 @@ import { featureTitle } from '@/lib/elements'
 import { haptics } from '@/lib/haptics'
 import { t } from '@/lib/i18n'
 import { visits, useVisit } from '@/lib/visit'
-import { countByTheme, questionsOf, visitNotes } from '@/lib/visit-core'
+import { clock, countByTheme, questionsOf, visitDay, visitNotes, walked } from '@/lib/visit-core'
+import { visitAudio } from '@/lib/visitAudio'
+import { visitTrack } from '@/lib/visitTrack'
 import { useMapBundle } from '@/state/useMapBundle'
 import { Icon } from '@/ui/Icon'
 import { Body, Button, MAX_FONT_SCALE } from '@/ui/kit'
@@ -25,6 +28,9 @@ export default function VisitEnd() {
   const notes = useMemo(() => (bundle && visit ? visitNotes(bundle, visit.key) : []), [bundle, visit])
   const questions = questionsOf(notes)
   const [unticked, setUnticked] = useState<Set<number>>(new Set())
+  const [closing, setClosing] = useState(false)
+  const sound = visit?.audio ? visitAudio.state() : null
+  const meters = visit ? visitTrack.meters(visit.key) : 0
 
   const toggle = (id: number) => setUnticked((all) => {
     const next = new Set(all)
@@ -33,10 +39,14 @@ export default function VisitEnd() {
     return next
   })
 
-  const close = () => {
-    visits.close(mapId, questions.map((q) => q.id).filter((id) => !unticked.has(id)))
+  const close = async () => {
+    if (!visit) return
+    setClosing(true)
+    const day = visitDay(visit.startedAt)
+    const withSound = !!visit.audio
+    await visits.close(mapId, questions.map((q) => q.id).filter((id) => !unticked.has(id)))
     haptics.success()
-    toast(t('mobile.visit.closed_title'), { body: t('mobile.visit.closed') })
+    toast(t('mobile.visit.closed_title'), { body: t(withSound ? 'mobile.visit.closed_with_sound' : 'mobile.visit.closed', { date: day }) })
     router.back()
   }
 
@@ -53,6 +63,30 @@ export default function VisitEnd() {
           <Text style={s.count} maxFontSizeMultiplier={1.3}>{count}</Text>
         </View>
       ))}
+
+      {(sound || meters > 0) && (
+        <>
+          <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.recorded')}</Text>
+          {sound && visit && (
+            <View style={s.row} accessible>
+              <Icon name="sound" size={22} color={colors.prune700} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.record.sound')}{sound.live ? ` · ${clock(sound.seconds)}` : ''}</Text>
+                <Text style={s.meta} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.end_sound', { date: visitDay(visit.startedAt) })}</Text>
+              </View>
+            </View>
+          )}
+          {meters > 0 && (
+            <View style={s.row} accessible>
+              <Icon name="walk" size={22} color={colors.prune700} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.record.walk')} · {walked(meters)}</Text>
+                <Text style={s.meta} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.visit.end_walk')}</Text>
+              </View>
+            </View>
+          )}
+        </>
+      )}
 
       {questions.length > 0 && (
         <>
@@ -73,7 +107,7 @@ export default function VisitEnd() {
         </>
       )}
 
-      <Button icon="check" label={t('mobile.visit.close')} onPress={close} disabled={!visit} style={{ marginTop: space.lg }} />
+      <Button icon="check" label={t('mobile.visit.close')} onPress={() => void close()} busy={closing} disabled={!visit || closing} style={{ marginTop: space.lg }} />
       <Button variant="ghost" label={t('mobile.visit.keep_going')} onPress={() => router.back()} />
     </ScrollView>
   )
@@ -87,4 +121,5 @@ const s = StyleSheet.create({
   rowTitle: { flex: 1, fontSize: 16, fontFamily: fonts.medium, color: colors.loam900 },
   count: { ...type.label, color: colors.prune700 },
   question: { flex: 1, ...type.body, color: colors.loam900 },
+  meta: { ...type.meta, color: colors.loam600 },
 })

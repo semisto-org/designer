@@ -38,7 +38,9 @@ class MapDocument < ApplicationRecord
     "text" => %w[doc docx odt rtf txt md],
     "sheet" => %w[xls xlsx ods csv],
     "slides" => %w[ppt pptx odp],
-    "plan" => %w[dwg dxf kml kmz gpx geojson]
+    "plan" => %w[dwg dxf kml kmz gpx geojson],
+    # A walk recorded with the phone (SiteVisit#attach_audio!), an interview…
+    "audio" => %w[m4a mp3 wav aac ogg oga opus caf amr flac]
   }.freeze
 
   belongs_to :map
@@ -176,10 +178,12 @@ class MapDocument < ApplicationRecord
     file.attach(io: StringIO.new(content.to_s), filename:, content_type: "text/markdown", identify: false)
   end
 
-  # What the browser can show as is: an image (its variants) or a PDF.
+  # What the browser can show as is: an image (its variants), a PDF, or a
+  # sound it plays (the visit recorded with the phone).
   def preview
     return nil unless file.attached?
     return "image" if PREVIEW_IMAGE_TYPES.include?(file.blob.content_type)
+    return "audio" if kind == "audio" && file.blob.content_type.to_s.start_with?("audio/")
     "pdf" if file.blob.content_type == "application/pdf"
   end
 

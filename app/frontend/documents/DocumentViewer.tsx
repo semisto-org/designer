@@ -80,6 +80,14 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <img src={doc.previewUrl} alt={doc.title} className="max-h-full max-w-full object-contain" />
         )}
         {doc.preview === 'pdf' && doc.previewUrl && <PdfPages key={doc.id} url={doc.previewUrl} title={doc.title} />}
+        {doc.preview === 'audio' && doc.previewUrl && (
+          <div className="w-full max-w-md text-center">
+            <DocumentIcon kind="audio" filename={doc.filename} className="mx-auto h-24 w-24" />
+            <p className="mt-4 text-lg">{doc.title}</p>
+            {doc.description && <p className="mt-1 text-sm text-loam-300">{doc.description}</p>}
+            <audio key={doc.id} src={doc.previewUrl} controls preload="metadata" className="mt-5 w-full" aria-label={doc.title} />
+          </div>
+        )}
         {doc.form && (
           <div className="max-h-full w-full max-w-2xl overflow-y-auto rounded-2xl">
             <FormAnswers fields={doc.form.fields} title={doc.form.formName} className="!px-6 !py-5" />

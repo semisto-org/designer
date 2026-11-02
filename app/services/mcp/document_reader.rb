@@ -27,6 +27,7 @@ module Mcp
     end
 
     def call
+      return Result.unreadable("audio") if @document.kind == "audio"
       return Result.unreadable("format") unless self.class.readable?(@document)
       return Result.unreadable("too_large") if @document.file.blob.byte_size > MAX_SOURCE_BYTES
       return image if @document.kind == "image"

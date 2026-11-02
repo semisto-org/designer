@@ -29,7 +29,9 @@ export type Op = Base & (
   | { type: 'createStorageReading'; featureId: FeatureRef; reading: NewStorageReading }
   | { type: 'createComment'; featureId: FeatureRef | null; body: string }
   | { type: 'createBioindicator'; observation: NewBioindicator; photo: string }
-  | { type: 'closeVisit'; key: string; startedAt: string; endedAt: string; questionIds: FeatureRef[] }
+  | { type: 'closeVisit'; key: string; startedAt: string; endedAt: string; questionIds: FeatureRef[]; track?: [number, number][] }
+  // The sound of the walk, filed in the documents; queued just before closeVisit so the report can name it.
+  | { type: 'uploadVisitAudio'; key: string; startedAt: string; file: string; seconds: number | null }
 )
 
 /** A wild plant noted from its photo (identified by Pl@ntNet, confirmed by the person). */
@@ -141,6 +143,7 @@ export type Transport = {
   createComment(mapId: number, featureId: number | null, body: string, key: string): Promise<void>
   createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>, key: string): Promise<void>
   closeVisit(mapId: number, op: Extract<Op, { type: 'closeVisit' }>, questionIds: number[], key: string): Promise<void>
+  uploadVisitAudio(mapId: number, op: Extract<Op, { type: 'uploadVisitAudio' }>, key: string): Promise<void>
 }
 
 type HttpError = { status: number; body?: Record<string, unknown> | null; message?: string }
@@ -222,6 +225,7 @@ export function filesOf(op: Op): string[] {
   if (op.type === 'uploadPhoto') return [op.file]
   if (op.type === 'createObservation' && op.photo) return [op.photo]
   if (op.type === 'createBioindicator') return [op.photo]
+  if (op.type === 'uploadVisitAudio') return [op.file]
   return []
 }
 
@@ -296,6 +300,8 @@ async function send(state: OutboxState, op: Op, transport: Transport, versions: 
     case 'closeVisit':
       // A question whose note the server refused is left out, not the whole visit.
       return transport.closeVisit(op.mapId, op, op.questionIds.map((ref) => resolveId(state, ref)!).filter((id) => id > 0), op.id)
+    case 'uploadVisitAudio':
+      return transport.uploadVisitAudio(op.mapId, op, op.id)
   }
 }
 

@@ -1,12 +1,12 @@
 import clsx from 'clsx'
-import { File, FileArchive, FileImage, FileSpreadsheet, FileText, Map as MapIcon, Presentation } from 'lucide-react'
+import { File, FileArchive, FileAudio, FileImage, FileSpreadsheet, FileText, Map as MapIcon, Presentation } from 'lucide-react'
 import type { DocumentKind } from '@/types/documents'
 
-const ICONS = { pdf: FileText, image: FileImage, text: FileText, sheet: FileSpreadsheet, slides: Presentation, plan: MapIcon, other: File }
+const ICONS = { pdf: FileText, image: FileImage, text: FileText, sheet: FileSpreadsheet, slides: Presentation, plan: MapIcon, audio: FileAudio, other: File }
 // Each kind its own ink, like labels on a field notebook's pockets.
 const INKS: Record<DocumentKind, string> = {
   pdf: 'text-clay-600 bg-clay-50', image: 'text-leaf-700 bg-leaf-50', text: 'text-prune-700 bg-prune-50',
-  sheet: 'text-leaf-700 bg-leaf-50', slides: 'text-humus-700 bg-humus-50', plan: 'text-lichen-700 bg-lichen-50', other: 'text-loam-600 bg-loam-100',
+  sheet: 'text-leaf-700 bg-leaf-50', slides: 'text-humus-700 bg-humus-50', plan: 'text-lichen-700 bg-lichen-50', audio: 'text-prune-700 bg-prune-50', other: 'text-loam-600 bg-loam-100',
 }
 
 export function DocumentIcon({ kind, filename, className }: { kind: DocumentKind; filename?: string | null; className?: string }) {

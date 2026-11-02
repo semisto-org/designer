@@ -32,6 +32,7 @@ import { useOnline, useOutbox, useSendProgress } from '@/state/sync'
 import {
   AROUND_RADIUS, FeatureBody, FeatureTop, NoteTop, RestBody, RestTop, TourTop, VisitBody, VisitTop, whereLabel, type NoteChoice, type QuickAction,
 } from '@/terrain/SheetContent'
+import { VisitRecord } from '@/terrain/VisitRecord'
 import { chooseMedia } from '@/ui/chooseMedia'
 import { Icon } from '@/ui/Icon'
 import { Body, Button, IconButton, Notice } from '@/ui/kit'
@@ -288,7 +289,7 @@ export default function Terrain() {
                   gestures={quickActions(selected)} onClose={unselect} />
               : visit && editable
                 ? <VisitTop visit={visit} count={visitNoted.length} onTheme={(theme) => go('/maps/[id]/visit-note', theme ? { theme } : {})}
-                    onEnd={() => go('/maps/[id]/visit-end')} />
+                    onEnd={() => go('/maps/[id]/visit-end')} recorder={<VisitRecord mapId={mapId} visit={visit} />} />
                 : noting
                   ? <NoteTop onChoose={note} onClose={() => setNoting(false)} />
                   : <RestTop editable={editable} onNote={() => { setNoting(true); setLevel(0) }} onVisit={startVisit} />}
