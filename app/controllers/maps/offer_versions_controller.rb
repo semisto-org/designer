@@ -9,17 +9,17 @@ module Maps
     before_action :set_version, except: :create
 
     def show
-      render inertia: "maps/offers/version", props: {
-        map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2),
-        team: @map.organization && { name: @map.organization.name },
-        # Who makes the offer, at the top of the page the client reads.
-        issuer: @map.organization&.name || @map.owner.display_name,
-        letterhead: @map.letterhead,
-        version: version_json(@version).merge(
-          inputs: @version.inputs, measures: @version.measures, result: @version.result,
-          terms: Offer::Pricing.new(@version.pricing.presence || Offer::Pricing::SEMISTO).terms
-        )
-      }
+      document = Offer::ClientDocument.for(@version, map: @map, issuer: offer_issuer)
+      respond_to do |format|
+        format.html do
+          render inertia: "maps/offers/version", props: client_document_props(document).merge(
+            version: version_json(@version).merge(
+              inputs: @version.inputs, measures: @version.measures, result: @version.result, terms: document.terms
+            )
+          )
+        end
+        format.docx { send_docx(document, label: @version.label, date: @version.created_at.to_date) }
+      end
     end
 
     def create

@@ -1,60 +1,228 @@
 import { Head, Link } from '@inertiajs/react'
-import { ArrowLeft, Printer } from 'lucide-react'
+import clsx from 'clsx'
+import { ArrowLeft, FileText, Printer } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Prose } from '@/components/help/Prose'
 import { phaseLabel, PhaseMark, euros, lineLabel } from '@/components/offers/shared'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
-import type { OfferTerms, OfferVersionPageProps } from '@/types/offers'
+import type { ClientSection, DocumentStep, OfferTerms, OfferVersionPageProps } from '@/types/offers'
 
 const dateFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })
 
 /**
- * A saved version as the client will read it: the budget phase by phase,
- * plants and supplies, co-management, the total, how it is billed and what
- * the price covers. Frozen: it shows the version's own numbers, whatever
- * the map has become since. Printable.
+ * The client document of an offer: a saved version, or the working offer
+ * in preview. Its blocks come from the account's price scale and the
+ * offer (Offer::ClientDocument): cover, letter, approach, scope, one page
+ * per phase, co-management, the software, deliverables, the budget and a
+ * conclusion. A saved version is frozen: it shows its own numbers,
+ * whatever the map has become since. Printed (or saved as PDF) one block
+ * per page; also downloadable as a Word file.
  */
-export default function OfferVersion({ map, version, issuer, letterhead }: OfferVersionPageProps) {
-  const { result, inputs, measures } = version
+export default function OfferVersion(props: OfferVersionPageProps) {
+  const { map, version, document, preview } = props
+  const docxUrl = preview ? `/maps/${map.id}/offer/preview.docx` : `/maps/${map.id}/offer/versions/${version.number}.docx`
+
+  return (
+    <div className="offer-document mx-auto max-w-3xl space-y-6">
+      <Head title={t('offers.version_page.title', { label: version.label })} />
+      <header className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <Link href={`/maps/${map.id}/offer`} className="inline-flex items-center gap-1 text-sm text-loam-500 hover:text-loam-900">
+          <ArrowLeft className="h-4 w-4" />{t('offers.version_page.back')}
+        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm" title={t('offers.document.pdf_hint')} onClick={() => window.print()}>
+            <Printer className="h-4 w-4" aria-hidden />{t('offers.document.download_pdf')}
+          </Button>
+          {/* A file, not a page: a plain link, outside Inertia. */}
+          <a href={docxUrl} download className={buttonClass('secondary', 'sm')}>
+            <FileText className="h-4 w-4" aria-hidden />{t('offers.document.download_word')}
+          </a>
+        </div>
+      </header>
+      {preview && (
+        <p className="rounded-xl bg-humus-50 p-3 text-sm text-humus-900 ring-1 ring-inset ring-humus-200 print:hidden">{t('offers.document.preview_banner')}</p>
+      )}
+
+      {document.sections.map((section, index) => (
+        <Page key={section.key} first={index === 0}>
+          <Section section={section} {...props} />
+        </Page>
+      ))}
+
+      <InternalDetails {...props} />
+    </div>
+  )
+}
+
+/** One block: a card on screen, a page on paper. */
+function Page({ first, children }: { first: boolean; children: ReactNode }) {
+  return (
+    <Card className={clsx('space-y-4 print:p-0 print:shadow-none print:ring-0', !first && 'print:break-before-page')}>
+      {children}
+    </Card>
+  )
+}
+
+function Section({ section, ...props }: OfferVersionPageProps & { section: ClientSection }) {
+  switch (section.key) {
+    case 'cover': return <Cover section={section} {...props} />
+    case 'scope': return <Scope section={section} {...props} />
+    case 'budget': return <Budget section={section} {...props} />
+    case 'phases': return <Phases section={section} />
+    case 'co_management':
+      return (
+        <>
+          <Title><span className="text-leaf-700">{t('offers.co_management.number')}</span> {section.title}</Title>
+          <Text html={section.html} />
+        </>
+      )
+    case 'letter':
+      return (
+        <>
+          <Title>{section.title}</Title>
+          <Text html={section.html} />
+          <Text html={section.closingHtml} />
+        </>
+      )
+    default:
+      return (
+        <>
+          <Title>{section.title}</Title>
+          <Text html={section.html} />
+          {section.phases && <Steps steps={section.phases} />}
+        </>
+      )
+  }
+}
+
+function Title({ children }: { children: ReactNode }) {
+  return <h2 className="font-serif text-2xl font-semibold text-prune-800">{children}</h2>
+}
+
+function Text({ html }: { html?: string }) {
+  return html ? <Prose html={html} /> : null
+}
+
+function StepMark({ step }: { step: DocumentStep }) {
+  return step === 'co_management' ? <span className="font-serif text-leaf-700">{t('offers.co_management.number')}</span> : <PhaseMark phase={step} />
+}
+
+function stepLabel(step: DocumentStep) {
+  return step === 'co_management' ? t('offers.co_management.title') : phaseLabel(step)
+}
+
+/** The four steps, or the deliverables step by step. */
+function Steps({ steps }: { steps: NonNullable<ClientSection['phases']> }) {
+  return (
+    <div className="space-y-4">
+      {steps.filter((step) => step.html).map((step) => (
+        <section key={step.key} className="space-y-1">
+          <h3 className="font-semibold text-loam-900"><StepMark step={step.key} /> {stepLabel(step.key)}</h3>
+          <Text html={step.html} />
+        </section>
+      ))}
+    </div>
+  )
+}
+
+/** One page per phase in the offer. */
+function Phases({ section }: { section: ClientSection }) {
+  return (
+    <div className="space-y-8">
+      {(section.phases ?? []).map((phase, index) => (
+        <section key={phase.key} className={clsx('space-y-3', index > 0 && 'border-t border-loam-100 pt-6 print:break-before-page print:border-0 print:pt-0')}>
+          <Title><StepMark step={phase.key} /> {stepLabel(phase.key)}</Title>
+          <Text html={phase.html} />
+        </section>
+      ))}
+    </div>
+  )
+}
+
+function Cover({ section, map, version, issuer, letterhead }: OfferVersionPageProps & { section: ClientSection }) {
+  const recipient = [version.measures.lead_name, map.address].filter(Boolean).join(' · ')
+  return (
+    <div className="space-y-6 py-6 print:flex print:min-h-[85vh] print:flex-col print:justify-center">
+      {letterhead && <img src={letterhead.logoUrl} alt="" className="max-h-16 max-w-[12rem] object-contain object-left" />}
+      <h1 className="text-4xl text-prune-900">{section.title}</h1>
+      <div className="space-y-1">
+        <p className="font-medium text-loam-900">{issuer}</p>
+        <Text html={section.html} />
+      </div>
+      <div className="space-y-0.5 text-loam-600">
+        {recipient && <p>{t('offers.version_page.recipient', { recipient })}</p>}
+        <p>{t('offers.version_page.subtitle', { map: map.name, date: dateFormat.format(new Date(version.createdAt)) })} · {version.label}</p>
+      </div>
+    </div>
+  )
+}
+
+function Scope({ section, version }: OfferVersionPageProps & { section: ClientSection }) {
+  const scope = version.measures.scope.filter((item) => !item.missing)
+  const [base, options] = [scope.filter((item) => !item.option), scope.filter((item) => item.option)]
+  const phases = version.result.phases.filter((phase) => phase.enabled !== false)
+  // Work that only comes with an extension (the pond, its supplies…): the client sees it before agreeing to it.
+  const optionLines = phases.flatMap((phase) => [...phase.lines, ...phase.expenses].filter((line) => line.option && !line.disabled).map((line) => ({ line, phase: phase.key })))
+  const item = (entry: (typeof scope)[number]) => (
+    <li key={entry.id} className="flex justify-between gap-2">
+      <span>
+        {t(`offers.planting_types.${entry.planting_type}`)}
+        {/* Versions saved before the default label was dropped still carry it: it says nothing to the client. */}
+        {entry.label && entry.label !== t('offers.scope.manual_label') && <span className="text-loam-500"> · {entry.label}</span>}
+      </span>
+      <span className="tabular-nums text-loam-500">
+        {entry.measure_kind === 'area' ? formatArea(entry.measure) : formatLength(entry.measure)}
+        {entry.plants_total > 0 && ` · ${formatNumber(entry.plants_total)} ${t('offers.scope.plants').toLowerCase()}`}
+      </span>
+    </li>
+  )
+  return (
+    <>
+      <Title>{section.title}</Title>
+      <Text html={section.html} />
+      <ul className="space-y-1 text-loam-800">{base.map(item)}</ul>
+      {options.length > 0 && (
+        <>
+          <p className="font-medium uppercase tracking-wide text-sm text-leaf-700">{t('offers.document.scope_options')}</p>
+          <ul className="space-y-1 text-loam-800">{options.map(item)}</ul>
+        </>
+      )}
+      {optionLines.length > 0 && (
+        <>
+          <p className="font-medium text-loam-800">{t('offers.version_page.option_work')}</p>
+          <ul className="space-y-1 text-sm text-loam-700">
+            {optionLines.map(({ line, phase }) => (
+              <li key={`${phase}-${line.key}`}>{lineLabel(line)} <span className="text-loam-500">· {phaseLabel(phase)}</span></li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  )
+}
+
+/** The budget phase by phase, plants and supplies, co-management, the total, how it is billed and what the price covers. */
+function Budget({ section, version }: OfferVersionPageProps & { section: ClientSection }) {
+  const { result, inputs } = version
   const settings = inputs.settings
   const vatServices = settings.vat_services_pct
-  const regieHtva = settings.hourly_rate
   const plants = result.plants
   // Phases the team left out of the offer are not the client's business.
   const phases = result.phases.filter((phase) => phase.enabled !== false)
   const servicesTotal = phases.reduce((sum, phase) => sum + phase.price_tvac, 0)
   const coManagement = result.co_management
   const planting = result.totals.planting_included !== false
-  const scope = measures.scope.filter((item) => !item.missing)
-  // Work that only comes with an extension (the pond, its supplies…): the client sees it before agreeing to it.
-  const optionLines = phases.flatMap((phase) => [...phase.lines, ...phase.expenses].filter((line) => line.option && !line.disabled).map((line) => ({ line, phase: phase.key })))
-  const recipient = [measures.lead_name, map.address].filter(Boolean).join(' · ')
-  const rates = { rate: euros(regieHtva), rate_tvac: euros(result.regie_rate_tvac) }
+  const rates = { rate: euros(settings.hourly_rate), rate_tvac: euros(result.regie_rate_tvac) }
   // The markup on the fees is named by the account's price scale, or not at all.
   const markupLabel = version.terms.markup_label?.trim()
   const feesDetail = markupLabel ? t('offers.version_page.fees_detail_markup', { label: markupLabel }) : t('offers.version_page.fees_detail')
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <Head title={t('offers.version_page.title', { label: version.label })} />
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <Link href={`/maps/${map.id}/offer`} className="inline-flex items-center gap-1 text-sm text-loam-500 hover:text-loam-900 print:hidden">
-            <ArrowLeft className="h-4 w-4" />{t('offers.version_page.back')}
-          </Link>
-          <div className="mt-3 flex items-center gap-3">
-            {letterhead && <img src={letterhead.logoUrl} alt="" className="max-h-12 max-w-[10rem] object-contain object-left" />}
-            <p className="font-medium text-loam-800">{t('offers.version_page.issuer', { name: issuer })}</p>
-          </div>
-          <h1 className="mt-3 text-2xl">{t('offers.version_page.title', { label: version.label })}</h1>
-          {recipient && <p className="text-loam-700">{t('offers.version_page.recipient', { recipient })}</p>}
-          <p className="text-loam-500">{t('offers.version_page.subtitle', { map: map.name, date: dateFormat.format(new Date(version.createdAt)) })}</p>
-        </div>
-        <Button variant="ghost" size="sm" className="print:hidden" onClick={() => window.print()}><Printer className="h-4 w-4" />{t('offers.page.print')}</Button>
-      </header>
-
-      <Card className="space-y-5 print:shadow-none print:ring-0">
-        <h2 className="font-serif text-xl font-semibold text-prune-800">{t('offers.version_page.budget_title')}</h2>
+    <>
+      <Title>{section.title}</Title>
+      <div className="space-y-5">
         {phases.map((phase) => (
           <section key={phase.key} className="space-y-1.5">
             <h3 className="flex items-baseline justify-between gap-2 font-semibold text-loam-900">
@@ -71,7 +239,6 @@ export default function OfferVersion({ map, version, issuer, letterhead }: Offer
           <section className="space-y-1.5 border-t border-loam-100 pt-4">
             <Row label={t('offers.version_page.plants', { count: formatNumber(plants.count_base) })} hint={t('offers.version_page.vat', { pct: settings.vat_plants_pct })} value={plants.plants_base_tvac} />
             <Row label={t('offers.version_page.supplies')} hint={t('offers.version_page.vat', { pct: settings.vat_supplies_pct })} value={plants.supplies_base_tvac} />
-            <p className="text-sm text-loam-600">{t('offers.version_page.plants_note')}</p>
           </section>
         )}
 
@@ -118,38 +285,10 @@ export default function OfferVersion({ map, version, issuer, letterhead }: Offer
             <p>{t('offers.version_page.co_management_text', { ...rates, half_days: coManagement.half_days })}</p>
           </section>
         )}
-      </Card>
+      </div>
 
-      <Card className="space-y-4 text-sm text-loam-700 print:shadow-none print:ring-0">
-        <section>
-          <h3 className="font-semibold text-loam-900">{t('offers.version_page.scope_title')}</h3>
-          <ul className="mt-1 space-y-1">
-            {scope.map((item) => (
-              <li key={item.id} className="flex justify-between gap-2">
-                <span>
-                  {t(`offers.planting_types.${item.planting_type}`)}
-                  {/* Versions saved before the default label was dropped still carry it: it says nothing to the client. */}
-                  {item.label && item.label !== t('offers.scope.manual_label') && <span className="text-loam-500"> · {item.label}</span>}
-                  {item.option && <span className="text-loam-500"> · {t('offers.version_page.scope_option')}</span>}
-                </span>
-                <span className="tabular-nums text-loam-500">
-                  {item.measure_kind === 'area' ? formatArea(item.measure) : formatLength(item.measure)}
-                  {item.plants_total > 0 && ` · ${formatNumber(item.plants_total)} ${t('offers.scope.plants').toLowerCase()}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-          {optionLines.length > 0 && (
-            <>
-              <p className="mt-3 font-medium text-loam-800">{t('offers.version_page.option_work')}</p>
-              <ul className="mt-1 space-y-1">
-                {optionLines.map(({ line, phase }) => (
-                  <li key={line.key}>{lineLabel(line)} <span className="text-loam-500">· {phaseLabel(phase)}</span></li>
-                ))}
-              </ul>
-            </>
-          )}
-        </section>
+      <Text html={section.html} />
+      <div className="space-y-4 border-t border-loam-100 pt-4 text-sm text-loam-700">
         <section>
           <h3 className="font-semibold text-loam-900">{t('offers.version_page.billing_title')}</h3>
           <p>{t('offers.version_page.billing')}</p>
@@ -159,21 +298,26 @@ export default function OfferVersion({ map, version, issuer, letterhead }: Offer
           <p>{t('offers.version_page.regie', rates)}</p>
         </section>
         <Terms terms={version.terms} />
-      </Card>
+      </div>
+    </>
+  )
+}
 
-      <details className="rounded-2xl bg-loam-50 p-4 text-sm ring-1 ring-inset ring-loam-200 print:hidden">
-        <summary className="cursor-pointer font-medium text-loam-800">{t('offers.version_page.internal_title')}</summary>
-        <ul className="mt-2 space-y-1 text-loam-700">
-          {result.phases.map((phase) => (
-            <li key={phase.key} className="flex justify-between gap-2">
-              <span>{phaseLabel(phase.key)} · {formatNumber(phase.hours_min)} h → {formatNumber(phase.hours_max)} h</span>
-              <span className="tabular-nums">{euros(phase.total_min)} → {euros(phase.total_max)} HTVA</span>
-            </li>
-          ))}
-        </ul>
-        {inputs.notes && <p className="mt-2 whitespace-pre-line text-loam-600">{inputs.notes}</p>}
-      </details>
-    </div>
+/** For the team only, never printed: hours and amounts before tax, and the internal notes. */
+function InternalDetails({ version }: OfferVersionPageProps) {
+  return (
+    <details className="rounded-2xl bg-loam-50 p-4 text-sm ring-1 ring-inset ring-loam-200 print:hidden">
+      <summary className="cursor-pointer font-medium text-loam-800">{t('offers.version_page.internal_title')}</summary>
+      <ul className="mt-2 space-y-1 text-loam-700">
+        {version.result.phases.map((phase) => (
+          <li key={phase.key} className="flex justify-between gap-2">
+            <span>{phaseLabel(phase.key)} · {formatNumber(phase.hours_min)} h → {formatNumber(phase.hours_max)} h</span>
+            <span className="tabular-nums">{euros(phase.total_min)} → {euros(phase.total_max)} HTVA</span>
+          </li>
+        ))}
+      </ul>
+      {version.inputs.notes && <p className="mt-2 whitespace-pre-line text-loam-600">{version.inputs.notes}</p>}
+    </details>
   )
 }
 

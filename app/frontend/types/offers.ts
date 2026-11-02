@@ -71,8 +71,30 @@ export type OfferInputs = {
   custom_supplies: CustomSupplyInput[]
   phases_off: Phase[]
   co_management: CoManagementInput
+  document: OfferDocumentInput
   notes: string | null
 }
+
+/** Blocks of the client document (Offer::Document::BLOCKS), in reading order. */
+export const DOCUMENT_BLOCKS = ['cover', 'letter', 'approach', 'scope', 'phases', 'co_management', 'software', 'deliverables', 'budget', 'conclusion'] as const
+export type DocumentBlockKey = (typeof DOCUMENT_BLOCKS)[number]
+export type DocumentStep = Phase | 'co_management'
+/** A block as it applies, or one layer's changes to it (only what is set). */
+export type DocumentBlock = { enabled?: boolean; title?: string; body?: string; phases?: Partial<Record<DocumentStep, string>> }
+export type DocumentBlocks = Partial<Record<DocumentBlockKey, DocumentBlock>>
+export type LetterDraft = { body: string; rationale?: string; client_name?: string; proposed_at?: string }
+export type OfferDocumentInput = { blocks: DocumentBlocks; letter?: string; letter_draft?: LetterDraft }
+/** A block of the document as the client reads it (Offer::ClientDocument). */
+export type ClientSection = {
+  key: DocumentBlockKey
+  title: string
+  markdown?: string
+  html?: string
+  closing?: string
+  closingHtml?: string
+  phases?: { key: DocumentStep; markdown?: string; html?: string }[]
+}
+export type ClientDocumentData = { sections: ClientSection[]; letter?: string | null; values: Record<string, string> }
 
 export type PlantingType = { key: string; label: string | null; measure: 'area' | 'length'; mix: Record<string, number> }
 export type PlantCategory = { key: string; label: string | null; price: number; mulch_m2: number; compost_l: number; guard: number; stake: number }
@@ -89,6 +111,8 @@ export type PricingInfo = {
   complexity: { criteria: ComplexityCriterion[]; levels: ComplexityLevel[] }
   targetDesignSharePct: number
   terms: OfferTerms
+  /** The template's document blocks, resolved over Semisto's texts. */
+  documentBlocks: Record<DocumentBlockKey, DocumentBlock>
 }
 
 export type OfferData = {
@@ -298,5 +322,8 @@ export type OfferVersionPageProps = {
   issuer: string
   /** The logo printed at the top (Map#letterhead). */
   letterhead: { logoUrl: string; name: string } | null
-  version: OfferVersionSummary & { inputs: OfferInputs; measures: OfferMeasures; result: OfferResult; terms: OfferTerms }
+  /** The working offer, not a saved version. */
+  preview?: boolean
+  document: ClientDocumentData
+  version: Partial<OfferVersionSummary> & { label: string; createdAt: string; inputs: OfferInputs; measures: OfferMeasures; result: OfferResult; terms: OfferTerms }
 }

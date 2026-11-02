@@ -186,6 +186,7 @@ class Offer
     def complexity = data["complexity"]
     def target_design_share_pct = data["target_design_share_pct"]
     def terms = data["terms"]
+    def document = data["document"]
 
     # The type a drawn feature starts with, when this pricing has it.
     def default_type_for(kind, measure_kind)
@@ -232,7 +233,9 @@ class Offer
           "default_trips" => PHASES.index_with { (number(Offer::Inputs.hash(raw["default_trips"])[_1]) || base["default_trips"][_1]).clamp(0, 100) },
           "complexity" => complexity(raw.fetch("complexity", base["complexity"])),
           "target_design_share_pct" => (number(raw["target_design_share_pct"]) || base["target_design_share_pct"]).clamp(0, 100),
-          "terms" => terms(raw.fetch("terms", base["terms"]))
+          "terms" => terms(raw.fetch("terms", base["terms"])),
+          # The client document's blocks and texts (Offer::Document): only the account's changes.
+          "document" => Offer::Document.normalize(raw["document"])
         }
       end
 

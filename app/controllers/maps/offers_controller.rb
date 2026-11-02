@@ -10,7 +10,7 @@ module Maps
   class OffersController < ApplicationController
     include OfferScoped
 
-    before_action :require_editor!, only: :update
+    before_action :require_editor!, only: %i[update accept_letter reject_letter]
 
     def show
       respond_to do |format|
@@ -35,7 +35,43 @@ module Maps
       render json: { message: t("offers.errors.stale"), offer: offer_json, measures: measures_json, result: @offer.result }, status: :conflict
     end
 
+    # The client document of the working offer, as the client would read it
+    # once saved: to reread before saving a version, or to download as Word.
+    def preview
+      document = Offer::ClientDocument.for(@offer, map: @map, issuer: offer_issuer)
+      respond_to do |format|
+        format.html do
+          render inertia: "maps/offers/version", props: client_document_props(document).merge(
+            preview: true,
+            version: {
+              label: t("offers.document.preview_label"), createdAt: Time.current.iso8601,
+              inputs: @offer.inputs, measures: @offer.measures.to_h, result: @offer.result, terms: document.terms
+            }
+          )
+        end
+        format.docx { send_docx(document, label: t("offers.document.preview_label"), date: Date.current) }
+      end
+    end
+
+    # The letter the AI proposed becomes the offer's letter (the team edits it after).
+    def accept_letter
+      draft = @offer.inputs.dig("document", "letter_draft")
+      return render(json: { message: t("offers.document.no_draft") }, status: :not_found) unless draft
+      change_document { _1.merge("letter" => draft["body"]).except("letter_draft") }
+    end
+
+    def reject_letter
+      change_document { _1.except("letter_draft") }
+    end
+
     private
+      def change_document
+        inputs = @offer.inputs.deep_dup
+        inputs["document"] = yield(inputs["document"].to_h)
+        @offer.update!(inputs:, updated_by: Current.user)
+        render json: { offer: offer_json, measures: measures_json, result: @offer.result }
+      end
+
       def page_props
         base = {
           map: @map.as_inertia(Current.user).slice(:id, :name, :address, :areaM2, :role, :teamId)

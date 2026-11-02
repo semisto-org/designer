@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NumberInput } from '@/components/finances/NumberInput'
+import { DocumentBlocksEditor } from '@/components/offers/DocumentBlocksEditor'
 import { returnToOffer } from '@/components/offers/returnTo'
 import { categoryLabel, newId, phaseLabel, PhaseMark, typeLabel } from '@/components/offers/shared'
 import { Button } from '@/components/ui/Button'
@@ -35,7 +36,7 @@ const supplyHeading = (supply: string) => {
  * Saved with one button; an offer priced with it follows it until a
  * version is saved.
  */
-export default function OfferTemplateEdit({ template, account, vocabulary }: TemplateEditProps) {
+export default function OfferTemplateEdit({ template, account, vocabulary, documentDefaults }: TemplateEditProps) {
   const [name, setName] = useState(template.name)
   const [clientTypes, setClientTypes] = useState(template.clientTypes)
   const [data, setData] = useState<PricingData>(template.data)
@@ -209,6 +210,18 @@ export default function OfferTemplateEdit({ template, account, vocabulary }: Tem
           <span className="block text-sm text-loam-600">{t('offer_templates.edit.exclusions')}</span>
           <Textarea rows={3} value={data.terms.exclusions ?? ''} placeholder={t('offer_templates.edit.exclusions_placeholder')} onChange={(e) => change({ terms: { ...data.terms, exclusions: e.target.value } })} />
         </label>
+      </Section>
+
+      <Section title={t('offers.document.title')} help={t('offers.document.template_intro')}>
+        <p className="text-sm text-loam-500">{t('offers.document.placeholders')}</p>
+        <DocumentBlocksEditor
+          base={documentDefaults}
+          own={data.document?.blocks ?? {}}
+          readOnly={false}
+          resetLabel={t('offers.document.reset_template')}
+          changedLabel={t('offers.document.changed_template')}
+          onChange={(blocks) => change({ document: { blocks } })}
+        />
       </Section>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-loam-200 bg-white/95 px-4 py-3 backdrop-blur">

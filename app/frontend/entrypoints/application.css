@@ -342,3 +342,11 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
   .markdown-page h1, .markdown-page h2, .markdown-page h3 { break-after: avoid; }
   .markdown-page table, .markdown-page img, .markdown-page blockquote { break-inside: avoid; }
 }
+
+/* The client document of an offer, printed or saved as PDF: white paper,
+   one block per page, no card frame, headings kept with their text. */
+@media print {
+  body:has(.offer-document) { background: #fff; }
+  .offer-document h2, .offer-document h3 { break-after: avoid; }
+  .offer-document li { break-inside: avoid; }
+}

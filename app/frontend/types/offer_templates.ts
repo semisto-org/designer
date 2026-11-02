@@ -1,7 +1,7 @@
 // Pricing templates (OfferTemplate): their summary for the list, and the
 // whole pricing (Offer::Pricing) for the editor. Data keeps the server's
 // snake_case keys: it goes back as it is.
-import type { ComplexityCriterion, ComplexityLevel, OfferSettings, OfferTerms, Phase, PlantCategory, PlantingType } from '@/types/offers'
+import type { ComplexityCriterion, ComplexityLevel, DocumentBlock, DocumentBlockKey, DocumentBlocks, OfferSettings, OfferTerms, Phase, PlantCategory, PlantingType } from '@/types/offers'
 
 export type TemplateSummary = { id: number; name: string; clientTypes: string[]; updatedAt: string | null }
 
@@ -32,6 +32,7 @@ export type PricingData = {
   complexity: { criteria: ComplexityCriterion[]; levels: ComplexityLevel[] }
   target_design_share_pct: number
   terms: OfferTerms
+  document: { blocks: DocumentBlocks }
 }
 
 export type TemplateAccount = { key: string; name: string | null; canEdit: boolean; templates: TemplateSummary[] }
@@ -39,6 +40,7 @@ export type TemplateAccount = { key: string; name: string | null; canEdit: boole
 export type TemplateEditProps = {
   template: TemplateSummary & { data: PricingData }
   account: { key: string; name: string | null }
+  documentDefaults: Record<DocumentBlockKey, DocumentBlock>
   vocabulary: {
     phases: Phase[]
     drivers: string[]
