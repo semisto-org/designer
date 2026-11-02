@@ -234,6 +234,7 @@ const RATE_FIELDS: { key: keyof OfferSettings; unit: string }[] = [
   { key: 'vat_plants_pct', unit: '%' },
   { key: 'vat_supplies_pct', unit: '%' },
   { key: 'rounding', unit: '€' },
+  { key: 'project_management_pct', unit: '%' },
   { key: 'co_management_half_days', unit: '/an' },
   { key: 'half_day_hours', unit: 'h' },
 ]

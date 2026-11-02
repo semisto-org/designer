@@ -26,13 +26,14 @@ export function lineLabel(line: BudgetLine): string {
 export const typeLabel = (type: { key: string; label?: string | null }) => type.label || t(`offers.planting_types.${type.key}`)
 export const categoryLabel = (category: { key: string; label?: string | null }) => category.label || t(`offers.categories.${category.key}`)
 
-/** « 2 h + 0,02 h × 510 plants », or « forfait ». */
+/** « 2 h + 0,02 h × 510 plants », « 10 % de 49 h », or « forfait ». */
 export function formulaText(line: BudgetLine): string | null {
   const formula = line.formula
   if (!formula) return null
+  if (formula.pct != null) return t('offers.budget.formula_share', { pct: formatNumber(formula.pct), hours: formatNumber(formula.of_hours ?? 0) })
   if (!formula.driver || !formula.per) return t('offers.budget.formula_fixed')
   const driver = t(`offers.drivers.${formula.driver}`, { value: formatNumber(formula.value ?? 0) })
-  return t('offers.budget.formula', { base: formatNumber(formula.base), per: formatNumber(formula.per), driver })
+  return t('offers.budget.formula', { base: formatNumber(formula.base ?? 0), per: formatNumber(formula.per), driver })
 }
 
 export const phaseLabel = (phase: Phase) => t(`offers.phases.${phase}`)

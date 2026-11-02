@@ -20,6 +20,7 @@ export type OfferSettings = {
   rounding: number
   co_management_half_days: number
   half_day_hours: number
+  project_management_pct: number
 }
 
 export type ScopeInput = {
@@ -29,6 +30,8 @@ export type ScopeInput = {
   planting_type: string
   measure: number | null
   plants_override: number | null
+  /** The team's densities, per category (plants per m² or per metre). */
+  mix: Record<string, number>
   option: boolean
 }
 
@@ -47,6 +50,10 @@ export type CustomLineInput = {
   option: boolean
 }
 
+export type SupplyOverride = { key: string; quantity: number | null; unit_price: number | null; disabled: boolean }
+export type CustomSupplyInput = { id: string; label: string | null; quantity: number | null; unit_price: number | null }
+export type CoManagementInput = { enabled: boolean; years: number[]; one_way_km: number | null }
+
 export type AdjustmentInput = { id: string; preset: string | null; label: string | null; pct: number; phase: AdjustmentPhase }
 
 export type OfferInputs = {
@@ -60,6 +67,10 @@ export type OfferInputs = {
   adjustments: AdjustmentInput[]
   prices: Partial<Record<Phase, { fees?: number; expenses?: number }>>
   plant_prices: Record<string, number>
+  supplies: SupplyOverride[]
+  custom_supplies: CustomSupplyInput[]
+  phases_off: Phase[]
+  co_management: CoManagementInput
   notes: string | null
 }
 
@@ -101,6 +112,9 @@ export type ScopeMeasure = {
   planting_type: string
   measure_kind: 'area' | 'length'
   measure: number
+  /** Densities in use, and the planting type's own (absent from older versions). */
+  mix?: Record<string, number>
+  type_mix?: Record<string, number>
   plants: Record<string, number>
   plants_total: number
   option: boolean
@@ -119,18 +133,17 @@ export type OfferMeasures = {
   candidates?: Candidate[]
 }
 
-export type Formula = { base: number; per: number; driver: string | null; value: number | null }
+/** A task's hours (base + per × driver), or project management's share of the phase (pct of of_hours). */
+export type Formula = { base?: number; per?: number; driver?: string | null; value?: number | null; pct?: number; of_hours?: number }
 
 export type BudgetLine = {
   key: string
-  kind: 'task' | 'expense' | 'trip' | 'custom'
+  kind: 'task' | 'project_management' | 'expense' | 'trip' | 'custom'
   task?: string
   id?: string
   label?: string | null
   persons?: number
   hours?: number
-  computed_hours_without?: number
-  gain_pct?: number
   rate?: number
   amount: number
   computed_persons?: number
@@ -147,6 +160,8 @@ export type BudgetLine = {
 
 export type PhaseResult = {
   key: Phase
+  /** False when the team leaves the phase out of the offer (absent from older versions: true). */
+  enabled?: boolean
   lines: BudgetLine[]
   expenses: BudgetLine[]
   hours_min: number
@@ -155,6 +170,10 @@ export type PhaseResult = {
   labour_options: number
   adjustment_pct: number
   factor: number
+  contribution_pct?: number
+  complexity_factor?: number
+  fees_min_tvac?: number
+  rounding?: number
   fees_min: number
   fees_max: number
   expenses_min: number
@@ -167,13 +186,29 @@ export type PhaseResult = {
   prices: { fees: number; expenses: number }
   prices_set: ('fees' | 'expenses')[]
   price_tvac: number
-  hours_saved: number
-  saved_tvac: number
 }
+
+export type SupplyRow = {
+  key: string
+  kind?: 'supply' | 'custom'
+  id?: string
+  label?: string | null
+  unit_price: number
+  computed_unit_price?: number
+  base: number
+  computed_base?: number
+  option: number
+  amount_base: number
+  amount_option: number
+  disabled?: boolean
+  overridden?: boolean
+}
+
+export type CoManagementYear = { year: number; half_days: number; hours: number; trips_htva: number; amount_htva: number; amount_tvac: number }
 
 export type PlantsResult = {
   categories: { key: string; label: string | null; price: number; base: number; option: number; amount_base: number; amount_option: number }[]
-  supplies: { key: string; unit_price: number; base: number; option: number; amount_base: number; amount_option: number }[]
+  supplies: SupplyRow[]
   small_material: number
   count_base: number
   count_option: number
@@ -196,14 +231,18 @@ export type OfferPrecision = { score: number; level: 'rough' | 'range' | 'precis
 export type OfferResult = {
   phases: PhaseResult[]
   plants: PlantsResult
-  co_management: { half_days: number; hours: number; amount_htva: number; amount_tvac: number }
+  /** Older versions carry only the yearly estimate (no enabled, no years). */
+  co_management: { enabled?: boolean; years?: CoManagementYear[]; one_way_km?: number | null; half_days: number; hours: number; amount_htva: number; amount_tvac: number }
   complexity: { points: number | null; max: number; level: string | null; factor: number }
   target_design_share_pct: number
   totals: {
     design_tvac: number
     implementation_tvac: number
     design_share_pct: number | null
-    saved_tvac: number
+    /** Older versions only: what the Designer took off the design. */
+    saved_tvac?: number
+    co_management_tvac?: number
+    planting_included?: boolean
     services_min: number
     services_max: number
     services_price_tvac: number

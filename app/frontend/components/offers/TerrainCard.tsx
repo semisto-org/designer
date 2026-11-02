@@ -3,11 +3,12 @@ import clsx from 'clsx'
 import { MapPinned, Plus, RotateCcw, Ruler, Trash2 } from 'lucide-react'
 import { NumberInput } from '@/components/finances/NumberInput'
 import { Card } from '@/components/ui/Card'
+import { IconButton } from '@/components/ui/IconButton'
 import { Input, Select } from '@/components/ui/Field'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
-import type { Candidate, OfferInputs, OfferMap, OfferMeasures, PricingInfo, ScopeInput } from '@/types/offers'
+import type { Candidate, OfferInputs, OfferMap, OfferMeasures, PlantCategory, PlantingType, PricingInfo, ScopeInput } from '@/types/offers'
 import { addableCandidates, itemMeasure } from './scope'
-import { euros, newId, SectionTitle, typeLabel } from './shared'
+import { categoryLabel, euros, newId, SectionTitle, typeLabel } from './shared'
 
 type Props = {
   map: OfferMap
@@ -40,7 +41,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
       ...inputs,
       scope: [...inputs.scope, {
         id: newId(), feature_id: feature.id, label: null, planting_type: firstOf(feature.measure_kind)?.key ?? '',
-        measure: null, plants_override: null, option: false,
+        measure: null, plants_override: null, mix: {}, option: false,
       }],
     })
   }
@@ -48,7 +49,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
   function addManual() {
     onChange({
       ...inputs,
-      scope: [...inputs.scope, { id: newId(), feature_id: null, label: null, planting_type: firstOf('area')?.key ?? '', measure: null, plants_override: null, option: false }],
+      scope: [...inputs.scope, { id: newId(), feature_id: null, label: null, planting_type: firstOf('area')?.key ?? '', measure: null, plants_override: null, mix: {}, option: false }],
     })
   }
 
@@ -152,6 +153,15 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                       )}
                     </div>
                   </div>
+                  {type && Object.keys(type.mix).length > 0 && !item.plants_override && (
+                    <Densities
+                      type={type}
+                      categories={pricing.categories}
+                      mix={item.mix ?? {}}
+                      readOnly={readOnly}
+                      onChange={(mix) => setItem(item.id, { mix })}
+                    />
+                  )}
                   <p className="mt-1.5 text-sm text-loam-500">
                     {measure?.missing
                       ? <span className="text-clay-600">{t('offers.scope.missing')}</span>
@@ -194,6 +204,55 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
         )}
       </div>
     </Card>
+  )
+}
+
+/**
+ * The densities of one element, category by category: « 1 tous les 4 m² »
+ * as a designer thinks of spacing, or « 6 par m² » for dense plantings.
+ * The type's density until the team writes its own (an existing hedge,
+ * trees already there…).
+ */
+function Densities({ type, categories, mix, readOnly, onChange }: { type: PlantingType; categories: PlantCategory[]; mix: Record<string, number>; readOnly: boolean; onChange: (mix: Record<string, number>) => void }) {
+  const unit = type.measure === 'length' ? 'm' : 'm²'
+  const set = (key: string, density: number | null) => {
+    const next = { ...mix }
+    if (density == null || density === type.mix[key]) delete next[key]
+    else next[key] = density
+    onChange(next)
+  }
+  return (
+    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
+      {Object.entries(type.mix).map(([key, typeDensity]) => {
+        const category = categories.find((candidate) => candidate.key === key) ?? { key, label: null }
+        const density = mix[key] ?? typeDensity
+        const own = mix[key] != null
+        // Dense plantings read per unit; the others as spacing.
+        const perUnit = typeDensity >= 1
+        const shown = perUnit ? density : density > 0 ? Math.round((1 / density) * 100) / 100 : null
+        return (
+          <label key={key} className="flex items-center gap-1.5 text-sm text-loam-600">
+            <span>{categoryLabel(category)} :</span>
+            <span>{perUnit ? '' : t('offers.scope.density_every')}</span>
+            <span className="w-20">
+              <NumberInput
+                aria-label={`${t('offers.scope.density')} · ${categoryLabel(category)}`}
+                value={shown}
+                unit={perUnit ? `/${unit}` : unit}
+                disabled={readOnly}
+                className={clsx(own && 'bg-humus-50')}
+                onValue={(value) => set(key, value == null ? null : perUnit ? value : value > 0 ? 1 / value : 0)}
+              />
+            </span>
+            {own && !readOnly && (
+              <IconButton size="sm" label={t('offers.scope.density_reset')} onClick={() => set(key, null)}>
+                <RotateCcw aria-hidden />
+              </IconButton>
+            )}
+          </label>
+        )
+      })}
+    </div>
   )
 }
 

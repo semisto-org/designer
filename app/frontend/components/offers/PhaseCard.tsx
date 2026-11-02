@@ -1,23 +1,24 @@
 import clsx from 'clsx'
-import { CircleMinus, CirclePlus, Plus, RotateCcw, Sparkles, Trash2 } from 'lucide-react'
+import { CircleMinus, CirclePlus, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { NumberInput } from '@/components/finances/NumberInput'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Field'
 import { formatNumber, t } from '@/lib/i18n'
-import type { BudgetLine, CustomLineInput, OfferInputs, PhaseResult } from '@/types/offers'
+import type { BudgetLine, CustomLineInput, OfferInputs, OfferResult, PhaseResult } from '@/types/offers'
 import { euros, formulaText, hoursText, lineLabel, newId, PhaseMark, withLineOverride } from './shared'
 
-type Props = { phase: PhaseResult; inputs: OfferInputs; readOnly: boolean; onChange: (inputs: OfferInputs) => void }
+type Props = { phase: PhaseResult; complexity: OfferResult['complexity']; inputs: OfferInputs; readOnly: boolean; onChange: (inputs: OfferInputs) => void }
 
 // Persons, hours (wide enough for « 2,5 h »), amount, actions; the name above them on a phone, beside them from `sm`.
 const LINE_GRID = 'grid grid-cols-[4.5rem_6rem_minmax(0,1fr)_4rem] sm:grid-cols-[minmax(0,1fr)_4.5rem_6rem_5.5rem_4rem]'
 
 /**
- * One phase of the budget: its lines with the hours the map gives and why,
- * the team's corrections, the expenses, then the fees, the minimum and
- * maximum, and the price the client will read.
+ * One phase of the budget: in the offer or not, its lines with the hours
+ * the map gives and why, the team's corrections, project management on its
+ * own, the expenses, then how the fees are built step by step, the minimum
+ * and maximum, and the price the client will read.
  */
-export function PhaseCard({ phase, inputs, readOnly, onChange }: Props) {
+export function PhaseCard({ phase, complexity, inputs, readOnly, onChange }: Props) {
   const setCustom = (id: string, patch: Partial<CustomLineInput>) =>
     onChange({ ...inputs, custom_lines: inputs.custom_lines.map((line) => (line.id === id ? { ...line, ...patch } : line)) })
   const removeCustom = (id: string) => onChange({ ...inputs, custom_lines: inputs.custom_lines.filter((line) => line.id !== id) })
@@ -34,15 +35,74 @@ export function PhaseCard({ phase, inputs, readOnly, onChange }: Props) {
     onChange({ ...inputs, prices })
   }
 
-  const contribution = inputs.settings.contribution_pct
   const custom = (line: BudgetLine) => inputs.custom_lines.find((candidate) => candidate.id === line.id)
+  const enabled = phase.enabled !== false
+  const setEnabled = (on: boolean) =>
+    onChange({ ...inputs, phases_off: on ? inputs.phases_off.filter((key) => key !== phase.key) : [...inputs.phases_off, phase.key] })
+  const management = phase.lines.find((line) => line.kind === 'project_management')
+  const work = phase.lines.filter((line) => line.kind !== 'project_management')
+
+  function renderLine(line: BudgetLine) {
+    const own = line.kind === 'custom' ? custom(line) : undefined
+    return (
+      <div key={line.key} className={clsx(LINE_GRID, 'items-center gap-x-2 gap-y-1 px-2 py-2', line.disabled && 'opacity-50')}>
+        <div className="col-span-4 min-w-0 sm:col-span-1">
+          {own ? (
+            <Input aria-label={t('offers.budget.line')} value={own.label ?? ''} placeholder={t('offers.budget.custom_label')} disabled={readOnly} onChange={(e) => setCustom(own.id, { label: e.target.value })} />
+          ) : (
+            <p className={clsx('text-sm text-loam-900', line.disabled && 'line-through')}>{lineLabel(line)}</p>
+          )}
+          <p className="flex flex-wrap items-center gap-x-2 text-sm text-loam-500">
+            {line.option && <span className="rounded-full bg-loam-100 px-1.5 text-loam-600">{t('offers.budget.option')}</span>}
+            {formulaText(line)}
+            {line.overridden && <span className="text-humus-700">{t('offers.budget.computed', { value: `${formatNumber(line.computed_persons ?? 0)} × ${hoursText(line.computed_hours ?? 0)}` })}</span>}
+          </p>
+        </div>
+        {own ? (
+          <>
+            <NumberInput aria-label={t('offers.budget.persons')} value={own.persons} disabled={readOnly} onValue={(value) => setCustom(own.id, { persons: value })} />
+            <NumberInput aria-label={t('offers.budget.hours')} value={own.hours} unit="h" disabled={readOnly} onValue={(value) => setCustom(own.id, { hours: value })} />
+          </>
+        ) : (
+          <>
+            <NumberInput aria-label={t('offers.budget.persons')} value={line.persons} disabled={readOnly || line.disabled} className={clsx(line.persons !== line.computed_persons && 'bg-humus-50')} onValue={(value) => onChange(withLineOverride(inputs, line.key, { persons: value === line.computed_persons ? null : value }))} />
+            <NumberInput aria-label={t('offers.budget.hours')} value={line.hours} unit="h" disabled={readOnly || line.disabled} className={clsx(line.hours !== line.computed_hours && 'bg-humus-50')} onValue={(value) => onChange(withLineOverride(inputs, line.key, { hours: value === line.computed_hours ? null : value }))} />
+          </>
+        )}
+        <p className="text-right text-sm tabular-nums text-loam-900">{euros(line.amount)}</p>
+        <LineActions
+          readOnly={readOnly}
+          line={line}
+          onReset={() => onChange(withLineOverride(inputs, line.key, { persons: null, hours: null }))}
+          onToggle={() => onChange(withLineOverride(inputs, line.key, { disabled: !line.disabled }))}
+          onRemove={own ? () => removeCustom(own.id) : undefined}
+        />
+      </div>
+    )
+  }
 
   return (
-    <Card className="space-y-4">
-      <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-serif text-xl font-semibold text-prune-800"><PhaseMark phase={phase.key} /> {t(`offers.phases.${phase.key}`)}</h3>
-        <p className="text-xs text-loam-500">{t('offers.budget.hours_total', { min: formatNumber(phase.hours_min), max: formatNumber(phase.hours_max) })}</p>
+    <Card className={clsx('space-y-4', !enabled && 'bg-loam-50/70')}>
+      <header className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className={clsx('font-serif text-xl font-semibold', enabled ? 'text-prune-800' : 'text-loam-500')}><PhaseMark phase={phase.key} /> {t(`offers.phases.${phase.key}`)}</h3>
+        <div className="flex flex-wrap items-center gap-3">
+          {enabled && <p className="text-sm text-loam-500">{t('offers.budget.hours_total', { min: formatNumber(phase.hours_min), max: formatNumber(phase.hours_max) })}</p>}
+          <label className="inline-flex items-center gap-1.5 text-sm font-medium text-loam-700">
+            <input
+              type="checkbox"
+              className="rounded border-loam-300 text-prune-600 focus:ring-prune-600"
+              checked={enabled}
+              disabled={readOnly}
+              onChange={(e) => setEnabled(e.target.checked)}
+            />
+            {t('offers.budget.in_offer')}
+          </label>
+        </div>
       </header>
+
+      {!enabled ? (
+        <p className="text-sm text-loam-500">{t(phase.key === 'implementation' ? 'offers.budget.phase_off_implementation' : 'offers.budget.phase_off')}</p>
+      ) : (<>
 
       <div className="-mx-2 divide-y divide-loam-100">
         {/* On a phone the line's name takes its own row; the columns below keep their headings. */}
@@ -50,51 +110,15 @@ export function PhaseCard({ phase, inputs, readOnly, onChange }: Props) {
           <span className="hidden sm:block">{t('offers.budget.line')}</span><span className="sm:text-right">{t('offers.budget.persons')}</span>
           <span className="sm:text-right">{t('offers.budget.hours')}</span><span className="text-right">{t('offers.budget.amount')}</span><span />
         </div>
-        {phase.lines.map((line) => {
-          const own = line.kind === 'custom' ? custom(line) : undefined
-          return (
-            <div key={line.key} className={clsx(LINE_GRID, 'items-center gap-x-2 gap-y-1 px-2 py-2', line.disabled && 'opacity-50')}>
-              <div className="col-span-4 min-w-0 sm:col-span-1">
-                {own ? (
-                  <Input aria-label={t('offers.budget.line')} value={own.label ?? ''} placeholder={t('offers.budget.custom_label')} disabled={readOnly} onChange={(e) => setCustom(own.id, { label: e.target.value })} />
-                ) : (
-                  <p className={clsx('text-sm text-loam-900', line.disabled && 'line-through')}>{lineLabel(line)}</p>
-                )}
-                <p className="flex flex-wrap items-center gap-x-2 text-xs text-loam-500">
-                  {line.option && <span className="rounded-full bg-loam-100 px-1.5 text-loam-600">{t('offers.budget.option')}</span>}
-                  {formulaText(line)}
-                  {!!line.gain_pct && (
-                    <span className="inline-flex items-center gap-0.5 rounded-full bg-leaf-50 px-1.5 text-leaf-800 ring-1 ring-inset ring-leaf-200" title={t('offers.budget.gain_help')}>
-                      <Sparkles className="h-3 w-3" aria-hidden />
-                      {t('offers.budget.gain', { pct: formatNumber(line.gain_pct), hours: hoursText(line.computed_hours_without ?? 0) })}
-                    </span>
-                  )}
-                  {line.overridden && <span className="text-humus-700">{t('offers.budget.computed', { value: `${formatNumber(line.computed_persons ?? 0)} × ${hoursText(line.computed_hours ?? 0)}` })}</span>}
-                </p>
-              </div>
-              {own ? (
-                <>
-                  <NumberInput aria-label={t('offers.budget.persons')} value={own.persons} disabled={readOnly} onValue={(value) => setCustom(own.id, { persons: value })} />
-                  <NumberInput aria-label={t('offers.budget.hours')} value={own.hours} unit="h" disabled={readOnly} onValue={(value) => setCustom(own.id, { hours: value })} />
-                </>
-              ) : (
-                <>
-                  <NumberInput aria-label={t('offers.budget.persons')} value={line.persons} disabled={readOnly || line.disabled} className={clsx(line.persons !== line.computed_persons && 'bg-humus-50')} onValue={(value) => onChange(withLineOverride(inputs, line.key, { persons: value === line.computed_persons ? null : value }))} />
-                  <NumberInput aria-label={t('offers.budget.hours')} value={line.hours} unit="h" disabled={readOnly || line.disabled} className={clsx(line.hours !== line.computed_hours && 'bg-humus-50')} onValue={(value) => onChange(withLineOverride(inputs, line.key, { hours: value === line.computed_hours ? null : value }))} />
-                </>
-              )}
-              <p className="text-right text-sm tabular-nums text-loam-900">{euros(line.amount)}</p>
-              <LineActions
-                readOnly={readOnly}
-                line={line}
-                onReset={() => onChange(withLineOverride(inputs, line.key, { persons: null, hours: null }))}
-                onToggle={() => onChange(withLineOverride(inputs, line.key, { disabled: !line.disabled }))}
-                onRemove={own ? () => removeCustom(own.id) : undefined}
-              />
-            </div>
-          )
-        })}
+        {work.map(renderLine)}
       </div>
+
+      {management && (
+        <section className="rounded-xl bg-leaf-50/60 ring-1 ring-inset ring-leaf-200">
+          <p className="px-3 pt-2 text-sm text-loam-600">{t('offers.budget.management_help')}</p>
+          <div className="divide-y divide-loam-100">{renderLine(management)}</div>
+        </section>
+      )}
 
       {phase.expenses.length > 0 && (
         <div>
@@ -148,24 +172,10 @@ export function PhaseCard({ phase, inputs, readOnly, onChange }: Props) {
 
       <footer className="space-y-3 rounded-xl bg-loam-50 p-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
-          <span className="text-loam-700">
-            {t('offers.budget.fees')} :{' '}
-            <span className="text-loam-500">
-              {t('offers.budget.fees_detail', {
-                labour: euros(phase.labour_base), contribution: formatNumber(contribution),
-                adjustment: phase.adjustment_pct ? t('offers.budget.adjustment_detail', { pct: `${phase.adjustment_pct > 0 ? '+' : ''}${formatNumber(phase.adjustment_pct)}` }) : '',
-              })}
-            </span>
-          </span>
-          <span className="font-medium tabular-nums">{euros(phase.fees_min)}</span>
+          <span className="font-medium text-loam-800">{t('offers.budget.fees')}</span>
+          <span className="font-medium tabular-nums">{euros(phase.fees_min)} HTVA</span>
         </div>
-        <p className="text-sm text-loam-500">{t('offers.budget.min_max', { min: euros(phase.total_min), max: euros(phase.total_max) })}</p>
-        {phase.hours_saved > 0 && (
-          <p className="flex items-center gap-1 text-sm text-leaf-800">
-            <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {t('offers.budget.saved', { hours: hoursText(phase.hours_saved), amount: euros(phase.saved_tvac) })}
-          </p>
-        )}
+        <FeesSteps phase={phase} complexity={complexity} vat={inputs.settings.vat_services_pct} buffer={inputs.settings.buffer_pct} />
         <div className="grid gap-2 sm:grid-cols-2">
           {(['fees', 'expenses'] as const).map((part) => (
             <label key={part} className="block space-y-1">
@@ -189,7 +199,38 @@ export function PhaseCard({ phase, inputs, readOnly, onChange }: Props) {
           ))}
         </div>
       </footer>
+      </>)}
     </Card>
+  )
+}
+
+/**
+ * Where the fees come from, one step per line: the work, the markup, the
+ * complexity, the adjustments, then the VAT and the rounding; and what the
+ * minimum and the maximum hold.
+ */
+function FeesSteps({ phase, complexity, vat, buffer }: { phase: PhaseResult; complexity: OfferResult['complexity']; vat: number; buffer: number }) {
+  // Versions saved before the steps were kept: the factor alone.
+  if (phase.contribution_pct == null || phase.complexity_factor == null) {
+    return <p className="text-sm text-loam-500">{t('offers.budget.min_max', { min: euros(phase.total_min), max: euros(phase.total_max) })}</p>
+  }
+  const signed = (value: number) => `${value > 0 ? '+' : '−'} ${formatNumber(Math.abs(value))}`
+  const steps: string[] = [t('offers.budget.step_labour', { amount: euros(phase.labour_base) })]
+  if (phase.contribution_pct) steps.push(t('offers.budget.step_markup', { pct: formatNumber(phase.contribution_pct) }))
+  if (phase.complexity_factor !== 1) {
+    steps.push(t('offers.budget.step_complexity', { factor: formatNumber(phase.complexity_factor), level: complexity.level ? t(`offers.complexity.levels.${complexity.level}`) : '' }))
+  }
+  if (phase.adjustment_pct) steps.push(t('offers.budget.step_adjustments', { pct: signed(phase.adjustment_pct) }))
+  return (
+    <div className="space-y-1 text-sm text-loam-600">
+      <p>{steps.join(' ')} = <span className="font-medium text-loam-800">{euros(phase.fees_min)} HTVA</span></p>
+      <p>{t('offers.budget.step_vat', { pct: formatNumber(vat), tvac: euros(phase.fees_min_tvac), rounding: euros(phase.rounding), price: euros(phase.computed_prices.fees) })}</p>
+      <p className="text-loam-500">
+        {phase.total_max > phase.total_min
+          ? t('offers.budget.min_max_explained', { min: euros(phase.total_min), max: euros(phase.total_max), buffer: formatNumber(buffer) })
+          : t('offers.budget.min_only', { min: euros(phase.total_min) })}
+      </p>
+    </div>
   )
 }
 

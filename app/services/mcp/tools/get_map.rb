@@ -173,13 +173,24 @@ module Mcp
           {
             number: version.number, label: version.label, note: version.note, pricing_name: version.pricing_name,
             accepted_at: version.updated_at.iso8601,
-            total_tvac: totals["total_tvac"], total_htva: (services_htva + plants_htva).round(2),
+            total_tvac: totals["total_tvac"], total_htva: (services_htva + plants_htva + co_management_htva(version.result["co_management"])).round(2),
             services_tvac: totals["services_price_tvac"], services_htva: services_htva.round(2),
             plants_supplies_tvac: totals["plants_supplies_base_tvac"], plants_supplies_htva: plants_htva.round(2),
             design_tvac: totals["design_tvac"], implementation_tvac: totals["implementation_tvac"],
             hours_min: phases.sum { _1["hours_min"].to_f }.round(1), hours_max: phases.sum { _1["hours_max"].to_f }.round(1),
-            phases: phases.map { { key: _1["key"], price_tvac: _1["price_tvac"], hours_min: _1["hours_min"], hours_max: _1["hours_max"] } }
+            # A phase the team left out of the offer (enabled: false) counts nowhere.
+            phases: phases.map { { key: _1["key"], enabled: _1.fetch("enabled", true), price_tvac: _1["price_tvac"], hours_min: _1["hours_min"], hours_max: _1["hours_max"] } },
+            co_management: co_management_budget(version.result["co_management"])
           }
+        end
+
+        def co_management_htva(spec) = spec.is_a?(Hash) && spec["enabled"] ? spec["amount_htva"].to_f : 0
+
+        # Co-management after planting, when the offer includes it: half-days
+        # and price year by year. Older versions only estimated it.
+        def co_management_budget(spec)
+          return nil unless spec.is_a?(Hash) && spec["enabled"]
+          { total_tvac: spec["amount_tvac"], years: Array(spec["years"]).map { _1.slice("year", "half_days", "hours", "amount_tvac") } }
         end
 
         # Wild plants noted on the terrain (by hand, from a photo identified by

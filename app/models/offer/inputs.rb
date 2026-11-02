@@ -33,6 +33,10 @@ class Offer
         "adjustments" => list(raw["adjustments"], 20) { adjustment(_1) },
         "prices" => prices(raw["prices"]),
         "plant_prices" => plant_prices(raw["plant_prices"], pricing),
+        "supplies" => list(raw["supplies"], 20) { supply_override(_1) }.uniq { _1["key"] },
+        "custom_supplies" => list(raw["custom_supplies"], 30) { custom_supply(_1) },
+        "phases_off" => Array(raw["phases_off"]).map(&:to_s) & Pricing::PHASES,
+        "co_management" => co_management(raw["co_management"]),
         "notes" => string(raw["notes"], MAX_NOTES)
       }
     end
@@ -79,7 +83,55 @@ class Offer
         "planting_type" => pricing.planting_types.key?(type) ? type : pricing.fallback_type,
         "measure" => number(raw["measure"])&.clamp(0, 100_000_000),
         "plants_override" => integer(raw["plants_override"])&.clamp(0, 1_000_000),
+        "mix" => mix_override(raw["mix"], pricing),
         "option" => boolean(raw["option"]) || false
+      }
+    end
+
+    # The team's own densities for one element, per category (plants per
+    # m² or per metre): { "fruit_tree" => 0.0025 } when the place already
+    # has trees. Absent categories keep the planting type's density.
+    def mix_override(raw, pricing)
+      raw = hash(raw)
+      pricing.categories.keys.each_with_object({}) do |category, memo|
+        value = number(raw[category])
+        memo[category] = value.clamp(0, 100) unless value.nil?
+      end
+    end
+
+    # A correction of a computed supply (Pricing::SUPPLY_KEYS, or the lump
+    # of small material): left out, another quantity or another price.
+    def supply_override(raw)
+      key = raw["key"].to_s
+      return nil unless [ *Pricing::SUPPLY_KEYS, "small_material" ].include?(key)
+      {
+        "key" => key,
+        "quantity" => number(raw["quantity"])&.clamp(0, 1_000_000),
+        "unit_price" => number(raw["unit_price"])&.clamp(0, 100_000),
+        "disabled" => boolean(raw["disabled"]) || false
+      }
+    end
+
+    # A supply the team adds (cages against voles…), at quantity × price.
+    def custom_supply(raw)
+      {
+        "id" => id(raw["id"]),
+        "label" => string(raw["label"]),
+        "quantity" => number(raw["quantity"])&.clamp(0, 1_000_000),
+        "unit_price" => number(raw["unit_price"])&.clamp(0, 100_000)
+      }
+    end
+
+    # Co-management after planting, offered or not: half-days year by year
+    # (often fewer each year), and the one-way distance of each visit
+    # (else the offer's first trip with a distance).
+    def co_management(raw)
+      raw = hash(raw)
+      years = Array(raw["years"]).first(10).map { number(_1)&.clamp(0, 365) || 0 }
+      {
+        "enabled" => boolean(raw["enabled"]) || false,
+        "years" => years,
+        "one_way_km" => number(raw["one_way_km"])&.clamp(0, 5_000)
       }
     end
 
