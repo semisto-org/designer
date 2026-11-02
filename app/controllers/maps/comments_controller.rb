@@ -12,7 +12,8 @@ module Maps
     before_action :set_commentable, only: %i[index create read]
     before_action :set_comment, only: %i[show update destroy]
 
-    # One thread: its comments, whether I follow it, who I can mention.
+    # One thread: its comments, whether I follow it, who I can mention, who
+    # my next comment will e-mail.
     # Opening a thread marks it as read (the previous read time is returned
     # so the client can show what is new).
     def index
@@ -24,6 +25,7 @@ module Maps
         subscribed: CommentSubscription.subscribed?(Current.user, @commentable),
         lastReadAt: last_read&.iso8601,
         members: comment_serializer.mentionable(@commentable),
+        notified: Collab::CommentNotifier.recipients_for(@commentable, Current.user)&.map(&:display_name),
         commentEmails: Current.user.comment_emails
       }
       CommentRead.mark!(Current.user, @commentable)

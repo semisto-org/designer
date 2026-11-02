@@ -34,6 +34,20 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ @viewer.id ], Comment.last.then { |c| [ c.author_id ] }
   end
 
+  test "the thread says who the next comment will e-mail" do
+    sign_in_as @viewer
+    get map_comments_path(@map), params: { commentable_type: "MapFeature", commentable_id: @feature.id }, as: :json
+    assert_equal [ @owner.display_name ], json["notified"]
+
+    sign_in_as @owner
+    get map_comments_path(@map), params: { commentable_type: "MapFeature", commentable_id: @feature.id }, as: :json
+    assert_equal [], json["notified"]
+
+    @map.memberships.find_by(user: @viewer).update!(chat_access: true)
+    get map_comments_path(@map), params: { commentable_type: "Map", commentable_id: @map.id }, as: :json
+    assert_nil json["notified"]
+  end
+
   test "a non-member cannot read, comment, applaud or follow" do
     comment = Comment.create!(commentable: @feature, author: @owner, body: "Privé")
     sign_in_as @outsider
