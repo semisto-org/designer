@@ -46,6 +46,7 @@ module Mcp
           photos: map.photos.count,
           discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
+          first_hour: first_hour(map),
           offer: offer(map),
           sectors: sectors(map),
           exports: exports(map),
@@ -54,6 +55,7 @@ module Mcp
           team_season: team_season(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
+          reader_guide: reader_guide,
           permissions: {
             read: true,
             propose_drafts: blockers.empty?,
@@ -75,6 +77,14 @@ module Mcp
       end
 
       private
+        # A reader (most often the person the garden is designed for) gets the
+        # help article written for them: how to read the plan, ask, print.
+        def reader_guide
+          return nil unless @role == "viewer"
+          article = HelpArticle.find(MapInvitationMailer::READER_GUIDE) or return nil
+          { slug: article.slug, title: article.title, url: "#{origin}/help/#{article.slug}", note: t("notes.reader_guide") }
+        end
+
       # The walks made with the phone; list_site_visits gives each one.
       def site_visits(map)
         last = map.site_visits.reorder(started_at: :desc).first
@@ -281,6 +291,16 @@ module Mcp
             with_reports: samples.count { |s| s.lab_reports.attached? },
             drafts_pending: samples.count { |s| s.draft.pending? }
           }
+        end
+
+        # « Ta première heure »: what Terranova reads of the place on its own
+        # (Maps::PlaceReading: slope in %, which way it runs, drop in metres,
+        # where rain water gathers) and when the person first read it.
+        def first_hour(map)
+          {
+            started_at: map.first_hour_started_at&.iso8601,
+            reading: Maps::PlaceReading.new(map).call.presence
+          }.compact
         end
 
         # Who owns the place and what they chose to share with other

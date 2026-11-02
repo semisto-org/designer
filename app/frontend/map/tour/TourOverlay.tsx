@@ -1,7 +1,6 @@
 import { usePage } from '@inertiajs/react'
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '@/lib/api'
-import { useEditor } from '@/map/editor/EditorContext'
 import type { SharedProps } from '@/types'
 
 // The painted terrain and its sprites load only when the carnet opens.
@@ -15,30 +14,16 @@ export function openTour() {
 }
 
 /**
- * Always mounted in the editor: opens the « carnet de route » by itself the
- * first time the person is on a map they can edit whose terrain is outlined,
- * and again on request. Not before: on a new map the person first sees their
- * own place and outlines it; the carnet (told on an example terrain) then
- * comes as the next step, not in front of their land. Closing it the first
- * time is remembered on the account, for all devices. Someone invited to
- * another person's map is greeted by « Bienvenue » instead (WelcomeCard):
- * the carnet would cover the garden they came to see with an example.
+ * Always mounted in the editor: opens the « carnet de route » on request
+ * (Parcours panel, « Voici ton lieu », the welcome card). It no longer opens
+ * by itself: a new map greets its owner with their own place (« Voici ton
+ * lieu », FirstHourOverlay), not with the carnet's example terrain. Closing
+ * it the first time is remembered on the account, for all devices.
  */
 export default function TourOverlay() {
-  const editor = useEditor()
   const { props } = usePage<SharedProps & { aiConnected?: boolean }>()
-  const firstVisit = editor.canEdit && editor.map.role === 'owner' && props.currentUser != null && !props.currentUser.tourSeen
-  const outlined = editor.map.boundary != null
   const [open, setOpen] = useState(false)
-  const remembered = useRef(!firstVisit)
-
-  // The terrain outlined on a first visit: once the person leaves the
-  // « Terrain » panel (more parcels may still come), the carnet tells what
-  // comes next.
-  const outlining = editor.activePanel === 'terrain'
-  useEffect(() => {
-    if (outlined && !outlining && !remembered.current) setOpen(true)
-  }, [outlined, outlining])
+  const remembered = useRef(props.currentUser == null || props.currentUser.tourSeen)
 
   useEffect(() => {
     const onOpen = () => setOpen(true)

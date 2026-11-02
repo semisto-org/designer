@@ -268,6 +268,7 @@ fr:
         open_chat: "Dire bonjour à l'équipe"
         explore: "Découvrir le plan"
         tour: "Comment se conçoit un jardin-forêt ?"
+        reader_guide: "Comment lire ce plan ?"
       problems:
         invalid:
           title: "Lien introuvable"
@@ -333,13 +334,17 @@ fr:
   map_invitation_mailer:
     invite:
       subject: "%{inviter} t'invite sur la carte « %{map} »"
+      subject_viewer: "%{inviter} t'envoie le plan de « %{map} »"
       greeting: "Bonjour,"
       body: "%{inviter} t'invite à rejoindre la carte « %{map} » sur Semisto Terranova, en tant que %{role}."
+      body_viewer: "%{inviter} t'envoie le plan du jardin « %{map} », dessiné sur Semisto Terranova, pour que tu le découvres et donnes ton avis."
       role_editor: "Un éditeur dessine et modifie la carte, et participe à la discussion de l'équipe."
-      role_viewer: "Un lecteur consulte la carte et commente ses éléments."
+      role_viewer: "Tu pourras parcourir le plan, faire glisser les années pour voir le jardin grandir, et poser tes questions là où elles se posent : sur un arbre, une mare, un chemin. Rien de ce que tu touches ne change le plan."
       chat: "Tu feras aussi partie de la discussion de la carte, pour parler avec l'équipe en direct."
       since: "Ce jardin se dessine depuis %{date} : sur la carte, tu le verras grandir, de l'an 1 à l'an 30."
       button: "Rejoindre la carte"
+      button_viewer: "Découvrir le plan du jardin"
+      guide_viewer: "Pour t'y retrouver en deux minutes, lis « %{title} » :"
       signin_hint: "Tu seras invité à te connecter (avec Google ou un lien par e-mail, sans mot de passe) si ce n'est pas déjà fait."
       expiry: "Cette invitation est valable jusqu'au %{date}."
   comment_mailer:

@@ -9,7 +9,7 @@ class HelpArticleTest < ActiveSupport::TestCase
     construire-sa-palette-et-ses-patches la-liste-de-plants-et-la-commande planter-puis-observer
     les-alertes-reglementaires le-tableau-financier
     partager-et-commenter publier-sa-carte imprimer-un-plan-a-l-echelle
-    connecter-son-ia relire-les-brouillons-de-l-ia formules-et-forfait
+    connecter-son-ia relire-les-brouillons-de-l-ia formules-et-forfait tu-as-recu-le-plan-de-ton-jardin
   ].freeze
 
   # The help center's categories, in display order.

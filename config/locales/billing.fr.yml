@@ -262,6 +262,17 @@ fr:
       after: "Ensuite, rien ne disparaît : ton IA continue de lire tes cartes, et tout ce que tu as accepté reste sur la carte. Seuls les nouveaux brouillons demanderont le forfait."
       cta: "Voir les formules"
       account: "Où en est la connexion de ton IA : %{url}"
+    plan_started:
+      subject: "Ta formule %{plan} est active"
+      yearly: "Merci ! Ta formule Home est active jusqu'au %{date}."
+      yearly_renewed: "Merci ! Ta formule Home est renouvelée : ta nouvelle année court du %{from} au %{date}, sans perdre un jour de l'actuelle."
+      yearly_note: "Rien n'est prélevé automatiquement : on te prévient un mois avant l'échéance."
+      subscription: "Merci ! Ton abonnement %{plan} est actif."
+      subscription_note: "Il se renouvelle tout seul. Tu peux le gérer ou le résilier à tout moment depuis ta page Formule."
+      unlocks: "Ce qu'elle t'ouvre :"
+      team: "Pour que les cartes de ton équipe comptent dans cette formule, ouvre la page de l'équipe et choisis « Payer les cartes de l'équipe avec mon forfait »."
+      receipt: "Le reçu de Stripe arrive dans un e-mail à part. Tes paiements et tes factures sont aussi sur ta page Formule : %{url}"
+      cta: "Ouvrir mes cartes"
     drone_ordered:
       subject: "Mission drone commandée par %{name}"
       body: "%{name} (%{email}) vient de commander une mission drone sur Semisto Terranova."

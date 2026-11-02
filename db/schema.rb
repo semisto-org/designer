@@ -859,6 +859,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_190100) do
     t.datetime "outlined_at"
     t.datetime "plan_printed_at"
     t.datetime "chat_digest_at"
+    t.datetime "first_hour_started_at"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"

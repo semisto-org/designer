@@ -44,11 +44,14 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal 1, data.dig("elements", "by_layer", "networks", "active")
     assert_equal "Zone", data.dig("known_kinds", "zone")
     assert_equal [], data.dig("implementation", "phases")
+    assert_nil data["reader_guide"], "the reader's guide is for readers"
     assert_equal AiAction.last.map, @map
 
     data, = call_tool(@viewer, "get_map", { map_id: @map.id })
     assert_nil data.dig("elements", "by_layer", "networks"), "networks are hidden from viewers"
     refute data.dig("permissions", "propose_drafts")
+    assert_equal "tu-as-recu-le-plan-de-ton-jardin", data.dig("reader_guide", "slug")
+    assert_equal "http://www.example.com/help/tu-as-recu-le-plan-de-ton-jardin", data.dig("reader_guide", "url")
 
     text, error = call_tool(@stranger, "get_map", { map_id: @map.id })
     assert error

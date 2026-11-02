@@ -31,7 +31,8 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const sectionsRef = useRef<(HTMLElement | null)[]>([])
-  const [stamp, setStamp] = useState({ tau: 0, chapter: 0, zoom: 1, past: false })
+  const stampRef = useRef<HTMLDivElement>(null)
+  const [stamp, setStamp] = useState({ tau: 0, chapter: 0, zoom: 1, past: false, covered: false })
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -68,6 +69,18 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
       measure()
     }
     const target = () => stateAt(tops, window.scrollY + vh * 0.35, vh)
+    // On a phone the date sits at the top of the screen, where the chapter
+    // notes scroll by: it steps aside while a note passes under it, so two
+    // dates are never written over each other (the note carries its own).
+    const stampCovered = () => {
+      const box = stampRef.current
+      if (!box || vw >= 768) return false
+      const { top, bottom } = box.getBoundingClientRect()
+      return sectionsRef.current.some((section) => {
+        const note = section?.firstElementChild?.getBoundingClientRect()
+        return !!note && note.top < bottom + 12 && note.bottom > top - 12
+      })
+    }
 
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000)
@@ -93,10 +106,11 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
         const season = painter.draw(shown, cam, vw, vh, dpr, wind, planted, particles)
         painter.step(particles, season, shown.tau, dt)
       }
-      const key = `${calendar(shown.tau).year}-${calendar(shown.tau).month}-${shown.chapter}-${shown.zoom < 0.7}-${past}`
+      const covered = stampCovered()
+      const key = `${calendar(shown.tau).year}-${calendar(shown.tau).month}-${shown.chapter}-${shown.zoom < 0.7}-${past}-${covered}`
       if (key !== lastStamp) {
         lastStamp = key
-        setStamp({ tau: shown.tau, chapter: shown.chapter, zoom: shown.zoom, past })
+        setStamp({ tau: shown.tau, chapter: shown.chapter, zoom: shown.zoom, past, covered })
       }
       // nothing to paint under the practical notes: sleep until the visitor scrolls back up
       if (past) frame = 0
@@ -136,7 +150,7 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
   const stageLabel = cal.stage === 'growing'
     ? tf('site.home.story.stamp.growing', { year: cal.gardenYear })
     : tf(`site.home.story.stamp.${cal.stage}`)
-  const hideStamp = stamp.zoom < 0.7 || stamp.chapter === 0 || stamp.past
+  const hideStamp = stamp.zoom < 0.7 || stamp.chapter === 0 || stamp.past || stamp.covered
 
   return (
     <div ref={rootRef} className="timelapse relative">
@@ -156,6 +170,7 @@ export function Timelapse({ children }: { children?: React.ReactNode }) {
       </header>
 
       <div
+        ref={stampRef}
         className={'pointer-events-none fixed left-4 z-20 grid transition-opacity duration-300 sm:left-8 max-md:top-[calc(4.5rem+env(safe-area-inset-top))] md:bottom-[calc(1.25rem+env(safe-area-inset-bottom))] ' + (hideStamp ? 'opacity-0' : 'opacity-100')}
         aria-live="polite"
       >
