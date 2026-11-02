@@ -10,7 +10,8 @@ import { elementFor } from '@/map/drawing/catalog'
 import { featureName } from '@/map/earthworks/model'
 import { measure } from '@/map/editor/measure'
 import { INSPECTOR_SECTIONS } from '@/map/panels'
-import { useChat } from '@/collab/chat/chatStore'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 import PlantHeading from '@/map/plants/PlantHeading'
 import { isPlant } from '@/map/plants/properties'
 import { displayGeometry } from '@/map/zones/zones'
@@ -23,7 +24,6 @@ import type { MapFeature } from '@/types'
  */
 export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeature; frame?: 'map' | 'page'; lead?: ReactNode }) {
   const editor = useEditor()
-  const chat = useChat()
   const p = feature.properties
   const [name, setName] = useState(p.name ?? '')
   const [notes, setNotes] = useState(p.notes ?? '')
@@ -75,11 +75,9 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
     editor.updateFeature(p.id, patch).catch((e: Error) => editor.notify(e.message, 'error'))
   }
 
-  return (
+  const sheet = (
     <aside className={clsx('overflow-y-auto bg-white', frame === 'map'
-      ? clsx('absolute inset-x-2 bottom-14 z-20 max-h-[60%] rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]',
-        // The map's discussion takes the right edge while it shows: the inspector steps beside it.
-        chat.open && !chat.picking ? 'md:right-[25rem]' : 'md:right-3')
+      ? 'min-h-0 rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:w-80'
       : 'h-full w-full p-5')}>
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -152,4 +150,7 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
       </div>
     </aside>
   )
+  if (frame !== 'map') return sheet
+  // The right zone from md up, the one sheet on a phone; it outranks the discussion, which waits (map/layout/zones).
+  return <ZoneCard id="inspector" zone={{ desktop: 'right', phone: 'sheet' }} priority={PRIORITY.inspector} className="max-h-[60%] md:max-h-full">{sheet}</ZoneCard>
 }

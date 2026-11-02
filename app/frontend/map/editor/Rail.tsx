@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { GuidePill } from '@/map/editor/GuidePill'
 import { STAGES, useGuide } from '@/map/editor/guide'
 import { parseExpanded, railItems } from '@/map/editor/railItems'
 import type { EditorPanel, PanelGroup } from '@/map/panels/registry'
@@ -129,6 +130,8 @@ export function EditorRail({ panels }: RailProps) {
         collapsed ? 'w-14' : 'w-[220px]',
       )}
     >
+      {/* « À faire maintenant » leaves the map while a panel is open, and waits here. */}
+      {editor.activePanel != null && editor.activePanel !== 'journey' && <GuidePill collapsed={collapsed} />}
       <div className={clsx('flex min-h-0 flex-1 flex-col overflow-y-auto', collapsed ? 'items-center gap-1 py-3' : 'gap-3.5 px-2.5 py-3.5')}>
         {groups.map(({ group, items, hidden, foldable }) => {
           const index = STAGES.indexOf(group as never)

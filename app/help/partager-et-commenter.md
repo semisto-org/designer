@@ -27,7 +27,7 @@ Les commentaires sont attachés à ce dont on parle : un élément, une plante, 
 
 ## La discussion de la carte
 
-Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travaille, au bureau comme sur le terrain. Touche **Discussion** en haut de la carte (ou la touche **D**) pour l'afficher, et encore une fois pour la masquer : elle se range sans rien perdre, et ce qui arrive pendant ce temps s'affiche en pastille sur le bouton.
+Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travaille, au bureau comme sur le terrain. Touche **Discussion** en haut de la carte (ou la touche **D**) pour l'afficher, et encore une fois pour la masquer : elle se range sans rien perdre, et ce qui arrive pendant ce temps s'affiche en pastille sur le bouton. Sur ordinateur, elle occupe le côté droit de la carte ; quand tu ouvres la fiche d'un élément, la fiche prend sa place et la discussion revient dès que tu la fermes.
 
 - **Qui y est** : le propriétaire, les éditeurs et l'équipe de la carte, toujours. Un lecteur (un client, un habitant du lieu) n'y entre que si le propriétaire coche **Dans la discussion** à côté de son nom, dans **Partager** ; on peut aussi le cocher en l'invitant.
 - **@** mentionne quelqu'un : il reçoit un e-mail tout de suite.
