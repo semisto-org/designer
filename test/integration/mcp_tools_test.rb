@@ -157,6 +157,35 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert error, "a viewer (maybe the client) proposes nothing"
   end
 
+  test "get_document_theme reads a charter; propose_document_theme leaves it as a proposal on the page" do
+    data, error = call_tool(@owner, "get_document_theme")
+    refute error, data
+    assert_equal DocumentTheme::DEFAULTS["heading_font"], data["applies"]["heading_font"]
+    assert_equal "http://www.example.com/account/charte", data["url"]
+    assert_includes data["fonts"].map { _1["key"] }, "lora"
+
+    data, error = call_tool(@owner, "propose_document_theme", { heading_color: "#5B5781", body_font: "inter", rationale: "Le Design System Semisto (colors_and_type.css)." })
+    refute error, data
+    assert_equal({ "heading_color" => "#5b5781", "body_font" => "inter" }, data["proposed"])
+    user = users(:michael).reload
+    assert_equal({}, user.document_theme, "nothing changes before the person takes it")
+    assert_equal "#5b5781", user.document_theme_draft.dig("theme", "heading_color")
+    assert_equal "#5b5781", call_tool(@owner, "get_document_theme").first.dig("pending_proposal", "fields", "heading_color")
+
+    _, error = call_tool(@owner, "propose_document_theme", { footer: "  ", rationale: "Rien de neuf à proposer." })
+    assert error, "an empty proposal is refused"
+
+    team = Organization.create_with_admin!(users(:bob), name: "Autre équipe")
+    error_text, error = call_tool(@owner, "propose_document_theme", { team_id: team.id, accent_color: "#afbd00", rationale: "Le Design System de l'équipe." })
+    assert error, "not a member of that team"
+    assert_match(/introuvable/, error_text)
+    team.memberships.create!(user: users(:michael), role: "member")
+    data, error = call_tool(@owner, "propose_document_theme", { team_id: team.id, accent_color: "#afbd00", rationale: "Le Design System de l'équipe." })
+    refute error, data
+    assert_equal "http://www.example.com/teams/#{team.id}/charte", data["review_url"]
+    assert_equal false, call_tool(@owner, "get_document_theme", { team_id: team.id }).first["can_change"]
+  end
+
   test "get_map counts the palette like its table: planted, still to plant, its price and what is left to buy" do
     apple = plant_species(:apple)
     apple.update!(invasive_countries: [ "BE" ])

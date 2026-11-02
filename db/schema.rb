@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1019,6 +1019,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "billing_user_id"
+    t.jsonb "document_theme", default: {}, null: false
+    t.jsonb "document_theme_draft"
     t.index ["billing_user_id"], name: "index_organizations_on_billing_user_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
@@ -1762,6 +1764,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_150000) do
     t.bigint "source_publication_id"
     t.boolean "replay_consent"
     t.datetime "replay_consent_at"
+    t.jsonb "document_theme", default: {}, null: false
+    t.jsonb "document_theme_draft"
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true

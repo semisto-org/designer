@@ -13,6 +13,16 @@
    EB Garamond for display titles, never in italics. Fonts are self-hosted
    (no request to Google). The token names stay those of the v1 so every
    component follows. */
+/* A themed document (DocumentTheme, lib/documentTheme.ts): its charter sets
+   the --doc-* variables; without one, Semisto's tokens. */
+@theme inline {
+  --color-doc-heading: var(--doc-heading, var(--color-prune-800));
+  --color-doc-accent: var(--doc-accent, var(--color-leaf-700));
+  --color-doc-text: var(--doc-text, var(--color-loam-700));
+  --font-doc-heading: var(--doc-heading-font, var(--font-serif));
+  --font-doc-body: var(--doc-body-font, var(--font-sans));
+}
+
 @theme {
   --font-sans: "Inter Variable", "Allotrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: "EB Garamond Variable", "Sole Serif Small", "Cormorant Garamond", Georgia, serif;
@@ -310,6 +320,11 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 .prose img[src^="/help/captures/"] { border-radius: 0.75rem; box-shadow: 0 4px 18px rgb(38 30 20 / 0.12), 0 0 0 1px rgb(38 30 20 / 0.08); }
 /* Markdown pages (documents/markdown): checklists, tables and the empty
    line's hint, which the typography plugin does not style. */
+/* A map's Markdown page wears the charter of its team or pro (DocumentTheme). */
+.doc-themed .markdown-page { color: var(--color-doc-text); font-family: var(--font-doc-body); }
+.doc-themed .markdown-page :is(h1, h2, h3, h4) { color: var(--color-doc-heading); font-family: var(--font-doc-heading); }
+.doc-themed .markdown-page a { color: var(--color-doc-accent); }
+.doc-themed .markdown-page blockquote { border-left-color: var(--color-doc-accent); }
 /* Someone else writing on the same page: their caret and their first name. */
 .markdown-page .collab-caret { position: relative; margin: 0 -1px; border-left: 2px solid; border-right: 0; word-break: normal; pointer-events: none; }
 .markdown-page .collab-caret-label { position: absolute; top: -1.45em; left: -2px; white-space: nowrap; border-radius: 0.375rem 0.375rem 0.375rem 0; padding: 0.05rem 0.4rem; font-family: var(--font-sans); font-size: 0.875rem; font-weight: 600; line-height: 1.3; color: #fff; user-select: none; }

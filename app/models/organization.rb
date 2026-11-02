@@ -10,6 +10,7 @@
 # Moving a map in or out of a team is the map owner's decision only.
 class Organization < ApplicationRecord
   include HasLogo
+  include HasDocumentTheme
 
   NAME_MAX_LENGTH = 80
 

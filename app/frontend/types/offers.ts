@@ -1,3 +1,4 @@
+import type { DocumentTheme } from './documentThemes'
 // The offer builder (pages/maps/offers): inputs edited by the team, the
 // map's measures and the computed budget (Offer::Inputs, Offer::Measures,
 // Offer::Estimator). Inputs keep the server's snake_case keys: they go
@@ -322,6 +323,8 @@ export type OfferVersionPageProps = {
   issuer: string
   /** The logo printed at the top (Map#letterhead). */
   letterhead: { logoUrl: string; name: string } | null
+  /** The « charte graphique » of the team, else of the owner (DocumentTheme). */
+  theme?: DocumentTheme
   /** The working offer, not a saved version. */
   preview?: boolean
   document: ClientDocumentData
