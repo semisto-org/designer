@@ -25,6 +25,8 @@ Depuis la carte, touche **Partager** en haut de l'écran, puis invite par adress
 
 Les commentaires sont attachés à ce dont on parle : un élément, une plante, une zone. Pas de messages perdus dans une boîte mail : la discussion reste là où elle a un sens, avec ceux qui ont accès à la carte. Les lecteurs peuvent commenter : c'est idéal pour un voisin, un ami ou un animateur de stage qui veut donner son avis sans toucher au plan.
 
+Quand un lecteur pose la **première question** sur un élément, le propriétaire de la carte reçoit un e-mail et suit cette discussion ensuite, pour qu'aucune question ne reste sans réponse. Sous le champ de commentaire, une phrase dit toujours qui recevra un e-mail (« Michael recevra un e-mail ») ; pour prévenir quelqu'un d'autre, mentionne-le avec **@**. Chacun peut couper ces e-mails dans **Mon compte**, ou ne plus suivre une discussion avec sa cloche.
+
 ## La discussion de la carte
 
 Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travaille, au bureau comme sur le terrain. Touche **Discussion** en haut de la carte (ou la touche **D**) pour l'afficher, et encore une fois pour la masquer : elle se range sans rien perdre, et ce qui arrive pendant ce temps s'affiche en pastille sur le bouton. Sur ordinateur, elle occupe le côté droit de la carte ; quand tu ouvres la fiche d'un élément, la fiche prend sa place et la discussion revient dès que tu la fermes.
@@ -34,6 +36,8 @@ Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travail
 - **#** cite un élément de la carte (« #Mare du bas », « #Pommier n° 12 ») : un clic dessus le montre sur la carte.
 - **Épingler un endroit** : sur le terrain, le bouton de position épingle ton message là où tu te tiens ; au bureau, la mire te laisse toucher l'endroit sur la carte. Les messages épinglés apparaissent sur la carte tant que la discussion est affichée.
 - **Joindre une photo** (éditeurs) : elle rejoint aussi les photos de la carte, à l'endroit où elle a été prise.
+
+Dans l'**app Terranova**, la discussion s'ouvre avec le bouton **Discussion** sous l'en-tête de la carte, et se range d'un glissement vers le bas, sans rien perdre. Sur le terrain, **Ici** épingle ton message là où tu te tiens et l'appareil photo y joint ce que tu vois ; # propose d'abord les éléments autour de toi. Sans réseau, ton message attend dans tes envois et part dès qu'il revient. Les messages épinglés apparaissent sur la carte, et la feuille du terrain montre sous **Dit ici** ceux qu'on a laissés là où tu te tiens.
 
 Les e-mails restent calmes : une mention t'arrive tout de suite ; les autres messages, en **un seul résumé une heure plus tard**, et seulement s'ils ne sont pas lus. La cloche de la discussion coupe ce résumé pour cette carte.
 

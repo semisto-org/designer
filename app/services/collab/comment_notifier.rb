@@ -11,6 +11,17 @@ module Collab
       @comment = comment
     end
 
+    # Who a new comment from `author` on `commentable` would e-mail, mentions
+    # aside: shown under the comment box (« Michael recevra un e-mail »).
+    # Nil for the map's own discussion, e-mailed as a digest to its members.
+    def self.recipients_for(commentable, author)
+      return nil if commentable.is_a?(Map)
+      map = commentable.comment_map
+      ids = CommentSubscription.where(commentable:).pluck(:user_id)
+      ids << map.owner_id if Comment.alerts_owner?(commentable, author)
+      map.participants.where(id: ids, comment_emails: true).where.not(id: author.id).order(:id).to_a
+    end
+
     # `only_mentions: [ids]` is used after an edit: just the new mentions.
     def deliver(only_mentions: nil)
       mentioned = mentioned_recipients(only_mentions)

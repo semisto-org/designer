@@ -11,6 +11,7 @@ import type { Memory } from '@/lib/memory'
 import { missingSeasons, observationTime, seenLabel, signLabel, signsOfMonth, type SeasonCount, type Sign } from '@/lib/season'
 import type { WeekReport } from '@/lib/week'
 import type { SpotPhotos } from '@/lib/retake'
+import type { ChatMessage } from '@/lib/chat-core'
 import { arrived, arrowAngle, type Target } from '@/lib/tour'
 import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
 import type { MapFeature, Photo, Planting } from '@/lib/types'
@@ -62,7 +63,7 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week, year }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week, year, saidHere = [], onSaid }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
   /** Plants of the design still to put in the ground, for the planting round. */
   toPlant?: number; onTour?: () => void
@@ -74,6 +75,8 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
   week?: WeekReport | null
   /** « Ton année d'observation »: what was seen in each season, and the signs to go out for this month. */
   year?: { seasons: SeasonCount[]; lookFor: { sign: Sign; noted: boolean }[]; onSign: (sign: Sign) => void } | null
+  /** Messages of the map's discussion pinned where one stands, nearest first. */
+  saidHere?: { message: ChatMessage; meters: number }[]; onSaid?: (messageId: number) => void
 }) {
   const card = monthCard()
   return (
@@ -91,6 +94,23 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
       {card && <Body muted>{card.body}</Body>}
       {viewer && <Body muted>{t('mobile.terrain.viewer')}</Body>}
       {memory && mapId !== undefined && <MemoryCard memory={memory} mapId={mapId} planting={planting} onPick={onPick} onPhoto={onPhoto} />}
+      {saidHere.length > 0 && onSaid && (
+        <>
+          <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.chat.here_title')}</Text>
+          {saidHere.slice(0, 3).map(({ message, meters }) => (
+            <Pressable key={message.id} style={s.row} onPress={() => { haptics.tap(); onSaid(message.id) }} accessibilityRole="button"
+              accessibilityHint={t('mobile.chat.here_hint')}>
+              <Icon name="chat" size={22} color={colors.prune600} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowTitle} numberOfLines={2} maxFontSizeMultiplier={MAX_FONT_SCALE}>{message.body}</Text>
+                <Text style={s.meta} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+                  {[message.canEdit ? t('mobile.chat.you') : message.author.name, formatDate(message.createdAt), formatDistance(meters)].join(' · ')}
+                </Text>
+              </View>
+            </Pressable>
+          ))}
+        </>
+      )}
       <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.terrain.around')}</Text>
       {located === 'pending' && <Body muted>{t('mobile.terrain.around_locating')}</Body>}
       {located === 'denied' && <Body muted>{t('mobile.terrain.around_no_position')}</Body>}

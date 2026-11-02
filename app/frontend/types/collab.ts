@@ -37,6 +37,8 @@ export type ThreadData = {
   subscribed: boolean
   lastReadAt: string | null
   members: Mentionable[]
+  /** Who my next comment will e-mail (mentions aside); null for the map's live discussion. */
+  notified?: string[] | null
   commentEmails: boolean
 }
 

@@ -25,6 +25,8 @@ export function matchMembers(members: Mentionable[], query: string): Mentionable
 
 type Props = {
   members: Mentionable[]
+  /** Who a new comment will e-mail (names), shown under the box; omitted when editing. */
+  notified?: string[] | null
   initial?: string
   placeholder?: string
   submitLabel?: string
@@ -35,7 +37,18 @@ type Props = {
 }
 
 /** Comment box with @mention completion (members of the map only). */
-export function CommentComposer({ members, initial = '', placeholder, submitLabel, busy, autoFocus, onSubmit, onCancel }: Props) {
+/** « Michael recevra un e-mail · @ pour mentionner quelqu'un ». */
+export function composerHint(notified: string[] | null | undefined, canMention: boolean): string {
+  const parts: string[] = []
+  if (notified) {
+    const names = notified.length > 1 ? `${notified.slice(0, -1).join(', ')} ${t('collab.comments.and')} ${notified[notified.length - 1]}` : notified.join('')
+    parts.push(notified.length === 0 ? t('collab.comments.notified_none') : t(notified.length === 1 ? 'collab.comments.notified_one' : 'collab.comments.notified_many', { names }))
+  }
+  if (canMention) parts.push(t('collab.comments.mention_hint'))
+  return parts.join(' · ')
+}
+
+export function CommentComposer({ members, notified, initial = '', placeholder, submitLabel, busy, autoFocus, onSubmit, onCancel }: Props) {
   const [text, setText] = useState(initial)
   const [cursor, setCursor] = useState(0)
   const [active, setActive] = useState(0)
@@ -120,7 +133,7 @@ export function CommentComposer({ members, initial = '', placeholder, submitLabe
         </ul>
       )}
       <div className="mt-2 flex items-center justify-between gap-2">
-        <span className="text-xs text-loam-400">{members.length > 0 ? t('collab.comments.mention_hint') : ''}</span>
+        <span className="text-sm text-loam-500">{composerHint(notified, members.length > 0)}</span>
         <div className="flex gap-2">
           {onCancel && <Button size="sm" variant="ghost" onClick={onCancel}>{t('common.cancel')}</Button>}
           <Button size="sm" onClick={() => void submit()} disabled={busy || text.trim() === ''}>
