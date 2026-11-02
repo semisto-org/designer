@@ -54,6 +54,7 @@ module Mcp
           team_season: team_season(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
+          reader_guide: reader_guide,
           permissions: {
             read: true,
             propose_drafts: blockers.empty?,
@@ -75,6 +76,14 @@ module Mcp
       end
 
       private
+        # A reader (most often the person the garden is designed for) gets the
+        # help article written for them: how to read the plan, ask, print.
+        def reader_guide
+          return nil unless @role == "viewer"
+          article = HelpArticle.find(MapInvitationMailer::READER_GUIDE) or return nil
+          { slug: article.slug, title: article.title, url: "#{origin}/help/#{article.slug}", note: t("notes.reader_guide") }
+        end
+
       # The walks made with the phone; list_site_visits gives each one.
       def site_visits(map)
         last = map.site_visits.reorder(started_at: :desc).first

@@ -71,7 +71,8 @@ function useRailGroups(panels: EditorPanel[]) {
   const editor = useEditor()
   const guide = useGuide()
   const [expanded, toggle] = useExpandedGroups()
-  const todoPanel = guide.target?.kind === 'item' ? guide.target.panel : null
+  // « À faire maintenant » is for whoever can do it: a reader has no dot to chase.
+  const todoPanel = editor.canEdit && guide.target?.kind === 'item' ? guide.target.panel : null
   const groups = GROUPS.map((group) => {
     const all = panels.filter((p) => p.group === group && !p.hiddenFromRail).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
     const { shown, hidden } = railItems(all, { expanded: expanded.has(group), pinned: [editor.activePanel, todoPanel] })

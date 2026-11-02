@@ -27,6 +27,28 @@ class CollabMailersTest < ActionMailer::TestCase
     assert_includes text, I18n.t("map_invitation_mailer.invite.chat")
   end
 
+  test "invitation mail for a reader: the plan they receive, how to read it, and the guide" do
+    invitation = @map.invitations.create!(email_address: "client@example.org", role: "viewer", invited_by: @owner)
+    mail = MapInvitationMailer.invite(invitation)
+    assert_equal "Michael t'envoie le plan de « Domaine d'Ahinvaux »", mail.subject
+    text = mail.text_part.body.to_s
+    html = mail.html_part.body.to_s
+    assert_includes text, "Michael t'envoie le plan du jardin « Domaine d'Ahinvaux »"
+    assert_includes text, "faire glisser les années"
+    assert_includes html, I18n.t("map_invitation_mailer.invite.button_viewer")
+    assert_not_includes html, I18n.t("map_invitation_mailer.invite.button")
+    assert_includes html, "http://example.com/help/tu-as-recu-le-plan-de-ton-jardin"
+    assert_includes text, "« Tu as reçu le plan de ton jardin »"
+    assert_not_includes text, I18n.t("map_invitation_mailer.invite.chat"), "no discussion line without chat access"
+  end
+
+  test "invitation mail for an editor keeps its words, without the reader's guide" do
+    invitation = @map.invitations.create!(email_address: "new@example.org", role: "editor", invited_by: @owner)
+    html = MapInvitationMailer.invite(invitation).html_part.body.to_s
+    assert_includes html, I18n.t("map_invitation_mailer.invite.button")
+    assert_not_includes html, "tu-as-recu-le-plan-de-ton-jardin"
+  end
+
   test "mention mail: escaped body, mention in bold, link to the thread" do
     feature = with_feature(@map, name: "Noyer")
     comment = Comment.create!(commentable: feature, author: @owner, body: "<script>alert(1)</script> @Alice voici\nla suite")
