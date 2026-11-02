@@ -4,16 +4,25 @@ module MapJoining
   extend ActiveSupport::Concern
 
   private
-    # Sends visitors to sign in first (Google or magic link), then back here.
-    def require_sign_in_to_join(map)
+    # A signed-out visitor first sees the place they are invited to (its
+    # outline, who invites them, what they will be able to do, since when the
+    # garden is being designed), then signs in (Google or magic link) and
+    # comes back here to join.
+    def require_sign_in_to_join(map, inviter:, role:, chat:)
       return true if authenticated?
       session[:return_to_after_authenticating] = request.url
-      redirect_to new_session_path, notice: t("collab.joining.sign_in_first", map: map.name)
+      render inertia: "invitations/welcome", props: {
+        invitation: Collab::InvitationWelcome.new(map, inviter:, role:, chat:).as_json,
+        signInPath: new_session_path
+      }
       false
     end
 
-    def joined(map)
-      redirect_to map_path(map), notice: t("collab.joining.joined", map: map.name)
+    # The map greets the newcomer once (`welcome` in its props, MapsController#show),
+    # with who invited them: no toast on top of it.
+    def joined(map, inviter:)
+      flash[:joined_map] = { "id" => map.id, "inviter" => inviter&.display_name }
+      redirect_to map_path(map)
     end
 
     def render_join_problem(state, map: nil, status:)

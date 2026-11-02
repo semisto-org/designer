@@ -59,9 +59,9 @@ class Maps::TeamsControllerTest < ActionDispatch::IntegrationTest
     assert_nil json["organization"]
     assert_nil @map.reload.organization_id
     assert_nil @map.role_for(@colleague)
-    assert_not CommentSubscription.subscribed?(@colleague, @map)
+    assert_not CommentSubscription.exists?(user: @colleague, commentable: @map)
     assert_equal "viewer", @map.role_for(users(:alice))
-    assert CommentSubscription.subscribed?(users(:alice), @map)
+    assert CommentSubscription.exists?(user: users(:alice), commentable: @map)
   end
 
   test "an owner who left the team can still take their map out" do

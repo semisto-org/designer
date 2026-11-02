@@ -4,13 +4,13 @@ class JoinsController < ApplicationController
   allow_unauthenticated_access only: :show
 
   def show
-    link = MapShareLink.includes(:map).find_by(token: params[:token])
+    link = MapShareLink.includes(:created_by, map: :owner).find_by(token: params[:token])
     return render_join_problem("invalid", status: :not_found) unless link && link.map.archived_at.nil?
     map = link.map
     return render_join_problem("disabled", map:, status: :gone) unless link.enabled?
-    return unless require_sign_in_to_join(map)
+    return unless require_sign_in_to_join(map, inviter: link.created_by || map.owner, role: link.role, chat: link.role == "editor")
 
     link.accept!(Current.user)
-    joined(map)
+    joined(map, inviter: link.created_by || map.owner)
   end
 end

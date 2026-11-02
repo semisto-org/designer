@@ -34,8 +34,16 @@ class CommentTest < ActiveSupport::TestCase
   end
 
   test "mentions are resolved on the server against the people who can open the map" do
-    comment = Comment.create!(commentable: @map, author: @owner, body: "@Alice peux-tu regarder ? cc @Bob")
+    comment = Comment.create!(commentable: @feature, author: @owner, body: "@Alice peux-tu regarder ? cc @Bob")
     assert_equal [ @alice.id ], comment.mentioned_user_ids, "Bob has no access, he cannot be mentioned"
+  end
+
+  test "in the map's discussion, only its members can be mentioned" do
+    comment = Comment.create!(commentable: @map, author: @owner, body: "@Alice peux-tu regarder ?")
+    assert_empty comment.mentioned_user_ids, "a viewer outside the discussion is not reachable there"
+    @map.memberships.find_by(user: @alice).update!(chat_access: true)
+    comment.update!(body: "@Alice et maintenant ?")
+    assert_equal [ @alice.id ], comment.mentioned_user_ids
   end
 
   test "team members can be mentioned too" do

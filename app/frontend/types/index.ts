@@ -131,6 +131,8 @@ export type MapData = {
   readOnlyByPlan?: boolean
   /** Put away by its owner: readable, not editable, out of the plan's count. */
   archived?: boolean
+  /** The person takes part in the map's live discussion (owner, editors, team, viewers let in). */
+  chat?: boolean
 }
 
 export type FeatureLayer =

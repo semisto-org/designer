@@ -1,0 +1,9 @@
+<p><%= t(".intro", count: @comments.size, map: @map.name) %></p>
+<% @comments.each do |comment| %>
+  <p style="margin:16px 0 4px;color:#6b6257;font-size:13px"><strong style="color:#332d25"><%= comment.author.display_name %></strong> · <%= l(comment.created_at.in_time_zone("Europe/Brussels"), format: :short) %><% if comment.location %> · <%= t(".pinned") %><% end %></p>
+  <blockquote style="margin:0;padding:4px 16px;border-left:3px solid #b4acce;color:#332d25">
+    <%= comment_body_html(comment) %>
+  </blockquote>
+<% end %>
+<p style="margin-top:20px"><a href="<%= @url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:999px;text-decoration:none;font-weight:600"><%= t(".open") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".reason") %> <%= t(".how_to_stop") %></p>

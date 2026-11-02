@@ -5,7 +5,7 @@ category: Partager et collaborer
 order: 70
 ---
 
-Un projet de jardin-forêt se construit rarement seul. Terranova permet d'inviter, de discuter sur la carte même, et de montrer son travail.
+Un projet de jardin-forêt se construit rarement seul. Terranova permet d'inviter, de discuter en direct sur la carte même, et de montrer son travail.
 
 [Ouvrir le panneau Discussions](action:panel/discussions)
 
@@ -21,9 +21,23 @@ Une carte à laquelle on est invité **ne compte jamais** dans la formule de l'i
 
 Depuis la carte, touche **Partager** en haut de l'écran, puis invite par adresse e-mail en choisissant le rôle. La personne reçoit un lien ; si elle n'a pas de compte, elle en crée un en quelques secondes avec Google ou un lien magique.
 
-## Commenter sur la carte
+## Commenter un élément
 
 Les commentaires sont attachés à ce dont on parle : un élément, une plante, une zone. Pas de messages perdus dans une boîte mail : la discussion reste là où elle a un sens, avec ceux qui ont accès à la carte. Les lecteurs peuvent commenter : c'est idéal pour un voisin, un ami ou un animateur de stage qui veut donner son avis sans toucher au plan.
+
+## La discussion de la carte
+
+Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travaille, au bureau comme sur le terrain. Touche **Discussion** en haut de la carte (ou la touche **D**) pour l'afficher, et encore une fois pour la masquer : elle se range sans rien perdre, et ce qui arrive pendant ce temps s'affiche en pastille sur le bouton.
+
+- **Qui y est** : le propriétaire, les éditeurs et l'équipe de la carte, toujours. Un lecteur (un client, un habitant du lieu) n'y entre que si le propriétaire coche **Dans la discussion** à côté de son nom, dans **Partager** ; on peut aussi le cocher en l'invitant.
+- **@** mentionne quelqu'un : il reçoit un e-mail tout de suite.
+- **#** cite un élément de la carte (« #Mare du bas », « #Pommier n° 12 ») : un clic dessus le montre sur la carte.
+- **Épingler un endroit** : sur le terrain, le bouton de position épingle ton message là où tu te tiens ; au bureau, la mire te laisse toucher l'endroit sur la carte. Les messages épinglés apparaissent sur la carte tant que la discussion est affichée.
+- **Joindre une photo** (éditeurs) : elle rejoint aussi les photos de la carte, à l'endroit où elle a été prise.
+
+Les e-mails restent calmes : une mention t'arrive tout de suite ; les autres messages, en **un seul résumé une heure plus tard**, et seulement s'ils ne sont pas lus. La cloche de la discussion coupe ce résumé pour cette carte.
+
+Ton IA peut lire la discussion (si tu en fais partie) pour te résumer ce qui s'est dit ou relier une remarque de terrain à la carte ; elle n'y écrit pas.
 
 ## Transférer la carte
 

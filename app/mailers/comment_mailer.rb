@@ -16,6 +16,18 @@ class CommentMailer < ApplicationMailer
     mail to: user.email_address, subject: t(".subject", author: @author.display_name, title: @title)
   end
 
+  # The unread messages of the map's live discussion, gathered an hour after
+  # the first one (Collab::ChatDigest).
+  def chat_digest(map, user, comment_ids)
+    @map = map
+    @user = user
+    @comments = map.comments.visible.where(id: comment_ids).chronological.includes(:author).to_a
+    return if @comments.empty?
+    @url = map_url(map, discussion: map.comment_key)
+    show_place(map)
+    mail to: user.email_address, subject: t(".subject", count: @comments.size, map: map.name)
+  end
+
   private
     def prepare(comment, user)
       @comment = comment

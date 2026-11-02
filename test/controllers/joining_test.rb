@@ -9,12 +9,22 @@ class JoiningTest < ActionDispatch::IntegrationTest
     @bob = users(:bob)
   end
 
-  test "signed-out visitor is sent to sign in, then lands back on the invitation and joins" do
+  test "signed-out visitor first sees the place, then signs in, lands back on the invitation and joins" do
     invitation = @map.invitations.create!(email_address: "bob@example.org", role: "editor", invited_by: @owner)
-    get invitation_path(invitation.token)
-    assert_redirected_to new_session_path
-    follow_redirect!
-    assert_equal I18n.t("collab.joining.sign_in_first", map: @map.name), flash[:notice]
+    get invitation_path(invitation.token), headers: inertia_headers
+    assert_response :success
+    page = JSON.parse(response.body)
+    assert_equal "invitations/welcome", page["component"]
+    welcome = page["props"]["invitation"]
+    assert_equal @map.name, welcome["mapName"]
+    assert_equal @owner.display_name, welcome["inviterName"]
+    assert_equal "editor", welcome["role"]
+    assert welcome["chat"], "an editor is always in the discussion"
+    assert_equal @map.created_at.to_date.iso8601, welcome["since"]
+    assert_equal new_session_path, page["props"]["signInPath"]
+    # Never the address or the parcels before signing in.
+    assert_not welcome.key?("address")
+    assert_not welcome.key?("parcels")
 
     # Signing in (the magic link carries return_to) brings them back to the invitation.
     post magic_link_path(@bob.generate_token_for(:magic_link), return_to: invitation_path(invitation.token))
@@ -23,6 +33,20 @@ class JoiningTest < ActionDispatch::IntegrationTest
     assert_redirected_to map_path(@map)
     assert_equal "editor", @map.role_for(@bob)
     assert invitation.reload.accepted?
+
+    # The map greets them once, by who invited them, instead of the carnet de route.
+    get map_path(@map), headers: inertia_headers
+    welcome = JSON.parse(response.body)["props"]["welcome"]
+    assert_equal @owner.display_name, welcome["inviterName"]
+    assert_equal "editor", welcome["role"]
+    get map_path(@map), headers: inertia_headers
+    assert_nil JSON.parse(response.body)["props"]["welcome"]
+  end
+
+  test "a viewer invited into the discussion is told so" do
+    invitation = @map.invitations.create!(email_address: "bob@example.org", role: "viewer", chat_access: true, invited_by: @owner)
+    get invitation_path(invitation.token), headers: inertia_headers
+    assert JSON.parse(response.body)["props"]["invitation"]["chat"]
   end
 
   test "return_to survives the session: sign-in redirects to the stored invitation url" do
@@ -93,8 +117,11 @@ class JoiningTest < ActionDispatch::IntegrationTest
 
   test "share link: join as the link's role" do
     link = @map.create_share_link!(role: "viewer", created_by: @owner)
-    get join_path(link.token)
-    assert_redirected_to new_session_path
+    get join_path(link.token), headers: inertia_headers
+    page = JSON.parse(response.body)
+    assert_equal "invitations/welcome", page["component"]
+    assert_equal "viewer", page["props"]["invitation"]["role"]
+    assert_not page["props"]["invitation"]["chat"]
 
     sign_in_as @bob
     get join_path(link.token)

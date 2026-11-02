@@ -19,6 +19,14 @@ class CollabMailersTest < ActionMailer::TestCase
     assert_match(/valable jusqu'au \d\d\/\d\d\/\d{4}/, mail.text_part.body.to_s)
   end
 
+  test "invitation mail: says since when the garden grows, and the discussion for a viewer in it" do
+    @map.update_column(:created_at, Time.zone.local(2026, 10, 4))
+    invitation = @map.invitations.create!(email_address: "voisin@example.org", role: "viewer", chat_access: true, invited_by: @owner)
+    text = MapInvitationMailer.invite(invitation).text_part.body.to_s
+    assert_includes text, "Ce jardin se dessine depuis octobre 2026"
+    assert_includes text, I18n.t("map_invitation_mailer.invite.chat")
+  end
+
   test "mention mail: escaped body, mention in bold, link to the thread" do
     feature = with_feature(@map, name: "Noyer")
     comment = Comment.create!(commentable: feature, author: @owner, body: "<script>alert(1)</script> @Alice voici\nla suite")

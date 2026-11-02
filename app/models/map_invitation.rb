@@ -32,7 +32,7 @@ class MapInvitation < ApplicationRecord
   # invited address become theirs.
   def accept!(user)
     transaction do
-      membership = map.grant_access!(user, role, invited_by:)
+      membership = map.grant_access!(user, role, invited_by:, chat_access:)
       # Invited as an owner of the place: they become one on joining.
       membership&.update!(place_owner: true) if place_owner?
       update!(accepted_at: Time.current)
