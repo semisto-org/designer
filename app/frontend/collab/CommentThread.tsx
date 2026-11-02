@@ -189,7 +189,7 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
           ))}
         </ol>
       )}
-      <CommentComposer members={thread.members} busy={busy} onSubmit={post} />
+      <CommentComposer members={thread.members} notified={thread.notified} busy={busy} onSubmit={post} />
       <button
         type="button"
         onClick={() => void toggleSubscription()}

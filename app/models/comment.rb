@@ -56,6 +56,17 @@ class Comment < ApplicationRecord
   # discussion, everyone with access for an element's thread.
   def mention_pool = chat? ? map.chat_participants : map.participants
 
+  # A reader's (or a support role's) first message in an element's thread
+  # reaches the map's owner, who follows the thread from then on: the first
+  # question of a client must not wait for a designer to stumble on it.
+  # `except` leaves out the comment being saved.
+  def self.alerts_owner?(commentable, author, except: nil)
+    map = commentable&.comment_map
+    return false if map.nil? || commentable.is_a?(Map) || author.nil? || map.owner_id == author.id
+    return false if map.editable_by?(author)
+    commentable.comments.visible.where.not(id: except).none?
+  end
+
   # Mentions that appeared in the last edit (new mentions get notified).
   def newly_mentioned_ids
     change = saved_change_to_mentioned_user_ids
@@ -96,11 +107,14 @@ class Comment < ApplicationRecord
       self.edited_at = Time.current
     end
 
-    # The author follows their own thread, and so do the people they mention.
+    # The author follows their own thread, and so do the people they mention
+    # (and the owner, for a reader's first question: Comment.alerts_owner?).
     # The map's discussion has no follow list: its members get the digest.
     def subscribe_participants
       return if chat?
-      User.where(id: [ author_id ] + mentioned_user_ids).find_each do |user|
+      ids = [ author_id ] + mentioned_user_ids
+      ids << map.owner_id if saved_change_to_id? && Comment.alerts_owner?(commentable, author, except: id)
+      User.where(id: ids).find_each do |user|
         CommentSubscription.subscribe(user, commentable)
       end
     end

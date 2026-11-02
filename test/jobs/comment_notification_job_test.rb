@@ -50,7 +50,34 @@ class CommentNotificationJobTest < ActiveJob::TestCase
   end
 
   test "the author is never e-mailed, even when mentioning themselves" do
-    assert_empty notifications { Comment.create!(commentable: @feature, author: @alice, body: "Note pour moi-même @Alice") }
+    assert_empty notifications { Comment.create!(commentable: @feature, author: @edith, body: "Note pour moi-même @Edith") }
+  end
+
+  test "a reader's first question reaches the owner, who follows the thread from then on" do
+    mails = notifications { Comment.create!(commentable: @feature, author: @alice, body: "Faut-il arroser ce pommier ?") }
+    assert_equal [ @owner.email_address ], mails.map { |m| m.to.first }
+    assert_match(/Alice a commenté/, mails.first.subject)
+    assert CommentSubscription.subscribed?(@owner, @feature)
+
+    mails = notifications { Comment.create!(commentable: @feature, author: @alice, body: "Et en été ?") }
+    assert_equal [ @owner.email_address ], mails.map { |m| m.to.first }
+  end
+
+  test "the owner who unfollowed a reader's thread is not brought back" do
+    notifications { Comment.create!(commentable: @feature, author: @alice, body: "Une question") }
+    CommentSubscription.unsubscribe(@owner, @feature)
+    assert_empty notifications { Comment.create!(commentable: @feature, author: @alice, body: "Une autre") }
+  end
+
+  test "an editor's new thread does not e-mail the owner, nor does a reader joining a thread" do
+    assert_empty notifications { Comment.create!(commentable: @feature, author: @edith, body: "Je plante ici") }
+    CommentSubscription.unsubscribe(@edith, @feature)
+    assert_empty notifications { Comment.create!(commentable: @feature, author: @alice, body: "D'accord") }
+  end
+
+  test "the owner's choice to receive no discussion e-mails holds" do
+    @owner.update!(comment_emails: false)
+    assert_empty notifications { Comment.create!(commentable: @feature, author: @alice, body: "Une question") }
   end
 
   test "users who turned discussion e-mails off get nothing" do
