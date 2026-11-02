@@ -28,6 +28,8 @@ export type Op = Base & (
   | { type: 'createHarvest'; featureId: FeatureRef; harvest: NewHarvest }
   | { type: 'createStorageReading'; featureId: FeatureRef; reading: NewStorageReading }
   | { type: 'createComment'; featureId: FeatureRef | null; body: string }
+  // A message of the map's discussion, maybe pinned where one stood and with a photo taken there.
+  | { type: 'chatMessage'; body: string; featureIds: FeatureRef[]; lng: number | null; lat: number | null; photo: string | null; takenAt: string | null; heading?: number | null }
   | { type: 'createBioindicator'; observation: NewBioindicator; photo: string }
   | { type: 'closeVisit'; key: string; startedAt: string; endedAt: string; questionIds: FeatureRef[]; track?: [number, number][] }
   // The sound of the walk, filed in the documents; queued just before closeVisit so the report can name it.
@@ -141,6 +143,7 @@ export type Transport = {
   createHarvest(mapId: number, featureId: number, harvest: NewHarvest, key: string): Promise<void>
   createStorageReading(mapId: number, featureId: number, reading: NewStorageReading, key: string): Promise<void>
   createComment(mapId: number, featureId: number | null, body: string, key: string): Promise<void>
+  chatMessage(mapId: number, op: Extract<Op, { type: 'chatMessage' }>, featureIds: number[], key: string): Promise<void>
   createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>, key: string): Promise<void>
   closeVisit(mapId: number, op: Extract<Op, { type: 'closeVisit' }>, questionIds: number[], key: string): Promise<void>
   uploadVisitAudio(mapId: number, op: Extract<Op, { type: 'uploadVisitAudio' }>, key: string): Promise<void>
@@ -226,6 +229,7 @@ export function filesOf(op: Op): string[] {
   if (op.type === 'createObservation' && op.photo) return [op.photo]
   if (op.type === 'createBioindicator') return [op.photo]
   if (op.type === 'uploadVisitAudio') return [op.file]
+  if (op.type === 'chatMessage' && op.photo) return [op.photo]
   return []
 }
 
@@ -295,6 +299,9 @@ async function send(state: OutboxState, op: Op, transport: Transport, versions: 
       return transport.createStorageReading(op.mapId, id(op.featureId)!, op.reading, op.id)
     case 'createComment':
       return transport.createComment(op.mapId, id(op.featureId), op.body, op.id)
+    case 'chatMessage':
+      // An element drawn offline whose creation the server refused is left out, not the message.
+      return transport.chatMessage(op.mapId, op, op.featureIds.map((ref) => resolveId(state, ref) ?? -1).filter((id) => id > 0), op.id)
     case 'createBioindicator':
       return transport.createBioindicator(op.mapId, op, op.id)
     case 'closeVisit':

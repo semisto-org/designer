@@ -34,6 +34,9 @@ Rails.application.routes.draw do
   resources :maps, only: [] do
     scope module: :maps do
       resource :sharing, only: :show
+      # « Voici ton lieu »: the place's first reading (show), and the page
+      # read once (update, editors).
+      resource :place_reading, only: %i[show update]
       # Archive (create) and bring back (destroy): the owner only.
       resource :archive, only: %i[create destroy]
       resources :memberships, only: %i[update destroy]

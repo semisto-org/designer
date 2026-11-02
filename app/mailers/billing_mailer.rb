@@ -19,6 +19,23 @@ class BillingMailer < ApplicationMailer
     mail to: @user.email_address, subject: t(".subject", date: @ends_on)
   end
 
+  # A plan just started: what it opens, until when, and where to manage it.
+  # Stripe sends the receipt; this says what the money unlocks. Sent for a
+  # yearly pass (starts_at later than now when renewed early) and when a
+  # subscription starts giving access or changes plan.
+  def plan_started(user, plan_key, ends_at: nil, starts_at: nil)
+    @user = user
+    @plan_key = plan_key
+    @plan_name = t("billing.plans.#{plan_key}.name")
+    @features = t("billing.plans.#{plan_key}.features").values
+    @ends_on = ends_at && french_date(ends_at)
+    @renewed_from = french_date(starts_at) if starts_at && starts_at > Time.current + 1.day
+    @maps_url = maps_url
+    @billing_url = billing_url
+    show_places(@user)
+    mail to: @user.email_address, subject: t(".subject", plan: @plan_name)
+  end
+
   # A drone mission is a manual service: tell Semisto who ordered it.
   def drone_ordered(purchase)
     @purchase = purchase

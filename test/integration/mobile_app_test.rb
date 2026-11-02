@@ -174,6 +174,25 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "the map's discussion from the phone: a peek keeps it unread, a message sent twice is posted once" do
+    token = app_token(users(:michael))
+    Comment.create!(commentable: @map, author: users(:alice), body: "Les noyers ont gelé ?")
+    get "/maps/#{@map.id}/comments", params: { commentable_type: "Map", commentable_id: @map.id, peek: 1 }, headers: bearer(token)
+    assert_response :success
+    assert_equal [ "Les noyers ont gelé ?" ], response.parsed_body["comments"].map { |c| c["body"] }
+    assert_not CommentRead.exists?(user: users(:michael), commentable: @map), "peeking (pins, unread count) does not mark it read"
+
+    message = { comment: { commentable_type: "Map", commentable_id: @map.id, body: "Oui, ici", feature_ids: [], lng: 4.91, lat: 50.35 } }
+    headers = bearer(token).merge("Idempotency-Key" => "chat-1")
+    assert_difference -> { @map.discussion_comments.count }, 1 do
+      2.times { post "/maps/#{@map.id}/comments", params: message, headers:, as: :json }
+    end
+    assert_equal [ 4.91, 50.35 ], response.parsed_body["location"]
+
+    get "/maps/#{@map.id}/comments", params: { commentable_type: "Map", commentable_id: @map.id }, headers: bearer(token)
+    assert CommentRead.exists?(user: users(:michael), commentable: @map), "opening the discussion marks it read"
+  end
+
   test "a change sent twice with the same Idempotency-Key is made once, and the first answer comes back" do
     token = app_token(users(:michael))
     feature = { layer: "notes", kind: "note", name: "Repère", geometry: { type: "Point", coordinates: [ 4.95, 50.32 ] } }

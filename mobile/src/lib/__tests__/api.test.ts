@@ -6,7 +6,7 @@ jest.mock('expo-file-system', () => ({
 jest.mock('../auth', () => ({ accessToken: jest.fn().mockResolvedValue('token-1') }))
 jest.mock('../config', () => ({ API_URL: 'https://terranova.test' }))
 
-import { ApiError, api, form } from '../api'
+import { ApiError, UPLOAD_IDLE_MS, api, form } from '../api'
 
 describe('uploads from the phone', () => {
   beforeEach(() => mockUpload.mockReset())
@@ -42,5 +42,57 @@ describe('uploads from the phone', () => {
     const error = await api<ApiError>('POST', '/maps/1/photos', form('photo', { image: { uri: 'file:///a/b.jpg', name: 'b.jpg', type: 'image/jpeg' } })).catch((e: ApiError) => e)
     expect(error).toBeInstanceOf(ApiError)
     expect(error.offline).toBe(true)
+  })
+
+  // iOS stalls a foreground session once the phone is in the pocket.
+  it('keeps sending in the background and reports the bytes as they leave', async () => {
+    const seen: number[] = []
+    mockUpload.mockImplementation(async (_url: string, options: { onProgress: (p: { bytesSent: number; totalBytes: number }) => void }) => {
+      options.onProgress({ bytesSent: 500, totalBytes: 1000 })
+      options.onProgress({ bytesSent: 1000, totalBytes: 1000 })
+      return { status: 201, body: '{}', headers: {} }
+    })
+    await api('POST', '/maps/1/photos', form('photo', { image: { uri: 'file:///a/b.jpg', name: 'b.jpg', type: 'image/jpeg' } }), { onProgress: (sent) => seen.push(sent) })
+    expect(mockUpload).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ sessionType: 'background' }))
+    expect(seen).toEqual([500, 1000])
+  })
+
+  describe('a slow upload', () => {
+    beforeEach(() => jest.useFakeTimers())
+    afterEach(() => jest.useRealTimers())
+
+    // Waits for an upload that only settles when its signal aborts.
+    const hanging = () => mockUpload.mockImplementation((_url: string, options: { signal: AbortSignal; onProgress: (p: { bytesSent: number; totalBytes: number }) => void }) => {
+      (mockUpload as unknown as { progress: typeof options.onProgress }).progress = options.onProgress
+      return new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))))
+    })
+    const photo = () => form('photo', { image: { uri: 'file:///a/b.jpg', name: 'b.jpg', type: 'image/jpeg' } })
+
+    it('is never cut off while its bytes keep moving, only once they stop', async () => {
+      hanging()
+      let error: ApiError | null = null
+      const sending = api('POST', '/maps/1/photos', photo()).catch((e: ApiError) => { error = e })
+      await Promise.resolve(); await Promise.resolve()
+      const progress = (mockUpload as unknown as { progress: (p: { bytesSent: number; totalBytes: number }) => void }).progress
+      for (let i = 1; i <= 5; i++) {
+        jest.advanceTimersByTime(UPLOAD_IDLE_MS - 1_000)
+        progress({ bytesSent: i * 100, totalBytes: 1000 })
+      }
+      await Promise.resolve()
+      expect(error).toBeNull()
+      jest.advanceTimersByTime(UPLOAD_IDLE_MS)
+      await sending
+      expect(error).toBeInstanceOf(ApiError)
+      expect(error!.message).toBe('timeout')
+    })
+
+    it('stops when asked from outside', async () => {
+      hanging()
+      const controller = new AbortController()
+      const sending = api('POST', '/maps/1/photos', photo(), { signal: controller.signal }).catch((e: ApiError) => e)
+      await Promise.resolve(); await Promise.resolve()
+      controller.abort()
+      expect(((await sending) as ApiError).offline).toBe(true)
+    })
   })
 })

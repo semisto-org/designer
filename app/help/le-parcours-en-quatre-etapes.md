@@ -13,9 +13,9 @@ Concevoir un jardin-forêt, c'est une foule de petites tâches. Le **parcours** 
 
 ## Le carnet de route
 
-Une fois le terrain de ta carte délimité, Terranova ouvre le **carnet de route** : quelques pages qui racontent les quatre étapes sur un terrain d'exemple, pendant que trente ans passent sous tes yeux. Chaque page montre les panneaux qui servent l'étape et où en est ta carte. La dernière explique pourquoi brancher ton IA prend tout son sens quand ton carnet est rempli (voir [Connecter ton IA](/help/connecter-son-ia)).
+Le **carnet de route**, c'est quelques pages qui racontent les quatre étapes sur un terrain d'exemple, pendant que trente ans passent sous tes yeux. Chaque page montre les panneaux qui servent l'étape et où en est ta carte. La dernière explique pourquoi brancher ton IA prend tout son sens quand ton carnet est rempli (voir [Connecter ton IA](/help/connecter-son-ia)).
 
-Tu peux le revoir à tout moment : panneau **Parcours**, lien **Revoir le carnet de route**.
+Il ne s'ouvre plus tout seul : c'est ton propre lieu qui t'accueille ([Voici ton lieu](/help/voici-ton-lieu)). Ouvre-le quand tu veux : panneau **Parcours**, lien **Revoir le carnet de route**.
 
 ## Les étapes dans l'éditeur
 

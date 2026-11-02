@@ -25,6 +25,7 @@ class PlanPurchase < ApplicationRecord
 
   # Notify Semisto once the order is committed: the drone mission is delivered by hand.
   after_create_commit :notify_drone_order, if: -> { plan_key == "drone" }
+  after_create_commit :welcome_to_plan, if: -> { plan_key == "yearly" }
 
   def yearly? = plan_key == "yearly"
   def drone? = plan_key == "drone"
@@ -53,5 +54,9 @@ class PlanPurchase < ApplicationRecord
   private
     def notify_drone_order
       BillingMailer.drone_ordered(self).deliver_later
+    end
+
+    def welcome_to_plan
+      BillingMailer.plan_started(user, plan_key, starts_at:, ends_at: expires_at).deliver_later
     end
 end

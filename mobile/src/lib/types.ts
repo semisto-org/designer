@@ -18,6 +18,8 @@ export type MapSummary = {
   ownerName: string
   updatedAt: string
   readOnlyByPlan: boolean
+  /** Takes part in the map's discussion (Map#chat_member?); only in a map's bundle. */
+  chat?: boolean
   areaM2: number | null
   bbox: [number, number, number, number] | null
   center: Position | null
