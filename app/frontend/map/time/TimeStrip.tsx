@@ -26,6 +26,11 @@ function monthYear(date: string): string {
   return new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`))
 }
 
+/** « 2 nov. »: the pill that stands for the strip while observing. */
+function dayMonth(date: string): string {
+  return new Intl.DateTimeFormat('fr', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`))
+}
+
 /** « 20 oct. 2026 »: short enough for the strip's title on a phone. */
 function shortDate(date: string): string {
   return new Intl.DateTimeFormat('fr', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`))
@@ -35,6 +40,12 @@ function title(moment: Moment, line: Timeline): string {
   const date = momentDate(moment, line)
   if (isFuture(moment)) return t('time_strip.title.future', { years: FUTURE_YEARS[moment], year: yearOf(date) })
   return t(`time_strip.title.${moment}`, { date: shortDate(date) })
+}
+
+/** The folded strip's label: « Aujourd’hui · 2 nov. », « Arrivée · 3 mai », « An 15 · 2041 ». */
+function pillLabel(moment: Moment, line: Timeline): string {
+  if (isFuture(moment)) return title(moment, line)
+  return t(`time_strip.title.${moment}`, { date: dayMonth(momentDate(moment, line)) })
 }
 
 function stopHint(moment: Moment, line: Timeline): string {
@@ -74,6 +85,10 @@ export default function TimeStrip() {
     return () => observer.disconnect()
   }, [])
 
+  // Back to observing, the strip starts folded again.
+  const observing = editor.focusStage === 'observe'
+  useEffect(() => setUnfolded(false), [observing])
+
   // An AI's draft opened from the drafts bar is a project: show it in the future.
   const draftSelected = selected?.properties.status === 'draft'
   const firstFuture = availableMoments(timeline).find(isFuture)
@@ -86,7 +101,8 @@ export default function TimeStrip() {
   if (features.length === 0) return null
   const drafts = features.some((f) => f.properties.status === 'draft')
   const beside = activePanel != null || selected != null
-  const folded = beside && width < FULL_WIDTH
+  // Observing is about the land as it is today: the strip shrinks to a pill so it hides less of the map.
+  const folded = observing || (beside && width < FULL_WIDTH)
 
   const card = (
     <section
@@ -119,10 +135,12 @@ export default function TimeStrip() {
     >
       {folded ? (
         <div className="pointer-events-auto relative">
-          {unfolded && <div className="absolute bottom-full right-0 mb-2 w-[29rem] max-w-[calc(100vw-1rem)]">{card}</div>}
+          {unfolded && (
+            <div className={clsx('absolute bottom-full mb-2 w-[29rem] max-w-[calc(100vw-1rem)]', observing ? 'left-1/2 -translate-x-1/2' : 'right-0')}>{card}</div>
+          )}
           <Button variant="secondary" size="sm" className="shadow-md" aria-expanded={unfolded} onClick={() => setUnfolded(!unfolded)} title={t(unfolded ? 'time_strip.close' : 'time_strip.open')}>
-            <Hourglass className="h-4 w-4" aria-hidden />
-            {t(`time_strip.stops.${moment}`)}
+            <Hourglass className="h-4 w-4 text-prune-600" aria-hidden />
+            {observing ? pillLabel(moment, timeline) : t(`time_strip.stops.${moment}`)}
             <ChevronDown className={clsx('h-4 w-4 transition-transform', unfolded ? '' : 'rotate-180')} aria-hidden />
           </Button>
         </div>
