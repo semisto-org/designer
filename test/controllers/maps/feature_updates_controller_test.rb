@@ -50,6 +50,12 @@ class Maps::FeatureUpdatesControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ { "field" => "properties.planted_on", "before" => nil, "after" => "2026-05-23" } ], entry["changes"]
   end
 
+  test "a roof change an AI proposes reads in words" do
+    change = FeatureUpdateDraft.labeled([ { field: "properties.roof", before: "flat", after: "hip" }, { field: "properties.ridge", after: "short" } ])
+    assert_equal [ "Plate", "Quatre pans" ], change.first.values_at(:beforeLabel, :afterLabel)
+    assert_equal "Dans la largeur", change.last[:afterLabel]
+  end
+
   test "lists the pending changes with their diff and names for catalogue ids" do
     herb = plant(1)
     propose(herb, { "properties" => { "species_id" => plant_species(:apple).id } })

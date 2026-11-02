@@ -4,13 +4,30 @@
 // gable along either axis of the building, single slope) and the best one
 // is kept. A shape is a function of the position; the roof is then made of
 // planar faces cut along the ridge, and the walls follow the roof at each
-// corner (gable ends included). No import of three.js.
+// corner (gable ends included). A drawn building's roof is the person's
+// own (`designedRoof`): flat, single slope, gable or hip, at the eaves and
+// ridge heights they give. No import of three.js.
 
 export type Point = { x: number; y: number }
 export type RoofShape =
   | { type: 'flat'; height: number }
   | { type: 'gable'; angle: number; centre: number; ridge: number; slope: number; origin: Point }
   | { type: 'shed'; angle: number; height: number; slope: number; origin: Point }
+  /** Four slopes rising from every wall of the footprint's rectangle, at the same pitch. */
+  | { type: 'hip'; angle: number; origin: Point; uMin: number; uMax: number; vMin: number; vMax: number; eaves: number; slope: number }
+
+/** The roof a person gives a drawn building (its card or the 3D view). */
+export type RoofSpec = {
+  shape: 'flat' | 'shed' | 'gable' | 'hip'
+  /** Highest point (the ridge), above the ground. */
+  height: number
+  /** Height of the gutters; null: a usual 35° pitch from the ridge. */
+  eaves: number | null
+  /** The ridge along the long side of the building, or across it. */
+  ridge: 'long' | 'short'
+  /** Single slope: the high side on the other wall. */
+  flip: boolean
+}
 
 /** A sample of the surface model: a cell centre and what stands above the ground there. */
 export type RoofSample = { x: number; y: number; z: number }
@@ -47,12 +64,60 @@ function across(p: Point, angle: number, origin: Point): number {
   return -(p.x - origin.x) * Math.sin(angle) + (p.y - origin.y) * Math.cos(angle)
 }
 
+/** Coordinate along a direction, from `origin`. */
+function along(p: Point, angle: number, origin: Point): number {
+  return (p.x - origin.x) * Math.cos(angle) + (p.y - origin.y) * Math.sin(angle)
+}
+
+/** A hip roof's distances to the four walls of its rectangle, at a point. */
+function hipDistances(shape: Extract<RoofShape, { type: 'hip' }>, p: Point): number[] {
+  const u = along(p, shape.angle, shape.origin)
+  const v = across(p, shape.angle, shape.origin)
+  return [u - shape.uMin, shape.uMax - u, v - shape.vMin, shape.vMax - v]
+}
+
 /** Height of the roof above the base at a point. */
 export function roofHeight(shape: RoofShape, p: Point): number {
   if (shape.type === 'flat') return shape.height
+  if (shape.type === 'hip') return shape.eaves + shape.slope * Math.max(0, Math.min(...hipDistances(shape, p)))
   const v = across(p, shape.angle, shape.origin)
   if (shape.type === 'shed') return shape.height + shape.slope * v
   return shape.ridge - shape.slope * Math.abs(v - shape.centre)
+}
+
+const USUAL_PITCH = Math.tan((35 * Math.PI) / 180)
+
+/**
+ * A drawn building's roof from what the person gave: the ridge along the
+ * long side of the footprint's tightest rectangle (or across it), eaves on
+ * the walls, the ridge at the top. Without an eaves height, a usual 35°
+ * pitch, never lower than `minEaves`.
+ */
+export function designedRoof(closed: Point[], spec: RoofSpec, minEaves = 0): RoofShape {
+  const height = spec.height
+  const ring = closed.length > 1 && closed[0].x === closed[closed.length - 1].x && closed[0].y === closed[closed.length - 1].y ? closed.slice(0, -1) : closed
+  if (spec.shape === 'flat' || ring.length < 3) return { type: 'flat', height }
+  const axis = mainAxis([...ring, ring[0]])
+  const angle = spec.ridge === 'short' ? axis + Math.PI / 2 : axis
+  const origin = { x: ring.reduce((s, p) => s + p.x, 0) / ring.length, y: ring.reduce((s, p) => s + p.y, 0) / ring.length }
+  const us = ring.map((p) => along(p, angle, origin))
+  const vs = ring.map((p) => across(p, angle, origin))
+  const [uMin, uMax, vMin, vMax] = [Math.min(...us), Math.max(...us), Math.min(...vs), Math.max(...vs)]
+  const spanU = uMax - uMin
+  const spanV = vMax - vMin
+  if (spanV < 0.1 || spanU < 0.1) return { type: 'flat', height }
+  // How far the roof rises, from the gutters to the top.
+  const run = spec.shape === 'shed' ? spanV : spec.shape === 'hip' ? Math.min(spanU, spanV) / 2 : spanV / 2
+  const wanted = spec.eaves ?? height - run * USUAL_PITCH
+  const eaves = Math.min(height, Math.max(Math.min(minEaves, height), wanted))
+  const slope = (height - eaves) / run
+  if (slope <= 1e-6) return { type: 'flat', height }
+  if (spec.shape === 'gable') return { type: 'gable', angle, centre: (vMin + vMax) / 2, ridge: height, slope, origin }
+  if (spec.shape === 'hip') return { type: 'hip', angle, origin, uMin, uMax, vMin, vMax, eaves, slope }
+  // Single slope: low on the vMin wall, high on the vMax one (or the other way round).
+  return spec.flip
+    ? { type: 'shed', angle, height: eaves + slope * vMax, slope: -slope, origin }
+    : { type: 'shed', angle, height: eaves - slope * vMin, slope, origin }
 }
 
 /** Least squares of z ≈ a + b·f: [a, b, residual sum of squares]. */
@@ -136,25 +201,47 @@ export function shell(closed: Point[], shape: RoofShape, min: number, max: numbe
   const height = (p: Point) => Math.min(max, Math.max(min, roofHeight(shape, p)))
   let ring = closed.slice(0, -1)
   let faces: Point[][] = [ring]
-  if (shape.type === 'gable') {
-    const side = (p: Point) => across(p, shape.angle, shape.origin) - shape.centre
-    // The ridge crosses the walls at the gable ends: a corner there.
-    const withRidge: Point[] = []
+  const { cuts, regions } = planes(shape)
+  if (cuts.length) {
+    // Where a wall crosses the line between two slopes (a gable end, a
+    // hip's corner), it gets a corner: the wall's top follows the roof.
+    const withCorners: Point[] = []
     for (let k = 0; k < ring.length; k++) {
       const a = ring[k]
       const b = ring[(k + 1) % ring.length]
-      withRidge.push(a)
-      const [sa, sb] = [side(a), side(b)]
-      if ((sa > 0 && sb < 0) || (sa < 0 && sb > 0)) {
-        const t = sa / (sa - sb)
-        withRidge.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t })
+      withCorners.push(a)
+      const ts: number[] = []
+      for (const cut of cuts) {
+        const [sa, sb] = [cut(a), cut(b)]
+        if ((sa > 1e-9 && sb < -1e-9) || (sa < -1e-9 && sb > 1e-9)) ts.push(sa / (sa - sb))
       }
+      for (const t of ts.sort((p, q) => p - q)) withCorners.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t })
     }
-    ring = withRidge
-    faces = [clip(ring, side), clip(ring, (p) => -side(p))].filter((f) => f.length >= 3)
+    ring = withCorners
+    faces = regions.map((keeps) => keeps.reduce((face, keep) => (face.length >= 3 ? clip(face, keep) : face), ring)).filter((f) => f.length >= 3)
   }
   return {
     ring: ring.map((p) => ({ ...p, top: height(p) })),
     faces: faces.map((face) => face.map((p) => ({ ...p, h: height(p) }))),
   }
+}
+
+/**
+ * The planar pieces of a roof: the lines where its slopes meet (`cuts`), and
+ * each slope as the half-planes that keep it (`regions`, ≥ 0 inside).
+ */
+function planes(shape: RoofShape): { cuts: Array<(p: Point) => number>; regions: Array<Array<(p: Point) => number>> } {
+  if (shape.type === 'gable') {
+    const side = (p: Point) => across(p, shape.angle, shape.origin) - shape.centre
+    return { cuts: [side], regions: [[side], [(p) => -side(p)]] }
+  }
+  if (shape.type === 'hip') {
+    const d = (i: number) => (p: Point) => hipDistances(shape, p)[i]
+    const cuts: Array<(p: Point) => number> = []
+    for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) cuts.push((p) => d(i)(p) - d(j)(p))
+    // Slope i: where wall i is the nearest one.
+    const regions = [0, 1, 2, 3].map((i) => [0, 1, 2, 3].filter((j) => j !== i).map((j) => (p: Point) => d(j)(p) - d(i)(p)))
+    return { cuts, regions }
+  }
+  return { cuts: [], regions: [] }
 }

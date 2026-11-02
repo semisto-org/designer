@@ -91,6 +91,11 @@ fr:
       number: "Numéro"
       planted_on_precision: "Précision de la date"
       functions: "Fonctions"
+      height_m: "Hauteur (m)"
+      roof: "Toiture"
+      eaves_m: "Hauteur des gouttières (m)"
+      ridge: "Sens du faîte"
+      roof_flip: "Pan inversé"
     precisions:
       year: "Année seulement"
       unknown: "Date inconnue"

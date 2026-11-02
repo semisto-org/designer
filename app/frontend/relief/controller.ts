@@ -12,7 +12,7 @@
 // instant (~30 ms) or the sun hours of a day (~1-3 s).
 
 import type { Geometry } from 'geojson'
-import { buildingLayer, drawnBuildings, mergeBuildings, type BuildingData, type BuildingLayer, type BuildingsResponse } from './buildings.ts'
+import { buildingLayer, drawnBuildings, mergeBuildings, type BuildingData, type BuildingLayer, type BuildingsResponse, type BuildingVolume } from './buildings.ts'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
 import { applyDesigns, downsampleCrest, downsampleDesigned, pointsAlong, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
@@ -161,6 +161,21 @@ export type ControllerOptions = {
 }
 
 /** `count` and `measured` are OpenStreetMap's; `drawn` the map's own, `planned` of them still a project. */
+/** A building clicked in the 3D view: drawn on the map (its card gives the roof) or read from OpenStreetMap. */
+export type BuildingPick = {
+  /** The map feature of a drawn building, null for an OpenStreetMap one. */
+  featureId: number | null
+  kind: string
+  planned: boolean
+  /** Its footprint, WGS84 (to draw it on the map when taking it over). */
+  rings: Array<Array<[number, number]>>
+  /** As shown: top and gutters above the ground, in metres, and the roof's shape. */
+  height: number
+  eaves: number
+  roof: 'pitched' | 'hip' | 'shed' | 'flat'
+  source: 'surface' | 'tags' | 'guess'
+}
+
 export type BuildingsInfo = { count: number; measured: number; attribution: string | null; drawn: number; planned: number }
 
 const AXIS_FRAME_BUDGET_MS = 11
@@ -205,6 +220,8 @@ export class ReliefController {
   full: { heights: Float32Array; cols: number; rows: number } | null = null
   surface: Float32Array | null = null
   private buildingsData: BuildingData[] | null = null
+  /** The footprints read from OpenStreetMap (without the drawn ones). */
+  private mappedBuildings: BuildingData[] = []
   private buildings: BuildingLayer | null = null
   landcover: Uint8Array | null = null
   roles: Uint8Array | null = null
@@ -570,6 +587,7 @@ export class ReliefController {
       if (this.buildingsData) return
     }
     const mapped = response?.available ? response.buildings : []
+    this.mappedBuildings = mapped
     // The buildings drawn on the map stand too, without a provider.
     const drawn = drawnBuildings(this.options.features as never)
     if (!mapped.length && !drawn.length) return
@@ -599,6 +617,43 @@ export class ReliefController {
     this.scene?.setBuildings(this.buildings.volumes)
     this.scene?.showBuildings(this.view.buildingsOn)
     if (this.view.base === 'blocks') void this.renderBlocks()
+  }
+
+  /** The building under a pointer, as shown, or null. */
+  buildingAt(event: { clientX: number; clientY: number }): BuildingPick | null {
+    const index = this.scene?.pickBuilding(event)
+    return index == null ? null : this.buildingPick(this.buildings?.volumes[index])
+  }
+
+  /** A drawn building as shown now (after its roof changed), or null. */
+  drawnBuilding(featureId: number): BuildingPick | null {
+    return this.buildingPick(this.buildings?.volumes.find((v) => v.id === `drawn-${featureId}`))
+  }
+
+  private buildingPick(volume: BuildingVolume | undefined): BuildingPick | null {
+    if (!volume) return null
+    const data = this.buildingsData?.find((b) => b.id === volume.id)
+    if (!data) return null
+    const featureId = volume.drawn ? Number(/^drawn-(\d+)/.exec(volume.id)?.[1]) || null : null
+    const roof = volume.roof.type === 'gable' ? 'pitched' : volume.roof.type
+    return {
+      featureId, kind: data.kind, planned: volume.planned, rings: data.rings,
+      height: volume.height, eaves: volume.eaves, roof, source: volume.source,
+    }
+  }
+
+  /**
+   * The map's features changed (a roof set in the 3D view, a building taken
+   * over from OpenStreetMap): the drawn buildings and their shadows follow.
+   */
+  setFeatures(features: OverlayFeature[]) {
+    this.options.features = features
+    const drawn = drawnBuildings(features as never)
+    this.buildingsData = mergeBuildings(this.mappedBuildings, drawn)
+    this.layoutBuildings()
+    if (this.view.surfaceOn) this.applySurfaceHeights()
+    this.dayHours = null
+    if (this.sun.mode !== 'off') void this.renderSun()
   }
 
   setBuildings(on: boolean) {

@@ -43,7 +43,11 @@ layers:
         fields:
           - { key: height_m, type: number, unit: m, min: 0, max: 80, step: 0.5 }
           - { key: floors, type: integer, min: 0, max: 30 }
-          - { key: roof, type: select, options: [pitched, flat, green] }
+          # The roof in the 3D view (relief/roofs.ts designedRoof): height_m is its top.
+          - { key: roof, type: select, options: [pitched, hip, shed, flat, green] }
+          - { key: eaves_m, type: number, unit: m, min: 0, max: 80, step: 0.1 }
+          - { key: ridge, type: select, options: [long, short] }
+          - { key: roof_flip, type: boolean }
           # The house people live in: zone 0 of the permaculture zones (« Zones » panel).
           - { key: dwelling, type: boolean }
       existing_tree:
@@ -392,6 +396,10 @@ layers:
         defaults: { height_m: 2.5, covering: polycarbonate }
         fields:
           - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: roof, type: select, options: [pitched, hip, shed, flat, green] }
+          - { key: eaves_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: ridge, type: select, options: [long, short] }
+          - { key: roof_flip, type: boolean }
           - { key: covering, type: select, options: [glass, polycarbonate, plastic] }
           - { key: heated, type: boolean }
       shelter:
@@ -402,6 +410,10 @@ layers:
         defaults: { height_m: 2.5 }
         fields:
           - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: roof, type: select, options: [pitched, hip, shed, flat, green] }
+          - { key: eaves_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: ridge, type: select, options: [long, short] }
+          - { key: roof_flip, type: boolean }
       shed:
         geometry: Polygon
         icon: warehouse
@@ -410,6 +422,10 @@ layers:
         defaults: { height_m: 2.5 }
         fields:
           - { key: height_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: roof, type: select, options: [pitched, hip, shed, flat, green] }
+          - { key: eaves_m, type: number, unit: m, min: 0, max: 10, step: 0.1 }
+          - { key: ridge, type: select, options: [long, short] }
+          - { key: roof_flip, type: boolean }
       fruit_store:
         geometry: [Point, Polygon]
         icon: thermometer-snowflake
