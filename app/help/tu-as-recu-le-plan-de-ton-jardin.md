@@ -34,7 +34,7 @@ Une question sur un arbre, une mare, un chemin ? Pose-la **là où elle se pose*
 1. touche l'élément sur la carte ;
 2. en bas de sa fiche, écris dans la **Discussion** et touche **Publier**.
 
-Le propriétaire de la carte est prévenu par e-mail, et sa réponse arrive au même endroit. Le panneau **Discussions** rassemble toutes les conversations de la carte : un clic sur l'une d'elles ouvre l'élément dont elle parle.
+Sous le champ, Terranova te dit qui recevra un e-mail : d'habitude, le propriétaire de la carte. Sa réponse arrive au même endroit, et un e-mail te prévient. Le panneau **Discussions** rassemble toutes les conversations de la carte : un clic sur l'une d'elles ouvre l'élément dont elle parle.
 
 Si le propriétaire t'a ajouté·e à la **discussion de la carte**, le bouton **Discussion** en haut de l'écran ouvre la conversation en direct avec l'équipe.
 
