@@ -281,6 +281,7 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     get url
     assert_response :success
     assert_not response.parsed_body["available"]
+    assert response.parsed_body["retry"], "a busy OpenStreetMap: the page asks again"
     assert_empty response.parsed_body["buildings"]
   end
 

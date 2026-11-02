@@ -26,7 +26,8 @@ export type BuildingData = {
   planned?: boolean
 }
 
-export type BuildingsResponse = { available: boolean; attribution: string | null; buildings: BuildingData[] }
+/** `retry`: OpenStreetMap was busy this time, asking again later usually works. */
+export type BuildingsResponse = { available: boolean; retry?: boolean; attribution: string | null; buildings: BuildingData[] }
 
 export type HeightSource = 'surface' | 'tags' | 'guess'
 

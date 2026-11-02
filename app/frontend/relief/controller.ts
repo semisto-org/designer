@@ -539,19 +539,36 @@ export class ReliefController {
   private fetchBuildings(): Promise<BuildingsResponse | null> {
     const url = this.options.buildingsUrl
     if (!url) return Promise.resolve(null)
-    return fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    // `no-cache`: an answer kept from a busy moment must not stand in for
+    // the buildings (the server's own cache keeps the real ones a month).
+    return fetch(url, { credentials: 'same-origin', cache: 'no-cache', headers: { Accept: 'application/json' } })
       .then((r) => (r.ok ? (r.json() as Promise<BuildingsResponse>) : null))
       .catch(() => null)
   }
+
+  /** OpenStreetMap busy or the network down: worth asking again, after these pauses. */
+  private static BUILDINGS_RETRIES_S = [4, 12, 30]
+  private buildingsRetry: ReturnType<typeof setTimeout> | null = null
 
   /**
    * The buildings arrive after the relief (the footprints come from
    * OpenStreetMap, a few seconds away): the relief is usable meanwhile, and
    * stays so if they never come.
    */
-  private async loadBuildings(request: Promise<BuildingsResponse | null>) {
+  private async loadBuildings(request: Promise<BuildingsResponse | null>, attempt = 0) {
     const response = await request
     if (this.disposed) return
+    // A busy OpenStreetMap used to leave the view without buildings until
+    // the page was reloaded: ask again on our own, a few times.
+    const retries = ReliefController.BUILDINGS_RETRIES_S
+    if ((!response || (!response.available && response.retry)) && attempt < retries.length) {
+      this.buildingsRetry = setTimeout(() => {
+        this.buildingsRetry = null
+        if (!this.disposed) void this.loadBuildings(this.fetchBuildings(), attempt + 1)
+      }, retries[attempt] * 1000)
+      // The drawn buildings stand meanwhile.
+      if (this.buildingsData) return
+    }
     const mapped = response?.available ? response.buildings : []
     // The buildings drawn on the map stand too, without a provider.
     const drawn = drawnBuildings(this.options.features as never)
@@ -604,6 +621,7 @@ export class ReliefController {
     cancelAnimationFrame(this.sunReplay.frame)
     if (this.sunReplay.timer) clearTimeout(this.sunReplay.timer)
     if (this.blocksTimer) clearTimeout(this.blocksTimer)
+    if (this.buildingsRetry) clearTimeout(this.buildingsRetry)
     this.scene?.dispose()
     this.scene = null
   }

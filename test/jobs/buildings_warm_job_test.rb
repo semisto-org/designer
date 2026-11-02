@@ -30,7 +30,9 @@ class BuildingsWarmJobTest < ActiveJob::TestCase
 
   test "quiet when OpenStreetMap is down or the relief is not ready" do
     stub = stub_request(:get, %r{overpass}).to_return(status: 504)
-    assert_nothing_raised { BuildingsWarmJob.perform_now(@map) }
+    assert_enqueued_with(job: BuildingsWarmJob, args: [ @map ]) do
+      assert_nothing_raised { BuildingsWarmJob.perform_now(@map) }
+    end
     assert_requested stub, times: 1
 
     @map.terrain.update!(status: "running")
