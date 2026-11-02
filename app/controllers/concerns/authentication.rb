@@ -44,7 +44,11 @@ module Authentication
 
     def find_session_by_cookie
       found = Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
-      found&.impersonation_expired? ? end_impersonation(found, reason: "expired") : found
+      return nil if found.nil? || found.idle?
+      return end_impersonation(found, reason: "expired") if found.impersonation_expired?
+      # Coming back within the year keeps the browser signed in for another one.
+      cookies.signed[:session_id] = Session.cookie(found.id) if found.seen!
+      found
     end
 
     def request_authentication
@@ -63,7 +67,7 @@ module Authentication
       previous = Session.find_by(id: cookies.signed[:session_id], impersonator_id: nil) if cookies.signed[:session_id]
       user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
         Current.session = session
-        cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax }
+        cookies.signed[:session_id] = Session.cookie(session.id)
         others = other_sessions.reject { |s| s.user_id == user.id }
         others.unshift(previous) if previous && previous.user_id != user.id && others.none? { |s| s.user_id == previous.user_id }
         store_other_sessions(others)
@@ -113,7 +117,7 @@ module Authentication
     def switch_to_session(target)
       others = other_sessions.reject { |s| s.id == target.id }
       others.unshift(Current.session) if Current.session && !Current.session.impersonation? && Current.session.persisted?
-      cookies.signed.permanent[:session_id] = { value: target.id, httponly: true, same_site: :lax }
+      cookies.signed[:session_id] = Session.cookie(target.id)
       Current.session = target
       store_other_sessions(others.reject { |s| s.user_id == target.user_id })
     end
@@ -123,7 +127,7 @@ module Authentication
       if ids.empty?
         cookies.delete(OTHER_SESSIONS_COOKIE)
       else
-        cookies.signed.permanent[OTHER_SESSIONS_COOKIE] = { value: ids, httponly: true, same_site: :lax }
+        cookies.signed[OTHER_SESSIONS_COOKIE] = Session.cookie(ids)
       end
     end
 end

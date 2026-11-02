@@ -22,8 +22,8 @@ module Impersonation
       admin_session = Current.session
       impersonated = user.sessions.create!(impersonator: admin_session.user, user_agent: request.user_agent, ip_address: request.remote_ip)
       AdminEvent.record!("impersonation_started", admin: admin_session.user, target: user, request:)
-      cookies.signed.permanent[ADMIN_SESSION_COOKIE] = { value: admin_session.id, httponly: true, same_site: :lax }
-      cookies.signed.permanent[:session_id] = { value: impersonated.id, httponly: true, same_site: :lax }
+      cookies.signed[ADMIN_SESSION_COOKIE] = Session.cookie(admin_session.id)
+      cookies.signed[:session_id] = Session.cookie(impersonated.id)
       Current.session = impersonated
     end
 
@@ -35,7 +35,7 @@ module Impersonation
       admin_session = Session.find_by(id: cookies.signed[ADMIN_SESSION_COOKIE], user_id: impersonated.impersonator_id, impersonator_id: nil)
       cookies.delete(ADMIN_SESSION_COOKIE)
       if admin_session
-        cookies.signed.permanent[:session_id] = { value: admin_session.id, httponly: true, same_site: :lax }
+        cookies.signed[:session_id] = Session.cookie(admin_session.id)
       else
         cookies.delete(:session_id)
       end

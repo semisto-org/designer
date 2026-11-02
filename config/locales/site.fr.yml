@@ -760,7 +760,7 @@ fr:
               - "Un élément supprimé d'une carte : 30 jours dans la corbeille de la carte, d'où vous pouvez le rétablir, puis il est effacé."
               - "Les pièces comptables (factures, paiements, demandes de paiement sur facture) : 10 ans à partir du 1er janvier qui suit la clôture de l'exercice, comme le droit belge l'exige, même après la suppression du compte."
               - "Les notifications de paiement reçues de Stripe : 90 jours."
-              - "L'adresse IP et le navigateur d'une connexion : tant que cette connexion reste ouverte ; ils sont effacés quand vous vous déconnectez ou que votre compte est supprimé."
+              - "L'adresse IP et le navigateur d'une connexion : tant que cette connexion reste ouverte, et 12 mois au plus après votre dernière visite ; ils sont effacés quand vous vous déconnectez, quand votre compte est supprimé, ou après un an sans visite."
               - "Les journaux du serveur : 12 mois au plus. Les rapports d'erreur chez Sentry : 90 jours au plus."
               - "Les liens et codes de connexion : 20 minutes, et ils ne servent qu'une fois."
               - "Un essai « Et chez toi ? » qui n'est pas devenu une carte : 48 heures, puis il est effacé lors du nettoyage de la nuit suivante."
@@ -774,7 +774,7 @@ fr:
               - "Terranova n'utilise ni cookies publicitaires, ni cookies de mesure d'audience, ni traceurs de tiers. Il ne dépose que des cookies nécessaires au fonctionnement du service que vous demandez, qui ne requièrent pas votre consentement :"
             items:
               - "Le cookie de session de l'application : il protège les formulaires contre la falsification de requêtes, garde votre essai « Et chez toi ? » en cours et, quand vous ouvrez une carte publiée, retient quelles cartes publiées vous avez déjà vues dans cette session de navigation, pour ne compter votre visite qu'une fois et relier une éventuelle inscription à la carte qui vous a amené. Il s'efface à la fermeture du navigateur."
-              - "Le cookie de connexion (session_id) : il vous garde connecté. Il reste dans votre navigateur jusqu'à ce que vous vous déconnectiez."
+              - "Le cookie de connexion (session_id) : il vous garde connecté. Il reste dans votre navigateur jusqu'à ce que vous vous déconnectiez, et au plus un an après votre dernière visite."
               - "Le cookie des autres comptes (other_session_ids) : si vous vous connectez à plusieurs comptes dans le même navigateur, il permet de passer de l'un à l'autre. Il s'efface quand vous vous déconnectez de ces comptes."
             outro: "Ces cookies sont signés pour ne pas pouvoir être falsifiés, et ne sont lus que par Terranova. Votre navigateur garde aussi quelques préférences d'affichage (stockage local), qui ne quittent pas votre appareil. Nous comptons les visites avec Plausible, installé sur nos propres serveurs : il ne pose aucun cookie, ne garde ni votre adresse IP ni aucun identifiant, et ne donne que des chiffres d'ensemble (pages vues, pays, type d'appareil). Le suivi des erreurs (Sentry) ne pose pas de cookie non plus ; si vous acceptez l'enregistrement de vos premières séances, il garde le temps de la séance un identifiant dans le stockage de votre navigateur."
           - title: "L'application mobile"
