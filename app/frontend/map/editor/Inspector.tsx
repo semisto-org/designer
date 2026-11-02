@@ -10,6 +10,7 @@ import { elementFor } from '@/map/drawing/catalog'
 import { featureName } from '@/map/earthworks/model'
 import { measure } from '@/map/editor/measure'
 import { INSPECTOR_SECTIONS } from '@/map/panels'
+import { useChat } from '@/collab/chat/chatStore'
 import PlantHeading from '@/map/plants/PlantHeading'
 import { isPlant } from '@/map/plants/properties'
 import { displayGeometry } from '@/map/zones/zones'
@@ -22,6 +23,7 @@ import type { MapFeature } from '@/types'
  */
 export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeature; frame?: 'map' | 'page'; lead?: ReactNode }) {
   const editor = useEditor()
+  const chat = useChat()
   const p = feature.properties
   const [name, setName] = useState(p.name ?? '')
   const [notes, setNotes] = useState(p.notes ?? '')
@@ -75,7 +77,9 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
 
   return (
     <aside className={clsx('overflow-y-auto bg-white', frame === 'map'
-      ? 'absolute inset-x-2 bottom-14 z-20 max-h-[60%] rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:right-3 md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]'
+      ? clsx('absolute inset-x-2 bottom-14 z-20 max-h-[60%] rounded-xl p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:top-3 md:w-80 md:max-h-[calc(100%-1.5rem)]',
+        // The map's discussion takes the right edge while it shows: the inspector steps beside it.
+        chat.open && !chat.picking ? 'md:right-[25rem]' : 'md:right-3')
       : 'h-full w-full p-5')}>
       <div className="flex items-start justify-between gap-2">
         <div>

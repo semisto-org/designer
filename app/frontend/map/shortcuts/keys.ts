@@ -50,6 +50,7 @@ export const SHORTCUT_GROUPS: { key: string; rows: { keys: string[]; label: stri
     key: 'anywhere',
     rows: [
       { keys: ['cmd', 'j'], label: 'search' },
+      { keys: ['d'], label: 'chat' },
       { keys: ['?'], label: 'sheet' },
     ],
   },

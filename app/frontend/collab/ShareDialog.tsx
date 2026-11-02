@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react'
-import { Check, Copy, LogOut, Mail, RefreshCw, Trash2, UserMinus, Users } from 'lucide-react'
+import { Check, Copy, LogOut, Mail, MessageCircle, RefreshCw, Trash2, UserMinus, Users } from 'lucide-react'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
@@ -133,12 +133,22 @@ function MemberRow({ member, owner, busy, base, run }: SectionProps & { member: 
         </p>
         {member.email && <p className="truncate text-xs text-loam-500">{member.email}</p>}
         {owner ? (
-          <PlaceOwnerToggle
-            label={t('propagation.place.mark_of', { name: member.name })}
-            checked={member.placeOwner}
-            disabled={busy}
-            onChange={(placeOwner) => void run(() => api<SharingData>(`${base}/memberships/${member.id}`, { method: 'PATCH', body: { membership: { place_owner: placeOwner } } }))}
-          />
+          <div className="flex flex-wrap gap-x-4">
+            <PlaceOwnerToggle
+              label={t('propagation.place.mark_of', { name: member.name })}
+              checked={member.placeOwner}
+              disabled={busy}
+              onChange={(placeOwner) => void run(() => api<SharingData>(`${base}/memberships/${member.id}`, { method: 'PATCH', body: { membership: { place_owner: placeOwner } } }))}
+            />
+            {member.role === 'viewer' && (
+              <ChatToggleBox
+                label={t('collab.share.chat_mark_of', { name: member.name })}
+                checked={member.chat}
+                disabled={busy}
+                onChange={(chat) => void run(() => api<SharingData>(`${base}/memberships/${member.id}`, { method: 'PATCH', body: { membership: { chat_access: chat } } }))}
+              />
+            )}
+          </div>
         ) : member.placeOwner && (
           <span className="mt-0.5 inline-block rounded-full bg-leaf-50 px-2 py-0.5 text-sm text-leaf-800">{t('propagation.place.badge')}</span>
         )}
@@ -177,6 +187,20 @@ function MemberRow({ member, owner, busy, base, run }: SectionProps & { member: 
   )
 }
 
+/**
+ * « Dans la discussion », ticked by the map's owner for a viewer or an invited
+ * viewer: they join the map's live discussion (owner, editors and team always do).
+ */
+function ChatToggleBox({ label, checked, disabled, onChange }: { label: string; checked: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="mt-1 inline-flex cursor-pointer items-center gap-1.5 text-sm text-loam-600" title={label}>
+      <input type="checkbox" className="h-4 w-4 rounded border-loam-300 text-prune-600" checked={checked} disabled={disabled} aria-label={label} onChange={(e) => onChange(e.target.checked)} />
+      <MessageCircle className="h-4 w-4 text-loam-400" />
+      {t('collab.share.chat_mark')}
+    </label>
+  )
+}
+
 /** « Propriétaire du lieu », ticked by the map's owner for a member or an invitee. */
 function PlaceOwnerToggle({ label, checked, disabled, onChange }: { label: string; checked: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
   return (
@@ -191,17 +215,19 @@ function Invite({ data, busy, base, run }: SectionProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'viewer' | 'editor'>('viewer')
   const [placeOwner, setPlaceOwner] = useState(false)
+  const [chat, setChat] = useState(false)
   const invitations = data.invitations ?? []
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     const ok = await run(
-      () => api<SharingData>(`${base}/invitations`, { method: 'POST', body: { invitation: { email_address: email, role, place_owner: placeOwner } } }),
+      () => api<SharingData>(`${base}/invitations`, { method: 'POST', body: { invitation: { email_address: email, role, place_owner: placeOwner, chat_access: role === 'viewer' && chat } } }),
       t('collab.share.invited', { email: email.trim().toLowerCase() }),
     )
     if (ok) {
       setEmail('')
       setPlaceOwner(false)
+      setChat(false)
     }
   }
 
@@ -224,7 +250,10 @@ function Invite({ data, busy, base, run }: SectionProps) {
         </Select>
         <Button type="submit" disabled={busy || email.trim() === ''}>{t('collab.share.invite_send')}</Button>
       </form>
-      <PlaceOwnerToggle label={t('propagation.place.mark')} checked={placeOwner} disabled={busy} onChange={setPlaceOwner} />
+      <div className="flex flex-wrap gap-x-4">
+        <PlaceOwnerToggle label={t('propagation.place.mark')} checked={placeOwner} disabled={busy} onChange={setPlaceOwner} />
+        {role === 'viewer' && <ChatToggleBox label={t('collab.share.chat_mark')} checked={chat} disabled={busy} onChange={setChat} />}
+      </div>
       <p className="text-xs text-loam-500">{t(`collab.share.role_help_${role}`)}</p>
 
       {invitations.length > 0 && (
@@ -235,12 +264,22 @@ function Invite({ data, busy, base, run }: SectionProps) {
               <li key={invitation.id} className="flex items-center gap-2 py-1.5 text-sm">
                 <div className="min-w-0 flex-1">
                   <p className="truncate">{invitation.email}</p>
-                  <PlaceOwnerToggle
-                    label={t('propagation.place.mark_of', { name: invitation.email })}
-                    checked={invitation.placeOwner}
-                    disabled={busy}
-                    onChange={(value) => void run(() => api<SharingData>(`${base}/invitations/${invitation.id}`, { method: 'PATCH', body: { invitation: { place_owner: value } } }))}
-                  />
+                  <div className="flex flex-wrap gap-x-4">
+                    <PlaceOwnerToggle
+                      label={t('propagation.place.mark_of', { name: invitation.email })}
+                      checked={invitation.placeOwner}
+                      disabled={busy}
+                      onChange={(value) => void run(() => api<SharingData>(`${base}/invitations/${invitation.id}`, { method: 'PATCH', body: { invitation: { place_owner: value } } }))}
+                    />
+                    {invitation.role === 'viewer' && (
+                      <ChatToggleBox
+                        label={t('collab.share.chat_mark_of', { name: invitation.email })}
+                        checked={invitation.chat}
+                        disabled={busy}
+                        onChange={(value) => void run(() => api<SharingData>(`${base}/invitations/${invitation.id}`, { method: 'PATCH', body: { invitation: { chat_access: value } } }))}
+                      />
+                    )}
+                  </div>
                 </div>
                 <span className="rounded-full bg-loam-100 px-2 py-0.5 text-xs text-loam-600">{t(`maps.roles.${invitation.role}`)}</span>
                 <button

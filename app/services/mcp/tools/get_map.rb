@@ -44,6 +44,7 @@ module Mcp
           documents: map.documents.count,
           site_visits: site_visits(map),
           photos: map.photos.count,
+          discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
           offer: offer(map),
           sectors: sectors(map),
@@ -138,6 +139,20 @@ module Mcp
         # part at its own rate (services, plants, supplies).
         # The sector analysis: the sun at the solstices (computed from the
         # latitude) and the sectors noted around the terrain, accepted or proposed.
+        # The map's live discussion at a glance (list_discussion reads it), for its members only.
+        def discussion(map)
+          return { member: false } unless map.chat_member?(user)
+          messages = map.comments.visible
+          read = CommentRead.find_by(user:, commentable: map)&.last_read_at
+          unread = messages.where.not(author_id: user.id)
+          unread = unread.where(created_at: read..) if read
+          {
+            member: true, messages: messages.count, unread: unread.count,
+            pinned: messages.where.not(location: nil).count,
+            last_message_at: messages.maximum(:created_at)&.iso8601
+          }
+        end
+
         def sectors(map)
           center = map.center || map.boundary&.centroid
           return nil unless center

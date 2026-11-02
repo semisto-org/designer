@@ -1,20 +1,21 @@
-import { ArrowLeft, MessageSquare } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { MessageSquare } from 'lucide-react'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { LAYER_COLORS } from '@/map/layers/features'
-import { CommentThread } from './CommentThread'
+import { chatActions } from './chat/chatStore'
 import { geometryCenter } from './geometry'
-import { clearGeneralDiscussionRequest, peekGeneralDiscussionRequest, setCommentEmails, useThreads } from './threadsStore'
+import { setCommentEmails, useThreads } from './threadsStore'
 import { timeAgo } from './time'
 
-/** "Discussions": every thread of the map, newest first; a click opens the element. */
+/**
+ * "Discussions": every thread of the map, newest first; a click opens the
+ * element. The map's own discussion is live, in its dock (MapChat): the
+ * entry here opens it, for its members.
+ */
 export default function DiscussionsPanel() {
   const editor = useEditor()
   const { threads, commentEmails, loaded } = useThreads(editor.map.id)
-  const [general, setGeneral] = useState(peekGeneralDiscussionRequest)
-  useEffect(clearGeneralDiscussionRequest, [])
 
   const mapThread = threads.find((thread) => thread.type === 'Map')
   const elementThreads = threads.filter((thread) => thread.type === 'MapFeature' && thread.count > 0)
@@ -38,26 +39,16 @@ export default function DiscussionsPanel() {
     }
   }
 
-  if (general) {
-    return (
-      <div className="space-y-3" data-private>
-        <button type="button" onClick={() => setGeneral(false)} className="inline-flex items-center gap-1.5 text-sm text-loam-600 hover:text-loam-900">
-          <ArrowLeft className="h-4 w-4" />
-          {t('collab.discussions.back')}
-        </button>
-        <h3 className="text-sm font-semibold text-loam-900">{t('collab.discussions.general')}</h3>
-        <CommentThread type="Map" id={editor.map.id} emptyHint={t('collab.discussions.general_empty')} />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-4" data-private>
       <p className="text-sm text-loam-600">{t('collab.discussions.intro')}</p>
 
-      <button
+      {editor.map.chat && <button
         type="button"
-        onClick={() => setGeneral(true)}
+        onClick={() => {
+          chatActions.setOpen(true)
+          if (window.matchMedia('(max-width: 767px)').matches) editor.openPanel(null)
+        }}
         className="flex w-full items-start gap-2 rounded-lg bg-prune-50 p-3 text-left hover:bg-prune-100"
       >
         <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-prune-600" />
@@ -70,7 +61,7 @@ export default function DiscussionsPanel() {
             {mapThread?.preview ? `${mapThread.lastAuthorName} : ${mapThread.preview}` : t('collab.discussions.general_hint')}
           </span>
         </span>
-      </button>
+      </button>}
 
       <section aria-label={t('collab.discussions.elements')}>
         <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-loam-500">{t('collab.discussions.elements')}</h3>
