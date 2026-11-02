@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { MapPinned, Plus, RotateCcw, Ruler, Trash2 } from 'lucide-react'
 import { NumberInput } from '@/components/finances/NumberInput'
 import { Card } from '@/components/ui/Card'
-import { IconButton } from '@/components/ui/IconButton'
+import { Button } from '@/components/ui/Button'
 import { Input, Select } from '@/components/ui/Field'
 import { formatArea, formatLength, formatNumber, t } from '@/lib/i18n'
 import type { Candidate, OfferInputs, OfferMap, OfferMeasures, PlantCategory, PlantingType, PricingInfo, ScopeInput } from '@/types/offers'
@@ -114,7 +114,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                       </button>
                     )}
                   </div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_7rem]">
+                  <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_9rem]">
                     <label className="block">
                       <span className="sr-only">{t('offers.scope.type')}</span>
                       <Select value={item.planting_type} disabled={readOnly} onChange={(e) => setItem(item.id, { planting_type: e.target.value })}>
@@ -137,7 +137,7 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                         onValue={(value) => setItem(item.id, { measure: value })}
                       />
                     )}
-                    <div className="flex items-center gap-1">
+                    <label className="flex items-center gap-2 text-sm text-loam-600">
                       <NumberInput
                         aria-label={t('offers.scope.plants_override')}
                         integer
@@ -146,21 +146,29 @@ export function TerrainCard({ map, inputs, measures, pricing, readOnly, onChange
                         className={clsx(item.plants_override != null && 'bg-humus-50')}
                         onValue={(value) => setItem(item.id, { plants_override: value })}
                       />
-                      {item.plants_override != null && !readOnly && (
-                        <button type="button" onClick={() => setItem(item.id, { plants_override: null })} className="rounded-full p-1 text-loam-400 hover:text-prune-700" aria-label={t('offers.scope.plants_reset')} title={t('offers.scope.plants_reset')}>
-                          <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-                        </button>
+                      {t('offers.scope.plants_unit')}
+                    </label>
+                  </div>
+                  {item.plants_override != null ? (
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-900">
+                      <span>{t('offers.scope.plants_fixed')}</span>
+                      {!readOnly && (
+                        <Button variant="ghost" size="sm" onClick={() => setItem(item.id, { plants_override: null })}>
+                          <RotateCcw className="h-3.5 w-3.5" aria-hidden />{t('offers.scope.plants_reset')}
+                        </Button>
                       )}
                     </div>
-                  </div>
-                  {type && Object.keys(type.mix).length > 0 && !item.plants_override && (
-                    <Densities
-                      type={type}
-                      categories={pricing.categories}
-                      mix={item.mix ?? {}}
-                      readOnly={readOnly}
-                      onChange={(mix) => setItem(item.id, { mix })}
-                    />
+                  ) : type && Object.keys(type.mix).length > 0 && (
+                    <>
+                      <Densities
+                        type={type}
+                        categories={pricing.categories}
+                        mix={item.mix ?? {}}
+                        readOnly={readOnly}
+                        onChange={(mix) => setItem(item.id, { mix })}
+                      />
+                      {!readOnly && <p className="mt-1 text-sm text-loam-500">{t('offers.scope.plants_hint')}</p>}
+                    </>
                   )}
                   <p className="mt-1.5 text-sm text-loam-500">
                     {measure?.missing
@@ -245,9 +253,9 @@ function Densities({ type, categories, mix, readOnly, onChange }: { type: Planti
               />
             </span>
             {own && !readOnly && (
-              <IconButton size="sm" label={t('offers.scope.density_reset')} onClick={() => set(key, null)}>
-                <RotateCcw aria-hidden />
-              </IconButton>
+              <Button variant="ghost" size="sm" onClick={() => set(key, null)}>
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden />{t('offers.scope.density_reset')}
+              </Button>
             )}
           </label>
         )
