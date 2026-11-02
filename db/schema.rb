@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_190100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1220,6 +1220,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_170000) do
     t.string "status", default: "to_verify", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "cross_checked_with"
     t.index ["record_type", "record_id", "field"], name: "index_plant_field_sources_uniqueness", unique: true
     t.index ["source"], name: "index_plant_field_sources_on_source"
   end

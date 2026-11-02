@@ -66,6 +66,21 @@ class Catalog::ValueCheckTest < ActiveSupport::TestCase
     assert_equal "to_verify", @species.provenance_for("height_max_m").status
   end
 
+  test "when PFAF and Wikipédia agree, the value cites Wikipédia: PFAF only cross-checks" do
+    stub_jev do |state, _questions|
+      both = { "life_cycle" => { "choice" => "perennial", "confidence" => state["source"] == "pfaf" ? 0.99 : 0.85 },
+               "exposures.sun" => { "noul" => 0.95 } }
+      state["source"] == "pfaf" ? both.merge("foliage_type" => { "choice" => "evergreen", "confidence" => 0.95 }) : both
+    end
+    @check.run
+    checks = @species.value_checks.index_by(&:field)
+
+    assert_equal [ "confirmed", "wikipedia" ], checks["life_cycle"].values_at(:verdict, :source)
+    assert_equal [ "confirmed", "wikipedia" ], checks["exposures"].values_at(:verdict, :source)
+    assert_equal [ "confirmed", "pfaf" ], checks["foliage_type"].values_at(:verdict, :source), "only PFAF says it"
+    assert_equal false, checks["foliage_type"].as_json[:citable]
+  end
+
   test "without a key, Jev says it cannot check" do
     assert_raises(Providers::Jev::Unavailable) { Catalog::ValueCheck.new(@species, jev: Providers::Jev.new(api_key: nil)).run }
   end
