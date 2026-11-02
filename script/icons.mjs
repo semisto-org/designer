@@ -10,7 +10,12 @@
 // - docs/brand/app-icon-macos.png: the icon on the macOS grid, for a Mac build
 //   or store listing.
 //
+// - mobile/assets/images/splash/: the splash crowns one layer per file (washes,
+//   pencil rings, centre), stacked by the phone app's opening animation.
+//
 // Shapes come from a seeded generator, so a run always draws the same icon.
+// `node script/icons.mjs mobile/assets/images/splash` renders only the files
+// under that prefix.
 import { chromium } from 'playwright'
 import { mkdirSync, writeFileSync } from 'node:fs'
 
@@ -102,7 +107,7 @@ function wash(cx, cy, r, color, seed, alpha, painted) {
  * The crowns and rings at a given scale around (512, 512).
  * mode: 'painted' (filters), 'flat' (no filters), 'mono' (Android themed icon: one colour, alpha only).
  */
-function crowns(scale, mode = 'painted') {
+function crowns(scale, mode = 'painted', only = null) {
   const painted = mode === 'painted'
   const pencil = painted ? ' filter="url(#pencil)"' : ''
   const c = 512
@@ -115,11 +120,13 @@ function crowns(scale, mode = 'painted') {
     out.push(`<path d="${blob(c, c, 62 * scale, { seed: 13 })}" fill="#fff"/>`)
     return out.join('\n')
   }
-  CROWNS.forEach(({ r, color, alpha, offset: [ox, oy] }, i) => out.push(wash(c + ox * scale, c + oy * scale, r * scale, color, 10 + i, alpha, painted)))
+  // only: one layer by name (crown-0…3 from year 30 inward, ring-0…2, dot), for the splash animation.
+  const keep = (name) => only === null || only === name
+  CROWNS.forEach(({ r, color, alpha, offset: [ox, oy] }, i) => keep(`crown-${i}`) && out.push(wash(c + ox * scale, c + oy * scale, r * scale, color, 10 + i, alpha, painted)))
   CROWNS.slice(0, 3).forEach(({ r, offset: [ox, oy] }, i) =>
-    out.push(`<path d="${ring(c + ox * scale - 4, c + oy * scale + 3, (r + 4) * scale, { seed: 30 + i })}" fill="none" stroke="${PRUNE_700}" stroke-width="${fmt((painted ? 11 : 22) * scale)}" stroke-linecap="round"${pencil}/>`),
+    keep(`ring-${i}`) && out.push(`<path d="${ring(c + ox * scale - 4, c + oy * scale + 3, (r + 4) * scale, { seed: 30 + i })}" fill="none" stroke="${PRUNE_700}" stroke-width="${fmt((painted ? 11 : 22) * scale)}" stroke-linecap="round"${pencil}/>`),
   )
-  out.push(`<circle cx="${c}" cy="${c}" r="${fmt((painted ? 17 : 30) * scale)}" fill="${PRUNE_900}"${pencil}/>`)
+  if (keep('dot')) out.push(`<circle cx="${c}" cy="${c}" r="${fmt((painted ? 17 : 30) * scale)}" fill="${PRUNE_900}"${pencil}/>`)
   return out.join('\n')
 }
 
@@ -168,11 +175,20 @@ const renders = [
   ['mobile/assets/images/splash-icon.png', masters['app-icon-crowns.svg'], 400],
   ['mobile/assets/images/favicon.png', masters['app-icon-flat.svg'], 48],
   ['docs/brand/app-icon-macos.png', macos, 1024],
+  // The splash, layer by layer, at three times its 120 pt width.
+  ...['crown-0', 'crown-1', 'crown-2', 'crown-3', 'ring-0', 'ring-1', 'ring-2', 'dot'].map((layer) => [
+    `mobile/assets/images/splash/${layer}.png`,
+    svg(crowns(1.2, 'painted', layer), { background: null }),
+    360,
+  ]),
 ]
+
+const prefix = process.argv[2] ?? ''
+mkdirSync('mobile/assets/images/splash', { recursive: true })
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined })
 const page = await browser.newPage()
-for (const [file, source, size] of renders) {
+for (const [file, source, size] of renders.filter(([file]) => file.startsWith(prefix))) {
   // Filters are drawn at 1024 and scaled down, so every size shows the same grain.
   await page.setViewportSize({ width: 1024, height: 1024 })
   await page.setContent(`<html><body style="margin:0;background:transparent">${source}</body></html>`)
