@@ -1,18 +1,19 @@
 import { usePage } from '@inertiajs/react'
-import { Bell, BellOff, Users, X } from 'lucide-react'
+import { Bell, BellOff, ImagePlus, Users, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { IconButton } from '@/components/ui/IconButton'
 import { confirmAction } from '@/components/ui/confirm'
 import { api } from '@/lib/api'
 import { cable } from '@/lib/cable'
 import { t } from '@/lib/i18n'
+import { useFileDrag } from '@/lib/useFileDrag'
 import { useEditor } from '@/map/editor/EditorContext'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
 import type { SharedProps } from '@/types'
 import type { CommentData, ThreadData } from '@/types/collab'
 import { refreshThreads, useThreads } from '../threadsStore'
-import { ChatComposer, type ChatDraft } from './ChatComposer'
+import { ChatComposer, type ChatComposerHandle, type ChatDraft } from './ChatComposer'
 import { ChatMessage } from './ChatMessage'
 import { ChatPins } from './ChatPins'
 import { chatActions, rememberedOpen, useChat } from './chatStore'
@@ -41,6 +42,7 @@ export default function MapChat() {
   const [busy, setBusy] = useState(false)
   const [editing, setEditing] = useState<number | null>(null)
   const loadedRef = useRef(false)
+  const composer = useRef<ChatComposerHandle>(null)
   const openRef = useRef(chat.open)
   openRef.current = chat.open
   const { threads } = useThreads(mapId)
@@ -199,6 +201,8 @@ export default function MapChat() {
   const replace = (updated: CommentData) =>
     setThread((current) => current && { ...current, comments: current.comments.map((c) => (c.id === updated.id ? updated : c)) })
 
+  // A picture dragged from the computer can be dropped anywhere on the panel.
+  const fileDrag = useFileDrag(member && chat.open && !chat.picking && editor.canEdit)
   if (!member) return null
 
   const comments = thread?.comments ?? []
@@ -213,8 +217,24 @@ export default function MapChat() {
         <aside
           aria-label={t('collab.chat.title')}
           data-private
-          className="pointer-events-auto flex h-[70%] min-h-0 flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl ring-1 ring-loam-200 md:h-full md:w-96 md:rounded-xl"
+          className="pointer-events-auto relative flex h-[70%] min-h-0 flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl ring-1 ring-loam-200 md:h-full md:w-96 md:rounded-xl"
+          onDragOver={(e) => {
+            if (!fileDrag || !composer.current?.canAttach) return
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'copy'
+          }}
+          onDrop={(e) => {
+            if (!fileDrag) return
+            e.preventDefault()
+            if (!composer.current?.attachFiles(e.dataTransfer.files)) editor.notify(t('collab.chat.photo_drop_none'), 'error')
+          }}
         >
+          {fileDrag && composer.current?.canAttach && (
+            <div aria-hidden className="pointer-events-none absolute inset-2 z-20 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-prune-400 bg-prune-50/90 p-6 text-center text-sm font-medium text-prune-800">
+              <ImagePlus className="h-6 w-6" />
+              {t('collab.chat.photo_drop')}
+            </div>
+          )}
           <header className="flex items-start gap-2 border-b border-loam-100 px-4 py-3">
             <div className="min-w-0 flex-1">
               <h2 className="font-serif text-lg leading-tight text-loam-900">{t('collab.chat.title')}</h2>
@@ -244,7 +264,7 @@ export default function MapChat() {
             onApplaud={applaud}
           />
           <div className="border-t border-loam-100 p-3">
-            <ChatComposer members={thread?.members ?? []} busy={busy} onSubmit={post} />
+            <ChatComposer ref={composer} members={thread?.members ?? []} busy={busy} onSubmit={post} />
           </div>
         </aside>
         </ZoneCard>
