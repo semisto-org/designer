@@ -1,0 +1,20 @@
+<p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
+<% if @plan_key == "yearly" %>
+  <p><%= @renewed_from ? t("billing_mailer.plan_started.yearly_renewed", from: @renewed_from, date: @ends_on) : t("billing_mailer.plan_started.yearly", date: @ends_on) %></p>
+<% else %>
+  <p><%= t("billing_mailer.plan_started.subscription", plan: @plan_name) %></p>
+<% end %>
+<%= render "mail_places", places: @place_names %>
+<p><%= t("billing_mailer.plan_started.unlocks") %></p>
+<ul>
+  <% @features.each do |feature| %>
+    <li><%= feature %></li>
+  <% end %>
+</ul>
+<% if @plan_key == "bureau" %>
+  <p><%= t("billing_mailer.plan_started.team") %></p>
+<% end %>
+<p><a href="<%= @maps_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:999px;text-decoration:none;font-weight:600"><%= t("billing_mailer.plan_started.cta") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= @plan_key == "yearly" ? t("billing_mailer.plan_started.yearly_note") : t("billing_mailer.plan_started.subscription_note") %> <%= t("billing_mailer.plan_started.receipt", url: @billing_url) %></p>
+<%= render "mail_supports" %>
+<p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>
