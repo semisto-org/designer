@@ -54,7 +54,7 @@ class OrganizationTest < ActiveSupport::TestCase
     assert Map.exists?(@map.id), "no map is deleted"
     assert_nil @map.role_for(member)
     assert_equal 0, OrganizationMembership.where(user: member).count
-    assert_not CommentSubscription.subscribed?(member, @map)
-    assert CommentSubscription.subscribed?(users(:alice), @map), "direct members keep their subscriptions"
+    assert_not CommentSubscription.exists?(user: member, commentable: @map)
+    assert CommentSubscription.exists?(user: users(:alice), commentable: @map), "direct members keep their subscriptions"
   end
 end

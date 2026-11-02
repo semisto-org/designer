@@ -3,7 +3,8 @@ import { useEffect } from 'react'
 import { useEditor } from '@/map/editor/EditorContext'
 import { featureAt } from '@/map/featurePick'
 import { geometryCenter } from './geometry'
-import { requestGeneralDiscussion, useThreads } from './threadsStore'
+import { chatActions } from './chat/chatStore'
+import { useThreads } from './threadsStore'
 
 const SOURCE = 'comment-badges'
 const LAYERS = ['comment-badges-circle', 'comment-badges-count']
@@ -100,9 +101,9 @@ export default function CollabOverlay() {
       editor.select(id)
       const center = geometryCenter(features.find((f) => f.properties.id === id)!.geometry)
       if (center) instance.easeTo({ center, duration: 0 })
-    } else if (type === 'Map') {
-      requestGeneralDiscussion()
-      editor.openPanel('discussions')
+    } else if (type === 'Map' && editor.map.chat) {
+      // The map's own discussion (a digest or a mention e-mail).
+      chatActions.focus(Number(window.location.hash.replace('#comment-', '')) || null)
     }
     url.searchParams.delete('discussion')
     window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)

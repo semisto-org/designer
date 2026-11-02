@@ -1,11 +1,21 @@
 # One message of a discussion thread. Plain text; @mentions are resolved on
 # the server against the people who can open the map. Deleting is soft.
+#
+# The comments on the map itself are its live discussion (« Discussion de la
+# carte », `chat?`): only its members read them (Map#chat_member?), they are
+# relayed live (MapChatChannel) and e-mailed as a digest (Collab::ChatDigest)
+# rather than one by one. Any message can point at the map: elements cited
+# with « # » (`feature_ids`), a pinned spot (`location`) and a photo.
 class Comment < ApplicationRecord
+  include PointLocation
+
   MAX_LENGTH = 5_000
+  MAX_FEATURES = 20
 
   belongs_to :map
   belongs_to :commentable, polymorphic: true
   belongs_to :author, class_name: "User"
+  belongs_to :map_photo, optional: true
   has_many :applauses, dependent: :destroy
 
   # Keep line breaks, drop control characters and surrounding blank space.
@@ -14,22 +24,37 @@ class Comment < ApplicationRecord
   before_validation :set_map, on: :create
   validates :body, presence: true, length: { maximum: MAX_LENGTH }
   validate :commentable_in_map
+  validate :photo_in_map
+  before_save :keep_features_of_map, if: -> { new_record? || will_save_change_to_feature_ids? }
   before_save :resolve_mentions, if: -> { new_record? || will_save_change_to_body? }
   before_update :stamp_edit, if: :will_save_change_to_body?
   after_save :subscribe_participants
   after_create_commit :notify_later
   after_update_commit :notify_new_mentions, if: :saved_change_to_body?
+  after_commit :relay_live, if: :chat?
 
   scope :visible, -> { where(deleted_at: nil) }
   scope :chronological, -> { order(:created_at, :id) }
 
   def deleted? = deleted_at.present?
+  def chat? = commentable_type == "Map"
   def edited? = edited_at.present?
   def soft_delete! = update!(deleted_at: Time.current)
 
   def mentioned_users
-    map.participants.where(id: mentioned_user_ids)
+    mention_pool.where(id: mentioned_user_ids)
   end
+
+  # The elements of the map this message cites, in the order of `feature_ids`.
+  def cited_features
+    return [] if feature_ids.empty?
+    by_id = map.features.where(id: feature_ids).index_by(&:id)
+    feature_ids.filter_map { |id| by_id[id] }
+  end
+
+  # Who a mention can reach: the discussion's members for the map's own
+  # discussion, everyone with access for an element's thread.
+  def mention_pool = chat? ? map.chat_participants : map.participants
 
   # Mentions that appeared in the last edit (new mentions get notified).
   def newly_mentioned_ids
@@ -47,8 +72,24 @@ class Comment < ApplicationRecord
       errors.add(:commentable, :invalid) unless commentable.comment_map == map
     end
 
+    def photo_in_map
+      errors.add(:map_photo, :invalid) if map_photo && map && map_photo.map_id != map.id
+    end
+
+    # Cited elements: those of this map only, each once, at most MAX_FEATURES.
+    def keep_features_of_map
+      ids = Array(feature_ids).map(&:to_i).uniq.first(MAX_FEATURES)
+      kept = ids.empty? || map.nil? ? [] : map.features.where(id: ids).pluck(:id)
+      self.feature_ids = ids & kept
+    end
+
     def resolve_mentions
-      self.mentioned_user_ids = Collab::Mentions.parse(body, map.participants).map(&:id)
+      self.mentioned_user_ids = Collab::Mentions.parse(body, mention_pool).map(&:id)
+    end
+
+    # Tells the discussion's open tabs that this message changed (MapChatChannel).
+    def relay_live
+      MapChatChannel.broadcast_to(map, { type: destroyed? || deleted? ? "delete" : "upsert", id: })
     end
 
     def stamp_edit
@@ -56,7 +97,9 @@ class Comment < ApplicationRecord
     end
 
     # The author follows their own thread, and so do the people they mention.
+    # The map's discussion has no follow list: its members get the digest.
     def subscribe_participants
+      return if chat?
       User.where(id: [ author_id ] + mentioned_user_ids).find_each do |user|
         CommentSubscription.subscribe(user, commentable)
       end

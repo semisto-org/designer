@@ -67,14 +67,17 @@ export default function ShortcutsSheet() {
 
 /** The keyboard button of the header (computers only: a phone has no keys). */
 export function ShortcutsButton() {
+  // No keyboard on a phone. Hidden through a wrapper: on the button itself,
+  // its own `inline-flex` wins over `hidden` and the header overflows.
   return (
-    <IconButton
-      size="sm"
-      onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
-      label={t('editor.shortcuts.button')}
-      className="hidden md:inline-flex"
-    >
-      <Keyboard aria-hidden />
-    </IconButton>
+    <span className="hidden md:contents">
+      <IconButton
+        size="sm"
+        onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
+        label={t('editor.shortcuts.button')}
+      >
+        <Keyboard aria-hidden />
+      </IconButton>
+    </span>
   )
 }

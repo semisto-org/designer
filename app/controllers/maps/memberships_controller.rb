@@ -1,6 +1,6 @@
 module Maps
-  # Change a member's role or mark them as an owner of the place (owner
-  # only), remove them (owner) or leave the map (anyone but the owner, on
+  # Change a member's role, mark them as an owner of the place or let a
+  # viewer into the map's discussion (owner only), remove them (owner) or leave the map (anyone but the owner, on
   # their own membership).
   class MembershipsController < ApplicationController
     include MapScoped
@@ -19,6 +19,8 @@ module Maps
       end
       # The map's owner may own the place too.
       @membership.place_owner = ActiveModel::Type::Boolean.new.cast(attrs[:place_owner]) if attrs.key?(:place_owner)
+      # A viewer joins the map's discussion (owner, editors and team always do).
+      @membership.chat_access = ActiveModel::Type::Boolean.new.cast(attrs[:chat_access]) || false if attrs.key?(:chat_access)
 
       @membership.save!
       render_sharing

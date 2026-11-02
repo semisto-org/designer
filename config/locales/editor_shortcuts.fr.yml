@@ -24,6 +24,7 @@ fr:
         points_extend: "Continuer une ligne depuis un bout"
         search: "Chercher une page, une carte ou un guide"
         sheet: "Ouvrir cette fiche"
+        chat: "Afficher ou masquer la discussion de la carte"
       keys:
         shift: "Maj"
         click: "clic"
@@ -36,6 +37,7 @@ fr:
         enter: "Entrée"
         a: "A"
         p: "P"
+        d: "D"
         "+": "+"
         "-": "−"
         "?": "?"

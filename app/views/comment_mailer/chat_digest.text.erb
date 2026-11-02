@@ -1,0 +1,10 @@
+<%= t(".intro", count: @comments.size, map: @map.name) %>
+<% @comments.each do |comment| %>
+
+<%= comment.author.display_name %> · <%= l(comment.created_at.in_time_zone("Europe/Brussels"), format: :short) %><% if comment.location %> · <%= t(".pinned") %><% end %>
+<%= comment.body %>
+<% end %>
+
+<%= t(".open") %> : <%= @url %>
+
+<%= t(".reason") %> <%= t(".how_to_stop") %>

@@ -54,7 +54,7 @@ class OrganizationMembershipTest < ActiveSupport::TestCase
     assert @member_membership.destroy
 
     assert_nil team_map.role_for(@member)
-    assert_not CommentSubscription.subscribed?(@member, team_map), "subscriptions on maps they cannot open go"
+    assert_not CommentSubscription.exists?(user: @member, commentable: team_map), "subscriptions on maps they cannot open go"
     assert_not CommentSubscription.subscribed?(@member, feature), "element threads too"
     assert CommentSubscription.subscribed?(@admin, feature)
     assert_equal @team.id, own_map.reload.organization_id, "their own map stays in the team"
@@ -69,6 +69,6 @@ class OrganizationMembershipTest < ActiveSupport::TestCase
     CommentSubscription.subscribe(@member, team_map)
     @member_membership.destroy!
     assert_equal "viewer", team_map.role_for(@member)
-    assert CommentSubscription.subscribed?(@member, team_map)
+    assert CommentSubscription.exists?(user: @member, commentable: team_map)
   end
 end

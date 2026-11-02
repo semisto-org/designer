@@ -110,6 +110,26 @@ class Map < ApplicationRecord
   def project_sheet = ProjectSheet.parse(project, strict: false)
 
   def viewable_by?(user) = role_for(user).present?
+
+  # The map's live discussion (« Discussion de la carte », the comments on
+  # the map itself): its owner, editors and team, plus the viewers the owner
+  # let in one by one (`chat_access` on their membership). Support roles
+  # (a drone pilot, Semisto answering a request) stay out of it.
+  def chat_member?(user)
+    case role_for(user)
+    when "owner", "editor" then true
+    when "viewer" then memberships.where(user:, chat_access: true).exists?
+    else false
+    end
+  end
+
+  # Everyone in the map's discussion (see #chat_member?).
+  def chat_participants
+    in_chat = memberships.where(role: %w[owner editor]).or(memberships.where(chat_access: true)).select(:user_id)
+    scope = User.where(id: in_chat)
+    scope = scope.or(User.where(id: OrganizationMembership.where(organization_id:).select(:user_id))) if organization_id
+    scope
+  end
   def editable_by?(user) = %w[owner editor].include?(role_for(user))
   def manageable_by?(user) = role_for(user) == "owner"
 
@@ -176,13 +196,18 @@ class Map < ApplicationRecord
 
   # Gives `user` the role through an invitation or a share link. Never
   # downgrades.
-  def grant_access!(user, role, invited_by: nil)
+  def grant_access!(user, role, invited_by: nil, chat_access: false)
     current = role_for(user)
-    return memberships.find_by(user:) if current == "owner" || current == "editor" || current == role
+    if current == "owner" || current == "editor" || current == role
+      membership = memberships.find_by(user:)
+      membership.update!(chat_access: true) if chat_access && membership && !membership.chat_access
+      return membership
+    end
 
     membership = memberships.find_or_initialize_by(user:)
     membership.role = role
     membership.invited_by ||= invited_by
+    membership.chat_access ||= chat_access
     membership.save!
     membership
   end

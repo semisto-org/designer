@@ -45,9 +45,10 @@ Rails.application.routes.draw do
       resource :share_link, only: %i[create update destroy] do
         post :reset
       end
-      resources :comments, only: %i[index create update destroy] do
+      resources :comments, only: %i[index show create update destroy] do
         collection do
           get :threads
+          post :read
           post :subscribe, to: "comment_subscriptions#create"
           delete :subscribe, to: "comment_subscriptions#destroy"
         end
