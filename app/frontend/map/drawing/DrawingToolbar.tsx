@@ -1,3 +1,5 @@
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 import clsx from 'clsx'
 import type { Geometry } from 'geojson'
 import { Hand, LandPlot, Minus, MousePointer2, PenLine, Pencil, Plus, Ruler, Shapes, Spline, type LucideIcon } from 'lucide-react'
@@ -313,7 +315,7 @@ export default function DrawingToolbar() {
 
   return (
     <>
-      <div className="pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 md:top-3.5">
+      <ZoneCard id="drawing-toolbar" zone="toolbar" passThrough>
         <div role="toolbar" aria-label={t('drawing.toolbar.label')} className="pointer-events-auto flex items-center gap-0.5 rounded-xl bg-white p-1 shadow-[0_6px_16px_rgb(26_26_26/0.14)]">
           {editor.canEdit && (
             <ToolButton icon={Shapes} label={t('drawing.toolbar.draw')} hint={t('drawing.toolbar.draw_hint')} active={tool === 'draw'} onClick={() => setTool(tool === 'draw' ? null : 'draw')} />
@@ -326,21 +328,22 @@ export default function DrawingToolbar() {
             <ToolButton icon={Pencil} label={t('drawing.toolbar.sketch')} hint={t('drawing.toolbar.sketch_hint')} active={tool === 'sketch'} onClick={() => setTool(tool === 'sketch' ? null : 'sketch')} />
           )}
         </div>
-      </div>
+      </ZoneCard>
 
       {/* A shape started from a panel (outline, patch, zone…): the same way to finish it. */}
       {!tool && (editor.drawingShape === 'polygon' || editor.drawingShape === 'linestring') && (
-        <div className="pointer-events-none absolute inset-x-2 top-14 z-30 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
+        <ZoneCard id="drawing-hint" zone="top" priority={PRIORITY.activeTool} passThrough className="w-full md:w-[30rem]">
           <HintBar text={t(editor.drawingShape === 'polygon' ? 'drawing.toolbar.hint_outline' : 'drawing.toolbar.hint_path')}>
             <StepBackButton editor={editor} />
             <Button size="sm" variant="secondary" onClick={() => editor.finishDraw()}>{t('drawing.toolbar.finish')}</Button>
             <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.toolbar.cancel')}</Button>
           </HintBar>
-        </div>
+        </ZoneCard>
       )}
 
       {tool && (
-        <div className="pointer-events-none absolute inset-x-2 top-14 z-30 md:left-1/2 md:right-auto md:w-[30rem] md:-translate-x-1/2">
+        // The picker keeps its width even when the side cards leave a narrow middle: it opens over them, on demand.
+        <ZoneCard id="drawing-tool" zone="top" priority={PRIORITY.activeTool} passThrough className="w-full md:w-[30rem] md:max-w-none">
           {tool === 'draw' && !drawingSpec && (
             <ElementPicker onPick={(spec, planned) => void drawElement(spec, planned)} onClose={close} />
           )}
@@ -376,7 +379,7 @@ export default function DrawingToolbar() {
               <Button size="sm" variant="ghost" className="text-white hover:bg-white/10" onClick={() => editor.cancelDraw()}>{t('drawing.edit.cancel')}</Button>
             </HintBar>
           )}
-        </div>
+        </ZoneCard>
       )}
     </>
   )

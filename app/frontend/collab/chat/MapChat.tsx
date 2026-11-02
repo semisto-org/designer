@@ -1,5 +1,4 @@
 import { usePage } from '@inertiajs/react'
-import clsx from 'clsx'
 import { Bell, BellOff, Users, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { IconButton } from '@/components/ui/IconButton'
@@ -7,8 +6,9 @@ import { confirmAction } from '@/components/ui/confirm'
 import { api } from '@/lib/api'
 import { cable } from '@/lib/cable'
 import { t } from '@/lib/i18n'
-import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEditor } from '@/map/editor/EditorContext'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 import type { SharedProps } from '@/types'
 import type { CommentData, ThreadData } from '@/types/collab'
 import { refreshThreads, useThreads } from '../threadsStore'
@@ -43,7 +43,6 @@ export default function MapChat() {
   const loadedRef = useRef(false)
   const openRef = useRef(chat.open)
   openRef.current = chat.open
-  const wide = useMediaQuery('(min-width: 768px)')
   const { threads } = useThreads(mapId)
   const base = `/maps/${mapId}/comments`
 
@@ -209,14 +208,12 @@ export default function MapChat() {
       {(chat.open || chat.picking) && <ChatPins comments={comments} />}
       {/* Mounted once opened, then only hidden: the scroll, the draft and the photo being sent survive. */}
       {(thread || chat.open) && (
+        // The right zone from md up, a sheet on a phone; it waits while an element's sheet is open (map/layout/zones).
+        <ZoneCard id="chat" zone={{ desktop: 'right', phone: 'sheet' }} priority={PRIORITY.chat} active={shown} passThrough className="h-full justify-end">
         <aside
           aria-label={t('collab.chat.title')}
           data-private
-          className={clsx(
-            'absolute z-30 flex-col overflow-hidden bg-white shadow-xl ring-1 ring-loam-200',
-            shown ? 'flex' : 'hidden',
-            wide ? 'bottom-2 right-2 top-2 w-96 rounded-xl' : 'inset-x-0 bottom-14 h-[70%] rounded-t-2xl',
-          )}
+          className="pointer-events-auto flex h-[70%] min-h-0 flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl ring-1 ring-loam-200 md:h-full md:w-96 md:rounded-xl"
         >
           <header className="flex items-start gap-2 border-b border-loam-100 px-4 py-3">
             <div className="min-w-0 flex-1">
@@ -250,6 +247,7 @@ export default function MapChat() {
             <ChatComposer members={thread?.members ?? []} busy={busy} onSubmit={post} />
           </div>
         </aside>
+        </ZoneCard>
       )}
     </>
   )

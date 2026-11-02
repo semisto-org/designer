@@ -7,6 +7,8 @@ import { useMediaQuery } from '@/lib/useMediaQuery'
 import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
 import { selectionMove, translateGeometry } from '@/map/selection/move'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 const SOURCE = 'selection-move'
 const LAYERS = ['selection-move-fill', 'selection-move-line', 'selection-move-point'] as const
@@ -156,7 +158,7 @@ export default function SelectionOverlay() {
       ].join(' ')
 
   return (
-    <div className="pointer-events-none absolute inset-x-2 top-14 z-30 md:left-1/2 md:right-auto md:w-[32rem] md:-translate-x-1/2">
+    <ZoneCard id="selection" zone="top" priority={PRIORITY.activeTool} passThrough className="w-full md:w-[32rem]">
       <div className="pointer-events-auto flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-loam-900/90 px-3 py-2 text-sm text-white shadow-lg" role="status">
         <span className="min-w-[14rem] flex-1">{text}</span>
         <div className="flex shrink-0 gap-2">
@@ -173,7 +175,7 @@ export default function SelectionOverlay() {
           )}
         </div>
       </div>
-    </div>
+    </ZoneCard>
   )
 }
 

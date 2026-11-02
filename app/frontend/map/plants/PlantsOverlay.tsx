@@ -22,6 +22,8 @@ import { isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
 import { growingPlant, sizeAtMoment } from '@/map/time/plants'
 import type { PlantingState } from '@/types/plants'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 const CROWNS = 'plant-crowns'
 const LABELS = 'plant-labels'
@@ -380,7 +382,7 @@ export default function PlantsOverlay() {
 
   if (!placing) return null
   return (
-    <div className="pointer-events-none absolute left-14 right-2 top-2 z-30 flex justify-center md:left-1/2 md:right-auto md:-translate-x-1/2">
+    <ZoneCard id="plant-placing" zone="top" priority={PRIORITY.activeTool} passThrough className="items-center">
       <div className="pointer-events-auto flex max-w-md items-center gap-2 rounded-xl bg-leaf-700 px-3 py-2 text-sm text-white shadow-lg">
         <MapPin className="h-4 w-4 shrink-0" />
         <span className="min-w-0 flex-1">{t('palette.placing', { name: placing.name })}</span>
@@ -392,6 +394,6 @@ export default function PlantsOverlay() {
           <X className="h-3.5 w-3.5" />{t('palette.stop_placing')}
         </button>
       </div>
-    </div>
+    </ZoneCard>
   )
 }

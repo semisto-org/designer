@@ -5,6 +5,7 @@ import { CanopyLegend, CanopyStrip } from '@/map/canopy/CanopyLegend'
 import { canopyBeforeId, decodeGrid, gridCorners, paintHeights } from '@/map/canopy/ramp'
 import { canopyActions, useCanopy, type CanopyReport } from '@/map/canopy/store'
 import { useEditor } from '@/map/editor/EditorContext'
+import { ZoneCard, useZoneDevice } from '@/map/layout/ZoneLayer'
 
 const SOURCE = 'canopy-height'
 const LAYER = 'canopy-height'
@@ -91,18 +92,25 @@ export default function CanopyOverlay() {
 
   useEffect(() => () => removeCanopy(map), [map])
 
+  const phone = useZoneDevice() === 'phone'
   // The panel has its own legend.
   if (!ready || activePanel === 'canopy') return null
   return (
     <>
-      <div className="pointer-events-none absolute right-16 top-3 z-10 hidden rounded-lg bg-white/90 px-2.5 py-2 text-[11px] text-loam-700 shadow-sm backdrop-blur md:block">
+      {/* Beside the zoom controls, which move beside an open element sheet (map/layout). */}
+      <div className="pointer-events-none absolute right-[calc(var(--zone-right,0px)+4rem)] top-3 z-10 hidden rounded-lg bg-white/90 px-2.5 py-2 text-[11px] text-loam-700 shadow-sm backdrop-blur md:block">
         <p className="mb-1 font-medium text-loam-800">{t('canopy.legend.title')}</p>
         <CanopyLegend compact />
         <p className="mt-1.5 max-w-36 text-[10px] leading-tight text-loam-500">{t('canopy.legend.source')}</p>
       </div>
-      <div className="pointer-events-none absolute bottom-[5.5rem] right-3 z-10 rounded-full bg-white/90 px-2.5 py-1 text-[10px] text-loam-700 shadow-sm backdrop-blur md:hidden">
-        <CanopyStrip />
-      </div>
+      {phone && (
+        // On a phone, in the foot of the map with the time strip and the legend.
+        <ZoneCard id="canopy-strip" zone="bottom" order={3} passThrough className="ml-auto">
+          <div className="rounded-full bg-white/90 px-2.5 py-1 text-[10px] text-loam-700 shadow-sm backdrop-blur">
+            <CanopyStrip />
+          </div>
+        </ZoneCard>
+      )}
     </>
   )
 }

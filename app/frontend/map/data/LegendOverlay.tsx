@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { ChevronDown, Eye, EyeOff, ListTree } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { hasLegend, LayerLegend } from '@/components/legend/LayerLegend'
 import { strataLabel } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
@@ -17,6 +17,7 @@ import { usePlanting } from '@/map/plants/store'
 import { isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
 import type { Strata } from '@/types/plants'
+import { ZoneCard, useZoneOccupied } from '@/map/layout/ZoneLayer'
 
 const OPEN_KEY = 'designer.legend.open'
 
@@ -82,18 +83,23 @@ function usePlantStrata(): PlantLegend {
 
 /**
  * The legend of the plant strata and of the data layers shown on the map,
- * over the map: a card in
- * the lower right corner on a computer, a « Légende » button that opens it
- * on a phone. The « Couches » panel shows the same legends under each layer,
- * so the card steps aside while it is open, and on a phone it leaves the
- * bottom of the screen to any open panel or selection.
+ * over the map: a card at the end of the foot of the map on a computer, a
+ * « Légende » button that opens it on a phone. The « Couches » panel shows
+ * the same legends under each layer, so the card steps aside while it is open.
  */
 export default function LegendOverlay() {
-  const { regionLayers, activePanel, selected, features } = useEditor()
+  const { regionLayers, activePanel } = useEditor()
   const state = useLayerState()
   const wide = useMediaQuery('(min-width: 768px)')
   const [choice, setChoice] = useState<boolean | null>(storedOpen)
-  const open = choice ?? wide
+  // A panel and an element's sheet both open: the foot of the map is narrow,
+  // the card folds to its button (unfolded on demand, without changing the stored choice).
+  const left = useZoneOccupied('left')
+  const right = useZoneOccupied('right')
+  const crowded = wide && left && right
+  const [unfolded, setUnfolded] = useState(false)
+  useEffect(() => setUnfolded(false), [crowded])
+  const open = crowded ? unfolded : choice ?? wide
 
   const plants = usePlantStrata()
   const shown = visibleOverlays(state)
@@ -102,10 +108,11 @@ export default function LegendOverlay() {
     .filter((layer) => layer.category === 'overlay' && shown.includes(layer.key) && hasLegend(layer))
     .sort((a, b) => (b.position ?? 0) - (a.position ?? 0))
   const sections = layers.length + (plants.counts.length > 0 || plants.unknown > 0 ? 1 : 0)
-  if (sections === 0 || (!wide && (activePanel || selected))) return null
+  if (sections === 0) return null
 
   const toggle = () => {
     const next = !open
+    if (crowded) return setUnfolded(next)
     setChoice(next)
     try {
       window.localStorage.setItem(OPEN_KEY, next ? '1' : '0')
@@ -115,15 +122,9 @@ export default function LegendOverlay() {
   }
 
   return (
-    <section
-      aria-label={t('map_data.legend.title')}
-      className={clsx(
-        'absolute left-2 z-10 md:bottom-11 md:left-auto md:right-2',
-        // Phone: above the time strip (map/time), which shows once the map holds something.
-        features.length > 0 ? 'bottom-[11.75rem]' : 'bottom-[5.5rem]',
-        open && 'right-2 md:w-72',
-      )}
-    >
+    // The end of the foot of the map, beside the time strip; on a phone, above it, and away while a sheet is open (map/layout/zones).
+    <ZoneCard id="legend" zone="bottom" order={2} className={clsx('md:ml-auto', open && 'w-full md:w-72')}>
+    <section aria-label={t('map_data.legend.title')}>
       <div className={clsx('rounded-xl bg-white/95 shadow-lg ring-1 ring-loam-900/10 backdrop-blur', open && 'flex max-h-[42dvh] flex-col md:max-h-[min(28rem,55dvh)]')}>
         <button
           type="button"
@@ -152,6 +153,7 @@ export default function LegendOverlay() {
         )}
       </div>
     </section>
+    </ZoneCard>
   )
 }
 

@@ -58,7 +58,9 @@ Seuls le propriétaire et les éditeurs de la carte peuvent changer d'étape ; l
 
 Une carte flotte sur le plan (en bas à gauche sur ordinateur, en haut sur téléphone). Elle dit ce qu'il y a de plus utile à faire maintenant, en une phrase, avec un bouton qui ouvre directement le bon outil, par exemple **Remplir la fiche projet**. La barre en haut de la carte montre où en est tout le parcours.
 
-Elle te gêne ? La flèche à côté du titre la **réduit** à une ligne, « À faire : … », pour cette carte et sur cet appareil ; la flèche inverse la déplie. Elle ne disparaît jamais tout à fait, pour que tu ne perdes pas le fil. Elle n'apparaît que pour le propriétaire et les éditeurs.
+Elle te gêne ? La flèche à côté du titre la **réduit** à une ligne, « À faire : … », pour cette carte et sur cet appareil ; la flèche inverse la déplie.
+
+Sur ordinateur, dès qu'un panneau est ouvert, elle quitte la carte pour lui laisser la place : elle t'attend en haut de la colonne des outils, en une ligne « À faire : … ». Touche-la pour la déplier à côté du panneau. Elle ne disparaît jamais tout à fait, pour que tu ne perdes pas le fil. Elle n'apparaît que pour le propriétaire et les éditeurs.
 
 ## Un conseil
 
