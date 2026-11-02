@@ -1,0 +1,16 @@
+fr:
+  place_reading:
+    title: "Voici ton lieu"
+    intro: "Avant de dessiner quoi que ce soit, voici ce que Terranova lit déjà de ton terrain, d'après le relief de ta région."
+    open:
+      relief: "Voir le relief"
+      water: "Voir où va l'eau"
+      sun: "Voir le soleil"
+    low_point: "Montrer le point bas"
+    outside:
+      title: "Ce que les cartes ne savent pas"
+      body: "Ces lignes viennent d'un modèle, juste à quelques mètres près. Ce que ton terrain fait vraiment, toi seul peux le voir : où l'eau reste après une pluie, où le givre tient le matin, ce qui pousse tout seul."
+      note: "Va y faire un tour cette semaine, téléphone en poche."
+    tour: "Lire le carnet de route"
+    start: "Commencer"
+    reopen: "Relire « Voici ton lieu »"

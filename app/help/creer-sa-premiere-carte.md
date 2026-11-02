@@ -37,7 +37,7 @@ Rien n'est obligatoire ni linéaire : on revient souvent en arrière, et c'est t
 
 À gauche de la carte (en bas sur un téléphone), chaque étape montre d'abord ses outils essentiels : la fiche projet, les couches, le relief, le soleil et les photos pour observer, le terrain et les éléments pour cartographier, et ainsi de suite. Les autres attendent derrière **N autres outils** : touche-le pour les déplier, **Moins d'outils** pour les replier. Ton choix est gardé sur cet appareil. L'outil que propose « À faire maintenant » reste toujours visible.
 
-Le **carnet de route** s'ouvre une fois ton terrain délimité : il raconte la suite du chemin sur un terrain d'exemple. Tu le retrouves dans le panneau **Parcours**.
+Une fois ton terrain délimité, **Voici ton lieu** te dit ce que Terranova lit déjà de ton terrain : sa pente, où va l'eau de pluie, le soleil qu'il reçoit. Voir [Voici ton lieu](/help/voici-ton-lieu). Le **carnet de route**, qui raconte la suite du chemin sur un terrain d'exemple, t'attend dans le panneau **Parcours**.
 
 ## Un conseil pour bien démarrer
 

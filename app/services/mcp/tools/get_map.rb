@@ -46,6 +46,7 @@ module Mcp
           photos: map.photos.count,
           discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
+          first_hour: first_hour(map),
           offer: offer(map),
           sectors: sectors(map),
           exports: exports(map),
@@ -281,6 +282,16 @@ module Mcp
             with_reports: samples.count { |s| s.lab_reports.attached? },
             drafts_pending: samples.count { |s| s.draft.pending? }
           }
+        end
+
+        # « Ta première heure »: what Terranova reads of the place on its own
+        # (Maps::PlaceReading: slope in %, which way it runs, drop in metres,
+        # where rain water gathers) and when the person first read it.
+        def first_hour(map)
+          {
+            started_at: map.first_hour_started_at&.iso8601,
+            reading: Maps::PlaceReading.new(map).call.presence
+          }.compact
         end
 
         # Who owns the place and what they chose to share with other
