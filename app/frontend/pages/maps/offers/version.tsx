@@ -162,7 +162,7 @@ function Cover({ section, map, version, issuer, letterhead, theme }: OfferVersio
   return (
     <div className="space-y-6 py-6 print:flex print:min-h-[85vh] print:flex-col print:justify-center">
       {theme?.coverUrl && <img src={theme.coverUrl} alt="" className="max-h-80 w-full rounded-xl object-cover print:max-h-[45vh]" />}
-      {letterhead && <img src={letterhead.logoUrl} alt="" className="max-h-16 max-w-[12rem] object-contain object-left" />}
+      {letterhead && <img src={letterhead.logoUrl} alt="" className="max-h-48 max-w-full object-contain object-left" />}
       <h1 className="font-doc-heading text-4xl text-doc-heading">{section.title}</h1>
       <div className="space-y-1">
         <p className="font-medium text-loam-900">{issuer}</p>
