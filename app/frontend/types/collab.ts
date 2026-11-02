@@ -191,3 +191,18 @@ export type PublicMapProps = {
   /** The simplified 3D view (/p/:token/3d), when the terrain's relief is there. */
   reliefPath?: string | null
 }
+
+/** What a person invited to a map sees before signing in, and once on the map. */
+export type InvitationWelcome = {
+  mapId: number
+  mapName: string
+  boundary: import('geojson').Geometry | null
+  areaM2: number | null
+  inviterName: string | null
+  role: 'editor' | 'viewer'
+  chat: boolean
+  /** The day the map was started (ISO date). */
+  since: string
+  plants: number
+  plantsInGround: number
+}

@@ -82,7 +82,9 @@ class MapsController < ApplicationController
       # The « carnet de route » ends on Claude: already plugged in, or how to.
       aiConnected: Current.user.ai_connected?,
       # The « Offre » panel: for teams and professional accounts only.
-      offerBuilder: Offer.shown_to?(@map, Current.user)
+      offerBuilder: Offer.shown_to?(@map, Current.user),
+      # Just joined from an invitation or the share link: greeted once.
+      welcome: welcome_props
     }
   end
 
@@ -110,6 +112,13 @@ class MapsController < ApplicationController
   end
 
   private
+    def welcome_props
+      joined = flash[:joined_map]
+      return unless joined.is_a?(Hash) && joined["id"] == @map.id && @role != "owner"
+      Collab::InvitationWelcome.new(@map, inviter: nil, role: @role, chat: @map.chat_member?(Current.user))
+        .as_json.merge(inviterName: joined["inviter"])
+    end
+
     def new_map_spaces = @new_map_spaces ||= Billing::NewMapSpaces.new(Current.user)
 
     def renaming?

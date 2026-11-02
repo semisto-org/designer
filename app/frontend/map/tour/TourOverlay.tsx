@@ -20,12 +20,14 @@ export function openTour() {
  * and again on request. Not before: on a new map the person first sees their
  * own place and outlines it; the carnet (told on an example terrain) then
  * comes as the next step, not in front of their land. Closing it the first
- * time is remembered on the account, for all devices.
+ * time is remembered on the account, for all devices. Someone invited to
+ * another person's map is greeted by « Bienvenue » instead (WelcomeCard):
+ * the carnet would cover the garden they came to see with an example.
  */
 export default function TourOverlay() {
   const editor = useEditor()
   const { props } = usePage<SharedProps & { aiConnected?: boolean }>()
-  const firstVisit = editor.canEdit && props.currentUser != null && !props.currentUser.tourSeen
+  const firstVisit = editor.canEdit && editor.map.role === 'owner' && props.currentUser != null && !props.currentUser.tourSeen
   const outlined = editor.map.boundary != null
   const [open, setOpen] = useState(false)
   const remembered = useRef(!firstVisit)

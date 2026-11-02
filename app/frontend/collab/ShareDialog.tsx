@@ -13,6 +13,7 @@ import { MapTransferSection } from '@/transfer/MapTransferSection'
 import { Avatar } from './Avatar'
 import { Dialog } from './Dialog'
 import { PlaceSection } from './PlaceSection'
+import { HandNote } from '@/components/ui/HandNote'
 
 /**
  * Who has access to the map and how: members with their roles, invitations
@@ -56,10 +57,11 @@ export function ShareDialog({ onClose }: { onClose: () => void }) {
         // data-private: people's names and addresses stay masked in session replays (lib/replay.ts).
         <div className="space-y-6" data-private>
           {error && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm text-clay-700">{error}</p>}
+          {/* Inviting is why the owner opens this dialog: it comes first, above the fold on a phone. */}
+          {owner && <Invite data={data} busy={busy} base={base} run={run} />}
           <Members data={data} owner={owner} busy={busy} base={base} run={run} onLeft={() => router.visit('/maps')} />
           <PlaceSection data={data} manager={owner} busy={busy} base={base} run={run} />
           {data.organization && <MapProjectSection teamId={data.organization.id} mapId={editor.map.id} canEdit={editor.canEdit} notify={editor.notify} />}
-          {owner && <Invite data={data} busy={busy} base={base} run={run} />}
           {owner && <ShareLink data={data} busy={busy} base={base} run={run} />}
           {owner && <MapTeamSection data={data} busy={busy} base={base} run={run} />}
           {owner && <MapTransferSection data={data} base={base} />}
@@ -216,14 +218,17 @@ function Invite({ data, busy, base, run }: SectionProps) {
   const [role, setRole] = useState<'viewer' | 'editor'>('viewer')
   const [placeOwner, setPlaceOwner] = useState(false)
   const [chat, setChat] = useState(false)
+  // Said under the form rather than in a toast, which would cover the field on a phone.
+  const [sent, setSent] = useState<string | null>(null)
   const invitations = data.invitations ?? []
 
   async function submit(e: FormEvent) {
     e.preventDefault()
+    const address = email.trim().toLowerCase()
     const ok = await run(
       () => api<SharingData>(`${base}/invitations`, { method: 'POST', body: { invitation: { email_address: email, role, place_owner: placeOwner, chat_access: role === 'viewer' && chat } } }),
-      t('collab.share.invited', { email: email.trim().toLowerCase() }),
     )
+    setSent(ok ? address : null)
     if (ok) {
       setEmail('')
       setPlaceOwner(false)
@@ -255,6 +260,7 @@ function Invite({ data, busy, base, run }: SectionProps) {
         {role === 'viewer' && <ChatToggleBox label={t('collab.share.chat_mark')} checked={chat} disabled={busy} onChange={setChat} />}
       </div>
       <p className="text-xs text-loam-500">{t(`collab.share.role_help_${role}`)}</p>
+      {sent && <HandNote tone="leaf" arrow="right">{t('collab.share.invited', { email: sent })}</HandNote>}
 
       {invitations.length > 0 && (
         <div>

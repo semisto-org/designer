@@ -63,7 +63,7 @@ fr:
       invite_role: "Rôle"
       invite_send: "Inviter"
       invited: "Invitation envoyée à %{email}."
-      role_help_viewer: "Un lecteur consulte la carte et participe aux discussions."
+      role_help_viewer: "Un lecteur consulte la carte et commente ses éléments ; coche « Dans la discussion » pour qu'il parle aussi avec l'équipe."
       role_help_editor: "Un éditeur dessine et modifie la carte, gratuitement : il travaille avec le forfait qui couvre la carte."
       pending: "Invitations en attente"
       resend: "Renvoyer l'invitation à %{email}"
@@ -223,9 +223,47 @@ fr:
         failed: "La vidéo n'a pas pu être peinte. Réessaie dans un instant."
         no_plants: "La vidéo montre tes plantes qui poussent : publie la couche Plantes pour la peindre."
     joining:
-      sign_in_first: "Connecte-toi pour rejoindre la carte « %{map} » : un lien te sera envoyé par e-mail, sans mot de passe."
-      joined: "Bienvenue sur la carte « %{map} »."
       my_maps: "Mes cartes"
+      # The page a signed-out person sees from an invitation or the share
+      # link, and the card that greets them once on the map.
+      welcome:
+        page_title: "Invitation à « %{map} »"
+        kicker: "une invitation"
+        title: "« %{map} » t'attend"
+        invited_by:
+          editor: "%{name} t'invite à le concevoir ensemble, comme %{role}."
+          viewer: "%{name} t'invite à le découvrir et à donner ton avis, comme %{role}."
+        invited: "Tu es invité·e à rejoindre ce jardin comme %{role}."
+        roles:
+          editor: "éditeur ou éditrice"
+          viewer: "lecteur ou lectrice"
+        can_title: "Ce que tu pourras y faire"
+        can:
+          editor:
+            draw: "Dessiner le plan avec l'équipe : arbres, haies, mares, chemins."
+            observe: "Ajouter tes photos et ce que tu observes sur le terrain."
+          viewer:
+            browse: "Parcourir le plan, du terrain d'aujourd'hui au jardin dans trente ans."
+            comment: "Commenter un arbre, une mare, une zone : ton avis reste là où il compte."
+          chat: "Parler avec l'équipe dans la discussion de la carte, au bureau comme sur place."
+          phone: "Sur ton téléphone, retrouver le plan au milieu du terrain."
+        since: "Ce jardin se dessine depuis %{date}."
+        plants_none: "Ses arbres ne sont pas encore choisis : tu arrives au bon moment."
+        plants_planned:
+          one: "1 plante y est prévue ; elle grandira sous tes yeux, année après année."
+          other: "%{count} plantes y sont prévues ; elles grandiront sous tes yeux, année après année."
+        plants_mixed: "%{in_ground} plantes sont déjà en terre, %{planned} attendent leur tour."
+        plants_all_in_ground:
+          one: "1 plante y est déjà en terre."
+          other: "%{count} plantes y sont déjà en terre."
+        crowns: "Sur la carte, chaque cercle en pointillés est un arbre à sa taille adulte."
+        join: "Rejoindre le jardin"
+        join_hint: "Pas encore de compte ? Il se crée au même endroit, en quelques secondes, sans mot de passe."
+        note: "on t'attendait"
+        card_title: "Bienvenue sur « %{map} »"
+        open_chat: "Dire bonjour à l'équipe"
+        explore: "Découvrir le plan"
+        tour: "Comment se conçoit un jardin-forêt ?"
       problems:
         invalid:
           title: "Lien introuvable"
@@ -293,8 +331,10 @@ fr:
       subject: "%{inviter} t'invite sur la carte « %{map} »"
       greeting: "Bonjour,"
       body: "%{inviter} t'invite à rejoindre la carte « %{map} » sur Semisto Terranova, en tant que %{role}."
-      role_editor: "Un éditeur dessine et modifie la carte, et participe aux discussions."
-      role_viewer: "Un lecteur consulte la carte et participe aux discussions."
+      role_editor: "Un éditeur dessine et modifie la carte, et participe à la discussion de l'équipe."
+      role_viewer: "Un lecteur consulte la carte et commente ses éléments."
+      chat: "Tu feras aussi partie de la discussion de la carte, pour parler avec l'équipe en direct."
+      since: "Ce jardin se dessine depuis %{date} : sur la carte, tu le verras grandir, de l'an 1 à l'an 30."
       button: "Rejoindre la carte"
       signin_hint: "Tu seras invité à te connecter (avec Google ou un lien par e-mail, sans mot de passe) si ce n'est pas déjà fait."
       expiry: "Cette invitation est valable jusqu'au %{date}."

@@ -13,6 +13,7 @@ import PublishPanel from '@/collab/PublishPanel'
 import ShareButton from '@/collab/ShareButton'
 import ChatToggle from '@/collab/chat/ChatToggle'
 import MapChat from '@/collab/chat/MapChat'
+import WelcomeCard from '@/collab/welcome/WelcomeCard'
 import JourneyPanel from '@/map/panels/JourneyPanel'
 import JourneyOverlay from '@/map/panels/JourneyOverlay'
 import TourOverlay from '@/map/tour/TourOverlay'
@@ -185,6 +186,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
 export const OVERLAYS: EditorSlot[] = [
   { id: 'collab', component: CollabOverlay, order: 90 },
   { id: 'chat', component: MapChat, order: 91 },
+  { id: 'welcome', component: WelcomeCard, order: 92 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
   { id: 'version', component: VersionPicker, order: 25 },
   { id: 'time-strip', component: TimeStrip, order: 24 },
