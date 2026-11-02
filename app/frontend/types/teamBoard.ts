@@ -44,7 +44,7 @@ export type BoardRequest = {
 }
 
 /** A season step: design, work site or planting, from one date to another. */
-export type BoardStep = { id: number; mapId: number; kind: StepKind; title: string; startsOn: string; dueOn: string; done: boolean }
+export type BoardStep = { id: number; mapId: number; kind: StepKind; title: string; startsOn: string; dueOn: string; done: boolean; forecast: boolean }
 
 export type BoardMemberLoad = BoardPerson & {
   you: boolean

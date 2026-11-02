@@ -399,6 +399,9 @@ function TaskRow({ task, mapId, today, open, canEdit, canTick, onToggle, onOpen,
           <span className={clsx('text-[15px] leading-snug', done ? 'text-loam-400 line-through decoration-loam-300' : 'text-loam-900 group-hover:text-prune-800')}>
             {task.title}
           </span>
+          {task.forecast && !done && (
+            <span className="ml-2 inline-flex rounded-full border border-dashed border-loam-400 px-2 py-0.5 align-middle text-sm text-loam-600">{t('tasks.task.forecast')}</span>
+          )}
           {!done && !open && task.notes && (
             <span className="mt-0.5 line-clamp-2 block text-sm leading-snug text-loam-500">{task.notes}</span>
           )}

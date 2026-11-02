@@ -124,6 +124,7 @@ fr:
         one: "et 1 autre"
         other: "et %{count} autres"
       map_says_done: "La carte montre que c'est fait"
+      forecast: "prévisionnel"
       tick_now: "Cocher"
       due:
         today: "Aujourd'hui"

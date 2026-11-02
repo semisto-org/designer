@@ -3,6 +3,8 @@
 # (« Chantier de mars », « Devis »…). `key` marks a default list.
 class TaskList < ApplicationRecord
   NAME_MAX_LENGTH = 80
+  # The list that holds the season steps of the team board.
+  SEASON_KEY = "season"
 
   belongs_to :map
   belongs_to :created_by, class_name: "User", optional: true
@@ -14,6 +16,12 @@ class TaskList < ApplicationRecord
   scope :ordered, -> { order(:position, :id) }
 
   before_create :append_position
+
+  # The map's season list (« Calendrier de la saison »), made on first use.
+  def self.season!(map, by:)
+    map.task_lists.find_by(key: SEASON_KEY) ||
+      map.task_lists.create!(key: SEASON_KEY, name: I18n.t("team_board.season_list"), created_by: by)
+  end
 
   # Puts the list at `index` among the map's lists (0-based, clamped).
   def move_to!(index)
