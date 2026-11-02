@@ -10,6 +10,17 @@ class BillingMailer < ApplicationMailer
     mail to: @user.email_address, subject: t(".#{kind}.subject", date: @expires_on)
   end
 
+  # A yearly subscription renews itself in about 45 days: its date, its price
+  # and how to cancel (Billing::SubscriptionRenewalReminders).
+  def subscription_renewal(subscription)
+    @user = subscription.user
+    @plan_name = t("account.plan_names.#{subscription.plan_key}")
+    @renews_on = french_date(subscription.current_period_end)
+    @price = euros(Billing::Catalog.fetch(subscription.plan_key).yearly_price_cents)
+    @billing_url = billing_url
+    mail to: @user.email_address, subject: t(".subject", plan: @plan_name, date: @renews_on)
+  end
+
   # The trial of AI drafts on the free plan ends in a few days.
   def ai_trial_ending(user)
     @user = user
@@ -29,6 +40,12 @@ class BillingMailer < ApplicationMailer
   end
 
   private
+    # "490 €", "1 290 €".
+    def euros(cents)
+      precision = (cents % 100).zero? ? 0 : 2
+      ActiveSupport::NumberHelper.number_to_currency(cents / 100.0, unit: "€", format: "%n %u", separator: ",", delimiter: " ", precision:)
+    end
+
     # "12 octobre 2027" (the app has no French date formats of its own).
     def french_date(time)
       date = time.in_time_zone.to_date
