@@ -37,6 +37,8 @@ class Offer
         "custom_supplies" => list(raw["custom_supplies"], 30) { custom_supply(_1) },
         "phases_off" => Array(raw["phases_off"]).map(&:to_s) & Pricing::PHASES,
         "co_management" => co_management(raw["co_management"]),
+        # The client document: this client's letter and changes to the template's blocks.
+        "document" => Document.normalize(raw["document"], letter: true),
         "notes" => string(raw["notes"], MAX_NOTES)
       }
     end

@@ -4,6 +4,7 @@ import { Component, useState, type ReactNode } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { MapViewHeader } from '@/components/map_views/MapViews'
 import { CoManagementCard } from '@/components/offers/CoManagementCard'
+import { DocumentCard } from '@/components/offers/DocumentCard'
 import { InternalCard } from '@/components/offers/InternalCard'
 import { PhaseCard } from '@/components/offers/PhaseCard'
 import { PlantsCard } from '@/components/offers/PlantsCard'
@@ -140,6 +141,12 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
           ))}
           {result.totals.planting_included !== false && <PlantsCard inputs={inputs} result={result} readOnly={readOnly} onChange={setInputs} />}
           <CoManagementCard inputs={inputs} result={result} readOnly={readOnly} onChange={setInputs} />
+          <div id="document" className="scroll-mt-6">
+            <DocumentCard
+              mapId={map.id} inputs={inputs} base={autosave.pricing.documentBlocks} readOnly={readOnly} onChange={setInputs}
+              beforeLeave={autosave.flush} onAdopt={(data) => autosave.adopt(data, true)}
+            />
+          </div>
         </div>
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <div className="hidden lg:block"><PrecisionCard mapId={map.id} precision={result.precision} /></div>

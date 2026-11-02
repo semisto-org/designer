@@ -505,6 +505,11 @@ Rails.application.routes.draw do
   # The offer builder of a team map: the working offer and its versions.
   resources :maps, only: [] do
     resource :offer, only: %i[show update], controller: "maps/offers" do
+      # The client document of the working offer, before it is saved as a version.
+      get :preview, on: :member
+      # The team accepts or refuses the letter its AI proposed.
+      post :letter_draft, on: :member, action: :accept_letter
+      delete :letter_draft, on: :member, action: :reject_letter
       resources :versions, only: %i[create show update], param: :number, controller: "maps/offer_versions" do
         post :restore, on: :member
       end

@@ -46,8 +46,17 @@ Le but : que le budget de ton client aille d'abord à la plantation. L'offre aff
 
 ## Tes barèmes
 
-Un **barème** rassemble ta façon de chiffrer : taux, tâches et heures, part de la gestion de projet, prix des plants, complexité et conditions (allers-retours compris, validité, acompte, hypothèses, exclusions). Tu pars du barème Semisto et tu en fais autant de copies que tu veux, par exemple une pour les particuliers et une pour les communes. La fiche projet choisit celui qui ouvre l'offre ; tu peux en changer à tout moment.
+Un **barème** rassemble ta façon de chiffrer : taux, tâches et heures, part de la gestion de projet, prix des plants, complexité, conditions (allers-retours compris, validité, acompte, hypothèses, exclusions) et le document client. Tu pars du barème Semisto et tu en fais autant de copies que tu veux, par exemple une pour les particuliers et une pour les communes. La fiche projet choisit celui qui ouvre l'offre ; tu peux en changer à tout moment.
+
+## Le document client
+
+Ton client ne lit pas la page de calcul : il reçoit un **document**, bloc par bloc. Une page de garde, la lettre « Votre projet », l'approche en quatre étapes, le périmètre, une page par étape, la co-gestion, le logiciel, les livrables, le prix avec la facturation et tes conditions, puis une conclusion avec vos contacts.
+
+- **Les blocs et leurs textes** viennent de ton barème. Semisto propose les siens ; dans ton barème, décoche ce que tu n'envoies jamais, réécris un texte à ta façon, ajoute vos noms et téléphones dans la conclusion. Chaque offre peut encore changer un bloc pour son client, depuis la carte « Document client » de l'offre.
+- **La lettre « Votre projet »** s'écrit pour chaque client : ce que vous avez vu sur place, ce que le lieu peut devenir, comment vous proposez d'avancer. Ton IA peut la rédiger d'après la fiche projet, la carte et les documents de la visite (par exemple la transcription de l'entretien) : demande-lui « Rédige la lettre de l'offre de cette carte ». Elle arrive en proposition ; tu la prends ou la refuses, puis tu la retouches.
+- Dans les textes, `{client}`, `{lieu}` et `{equipe}` deviennent le nom du client, celui de la carte et celui de ton équipe.
+- **Aperçu du document** montre l'offre en cours telle que ton client la lira. Le bouton **PDF** ouvre l'impression (choisis « Enregistrer en PDF ») ; **Word** télécharge un fichier .docx à finir dans ton traitement de texte.
 
 ## Les versions
 
-Quand le budget te convient, **enregistre la V1** : elle reste telle quelle, même si la carte change ensuite. Le client demande des changements ? Ajuste, puis enregistre la V2. Chaque version a son statut (envoyée, acceptée, refusée) et sa page imprimable, et tu peux repartir de n'importe laquelle. Le bouton « Voir l'offre client », en haut de l'offre, ouvre la dernière version telle que ton client la lira.
+Quand le budget te convient, **enregistre la V1** : elle reste telle quelle, même si la carte change ensuite. Le client demande des changements ? Ajuste, puis enregistre la V2. Chaque version a son statut (envoyée, acceptée, refusée) et son document client, en PDF ou en Word, et tu peux repartir de n'importe laquelle. Le bouton « Voir l'offre client », en haut de l'offre, ouvre la dernière version telle que ton client la lira.

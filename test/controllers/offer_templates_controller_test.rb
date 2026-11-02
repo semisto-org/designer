@@ -39,8 +39,10 @@ class OfferTemplatesControllerTest < ActionDispatch::IntegrationTest
     props = response.parsed_body["props"]
     assert_equal "offer_templates/edit", response.parsed_body["component"]
     assert_includes props["vocabulary"]["drivers"], "plants"
+    assert_equal "Livrables", props["documentDefaults"]["deliverables"]["title"], "Semisto's texts, under the template's"
 
     data = template.data.deep_dup
+    data["document"] = { "blocks" => { "software" => { "enabled" => false }, "conclusion" => { "body" => "Christophe — 0472 00 00 00" } } }
     data["settings"]["hourly_rate"] = "75"
     data["tasks"].first["gain_pct"] = 500
     data["terms"]["markup_label"] = "contribution au déploiement de l’ASBL"
@@ -49,6 +51,7 @@ class OfferTemplatesControllerTest < ActionDispatch::IntegrationTest
     template.reload
     assert_equal [ "Communes", %w[commune], 75.0, 90 ], [ template.name, template.client_types, template.data["settings"]["hourly_rate"], template.data["tasks"].first["gain_pct"] ]
     assert_equal "contribution au déploiement de l’ASBL", template.pricing.terms["markup_label"]
+    assert_equal({ "software" => { "enabled" => false }, "conclusion" => { "body" => "Christophe — 0472 00 00 00" } }, template.pricing.document["blocks"])
     assert_nil Offer::Pricing.semisto.terms["markup_label"], "the shared default names no markup"
   end
 

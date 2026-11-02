@@ -129,6 +129,34 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_nil data["offer"], "a viewer (maybe the client) never sees the offer"
   end
 
+  test "get_offer reads the offer and its client document; propose_offer_letter leaves a draft for the team" do
+    error_text, error = call_tool(@owner, "get_offer", { map_id: @map.id })
+    assert error, "a personal account prices nothing"
+    assert_match(/réservée/, error_text)
+
+    users(:michael).update!(account_kind: "professional")
+    data, error = call_tool(@owner, "get_offer", { map_id: @map.id })
+    refute error
+    assert_equal "http://www.example.com/maps/#{@map.id}/offer/preview", data["preview_url"]
+    assert_equal "cover", data["sections"].first["key"]
+    assert_nil data["letter"]
+    assert data["budget"]["total_tvac"]
+
+    letter = "Bonjour {client},\n\n" + ("En descendant vers le bois, nous avons vu tout ce que la parcelle peut devenir. " * 4)
+    data, error = call_tool(@owner, "propose_offer_letter", { map_id: @map.id, body: letter, rationale: "Fiche projet et notes de la visite du 2 novembre." })
+    refute error, data
+    assert_equal "http://www.example.com/maps/#{@map.id}/offer#document", data["review_url"]
+    draft = @map.reload.offer.inputs.dig("document", "letter_draft")
+    assert_equal letter.strip, draft["body"]
+    assert_nil @map.offer.inputs.dig("document", "letter"), "the letter only changes when the team takes the draft"
+
+    data, = call_tool(@owner, "get_offer", { map_id: @map.id })
+    assert data["letter_draft"]["body"].start_with?("Bonjour")
+
+    _, error = call_tool(@viewer, "propose_offer_letter", { map_id: @map.id, body: letter, rationale: "Fiche projet et notes." })
+    assert error, "a viewer (maybe the client) proposes nothing"
+  end
+
   test "get_map counts the palette like its table: planted, still to plant, its price and what is left to buy" do
     apple = plant_species(:apple)
     apple.update!(invasive_countries: [ "BE" ])
