@@ -176,6 +176,13 @@ fr:
       empty: "Aucune étape sur les douze mois qui viennent. Ajoute le design, le chantier ou la plantation d'un projet."
       today: "aujourd'hui"
       project: "Projet"
+      forecast: "Prévisionnel"
+      forecast_hint: "L'offre n'est pas encore signée : l'étape se dessine en pointillés, pour calibrer le planning, jusqu'à ce que tu la confirmes."
+      forecast_legend: "prévisionnel"
+      forecast_label: "Prévisionnel · %{title}"
+      confirm: "Confirmer l'étape"
+      confirmed: "Étape confirmée."
+      forecast_note: "Prévisionnel : à confirmer quand l'offre est signée."
     steps:
       design: "Design"
       site: "Chantier"

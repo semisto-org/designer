@@ -43,6 +43,8 @@ class Task < ApplicationRecord
   scope :done, -> { where.not(completed_at: nil) }
   scope :overdue, ->(today = Date.current) { pending.where(due_on: ...today) }
   scope :steps, -> { where.not(step_kind: nil) }
+  # Season steps pencilled in before the offer is signed (« prévisionnel »).
+  scope :forecast, -> { steps.where(forecast: true) }
   scope :about, ->(feature_ids) { where(id: TaskFeature.where(map_feature_id: feature_ids).select(:task_id)) }
 
   before_validation { self.map_id ||= task_list&.map_id }
@@ -106,6 +108,7 @@ class Task < ApplicationRecord
       dueOn: due_on&.iso8601,
       startsOn: starts_on&.iso8601,
       stepKind: step_kind,
+      forecast: (forecast if step_kind),
       assignee: assignee_json,
       completedAt: completed_at&.iso8601,
       completedBy: completed_by&.display_name,
