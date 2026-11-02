@@ -87,4 +87,17 @@ class OfferDocumentTest < ActiveSupport::TestCase
     assert_includes xml, "Total TVAC"
     assert_match(/\Aoffre-.+-v1\.docx\z/, export.filename)
   end
+
+  test "an offer saved before the newest keys still opens (project management, co-management, document)" do
+    built = offer
+    built.save!
+    old = built.inputs.except("co_management", "document", "supplies", "custom_supplies", "phases_off")
+    old["settings"] = old["settings"].except("project_management_pct")
+    built.update_column(:inputs, old)
+    reloaded = Offer.find(built.id)
+    assert_equal 10, reloaded.inputs.dig("settings", "project_management_pct")
+    assert reloaded.result["totals"]["total_tvac"].positive?
+    assert_equal false, reloaded.inputs.dig("co_management", "enabled")
+    assert document_of(reloaded).sections.any?
+  end
 end
