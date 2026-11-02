@@ -286,11 +286,16 @@ module Mcp
 
         # « Ta première heure »: what Terranova reads of the place on its own
         # (Maps::PlaceReading: slope in %, which way it runs, drop in metres,
-        # where rain water gathers) and when the person first read it.
+        # where rain water gathers), when the person first read it, and the
+        # three things to go and see outside (Maps::FirstHourMissions).
         def first_hour(map)
+          missions = Maps::FirstHourMissions.new(map)
           {
             started_at: map.first_hour_started_at&.iso8601,
-            reading: Maps::PlaceReading.new(map).call.presence
+            reading: Maps::PlaceReading.new(map).call.presence,
+            missions: missions.missions,
+            missions_done: missions.done?,
+            signs_this_month: missions.as_json[:signs]
           }.compact
         end
 

@@ -10,6 +10,9 @@
 # Items whose data lives in another area (palette, plant list) are read
 # defensively and omitted when that area is absent.
 #
+# `firstHour` holds the three missions outside of « Ta première heure »
+# during the first weeks (Maps::FirstHourMissions).
+#
 # `season` is the year of observation (see MapFeature::SeasonSign): when
 # the season of today has never been looked at, the guide card invites the
 # person outside. It sits beside the checklist and never blocks a step: a
@@ -82,8 +85,18 @@ class Journey
     end
   end
 
+  # « Ta première heure »: the three missions outside, while the card shows
+  # them (Maps::FirstHourMissions); nil otherwise.
+  def first_hour
+    missions = Maps::FirstHourMissions.new(map)
+    missions.as_json if missions.shown?
+  rescue StandardError => error
+    Rails.logger.warn("Journey: first hour unreadable (#{error.class}: #{error.message})")
+    nil
+  end
+
   def as_json(*)
-    { stage: map.stage, stageIndex: STEPS.index(map.stage), steps:, next: next_action, season: }
+    { stage: map.stage, stageIndex: STEPS.index(map.stage), steps:, next: next_action, season:, firstHour: first_hour }.compact
   end
 
   private

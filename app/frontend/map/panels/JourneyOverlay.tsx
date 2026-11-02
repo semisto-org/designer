@@ -15,7 +15,9 @@ import { SEASONS, seasonToObserve } from '@/map/editor/guideTarget'
 import { useStageSetter } from '@/map/panels/JourneyPanel'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
-import type { JourneySeason, Season } from '@/types/journey'
+import { openFirstHour } from '@/map/first_hour/FirstHourOverlay'
+import { MissionList, missionsDone } from '@/map/first_hour/Missions'
+import type { FirstHourMissions, JourneySeason, Season } from '@/types/journey'
 
 /**
  * Always mounted in the editor: keeps the journey fresh (recomputed when
@@ -152,13 +154,42 @@ export function GuideCardBody({ collapsed, setCollapsed, onAction }: { collapsed
               </button>
             )}
           </div>
-          {season && guide.data.season && <SeasonInvite season={season} year={guide.data.season} />}
+          {guide.data.firstHour
+            ? <MissionsInvite data={guide.data.firstHour} onOpen={() => { onAction?.(); openFirstHour() }} />
+            : season && guide.data.season && <SeasonInvite season={season} year={guide.data.season} />}
           <button type="button" onClick={() => { onAction?.(); editor.openPanel('journey') }} className="self-start text-sm font-medium text-prune-700 hover:underline">
             {t('editor.guide.all_steps')}
           </button>
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * « Ta première heure », during its first weeks: the three missions outside,
+ * ticked as the observations come in (they include today's season, so the
+ * season invitation waits behind them).
+ */
+function MissionsInvite({ data, onOpen }: { data: FirstHourMissions; onOpen: () => void }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-[10px] border border-dashed border-leaf-300 bg-leaf-50 px-3 py-2.5">
+      <p className="flex items-center justify-between gap-2 text-sm font-semibold text-leaf-800">
+        <span className="flex items-center gap-2">
+          <Footprints className="h-4 w-4 shrink-0" aria-hidden />
+          {t(data.done ? 'place_reading.missions.done_title' : 'place_reading.missions.title')}
+        </span>
+        {!data.done && <span className="font-normal text-loam-500">{t('place_reading.missions.progress', { done: missionsDone(data.missions) })}</span>}
+      </p>
+      {data.done
+        ? <p className="text-sm leading-[1.45] text-loam-600">{t('place_reading.missions.done_body')}</p>
+        : <MissionList data={data} compact />}
+      {!data.done && (
+        <Button variant="leaf" size="sm" onClick={onOpen} className="self-start">
+          {t('place_reading.missions.open')}
+        </Button>
+      )}
+    </div>
   )
 }
 

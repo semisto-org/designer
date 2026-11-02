@@ -23,6 +23,7 @@ class TeamMapsTest < ActionDispatch::IntegrationTest
     refute error, data
     assert data.dig("permissions", "propose_drafts")
     assert data.key?("first_hour"), "get_map tells the AI the place's first reading"
+    assert_equal %w[water season living], data.dig("first_hour", "missions").pluck("key"), "and the three missions outside"
 
     feature = { layer: "plants", kind: "tree", rationale: "Plein sud, à l'abri du vent.", geometry: point(lng: 4.906, lat: 50.341) }
     data, error = call_tool(token, "propose_features", { map_id: @map.id, features: [ feature ] })

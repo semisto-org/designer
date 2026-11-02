@@ -14,3 +14,29 @@ fr:
     tour: "Lire le carnet de route"
     start: "Commencer"
     reopen: "Relire « Voici ton lieu »"
+    missions:
+      title: "Trois choses à aller voir"
+      done_title: "Ton lieu, vu par toi"
+      done_body: "Les trois sont faites : ta carte sait maintenant ce que les modèles ne savaient pas. Tes observations guident la suite du design, et ton IA les lit aussi."
+      progress: "%{done} sur 3"
+      open: "Voir les missions"
+      done: "Fait"
+      todo: "À faire"
+      water:
+        title: "L'eau"
+        body: "Après une pluie, va voir où l'eau reste ou s'écoule. Commence par le point bas : est-ce bien là qu'elle se rassemble ?"
+        done: "Vu : la carte sait où va l'eau."
+      season:
+        title: "La saison"
+        body: "Note un signe de la saison là où tu le vois. Ce mois-ci : %{signs}."
+        done: "Noté dans ton carnet des saisons."
+      living:
+        title: "Le vivant"
+        body: "Photographie 3 plantes qui poussent toutes seules. Elles disent beaucoup de ton sol."
+        count: "%{count} sur %{target}"
+        done: "Tes plantes spontanées parlent de ton sol."
+      phone:
+        title: "Emporte-les dehors"
+        body: "Scanne ce code avec ton téléphone : les missions s'ouvrent sur ta carte. Dans l'app Terranova, elles t'attendent aussi."
+        small: "Dans l'app Terranova, sur ton téléphone, ces missions t'attendent sur ta carte."
+        alt: "Code QR vers ta carte sur le téléphone"
