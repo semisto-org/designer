@@ -3,7 +3,7 @@
 import {
   Apple, Aperture, Bandage, Bug, Flower2, Scissors, Wrench, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
   Eye, EyeOff, Fence, Leaf, Snowflake, Sun, SunSnow, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Mic, Navigation2, NotebookPen, PenLine, PawPrint, Pause, Route, Ruler, ScanSearch, Shovel, Sprout,
-  SkipForward, Square, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
+  SkipForward, Square, ChevronDown, MessagesSquare, SendHorizontal, User, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
 import { colors } from './theme'
 
@@ -11,6 +11,8 @@ const ICONS = {
   back: ChevronLeft, next: ChevronRight, close: X, check: Check, undo: Undo2,
   photo: Camera, plant: Sprout, point: MapPin, measure: Ruler, identify: ScanSearch, trace: Footprints,
   display: Layers, follow: LocateFixed,
+  // The map's discussion.
+  chat: MessagesSquare, hide: ChevronDown, send: SendHorizontal, person: User,
   note: NotebookPen, storm: CloudRainWind, planted: Shovel, followUp: HeartPulse, sheet: BookOpen,
   flowering: Flower2, pruning: Scissors, damage: Bandage, disease: Bug, intervention: Wrench, harvest: Apple,
   flows: Waves, pools: Droplet, seeps: Droplets,

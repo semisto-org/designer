@@ -25,6 +25,7 @@ function transport(overrides: Partial<Transport> = {}) {
     uploadPhoto: async (_m, _op, featureId) => { calls.push(`photo ${featureId}`) },
     createObservation: async (_m, featureId) => { calls.push(`observation ${featureId}`) },
     createComment: async (_m, featureId) => { calls.push(`comment ${featureId}`) },
+    chatMessage: async (_m, op, featureIds) => { calls.push(`chat ${op.body} [${featureIds.join(',')}]`) },
     createHarvest: async (_m, featureId, harvest) => { calls.push(`harvest ${featureId} ${harvest.stage}`) },
     createStorageReading: async (_m, featureId, reading) => { calls.push(`storage ${featureId} ${reading.humidityPct}`) },
     createBioindicator: async (_m, op) => { calls.push(`bioindicator ${op.observation.speciesName}`) },
@@ -278,5 +279,29 @@ describe('uploadVisitAudio', () => {
     expect(sent).toEqual(['file:///visit.m4a'])
     expect(result.state.ops).toEqual([])
     expect(filesOf(audio)).toEqual(['file:///visit.m4a'])
+  })
+})
+
+describe('a message of the map\'s discussion', () => {
+  const message = (extra: Partial<Extract<Op, { type: 'chatMessage' }>> = {}): Op => ({
+    id: 'm', mapId: 1, createdAt: at, type: 'chatMessage', body: 'Regarde ici', featureIds: [5, -1],
+    lng: 4.95, lat: 50.32, photo: null, takenAt: null, ...extra,
+  })
+
+  it('cites an element drawn offline by its real id once it exists', async () => {
+    const { t, calls } = transport()
+    await flush(state([create('a', -1), message()]), t)
+    expect(calls).toEqual(['create', 'chat Regarde ici [5,100]'])
+  })
+
+  it('leaves out an element whose creation was refused, not the message', async () => {
+    const { t, calls } = transport()
+    await flush(state([{ ...create('a', -1), error: 'refused' }, message()]), t)
+    expect(calls).toEqual(['chat Regarde ici [5]'])
+  })
+
+  it('keeps its photo on the phone until it is sent', () => {
+    expect(filesOf(message({ photo: 'file:///photos/a.jpg' }))).toEqual(['file:///photos/a.jpg'])
+    expect(filesOf(message())).toEqual([])
   })
 })

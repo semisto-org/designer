@@ -48,6 +48,7 @@ function Navigator() {
       <Stack.Screen name="maps/[id]/measure" options={{ headerShown: false }} />
       <Stack.Screen name="maps/[id]/bioindicator" options={{ title: t('mobile.bioindicator.title'), presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/display" options={{ title: t('mobile.display.title'), presentation: 'modal' }} />
+      <Stack.Screen name="maps/[id]/chat" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/outbox" options={{ title: t('mobile.outbox.title') }} />
       <Stack.Screen name="maps/[id]/visit-note" options={{ title: '', presentation: 'modal' }} />
       <Stack.Screen name="maps/[id]/season" options={{ title: t('mobile.season.title'), presentation: 'modal' }} />
