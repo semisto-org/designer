@@ -113,7 +113,7 @@ function stepLabel(step: DocumentStep) {
   return step === 'co_management' ? t('offers.co_management.title') : phaseLabel(step)
 }
 
-/** The four steps, or the deliverables step by step. */
+/** The three steps, or the deliverables step by step. */
 function Steps({ steps }: { steps: NonNullable<ClientSection['phases']> }) {
   return (
     <div className="space-y-4">

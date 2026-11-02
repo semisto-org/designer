@@ -7,7 +7,7 @@ import { DOCUMENT_BLOCKS, type DocumentBlock, type DocumentBlockKey, type Docume
 import { phaseLabel } from './shared'
 
 const PHASED: Partial<Record<DocumentBlockKey, DocumentStep[]>> = {
-  approach: ['pre_design', 'design', 'implementation', 'co_management'],
+  approach: ['pre_design', 'design', 'implementation'],
   phases: ['pre_design', 'design', 'implementation'],
   deliverables: ['pre_design', 'design', 'implementation', 'co_management'],
 }
@@ -27,7 +27,7 @@ type Props = {
 
 /**
  * The blocks of a client document, each with its switch, its title and its
- * Markdown text (and, for the four steps and the deliverables, one text per
+ * Markdown text (and, for the three steps and the deliverables, one text per
  * step). The fields show the text that applies; what differs from the base
  * is kept as this layer's change, and « Reprendre » drops it.
  */
