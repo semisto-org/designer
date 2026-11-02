@@ -17,6 +17,7 @@ import WelcomeCard from '@/collab/welcome/WelcomeCard'
 import JourneyPanel from '@/map/panels/JourneyPanel'
 import JourneyOverlay from '@/map/panels/JourneyOverlay'
 import TourOverlay from '@/map/tour/TourOverlay'
+import FirstHourOverlay from '@/map/first_hour/FirstHourOverlay'
 import ProjectPanel from '@/map/panels/ProjectPanel'
 import ActionsPanel from '@/map/panels/ActionsPanel'
 import LayersPanel from '@/map/panels/LayersPanel'
@@ -192,6 +193,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'time-strip', component: TimeStrip, order: 24 },
   { id: 'time-shade', component: ShadeOverlay, order: 19 },
   { id: 'tour', component: TourOverlay, order: 100 },
+  { id: 'first-hour', component: FirstHourOverlay, order: 99 },
   { id: 'shortcuts', component: ShortcutsSheet, order: 101 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'photo-limit', component: PhotoLimitOverlay, order: 6 },

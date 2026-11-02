@@ -244,6 +244,8 @@ class Map < ApplicationRecord
       archived: archived?,
       # The land « on arrival » of the editor's time strip.
       createdAt: created_at&.iso8601,
+      # « Ta première heure »: nil until « Voici ton lieu » has been read.
+      firstHourStartedAt: first_hour_started_at&.iso8601,
       updatedAt: updated_at.iso8601,
       lockVersion: lock_version
     }

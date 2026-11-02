@@ -16,7 +16,8 @@ import { MapView } from '@/map/MapView'
 import { installBoundary } from '@/map/layers/boundary'
 import { drawSketch } from '@/my_maps/sketch'
 import { syncRegionLayers } from '@/map/layers/region'
-import { readingLines, type ReadingLine } from '@/trials/reading'
+import { readingLines } from '@/trials/reading'
+import { readingSentence } from '@/trials/sentence'
 import type { LngLat, RegionLayerData, SharedProps } from '@/types'
 import type { SketchGeometry } from '@/types/myMaps'
 import type { TrialData, TrialReading, TrialShowProps } from '@/types/trials'
@@ -73,7 +74,7 @@ export default function TrialShow(props: TrialShowProps) {
     router.post(`${base}/keep`)
   }
 
-  const sentences = reading.status === 'done' ? readingLines(reading.reading, trial.areaM2).map(sentence) : []
+  const sentences = reading.status === 'done' ? readingLines(reading.reading, trial.areaM2).map(readingSentence) : []
   const lowPoint = reading.status === 'done' ? reading.reading.low_point ?? null : null
 
   return (
@@ -286,27 +287,6 @@ function PlaceSketch({ trial }: { trial: TrialData }) {
     return () => observer.disconnect()
   }, [trial.token, trial.boundary, trial.areaM2])
   return <canvas ref={canvas} aria-hidden="true" className="mt-3 aspect-[4/3] w-full rounded-xl bg-loam-50 ring-1 ring-loam-200" />
-}
-
-const decimal = (value: number) => (Math.round(value * 10) / 10).toLocaleString('fr-BE')
-
-function sentence(line: ReadingLine): string {
-  switch (line.key) {
-    case 'slope':
-      return t('trials.reading.slope', { direction: t(`trials.reading.directions.${line.downhill}`), slope: decimal(line.slope), drop: decimal(line.drop) })
-    case 'gentle':
-      return t('trials.reading.gentle', { direction: t(`trials.reading.directions.${line.downhill}`), slope: decimal(line.slope) })
-    case 'water_side':
-      return t('trials.reading.water_side', { side: t(`trials.reading.sides.${line.side}`) })
-    case 'sun':
-      return t(`trials.reading.sun.${line.facing}`)
-    case 'area':
-      return t('trials.reading.area', { area: formatArea(line.area), count: line.count })
-    case 'small':
-      return t('trials.reading.small', { area: formatArea(line.area) })
-    default:
-      return t(`trials.reading.${line.key}`)
-  }
 }
 
 /** The aerial photo with the cadastre over it, the parcels kept, and the lowest point. */
