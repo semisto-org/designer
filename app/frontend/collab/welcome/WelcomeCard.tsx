@@ -9,6 +9,9 @@ import type { InvitationWelcome } from '@/types/collab'
 import { chatActions } from '../chat/chatStore'
 import { WelcomeAbilities, WelcomeTime, invitedLine } from './WelcomeParts'
 
+/** The help article for whoever receives a plan to read (app/help). */
+export const READER_GUIDE = '/help/tu-as-recu-le-plan-de-ton-jardin'
+
 /**
  * The first moment on a map one was invited to: who invited you, what you
  * can do here and since when this garden grows, instead of the carnet de
@@ -27,7 +30,12 @@ export default function WelcomeCard() {
       title={t('collab.joining.welcome.card_title', { map: welcome.mapName })}
       footer={(
         <>
-          <Button variant="ghost" onClick={() => { close(); openTour() }}>{t('collab.joining.welcome.tour')}</Button>
+          {welcome.role === 'viewer' ? (
+            // A reader is not here to design: the guide to reading the plan, beside the map.
+            <Button variant="ghost" onClick={() => window.open(READER_GUIDE, '_blank', 'noopener')}>{t('collab.joining.welcome.reader_guide')}</Button>
+          ) : (
+            <Button variant="ghost" onClick={() => { close(); openTour() }}>{t('collab.joining.welcome.tour')}</Button>
+          )}
           {welcome.chat ? (
             <>
               <Button variant="secondary" onClick={close}>{t('collab.joining.welcome.explore')}</Button>
