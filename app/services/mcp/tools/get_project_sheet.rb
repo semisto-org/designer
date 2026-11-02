@@ -4,6 +4,8 @@ module Mcp
     # field, its type, the allowed values with their French labels, the
     # current answer, the completion and the answers an AI already proposed.
     # What an AI needs to fill the sheet from a conversation or a transcript.
+    # For the map's team (or its pro owner) only, each section also carries
+    # the team's internal note (ProjectSheetNote), never meant for the client.
     class GetProjectSheet < Base
       arguments(
         properties: { map_id: { type: "integer", minimum: 1, description: :map_id } },
@@ -15,6 +17,7 @@ module Mcp
         map = find_map!(map_id)
         sheet = map.project_sheet
         progress = sheet.progress
+        @team_notes = map.project_sheet_notes.includes(:updated_by).index_by(&:section) if ProjectSheetNote.audience?(map, user)
         {
           map_id: map.id,
           url: "#{map_url(map)}/project",
@@ -22,8 +25,9 @@ module Mcp
           next_section: progress[:nextSection],
           sections: ProjectSheet::SECTIONS.map { |key, fields| section_json(sheet, progress, key, fields) },
           pending_drafts: map.project_sheet_drafts.map { |d| { section: d.section, field: d.field, value: d.value, rationale: d.rationale } },
-          note: t("notes.project_sheet")
-        }
+          team_notes_shown: @team_notes ? true : nil,
+          note: [ t("notes.project_sheet"), (t("notes.project_team_notes") if @team_notes) ].compact.join(" ")
+        }.compact
       end
 
       private
@@ -35,7 +39,8 @@ module Mcp
             hint: I18n.t("#{texts}.hint", default: nil),
             percent: progress[:sections][key][:percent],
             done: sheet.done?(key),
-            fields: fields.reject(&:hidden).map { |f| field_json(f, "#{texts}.fields.#{f.key}", sheet.section(key)[f.key]) }
+            fields: fields.reject(&:hidden).map { |f| field_json(f, "#{texts}.fields.#{f.key}", sheet.section(key)[f.key]) },
+            team_note: team_note_json(@team_notes&.[](key))
           }.compact
         end
 
@@ -55,6 +60,10 @@ module Mcp
             item: field.item&.reject(&:hidden)&.map { |i| field_json(i, "#{texts}.item.#{i.key}", nil).except(:value) },
             value:
           }.compact
+        end
+
+        def team_note_json(note)
+          note && { body: note.body, updated_at: note.updated_at.iso8601, updated_by: note.updated_by&.display_name }.compact
         end
 
         def summarize_result(data) = { percent: data[:percent] }

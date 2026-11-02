@@ -68,9 +68,25 @@ export type ProjectPayload = {
   canEdit: boolean
   /** The private link for the people behind the project (editors only). */
   formLink: ProjectFormLink | null
+  /** The internal notes of each section: only for the map's team or its pro owner, else null. */
+  teamNotes?: TeamNotesPayload | null
   /** Documents sent with the sheet (also in the map's « Documents »). */
   documents: MapDocumentData[]
   documentLimits: DocumentLimits
+}
+
+/** A section's internal note (Markdown), never shown to the people behind the project. */
+export type TeamNote = {
+  body: string
+  lockVersion: number
+  updatedAt: string | null
+  updatedBy: string | null
+}
+
+export type TeamNotesPayload = {
+  canEdit: boolean
+  teamName: string | null
+  notes: Record<string, TeamNote>
 }
 
 export type ProjectFormLink = {

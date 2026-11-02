@@ -27,6 +27,7 @@ module Mcp
           project: map.project,
           project_percent: map.project_sheet.progress[:percent],
           project_drafts_pending: map.project_sheet_drafts.count,
+          project_team_notes: project_team_notes(map),
           elements: element_counts(map),
           tags: tag_counts(map),
           palette: palette(map),
@@ -84,6 +85,14 @@ module Mcp
       end
 
         MAX_BIOINDICATORS = 100
+
+        # The team's internal notes on the sheet, for the team (or the map's
+        # pro owner) only: which sections have one. The text is in
+        # get_project_sheet. Nil for anyone else, who is not told they exist.
+        def project_team_notes(map)
+          return nil unless ProjectSheetNote.audience?(map, user)
+          { sections: map.project_sheet_notes.order(:section).pluck(:section), note: t("notes.project_team_notes") }
+        end
 
         # The public view (« Publier »), for the owner only, as in the editor:
         # its address, whether the map changed since the snapshot, and what

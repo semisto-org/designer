@@ -747,6 +747,27 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal({ "percent" => 3 }, AiAction.last.result)
   end
 
+  test "the team's notes on the sheet go to the team only, never to a guest of the map" do
+    owner = users(:michael)
+    owner.update!(account_kind: "professional")
+    ProjectSheetNote.write!(@map, "budget", "Le voisin financera la haie", user: owner, lock_version: nil)
+
+    data, error = call_tool(@owner, "get_project_sheet", { map_id: @map.id })
+    refute error, data
+    budget = data["sections"].find { |s| s["key"] == "budget" }
+    assert_equal [ "Le voisin financera la haie", owner.display_name ], budget["team_note"].values_at("body", "updated_by")
+    assert data["team_notes_shown"]
+    assert_includes data["note"], "team_note"
+    map, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal [ "budget" ], map.dig("project_team_notes", "sections")
+
+    data, = call_tool(@viewer, "get_project_sheet", { map_id: @map.id })
+    assert_not data.to_json.include?("voisin financera"), "a viewer, maybe the client"
+    assert_nil data["team_notes_shown"]
+    map, = call_tool(@viewer, "get_map", { map_id: @map.id })
+    assert_nil map["project_team_notes"]
+  end
+
   test "propose_project_sheet turns what the person said into answers waiting on the sheet" do
     @map.update!(project: { "budget" => { "initial" => "under_500" }, "time" => { "hours_per_week" => 4 } })
     answers = [
