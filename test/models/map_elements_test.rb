@@ -6,8 +6,9 @@ class MapElementsTest < ActiveSupport::TestCase
   end
 
   test "the library covers every design layer but plants, with unique kinds" do
-    assert_equal %w[existing water access structures animals networks notes], MapElements.layers
+    assert_equal %w[existing water access structures animals networks drawings notes], MapElements.layers
     assert_empty MapElements.kinds_for("plants")
+    assert_empty MapElements.kinds_for("drawings"), "zones and lines are generic kinds"
     assert_includes MapElements.kinds_for("water"), "pond"
     assert_includes MapElements.kinds_for("networks"), "water_pipe"
     assert_equal "water", MapElements.find("swale").layer
