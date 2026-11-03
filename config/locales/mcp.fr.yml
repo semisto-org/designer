@@ -25,7 +25,7 @@ fr:
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
       theme_team_id: "Identifiant d'une équipe de la personne (teams dans get_document_theme). Sans lui : la charte de son propre compte."
-      layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), notes."
+      layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), notes (annotations : notes, zones et lignes libres, mesures, croquis, secteurs, zones de permaculture ; rien de réel sur le terrain)."
       kind: "Type d'élément (kind), par exemple tree, pond, hedge, path, swale."
       tag: "Étiquette posée par l'utilisateur (voir tags dans get_map), sans tenir compte des majuscules : seuls les éléments qui la portent sont renvoyés."
       bbox: "Emprise [ouest, sud, est, nord] en degrés WGS84 : seuls les éléments qui la touchent sont renvoyés."

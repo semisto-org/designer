@@ -42,7 +42,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert data["area_m2"].positive?
     assert data.dig("permissions", "propose_drafts")
     assert_equal 1, data.dig("elements", "by_layer", "networks", "active")
-    assert_equal "Zone", data.dig("known_kinds", "zone")
+    assert_equal "Zone libre", data.dig("known_kinds", "zone")
     assert_equal [], data.dig("implementation", "phases")
     assert_nil data["reader_guide"], "the reader's guide is for readers"
     assert_equal AiAction.last.map, @map

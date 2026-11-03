@@ -11,7 +11,7 @@ Trois outils simples accompagnent le dessin : les **calques**, pour y voir clair
 
 ## Les calques
 
-Tout ce que tu dessines se range dans une des huit couches : **Existant**, **Eau**, **Accès**, **Structures**, **Plantes**, **Animaux**, **Réseaux** et **Notes**.
+Tout ce que tu dessines se range dans une des huit couches : **Existant**, **Eau**, **Accès**, **Structures**, **Plantes**, **Animaux**, **Réseaux** et **Annotations** (ce qui se dessine par-dessus le terrain sans y exister : notes, zones et lignes libres, mesures, croquis).
 
 Le panneau **Calques** (l'icône en forme d'œil) les liste, avec le nombre d'éléments de chacune. Touche une couche pour la masquer ou l'afficher ; **Tout afficher** remet tout à l'écran.
 
@@ -36,7 +36,7 @@ En haut de la carte, la barre d'outils propose **Éléments**, **Zone**, **Mesur
    Le bouton **Terminer** fait la même chose, pratique sur un écran tactile.
 4. Lis le résultat : la **Longueur** pour une distance, la **Surface** et le **Périmètre** pour une surface.
 
-**Nouvelle mesure** recommence. Une mesure ne s'enregistre que si tu le demandes : propriétaire et éditeurs peuvent toucher **Enregistrer la mesure**. Elle rejoint alors la couche **Notes**, et ses valeurs suivent si tu modifies sa forme ensuite.
+**Nouvelle mesure** recommence. Une mesure ne s'enregistre que si tu le demandes : propriétaire et éditeurs peuvent toucher **Enregistrer la mesure**. Elle rejoint alors la couche **Annotations**, et ses valeurs suivent si tu modifies sa forme ensuite.
 
 Quelques idées : la distance entre la future mare et la limite du voisin, la longueur d'une haie pour compter les plants, la surface d'un potager.
 
@@ -49,9 +49,9 @@ Le croquis sert à noter une idée sans choisir de type d'élément : une flèch
 3. Clique (ou touche) pour commencer, trace à main levée, puis clique pour finir le trait.
 4. Enchaîne autant de traits que tu veux, puis touche **Terminer**.
 
-Chaque trait est enregistré aussitôt dans la couche **Notes**. Les traits d'une même encre forment un seul croquis ; changer d'encre en commence un nouveau.
+Chaque trait est enregistré aussitôt dans la couche **Annotations**. Les traits d'une même encre forment un seul croquis ; changer d'encre en commence un nouveau.
 
-Comme tout élément, un croquis se sélectionne : tu peux lui donner un nom, des notes, ou le supprimer. Masque la couche **Notes** quand tu veux un plan net.
+Comme tout élément, un croquis se sélectionne : tu peux lui donner un nom, des notes, ou le supprimer. Masque la couche **Annotations** quand tu veux un plan net.
 
 ## Pour aller plus loin
 

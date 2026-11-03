@@ -1245,7 +1245,7 @@
       "plants": "Plantes",
       "animals": "Animaux",
       "networks": "Réseaux",
-      "notes": "Notes"
+      "notes": "Annotations"
     },
     "kinds": {
       "building": "Bâtiment",
@@ -1307,8 +1307,8 @@
       "sketch": "Croquis",
       "sector": "Secteur",
       "permaculture_zone": "Zone de permaculture",
-      "zone": "Zone",
-      "line": "Ligne",
+      "zone": "Zone libre",
+      "line": "Ligne libre",
       "point": "Point",
       "measure": "Mesure",
       "plant": "Plante",

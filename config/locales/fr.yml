@@ -150,10 +150,10 @@ fr:
       plants: "Plantes"
       animals: "Animaux"
       networks: "Réseaux"
-      notes: "Notes"
+      notes: "Annotations"
     kinds:
-      zone: "Zone"
-      line: "Ligne"
+      zone: "Zone libre"
+      line: "Ligne libre"
       point: "Point"
       measure: "Mesure"
   public:

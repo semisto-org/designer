@@ -27,7 +27,7 @@ Touche la zone, ou son nom, pour ouvrir sa fiche :
 - **Écrire la surface sur la carte** (ou la longueur, pour un tracé) : décoche-la si seul le nom compte, pour une flèche de vue par exemple ;
 - **Modifier la forme**, pour déplacer, ajouter ou retirer des points (voir [Dessiner l'existant](/help/dessiner-l-existant)).
 
-Les zones se rangent dans la couche **Notes** : le panneau **Calques** les masque ou les affiche toutes d'un coup.
+Les zones se rangent dans la couche **Annotations** : le panneau **Calques** les masque ou les affiche toutes d'un coup.
 
 ## Plusieurs versions pour ton client
 
