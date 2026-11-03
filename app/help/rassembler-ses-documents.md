@@ -1,6 +1,6 @@
 ---
 title: "Rassembler ses documents"
-summary: "Plans d'architecte, relevés, analyses, permis : la bibliothèque de la carte, rangée par étiquette, avec un aperçu des images et des PDF, et des pages à écrire à plusieurs, en direct."
+summary: "Plans d'architecte, relevés, analyses, permis : la bibliothèque de la carte, rangée par étiquette, avec un aperçu des images et des PDF, les documents Word convertis en PDF, et des pages à écrire à plusieurs, en direct."
 category: Observer son terrain
 order: 32
 ---
@@ -31,6 +31,15 @@ Astuce : si une étagère est ouverte quand tu ajoutes des fichiers, ils reçoiv
 ## Regarder sans télécharger
 
 Touche un document : les **images** et les **PDF** s'affichent directement, avec toutes leurs pages, et un **enregistrement audio** s'écoute sur place. Les autres fichiers (un plan DWG, un tableur) se **téléchargent** pour être ouverts dans leur logiciel. Les flèches du clavier passent au document suivant.
+
+## Convertir un document Word en PDF
+
+Un document de traitement de texte (**.docx**, et aussi .doc, .odt ou .rtf) ne s'affiche pas tel quel. Ouvre-le et touche **Convertir en PDF** : quelques secondes plus tard, sa **version PDF** rejoint la bibliothèque, juste à côté, avec le même titre, la même note et les mêmes étiquettes. Elle se lit ici et sur le téléphone, au milieu du terrain, s'imprime et s'envoie telle quelle ; l'original reste là, inchangé.
+
+- Le document Word propose ensuite **Ouvrir la version PDF** ; si tu as modifié l'original entre-temps, **Refaire le PDF** en fait une nouvelle.
+- La version PDF rappelle de quel document elle vient (**Ouvrir l'original**).
+- Le PDF compte dans l'espace de stockage de la carte. Ton IA peut aussi le demander pour toi.
+- Seuls le propriétaire et les éditeurs de la carte convertissent.
 
 ## Écrire un document dans Terranova
 
