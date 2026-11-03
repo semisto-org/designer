@@ -1,8 +1,11 @@
 require "test_helper"
 require_relative "../../test_helpers/soil_photos_helper"
+require_relative "../../test_helpers/office_pdf_test_helper"
 
 class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
   include SoilPhotosHelper
+  include OfficePdfTestHelper
+  include ActiveJob::TestHelper
 
   setup { @map = maps(:ahinvaux) }
 
@@ -179,5 +182,40 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
     props = response.parsed_body["props"]
     assert_equal [ "rapport labo" ], props["documents"].map { _1["title"] }
     assert_equal 200.megabytes, props["documentLimits"]["maxBytes"]
+  end
+
+  test "an editor turns a .docx into a PDF, which then joins the library beside it" do
+    with_fake_libreoffice do
+      source = attach_docx(@map)
+      sign_in_as users(:michael)
+      get map_documents_path(@map), headers: json_headers
+      listed = response.parsed_body["documents"].sole
+      assert_equal [ true, nil, nil ], listed.values_at("convertibleToPdf", "pdfConversion", "pdfCopyId")
+
+      post pdf_map_document_path(@map, source), headers: json_headers
+      assert_response :accepted
+      assert_equal "pending", response.parsed_body["pdfConversion"]
+      assert_enqueued_jobs 1, only: ConvertMapDocumentToPdfJob
+
+      perform_enqueued_jobs(only: ConvertMapDocumentToPdfJob)
+      get map_documents_path(@map), headers: json_headers
+      copy, listed = response.parsed_body["documents"].partition { _1["convertedFromId"] }.map(&:sole)
+      assert_equal copy["id"], listed["pdfCopyId"]
+      assert_nil listed["pdfConversion"]
+      assert_equal [ "pdf", false ], copy.values_at("preview", "convertibleToPdf")
+    end
+  end
+
+  test "a viewer cannot convert, and only word-processor files are converted" do
+    with_fake_libreoffice do
+      source = attach_docx(@map)
+      sign_in_as users(:alice)
+      post pdf_map_document_path(@map, source), headers: json_headers
+      assert_response :forbidden
+      sign_in_as users(:michael)
+      post pdf_map_document_path(@map, create_document), headers: json_headers
+      assert_response :unprocessable_entity
+      assert_no_enqueued_jobs only: ConvertMapDocumentToPdfJob
+    end
   end
 end

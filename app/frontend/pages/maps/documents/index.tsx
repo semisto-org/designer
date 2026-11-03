@@ -8,6 +8,7 @@ import { Input, Select } from '@/components/ui/Field'
 import { useCompressionRefresh } from '@/documents/compression'
 import { DocumentTile } from '@/documents/DocumentTile'
 import { DocumentViewer } from '@/documents/DocumentViewer'
+import { usePdfConversionRefresh } from '@/documents/pdfConversion'
 import { NewDocumentDialog } from '@/documents/markdown/NewDocumentDialog'
 import { UploadList } from '@/documents/ProjectDocuments'
 import { useDocumentUploads } from '@/documents/upload'
@@ -56,6 +57,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
   const onSaved = useCallback((doc: MapDocumentData) => setDocs((list) => [doc, ...list]), [])
   const { uploads, add, dismiss } = useDocumentUploads(endpoint, limits, onSaved)
   useCompressionRefresh(endpoint, docs, setDocs)
+  usePdfConversionRefresh(endpoint, docs, setDocs)
 
   const tags = useMemo(() => tagCounts(docs.map(asTagged)), [docs])
   const fromSheet = docs.filter((d) => d.origin === 'project_sheet').length
@@ -98,6 +100,16 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
     setError(null)
     try {
       const saved = await api<MapDocumentData>(`${endpoint}/${doc.id}`, { method: 'PATCH', body: { document: patch } })
+      setDocs((list) => list.map((d) => (d.id === saved.id ? saved : d)))
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
+    }
+  }
+
+  async function convert(doc: MapDocumentData) {
+    setError(null)
+    try {
+      const saved = await api<MapDocumentData>(`${endpoint}/${doc.id}/pdf`, { method: 'POST' })
       setDocs((list) => list.map((d) => (d.id === saved.id ? saved : d)))
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('documents.errors.generic'))
@@ -222,7 +234,7 @@ export default function MapDocuments({ map, documents, canEdit, limits }: Props)
         docs={ordered} openId={openId} onOpen={setOpenId} canEdit={canEdit}
         tagSuggestions={tags.map((c) => c.tag).concat(t('documents.suggested_tags').split(',').map((s) => s.trim()))
           .filter((tag, i, all) => all.findIndex((o) => o.toLowerCase() === tag.toLowerCase()) === i)}
-        onSave={save} onDelete={remove}
+        onSave={save} onDelete={remove} onConvert={convert}
         pageUrl={(doc) => `${endpoint}/${doc.id}`}
       />
       {canEdit && (

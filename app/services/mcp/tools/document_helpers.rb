@@ -13,6 +13,10 @@ module Mcp
             from_project_sheet: document.origin == "project_sheet" || nil,
             form_answer: document.origin == "form" || nil,
             in_discussion_only: !document.in_library? || nil,
+            convertible_to_pdf: document.convertible_to_pdf? || nil,
+            pdf_conversion: document.pdf_conversion_state,
+            pdf_document_id: (document.pdf_copy&.id if OfficePdf.convertible?(document.extension)),
+            converted_from_id: document.converted_from_id,
             uploaded_by: document.uploaded_by&.display_name || (document.project_sheet_link_id && t("notes.project_link_author")),
             created_at: document.created_at.iso8601, updated_at: document.updated_at.iso8601
           }.compact

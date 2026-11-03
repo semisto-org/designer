@@ -4,7 +4,8 @@
 # live here too, and so, once added, do the files joined to a message of the
 # discussion (`in_library: false` until then, read by its members only).
 # A Markdown document opens as a page of its own (show),
-# read by everyone, written in place by editors (content).
+# read by everyone, written in place by editors (content). A word-processor
+# file is turned into a PDF beside it on an editor's request (convert_to_pdf).
 module Maps
   class DocumentsController < ApplicationController
     include MapScoped
@@ -12,7 +13,7 @@ module Maps
 
     before_action :set_map
     before_action :require_editor!, except: %i[index show file content]
-    before_action :set_document, only: %i[show update destroy file content update_content collab]
+    before_action :set_document, only: %i[show update destroy file content update_content collab convert_to_pdf]
     before_action :require_markdown!, only: %i[show content update_content collab]
 
     def index
@@ -100,6 +101,16 @@ module Maps
     def destroy
       @document.destroy!
       head :no_content
+    end
+
+    # Starts the PDF of a .docx (.doc, .odt, .rtf): the library asks again
+    # until the new document is there (or the source says it failed).
+    def convert_to_pdf
+      unless @document.convertible_to_pdf?
+        return render json: { message: t("documents.pdf_conversion.not_convertible") }, status: :unprocessable_entity
+      end
+      @document.request_pdf!(by: Current.user)
+      render json: as_json(@document.reload), status: :accepted
     end
 
     # /maps/:map_id/documents/:id/file?size=thumb|large|original|download

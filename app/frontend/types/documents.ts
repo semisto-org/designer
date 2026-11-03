@@ -32,6 +32,14 @@ export type MapDocumentData = {
   markdown: boolean
   /** The first words of a Markdown page, for its tile (the map's library only). */
   excerpt?: string | null
+  /** A word-processor file (.docx, .doc, .odt, .rtf) the server can turn into a PDF. */
+  convertibleToPdf: boolean
+  /** While the PDF is being made, or why it was not. */
+  pdfConversion: 'pending' | 'failed' | 'storage_full' | null
+  /** The PDF made from this file, a document of its own. */
+  pdfCopyId: number | null
+  /** On a PDF made here: the word-processor file it came from. */
+  convertedFromId: number | null
   contentEditedAt: string | null
   contentEditedBy: string | null
   thumbUrl: string | null
