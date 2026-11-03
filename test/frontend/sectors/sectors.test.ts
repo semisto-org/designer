@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  allAround, arcPath, bearing, compassPoint, labelReversed, packRings, sectorArc, sectorDirections, sectorRange, shorterWay, showsIn, sunSectors, sweep,
+  allAround, arcPath, bearing, compassPoint, groupsFromParam, labelReversed, packRings, SECTOR_GROUPS, SECTOR_TYPES, sectorArc, sectorDirections, sectorGroup,
+  sectorRange, shorterWay, showsIn, sunSectors, sweep,
 } from '../../../app/frontend/map/sectors/sectors.ts'
 import { overlayData } from '../../../app/frontend/map/sectors/overlay.ts'
 
@@ -105,4 +106,22 @@ test('the editor overlay puts overlapping arcs on separate rings, outside the te
   assert.notEqual(Math.round(distance(0)), Math.round(distance(1)))
   assert.equal(Math.round(distance(0)), Math.round(distance(2)))
   assert.equal(data.features[2].properties?.draft, true)
+})
+
+test('each sector type belongs to one group, to show or hide together', () => {
+  assert.equal(sectorGroup('summer_sun'), 'sun')
+  assert.equal(sectorGroup('cold_wind'), 'wind')
+  assert.equal(sectorGroup('frost'), 'risks')
+  assert.equal(sectorGroup('dust'), 'nuisances')
+  assert.equal(sectorGroup('privacy'), 'views')
+  assert.equal(sectorGroup('predators'), 'wildlife')
+  assert.equal(sectorGroup('mystery'), 'other')
+  for (const type of SECTOR_TYPES) assert.ok(SECTOR_GROUPS.includes(sectorGroup(type)))
+})
+
+test('?sectors= names the groups kept on the map, the others hidden', () => {
+  assert.deepEqual(groupsFromParam('sun,wind'), { shown: ['sun', 'wind'], hidden: ['risks', 'nuisances', 'views', 'wildlife', 'other'] })
+  assert.deepEqual(groupsFromParam('all')?.hidden, [])
+  assert.equal(groupsFromParam('nothing'), null)
+  assert.equal(groupsFromParam(''), null)
 })

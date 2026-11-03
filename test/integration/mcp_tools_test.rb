@@ -69,6 +69,9 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/\Ade (NE|ENE) à (NO|ONO)\z/, sun.dig("summer_sun", "directions"))
     sector = data.dig("sectors", "drawn").sole
     assert_equal [ "cold_wind", "winter", 300.0, 40.0, "de ONO à NE", "Bise" ], sector.values_at("sector_type", "season", "from_deg", "to_deg", "directions", "name")
+    assert_equal "wind", sector["group"]
+    assert_equal %w[sun wind], data.dig("sectors", "groups")
+    assert_equal "http://www.example.com/maps/#{@map.id}?sectors=all", data.dig("sectors", "show_url")
     assert_equal "http://www.example.com/maps/#{@map.id}?export=book", data.dig("exports", "book_pdf_url")
     assert_equal "http://www.example.com/maps/#{@map.id}/dossier", data.dig("exports", "dossier_url")
   end

@@ -23,7 +23,9 @@ import { plantLegend, plantNumber, plantNumbersAt, type StrataGroup } from '@/pu
 import { paintPlantNumbers, removePlantNumbers, setPlantNumbersVisible } from '@/public_maps/plantNumbersLayer'
 import { strataLabel } from '@/components/plants/format'
 import { STRATA_COLORS, inkOn } from '@/map/plants/strataColors'
-import type { PublicMapProps } from '@/types/collab'
+import type { PublicMapProps, PublicSectors } from '@/types/collab'
+import { hideSectorOverlay, overlayBounds, showSectorOverlay } from '@/map/sectors/overlay'
+import { arcRadius, GROUP_COLORS, isSectorType, SECTOR_COLORS, sectorGroup, type SectorGroup } from '@/map/sectors/sectors'
 
 /**
  * The plan of a published map, read-only: the snapshot's boundary, layers
@@ -52,6 +54,9 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
   // The visitor shows or hides the plant numbers (zone names are the owner's choice, at publication).
   const [showNumbers, setShowNumbers] = useState(true)
   const legend = useMemo(() => (props.growth ? plantLegend(props.growth, t('public_maps.display.unnamed_plant')) : []), [props.growth])
+  // The sector analysis, when the owner shows it: the visitor hides or shows each group (sun, winds, views…).
+  const sectorGroups = useMemo(() => (published.sectors ? publicSectorGroups(published.sectors) : []), [published.sectors])
+  const [hiddenSectorGroups, setHiddenSectorGroups] = useState<SectorGroup[]>([])
 
   return (
     <div className={className}>
@@ -65,6 +70,7 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
         <PublicLayers {...props} selectedId={selectedId} onSelect={setSelectedId} />
         {plants.length > 0 && <Garden plants={plants} year={moment.year} season={moment.season} latitude={map.center?.[1] ?? plants[0].lat} />}
         {props.growth && props.growth.plants.length > 0 && <PlantNumbers growth={props.growth} year={moment.year} visible={showNumbers} />}
+        {published.sectors && map.center && <PublicSectorArcs sectors={published.sectors} center={map.center} bbox={map.bbox} hidden={hiddenSectorGroups} />}
       </MapView>
       {props.description && <About text={props.description} />}
       {props.growth && plants.length > 0 && (
@@ -85,6 +91,9 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
         onShowNumbers={setShowNumbers}
         situation={project ? situation : null}
         onSituation={setSituation}
+        sectorGroups={sectorGroups}
+        hiddenSectorGroups={hiddenSectorGroups}
+        onToggleSectorGroup={(group) => setHiddenSectorGroups((hidden) => (hidden.includes(group) ? hidden.filter((g) => g !== group) : [...hidden, group]))}
       />
       {selected && <FeatureCard feature={selected} plant={props.growth?.plants.find((p) => p.id === selected.properties.id)} onClose={() => setSelectedId(null)} />}
     </div>
@@ -188,6 +197,43 @@ function PlantNumbers({ growth, year, visible }: { growth: NonNullable<PublicMap
   return null
 }
 
+/** The groups a publication's sectors fall in, the sun first. */
+function publicSectorGroups(sectors: PublicSectors): SectorGroup[] {
+  const groups = new Set<SectorGroup>()
+  if (sectors.sun.length > 0) groups.add('sun')
+  sectors.drawn.forEach((s) => groups.add(sectorGroup(s.type)))
+  return [...groups]
+}
+
+/** The sector analysis around the terrain, as the editor draws it, without the groups the visitor hid. */
+function PublicSectorArcs({ sectors, center, bbox, hidden }: { sectors: PublicSectors; center: [number, number]; bbox: PublicMapProps['map']['bbox']; hidden: SectorGroup[] }) {
+  const instance = useMapInstance()
+  const arcs = useMemo(() => [
+    ...(hidden.includes('sun') ? [] : sectors.sun.map((s) => ({ key: s.type, from: s.from_deg, to: s.to_deg, color: SECTOR_COLORS[s.type], label: t(`sectors.sun.${s.type}`), draft: false }))),
+    ...sectors.drawn.flatMap((s, i) => {
+      const type = isSectorType(s.type) ? s.type : 'other'
+      if (hidden.includes(sectorGroup(type))) return []
+      return [{ key: `sector-${i}`, from: s.from_deg, to: s.to_deg, color: SECTOR_COLORS[type], label: s.name || t(`drawing.options.sector_type.${type}`), draft: false }]
+    }),
+  ], [sectors, hidden])
+
+  useEffect(() => {
+    if (!instance) return
+    whenStyleReady(instance, () => showSectorOverlay(instance, arcs, center, arcRadius(bbox as [number, number, number, number] | null)))
+  }, [instance, arcs, center, bbox])
+  useEffect(() => () => {
+    if (instance?.getStyle()) hideSectorOverlay(instance)
+  }, [instance])
+  // On arrival, step back until the outermost ring is in view.
+  useEffect(() => {
+    if (!instance) return
+    const [w, s, e, n] = overlayBounds(arcs, center, arcRadius(bbox as [number, number, number, number] | null))
+    const view = instance.getBounds()
+    if (!view.contains([w, s]) || !view.contains([e, n])) instance.fitBounds([[w, s], [e, n]], { padding: 24, duration: 0 })
+  }, [instance]) // eslint-disable-line react-hooks/exhaustive-deps
+  return null
+}
+
 /**
  * Runs `fn` now, or once the style accepts sources. `isStyleLoaded()` is
  * also false while tiles or crowns load, and `load` fires only once: a
@@ -218,6 +264,9 @@ function About({ text }: { text: string }) {
 }
 
 type DisplayProps = {
+  sectorGroups: SectorGroup[]
+  hiddenSectorGroups: SectorGroup[]
+  onToggleSectorGroup: (group: SectorGroup) => void
   plantGroups: StrataGroup[]
   showNumbers: boolean
   onShowNumbers: (show: boolean) => void
@@ -226,7 +275,7 @@ type DisplayProps = {
   onSituation: (situation: Situation) => void
 }
 
-function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumbers, situation, onSituation }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean } & DisplayProps) {
+function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumbers, situation, onSituation, sectorGroups, hiddenSectorGroups, onToggleSectorGroup }: Pick<PublicMapProps, 'features' | 'layers'> & { raised: boolean } & DisplayProps) {
   const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   const counts = useMemo(() => {
     const result = new Map<string, number>()
@@ -234,7 +283,7 @@ function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumb
     return [...result.entries()]
   }, [features])
   const overlays = layers.filter((l) => l.category === 'overlay')
-  if (counts.length === 0 && overlays.length === 0 && !situation) return null
+  if (counts.length === 0 && overlays.length === 0 && !situation && sectorGroups.length === 0) return null
   return (
     <section className={(raised ? 'bottom-52 md:bottom-14' : 'bottom-14') + ' absolute left-2 z-10 max-w-[min(18rem,calc(100%-1rem))] rounded-xl bg-white p-3 shadow-lg ring-1 ring-loam-200'} aria-label={t('public_maps.legend')}>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-loam-500">
@@ -255,6 +304,22 @@ function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumb
             </div>
           )}
           {plantGroups.length > 0 && <PlantLegend groups={plantGroups} />}
+          {sectorGroups.length > 0 && (
+            <div className="border-b border-loam-100 pb-2">
+              <p className="mb-1 font-medium">{t('public_maps.display.sectors')}</p>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('public_maps.display.sectors')}>
+                {sectorGroups.map((group) => (
+                  <Toggle
+                    key={group}
+                    on={!hiddenSectorGroups.includes(group)}
+                    onChange={() => onToggleSectorGroup(group)}
+                    label={t(`sectors.groups.${group}`)}
+                    color={GROUP_COLORS[group]}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           <ul className="space-y-1">
             {counts.map(([layer, count]) => (
               <li key={layer} className="flex items-center gap-2">
@@ -283,14 +348,15 @@ function Legend({ features, layers, raised, plantGroups, showNumbers, onShowNumb
 }
 
 /** A switch written as a pill: on, it is filled. */
-function Toggle({ on, onChange, label }: { on: boolean; onChange: (on: boolean) => void; label: string }) {
+function Toggle({ on, onChange, label, color }: { on: boolean; onChange: (on: boolean) => void; label: string; color?: string }) {
   return (
     <button
       type="button"
       aria-pressed={on}
       onClick={() => onChange(!on)}
-      className={'rounded-full px-3 py-1 text-sm ring-1 transition ' + (on ? 'bg-prune-700 text-white ring-prune-700' : 'bg-white text-loam-600 ring-loam-200 hover:bg-loam-50')}
+      className={'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm ring-1 transition ' + (on ? 'bg-prune-700 text-white ring-prune-700' : 'bg-white text-loam-600 ring-loam-200 hover:bg-loam-50')}
     >
+      {color && <span className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-white" style={{ background: color }} aria-hidden />}
       {label}
     </button>
   )

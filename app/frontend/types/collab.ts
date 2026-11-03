@@ -118,6 +118,8 @@ export type PublicationOptions = {
   show_planned?: boolean
   /** The newest drone view (drone area); off by default. */
   show_aerial_view?: boolean
+  /** The sector analysis around the terrain, to present the design; off by default. */
+  show_sectors?: boolean
   /** The owner's consent to « Carnets ouverts » on the public site; off by default. */
   in_gallery?: boolean
 }
@@ -194,6 +196,13 @@ export type PublicMapProps = {
   aerialView?: AerialView | null
   /** The simplified 3D view (/p/:token/3d), when the terrain's relief is there. */
   reliefPath?: string | null
+  /** The sector analysis, when the owner shows it: the sun at the solstices and the accepted sectors. */
+  sectors?: PublicSectors | null
+}
+
+export type PublicSectors = {
+  sun: { type: 'summer_sun' | 'winter_sun'; from_deg: number; to_deg: number }[]
+  drawn: { type: string; season: string; from_deg: number; to_deg: number; name?: string }[]
 }
 
 /** What a person invited to a map sees before signing in, and once on the map. */
