@@ -151,9 +151,9 @@ fr:
       members:
         one: "%{count} personne dans la discussion"
         other: "%{count} personnes dans la discussion"
-      who: "Le propriétaire, les éditeurs et l'équipe de la carte y sont toujours ; le propriétaire y ajoute les lecteurs qu'il veut, dans « Partager »."
+      who: "Le propriétaire, les éditeurs et l'équipe de la carte y sont toujours ; le propriétaire y ajoute les lecteurs qu'il veut, dans « Partager ». Sur une carte d'équipe, seule l'équipe du projet reçoit les e-mails d'office ; les autres membres de l'équipe les activent avec la cloche."
       digest: "Recevoir un résumé par e-mail"
-      digest_hint: "Une mention t'arrive tout de suite ; les autres messages, en un seul e-mail une heure plus tard, si tu ne les as pas lus."
+      digest_hint: "Une mention t'arrive tout de suite ; les autres messages, en un seul e-mail une heure plus tard, si tu ne les as pas lus. Sur une carte d'équipe, le résumé part d'office à l'équipe du projet seulement."
       offline: "Connexion perdue : les messages reviendront dès qu'elle sera rétablie."
       new_below: "Nouveaux messages"
       error: "Le message n'a pas pu être envoyé."

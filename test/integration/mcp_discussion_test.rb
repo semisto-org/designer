@@ -25,6 +25,8 @@ class McpDiscussionTest < ActionDispatch::IntegrationTest
     assert_equal [ 4.91, 50.35 ], message["location"]
     assert message["mine"]
     assert_match "discussion=Map:#{@map.id}", data["url"]
+    assert_includes data["digest_to"], users(:michael).display_name
+    assert data["digest_for_you"]
 
     older, = call_tool(@owner, "list_discussion", { map_id: @map.id, before_id: data["next_before_id"] })
     assert_equal [ first.id ], older["messages"].map { _1["id"] }

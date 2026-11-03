@@ -7,6 +7,9 @@ module Collab
   # along. Nobody gets a message twice (`comment_reads.emailed_until`), nor
   # their own messages, nor the ones that mentioned them.
   #
+  # On a team map whose project team is set, the rest of the team is out of
+  # the digest unless they turn it on (Map#chat_audience).
+  #
   # Out of the digest: people who turned discussion e-mails off
   # (`users.comment_emails`) or muted this map's discussion (a muted
   # CommentSubscription on the map).
@@ -43,9 +46,13 @@ module Collab
     end
 
     private
+      # The discussion's audience (on a team map, its project team) and the
+      # members who turned the digest on, minus those who muted it.
       def recipients
-        muted = CommentSubscription.where(commentable: @map, muted: true).select(:user_id)
-        @map.chat_participants.where(comment_emails: true).where.not(id: muted).to_a
+        subscriptions = CommentSubscription.where(commentable: @map)
+        ids = @map.chat_audience.pluck(:id) | subscriptions.where(muted: false).pluck(:user_id)
+        @map.chat_participants.where(id: ids, comment_emails: true)
+          .where.not(id: subscriptions.where(muted: true).select(:user_id)).to_a
       end
 
       def unread_for(user, since)
