@@ -171,15 +171,20 @@ module Mcp
             from, to = Sectors::Arc.directions(feature, [ center.x, center.y ])
             next unless from
             {
-              id: feature.id, status: feature.status, sector_type: feature.properties["sector_type"],
+              id: feature.id, status: feature.status, sector_type: feature.properties["sector_type"], group: Sectors::Arc.group(feature.properties["sector_type"]),
               season: feature.properties["sector_season"] || "all_year", from_deg: from, to_deg: to, directions: range.(from, to),
               name: feature.name, notes: feature.notes
             }.compact
           end
+          sun = Sectors::Arc.sun(center.y).map { |s| s.merge(group: "sun", directions: range.(s[:from_deg], s[:to_deg])) }
           {
-            sun: Sectors::Arc.sun(center.y).map { |s| s.merge(directions: range.(s[:from_deg], s[:to_deg])) },
+            sun:,
             drawn:,
-            panel_url: "#{map_url(map)}?panel=sectors"
+            # The groups to show or hide together when presenting the design, and the
+            # link that opens the map with only some of them kept around the terrain.
+            groups: (sun + drawn).map { |s| s[:group] }.uniq.sort_by { |g| Sectors::Arc::GROUPS.keys.index(g) },
+            panel_url: "#{map_url(map)}?panel=sectors",
+            show_url: "#{map_url(map)}?sectors=all"
           }
         end
 

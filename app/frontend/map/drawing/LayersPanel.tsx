@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Camera, ChevronDown, Eye, EyeOff, ShieldAlert } from 'lucide-react'
+import { Camera, ChevronDown, Compass, Eye, EyeOff, ShieldAlert } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { strataLabel } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
@@ -13,6 +13,9 @@ import { usePlanting } from '@/map/plants/store'
 import { plantStrata, STRATA_COLORS } from '@/map/plants/strata'
 import { soilActions, useSoil } from '@/map/soil/store'
 import { SOIL_MARKERS, type SoilMarker } from '@/map/soil/visibility'
+import { GROUP_COLORS } from '@/map/sectors/sectors'
+import { mapSectors, presentGroups } from '@/map/sectors/SectorsOverlay'
+import { sectorView, useSectorView } from '@/map/sectors/store'
 import { STRATA } from '@/types/plants'
 import type { MapFeature } from '@/types'
 
@@ -25,7 +28,8 @@ type Part = { key: string; label: string; color: string; count: number; hidden: 
 /**
  * "Calques": show or hide each design layer, and inside it each kind of
  * element (plants: each strata; what exists: also the bio-indicator plants
- * and soil sampling points), and the photos, for this viewer only.
+ * and soil sampling points), the photos and the sector analysis (kept on
+ * the map to present a design, group by group), for this viewer only.
  */
 export default function LayersPanel() {
   const editor = useEditor()
@@ -37,6 +41,9 @@ export default function LayersPanel() {
   const { data: planting } = usePlanting(editor.map.id)
   const photos = usePhotos()
   const placedPhotos = photos.photos.filter((p) => p.lng != null && p.lat != null).length
+  const sectors = useSectorView()
+  const sectorCount = mapSectors(editor.features).length
+  const sectorGroups = presentGroups(editor.features, (editor.map.center ?? editor.instance.getCenter().toArray())[1])
   // Layers with something hidden inside open first: it must be easy to find again.
   const [opened, setOpened] = useState<string[]>(() => [...new Set([
     ...(hiddenStrata.length ? ['plants'] : []),
@@ -100,7 +107,8 @@ export default function LayersPanel() {
       }
     }
     const byKind = new Map<string, { count: number; color: string }>()
-    inLayer.filter((f) => !isPlantLike(f) && f.properties.kind).forEach((f) => {
+    // Sectors have their own line below: they are drawn around the terrain, not with the notes.
+    inLayer.filter((f) => !isPlantLike(f) && f.properties.kind && f.properties.kind !== 'sector').forEach((f) => {
       const kind = f.properties.kind as string
       const entry = byKind.get(kind) ?? { count: 0, color: featureColor(f) }
       entry.count += 1
@@ -121,7 +129,8 @@ export default function LayersPanel() {
   }
 
   const soilHidden = (soilCounts.bioindicators > 0 || soilCounts.samples > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
-  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden
+  const sectorsHidden = sectors.onMap && sectors.hiddenGroups.length > 0
+  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden || sectorsHidden
 
   return (
     <div className="space-y-3">
@@ -187,9 +196,43 @@ export default function LayersPanel() {
           />
           <span className="ml-1 w-9 shrink-0" aria-hidden />
         </li>
+        {/* The sector analysis around the terrain: off unless asked, to present a design. */}
+        <li>
+          <div className="flex items-center">
+            <ToggleRow
+              shown={sectors.onMap}
+              label={t('sectors.layer')}
+              ariaLabel={t('drawing.layers_panel.toggle', { layer: t('sectors.layer') })}
+              marker={<Compass className={clsx('h-3.5 w-3.5 shrink-0 text-humus-600', !sectors.onMap && 'opacity-30')} aria-hidden />}
+              count={t('sectors.layer_count', { count: sectorCount + (sectorGroups.includes('sun') ? 2 : 0) })}
+              onClick={() => sectorView.setOnMap(!sectors.onMap)}
+            />
+            <span className="ml-1 w-9 shrink-0" aria-hidden />
+          </div>
+          {sectors.onMap && sectorGroups.length > 1 && (
+            <ul className="mb-2 ml-6 border-l border-loam-100 pl-2">
+              {sectorGroups.map((group) => {
+                const label = t(`sectors.groups.${group}`)
+                const groupHidden = sectors.hiddenGroups.includes(group)
+                return (
+                  <li key={group}>
+                    <ToggleRow
+                      shown={!groupHidden}
+                      label={label}
+                      ariaLabel={t('drawing.layers_panel.toggle', { layer: label })}
+                      marker={<Dot color={GROUP_COLORS[group]} faded={groupHidden} small />}
+                      count=""
+                      onClick={() => sectorView.toggleGroup(group)}
+                    />
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </li>
       </ul>
       {somethingHidden && (
-        <button type="button" onClick={() => { showEverything(); photoActions.setShowOnMap(true); soilActions.setShowOnMap(true) }} className="text-sm font-medium text-prune-700 hover:underline">
+        <button type="button" onClick={() => { showEverything(); photoActions.setShowOnMap(true); soilActions.setShowOnMap(true); sectorView.setHiddenGroups([]) }} className="text-sm font-medium text-prune-700 hover:underline">
           {t('drawing.layers_panel.show_all')}
         </button>
       )}
