@@ -3,7 +3,7 @@ import { EBGaramond_500Medium, EBGaramond_600SemiBold } from '@expo-google-fonts
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, useFonts } from '@expo-google-fonts/inter'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 // Define the background tasks of GPS traces and of visit tracks: must load with the bundle.
@@ -14,6 +14,7 @@ import { Sentry } from '@/lib/monitoring'
 import { SessionProvider, useSession } from '@/state/session'
 import { useAutoSync } from '@/state/sync'
 import { ErrorScreen } from '@/ui/ErrorScreen'
+import { Opening } from '@/ui/Opening'
 import { ToastHost } from '@/ui/Toast'
 import { colors, fonts } from '@/ui/theme'
 
@@ -23,9 +24,18 @@ function Navigator() {
   const status = useSession()
   const [fontsLoaded, fontError] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, EBGaramond_500Medium, EBGaramond_600SemiBold, Caveat_500Medium })
   const ready = status !== 'loading' && (fontsLoaded || !!fontError)
+  const [opened, setOpened] = useState(false)
   useAutoSync()
-  useEffect(() => { if (ready) SplashScreen.hideAsync() }, [ready])
-  if (!ready) return null
+  // The opening animation takes over from the native splash and hides it.
+  return (
+    <>
+      {ready && <Screens />}
+      {!opened && <Opening ready={ready} onDone={() => setOpened(true)} />}
+    </>
+  )
+}
+
+function Screens() {
   return (
     <Stack
       screenOptions={{
