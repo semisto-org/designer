@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { api } from '@/lib/api'
+import { isAnnotationLayer } from '@/map/scenario'
 import { elementFor, GENERIC_KINDS } from '@/map/drawing/catalog'
 import { useEditor } from '@/map/editor/EditorContext'
 import { isPatch, isPlant } from '@/map/plants/properties'
@@ -28,7 +29,7 @@ export type FunctionsResponse = {
 
 /** Whether a feature takes part in the review (mirrors ElementFunctions.applies?). */
 export function appliesToFunctions(feature: MapFeature): boolean {
-  if (feature.properties.layer === 'notes') return false
+  if (isAnnotationLayer(feature.properties.layer)) return false
   return isPlant(feature) || isPatch(feature) || GENERIC_KINDS.includes(feature.properties.kind) || elementFor(feature.properties.kind)?.functions != null
 }
 

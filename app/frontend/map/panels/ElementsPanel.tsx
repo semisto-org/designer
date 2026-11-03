@@ -7,7 +7,7 @@ import { TagChips, TagFilter } from '@/map/tags/TagFilter'
 import { groupByTag, hasTag, tagCounts, tagsOf } from '@/map/tags/tags'
 import type { FeatureLayer, MapFeature } from '@/types'
 
-const LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks', 'notes']
+const LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks', 'drawings', 'notes']
 
 /** Every element of the map, grouped by layer or by tag, filtered by tag. Clicking one selects it. */
 export default function ElementsPanel() {

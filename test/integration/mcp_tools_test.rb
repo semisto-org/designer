@@ -42,7 +42,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert data["area_m2"].positive?
     assert data.dig("permissions", "propose_drafts")
     assert_equal 1, data.dig("elements", "by_layer", "networks", "active")
-    assert_equal "Zone libre", data.dig("known_kinds", "zone")
+    assert_equal "Zone", data.dig("known_kinds", "zone")
     assert_equal [], data.dig("implementation", "phases")
     assert_nil data["reader_guide"], "the reader's guide is for readers"
     assert_equal AiAction.last.map, @map
@@ -619,7 +619,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
 
   test "propose_features drafts a named zone in its colour" do
     make_editor(@map, users(:bob))
-    zone = { layer: "notes", kind: "zone", name: "Forêt-jardin en strates hautes", color: "#7FA650", rationale: "Plein sud, à l'abri de la haie.",
+    zone = { layer: "drawings", kind: "zone", name: "Forêt-jardin en strates hautes", color: "#7FA650", rationale: "Plein sud, à l'abri de la haie.",
              geometry: { type: "Polygon", coordinates: [ [ [ 4.905, 50.340 ], [ 4.906, 50.340 ], [ 4.906, 50.341 ], [ 4.905, 50.341 ], [ 4.905, 50.340 ] ] ] } }
     data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: [ zone ] })
     refute error, data

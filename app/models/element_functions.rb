@@ -36,7 +36,7 @@ class ElementFunctions
 
   # Whether a feature takes part in the review (and gets the inspector section).
   def self.applies?(feature)
-    return false if feature.layer == "notes"
+    return false if MapFeature::ANNOTATION_LAYERS.include?(feature.layer)
     feature.plant? || feature.patch? || GENERIC_KINDS.include?(feature.kind) || MapElements.find(feature.kind)&.functions
   end
 
@@ -83,7 +83,7 @@ class ElementFunctions
 
   private
     def features
-      @features ||= @map.features.active.where.not(layer: "notes").includes(:patch_items).to_a.select { |f| self.class.applies?(f) }
+      @features ||= @map.features.active.where.not(layer: MapFeature::ANNOTATION_LAYERS).includes(:patch_items).to_a.select { |f| self.class.applies?(f) }
     end
 
     def species

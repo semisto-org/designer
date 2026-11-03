@@ -138,7 +138,7 @@ export type MapData = {
 }
 
 export type FeatureLayer =
-  | 'existing' | 'water' | 'access' | 'structures' | 'plants' | 'animals' | 'networks' | 'notes'
+  | 'existing' | 'water' | 'access' | 'structures' | 'plants' | 'animals' | 'networks' | 'drawings' | 'notes'
 
 export type MapFeatureProperties = {
   id: number

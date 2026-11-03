@@ -17,6 +17,7 @@ export const LAYER_COLORS: Record<string, string> = {
   plants: '#3d7d42',
   animals: '#946614',
   networks: '#c03c28',
+  drawings: '#5f7fa3',
   notes: '#726b9f',
 }
 
