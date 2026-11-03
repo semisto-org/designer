@@ -1,5 +1,6 @@
 import { type GeoJSONSource, type Map as MapLibreMap } from 'maplibre-gl'
 import type { MultiPolygon } from 'geojson'
+import { stackFeatureLayers } from '@/map/layers/stack'
 
 export const BOUNDARY_SOURCE = 'boundary'
 
@@ -36,4 +37,6 @@ export function installBoundary(map: MapLibreMap, boundary: MultiPolygon | null)
     layout: { 'line-join': 'round', 'line-cap': 'round' },
     paint: { 'line-color': '#5b5781', 'line-width': 3 },
   })
+  // Under the features, even when they were there first.
+  stackFeatureLayers(map)
 }
