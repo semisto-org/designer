@@ -86,12 +86,11 @@ module Providers
       end
 
       def transform(points, from:, to:)
-        values = points.map { |x, y| "(#{Float(x)}, #{Float(y)})" }.join(", ")
-        sql = <<~SQL.squish
-          SELECT ST_X(g), ST_Y(g) FROM (
-            SELECT ST_Transform(ST_SetSRID(ST_MakePoint(v.x, v.y), #{Integer(from)}), #{Integer(to)}) AS g, v.n
-            FROM (SELECT x, y, row_number() OVER () AS n FROM (VALUES #{values}) AS t(x, y)) AS v
-          ) AS p ORDER BY n
+        sql = ActiveRecord::Base.sanitize_sql_array([ <<~SQL.squish, points.map { Float(_1[0]) }, points.map { Float(_1[1]) }, Integer(from), Integer(to) ])
+          SELECT ST_X(g), ST_Y(g)
+          FROM unnest(ARRAY[?]::float8[], ARRAY[?]::float8[]) WITH ORDINALITY AS t(x, y, n),
+               LATERAL ST_Transform(ST_SetSRID(ST_MakePoint(t.x, t.y), ?), ?) AS g
+          ORDER BY t.n
         SQL
         ActiveRecord::Base.connection.select_rows(sql).map { |x, y| [ x.to_f, y.to_f ] }
       end
