@@ -32,8 +32,22 @@ export type RoofSpec = {
 /** A sample of the surface model: a cell centre and what stands above the ground there. */
 export type RoofSample = { x: number; y: number; z: number }
 
-/** A wall corner with the roof's height above it, and a planar piece of roof. */
-export type Shell = { ring: Array<Point & { top: number }>; faces: Array<Array<Point & { h: number }>> }
+/** A corner of a roof with its height above the building's base. */
+export type RoofPoint = Point & { h: number }
+
+/**
+ * A wall corner with the roof's height above it, and a planar piece of roof.
+ * A building of the region's 3D model has its own roof instead: planar
+ * polygons, holes included (`polygons`), and a wall under each of their
+ * free edges (`edges`, from the ground to the edge), in place of the walls
+ * along `ring`.
+ */
+export type Shell = {
+  ring: Array<Point & { top: number }>
+  faces: RoofPoint[][]
+  polygons?: Array<{ outer: RoofPoint[]; holes: RoofPoint[][] }>
+  edges?: Array<[RoofPoint, RoofPoint]>
+}
 
 const MIN_SAMPLES = 12
 // A pitch under ~8° reads as flat; over ~60° it is noise or a tower.

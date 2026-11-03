@@ -285,6 +285,26 @@ class Maps::ReliefControllersTest < ActionDispatch::IntegrationTest
     assert_empty response.parsed_body["buildings"]
   end
 
+  test "where the region publishes its buildings in 3D, they come along with the footprints" do
+    stub_spw
+    Relief::TerrainImport.new(@map.create_terrain!, provider: instant_provider).call
+    stub_request(:get, %r{\Ahttps://overpass-api\.de/api/interpreter}).to_return(status: 200, body: { elements: [] }.to_json)
+    region = @map.region
+    region.update!(settings: region.settings.merge("buildings_3d" => { "provider" => "urbis", "attribution" => "© UrbIS" }))
+    feed = stub_request(:get, Providers::UrbisBuildings3d::DEFAULT_FEED).to_return(status: 200, body: "<feed></feed>")
+    sign_in_as users(:alice)
+
+    get buildings_map_relief_path(@map)
+    assert_response :success
+    assert_requested feed
+    assert_nil response.parsed_body["models"], "a feed without tiles: no model, the footprints stand"
+    assert response.parsed_body["available"]
+
+    stub_request(:get, Providers::UrbisBuildings3d::DEFAULT_FEED).to_return(status: 200, body: %(<a href="https://urbisdownload.datastore.brussels/x/SHP/UrbISBuildings3D_31370_SHP_100100_20261003.zip">))
+    get buildings_map_relief_path(@map)
+    assert_equal({ "attribution" => "© UrbIS", "buildings" => [] }, response.parsed_body["models"], "outside the model's tiles: none")
+  end
+
   test "no building footprints before the terrain is imported" do
     sign_in_as users(:alice)
     get buildings_map_relief_path(@map)
