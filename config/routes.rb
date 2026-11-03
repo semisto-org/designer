@@ -417,6 +417,8 @@ Rails.application.routes.draw do
           patch :content, action: :update_content
           # Where the shared editor starts (MapDocumentChannel).
           get :collab
+          # A PDF made from a word-processor file (ConvertMapDocumentToPdfJob).
+          post :pdf, action: :convert_to_pdf
         end
       end
       resources :soil_samples, only: %i[index create update destroy] do

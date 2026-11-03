@@ -41,6 +41,53 @@ export const SECTOR_COLORS: Record<SectorType | SunSectorType, string> = {
   other: '#9b8fb5',
 }
 
+/**
+ * Sectors gathered by what they bring, to show or hide them together when
+ * presenting a design: the sun, the winds, the risks (fire, water, frost),
+ * the nuisances, the views and the wildlife.
+ */
+export const SECTOR_GROUPS = ['sun', 'wind', 'risks', 'nuisances', 'views', 'wildlife', 'other'] as const
+export type SectorGroup = (typeof SECTOR_GROUPS)[number]
+
+const GROUP_OF: Record<SectorType | SunSectorType, SectorGroup> = {
+  summer_sun: 'sun', winter_sun: 'sun',
+  wind: 'wind', cold_wind: 'wind',
+  fire: 'risks', flood: 'risks', frost: 'risks',
+  noise: 'nuisances', dust: 'nuisances', pollution: 'nuisances',
+  good_view: 'views', bad_view: 'views', privacy: 'views',
+  wildlife: 'wildlife', predators: 'wildlife',
+  other: 'other',
+}
+
+/** The group of a sector type (an unknown type is « other »). */
+export const sectorGroup = (type: unknown): SectorGroup => GROUP_OF[type as SectorType] ?? 'other'
+
+export const isSectorGroup = (value: unknown): value is SectorGroup =>
+  typeof value === 'string' && (SECTOR_GROUPS as readonly string[]).includes(value)
+
+/** The colour that stands for a group: that of its first type. */
+export const GROUP_COLORS: Record<SectorGroup, string> = {
+  sun: SECTOR_COLORS.summer_sun,
+  wind: SECTOR_COLORS.wind,
+  risks: SECTOR_COLORS.fire,
+  nuisances: SECTOR_COLORS.noise,
+  views: SECTOR_COLORS.good_view,
+  wildlife: SECTOR_COLORS.wildlife,
+  other: SECTOR_COLORS.other,
+}
+
+/**
+ * Reads `?sectors=sun,wind` (or `all`): the groups to show, the others
+ * hidden. Null when the value names no group.
+ */
+export function groupsFromParam(value: string | null | undefined): { shown: SectorGroup[]; hidden: SectorGroup[] } | null {
+  if (!value) return null
+  const asked = value.split(',').map((v) => v.trim())
+  const shown = asked.includes('all') ? [...SECTOR_GROUPS] : SECTOR_GROUPS.filter((g) => asked.includes(g))
+  if (shown.length === 0) return null
+  return { shown, hidden: SECTOR_GROUPS.filter((g) => !shown.includes(g)) }
+}
+
 export const isSectorType = (value: unknown): value is SectorType =>
   typeof value === 'string' && (SECTOR_TYPES as readonly string[]).includes(value)
 

@@ -20,7 +20,7 @@ module Mcp
 
       def perform(map_id:, document_id:, offset: 0)
         map = find_map!(map_id)
-        document = find_document!(map, document_id)
+        document = find_document!(map, document_id, discussion: true)
         read = DocumentReader.new(document).call
         data = document_json(document).merge(url: documents_url(map), format: read.format)
         case read.format

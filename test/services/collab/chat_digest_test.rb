@@ -66,4 +66,38 @@ class Collab::ChatDigestTest < ActiveJob::TestCase
     assert_equal [ @edith.email_address ], ActionMailer::Base.deliveries.select { |m| m.subject.include?("mentionné") }.flat_map(&:to)
     assert_empty mails.select { |m| m.subject.start_with?("Michael a commenté") }
   end
+  test "on a team map with a project team, the rest of the team gets no digest unless they turn it on" do
+    team = Organization.create!(name: "Semisto")
+    crew = make_user("Camille")
+    outside = make_user("Olivier")
+    [ crew, outside ].each { |u| team.memberships.create!(user: u, role: "member") }
+    @map.update!(organization: team)
+
+    say "Avant l'équipe du projet"
+    assert_equal [ crew, @edith, outside ].map(&:email_address).sort,
+      digests { Collab::ChatDigest.new(@map).deliver }.flat_map(&:to).sort, "no project team yet: the whole team"
+
+    @map.update_board!(crew_ids: [ crew.id ])
+    say "La mare déborde"
+    assert_equal [ crew, @edith ].map(&:email_address).sort,
+      digests { Collab::ChatDigest.new(@map).deliver }.flat_map(&:to).sort, "the project team and the map's own members"
+    assert CommentSubscription.subscribed?(crew, @map)
+    assert_not CommentSubscription.subscribed?(outside, @map)
+    assert @map.chat_member?(outside), "still reads the discussion"
+
+    CommentSubscription.mute(outside, @map, false)
+    say "Et la haie ?"
+    assert_includes digests { Collab::ChatDigest.new(@map).deliver }.flat_map(&:to), outside.email_address, "turned on with the bell"
+    assert CommentSubscription.subscribed?(outside, @map)
+  end
+
+  test "a mention still reaches a team member outside the project team" do
+    team = Organization.create!(name: "Semisto")
+    outside = make_user("Olivier")
+    team.memberships.create!(user: outside, role: "member")
+    @map.update!(organization: team)
+    @map.update_board!(crew_ids: [ @owner.id ])
+    digests { say "@Olivier tu passes voir ?" }
+    assert_includes ActionMailer::Base.deliveries.select { |m| m.subject.include?("mentionné") }.flat_map(&:to), outside.email_address
+  end
 end

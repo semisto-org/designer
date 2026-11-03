@@ -166,15 +166,49 @@ class CatalogueReviewsControllerTest < ActionDispatch::IntegrationTest
     Catalog::SpeciesWriter.new(source: "terranova", status: "to_verify").write(@species, { "foliage_type" => "deciduous", "height_max_m" => 1.0 })
     @species.update!(values_checked_at: Time.current)
     @species.value_checks.create!(field: "foliage_type", verdict: "confirmed", source: "wikipedia", url: "https://en.wikipedia.org/wiki/Salvia")
-    @species.value_checks.create!(field: "height_max_m", verdict: "contradicted", source_value: 0.6, source: "pfaf", url: "https://pfaf.org/x")
-    @species.value_checks.create!(field: "strata", verdict: "contradicted", source_value: "shrub", source: "pfaf")
+    @species.value_checks.create!(field: "height_max_m", verdict: "contradicted", source_value: 0.6, source: "wikipedia", url: "https://fr.wikipedia.org/wiki/Salvia")
+    @species.value_checks.create!(field: "strata", verdict: "contradicted", source_value: "shrub", source: "wikipedia")
 
     sign_in_as @reviewer
     patch catalogue_review_path(@species), params: { review: { latin_name: "Salvia nemorosa", take: [ "height_max_m" ] } }
     @species.reload
     assert_equal [ "sourced", "wikipedia", "https://en.wikipedia.org/wiki/Salvia" ], @species.provenance_for("foliage_type").values_at(:status, :source, :url)
     assert_equal 0.6, @species.height_max_m
-    assert_equal [ "sourced", "pfaf" ], @species.provenance_for("height_max_m").values_at(:status, :source)
+    assert_equal [ "sourced", "wikipedia" ], @species.provenance_for("height_max_m").values_at(:status, :source)
     assert_equal "herbaceous", @species.strata, "a contradiction not taken changes nothing"
+  end
+
+  test "PFAF only cross-checks: its confirmation keeps the value's source, and its value is never taken" do
+    Catalog::SpeciesWriter.new(source: "terranova", status: "to_verify").write(@species, { "foliage_type" => "deciduous" })
+    @species.update!(values_checked_at: Time.current)
+    @species.value_checks.create!(field: "foliage_type", verdict: "confirmed", source: "pfaf", url: "https://pfaf.org/x")
+    @species.value_checks.create!(field: "height_max_m", verdict: "contradicted", source_value: 0.9, source: "pfaf", url: "https://pfaf.org/x")
+
+    sign_in_as @reviewer
+    patch catalogue_review_path(@species), params: { review: { latin_name: "Salvia nemorosa", take: [ "height_max_m" ] } }
+    @species.reload
+    foliage = @species.provenance_for("foliage_type")
+    assert_equal [ "to_verify", "terranova", "pfaf", nil ], foliage.values_at(:status, :source, :cross_checked_with, :license)
+    assert_equal "pfaf", @species.provenance_json.dig("foliageType", :crossCheckedWith)
+    assert_equal 0.6, @species.height_max_m, "a PFAF value cannot be taken"
+    assert_equal [ "to_verify", "user" ], @species.provenance_for("height_max_m").values_at(:status, :source)
+  end
+
+  test "the queue tells which checks the reviewer may take" do
+    @species.update!(values_checked_at: Time.current)
+    @species.value_checks.create!(field: "height_max_m", verdict: "contradicted", source_value: 0.9, source: "pfaf")
+    @species.value_checks.create!(field: "strata", verdict: "contradicted", source_value: "shrub", source: "wikipedia")
+
+    sign_in_as @reviewer
+    get catalogue_reviews_path, headers: inertia_headers
+    results = response.parsed_body.dig("props", "proposals").sole.dig("check", "results").index_by { _1["field"] }
+    assert_equal [ false, true ], [ results.dig("height_max_m", "citable"), results.dig("strata", "citable") ]
+  end
+
+  test "a new provenance drops the cross-check of the value it replaces" do
+    @species.mark_cross_checked!("height_max_m", "pfaf", fallback: "user")
+    assert_equal "pfaf", @species.provenance_for("height_max_m").cross_checked_with
+    Catalog::SpeciesWriter.new(source: "wikipedia", status: "sourced").write(@species, { "height_max_m" => 0.8 })
+    assert_nil @species.reload.provenance_for("height_max_m").cross_checked_with
   end
 end

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { drawsCrown, inkOn, STRATA_COLORS, strataCounts } from '../../../app/frontend/map/plants/strataColors.ts'
+import { crownOrder, drawsCrown, inkOn, STRATA_COLORS, strataCounts } from '../../../app/frontend/map/plants/strataColors.ts'
 import { STRATA } from '../../../app/frontend/types/plants.ts'
 
 // CIE L*a*b* distance between two sRGB colours (CIE76).
@@ -51,4 +51,12 @@ test('climbers have no crown on the plan, every other strata keeps one', () => {
   assert.equal(drawsCrown('vine'), false)
   for (const strata of STRATA.filter((s) => s !== 'vine')) assert.equal(drawsCrown(strata), true, strata)
   assert.equal(drawsCrown(null), true)
+})
+
+test('crowns are drawn from the canopy down to the ground cover, the wider under the narrower', () => {
+  assert.ok(crownOrder('canopy', 4) < crownOrder('sub_canopy', 2))
+  assert.ok(crownOrder('sub_canopy', 2) < crownOrder('shrub', 0.8))
+  assert.ok(crownOrder('shrub', 0.8) < crownOrder('herbaceous', 0.3))
+  assert.ok(crownOrder('herbaceous', 0.3) < crownOrder('ground_cover', 0.2))
+  assert.ok(crownOrder('canopy', 6) < crownOrder('canopy', 3))
 })

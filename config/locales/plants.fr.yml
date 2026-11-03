@@ -168,6 +168,7 @@ fr:
       updated: "Mise à jour le %{date}"
       open: "Voir la source"
       details: "Provenance de la valeur"
+      cross_checked: "Recoupée avec %{source}"
       statuses:
         sourced: "vérifiée"
         to_verify: "à vérifier"

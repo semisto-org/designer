@@ -1,4 +1,4 @@
-import { BookOpen, ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, MessageSquareText, PenLine, Trash2, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, FileOutput, LoaderCircle, MessageSquareText, PenLine, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button, buttonClass } from '@/components/ui/Button'
@@ -19,7 +19,7 @@ import type { MapDocumentData } from '@/types/documents'
  * page of its own (`pageUrl`), anything else waits for a download. Its title,
  * note and tags sit beside it; arrows and keys move through the list.
  */
-export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete, pageUrl }: {
+export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, onSave, onDelete, onConvert, pageUrl }: {
   docs: MapDocumentData[]
   openId: number | null
   onOpen: (id: number | null) => void
@@ -27,6 +27,8 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
   tagSuggestions: string[]
   onSave?: (doc: MapDocumentData, patch: { title?: string; description?: string; tags?: string[] }) => Promise<void>
   onDelete?: (doc: MapDocumentData) => Promise<void>
+  /** Asks the server for a PDF of a word-processor file (the map's library only). */
+  onConvert?: (doc: MapDocumentData) => Promise<void>
   /** The page where a Markdown document is read and written (the map's library only). */
   pageUrl?: (doc: MapDocumentData) => string
 }) {
@@ -71,6 +73,9 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
   if (!doc) return null
   const page = doc.markdown && pageUrl ? pageUrl(doc) : null
   const save = (patch: Parameters<NonNullable<typeof onSave>>[1]) => onSave?.(doc, patch)
+  // The PDF made from this file, or the file this PDF was made from, when on screen.
+  const pdfCopy = doc.pdfCopyId ? docs.find((d) => d.id === doc.pdfCopyId) : undefined
+  const source = doc.convertedFromId ? docs.find((d) => d.id === doc.convertedFromId) : undefined
 
   return createPortal(
     <div ref={dialog} role="dialog" aria-modal="true" aria-label={doc.title} tabIndex={-1}
@@ -98,7 +103,16 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <div className="max-w-sm text-center">
             <DocumentIcon kind={doc.kind} filename={doc.filename} className="mx-auto h-24 w-24" />
             <p className="mt-4 text-lg">{doc.filename}</p>
-            <p className="mt-1 text-sm text-loam-300">{t('documents.viewer.no_preview')}</p>
+            {pdfCopy ? (
+              <Button className="mt-4" onClick={() => onOpen(pdfCopy.id)}>
+                <FileOutput className="h-4 w-4" />{t('documents.pdf_conversion.open_copy')}
+              </Button>
+            ) : (
+              <p className="mt-1 text-sm text-loam-300">{t('documents.viewer.no_preview')}</p>
+            )}
+            {canEdit && onConvert && doc.convertibleToPdf && (
+              <PdfConversion doc={doc} again={!!pdfCopy} onConvert={() => onConvert(doc)} />
+            )}
             <a href={doc.downloadUrl} className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-prune-700 hover:bg-prune-50">
               <Download className="h-4 w-4" />{t('documents.viewer.download')}
             </a>
@@ -142,6 +156,19 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
           <br />
           {doc.filename}{doc.byteSize ? ` · ${documentSize(doc)}` : ''}
         </p>
+        {doc.convertedFromId && (
+          <div className="rounded-lg bg-leaf-50 px-3 py-2 text-sm text-leaf-800">
+            <p className="flex items-center gap-1.5">
+              <FileOutput className="h-4 w-4 shrink-0" aria-hidden />
+              {t('documents.pdf_conversion.converted_from', { title: source?.title ?? doc.title })}
+            </p>
+            {source && (
+              <Button variant="ghost" size="sm" className="-ml-3 mt-1" onClick={() => onOpen(source.id)}>
+                {t('documents.pdf_conversion.open_source')}
+              </Button>
+            )}
+          </div>
+        )}
         {doc.origin === 'form' && (
           <p className="flex items-center gap-1.5 rounded-lg bg-lichen-100 px-3 py-2 text-sm text-lichen-700">
             <MessageSquareText className="h-4 w-4 shrink-0" aria-hidden />{t('forms.viewer.badge')}
@@ -193,5 +220,26 @@ export function DocumentViewer({ docs, openId, onOpen, canEdit, tagSuggestions, 
       </aside>
     </div>,
     document.body,
+  )
+}
+
+/** « Convertir en PDF » under a .docx with no preview: what it gives, then its state. */
+function PdfConversion({ doc, again, onConvert }: { doc: MapDocumentData; again: boolean; onConvert: () => void }) {
+  if (doc.pdfConversion === 'pending') {
+    return (
+      <p className="mt-4 inline-flex items-center gap-2 text-sm text-loam-200" role="status">
+        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />{t('documents.pdf_conversion.pending')}
+      </p>
+    )
+  }
+  return (
+    <div className="mt-4">
+      {doc.pdfConversion === 'failed' && <p className="mb-3 text-sm text-humus-200" role="alert">{t('documents.pdf_conversion.failed')}</p>}
+      {doc.pdfConversion === 'storage_full' && <p className="mb-3 text-sm text-humus-200" role="alert">{t('documents.pdf_conversion.storage_full')}</p>}
+      <Button variant={again ? 'secondary' : 'primary'} size={again ? 'sm' : 'md'} onClick={onConvert}>
+        <FileOutput className="h-4 w-4" />{t(again ? 'documents.pdf_conversion.again' : 'documents.pdf_conversion.convert')}
+      </Button>
+      {!again && <p className="mt-2 text-sm text-loam-300">{t('documents.pdf_conversion.hint')}</p>}
+    </div>
   )
 }

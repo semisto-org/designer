@@ -5,6 +5,12 @@
       "close": "Fermer",
       "cancel": "Annuler"
     },
+    "opening": {
+      "years": {
+        "one": "%{count} an",
+        "other": "%{count} ans"
+      }
+    },
     "error": {
       "title": "Oups, cet écran a calé",
       "body": "Rien n'est perdu : ce que tu as noté reste sur le téléphone et partira au retour du réseau. Semisto a été prévenu.",

@@ -236,14 +236,18 @@ module Catalog
 
         if LISTS.key?(field)
           confirmed = findings.flat_map { |_, f| f.value }.uniq
-          page, best = findings.max_by { |_, f| f.value.size }
           verdict = (Array(ours) - confirmed).empty? ? "confirmed" : "partial"
+          # A list the citable pages confirm on their own cites one of them;
+          # one that needs PFAF's values cites PFAF, which only cross-checks.
+          citable_values = findings.select { |page, _| citable(page) == 1 }.flat_map { |_, f| f.value }
+          wanted = verdict == "partial" || (Array(ours) - citable_values).empty? ? 1 : 0
+          page, best = findings.max_by { |page, f| [ citable(page) == wanted ? 1 : 0, f.value.size ] }
           return attributes(verdict, page, best, value: confirmed)
         end
 
         agree, disagree = findings.partition { |_, f| same?(field, ours, f.value) }
         if disagree.empty?
-          page, best = agree.max_by { |_, f| f.confidence }
+          page, best = agree.max_by { |page, f| [ citable(page), f.confidence ] }
           return attributes("confirmed", page, best)
         end
         page, best = disagree.max_by { |_, f| f.confidence }
@@ -251,6 +255,10 @@ module Catalog
       end
 
       def confidence_min(field) = LISTS.key?(field) ? LIST_MIN : MIN_CONFIDENCE
+
+      # When pages agree, the one a value may cite (Wikipédia) comes before
+      # the one that only cross-checks (PFAF, PlantSource.cross_check_only?).
+      def citable(page) = PlantSource.cross_check_only?(page.source) ? 0 : 1
 
       def attributes(verdict, page, finding, value: finding.value)
         { verdict:, source_value: value, confidence: finding.confidence.round(3), source: page.source, url: page.url,

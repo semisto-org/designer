@@ -14,6 +14,22 @@ fr:
       winter: "Hiver"
       summer: "Été"
     proposed: "Proposé"
+    groups:
+      title: "Afficher"
+      sun: "Soleil"
+      wind: "Vents"
+      risks: "Feu, eau et gel"
+      nuisances: "Nuisances"
+      views: "Vues"
+      wildlife: "Faune"
+      other: "Autres"
+      keep_on_map: "Garder les secteurs sur la carte"
+      keep_on_map_hint: "Pour présenter ton design : les groupes choisis restent affichés une fois le panneau fermé. « Calques » les masque aussi."
+    layer: "Secteurs"
+    layer_count:
+      zero: "aucun"
+      one: "%{count} arc"
+      other: "%{count} arcs"
     observe_title: "Comment l'observer :"
     observe:
       wind: "regarde de quel côté les arbres isolés penchent et où la neige s'accumule. Demande aussi aux voisins d'où vient le vent des tempêtes."

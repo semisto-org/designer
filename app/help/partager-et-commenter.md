@@ -35,7 +35,9 @@ Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travail
 - **@** mentionne quelqu'un : il reçoit un e-mail tout de suite.
 - **#** cite un élément de la carte (« #Mare du bas », « #Pommier n° 12 ») : un clic dessus le montre sur la carte.
 - **Épingler un endroit** : sur le terrain, le bouton de position épingle ton message là où tu te tiens ; au bureau, la mire te laisse toucher l'endroit sur la carte. Les messages épinglés apparaissent sur la carte tant que la discussion est affichée.
-- **Joindre une photo** (éditeurs) : elle rejoint aussi les photos de la carte, à l'endroit où elle a été prise.
+- **Joindre une photo** (éditeurs) : avec l'appareil photo, ou en la glissant depuis ton ordinateur sur la discussion, ou en la collant dans le message (une capture d'écran, par exemple). Elle rejoint aussi les photos de la carte. Elle n'épingle ton message que si elle sait où elle a été prise : son GPS, ou ton téléphone sur place ; une capture d'écran n'épingle rien.
+- **Joindre un document** (éditeurs) : le trombone joint un fichier de n'importe quel type (devis, plan, PDF, tableur…) ; tu peux aussi le glisser sur la discussion ou le coller dans le message. Il reste dans la discussion ; **Ajouter aux documents**, sous le message, le range d'un clic dans les documents de la carte. Supprimer le message supprime aussi un document resté dans la discussion.
+- Survole un bouton sous le message pour voir ce qu'il fait.
 
 Dans l'**app Terranova**, la discussion s'ouvre avec le bouton **Discussion** sous l'en-tête de la carte, et se range d'un glissement vers le bas, sans rien perdre. Sur le terrain, **Ici** épingle ton message là où tu te tiens et l'appareil photo y joint ce que tu vois ; # propose d'abord les éléments autour de toi. Sans réseau, ton message attend dans tes envois et part dès qu'il revient. Les messages épinglés apparaissent sur la carte, et la feuille du terrain montre sous **Dit ici** ceux qu'on a laissés là où tu te tiens.
 

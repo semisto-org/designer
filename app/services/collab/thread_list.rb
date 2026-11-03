@@ -37,7 +37,7 @@ module Collab
           lastAuthorName: last&.author&.display_name,
           preview: last && last.body.squish.truncate(PREVIEW),
           unread: newest_foreign.present? && (seen.nil? || newest_foreign > seen),
-          subscribed: subscribed.include?(key)
+          subscribed: key[0] == "Map" ? CommentSubscription.chat_subscribed?(@user, @map) : subscribed.include?(key)
         }
       end
       active, quiet = rows.partition { |row| row[:lastCommentAt] }

@@ -25,6 +25,19 @@ class MapElementsTest < ActiveSupport::TestCase
     end
   end
 
+  test "a building's roof for the 3D view: shape, gutters, ridge and side, the old « En pente » still valid" do
+    house = { "type" => "Polygon", "coordinates" => [ [ [ 4.9, 50.34 ], [ 4.9002, 50.34 ], [ 4.9002, 50.3401 ], [ 4.9, 50.3401 ], [ 4.9, 50.34 ] ] ] }
+    building = ->(props) { maps(:ahinvaux).features.new(layer: "existing", kind: "building", geometry: house, properties: props) }
+    %w[pitched hip shed flat green].each do |roof|
+      assert building.({ "roof" => roof, "height_m" => 9, "eaves_m" => 5.5, "ridge" => "short", "roof_flip" => true }).valid?, roof
+    end
+    assert_not building.({ "roof" => "dome" }).valid?
+    assert_not building.({ "ridge" => "diagonal" }).valid?
+    assert_not building.({ "eaves_m" => 120 }).valid?
+    shed = maps(:ahinvaux).features.new(layer: "structures", kind: "shed", geometry: house, properties: { "roof" => "shed", "height_m" => 2.4, "eaves_m" => 1.9 })
+    assert shed.valid?, shed.errors.full_messages.to_sentence
+  end
+
   test "a pump and its irrigation line live in the water layer, not in the hidden networks" do
     # Clémence's test (October 2026): she wanted to place a pump and its watering.
     pump = feature(kind: "pump", geometry: { "type" => "Point", "coordinates" => [ 4.9, 50.34 ] }, properties: { "pump_power" => "solar", "head_m" => 4 })

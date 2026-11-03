@@ -57,6 +57,17 @@ fr:
       added: "Ajouté %{when}"
       sent_by_link: "Envoyé par le porteur de projet %{when}"
       confirm_delete: "Supprimer ce document ? Il disparaîtra pour tout le monde."
+    pdf_conversion:
+      convert: "Convertir en PDF"
+      hint: "Le PDF se lit ici et sur le téléphone, s'imprime et s'envoie tel quel. L'original reste à côté."
+      pending: "Conversion en PDF…"
+      open_copy: "Ouvrir la version PDF"
+      again: "Refaire le PDF"
+      converted_from: "Version PDF de « %{title} »"
+      open_source: "Ouvrir l'original"
+      failed: "La conversion n'a pas abouti. Réessaie, ou ouvre le fichier dans ton traitement de texte pour l'enregistrer en PDF."
+      storage_full: "Plus assez de place pour le PDF : libère de l'espace ou passe à une formule plus grande, puis réessaie."
+      not_convertible: "Seuls les documents de traitement de texte (.docx, .doc, .odt, .rtf) se convertissent en PDF."
     empty:
       title: "Rassemble ce que l'on sait déjà du lieu"
       body: "Avant de dessiner, il est précieux de réunir ce qui existe : chaque document raconte une partie de l'histoire du terrain. Range-les par étiquette pour les retrouver d'un coup d'œil."

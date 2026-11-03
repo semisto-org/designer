@@ -89,6 +89,8 @@ fr:
         contradicted: "Contredite"
         unknown: "Aucune source n'en parle"
         confirmed_by: "confirmée par %{source}"
+        cross_checked_by: "recoupée avec %{source} (reste à vérifier)"
+        cross_check_only: "%{source} sert seulement à recouper : on ne reprend pas sa valeur. Vérifie-la ailleurs si elle te semble plus juste."
         partial_by: "%{source} confirme : %{value}"
         contradicted_by: "%{source} dit : %{value}"
         take: "Prendre cette valeur"

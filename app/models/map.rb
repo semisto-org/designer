@@ -73,7 +73,10 @@ class Map < ApplicationRecord
   has_many :photo_sketches, dependent: :destroy
   has_many :photo_renderings, dependent: :destroy
   has_many :photo_albums, dependent: :destroy
-  has_many :documents, class_name: "MapDocument", dependent: :destroy
+  # The library, and every document of the map: those joined to a message of
+  # the discussion stay out of the library until someone adds them there.
+  has_many :all_documents, class_name: "MapDocument", dependent: :destroy
+  has_many :documents, -> { where(in_library: true) }, class_name: "MapDocument"
   has_many :soil_samples, dependent: :destroy
   has_many :bioindicator_observations, dependent: :destroy
 
@@ -130,6 +133,21 @@ class Map < ApplicationRecord
     scope = scope.or(User.where(id: OrganizationMembership.where(organization_id:).select(:user_id))) if organization_id
     scope
   end
+
+  # Who the discussion's e-mails reach without asking (the digest; a mention
+  # reaches whoever it names). Its members, except that on a team map whose
+  # project team is set (« l'équipe du projet », MapBoard#crew) the rest of
+  # the team only reads along: they turn the digest on with the bell
+  # (CommentSubscription.subscribed?). Michael, 2026-11-03.
+  def chat_audience
+    return chat_participants unless organization_id && assignments.exists?
+    direct = memberships.where(role: %w[owner editor]).or(memberships.where(chat_access: true)).select(:user_id)
+    concerned = User.where(id: direct).or(User.where(id: owner_id)).or(User.where(id: assignments.select(:user_id)))
+    chat_participants.where(id: concerned.select(:id))
+  end
+
+  def chat_audience?(user) = user.present? && chat_audience.exists?(id: user.id)
+
   def editable_by?(user) = %w[owner editor].include?(role_for(user))
   def manageable_by?(user) = role_for(user) == "owner"
 

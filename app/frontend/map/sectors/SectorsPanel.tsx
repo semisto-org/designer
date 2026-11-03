@@ -2,25 +2,26 @@ import clsx from 'clsx'
 import { ArrowLeftRight, Bot, Circle, Pencil, Plus, Sun, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Button } from '@/components/ui/Button'
+import { ChipButton } from '@/components/ui/ChipButton'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { rangeText } from '@/map/sectors/labels'
-import { hideSectorOverlay, overlayBounds, showSectorOverlay, type OverlayArc } from '@/map/sectors/overlay'
+import { overlayBounds } from '@/map/sectors/overlay'
 import {
-  allAround, arcPath, arcRadius, COMPASS_POINTS, isSectorSeason, isSectorType, SECTOR_COLORS, SECTOR_SEASONS, SECTOR_TYPES, sectorArc,
-  sectorDirections, shorterWay, showsIn, sunSectors,
+  allAround, arcPath, arcRadius, COMPASS_POINTS, GROUP_COLORS, isSectorType, SECTOR_COLORS, SECTOR_SEASONS, SECTOR_TYPES, sectorArc,
+  sectorDirections, sectorGroup, shorterWay, showsIn, sunSectors,
   type SectorSeason, type SectorType,
 } from '@/map/sectors/sectors'
+import { isSector, mapSectors, presentGroups, sectorArcs, sectorSeasonOf } from '@/map/sectors/SectorsOverlay'
+import { sectorView, useSectorView, type SeasonFilter } from '@/map/sectors/store'
 import type { MapFeature } from '@/types'
 import type { LineString } from 'geojson'
 
 type Draft = { id: number | null; type: SectorType; season: SectorSeason; from: number | null; to: number | null; name: string; notes: string }
-type SeasonFilter = 'all' | 'winter' | 'summer'
-
 const EMPTY: Draft = { id: null, type: 'wind', season: 'all_year', from: null, to: null, name: '', notes: '' }
 
-export const isSector = (f: MapFeature) => f.properties.kind === 'sector' && f.geometry.type === 'LineString'
+export { isSector }
 
 const pointName = (i: number) => t(`sectors.points.${COMPASS_POINTS[i].toLowerCase()}`)
 
@@ -111,55 +112,43 @@ function Compass({ from, to, color, onPick }: { from: number | null; to: number 
  * direction (winds, fire, noise, views, wildlife, flooding…), drawn as arcs
  * around it. The summer and winter sun come from the latitude. While the
  * panel is open, the map shows every arc on its own ring, like the page
- * « Analyse des secteurs » of the project dossier.
+ * « Analyse des secteurs » of the project dossier (SectorsOverlay); to
+ * present a design, the viewer shows or hides them group by group and can
+ * keep them on the map once the panel is closed.
  */
 export default function SectorsPanel() {
   const editor = useEditor()
   const [draft, setDraft] = useState<Draft | null>(null)
   const [saving, setSaving] = useState(false)
-  const [season, setSeason] = useState<SeasonFilter>('all')
+  const view = useSectorView()
+  const { season, hiddenGroups, onMap } = view
   const center = editor.map.center ?? (editor.instance.getCenter().toArray() as [number, number])
-  const all = editor.features.filter((f) => isSector(f) && (f.properties.status === 'active' || f.properties.status === 'draft'))
-  const sectorSeason = (f: MapFeature) => (isSectorSeason(f.properties.sector_season) ? f.properties.sector_season : 'all_year')
+  const all = mapSectors(editor.features)
+  const sectorSeason = sectorSeasonOf
   const sectors = all.filter((f) => showsIn(sectorSeason(f), season))
   const sun = useMemo(() => sunSectors(center[1]), [center[1]]) // eslint-disable-line react-hooks/exhaustive-deps
   const shownSun = sun.filter((s) => season === 'all' || s.type === `${season}_sun`)
+  const groups = presentGroups(editor.features, center[1])
+  const groupHidden = (type: string) => hiddenGroups.includes(sectorGroup(type))
 
-  // The overlay: every arc on its own ring around the terrain, the one being edited included.
-  const arcs: OverlayArc[] = [
-    ...shownSun.map((s) => ({ key: s.type, from: s.from, to: s.to, color: SECTOR_COLORS[s.type], label: t(`sectors.sun.${s.type}`), draft: false })),
-    ...sectors.flatMap((f): OverlayArc[] => {
-      if (draft?.id === f.properties.id) return []
-      const range = sectorDirections(f.properties, f.geometry as LineString, center)
-      const type = isSectorType(f.properties.sector_type) ? f.properties.sector_type : 'other'
-      return range ? [{ key: String(f.properties.id), ...range, color: SECTOR_COLORS[type], label: f.properties.name || t(`drawing.options.sector_type.${type}`), draft: f.properties.status === 'draft' }] : []
-    }),
-    ...(draft && draft.from != null && draft.to != null
-      ? [{ key: 'editing', from: draft.from, to: draft.to, color: SECTOR_COLORS[draft.type], label: draft.name || t(`drawing.options.sector_type.${draft.type}`), draft: false }]
-      : []),
-  ]
-  const arcsKey = JSON.stringify(arcs)
+  // The overlay (SectorsOverlay) draws the sector being edited in place of its saved arc.
+  useEffect(() => {
+    sectorView.setEditing(draft ? {
+      id: draft.id,
+      arc: draft.from != null && draft.to != null
+        ? { key: 'editing', from: draft.from, to: draft.to, color: SECTOR_COLORS[draft.type], label: draft.name || t(`drawing.options.sector_type.${draft.type}`), draft: false }
+        : null,
+    } : null)
+  }, [draft])
+  useEffect(() => () => sectorView.setEditing(null), [])
   const radius = arcRadius(editor.map.bbox)
   const map = editor.instance
-  useEffect(() => {
-    const ensure = () => {
-      try {
-        showSectorOverlay(map, JSON.parse(arcsKey) as OverlayArc[], center, radius)
-      } catch {
-        /* style not ready yet: the next styledata brings us back */
-      }
-    }
-    ensure()
-    map.on('styledata', ensure)
-    return () => { map.off('styledata', ensure) }
-  }, [map, arcsKey, center[0], center[1], radius]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => () => { try { hideSectorOverlay(map) } catch { /* map already gone */ } }, [map])
   // On opening, step back until every ring is in view, beside the panel: on its
   // right on a computer, above it on a phone, where it rises from the bottom.
   useEffect(() => {
-    const [w, s, e, n] = overlayBounds(arcs, center, radius)
-    const view = map.getBounds()
-    if (view.contains([w, s]) && view.contains([e, n])) return
+    const [w, s, e, n] = overlayBounds(sectorArcs(editor.features, center, view), center, radius)
+    const view_ = map.getBounds()
+    if (view_.contains([w, s]) && view_.contains([e, n])) return
     const { clientWidth: width, clientHeight: height } = map.getContainer()
     const padding = width < 768
       ? { top: 130, bottom: Math.round(height * 0.55), left: 16, right: 64 }
@@ -244,7 +233,7 @@ export default function SectorsPanel() {
             type="button"
             role="radio"
             aria-checked={season === s}
-            onClick={() => setSeason(s)}
+            onClick={() => sectorView.setSeason(s)}
             className={clsx('flex-1 whitespace-nowrap rounded-full px-2 py-1 text-sm', season === s ? 'bg-white font-medium text-loam-900 shadow-sm' : 'text-loam-600 hover:text-loam-900')}
           >
             {t(`sectors.season.${s}`)}
@@ -252,9 +241,37 @@ export default function SectorsPanel() {
         ))}
       </div>
 
+      {/* To present a design: groups shown or hidden together, and the arcs kept on the map once the panel is closed. */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-loam-700">{t('sectors.groups.title')}</p>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('sectors.groups.title')}>
+          {groups.map((group) => {
+            const shown = !hiddenGroups.includes(group)
+            return (
+              <ChipButton
+                key={group}
+                pressed={shown}
+                onClick={() => sectorView.toggleGroup(group)}
+                icon={<span className={clsx('h-2.5 w-2.5 rounded-full', !shown && 'opacity-40')} style={{ background: GROUP_COLORS[group] }} aria-hidden />}
+                className={clsx(!shown && 'text-loam-500 line-through decoration-loam-300')}
+              >
+                {t(`sectors.groups.${group}`)}
+              </ChipButton>
+            )
+          })}
+        </div>
+        <label className="flex items-start gap-2 text-sm text-loam-700">
+          <input type="checkbox" className="mt-0.5 h-4 w-4 accent-prune-700" checked={onMap} onChange={(e) => sectorView.setOnMap(e.target.checked)} />
+          <span>
+            {t('sectors.groups.keep_on_map')}
+            <span className="block text-loam-500">{t('sectors.groups.keep_on_map_hint')}</span>
+          </span>
+        </label>
+      </div>
+
       <ul className="space-y-1">
         {shownSun.map((s) => (
-          <li key={s.type} className="flex items-center gap-2 rounded-md px-1.5 py-1 text-sm">
+          <li key={s.type} className={clsx('flex items-center gap-2 rounded-md px-1.5 py-1 text-sm', groupHidden(s.type) && 'opacity-50')}>
             <span className="h-2.5 w-6 rounded-full" style={{ background: SECTOR_COLORS[s.type] }} aria-hidden />
             <Sun className="h-3.5 w-3.5 text-humus-600" aria-hidden />
             <span className="font-medium text-loam-900">{t(`sectors.sun.${s.type}`)}</span>
@@ -270,7 +287,7 @@ export default function SectorsPanel() {
               <button
                 type="button"
                 onClick={() => (proposed ? editor.select(f.properties.id) : edit(f))}
-                className={clsx('flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-sm hover:bg-loam-50', (draft?.id ?? editor.selectedId) === f.properties.id && 'bg-loam-100')}
+                className={clsx('flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-sm hover:bg-loam-50', (draft?.id ?? editor.selectedId) === f.properties.id && 'bg-loam-100', groupHidden(type) && 'opacity-50')}
               >
                 <span className={clsx('h-2.5 w-6 shrink-0 rounded-full', proposed && 'opacity-60')} style={{ background: SECTOR_COLORS[type] }} aria-hidden />
                 <span className="truncate font-medium text-loam-900">{f.properties.name || t(`drawing.options.sector_type.${type}`)}</span>

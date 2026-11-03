@@ -60,6 +60,7 @@ import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
 import SectorInspector from '@/map/sectors/SectorInspector'
 import SectorsPanel, { isSector } from '@/map/sectors/SectorsPanel'
+import SectorsOverlay from '@/map/sectors/SectorsOverlay'
 import ZonesPanel from '@/map/zones/ZonesPanel'
 import ZoneSection, { appliesToZone } from '@/map/zones/ZoneSection'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
@@ -217,4 +218,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'plan-images', component: PlanImagesOverlay, order: 2 },
   { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
   { id: 'earthworks', component: EarthworksOverlay, order: 12 },
+  { id: 'sectors', component: SectorsOverlay, order: 13 },
 ]
