@@ -180,4 +180,13 @@ class JourneyTest < ActiveSupport::TestCase
     end
     Journey::STEPS.each { |s| assert I18n.exists?("journey.steps.#{s}.summary"), s }
   end
+
+  test "the three missions outside sit beside the checklist during the first weeks" do
+    @map.update_column(:first_hour_started_at, nil)
+    assert_nil Journey.new(@map).as_json[:firstHour]
+    @map.update_column(:first_hour_started_at, 1.day.ago)
+    data = Journey.new(@map).as_json[:firstHour]
+    assert_equal %w[water season living], data[:missions].pluck(:key)
+    refute data[:done]
+  end
 end

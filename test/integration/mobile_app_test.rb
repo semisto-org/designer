@@ -89,7 +89,7 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = response.parsed_body
     assert_equal @map.id, body.dig("map", "id")
-    %w[layers features photos planting syncedAt mapEntitlements].each { |key| assert body.key?(key), key }
+    %w[layers features photos planting syncedAt mapEntitlements firstHour].each { |key| assert body.key?(key), key }
 
     get "/api/v1/maps/#{@map.id}", headers: bearer(app_token(users(:bob)))
     assert_response :not_found

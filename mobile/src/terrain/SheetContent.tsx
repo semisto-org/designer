@@ -8,13 +8,13 @@ import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
 import type { Memory } from '@/lib/memory'
-import { missingSeasons, observationTime, seenLabel, signLabel, signsOfMonth, type SeasonCount, type Sign } from '@/lib/season'
+import { isSign, missingSeasons, observationTime, seenLabel, signLabel, signsOfMonth, type SeasonCount, type Sign } from '@/lib/season'
 import type { WeekReport } from '@/lib/week'
 import type { SpotPhotos } from '@/lib/retake'
 import type { ChatMessage } from '@/lib/chat-core'
 import { arrived, arrowAngle, type Target } from '@/lib/tour'
 import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
-import type { MapFeature, Photo, Planting } from '@/lib/types'
+import type { FirstHour, FirstHourMission, MapFeature, Photo, Planting } from '@/lib/types'
 import { Icon, type IconName } from '@/ui/Icon'
 import { Body, Button, IconButton, MAX_FONT_SCALE } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
@@ -63,7 +63,7 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week, year, saidHere = [], onSaid }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week, year, firstHour, saidHere = [], onSaid }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
   /** Plants of the design still to put in the ground, for the planting round. */
   toPlant?: number; onTour?: () => void
@@ -75,6 +75,8 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
   week?: WeekReport | null
   /** « Ton année d'observation »: what was seen in each season, and the signs to go out for this month. */
   year?: { seasons: SeasonCount[]; lookFor: { sign: Sign; noted: boolean }[]; onSign: (sign: Sign) => void } | null
+  /** « Ta première heure »: the three things to go and see outside, in the first weeks. */
+  firstHour?: { data: FirstHour; onMission: (key: FirstHourMission['key']) => void } | null
   /** Messages of the map's discussion pinned where one stands, nearest first. */
   saidHere?: { message: ChatMessage; meters: number }[]; onSaid?: (messageId: number) => void
 }) {
@@ -89,6 +91,7 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
           <Button icon="planted" label={t('mobile.tour.start')} onPress={onTour} />
         </View>
       )}
+      {firstHour && <FirstHourCard {...firstHour} />}
       {week && <WeekCard report={week} />}
       {year && <YearCard {...year} />}
       {card && <Body muted>{card.body}</Body>}
@@ -132,6 +135,48 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
           </ScrollView>
         </>
       )}
+    </View>
+  )
+}
+
+const MISSION_ICON: Record<FirstHourMission['key'], IconName> = { water: 'water', season: 'season', living: 'plant' }
+
+/**
+ * « Ta première heure » on the land: the three missions, each opening the
+ * screen that notes it (a downpour, a sign of the season, a wild plant).
+ */
+function FirstHourCard({ data, onMission }: { data: FirstHour; onMission: (key: FirstHourMission['key']) => void }) {
+  const done = data.missions.filter((m) => m.done).length
+  const signs = data.signs.filter(isSign).map((sign) => signLabel(sign).toLowerCase()).join(', ')
+  return (
+    <View style={s.memory}>
+      <Text accessibilityRole="header" style={s.memoryTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+        {t(data.done ? 'mobile.first_hour.done_title' : 'mobile.first_hour.title')}
+      </Text>
+      {data.done
+        ? <Body muted>{t('mobile.first_hour.done_body')}</Body>
+        : <>
+            <Body muted>{t('mobile.first_hour.hint')}</Body>
+            <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.first_hour.progress', { done: String(done) })}</Text>
+            {data.missions.map((mission) => {
+              const body = mission.key === 'living' && mission.count > 0 && !mission.done
+                ? `${t('mobile.first_hour.living.body')} ${t('mobile.first_hour.living.count', { count: String(mission.count), target: String(mission.target ?? 3) })}`
+                : t(`mobile.first_hour.${mission.key}.body`, { signs })
+              return (
+                <Pressable key={mission.key} onPress={() => { haptics.tap(); onMission(mission.key) }} accessibilityRole="button"
+                  accessibilityLabel={[t(`mobile.first_hour.${mission.key}.title`), mission.done ? t('mobile.first_hour.done') : null].filter(Boolean).join(', ')}
+                  accessibilityHint={body}
+                  style={({ pressed }) => [s.row, pressed && { backgroundColor: colors.loam100 }]}>
+                  <Icon name={mission.done ? 'ticked' : MISSION_ICON[mission.key]} size={22} color={mission.done ? colors.leaf700 : colors.prune700} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.rowTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`mobile.first_hour.${mission.key}.title`)}</Text>
+                    <Text style={s.meta} numberOfLines={3} maxFontSizeMultiplier={MAX_FONT_SCALE}>{mission.done ? t('mobile.first_hour.done') : body}</Text>
+                  </View>
+                  <Icon name="next" size={20} color={colors.loam500} />
+                </Pressable>
+              )
+            })}
+          </>}
     </View>
   )
 }

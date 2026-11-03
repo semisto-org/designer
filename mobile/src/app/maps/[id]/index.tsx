@@ -13,6 +13,7 @@ import { display, useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
 import { memoryOf } from '@/lib/memory'
 import { observationYear, signsToLookFor } from '@/lib/season'
+import { firstHourMissions } from '@/lib/firstHour'
 import { anchor, boundsOf } from '@/lib/geo'
 import { t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
@@ -107,6 +108,7 @@ export default function Terrain() {
   const shotHere = useMemo(() => (me && bundle ? photosHere(bundle.photos, me) : []), [bundle, me])
   const week = useWeek(mapId)
   const memory = useMemo(() => (bundle ? memoryOf({ photos: bundle.photos, features: bundle.features }) : null), [bundle])
+  const firstHour = useMemo(() => (bundle ? firstHourMissions(bundle.firstHour, bundle.features) : null), [bundle])
   const seasons = useMemo(() => (bundle ? { seasons: observationYear(bundle.features), lookFor: signsToLookFor(bundle.features) } : null), [bundle])
   const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
   const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
@@ -353,6 +355,10 @@ export default function Terrain() {
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
             : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
                 mapId={mapId} photosHere={shotHere} memory={memory} week={week} saidHere={saidHere} onSaid={openChat}
+                firstHour={editable && firstHour ? {
+                  data: firstHour,
+                  onMission: (key) => go(key === 'water' ? '/maps/[id]/storm' : key === 'season' ? '/maps/[id]/season' : '/maps/[id]/bioindicator'),
+                } : null}
                 year={editable && seasons ? { ...seasons, onSign: (sign) => go('/maps/[id]/season', { sign }) } : null} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
       </Sheet>
     </View>

@@ -12,7 +12,9 @@ import { openTour } from '@/map/tour/TourOverlay'
 import { readingLines, type ReadingLine } from '@/trials/reading'
 import { readingSentence } from '@/trials/sentence'
 import type { LngLat } from '@/types'
+import type { FirstHourMissions } from '@/types/journey'
 import type { TrialReading } from '@/types/trials'
+import { MissionList } from './Missions'
 
 const OPEN_EVENT = 'designer:first-hour-open'
 
@@ -21,7 +23,11 @@ export function openFirstHour() {
   window.dispatchEvent(new Event(OPEN_EVENT))
 }
 
-type State = { status: 'loading' } | { status: 'done'; reading: TrialReading; relief: boolean } | { status: 'error' }
+type Reading = { reading: TrialReading; relief: boolean; missions: FirstHourMissions; phone: { url: string; qr: string } }
+type State = { status: 'loading' } | ({ status: 'done' } & Reading) | { status: 'error' }
+
+/** The QR code links here with ?missions=1: the missions open on the phone. */
+const askedForMissions = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('missions') === '1'
 
 /** The tool that says more about a line of the reading. */
 const LINE_PANEL: Partial<Record<ReadingLine['key'], { panel: string; label: string; icon: typeof Mountain }>> = {
@@ -53,6 +59,9 @@ export default function FirstHourOverlay() {
   const [state, setState] = useState<State>({ status: 'loading' })
   const marker = useRef<maplibregl.Marker | null>(null)
   const auto = useRef(false)
+  // Come from the QR code: the missions, not the reading, are what the phone is for.
+  const toMissions = useRef(false)
+  const outside = useRef<HTMLElement | null>(null)
 
   // On a new map, once the outline is there and the person left « Terrain ».
   const outlining = editor.activePanel === 'terrain'
@@ -62,6 +71,14 @@ export default function FirstHourOverlay() {
     setOpen(true)
     track('first_hour_open', { from: 'outline' })
   }, [greets, outlined, outlining])
+
+  useEffect(() => {
+    if (!askedForMissions()) return
+    auto.current = true
+    toMissions.current = true
+    setOpen(true)
+    track('first_hour_open', { from: 'qr' })
+  }, [])
 
   useEffect(() => {
     const onOpen = () => { setOpen(true); track('first_hour_open', { from: 'journey' }) }
@@ -75,13 +92,19 @@ export default function FirstHourOverlay() {
     if (!open) return
     const controller = new AbortController()
     setState({ status: 'loading' })
-    api<{ reading: TrialReading; relief: boolean }>(`/maps/${map.id}/place_reading`, { signal: controller.signal })
-      .then((data) => setState({ status: 'done', reading: data.reading, relief: data.relief }))
+    api<Reading>(`/maps/${map.id}/place_reading`, { signal: controller.signal })
+      .then((data) => setState({ status: 'done', ...data }))
       .catch(() => { if (!controller.signal.aborted) setState({ status: 'error' }) })
     return () => controller.abort()
   }, [open, map.id, boundaryKey])
 
   useEffect(() => () => { marker.current?.remove() }, [])
+
+  useEffect(() => {
+    if (state.status !== 'done' || !toMissions.current) return
+    toMissions.current = false
+    outside.current?.scrollIntoView({ block: 'start' })
+  }, [state.status])
 
   const close = useCallback(() => {
     setOpen(false)
@@ -161,12 +184,38 @@ export default function FirstHourOverlay() {
             )}
           </ul>
         )}
-        <section className="rounded-2xl bg-leaf-50 p-4 ring-1 ring-leaf-200">
+        <section ref={outside} className="scroll-mt-4 rounded-2xl bg-leaf-50 p-4 ring-1 ring-leaf-200">
           <h3 className="font-sans text-base font-semibold text-leaf-800">{t('place_reading.outside.title')}</h3>
           <p className="mt-1 text-loam-700">{t('place_reading.outside.body')}</p>
-          <HandNote tone="leaf" className="mt-2">{t('place_reading.outside.note')}</HandNote>
+          {state.status === 'done' && <Outside data={state.missions} phone={state.phone} />}
+          <HandNote tone="leaf" className="mt-3">{t('place_reading.outside.note')}</HandNote>
         </section>
       </div>
     </Dialog>
+  )
+}
+
+/** The three missions, then the code that carries them to the phone (from md up). */
+function Outside({ data, phone }: { data: FirstHourMissions; phone: { url: string; qr: string } }) {
+  if (data.done) {
+    return (
+      <div className="mt-3 space-y-1">
+        <p className="font-hand text-2xl leading-snug text-leaf-800">{t('place_reading.missions.done_title')}</p>
+        <p className="text-sm text-loam-700">{t('place_reading.missions.done_body')}</p>
+      </div>
+    )
+  }
+  return (
+    <div className="mt-3 space-y-4">
+      <MissionList data={data} />
+      <div className="hidden items-center gap-4 rounded-2xl bg-white p-3 ring-1 ring-leaf-200 md:flex">
+        <img src={`data:image/svg+xml;utf8,${encodeURIComponent(phone.qr)}`} alt={t('place_reading.missions.phone.alt')} className="h-28 w-28 shrink-0" />
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-loam-900">{t('place_reading.missions.phone.title')}</p>
+          <p className="text-sm text-loam-600">{t('place_reading.missions.phone.body')}</p>
+        </div>
+      </div>
+      <p className="text-sm text-loam-600 md:hidden">{t('place_reading.missions.phone.small')}</p>
+    </div>
   )
 }

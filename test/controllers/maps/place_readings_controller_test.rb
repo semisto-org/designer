@@ -10,6 +10,9 @@ class Maps::PlaceReadingsControllerTest < ActionDispatch::IntegrationTest
     get map_place_reading_path(@map), as: :json
     assert_response :success
     assert response.parsed_body.key?("reading")
+    assert_equal %w[water season living], response.parsed_body.dig("missions", "missions").pluck("key")
+    assert_includes response.parsed_body.dig("phone", "url"), "/maps/#{@map.id}?missions=1"
+    assert_includes response.parsed_body.dig("phone", "qr"), "<svg"
     patch map_place_reading_path(@map), as: :json
     assert_response :forbidden
 

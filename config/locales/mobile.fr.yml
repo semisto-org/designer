@@ -705,6 +705,23 @@ fr:
     trace:
       notification_title: "Trace en cours"
       notification_body: "Semisto Terranova enregistre ta trace."
+    first_hour:
+      title: "Trois choses à aller voir"
+      hint: "Ce que les cartes ne savent pas de ton terrain : toi seul peux le voir. Chaque mission se coche toute seule."
+      progress: "%{done} sur 3"
+      done_title: "Ton lieu, vu par toi"
+      done_body: "Les trois sont faites : ta carte sait ce que les modèles ne savaient pas."
+      done: "fait"
+      water:
+        title: "L'eau"
+        body: "Après une pluie, regarde où l'eau reste ou s'écoule, à commencer par le point bas."
+      season:
+        title: "La saison"
+        body: "Note un signe du moment là où tu le vois. Ce mois-ci : %{signs}."
+      living:
+        title: "Le vivant"
+        body: "Photographie 3 plantes qui poussent toutes seules : elles parlent de ton sol."
+        count: "%{count} sur %{target}"
     season:
       title: "Un signe de saison"
       intro: "Ce que ton terrain montre en ce moment, noté là où tu es. Un lieu se lit sur quatre saisons."

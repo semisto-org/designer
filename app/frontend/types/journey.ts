@@ -144,6 +144,11 @@ export type Season = 'winter' | 'spring' | 'summer' | 'autumn'
 /** The year of observation: seasons looked at over the last twelve months, the ones missing and today's. */
 export type JourneySeason = { current: Season; missing: Season[]; observed: number }
 
+export type FirstHourMissionKey = 'water' | 'season' | 'living'
+export type FirstHourMission = { key: FirstHourMissionKey; done: boolean; count: number; target?: number }
+/** « Ta première heure »: the three missions outside (Maps::FirstHourMissions). */
+export type FirstHourMissions = { missions: FirstHourMission[]; done: boolean; shown: boolean; signs: string[] }
+
 export type JourneyData = {
   stage: MapStage
   stageIndex: number
@@ -151,6 +156,8 @@ export type JourneyData = {
   next: JourneyNext
   /** Beside the checklist, never blocking; null when the observations cannot be read. */
   season?: JourneySeason | null
+  /** During the first weeks after « Voici ton lieu ». */
+  firstHour?: FirstHourMissions | null
 }
 
 // ----- Requests to Semisto -----
