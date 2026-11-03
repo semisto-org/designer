@@ -34,6 +34,10 @@ module Mcp
         {
           messages: page.reverse.map { |comment| message_json(comment, features, read) },
           members: map.chat_participants.order(:id).map(&:display_name),
+          # Who gets the e-mail digest without asking (on a team map, its
+          # project team), and whether this user gets it.
+          digest_to: map.chat_audience.order(:id).map(&:display_name),
+          digest_for_you: CommentSubscription.chat_subscribed?(user, map),
           next_before_id: (page.last.id if older),
           url: "#{map_url(map)}?discussion=#{map.comment_key}"
         }
