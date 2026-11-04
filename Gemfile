@@ -35,7 +35,7 @@ gem "mcp", "~> 1.6"
 gem "commonmarker", "~> 2.0"
 
 # HTTP client for external providers (Géoportail, cadastre, climate)
-gem "faraday", "~> 2.12"
+gem "faraday", "~> 2.15"
 
 # CSV exports (plant list); leaves Ruby's default gems in 3.4
 gem "csv"
