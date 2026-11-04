@@ -125,3 +125,14 @@ test('?sectors= names the groups kept on the map, the others hidden', () => {
   assert.equal(groupsFromParam('nothing'), null)
   assert.equal(groupsFromParam(''), null)
 })
+
+test('the sun panel shows the sun arcs without saving anything', async () => {
+  const { displayedGroups } = await import('../../../app/frontend/map/sectors/sectors.ts')
+  const others = SECTOR_GROUPS.filter((g) => g !== 'sun')
+  assert.equal(displayedGroups(null, { onMap: false, hiddenGroups: [] }), null)
+  assert.equal(displayedGroups('plants', { onMap: false, hiddenGroups: [] }), null)
+  assert.deepEqual(displayedGroups('sun', { onMap: false, hiddenGroups: [] }), { hiddenGroups: others })
+  assert.deepEqual(displayedGroups('sun', { onMap: true, hiddenGroups: ['sun', 'wind'] }), { hiddenGroups: ['wind'] })
+  assert.deepEqual(displayedGroups('sectors', { onMap: false, hiddenGroups: ['sun'] }), { hiddenGroups: ['sun'] })
+  assert.deepEqual(displayedGroups(null, { onMap: true, hiddenGroups: ['sun'] }), { hiddenGroups: ['sun'] })
+})

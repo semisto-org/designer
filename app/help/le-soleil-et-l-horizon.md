@@ -24,6 +24,12 @@ Quand la course est en trait plein, le soleil éclaire ton terrain. En pointill�
 
 Les heures sont des **heures solaires** : à midi, le soleil est plein sud. En Belgique et en France, midi solaire tombe entre 13 h 30 et 14 h 15 à l'horloge en été, une heure plus tôt en hiver.
 
+## Les secteurs du soleil sur la carte
+
+Tant que le panneau est ouvert, la carte trace autour de ton terrain les **secteurs du soleil** : l'arc d'où il arrive au solstice d'été, de son lever à son coucher, et celui, plus étroit et plus au sud, du solstice d'hiver. Ce sont les directions à surveiller : ce qui s'y dresse (un arbre, un talus, un bâtiment) fera de l'ombre. Prends la carte avec toi et va regarder sur place, dans ces directions-là.
+
+Ces arcs disparaissent quand tu fermes le panneau, sauf si tu as choisi de garder les secteurs sur la carte dans le panneau **Secteurs**.
+
 ## Les heures de soleil, mois par mois
 
 Pour le 21 de chaque mois, le panneau compare :

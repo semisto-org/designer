@@ -290,3 +290,24 @@ export function farthestM(center: Position, points: Position[]): number {
   const kx = Math.cos((center[1] * Math.PI) / 180)
   return points.reduce((max, p) => Math.max(max, Math.hypot((p[0] - center[0]) * kx, p[1] - center[1]) * METERS_PER_DEGREE), 0)
 }
+
+/**
+ * Which groups of the sector analysis show on the map for the panel open.
+ * The « Secteurs » panel shows the viewer's own choice, and so does the map
+ * when they keep the sectors on it. The « Soleil » panel always adds the
+ * sun's arcs (where it rises and sets at the solstices): alone when the
+ * viewer keeps nothing on the map, beside what they keep otherwise. Nothing
+ * is saved, so closing the panel brings back what was there before.
+ * Null when no arc shows.
+ */
+export function displayedGroups(
+  activePanel: string | null | undefined,
+  view: { onMap: boolean; hiddenGroups: readonly SectorGroup[] },
+): { hiddenGroups: SectorGroup[] } | null {
+  if (activePanel === 'sectors') return { hiddenGroups: [...view.hiddenGroups] }
+  if (activePanel === 'sun') {
+    const hidden = view.onMap ? view.hiddenGroups : SECTOR_GROUPS
+    return { hiddenGroups: hidden.filter((g) => g !== 'sun') }
+  }
+  return view.onMap ? { hiddenGroups: [...view.hiddenGroups] } : null
+}

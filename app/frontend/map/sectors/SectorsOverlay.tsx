@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { hideSectorOverlay, showSectorOverlay, type OverlayArc } from '@/map/sectors/overlay'
 import {
-  arcRadius, isSectorSeason, isSectorType, SECTOR_COLORS, sectorDirections, sectorGroup, showsIn, sunSectors,
+  arcRadius, displayedGroups, isSectorSeason, isSectorType, SECTOR_COLORS, sectorDirections, sectorGroup, showsIn, sunSectors,
   type SectorGroup,
 } from '@/map/sectors/sectors'
 import { initSectorView, useSectorView, type SectorView } from '@/map/sectors/store'
@@ -55,19 +55,20 @@ export function sectorArcs(features: MapFeature[], center: Position, view: Pick<
  * Always mounted in the editor: draws the sector analysis around the
  * terrain while the « Secteurs » panel is open, and keeps it on the map
  * afterwards when the viewer asked for it (to present a design), group by
- * group (sun, winds, risks, nuisances, views, wildlife).
+ * group (sun, winds, risks, nuisances, views, wildlife). The « Soleil »
+ * panel shows the sun's arcs too, for as long as it is open.
  */
 export default function SectorsOverlay() {
   const editor = useEditor()
   const map = editor.instance
   useLayoutEffect(() => initSectorView(editor.map.id), [editor.map.id])
   const view = useSectorView()
-  const shown = view.mapId === editor.map.id && (editor.activePanel === 'sectors' || view.onMap)
+  const groups = view.mapId === editor.map.id ? displayedGroups(editor.activePanel, view) : null
   const center = useMemo(
     () => editor.map.center ?? (map.getCenter().toArray() as [number, number]),
     [editor.map.center, map], // eslint-disable-line react-hooks/exhaustive-deps
   )
-  const arcsKey = shown ? JSON.stringify(sectorArcs(editor.features, center, view)) : null
+  const arcsKey = groups ? JSON.stringify(sectorArcs(editor.features, center, { ...view, ...groups })) : null
   const radius = arcRadius(editor.map.bbox)
 
   useEffect(() => {
