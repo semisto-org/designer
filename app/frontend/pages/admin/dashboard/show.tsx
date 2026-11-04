@@ -156,6 +156,11 @@ export default function AdminDashboard({ stats, recentUsers, recentMaps, events 
                     {t(`admin.dashboard.events.actions.${event.action}`)}{' '}
                     <span className="font-medium text-loam-900">{event.target?.name ?? '—'}</span>
                     {event.reason && <span className="text-loam-500"> {t(`admin.dashboard.events.reasons.${event.reason}`)}</span>}
+                    {event.motive && (
+                      <span className="text-loam-500">
+                        {' '}{t(`admin.dashboard.events.motives.${event.motive}`)}{event.motiveNote && ` : « ${event.motiveNote} »`}
+                      </span>
+                    )}
                   </p>
                   <time dateTime={event.createdAt} title={formatDate(event.createdAt)} className="shrink-0 text-xs text-loam-500">
                     {relativeTime(event.createdAt)}

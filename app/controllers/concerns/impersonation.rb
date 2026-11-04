@@ -18,10 +18,10 @@ module Impersonation
   private
     def impersonating? = Current.session&.impersonation? || false
 
-    def start_impersonation(user)
+    def start_impersonation(user, motive:, motive_note:)
       admin_session = Current.session
       impersonated = user.sessions.create!(impersonator: admin_session.user, user_agent: request.user_agent, ip_address: request.remote_ip)
-      AdminEvent.record!("impersonation_started", admin: admin_session.user, target: user, request:)
+      AdminEvent.record!("impersonation_started", admin: admin_session.user, target: user, request:, motive:, motive_note:)
       cookies.signed[ADMIN_SESSION_COOKIE] = Session.cookie(admin_session.id)
       cookies.signed[:session_id] = Session.cookie(impersonated.id)
       Current.session = impersonated

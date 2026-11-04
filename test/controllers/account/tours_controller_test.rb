@@ -30,7 +30,7 @@ class Account::ToursControllerTest < ActionDispatch::IntegrationTest
   test "an admin signed in as someone does not use up their first visit" do
     admin = User.create!(email_address: "staff@example.org", name: "Staff", admin: true)
     sign_in_as admin
-    post admin_user_impersonation_path(users(:alice))
+    post admin_user_impersonation_path(users(:alice)), params: { motive: "request", motive_note: "Asked for help by e-mail" }
 
     patch account_tour_path, as: :json
     assert_response :no_content
