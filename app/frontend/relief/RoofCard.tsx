@@ -3,6 +3,9 @@
 // slope falls), seen at once in 3D and saved to its card. A neighbour read
 // from OpenStreetMap only has a guessed roof: one click takes it over as a
 // building of the map, with its footprint and height, to set its roof too.
+// Where the region publishes a 3D model of its buildings, the roof shown is
+// the measured one: the card says so, and a roof set by hand for the
+// project can go back to it.
 import { ArrowLeftRight, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -21,7 +24,7 @@ const SHAPES: Shape[] = ['pitched', 'hip', 'shed', 'flat']
 const SAVE_DELAY_MS = 600
 
 /** The roof keys of a building's card, as the 3D view reads them (relief/buildings.ts). */
-export type RoofProps = { roof?: string; height_m?: number; eaves_m?: number | null; ridge?: string; roof_flip?: boolean }
+export type RoofProps = { roof?: string | null; height_m?: number; eaves_m?: number | null; ridge?: string; roof_flip?: boolean }
 
 function metres(value: number): string {
   return formatNumber(value, value % 1 ? 1 : 0)
@@ -32,11 +35,13 @@ function parsed(text: string): number | null {
   return text.trim() && Number.isFinite(n) && n > 0 ? n : null
 }
 
-export function RoofCard({ mapId, pick, feature, canEdit, onFeature, onClose }: {
+export function RoofCard({ mapId, pick, feature, drawnFeature, canEdit, onFeature, onClose }: {
   mapId: number
   pick: BuildingPick
   /** The drawn building, null for an OpenStreetMap one. */
   feature: MapFeature | null
+  /** A building of the region's model standing for one drawn on the map without its own roof: that feature. */
+  drawnFeature: MapFeature | null
   canEdit: boolean
   /** A feature changed (here, before saving, then as saved) or was created. */
   onFeature: (feature: MapFeature) => void
@@ -52,27 +57,38 @@ export function RoofCard({ mapId, pick, feature, canEdit, onFeature, onClose }: 
       </IconButton>
       {feature
         ? <DrawnRoof key={feature.properties.id} mapId={mapId} feature={feature} pick={pick} canEdit={canEdit} onFeature={onFeature} />
-        : <MappedBuilding mapId={mapId} pick={pick} canEdit={canEdit} onFeature={onFeature} />}
+        : <MappedBuilding mapId={mapId} pick={pick} drawnFeature={drawnFeature} canEdit={canEdit} onFeature={onFeature} />}
     </div>
   )
 }
 
-/** A neighbour from OpenStreetMap: its guessed height, and « Régler son toit » to take it over. */
-function MappedBuilding({ mapId, pick, canEdit, onFeature }: {
-  mapId: number; pick: BuildingPick; canEdit: boolean; onFeature: (feature: MapFeature) => void
+/**
+ * A neighbour from OpenStreetMap (its guessed height) or from the region's
+ * 3D model (its measured roof), and « Régler son toit » to take it over:
+ * added to the map, or, for a building already drawn there, given a roof
+ * of its own.
+ */
+function MappedBuilding({ mapId, pick, drawnFeature, canEdit, onFeature }: {
+  mapId: number; pick: BuildingPick; drawnFeature: MapFeature | null; canEdit: boolean; onFeature: (feature: MapFeature) => void
 }) {
   const [busy, setBusy] = useState(false)
+  const model = pick.source === 'model'
   async function takeOver() {
     setBusy(true)
     try {
       const height = Math.min(80, Math.max(1, Math.round(pick.height * 2) / 2))
       const properties: Record<string, unknown> = { height_m: height, roof: pick.roof }
       if (pick.roof !== 'flat') properties.eaves_m = Math.min(height, Math.max(0.5, Math.round(pick.eaves * 2) / 2))
-      const created = await api<MapFeature>(`/maps/${mapId}/features`, {
-        method: 'POST',
-        body: { feature: { layer: 'existing', kind: 'building', geometry: { type: 'Polygon', coordinates: pick.rings }, properties } },
-      })
-      onFeature(created)
+      const saved = drawnFeature
+        ? await api<MapFeature>(`/maps/${mapId}/features/${drawnFeature.properties.id}`, {
+          method: 'PATCH',
+          body: { feature: { lock_version: drawnFeature.properties.lockVersion, properties_patch: properties } },
+        })
+        : await api<MapFeature>(`/maps/${mapId}/features`, {
+          method: 'POST',
+          body: { feature: { layer: 'existing', kind: 'building', geometry: { type: 'Polygon', coordinates: model ? pick.rings.slice(0, 1) : pick.rings }, properties } },
+        })
+      onFeature(saved)
     } catch {
       toast(t('relief.page.roof.failed'), { tone: 'error' })
     } finally {
@@ -82,12 +98,14 @@ function MappedBuilding({ mapId, pick, canEdit, onFeature }: {
   return (
     <>
       <div>
-        <p className="font-semibold text-loam-900">{t('relief.page.roof.title_osm')}</p>
-        <p>{t(`relief.page.roof.source.${pick.source}`, { height: metres(pick.height) })}</p>
+        <p className="font-semibold text-loam-900">
+          {drawnFeature ? drawnFeature.properties.name || t(`editor.kinds.${drawnFeature.properties.kind}`) : t(model ? 'relief.page.roof.title_model' : 'relief.page.roof.title_osm')}
+        </p>
+        <p>{t(`relief.page.roof.source.${pick.source}`, { height: metres(pick.height), eaves: metres(pick.eaves) })}</p>
       </div>
       {canEdit ? (
         <>
-          <p>{t('relief.page.roof.take_over_intro')}</p>
+          <p>{t(drawnFeature ? 'relief.page.roof.take_over_drawn' : model ? 'relief.page.roof.take_over_model' : 'relief.page.roof.take_over_intro')}</p>
           <Button size="sm" className="w-full" onClick={takeOver} disabled={busy}>
             {busy ? t('relief.page.roof.taking_over') : t('relief.page.roof.take_over')}
           </Button>
@@ -206,8 +224,19 @@ function DrawnRoof({ mapId, feature, pick, canEdit, onFeature }: {
           </Field>
         )}
       </div>
-      <p className="text-loam-500">{t('relief.page.roof.measure_hint')}</p>
-      <p className="hidden text-loam-500 sm:block">{t('relief.page.roof.complex_hint')}</p>
+      {pick.overridesModel && !props.planned ? (
+        <div className="space-y-2 border-t border-loam-100 pt-3">
+          <p className="text-loam-500">{t('relief.page.roof.back_to_model_hint')}</p>
+          <Button size="sm" variant="secondary" className="w-full" onClick={() => change({ roof: null })}>
+            {t('relief.page.roof.back_to_model')}
+          </Button>
+        </div>
+      ) : (
+        <>
+          <p className="text-loam-500">{t('relief.page.roof.measure_hint')}</p>
+          <p className="hidden text-loam-500 sm:block">{t('relief.page.roof.complex_hint')}</p>
+        </>
+      )}
     </>
   )
 }

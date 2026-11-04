@@ -6,10 +6,13 @@
 // (`height`, `building:levels`), else guessed from the kind of building.
 // The buildings drawn on the map (existing or « En projet ») join them, at
 // the height the person gave, and replace the OpenStreetMap one they cover.
+// Where the region publishes a 3D model of its buildings (Brussels), those
+// stand instead of the footprints, with their measured roofs (models.ts).
 // No import of three.js: the scene turns the volumes into a mesh.
 
 import { BUILDING_KINDS } from '../map/scenario.ts'
 import { toGrid, type GridMeta } from './grid.ts'
+import { modelHeight, modelPlanes, modelShell, roofKind, type ModelData, type ModelRoof, type RoofKind } from './models.ts'
 import { designedRoof, fitRoof, roofHeight, shell, type RoofSample, type RoofShape, type RoofSpec, type Shell } from './roofs.ts'
 
 /** One building as the server sends it: WGS84 rings, tagged heights. */
@@ -26,12 +29,20 @@ export type BuildingData = {
   planned?: boolean
   /** Drawn with a roof chosen in its card: its shape, gutters and ridge (the top is `height`). */
   roof?: Omit<RoofSpec, 'height'>
+  /** From the region's 3D model: its measured roof surfaces (`height` is the highest point). */
+  model?: { roofs: ModelRoof[] }
+  /** A model building that stands for a building drawn on the map without a roof of its own: that feature's id. */
+  drawnId?: number
 }
 
 /** `retry`: OpenStreetMap was busy this time, asking again later usually works. */
-export type BuildingsResponse = { available: boolean; retry?: boolean; attribution: string | null; buildings: BuildingData[] }
+export type BuildingsResponse = {
+  available: boolean; retry?: boolean; attribution: string | null; buildings: BuildingData[]
+  /** The region's real 3D buildings, when it publishes them. */
+  models?: { attribution: string | null; buildings: ModelData[] } | null
+}
 
-export type HeightSource = 'surface' | 'tags' | 'guess'
+export type HeightSource = 'surface' | 'tags' | 'guess' | 'model'
 
 /** A building ready for the scene, in grid metres (x east, y south of the first cell). */
 export type BuildingVolume = {
@@ -54,6 +65,8 @@ export type BuildingVolume = {
   drawn: boolean
   /** Height of the lowest gutter above the base, in real metres. */
   eaves: number
+  /** From the region's 3D model: its roof as a simple shape, for « Régler son toit ». */
+  model?: RoofKind
 }
 
 export type BuildingLayer = {
@@ -147,20 +160,50 @@ function centroid(ring: Array<[number, number]>): [number, number] {
   return [x, y]
 }
 
+/** The region's 3D buildings as building data (their roofs are measured). */
+export function modelBuildings(models: readonly ModelData[]): BuildingData[] {
+  return models.map((m) => ({ id: m.id, kind: 'model', rings: m.rings, height: m.height, minHeight: null, levels: null, model: { roofs: m.roofs } }))
+}
+
+function covers(a: BuildingData, b: BuildingData): boolean {
+  const ring = b.rings[0]
+  return !!ring?.length && !!a.rings[0] && insideRing(a.rings[0], centroid(ring))
+}
+
+/** Two footprints of the same building: either holds the other's centre. */
+export function sharesPlace(a: Array<[number, number]>, b: Array<[number, number]>): boolean {
+  return insideRing(a, centroid(b)) || insideRing(b, centroid(a))
+}
+
+/** The person's own roof wins over the model: one set in its card, or a building still in project. */
+function ownRoof(building: BuildingData): boolean {
+  return building.planned === true || !!building.roof
+}
+
 /**
- * OpenStreetMap's buildings plus the drawn ones: a drawn building replaces
- * the OpenStreetMap footprint whose centre it covers (the same house traced
- * by hand, a barn about to be rebuilt), so that nothing stands twice.
+ * OpenStreetMap's buildings plus the drawn ones, and the region's 3D model
+ * where there is one: a drawn building replaces the OpenStreetMap footprint
+ * whose centre it covers (the same house traced by hand, a barn about to be
+ * rebuilt), a model building replaces the footprints it covers, so that
+ * nothing stands twice. A drawn building without a roof of its own gives
+ * way to the model's measured one (it keeps its id there, to set its roof);
+ * one with its own roof, or in project, replaces the model.
  */
-export function mergeBuildings(mapped: readonly BuildingData[], drawn: readonly BuildingData[]): BuildingData[] {
-  if (!drawn.length) return [...mapped]
-  const kept = mapped.filter((building) => {
-    const ring = building.rings[0]
-    if (!ring?.length) return true
-    const centre = centroid(ring)
-    return !drawn.some((d) => d.rings[0] && insideRing(d.rings[0], centre))
+export function mergeBuildings(mapped: readonly BuildingData[], drawn: readonly BuildingData[], models: readonly BuildingData[] = []): BuildingData[] {
+  const shown: BuildingData[] = []
+  const fresh = models.map((m) => ({ ...m, drawnId: undefined as number | undefined }))
+  const standingDrawn = drawn.filter((d) => {
+    const model = fresh.find((m) => covers(d, m) || covers(m, d))
+    if (!model || ownRoof(d)) return true
+    model.drawnId ??= Number(/^drawn-(\d+)/.exec(d.id)?.[1]) || undefined
+    return false
   })
-  return [...kept, ...drawn]
+  const keptModels = fresh.filter((m) => !standingDrawn.some((d) => ownRoof(d) && (covers(d, m) || covers(m, d))))
+  for (const building of mapped) {
+    if (standingDrawn.some((d) => covers(d, building)) || keptModels.some((m) => covers(m, building))) continue
+    shown.push(building)
+  }
+  return [...shown, ...keptModels, ...standingDrawn]
 }
 
 function median(values: number[]): number {
@@ -251,6 +294,31 @@ export function buildingLayer(
     let base = Infinity
     for (const i of cells) if (ground[i] < base) base = ground[i]
     for (const i of vertexCells) if (ground[i] < base) base = ground[i]
+
+    if (building.model) {
+      const modelled = modelShell(building.model.roofs, rings[0], (p) => toGrid(meta, p))
+      const corners = (modelled.polygons ?? []).flatMap((polygon) => polygon.outer.map((p) => p.h))
+      if (!corners.length) continue
+      const top = Math.min(MAX_HEIGHT, Math.max(...corners))
+      const gutters = (modelled.edges ?? []).flatMap(([a, b]) => [a.h, b.h])
+      const eave = Math.max(0, Math.min(...(gutters.length ? gutters : corners)))
+      volumes.push({
+        id: building.id, rings, base, height: top, roof: { type: 'flat', height: top }, shells: [modelled], bottom: 0,
+        source: 'model', planned: false, drawn: false, eaves: eave, model: roofKind(modelled),
+      })
+      const planes = modelPlanes(modelled)
+      for (const i of cells) {
+        const p = { x: (i % cols) * meta.cellSizeM, y: Math.floor(i / cols) * meta.cellSizeM }
+        const h = modelHeight(planes, p)
+        if (h === null) continue // a courtyard
+        inside[i] = 1
+        const roofTop = Math.min(MAX_HEIGHT, Math.max(0, h))
+        roofs[i] = Math.max(roofs[i], base + roofTop)
+        tops[i] = Math.max(tops[i], base + roofTop - ground[i])
+        eaves[i] = Math.max(eaves[i], base + eave - ground[i])
+      }
+      continue
+    }
 
     let { height, source } = taggedHeight(building)
     let roof: RoofShape = { type: 'flat', height }

@@ -12,7 +12,7 @@
 // instant (~30 ms) or the sun hours of a day (~1-3 s).
 
 import type { Geometry } from 'geojson'
-import { buildingLayer, drawnBuildings, mergeBuildings, type BuildingData, type BuildingLayer, type BuildingsResponse, type BuildingVolume } from './buildings.ts'
+import { buildingLayer, drawnBuildings, mergeBuildings, modelBuildings, sharesPlace, type BuildingData, type BuildingLayer, type BuildingsResponse, type BuildingVolume } from './buildings.ts'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
 import { applyDesigns, downsampleCrest, downsampleDesigned, pointsAlong, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
@@ -173,10 +173,18 @@ export type BuildingPick = {
   height: number
   eaves: number
   roof: 'pitched' | 'hip' | 'shed' | 'flat'
-  source: 'surface' | 'tags' | 'guess'
+  source: 'surface' | 'tags' | 'guess' | 'model'
+  /** A building of the region's 3D model standing for one drawn on the map: that feature (its roof is set there). */
+  drawnId: number | null
+  /** A drawn building with its own roof, standing where the region's 3D model has one: it can go back to it. */
+  overridesModel: boolean
 }
 
-export type BuildingsInfo = { count: number; measured: number; attribution: string | null; drawn: number; planned: number }
+export type BuildingsInfo = {
+  count: number; measured: number; attribution: string | null; drawn: number; planned: number
+  /** From the region's 3D model, with their measured roofs. */
+  modelled: number
+}
 
 const AXIS_FRAME_BUDGET_MS = 11
 const POND_KINDS = new Set(['pond'])
@@ -222,6 +230,7 @@ export class ReliefController {
   private buildingsData: BuildingData[] | null = null
   /** The footprints read from OpenStreetMap (without the drawn ones). */
   private mappedBuildings: BuildingData[] = []
+  private modelled: BuildingData[] = []
   private buildings: BuildingLayer | null = null
   landcover: Uint8Array | null = null
   roles: Uint8Array | null = null
@@ -588,16 +597,24 @@ export class ReliefController {
     }
     const mapped = response?.available ? response.buildings : []
     this.mappedBuildings = mapped
+    this.modelled = modelBuildings(response?.models?.buildings ?? [])
     // The buildings drawn on the map stand too, without a provider.
     const drawn = drawnBuildings(this.options.features as never)
-    if (!mapped.length && !drawn.length) return
-    this.buildingsData = mergeBuildings(mapped, drawn)
+    if (!mapped.length && !drawn.length && !this.modelled.length) return
+    this.buildingsData = mergeBuildings(mapped, drawn, this.modelled)
     this.layoutBuildings()
     const volumes = (this.buildings?.volumes ?? []).filter((v) => !v.id.startsWith('drawn-'))
+    const osm = volumes.filter((v) => v.source !== 'model')
+    const shownDrawn = this.buildingsData.filter((b) => b.drawn)
     this.options.onBuildings?.({
-      count: volumes.length, measured: volumes.filter((v) => v.source === 'surface').length,
-      attribution: mapped.length ? response?.attribution ?? null : null,
-      drawn: drawn.length, planned: drawn.filter((d) => d.planned).length,
+      count: osm.length, measured: osm.filter((v) => v.source === 'surface').length,
+      modelled: volumes.length - osm.length,
+      attribution: [
+        volumes.length > osm.length ? response?.models?.attribution : null,
+        osm.length ? response?.attribution : null,
+      ].filter(Boolean).join(' · ') || null,
+      // Those standing: a drawn building without a roof of its own gives way to the model's.
+      drawn: shownDrawn.length, planned: shownDrawn.filter((d) => d.planned).length,
     })
     if (this.view.surfaceOn) this.applySurfaceHeights()
     // The shadows now fall from the buildings too: without a surface model
@@ -625,9 +642,16 @@ export class ReliefController {
     return index == null ? null : this.buildingPick(this.buildings?.volumes[index])
   }
 
-  /** A drawn building as shown now (after its roof changed), or null. */
+  /**
+   * A drawn building as shown now (after its roof changed), or the region's
+   * model building standing for it (its roof given back to the model), or null.
+   */
   drawnBuilding(featureId: number): BuildingPick | null {
-    return this.buildingPick(this.buildings?.volumes.find((v) => v.id === `drawn-${featureId}`))
+    const volumes = this.buildings?.volumes ?? []
+    const drawn = volumes.find((v) => v.id === `drawn-${featureId}`)
+    if (drawn) return this.buildingPick(drawn)
+    const model = this.buildingsData?.find((b) => b.drawnId === featureId)
+    return model ? this.buildingPick(volumes.find((v) => v.id === model.id)) : null
   }
 
   private buildingPick(volume: BuildingVolume | undefined): BuildingPick | null {
@@ -635,10 +659,12 @@ export class ReliefController {
     const data = this.buildingsData?.find((b) => b.id === volume.id)
     if (!data) return null
     const featureId = volume.drawn ? Number(/^drawn-(\d+)/.exec(volume.id)?.[1]) || null : null
-    const roof = volume.roof.type === 'gable' ? 'pitched' : volume.roof.type
+    const roof = volume.model ?? (volume.roof.type === 'gable' ? 'pitched' : volume.roof.type)
+    const overridesModel = volume.drawn && this.modelled.some((m) => m.rings[0]?.length && data.rings[0] && sharesPlace(m.rings[0], data.rings[0]))
     return {
       featureId, kind: data.kind, planned: volume.planned, rings: data.rings,
       height: volume.height, eaves: volume.eaves, roof, source: volume.source,
+      drawnId: data.drawnId ?? null, overridesModel,
     }
   }
 
@@ -649,7 +675,7 @@ export class ReliefController {
   setFeatures(features: OverlayFeature[]) {
     this.options.features = features
     const drawn = drawnBuildings(features as never)
-    this.buildingsData = mergeBuildings(this.mappedBuildings, drawn)
+    this.buildingsData = mergeBuildings(this.mappedBuildings, drawn, this.modelled)
     this.layoutBuildings()
     if (this.view.surfaceOn) this.applySurfaceHeights()
     this.dayHours = null

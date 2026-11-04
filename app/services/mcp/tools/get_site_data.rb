@@ -4,7 +4,9 @@ module Mcp
     # sun and horizon (PVGIS), nearby weather stations (IRM), the climate
     # observed over 30 years (ERA5-Land) and its water balance month by
     # month, the trees already there (Meta/WRI
-    # canopy height) and the town-planning rules and risks (France). Each
+    # canopy height), the buildings around it with their heights (measured
+    # roofs where the region publishes them in 3D) and the town-planning
+    # rules and risks (France). Each
     # topic reuses the report the editor panel shows, without the heavy
     # drawing data (sun path points, canopy grid), and says why it is missing
     # when its source is not configured or does not answer.
@@ -15,6 +17,7 @@ module Mcp
         "observed_climate" => ->(map) { ObservedClimate::MapReport.new(map).as_json },
         "water_balance" => ->(map) { WaterBalance::MapReport.new(map).as_json },
         "canopy" => ->(map) { Canopy::MapReport.new(map).as_json },
+        "buildings" => ->(map) { Relief::BuildingsReport.new(map).as_json },
         # Network easements (gas, power lines…) stay hidden from the MCP.
         "site_rules" => ->(map) { SiteRules::MapReport.new(map, include_networks: false).as_json }
       }.freeze
