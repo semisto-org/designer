@@ -3,6 +3,7 @@ import { LifeBuoy, Search, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { AccountMenu } from '@/components/AccountMenu'
 import { FeedbackButton } from '@/components/feedback/FeedbackButton'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { Flash } from '@/components/ui/Flash'
 import { Wordmark } from '@/components/Logo'
 import { t } from '@/lib/i18n'
@@ -77,6 +78,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </AsideLink>
             )}
             {currentUser && <FeedbackButton />}
+            {currentUser && <NotificationBell />}
             {currentUser && <span aria-hidden className="mx-1 h-6 w-px bg-loam-900/10 sm:mx-2" />}
             {currentUser && <AccountMenu user={currentUser} />}
           </div>

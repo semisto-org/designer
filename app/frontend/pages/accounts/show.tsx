@@ -1,6 +1,6 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
 import { type ReactNode, useRef, useState } from 'react'
-import { Briefcase, Camera, CreditCard, KeyRound, LogOut, Receipt, Sprout, Sparkles, Trash2, Video } from 'lucide-react'
+import { Bell, Briefcase, Camera, CreditCard, KeyRound, LogOut, Mail, Receipt, Smartphone, Sprout, Sparkles, Trash2, Video } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { DocumentThemeLink } from '@/components/documents/DocumentThemeLink'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -11,7 +11,7 @@ import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { formatDate } from '@/lib/money'
 import { TeamsCard } from '@/teams/TeamsCard'
-import type { AccountData, AccountKind } from '@/types/billing'
+import type { AccountData, AccountKind, NotificationPreferences } from '@/types/billing'
 
 export default function AccountShow({ account }: { account: AccountData }) {
   const form = useForm({ name: account.name ?? '' })
@@ -66,6 +66,8 @@ export default function AccountShow({ account }: { account: AccountData }) {
 
       <PasswordCard hasPassword={account.hasPassword} />
 
+      <NotificationsCard initial={account.notifications} />
+
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -116,6 +118,58 @@ export default function AccountShow({ account }: { account: AccountData }) {
         </Button>
       </Card>
     </div>
+  )
+}
+
+// « Notifications »: where a discussion message reaches me, for all my maps
+// (Michael, 2026-11-04). Each map then says how much, with the bell of its
+// discussion. Reached from the header's bell (#notifications).
+function NotificationsCard({ initial }: { initial: NotificationPreferences }) {
+  const [prefs, setPrefs] = useState(initial)
+  const rows = [
+    { key: 'app', icon: Bell, hint: t('notifications.preferences.app_hint') },
+    { key: 'email', icon: Mail, hint: t('notifications.preferences.email_hint') },
+    { key: 'push', icon: Smartphone, hint: `${t('notifications.preferences.push_hint')} ${t('notifications.preferences.phones', { count: prefs.phones })}` },
+  ] as const
+
+  async function change(key: 'app' | 'email' | 'push', value: boolean) {
+    const before = prefs
+    setPrefs({ ...prefs, [key]: value })
+    try {
+      setPrefs(await api<NotificationPreferences>('/notification_preference', { method: 'PATCH', body: { [key]: value } }))
+      toast(t('notifications.preferences.saved'), { tone: 'success' })
+    } catch {
+      setPrefs(before)
+      toast(t('notifications.preferences.error'), { tone: 'error' })
+    }
+  }
+
+  return (
+    <section id="notifications" className="scroll-mt-20">
+    <Card>
+      <h2 className="flex items-center gap-2 text-base"><Bell className="h-4 w-4 text-prune-500" aria-hidden="true" />{t('notifications.preferences.title')}</h2>
+      <p className="mt-2 max-w-xl text-sm text-loam-600">{t('notifications.preferences.intro')}</p>
+      <ul className="mt-4 divide-y divide-dashed divide-loam-200">
+        {rows.map(({ key, icon: Icon, hint }) => (
+          <li key={key}>
+            <label className="flex cursor-pointer items-start gap-3 py-3">
+              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-loam-400" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-loam-900">{t(`notifications.preferences.${key}`)}</span>
+                <span className="block text-sm text-loam-500">{hint}</span>
+              </span>
+              <input
+                type="checkbox"
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-loam-300 text-prune-600"
+                checked={prefs[key]}
+                onChange={(event) => void change(key, event.target.checked)}
+              />
+            </label>
+          </li>
+        ))}
+      </ul>
+    </Card>
+    </section>
   )
 }
 

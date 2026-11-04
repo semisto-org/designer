@@ -25,6 +25,8 @@ module Maps
         commentable: { type: @commentable.class.name, id: @commentable.id, key: @commentable.comment_key, title: @commentable.comment_title },
         comments: comments.map { |c| comment_serializer.call(c) },
         subscribed: CommentSubscription.subscribed?(Current.user, @commentable),
+        # The map's discussion: how much of it reaches me (all, mentions, none).
+        level: (CommentSubscription.chat_level(Current.user, @commentable) if @commentable.is_a?(Map)),
         lastReadAt: last_read&.iso8601,
         members: comment_serializer.mentionable(@commentable),
         notified: Collab::CommentNotifier.recipients_for(@commentable, Current.user)&.map(&:display_name),

@@ -3,7 +3,7 @@
 small-text	1	app/frontend/collab/Avatar.tsx
 hex-color	4	app/frontend/collab/CollabOverlay.tsx
 bare-button	1	app/frontend/collab/CommentComposer.tsx
-small-text	2	app/frontend/collab/CommentComposer.tsx
+small-text	1	app/frontend/collab/CommentComposer.tsx
 bare-button	4	app/frontend/collab/CommentThread.tsx
 native-confirm	1	app/frontend/collab/CommentThread.tsx
 small-text	4	app/frontend/collab/CommentThread.tsx
@@ -365,7 +365,6 @@ bare-button	1	app/frontend/pages/maps/forms/index.tsx
 hex-color	1	app/frontend/pages/maps/new.tsx
 small-text	3	app/frontend/pages/maps/new.tsx
 bare-button	1	app/frontend/pages/maps/offers/show.tsx
-small-text	1	app/frontend/pages/maps/offers/version.tsx
 bare-button	9	app/frontend/pages/maps/photos/index.tsx
 hex-color	1	app/frontend/pages/maps/photos/index.tsx
 native-confirm	2	app/frontend/pages/maps/photos/index.tsx

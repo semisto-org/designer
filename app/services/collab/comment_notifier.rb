@@ -5,7 +5,9 @@ module Collab
   # someone who left the map, never someone who turned discussion e-mails off.
   #
   # The map's own discussion is live: a mention is still e-mailed at once,
-  # the other messages wait for the digest (Collab::ChatDigest).
+  # the other messages wait for the digest (Collab::ChatDigest); the bell and
+  # the phones hear of every message at once (Collab::ChatAlert). Someone who
+  # chose « Rien » on a map's discussion gets no e-mail from it, mention or not.
   class CommentNotifier
     def initialize(comment)
       @comment = comment
@@ -29,6 +31,7 @@ module Collab
       return mentioned if only_mentions
 
       if @comment.chat?
+        ChatAlert.new(@comment).deliver
         ChatDigest.schedule(@comment.map)
         return mentioned
       end
@@ -46,7 +49,10 @@ module Collab
 
       def mentioned_recipients(only_mentions)
         ids = only_mentions || @comment.mentioned_user_ids
-        audience.select { |user| ids.include?(user.id) }
+        mentioned = audience.select { |user| ids.include?(user.id) }
+        return mentioned unless @comment.chat? && mentioned.any?
+        levels = CommentSubscription.chat_levels(mentioned, @comment.map)
+        mentioned.reject { |user| levels[user.id] == "none" }
       end
 
       def subscriber_recipients(excluding:)

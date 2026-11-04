@@ -5,6 +5,7 @@ import * as WebBrowser from 'expo-web-browser'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { completeSignIn, loadTokens, onAuthChange } from '@/lib/auth'
 import { authorizeMapRequests } from '@/lib/maps'
+import { registerForPush } from '@/lib/push'
 
 type Status = 'loading' | 'signed_in' | 'signed_out'
 const SessionContext = createContext<Status>('loading')
@@ -32,6 +33,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (status !== 'signed_in') return
     void authorizeMapRequests()
+    // Discussion messages on this phone (asks once; keeps the token fresh).
+    void registerForPush()
     // A map can stay open for hours on the terrain without any other call.
     const timer = setInterval(() => void authorizeMapRequests(), 5 * 60_000)
     return () => clearInterval(timer)

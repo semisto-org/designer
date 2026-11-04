@@ -24,7 +24,7 @@ class Collab::ChatDigestTest < ActiveJob::TestCase
     freeze_time
     perform_enqueued_jobs(only: CommentNotificationJob) { say "Un" }
     assert_enqueued_jobs 1, only: ChatDigestJob
-    assert_in_delta 1.hour.from_now, @map.reload.chat_digest_at, 1
+    assert_in_delta Collab::ChatDigest::DELAY.from_now, @map.reload.chat_digest_at, 1
     perform_enqueued_jobs(only: CommentNotificationJob) { say "Deux" }
     assert_enqueued_jobs 1, only: ChatDigestJob
   end

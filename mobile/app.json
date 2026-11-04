@@ -81,6 +81,14 @@
           "enableBackgroundPlayback": false
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#5b5781",
+          "defaultChannel": "discussion"
+        }
+      ],
       "expo-font",
       "@sentry/react-native"
     ],

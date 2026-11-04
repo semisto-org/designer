@@ -13,6 +13,7 @@ import { DiscussionsIcon } from '@/collab/DiscussionsIcon'
 import PublishPanel from '@/collab/PublishPanel'
 import ShareButton from '@/collab/ShareButton'
 import ChatToggle from '@/collab/chat/ChatToggle'
+import EditorNotificationBell from '@/collab/chat/EditorNotificationBell'
 import MapChat from '@/collab/chat/MapChat'
 import WelcomeCard from '@/collab/welcome/WelcomeCard'
 import JourneyPanel from '@/map/panels/JourneyPanel'
@@ -181,6 +182,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'shortcuts', component: ShortcutsButton, order: 94 },
   { id: 'feedback', component: FeedbackButton, order: 93 },
+  { id: 'notifications', component: EditorNotificationBell, order: 96 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
 ]
