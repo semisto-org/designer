@@ -44,7 +44,7 @@ class WelcomesControllerTest < ActionDispatch::IntegrationTest
   test "an admin signed in as someone is not stopped by the question and cannot answer it" do
     admin = User.create!(email_address: "staff@example.org", admin: true, account_kind: "individual")
     sign_in_as admin
-    post admin_user_impersonation_path(@newcomer)
+    post admin_user_impersonation_path(@newcomer), params: { motive: "request", motive_note: "Asked for help by e-mail" }
 
     get maps_path, headers: inertia_headers
     assert_response :success

@@ -169,6 +169,9 @@ fr:
           stopped: "depuis le bandeau"
           expired: "au bout d'une heure"
           sign_out: "en se déconnectant"
+        motives:
+          request: "à sa demande"
+          abuse: "pour un abus"
     users:
       title: "Comptes"
       intro: "Tous les comptes de Terranova. Connecte-toi en tant que quelqu'un pour voir ce qu'il voit et l'aider."
@@ -270,3 +273,15 @@ fr:
       errors:
         self: "C'est déjà ton compte."
         admin: "On ne se connecte pas en tant qu'un autre admin."
+        motive: "Dis pourquoi tu ouvres ce compte : à la demande de la personne ou pour un abus, avec une courte note."
+      motive:
+        title: "Se connecter en tant que %{name}"
+        intro: "Tu ne le fais qu'à la demande de la personne ou pour traiter un abus. Ton motif est gardé dans le journal d'administration."
+        label: "Motif"
+        choose: "Choisir…"
+        request: "La personne a demandé de l'aide"
+        abuse: "Abus signalé ou suspecté"
+        note_label: "Note"
+        note_hint: "Par exemple : « e-mail du 3 novembre, carte qui ne s'ouvre pas »."
+        submit: "Se connecter"
+        cancel: "Annuler"

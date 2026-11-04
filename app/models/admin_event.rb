@@ -28,7 +28,8 @@ class AdminEvent < ApplicationRecord
       admin: admin ? { id: admin.id, name: admin.display_name } : { id: nil, name: details["admin_email"] },
       target: target_user ? { id: target_user.id, name: target_user.display_name } : (details["target_email"] && { id: nil, name: details["target_email"] }) ||
         (details["code"] && { id: nil, name: details["code"] }) || (details["label"] && { id: nil, name: details["label"] }),
-      reason: details["reason"]
+      reason: details["reason"],
+      motive: details["motive"], motiveNote: details["motive_note"]
     }
   end
 end

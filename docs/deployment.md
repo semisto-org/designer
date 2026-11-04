@@ -25,7 +25,7 @@ Interface labels are quoted in French, as they appear in the app.
 | `APP_HOST` | `terranova.semisto.org` (e-mail links, OAuth, sitemap). It is also the only accepted host name: any other domain gets a 403 error, except `/up`. |
 | `MAIL_FROM` | Sender, e.g. `Semisto Terranova <designer@semisto.org>`. |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Sending e-mails: magic-link sign-in, invitations, comments, requests. Without them, the screen says « lien envoyé » but the delivery job fails (visible in the logs and Sentry): nobody can sign in by e-mail. |
-| `MAIL_BCC_ADDRESS` | Optional. Blind copy of **every** e-mail sent (sign-in, invitations, comments, invoices…) to this address, e.g. `hello@semisto.org` during the beta; several addresses separated by commas. Empty or missing: no copy. Read on every delivery: removing it (and redeploying) is enough to stop the copies. |
+| `MAIL_BCC_ADDRESS` | Optional. Blind copy of every e-mail sent (invitations, comments, invoices…) except sign-in links and codes, which would let the reader sign in (`MailBccInterceptor::NO_COPY_HEADER`), to this address, e.g. `hello@semisto.org` during the beta; several addresses separated by commas. Empty or missing: no copy. Read on every delivery: removing it (and redeploying) is enough to stop the copies. |
 | `SOLID_QUEUE_IN_PUMA` | Optional. By default in production, background jobs (e-mails, relief import, renewal reminders) run inside the web server, on a single machine. `false` turns them off there, to hand them to a separate `bin/jobs` process. |
 
 ### Google sign-in
