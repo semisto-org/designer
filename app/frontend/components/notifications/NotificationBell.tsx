@@ -110,11 +110,11 @@ export function NotificationBell({ currentMapId, onOpenCurrent }: { currentMapId
       </IconButton>
 
       {open && (
-        <div role="dialog" aria-label={t('notifications.bell')} className="absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-2xl bg-white p-2 shadow-lg ring-1 ring-loam-200">
+        <div role="dialog" aria-label={t('notifications.bell')} className="fixed inset-x-4 top-16 z-50 rounded-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem] bg-white p-2 shadow-lg ring-1 ring-loam-200">
           <div className="flex items-center justify-between gap-2 px-3 pb-1 pt-2">
-            <p className="font-hand text-lg text-leaf-600">{t('notifications.title')}</p>
+            <p className="whitespace-nowrap font-hand text-lg text-leaf-600">{t('notifications.title')}</p>
             {(inbox?.items.length ?? 0) > 0 && (
-              <Button size="sm" variant="ghost" onClick={() => void readAll()}>{t('notifications.read_all')}</Button>
+              <Button size="sm" variant="ghost" className="whitespace-nowrap" onClick={() => void readAll()}>{t('notifications.read_all')}</Button>
             )}
           </div>
           {inbox && !inbox.enabled && <p className="px-3 pb-2 text-sm text-humus-800">{t('notifications.off')}</p>}
