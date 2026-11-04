@@ -16,7 +16,7 @@ const POLL_MS = 30_000
 const DESKTOP = '(min-width: 768px)'
 // Room the inspector takes on the right of the map on desktop (w-80 + margins).
 const INSPECTOR_PX = 352
-const LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks', 'notes']
+const LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks', 'drawings', 'notes']
 
 /**
  * Card shown (in AiProposalsOverlay) when an AI proposed drafts on the map: « Claude propose

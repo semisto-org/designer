@@ -134,7 +134,7 @@ module Collab
 
       # A named zone or path drawn with the « Zone » tool: its name often
       # carries the designer's notes, so it stays private unless shown.
-      def zone?(feature) = feature.kind == "zone" || (feature.kind == "line" && feature.layer == "notes")
+      def zone?(feature) = feature.kind == "zone" || (feature.kind == "line" && feature.layer == "drawings")
 
       def region_layer_keys
         scope = @map.region.catalogue.enabled.where(key: @options["region_layers"])

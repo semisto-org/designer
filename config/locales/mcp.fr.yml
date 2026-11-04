@@ -25,7 +25,7 @@ fr:
     params:
       map_id: "Identifiant de la carte, donné par list_maps."
       theme_team_id: "Identifiant d'une équipe de la personne (teams dans get_document_theme). Sans lui : la charte de son propre compte."
-      layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), notes."
+      layer: "Couche : existing (existant), water (eau), access (accès), structures, plants (plantes), animals (animaux), networks (réseaux), drawings (dessins : zones et lignes libres, nommées et colorées, kinds zone et line), notes (notes, mesures, croquis, secteurs, zones de permaculture). drawings et notes se dessinent par-dessus le terrain sans y exister."
       kind: "Type d'élément (kind), par exemple tree, pond, hedge, path, swale."
       tag: "Étiquette posée par l'utilisateur (voir tags dans get_map), sans tenir compte des majuscules : seuls les éléments qui la portent sont renvoyés."
       bbox: "Emprise [ouest, sud, est, nord] en degrés WGS84 : seuls les éléments qui la touchent sont renvoyés."
@@ -366,7 +366,7 @@ fr:
           summary: "Résumé de la proposition dans son ensemble, montré à l'humain au-dessus des brouillons."
           features: "Les éléments proposés, de 1 à 200."
           feature_layer: "Couche de l'élément. Les réseaux ne peuvent pas être proposés."
-          feature_kind: "Type d'élément en snake_case, par exemple fruit_tree, hedge, pond, swale, path, raised_bed. Les types connus de l'éditeur sont dans known_kinds (get_map). Pour montrer au client une zone du design (forêt-jardin, patch, point de vue…), utilise zone (surface) ou line (tracé) dans la couche notes, avec un nom et une couleur : le nom s'écrit sur la carte avec la surface ou la longueur."
+          feature_kind: "Type d'élément en snake_case, par exemple fruit_tree, hedge, pond, swale, path, raised_bed. Les types connus de l'éditeur sont dans known_kinds (get_map). Pour montrer au client une zone du design (forêt-jardin, patch, point de vue…), utilise zone (surface) ou line (tracé) dans la couche drawings (« Dessins »), avec un nom et une couleur : le nom s'écrit sur la carte avec la surface ou la longueur."
           feature_geometry: "Géométrie GeoJSON (Point, LineString, Polygon ou Multi…), coordonnées [longitude, latitude] en WGS84."
           feature_name: "Nom court affiché sur la carte."
           feature_color: "Couleur de l'élément sur la carte, en hexadécimal (#7fa650). Des tons doux distinguent les zones voisines : #7fa650, #8b5e3c, #d08b3a, #c48a96, #5b7fa6, #9a7fb8, #c9b03a, #4f8f86."

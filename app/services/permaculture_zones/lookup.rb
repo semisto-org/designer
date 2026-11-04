@@ -23,7 +23,7 @@ module PermacultureZones
     end
 
     def for_features(features)
-      ids = features.reject { |f| f.layer == "notes" || dwelling?(f) }.map(&:id)
+      ids = features.reject { |f| MapFeature::ANNOTATION_LAYERS.include?(f.layer) || dwelling?(f) }.map(&:id)
       return {} if ids.empty? || !any?
 
       sql = <<~SQL

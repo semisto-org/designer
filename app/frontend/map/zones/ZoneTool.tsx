@@ -10,8 +10,8 @@ import { StepBackButton } from '@/map/drawing/StepBackButton'
 import { revealForDrawing, useDrawingState } from '@/map/drawing/store'
 import { isZoneKind, nextZoneColor, ZONE_COLORS, type ZoneKind } from '@/map/zones/zones'
 
-/** Zones go to the notes layer: they annotate the plan for the client. */
-export const ZONE_LAYER = 'notes'
+/** Zones and lines go to the « Dessins » layer: they annotate the plan for the client. */
+export const ZONE_LAYER = 'drawings'
 
 /**
  * The « Zone » tool: a name, a colour, then a surface or a path drawn on

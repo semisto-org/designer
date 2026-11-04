@@ -38,7 +38,7 @@ export const GENERIC_KINDS = ['zone', 'line', 'point']
 /** Colours offered in the inspector, besides the element's own. */
 export const COLOR_SWATCHES = ['#2b7bb9', '#3d7d42', '#b8851a', '#5b5781', '#946614', '#c03c28', '#6e6355', '#1b1712']
 
-export const DESIGN_LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks', 'notes']
+export const DESIGN_LAYERS: FeatureLayer[] = ['existing', 'water', 'access', 'structures', 'plants', 'animals', 'networks', 'drawings', 'notes']
 
 export function elementFor(kind: string | null | undefined): ElementSpec | null {
   return (kind && ELEMENTS[kind]) || null

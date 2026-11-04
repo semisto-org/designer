@@ -18,6 +18,7 @@
 import { along, area, booleanPointInPolygon, buffer, difference, featureCollection, intersect, length, lineString, pointOnFeature, union } from '@turf/turf'
 import type { Feature, Geometry, LineString, MultiPolygon, Polygon, Position } from 'geojson'
 import { bearing, sweep } from '../sectors/sectors.ts'
+import { isAnnotationLayer } from '../scenario.ts'
 
 export const ZONE_NUMBERS = [0, 1, 2, 3, 4, 5] as const
 export type ZoneNumber = (typeof ZONE_NUMBERS)[number]
@@ -100,7 +101,7 @@ export function zoneAt(point: Position, features: readonly Shape[]): ZoneNumber 
 
 /** The zone of an element (null for the zones themselves, sectors, notes and what lies outside every zone). */
 export function zoneOfFeature(feature: Shape, features: readonly Shape[]): ZoneNumber | null {
-  if (isPermacultureZone(feature) || isDwelling(feature) || feature.properties.layer === 'notes') return null
+  if (isPermacultureZone(feature) || isDwelling(feature) || isAnnotationLayer(feature.properties.layer)) return null
   const anchor = anchorOf(feature.geometry)
   return anchor ? zoneAt(anchor, features) : null
 }

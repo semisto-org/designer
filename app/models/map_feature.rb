@@ -19,7 +19,15 @@ class MapFeature < ApplicationRecord
   include MapFeature::Functions
   include MapFeature::SeasonSign
 
-  LAYERS = %w[existing water access structures plants animals networks notes].freeze
+  LAYERS = %w[existing water access structures plants animals networks drawings notes].freeze
+  # Drawn over the land without standing on it: free zones and lines
+  # (« Dessins ») and notes, measures, sketches, sectors, permaculture zones
+  # (« Notes »). Never « En projet », never « À retirer », no task, no
+  # function. Twin of ANNOTATION_LAYERS in app/frontend/map/scenario.ts.
+  ANNOTATION_LAYERS = %w[drawings notes].freeze
+  # The free shapes of the « Zone » tool, in the « Dessins » layer since
+  # 2026-11-03; a client that still sends them to « notes » is redirected.
+  DRAWING_KINDS = %w[zone line].freeze
   STATUSES = %w[active draft rejected].freeze
   SOURCES = %w[human ai].freeze
   # Constructions with a roof: volumes in the 3D view; planned, never public.
@@ -37,6 +45,7 @@ class MapFeature < ApplicationRecord
   has_many :task_features, dependent: :delete_all
   has_many :tasks, through: :task_features
 
+  before_validation :move_free_drawings
   validates :kind, presence: true
   validates :layer, inclusion: { in: LAYERS }
   validates :status, inclusion: { in: STATUSES }
@@ -57,7 +66,7 @@ class MapFeature < ApplicationRecord
   TO_REMOVE_SQL = <<~SQL.squish.freeze
     COALESCE(map_features.properties -> 'to_remove', 'false'::jsonb) = 'true'::jsonb
     AND COALESCE(jsonb_typeof(map_features.properties -> 'removed_on'), '') <> 'string'
-    AND map_features.layer <> 'notes' AND NOT (map_features.layer = 'plants' AND map_features.kind = 'plant')
+    AND map_features.layer NOT IN ('drawings', 'notes') AND NOT (map_features.layer = 'plants' AND map_features.kind = 'plant')
   SQL
   scope :planned, -> { where(PLANNED_SQL) }
   # On the land today: neither a project nor taken away (`removed_on`).
@@ -80,7 +89,7 @@ class MapFeature < ApplicationRecord
   # by definition, except a building or a wall yet to be built. Twin of
   # canBePlanned in app/frontend/map/scenario.ts.
   def self.plannable?(layer, kind)
-    return false if layer == "notes" || (layer == "plants" && kind == "plant")
+    return false if ANNOTATION_LAYERS.include?(layer) || (layer == "plants" && kind == "plant")
     return PLANNABLE_EXISTING_KINDS.include?(kind) if layer == "existing"
     LAYERS.include?(layer)
   end
@@ -90,7 +99,7 @@ class MapFeature < ApplicationRecord
 
   # Whether it can be « À retirer »: anything on the ground but a note or a
   # plant of the plan. Twin of canBeRemoved in app/frontend/map/scenario.ts.
-  def self.removable?(layer, kind) = LAYERS.include?(layer) && layer != "notes" && !(layer == "plants" && kind == "plant")
+  def self.removable?(layer, kind) = LAYERS.include?(layer) && !ANNOTATION_LAYERS.include?(layer) && !(layer == "plants" && kind == "plant")
 
   # Taken away (« Marquer comme retiré »): it no longer stands on the land.
   def removed? = properties.to_h["removed_on"].is_a?(String)
@@ -137,5 +146,9 @@ class MapFeature < ApplicationRecord
   private
     def release_photos
       MapPhoto.where(map_feature_id: id).update_all(map_feature_id: nil, updated_at: Time.current)
+    end
+
+    def move_free_drawings
+      self.layer = "drawings" if layer == "notes" && DRAWING_KINDS.include?(kind)
     end
 end

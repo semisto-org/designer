@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { isAnnotationLayer } from '@/map/scenario'
 import { Target, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
@@ -12,7 +13,7 @@ import type { MapFeature } from '@/types'
 /** A zone itself, or any element once the terrain has zones (sectors and notes aside). */
 export function appliesToZone(feature: MapFeature): boolean {
   if (isPermacultureZone(feature)) return true
-  return feature.properties.layer !== 'notes' && feature.properties.status === 'active'
+  return !isAnnotationLayer(feature.properties.layer) && feature.properties.status === 'active'
 }
 
 /**

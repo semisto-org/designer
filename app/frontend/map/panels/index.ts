@@ -1,5 +1,6 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Trees } from 'lucide-react'
+import { isAnnotationLayer } from '@/map/scenario'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
@@ -152,7 +153,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'fruit-store', applies: appliesToFruitStore, component: StorageSection, order: 20.5 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
   { id: 'plant-other-properties', applies: isPlant, component: OtherPropertiesSection, order: 23 },
-  { id: 'feature-tasks', applies: (f) => f.properties.status === 'active' && f.properties.layer !== 'notes', component: FeatureTasksSection, order: 21.5 },
+  { id: 'feature-tasks', applies: (f) => f.properties.status === 'active' && !isAnnotationLayer(f.properties.layer), component: FeatureTasksSection, order: 21.5 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
   { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },

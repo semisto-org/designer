@@ -23,7 +23,7 @@ export const colors = {
 // The colours of the map layers, as the website draws them (map/layers/features.ts).
 export const layerColors: Record<string, string> = {
   existing: '#6e6355', water: '#2b7bb9', access: '#b8851a', structures: '#5b5781',
-  plants: '#3d7d42', animals: '#946614', networks: '#c03c28', notes: '#726b9f',
+  plants: '#3d7d42', animals: '#946614', networks: '#c03c28', drawings: '#5f7fa3', notes: '#726b9f',
 }
 
 export const fonts = {

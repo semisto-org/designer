@@ -634,6 +634,11 @@ layers:
         fields:
           - { key: potable, type: boolean }
 
+  # Free zones and lines of the « Zone » tool (generic kinds zone / line,
+  # named and coloured by the designer): drawn over the plan, not on the land.
+  drawings:
+    color: "#5f7fa3"
+    elements: {}
   notes:
     color: "#726b9f"
     elements:

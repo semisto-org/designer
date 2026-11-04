@@ -150,6 +150,7 @@ fr:
       plants: "Plantes"
       animals: "Animaux"
       networks: "Réseaux"
+      drawings: "Dessins"
       notes: "Notes"
     kinds:
       zone: "Zone"

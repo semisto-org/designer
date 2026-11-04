@@ -11,7 +11,7 @@ Trois outils simples accompagnent le dessin : les **calques**, pour y voir clair
 
 ## Les calques
 
-Tout ce que tu dessines se range dans une des huit couches : **Existant**, **Eau**, **Accès**, **Structures**, **Plantes**, **Animaux**, **Réseaux** et **Notes**.
+Tout ce que tu dessines se range dans une des neuf couches : **Existant**, **Eau**, **Accès**, **Structures**, **Plantes**, **Animaux**, **Réseaux**, **Dessins** (les zones et lignes de l'outil **Zone**) et **Notes** (notes, mesures, croquis).
 
 Le panneau **Calques** (l'icône en forme d'œil) les liste, avec le nombre d'éléments de chacune. Touche une couche pour la masquer ou l'afficher ; **Tout afficher** remet tout à l'écran.
 
