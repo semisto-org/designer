@@ -14,6 +14,7 @@ fr:
       out_of_coverage: "PVGIS ne couvre pas cet endroit (en mer ou hors de ses données) : les heures de soleil sont comptées sur un horizon dégagé."
       upstream_error: "PVGIS ne répond pas pour l'instant : les heures de soleil sont comptées sur un horizon dégagé. Réessaie plus tard."
     intro: "Vu depuis le centre de ton terrain : la ligne des collines et la course du soleil au fil de l'année."
+    map_sectors: "Sur la carte, les arcs montrent d'où arrive le soleil d'été et d'hiver autour de ton terrain. Va voir sur place ce qui se trouve dans ces directions : un arbre, un talus, un bâtiment."
     horizon_note: "L'horizon vient d'un modèle du terrain (mailles d'environ 90 m) : collines et versants, sans les arbres ni les bâtiments."
     solar_time: "Heures solaires : à midi, le soleil est plein sud."
     diagram:
