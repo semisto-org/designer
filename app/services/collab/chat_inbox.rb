@@ -59,10 +59,10 @@ module Collab
           map = by_id[map_id]
           next unless map && lasts[map_id]
           unread = case CommentSubscription.chat_level(@user, map)
-                   when "all" then count
-                   when "mentions" then mentions
-                   else 0
-                   end
+          when "all" then count
+          when "mentions" then mentions
+          else 0
+          end
           Item.new(map:, unread:, mentions:, last: lasts[map_id]) if unread.positive?
         end.sort_by { |item| -item.last.created_at.to_f }
       end
