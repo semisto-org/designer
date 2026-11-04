@@ -1,0 +1,121 @@
+fr:
+  presentations:
+    panel_title: "Présenter"
+    intro: "Montre ton design pas à pas : chaque étape remet la carte dans la vue que tu as choisie. Coche ce qui parle à ce lieu, décoche le reste."
+    empty_title: "Prépare ta présentation"
+    empty_body: "Pars du déroulé de pré-design de Semisto (le lieu, l'analyse, la proposition couche par couche, la suite), puis ajuste chaque vue sur ce terrain."
+    start_template: "Partir du modèle « %{name} »"
+    start_blank: "Commencer vide"
+    present: "Présenter"
+    help: "Comment préparer une présentation"
+    shown_count:
+      one: "%{count} étape montrée sur %{total}"
+      other: "%{count} étapes montrées sur %{total}"
+    add_step: "Ajouter la vue actuelle"
+    new_step_title: "Nouvelle étape"
+    show_step: "Voir cette vue"
+    capture: "Capturer la vue actuelle"
+    captured: "Vue capturée pour « %{title} »"
+    default_view: "Vue du modèle, pas encore ajustée à ce terrain"
+    captured_view: "Vue ajustée à ce terrain"
+    toggle_shown: "Montrer cette étape"
+    edit: "Modifier le titre et la note"
+    title_label: "Titre"
+    note_label: "Note pour toi (ce que tu veux dire)"
+    done: "Fermer"
+    back_to_steps: "Toutes les étapes"
+    move_up: "Monter"
+    move_down: "Descendre"
+    delete: "Retirer l'étape"
+    delete_confirm: "Retirer l'étape « %{title} » ?"
+    delete_presentation: "Effacer la présentation"
+    delete_presentation_confirm: "Effacer toute la présentation de cette carte ? Les éléments de la carte ne bougent pas."
+    stale: "Quelqu'un vient de modifier la présentation : voici sa version."
+    save_failed: "La présentation n'a pas pu être enregistrée."
+    read_only: "Tu peux suivre la présentation ; seuls les éditeurs de la carte la modifient."
+    nothing_shown: "Coche au moins une étape pour présenter."
+    bar:
+      label: "Présentation"
+      previous: "Étape précédente"
+      next: "Étape suivante"
+      note: "Note"
+      hide_note: "Masquer la note"
+      exit: "Quitter"
+      position: "%{index} / %{total}"
+      keys: "← → pour avancer, Échap pour quitter"
+    errors:
+      steps: "Les étapes de la présentation ne sont pas valides."
+      too_many: "Une présentation compte au plus %{count} étapes."
+    templates:
+      pre_design:
+        name: "Pré-design"
+        steps:
+          project:
+            title: "Votre projet"
+            note: "Le lieu et l'intention : nourrir, accueillir, protéger. Rappelle avec leurs mots ce que la famille veut vivre ici."
+          microclimates:
+            title: "Micro-climats"
+            note: "Zones chaudes près du bâti, coulées d'air froid au fond du vallon : quelques degrés font la différence entre gel et non-gel à la floraison."
+          sun:
+            title: "Ensoleillement"
+            note: "Soleil d'été, soleil d'hiver, et l'ombre de midi en décembre. Montre où le soleil reste le plus longtemps."
+          soil:
+            title: "Sol"
+            note: "Les échantillons, le pH, la texture, la pollution recherchée là où elle compte (le futur potager). Et ce que le sol demande."
+          water_slope:
+            title: "Eau et pente"
+            note: "Par où l'eau arrive, où elle s'accumule, ce que disent les plantes des zones humides."
+          wind:
+            title: "Vent"
+            note: "Vents dominants doux et humides, vents d'est asséchants : le côté à protéger."
+          access:
+            title: "Flux et accès existants"
+            note: "Les passages déjà là (tracteur, voitures) et les sorties de la maison."
+          views:
+            title: "Vues et intimité"
+            note: "Les belles vues à garder, les vis-à-vis et les éléments à masquer."
+          flora_fauna:
+            title: "Flore et faune"
+            note: "Ce qui pousse déjà et se mange, les indices de passage des animaux."
+          functions:
+            title: "Besoins et fonctions"
+            note: "Défis et atouts, besoins de la famille et du lieu, et la raison d'être de ce jardin-forêt."
+          sketch:
+            title: "Esquisse du pré-projet"
+            note: "Le projet en entier, une première fois, avant de le décomposer couche par couche."
+          earthworks:
+            title: "Terrassement"
+            note: "Terrasses et talus, déblais et remblais, l'eau guidée vers les zones d'infiltration."
+          water_design:
+            title: "Eau"
+            note: "Citernes, conduites, points d'eau, mares et trop-pleins."
+          structures:
+            title: "Structures"
+            note: "Serre, abris, poulailler, rangements : chaque structure à sa place, avec sa raison."
+          strata_low:
+            title: "Strates basses"
+            note: "Petits fruits, vivaces, couvre-sols : ils dessinent le relief et allongent la perspective."
+          strata_middle:
+            title: "Strates moyennes"
+            note: "Arbustes et petits arbres : brise-vue, ambiance forestière, intégration des structures."
+          strata_high:
+            title: "Strates hautes"
+            note: "Les grands arbres qui structurent le jardin pour trente ans."
+          screens:
+            title: "Brise-vues dans 5 ans"
+            note: "La hauteur des écrans végétaux dans 5 ans et leur ombre en hiver."
+          zones:
+            title: "Zones"
+            note: "Des zones les plus fréquentées aux plus sauvages ; les lieux de vie et de rassemblement."
+          flows:
+            title: "Flux"
+            note: "Récolte, convivialité, travail, intimité, engins : un parcours à la fois (une étiquette par flux)."
+          synthesis:
+            title: "Synthèse dans 15 ans"
+            note: "Toutes les couches ensemble, quand le jardin aura grandi."
+          next_steps:
+            title: "Prochaines étapes"
+            note: "Validation du pré-projet, terrassement, liste de plantation, première plantation. La page Mise en œuvre donne le calendrier."
+          budget:
+            title: "Plants et budget"
+            note: "La liste de plantation et son ordre de grandeur : prioriser ce qu'on veut voir grandir en premier."

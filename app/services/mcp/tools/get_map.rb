@@ -50,6 +50,7 @@ module Mcp
           offer: offer(map),
           sectors: sectors(map),
           exports: exports(map),
+          presentations: presentations(map),
           publication: publication(map),
           implementation: implementation(map),
           team_season: team_season(map),
@@ -198,6 +199,27 @@ module Mcp
             plan_pdf_url: "#{map_url(map)}?export=plan",
             book_pdf_url: "#{map_url(map)}?export=book",
             pdf_in_plan: Entitlements.for_map(map).pdf_export?
+          }
+        end
+
+        # The « Présenter » sequences of the map: each step a view of the map
+        # (panel, layers, sectors, moment) with the presenter's note. The
+        # panel opens at panel_url, where the person presents full screen.
+        def presentations(map)
+          list = map.presentations.map do |presentation|
+            {
+              id: presentation.id, name: presentation.name, template: presentation.template_key,
+              steps: presentation.steps.map do |step|
+                view = step["view"] || {}
+                { title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: step["note"],
+                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"] }.compact
+              end
+            }
+          end
+          {
+            list:,
+            templates: PresentationTemplate.all.map { { key: _1.key, name: _1.name } },
+            panel_url: "#{map_url(map)}?panel=present"
           }
         end
 

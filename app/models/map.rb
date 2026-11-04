@@ -46,6 +46,7 @@ class Map < ApplicationRecord
   has_one :financial_plan, dependent: :destroy
   has_one :offer, dependent: :destroy
   has_many :implementation_phases, -> { ordered }, dependent: :delete_all, inverse_of: :map
+  has_many :presentations, -> { ordered }, class_name: "MapPresentation", dependent: :delete_all, inverse_of: :map
   # Dated aerial views (« Vues drone ») set up by Semisto, newest first.
   has_many :aerial_views, -> { newest_first }, dependent: :destroy, inverse_of: :map
   # The project's to-do lists (« Tâches »), see TaskList::Defaults.
