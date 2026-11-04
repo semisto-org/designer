@@ -212,7 +212,7 @@ module Mcp
               steps: presentation.steps.map do |step|
                 view = step["view"] || {}
                 { title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: step["note"],
-                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"] }.compact
+                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"], in_3d: view["relief"].present? || nil }.compact
               end
             }
           end

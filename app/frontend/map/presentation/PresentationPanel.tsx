@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ArrowDown, ArrowUp, Camera, Pencil, Play, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Camera, GripVertical, Mountain, Pencil, Play, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
@@ -8,9 +8,9 @@ import { Field, Input, Textarea } from '@/components/ui/Field'
 import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import { captureView, applyView } from './view'
+import { captureView } from './view'
 import {
-  deletePresentation, loadPresentation, newStepId, saveSteps, setCurrentStep, shownSteps, startPresentation, usePresentation,
+  deletePresentation, loadPresentation, newStepId, requestStep, saveSteps, shownSteps, startPresentation, usePresentation,
 } from './store'
 import { startPresenting } from './presenting'
 import type { PresentationStep } from './types'
@@ -30,6 +30,9 @@ export default function PresentationPanel() {
   const currentId = usePresentation((s) => s.currentId)
   const [editing, setEditing] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Drag and drop: the step held and the place it would land (before that index).
+  const [dragged, setDragged] = useState<number | null>(null)
+  const [over, setOver] = useState<number | null>(null)
 
   useEffect(() => void loadPresentation(map.id), [map.id])
 
@@ -70,17 +73,22 @@ export default function PresentationPanel() {
   const steps = presentation.steps
   const shown = shownSteps(presentation)
   const update = (id: string, patch: Partial<PresentationStep>) => save(steps.map((s) => (s.id === id ? { ...s, ...patch } : s)))
-  const move = (index: number, by: number) => {
+  const moveTo = (from: number, to: number) => {
+    if (to === from || to === from + 1) return
     const next = [...steps]
-    const [step] = next.splice(index, 1)
-    next.splice(index + by, 0, step)
+    const [step] = next.splice(from, 1)
+    next.splice(to > from ? to - 1 : to, 0, step)
     save(next)
   }
-  const show = (step: PresentationStep) => {
-    setCurrentStep(step.id)
-    applyView(editor, step.view)
+  const move = (index: number, by: number) => moveTo(index, by > 0 ? index + by + 1 : index + by)
+  const drop = () => {
+    if (dragged != null && over != null) moveTo(dragged, over)
+    setDragged(null)
+    setOver(null)
   }
+  const show = (step: PresentationStep) => requestStep(step.id)
   const capture = (step: PresentationStep) => {
+    // A capture on the map makes it a map view, without the 3D relief.
     update(step.id, { view: captureView(editor), captured: true })
     editor.notify(t('presentations.captured', { title: step.title }))
   }
@@ -103,7 +111,7 @@ export default function PresentationPanel() {
       <p className="text-sm text-loam-600">{t('presentations.intro')}</p>
       <HelpButton slug="presenter-son-design" label={t('presentations.help')} className="-ml-2" />
       <div className="flex items-center gap-3">
-        <Button disabled={shown.length === 0} onClick={() => startPresenting(editor)}>
+        <Button disabled={shown.length === 0} onClick={() => startPresenting(captureView(editor))}>
           <Play className="h-4 w-4" aria-hidden />
           {t('presentations.present')}
         </Button>
@@ -111,8 +119,38 @@ export default function PresentationPanel() {
       </div>
       <ol className="space-y-1">
         {steps.map((step, index) => (
-          <li key={step.id} className={clsx('rounded-lg', currentId === step.id && 'bg-prune-50')}>
+          <li
+            key={step.id}
+            className={clsx(
+              'rounded-lg border-t-2 border-transparent',
+              currentId === step.id && 'bg-prune-50',
+              dragged === index && 'opacity-40',
+              dragged != null && over === index && '!border-prune-500',
+              dragged != null && over === steps.length && index === steps.length - 1 && 'border-b-2 !border-b-prune-500',
+            )}
+            draggable={canEdit && editing !== step.id}
+            onDragStart={(e) => {
+              e.dataTransfer.effectAllowed = 'move'
+              e.dataTransfer.setData('text/plain', step.id)
+              setDragged(index)
+            }}
+            onDragOver={(e) => {
+              if (dragged == null) return
+              e.preventDefault()
+              const box = e.currentTarget.getBoundingClientRect()
+              setOver(e.clientY > box.top + box.height / 2 ? index + 1 : index)
+            }}
+            onDrop={(e) => {
+              e.preventDefault()
+              drop()
+            }}
+            onDragEnd={() => {
+              setDragged(null)
+              setOver(null)
+            }}
+          >
             <div className="flex items-center gap-1">
+              {canEdit && <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-loam-300" aria-hidden />}
               <input
                 type="checkbox"
                 className="ml-1.5 h-4 w-4 shrink-0 rounded border-loam-300 text-prune-600 focus:ring-prune-600"
@@ -130,6 +168,7 @@ export default function PresentationPanel() {
               >
                 <span className="w-5 shrink-0 text-loam-400">{index + 1}</span>
                 <span className="truncate">{step.title}</span>
+                {step.view.relief && <Mountain className="h-4 w-4 shrink-0 text-loam-400" aria-label={t('presentations.relief_view')} />}
                 <span
                   className={clsx('ml-auto h-2 w-2 shrink-0 rounded-full', step.captured ? 'bg-leaf-600' : 'bg-loam-300')}
                   title={t(step.captured ? 'presentations.captured_view' : 'presentations.default_view')}
@@ -150,6 +189,7 @@ export default function PresentationPanel() {
             {canEdit && editing === step.id && (
               <StepEditor
                 step={step}
+                onDropRelief={() => update(step.id, { view: { ...step.view, relief: undefined } })}
                 first={index === 0}
                 last={index === steps.length - 1}
                 onChange={(patch) => update(step.id, patch)}
@@ -177,8 +217,9 @@ export default function PresentationPanel() {
 }
 
 /** Title and note of a step, saved when the field is left; order and removal. */
-function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose }: {
+function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose, onDropRelief }: {
   step: PresentationStep
+  onDropRelief: () => void
   first: boolean
   last: boolean
   onChange: (patch: Partial<PresentationStep>) => void
@@ -199,6 +240,13 @@ function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose }: 
       <Field label={t('presentations.note_label')}>
         <Textarea rows={3} value={note} maxLength={4000} onChange={(e) => setNote(e.target.value)} onBlur={() => note !== (step.note ?? '') && onChange({ note })} />
       </Field>
+      {step.view.relief && (
+        <div className="flex items-center gap-2 rounded-lg bg-loam-50 px-3 py-2 text-sm text-loam-700">
+          <Mountain className="h-4 w-4 shrink-0" aria-hidden />
+          <span className="flex-1">{t('presentations.relief_view_note')}</span>
+          <Button variant="ghost" size="sm" onClick={onDropRelief}>{t('presentations.drop_relief')}</Button>
+        </div>
+      )}
       <div className="flex items-center gap-1">
         <IconButton size="sm" label={t('presentations.move_up')} disabled={first} onClick={() => onMove(-1)}>
           <ArrowUp />

@@ -19,10 +19,21 @@ type State = {
   presenting: boolean
   /** The viewer's own view before presenting, given back at the end. */
   before: PresentationView | null
+  /** Presenting just ended: the editor gives the viewer's own view back. */
+  restore: boolean
+  /**
+   * Each request to show a step bumps `token`; the page that can show it
+   * (the editor, or the 3D relief for a step with a relief view) applies
+   * it and records `appliedToken`, the other one goes to that page.
+   */
+  token: number
+  appliedToken: number
   error: string | null
 }
 
-let state: State = { mapId: null, loaded: false, presentation: null, templates: [], currentId: null, presenting: false, before: null, error: null }
+let state: State = {
+  mapId: null, loaded: false, presentation: null, templates: [], currentId: null, presenting: false, before: null, restore: false, token: 0, appliedToken: 0, error: null,
+}
 const listeners = new Set<() => void>()
 let queue: Promise<unknown> = Promise.resolve()
 
@@ -103,12 +114,22 @@ export function saveSteps(steps: PresentationStep[], onError: (message: string, 
   })
 }
 
-export function setCurrentStep(id: string | null) {
-  set({ currentId: id })
+/** Asks for a step's view (null: no step in hand any more). */
+export function requestStep(id: string | null) {
+  set(id == null ? { currentId: null } : { currentId: id, token: state.token + 1 })
+}
+
+/** The page that showed the requested step says so. */
+export function markApplied() {
+  if (state.appliedToken !== state.token) set({ appliedToken: state.token })
 }
 
 export function setPresenting(presenting: boolean, before: PresentationView | null = null) {
-  set({ presenting, before: presenting ? before : null })
+  set(presenting ? { presenting, before, restore: false } : { presenting, restore: state.before != null })
+}
+
+export function restored() {
+  set({ restore: false, before: null })
 }
 
 export const shownSteps = (presentation: Presentation | null) => presentation?.steps.filter((s) => s.shown) ?? []

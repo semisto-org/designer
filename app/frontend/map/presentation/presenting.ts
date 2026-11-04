@@ -1,53 +1,40 @@
-import type { Editor } from '@/map/editor/EditorContext'
-import { presentationStore, setCurrentStep, setPresenting, shownSteps } from './store'
-import { applyView, captureView } from './view'
+import { presentationStore, requestStep, setPresenting, shownSteps } from './store'
+import type { PresentationView } from './types'
 
 /**
- * Full-screen presenting: the editor's chrome steps aside (CSS on
- * `html[data-presenting]`), the first ticked step comes up, and the viewer's own view comes back at the end.
+ * Full-screen presenting, shared by the editor and the 3D relief: the
+ * chrome steps aside (CSS on `html[data-presenting]`), the first ticked step
+ * is asked for, and the viewer's own view (`before`) comes back at the end.
+ * Each page shows the steps it can and hands the others to the other page.
  */
-export function startPresenting(editor: Editor) {
+export function startPresenting(before: PresentationView) {
   const steps = shownSteps(presentationStore.get().presentation)
   if (steps.length === 0) return
-  setPresenting(true, captureView(editor))
+  setPresenting(true, before)
   document.documentElement.dataset.presenting = 'true'
   document.documentElement.requestFullscreen?.().catch(() => {})
-  const first = steps[0]
-  // The chrome leaves first: the map takes its new size, then the view eases in.
-  window.requestAnimationFrame(() => {
-    editor.instance.resize()
-    setCurrentStep(first.id)
-    applyView(editor, first.view)
-  })
+  requestStep(steps[0].id)
 }
 
-export function stopPresenting(editor: Editor) {
-  const { presenting, before } = presentationStore.get()
-  if (!presenting) return
+export function stopPresenting() {
+  if (!presentationStore.get().presenting) return
   setPresenting(false)
   delete document.documentElement.dataset.presenting
   if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {})
-  window.requestAnimationFrame(() => {
-    editor.instance.resize()
-    if (before) applyView(editor, { ...before, panel: 'present' })
-  })
 }
 
 /** The next (+1) or previous (-1) ticked step. */
-export function goTo(editor: Editor, by: number) {
+export function goTo(by: number) {
   const { presentation, currentId } = presentationStore.get()
   const steps = shownSteps(presentation)
   if (steps.length === 0) return
   const index = steps.findIndex((s) => s.id === currentId)
   const next = steps[Math.min(steps.length - 1, Math.max(0, index < 0 ? 0 : index + by))]
   if (next.id === currentId && index >= 0) return
-  setCurrentStep(next.id)
-  applyView(editor, next.view)
+  requestStep(next.id)
 }
 
-export function showStep(editor: Editor, id: string) {
-  const step = presentationStore.get().presentation?.steps.find((s) => s.id === id)
-  if (!step) return
-  setCurrentStep(id)
-  applyView(editor, step.view)
+export const currentStep = () => {
+  const { presentation, currentId } = presentationStore.get()
+  return presentation?.steps.find((s) => s.id === currentId) ?? null
 }

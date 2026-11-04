@@ -1,7 +1,7 @@
 fr:
   presentations:
     panel_title: "Présenter"
-    intro: "Montre ton design pas à pas : chaque étape remet la carte dans la vue que tu as choisie. Coche ce qui parle à ce lieu, décoche le reste."
+    intro: "Montre ton design pas à pas : chaque étape remet la carte dans la vue que tu as choisie. Coche ce qui parle à ce lieu, décoche le reste, glisse une étape pour la déplacer."
     empty_title: "Prépare ta présentation"
     empty_body: "Pars du déroulé de pré-design de Semisto (le lieu, l'analyse, la proposition couche par couche, la suite), puis ajuste chaque vue sur ce terrain."
     start_template: "Partir du modèle « %{name} »"
@@ -24,6 +24,11 @@ fr:
     note_label: "Note pour toi (ce que tu veux dire)"
     done: "Fermer"
     back_to_steps: "Toutes les étapes"
+    relief_view: "Vue 3D du relief"
+    relief_view_note: "Cette étape s'ouvre dans la vue 3D du relief."
+    drop_relief: "Retirer la vue 3D"
+    capture_relief: "Capturer la vue 3D"
+    back_to_map: "Retour à la carte"
     move_up: "Monter"
     move_down: "Descendre"
     delete: "Retirer l'étape"

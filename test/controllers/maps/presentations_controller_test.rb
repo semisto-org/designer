@@ -48,6 +48,24 @@ class Maps::PresentationsControllerTest < ActionDispatch::IntegrationTest
     assert_not saved[1]["shown"]
   end
 
+  test "a step keeps a 3D relief view, cleaned" do
+    sign_in_as users(:michael)
+    presentation = @map.presentations.create!(name: "Lautenne")
+    relief = {
+      position: [ -120.456, 80, "95.2" ], target: [ 0, 12, 0 ], base: "frost", exaggeration: 40,
+      tab: "night", sun: { mode: "instant", date: "winter", minutes: 5000 }, year: 15, extra: "x"
+    }
+    steps = [ { id: "a", title: "Air froid", view: { relief: relief } }, { id: "b", title: "Caméra", view: { relief: { position: [ 1, 2 ], tab: "disco" } } } ]
+    patch map_presentation_path(@map, presentation), params: { presentation: { steps:, lock_version: 0 } }, as: :json
+    assert_response :success
+
+    saved = presentation.reload.steps
+    assert_equal({ "position" => [ -120.46, 80.0, 95.2 ], "target" => [ 0.0, 12.0, 0.0 ], "base" => "frost", "exaggeration" => 10.0,
+                   "tab" => "night", "sun" => { "mode" => "instant", "date" => "winter", "minutes" => 1439 }, "year" => 15 },
+                 saved[0]["view"]["relief"])
+    assert_not saved[1]["view"].key?("relief"), "a relief view with nothing usable is dropped"
+  end
+
   test "a stale save answers the presentation as it stands" do
     sign_in_as users(:michael)
     presentation = @map.presentations.create!(name: "Lautenne")

@@ -9,13 +9,15 @@
 #   sectors: the sector groups kept around the terrain; absent = none
 #   moment:  the time strip (arrival, today, year5, year15, year30)
 #   shade:   the noon shade drawn (june, december)
+#   relief:  shown in the 3D relief instead (tab: view, rain, sun, night)
 steps:
   - key: project
     panel: project
     layers: [existing]
   - key: microclimates
-    panel: relief
     layers: [existing, water]
+    relief:
+      tab: night
   - key: sun
     panel: sun
     layers: [existing]

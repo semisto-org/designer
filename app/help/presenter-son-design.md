@@ -21,11 +21,15 @@ Chaque étape vient avec une **vue par défaut** et une **note** : ce qu'on dit 
 2. Règle la carte comme tu veux la montrer : zoom, calques, secteurs, année, un élément sélectionné.
 3. Clique sur **Capturer la vue actuelle**. Le point devient vert : la vue est ajustée à ce terrain.
 
-Le crayon change le titre et la note, et range l'étape plus haut ou plus bas. **Ajouter la vue actuelle** crée une étape de plus avec ce que tu vois.
+Glisse une étape dans la liste pour la déplacer ; le crayon change le titre et la note. **Ajouter la vue actuelle** crée une étape de plus avec ce que tu vois.
+
+## Une étape en 3D
+
+Certaines choses se comprennent mieux en relief : l'air froid qui coule la nuit au fond du vallon, la pente, l'ombre d'hiver. Clique sur l'étape, ouvre la **vue 3D** du terrain, place la caméra, choisis le fond, l'onglet (nuit, soleil…) et l'année des plantes, puis **Capturer la vue 3D**. Pendant la présentation, cette étape s'ouvre directement en 3D, et l'étape suivante te ramène à la carte. Le crayon permet de **retirer la vue 3D** d'une étape.
 
 ## Présenter
 
-**Présenter** passe en plein écran. Avance avec **→** ou la barre d'espace, reviens avec **←**. Le carnet ouvre ta note, la liste des étapes permet de sauter là où une question t'emmène. **Échap** ou **Quitter** te rend la carte telle que tu l'avais laissée.
+**Présenter** passe en plein écran. Avance avec **→** ou la barre d'espace, reviens avec **←**. Le carnet ouvre ta note, la liste des étapes permet de sauter là où une question t'emmène. **Échap** ou **Quitter** te rend la carte telle que tu l'avais laissée. Pendant la présentation, la carte est en lecture seule : un clic montre un élément sans risquer de le déplacer.
 
 Pour que les flux (récolte, convivialité, engins…) se montrent un par un, pose une étiquette par flux sur ses chemins, puis choisis cette étiquette comme version avant de capturer l'étape.
 

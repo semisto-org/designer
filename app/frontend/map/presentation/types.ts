@@ -6,6 +6,21 @@ import type { Season } from '@/map/time/growth'
 export type PresentationCamera = { center: [number, number]; zoom: number; bearing: number; pitch: number }
 
 /**
+ * A view of the 3D relief (/maps/:id/relief): where the camera stands and
+ * looks (scene metres, absent: the default view), the ground drawn, the
+ * tab open (« night » shows the cold air), the sun and the plants' year.
+ */
+export type ReliefView = {
+  position?: [number, number, number]
+  target?: [number, number, number]
+  base?: string
+  exaggeration?: number
+  tab?: 'view' | 'rain' | 'sun' | 'night'
+  sun?: { mode: 'off' | 'instant' | 'day'; date: 'winter' | 'equinox' | 'summer' | 'today'; minutes: number }
+  year?: number
+}
+
+/**
  * One view of the map, as a step brings it back. A key left out means the
  * plain state: everything shown, no panel, no sectors, today.
  */
@@ -21,6 +36,8 @@ export type PresentationView = {
   moment?: Moment
   shade?: Season
   featureId?: number
+  /** The step is shown in the 3D relief rather than on the map. */
+  relief?: ReliefView
 }
 
 export type PresentationStep = {

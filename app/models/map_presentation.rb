@@ -54,7 +54,8 @@ class MapPresentation < ApplicationRecord
       "sectors" => view["sectors"].nil? ? nil : strings(view["sectors"]) & SECTOR_GROUPS,
       "moment" => view["moment"].presence_in(MOMENTS),
       "shade" => view["shade"].presence_in(SHADES),
-      "featureId" => Integer(view["featureId"], exception: false)
+      "featureId" => Integer(view["featureId"], exception: false),
+      "relief" => clean_relief(view["relief"])
     }.compact
   end
 
@@ -68,6 +69,34 @@ class MapPresentation < ApplicationRecord
       "bearing" => Float(camera["bearing"], exception: false)&.clamp(-180, 180)&.round(1) || 0,
       "pitch" => Float(camera["pitch"], exception: false)&.clamp(0, 85)&.round(1) || 0
     }
+  end
+
+  RELIEF_TABS = %w[view rain sun night].freeze
+  RELIEF_BASES = %w[ortho altitude canopy aspect wetness frost landcover blocks].freeze
+  SUN_MODES = %w[off instant day].freeze
+  SUN_DATES = %w[winter equinox summer today].freeze
+
+  # A view of the 3D relief: camera position and target in scene metres,
+  # ground, tab, sun and the plants' year. nil when the step has none.
+  def self.clean_relief(relief)
+    return nil if relief.nil?
+    relief = relief.to_h.stringify_keys rescue (return nil)
+    vector = ->(value) do
+      numbers = Array(value).map { Float(_1, exception: false) }
+      numbers.size == 3 && numbers.all? { _1&.finite? && _1.abs < 1_000_000 } ? numbers.map { _1.round(2) } : nil
+    end
+    sun = relief["sun"].to_h.stringify_keys rescue {}
+    {
+      "position" => vector.(relief["position"]),
+      "target" => vector.(relief["target"]),
+      "base" => relief["base"].presence_in(RELIEF_BASES),
+      "exaggeration" => Float(relief["exaggeration"], exception: false)&.clamp(0.5, 10)&.round(2),
+      "tab" => relief["tab"].presence_in(RELIEF_TABS),
+      "sun" => sun["mode"].presence_in(SUN_MODES) && sun["date"].presence_in(SUN_DATES) ? {
+        "mode" => sun["mode"], "date" => sun["date"], "minutes" => Integer(sun["minutes"], exception: false)&.clamp(0, 1439) || 720
+      } : nil,
+      "year" => Integer(relief["year"], exception: false)&.clamp(0, 100)
+    }.compact.presence
   end
 
   def self.strings(value)

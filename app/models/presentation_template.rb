@@ -45,7 +45,8 @@ class PresentationTemplate
         "version" => nil,
         "sectors" => step["sectors"],
         "moment" => step["moment"] || "today",
-        "shade" => step["shade"]
+        "shade" => step["shade"],
+        "relief" => step["relief"]
       }
     end
 end
