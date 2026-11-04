@@ -63,4 +63,21 @@ class McpDiscussionTest < ActionDispatch::IntegrationTest
     map, = call_tool(@viewer, "get_map", { map_id: @map.id })
     assert_equal({ "member" => false }, map["discussion"])
   end
+
+  test "get_notifications says what waits in all my discussions, and list_discussion my level" do
+    Comment.create!(commentable: @map, author: users(:alice), body: "@Michael tu as vu la mare ?")
+    data, error = call_tool(@owner, "get_notifications", {})
+    refute error, data
+    item = data["unread"].sole
+    assert_equal [ @map.id, 1, 1 ], [ item["map_id"], item["unread"], item["mentions"] ]
+    assert_match "discussion=Map:#{@map.id}", item["url"]
+    assert_equal({ "bell" => true, "email" => true, "phone" => true, "phones" => 0 }, data["channels"])
+    assert_equal 10, data["email_delay_minutes"]
+
+    CommentSubscription.set_chat_level(users(:michael), @map, "none")
+    data, = call_tool(@owner, "list_discussion", { map_id: @map.id })
+    assert_equal "none", data.dig("notifications", "level")
+    data, = call_tool(@owner, "get_notifications", {})
+    assert_empty data["unread"]
+  end
 end

@@ -41,7 +41,15 @@ Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travail
 
 Dans l'**app Terranova**, la discussion s'ouvre avec le bouton **Discussion** sous l'en-tête de la carte, et se range d'un glissement vers le bas, sans rien perdre. Sur le terrain, **Ici** épingle ton message là où tu te tiens et l'appareil photo y joint ce que tu vois ; # propose d'abord les éléments autour de toi. Sans réseau, ton message attend dans tes envois et part dès qu'il revient. Les messages épinglés apparaissent sur la carte, et la feuille du terrain montre sous **Dit ici** ceux qu'on a laissés là où tu te tiens.
 
-Les e-mails restent calmes : une mention t'arrive tout de suite ; les autres messages, en **un seul résumé une heure plus tard**, et seulement s'ils ne sont pas lus. La cloche de la discussion coupe ce résumé pour cette carte.
+### Être prévenu des messages
+
+Un message dans la discussion d'une de tes cartes te prévient de trois façons, toutes ouvertes au départ :
+
+- **La cloche**, en haut de l'écran, à côté de ton nom : elle compte les messages que tu n'as pas lus sur toutes tes cartes, et un petit mot glisse en bas de l'écran quand quelqu'un écrit pendant que tu travailles ailleurs. Un clic sur une carte ouvre sa discussion.
+- **Ton téléphone**, avec l'app Terranova : la notification arrive même au fond du jardin, et la toucher ouvre la discussion sur le message.
+- **L'e-mail** : une mention t'arrive tout de suite ; les autres messages, en **un seul e-mail dix minutes plus tard**, et seulement si tu ne les as pas lus entre-temps.
+
+Où tu es prévenu se règle une fois pour toutes tes cartes, dans **Mon compte**, section **Notifications**. Combien, carte par carte, avec la cloche de la discussion : **Tous les messages**, **Seulement quand on me mentionne**, ou **Rien**. Sur une carte d'équipe, l'équipe du projet reçoit tous les messages d'office ; les autres membres de l'équipe, seulement leurs mentions, à moins de choisir **Tous les messages**.
 
 Ton IA peut lire la discussion (si tu en fais partie) pour te résumer ce qui s'est dit ou relier une remarque de terrain à la carte ; elle n'y écrit pas.
 

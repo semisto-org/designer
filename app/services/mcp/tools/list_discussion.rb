@@ -38,6 +38,8 @@ module Mcp
           # project team), and whether this user gets it.
           digest_to: map.chat_audience.order(:id).map(&:display_name),
           digest_for_you: CommentSubscription.chat_subscribed?(user, map),
+          # How much of it reaches this user, and where (the bell, e-mail, the phone).
+          notifications: { level: CommentSubscription.chat_level(user, map), bell: user.chat_notify_app, email: user.comment_emails, phone: user.chat_notify_push },
           next_before_id: (page.last.id if older),
           url: "#{map_url(map)}?discussion=#{map.comment_key}"
         }

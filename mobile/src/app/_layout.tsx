@@ -3,7 +3,7 @@ import { EBGaramond_500Medium, EBGaramond_600SemiBold } from '@expo-google-fonts
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, useFonts } from '@expo-google-fonts/inter'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 // Define the background tasks of GPS traces and of visit tracks: must load with the bundle.
@@ -11,6 +11,7 @@ import '@/lib/trace'
 import '@/lib/visitTrack'
 import { t } from '@/lib/i18n'
 import { Sentry } from '@/lib/monitoring'
+import { listenToPushTaps } from '@/lib/push'
 import { SessionProvider, useSession } from '@/state/session'
 import { useAutoSync } from '@/state/sync'
 import { ErrorScreen } from '@/ui/ErrorScreen'
@@ -36,6 +37,8 @@ function Navigator() {
 }
 
 function Screens() {
+  // A tap on a discussion notification opens that map's discussion.
+  useEffect(() => listenToPushTaps(), [])
   return (
     <Stack
       screenOptions={{
