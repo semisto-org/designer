@@ -18,7 +18,8 @@ export function sourceLabel(source: string): string {
 /**
  * Where a value comes from: a small pill (« Semisto · à vérifier ») that
  * opens the details (upstream source, licence, link, date). Values from
- * PFAF only ever cite PFAF: no text of theirs is shown.
+ * PFAF only ever cite PFAF: no text of theirs is shown. A value PFAF merely
+ * confirms keeps its own source, « recoupée avec PFAF ».
  */
 export function ProvenanceBadge({ provenance }: { provenance: Provenance | undefined }) {
   const [open, setOpen] = useState(false)
@@ -43,6 +44,7 @@ export function ProvenanceBadge({ provenance }: { provenance: Provenance | undef
             {provenance.upstreamSource && <> ({t('plants.provenance.via', { source: sourceLabel(provenance.upstreamSource) })})</>}
           </span>
           <span className="mt-1 block">{t(`plants.provenance.statuses.${status}`)}</span>
+          {provenance.crossCheckedWith && <span className="mt-1 block">{t('plants.provenance.cross_checked', { source: sourceLabel(provenance.crossCheckedWith) })}</span>}
           {provenance.license && <span className="mt-1 block">{t('plants.provenance.license', { license: provenance.license })}</span>}
           {provenance.updatedAt && <span className="mt-1 block text-loam-400">{t('plants.provenance.updated', { date: formatDate(provenance.updatedAt) })}</span>}
           {provenance.url && (

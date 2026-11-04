@@ -24,6 +24,8 @@ export type CommentData = {
   location?: [number, number] | null
   /** A photo of the map joined to the message. */
   photo?: { id: number; caption: string | null; video: boolean } | null
+  /** A document of any kind joined to the message; out of the map's library until someone adds it. */
+  document?: ChatDocument | null
   canEdit: boolean
   canDelete: boolean
 }
@@ -31,12 +33,18 @@ export type CommentData = {
 /** A person who can be @mentioned. */
 export type Mentionable = { id: number; name: string; handle: string; avatarUrl: string | null }
 
+export type ChatLevel = 'all' | 'mentions' | 'none'
+
 export type ThreadData = {
   commentable: { type: ThreadType; id: number; key: string; title: string }
   comments: CommentData[]
   subscribed: boolean
+  /** The map's discussion: how much of it reaches me (the bell, e-mail, the phone). */
+  level?: ChatLevel | null
   lastReadAt: string | null
   members: Mentionable[]
+  /** Who my next comment will e-mail (mentions aside); null for the map's live discussion. */
+  notified?: string[] | null
   commentEmails: boolean
 }
 
@@ -114,6 +122,8 @@ export type PublicationOptions = {
   show_planned?: boolean
   /** The newest drone view (drone area); off by default. */
   show_aerial_view?: boolean
+  /** The sector analysis around the terrain, to present the design; off by default. */
+  show_sectors?: boolean
   /** The owner's consent to « Carnets ouverts » on the public site; off by default. */
   in_gallery?: boolean
 }
@@ -190,6 +200,13 @@ export type PublicMapProps = {
   aerialView?: AerialView | null
   /** The simplified 3D view (/p/:token/3d), when the terrain's relief is there. */
   reliefPath?: string | null
+  /** The sector analysis, when the owner shows it: the sun at the solstices and the accepted sectors. */
+  sectors?: PublicSectors | null
+}
+
+export type PublicSectors = {
+  sun: { type: 'summer_sun' | 'winter_sun'; from_deg: number; to_deg: number }[]
+  drawn: { type: string; season: string; from_deg: number; to_deg: number; name?: string }[]
 }
 
 /** What a person invited to a map sees before signing in, and once on the map. */
@@ -205,4 +222,16 @@ export type InvitationWelcome = {
   since: string
   plants: number
   plantsInGround: number
+}
+
+/** A document joined to a message of the map's discussion. */
+export type ChatDocument = {
+  id: number
+  title: string
+  filename: string | null
+  kind: import('./documents').DocumentKind
+  byteSize: number | null
+  inLibrary: boolean
+  previewUrl: string | null
+  downloadUrl: string
 }

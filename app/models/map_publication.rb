@@ -47,6 +47,8 @@ class MapPublication < ApplicationRecord
       "show_planned" => flag.call("show_planned", false),
       # The newest drone view (« Vues drone »), off unless the owner asks.
       "show_aerial_view" => flag.call("show_aerial_view", false),
+      # The sector analysis around the terrain (sun, winds, views…), to present the design.
+      "show_sectors" => flag.call("show_sectors", false),
       # The owner's consent to « Carnets ouverts » on the public site.
       "in_gallery" => flag.call("in_gallery", false)
     }
@@ -185,6 +187,7 @@ class MapPublication < ApplicationRecord
         regionName: data.dig("region", "name"), locality:
       },
       growth: snapshot["growth"],
+      sectors: snapshot["sectors"],
       features: { type: "FeatureCollection", features: features },
       layers: region_layers.map { |layer| public_layer(layer) },
       aerialView: aerial_view&.as_inertia(archive_url: "#{public_path}/aerial-view"),

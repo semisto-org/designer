@@ -14,12 +14,13 @@ import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP
 import {
   ReliefController, type BaseLayer, type DesignSummary, type LoadingStep, type NivaInfo, type NivaKey, type ProbeInfo,
   type RainSettings, type RainStats, type SunDate, type SunInfo, type SunMode,
-  type BuildingsInfo, type PlantInfo, type WalkMode,
+  type BuildingPick, type BuildingsInfo, type PlantInfo, type WalkMode,
 } from '@/relief/controller'
 import { NIGHT_LENGTH, nightClock } from '@/relief/coldAir'
 import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import { GrowthBar, GrowthSection, PlantCard, WalkPad, useGrowthYear } from '@/relief/GrowthControls'
+import { RoofCard } from '@/relief/RoofCard'
 import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
 import type { WalkKey } from '@/relief/scene'
 import { STRATA_COLORS } from '@/map/plants/strataColors'
@@ -169,7 +170,7 @@ function isCompact() {
   return typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches
 }
 
-function ReliefViewer({ map, terrain, features, growingPlants, timezone, location, landcoverClasses, soilModel, buildingsUrl }: Props & { terrain: TerrainGridData }) {
+function ReliefViewer({ map, terrain, features, growingPlants, timezone, location, landcoverClasses, soilModel, buildingsUrl, canEdit }: Props & { terrain: TerrainGridData }) {
   const container = useRef<HTMLDivElement>(null)
   const controller = useRef<ReliefController | null>(null)
   const [loading, setLoading] = useState<LoadingStep | 'failed' | 'webgl'>('download')
@@ -197,6 +198,9 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
   const [plantCount, setPlantCount] = useState(0)
   const [plantsView, setPlantsView] = useState({ on: true, strataColors: false })
   const [plantInfo, setPlantInfo] = useState<PlantInfo | null>(null)
+  // The building clicked (its roof card), and the map's features as edited here.
+  const [roofPick, setRoofPick] = useState<BuildingPick | null>(null)
+  const featureList = useRef<MapFeature[]>(features)
   const plantToday = useMemo(
     () => Math.min(GROWTH_YEARS, Math.max(0, yearsBetween(growingPlants.origin, growingPlants.today))),
     [growingPlants.origin, growingPlants.today],
@@ -524,11 +528,30 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     setPlantInfo(plant)
     if (plant) {
       setProbe(null)
+      setRoofPick(null)
+      return
+    }
+    // Then a building: its roof card.
+    const building = walking ? null : controller.current?.buildingAt(event) ?? null
+    setRoofPick(building)
+    if (building) {
+      setProbe(null)
       return
     }
     if (walking) return
     const info = await controller.current?.probe(event)
     setProbe(info ?? null)
+  }
+
+  /** A building's roof changed or a neighbour was taken over: the 3D follows, and its card. */
+  function onFeature(feature: MapFeature) {
+    const list = featureList.current
+    const at = list.findIndex((f) => f.properties.id === feature.properties.id)
+    featureList.current = at >= 0 ? list.map((f, k) => (k === at ? feature : f)) : [...list, feature]
+    const c = controller.current
+    if (!c) return
+    c.setFeatures(featureList.current as unknown as OverlayFeature[])
+    setRoofPick(c.drawnBuilding(feature.properties.id))
   }
 
   const loadingLabel = loading === 'failed' ? t('relief.page.loading.failed')
@@ -700,6 +723,16 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
       </aside>
 
       {plantInfo && <PlantCard info={plantInfo} onClose={() => setPlantInfo(null)} />}
+      {roofPick && (
+        <RoofCard
+          mapId={map.id}
+          pick={roofPick}
+          feature={roofPick.featureId != null ? featureList.current.find((f) => f.properties.id === roofPick.featureId) ?? null : null}
+          canEdit={canEdit}
+          onFeature={onFeature}
+          onClose={() => setRoofPick(null)}
+        />
+      )}
       {probe && (
         <ProbeCard
           probe={probe}
@@ -845,6 +878,7 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, o
                 : t('relief.page.view.buildings_hint', { count: buildings.count })) : null,
               buildings.drawn ? t('relief.page.view.buildings_drawn', { count: buildings.drawn }) : null,
               buildings.planned ? t('relief.page.view.buildings_planned', { count: buildings.planned }) : null,
+              t('relief.page.view.buildings_click'),
             ].filter(Boolean).join(' ')}
           />
         )}

@@ -12,21 +12,27 @@ module Maps
     before_action :set_commentable, only: %i[index create read]
     before_action :set_comment, only: %i[show update destroy]
 
-    # One thread: its comments, whether I follow it, who I can mention.
+    # One thread: its comments, whether I follow it, who I can mention, who
+    # my next comment will e-mail.
     # Opening a thread marks it as read (the previous read time is returned
-    # so the client can show what is new).
+    # so the client can show what is new), unless the client only peeks: the
+    # phone app reads the discussion when the map opens, for its pins and
+    # its unread count, before anyone has looked at it.
     def index
-      comments = @commentable.comments.visible.chronological.includes(:author, :map_photo, applauses: :user)
+      comments = @commentable.comments.visible.chronological.includes(:author, :map_photo, { map_document: { file_attachment: :blob } }, applauses: :user)
       last_read = CommentRead.find_by(user: Current.user, commentable: @commentable)&.last_read_at
       payload = {
         commentable: { type: @commentable.class.name, id: @commentable.id, key: @commentable.comment_key, title: @commentable.comment_title },
         comments: comments.map { |c| comment_serializer.call(c) },
         subscribed: CommentSubscription.subscribed?(Current.user, @commentable),
+        # The map's discussion: how much of it reaches me (all, mentions, none).
+        level: (CommentSubscription.chat_level(Current.user, @commentable) if @commentable.is_a?(Map)),
         lastReadAt: last_read&.iso8601,
         members: comment_serializer.mentionable(@commentable),
+        notified: Collab::CommentNotifier.recipients_for(@commentable, Current.user)&.map(&:display_name),
         commentEmails: Current.user.comment_emails
       }
-      CommentRead.mark!(Current.user, @commentable)
+      CommentRead.mark!(Current.user, @commentable) unless params[:peek].present?
       render json: payload
     end
 
@@ -84,13 +90,14 @@ module Maps
       end
 
       # What a message points at on the map: cited elements, a pinned spot
-      # (lng, lat), a photo of the map (one an editor uploaded).
+      # (lng, lat), a photo of the map (one an editor uploaded), a document.
       def pointers
-        attrs = params.require(:comment).permit(:lng, :lat, :map_photo_id, feature_ids: [])
+        attrs = params.require(:comment).permit(:lng, :lat, :map_photo_id, :map_document_id, feature_ids: [])
         pointers = {}
         pointers[:feature_ids] = Array(attrs[:feature_ids]).map(&:to_i) if attrs.key?(:feature_ids)
         pointers[:location] = [ attrs[:lng], attrs[:lat] ] if attrs[:lng].present? && attrs[:lat].present?
         pointers[:map_photo] = @map.photos.find_by(id: attrs[:map_photo_id]) if attrs[:map_photo_id].present?
+        pointers[:map_document] = @map.all_documents.find_by(id: attrs[:map_document_id]) if attrs[:map_document_id].present?
         pointers
       end
   end

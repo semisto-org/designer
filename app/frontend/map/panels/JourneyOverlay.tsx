@@ -13,7 +13,11 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { STAGES, useGuide, type GuideTarget } from '@/map/editor/guide'
 import { SEASONS, seasonToObserve } from '@/map/editor/guideTarget'
 import { useStageSetter } from '@/map/panels/JourneyPanel'
-import type { JourneySeason, Season } from '@/types/journey'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
+import { openFirstHour } from '@/map/first_hour/FirstHourOverlay'
+import { MissionList, missionsDone } from '@/map/first_hour/Missions'
+import type { FirstHourMissions, JourneySeason, Season } from '@/types/journey'
 
 /**
  * Always mounted in the editor: keeps the journey fresh (recomputed when
@@ -61,17 +65,29 @@ export default function JourneyOverlay() {
 
 function GuideCard() {
   const editor = useEditor()
+  const desktop = useMediaQuery('(min-width: 768px)')
+  const guide = useGuide()
+  const [stored, setStored] = useGuideCollapsed(editor.map.id)
+  // An open panel takes the left of the map: from md up the card becomes a
+  // pill in the rail (map/editor/Rail), which opens it on demand.
+  if (!guide.data || !guide.target || (desktop && editor.activePanel != null)) return null
+  const collapsed = stored ?? !desktop
+  return (
+    // The start of the foot of the map from md up; on a phone, a message under the toolbar that waits behind an AI's drafts (map/layout/zones).
+    <ZoneCard id="journey" zone={{ desktop: 'bottom', phone: 'top' }} priority={PRIORITY.guide} order={0} className="w-full md:w-[300px] md:shrink-0">
+      <GuideCardBody collapsed={collapsed} setCollapsed={setStored} />
+    </ZoneCard>
+  )
+}
+
+/**
+ * The card itself, folded to one line or unfolded: in the foot of the map,
+ * or opened from the rail's pill (`setCollapsed(true)` then closes it).
+ */
+export function GuideCardBody({ collapsed, setCollapsed, onAction }: { collapsed: boolean; setCollapsed: (value: boolean) => void; onAction?: () => void }) {
+  const editor = useEditor()
   const guide = useGuide()
   const setStage = useStageSetter()
-  const desktop = useMediaQuery('(min-width: 768px)')
-  const [stored, setStored] = useGuideCollapsed(editor.map.id)
-  // An open panel already takes the left of the map: the card folds to one
-  // line beside it, unfolds on demand, and folds again with the next panel.
-  const crowded = desktop && editor.activePanel != null
-  const [unfolded, setUnfolded] = useState(false)
-  useEffect(() => setUnfolded(false), [editor.activePanel])
-  const collapsed = crowded ? !unfolded : stored ?? !desktop
-  const setCollapsed = (value: boolean) => (crowded ? setUnfolded(!value) : setStored(value))
   if (!guide.data || !guide.target) return null
 
   const target = guide.target
@@ -79,23 +95,14 @@ function GuideCard() {
   const season = seasonToObserve(guide.data)
   const action = actionFor(target, focus, editor.map.stage, editor.canEdit)
   const run = () => {
+    onAction?.()
     if (target.kind === 'item' && target.panel) editor.openPanel(target.panel)
     else if (target.kind === 'advance') void setStage(target.stage)
     else if (target.kind === 'step_done' && focus !== editor.map.stage) void setStage(focus)
   }
-  // On a phone the drafts bar takes the same spot under the drawing toolbar.
-  const hasDrafts = editor.features.some((f) => f.properties.status === 'draft')
 
   return (
-    <section
-      aria-label={t('editor.guide.title')}
-      className={clsx(
-        // Under the drawing toolbar on a phone, bottom left from md up (beside an open panel).
-        'absolute left-2 right-14 top-14 z-10 md:bottom-4 md:right-auto md:top-auto md:w-[300px]',
-        editor.activePanel ? 'md:left-[21.5rem]' : 'md:left-4',
-        hasDrafts && 'hidden md:block',
-      )}
-    >
+    <section aria-label={t('editor.guide.title')}>
       {collapsed ? (
         <div className="flex items-center gap-1 rounded-2xl bg-white py-1.5 pl-3 pr-1.5 shadow-[0_6px_16px_rgb(26_26_26/0.18)]">
           <button
@@ -147,13 +154,42 @@ function GuideCard() {
               </button>
             )}
           </div>
-          {season && guide.data.season && <SeasonInvite season={season} year={guide.data.season} />}
-          <button type="button" onClick={() => editor.openPanel('journey')} className="self-start text-sm font-medium text-prune-700 hover:underline">
+          {guide.data.firstHour
+            ? <MissionsInvite data={guide.data.firstHour} onOpen={() => { onAction?.(); openFirstHour() }} />
+            : season && guide.data.season && <SeasonInvite season={season} year={guide.data.season} />}
+          <button type="button" onClick={() => { onAction?.(); editor.openPanel('journey') }} className="self-start text-sm font-medium text-prune-700 hover:underline">
             {t('editor.guide.all_steps')}
           </button>
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * « Ta première heure », during its first weeks: the three missions outside,
+ * ticked as the observations come in (they include today's season, so the
+ * season invitation waits behind them).
+ */
+function MissionsInvite({ data, onOpen }: { data: FirstHourMissions; onOpen: () => void }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-[10px] border border-dashed border-leaf-300 bg-leaf-50 px-3 py-2.5">
+      <p className="flex items-center justify-between gap-2 text-sm font-semibold text-leaf-800">
+        <span className="flex items-center gap-2">
+          <Footprints className="h-4 w-4 shrink-0" aria-hidden />
+          {t(data.done ? 'place_reading.missions.done_title' : 'place_reading.missions.title')}
+        </span>
+        {!data.done && <span className="font-normal text-loam-500">{t('place_reading.missions.progress', { done: missionsDone(data.missions) })}</span>}
+      </p>
+      {data.done
+        ? <p className="text-sm leading-[1.45] text-loam-600">{t('place_reading.missions.done_body')}</p>
+        : <MissionList data={data} compact />}
+      {!data.done && (
+        <Button variant="leaf" size="sm" onClick={onOpen} className="self-start">
+          {t('place_reading.missions.open')}
+        </Button>
+      )}
+    </div>
   )
 }
 
@@ -196,7 +232,7 @@ function SeasonInvite({ season, year }: { season: Season; year: JourneySeason })
 }
 
 /** The button of the card, or null when there is nothing to click. */
-function actionFor(target: GuideTarget, focus: string, stage: string, canEdit: boolean): string | null {
+export function actionFor(target: GuideTarget, focus: string, stage: string, canEdit: boolean): string | null {
   if (target.kind === 'item') return target.panel ? itemLabel(target.item) : null
   if (target.kind === 'advance') return canEdit ? t('journey.panel.advance_cta', { stage: stageLabel(target.stage) }) : null
   if (target.kind === 'step_done') return canEdit && focus !== stage ? t('editor.guide.mark_stage') : null

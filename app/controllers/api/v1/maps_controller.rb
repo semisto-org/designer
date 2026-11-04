@@ -28,6 +28,8 @@ module Api
           planting: PlantingState.new(@map),
           # Dated drone views, newest first, to lay over the base map (style ?drone=id).
           aerialViews: @map.aerial_views.ready.newest_first.map { aerial_view_json(_1) },
+          # « Ta première heure »: the three missions outside, as the server last read them.
+          firstHour: Maps::FirstHourMissions.new(@map).as_json,
           syncedAt: Time.current.iso8601
         }
       end

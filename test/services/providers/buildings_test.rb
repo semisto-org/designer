@@ -60,6 +60,39 @@ class Providers::BuildingsTest < ActiveSupport::TestCase
     assert_raises(Providers::Buildings::Unavailable) { off.within(**BOX) }
   end
 
+  test "a busy Overpass is worth asking again, and is never cached as an empty place" do
+    with_memory_cache do
+      busy = { "remark" => "runtime error: Query timed out in \"query\" at line 1 after 36 seconds.", "elements" => [] }.to_json
+      stub = stub_request(:get, %r{overpass}).to_return({ status: 200, body: busy }, { status: 429 }, { status: 200, body: overpass_answer })
+      provider = Providers::Buildings.build({})
+      assert_raises(Providers::Buildings::Busy) { provider.within(**BOX) }
+      assert_raises(Providers::Buildings::Busy) { provider.within(**BOX) }
+      assert_equal 3, provider.within(**BOX).size
+      assert_requested stub, times: 3
+    end
+  end
+
+  test "one question per extent at a time: a second asker comes back later" do
+    with_memory_cache do
+      stub = stub_request(:get, %r{overpass}).to_return(status: 200, body: overpass_answer)
+      provider = Providers::Buildings.build({})
+      key = [ "map_data/buildings/v1", Digest::SHA1.hexdigest(Providers::Buildings::DEFAULT_URL)[0, 8], *BOX.values_at(:south, :west, :north, :east) ].join("/")
+      Rails.cache.write("#{key}/asking", true)
+      assert_raises(Providers::Buildings::Busy) { provider.within(**BOX) }
+      assert_not_requested stub
+
+      Rails.cache.delete("#{key}/asking")
+      assert_equal 3, provider.within(**BOX).size
+      assert_nil Rails.cache.read("#{key}/asking"), "the flag goes once answered"
+    end
+  end
+
+  test "switched off or too large is not busy" do
+    off = Providers::Buildings.build("BUILDINGS_PROVIDER" => "none")
+    error = assert_raises(Providers::Buildings::Unavailable) { off.within(**BOX) }
+    assert_not_kind_of Providers::Buildings::Busy, error
+  end
+
   test "a city-sized extent is refused without asking" do
     assert_raises(Providers::Buildings::Unavailable) do
       Providers::Buildings.build({}).within(south: 50.0, west: 4.0, north: 50.5, east: 4.5)

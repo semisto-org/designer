@@ -41,8 +41,8 @@ export function PlantsCard({ inputs, result, readOnly, onChange }: Props) {
                   <th className="pb-2 font-medium">{t('offers.plants.category')}</th>
                   <th className="pb-2 text-right font-medium">{t('offers.plants.base')}</th>
                   {hasOptions && <th className="pb-2 text-right font-medium">{t('offers.plants.option')}</th>}
-                  <th className="w-28 pb-2 text-right font-medium">{t('offers.plants.price')}</th>
-                  <th className="pb-2 text-right font-medium">HTVA</th>
+                  <th className="w-32 pb-2 pl-4 text-right font-medium">{t('offers.plants.price')}</th>
+                  <th className="pb-2 pl-4 text-right font-medium">HTVA</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-loam-100">
@@ -51,7 +51,7 @@ export function PlantsCard({ inputs, result, readOnly, onChange }: Props) {
                     <td className="py-1.5 text-loam-800">{categoryLabel(row)}</td>
                     <td className="py-1.5 text-right tabular-nums">{formatNumber(row.base)}</td>
                     {hasOptions && <td className="py-1.5 text-right tabular-nums text-loam-500">{row.option ? `+ ${formatNumber(row.option)}` : '—'}</td>}
-                    <td className="py-1.5">
+                    <td className="py-1.5 pl-4">
                       <NumberInput
                         aria-label={`${t('offers.plants.price')} · ${categoryLabel(row)}`}
                         value={inputs.plant_prices[row.key] ?? row.price}
@@ -61,7 +61,7 @@ export function PlantsCard({ inputs, result, readOnly, onChange }: Props) {
                         onValue={(value) => setPrice(row.key, value)}
                       />
                     </td>
-                    <td className="py-1.5 text-right tabular-nums">{euros(row.amount_base)}</td>
+                    <td className="py-1.5 pl-4 text-right tabular-nums">{euros(row.amount_base)}</td>
                   </tr>
                 ))}
               </tbody>

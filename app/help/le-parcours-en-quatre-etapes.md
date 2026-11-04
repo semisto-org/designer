@@ -13,9 +13,9 @@ Concevoir un jardin-forêt, c'est une foule de petites tâches. Le **parcours** 
 
 ## Le carnet de route
 
-Une fois le terrain de ta carte délimité, Terranova ouvre le **carnet de route** : quelques pages qui racontent les quatre étapes sur un terrain d'exemple, pendant que trente ans passent sous tes yeux. Chaque page montre les panneaux qui servent l'étape et où en est ta carte. La dernière explique pourquoi brancher ton IA prend tout son sens quand ton carnet est rempli (voir [Connecter ton IA](/help/connecter-son-ia)).
+Le **carnet de route**, c'est quelques pages qui racontent les quatre étapes sur un terrain d'exemple, pendant que trente ans passent sous tes yeux. Chaque page montre les panneaux qui servent l'étape et où en est ta carte. La dernière explique pourquoi brancher ton IA prend tout son sens quand ton carnet est rempli (voir [Connecter ton IA](/help/connecter-son-ia)).
 
-Tu peux le revoir à tout moment : panneau **Parcours**, lien **Revoir le carnet de route**.
+Il ne s'ouvre plus tout seul : c'est ton propre lieu qui t'accueille ([Voici ton lieu](/help/voici-ton-lieu)). Ouvre-le quand tu veux : panneau **Parcours**, lien **Revoir le carnet de route**.
 
 ## Les étapes dans l'éditeur
 
@@ -58,7 +58,9 @@ Seuls le propriétaire et les éditeurs de la carte peuvent changer d'étape ; l
 
 Une carte flotte sur le plan (en bas à gauche sur ordinateur, en haut sur téléphone). Elle dit ce qu'il y a de plus utile à faire maintenant, en une phrase, avec un bouton qui ouvre directement le bon outil, par exemple **Remplir la fiche projet**. La barre en haut de la carte montre où en est tout le parcours.
 
-Elle te gêne ? La flèche à côté du titre la **réduit** à une ligne, « À faire : … », pour cette carte et sur cet appareil ; la flèche inverse la déplie. Elle ne disparaît jamais tout à fait, pour que tu ne perdes pas le fil. Elle n'apparaît que pour le propriétaire et les éditeurs.
+Elle te gêne ? La flèche à côté du titre la **réduit** à une ligne, « À faire : … », pour cette carte et sur cet appareil ; la flèche inverse la déplie.
+
+Sur ordinateur, dès qu'un panneau est ouvert, elle quitte la carte pour lui laisser la place : elle t'attend en haut de la colonne des outils, en une ligne « À faire : … ». Touche-la pour la déplier à côté du panneau. Elle ne disparaît jamais tout à fait, pour que tu ne perdes pas le fil. Elle n'apparaît que pour le propriétaire et les éditeurs.
 
 ## Un conseil
 

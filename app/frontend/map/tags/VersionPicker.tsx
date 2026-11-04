@@ -4,6 +4,8 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { setVersion, useDrawingState } from '@/map/drawing/store'
 import { hasTag, tagCounts } from '@/map/tags/tags'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 /**
  * « Version » over the map (top left): shows on the map only the elements of
@@ -12,7 +14,7 @@ import { hasTag, tagCounts } from '@/map/tags/tags'
  * time, and the printed plan follows. Only there when the map has tags.
  */
 export default function VersionPicker() {
-  const { features, activePanel } = useEditor()
+  const { features } = useEditor()
   const version = useDrawingState((s) => s.version)
   const tags = tagCounts(features)
   const current = version ? tags.find(({ tag }) => hasTag({ properties: { tags: [tag] } }, version))?.tag ?? null : null
@@ -24,11 +26,11 @@ export default function VersionPicker() {
 
   if (tags.length === 0) return null
   return (
-    // Phone: above the time strip and the legend. Larger screens: top left, where a side
-    // panel opens, so it steps aside while one is open.
+    // The left zone while no panel is open (the panel outranks it); on a phone, in the foot of the map (map/layout/zones).
+    <ZoneCard id="version" zone={{ desktop: 'left', phone: 'bottom' }} priority={PRIORITY.version} order={0} className="items-start">
     <label
       title={t('tags.version_hint')}
-      className={`pointer-events-auto absolute bottom-[14.75rem] left-2 z-10 items-center gap-1.5 rounded-full bg-white py-1 pl-2.5 pr-1 text-sm text-loam-600 shadow-[0_6px_16px_rgb(26_26_26/0.14)] focus-within:ring-2 focus-within:ring-prune-600 md:bottom-auto md:left-3 md:top-3.5 ${activePanel ? 'hidden' : 'inline-flex'}`}
+      className="inline-flex items-center gap-1.5 rounded-full bg-white py-1 pl-2.5 pr-1 text-sm text-loam-600 shadow-[0_6px_16px_rgb(26_26_26/0.14)] focus-within:ring-2 focus-within:ring-prune-600 md:mt-1.5 md:ml-1"
     >
       <Layers2 className="h-4 w-4 shrink-0" aria-hidden />
       <select
@@ -41,5 +43,6 @@ export default function VersionPicker() {
         {tags.map(({ tag }) => <option key={tag} value={tag}>{tag}</option>)}
       </select>
     </label>
+    </ZoneCard>
   )
 }

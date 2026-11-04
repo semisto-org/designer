@@ -13,9 +13,14 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
+# Install base packages. LibreOffice Writer (headless, no GUI) turns a .docx
+# of a map's library into a PDF (OfficePdf), one at a time and only on
+# request: about 200 MB while it works, nothing between conversions. Carlito
+# and Caladea have the metrics of Calibri and Cambria, Liberation those of
+# Arial and Times, so Word documents keep their page breaks.
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client libgeos-c1v5 ghostscript ffmpeg gdal-bin && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client libgeos-c1v5 ghostscript ffmpeg gdal-bin \
+      libreoffice-writer-nogui fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea fonts-dejavu-core && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 

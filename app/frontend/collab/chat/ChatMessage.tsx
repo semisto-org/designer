@@ -1,14 +1,17 @@
 import clsx from 'clsx'
-import { Camera, MapPin, Pencil, Trash2 } from 'lucide-react'
-import { Fragment, useMemo } from 'react'
+import { Camera, Check, Download, FolderPlus, MapPin, Pencil, Trash2 } from 'lucide-react'
+import { Fragment, useMemo, useState } from 'react'
 import { ChipButton } from '@/components/ui/ChipButton'
 import { IconButton } from '@/components/ui/IconButton'
+import { DocumentIcon } from '@/documents/DocumentIcon'
+import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { formatBytes } from '@/map/photos/format'
 import { useEditor } from '@/map/editor/EditorContext'
 import { LAYER_COLORS } from '@/map/layers/features'
 import { photoUrl } from '@/map/photos/format'
 import { photoActions } from '@/map/photos/store'
-import type { CommentData, Mentionable } from '@/types/collab'
+import type { ChatDocument, CommentData, Mentionable } from '@/types/collab'
 import { Avatar } from '../Avatar'
 import { geometryCenter } from '../geometry'
 import { timeAgo } from '../time'
@@ -135,6 +138,8 @@ export function ChatMessage({ comment, members, highlighted, editing, busy, onEd
           </a>
         )}
 
+        {comment.document && !editing && <ChatDocumentCard document={comment.document} />}
+
         {!editing && (
           <div className="mt-1 flex items-center gap-1 text-sm text-loam-500">
             <ChipButton
@@ -153,5 +158,61 @@ export function ChatMessage({ comment, members, highlighted, editing, busy, onEd
         )}
       </div>
     </article>
+  )
+}
+
+/**
+ * A document joined to a message: open it (or download it), and, for an
+ * editor, file it in the map's library in one click. Once there, the card
+ * says so and leads to it.
+ */
+function ChatDocumentCard({ document }: { document: ChatDocument }) {
+  const editor = useEditor()
+  const [inLibrary, setInLibrary] = useState(document.inLibrary)
+  const [adding, setAdding] = useState(false)
+  const libraryUrl = `/maps/${editor.map.id}/documents?open=${document.id}`
+
+  async function addToLibrary() {
+    setAdding(true)
+    try {
+      await api(`/maps/${editor.map.id}/documents/${document.id}`, { method: 'PATCH', body: { document: { in_library: true } } })
+      setInLibrary(true)
+      editor.notify(t('collab.chat.document_added'))
+    } catch (error) {
+      editor.notify(error instanceof Error ? error.message : t('collab.chat.error'), 'error')
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 flex w-full max-w-sm items-center gap-3 rounded-xl bg-loam-50 p-2 ring-1 ring-loam-200">
+      <DocumentIcon kind={document.kind} filename={document.filename} className="h-10 w-10 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <a
+          href={document.previewUrl ?? document.downloadUrl}
+          target={document.previewUrl ? '_blank' : undefined}
+          rel="noopener noreferrer"
+          className="block truncate text-sm font-medium text-loam-900 hover:text-prune-700 hover:underline"
+        >
+          {document.filename ?? document.title}
+        </a>
+        <p className="flex flex-wrap items-center gap-x-2 text-sm text-loam-500">
+          {document.byteSize != null && <span>{formatBytes(document.byteSize)}</span>}
+          {inLibrary ? (
+            <a href={libraryUrl} className="inline-flex items-center gap-1 text-leaf-700 hover:underline">
+              <Check className="h-4 w-4" aria-hidden />{t('collab.chat.document_in_library')}
+            </a>
+          ) : editor.canEdit && (
+            <ChipButton tone="prune" icon={<FolderPlus />} onClick={() => void addToLibrary()} disabled={adding} className="!py-0.5">
+              {t('collab.chat.document_add')}
+            </ChipButton>
+          )}
+        </p>
+      </div>
+      <a href={document.downloadUrl} aria-label={t('collab.chat.document_download')} title={t('collab.chat.document_download')} className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-loam-500 hover:bg-loam-100 hover:text-loam-900">
+        <Download className="h-4 w-4" aria-hidden />
+      </a>
+    </div>
   )
 }

@@ -5,10 +5,23 @@ module Collab
   # someone who left the map, never someone who turned discussion e-mails off.
   #
   # The map's own discussion is live: a mention is still e-mailed at once,
-  # the other messages wait for the digest (Collab::ChatDigest).
+  # the other messages wait for the digest (Collab::ChatDigest); the bell and
+  # the phones hear of every message at once (Collab::ChatAlert). Someone who
+  # chose « Rien » on a map's discussion gets no e-mail from it, mention or not.
   class CommentNotifier
     def initialize(comment)
       @comment = comment
+    end
+
+    # Who a new comment from `author` on `commentable` would e-mail, mentions
+    # aside: shown under the comment box (« Michael recevra un e-mail »).
+    # Nil for the map's own discussion, e-mailed as a digest to its members.
+    def self.recipients_for(commentable, author)
+      return nil if commentable.is_a?(Map)
+      map = commentable.comment_map
+      ids = CommentSubscription.where(commentable:).pluck(:user_id)
+      ids << map.owner_id if Comment.alerts_owner?(commentable, author)
+      map.participants.where(id: ids, comment_emails: true).where.not(id: author.id).order(:id).to_a
     end
 
     # `only_mentions: [ids]` is used after an edit: just the new mentions.
@@ -18,6 +31,7 @@ module Collab
       return mentioned if only_mentions
 
       if @comment.chat?
+        ChatAlert.new(@comment).deliver
         ChatDigest.schedule(@comment.map)
         return mentioned
       end
@@ -35,7 +49,10 @@ module Collab
 
       def mentioned_recipients(only_mentions)
         ids = only_mentions || @comment.mentioned_user_ids
-        audience.select { |user| ids.include?(user.id) }
+        mentioned = audience.select { |user| ids.include?(user.id) }
+        return mentioned unless @comment.chat? && mentioned.any?
+        levels = CommentSubscription.chat_levels(mentioned, @comment.map)
+        mentioned.reject { |user| levels[user.id] == "none" }
       end
 
       def subscriber_recipients(excluding:)

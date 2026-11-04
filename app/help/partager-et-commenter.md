@@ -25,17 +25,31 @@ Depuis la carte, touche **Partager** en haut de l'écran, puis invite par adress
 
 Les commentaires sont attachés à ce dont on parle : un élément, une plante, une zone. Pas de messages perdus dans une boîte mail : la discussion reste là où elle a un sens, avec ceux qui ont accès à la carte. Les lecteurs peuvent commenter : c'est idéal pour un voisin, un ami ou un animateur de stage qui veut donner son avis sans toucher au plan.
 
+Quand un lecteur pose la **première question** sur un élément, le propriétaire de la carte reçoit un e-mail et suit cette discussion ensuite, pour qu'aucune question ne reste sans réponse. Sous le champ de commentaire, une phrase dit toujours qui recevra un e-mail (« Michael recevra un e-mail ») ; pour prévenir quelqu'un d'autre, mentionne-le avec **@**. Chacun peut couper ces e-mails dans **Mon compte**, ou ne plus suivre une discussion avec sa cloche.
+
 ## La discussion de la carte
 
-Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travaille, au bureau comme sur le terrain. Touche **Discussion** en haut de la carte (ou la touche **D**) pour l'afficher, et encore une fois pour la masquer : elle se range sans rien perdre, et ce qui arrive pendant ce temps s'affiche en pastille sur le bouton.
+Chaque carte a sa **discussion en direct**, pour se parler pendant qu'on travaille, au bureau comme sur le terrain. Touche **Discussion** en haut de la carte (ou la touche **D**) pour l'afficher, et encore une fois pour la masquer : elle se range sans rien perdre, et ce qui arrive pendant ce temps s'affiche en pastille sur le bouton. Sur ordinateur, elle occupe le côté droit de la carte ; quand tu ouvres la fiche d'un élément, la fiche prend sa place et la discussion revient dès que tu la fermes.
 
 - **Qui y est** : le propriétaire, les éditeurs et l'équipe de la carte, toujours. Un lecteur (un client, un habitant du lieu) n'y entre que si le propriétaire coche **Dans la discussion** à côté de son nom, dans **Partager** ; on peut aussi le cocher en l'invitant.
 - **@** mentionne quelqu'un : il reçoit un e-mail tout de suite.
 - **#** cite un élément de la carte (« #Mare du bas », « #Pommier n° 12 ») : un clic dessus le montre sur la carte.
 - **Épingler un endroit** : sur le terrain, le bouton de position épingle ton message là où tu te tiens ; au bureau, la mire te laisse toucher l'endroit sur la carte. Les messages épinglés apparaissent sur la carte tant que la discussion est affichée.
-- **Joindre une photo** (éditeurs) : elle rejoint aussi les photos de la carte, à l'endroit où elle a été prise.
+- **Joindre une photo** (éditeurs) : avec l'appareil photo, ou en la glissant depuis ton ordinateur sur la discussion, ou en la collant dans le message (une capture d'écran, par exemple). Elle rejoint aussi les photos de la carte. Elle n'épingle ton message que si elle sait où elle a été prise : son GPS, ou ton téléphone sur place ; une capture d'écran n'épingle rien.
+- **Joindre un document** (éditeurs) : le trombone joint un fichier de n'importe quel type (devis, plan, PDF, tableur…) ; tu peux aussi le glisser sur la discussion ou le coller dans le message. Il reste dans la discussion ; **Ajouter aux documents**, sous le message, le range d'un clic dans les documents de la carte. Supprimer le message supprime aussi un document resté dans la discussion.
+- Survole un bouton sous le message pour voir ce qu'il fait.
 
-Les e-mails restent calmes : une mention t'arrive tout de suite ; les autres messages, en **un seul résumé une heure plus tard**, et seulement s'ils ne sont pas lus. La cloche de la discussion coupe ce résumé pour cette carte.
+Dans l'**app Terranova**, la discussion s'ouvre avec le bouton **Discussion** sous l'en-tête de la carte, et se range d'un glissement vers le bas, sans rien perdre. Sur le terrain, **Ici** épingle ton message là où tu te tiens et l'appareil photo y joint ce que tu vois ; # propose d'abord les éléments autour de toi. Sans réseau, ton message attend dans tes envois et part dès qu'il revient. Les messages épinglés apparaissent sur la carte, et la feuille du terrain montre sous **Dit ici** ceux qu'on a laissés là où tu te tiens.
+
+### Être prévenu des messages
+
+Un message dans la discussion d'une de tes cartes te prévient de trois façons, toutes ouvertes au départ :
+
+- **La cloche**, en haut de l'écran, à côté de ton nom : elle compte les messages que tu n'as pas lus sur toutes tes cartes, et un petit mot glisse en bas de l'écran quand quelqu'un écrit pendant que tu travailles ailleurs. Un clic sur une carte ouvre sa discussion.
+- **Ton téléphone**, avec l'app Terranova : la notification arrive même au fond du jardin, et la toucher ouvre la discussion sur le message.
+- **L'e-mail** : une mention t'arrive tout de suite ; les autres messages, en **un seul e-mail dix minutes plus tard**, et seulement si tu ne les as pas lus entre-temps.
+
+Où tu es prévenu se règle une fois pour toutes tes cartes, dans **Mon compte**, section **Notifications**. Combien, carte par carte, avec la cloche de la discussion : **Tous les messages**, **Seulement quand on me mentionne**, ou **Rien**. Sur une carte d'équipe, l'équipe du projet reçoit tous les messages d'office ; les autres membres de l'équipe, seulement leurs mentions, à moins de choisir **Tous les messages**.
 
 Ton IA peut lire la discussion (si tu en fais partie) pour te résumer ce qui s'est dit ou relier une remarque de terrain à la carte ; elle n'y écrit pas.
 

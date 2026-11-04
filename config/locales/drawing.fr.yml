@@ -94,6 +94,9 @@ fr:
       height_m: "Hauteur"
       floors: "Niveaux"
       roof: "Toiture"
+      eaves_m: "Hauteur des gouttières"
+      ridge: "Sens du faîte"
+      roof_flip: "Pan inversé (un seul pan)"
       dwelling: "Maison habitée (zone 0)"
       zone_number: "Numéro de zone"
       store_type: "Type de lieu"
@@ -199,7 +202,8 @@ fr:
         leaf_fall: "Chute des feuilles"
       role: { keyline: "Keyline (par le point clé)", parallel: "Parallèle à la keyline" }
       use: { swale: "Baissière", trees: "Ligne d'arbres", subsoiling: "Décompactage" }
-      roof: { pitched: "En pente", flat: "Plate", green: "Végétalisée" }
+      roof: { pitched: "Deux pans", hip: "Quatre pans", shed: "Un seul pan", flat: "Plate", green: "Végétalisée" }
+      ridge: { long: "Dans la longueur", short: "Dans la largeur" }
       store_type: { cellar: "Cave", cold_room: "Chambre froide", barn: "Grange", shed: "Remise ou cellier", fridge: "Frigo", other: "Autre" }
       health: { good: "Bon", fair: "Moyen", poor: "Mauvais", dead: "Mort" }
       material:

@@ -32,6 +32,7 @@ const ICONS: Record<string, typeof Bot> = {
   get_document: FileText,
   add_document: FileText,
   update_document: FileText,
+  convert_document_to_pdf: FileText,
   list_photos: Camera,
   get_photo: Camera,
   add_photo: Camera,

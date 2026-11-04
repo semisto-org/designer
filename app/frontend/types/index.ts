@@ -125,6 +125,8 @@ export type MapData = {
   ownerName: string
   /** When the map was made: the land « on arrival » of the time strip. */
   createdAt?: string
+  /** « Ta première heure »: when « Voici ton lieu » was read; null until then. */
+  firstHourStartedAt?: string | null
   updatedAt: string
   lockVersion: number
   /** The owner's plan no longer covers this map: it stays readable but cannot be edited. */
@@ -136,7 +138,7 @@ export type MapData = {
 }
 
 export type FeatureLayer =
-  | 'existing' | 'water' | 'access' | 'structures' | 'plants' | 'animals' | 'networks' | 'notes'
+  | 'existing' | 'water' | 'access' | 'structures' | 'plants' | 'animals' | 'networks' | 'drawings' | 'notes'
 
 export type MapFeatureProperties = {
   id: number

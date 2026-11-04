@@ -23,6 +23,10 @@ module Billing
       record = PlanSubscription.find_or_initialize_by(stripe_subscription_id: @sub.fetch("id"))
       return "stale subscription event" if record.synced_at && record.synced_at > @synced_at
 
+      # Said once, when the subscription starts giving access or changes plan.
+      granted_before = record.persisted? && record.grants_access?(@synced_at)
+      previous_plan = record.plan_key
+
       period_start, period_end = Payload.subscription_period(@sub)
       status = @sub.fetch("status")
       record.assign_attributes(
@@ -37,6 +41,9 @@ module Billing
         synced_at: @synced_at
       )
       record.save!
+      if PlanSubscription::ACTIVE_STATUSES.include?(status) && (!granted_before || previous_plan != plan_key)
+        BillingMailer.plan_started(user, plan_key).deliver_later
+      end
       "subscription #{status}"
     end
   end

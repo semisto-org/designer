@@ -25,6 +25,8 @@ class McpDiscussionTest < ActionDispatch::IntegrationTest
     assert_equal [ 4.91, 50.35 ], message["location"]
     assert message["mine"]
     assert_match "discussion=Map:#{@map.id}", data["url"]
+    assert_includes data["digest_to"], users(:michael).display_name
+    assert data["digest_for_you"]
 
     older, = call_tool(@owner, "list_discussion", { map_id: @map.id, before_id: data["next_before_id"] })
     assert_equal [ first.id ], older["messages"].map { _1["id"] }
@@ -34,6 +36,25 @@ class McpDiscussionTest < ActionDispatch::IntegrationTest
     assert_equal({ "member" => true, "messages" => 2, "unread" => 1, "pinned" => 1 }, map["discussion"].except("last_message_at"))
   end
 
+  test "a document joined to a message is listed with it and read by the discussion's members only" do
+    doc = @map.all_documents.new(uploaded_by: users(:michael), origin: "chat", in_library: false)
+    doc.file.attach(io: StringIO.new("Devis : 120 arbres"), filename: "devis.txt", content_type: "text/plain")
+    doc.save!
+    Comment.create!(commentable: @map, author: users(:michael), body: "Le devis", map_document: doc)
+
+    data, error = call_tool(@owner, "list_discussion", { map_id: @map.id })
+    refute error, data
+    assert_equal({ "id" => doc.id, "title" => "devis", "in_library" => false }, data["messages"].sole["document"])
+    read, error = call_tool(@owner, "get_document", { map_id: @map.id, document_id: doc.id })
+    refute error, read
+    assert read["in_discussion_only"]
+    listed, = call_tool(@owner, "list_documents", { map_id: @map.id })
+    assert_not_includes listed["documents"].map { _1["id"] }, doc.id
+
+    _, error = call_tool(@viewer, "get_document", { map_id: @map.id, document_id: doc.id })
+    assert error
+  end
+
   test "a viewer outside the discussion cannot read it" do
     Comment.create!(commentable: @map, author: users(:michael), body: "Entre nous")
     data, error = call_tool(@viewer, "list_discussion", { map_id: @map.id })
@@ -41,5 +62,22 @@ class McpDiscussionTest < ActionDispatch::IntegrationTest
     assert_match "réservée à ses membres", data.to_s
     map, = call_tool(@viewer, "get_map", { map_id: @map.id })
     assert_equal({ "member" => false }, map["discussion"])
+  end
+
+  test "get_notifications says what waits in all my discussions, and list_discussion my level" do
+    Comment.create!(commentable: @map, author: users(:alice), body: "@Michael tu as vu la mare ?")
+    data, error = call_tool(@owner, "get_notifications", {})
+    refute error, data
+    item = data["unread"].sole
+    assert_equal [ @map.id, 1, 1 ], [ item["map_id"], item["unread"], item["mentions"] ]
+    assert_match "discussion=Map:#{@map.id}", item["url"]
+    assert_equal({ "bell" => true, "email" => true, "phone" => true, "phones" => 0 }, data["channels"])
+    assert_equal 10, data["email_delay_minutes"]
+
+    CommentSubscription.set_chat_level(users(:michael), @map, "none")
+    data, = call_tool(@owner, "list_discussion", { map_id: @map.id })
+    assert_equal "none", data.dig("notifications", "level")
+    data, = call_tool(@owner, "get_notifications", {})
+    assert_empty data["unread"]
   end
 end

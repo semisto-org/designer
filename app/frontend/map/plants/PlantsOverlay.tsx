@@ -12,23 +12,27 @@ import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { graftProperty, isPatch, isPlant, numberProperty, trainedCrown, trainingProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
+import { stackFeatureLayers } from '@/map/layers/stack'
 import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
 import { plantLabelStyleStore, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/plants/strata'
 import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
-import { inkOn } from '@/map/plants/strataColors'
+import { crownOrder, inkOn } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
 import { growingPlant, sizeAtMoment } from '@/map/time/plants'
 import type { PlantingState } from '@/types/plants'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 const CROWNS = 'plant-crowns'
 const LABELS = 'plant-labels'
 const NUMBERS = 'plant-numbers'
 
 // `reach`: the hatched disc of a support plant, the ground it feeds (not a crown).
-type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean; support: boolean; reach?: boolean }
+// `order`: drawing order within each crown layer (see crownOrder).
+type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean; support: boolean; order: number; reach?: boolean }
 // `featureId` makes crowns and names select their plant (see map/featurePick).
 type LabelProps = { featureId: number; label: string; planted: boolean; minZoom: number; rank: number }
 // A plant's number written inside its point (« Numéro » mode).
@@ -116,11 +120,12 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
     const radiusM = Math.max(crownM / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
     const support = plantIsSupport(feature, data)
+    const order = crownOrder(strata, radiusM)
     if (support) {
       const reach = circle(feature.geometry.coordinates, Math.max(radiusM, SUPPORT_REACH_M) / 1000, { steps: 40, units: 'kilometers' })
       crowns.push({
         ...reach,
-        properties: { featureId: feature.properties.id, color: STRATA_COLORS[strata], planted: !isPlannedPlant(feature.properties), selected: false, support, reach: true },
+        properties: { featureId: feature.properties.id, color: STRATA_COLORS[strata], planted: !isPlannedPlant(feature.properties), selected: false, support, order, reach: true },
       })
     }
     crowns.push({
@@ -131,6 +136,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
         planted: !isPlannedPlant(feature.properties),
         selected: editor.selectedId === feature.properties.id || editor.selection.includes(feature.properties.id),
         support,
+        order,
       },
     })
   }
@@ -162,9 +168,11 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     ;(map.getSource(LABELS) as GeoJSONSource | undefined)?.setData(data.labels)
     ;(map.getSource(NUMBERS) as GeoJSONSource | undefined)?.setData(data.numbers)
     raiseNumbers(map)
+    stackFeatureLayers(map)
     return
   }
-  // Under the feature lines and points, so plants stay clickable.
+  // Added under the feature lines; stackFeatureLayers then lifts them over
+  // every surface and line (zones, beds, paths), under the points and names.
   const before = map.getLayer('features-line') ? 'features-line' : undefined
   map.addSource(CROWNS, { type: 'geojson', data: data.crowns })
   map.addSource(LABELS, { type: 'geojson', data: data.labels })
@@ -176,6 +184,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-fill`,
     type: 'fill',
     source: CROWNS,
+    layout: { 'fill-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
     paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, 0.45, 0.15] },
   }, before)
@@ -186,6 +195,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-reach`,
     type: 'fill',
     source: CROWNS,
+    layout: { 'fill-sort-key': ['get', 'order'] },
     filter: ['to-boolean', ['get', 'reach']],
     paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, 0.3, 0.12] },
   }, before)
@@ -193,6 +203,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-support`,
     type: 'fill',
     source: CROWNS,
+    layout: { 'fill-sort-key': ['get', 'order'] },
     filter: ['to-boolean', ['get', 'reach']],
     paint: { 'fill-pattern': SUPPORT_HATCH, 'fill-opacity': ['case', PLANTED, 0.9, 0.5] },
   }, before)
@@ -200,6 +211,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-reach-line`,
     type: 'line',
     source: CROWNS,
+    layout: { 'line-sort-key': ['get', 'order'] },
     filter: ['to-boolean', ['get', 'reach']],
     // design-lint-ok: MapLibre paint takes colour values, not theme classes
     paint: { 'line-color': '#ffffff', 'line-width': 1.5, 'line-opacity': ['case', PLANTED, 0.9, 0.5], 'line-dasharray': ['literal', [2, 2]] },
@@ -208,6 +220,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-casing`,
     type: 'line',
     source: CROWNS,
+    layout: { 'line-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
     paint: {
       'line-color': '#ffffff',
@@ -219,6 +232,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     id: `${CROWNS}-line`,
     type: 'line',
     source: CROWNS,
+    layout: { 'line-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
     paint: {
       'line-color': ['get', 'color'],
@@ -268,6 +282,8 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     paint: { 'text-color': ['case', PLANTED, ['get', 'ink'], '#1b1712'] },
   })
   raiseNumbers(map)
+  // Over the zones and surfaces, whichever was added first.
+  stackFeatureLayers(map)
 }
 
 /** The pastilles cover the plant's point, which the features layers may have drawn later. */
@@ -380,7 +396,7 @@ export default function PlantsOverlay() {
 
   if (!placing) return null
   return (
-    <div className="pointer-events-none absolute left-14 right-2 top-2 z-30 flex justify-center md:left-1/2 md:right-auto md:-translate-x-1/2">
+    <ZoneCard id="plant-placing" zone="top" priority={PRIORITY.activeTool} passThrough className="items-center">
       <div className="pointer-events-auto flex max-w-md items-center gap-2 rounded-xl bg-leaf-700 px-3 py-2 text-sm text-white shadow-lg">
         <MapPin className="h-4 w-4 shrink-0" />
         <span className="min-w-0 flex-1">{t('palette.placing', { name: placing.name })}</span>
@@ -392,6 +408,6 @@ export default function PlantsOverlay() {
           <X className="h-3.5 w-3.5" />{t('palette.stop_placing')}
         </button>
       </div>
-    </div>
+    </ZoneCard>
   )
 }

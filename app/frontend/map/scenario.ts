@@ -26,6 +26,17 @@ export function isPlannedElement(properties: Properties): boolean {
  */
 export const BUILDING_KINDS: ReadonlySet<string> = new Set(['building', 'shed', 'shelter', 'greenhouse', 'fruit_store', 'poultry_house'])
 
+/**
+ * Drawn over the land without standing on it: free zones and lines
+ * (« Dessins »), notes, measures, sketches, sectors, permaculture zones
+ * (« Notes »). Twin of MapFeature::ANNOTATION_LAYERS.
+ */
+export const ANNOTATION_LAYERS: ReadonlySet<string> = new Set(['drawings', 'notes'])
+
+export function isAnnotationLayer(layer: unknown): boolean {
+  return typeof layer === 'string' && ANNOTATION_LAYERS.has(layer)
+}
+
 /** What the « Existant » layer holds that can still be a project: a building, a wall. */
 const PLANNABLE_EXISTING = new Set(['building', 'wall'])
 
@@ -36,7 +47,7 @@ const PLANNABLE_EXISTING = new Set(['building', 'wall'])
  * wall that is yet to be built. Twin of MapFeature#plannable?.
  */
 export function canBePlanned(layer: unknown, kind: unknown): boolean {
-  if (layer === 'notes' || (layer === 'plants' && kind === 'plant')) return false
+  if (isAnnotationLayer(layer) || (layer === 'plants' && kind === 'plant')) return false
   if (layer === 'existing') return PLANNABLE_EXISTING.has(String(kind))
   return typeof layer === 'string'
 }
@@ -48,7 +59,7 @@ export function canBePlanned(layer: unknown, kind: unknown): boolean {
  * Twin of MapFeature.removable?.
  */
 export function canBeRemoved(layer: unknown, kind: unknown): boolean {
-  return typeof layer === 'string' && layer !== 'notes' && !(layer === 'plants' && kind === 'plant')
+  return typeof layer === 'string' && !isAnnotationLayer(layer) && !(layer === 'plants' && kind === 'plant')
 }
 
 /** The day an element was taken away (`removed_on`, ISO day), or null. */
@@ -104,6 +115,6 @@ export const TO_REMOVE_EXPR = [
   ['==', ['get', 'to_remove'], true],
   ['!', REMOVED_EXPR],
   ['!', PLANNED_EXPR],
-  ['!=', ['get', 'layer'], 'notes'],
+  ['!', ['in', ['get', 'layer'], ['literal', [...ANNOTATION_LAYERS]]]],
   ['!', ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]],
 ] as const

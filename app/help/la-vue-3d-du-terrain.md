@@ -22,6 +22,8 @@ La **rose des vents**, en haut à droite, tourne avec la caméra et montre toujo
 
 **Bâtiments en volume** (onglet **Vue**) lève les bâtiments autour du terrain, d'après OpenStreetMap. Ceux que tu as dessinés sur ta carte (bâtiment, abri, cabane ou remise, serre, stockage des fruits, poulailler) se lèvent aussi, à la hauteur notée dans leur fiche, et remplacent celui d'OpenStreetMap qu'ils recouvrent. Un bâtiment **en projet** a un toit mauve : il n'existe pas encore, mais son ombre compte déjà dans l'onglet **Soleil**. Regarde-la en décembre avant de placer le potager ou les fruitiers à son pied. Pour le dessiner, voir [Dessiner l'existant](/help/dessiner-l-existant).
 
+**Régler un toit.** Clique sur un bâtiment dans la 3D. Pour un bâtiment de ta carte, choisis sa toiture (deux pans, quatre pans, un pan ou plate), le sens du faîte, sa hauteur et celle des gouttières : la 3D change aussitôt, et l'ombre suit. Sans hauteur de gouttières, Terranova prend une pente de 35°. Pour un bâtiment voisin lu sur OpenStreetMap, **Régler son toit** l'ajoute d'abord à ta carte comme bâtiment existant, avec sa forme et sa hauteur. Un toit plus compliqué (une aile, une tour) se dessine en plusieurs bâtiments côte à côte, chacun avec son toit. Le plus juste reste d'aller voir : compte les rangs de briques jusqu'à la gouttière, environ 15 par mètre.
+
 ### Les blocs et la Niva
 
 Le fond **Blocs** montre le terrain en cubes d'environ 2 m, comme un jeu de construction : herbe, chemins, eau et sous-bois d'après l'occupation du sol, arbres et bâtiments à leur vraie hauteur. La pluie, le soleil et tes éléments s'y posent comme sur le relief.

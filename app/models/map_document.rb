@@ -11,9 +11,17 @@
 # in the background (CompressMapDocumentJob) and the lighter copy replaces
 # the original, to spare storage.
 #
+# A file joined to a message of the map's discussion is a document too, out of
+# the library (`in_library: false`, origin « chat ») until someone adds it
+# there in one click; only the discussion's members open it until then.
+#
 # A Markdown file (.md) is read as a page and edited in place
 # (`replace_markdown!`): the file stays plain Markdown, so it downloads, and
 # the MCP reads and writes it, like any other.
+#
+# A word-processor file (.docx, .doc, .odt, .rtf) is turned into a PDF on
+# request (`request_pdf!`, ConvertMapDocumentToPdfJob): the PDF is a new
+# document beside it, which the browser shows and the AI reads page by page.
 class MapDocument < ApplicationRecord
   include HeicAttachment
   include CountsTowardStorage
@@ -24,7 +32,11 @@ class MapDocument < ApplicationRecord
   MAX_THUMBNAIL_BYTES = 2.megabytes
   class_attribute :compress_pdf_above, default: 5.megabytes
   PREVIEW_IMAGE_TYPES = %w[image/jpeg image/png image/webp image/gif].freeze
-  ORIGINS = %w[library project_sheet form].freeze
+  ORIGINS = %w[library project_sheet form chat].freeze
+  # « pending » while LibreOffice works; « failed » or « storage_full » after.
+  PDF_CONVERSIONS = %w[pending failed storage_full].freeze
+  # A conversion still « pending » after this was lost: it may be asked again.
+  PDF_CONVERSION_STALE_AFTER = 10.minutes
   MARKDOWN_EXTENSIONS = %w[md markdown].freeze
   # Larger Markdown files are only downloaded: nobody writes a megabyte of text.
   MAX_MARKDOWN_BYTES = 1.megabyte
@@ -51,6 +63,9 @@ class MapDocument < ApplicationRecord
   has_many :collab_updates, class_name: "MapDocumentCollabUpdate", dependent: :delete_all
   # An answer to one of the team's forms (Tally), filed here as Markdown.
   has_one :form_response, dependent: :nullify
+  # The PDF made from this word-processor file, and the file a PDF was made from.
+  belongs_to :converted_from, class_name: "MapDocument", optional: true
+  has_many :pdf_copies, class_name: "MapDocument", foreign_key: :converted_from_id, inverse_of: :converted_from, dependent: :nullify
 
   has_one_attached :file do |attachable|
     attachable.variant :thumb, resize_to_limit: [ 480, 480 ], format: :jpeg, saver: { strip: true, quality: 80 }
@@ -68,6 +83,7 @@ class MapDocument < ApplicationRecord
   validates :description, length: { maximum: 2000 }
   validates :origin, inclusion: { in: ORIGINS }
   validates :compression, inclusion: { in: COMPRESSIONS }, allow_nil: true
+  validates :pdf_conversion, inclusion: { in: PDF_CONVERSIONS }, allow_nil: true
   validate :file_is_acceptable
   validate :thumbnail_is_acceptable
   validate :link_belongs_to_map
@@ -178,6 +194,29 @@ class MapDocument < ApplicationRecord
     file.attach(io: StringIO.new(content.to_s), filename:, content_type: "text/markdown", identify: false)
   end
 
+  # A word-processor file LibreOffice can turn into a PDF, on this server.
+  def convertible_to_pdf? = file.attached? && OfficePdf.convertible?(extension) && OfficePdf.available?
+
+  def pdf_conversion_pending?
+    pdf_conversion == "pending" && updated_at > PDF_CONVERSION_STALE_AFTER.ago
+  end
+
+  # The latest PDF made from this file (they stay in the library until removed).
+  def pdf_copy = pdf_copies.where(in_library: in_library).order(:id).last
+
+  # Asks for a PDF of this file, made in the background by `by`. False when
+  # the file cannot be converted or a conversion is already running.
+  def request_pdf!(by:)
+    return false unless convertible_to_pdf?
+    started = with_lock do
+      next false if pdf_conversion_pending?
+      # The state only: an older file need not pass today's validations.
+      update_columns(pdf_conversion: "pending", updated_at: Time.current)
+    end
+    ConvertMapDocumentToPdfJob.perform_later(self, by) if started
+    !!started
+  end
+
   # What the browser can show as is: an image (its variants), a PDF, or a
   # sound it plays (the visit recorded with the phone).
   def preview
@@ -196,13 +235,15 @@ class MapDocument < ApplicationRecord
   def as_inertia(url:, excerpt: false)
     blob = file.attached? ? file.blob : nil
     {
-      id:, title:, description:, tags:, origin:, kind:, preview:,
+      id:, title:, description:, tags:, origin:, kind:, preview:, inLibrary: in_library,
       filename: blob&.filename&.to_s, contentType: blob&.content_type, byteSize: blob&.byte_size,
       compression:, originalByteSize: original_byte_size,
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601,
       uploadedBy: uploaded_by&.display_name, fromProjectLink: project_sheet_link_id.present?,
       form: (form_response&.as_inertia if origin == "form"),
       markdown: editable_markdown?,
+      convertibleToPdf: convertible_to_pdf?, pdfConversion: pdf_conversion_state,
+      pdfCopyId: (pdf_copy&.id if OfficePdf.convertible?(extension)), convertedFromId: converted_from_id,
       excerpt: (markdown_excerpt if excerpt),
       contentEditedAt: content_edited_at&.iso8601, contentEditedBy: content_edited_by&.display_name,
       thumbUrl: thumb_available? ? url.call(self, "thumb") : nil,
@@ -210,6 +251,12 @@ class MapDocument < ApplicationRecord
       fileUrl: url.call(self, "original"),
       downloadUrl: url.call(self, "download")
     }
+  end
+
+  # « pending », « failed » or « storage_full »; a lost conversion reads as failed.
+  def pdf_conversion_state
+    return "failed" if pdf_conversion == "pending" && !pdf_conversion_pending?
+    pdf_conversion
   end
 
   def thumb_available? = preview == "image" || thumbnail.attached?

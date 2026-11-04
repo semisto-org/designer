@@ -10,7 +10,7 @@
 - [ombre, ombrage, ensoleillement, soleil]
 - [prix, tarif, abonnement, forfait, formule, payer, paiement]
 - [facture, devis, offre]
-- [partager, inviter, collaborateur, editeur, lecteur]
+- [partager, inviter, invitation, collaborateur, editeur, lecteur]
 - [equipe, collectif, organisation]
 - [supprimer, effacer, retirer]
 - [photo, image, video]
@@ -22,3 +22,4 @@
 - [compte, profil, mot de passe, connexion, se connecter]
 - [annuler, defaire, retour en arriere, ctrl z, cmd z]
 - [zonage, zones, zone 0, zone 1, zone 5]
+- [notification, notifications, cloche, alerte, prevenir, push]

@@ -22,6 +22,8 @@ class AccountsController < ApplicationController
         # Once they pay for a team, the plan covers the team's maps and their
         # own maps follow the free plan apart (Billing::Scope).
         personalMaps: (personal_maps(Billing::Scope.own(user)) if user.pays_for_teams?),
+        # Where a discussion message reaches me (the bell, e-mail, the phone).
+        notifications: NotificationPreferencesController.preferences(user),
         # « Aider à améliorer Terranova »: the beta's session recording (SessionReplayConsent).
         replay: { enabled: SessionReplay.enabled?, consent: user.replay_consent, sessions: user.session_replays.count, perUser: SessionReplay.per_user }
       }

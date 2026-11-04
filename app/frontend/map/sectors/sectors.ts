@@ -41,6 +41,53 @@ export const SECTOR_COLORS: Record<SectorType | SunSectorType, string> = {
   other: '#9b8fb5',
 }
 
+/**
+ * Sectors gathered by what they bring, to show or hide them together when
+ * presenting a design: the sun, the winds, the risks (fire, water, frost),
+ * the nuisances, the views and the wildlife.
+ */
+export const SECTOR_GROUPS = ['sun', 'wind', 'risks', 'nuisances', 'views', 'wildlife', 'other'] as const
+export type SectorGroup = (typeof SECTOR_GROUPS)[number]
+
+const GROUP_OF: Record<SectorType | SunSectorType, SectorGroup> = {
+  summer_sun: 'sun', winter_sun: 'sun',
+  wind: 'wind', cold_wind: 'wind',
+  fire: 'risks', flood: 'risks', frost: 'risks',
+  noise: 'nuisances', dust: 'nuisances', pollution: 'nuisances',
+  good_view: 'views', bad_view: 'views', privacy: 'views',
+  wildlife: 'wildlife', predators: 'wildlife',
+  other: 'other',
+}
+
+/** The group of a sector type (an unknown type is « other »). */
+export const sectorGroup = (type: unknown): SectorGroup => GROUP_OF[type as SectorType] ?? 'other'
+
+export const isSectorGroup = (value: unknown): value is SectorGroup =>
+  typeof value === 'string' && (SECTOR_GROUPS as readonly string[]).includes(value)
+
+/** The colour that stands for a group: that of its first type. */
+export const GROUP_COLORS: Record<SectorGroup, string> = {
+  sun: SECTOR_COLORS.summer_sun,
+  wind: SECTOR_COLORS.wind,
+  risks: SECTOR_COLORS.fire,
+  nuisances: SECTOR_COLORS.noise,
+  views: SECTOR_COLORS.good_view,
+  wildlife: SECTOR_COLORS.wildlife,
+  other: SECTOR_COLORS.other,
+}
+
+/**
+ * Reads `?sectors=sun,wind` (or `all`): the groups to show, the others
+ * hidden. Null when the value names no group.
+ */
+export function groupsFromParam(value: string | null | undefined): { shown: SectorGroup[]; hidden: SectorGroup[] } | null {
+  if (!value) return null
+  const asked = value.split(',').map((v) => v.trim())
+  const shown = asked.includes('all') ? [...SECTOR_GROUPS] : SECTOR_GROUPS.filter((g) => asked.includes(g))
+  if (shown.length === 0) return null
+  return { shown, hidden: SECTOR_GROUPS.filter((g) => !shown.includes(g)) }
+}
+
 export const isSectorType = (value: unknown): value is SectorType =>
   typeof value === 'string' && (SECTOR_TYPES as readonly string[]).includes(value)
 
@@ -242,4 +289,25 @@ export function toPixels(center: Position, point: Position, metersPerPx: number)
 export function farthestM(center: Position, points: Position[]): number {
   const kx = Math.cos((center[1] * Math.PI) / 180)
   return points.reduce((max, p) => Math.max(max, Math.hypot((p[0] - center[0]) * kx, p[1] - center[1]) * METERS_PER_DEGREE), 0)
+}
+
+/**
+ * Which groups of the sector analysis show on the map for the panel open.
+ * The « Secteurs » panel shows the viewer's own choice, and so does the map
+ * when they keep the sectors on it. The « Soleil » panel always adds the
+ * sun's arcs (where it rises and sets at the solstices): alone when the
+ * viewer keeps nothing on the map, beside what they keep otherwise. Nothing
+ * is saved, so closing the panel brings back what was there before.
+ * Null when no arc shows.
+ */
+export function displayedGroups(
+  activePanel: string | null | undefined,
+  view: { onMap: boolean; hiddenGroups: readonly SectorGroup[] },
+): { hiddenGroups: SectorGroup[] } | null {
+  if (activePanel === 'sectors') return { hiddenGroups: [...view.hiddenGroups] }
+  if (activePanel === 'sun') {
+    const hidden = view.onMap ? view.hiddenGroups : SECTOR_GROUPS
+    return { hiddenGroups: hidden.filter((g) => g !== 'sun') }
+  }
+  return view.onMap ? { hiddenGroups: [...view.hiddenGroups] } : null
 }

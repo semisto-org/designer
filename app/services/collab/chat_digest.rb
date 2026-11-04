@@ -1,17 +1,22 @@
 module Collab
   # The e-mail digest of the map's live discussion (decided with Michael,
   # 2026-11-02): a mention is e-mailed at once (CommentNotifier); the other
-  # messages wait an hour, then each member who has not read them gets one
-  # e-mail with all of them. One digest job per map at a time
+  # messages wait ten minutes (an hour until 2026-11-04: Chris's message
+  # reached Michael an hour late), then each member who has not read them
+  # meanwhile (the bell or the phone told them at once) gets one e-mail with
+  # all of them. One digest job per map at a time
   # (`maps.chat_digest_at`); the messages that arrive while it waits ride
   # along. Nobody gets a message twice (`comment_reads.emailed_until`), nor
   # their own messages, nor the ones that mentioned them.
+  #
+  # On a team map whose project team is set, the rest of the team is out of
+  # the digest unless they turn it on (Map#chat_audience).
   #
   # Out of the digest: people who turned discussion e-mails off
   # (`users.comment_emails`) or muted this map's discussion (a muted
   # CommentSubscription on the map).
   class ChatDigest
-    DELAY = 1.hour
+    DELAY = 10.minutes
     MAX_MESSAGES = 30
 
     def self.schedule(map, now: Time.current)
@@ -43,9 +48,13 @@ module Collab
     end
 
     private
+      # The discussion's audience (on a team map, its project team) and the
+      # members who turned the digest on, minus those who muted it.
       def recipients
-        muted = CommentSubscription.where(commentable: @map, muted: true).select(:user_id)
-        @map.chat_participants.where(comment_emails: true).where.not(id: muted).to_a
+        subscriptions = CommentSubscription.where(commentable: @map)
+        ids = @map.chat_audience.pluck(:id) | subscriptions.where(muted: false).pluck(:user_id)
+        @map.chat_participants.where(id: ids, comment_emails: true)
+          .where.not(id: subscriptions.where(muted: true).select(:user_id)).to_a
       end
 
       def unread_for(user, since)

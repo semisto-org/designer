@@ -60,7 +60,7 @@ export type FeatureUpdateHistoryEntry = {
 }
 
 /** Fields the review names in words (feature_updates.fields.*). */
-export const KNOWN_FIELDS = ['name', 'notes', 'tags', 'geometry', 'planted_on', 'species_id', 'variety_id', 'training', 'graft_form', 'trunk_height', 'rootstock_vigor', 'rootstock', 'count', 'number', 'planted_on_precision', 'functions'] as const
+export const KNOWN_FIELDS = ['name', 'notes', 'tags', 'geometry', 'planted_on', 'species_id', 'variety_id', 'training', 'graft_form', 'trunk_height', 'rootstock_vigor', 'rootstock', 'count', 'number', 'planted_on_precision', 'functions', 'height_m', 'roof', 'eaves_m', 'ridge', 'roof_flip'] as const
 
 /** The AI proposes to remove the element: accepting puts it in the trash. */
 export function isDeletion(update: Pick<FeatureUpdateData, 'proposedChanges'>): boolean {

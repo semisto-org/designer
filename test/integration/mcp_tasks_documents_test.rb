@@ -1,11 +1,14 @@
 require "test_helper"
 require "test_helpers/mcp_test_helper"
 require "test_helpers/teams_test_helper"
+require "test_helpers/office_pdf_test_helper"
 
 # The user's AI reads and keeps the project's tasks and its library of
 # documents, with the user's role on the map.
 class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
+  include OfficePdfTestHelper
+  include ActiveJob::TestHelper
 
   setup do
     @map = maps(:ahinvaux)
@@ -273,6 +276,32 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     doc = create_document(buffer, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename: "visite.docx")
     data, = call_tool(@viewer, "get_document", { map_id: @map.id, document_id: doc.id })
     assert_equal "Compte rendu de visite\nLe sol est argileux.", data["text"]
+  end
+
+  test "convert_document_to_pdf makes a PDF of a .docx, which get_document then points to" do
+    with_fake_libreoffice do
+      source = attach_docx(@map)
+      data, error = call_tool(@owner, "list_documents", { map_id: @map.id })
+      refute error
+      assert data["documents"].find { _1["id"] == source.id }["convertible_to_pdf"]
+
+      _, error = call_tool(@viewer, "convert_document_to_pdf", { map_id: @map.id, document_id: source.id })
+      assert error, "a viewer converts nothing"
+      data, error = call_tool(@owner, "convert_document_to_pdf", { map_id: @map.id, document_id: source.id })
+      refute error
+      assert_equal [ "converting", "pending" ], data.values_at("status", "pdf_conversion")
+      perform_enqueued_jobs(only: ConvertMapDocumentToPdfJob)
+
+      data, = call_tool(@owner, "get_document", { map_id: @map.id, document_id: source.id })
+      copy = @map.documents.find(data["pdf_document_id"])
+      assert_equal source.id, copy.converted_from_id
+      data, = call_tool(@owner, "get_document", { map_id: @map.id, document_id: copy.id })
+      assert_equal source.id, data["converted_from_id"]
+
+      text, error = call_tool(@owner, "convert_document_to_pdf", { map_id: @map.id, document_id: copy.id })
+      assert error
+      assert_match(/docx/, text)
+    end
   end
 
   test "add_document files the AI's own document, and update_document renames and retags one" do

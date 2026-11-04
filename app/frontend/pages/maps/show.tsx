@@ -25,6 +25,8 @@ import { SaveIndicator } from '@/map/editor/SaveIndicator'
 import { RecenterControl } from '@/map/editor/controls'
 import { EditorBar, EditorRail } from '@/map/editor/Rail'
 import { StageStepper } from '@/map/editor/StageStepper'
+import { ZoneCard, ZoneLayer } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 import { installBoundary } from '@/map/layers/boundary'
 import { FEATURES_SOURCE, installFeatureLayers } from '@/map/layers/features'
 import { HEADER_ACTIONS, OVERLAYS, PANELS } from '@/map/panels'
@@ -189,7 +191,21 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     }
     fold()
     instance.once('idle', fold)
-    return () => void instance.off('idle', fold)
+    // MapLibre opens the sources the moment they first turn compact, which
+    // can come after the first idle (the bottom corner then covers the map):
+    // fold that one opening too, never the person's own click.
+    const attribution = instance.getContainer().querySelector('.maplibregl-ctrl-attrib')
+    let compact = attribution?.classList.contains('maplibregl-compact') ?? false
+    const observer = new MutationObserver(() => {
+      const now = attribution?.classList.contains('maplibregl-compact') ?? false
+      if (now && !compact) fold()
+      compact = now
+    })
+    if (attribution) observer.observe(attribution, { attributes: true, attributeFilter: ['class'] })
+    return () => {
+      instance.off('idle', fold)
+      observer.disconnect()
+    }
   }, [instance])
   useEffect(() => installFeatureLayers(instance, { type: 'FeatureCollection', features }), [instance, features])
 
@@ -452,6 +468,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
 
   return (
     <EditorContext.Provider value={editor}>
+      <ZoneLayer>
       {/* The rail beside the map from md up; a bar along the bottom on a phone. */}
       {wideRail ? <RailPortal panels={visiblePanels} /> : <EditorBar panels={visiblePanels} />}
       {panel && panel.modal && wideScreen ? (
@@ -459,18 +476,22 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
           <div data-editor-panel={panel.id}><panel.component /></div>
         </Dialog>
       ) : panel && (
-        <section data-editor-panel={panel.id} className="absolute inset-x-2 bottom-14 z-10 max-h-[55%] overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:inset-x-auto md:bottom-auto md:left-2 md:top-2 md:max-h-[calc(100%-1rem)] md:w-80">
-          <h2 className="mb-3 text-base">{t(panel.label)}</h2>
-          <panel.component />
-        </section>
+        // The left zone from md up; on a phone, the one sheet above the tool bar (map/layout/zones).
+        <ZoneCard id="panel" zone={{ desktop: 'left', phone: 'sheet' }} priority={PRIORITY.panel} className="max-h-[55%] md:max-h-full">
+          <section data-editor-panel={panel.id} className="min-h-0 overflow-y-auto rounded-xl bg-white p-4 shadow-xl ring-1 ring-loam-200 md:w-80">
+            <h2 className="mb-3 text-base">{t(panel.label)}</h2>
+            <panel.component />
+          </section>
+        </ZoneCard>
       )}
       {editor.selected && <Inspector feature={editor.selected} />}
       {[...OVERLAYS].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)).map((o) => <o.component key={o.id} />)}
       <HeaderActions />
       <HeaderSteps />
       {/* On the body and above every overlay: a message sent from the photo viewer (z-[60]) or one of its dialogs must show over it. */}
+      {/* Above the foot of the map (time strip, legend), centred on the part no side card covers (ZoneLayer). */}
       {toast && createPortal(
-        <div role="status" className={'fixed bottom-16 left-1/2 z-[90] flex items-center gap-3 md:bottom-10 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
+        <div role="status" className={'fixed bottom-[var(--editor-toast-bottom,4rem)] left-[var(--editor-toast-center,50%)] z-[90] flex max-w-[calc(100vw-1rem)] items-center gap-3 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white shadow-lg ' + (toast.tone === 'error' ? 'bg-clay-500' : 'bg-loam-900')}>
           <span>{toast.message}</span>
           {toast.action && (
             <button
@@ -488,6 +509,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
         </div>,
         document.body,
       )}
+      </ZoneLayer>
     </EditorContext.Provider>
   )
 }

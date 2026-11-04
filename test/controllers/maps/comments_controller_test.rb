@@ -34,6 +34,20 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ @viewer.id ], Comment.last.then { |c| [ c.author_id ] }
   end
 
+  test "the thread says who the next comment will e-mail" do
+    sign_in_as @viewer
+    get map_comments_path(@map), params: { commentable_type: "MapFeature", commentable_id: @feature.id }, as: :json
+    assert_equal [ @owner.display_name ], json["notified"]
+
+    sign_in_as @owner
+    get map_comments_path(@map), params: { commentable_type: "MapFeature", commentable_id: @feature.id }, as: :json
+    assert_equal [], json["notified"]
+
+    @map.memberships.find_by(user: @viewer).update!(chat_access: true)
+    get map_comments_path(@map), params: { commentable_type: "Map", commentable_id: @map.id }, as: :json
+    assert_nil json["notified"]
+  end
+
   test "a non-member cannot read, comment, applaud or follow" do
     comment = Comment.create!(commentable: @feature, author: @owner, body: "Privé")
     sign_in_as @outsider
@@ -259,6 +273,30 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ { "id" => @feature.id, "name" => "Noyer", "layer" => "plants", "kind" => "tree" } ], json["features"]
     assert_equal [ 4.91, 50.35 ], json["location"]
     assert_equal photo.id, json["photo"]["id"]
+  end
+
+  test "a message carries a document; deleting the message removes it unless it went to the library" do
+    doc = @map.all_documents.new(uploaded_by: @owner, origin: "chat", in_library: false)
+    doc.file.attach(io: file_fixture("rapport_labo.pdf").open, filename: "devis.pdf", content_type: "application/pdf")
+    doc.save!
+    sign_in_as @owner
+    post map_comments_path(@map), params: { comment: { commentable_type: "Map", commentable_id: @map.id, body: "Le devis", map_document_id: doc.id } }, as: :json
+    assert_response :created
+    assert_equal doc.id, json["document"]["id"]
+    assert_equal "devis.pdf", json["document"]["filename"]
+    assert_equal false, json["document"]["inLibrary"]
+    assert json["document"]["downloadUrl"].present?
+
+    delete map_comment_path(@map, json["id"]), as: :json
+    assert_response :no_content
+    assert_not MapDocument.exists?(doc.id)
+
+    kept = @map.documents.new(uploaded_by: @owner)
+    kept.file.attach(io: file_fixture("rapport_labo.pdf").open, filename: "plan.pdf", content_type: "application/pdf")
+    kept.save!
+    comment = Comment.create!(commentable: @map, author: @owner, body: "Le plan", map_document: kept)
+    delete map_comment_path(@map, comment), as: :json
+    assert MapDocument.exists?(kept.id)
   end
 
   test "show reads one message as the person sees it; read marks the discussion read" do

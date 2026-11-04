@@ -12,7 +12,7 @@ fr:
     sign_out: "Se déconnecter"
   mailer:
     place_alt: "Le contour de « %{name} », dessiné comme une page de carnet"
-    footer: "Semisto Terranova, l'atelier en ligne de Semisto pour cartographier son terrain et concevoir son jardin-forêt."
+    footer: "Semisto Terranova, l'atelier en ligne de Semisto pour apprendre à lire son terrain et y concevoir son jardin-forêt."
   maps:
     created: "Carte créée. Délimitons maintenant ton terrain."
     updated: "Carte enregistrée."
@@ -150,6 +150,7 @@ fr:
       plants: "Plantes"
       animals: "Animaux"
       networks: "Réseaux"
+      drawings: "Dessins"
       notes: "Notes"
     kinds:
       zone: "Zone"

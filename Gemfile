@@ -95,3 +95,5 @@ gem "caxlsx", "~> 4.5"
 gem "rubyzip", ">= 2.4", "< 4"
 # Text of the PDF documents a map's library holds, for the AI (MCP get_document).
 gem "pdf-reader", "~> 2.15"
+
+gem "rqrcode", "~> 3.2"

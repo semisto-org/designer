@@ -73,6 +73,7 @@ export default function SunPanel() {
   return (
     <div className="space-y-5">
       <p className="text-sm text-loam-700">{t('sun.intro')}</p>
+      <p className="text-sm text-loam-600">{t('sun.map_sectors')}</p>
 
       <figure className="space-y-2">
         <div className="overflow-hidden rounded-2xl shadow-sm ring-1 ring-loam-200">

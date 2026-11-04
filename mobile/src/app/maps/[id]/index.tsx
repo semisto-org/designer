@@ -13,6 +13,7 @@ import { display, useDisplay } from '@/lib/display'
 import { hidesMore, isShown } from '@/lib/display-core'
 import { memoryOf } from '@/lib/memory'
 import { observationYear, signsToLookFor } from '@/lib/season'
+import { firstHourMissions } from '@/lib/firstHour'
 import { anchor, boundsOf } from '@/lib/geo'
 import { t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
@@ -25,6 +26,9 @@ import { arrived, nextTarget, remaining } from '@/lib/tour'
 import { useVisit, visits } from '@/lib/visit'
 import { visitNotes } from '@/lib/visit-core'
 import { FeatureLayers } from '@/map/FeatureLayers'
+import { ChatPins } from '@/map/ChatPins'
+import { chat, useChat } from '@/lib/chat'
+import { pinnedHere } from '@/lib/chat-core'
 import { useMapBundle } from '@/state/useMapBundle'
 import { useWeek } from '@/state/useWeek'
 import { useMapStyle } from '@/state/useMapStyle'
@@ -38,7 +42,7 @@ import { Icon } from '@/ui/Icon'
 import { Body, Button, IconButton, Notice } from '@/ui/kit'
 import { Sheet, type SheetLevel } from '@/ui/Sheet'
 import { toast } from '@/ui/Toast'
-import { colors, radius, shadows, space, touch, type } from '@/ui/theme'
+import { colors, fonts, radius, shadows, space, touch, type } from '@/ui/theme'
 
 export default function Terrain() {
   const mapId = Number(useLocalSearchParams<{ id: string }>().id)
@@ -104,6 +108,7 @@ export default function Terrain() {
   const shotHere = useMemo(() => (me && bundle ? photosHere(bundle.photos, me) : []), [bundle, me])
   const week = useWeek(mapId)
   const memory = useMemo(() => (bundle ? memoryOf({ photos: bundle.photos, features: bundle.features }) : null), [bundle])
+  const firstHour = useMemo(() => (bundle ? firstHourMissions(bundle.firstHour, bundle.features) : null), [bundle])
   const seasons = useMemo(() => (bundle ? { seasons: observationYear(bundle.features), lookFor: signsToLookFor(bundle.features) } : null), [bundle])
   const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
   const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
@@ -117,6 +122,34 @@ export default function Terrain() {
     camera.current?.easeTo({ center: anchor(target.feature.geometry), duration: 500, padding: { top: 120, bottom: 320, left: 0, right: 0 } })
   }, [targetId]) // eslint-disable-line react-hooks/exhaustive-deps
   const visitNoted = useMemo(() => (bundle && visit ? visitNotes(bundle, visit.key) : []), [bundle, visit])
+
+  // The map's discussion, for those who take part in it: live while this
+  // screen is open, so the discussion opens and closes over it instantly.
+  const member = bundle?.map.chat === true
+  const discussion = useChat()
+  const [spot, setSpot] = useState<number | null>(null)
+  useEffect(() => (member ? chat.attach(mapId) : undefined), [member, mapId])
+  const chatMessages = member && discussion.mapId === mapId ? discussion.messages : []
+  const saidHere = useMemo(() => (me ? pinnedHere(chatMessages, me) : []), [chatMessages, me])
+  // A pin or a cited element tapped in the discussion: shown here, on the map.
+  useEffect(() => chat.onFocus((focus) => {
+    setFollow(false)
+    if (focus.kind === 'spot') {
+      setSpot(focus.messageId)
+      setSelectedId(null)
+      setLevel(0)
+      camera.current?.easeTo({ center: focus.position, zoom: 19, duration: 500, padding: { top: 120, bottom: 240, left: 0, right: 0 } })
+    } else {
+      const feature = bundle?.features.find((f) => f.id === focus.id)
+      if (!feature) { toast(t('mobile.chat.feature_gone'), { tone: 'info' }); return }
+      if (bundle) display.reveal(mapId, feature.properties, bundle.planting)
+      setSpot(null)
+      setNoting(false)
+      setSelectedId(feature.id)
+      setLevel(1)
+      camera.current?.easeTo({ center: anchor(feature.geometry), duration: 500, padding: { top: 120, bottom: 360, left: 0, right: 0 } })
+    }
+  }), [bundle, mapId])
 
   if (!bundle) {
     return (
@@ -144,6 +177,10 @@ export default function Terrain() {
 
   const go = (pathname: string, params: Record<string, string> = {}) =>
     router.push({ pathname: pathname as never, params: { id: String(mapId), ...params } })
+  const openChat = (messageId?: number) => {
+    if (messageId) chat.openAt(messageId)
+    go('/maps/[id]/chat')
+  }
 
   const pick = (feature: MapFeature) => {
     setNoting(false)
@@ -229,7 +266,7 @@ export default function Terrain() {
 
   return (
     <View style={s.fill}>
-      <Map ref={mapRef} style={s.fill} mapStyle={mapStyle} compass compassPosition={{ top: insets.top + 72, right: 12 }}
+      <Map ref={mapRef} style={s.fill} mapStyle={mapStyle} compass compassPosition={{ top: insets.top + (member ? 128 : 72), right: 12 }}
         attribution={false} logo={false}
         onPress={(e) => { if (!('features' in e.nativeEvent && pickFeatureId(e.nativeEvent.features) !== null)) unselect() }}
         onRegionWillChange={(e) => { if (e.nativeEvent.userInteraction) setFollow(false) }}>
@@ -241,6 +278,7 @@ export default function Terrain() {
         />
         <FeatureLayers bundle={bundle} display={shown} selectedId={selectedId ?? (touring ? targetId : null)}
           onSelect={(id) => { const feature = id === null ? null : visible.find((f) => f.id === id); if (feature) pick(feature); else unselect() }} />
+        {member && <ChatPins messages={chatMessages} focusedId={spot} onPress={openChat} />}
         <UserLocation accuracy heading />
       </Map>
 
@@ -263,6 +301,19 @@ export default function Terrain() {
           onPress={() => go('/maps/[id]/display')} />
         <IconButton icon="follow" label={t('mobile.terrain.follow')} active={follow} onPress={() => setFollow((v) => !v)} />
       </View>
+
+      {/* The map's discussion, under the header on the right: a paper label with what is new. */}
+      {member && (
+        <Pressable style={[s.chatButton, { top: insets.top + 72 }]} onPress={() => openChat()} hitSlop={4}
+          accessibilityRole="button"
+          accessibilityLabel={discussion.unread > 0 ? t('mobile.chat.open_unread', { count: discussion.unread }) : discussion.unread < 0 ? t('mobile.chat.open_some') : t('mobile.chat.open')}>
+          <Icon name="chat" size={20} color={colors.prune700} />
+          <Text style={s.chatLabel} maxFontSizeMultiplier={1.3}>{t('mobile.chat.button')}</Text>
+          {discussion.unread !== 0 && (
+            <View style={s.chatBadge}><Text style={s.chatBadgeText} maxFontSizeMultiplier={1.2}>{discussion.unread > 0 ? String(Math.min(discussion.unread, 99)) : '•'}</Text></View>
+          )}
+        </Pressable>
+      )}
 
       {/* The map's sources (aerial photo, base map), on paper like the rest, under the back button. */}
       <Pressable style={[s.credits, { top: insets.top + 72 }]} onPress={() => mapRef.current?.showAttribution()} hitSlop={6}
@@ -303,7 +354,11 @@ export default function Terrain() {
           : visit && editable
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
             : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
-                mapId={mapId} photosHere={shotHere} memory={memory} week={week}
+                mapId={mapId} photosHere={shotHere} memory={memory} week={week} saidHere={saidHere} onSaid={openChat}
+                firstHour={editable && firstHour ? {
+                  data: firstHour,
+                  onMission: (key) => go(key === 'water' ? '/maps/[id]/storm' : key === 'season' ? '/maps/[id]/season' : '/maps/[id]/bioindicator'),
+                } : null}
                 year={editable && seasons ? { ...seasons, onSign: (sign) => go('/maps/[id]/season', { sign }) } : null} onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />}
       </Sheet>
     </View>
@@ -325,4 +380,11 @@ const s = StyleSheet.create({
   headerTitle: { ...type.mapName, fontSize: 19, lineHeight: 23, color: colors.loam900 },
   headerLine: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   headerSub: { ...type.meta, flexShrink: 1 },
+  chatButton: {
+    position: 'absolute', right: space.md, minHeight: touch.min, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: space.md,
+    backgroundColor: colors.paper, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.loam200, ...shadows.md,
+  },
+  chatLabel: { fontFamily: fonts.bold, fontSize: 15, color: colors.prune700 },
+  chatBadge: { minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: colors.prune600, alignItems: 'center', justifyContent: 'center' },
+  chatBadgeText: { fontFamily: fonts.bold, fontSize: 14, lineHeight: 18, color: colors.white },
 })

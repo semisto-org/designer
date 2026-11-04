@@ -46,6 +46,7 @@ module Mcp
           photos: map.photos.count,
           discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
+          first_hour: first_hour(map),
           offer: offer(map),
           sectors: sectors(map),
           exports: exports(map),
@@ -54,6 +55,7 @@ module Mcp
           team_season: team_season(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
+          reader_guide: reader_guide,
           permissions: {
             read: true,
             propose_drafts: blockers.empty?,
@@ -75,6 +77,14 @@ module Mcp
       end
 
       private
+        # A reader (most often the person the garden is designed for) gets the
+        # help article written for them: how to read the plan, ask, print.
+        def reader_guide
+          return nil unless @role == "viewer"
+          article = HelpArticle.find(MapInvitationMailer::READER_GUIDE) or return nil
+          { slug: article.slug, title: article.title, url: "#{origin}/help/#{article.slug}", note: t("notes.reader_guide") }
+        end
+
       # The walks made with the phone; list_site_visits gives each one.
       def site_visits(map)
         last = map.site_visits.reorder(started_at: :desc).first
@@ -161,15 +171,20 @@ module Mcp
             from, to = Sectors::Arc.directions(feature, [ center.x, center.y ])
             next unless from
             {
-              id: feature.id, status: feature.status, sector_type: feature.properties["sector_type"],
+              id: feature.id, status: feature.status, sector_type: feature.properties["sector_type"], group: Sectors::Arc.group(feature.properties["sector_type"]),
               season: feature.properties["sector_season"] || "all_year", from_deg: from, to_deg: to, directions: range.(from, to),
               name: feature.name, notes: feature.notes
             }.compact
           end
+          sun = Sectors::Arc.sun(center.y).map { |s| s.merge(group: "sun", directions: range.(s[:from_deg], s[:to_deg])) }
           {
-            sun: Sectors::Arc.sun(center.y).map { |s| s.merge(directions: range.(s[:from_deg], s[:to_deg])) },
+            sun:,
             drawn:,
-            panel_url: "#{map_url(map)}?panel=sectors"
+            # The groups to show or hide together when presenting the design, and the
+            # link that opens the map with only some of them kept around the terrain.
+            groups: (sun + drawn).map { |s| s[:group] }.uniq.sort_by { |g| Sectors::Arc::GROUPS.keys.index(g) },
+            panel_url: "#{map_url(map)}?panel=sectors",
+            show_url: "#{map_url(map)}?sectors=all"
           }
         end
 
@@ -281,6 +296,21 @@ module Mcp
             with_reports: samples.count { |s| s.lab_reports.attached? },
             drafts_pending: samples.count { |s| s.draft.pending? }
           }
+        end
+
+        # « Ta première heure »: what Terranova reads of the place on its own
+        # (Maps::PlaceReading: slope in %, which way it runs, drop in metres,
+        # where rain water gathers), when the person first read it, and the
+        # three things to go and see outside (Maps::FirstHourMissions).
+        def first_hour(map)
+          missions = Maps::FirstHourMissions.new(map)
+          {
+            started_at: map.first_hour_started_at&.iso8601,
+            reading: Maps::PlaceReading.new(map).call.presence,
+            missions: missions.missions,
+            missions_done: missions.done?,
+            signs_this_month: missions.as_json[:signs]
+          }.compact
         end
 
         # Who owns the place and what they chose to share with other

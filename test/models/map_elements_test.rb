@@ -6,8 +6,9 @@ class MapElementsTest < ActiveSupport::TestCase
   end
 
   test "the library covers every design layer but plants, with unique kinds" do
-    assert_equal %w[existing water access structures animals networks notes], MapElements.layers
+    assert_equal %w[existing water access structures animals networks drawings notes], MapElements.layers
     assert_empty MapElements.kinds_for("plants")
+    assert_empty MapElements.kinds_for("drawings"), "zones and lines are generic kinds"
     assert_includes MapElements.kinds_for("water"), "pond"
     assert_includes MapElements.kinds_for("networks"), "water_pipe"
     assert_equal "water", MapElements.find("swale").layer
@@ -23,6 +24,19 @@ class MapElementsTest < ActiveSupport::TestCase
         end
       end
     end
+  end
+
+  test "a building's roof for the 3D view: shape, gutters, ridge and side, the old « En pente » still valid" do
+    house = { "type" => "Polygon", "coordinates" => [ [ [ 4.9, 50.34 ], [ 4.9002, 50.34 ], [ 4.9002, 50.3401 ], [ 4.9, 50.3401 ], [ 4.9, 50.34 ] ] ] }
+    building = ->(props) { maps(:ahinvaux).features.new(layer: "existing", kind: "building", geometry: house, properties: props) }
+    %w[pitched hip shed flat green].each do |roof|
+      assert building.({ "roof" => roof, "height_m" => 9, "eaves_m" => 5.5, "ridge" => "short", "roof_flip" => true }).valid?, roof
+    end
+    assert_not building.({ "roof" => "dome" }).valid?
+    assert_not building.({ "ridge" => "diagonal" }).valid?
+    assert_not building.({ "eaves_m" => 120 }).valid?
+    shed = maps(:ahinvaux).features.new(layer: "structures", kind: "shed", geometry: house, properties: { "roof" => "shed", "height_m" => 2.4, "eaves_m" => 1.9 })
+    assert shed.valid?, shed.errors.full_messages.to_sentence
   end
 
   test "a pump and its irrigation line live in the water layer, not in the hidden networks" do

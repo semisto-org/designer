@@ -1,19 +1,22 @@
 import { usePage } from '@inertiajs/react'
-import clsx from 'clsx'
-import { Bell, BellOff, Users, X } from 'lucide-react'
+import { ImagePlus, Users, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { IconButton } from '@/components/ui/IconButton'
+import { toast } from '@/components/ui/toast'
 import { confirmAction } from '@/components/ui/confirm'
 import { api } from '@/lib/api'
 import { cable } from '@/lib/cable'
 import { t } from '@/lib/i18n'
-import { useMediaQuery } from '@/lib/useMediaQuery'
+import { useFileDrag } from '@/lib/useFileDrag'
 import { useEditor } from '@/map/editor/EditorContext'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 import type { SharedProps } from '@/types'
-import type { CommentData, ThreadData } from '@/types/collab'
+import type { ChatLevel, CommentData, ThreadData } from '@/types/collab'
 import { refreshThreads, useThreads } from '../threadsStore'
-import { ChatComposer, type ChatDraft } from './ChatComposer'
+import { ChatComposer, type ChatComposerHandle, type ChatDraft } from './ChatComposer'
 import { ChatMessage } from './ChatMessage'
+import { ChatNotifyMenu } from './ChatNotifyMenu'
 import { ChatPins } from './ChatPins'
 import { chatActions, rememberedOpen, useChat } from './chatStore'
 
@@ -41,9 +44,9 @@ export default function MapChat() {
   const [busy, setBusy] = useState(false)
   const [editing, setEditing] = useState<number | null>(null)
   const loadedRef = useRef(false)
+  const composer = useRef<ChatComposerHandle>(null)
   const openRef = useRef(chat.open)
   openRef.current = chat.open
-  const wide = useMediaQuery('(min-width: 768px)')
   const { threads } = useThreads(mapId)
   const base = `/maps/${mapId}/comments`
 
@@ -57,16 +60,37 @@ export default function MapChat() {
     if (mapThread?.unread && !loadedRef.current) chatActions.markSomeUnread()
   }, [mapThread?.unread])
 
+  // Read only when someone can see it: a tab left open with the discussion
+  // showing must not swallow the messages (they would never ring nor be
+  // e-mailed, Chris's to Michael on 2026-11-03). Hidden, the tab waits and
+  // marks them read when it shows again.
+  const pendingRead = useRef(false)
   const markRead = useCallback(() => {
+    if (document.visibilityState !== 'visible') {
+      pendingRead.current = true
+      return
+    }
+    pendingRead.current = false
     void api(`${base}/read`, { method: 'POST', body: { commentable_type: 'Map', commentable_id: mapId } })
       .then(() => refreshThreads(mapId))
       .catch(() => undefined)
   }, [base, mapId])
 
-  // Loaded the first time it shows (opening it marks it read).
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && pendingRead.current && openRef.current) markRead()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [markRead])
+
+  // Loaded the first time it shows (opening it marks it read, unless the tab
+  // is hidden: it is then read when it shows).
   const load = useCallback(async () => {
     try {
-      const data = await api<ThreadData>(`${base}?commentable_type=Map&commentable_id=${mapId}`)
+      const hidden = document.visibilityState !== 'visible'
+      const data = await api<ThreadData>(`${base}?commentable_type=Map&commentable_id=${mapId}${hidden ? '&peek=1' : ''}`)
+      if (hidden) pendingRead.current = true
       setThread(data)
       loadedRef.current = true
       setFailed(false)
@@ -142,7 +166,7 @@ export default function MapChat() {
     try {
       const comment = await api<CommentData>(base, {
         method: 'POST',
-        body: { comment: { commentable_type: 'Map', commentable_id: mapId, body: draft.body, feature_ids: draft.featureIds, lng: draft.location?.[0], lat: draft.location?.[1], map_photo_id: draft.photoId } },
+        body: { comment: { commentable_type: 'Map', commentable_id: mapId, body: draft.body, feature_ids: draft.featureIds, lng: draft.location?.[0], lat: draft.location?.[1], map_photo_id: draft.photoId, map_document_id: draft.documentId } },
       })
       setThread((current) => current && (current.comments.some((c) => c.id === comment.id) ? current : { ...current, comments: [...current.comments, comment] }))
       void refreshThreads(mapId)
@@ -186,12 +210,11 @@ export default function MapChat() {
     }
   }
 
-  async function toggleDigest() {
-    if (!thread) return
-    const subscribed = !thread.subscribed
+  async function changeLevel(level: ChatLevel) {
     try {
-      await api(`${base}/subscribe`, { method: subscribed ? 'POST' : 'DELETE', body: { commentable_type: 'Map', commentable_id: mapId } })
-      setThread((current) => current && { ...current, subscribed })
+      const result = await api<{ level: ChatLevel; subscribed: boolean }>(`${base}/subscribe`, { method: 'PATCH', body: { commentable_type: 'Map', commentable_id: mapId, level } })
+      setThread((current) => current && { ...current, level: result.level, subscribed: result.subscribed })
+      toast(t('collab.chat.notify.saved', { level: t(`collab.chat.notify.${result.level}`) }), { tone: 'success' })
     } catch (error) {
       fail(error)
     }
@@ -200,6 +223,8 @@ export default function MapChat() {
   const replace = (updated: CommentData) =>
     setThread((current) => current && { ...current, comments: current.comments.map((c) => (c.id === updated.id ? updated : c)) })
 
+  // A picture or any file dragged from the computer can be dropped anywhere on the panel.
+  const fileDrag = useFileDrag(member && chat.open && !chat.picking && editor.canEdit)
   if (!member) return null
 
   const comments = thread?.comments ?? []
@@ -209,15 +234,29 @@ export default function MapChat() {
       {(chat.open || chat.picking) && <ChatPins comments={comments} />}
       {/* Mounted once opened, then only hidden: the scroll, the draft and the photo being sent survive. */}
       {(thread || chat.open) && (
+        // The right zone from md up, a sheet on a phone; it waits while an element's sheet is open (map/layout/zones).
+        <ZoneCard id="chat" zone={{ desktop: 'right', phone: 'sheet' }} priority={PRIORITY.chat} active={shown} passThrough className="h-full justify-end">
         <aside
           aria-label={t('collab.chat.title')}
           data-private
-          className={clsx(
-            'absolute z-30 flex-col overflow-hidden bg-white shadow-xl ring-1 ring-loam-200',
-            shown ? 'flex' : 'hidden',
-            wide ? 'bottom-2 right-2 top-2 w-96 rounded-xl' : 'inset-x-0 bottom-14 h-[70%] rounded-t-2xl',
-          )}
+          className="pointer-events-auto relative flex h-[70%] min-h-0 flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl ring-1 ring-loam-200 md:h-full md:w-96 md:rounded-xl"
+          onDragOver={(e) => {
+            if (!fileDrag || !composer.current?.canAttach) return
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'copy'
+          }}
+          onDrop={(e) => {
+            if (!fileDrag) return
+            e.preventDefault()
+            if (!composer.current?.attachFiles(e.dataTransfer.files)) editor.notify(t('collab.chat.drop_busy'), 'error')
+          }}
         >
+          {fileDrag && composer.current?.canAttach && (
+            <div aria-hidden className="pointer-events-none absolute inset-2 z-20 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-prune-400 bg-prune-50/90 p-6 text-center text-sm font-medium text-prune-800">
+              <ImagePlus className="h-6 w-6" />
+              {t('collab.chat.drop')}
+            </div>
+          )}
           <header className="flex items-start gap-2 border-b border-loam-100 px-4 py-3">
             <div className="min-w-0 flex-1">
               <h2 className="font-serif text-lg leading-tight text-loam-900">{t('collab.chat.title')}</h2>
@@ -227,9 +266,7 @@ export default function MapChat() {
               </p>
             </div>
             {thread && (
-              <IconButton size="sm" label={t('collab.chat.digest')} pressed={thread.subscribed} onClick={() => void toggleDigest()}>
-                {thread.subscribed ? <Bell /> : <BellOff />}
-              </IconButton>
+              <ChatNotifyMenu level={thread.level ?? (thread.subscribed ? 'all' : 'mentions')} onChange={(level) => void changeLevel(level)} />
             )}
             <IconButton size="sm" label={`${t('collab.chat.hide')} (D)`} onClick={() => chatActions.setOpen(false)}>
               <X />
@@ -247,9 +284,10 @@ export default function MapChat() {
             onApplaud={applaud}
           />
           <div className="border-t border-loam-100 p-3">
-            <ChatComposer members={thread?.members ?? []} busy={busy} onSubmit={post} />
+            <ChatComposer ref={composer} members={thread?.members ?? []} busy={busy} onSubmit={post} />
           </div>
         </aside>
+        </ZoneCard>
       )}
     </>
   )

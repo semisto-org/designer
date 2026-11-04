@@ -45,3 +45,13 @@ export function inkOn(color: string): string {
   })
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.3 ? '#1b1712' : '#ffffff'
 }
+
+/**
+ * Crowns are drawn by strata, the canopy first and the ground cover last,
+ * then the wider crown under the narrower one: a fruit tree's crown, seen
+ * from above, would hide the currants and the herbs planted under it, so
+ * on the plan it is the wash they are drawn over.
+ */
+export function crownOrder(strata: Strata, radiusM: number): number {
+  return STRATA.indexOf(strata) * 100 - Math.min(radiusM, 99)
+}

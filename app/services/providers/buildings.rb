@@ -22,6 +22,11 @@
 module Providers
   class Buildings
     class Unavailable < StandardError; end
+    # OpenStreetMap did not answer this time (busy, timed out, rate limited,
+    # or already being asked for the same extent): asking again a little
+    # later usually works, unlike a provider switched off or a city-sized
+    # extent.
+    class Busy < Unavailable; end
 
     Building = Data.define(:id, :kind, :rings, :height, :min_height, :levels) do
       def as_json(*) = { id:, kind:, rings:, height:, minHeight: min_height, levels: }
@@ -58,11 +63,31 @@ module Providers
       raise Unavailable, "extent too large" if area_km2(*box) > MAX_AREA_KM2
 
       key = [ "map_data/buildings/v1", Digest::SHA1.hexdigest(@url)[0, 8], *box ].join("/")
-      rows = Rails.cache.fetch(key, expires_in: CACHE_TTL) { fetch(box).map(&:to_h) }
+      rows = Rails.cache.read(key) || ask_once(key) { fetch(box).map(&:to_h) }
       rows.map { |row| Building.new(**row.symbolize_keys) }
     end
 
     private
+      # One question to Overpass per extent at a time. The warm-up job and
+      # the 3D page often ask together (a map just published, a relief just
+      # imported): two parallel queries from one server are what the public
+      # instance rate-limits, and the loser used to come back empty. The
+      # second asker is told to come back instead; by then the answer is
+      # in the cache.
+      def ask_once(key)
+        flag = "#{key}/asking"
+        raise Busy, "already asking" if Rails.cache.read(flag)
+
+        Rails.cache.write(flag, true, expires_in: TIMEOUT + 5)
+        begin
+          rows = yield
+          Rails.cache.write(key, rows, expires_in: CACHE_TTL)
+          rows
+        ensure
+          Rails.cache.delete(flag)
+        end
+      end
+
       def fetch(box)
         bbox = box.join(",")
         query = <<~OVERPASS.squish
@@ -71,9 +96,15 @@ module Providers
           out geom qt;
         OVERPASS
         body = GeoHttp.get(@url, params: { data: query }, timeout: TIMEOUT).body
-        JSON.parse(body).fetch("elements", []).filter_map { |element| parse(element) }
+        json = JSON.parse(body)
+        # A busy Overpass answers 200 with a `remark` (« runtime error: Query
+        # timed out », « out of memory ») and no or part of the elements:
+        # never cache that for a month as if the place had no buildings.
+        raise Busy, json["remark"] if json["remark"].to_s.match?(/error|timed out|out of memory/i)
+
+        json.fetch("elements", []).filter_map { |element| parse(element) }
       rescue GeoHttp::Unavailable, JSON::ParserError, KeyError => e
-        raise Unavailable, e.message
+        raise Busy, e.message
       end
 
       def parse(element)

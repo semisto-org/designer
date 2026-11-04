@@ -18,6 +18,8 @@ export type MapSummary = {
   ownerName: string
   updatedAt: string
   readOnlyByPlan: boolean
+  /** Takes part in the map's discussion (Map#chat_member?); only in a map's bundle. */
+  chat?: boolean
   areaM2: number | null
   bbox: [number, number, number, number] | null
   center: Position | null
@@ -84,8 +86,14 @@ export type MapBundle = {
   planting: Planting
   /** Dated drone views of the map, newest first (older bundles have none). */
   aerialViews?: AerialView[]
+  /** « Ta première heure »: the three missions outside (older bundles have none). */
+  firstHour?: FirstHour | null
   syncedAt: string
 }
+
+export type FirstHourMission = { key: 'water' | 'season' | 'living'; done: boolean; count: number; target?: number }
+/** Maps::FirstHourMissions: shown during the first weeks after « Voici ton lieu ». */
+export type FirstHour = { missions: FirstHourMission[]; done: boolean; shown: boolean; signs: string[] }
 
 /** A drone orthophoto of the map, laid over the base map (style ?drone=id). */
 export type AerialView = {

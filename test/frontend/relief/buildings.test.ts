@@ -79,3 +79,32 @@ test('a drawn building replaces the OpenStreetMap footprint it covers, and keeps
   assert.equal(layer.volumes[0].source, 'tags')
   assert.ok(layer.roofs[7 * 20 + 8] >= 55, 'its roof is there for the shadows')
 })
+
+test('a drawn building wears the roof of its card: shape, gutters, ridge and side', () => {
+  const ring = building().rings[0]
+  const [drawn] = drawnBuildings([{
+    geometry: { type: 'Polygon', coordinates: [ring] },
+    properties: { id: 3, kind: 'building', height_m: 8, roof: 'pitched', eaves_m: 5, ridge: 'long' },
+  }])
+  assert.deepEqual(drawn.roof, { shape: 'gable', eaves: 5, ridge: 'long', flip: false })
+  const ground = new Float32Array(400).fill(50)
+  const [volume] = buildingLayer(meta, [drawn], { original: ground, ground, surface: null }).volumes
+  assert.equal(volume.roof.type, 'gable')
+  assert.equal(volume.drawn, true)
+  assert.ok(Math.abs(volume.height - 8) < 1e-6)
+  assert.ok(Math.abs(volume.eaves - 5) < 1e-6)
+
+  const hip = drawnBuildings([{ geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 4, kind: 'shed', height_m: 2, roof: 'hip' } }])[0]
+  assert.equal(hip.roof?.shape, 'hip')
+  // A green roof is flat; a card without roof keeps the flat volume of before.
+  assert.equal(drawnBuildings([{ geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 5, kind: 'building', roof: 'green' } }])[0].roof?.shape, 'flat')
+  assert.equal(drawnBuildings([{ geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 6, kind: 'building' } }])[0].roof, undefined)
+})
+
+test('a low drawn shed keeps its own height under the guessed minimum', () => {
+  const ring = building().rings[0]
+  const [drawn] = drawnBuildings([{ geometry: { type: 'Polygon', coordinates: [ring] }, properties: { id: 3, kind: 'poultry_house', height_m: 1.5 } }])
+  const ground = new Float32Array(400).fill(50)
+  const [volume] = buildingLayer(meta, [drawn], { original: ground, ground, surface: null }).volumes
+  assert.ok(Math.abs(volume.height - 1.5) < 1e-6)
+})

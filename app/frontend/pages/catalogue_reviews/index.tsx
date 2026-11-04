@@ -28,6 +28,8 @@ type Verdict = 'confirmed' | 'partial' | 'contradicted' | 'unknown'
 type ValueCheck = {
   field: string; verdict: Verdict; sourceValue: unknown; confidence: number | null
   source: string | null; url: string | null; excerpt: string | null
+  /** False for PFAF, which only cross-checks: its value is never taken. */
+  citable: boolean
 }
 
 type Props = {
@@ -251,13 +253,13 @@ function ValueRow({ field, value, check, taken, onTake }: {
         <dd className={taken ? 'text-loam-400 line-through' : 'text-loam-800'}>{formatValue(field, value)}</dd>
         {check && check.verdict !== 'unknown' && (
           <span className={VERDICT_STYLES[check.verdict]}>
-            {check.verdict === 'confirmed' ? t('plants.review.verdicts.confirmed_by', { source })
+            {check.verdict === 'confirmed' ? t(check.citable ? 'plants.review.verdicts.confirmed_by' : 'plants.review.verdicts.cross_checked_by', { source })
               : check.verdict === 'partial' ? t('plants.review.verdicts.partial_by', { source, value: formatValue(field, check.sourceValue) })
                 : t('plants.review.verdicts.contradicted_by', { source, value: formatValue(field, check.sourceValue) })}
             {check.url && <a href={check.url} target="_blank" rel="noreferrer" className="ml-1 inline-flex align-middle" aria-label={source}><ExternalLink className="h-3.5 w-3.5" aria-hidden /></a>}
           </span>
         )}
-        {check?.verdict === 'contradicted' && (
+        {check?.verdict === 'contradicted' && check.citable && (
           <button type="button" onClick={onTake} aria-pressed={taken}
             className={`rounded-full px-2 py-0.5 text-sm ring-1 ${taken ? 'bg-leaf-100 text-leaf-800 ring-leaf-300' : 'bg-white text-prune-700 ring-loam-200 hover:bg-loam-50'}`}>
             {taken ? t('plants.review.verdicts.taken') : t('plants.review.verdicts.take')}
@@ -265,6 +267,7 @@ function ValueRow({ field, value, check, taken, onTake }: {
         )}
       </div>
       {check?.excerpt && check.verdict !== 'confirmed' && <p className="ml-6 mt-0.5 text-sm text-loam-500">« {check.excerpt} »</p>}
+      {check?.verdict === 'contradicted' && !check.citable && <p className="ml-6 mt-0.5 text-sm text-loam-500">{t('plants.review.verdicts.cross_check_only', { source })}</p>}
     </div>
   )
 }

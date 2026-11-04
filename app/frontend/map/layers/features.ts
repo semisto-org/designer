@@ -2,6 +2,7 @@ import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, PLANNED_PLANT_EXPR, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import { ensureLabelBackground, markerLabel, PAPER_LABEL_IMAGE } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
+import { stackFeatureLayers } from '@/map/layers/stack'
 import { displayGeometry, isRounded, isZoneKind, ZONE_FILL_OPACITY, ZONE_KINDS, zoneMeasureText } from '@/map/zones/zones'
 import type { MapFeatureCollection } from '@/types'
 
@@ -16,6 +17,7 @@ export const LAYER_COLORS: Record<string, string> = {
   plants: '#3d7d42',
   animals: '#946614',
   networks: '#c03c28',
+  drawings: '#5f7fa3',
   notes: '#726b9f',
 }
 
@@ -128,6 +130,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
   data = withZones(withoutSectors(data))
   if (map.getSource(FEATURES_SOURCE)) {
     ;(map.getSource(FEATURES_SOURCE) as GeoJSONSource).setData(data)
+    stackFeatureLayers(map)
     return
   }
   map.addSource(FEATURES_SOURCE, { type: 'geojson', data, promoteId: 'id' })
@@ -206,4 +209,6 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     } as never,
     paint: ZONE_LABEL_PAINT,
   })
+  // Added again after a base map change: back under the plants already there.
+  stackFeatureLayers(map)
 }

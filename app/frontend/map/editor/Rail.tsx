@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { GuidePill } from '@/map/editor/GuidePill'
 import { STAGES, useGuide } from '@/map/editor/guide'
 import { parseExpanded, railItems } from '@/map/editor/railItems'
 import type { EditorPanel, PanelGroup } from '@/map/panels/registry'
@@ -70,7 +71,8 @@ function useRailGroups(panels: EditorPanel[]) {
   const editor = useEditor()
   const guide = useGuide()
   const [expanded, toggle] = useExpandedGroups()
-  const todoPanel = guide.target?.kind === 'item' ? guide.target.panel : null
+  // « À faire maintenant » is for whoever can do it: a reader has no dot to chase.
+  const todoPanel = editor.canEdit && guide.target?.kind === 'item' ? guide.target.panel : null
   const groups = GROUPS.map((group) => {
     const all = panels.filter((p) => p.group === group && !p.hiddenFromRail).sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
     const { shown, hidden } = railItems(all, { expanded: expanded.has(group), pinned: [editor.activePanel, todoPanel] })
@@ -129,6 +131,8 @@ export function EditorRail({ panels }: RailProps) {
         collapsed ? 'w-14' : 'w-[220px]',
       )}
     >
+      {/* « À faire maintenant » leaves the map while a panel is open, and waits here. */}
+      {editor.activePanel != null && editor.activePanel !== 'journey' && <GuidePill collapsed={collapsed} />}
       <div className={clsx('flex min-h-0 flex-1 flex-col overflow-y-auto', collapsed ? 'items-center gap-1 py-3' : 'gap-3.5 px-2.5 py-3.5')}>
         {groups.map(({ group, items, hidden, foldable }) => {
           const index = STAGES.indexOf(group as never)

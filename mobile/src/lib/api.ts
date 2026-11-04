@@ -26,24 +26,52 @@ export type Multipart = { fields: Record<string, string>; file: { key: string; u
 
 type Body = Record<string, unknown> | FormData | Multipart | undefined
 
-type Options = { timeoutMs?: number; idempotencyKey?: string }
+type Options = {
+  timeoutMs?: number
+  idempotencyKey?: string
+  /** A file upload's bytes as they leave the phone. */
+  onProgress?: (sent: number, total: number) => void
+  /** Cancels the request from outside (« Relancer l'envoi »). */
+  signal?: AbortSignal
+}
+
+/**
+ * A file upload is given up only when nothing has moved for this long (no
+ * byte sent, then no answer once the body is out), never after a fixed
+ * total: a 3 MB photo on a weak field connection can need several minutes
+ * and still be going well.
+ */
+export const UPLOAD_IDLE_MS = 60_000
 
 type Answer = { status: number; text: () => Promise<string> }
 
 const isMultipart = (body: Body): body is Multipart => !!body && !(body instanceof FormData) && 'fields' in body && 'file' in body
 
-async function send(method: string, path: string, body: Body, token: string | null, { timeoutMs, idempotencyKey }: Options): Promise<Answer> {
+async function send(method: string, path: string, body: Body, token: string | null, { timeoutMs, idempotencyKey, onProgress, signal }: Options): Promise<Answer> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (token) headers.Authorization = `Bearer ${token}`
   if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs ?? (body instanceof FormData || isMultipart(body) ? 120_000 : 20_000))
+  const cancel = () => controller.abort()
+  if (signal?.aborted) cancel()
+  signal?.addEventListener('abort', cancel)
+  const upload = isMultipart(body) && body.file ? body.file : null
+  // An upload's clock starts again with every byte that leaves; anything else has a fixed limit.
+  const limit = upload ? timeoutMs ?? UPLOAD_IDLE_MS : timeoutMs ?? (body instanceof FormData || isMultipart(body) ? 120_000 : 20_000)
+  let timer = setTimeout(cancel, limit)
   try {
-    if (isMultipart(body) && body.file) {
-      const result = await new File(body.file.uri).upload(`${API_URL}${path}`, {
+    if (upload && isMultipart(body)) {
+      const result = await new File(upload.uri).upload(`${API_URL}${path}`, {
         httpMethod: method as 'POST' | 'PUT' | 'PATCH', uploadType: UploadType.MULTIPART, headers,
-        fieldName: body.file.key, mimeType: body.file.type, parameters: body.fields,
-        sessionType: 'foreground', signal: controller.signal,
+        fieldName: upload.key, mimeType: upload.type, parameters: body.fields,
+        // iOS keeps sending while the phone is in the pocket or another app is open;
+        // a foreground session stalled there and the round timed out.
+        sessionType: 'background', signal: controller.signal,
+        onProgress: ({ bytesSent, totalBytes }) => {
+          clearTimeout(timer)
+          timer = setTimeout(cancel, limit)
+          onProgress?.(bytesSent, totalBytes)
+        },
       })
       return { status: result.status, text: async () => result.body }
     }
@@ -57,6 +85,7 @@ async function send(method: string, path: string, body: Body, token: string | nu
     return await fetch(`${API_URL}${path}`, { method, headers, body: payload, signal: controller.signal })
   } finally {
     clearTimeout(timer)
+    signal?.removeEventListener('abort', cancel)
   }
 }
 

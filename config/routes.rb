@@ -30,10 +30,18 @@ Rails.application.routes.draw do
   get "invitations/:token", to: "invitations#show", as: :invitation
   get "join/:token", to: "joins#show", as: :join
   resource :comment_preference, only: :update
+  # The bell in the header and « Mon compte » › Notifications.
+  resources :notifications, only: :index do
+    post :read_all, on: :collection
+  end
+  resource :notification_preference, only: %i[show update]
 
   resources :maps, only: [] do
     scope module: :maps do
       resource :sharing, only: :show
+      # « Voici ton lieu »: the place's first reading (show), and the page
+      # read once (update, editors).
+      resource :place_reading, only: %i[show update]
       # Archive (create) and bring back (destroy): the owner only.
       resource :archive, only: %i[create destroy]
       resources :memberships, only: %i[update destroy]
@@ -51,6 +59,7 @@ Rails.application.routes.draw do
           post :read
           post :subscribe, to: "comment_subscriptions#create"
           delete :subscribe, to: "comment_subscriptions#destroy"
+          patch :subscribe, to: "comment_subscriptions#update"
         end
         resource :applause, only: %i[create destroy], controller: "comments/applauses"
       end
@@ -140,6 +149,8 @@ Rails.application.routes.draw do
       resource :me, only: :show, controller: "me" do
         post :deletion_request
       end
+      resources :push_devices, only: :create
+      delete "push_devices", to: "push_devices#destroy"
       resources :maps, only: %i[index show] do
         get :style, on: :member, defaults: { format: :json }
         # A drone view's tiles, cut out of its PMTiles archive (AerialTilesController).
@@ -414,6 +425,8 @@ Rails.application.routes.draw do
           patch :content, action: :update_content
           # Where the shared editor starts (MapDocumentChannel).
           get :collab
+          # A PDF made from a word-processor file (ConvertMapDocumentToPdfJob).
+          post :pdf, action: :convert_to_pdf
         end
       end
       resources :soil_samples, only: %i[index create update destroy] do

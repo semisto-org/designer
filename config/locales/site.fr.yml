@@ -5,8 +5,8 @@ fr:
   site:
     seo:
       home:
-        title: "Cartographie ton terrain, conçois ton jardin-forêt"
-        description: "L'atelier en ligne de Semisto : cartographie ton terrain avec précision, comprends-le, puis conçois ton jardin-forêt pour le climat qui vient, avec ton IA à tes côtés."
+        title: "Ton terrain, dans trente ans : dessine ton jardin-forêt"
+        description: "Pars de ton propre terrain, de sa pente, de son eau et de son sol. Dessines-y ton jardin-forêt et regarde-le grandir, saison après saison, pendant trente ans. Ta première carte est gratuite."
       features:
         title: "Fonctionnalités"
         description: "Une visite d'un vrai carnet, étape par étape : retrouver son terrain, lire ses couches et son climat, dessiner l'existant, l'eau avant les plantes, la palette, trente ans de croissance, et ton IA qui lit ta carte."
@@ -118,7 +118,7 @@ fr:
         title: "Ce qu'il faut savoir avant d'ouvrir ton carnet"
         data:
           kicker: "tes données"
-          title: "Ton terrain, à sa vraie précision"
+          title: "Ce que ta région sait de ton terrain"
           body: "Là où ta région publie mieux, Terranova prend le meilleur. Ailleurs en Europe, le socle commun prend le relais."
           sources:
             - name: "Wallonie"

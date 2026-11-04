@@ -1,10 +1,18 @@
 <%= t(".greeting") %>
 
+<% if @viewer %>
+<%= t(".body_viewer", inviter: @inviter.display_name, map: @map.name) %>
+<% else %>
 <%= t(".body", inviter: @inviter.display_name, map: @map.name, role: t("maps.roles.#{@invitation.role}").downcase) %>
-<%= t(".role_#{@invitation.role}") %><% if @invitation.role == "viewer" && @invitation.chat_access %> <%= t(".chat") %><% end %>
+<% end %>
+<%= t(".role_#{@invitation.role}") %><% if @viewer && @invitation.chat_access %> <%= t(".chat") %><% end %>
 <%= t(".since", date: l(@map.created_at.to_date, format: "%B %Y")) %>
 
-<%= @url %>
+<%= t(@viewer ? ".button_viewer" : ".button") %> : <%= @url %>
+<% if @guide %>
+
+<%= t(".guide_viewer", title: @guide.title) %> <%= @guide_url %>
+<% end %>
 
 <%= t(".signin_hint") %>
 <%= t(".expiry", date: @invitation.expires_at.strftime("%d/%m/%Y")) %>

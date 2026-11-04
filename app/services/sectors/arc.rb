@@ -17,6 +17,13 @@ module Sectors
       "good_view" => "#a3bb8a", "bad_view" => "#b49b89", "privacy" => "#c2a5c8", "wildlife" => "#7fb2c4",
       "predators" => "#8f8d8a", "other" => "#9b8fb5"
     }.freeze
+    # Sectors gathered by what they bring, to show or hide them together
+    # when presenting a design (SECTOR_GROUPS in sectors.ts).
+    GROUPS = {
+      "sun" => %w[summer_sun winter_sun], "wind" => %w[wind cold_wind], "risks" => %w[fire flood frost],
+      "nuisances" => %w[noise dust pollution], "views" => %w[good_view bad_view privacy],
+      "wildlife" => %w[wildlife predators], "other" => %w[other]
+    }.freeze
     # 16 compass points, from N clockwise, as the editor writes them (French: O for ouest).
     COMPASS_POINTS = %w[N NNE NE ENE E ESE SE SSE S SSO SO OSO O ONO NO NNO].freeze
     AXIAL_TILT = 23.44
@@ -26,6 +33,9 @@ module Sectors
     module_function
 
     def normalize(deg) = deg.to_f % 360
+
+    # The group of a sector type (sun included); an unknown type is « other ».
+    def group(type) = GROUPS.find { |_, types| types.include?(type.to_s) }&.first || "other"
 
     # Degrees swept clockwise from `from` to `to` (a whole turn when they meet).
     def sweep(from, to)

@@ -25,6 +25,7 @@ module Collab
         "features" => features,
         "region_layer_keys" => region_layer_keys,
         "growth" => growth,
+        "sectors" => sectors,
         # The newest drone view at publication, only when the owner shows it.
         "aerial_view_id" => (@map.aerial_views.ready.first&.id if @options["show_aerial_view"])
       }
@@ -62,7 +63,25 @@ module Collab
       end
 
       def features
-        @features ||= @map.features.active.where(layer: layers).order(:id).select { |feature| published?(feature) }.map { |feature| serialize(feature) }
+        @features ||= @map.features.active.where(layer: layers).where.not(kind: "sector").order(:id)
+          .select { |feature| published?(feature) }.map { |feature| serialize(feature) }
+      end
+
+      # The sector analysis around the terrain, when the owner shows it to
+      # present the design: the sun at the solstices and each accepted
+      # sector (type, season, directions, the short name written along its
+      # arc), never an AI's draft nor the notes on what it changes.
+      def sectors
+        return nil unless @options["show_sectors"] == true
+        center = @map.center
+        return nil unless center
+        drawn = @map.features.active.where(kind: "sector").order(:id).filter_map do |feature|
+          from, to = Sectors::Arc.directions(feature, [ center.x, center.y ])
+          next unless from
+          type = Sectors::Arc::TYPES.include?(feature.properties["sector_type"]) ? feature.properties["sector_type"] : "other"
+          { "type" => type, "season" => feature.properties["sector_season"] || "all_year", "from_deg" => from, "to_deg" => to, "name" => feature.name }.compact
+        end
+        { "sun" => Sectors::Arc.sun(center.y).map { |s| s.transform_keys(&:to_s) }, "drawn" => drawn }
       end
 
       # What stands on the land today (Michael, 2026-10-24): anything still
@@ -115,7 +134,7 @@ module Collab
 
       # A named zone or path drawn with the « Zone » tool: its name often
       # carries the designer's notes, so it stays private unless shown.
-      def zone?(feature) = feature.kind == "zone" || (feature.kind == "line" && feature.layer == "notes")
+      def zone?(feature) = feature.kind == "zone" || (feature.kind == "line" && feature.layer == "drawings")
 
       def region_layer_keys
         scope = @map.region.catalogue.enabled.where(key: @options["region_layers"])

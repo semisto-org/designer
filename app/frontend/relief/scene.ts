@@ -177,6 +177,8 @@ export class ReliefScene {
   /** Per building vertex: the ground under it and its height above it (real metres). */
   private buildingFoot: Float32Array | null = null
   private buildingRise: Float32Array | null = null
+  /** Per vertex of the buildings' mesh: the index of its volume (for a click). */
+  private buildingOwner: Int32Array | null = null
   private buildingsOn = true
   private plants: PlantLayer | null = null
   private plantsOn = true
@@ -511,6 +513,16 @@ ${OVERLAY_MIX}`)
     if (this.plants) this.plants.group.visible = on
   }
 
+  /** The building (index in the volumes given to `setBuildings`) under a pointer, or null. */
+  pickBuilding(event: { clientX: number; clientY: number }): number | null {
+    if (!this.buildings || !this.buildings.visible || !this.buildingOwner) return null
+    const raycaster = new THREE.Raycaster()
+    raycaster.setFromCamera(this.pointer(event), this.camera)
+    const [hit] = raycaster.intersectObject(this.buildings, false)
+    if (!hit?.face) return null
+    return this.buildingOwner[hit.face.a] ?? null
+  }
+
   /** The plant (index in the list given to `setPlants`) under a pointer, or null. */
   pickPlant(event: { clientX: number; clientY: number }): number | null {
     if (!this.plants || !this.plantsOn) return null
@@ -646,6 +658,8 @@ ${OVERLAY_MIX}`)
     const uvs: number[] = []
     const foot: number[] = []
     const rise: number[] = []
+    const owner: number[] = []
+    let current = 0
     const roofIndices: number[] = []
     const plannedRoofIndices: number[] = []
     const wallIndices: number[] = []
@@ -654,6 +668,7 @@ ${OVERLAY_MIX}`)
       uvs.push(x / width, 1 - y / depth)
       foot.push(base - this.grid.zBase)
       rise.push(up)
+      owner.push(current)
       return positions.length / 3 - 1
     }
     const signedArea = (ring: Array<{ x: number; y: number }>) => {
@@ -665,7 +680,8 @@ ${OVERLAY_MIX}`)
       }
       return area
     }
-    for (const volume of volumes) {
+    for (const [index, volume] of volumes.entries()) {
+      current = index
       // A building still in project: the ortho shows the ground there, so its roof is plain.
       const roofs = volume.planned ? plannedRoofIndices : roofIndices
       for (const shell of volume.shells) {
@@ -711,6 +727,7 @@ ${OVERLAY_MIX}`)
     this.buildings = new THREE.Mesh(geometry, [roof, walls, plannedRoof])
     this.buildingFoot = new Float32Array(foot)
     this.buildingRise = new Float32Array(rise)
+    this.buildingOwner = Int32Array.from(owner)
     this.buildings.visible = this.buildingsOn && this.terrain.visible
     this.world.add(this.buildings)
     this.placeBuildings()

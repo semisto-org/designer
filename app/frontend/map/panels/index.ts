@@ -1,5 +1,6 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, Trees } from 'lucide-react'
+import { isAnnotationLayer } from '@/map/scenario'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
@@ -12,11 +13,13 @@ import { DiscussionsIcon } from '@/collab/DiscussionsIcon'
 import PublishPanel from '@/collab/PublishPanel'
 import ShareButton from '@/collab/ShareButton'
 import ChatToggle from '@/collab/chat/ChatToggle'
+import EditorNotificationBell from '@/collab/chat/EditorNotificationBell'
 import MapChat from '@/collab/chat/MapChat'
 import WelcomeCard from '@/collab/welcome/WelcomeCard'
 import JourneyPanel from '@/map/panels/JourneyPanel'
 import JourneyOverlay from '@/map/panels/JourneyOverlay'
 import TourOverlay from '@/map/tour/TourOverlay'
+import FirstHourOverlay from '@/map/first_hour/FirstHourOverlay'
 import ProjectPanel from '@/map/panels/ProjectPanel'
 import ActionsPanel from '@/map/panels/ActionsPanel'
 import LayersPanel from '@/map/panels/LayersPanel'
@@ -59,6 +62,7 @@ import ClimatePanel from '@/map/panels/ClimatePanel'
 import SunPanel from '@/map/sun/SunPanel'
 import SectorInspector from '@/map/sectors/SectorInspector'
 import SectorsPanel, { isSector } from '@/map/sectors/SectorsPanel'
+import SectorsOverlay from '@/map/sectors/SectorsOverlay'
 import ZonesPanel from '@/map/zones/ZonesPanel'
 import ZoneSection, { appliesToZone } from '@/map/zones/ZoneSection'
 import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
@@ -150,7 +154,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'fruit-store', applies: appliesToFruitStore, component: StorageSection, order: 20.5 },
   { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
   { id: 'plant-other-properties', applies: isPlant, component: OtherPropertiesSection, order: 23 },
-  { id: 'feature-tasks', applies: (f) => f.properties.status === 'active' && f.properties.layer !== 'notes', component: FeatureTasksSection, order: 21.5 },
+  { id: 'feature-tasks', applies: (f) => f.properties.status === 'active' && !isAnnotationLayer(f.properties.layer), component: FeatureTasksSection, order: 21.5 },
   { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
   { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
   { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },
@@ -178,6 +182,7 @@ export const HEADER_ACTIONS: EditorSlot[] = [
   { id: 'help', component: HelpAction, order: 95 },
   { id: 'shortcuts', component: ShortcutsButton, order: 94 },
   { id: 'feedback', component: FeedbackButton, order: 93 },
+  { id: 'notifications', component: EditorNotificationBell, order: 96 },
   { id: 'drawing-export', component: ExportMenu, order: 60 },
   { id: 'transfer-notice', component: TransferNotice, order: 4 },
 ]
@@ -192,6 +197,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'time-strip', component: TimeStrip, order: 24 },
   { id: 'time-shade', component: ShadeOverlay, order: 19 },
   { id: 'tour', component: TourOverlay, order: 100 },
+  { id: 'first-hour', component: FirstHourOverlay, order: 99 },
   { id: 'shortcuts', component: ShortcutsSheet, order: 101 },
   { id: 'region-layers', component: RegionLayersOverlay, order: 0 },
   { id: 'photo-limit', component: PhotoLimitOverlay, order: 6 },
@@ -215,4 +221,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'plan-images', component: PlanImagesOverlay, order: 2 },
   { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
   { id: 'earthworks', component: EarthworksOverlay, order: 12 },
+  { id: 'sectors', component: SectorsOverlay, order: 13 },
 ]

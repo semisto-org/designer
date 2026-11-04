@@ -106,10 +106,16 @@ class CatalogueReviewsController < ApplicationController
     # What Jev's check brings to an accepted species: a value a page confirms
     # becomes « sourced » from that page; a value a page contradicts is
     # replaced by the page's when the reviewer took it (`take`). The rest
-    # stays « to verify ».
+    # stays « to verify ». PFAF only cross-checks (PlantSource.cross_check_only?):
+    # its confirmation marks the value « recoupée avec PFAF » and its values
+    # are never taken.
     def apply_checks(species, take)
       species.value_checks.each do |check|
         next unless check.source
+        if PlantSource.cross_check_only?(check.source)
+          species.mark_cross_checked!(check.field, check.source, fallback: "user") if check.verdict == "confirmed"
+          next
+        end
         license = PlantSource.default_license(check.source)
         if check.verdict == "confirmed"
           species.record_provenance!([ check.field ], source: check.source, url: check.url, status: "sourced", license:)

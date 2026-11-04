@@ -1,8 +1,11 @@
 # The map's « Documents » library: a full page and its JSON. Everyone on the
 # map reads and downloads; editors add, rename, tag and remove. Documents
 # sent with the project sheet (by the team or through its private link)
-# live here too. A Markdown document opens as a page of its own (show),
-# read by everyone, written in place by editors (content).
+# live here too, and so, once added, do the files joined to a message of the
+# discussion (`in_library: false` until then, read by its members only).
+# A Markdown document opens as a page of its own (show),
+# read by everyone, written in place by editors (content). A word-processor
+# file is turned into a PDF beside it on an editor's request (convert_to_pdf).
 module Maps
   class DocumentsController < ApplicationController
     include MapScoped
@@ -10,7 +13,7 @@ module Maps
 
     before_action :set_map
     before_action :require_editor!, except: %i[index show file content]
-    before_action :set_document, only: %i[show update destroy file content update_content collab]
+    before_action :set_document, only: %i[show update destroy file content update_content collab convert_to_pdf]
     before_action :require_markdown!, only: %i[show content update_content collab]
 
     def index
@@ -44,7 +47,8 @@ module Maps
 
     def create
       return create_markdown if params.dig(:document, :markdown).present?
-      document = @map.documents.new(document_params.merge(uploaded_by: Current.user, origin: origin_param))
+      document = @map.all_documents.new(document_params.merge(uploaded_by: Current.user, origin: origin_param))
+      document.in_library = false if origin_param == "chat"
       document.save ? render(json: as_json(document), status: :created) : render_document_errors(document)
     end
 
@@ -86,13 +90,27 @@ module Maps
       }, status: :conflict
     end
 
+    # `in_library: true` adds a document joined to a message to the library;
+    # it never takes one out (delete it from the library instead).
     def update
-      @document.update(document_params(%i[title description])) ? render(json: as_json(@document)) : render_document_errors(@document)
+      @document.in_library = true if ActiveModel::Type::Boolean.new.cast(params.dig(:document, :in_library))
+      @document.assign_attributes(document_params(%i[title description]))
+      @document.save ? render(json: as_json(@document)) : render_document_errors(@document)
     end
 
     def destroy
       @document.destroy!
       head :no_content
+    end
+
+    # Starts the PDF of a .docx (.doc, .odt, .rtf): the library asks again
+    # until the new document is there (or the source says it failed).
+    def convert_to_pdf
+      unless @document.convertible_to_pdf?
+        return render json: { message: t("documents.pdf_conversion.not_convertible") }, status: :unprocessable_entity
+      end
+      @document.request_pdf!(by: Current.user)
+      render json: as_json(@document.reload), status: :accepted
     end
 
     # /maps/:map_id/documents/:id/file?size=thumb|large|original|download
@@ -103,8 +121,11 @@ module Maps
     private
       def editor? = %w[owner editor].include?(@role)
 
+      # A document joined to a message, not yet in the library, is the
+      # discussion's: its members only.
       def set_document
-        @document = @map.documents.find(params[:id])
+        @document = @map.all_documents.find(params[:id])
+        raise ActiveRecord::RecordNotFound if !@document.in_library? && !@map.chat_member?(Current.user)
       end
 
       def require_markdown!

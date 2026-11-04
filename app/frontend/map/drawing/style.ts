@@ -13,6 +13,7 @@ import { FEATURES_SOURCE } from '@/map/layers/features'
 import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 import { ensureSupportHatch } from '@/map/plants/supportHatch'
+import { stackFeatureLayers } from '@/map/layers/stack'
 
 /**
  * Per-kind styling of the element library on a MapLibre map: fills,
@@ -448,6 +449,8 @@ export function installDrawingLayers(map: MapLibreMap): boolean {
       if (!map.getLayer(layer.id)) map.addLayer(layer, before)
     }
   }
+  // Zones and surfaces under the trees, whatever was added since.
+  stackFeatureLayers(map)
   return true
 }
 

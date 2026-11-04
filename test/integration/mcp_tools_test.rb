@@ -44,11 +44,14 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal 1, data.dig("elements", "by_layer", "networks", "active")
     assert_equal "Zone", data.dig("known_kinds", "zone")
     assert_equal [], data.dig("implementation", "phases")
+    assert_nil data["reader_guide"], "the reader's guide is for readers"
     assert_equal AiAction.last.map, @map
 
     data, = call_tool(@viewer, "get_map", { map_id: @map.id })
     assert_nil data.dig("elements", "by_layer", "networks"), "networks are hidden from viewers"
     refute data.dig("permissions", "propose_drafts")
+    assert_equal "tu-as-recu-le-plan-de-ton-jardin", data.dig("reader_guide", "slug")
+    assert_equal "http://www.example.com/help/tu-as-recu-le-plan-de-ton-jardin", data.dig("reader_guide", "url")
 
     text, error = call_tool(@stranger, "get_map", { map_id: @map.id })
     assert error
@@ -66,6 +69,9 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_match(/\Ade (NE|ENE) à (NO|ONO)\z/, sun.dig("summer_sun", "directions"))
     sector = data.dig("sectors", "drawn").sole
     assert_equal [ "cold_wind", "winter", 300.0, 40.0, "de ONO à NE", "Bise" ], sector.values_at("sector_type", "season", "from_deg", "to_deg", "directions", "name")
+    assert_equal "wind", sector["group"]
+    assert_equal %w[sun wind], data.dig("sectors", "groups")
+    assert_equal "http://www.example.com/maps/#{@map.id}?sectors=all", data.dig("sectors", "show_url")
     assert_equal "http://www.example.com/maps/#{@map.id}?export=book", data.dig("exports", "book_pdf_url")
     assert_equal "http://www.example.com/maps/#{@map.id}/dossier", data.dig("exports", "dossier_url")
   end
@@ -613,7 +619,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
 
   test "propose_features drafts a named zone in its colour" do
     make_editor(@map, users(:bob))
-    zone = { layer: "notes", kind: "zone", name: "Forêt-jardin en strates hautes", color: "#7FA650", rationale: "Plein sud, à l'abri de la haie.",
+    zone = { layer: "drawings", kind: "zone", name: "Forêt-jardin en strates hautes", color: "#7FA650", rationale: "Plein sud, à l'abri de la haie.",
              geometry: { type: "Polygon", coordinates: [ [ [ 4.905, 50.340 ], [ 4.906, 50.340 ], [ 4.906, 50.341 ], [ 4.905, 50.341 ], [ 4.905, 50.340 ] ] ] } }
     data, error = call_tool(@stranger, "propose_features", { map_id: @map.id, features: [ zone ] })
     refute error, data

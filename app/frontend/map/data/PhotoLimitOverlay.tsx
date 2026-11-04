@@ -6,6 +6,8 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { useLayerState } from '@/map/data/store'
 import { pastPhotoLimit, photoMaxZoom } from '@/map/data/photoLimit'
 import { t } from '@/lib/i18n'
+import { ZoneCard } from '@/map/layout/ZoneLayer'
+import { PRIORITY } from '@/map/layout/zones'
 
 const DISMISSED = 'designer.editor.photo-limit-dismissed'
 
@@ -37,7 +39,7 @@ export default function PhotoLimitOverlay() {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-2 bottom-24 z-20 md:left-1/2 md:right-auto md:w-[28rem] md:-translate-x-1/2">
+    <ZoneCard id="photo-limit" zone="top" priority={PRIORITY.notice} passThrough className="w-full md:w-[28rem]">
       <div role="status" className="pointer-events-auto flex items-start gap-3 rounded-2xl border border-loam-900/10 bg-white/95 p-3.5 shadow-lg backdrop-blur">
         <div className="min-w-0 flex-1 space-y-1.5">
           <p className="font-serif text-lg leading-snug text-loam-900">{t('map_data.photo_limit.title')}</p>
@@ -52,6 +54,6 @@ export default function PhotoLimitOverlay() {
           <X className="h-4 w-4" aria-hidden />
         </IconButton>
       </div>
-    </div>
+    </ZoneCard>
   )
 }

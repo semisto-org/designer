@@ -76,6 +76,35 @@ class Webhooks::StripeControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a Home purchase is welcomed once, with what it opens and until when" do
+    with_billing do
+      event = stripe_event("checkout.session.completed", checkout_session(user: @user))
+      assert_enqueued_emails 1 do
+        post_stripe_event(event)
+        post_stripe_event(event)
+      end
+      perform_enqueued_jobs
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal [ @user.email_address ], mail.to
+      assert_equal "Ta formule Home est active", mail.subject
+      text = mail.text_part.body.to_s
+      assert_includes text, "active jusqu'au"
+      assert_includes text, "- 3 cartes actives, archivées sans limite"
+      assert_includes text, "Rien n'est prélevé automatiquement"
+    end
+  end
+
+  test "renewing Home early says when the new year starts" do
+    with_billing do
+      @user.plan_purchases.create!(plan_key: "yearly", starts_at: 10.months.ago, expires_at: 2.months.from_now, stripe_checkout_session_id: "cs_old")
+      ActionMailer::Base.deliveries.clear
+      clear_enqueued_jobs
+      post_stripe_event(stripe_event("checkout.session.completed", checkout_session(user: @user)))
+      perform_enqueued_jobs
+      assert_includes ActionMailer::Base.deliveries.last.text_part.body.to_s, "ta nouvelle année court du"
+    end
+  end
+
   test "is idempotent: the same event delivered twice changes nothing" do
     with_billing do
       event = stripe_event("checkout.session.completed", checkout_session(user: @user), id: "evt_same")
@@ -229,6 +258,30 @@ class Webhooks::StripeControllerTest < ActionDispatch::IntegrationTest
       post_stripe_event(stripe_event("customer.subscription.deleted", subscription_object(user: @user, price: "price_bureau", status: "canceled"), created: 10.seconds.ago.to_i))
       assert_equal "canceled", subscription.reload.status
       assert_equal "free", @user.current_plan_key
+    end
+  end
+
+  test "a subscription is welcomed when it starts and when it changes plan, not on every update" do
+    with_billing do
+      assert_enqueued_emails 1 do
+        post_stripe_event(stripe_event("customer.subscription.created", subscription_object(user: @user), created: 100.seconds.ago.to_i))
+        post_stripe_event(stripe_event("customer.subscription.updated", subscription_object(user: @user, cancel_at_period_end: true), created: 90.seconds.ago.to_i))
+      end
+      assert_enqueued_emails 1 do
+        post_stripe_event(stripe_event("customer.subscription.updated", subscription_object(user: @user, price: "price_bureau"), created: 50.seconds.ago.to_i))
+      end
+      perform_enqueued_jobs
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal "Ta formule Team est active", mail.subject
+      assert_includes mail.text_part.body.to_s, "Payer les cartes de l'équipe avec mon forfait"
+    end
+  end
+
+  test "a subscription that starts past due is not welcomed" do
+    with_billing do
+      assert_no_enqueued_emails do
+        post_stripe_event(stripe_event("customer.subscription.updated", subscription_object(user: @user, status: "past_due"), created: 1.day.ago.to_i))
+      end
     end
   end
 

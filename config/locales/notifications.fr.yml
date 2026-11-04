@@ -1,0 +1,51 @@
+fr:
+  notifications:
+    bell: "Notifications"
+    bell_unread:
+      one: "Notifications : %{count} message non lu"
+      other: "Notifications : %{count} messages non lus"
+    title: "Dans tes discussions"
+    empty: "Rien de neuf dans les discussions de tes cartes."
+    empty_hint: "Quand quelqu'un y écrit, tu le vois ici tout de suite, et dehors sur ton téléphone si tu as l'app."
+    off: "La cloche est coupée : rallume-la dans « Mon compte »."
+    read_all: "Tout marquer comme lu"
+    mention: "Te mentionne"
+    unread:
+      one: "%{count} nouveau"
+      other: "%{count} nouveaux"
+    toast: "%{author} dans « %{map} » : %{body}"
+    open: "Ouvrir"
+    settings: "Régler mes notifications"
+    push:
+      invalid_token: "Ce téléphone n'a pas pu être relié aux notifications."
+    preferences:
+      title: "Notifications"
+      intro: "Quand quelqu'un écrit dans la discussion d'une de tes cartes, où veux-tu l'apprendre ? Chaque carte dit ensuite combien, avec la cloche de sa discussion : tous les messages, seulement quand on te mentionne, ou rien."
+      app: "Dans Terranova"
+      app_hint: "La cloche en haut de l'écran compte les messages que tu n'as pas lus, sur toutes tes cartes."
+      email: "Par e-mail"
+      email_hint: "Une mention t'arrive tout de suite ; les autres messages, en un seul e-mail dix minutes plus tard, et seulement si tu ne les as pas lus entre-temps."
+      push: "Sur ton téléphone"
+      push_hint: "Dans l'app Terranova, sur chaque téléphone où tu es connecté : utile quand tu es au jardin."
+      phones:
+        zero: "Aucun téléphone relié pour l'instant : installe l'app Terranova et connecte-toi."
+        one: "1 téléphone relié."
+        other: "%{count} téléphones reliés."
+      saved: "Réglage enregistré"
+      error: "Le réglage n'a pas pu être enregistré."
+  collab:
+    chat:
+      notify:
+        label: "Notifications de cette discussion"
+        all: "Tous les messages"
+        all_hint: "Là où tu l'as choisi dans « Mon compte » : la cloche, l'e-mail, le téléphone."
+        mentions: "Seulement quand on me mentionne"
+        mentions_hint: "Les autres messages t'attendent ici, sans te déranger."
+        none: "Rien"
+        none_hint: "Même une mention ne te préviendra pas."
+        settings_link: "Où je suis prévenu"
+        invalid: "Ce réglage n'existe pas : choisis tous les messages, les mentions ou rien."
+        saved: "Notifications de cette carte : %{level}"
+      push:
+        message: "%{author} : %{body}"
+        mention: "%{author} t'a mentionné : %{body}"

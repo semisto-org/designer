@@ -25,6 +25,7 @@ module Collab
         features: comment.cited_features.map { |f| { id: f.id, name: feature_label(f), layer: f.layer, kind: f.kind } },
         location: comment.lnglat,
         photo: comment.map_photo && { id: comment.map_photo.id, caption: comment.map_photo.caption, video: comment.map_photo.kind == "video" },
+        document: comment.map_document && document_json(comment.map_document),
         canEdit: comment.author_id == @user.id,
         canDelete: comment.author_id == @user.id || @map.manageable_by?(@user)
       }
@@ -50,6 +51,19 @@ module Collab
     def feature_label(feature) = self.class.feature_label(feature)
 
     private
+      def document_json(document)
+        blob = document.file.attached? ? document.file.blob : nil
+        url = ->(size) { routes.file_map_document_path(@map, document, size:) }
+        {
+          id: document.id, title: document.title, filename: blob&.filename&.to_s, kind: document.kind,
+          byteSize: blob&.byte_size, inLibrary: document.in_library?,
+          previewUrl: document.preview ? url.call(document.preview == "image" ? "large" : "original") : nil,
+          downloadUrl: url.call("download")
+        }
+      end
+
+      def routes = Rails.application.routes.url_helpers
+
       def participants = @participants ||= @map.participants.order(:id).to_a
       def handles = @handles ||= Collab::Mentions.handles(participants)
       def chat_participants = @chat_participants ||= @map.chat_participants.order(:id).to_a

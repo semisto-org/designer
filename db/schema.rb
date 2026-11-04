@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -260,6 +260,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "muted", default: false, null: false
+    t.boolean "silenced", default: false, null: false
     t.index ["commentable_type", "commentable_id", "user_id"], name: "index_comment_subscriptions_unique", unique: true
     t.index ["user_id"], name: "index_comment_subscriptions_on_user_id"
   end
@@ -278,8 +279,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
     t.bigint "feature_ids", default: [], null: false, array: true
     t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
     t.bigint "map_photo_id"
+    t.bigint "map_document_id"
     t.index ["author_id"], name: "index_comments_on_author_id"
     t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
+    t.index ["map_document_id"], name: "index_comments_on_map_document_id"
     t.index ["map_id", "created_at"], name: "index_comments_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_comments_on_map_id"
     t.index ["map_photo_id"], name: "index_comments_on_map_photo_id"
@@ -599,7 +602,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
     t.bigint "content_edited_by_id"
     t.datetime "content_edited_at"
     t.integer "collab_epoch", default: 0, null: false
+    t.boolean "in_library", default: true, null: false
+    t.string "pdf_conversion"
+    t.bigint "converted_from_id"
     t.index ["content_edited_by_id"], name: "index_map_documents_on_content_edited_by_id"
+    t.index ["converted_from_id"], name: "index_map_documents_on_converted_from_id"
     t.index ["map_id", "created_at"], name: "index_map_documents_on_map_id_and_created_at"
     t.index ["map_id"], name: "index_map_documents_on_map_id"
     t.index ["project_sheet_link_id"], name: "index_map_documents_on_project_sheet_link_id"
@@ -859,6 +866,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
     t.datetime "outlined_at"
     t.datetime "plan_printed_at"
     t.datetime "chat_digest_at"
+    t.datetime "first_hour_started_at"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
@@ -1221,6 +1229,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
     t.string "status", default: "to_verify", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "cross_checked_with"
     t.index ["record_type", "record_id", "field"], name: "index_plant_field_sources_uniqueness", unique: true
     t.index ["source"], name: "index_plant_field_sources_on_source"
   end
@@ -1491,6 +1500,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
     t.index ["requester_id"], name: "index_propagation_requests_on_requester_id"
     t.index ["species_id"], name: "index_propagation_requests_on_species_id"
     t.index ["variety_id"], name: "index_propagation_requests_on_variety_id"
+  end
+
+  create_table "push_devices", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token", null: false
+    t.string "platform"
+    t.datetime "last_seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_push_devices_on_token", unique: true
+    t.index ["user_id"], name: "index_push_devices_on_user_id"
   end
 
   create_table "region_layers", force: :cascade do |t|
@@ -1776,6 +1796,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
     t.datetime "replay_consent_at"
     t.jsonb "document_theme", default: {}, null: false
     t.jsonb "document_theme_draft"
+    t.boolean "chat_notify_app", default: true, null: false
+    t.boolean "chat_notify_push", default: true, null: false
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
@@ -1822,6 +1844,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
   add_foreign_key "comment_reads", "users"
   add_foreign_key "comment_subscriptions", "users"
+  add_foreign_key "comments", "map_documents", on_delete: :nullify
   add_foreign_key "comments", "map_photos", on_delete: :nullify
   add_foreign_key "comments", "maps"
   add_foreign_key "comments", "users", column: "author_id"
@@ -1852,6 +1875,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
   add_foreign_key "map_assignments", "maps", on_delete: :cascade
   add_foreign_key "map_assignments", "users", on_delete: :cascade
   add_foreign_key "map_document_collab_updates", "map_documents", on_delete: :cascade
+  add_foreign_key "map_documents", "map_documents", column: "converted_from_id", on_delete: :nullify
   add_foreign_key "map_documents", "maps"
   add_foreign_key "map_documents", "project_sheet_links", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "content_edited_by_id", on_delete: :nullify
@@ -1964,6 +1988,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_180000) do
   add_foreign_key "propagation_requests", "plant_varieties", column: "variety_id", on_delete: :nullify
   add_foreign_key "propagation_requests", "users", column: "answered_by_id", on_delete: :nullify
   add_foreign_key "propagation_requests", "users", column: "requester_id", on_delete: :cascade
+  add_foreign_key "push_devices", "users", on_delete: :cascade
   add_foreign_key "region_layers", "regions"
   add_foreign_key "regions", "regions", column: "parent_id"
   add_foreign_key "release_note_likes", "release_notes", on_delete: :cascade
