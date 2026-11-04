@@ -1,8 +1,10 @@
 module Collab
   # The e-mail digest of the map's live discussion (decided with Michael,
   # 2026-11-02): a mention is e-mailed at once (CommentNotifier); the other
-  # messages wait an hour, then each member who has not read them gets one
-  # e-mail with all of them. One digest job per map at a time
+  # messages wait ten minutes (an hour until 2026-11-04: Chris's message
+  # reached Michael an hour late), then each member who has not read them
+  # meanwhile (the bell or the phone told them at once) gets one e-mail with
+  # all of them. One digest job per map at a time
   # (`maps.chat_digest_at`); the messages that arrive while it waits ride
   # along. Nobody gets a message twice (`comment_reads.emailed_until`), nor
   # their own messages, nor the ones that mentioned them.
@@ -14,7 +16,7 @@ module Collab
   # (`users.comment_emails`) or muted this map's discussion (a muted
   # CommentSubscription on the map).
   class ChatDigest
-    DELAY = 1.hour
+    DELAY = 10.minutes
     MAX_MESSAGES = 30
 
     def self.schedule(map, now: Time.current)

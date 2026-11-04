@@ -20,6 +20,7 @@ class User < ApplicationRecord
   has_many :comments, foreign_key: :author_id, inverse_of: :author, dependent: :restrict_with_error
   has_many :comment_subscriptions, dependent: :destroy
   has_many :comment_reads, dependent: :destroy
+  has_many :push_devices, dependent: :delete_all
   has_many :applauses, dependent: :destroy
   has_many :release_note_likes, dependent: :delete_all
   has_many :service_requests, dependent: :destroy
