@@ -66,14 +66,14 @@ export default function ShadeOverlay() {
   const { data } = usePlanting(editor.map.id)
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
-  const { features, moment, timeline, shade } = editor
+  const { features, moment, timeline, shade, mode } = editor
 
   const shadows = useMemo<Shadows>(() => {
     if (!shade || hidden.includes('plants')) return featureCollection([])
     const rings: [number, number][][] = []
     for (const feature of features) {
       if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
-      if (!inMoment(feature.properties, moment, timeline.arrival)) continue
+      if (!inMoment(feature.properties, moment, timeline.arrival, mode)) continue
       const strata = plantStrata(feature, data)
       if (!strata || hiddenStrata.includes(strataKey(strata))) continue
       const plant = growingPlant(feature, data, strata)
@@ -83,7 +83,7 @@ export default function ShadeOverlay() {
       if (ring) rings.push(ring)
     }
     return merged(rings)
-  }, [features, moment, timeline, shade, data, hidden, hiddenStrata])
+  }, [features, moment, timeline, shade, mode, data, hidden, hiddenStrata])
 
   const latest = useRef(shadows)
   latest.current = shadows

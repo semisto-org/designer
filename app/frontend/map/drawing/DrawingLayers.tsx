@@ -12,6 +12,7 @@ import { plantStrata } from '@/map/plants/strata'
 import { useSoil } from '@/map/soil/store'
 import type { MapFeature } from '@/types'
 import { momentFilter } from '@/map/time/moment'
+import { DESIGN_MODE_STATE } from '@/map/scenario'
 
 /**
  * Overlay without UI: styles the library elements on the editor map, keeps
@@ -23,7 +24,7 @@ export default function DrawingLayers() {
   const map = editor.instance
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const editingId = useDrawingState((s) => s.shapeEditId)
-  const moment = useMemo(() => momentFilter(editor.moment, editor.timeline.arrival), [editor.moment, editor.timeline.arrival])
+  const moment = useMemo(() => momentFilter(editor.moment, editor.timeline.arrival, editor.mode), [editor.moment, editor.timeline.arrival, editor.mode])
   const version = useDrawingState((s) => s.version)
   const hiddenKinds = useDrawingState((s) => s.hiddenKinds)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
@@ -41,10 +42,18 @@ export default function DrawingLayers() {
     initDrawingState(editor.map.id)
   }, [editor.map.id])
 
+  // « Existant » or « Projet »: what is on the ground fades behind the project (map/scenario, GROUND_IN_PROJECT_FACTOR).
+  const mode = useRef(editor.mode)
+  mode.current = editor.mode
+  useEffect(() => {
+    if (map.getGlobalState?.()[DESIGN_MODE_STATE] !== editor.mode) map.setGlobalStateProperty(DESIGN_MODE_STATE, editor.mode)
+  }, [map, editor.mode])
+
   useEffect(() => {
     // The generic feature layers are installed by the editor after its
     // children mount: wait for them, then follow any later style change.
     const ensure = () => {
+      if (map.getGlobalState?.()[DESIGN_MODE_STATE] !== mode.current) map.setGlobalStateProperty(DESIGN_MODE_STATE, mode.current)
       if (installDrawingLayers(map)) applyLayerVisibility(map, drawingStore.get().hiddenLayers, latest.current)
     }
     ensure()

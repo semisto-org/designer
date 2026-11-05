@@ -22,10 +22,5 @@ fr:
       removed_on: "Retiré le %{date}. Il n’apparaît plus que sur le terrain « Arrivée »."
       undo_removed: "Il est toujours là"
     picker:
-      label: "Sur le terrain ou en projet"
-      existing: "Sur le terrain"
-      planned: "En projet"
-      existing_hint: "Ce qui est déjà là aujourd’hui."
-      planned_hint: "Pas encore réalisé : dessiné en pointillés, à marquer « réalisé » le jour venu. Un bâtiment en projet compte déjà dans la 3D."
       drawing: "En projet."
       created: "Ajouté à la carte, en projet : %{kind}."

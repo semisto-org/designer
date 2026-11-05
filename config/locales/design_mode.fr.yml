@@ -1,0 +1,12 @@
+# « Existant | Projet » in the map editor (map/time/ModeSwitch): the land
+# alone, or the project over it.
+fr:
+  design_mode:
+    label: "Ce que montre la carte"
+    existing: "Existant"
+    project: "Projet"
+    existing_hint: "Le terrain tel qu’il est : seulement ce qui est déjà là. Ce que tu dessines est sur le terrain."
+    project_hint: "Le projet au premier plan, l’existant en retrait. Ce que tu dessines est en projet, à marquer « réalisé » le jour venu."
+    switched: "Passé en « Projet » pour que tu voies ce que tu viens d’ajouter."
+    picker_existing: "Tu dessines l’existant : ce qui est déjà là aujourd’hui."
+    picker_project: "Tu dessines le projet : pas encore réalisé, en pointillés, à marquer « réalisé » le jour venu. Un bâtiment en projet compte déjà dans la 3D."

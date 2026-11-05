@@ -5,29 +5,12 @@ import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { ELEMENT_LAYERS, elementFor } from '@/map/drawing/catalog'
 import { iconComponent } from '@/map/drawing/icons'
-import { canBePlanned } from '@/map/scenario'
+import { useEditor } from '@/map/editor/EditorContext'
+import { canBePlanned, isAnnotationLayer } from '@/map/scenario'
+import type { DesignMode } from '@/map/time/mode'
 import type { ElementSpec } from '@/types/drawing'
 
 const RECENT_KEY = 'designer:drawing:recent'
-const PLANNED_KEY = 'designer:drawing:planned'
-
-/** « Sur le terrain » or « En projet »: the last choice, for the next element. */
-export function loadPlannedChoice(): boolean {
-  try {
-    return window.localStorage.getItem(PLANNED_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function rememberPlannedChoice(planned: boolean) {
-  try {
-    window.localStorage.setItem(PLANNED_KEY, planned ? '1' : '0')
-  } catch {
-    // Storage unavailable: the choice holds for this picker only.
-  }
-}
-
 export function loadRecent(): string[] {
   try {
     const saved = JSON.parse(window.localStorage.getItem(RECENT_KEY) ?? '[]')
@@ -61,26 +44,28 @@ export function ElementBadge({ spec, size = 'md' }: { spec: ElementSpec; size?: 
 
 const PICKER_LAYERS = ELEMENT_LAYERS.filter((l) => l.elements.some((e) => e.pickable))
 
-/** What the picker offers: every element on the ground, only what can still be built in « En projet ». */
-function offered(spec: ElementSpec, planned: boolean): boolean {
-  return spec.pickable && (!planned || canBePlanned(spec.layer, spec.kind))
+/**
+ * What the picker offers: in « Existant », every element; in « Projet », what
+ * can still be built, and notes (drawn over the plan, never a project).
+ */
+export function offered(spec: ElementSpec, mode: DesignMode): boolean {
+  return spec.pickable && (mode === 'existing' || canBePlanned(spec.layer, spec.kind) || isAnnotationLayer(spec.layer))
 }
 
 /**
- * The element library: first whether the element is already on the land or
- * still a project, then a design layer, then the element to draw.
+ * The element library: the editor's mode first (« Existant » or « Projet »,
+ * map/time/mode: what is drawn is on the land or still a project; switching
+ * it here switches the whole map), then a design layer, then the element.
  */
 export function ElementPicker({ onPick, onClose }: { onPick: (spec: ElementSpec, planned: boolean) => void; onClose: () => void }) {
-  const [planned, setPlanned] = useState(loadPlannedChoice)
-  const recent = loadRecent().filter((kind) => offered(elementFor(kind)!, planned))
-  const layers = PICKER_LAYERS.filter((l) => l.elements.some((e) => offered(e, planned)))
+  const { mode, setMode } = useEditor()
+  const planned = mode === 'project'
+  const recent = loadRecent().filter((kind) => offered(elementFor(kind)!, mode))
+  const layers = PICKER_LAYERS.filter((l) => l.elements.some((e) => offered(e, mode)))
   const [layer, setLayer] = useState(() => elementFor(recent[0])?.layer ?? layers[0].layer)
   const current = layers.find((l) => l.layer === layer) ?? layers[0]
   const pick = (spec: ElementSpec) => onPick(spec, planned && canBePlanned(spec.layer, spec.kind))
-  const choose = (next: boolean) => {
-    setPlanned(next)
-    rememberPlannedChoice(next)
-  }
+  const choose = (next: boolean) => setMode(next ? 'project' : 'existing')
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -97,15 +82,15 @@ export function ElementPicker({ onPick, onClose }: { onPick: (spec: ElementSpec,
         </button>
       </div>
 
-      <div className="mt-2 flex gap-1 rounded-full bg-loam-50 p-1 ring-1 ring-loam-200" role="group" aria-label={t('scenario.picker.label')}>
+      <div className="mt-2 flex gap-1 rounded-full bg-loam-50 p-1 ring-1 ring-loam-200" role="group" aria-label={t('design_mode.label')}>
         <Button size="sm" variant={planned ? 'ghost' : 'leaf'} className="flex-1" aria-pressed={!planned} onClick={() => choose(false)}>
-          <MapPin className="h-4 w-4" aria-hidden />{t('scenario.picker.existing')}
+          <MapPin className="h-4 w-4" aria-hidden />{t('design_mode.existing')}
         </Button>
         <Button size="sm" variant={planned ? 'primary' : 'ghost'} className="flex-1" aria-pressed={planned} onClick={() => choose(true)}>
-          <Hammer className="h-4 w-4" aria-hidden />{t('scenario.picker.planned')}
+          <Hammer className="h-4 w-4" aria-hidden />{t('design_mode.project')}
         </Button>
       </div>
-      <p className="mt-1.5 text-sm text-loam-500">{t(planned ? 'scenario.picker.planned_hint' : 'scenario.picker.existing_hint')}</p>
+      <p className="mt-1.5 text-sm text-loam-500">{t(planned ? 'design_mode.picker_project' : 'design_mode.picker_existing')}</p>
 
       {recent.length > 0 && (
         <div className="mt-2">
@@ -145,7 +130,7 @@ export function ElementPicker({ onPick, onClose }: { onPick: (spec: ElementSpec,
       </div>
 
       <ul className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3" role="tabpanel">
-        {current.elements.filter((e) => offered(e, planned)).map((spec) => (
+        {current.elements.filter((e) => offered(e, mode)).map((spec) => (
           <li key={spec.kind}>
             <button
               type="button"

@@ -42,7 +42,7 @@ type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; s
  * numbers by species, first number first.
  */
 function usePlantStrata(): PlantLegend {
-  const { features, map, moment, timeline } = useEditor()
+  const { features, map, moment, timeline, mode } = useEditor()
   const { data } = usePlanting(map.id)
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
@@ -53,7 +53,7 @@ function usePlantStrata(): PlantLegend {
   let planned = false
   let support = false
   for (const feature of features) {
-    if (!isPlant(feature) || feature.properties.status === 'rejected' || !inMoment(feature.properties, moment, timeline.arrival)) continue
+    if (!isPlant(feature) || feature.properties.status === 'rejected' || !inMoment(feature.properties, moment, timeline.arrival, mode)) continue
     const s = plantStrata(feature, data)
     if (data && !s) unknown += 1
     if (hiddenStrata.includes(strataKey(s))) {
