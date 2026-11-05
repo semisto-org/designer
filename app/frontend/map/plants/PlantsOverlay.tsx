@@ -19,7 +19,7 @@ import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/pl
 import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
 import { crownOrder, inkOn } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
-import { isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
+import { DESIGN_MODE_STATE, GROUND_IN_PROJECT_OPACITY, isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
 import { growingPlant, sizeAtMoment } from '@/map/time/plants'
 import type { PlantingState } from '@/types/plants'
@@ -41,6 +41,8 @@ type NumberProps = { featureId: number; number: string; color: string; ink: stri
 type PointColors = Map<number, string>
 
 const PLANTED = ['get', 'planted'] as unknown as boolean
+// Plants in the ground fade behind the project while the editor shows « Projet » (map/time/mode).
+const GROUND_FADE = ['case', ['==', ['global-state', DESIGN_MODE_STATE], 'project'], GROUND_IN_PROJECT_OPACITY, 1] as unknown as number
 const NOT_REACH = ['!', ['to-boolean', ['get', 'reach']]] as never
 
 /**
@@ -65,7 +67,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
   const numbers: Feature<Point, NumberProps>[] = []
   for (const feature of editor.features) {
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
-    if (!inMoment(feature.properties, editor.moment, editor.timeline.arrival)) continue
+    if (!inMoment(feature.properties, editor.moment, editor.timeline.arrival, editor.mode)) continue
     const strata = plantStrata(feature, data)
     // « Calques » or the legend hid this strata: no crown, name or number.
     if (data && hiddenStrata.includes(strataKey(strata))) continue
@@ -152,7 +154,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
 // first (from zoom 17) and win collisions; small plants follow as one zooms in.
 const plantLabel = (() => {
   const { layout, paint } = markerLabel(['get', 'label'], { 'symbol-sort-key': ['get', 'rank'], 'text-padding': 6 })
-  const opacity = ['case', PLANTED, 1, PLANNED_OPACITY] as never
+  const opacity = ['case', PLANTED, ['*', 1, GROUND_FADE], PLANNED_OPACITY] as never
   return { layout, paint: { ...paint, 'text-opacity': opacity, 'icon-opacity': opacity } }
 })()
 
@@ -186,7 +188,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     source: CROWNS,
     layout: { 'fill-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
-    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, 0.45, 0.15] },
+    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, ['*', 0.45, GROUND_FADE], 0.15] },
   }, before)
   // Support plants: the ground they feed is hatched in their strata colour,
   // as a planting plan marks what is there for a while: they build the
@@ -197,7 +199,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     source: CROWNS,
     layout: { 'fill-sort-key': ['get', 'order'] },
     filter: ['to-boolean', ['get', 'reach']],
-    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, 0.3, 0.12] },
+    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, ['*', 0.3, GROUND_FADE], 0.12] },
   }, before)
   map.addLayer({
     id: `${CROWNS}-support`,
@@ -205,7 +207,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     source: CROWNS,
     layout: { 'fill-sort-key': ['get', 'order'] },
     filter: ['to-boolean', ['get', 'reach']],
-    paint: { 'fill-pattern': SUPPORT_HATCH, 'fill-opacity': ['case', PLANTED, 0.9, 0.5] },
+    paint: { 'fill-pattern': SUPPORT_HATCH, 'fill-opacity': ['case', PLANTED, ['*', 0.9, GROUND_FADE], 0.5] },
   }, before)
   map.addLayer({
     id: `${CROWNS}-reach-line`,
@@ -214,7 +216,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     layout: { 'line-sort-key': ['get', 'order'] },
     filter: ['to-boolean', ['get', 'reach']],
     // design-lint-ok: MapLibre paint takes colour values, not theme classes
-    paint: { 'line-color': '#ffffff', 'line-width': 1.5, 'line-opacity': ['case', PLANTED, 0.9, 0.5], 'line-dasharray': ['literal', [2, 2]] },
+    paint: { 'line-color': '#ffffff', 'line-width': 1.5, 'line-opacity': ['case', PLANTED, ['*', 0.9, GROUND_FADE], 0.5], 'line-dasharray': ['literal', [2, 2]] },
   }, before)
   map.addLayer({
     id: `${CROWNS}-casing`,
@@ -225,7 +227,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     paint: {
       'line-color': '#ffffff',
       'line-width': ['case', ['get', 'selected'], 5.5, 4],
-      'line-opacity': ['case', PLANTED, 0.7, 0.45],
+      'line-opacity': ['case', PLANTED, ['*', 0.7, GROUND_FADE], 0.45],
     },
   }, before)
   map.addLayer({
@@ -237,7 +239,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     paint: {
       'line-color': ['get', 'color'],
       'line-width': ['case', ['get', 'selected'], 3, 2],
-      'line-opacity': ['case', PLANTED, 0.95, PLANNED_OPACITY],
+      'line-opacity': ['case', PLANTED, ['*', 0.95, GROUND_FADE], PLANNED_OPACITY],
       'line-dasharray': ['case', PLANTED, ['literal', [1, 0]], ['literal', [2, 1.5]]] as never,
     },
   }, before)
@@ -263,7 +265,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
       'circle-color': ['case', PLANTED, ['get', 'color'], '#ffffff'],
       'circle-stroke-color': ['case', PLANTED, '#ffffff', ['get', 'color']],
       'circle-stroke-width': ['case', ['get', 'selected'], 3, PLANTED, 1.5, 2.5],
-      'circle-opacity': ['case', PLANTED, 1, 0.9],
+      'circle-opacity': ['case', PLANTED, ['*', 1, GROUND_FADE], 0.9],
     },
   })
   map.addLayer({
@@ -328,7 +330,7 @@ export default function PlantsOverlay() {
   const map = editor.instance
 
   const labelStyle = usePlantLabelStyle()
-  const layers = useMemo(() => crownsOf(editor, data, labelStyle, hiddenStrata), [editor.features, editor.selectedId, editor.selection, data, editor.moment, editor.timeline, labelStyle, hiddenStrata]) // eslint-disable-line react-hooks/exhaustive-deps
+  const layers = useMemo(() => crownsOf(editor, data, labelStyle, hiddenStrata), [editor.features, editor.selectedId, editor.selection, data, editor.moment, editor.timeline, editor.mode, labelStyle, hiddenStrata]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Install the crowns, and again after a basemap style change.
   const latest = useRef(layers)
@@ -363,10 +365,10 @@ export default function PlantsOverlay() {
   }, [signature, mapId])
 
   // Click-to-place loop: one plant per click until Escape or « Terminer ».
-  // New plants are planned ones: the land on arrival would hide them, today shows the plan.
+  // New plants are planned ones: « Existant » would hide them, « Projet » shows the plan (from arrival, today).
   useEffect(() => {
     if (!placing || !editorRef.current.canEdit) return
-    if (editorRef.current.moment === 'arrival') editorRef.current.setMoment('today')
+    if (editorRef.current.mode === 'existing') editorRef.current.setMode('project')
     // A distinct cursor while placing (application.css, .placing-plant).
     const container = editorRef.current.instance.getContainer()
     container.classList.add('placing-plant')

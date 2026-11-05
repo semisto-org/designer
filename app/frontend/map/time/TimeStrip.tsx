@@ -8,6 +8,8 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { noonElevation, SEASONS, type Season } from '@/map/time/growth'
 import { availableMoments, FUTURE_YEARS, isFuture, momentDate, type Moment, type Timeline } from '@/map/time/moment'
+import type { DesignMode } from '@/map/time/mode'
+import { ModeSwitch } from '@/map/time/ModeSwitch'
 
 /** Below this width (px) beside an open panel or inspector, the strip folds into one button. */
 const FULL_WIDTH = 470
@@ -56,8 +58,9 @@ function stopHint(moment: Moment, line: Timeline): string {
   return t('time_strip.stop_hints.future', { year: yearOf(date) })
 }
 
-function hint(moment: Moment, line: Timeline, drafts: boolean): string {
+function hint(moment: Moment, line: Timeline, drafts: boolean, mode: DesignMode): string {
   if (moment === 'arrival') return t('time_strip.hints.arrival')
+  if (moment === 'today' && mode === 'existing') return t('time_strip.hints.today_existing')
   if (moment === 'today') return t(drafts ? 'time_strip.hints.today_drafts' : 'time_strip.hints.today')
   const years = FUTURE_YEARS[moment]
   return drafts ? t('time_strip.hints.future_drafts', { years }) : t('time_strip.hints.future', { years, season: monthYear(line.nextSeason) })
@@ -111,12 +114,14 @@ export default function TimeStrip() {
       aria-label={t('time_strip.label')}
       className="pointer-events-auto w-full space-y-2 rounded-2xl bg-white/95 px-3 pb-1.5 pt-2.5 shadow-[0_6px_16px_rgb(26_26_26/0.18)] ring-1 ring-loam-900/10 backdrop-blur md:w-[29rem]"
     >
+      {/* On a phone the header has no room: « Existant | Projet » heads the strip. */}
+      <ModeSwitch className="md:hidden" />
       <div className="flex items-center gap-2">
         <Hourglass className="h-4 w-4 shrink-0 text-prune-600" aria-hidden />
         <p className="min-w-0 flex-1 truncate font-serif text-lg leading-tight text-loam-900" aria-live="polite">{title(moment, timeline)}</p>
         <ShadePicker />
       </div>
-      <p className="hidden text-sm leading-snug text-loam-600 md:block">{hint(moment, timeline, drafts)}</p>
+      <p className="hidden text-sm leading-snug text-loam-600 md:block">{hint(moment, timeline, drafts, editor.mode)}</p>
       {editor.shade && <p className="hidden text-sm leading-snug text-loam-500 md:block">{t(`time_strip.shade.note.${editor.shade}`)}</p>}
       <Stops />
     </section>

@@ -118,3 +118,30 @@ export const TO_REMOVE_EXPR = [
   ['!', ['in', ['get', 'layer'], ['literal', [...ANNOTATION_LAYERS]]]],
   ['!', ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]],
 ] as const
+
+/**
+ * The editor's mode (« Existant » or « Projet », map/time/mode), handed to
+ * the map's paint as the MapLibre global state `designMode`.
+ */
+export const DESIGN_MODE_STATE = 'designMode'
+
+/** Opacity of what is on the ground while the editor shows the project: still there, behind it. */
+export const GROUND_IN_PROJECT_OPACITY = 0.45
+
+/**
+ * Paint factor: what stands on the ground (not a draft, a project, something
+ * to take away or a note) fades while the editor shows « Projet ».
+ */
+export const GROUND_IN_PROJECT_FACTOR = [
+  'case',
+  [
+    'all',
+    ['==', ['global-state', DESIGN_MODE_STATE], 'project'],
+    ['!=', ['coalesce', ['get', 'status'], 'active'], 'draft'],
+    ['!', PLANNED_EXPR],
+    ['!', TO_REMOVE_EXPR],
+    ['!', ['in', ['get', 'layer'], ['literal', [...ANNOTATION_LAYERS]]]],
+  ],
+  GROUND_IN_PROJECT_OPACITY,
+  1,
+] as const

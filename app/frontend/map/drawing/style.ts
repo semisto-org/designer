@@ -10,7 +10,7 @@ import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
 import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
-import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
+import { GROUND_IN_PROJECT_FACTOR, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 import { ensureSupportHatch } from '@/map/plants/supportHatch'
 import { stackFeatureLayers } from '@/map/layers/stack'
@@ -91,8 +91,14 @@ const crowned = LIBRARY.filter((e) => e.crown)
 const arrowed = LIBRARY.filter((e) => e.line?.arrows)
 const pointKinds = LIBRARY.filter((e) => e.geometries.includes('Point'))
 
-/** Opacity factor: hidden while its shape is edited, faded when a draft, still a project or to be taken away. */
-const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, isPlannedElement, PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1])
+/**
+ * Opacity factor: hidden while its shape is edited, faded when a draft, still
+ * a project or to be taken away; what is on the ground fades behind the
+ * project while the editor shows « Projet » (unless selected).
+ */
+const visibleFactor = expr(['*',
+  ['case', editing, 0, isDraft, 0.5, isPlannedElement, PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1],
+  ['case', selected, 1, GROUND_IN_PROJECT_FACTOR]])
 /**
  * A planned element keeps its own dash if it has one, else draws dashed:
  * « not there yet ». What the project takes away draws dotted: « on its way out ».

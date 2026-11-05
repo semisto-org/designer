@@ -24,7 +24,7 @@ Sur la carte, un plant planté a une couronne pleine ; un plant encore **en proj
 Au pied de la carte, la **frise du temps** te fait voyager dans la vie de ton jardin : **Arrivée · Aujourd'hui · An 5 · An 15 · An 30**. Les couronnes grandissent d'un arrêt à l'autre, avec la même courbe que la vue 3D : un départ lent, le temps que les racines s'installent, puis une belle poussée, jusqu'à la taille adulte de l'espèce (ou moins pour une trogne, une cépée ou un fruitier greffé sur un porte-greffe faible).
 
 - **Arrivée** montre le terrain tel qu'il était quand tu as ouvert la carte : ce que tu y as planté ou construit depuis disparaît, tout comme les projets et les brouillons de l'IA. Les vieux arbres **déjà en terre, date inconnue** restent là, adultes.
-- **Aujourd'hui** (le choix par défaut) montre ce qui est en terre, chaque couronne à son âge réel d'après sa date de plantation. Ton projet reste visible en pointillés, à sa taille adulte : c'est la place qu'il prendra.
+- **Aujourd'hui** (le choix par défaut) montre ce qui est en terre, chaque couronne à son âge réel d'après sa date de plantation. En **Projet**, ton projet est visible en pointillés, à sa taille adulte : c'est la place qu'il prendra ; en **Existant**, il est caché.
 - **An 5**, **An 15** et **An 30** comptent à partir de la première plantation du jardin (ou de la prochaine saison de plantation si rien n'est encore planté). Les plants en projet y sont supposés mis en terre à la prochaine saison, de novembre à mars. Une plante de soutien disparaît l'année où elle laisse la place. Les propositions de l'IA n'apparaissent que dans ces années à venir : ouvrir un brouillon depuis le bandeau de l'IA y emmène la carte.
 
 Sous chaque arrêt, la date exacte s'affiche en survolant. Les années déjà derrière un vieux jardin ne sont pas proposées.
@@ -35,9 +35,9 @@ Sous chaque arrêt, la date exacte s'affiche en survolant. Les années déjà de
 
 ### Les autres éléments
 
-Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans leur fiche, la section **Sur le terrain** dit s'ils sont déjà là ou **en projet**. Pour dessiner directement un élément à venir, choisis **En projet** en haut de « Que veux-tu dessiner ? ». Sinon, touche **C'est un projet** pour une mare encore à creuser : elle passe en pointillés et disparaît du terrain à l'arrivée. Une fois creusée, **Marquer comme réalisé** garde la date : la frise la montre à partir de ce jour-là.
+Les autres éléments (mare, haie, chemin, abri…) ont la même logique. Dans leur fiche, la section **Sur le terrain** dit s'ils sont déjà là ou **en projet**. Pour dessiner directement un élément à venir, passe en **Projet** en haut de la carte (voir [Existant ou projet](/help/dessiner-l-existant)). Sinon, touche **C'est un projet** pour une mare encore à creuser : elle passe en pointillés et disparaît du terrain à l'arrivée. Une fois creusée, **Marquer comme réalisé** garde la date : la frise la montre à partir de ce jour-là.
 
-Le moment choisi est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse à **Aujourd'hui** si tu regardais l'arrivée, pour que tu les voies apparaître.
+Le moment choisi est gardé pour chaque carte, sur ton appareil. Placer des plants depuis la palette repasse en **Projet** (à **Aujourd'hui** si tu regardais l'arrivée), pour que tu les voies apparaître.
 
 ### Retirer ce qui est en projet
 
