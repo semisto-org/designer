@@ -60,7 +60,7 @@ export function drawShapeFor(geometry: ElementGeometry): DrawShape {
 }
 
 /** Keys that MapFeature#as_geojson adds next to the stored properties. */
-const META_KEYS = new Set(['id', 'layer', 'kind', 'name', 'notes', 'status', 'source', 'rationale', 'style', 'lockVersion', 'updatedAt'])
+const META_KEYS = new Set(['id', 'layer', 'kind', 'name', 'notes', 'status', 'source', 'rationale', 'style', 'lockVersion', 'updatedAt', 'variant_id'])
 
 /** The feature's stored `properties` (without the columns merged in by the server). */
 export function storedProperties(feature: MapFeature): Record<string, unknown> {

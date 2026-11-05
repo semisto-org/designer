@@ -98,4 +98,30 @@ class Maps::PresentationsControllerTest < ActionDispatch::IntegrationTest
     post map_presentations_path(@map), params: { template: "nope" }, as: :json
     assert_response :not_found
   end
+
+  test "a step keeps « Existant » or « Projet », the variant and the tag shown; an older « version » reads as a tag" do
+    sign_in_as users(:michael)
+    presentation = @map.presentations.create!(name: "Lautenne")
+    steps = [
+      { id: "a", title: "Analyse", view: { mode: "existing", moment: "today" } },
+      { id: "b", title: "Projet 2", view: { mode: "project", variantId: "7", tag: "Flux récolte" } },
+      { id: "c", title: "Avant", view: { version: "Version A", mode: "nope" } }
+    ]
+    patch map_presentation_path(@map, presentation), params: { presentation: { steps:, lock_version: 0 } }, as: :json
+    assert_response :success
+    views = presentation.reload.steps.map { _1["view"] }
+    assert_equal "existing", views[0]["mode"]
+    assert_equal [ "project", 7, "Flux récolte" ], views[1].values_at("mode", "variantId", "tag")
+    assert_equal "Version A", views[2]["tag"]
+    assert_nil views[2]["mode"]
+    assert_nil views[2]["version"]
+  end
+
+  test "the pre-design template reads the place in « Existant » and shows the project in « Projet »" do
+    sign_in_as users(:michael)
+    post map_presentations_path(@map), params: { template: "pre_design" }, as: :json
+    steps = response.parsed_body["presentations"].first["steps"]
+    assert_equal "existing", steps.find { _1["key"] == "wind" }["view"]["mode"]
+    assert_equal "project", steps.find { _1["key"] == "synthesis" }["view"]["mode"]
+  end
 end

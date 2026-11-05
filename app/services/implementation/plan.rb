@@ -25,13 +25,13 @@ module Implementation
                   WHEN GeometryType(geometry) IN ('POLYGON', 'MULTIPOLYGON') THEN ST_Perimeter(geometry::geography) / 2 END AS length_m,
              CASE WHEN GeometryType(geometry) IN ('POLYGON', 'MULTIPOLYGON') THEN ST_Area(geometry::geography) END AS area_m2
       FROM map_features
-      WHERE map_id = $1 AND status = 'active' AND deleted_at IS NULL AND layer = ANY($2::text[]) AND kind <> 'plant'
+      WHERE map_id = $1 AND status = 'active' AND deleted_at IS NULL AND #{MapFeature.in_design_sql} AND layer = ANY($2::text[]) AND kind <> 'plant'
       ORDER BY id
     SQL
 
     PHASES_SQL = <<~SQL.squish.freeze
       SELECT id, CASE WHEN properties->>'phase_id' ~ '^[0-9]+$' THEN (properties->>'phase_id')::bigint END AS phase_id
-      FROM map_features WHERE map_id = $1 AND kind = 'plant' AND status = 'active' AND deleted_at IS NULL
+      FROM map_features WHERE map_id = $1 AND kind = 'plant' AND status = 'active' AND deleted_at IS NULL AND #{MapFeature.in_design_sql}
     SQL
 
     BUDGET_CAPS_CENTS = { "under_500" => 50_000, "up_to_2000" => 200_000, "up_to_5000" => 500_000, "up_to_15000" => 1_500_000 }.freeze

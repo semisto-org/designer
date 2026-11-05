@@ -42,9 +42,10 @@ class PresentationTemplate
         "hiddenLayers" => step["layers"] ? MapFeature::LAYERS - step["layers"] : [],
         "hiddenKinds" => [],
         "hiddenStrata" => step["strata"] ? MapPresentation::STRATA - step["strata"] : [],
-        "version" => nil,
         "sectors" => step["sectors"],
         "moment" => step["moment"] || "today",
+        # The land as it is for the reading of the place, the project after.
+        "mode" => step["mode"],
         "shade" => step["shade"],
         "relief" => step["relief"]
       }

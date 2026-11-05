@@ -4,7 +4,6 @@ import { Field, Input, Select } from '@/components/ui/Field'
 import { formatNumber, t } from '@/lib/i18n'
 import { elementFor, storedProperties } from '@/map/drawing/catalog'
 import { saveFeature } from '@/map/drawing/save'
-import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
   DESTINATION_KEY, DESTINATIONS, destinationOf, excavation, isDiggable, isDone, isReceiving, receiverGap, SOIL_PARTS, topsoilCm,
@@ -35,7 +34,6 @@ export default function EarthworksSection({ feature }: { feature: MapFeature }) 
 
 function DigSection({ feature, balance, byId }: { feature: MapFeature; balance: Balance; byId: Map<number, MapFeature> }) {
   const editor = useEditor()
-  const version = useDrawingState((s) => s.version)
   const p = feature.properties
   const dug = excavation(p.kind, p, measureOf(feature))
   const done = isDone(p)
@@ -66,7 +64,7 @@ function DigSection({ feature, balance, byId }: { feature: MapFeature; balance: 
     try {
       const spec = elementFor('mound')!
       const mound = await editor.createFeature({
-        layer: spec.layer, kind: 'mound', geometry, properties: { ...spec.defaults }, ...(version ? { tags: [version] } : {}),
+        layer: spec.layer, kind: 'mound', geometry, properties: { ...spec.defaults },
       })
       const fresh = editor.features.find((f) => f.properties.id === p.id) ?? feature
       const next = { ...storedProperties(fresh), [DESTINATION_KEY[part]]: mound.properties.id }

@@ -1,0 +1,72 @@
+# Project variants (« Projet 1 », « Projet 2 »): MapVariant, the « Variantes »
+# panel and the picker over the map (app/frontend/map/variants).
+fr:
+  activerecord:
+    models:
+      map_variant: "Variante"
+    attributes:
+      map_variant:
+        name: "Nom"
+        notes: "Notes"
+    errors:
+      models:
+        map_variant:
+          too_many: "Une carte garde au plus %{count} variantes : supprime celles que tu as écartées."
+  variants:
+    default_name: "Projet %{number}"
+    copy_name: "%{name} (copie)"
+    panel_title: "Variantes"
+    intro: "Plusieurs idées pour le même lieu ? Chaque variante garde ses propres éléments ; ce qui est commun reste dans toutes. Tu en regardes une à la fois, en « Projet »."
+    retained_intro: "La variante retenue est celle que comptent la palette, les quantités, l’offre, la mise en œuvre, la 3D et la carte publique."
+    empty_title: "Un seul projet pour l’instant"
+    empty: "Tout ce que tu as dessiné en projet forme « Projet 1 ». Essaie une autre idée : elle naît dans « Projet 2 », avec le commun déjà en place."
+    start: "Essayer une autre idée"
+    new: "Nouvelle variante"
+    shown: "Sur la carte"
+    show: "Afficher"
+    retained: "Retenue"
+    retain: "Retenir"
+    retained_done: "« %{name} » est retenue : la palette, l’offre et la mise en œuvre la comptent."
+    own_count:
+      zero: "Rien qui lui soit propre : le commun seulement"
+      one: "1 élément qui lui est propre"
+      other: "%{count} éléments qui lui sont propres"
+    common_count:
+      zero: "Rien de commun pour l’instant"
+      one: "1 élément commun à toutes les variantes"
+      other: "%{count} éléments communs à toutes les variantes"
+    rename: "Renommer"
+    name_label: "Nom de la variante"
+    notes_label: "L’idée de cette variante"
+    notes_placeholder: "Ce qu’elle cherche, pour qui, ce qui la distingue…"
+    duplicate: "Dupliquer"
+    duplicated: "« %{name} » est née, avec une copie de ses éléments propres."
+    delete: "Supprimer"
+    delete_title: "Supprimer « %{name} » ?"
+    delete_body:
+      zero: "Elle n’a aucun élément propre : le commun reste en place."
+      one: "Son élément propre va à la corbeille ; le commun reste en place."
+      other: "Ses %{count} éléments propres vont à la corbeille ; le commun reste en place."
+    delete_note: "Tu les retrouves dans la corbeille pendant 30 jours."
+    deleted: "Variante supprimée."
+    see_in_years: "Voir à 15 ans"
+    go_outside_title: "Avant de retenir :"
+    go_outside: "marche chaque variante sur le terrain. Quelques piquets, une ficelle pour la mare, et tu sens laquelle tient debout."
+    from_tag_title: "Reprendre une étiquette"
+    from_tag_intro: "Tu séparais tes idées avec des étiquettes (« Version A »…) ? Leurs éléments en projet forment une variante."
+    from_tag_label: "Étiquette"
+    from_tag: "En faire une variante"
+    from_tag_done: "« %{name} » reprend les éléments étiquetés."
+    error: "La variante n’a pas pu être enregistrée."
+    # The picker over the map.
+    picker_label: "Variante affichée"
+    picker_hint: "Le commun et les éléments de cette variante. La variante retenue est marquée ★."
+    open_panel: "Gérer les variantes"
+    option_retained: "%{name} ★"
+    # The inspector section.
+    section_title: "Variante"
+    common: "Commun à toutes les variantes"
+    section_hint: "Commun : il reste quand tu passes d’une variante à l’autre. Propre : il n’existe que dans sa variante."
+    on_the_ground: "Sur le terrain : commun à toutes les variantes."
+    moved: "Élément déplacé dans « %{name} »."
+    moved_common: "Élément commun à toutes les variantes."

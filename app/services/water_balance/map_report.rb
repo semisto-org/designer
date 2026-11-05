@@ -72,7 +72,7 @@ module WaterBalance
       # What the map holds: tanks and the roofs' summer rain for watering,
       # ponds, swales and rain gardens for keeping water on the land.
       def storage(observed, settings)
-        features = @map.features.active
+        features = @map.features.active.in_design
         tanks_l = features.where(kind: "water_tank").sum { |f| f.properties.to_h["capacity_l"].to_f }
         roof = Relief::Rainwater.new(@map, settings:).call
         summer_rain = observed[:months].select { SUMMER.include?(_1[:month]) }.sum { _1[:rain_mm] }

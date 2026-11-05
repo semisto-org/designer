@@ -8,68 +8,92 @@
 #   strata:  the plant strata shown; absent = all
 #   sectors: the sector groups kept around the terrain; absent = none
 #   moment:  the time strip (arrival, today, year5, year15, year30)
+#   mode:    « Existant » (existing: the reading of the place) or « Projet » (project)
 #   shade:   the noon shade drawn (june, december)
 #   relief:  shown in the 3D relief instead (tab: view, rain, sun, night)
 steps:
   - key: project
+    mode: existing
     panel: project
     layers: [existing]
   - key: microclimates
+    mode: existing
     layers: [existing, water]
     relief:
       tab: night
   - key: sun
+    mode: existing
     panel: sun
     layers: [existing]
     sectors: [sun]
     shade: december
   - key: soil
+    mode: existing
     panel: soil
     layers: [existing]
   - key: water_slope
+    mode: existing
     layers: [existing, water]
   - key: wind
+    mode: existing
     layers: [existing]
     sectors: [wind]
   - key: access
+    mode: existing
     layers: [existing, access]
   - key: views
+    mode: existing
     layers: [existing]
     sectors: [views, nuisances]
   - key: flora_fauna
+    mode: existing
     panel: photos
     layers: [existing]
     sectors: [wildlife]
   - key: functions
+    mode: project
     panel: functions
   - key: sketch
+    mode: project
   - key: earthworks
+    mode: project
     panel: earthworks
     layers: [existing, water, access]
   - key: water_design
+    mode: project
     panel: water-sources
     layers: [existing, water, networks]
   - key: structures
+    mode: project
     layers: [existing, access, structures]
   - key: strata_low
+    mode: project
     layers: [existing, structures, plants]
     strata: [herbaceous, ground_cover, root, vine, aquatic]
   - key: strata_middle
+    mode: project
     layers: [existing, structures, plants]
     strata: [shrub, sub_canopy]
   - key: strata_high
+    mode: project
     layers: [existing, structures, plants]
     strata: [canopy]
   - key: screens
+    mode: project
     layers: [existing, structures, plants]
     moment: year5
     shade: december
   - key: zones
+    mode: project
     panel: zones
   - key: flows
+    mode: project
     layers: [existing, access, structures]
   - key: synthesis
+    mode: project
     moment: year15
   - key: next_steps
+    mode: project
   - key: budget
+    mode: project
     panel: plant-list

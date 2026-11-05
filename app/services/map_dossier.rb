@@ -105,7 +105,7 @@ class MapDossier
 
     def shown_features
       @shown_features ||= begin
-        scope = map.features.active.order(:layer, :id)
+        scope = map.features.active.in_design.order(:layer, :id)
         scope = scope.where.not(layer: SENSITIVE_LAYERS) unless include_networks?
         scope.to_a
       end

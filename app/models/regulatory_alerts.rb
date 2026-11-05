@@ -58,7 +58,7 @@ class RegulatoryAlerts
     end
 
     def features(rule)
-      map.features.where(status: STATUSES, kind: Array(rule["kinds"]).map(&:to_s))
+      map.features.in_design.where(status: STATUSES, kind: Array(rule["kinds"]).map(&:to_s))
     end
 
     def max_area(rule)

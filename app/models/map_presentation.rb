@@ -1,7 +1,7 @@
 # A map's « Présenter » sequence: ordered steps, each a view of the map that
 # a click brings back (framing, open panel, hidden layers, kinds and strata,
-# the version shown, the sector groups kept around the terrain, the moment
-# of the time strip and its noon shade, a selected element) with the
+# the tag and the project variant shown, the sector groups kept around the terrain, the moment
+# of the time strip, « Existant » or « Projet » and its noon shade, a selected element) with the
 # presenter's own note. The editor captures views; a template
 # (PresentationTemplate) gives a first sequence with default views.
 #
@@ -11,6 +11,8 @@ class MapPresentation < ApplicationRecord
   MAX_STEPS = 60
   MOMENTS = %w[arrival today year5 year15 year30].freeze
   SHADES = %w[june december].freeze
+  # « Existant » or « Projet » (app/frontend/map/time/mode.ts).
+  MODES = %w[existing project].freeze
   SECTOR_GROUPS = %w[sun wind risks nuisances views wildlife other].freeze
   STRATA = (PlantVocabulary::STRATA + %w[unknown]).freeze
 
@@ -50,9 +52,12 @@ class MapPresentation < ApplicationRecord
       "hiddenLayers" => strings(view["hiddenLayers"]) & MapFeature::LAYERS,
       "hiddenKinds" => strings(view["hiddenKinds"]),
       "hiddenStrata" => strings(view["hiddenStrata"]) & STRATA,
-      "version" => view["version"].to_s.presence&.first(80),
+      # One tag shown on its own; « version » is its name before the project variants.
+      "tag" => (view["tag"] || view["version"]).to_s.presence&.first(80),
+      "variantId" => Integer(view["variantId"], exception: false),
       "sectors" => view["sectors"].nil? ? nil : strings(view["sectors"]) & SECTOR_GROUPS,
       "moment" => view["moment"].presence_in(MOMENTS),
+      "mode" => view["mode"].presence_in(MODES),
       "shade" => view["shade"].presence_in(SHADES),
       "featureId" => Integer(view["featureId"], exception: false),
       "relief" => clean_relief(view["relief"])

@@ -30,6 +30,7 @@ module Mcp
           project_team_notes: project_team_notes(map),
           elements: element_counts(map),
           tags: tag_counts(map),
+          variants: variants(map),
           palette: palette(map),
           palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
@@ -212,7 +213,7 @@ module Mcp
               steps: presentation.steps.map do |step|
                 view = step["view"] || {}
                 { title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: step["note"],
-                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"], in_3d: view["relief"].present? || nil }.compact
+                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"], mode: view["mode"], variant_id: view["variantId"], in_3d: view["relief"].present? || nil }.compact
               end
             }
           end
@@ -400,6 +401,18 @@ module Mcp
             updates_pending: map.feature_update_drafts.pending.count,
             hidden_layers: [ "networks" ],
             hidden_note: t(editor? ? "notes.networks_on_request" : "notes.networks_hidden")
+          }
+        end
+
+        # The project variants (« Projet 1 », « Projet 2 »): each keeps its
+        # own elements, the common project is in all; the retained one is
+        # what the palette, the offer, the implementation plan and the 3D count.
+        def variants(map)
+          own = map.features.where.not(status: "rejected").where.not(variant_id: nil).group(:variant_id).count
+          {
+            list: map.variants.map { |v| v.as_json.merge(own_elements: own[v.id].to_i) },
+            note: t(map.variants.any? ? "notes.variants" : "notes.no_variants"),
+            panel_url: "#{map_url(map)}?panel=variants"
           }
         end
 

@@ -43,12 +43,16 @@ import { isPlanned } from '@/map/scenario'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
 import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
 import { usePresentation } from '@/map/presentation/store'
+import { initVariants, shownVariantId } from '@/map/variants/store'
+import type { MapVariant } from '@/map/variants/variants'
 
 type Props = {
   map: MapData
   layers: RegionLayerData[]
   features: MapFeature[]
   mapEntitlements: EntitlementsData
+  /** The project variants (map/variants); one is retained. */
+  variants?: MapVariant[]
   /** The « Offre » panel: for teams and professional accounts only. */
   offerBuilder?: boolean
 }
@@ -127,7 +131,7 @@ function featureFromUrl(features: MapFeature[]): MapFeature | null {
   return features.find((f) => f.properties.id === id) ?? null
 }
 
-function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, offerBuilder = false }: Props & { setMap: (m: MapData) => void }) {
+function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, variants = [], offerBuilder = false }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [arrival] = useState(() => featureFromUrl(initial))
@@ -137,6 +141,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   // The time strip (map/time): the moment is remembered per map and read by
   // the layers through the editor; a moment already behind the garden falls back to today.
   useLayoutEffect(() => initTime(map.id, map.stage), [map.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => initVariants(map.id, variants), [map.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const time = useTime()
   const [today] = useState(localDay)
   const timeline = useMemo(() => timelineOf(features.map((f) => f.properties), today, map.createdAt ?? today), [features, today, map.createdAt])
@@ -399,7 +404,10 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       multiSelect,
       setMultiSelect,
       async createFeature(input: NewFeature) {
-        const feature = await api<MapFeature>(base, { method: 'POST', body: { feature: input } })
+        // Drawn in « Projet » while variants exist: it belongs to the variant shown (the server keeps it common once on the ground).
+        const variant = timeStore.get().mode === 'project' && input.variant_id === undefined ? shownVariantId() : null
+        const body = variant != null ? { ...input, variant_id: variant } : input
+        const feature = await api<MapFeature>(base, { method: 'POST', body: { feature: body } })
         upsertFeatures([feature])
         tracked.create(feature)
         // A project placed while looking at the land alone (a plant from the palette…): show the project, or it would vanish.

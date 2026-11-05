@@ -31,6 +31,8 @@ Certaines choses se comprennent mieux en relief : l'air froid qui coule la nuit 
 
 **Présenter** passe en plein écran. Avance avec **→** ou la barre d'espace, reviens avec **←**. Le carnet ouvre ta note, la liste des étapes permet de sauter là où une question t'emmène. **Échap** ou **Quitter** te rend la carte telle que tu l'avais laissée. Pendant la présentation, la carte est en lecture seule : un clic montre un élément sans risquer de le déplacer.
 
-Pour que les flux (récolte, convivialité, engins…) se montrent un par un, pose une étiquette par flux sur ses chemins, puis choisis cette étiquette comme version avant de capturer l'étape.
+Chaque étape garde **Existant ou Projet** et la [variante](/help/comparer-des-variantes) affichée : l'analyse sur l'existant, puis le projet, une variante après l'autre.
+
+Pour que les flux (récolte, convivialité, engins…) se montrent un par un, pose une étiquette par flux sur ses chemins, puis choisis-la dans **Calques**, « N'afficher qu'une étiquette », avant de capturer l'étape.
 
 Ton IA voit aussi la présentation : elle peut t'aider à préparer ce que tu diras à chaque étape, d'après ce qu'elle sait du lieu.

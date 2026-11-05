@@ -15,6 +15,7 @@ import {
 } from '@/map/drawing/pdf'
 import { hiddenPlantIds } from '@/map/drawing/hidden'
 import { useDrawingState } from '@/map/drawing/store'
+import { useShownVariant } from '@/map/variants/store'
 import { showPrintFrame } from '@/map/drawing/style'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
@@ -61,10 +62,11 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   const { data: planting } = usePlanting(editor.map.id)
   const hiddenIds = planting ? hiddenPlantIds(editor.features, hiddenStrata, (f) => plantStrata(f as MapFeature, planting)) : []
-  const version = useDrawingState((s) => s.version)
+  const variant = useShownVariant()
+  const tag = useDrawingState((s) => s.shownTag)
   const instance = editor.instance
-  // The version shown on the map is the one printed, and named in the title.
-  const [title, setTitle] = useState(version ? `${editor.map.name} · ${version}` : editor.map.name)
+  // The variant (and tag) shown on the map is the one printed, and named in the title.
+  const [title, setTitle] = useState([editor.map.name, variant?.name, tag].filter(Boolean).join(' · '))
   const [paper, setPaper] = useState<Paper>('A4')
   const [orientation, setOrientation] = useState<Orientation>('landscape')
   const [scaleChoice, setScaleChoice] = useState<number | 'fit'>('fit')
@@ -89,8 +91,8 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
   const frame = useMemo(() => frameGeometry(center, scale, layout.frame), [center[0], center[1], scale, paper, orientation]) // eslint-disable-line react-hooks/exhaustive-deps
   const ground = groundSize(scale, layout.frame)
   const hiddenLayers = [...new Set([...hidden, ...(withNetworks && editor.canEdit ? [] : ['networks'])])]
-  const legend = legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, version, { kinds: hiddenKinds, ids: hiddenIds })
-  const sheets = bookSheets(title.trim() || editor.map.name, legend, editor.features, hiddenLayers, version)
+  const legend = legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, variant?.id ?? null, { kinds: hiddenKinds, ids: hiddenIds, tag })
+  const sheets = bookSheets(title.trim() || editor.map.name, legend, editor.features, hiddenLayers, variant?.id ?? null, tag)
 
   // The sheet takes the inspector's place.
   const select = editor.select
@@ -148,7 +150,8 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
         hiddenLayers,
         hiddenKinds,
         hiddenIds,
-        version,
+        variant: variant?.id ?? null,
+        tag,
         author: currentUser?.name ?? null,
         areaM2: editor.map.areaM2,
         legend,

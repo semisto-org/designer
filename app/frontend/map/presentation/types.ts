@@ -1,5 +1,6 @@
 import type { SectorGroup } from '@/map/sectors/sectors'
 import type { Moment } from '@/map/time/moment'
+import type { DesignMode } from '@/map/time/mode'
 import type { Season } from '@/map/time/growth'
 
 /** Where the map looks from: what MapLibre needs to come back to it. */
@@ -22,7 +23,7 @@ export type ReliefView = {
 
 /**
  * One view of the map, as a step brings it back. A key left out means the
- * plain state: everything shown, no panel, no sectors, today.
+ * plain state: everything shown, no panel, no sectors, today, the retained variant.
  */
 export type PresentationView = {
   camera?: PresentationCamera
@@ -30,10 +31,15 @@ export type PresentationView = {
   hiddenLayers?: string[]
   hiddenKinds?: string[]
   hiddenStrata?: string[]
-  version?: string
+  /** One tag shown on its own (« Calques »), such as a flow; absent: every element. */
+  tag?: string
+  /** The project variant shown (map/variants); absent: the retained one. */
+  variantId?: number
   /** The sector groups kept around the terrain; absent: none. */
   sectors?: SectorGroup[]
   moment?: Moment
+  /** « Existant » or « Projet »; absent: what the moment implies. */
+  mode?: DesignMode
   shade?: Season
   featureId?: number
   /** The step is shown in the 3D relief rather than on the map. */

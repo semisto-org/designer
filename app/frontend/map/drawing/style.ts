@@ -14,6 +14,7 @@ import { GROUND_IN_PROJECT_FACTOR, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REM
 import type { ElementSpec } from '@/types/drawing'
 import { ensureSupportHatch } from '@/map/plants/supportHatch'
 import { stackFeatureLayers } from '@/map/layers/stack'
+import { variantFilter } from '@/map/variants/variants'
 
 /**
  * Per-kind styling of the element library on a MapLibre map: fills,
@@ -463,13 +464,13 @@ export function installDrawingLayers(map: MapLibreMap): boolean {
 // --- Visibility of the design layers ("Calques") -----------------------------
 
 /**
- * MapLibre twin of `inVersion`: no tag, or the version's tag (any case).
- * Tags arrive as an array, or as its JSON text past the source's max zoom:
- * both read the same once written out and lowercased.
+ * MapLibre twin of `inTag`: no tag, or the tag shown (any case). Tags
+ * arrive as an array, or as its JSON text past the source's max zoom: both
+ * read the same once written out and lowercased.
  */
-function versionFilter(version: string): unknown {
+function tagFilter(tag: string): unknown {
   const tags = ['downcase', ['to-string', ['coalesce', ['get', 'tags'], ['literal', []]]]]
-  return ['any', ['==', tags, '[]'], ['in', JSON.stringify(version.toLocaleLowerCase('fr')), tags]]
+  return ['any', ['==', tags, '[]'], ['in', JSON.stringify(tag.toLocaleLowerCase('fr')), tags]]
 }
 
 /** Per layer: its own filter, the test « Calques » adds, and the filter last set from both. */
@@ -481,20 +482,22 @@ const visibilityState = new WeakMap<MapLibreMap, Map<string, VisibilityEntry>>()
  * drawn from the features source, whoever added it, by combining its own
  * filter with a test on the feature's `layer`. With `moment` (the time
  * strip's filter, map/time/moment), what that moment leaves out is hidden too. With a
- * `version` (a tag), only elements carrying it, or no tag at all, show.
+ * `variant` (map/variants), only the common project and that variant's own elements show;
+ * with a `tag`, only elements carrying it, or no tag at all.
  */
 export function applyLayerVisibility(
   map: MapLibreMap,
   hidden: string[],
-  options: { activeOnly?: boolean; moment?: unknown[] | null; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] } = {},
+  options: { activeOnly?: boolean; moment?: unknown[] | null; variant?: number | null; tag?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] } = {},
 ) {
   const hiddenKinds = options.hiddenKinds ?? []
   const hiddenIds = options.hiddenIds ?? []
   const store = visibilityState.get(map) ?? new Map<string, VisibilityEntry>()
   visibilityState.set(map, store)
   const moment = options.moment ?? null
-  const version = options.version ? versionFilter(options.version) : null
-  const key = `${options.activeOnly ? 'active:' : ''}${moment ? `m=${JSON.stringify(moment)}:` : ''}${options.version ? `v=${options.version}:` : ''}${[...hidden].sort().join(',')}|${[...hiddenKinds].sort().join(',')}|${hiddenIds.join(',')}`
+  const variant = variantFilter(options.variant ?? null)
+  const tag = options.tag ? tagFilter(options.tag) : null
+  const key = `${options.activeOnly ? 'active:' : ''}${moment ? `m=${JSON.stringify(moment)}:` : ''}${variant ? `v=${options.variant}:` : ''}${tag ? `t=${options.tag}:` : ''}${[...hidden].sort().join(',')}|${[...hiddenKinds].sort().join(',')}|${hiddenIds.join(',')}`
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
@@ -510,7 +513,8 @@ export function applyLayerVisibility(
     // Printed plans leave out drafts (AI proposals) and rejected features.
     if (options.activeOnly) tests.push(['==', ['coalesce', ['get', 'status'], 'active'], 'active'])
     if (moment) tests.push(moment)
-    if (version) tests.push(version)
+    if (variant) tests.push(variant)
+    if (tag) tests.push(tag)
     tests.push(...hiddenTests(hiddenKinds, hiddenIds))
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
     const filter = composeFilter(entry.original, test)

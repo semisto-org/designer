@@ -19,6 +19,8 @@ export type NewFeature = {
   style?: Record<string, unknown>
   status?: 'active' | 'draft'
   tags?: string[]
+  /** The project variant it belongs to (map/variants); null: common to all. */
+  variant_id?: number | null
 }
 
 /** swap_number: a plant taking a number another plant holds gives it its own (the other comes back in `swapped`). */
