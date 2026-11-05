@@ -63,6 +63,8 @@ class MapFeature < ApplicationRecord
   # public map.
   scope :in_design, -> { where(variant_id: nil).or(where(variant_id: MapVariant.retained.select(:id))) }
   # The same, for raw SQL on map_features (alias given: in_design_sql("f")).
+  # Raw SQL constants write it out literally (Brakeman refuses interpolation);
+  # test/models/map_variant_test.rb checks they agree.
   def self.in_design_sql(table = "map_features")
     "(#{table}.variant_id IS NULL OR #{table}.variant_id IN (SELECT id FROM map_variants WHERE retained))"
   end
