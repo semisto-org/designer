@@ -368,3 +368,12 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
   .offer-document h2, .offer-document h3 { break-after: avoid; }
   .offer-document li { break-inside: avoid; }
 }
+
+/* « Présenter » (map/presentation): while presenting full screen, the editor's
+   chrome steps aside and the map, its open panel, the time strip and the
+   legend stay; the guide card and the floating notices wait. */
+html[data-presenting] body header,
+html[data-presenting] #editor-rail,
+html[data-presenting] [data-zone="toolbar"],
+html[data-presenting] [data-zone="top"],
+html[data-presenting] [data-zone-card="journey"] { display: none !important; }

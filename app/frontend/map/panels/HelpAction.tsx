@@ -34,6 +34,7 @@ const ARTICLE_BY_PANEL: Record<string, string> = {
   finances: 'le-tableau-financier',
   offer: 'chiffrer-une-offre',
   discussions: 'partager-et-commenter',
+  present: 'presenter-son-design',
   publish: 'publier-sa-carte',
   actions: 'la-liste-de-plants-et-la-commande',
   'ai-journal': 'relire-les-brouillons-de-l-ia',

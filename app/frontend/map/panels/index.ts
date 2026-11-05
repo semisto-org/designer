@@ -1,5 +1,5 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
-import { Apple, Trees } from 'lucide-react'
+import { Apple, Presentation, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -101,6 +101,8 @@ import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
 import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
 import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
 import FunctionsPanel from '@/map/functions/FunctionsPanel'
+import PresentationPanel from '@/map/presentation/PresentationPanel'
+import PresentationOverlay from '@/map/presentation/PresentationOverlay'
 import FunctionsSection from '@/map/functions/FunctionsSection'
 import { appliesToFunctions } from '@/map/functions/store'
 
@@ -139,6 +141,7 @@ export const PANELS: EditorPanel[] = [
   // Échanger (no number)
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10, essential: true },
   { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: OfferPanel, requires: 'offers', order: 15 },
+  { id: 'present', label: 'presentations.panel_title', icon: Presentation, group: 'share', component: PresentationPanel, order: 17, essential: true },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20, essential: true },
   { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
 ]
@@ -222,4 +225,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
   { id: 'earthworks', component: EarthworksOverlay, order: 12 },
   { id: 'sectors', component: SectorsOverlay, order: 13 },
+  { id: 'presentation', component: PresentationOverlay, order: 95 },
 ]

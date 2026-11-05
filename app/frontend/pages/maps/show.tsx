@@ -39,6 +39,7 @@ import { DEFAULT_MOMENT, shownMoment, timeline as timelineOf } from '@/map/time/
 import { initTime, setMoment, setSeason, useTime } from '@/map/time/store'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
 import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
+import { usePresentation } from '@/map/presentation/store'
 
 type Props = {
   map: MapData
@@ -156,7 +157,10 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error'; action?: NotifyAction } | null>(null)
   const toastTimer = useRef<number | undefined>(undefined)
   const drawer = useRef<Drawer | null>(null)
-  const canEdit = (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived
+  const mayEdit = (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived
+  // While presenting, the map and the element cards are read-only: a click shows, never moves or edits.
+  const presenting = usePresentation((s) => s.presenting)
+  const canEdit = mayEdit && !presenting
 
   useEffect(() => {
     drawer.current = new Drawer(instance)
@@ -461,7 +465,7 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
     }
   }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade])
 
-  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'offers' ? canEdit && offerBuilder : map.role === 'owner'))
+  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? mayEdit : p.requires === 'offers' ? mayEdit && offerBuilder : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
   const wideScreen = useMediaQuery(MODAL_PANEL_QUERY)
   const wideRail = useMediaQuery('(min-width: 768px)')

@@ -850,6 +850,20 @@ ${OVERLAY_MIX}`)
     this.controls.update()
   }
 
+  /** Where the camera stands and looks, in scene metres (a presentation step keeps it). */
+  cameraView(): { position: [number, number, number]; target: [number, number, number] } {
+    const r = (v: number) => Math.round(v * 100) / 100
+    const { position } = this.camera
+    const { target } = this.controls
+    return { position: [r(position.x), r(position.y), r(position.z)], target: [r(target.x), r(target.y), r(target.z)] }
+  }
+
+  setCameraView(position: [number, number, number], target: [number, number, number]) {
+    this.controls.target.set(...target)
+    this.camera.position.set(...position)
+    this.controls.update()
+  }
+
   /** Look straight down, north up. */
   topView() {
     const span = Math.max(this.size.width, this.size.depth)

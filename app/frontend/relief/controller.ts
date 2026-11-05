@@ -941,6 +941,11 @@ export class ReliefController {
   resetView() { if (this.walkMode !== 'off') this.stopWalk(); this.scene?.resetView() }
   topView() { if (this.walkMode !== 'off') this.stopWalk(); this.scene?.topView() }
   faceNorth() { this.scene?.faceNorth() }
+  cameraView() { return this.scene?.cameraView() ?? null }
+  setCameraView(position: [number, number, number], target: [number, number, number]) {
+    if (this.walkMode !== 'off') this.stopWalk()
+    this.scene?.setCameraView(position, target)
+  }
   /** Camera heading in radians clockwise from north, or null before the scene loads. */
   heading(): number | null { return this.scene ? this.scene.heading() : null }
 

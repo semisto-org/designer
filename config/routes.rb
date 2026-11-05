@@ -701,6 +701,13 @@ Rails.application.routes.draw do
   end
   # --- end implementation ---
 
+  # --- presentations ---
+  # « Présenter »: a map's sequences of views to walk a client through.
+  resources :maps, only: [] do
+    resources :presentations, only: %i[index create update destroy], controller: "maps/presentations"
+  end
+  # --- end presentations ---
+
   # --- first-hours ---
   # The beta's « Premières heures »: « Un retour ? » from any page, the answer
   # to the session recording question and the replays it starts, the plan's
