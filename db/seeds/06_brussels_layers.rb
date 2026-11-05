@@ -50,3 +50,18 @@ catalogue.each do |attributes|
   layer.assign_attributes(attributes.except(:key))
   layer.save!
 end
+
+# The real buildings in 3D: UrbIS Buildings 3D (paradigm.brussels, CC0), a
+# LoD2 model of every building of the region with its roof surfaces,
+# published as one zip per square kilometre and updated every month
+# (Providers::UrbisBuildings3d). The 3D relief shows them instead of the
+# OpenStreetMap footprints and their guessed roofs.
+brussels.settings = brussels.settings.merge(
+  "buildings_3d" => {
+    "provider" => "urbis",
+    "label" => "UrbIS Buildings 3D (paradigm.brussels)",
+    "attribution" => "© UrbIS – paradigm.brussels (bâtiments 3D, CC0)",
+    "feed_url" => Providers::UrbisBuildings3d::DEFAULT_FEED
+  }
+)
+brussels.save!

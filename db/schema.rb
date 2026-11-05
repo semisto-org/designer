@@ -260,6 +260,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "muted", default: false, null: false
+    t.boolean "silenced", default: false, null: false
     t.index ["commentable_type", "commentable_id", "user_id"], name: "index_comment_subscriptions_unique", unique: true
     t.index ["user_id"], name: "index_comment_subscriptions_on_user_id"
   end
@@ -1511,6 +1512,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["variety_id"], name: "index_propagation_requests_on_variety_id"
   end
 
+  create_table "push_devices", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token", null: false
+    t.string "platform"
+    t.datetime "last_seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_push_devices_on_token", unique: true
+    t.index ["user_id"], name: "index_push_devices_on_user_id"
+  end
+
   create_table "region_layers", force: :cascade do |t|
     t.bigint "region_id", null: false
     t.string "key", null: false
@@ -1794,6 +1806,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.datetime "replay_consent_at"
     t.jsonb "document_theme", default: {}, null: false
     t.jsonb "document_theme_draft"
+    t.boolean "chat_notify_app", default: true, null: false
+    t.boolean "chat_notify_push", default: true, null: false
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
@@ -1985,6 +1999,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "propagation_requests", "plant_varieties", column: "variety_id", on_delete: :nullify
   add_foreign_key "propagation_requests", "users", column: "answered_by_id", on_delete: :nullify
   add_foreign_key "propagation_requests", "users", column: "requester_id", on_delete: :cascade
+  add_foreign_key "push_devices", "users", on_delete: :cascade
   add_foreign_key "region_layers", "regions"
   add_foreign_key "regions", "regions", column: "parent_id"
   add_foreign_key "release_note_likes", "release_notes", on_delete: :cascade

@@ -700,6 +700,32 @@ ${OVERLAY_MIX}`)
             else roofs.push(first + a, first + c, first + b)
           }
         }
+        // A building of the region's 3D model: its measured roof surfaces
+        // (holes included), and a wall from the ground under each free edge.
+        for (const { outer, holes } of shell.polygons ?? []) {
+          if (Math.abs(signedArea(outer)) < 1e-6) continue
+          const all = [outer, ...holes].flat()
+          const first = positions.length / 3
+          for (const p of all) vertex(p.x, p.y, volume.base, p.h)
+          const contour = outer.map((p) => new THREE.Vector2(p.x, p.y))
+          const holeContours = holes.map((hole) => hole.map((p) => new THREE.Vector2(p.x, p.y)))
+          for (const [a, b, c] of THREE.ShapeUtils.triangulateShape(contour, holeContours)) {
+            const [p, q, r] = [all[a], all[b], all[c]]
+            const up = (q.y - p.y) * (r.x - p.x) - (q.x - p.x) * (r.y - p.y)
+            if (up > 0) roofs.push(first + a, first + b, first + c)
+            else roofs.push(first + a, first + c, first + b)
+          }
+        }
+        if (shell.edges) {
+          for (const [a, b] of shell.edges) {
+            const a0 = vertex(a.x, a.y, volume.base, 0)
+            const b0 = vertex(b.x, b.y, volume.base, 0)
+            const a1 = vertex(a.x, a.y, volume.base, a.h)
+            const b1 = vertex(b.x, b.y, volume.base, b.h)
+            wallIndices.push(a0, a1, b0, b0, a1, b1)
+          }
+          continue
+        }
         // Walls up to the roof at each corner (gable ends included), one
         // winding for all rings so that they face outwards.
         const points = signedArea(shell.ring) > 0 ? shell.ring : [...shell.ring].reverse()

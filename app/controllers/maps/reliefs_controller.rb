@@ -27,7 +27,7 @@ module Maps
         location: location,
         landcoverClasses: @map.region.setting(:relief, :landcover_classes) || {},
         soilModel: soil_model,
-        buildingsUrl: terrain&.ready? && Providers::Buildings.build.available? ? buildings_map_relief_path(@map, v: terrain.version) : nil,
+        buildingsUrl: terrain&.ready? && Relief::BuildingsAround.available?(@map) ? buildings_map_relief_path(@map, v: terrain.version) : nil,
         canEdit: @map.editable_by?(Current.user)
       }
     end
@@ -41,22 +41,16 @@ module Maps
                                      filename: attachment.filename.to_s
     end
 
-    # The building footprints over the terrain's extent (OpenStreetMap), for
-    # extruded volumes in 3D. A provider that fails answers an empty list:
-    # the relief stays usable without them.
+    # The buildings over the terrain's extent, for volumes in 3D: the
+    # OpenStreetMap footprints, and the region's real 3D buildings where it
+    # publishes them (Relief::BuildingsAround). A provider that fails
+    # answers an empty list: the relief stays usable without them.
     def buildings
-      bounds = @map.terrain&.ready? && @map.terrain.bounds
-      return head :not_found unless bounds
+      answer = Relief::BuildingsAround.new(@map).call
+      return head :not_found unless answer
 
-      provider = Providers::Buildings.build
-      buildings = provider.within(**bounds)
-      response.set_header("Cache-Control", "private, max-age=86400")
-      render json: { available: true, attribution: provider.attribution, buildings: buildings.map(&:as_json) }
-    rescue Providers::Buildings::Busy
-      # OpenStreetMap is busy: the page asks again a little later.
-      render json: { available: false, retry: true, attribution: nil, buildings: [] }
-    rescue Providers::Buildings::Unavailable
-      render json: { available: false, attribution: nil, buildings: [] }
+      response.set_header("Cache-Control", "private, max-age=86400") if answer[:available]
+      render json: answer
     end
 
     # The contour line through a point (« Suivre la courbe » in the drawing

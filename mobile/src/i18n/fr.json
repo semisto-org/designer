@@ -1,5 +1,13 @@
 {
   "mobile": {
+    "push": {
+      "title": "Notifications",
+      "switch": "Sur ce téléphone",
+      "hint": "Quand quelqu'un écrit dans la discussion d'une de tes cartes, ton téléphone te prévient, même au fond du jardin. Combien de messages, carte par carte : la cloche de la discussion, sur le site.",
+      "denied": "Ton téléphone refuse les notifications de Terranova. Autorise-les dans ses réglages.",
+      "open_settings": "Ouvrir les réglages",
+      "channel": "Discussions des cartes"
+    },
     "common": {
       "back": "Retour",
       "close": "Fermer",

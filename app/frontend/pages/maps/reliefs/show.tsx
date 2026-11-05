@@ -817,6 +817,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
           mapId={map.id}
           pick={roofPick}
           feature={roofPick.featureId != null ? featureList.current.find((f) => f.properties.id === roofPick.featureId) ?? null : null}
+          drawnFeature={roofPick.drawnId != null ? featureList.current.find((f) => f.properties.id === roofPick.drawnId) ?? null : null}
           canEdit={canEdit}
           onFeature={onFeature}
           onClose={() => setRoofPick(null)}
@@ -962,6 +963,7 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, o
             onChange={(buildingsOn) => update({ buildingsOn })}
             label={t('relief.page.view.buildings')}
             hint={[
+              buildings.modelled ? t('relief.page.view.buildings_modelled', { count: buildings.modelled }) : null,
               buildings.count ? (buildings.measured
                 ? t('relief.page.view.buildings_measured', { count: buildings.count, measured: buildings.measured })
                 : t('relief.page.view.buildings_hint', { count: buildings.count })) : null,

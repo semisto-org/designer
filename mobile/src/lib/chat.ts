@@ -8,6 +8,7 @@
 // API, with its own rights. Sending goes through the outbox (lib/outbox.ts),
 // so a message written where the signal drops leaves as soon as it is back.
 import { useSyncExternalStore } from 'react'
+import { AppState } from 'react-native'
 import { api, ApiError } from './api'
 import { subscribe } from './cable'
 import { removeMessage, unreadSince, upsertMessage, type ChatMember, type ChatMessage, type ChatThread } from './chat-core'
@@ -79,7 +80,9 @@ async function arrived(mapId: number, id: number) {
     const known = state.messages.some((m) => m.id === id)
     set({ messages: upsertMessage(state.messages, message) })
     if (known || message.canEdit) return
-    if (state.visible) markRead(mapId)
+    // Read only when someone is looking: the phone in a pocket must not
+    // swallow the message (it would never ring nor be e-mailed).
+    if (state.visible && AppState.currentState === 'active') markRead(mapId)
     else set({ unread: Math.max(state.unread, 0) + 1 })
   } catch {
     // Deleted meanwhile, or the network dropped: the next load catches up.
@@ -119,8 +122,16 @@ export const chat = {
         else void arrived(mapId, message.id)
       },
     })
+    // Back in front with the discussion open: what came meanwhile is read now.
+    const appState = AppState.addEventListener('change', (next) => {
+      if (next === 'active' && state.mapId === mapId && state.visible) {
+        set({ unread: 0 })
+        markRead(mapId)
+      }
+    })
     unsubscribe = off
     return () => {
+      appState.remove()
       if (unsubscribe !== off) return
       off()
       unsubscribe = null

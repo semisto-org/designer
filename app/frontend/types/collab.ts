@@ -33,10 +33,14 @@ export type CommentData = {
 /** A person who can be @mentioned. */
 export type Mentionable = { id: number; name: string; handle: string; avatarUrl: string | null }
 
+export type ChatLevel = 'all' | 'mentions' | 'none'
+
 export type ThreadData = {
   commentable: { type: ThreadType; id: number; key: string; title: string }
   comments: CommentData[]
   subscribed: boolean
+  /** The map's discussion: how much of it reaches me (the bell, e-mail, the phone). */
+  level?: ChatLevel | null
   lastReadAt: string | null
   members: Mentionable[]
   /** Who my next comment will e-mail (mentions aside); null for the map's live discussion. */

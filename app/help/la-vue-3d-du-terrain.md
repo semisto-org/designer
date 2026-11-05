@@ -24,6 +24,8 @@ La **rose des vents**, en haut à droite, tourne avec la caméra et montre toujo
 
 **Régler un toit.** Clique sur un bâtiment dans la 3D. Pour un bâtiment de ta carte, choisis sa toiture (deux pans, quatre pans, un pan ou plate), le sens du faîte, sa hauteur et celle des gouttières : la 3D change aussitôt, et l'ombre suit. Sans hauteur de gouttières, Terranova prend une pente de 35°. Pour un bâtiment voisin lu sur OpenStreetMap, **Régler son toit** l'ajoute d'abord à ta carte comme bâtiment existant, avec sa forme et sa hauteur. Un toit plus compliqué (une aile, une tour) se dessine en plusieurs bâtiments côte à côte, chacun avec son toit. Le plus juste reste d'aller voir : compte les rangs de briques jusqu'à la gouttière, environ 15 par mètre.
 
+**Les vrais toits, là où la région les mesure.** À Bruxelles, la Région publie chaque mois un modèle 3D de tous ses bâtiments (UrbIS) : la 3D montre alors leurs vrais toits, lucarnes, terrasses et décrochements compris, au lieu de toits devinés. Ton bâtiment dessiné sans toiture prend lui aussi son toit mesuré. Pour montrer dans ton projet un toit qui n'existe pas encore (une rehausse, une toiture verte), clique dessus et **Régler son toit** ; **Revenir au vrai toit** le rend au modèle quand tu veux.
+
 ### Les blocs et la Niva
 
 Le fond **Blocs** montre le terrain en cubes d'environ 2 m, comme un jeu de construction : herbe, chemins, eau et sous-bois d'après l'occupation du sol, arbres et bâtiments à leur vraie hauteur. La pluie, le soleil et tes éléments s'y posent comme sur le relief.

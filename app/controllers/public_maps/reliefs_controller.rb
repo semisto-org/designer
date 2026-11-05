@@ -25,7 +25,7 @@ module PublicMaps
         location: @publication.snapshot.dig("map", "center"),
         landcoverClasses: @map.region.setting(:relief, :landcover_classes) || {},
         soilModel: soil_model,
-        buildingsUrl: Providers::Buildings.build.available? ? public_map_relief_buildings_path(@publication.token, v: terrain.version) : nil
+        buildingsUrl: Relief::BuildingsAround.available?(@map) ? public_map_relief_buildings_path(@publication.token, v: terrain.version) : nil
       }, meta: meta_tags(title: @publication.title, description: t("public_maps.relief.meta"))
     end
 
@@ -39,15 +39,11 @@ module PublicMaps
     end
 
     def buildings
-      provider = Providers::Buildings.build
-      buildings = provider.within(**@map.terrain.bounds)
-      response.set_header("Cache-Control", "public, max-age=86400")
-      render json: { available: true, attribution: provider.attribution, buildings: buildings.map(&:as_json) }
-    rescue Providers::Buildings::Busy
-      # OpenStreetMap is busy: the page asks again a little later.
-      render json: { available: false, retry: true, attribution: nil, buildings: [] }
-    rescue Providers::Buildings::Unavailable
-      render json: { available: false, attribution: nil, buildings: [] }
+      answer = Relief::BuildingsAround.new(@map).call
+      return head :not_found unless answer
+
+      response.set_header("Cache-Control", "public, max-age=86400") if answer[:available]
+      render json: answer
     end
 
     private

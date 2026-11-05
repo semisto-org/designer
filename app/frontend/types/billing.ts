@@ -162,6 +162,8 @@ export type AccountData = {
   personalMaps: { used: number; max: number } | null
   /** The beta's session recording (Sentry Session Replay): the person's answer and the sessions recorded so far. */
   replay: { enabled: boolean; consent: boolean | null; sessions: number; perUser: number }
+  /** Where a discussion message reaches me, for all my maps. */
+  notifications: NotificationPreferences
 }
 
 export type HelpArticleSummary = {
@@ -191,3 +193,5 @@ export type MetaTag = {
   innerContent?: unknown
   [attribute: string]: unknown
 }
+
+export type NotificationPreferences = { app: boolean; email: boolean; push: boolean; phones: number }
