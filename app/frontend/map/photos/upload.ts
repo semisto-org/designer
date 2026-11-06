@@ -25,6 +25,10 @@ export type UploadOptions = {
   source?: PhotoSource
   albumId?: number | null
   featureId?: number | null
+  /** Taken at this soil sampling point. */
+  soilSampleId?: number | null
+  /** Called with the saved photo, even if the screen that sent it is gone. */
+  onDone?: (photo: MapPhotoData) => void
   /** Used when the photo has no GPS of its own (a click on the map, the feature's position). */
   fallbackPosition?: { lng: number; lat: number } | null
   /** Ask the phone for its position when the photo has none (camera button). */
@@ -167,6 +171,7 @@ async function process(key: string) {
     }
     if (options.albumId) form.append('photo[photo_album_id]', String(options.albumId))
     if (options.featureId) form.append('photo[map_feature_id]', String(options.featureId))
+    if (options.soilSampleId) form.append('photo[soil_sample_id]', String(options.soilSampleId))
     if (options.bioindicatorStatus) form.append('photo[bioindicator_status]', options.bioindicatorStatus)
 
     const url = `/maps/${mapId}/photos${options.droneMissionId ? `?drone_mission_id=${options.droneMissionId}` : ''}`
@@ -176,6 +181,7 @@ async function process(key: string) {
       const photo = body as unknown as MapPhotoData
       photoActions.upsert(photo)
       patch(key, { status: 'done', progress: 100, photo })
+      options.onDone?.(photo)
     } else {
       const message = typeof body.message === 'string' ? body.message : t('soil_photos.errors.upload_failed')
       patch(key, { status: body.code === 'duplicate' ? 'duplicate' : 'error', message })

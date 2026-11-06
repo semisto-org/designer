@@ -17,6 +17,7 @@ The best soil data is gathered with a spade, in the person's hands. Ask them to 
 - **Water**: an `infiltration_test` (chapter `water`) measures what the soil drinks; a soil that drinks less than 5 mm/h needs opening before anything else.
 - **Wild plants**: the bio-indicator plants the person has noted or photographed (`get_map`, `bioindicators`) tell compaction, waterlogging, acidity, excess nitrogen. Read them with the person: they say what the soil lacks and often what will fix it.
 - **Lab analyses**: `get_soil_samples` gives the sampling points and their results (pH, organic matter, nutrients); `get_soil_report` reads the lab's PDF. Use them, but never instead of the spade: an analysis says what the soil contains, not how it lives.
+- **Photos of each sampling point**: at least one photo is taken at every point (the hole, the core laid on the ground, the profile against a ruler). `get_soil_samples` lists them per point (`photos`); look at them with `get_photo` and read the colour, the depth of the dark topsoil, the structure, stones, roots and rust or grey mottles (waterlogging) alongside the lab figures. A sampled point without a photo is worth a word to the person: the photo is the only memory of how the soil looked that day. Photos already on the map are linked to a point with `update_photos` (`soil_sample_id`).
 
 When the map has no soil observation yet, propose that the person digs a few spade holes before you go further, and say where: one in the best spot, one in the worst, one where trees will go.
 

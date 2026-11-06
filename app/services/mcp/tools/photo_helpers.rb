@@ -16,7 +16,8 @@ module Mcp
         heading: { type: [ "number", "null" ], minimum: 0, maximum: 360, description: :heading },
         album_id: { type: [ "integer", "null" ], minimum: 1, description: :album_id },
         album_name: { type: "string", minLength: 1, maxLength: 80, description: :album_name },
-        feature_id: { type: [ "integer", "null" ], minimum: 1, description: :photo_feature_id }
+        feature_id: { type: [ "integer", "null" ], minimum: 1, description: :photo_feature_id },
+        soil_sample_id: { type: [ "integer", "null" ], minimum: 1, description: :photo_soil_sample_id }
       }.freeze
 
       private
@@ -26,7 +27,7 @@ module Mcp
             id: photo.id, caption: photo.caption, taken_at: photo.taken_at&.iso8601,
             location: photo.lnglat&.map { |v| v.round(Geo::PRECISION) }, heading: photo.heading,
             album: photo.album && { id: photo.album.id, name: photo.album.name },
-            feature_id: photo.map_feature_id, source: photo.source, kind: photo.kind,
+            feature_id: photo.map_feature_id, soil_sample_id: photo.soil_sample_id, source: photo.source, kind: photo.kind,
             duration_s: blob&.metadata&.dig("duration")&.to_f&.round,
             width: blob&.metadata&.dig("width"), height: blob&.metadata&.dig("height"), filename: blob&.filename&.to_s,
             uploaded_by: photo.uploaded_by&.display_name, bioindicator_status: photo.bioindicator_status,
@@ -57,6 +58,9 @@ module Mcp
           end
           if line.key?("feature_id")
             photo.map_feature = line["feature_id"] && (map.features.active.find_by(id: line["feature_id"]) or raise Invalid, t("errors.feature_not_found", id: line["feature_id"]))
+          end
+          if line.key?("soil_sample_id")
+            photo.soil_sample = line["soil_sample_id"] && (map.soil_samples.find_by(id: line["soil_sample_id"]) or raise Invalid, t("errors.soil_sample_not_found", id: line["soil_sample_id"]))
           end
         end
 

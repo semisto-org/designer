@@ -21,6 +21,8 @@ export type MapPhotoData = {
   locationSource: PhotoLocationSource | null
   albumId: number | null
   featureId: number | null
+  /** The soil sampling point the photo was taken at (the hole, the core). */
+  soilSampleId: number | null
   /** Sketches drawn over the photo (PhotoSketch). */
   sketchesCount: number
   /** Painted by « Mettre en image » from that photo (PhotoRendering). */
@@ -146,6 +148,8 @@ export type SoilSampleData = {
   otherResults: SoilOtherResult[]
   /** The lab reports, one PDF per analysis (standard, heavy metals…). */
   reports: SoilReportFile[]
+  /** Photos taken at the point (the hole, the core, the profile), newest first. */
+  photos: MapPhotoData[]
   /** Values the person's AI read in the reports, waiting to be kept or refused. */
   draft: SoilResultsDraft | null
   createdAt: string

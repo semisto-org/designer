@@ -80,6 +80,7 @@ fr:
       album_id: "Identifiant d'un album de photos de la carte (albums dans list_photos). null sort la photo de son album."
       album_name: "Nom de l'album où ranger la photo, quand album_id manque : un album existant (sans tenir compte des majuscules) ou un nouveau, par exemple « Verger, avant travaux »."
       photo_feature_id: "Identifiant de l'élément de la carte que montre la photo (list_features). null défait le lien."
+      photo_soil_sample_id: "Identifiant du point de prélèvement de sol où la photo a été prise (le trou, la carotte, le profil ; get_soil_samples). Une photo appartient à un seul point. null défait le lien."
       photo_caption: "Légende de la photo, 500 caractères au plus. null l'efface."
       taken_at: "Date et heure de la prise de vue, au format ISO 8601 (2026-05-17T14:32:00+02:00). null l'efface."
       photo_location: "Endroit de la prise de vue, [longitude, latitude] en WGS84. null l'efface."
@@ -302,22 +303,23 @@ fr:
           document_format: "md (Markdown, par défaut), txt, csv ou geojson."
       list_photos:
         title: "Lister les photos du terrain"
-        description: "Les photos de la carte, des plus récentes aux plus anciennes : légende, date de prise de vue, endroit [lng, lat] et direction, album, élément lié, taille et qui l'a déposée, et si elle attend une lecture des bio-indicatrices. Donne aussi les albums. Filtres par album, élément lié et photos pas encore placées. Paginé : passe next_after_id dans after_id pour la page suivante. get_photo montre une photo."
+        description: "Les photos de la carte, des plus récentes aux plus anciennes : légende, date de prise de vue, endroit [lng, lat] et direction, album, élément lié, point de prélèvement de sol lié (soil_sample_id), taille et qui l'a déposée, et si elle attend une lecture des bio-indicatrices. Donne aussi les albums. Filtres par album, élément lié, point de prélèvement de sol et photos pas encore placées. Paginé : passe next_after_id dans after_id pour la page suivante. get_photo montre une photo."
         params:
           unplaced: "true : seulement les photos qui n'ont pas encore d'endroit sur la carte."
+          list_soil_sample_photos: "Seulement les photos prises à ce point de prélèvement de sol (get_soil_samples)."
           photo_after: "Pagination : la valeur next_after_id de la page précédente."
       get_photo:
         title: "Regarder une photo"
         description: "Une photo du terrain, en image (sans ses métadonnées GPS), avec sa légende, sa date, son endroit, sa direction, son album, l'élément lié et ce que dit l'appareil (modèle, hauteur et nacelle d'un drone). Pour une photo de plantes sauvages à analyser, préfère get_bioindicator_photo."
       add_photo:
         title: "Ajouter une photo"
-        description: "Pour une seule petite image que tu as déjà en mémoire. Pour des photos qui sont dans des fichiers, et pour tout envoi de plusieurs photos, utilise create_upload puis attach_photos : les octets ne passent pas par la conversation. Ajoute une photo du terrain à partir de son contenu en base64 (JPEG, PNG, WebP ou HEIC, 15 Mo au plus). Tu peux la légender, la dater, la placer, donner sa direction, la ranger dans un album (existant ou nouveau, par son nom) et la lier à un élément de la carte. Une photo déjà présente sur la carte est refusée. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Pour une seule petite image que tu as déjà en mémoire. Pour des photos qui sont dans des fichiers, et pour tout envoi de plusieurs photos, utilise create_upload puis attach_photos : les octets ne passent pas par la conversation. Ajoute une photo du terrain à partir de son contenu en base64 (JPEG, PNG, WebP ou HEIC, 15 Mo au plus). Tu peux la légender, la dater, la placer, donner sa direction, la ranger dans un album (existant ou nouveau, par son nom) et la lier à un élément de la carte ou à un point de prélèvement de sol. Une photo déjà présente sur la carte est refusée. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           image_base64: "Le fichier de l'image en base64 (une adresse data:image/…;base64, est acceptée)."
           photo_filename: "Nom du fichier, par exemple verger-nord.jpg."
       update_photos:
         title: "Modifier des photos"
-        description: "Change la légende, la date, l'endroit, la direction, l'album (existant ou nouveau, par son nom) ou l'élément lié de photos du terrain. Seuls les champs passés changent ; null efface. L'image elle-même ne change pas. 50 photos au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Change la légende, la date, l'endroit, la direction, l'album (existant ou nouveau, par son nom), l'élément lié ou le point de prélèvement de sol lié de photos du terrain : c'est ainsi qu'on rattache à un point les photos du trou déjà sur la carte. Seuls les champs passés changent ; null efface. L'image elle-même ne change pas. 50 photos au plus par appel ; une modification refusée est renvoyée avec sa raison. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           photo_changes: "Les modifications, une par photo, de 1 à 50."
       delete_photos:
@@ -334,7 +336,7 @@ fr:
           content_type: "Type MIME du fichier, par exemple image/jpeg, application/pdf ou application/vnd.openxmlformats-officedocument.wordprocessingml.document. C'est l'en-tête Content-Type de l'envoi."
       attach_photos:
         title: "Rattacher des photos envoyées"
-        description: "Dernière étape après create_upload et l'envoi par PUT : fait des fichiers envoyés des photos ou des vidéos du terrain (50 au plus par appel). Comme pour une photo déposée dans Terranova, la date de prise de vue, l'endroit et la direction sont lus dans les EXIF du fichier, et l'appareil (modèle, données d'un drone DJI) juste après ; ce que tu passes (légende, date, endroit, direction, album par son id ou son nom, élément lié) l'emporte sur les EXIF. Une photo HEIC devient un JPEG ; une vidéo (MP4, MOV, WebM) reste telle quelle, et son lieu et sa date sont lus dans le fichier juste après. Une photo refusée revient avec son code et sa raison (other_map : préparée pour une autre carte ; already_attached : déjà rattachée ; not_received : le PUT n'a pas été fait ; parts_missing : des morceaux manquent ; duplicate : déjà sur la carte ; unsupported_type…), les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
+        description: "Dernière étape après create_upload et l'envoi par PUT : fait des fichiers envoyés des photos ou des vidéos du terrain (50 au plus par appel). Comme pour une photo déposée dans Terranova, la date de prise de vue, l'endroit et la direction sont lus dans les EXIF du fichier, et l'appareil (modèle, données d'un drone DJI) juste après ; ce que tu passes (légende, date, endroit, direction, album par son id ou son nom, élément lié, point de prélèvement de sol) l'emporte sur les EXIF. Une photo HEIC devient un JPEG ; une vidéo (MP4, MOV, WebM) reste telle quelle, et son lieu et sa date sont lus dans le fichier juste après. Une photo refusée revient avec son code et sa raison (other_map : préparée pour une autre carte ; already_attached : déjà rattachée ; not_received : le PUT n'a pas été fait ; parts_missing : des morceaux manquent ; duplicate : déjà sur la carte ; unsupported_type…), les autres passent. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte (celui de son équipe s'il y en a un, sinon celui de son propriétaire)."
         params:
           attach_photo_lines: "Les photos à rattacher, une par fichier envoyé, de 1 à 50."
       attach_documents:
@@ -417,7 +419,7 @@ fr:
           plant_rationale: "Pourquoi cette plante, ou d'où elle vient (« ligne 12 du tableur de l'utilisateur »). Obligatoire, 10 caractères au moins."
       get_soil_samples:
         title: "Lire les points de prélèvement de sol"
-        description: "Les points de prélèvement de sol de la carte (panneau Sol, onglet Points) : nom, état, profondeur, date, laboratoire, référence du rapport, position, résultats déjà saisis (results, dans les unités de result_fields), autres valeurs (other_results : métaux lourds, azote… telles que le laboratoire les écrit), rapports PDF joints (reports, un par analyse, à lire avec get_soil_report) et si des valeurs proposées attendent encore la revue (draft_pending). Donne aussi les champs typés des résultats, avec leurs unités et leurs bornes, pour propose_soil_results."
+        description: "Les points de prélèvement de sol de la carte (panneau Sol, onglet Points) : nom, état, profondeur, date, laboratoire, référence du rapport, position, résultats déjà saisis (results, dans les unités de result_fields), autres valeurs (other_results : métaux lourds, azote… telles que le laboratoire les écrit), rapports PDF joints (reports, un par analyse, à lire avec get_soil_report), photos prises au point (photos : le trou, la carotte, le profil, à regarder avec get_photo pour la couleur, la structure, les cailloux, les racines, l'hydromorphie) et si des valeurs proposées attendent encore la revue (draft_pending). Donne aussi les champs typés des résultats, avec leurs unités et leurs bornes, pour propose_soil_results."
       get_soil_report:
         title: "Lire un rapport de laboratoire"
         description: "Un rapport PDF d'un point de prélèvement (reports dans get_soil_samples) : son texte, par tranches de 40 000 caractères (offset), avec les champs typés et la note sur les unités. Un scan n'a pas de texte : ses pages arrivent alors en images, 4 à la fois (first_page). Lis tout le rapport, puis propose les valeurs avec propose_soil_results."
@@ -560,6 +562,10 @@ fr:
       review_palette: "Les plantes proposées attendent dans le panneau Palette de la carte, où l'humain les accepte ou les refuse."
       soil_units: "Les champs typés suivent les unités des laboratoires wallons. P, K, Mg et Ca en mg de l'élément pour 100 g de terre sèche : divise des mg/kg par 10 ; un oxyde se convertit (P2O5 × 0,436 = P ; K2O × 0,830 = K ; MgO × 0,603 = Mg ; CaO × 0,715 = Ca). Matière organique en % : carbone organique (C) × 1,72. CEC en méq/100 g (= cmol+/kg). Texture en % de la terre fine (sable, limon, argile). Dis chaque conversion dans la note de la valeur ; une valeur que tu ne peux pas convertir sûrement va dans other_results, telle quelle."
       read_soil_reports: "Lis chaque rapport avec get_soil_report (sample_id, report_id), puis propose ses valeurs avec propose_soil_results, un appel par point."
+      soil_sample_photos:
+        zero: "Chaque point prélevé a au moins une photo : regarde-les avec get_photo avant de commenter le sol (couleur, structure, cailloux, racines, traces d'eau)."
+        one: "Un point prélevé n'a encore aucune photo : propose à la personne d'en lier une (panneau Sol, onglet Points, « Lier des photos ») ou rattache-la toi-même avec update_photos (soil_sample_id) si elle est déjà sur la carte."
+        other: "%{count} points prélevés n'ont encore aucune photo : propose à la personne d'en lier (panneau Sol, onglet Points, « Lier des photos ») ou rattache-les toi-même avec update_photos (soil_sample_id) si elles sont déjà sur la carte."
       no_soil_reports: "Aucun rapport PDF n'est joint aux points : la personne les joint dans le panneau Sol (onglet Points, « Joindre un PDF »)."
       propose_soil_results: "Recopie les valeurs fidèlement, avec propose_soil_results : les champs typés dans results (convertis, voir units_note), tout le reste dans other_results. Si le point a plusieurs rapports, lis-les tous avant de proposer, en un seul appel."
       review_soil: "Les valeurs proposées attendent sur le point « %{label} » (panneau Sol, onglet Points), où l'humain les garde ou les refuse une par une."
