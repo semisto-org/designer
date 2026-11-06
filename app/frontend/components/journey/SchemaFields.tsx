@@ -216,7 +216,7 @@ function ListField({ field, texts, value, onChange, disabled }: {
   const itemFields = (field.item ?? []).filter((f) => !f.hidden)
   // One line for the name and the short choices; free text and multiple
   // choices go underneath, one per line.
-  const main = itemFields.filter((f) => f.key === 'name' || f.type === 'enum' || f.type === 'integer')
+  const main = itemFields.filter((f) => f.key === 'name' || f.type === 'enum' || f.type === 'integer' || f.type === 'boolean')
   const below = itemFields.filter((f) => !main.includes(f))
   const canAdd = !disabled && rows.length < (field.max ?? 20)
 
@@ -232,6 +232,9 @@ function ListField({ field, texts, value, onChange, disabled }: {
   function add() {
     const row: Row = { name: '' }
     if (itemFields.some((f) => f.key === 'quantity')) row.quantity = 1
+    // A hidden id (a function of the analysis that map elements point to) is
+    // given here, so the next autosave already carries it.
+    if ((field.item ?? []).some((f) => f.key === 'id' && f.hidden)) row.id = `f${Math.random().toString(36).slice(2, 10)}`
     onChange([...rows, row])
   }
 
@@ -253,6 +256,13 @@ function ListField({ field, texts, value, onChange, disabled }: {
                     <option value="">{label}</option>
                     {(item.values ?? []).map((v) => <option key={v} value={v}>{itemTexts.options?.[v] ?? v}</option>)}
                   </Select>
+                )
+              }
+              if (item.type === 'boolean') {
+                return (
+                  <Chip key={item.key} kind="checkbox" checked={row[item.key] === true} disabled={disabled} onToggle={() => update(index, item.key, row[item.key] === true ? null : true)}>
+                    {label}
+                  </Chip>
                 )
               }
               if (item.type === 'integer') {

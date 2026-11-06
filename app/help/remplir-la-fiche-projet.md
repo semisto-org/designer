@@ -16,11 +16,15 @@ Avant de dessiner, il faut savoir **pour qui** et **pour quoi**. La **fiche proj
 
 Les deux présentations montrent la même fiche.
 
-## Onze sections, à ton rythme
+## Douze sections, à ton rythme
 
-**Qui**, **Ambitions**, **Usages**, **Palette gustative**, **Budget**, **Temps disponible**, **Compétences**, **Contraintes**, **Opportunités**, **Élevages** et **Calendrier**.
+**Qui**, **Ambitions**, **Usages**, **Palette gustative**, **Budget**, **Temps disponible**, **Compétences**, **Contraintes**, **Opportunités**, **Élevages**, **Calendrier** et **Analyse fonctionnelle**.
 
 La plupart des questions se répondent en cochant des cases ou en choisissant une tranche (« 500 à 2 000 € », « Plusieurs fois par semaine »). Chaque section a aussi un champ libre pour le dire avec tes mots. « Je ne sais pas encore » est une réponse valable : mieux vaut l'assumer que deviner.
+
+## L'analyse fonctionnelle
+
+La dernière section fait la synthèse avant de dessiner : la raison d'être du projet, les besoins et les fonctions des porteurs de projet puis du lieu, et les défis et atouts avec leur origine. Les fonctions que tu y écris rejoignent le panneau Fonctions de la carte : [Les fonctions des éléments](/help/les-fonctions-des-elements) explique comment les relier aux éléments du design.
 
 ## La palette gustative
 

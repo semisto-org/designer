@@ -1,6 +1,13 @@
 fr:
   presentations:
     panel_title: "Présenter"
+    # Headings of the slides filled from the project sheet's functional analysis.
+    analysis:
+      holder_needs: "Vos besoins"
+      place_needs: "Les besoins du lieu"
+      functions: "Les fonctions du jardin-forêt"
+      challenges: "Les défis"
+      assets: "Les atouts"
     intro: "Montre ton design pas à pas : chaque étape remet la carte dans la vue que tu as choisie. Coche ce qui parle à ce lieu, décoche le reste, glisse une étape pour la déplacer."
     empty_title: "Prépare ta présentation"
     empty_body: "Pars du déroulé de pré-design de Semisto (le lieu, l'analyse, la proposition couche par couche, la suite), puis ajuste chaque vue sur ce terrain."

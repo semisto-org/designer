@@ -19,4 +19,20 @@ class PresentationTemplateTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test "the pre-design slides start from the project sheet's functional analysis" do
+    map = maps(:ahinvaux)
+    map.update!(project: ProjectSheet.merge({}, { "analysis" => {
+      "purpose" => "Un jardin habité et vivant.",
+      "holder_needs" => [ { "name" => "Entretien simple" } ],
+      "place_functions" => [ { "name" => "Fertiliser" } ],
+      "challenges" => [ { "name" => "Hydromorphisme", "origin" => "place" } ]
+    } }).to_h)
+    steps = PresentationTemplate.find("pre_design").steps(map:).index_by { _1["key"] }
+    assert_equal "Un jardin habité et vivant.", steps["purpose"]["slide"]["body"]
+    assert_equal "Vos besoins\n- Entretien simple\n\nLes fonctions du jardin-forêt\n- Fertiliser", steps["functions"]["slide"]["body"]
+    assert_equal "Les défis\n- Hydromorphisme", steps["challenges"]["slide"]["body"]
+    assert_equal "", steps["cover"]["slide"]["body"]
+    assert_equal "", PresentationTemplate.find("pre_design").steps.find { _1["key"] == "purpose" }["slide"]["body"]
+  end
 end

@@ -14,6 +14,7 @@ module TypedSchema
   # `item`: the fields of one entry (list). `required`: an entry without it
   # is dropped (list items). `counts`: counts toward completion (sheet only).
   # `hidden`: carried along but never shown in forms (technical ids).
+  # `boolean` in a list item renders as a toggle on the entry's line.
   # `tone`: colours the chosen options (multi: "positive" green, "negative"
   # red), for pairs like « J'adore » / « Je n'aime pas ».
   # `team_only`: answered by the people working on the map, never shown to
@@ -41,7 +42,7 @@ module TypedSchema
 
   module_function
 
-  def text(key, limit: 2_000, required: false, counts: false, team_only: false) = Field.new(key:, type: :text, limit:, required:, counts:, team_only:)
+  def text(key, limit: 2_000, required: false, counts: false, team_only: false, hidden: false) = Field.new(key:, type: :text, limit:, required:, counts:, team_only:, hidden:)
   def enum(key, *values, required: false, counts: true) = Field.new(key:, type: :enum, values: values.map(&:to_s).freeze, required:, counts:)
   def multi(key, *values, exclusive: [], counts: true, team_only: false, tone: nil) = Field.new(key:, type: :multi, values: values.map(&:to_s).freeze, exclusive: Array(exclusive).map(&:to_s), counts:, team_only:, tone:)
   def integer(key, range, required: false, counts: true, hidden: false) = Field.new(key:, type: :integer, range:, required:, counts:, hidden:)

@@ -33,6 +33,17 @@ export default function FunctionsSection({ feature }: { feature: MapFeature }) {
   }
 
   const toggle = (fn: string) => save(selected.includes(fn) ? selected.filter((f) => f !== fn) : [...selected, fn])
+
+  // The project's own functions (functional analysis) this element serves.
+  const serves = Array.isArray(feature.properties.serves) ? (feature.properties.serves as string[]) : []
+  const projectShown = editor.canEdit ? data.project : data.project.filter((f) => serves.includes(f.id))
+  function toggleServes(id: string) {
+    const properties = storedProperties(feature)
+    const next = serves.includes(id) ? serves.filter((s) => s !== id) : [...serves, id]
+    if (next.length === 0) delete properties.serves
+    else properties.serves = next
+    void saveFeature(editor, feature.properties.id, { properties })
+  }
   const shown = editor.canEdit ? data.functions : selected
   const resources = (list: string[]) => list.map((r) => t(`element_functions.resources.${r}`)).join(', ')
 
@@ -68,6 +79,26 @@ export default function FunctionsSection({ feature }: { feature: MapFeature }) {
         <p className="mt-1.5 text-sm text-humus-700">
           {t('element_functions.section.alone', { functions: alone.map((b) => t(`element_functions.names.${b.function}`).toLowerCase()).join(', ') })}
         </p>
+      )}
+      {projectShown.length > 0 && (
+        <div className="mt-3">
+          <h4 className="text-sm font-medium text-loam-700">{t('element_functions.section.serves')}</h4>
+          {editor.canEdit && <p className="text-sm text-loam-500">{t('element_functions.section.serves_hint')}</p>}
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {projectShown.map((fn) => {
+              const on = serves.includes(fn.id)
+              return (
+                <Button
+                  key={fn.id} size="sm" variant={on ? 'primary' : 'ghost'} disabled={!editor.canEdit} aria-pressed={on} onClick={() => toggleServes(fn.id)}
+                  className={clsx('gap-1 px-2.5 py-0.5', !on && 'font-normal ring-1 ring-inset ring-loam-200')}
+                >
+                  {on && <Check className="h-3.5 w-3.5" aria-hidden />}
+                  {fn.name}
+                </Button>
+              )
+            })}
+          </div>
+        </div>
       )}
       {(entry.needs.length > 0 || entry.yields.length > 0) && (
         <dl className="mt-2 space-y-0.5 text-sm">

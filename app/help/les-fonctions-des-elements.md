@@ -30,6 +30,18 @@ Touche un élément sur la carte. Dans l'inspecteur, la section **Fonctions** mo
 
 La section dit aussi **ce qu'il demande** et **ce qu'il donne** : un toit donne de l'eau, une cuve en demande, la haie donne du bois et de la matière organique.
 
+## Les fonctions de ton projet
+
+Les onze fonctions valent pour tous les jardins. Les tiennes, tu les écris dans la fiche projet, à la section **Analyse fonctionnelle**. C'est la méthode de Semisto avant de dessiner :
+
+- **La raison d'être** : une à trois phrases sur le lien entre les personnes et ce lieu.
+- **Les besoins et les fonctions des porteurs de projet**, puis **ceux du lieu lui-même**. Un besoin dit ce qui manque, pas la solution : « que l'eau ne stagne plus », pas « une mare ». Une fonction est un verbe : accueillir, se ressourcer, fertiliser. Coche **Essentiel** pour un besoin qui ne se négocie pas.
+- **Les défis et les atouts**, en disant d'où ils viennent : des personnes, du lieu ou des alentours.
+
+Ces fonctions apparaissent en tête du panneau **Fonctions**, avec le nombre d'éléments qui les servent. Pour dire qu'un élément en sert une, touche-le sur la carte, puis la fonction sous **Sert le projet** dans l'inspecteur. Les défis qui viennent du lieu sont listés à part : va les regarder sur le terrain avant de figer ce qui en dépend.
+
+Quand tu pars du modèle de pré-design dans **Présenter**, ses diapositives « Raison d'être », « Besoins et fonctions » et « Défis et atouts » reprennent l'analyse telle que tu l'as écrite.
+
 ## Avec ton IA
 
-Ton IA lit le même bilan. Demande-lui par exemple : « Quelles fonctions ne tiennent qu'à un élément sur mon terrain, et que pourrais-je ajouter pour les doubler ? »
+Ton IA lit le même bilan. Demande-lui par exemple : « Quelles fonctions ne tiennent qu'à un élément sur mon terrain, et que pourrais-je ajouter pour les doubler ? » Après un entretien, confie-lui tes notes : elle propose l'analyse fonctionnelle en brouillons, que tu acceptes sur la fiche.

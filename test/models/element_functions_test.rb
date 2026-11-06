@@ -80,4 +80,29 @@ class ElementFunctionsTest < ActiveSupport::TestCase
     wood = review.balance.find { |b| b[:function] == "wood" }
     assert_equal [ "covered", true ], wood.values_at(:status, :existingOnly)
   end
+
+  test "the project's functions are reviewed through the elements that serve them" do
+    @map.update!(project: ProjectSheet.merge({}, { "analysis" => {
+      "holder_functions" => [ { "name" => "S'émerveiller", "id" => "fwonder" } ],
+      "place_functions" => [ { "name" => "Retenir l'eau", "id" => "fwater" } ],
+      "challenges" => [ { "name" => "Plaque de schiste", "origin" => "place" } ]
+    } }).to_h)
+    review = ElementFunctions.new(@map)
+    assert_equal %w[missing missing], review.project.map { _1[:status] }
+    assert_equal [ "Plaque de schiste" ], review.as_json[:placeChallenges]
+
+    map_features(:pond).update!(properties: { "serves" => %w[fwater fwonder gone] })
+    2.times { plant(plant_species(:apple), "serves" => [ "fwonder" ]) } # one species, one element
+    review = ElementFunctions.new(@map)
+    wonder, water = review.project
+    assert_equal [ "covered", 2 ], wonder.values_at(:status, :count)
+    assert_equal [ "fragile", 1 ], water.values_at(:status, :count)
+
+    pond = map_features(:pond)
+    pond.properties = { "serves" => [ "not an id!" ] }
+    refute pond.valid?
+    pond.properties = { "serves" => [] }
+    assert pond.valid?
+    refute pond.properties.key?("serves")
+  end
 end

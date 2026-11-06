@@ -13,6 +13,13 @@
 class ProjectSheet
   NOTES = TypedSchema.text("notes")
 
+  # Entries of the functional analysis (section "analysis").
+  NEED = [ TypedSchema.text("name", limit: 160, required: true), TypedSchema.boolean("essential") ].freeze
+  FUNCTION = [ TypedSchema.text("name", limit: 120, required: true), TypedSchema.text("id", limit: 40, hidden: true) ].freeze
+  FACTOR = [ TypedSchema.text("name", limit: 160, required: true), TypedSchema.enum("origin", *%w[people place surroundings], counts: false) ].freeze
+  # The lists of functions, and who they belong to.
+  FUNCTION_LISTS = { "holder_functions" => "holder", "place_functions" => "place" }.freeze
+
   # Food families for the taste palette: what each person loves or avoids,
   # and what the designer keeps for the plant palette.
   FOOD_FAMILIES = %w[apples pears plums cherries peaches_apricots figs grapes kiwis persimmons quinces_medlars berries
@@ -108,6 +115,23 @@ class ProjectSheet
       TypedSchema.integer("start_year", 2020..2060),
       TypedSchema.enum("phasing", *%w[one_go two_three_years as_budget_allows]),
       NOTES
+    ],
+    # Analyse fonctionnelle (Semisto's design method, app/design_guides/method.md):
+    # the purpose, then the needs and the functions of the people behind the
+    # project and of the place itself, then the challenges and the assets,
+    # each said to come from the people, the place or its surroundings. A
+    # need can be essential (not negotiable) or wished. Each function has a
+    # stable id that elements of the map point to (`properties.serves`), so
+    # the « Fonctions » panel says which ones no element, or only one, serves.
+    "analysis" => [
+      TypedSchema.text("purpose", limit: 500),
+      TypedSchema.list("holder_needs", NEED, max: 20),
+      TypedSchema.list("holder_functions", FUNCTION, max: 20),
+      TypedSchema.list("place_needs", NEED, max: 20),
+      TypedSchema.list("place_functions", FUNCTION, max: 20),
+      TypedSchema.list("challenges", FACTOR, max: 30),
+      TypedSchema.list("assets", FACTOR, max: 30),
+      NOTES
     ]
   }.each_value(&:freeze).freeze
 
@@ -143,7 +167,30 @@ class ProjectSheet
     patch.values.each_key { |section| touched[section] = now.utc.iso8601 }
     patch.meta["done"]&.each { |section| touched[section] ||= now.utc.iso8601 }
     meta["touched"] = touched
+    identify_functions!(merged["analysis"], base.values["analysis"]) if merged["analysis"]
     new({ **merged, "meta" => meta.compact }, strict: false)
+  end
+
+  # Gives every function of the analysis a stable id: the one it was sent
+  # with, else the one of the function of the same name already stored (an
+  # AI or a form that resends the list keeps the links of the map's
+  # elements), else a new one.
+  def self.identify_functions!(analysis, before)
+    known = FUNCTION_LISTS.keys.flat_map { |list| Array(before&.dig(list)) }
+      .select { _1["id"].present? }.to_h { [ _1["name"].to_s.downcase.squish, _1["id"] ] }
+    taken = Set.new
+    FUNCTION_LISTS.each_key do |list|
+      next unless analysis[list].is_a?(Array)
+      analysis[list] = analysis[list].map do |row|
+        id = row["id"].presence
+        id = nil if id && taken.include?(id)
+        id ||= known[row["name"].to_s.downcase.squish]
+        id = nil if id && taken.include?(id)
+        id ||= "f#{SecureRandom.alphanumeric(8).downcase}"
+        taken << id
+        row.merge("id" => id)
+      end
+    end
   end
 
   # Merges a (strict, valid) patch into the map's sheet and saves it, under a
@@ -198,6 +245,18 @@ class ProjectSheet
   end
 
   def section(name) = values.fetch(name, {}).compact
+
+  # The functions of the analysis, people's then place's: { id, name, source }.
+  def project_functions
+    FUNCTION_LISTS.flat_map do |list, source|
+      Array(section("analysis")[list]).filter_map { |row| { id: row["id"], name: row["name"], source: } if row["id"].present? }
+    end
+  end
+
+  # The challenges the place itself raises: what to go and look at on the land.
+  def place_challenges
+    Array(section("analysis")["challenges"]).select { _1["origin"] == "place" }.map { _1["name"] }
+  end
 
   # The sheet as the people behind the project see it on their private link.
   def for_holder = self.class.parse(to_h, strict: false, holder: true)

@@ -35,7 +35,7 @@ module Mcp
         require_ai_drafts_plan!(map)
         presentation = map.presentations.first || begin
           template = PresentationTemplate.find("pre_design")
-          map.presentations.create!(name: template.name, template_key: template.key, steps: template.steps)
+          map.presentations.create!(name: template.name, template_key: template.key, steps: template.steps(map:))
         end
         drafts = slides.each_with_index.map do |slide, index|
           slide = slide.to_h.symbolize_keys
