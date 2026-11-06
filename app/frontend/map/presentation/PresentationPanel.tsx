@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ArrowDown, ArrowUp, Camera, GripVertical, Mountain, Pencil, Play, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Bot, Camera, GripVertical, Mountain, Pencil, Play, Plus, Trash2, Type } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
@@ -13,7 +13,7 @@ import {
   deletePresentation, loadPresentation, newStepId, requestStep, saveSteps, shownSteps, startPresentation, usePresentation,
 } from './store'
 import { startPresenting } from './presenting'
-import type { PresentationStep } from './types'
+import type { PresentationStep, SlideProposal } from './types'
 
 /**
  * « Présenter »: the steps of the map's presentation. A click on a step
@@ -34,7 +34,8 @@ export default function PresentationPanel() {
   const [dragged, setDragged] = useState<number | null>(null)
   const [over, setOver] = useState<number | null>(null)
 
-  useEffect(() => void loadPresentation(map.id), [map.id])
+  // Each time the panel opens: drafts an AI proposed meanwhile come in.
+  useEffect(() => void loadPresentation(map.id, { refresh: true }), [map.id])
 
   if (!loaded) return <p className="text-sm text-loam-500">…</p>
 
@@ -42,7 +43,7 @@ export default function PresentationPanel() {
   const save = (steps: PresentationStep[]) => saveSteps(steps, (message, stale) => fail(stale ? t('presentations.stale') : message))
 
   if (!presentation) {
-    if (!canEdit) return <p className="text-sm text-loam-600">{t('presentations.read_only')}</p>
+    if (!canEdit) return <p className="text-sm text-loam-600">{t('presentations.none_yet')}</p>
     const start = async (template: string | null) => {
       setBusy(true)
       try {
@@ -97,6 +98,20 @@ export default function PresentationPanel() {
     save([...steps, step])
     setEditing(step.id)
   }
+  const addSlide = () => {
+    const step: PresentationStep = { id: newStepId(), title: t('presentations.new_slide_title'), shown: true, captured: true, slide: { body: '' }, view: { ...captureView(editor), panel: undefined } }
+    save([...steps, step])
+    setEditing(step.id)
+  }
+  const accept = (step: PresentationStep, proposal: SlideProposal) => {
+    update(step.id, { title: proposal.title || step.title, slide: { body: proposal.body }, shown: true, proposal: undefined })
+    editor.notify(t('presentations.proposal.accepted', { title: proposal.title || step.title }))
+  }
+  const refuse = (step: PresentationStep) => {
+    if (step.proposal?.new) save(steps.filter((s) => s.id !== step.id))
+    else update(step.id, { proposal: undefined })
+  }
+  const pending = steps.filter((s) => s.proposal).length
   const remove = async (step: PresentationStep) => {
     if (!(await confirmAction({ title: t('presentations.delete_confirm', { title: step.title }), confirmLabel: t('presentations.delete'), tone: 'danger' }))) return
     save(steps.filter((s) => s.id !== step.id))
@@ -117,6 +132,12 @@ export default function PresentationPanel() {
         </Button>
         <span className="text-sm text-loam-500">{t('presentations.shown_count', { count: shown.length, total: steps.length })}</span>
       </div>
+      {canEdit && pending > 0 && (
+        <p className="flex items-center gap-2 rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-900">
+          <Bot className="h-4 w-4 shrink-0" aria-hidden />
+          {t('presentations.proposal.pending', { count: pending })}
+        </p>
+      )}
       <ol className="space-y-1">
         {steps.map((step, index) => (
           <li
@@ -167,13 +188,22 @@ export default function PresentationPanel() {
                 onClick={() => show(step)}
               >
                 <span className="w-5 shrink-0 text-loam-400">{index + 1}</span>
+                {step.slide && <Type className="h-4 w-4 shrink-0 text-prune-500" aria-label={t('presentations.slide')} />}
                 <span className="truncate">{step.title}</span>
                 {step.view.relief && <Mountain className="h-4 w-4 shrink-0 text-loam-400" aria-label={t('presentations.relief_view')} />}
-                <span
-                  className={clsx('ml-auto h-2 w-2 shrink-0 rounded-full', step.captured ? 'bg-leaf-600' : 'bg-loam-300')}
-                  title={t(step.captured ? 'presentations.captured_view' : 'presentations.default_view')}
-                  aria-label={t(step.captured ? 'presentations.captured_view' : 'presentations.default_view')}
-                />
+                {step.slide ? (
+                  <span
+                    className={clsx('ml-auto h-2 w-2 shrink-0 rounded-full', step.slide.body ? 'bg-leaf-600' : 'bg-loam-300')}
+                    title={step.slide.body ? t('presentations.slide') : t('presentations.slide_empty')}
+                    aria-label={step.slide.body ? t('presentations.slide') : t('presentations.slide_empty')}
+                  />
+                ) : (
+                  <span
+                    className={clsx('ml-auto h-2 w-2 shrink-0 rounded-full', step.captured ? 'bg-leaf-600' : 'bg-loam-300')}
+                    title={t(step.captured ? 'presentations.captured_view' : 'presentations.default_view')}
+                    aria-label={t(step.captured ? 'presentations.captured_view' : 'presentations.default_view')}
+                  />
+                )}
               </Button>
               {canEdit && (
                 <IconButton size="sm" label={t('presentations.capture')} onClick={() => capture(step)}>
@@ -186,6 +216,9 @@ export default function PresentationPanel() {
                 </IconButton>
               )}
             </div>
+            {canEdit && step.proposal && (
+              <ProposalCard step={step} proposal={step.proposal} onAccept={() => step.proposal && accept(step, step.proposal)} onRefuse={() => refuse(step)} />
+            )}
             {canEdit && editing === step.id && (
               <StepEditor
                 step={step}
@@ -203,10 +236,16 @@ export default function PresentationPanel() {
       </ol>
       {canEdit && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-loam-100 pt-3">
-          <Button variant="secondary" size="sm" onClick={addCurrent}>
-            <Plus className="h-4 w-4" aria-hidden />
-            {t('presentations.add_step')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={addCurrent}>
+              <Plus className="h-4 w-4" aria-hidden />
+              {t('presentations.add_step')}
+            </Button>
+            <Button variant="secondary" size="sm" onClick={addSlide}>
+              <Type className="h-4 w-4" aria-hidden />
+              {t('presentations.add_slide')}
+            </Button>
+          </div>
           <Button variant="danger-ghost" size="sm" onClick={removeAll}>
             {t('presentations.delete_presentation')}
           </Button>
@@ -229,6 +268,8 @@ function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose, on
 }) {
   const [title, setTitle] = useState(step.title)
   const [note, setNote] = useState(step.note ?? '')
+  const [body, setBody] = useState(step.slide?.body ?? '')
+  useEffect(() => setBody(step.slide?.body ?? ''), [step.slide?.body])
   useEffect(() => setTitle(step.title), [step.title])
   useEffect(() => setNote(step.note ?? ''), [step.note])
 
@@ -237,6 +278,18 @@ function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose, on
       <Field label={t('presentations.title_label')}>
         <Input value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} onBlur={() => title.trim() && title !== step.title && onChange({ title: title.trim() })} />
       </Field>
+      {step.slide && (
+        <Field label={t('presentations.slide_body_label')}>
+          <Textarea
+            rows={6}
+            value={body}
+            maxLength={4000}
+            placeholder={t('presentations.slide_body_placeholder')}
+            onChange={(e) => setBody(e.target.value)}
+            onBlur={() => body !== (step.slide?.body ?? '') && onChange({ slide: { body } })}
+          />
+        </Field>
+      )}
       <Field label={t('presentations.note_label')}>
         <Textarea rows={3} value={note} maxLength={4000} onChange={(e) => setNote(e.target.value)} onBlur={() => note !== (step.note ?? '') && onChange({ note })} />
       </Field>
@@ -264,3 +317,24 @@ function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose, on
   )
 }
 
+
+/** A slide an AI drafted: its text and reason, for an editor to accept or refuse. */
+function ProposalCard({ step, proposal, onAccept, onRefuse }: { step: PresentationStep; proposal: SlideProposal; onAccept: () => void; onRefuse: () => void }) {
+  return (
+    <div className="mx-2 mb-2 space-y-2 rounded-xl border border-dashed border-humus-300 bg-humus-50/60 px-3 py-2.5">
+      <p className="flex items-center gap-1.5 text-sm font-medium text-humus-900">
+        <Bot className="h-4 w-4 shrink-0" aria-hidden />
+        {t(proposal.new ? 'presentations.proposal.new_label' : 'presentations.proposal.label')}
+        {proposal.by && <span className="font-normal text-humus-700">· {proposal.by}</span>}
+      </p>
+      {proposal.title && proposal.title !== step.title && <p className="font-serif text-base text-loam-900">{proposal.title}</p>}
+      <p className="whitespace-pre-line text-sm text-loam-800">{proposal.body}</p>
+      {proposal.rationale && <p className="text-sm text-loam-500">{proposal.rationale}</p>}
+      {!proposal.new && step.slide?.body && <p className="text-sm text-loam-600">{t('presentations.proposal.replaces')}</p>}
+      <div className="flex gap-2">
+        <Button size="sm" onClick={onAccept}>{t('presentations.proposal.accept')}</Button>
+        <Button variant="ghost" size="sm" onClick={onRefuse}>{t('presentations.proposal.refuse')}</Button>
+      </div>
+    </div>
+  )
+}

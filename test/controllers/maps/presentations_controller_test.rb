@@ -66,6 +66,28 @@ class Maps::PresentationsControllerTest < ActionDispatch::IntegrationTest
     assert_not saved[1]["view"].key?("relief"), "a relief view with nothing usable is dropped"
   end
 
+  test "a slide keeps its text; a viewer gets neither notes nor drafts" do
+    sign_in_as users(:michael)
+    presentation = @map.presentations.create!(name: "Lautenne")
+    steps = [
+      { id: "a", title: "Raison d'être", note: "Pour moi", slide: { body: "  Un lieu qui nourrit  " }, view: { relief: { tab: "night" } } },
+      { id: "b", title: "Brouillon", shown: false, slide: { body: "" }, proposal: { body: "Texte", rationale: "D'après la fiche", new: true, extra: 1 } }
+    ]
+    patch map_presentation_path(@map, presentation), params: { presentation: { steps:, lock_version: 0 } }, as: :json
+    assert_response :success
+    saved = presentation.reload.steps
+    assert_equal({ "body" => "Un lieu qui nourrit" }, saved[0]["slide"])
+    assert_not saved[0]["view"].key?("relief"), "a slide is shown on the map, never in 3D"
+    assert_equal({ "body" => "Texte", "rationale" => "D'après la fiche", "new" => true }, saved[1]["proposal"])
+
+    sign_in_as users(:alice)
+    get map_presentations_path(@map), as: :json
+    steps = response.parsed_body["presentations"].sole["steps"]
+    assert_equal [ "a" ], steps.map { _1["id"] }
+    assert_not steps.first.key?("note")
+    assert_equal "Un lieu qui nourrit", steps.first.dig("slide", "body")
+  end
+
   test "a stale save answers the presentation as it stands" do
     sign_in_as users(:michael)
     presentation = @map.presentations.create!(name: "Lautenne")

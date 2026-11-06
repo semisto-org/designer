@@ -88,8 +88,12 @@ export default function ShadeOverlay() {
   const latest = useRef(shadows)
   latest.current = shadows
   useEffect(() => {
-    const apply = () => safeInstall(map, latest.current)
-    apply()
+    // Only when a new style dropped the source: `styledata` also follows
+    // every change made to the current style (see PlantsOverlay).
+    const apply = () => {
+      if (!map.getSource(SOURCE)) safeInstall(map, latest.current)
+    }
+    safeInstall(map, latest.current)
     map.on('styledata', apply)
     return () => {
       map.off('styledata', apply)

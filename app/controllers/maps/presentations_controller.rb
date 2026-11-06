@@ -1,6 +1,7 @@
 # The « Présenter » sequences of a map: everyone on the map follows them,
 # editors start one (from a template or empty), save its steps whole and
-# delete it. Each answer gives the map's presentations and the templates.
+# delete it. Each answer gives the map's presentations and the templates;
+# viewers get them without the presenter's notes and the AI's drafts.
 module Maps
   class PresentationsController < ApplicationController
     include MapScoped
@@ -52,7 +53,9 @@ module Maps
       end
 
       def payload
-        { presentations: @map.presentations.reload.as_json, templates: PresentationTemplate.all.as_json }
+        list = @map.presentations.reload
+        presentations = %w[owner editor].include?(@role) ? list.as_json : list.map(&:for_viewer).as_json
+        { presentations:, templates: PresentationTemplate.all.as_json }
       end
   end
 end

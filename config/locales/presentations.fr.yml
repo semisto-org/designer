@@ -21,7 +21,23 @@ fr:
     toggle_shown: "Montrer cette étape"
     edit: "Modifier le titre et la note"
     title_label: "Titre"
-    note_label: "Note pour toi (ce que tu veux dire)"
+    note_label: "Note pour toi (ce que tu veux dire, jamais montrée au client)"
+    slide_body_label: "Texte affiché"
+    slide_body_placeholder: "Ce que le client lit en grand : quelques lignes, une idée par ligne. Un tiret en début de ligne fait une liste."
+    slide: "Diapositive de texte"
+    slide_empty: "Texte à écrire pour ce lieu"
+    add_slide: "Ajouter une diapositive"
+    new_slide_title: "Nouvelle diapositive"
+    proposal:
+      label: "Brouillon de ton IA"
+      new_label: "Nouvelle diapositive proposée par ton IA"
+      replaces: "Remplacerait le texte actuel."
+      accept: "Accepter"
+      refuse: "Refuser"
+      accepted: "Diapositive « %{title} » acceptée"
+      pending:
+        one: "%{count} brouillon de ton IA à revoir"
+        other: "%{count} brouillons de ton IA à revoir"
     done: "Fermer"
     back_to_steps: "Toutes les étapes"
     relief_view: "Vue 3D du relief"
@@ -38,6 +54,7 @@ fr:
     stale: "Quelqu'un vient de modifier la présentation : voici sa version."
     save_failed: "La présentation n'a pas pu être enregistrée."
     read_only: "Tu peux suivre la présentation ; seuls les éditeurs de la carte la modifient."
+    none_yet: "Pas encore de présentation sur cette carte. Quand l'équipe en préparera une, tu pourras la suivre ici."
     nothing_shown: "Coche au moins une étape pour présenter."
     bar:
       label: "Présentation"
@@ -55,6 +72,9 @@ fr:
       pre_design:
         name: "Pré-design"
         steps:
+          cover:
+            title: "Votre jardin-forêt"
+            note: "La page de garde, avec le nom du lieu et des personnes. Laisse le temps de saluer et de raconter ce que vous avez vu en arrivant."
           project:
             title: "Votre projet"
             note: "Le lieu et l'intention : nourrir, accueillir, protéger. Rappelle avec leurs mots ce que la famille veut vivre ici."
@@ -82,9 +102,15 @@ fr:
           flora_fauna:
             title: "Flore et faune"
             note: "Ce qui pousse déjà et se mange, les indices de passage des animaux."
+          challenges:
+            title: "Défis et atouts"
+            note: "Le « trousseau de clés » du bureau d'études commence ici : ce qui résiste (pente, route, vis-à-vis, entretien) et ce qui porte le projet (exposition, sol, eau, envies de la famille)."
           functions:
             title: "Besoins et fonctions"
-            note: "Défis et atouts, besoins de la famille et du lieu, et la raison d'être de ce jardin-forêt."
+            note: "Les besoins de la famille, ceux du lieu, et en miroir les fonctions que le jardin-forêt remplira : nourrir, protéger, accueillir, régénérer le sol."
+          purpose:
+            title: "Raison d'être de votre jardin-forêt"
+            note: "Une à trois phrases, volontairement évolutives : notre lecture du lien entre la famille et ce lieu, qu'elle pourra s'approprier et réécrire."
           sketch:
             title: "Esquisse du pré-projet"
             note: "Le projet en entier, une première fois, avant de le décomposer couche par couche."

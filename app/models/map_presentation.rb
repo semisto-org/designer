@@ -5,10 +5,17 @@
 # presenter's own note. The editor captures views; a template
 # (PresentationTemplate) gives a first sequence with default views.
 #
+# A step can also be a text slide (`slide.body`, « raison d'être »,
+# « défis et atouts »…): its title and text are shown large over its view of
+# the place. An AI drafts slides through the MCP (propose_slides!): the
+# draft waits in `proposal` until an editor accepts or refuses it. Notes and
+# drafts are the editors' own: viewers get the steps without them (for_viewer).
+#
 # `steps` is one jsonb array, cleaned on every write: unknown keys go, sizes
 # are bounded, so the editor can save it whole.
 class MapPresentation < ApplicationRecord
   MAX_STEPS = 60
+  MAX_BODY = 4_000
   MOMENTS = %w[arrival today year5 year15 year30].freeze
   SHADES = %w[june december].freeze
   # « Existant » or « Projet » (app/frontend/map/time/mode.ts).
@@ -40,7 +47,33 @@ class MapPresentation < ApplicationRecord
       "note" => step["note"].to_s.strip.first(4_000).presence,
       "shown" => step.key?("shown") ? ActiveModel::Type::Boolean.new.cast(step["shown"]) != false : true,
       "captured" => ActiveModel::Type::Boolean.new.cast(step["captured"]) == true,
+      "slide" => clean_slide(step["slide"]),
+      "proposal" => clean_proposal(step["proposal"]),
       "view" => clean_view(step["view"])
+    }.compact.tap { |clean| clean["view"].delete("relief") if clean["slide"] }
+  end
+
+  # A text slide: what the audience reads (nil for a view of the map).
+  def self.clean_slide(slide)
+    return nil if slide.nil?
+    slide = slide.to_h.stringify_keys rescue (return nil)
+    { "body" => slide["body"].to_s.strip.first(MAX_BODY) }
+  end
+
+  # A slide drafted by an AI, waiting for an editor: the text it would show,
+  # its reason, and whether the step itself is new (refused, it goes).
+  def self.clean_proposal(proposal)
+    return nil if proposal.nil?
+    proposal = proposal.to_h.stringify_keys rescue (return nil)
+    body = proposal["body"].to_s.strip.first(MAX_BODY)
+    return nil if body.blank?
+    {
+      "title" => proposal["title"].to_s.squish.first(120).presence,
+      "body" => body,
+      "rationale" => proposal["rationale"].to_s.strip.first(2_000).presence,
+      "new" => ActiveModel::Type::Boolean.new.cast(proposal["new"]) == true,
+      "by" => proposal["by"].to_s.first(80).presence,
+      "at" => proposal["at"].to_s.first(40).presence
     }.compact
   end
 
@@ -110,6 +143,49 @@ class MapPresentation < ApplicationRecord
 
   def as_json(*)
     { id:, name:, templateKey: template_key, steps:, lockVersion: lock_version, updatedAt: updated_at&.iso8601 }
+  end
+
+  # What a viewer of the map (the client) follows: the steps without the
+  # presenter's notes and without the drafts nobody accepted yet.
+  def for_viewer
+    as_json.merge(steps: steps.reject { _1.dig("proposal", "new") }.map { _1.except("note", "proposal") })
+  end
+
+  Draft = Struct.new(:index, :step_id, :title, :body, :rationale, :after, keyword_init: true)
+
+  # Slides an AI proposes: each fills an existing slide (step_id) or comes as
+  # a new step after another one (after_step_id; absent: at the end), as a
+  # draft an editor accepts or refuses in the panel. Returns what was placed
+  # and what was refused, with the reason.
+  def propose_slides!(drafts, by:)
+    placed = []
+    refused = []
+    with_lock do
+      list = steps.map(&:dup)
+      drafts.each do |draft|
+        proposal = { "title" => draft.title, "body" => draft.body, "rationale" => draft.rationale, "by" => by, "at" => Time.current.iso8601 }
+        if draft.step_id.present?
+          step = list.find { _1["id"] == draft.step_id }
+          next refused << { index: draft.index, error: I18n.t("mcp.presentation_errors.unknown_step", id: draft.step_id) } unless step
+          next refused << { index: draft.index, error: I18n.t("mcp.presentation_errors.not_a_slide", title: step["title"]) } unless step["slide"]
+          step["proposal"] = proposal
+          placed << { index: draft.index, step_id: step["id"], title: draft.title || step["title"], replaces: step.dig("slide", "body").present? }
+        else
+          if list.size >= MAX_STEPS
+            next refused << { index: draft.index, error: I18n.t("presentations.errors.too_many", count: MAX_STEPS) }
+          end
+          at = draft.after.present? ? list.index { _1["id"] == draft.after } : list.size - 1
+          next refused << { index: draft.index, error: I18n.t("mcp.presentation_errors.unknown_step", id: draft.after) } if at.nil?
+          title = draft.title.presence || I18n.t("presentations.new_slide_title")
+          step = { "id" => SecureRandom.uuid, "title" => title, "shown" => false, "slide" => { "body" => "" },
+                   "proposal" => proposal.merge("new" => true), "view" => list[at]&.dig("view") || {} }
+          list.insert(at + 1, step)
+          placed << { index: draft.index, step_id: step["id"], title:, new: true }
+        end
+      end
+      update!(steps: list) if placed.any?
+    end
+    [ placed, refused ]
   end
 
   private

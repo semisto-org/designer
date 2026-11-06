@@ -204,15 +204,18 @@ module Mcp
         end
 
         # The « Présenter » sequences of the map: each step a view of the map
-        # (panel, layers, sectors, moment) with the presenter's note. The
+        # (panel, layers, sectors, moment) or a text slide, with the presenter's note. The
         # panel opens at panel_url, where the person presents full screen.
         def presentations(map)
           list = map.presentations.map do |presentation|
             {
               id: presentation.id, name: presentation.name, template: presentation.template_key,
-              steps: presentation.steps.map do |step|
+              # Notes and drafts are the presenter's: a viewer (often the client) gets neither.
+              steps: (editor? ? presentation.steps : presentation.for_viewer[:steps]).map do |step|
                 view = step["view"] || {}
-                { title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: step["note"],
+                { id: step["id"], title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: (step["note"] if editor?),
+                  slide: step["slide"] && { text: step["slide"]["body"] },
+                  pending_proposal: step["proposal"]&.slice("title", "body", "new"),
                   panel: view["panel"], sectors: view["sectors"], moment: view["moment"], mode: view["mode"], variant_id: view["variantId"], in_3d: view["relief"].present? || nil }.compact
               end
             }

@@ -19,6 +19,7 @@ Bon à savoir :
 
 - ce choix ne vaut **que pour ton écran** : tes collaborateurs gardent leur propre affichage, et Terranova s'en souvient la prochaine fois que tu ouvres la carte ;
 - si tu dessines un élément d'une couche masquée, elle se réaffiche d'elle-même ;
+- **Noms sur la carte** masque les noms écrits sur la carte (plantes, zones, éléments) : passe la souris sur un élément pour lire le sien ;
 - le [plan PDF à l'échelle](/help/imprimer-un-plan-a-l-echelle) n'imprime que les couches affichées ;
 - la couche **Réseaux** n'est jamais exportée ni publiée sans ton accord.
 

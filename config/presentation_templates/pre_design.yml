@@ -11,7 +11,12 @@
 #   mode:    « Existant » (existing: the reading of the place) or « Projet » (project)
 #   shade:   the noon shade drawn (june, december)
 #   relief:  shown in the 3D relief instead (tab: view, rain, sun, night)
+#   slide:   true for a text slide (its text is written for each place, by
+#            the presenter or drafted by their AI), shown over the view
 steps:
+  - key: cover
+    slide: true
+    mode: existing
   - key: project
     mode: existing
     panel: project
@@ -50,9 +55,15 @@ steps:
     panel: photos
     layers: [existing]
     sectors: [wildlife]
+  - key: challenges
+    slide: true
+    mode: existing
   - key: functions
+    slide: true
+    mode: existing
+  - key: purpose
+    slide: true
     mode: project
-    panel: functions
   - key: sketch
     mode: project
   - key: earthworks
@@ -93,6 +104,7 @@ steps:
     mode: project
     moment: year15
   - key: next_steps
+    slide: true
     mode: project
   - key: budget
     mode: project

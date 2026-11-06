@@ -7,9 +7,10 @@ class MapsController < ApplicationController
 
   def index
     # A new account first says who it designs for (welcome page), unless it
-    # came in with its place already (a trial kept): then the question waits
-    # for its second map (#new).
-    return redirect_to welcome_path if request.format.html? && ask_account_kind? && Current.user.owned_maps.none?
+    # already has maps to open: its place came in with it (a trial kept), or
+    # a team or a map was shared with it. The question then waits for its
+    # next new map (#new), so « Mes cartes » always opens on those maps.
+    return redirect_to welcome_path if request.format.html? && ask_account_kind? && !has_maps_already?
 
     maps = Map.active.where(id: Current.user.map_memberships.select(:map_id))
       .or(Map.active.where(organization_id: Current.user.organization_memberships.select(:organization_id)))
@@ -41,7 +42,7 @@ class MapsController < ApplicationController
   end
 
   def new
-    if ask_account_kind? && Current.user.owned_maps.exists?
+    if ask_account_kind? && has_maps_already?
       session[:after_welcome] = new_map_path
       return redirect_to welcome_path
     end
@@ -165,4 +166,7 @@ class MapsController < ApplicationController
     end
 
     def ask_account_kind? = !Current.user.account_kind_chosen? && !impersonating?
+
+    # Mine (archived ones too), shared with me, or my teams' maps.
+    def has_maps_already? = Current.user.owned_maps.exists? || Current.user.openable_maps.exists?
 end
