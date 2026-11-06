@@ -70,4 +70,31 @@ class WelcomesControllerTest < ActionDispatch::IntegrationTest
     get new_map_path, headers: inertia_headers
     assert_response :success
   end
+
+  test "a team member with no map of their own opens « Mes cartes » on the team's maps, and is asked at their first new map" do
+    team = Organization.create_with_admin!(users(:alice), name: "Semisto")
+    team.memberships.create!(user: @newcomer, role: "member")
+    users(:alice).owned_maps.create!(name: "Lautenne", region: regions(:wallonia), organization: team)
+    sign_in_as @newcomer
+
+    get maps_path, headers: inertia_headers
+    assert_response :success
+    assert_equal [ "Lautenne" ], props["maps"].map { |map| map["name"] }
+    assert_equal [ "Semisto" ], props["teams"].map { |t| t["name"] }
+
+    get new_map_path
+    assert_redirected_to welcome_path
+    patch welcome_path, params: { account_kind: "individual" }
+    assert_redirected_to new_map_path
+  end
+
+  test "someone a map was shared with goes straight to it" do
+    map = users(:alice).owned_maps.create!(name: "Le verger de Mozet", region: regions(:wallonia))
+    map.memberships.create!(user: @newcomer, role: "viewer")
+    sign_in_as @newcomer
+
+    get maps_path, headers: inertia_headers
+    assert_response :success
+    assert_includes props["maps"].map { |m| m["name"] }, "Le verger de Mozet"
+  end
 end
