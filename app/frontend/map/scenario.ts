@@ -125,6 +125,16 @@ export const TO_REMOVE_EXPR = [
  */
 export const DESIGN_MODE_STATE = 'designMode'
 
+/**
+ * Whether the editor presents the project as a designer's plan
+ * (map/presentation/render), handed to the paint as the MapLibre global
+ * state `presentRender`.
+ */
+export const PRESENT_RENDER_STATE = 'presentRender'
+
+/** True while the plan rendering is on. */
+export const IN_PRESENT_RENDER = ['==', ['global-state', PRESENT_RENDER_STATE], true] as const
+
 /** Opacity of what is on the ground while the editor shows the project: still there, behind it. */
 export const GROUND_IN_PROJECT_OPACITY = 0.45
 

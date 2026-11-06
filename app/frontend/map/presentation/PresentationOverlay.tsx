@@ -10,6 +10,7 @@ import { PRIORITY } from '@/map/layout/zones'
 import { PresentationBar } from './PresentationBar'
 import { SlideView } from './SlideView'
 import { loadPresentation, markApplied, presentationStore, requestStep, restored, saveSteps, usePresentation } from './store'
+import { applyPresentRender, usePresentRender } from './render'
 import { applyView, captureView } from './view'
 
 /**
@@ -25,6 +26,28 @@ export default function PresentationOverlay() {
   const currentId = usePresentation((s) => s.currentId)
   const token = usePresentation((s) => s.token)
   const restore = usePresentation((s) => s.restore)
+  const render = usePresentRender()
+
+  // « Rendu présentation »: the project as a designer's plan while presenting
+  // it, and again after any change of style or of an overlay's layers.
+  useEffect(() => {
+    const map = editor.instance
+    const apply = () => {
+      try {
+        applyPresentRender(map, render)
+        return true
+      } catch {
+        return false // style not ready yet: its `styledata` brings us back
+      }
+    }
+    // While presenting, again after any style change; once off, until it took.
+    const listener = render ? apply : () => { if (apply()) map.off('styledata', listener) }
+    if (apply() && !render) return
+    map.on('styledata', listener)
+    return () => {
+      map.off('styledata', listener)
+    }
+  }, [editor.instance, render])
 
   // `?panel=present` opens the panel; the steps load for it and for this overlay.
   useEffect(() => {

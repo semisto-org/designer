@@ -14,6 +14,7 @@ import { useSoil } from '@/map/soil/store'
 import type { MapFeature } from '@/types'
 import { momentFilter } from '@/map/time/moment'
 import { DESIGN_MODE_STATE } from '@/map/scenario'
+import { renderHiddenLayers, usePresentRender } from '@/map/presentation/render'
 import { shownVariantId, useVariants } from '@/map/variants/store'
 
 /**
@@ -45,6 +46,10 @@ export default function DrawingLayers() {
     initDrawingState(editor.map.id)
   }, [editor.map.id])
 
+  const render = usePresentRender()
+  const renderRef = useRef(render)
+  renderRef.current = render
+
   // « Existant » or « Projet »: what is on the ground fades behind the project (map/scenario, GROUND_IN_PROJECT_FACTOR).
   const mode = useRef(editor.mode)
   mode.current = editor.mode
@@ -57,7 +62,7 @@ export default function DrawingLayers() {
     // children mount: wait for them, then follow any later style change.
     const ensure = () => {
       if (map.getGlobalState?.()[DESIGN_MODE_STATE] !== mode.current) map.setGlobalStateProperty(DESIGN_MODE_STATE, mode.current)
-      if (installDrawingLayers(map)) applyLayerVisibility(map, drawingStore.get().hiddenLayers, latest.current)
+      if (installDrawingLayers(map)) applyLayerVisibility(map, renderHiddenLayers(drawingStore.get().hiddenLayers, renderRef.current), latest.current)
       applyFeatureLabelsVisibility(map, drawingStore.get().labelsHidden)
     }
     ensure()
@@ -67,7 +72,8 @@ export default function DrawingLayers() {
     }
   }, [map])
 
-  useEffect(() => applyLayerVisibility(map, hidden, { moment, variant, tag, hiddenKinds, hiddenIds }), [map, hidden, moment, variant, tag, hiddenKinds, hiddenIds])
+  // « Rendu présentation »: notes leave the plan while presenting the project.
+  useEffect(() => applyLayerVisibility(map, renderHiddenLayers(hidden, render), { moment, variant, tag, hiddenKinds, hiddenIds }), [map, hidden, render, moment, variant, tag, hiddenKinds, hiddenIds])
   // « Noms sur la carte »: the names of elements and zones (plants: PlantsOverlay), shown on hover only when off (LabelPeek).
   const labelsHidden = useDrawingState((s) => s.labelsHidden)
   useEffect(() => applyFeatureLabelsVisibility(map, labelsHidden), [map, labelsHidden])

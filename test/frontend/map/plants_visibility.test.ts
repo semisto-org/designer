@@ -57,3 +57,13 @@ test('« Noms sur la carte » off hides the plant names, not their crowns or num
   applyPlantsVisibility(map as never, [], 'name', false)
   assert.equal(map.visibility['plant-labels-text'], 'visible')
 })
+
+test('while the plan is presented, names and numbers stay hidden and the crowns show', () => {
+  const map = { ...fakeMap([...PLANT_OVERLAY_LAYERS, ...PLANT_NUMBER_LAYERS]), getGlobalState: () => ({ presentRender: true }) }
+  applyPlantsVisibility(map, [], 'name')
+  assert.equal(map.visibility['plant-labels-text'], 'none')
+  assert.equal(map.visibility['plant-crowns-fill'], 'visible')
+  assert.equal(map.visibility['plant-trunks'], 'visible')
+  applyPlantsVisibility(map, [], 'number')
+  assert.equal(map.visibility['plant-numbers-disc'], 'none')
+})

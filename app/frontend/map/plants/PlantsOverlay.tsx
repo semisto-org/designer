@@ -17,34 +17,50 @@ import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } 
 import { plantLabelStyleStore, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/plants/strata'
 import { ensureSupportHatch, SUPPORT_HATCH } from '@/map/plants/supportHatch'
-import { crownOrder, inkOn } from '@/map/plants/strataColors'
+import { crownOrder, darken, inkOn, PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
 import { applyPlantsVisibility } from '@/map/plants/visibility'
 import { setPlantLabels } from '@/map/plants/labelIndex'
-import { DESIGN_MODE_STATE, GROUND_IN_PROJECT_OPACITY, isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
+import { DESIGN_MODE_STATE, GROUND_IN_PROJECT_OPACITY, IN_PRESENT_RENDER, isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
 import { inMoment } from '@/map/time/moment'
 import { growingPlant, sizeAtMoment } from '@/map/time/plants'
-import type { PlantingState } from '@/types/plants'
+import type { PlantingState, Strata } from '@/types/plants'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
 
 const CROWNS = 'plant-crowns'
 const LABELS = 'plant-labels'
 const NUMBERS = 'plant-numbers'
+/** Each tree's trunk, a dot at the foot of its crown in the « rendu présentation ». */
+const TRUNKS = 'plant-trunks'
 
 // `reach`: the hatched disc of a support plant, the ground it feeds (not a crown).
 // `order`: drawing order within each crown layer (see crownOrder).
-type CrownProps = { featureId: number; color: string; planted: boolean; selected: boolean; support: boolean; order: number; reach?: boolean }
+type CrownProps = { featureId: number; color: string; planColor: string; planEdge: string; planOpacity: number; planRim: boolean; planted: boolean; selected: boolean; support: boolean; order: number; reach?: boolean }
 // `featureId` makes crowns and names select their plant (see map/featurePick).
 type LabelProps = { featureId: number; label: string; planted: boolean; minZoom: number; rank: number }
 // A plant's number written inside its point (« Numéro » mode).
 type NumberProps = { featureId: number; number: string; color: string; ink: string; planted: boolean; selected: boolean }
-/** Each plant's strata colour, for its point in the features source. */
-type PointColors = Map<number, string>
+/** Each plant's strata colour, for its point in the features source, and whether a crown stands for it. */
+type PointColors = Map<number, { color: string; crowned: boolean }>
 
 const PLANTED = ['get', 'planted'] as unknown as boolean
 // Plants in the ground fade behind the project while the editor shows « Projet » (map/time/mode).
 const GROUND_FADE = ['case', ['==', ['global-state', DESIGN_MODE_STATE], 'project'], GROUND_IN_PROJECT_OPACITY, 1] as unknown as number
 const NOT_REACH = ['!', ['to-boolean', ['get', 'reach']]] as never
+// « Rendu présentation » (map/presentation/render): crowns as soft washes.
+const RENDER = IN_PRESENT_RENDER as unknown as boolean
+
+/** A crown's wash and rim in the « rendu présentation ». */
+function planColors(strata: Strata) {
+  const planColor = PLAN_STRATA_COLORS[strata]
+  return { planColor, planEdge: darken(planColor, 0.3), planOpacity: PLAN_OPACITY[strata] ?? 0.85, planRim: strata === 'canopy' }
+}
+
+/** Tall crowns are lighter washes, so what grows under them still shows through. */
+const PLAN_OPACITY: Partial<Record<Strata, number>> = { canopy: 0.62, sub_canopy: 0.72 }
+
+/** Strata whose plants are trees: a trunk dot at their foot on the plan. */
+const TREE_STRATA: ReadonlySet<Strata> = new Set(['canopy', 'sub_canopy'])
 
 /**
  * The ground a support plant feeds (m, radius): its cuttings are dropped and
@@ -66,6 +82,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
   const labels: Feature<Point, LabelProps>[] = []
   const points: PointColors = new Map()
   const numbers: Feature<Point, NumberProps>[] = []
+  const trunks: Feature<Point>[] = []
   for (const feature of editor.features) {
     if (!isPlant(feature) || feature.geometry.type !== 'Point' || feature.properties.status === 'rejected') continue
     if (!inMoment(feature.properties, editor.moment, editor.timeline.arrival, editor.mode)) continue
@@ -115,20 +132,22 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
       })
     }
     if (!strata || !species) continue
-    points.set(feature.properties.id, STRATA_COLORS[strata])
+    points.set(feature.properties.id, { color: STRATA_COLORS[strata], crowned: false })
     if (!drawsCrown(strata)) continue
     const size = sizeAtMoment(feature, growingPlant(feature, data, strata), editor.moment, editor.timeline)
     if (size === null) continue
+    points.set(feature.properties.id, { color: STRATA_COLORS[strata], crowned: true })
     const crownM = size ? size.spread : trainedCrown(species.crownM, trainingProperty(feature), strata, graftProperty(feature, strata))
     const radiusM = Math.max(crownM / 2, 0.15)
     const polygon = circle(feature.geometry.coordinates, radiusM / 1000, { steps: 40, units: 'kilometers' })
     const support = plantIsSupport(feature, data)
     const order = crownOrder(strata, radiusM)
+    if (TREE_STRATA.has(strata)) trunks.push({ type: 'Feature', geometry: feature.geometry, properties: { order } })
     if (support) {
       const reach = circle(feature.geometry.coordinates, Math.max(radiusM, SUPPORT_REACH_M) / 1000, { steps: 40, units: 'kilometers' })
       crowns.push({
         ...reach,
-        properties: { featureId: feature.properties.id, color: STRATA_COLORS[strata], planted: !isPlannedPlant(feature.properties), selected: false, support, order, reach: true },
+        properties: { featureId: feature.properties.id, color: STRATA_COLORS[strata], ...planColors(strata), planted: !isPlannedPlant(feature.properties), selected: false, support, order, reach: true },
       })
     }
     crowns.push({
@@ -136,6 +155,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
       properties: {
         featureId: feature.properties.id,
         color: STRATA_COLORS[strata],
+        ...planColors(strata),
         planted: !isPlannedPlant(feature.properties),
         selected: editor.selectedId === feature.properties.id || editor.selection.includes(feature.properties.id),
         support,
@@ -147,6 +167,7 @@ function crownsOf(editor: Editor, data: PlantingState | null, labelStyle: PlantL
     crowns: { type: 'FeatureCollection', features: crowns } as FeatureCollection<Polygon, CrownProps>,
     labels: { type: 'FeatureCollection', features: labels } as FeatureCollection<Point, LabelProps>,
     numbers: { type: 'FeatureCollection', features: numbers } as FeatureCollection<Point, NumberProps>,
+    trunks: { type: 'FeatureCollection', features: trunks } as FeatureCollection<Point>,
     points,
   }
 }
@@ -170,6 +191,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     crowns.setData(data.crowns)
     ;(map.getSource(LABELS) as GeoJSONSource | undefined)?.setData(data.labels)
     ;(map.getSource(NUMBERS) as GeoJSONSource | undefined)?.setData(data.numbers)
+    ;(map.getSource(TRUNKS) as GeoJSONSource | undefined)?.setData(data.trunks)
     raiseNumbers(map)
     stackFeatureLayers(map)
     return
@@ -180,16 +202,35 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   map.addSource(CROWNS, { type: 'geojson', data: data.crowns })
   map.addSource(LABELS, { type: 'geojson', data: data.labels })
   map.addSource(NUMBERS, { type: 'geojson', data: data.numbers })
+  map.addSource(TRUNKS, { type: 'geojson', data: data.trunks })
   // Every crown wears its strata colour over a white ring, readable on aerial
   // photos as on plans. Planted: solid crown. Planned: faint fill and a
   // dashed outline at 75 % opacity.
+  // « Rendu présentation »: each crown casts a soft shadow to the north, where
+  // the sun sends it in Europe, as a designer's plan gives its trees volume.
+  map.addLayer({
+    id: `${CROWNS}-shadow`,
+    type: 'fill',
+    source: CROWNS,
+    layout: { 'fill-sort-key': ['get', 'order'] },
+    filter: NOT_REACH,
+    paint: {
+      'fill-color': PLAN_COLORS.shadow,
+      'fill-opacity': ['case', RENDER, 0.18, 0],
+      'fill-translate': ['interpolate', ['exponential', 2], ['zoom'], 16, ['literal', [-0.3, -0.9]], 20, ['literal', [-3, -9]], 22, ['literal', [-12, -36]]],
+      'fill-translate-anchor': 'map',
+    },
+  }, before)
   map.addLayer({
     id: `${CROWNS}-fill`,
     type: 'fill',
     source: CROWNS,
     layout: { 'fill-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
-    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': ['case', PLANTED, ['*', 0.45, GROUND_FADE], 0.15] },
+    paint: {
+      'fill-color': ['case', RENDER, ['get', 'planColor'], ['get', 'color']],
+      'fill-opacity': ['case', RENDER, ['get', 'planOpacity'], PLANTED, ['*', 0.45, GROUND_FADE], 0.15],
+    },
   }, before)
   // Support plants: the ground they feed is hatched in their strata colour,
   // as a planting plan marks what is there for a while: they build the
@@ -228,7 +269,7 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     paint: {
       'line-color': '#ffffff',
       'line-width': ['case', ['get', 'selected'], 5.5, 4],
-      'line-opacity': ['case', PLANTED, ['*', 0.7, GROUND_FADE], 0.45],
+      'line-opacity': ['case', RENDER, 0, PLANTED, ['*', 0.7, GROUND_FADE], 0.45],
     },
   }, before)
   map.addLayer({
@@ -238,10 +279,24 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
     layout: { 'line-sort-key': ['get', 'order'] },
     filter: NOT_REACH,
     paint: {
-      'line-color': ['get', 'color'],
-      'line-width': ['case', ['get', 'selected'], 3, 2],
-      'line-opacity': ['case', PLANTED, ['*', 0.95, GROUND_FADE], PLANNED_OPACITY],
-      'line-dasharray': ['case', PLANTED, ['literal', [1, 0]], ['literal', [2, 1.5]]] as never,
+      'line-color': ['case', RENDER, ['get', 'planEdge'], ['get', 'color']],
+      // On the plan only the canopy keeps a soft rim; lower crowns are washes.
+      'line-width': ['case', RENDER, ['case', ['get', 'planRim'], 1.6, 0], ['get', 'selected'], 3, 2],
+      'line-blur': ['case', RENDER, 0.6, 0],
+      'line-opacity': ['case', RENDER, ['case', ['get', 'planRim'], 0.85, 0], PLANTED, ['*', 0.95, GROUND_FADE], PLANNED_OPACITY],
+      'line-dasharray': ['case', ['any', PLANTED, RENDER], ['literal', [1, 0]], ['literal', [2, 1.5]]] as never,
+    },
+  }, before)
+  // « Rendu présentation »: a dark dot at each tree's foot, as on a planting
+  // plan, so a wash of colour reads as a tree standing in its place.
+  map.addLayer({
+    id: TRUNKS,
+    type: 'circle',
+    source: TRUNKS,
+    paint: {
+      'circle-color': PLAN_COLORS.trunk,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 17, 1.2, 20, 2.5, 22, 4],
+      'circle-opacity': ['case', RENDER, 0.85, 0],
     },
   }, before)
   // Under the other names (zones, pond, buildings), which MapLibre places first.
@@ -308,7 +363,7 @@ function raiseNumbers(map: MapLibreMap) {
  */
 function colorPoints(map: MapLibreMap, colors: PointColors) {
   if (!map.getSource(FEATURES_SOURCE)) return
-  for (const [id, color] of colors) map.setFeatureState({ source: FEATURES_SOURCE, id }, { strataColor: color })
+  for (const [id, { color, crowned }] of colors) map.setFeatureState({ source: FEATURES_SOURCE, id }, { strataColor: color, crowned })
 }
 
 // A style being swapped (basemap change) refuses sources until it loaded;
