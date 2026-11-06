@@ -80,4 +80,3 @@ class McpPresentationsTest < ActionDispatch::IntegrationTest
     assert error, "a viewer cannot propose"
   end
 end
-
