@@ -24,13 +24,15 @@ export type Texts = {
  * server and in the locale file is all it takes to show it here.
  * `aside` adds something under a field's label (an AI's proposal…).
  */
-export function SchemaFields({ fields, values, onChange, prefix, disabled = false, aside }: {
+export function SchemaFields({ fields, values, onChange, prefix, disabled = false, aside, teamSection = false }: {
   fields: SchemaField[]
   values: Record<string, unknown>
   onChange: (key: string, value: unknown) => void
   prefix: string
   disabled?: boolean
   aside?: (field: SchemaField, texts: Texts) => ReactNode
+  /** The whole section is the team's: said once above, not under every field. */
+  teamSection?: boolean
 }) {
   return (
     <div className="space-y-6">
@@ -45,6 +47,7 @@ export function SchemaFields({ fields, values, onChange, prefix, disabled = fals
             onChange={(v) => onChange(field.key, v)}
             disabled={disabled}
             aside={aside?.(field, texts)}
+            teamSection={teamSection}
           />
         )
       })}
@@ -52,15 +55,16 @@ export function SchemaFields({ fields, values, onChange, prefix, disabled = fals
   )
 }
 
-function FieldBlock({ field, texts, value, onChange, disabled, aside }: {
-  field: SchemaField; texts: Texts; value: unknown; onChange: (v: unknown) => void; disabled: boolean; aside?: ReactNode
+function FieldBlock({ field, texts, value, onChange, disabled, aside, teamSection }: {
+  field: SchemaField; texts: Texts; value: unknown; onChange: (v: unknown) => void; disabled: boolean; aside?: ReactNode; teamSection: boolean
 }) {
+  const teamOnly = field.teamOnly && !teamSection
   const id = useId()
   const grouped = field.type === 'multi' || field.type === 'enum' || field.type === 'list'
-  const hint = (texts.hint || field.teamOnly) && (
+  const hint = (texts.hint || teamOnly) && (
     <>
       {texts.hint && <p id={`${id}-hint`} className="mt-0.5 text-sm text-loam-500">{texts.hint}</p>}
-      {field.teamOnly && (
+      {teamOnly && (
         <p className="mt-0.5 flex items-center gap-1 text-sm text-loam-500">
           <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />{t('journey.project.team_only')}
         </p>

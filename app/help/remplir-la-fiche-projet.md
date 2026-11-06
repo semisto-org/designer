@@ -24,7 +24,7 @@ La plupart des questions se répondent en cochant des cases ou en choisissant un
 
 ## L'analyse fonctionnelle
 
-La dernière section fait la synthèse avant de dessiner : la raison d'être du projet, les besoins et les fonctions des porteurs de projet puis du lieu, et les défis et atouts avec leur origine. Les fonctions que tu y écris rejoignent le panneau Fonctions de la carte : [Les fonctions des éléments](/help/les-fonctions-des-elements) explique comment les relier aux éléments du design.
+La dernière section est le travail des concepteurs : le porteur de projet ne la voit pas sur son lien privé. Elle fait la synthèse avant de dessiner : la raison d'être du projet, les besoins et les fonctions des porteurs de projet puis du lieu, et les défis et atouts avec leur origine. Les fonctions que tu y écris rejoignent le panneau Fonctions de la carte : [Les fonctions des éléments](/help/les-fonctions-des-elements) explique comment les relier aux éléments du design.
 
 ## La palette gustative
 

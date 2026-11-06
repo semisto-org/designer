@@ -47,7 +47,7 @@ module TypedSchema
   def multi(key, *values, exclusive: [], counts: true, team_only: false, tone: nil) = Field.new(key:, type: :multi, values: values.map(&:to_s).freeze, exclusive: Array(exclusive).map(&:to_s), counts:, team_only:, tone:)
   def integer(key, range, required: false, counts: true, hidden: false) = Field.new(key:, type: :integer, range:, required:, counts:, hidden:)
   def boolean(key, counts: false) = Field.new(key:, type: :boolean, counts:)
-  def list(key, item, max: 20, counts: true) = Field.new(key:, type: :list, item: item.freeze, max:, counts:)
+  def list(key, item, max: 20, counts: true, team_only: false) = Field.new(key:, type: :list, item: item.freeze, max:, counts:, team_only:)
 
   # Coerces raw input against fields. Strict mode records an error for every
   # value that does not fit; lenient mode (reading stored data) silently

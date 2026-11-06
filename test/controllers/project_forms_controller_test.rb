@@ -19,7 +19,7 @@ class ProjectFormsControllerTest < ActionDispatch::IntegrationTest
     props = body["props"]
     assert_equal @map.name, props["mapName"]
     assert_equal({ "budget" => { "initial" => "under_500" } }, props["project"])
-    assert_equal 12, props["schema"]["sections"].size
+    assert_equal 11, props["schema"]["sections"].size
     assert_equal true, props["canEdit"]
     assert_nil props["currentUser"]
     refute_includes response.body, "Rue du Moulin"

@@ -16,7 +16,7 @@ class ProjectFormsController < ApplicationController
       mapName: @map.name,
       invitedBy: @link.created_by&.display_name || @map.owner.display_name,
       project: @map.project_sheet.for_holder.to_h,
-      progress: @map.project_sheet.progress,
+      progress: @map.project_sheet.progress(holder: true),
       schema: ProjectSheet.schema_json(holder: true),
       canEdit: !@map.read_only_by_plan?,
       submittedAt: @link.submitted_at&.iso8601,
@@ -33,7 +33,7 @@ class ProjectFormsController < ApplicationController
       return render json: { errors: patch.errors, message: t("journey.project.invalid") }, status: :unprocessable_entity
     end
     sheet = ProjectSheet.save!(@map, patch)
-    render json: { project: sheet.for_holder.to_h, progress: sheet.progress }
+    render json: { project: sheet.for_holder.to_h, progress: sheet.progress(holder: true) }
   end
 
   def submit

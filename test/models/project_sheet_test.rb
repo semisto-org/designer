@@ -222,7 +222,11 @@ class ProjectSheetTest < ActiveSupport::TestCase
     refute_includes ids, resent.project_functions.second[:id]
 
     refute ProjectSheet.parse({ "analysis" => { "challenges" => [ { "name" => "Pente", "origin" => "moon" } ] } }).valid?
-    holder = ProjectSheet.schema_json(holder: true)[:sections].find { _1[:key] == "analysis" }
-    assert holder, "the people behind the project fill the analysis too"
+    # The designers' work: never on the private link, nor in its progress.
+    refute ProjectSheet.schema_json(holder: true)[:sections].any? { _1[:key] == "analysis" }
+    assert_equal true, ProjectSheet.schema_json[:sections].find { _1[:key] == "analysis" }[:teamOnly]
+    refute sheet.progress(holder: true)[:sections].key?("analysis")
+    assert_equal({}, sheet.for_holder.to_h.except("meta"))
+    assert_equal({}, ProjectSheet.parse({ "analysis" => { "purpose" => "Écrit par le porteur" } }, holder: true).to_h)
   end
 end

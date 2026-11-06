@@ -123,15 +123,16 @@ class ProjectSheet
     # need can be essential (not negotiable) or wished. Each function has a
     # stable id that elements of the map point to (`properties.serves`), so
     # the « Fonctions » panel says which ones no element, or only one, serves.
+    # The designers' work, not the client's: never on the private link.
     "analysis" => [
-      TypedSchema.text("purpose", limit: 500),
-      TypedSchema.list("holder_needs", NEED, max: 20),
-      TypedSchema.list("holder_functions", FUNCTION, max: 20),
-      TypedSchema.list("place_needs", NEED, max: 20),
-      TypedSchema.list("place_functions", FUNCTION, max: 20),
-      TypedSchema.list("challenges", FACTOR, max: 30),
-      TypedSchema.list("assets", FACTOR, max: 30),
-      NOTES
+      TypedSchema.text("purpose", limit: 500, team_only: true),
+      TypedSchema.list("holder_needs", NEED, max: 20, team_only: true),
+      TypedSchema.list("holder_functions", FUNCTION, max: 20, team_only: true),
+      TypedSchema.list("place_needs", NEED, max: 20, team_only: true),
+      TypedSchema.list("place_functions", FUNCTION, max: 20, team_only: true),
+      TypedSchema.list("challenges", FACTOR, max: 30, team_only: true),
+      TypedSchema.list("assets", FACTOR, max: 30, team_only: true),
+      TypedSchema.text("notes", team_only: true)
     ]
   }.each_value(&:freeze).freeze
 
@@ -212,8 +213,16 @@ class ProjectSheet
   # For the frontend: the whole declaration, in display order. `holder`:
   # without the team-only fields (the private link's form).
   def self.schema_json(holder: false)
-    { sections: SECTIONS.keys.map { |key| { key:, fields: fields_for(key, holder:).map(&:as_json) } } }
+    sections = SECTIONS.keys.filter_map do |key|
+      fields = fields_for(key, holder:)
+      next if fields.empty?
+      { key:, fields: fields.map(&:as_json), teamOnly: (true if team_section?(key)) }.compact
+    end
+    { sections: }
   end
+
+  # A section only the people working on the map fill (the functional analysis).
+  def self.team_section?(section) = SECTIONS.fetch(section).all?(&:team_only)
 
   def initialize(raw, strict: true, holder: false)
     coercer = TypedSchema::Coercer.new(strict:)
@@ -266,8 +275,12 @@ class ProjectSheet
   # Completion: per section the share of "counting" fields that have an
   # answer (free text never counts), 100 when the person marked the section
   # as done. The sheet's percent is the mean of its sections.
-  def progress
-    sections = SECTIONS.to_h do |name, fields|
+  # holder: as the people behind the project see it on their private link,
+  # without the sections only the team fills.
+  def progress(holder: false)
+    names = holder ? SECTIONS.keys.reject { self.class.team_section?(_1) } : SECTIONS.keys
+    sections = names.to_h do |name|
+      fields = self.class.fields_for(name, holder:)
       counting = fields.select(&:counts)
       answered = counting.count { |f| TypedSchema.answered?(section(name)[f.key]) }
       total = counting.size

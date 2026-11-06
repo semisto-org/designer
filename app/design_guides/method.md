@@ -26,7 +26,7 @@ If the person asks straight away for plants while water or structure are not yet
 
 ## The functional analysis
 
-Between reading the place and drawing anything, Semisto writes a functional analysis, the synthesis of the interview with the people behind the project. It always has the same parts, in the last section of the project sheet (`analysis` in `get_project_sheet`):
+Between reading the place and drawing anything, Semisto writes a functional analysis, the synthesis of the interview with the people behind the project. It is the designers' work, not a form for the client: the private link of the project sheet never shows it. It always has the same parts, in the last section of the project sheet (`analysis` in `get_project_sheet`):
 
 1. **Purpose** (raison d'être): one to three sentences on the bond between these people and this place. It stays open; they will rewrite it.
 2. **The people's needs and functions**: what they need (`holder_needs`) and what the place will do for them (`holder_functions`).
