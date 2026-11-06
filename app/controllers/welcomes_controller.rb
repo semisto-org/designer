@@ -1,7 +1,8 @@
 # /welcome — asked once, after the first sign-in: does the person design
 # their own place or for clients? « Mes cartes » sends here until they have
-# answered, or « Nouvelle carte » for an account that came in with its place
-# already (a trial kept); the answer can be changed later in « Mon compte ».
+# answered, or « Nouvelle carte » for an account that already has maps to open
+# (a trial kept, a team or a map shared with it); the answer can be changed
+# later in « Mon compte ».
 class WelcomesController < ApplicationController
   forbid_while_impersonating only: :update
 
