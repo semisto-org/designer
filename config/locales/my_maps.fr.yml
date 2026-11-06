@@ -4,6 +4,7 @@ fr:
   my_maps:
     resume:
       eyebrow: "Là où tu t'étais arrêté·e · %{when}"
+      eyebrow_changed: "Modifiée en dernier · %{when}"
       open: "Reprendre la carte"
       next: "Prochaine étape : %{step}"
       advance: "Cette étape est faite : passe à « %{stage} » quand tu te sens prêt·e."

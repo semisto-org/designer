@@ -16,7 +16,7 @@ export function nextStepText(next: ResumeStep) {
 }
 
 /** The map worked on last, open as a full notebook page with its next step. */
-export function ResumeCard({ map, next }: { map: ListedMap; next: ResumeStep }) {
+export function ResumeCard({ map, next, openedAt }: { map: ListedMap; next: ResumeStep; openedAt?: string | null }) {
   const [grown, setGrown] = useState(false)
   return (
     <Link
@@ -29,7 +29,7 @@ export function ResumeCard({ map, next }: { map: ListedMap; next: ResumeStep }) 
     >
       <TerrainSketch map={map} grown={grown} className="block aspect-[4/3] w-full md:aspect-auto md:h-full md:min-h-[300px]" />
       <div className="flex min-w-0 flex-col gap-3.5 border-t border-dashed border-loam-200 p-5 md:border-t-0 md:border-l md:px-7 md:py-7">
-        <p className="text-[11px] tracking-[0.08em] text-loam-500 uppercase">{t('my_maps.resume.eyebrow', { when: relativeTime(map.updatedAt) })}</p>
+        <p className="text-[11px] tracking-[0.08em] text-loam-500 uppercase">{openedAt ? t('my_maps.resume.eyebrow', { when: relativeTime(openedAt) }) : t('my_maps.resume.eyebrow_changed', { when: relativeTime(map.updatedAt) })}</p>
         <div>
           <h2 className="font-serif text-3xl leading-tight">{map.name}</h2>
           {map.areaM2 != null && <p className="text-sm text-loam-500">{formatArea(map.areaM2)}</p>}
