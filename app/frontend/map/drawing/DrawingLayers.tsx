@@ -13,11 +13,12 @@ import { useSoil } from '@/map/soil/store'
 import type { MapFeature } from '@/types'
 import { momentFilter } from '@/map/time/moment'
 import { DESIGN_MODE_STATE } from '@/map/scenario'
+import { shownVariantId, useVariants } from '@/map/variants/store'
 
 /**
  * Overlay without UI: styles the library elements on the editor map, keeps
  * the "Calques" visibility (layers, kinds, plant strata), the moment of the time strip (map/time)
- * and the version shown (a tag) to every feature layer (including ones other modules add later) and hides a feature while its shape is edited.
+ * the project variant shown (map/variants) and the tag shown to every feature layer (including ones other modules add later) and hides a feature while its shape is edited.
  */
 export default function DrawingLayers() {
   const editor = useEditor()
@@ -25,7 +26,8 @@ export default function DrawingLayers() {
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const editingId = useDrawingState((s) => s.shapeEditId)
   const moment = useMemo(() => momentFilter(editor.moment, editor.timeline.arrival, editor.mode), [editor.moment, editor.timeline.arrival, editor.mode])
-  const version = useDrawingState((s) => s.version)
+  const variant = useVariants(shownVariantId)
+  const tag = useDrawingState((s) => s.shownTag)
   const hiddenKinds = useDrawingState((s) => s.hiddenKinds)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   const { data: planting } = usePlanting(editor.map.id)
@@ -34,7 +36,7 @@ export default function DrawingLayers() {
     () => (planting ? hiddenPlantIds(editor.features, hiddenStrata, (f) => plantStrata(f as MapFeature, planting)) : []),
     [editor.features, hiddenStrata, planting],
   )
-  const options = { moment, version, hiddenKinds, hiddenIds }
+  const options = { moment, variant, tag, hiddenKinds, hiddenIds }
   const latest = useRef(options)
   latest.current = options
 
@@ -63,7 +65,7 @@ export default function DrawingLayers() {
     }
   }, [map])
 
-  useEffect(() => applyLayerVisibility(map, hidden, { moment, version, hiddenKinds, hiddenIds }), [map, hidden, moment, version, hiddenKinds, hiddenIds])
+  useEffect(() => applyLayerVisibility(map, hidden, { moment, variant, tag, hiddenKinds, hiddenIds }), [map, hidden, moment, variant, tag, hiddenKinds, hiddenIds])
 
   // « Calques » from the map, in the column of map controls; the photos button joins it below.
   const openPanel = useRef(editor.openPanel)

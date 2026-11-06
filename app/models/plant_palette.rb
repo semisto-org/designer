@@ -51,7 +51,7 @@ class PlantPalette
 
   # The tags used by plants, patches and existing trees, one spelling each.
   def tags
-    @tags ||= map.features.active.where(layer: "plants").or(map.features.active.where(kind: EXISTING_KIND))
+    @tags ||= map.features.active.in_design.where(layer: "plants").or(map.features.active.in_design.where(kind: EXISTING_KIND))
                  .tag_counts.keys
   end
 
@@ -168,7 +168,7 @@ class PlantPalette
 
     # Active plant points with their tags and properties.
     def plant_features
-      @plant_features ||= map.features.active.where(kind: "plant").select(:id, :map_id, :kind, :name, :tags, :properties, :lock_version).order(:id).to_a
+      @plant_features ||= map.features.active.in_design.where(kind: "plant").select(:id, :map_id, :kind, :name, :tags, :properties, :lock_version).order(:id).to_a
     end
 
     def plant_features_by_key = @plant_features_by_key ||= plant_features.group_by { |f| plant_key(f) }
@@ -198,7 +198,7 @@ class PlantPalette
     # Existing trees kept and alive: what already grows on the land.
     def existing_trees
       @existing_trees ||= begin
-        features = map.features.active.where(kind: EXISTING_KIND).order(:id).to_a
+        features = map.features.active.in_design.where(kind: EXISTING_KIND).order(:id).to_a
                       .reject { |f| f.properties["keep"] == false || f.properties["health"] == "dead" }
         matches = species_for_texts(features.map { |f| f.properties["species"].to_s })
         features.map do |f|

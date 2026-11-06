@@ -29,15 +29,9 @@ Touche la zone, ou son nom, pour ouvrir sa fiche :
 
 Les zones et les tracés se rangent dans la couche **Dessins** : le panneau **Calques** les masque ou les affiche toutes d'un coup.
 
-## Plusieurs versions pour ton client
+## Plusieurs idées pour ton client
 
-Pour montrer deux ou trois propositions, donne aux zones de chacune une [étiquette](/help/etiqueter-ses-elements) comme « Version A » ou « Version B ». Dès que la carte a des étiquettes, le sélecteur **Toutes les versions** apparaît en haut à gauche de la carte (en bas sur un téléphone) :
-
-- choisis « Version A » : la carte ne montre que ses éléments, plus ceux **sans étiquette**, communs à toutes les versions (l'existant, les arbres déjà en place) ;
-- ce que tu dessines pendant ce temps rejoint d'office la version affichée ;
-- le **plan PDF** imprime la version choisie, avec son nom dans le titre.
-
-Ce choix ne vaut que pour ton écran ; **Toutes les versions** remet tout à l'écran.
+Pour montrer deux ou trois propositions, pose-les en [variantes de projet](/help/comparer-des-variantes) (« Projet 1 », « Projet 2 ») : en Projet, le sélecteur en haut à gauche de la carte montre une variante à la fois, et les zones que tu dessines rejoignent la variante affichée.
 
 ## Sur le plan imprimé et pour ton IA
 

@@ -79,7 +79,7 @@ export const PRIORITY = {
   inspector: 30,
   chat: 20,
   panel: 15,
-  version: 5,
+  variant: 5,
   // bottom row and toolbar: everything shows, `order` places it.
   always: 0,
 } as const

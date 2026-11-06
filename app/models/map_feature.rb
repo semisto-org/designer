@@ -39,6 +39,8 @@ class MapFeature < ApplicationRecord
   belongs_to :map, touch: true
   belongs_to :created_by, class_name: "User", optional: true
   belongs_to :updated_by, class_name: "User", optional: true
+  # The project variant it belongs to (MapVariant); none: every variant's, or on the ground.
+  belongs_to :variant, class_name: "MapVariant", optional: true, inverse_of: :features
   # Changes an AI proposed to this element; the accepted ones are its history.
   has_many :storage_readings, -> { order(:measured_on, :id) }, dependent: :delete_all
   has_many :update_drafts, class_name: "FeatureUpdateDraft", dependent: :delete_all
@@ -46,6 +48,8 @@ class MapFeature < ApplicationRecord
   has_many :tasks, through: :task_features
 
   before_validation :move_free_drawings
+  before_validation :leave_variant_once_on_the_ground
+  validate :variant_of_the_same_map
   validates :kind, presence: true
   validates :layer, inclusion: { in: LAYERS }
   validates :status, inclusion: { in: STATUSES }
@@ -53,6 +57,17 @@ class MapFeature < ApplicationRecord
   validates :geometry, presence: true
 
   scope :active, -> { where(status: "active") }
+  # What the design counts: the common project and the retained variant's,
+  # with everything on the ground (MapVariant). Elements of the other
+  # variants are left out of the palette, quantities, offer, plan, 3D and
+  # public map.
+  scope :in_design, -> { where(variant_id: nil).or(where(variant_id: MapVariant.retained.select(:id))) }
+  # The same, for raw SQL on map_features (alias given: in_design_sql("f")).
+  # Raw SQL constants write it out literally (Brakeman refuses interpolation);
+  # test/models/map_variant_test.rb checks they agree.
+  def self.in_design_sql(table = "map_features")
+    "(#{table}.variant_id IS NULL OR #{table}.variant_id IN (SELECT id FROM map_variants WHERE retained))"
+  end
   scope :drafts, -> { where(status: "draft") }
   # Still a project: a plant not marked as planted, another element marked
   # « En projet ». Twin of isPlanned in app/frontend/map/scenario.ts.
@@ -120,7 +135,7 @@ class MapFeature < ApplicationRecord
       properties: properties.merge(
         "id" => id, "layer" => layer, "kind" => kind, "name" => name, "notes" => notes,
         "status" => status, "source" => source, "rationale" => rationale,
-        "style" => style, "tags" => tags, "lockVersion" => lock_version,
+        "style" => style, "tags" => tags, "lockVersion" => lock_version, "variant_id" => variant_id,
         "updatedAt" => updated_at&.iso8601
       )
     }
@@ -150,5 +165,17 @@ class MapFeature < ApplicationRecord
 
     def move_free_drawings
       self.layer = "drawings" if layer == "notes" && DRAWING_KINDS.include?(kind)
+    end
+
+    # Planted, built: it is on the land now, common to every variant.
+    def leave_variant_once_on_the_ground
+      # The variant is a column: a client that sends the GeoJSON properties back never stores it twice.
+      self.properties = properties.except("variant_id") if properties.is_a?(Hash) && properties.key?("variant_id")
+      return if variant_id.nil? || ANNOTATION_LAYERS.include?(layer) || status == "draft"
+      self.variant_id = nil unless planned?
+    end
+
+    def variant_of_the_same_map
+      errors.add(:variant, :invalid) if variant && variant.map_id != map_id
     end
 end

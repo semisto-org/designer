@@ -1,7 +1,8 @@
-import { drawingStore, setHiddenKinds, setHiddenLayers, setHiddenStrata, setVersion } from '@/map/drawing/store'
+import { drawingStore, setHiddenKinds, setHiddenLayers, setHiddenStrata, setShownTag } from '@/map/drawing/store'
 import type { Editor } from '@/map/editor/EditorContext'
 import { SECTOR_GROUPS } from '@/map/sectors/sectors'
 import { sectorView } from '@/map/sectors/store'
+import { showVariant, shownVariantId, variantStore } from '@/map/variants/store'
 import type { PresentationView } from './types'
 
 const round = (value: number, digits: number) => Number(value.toFixed(digits))
@@ -23,9 +24,12 @@ export function captureView(editor: Editor): PresentationView {
     hiddenKinds: [...drawing.hiddenKinds],
     hiddenStrata: [...drawing.hiddenStrata],
     moment: editor.moment,
+    mode: editor.mode,
   }
   if (editor.activePanel && editor.activePanel !== 'present') view.panel = editor.activePanel
-  if (drawing.version) view.version = drawing.version
+  if (drawing.shownTag) view.tag = drawing.shownTag
+  const variant = shownVariantId()
+  if (variant != null) view.variantId = variant
   if (sectors.onMap) view.sectors = SECTOR_GROUPS.filter((g) => !sectors.hiddenGroups.includes(g))
   if (editor.shade) view.shade = editor.shade
   if (editor.selectedId != null) view.featureId = editor.selectedId
@@ -33,15 +37,17 @@ export function captureView(editor: Editor): PresentationView {
 }
 
 /**
- * Brings a step's view back: layers, kinds and strata, version, sectors,
- * time and shade, the panel, the selected element, then the framing (the
+ * Brings a step's view back: layers, kinds and strata, the tag shown,
+ * the project variant, sectors, time, « Existant » or « Projet » and shade, the panel, the selected element, then the framing (the
  * terrain as a whole when the step has none of its own).
  */
 export function applyView(editor: Editor, view: PresentationView) {
   setHiddenLayers(view.hiddenLayers ?? [])
   setHiddenKinds(view.hiddenKinds ?? [])
   setHiddenStrata(view.hiddenStrata ?? [])
-  setVersion(view.version ?? null)
+  setShownTag(view.tag ?? null)
+  // A variant deleted since: the retained one.
+  showVariant(variantStore.get().variants.some((v) => v.id === view.variantId) ? view.variantId ?? null : null)
   if (view.sectors && view.sectors.length > 0) {
     sectorView.setHiddenGroups(SECTOR_GROUPS.filter((g) => !view.sectors?.includes(g)))
     sectorView.setOnMap(true)
@@ -49,6 +55,8 @@ export function applyView(editor: Editor, view: PresentationView) {
     sectorView.setOnMap(false)
   }
   editor.setMoment(view.moment ?? 'today')
+  // Views captured before the switch keep the mode their moment implies.
+  if (view.mode) editor.setMode(view.mode)
   editor.setShade(view.shade ?? null)
   const feature = view.featureId != null ? editor.features.find((f) => f.properties.id === view.featureId) : null
   editor.select(feature ? feature.properties.id : null)

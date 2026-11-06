@@ -6,7 +6,9 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { DESIGN_LAYERS, featureColor, layerColor } from '@/map/drawing/catalog'
 import { isPlantLike, strataKey, UNKNOWN_STRATA } from '@/map/drawing/hidden'
-import { setHiddenKinds, setHiddenLayers, setHiddenSoil, setHiddenStrata, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
+import { setHiddenKinds, setHiddenLayers, setHiddenSoil, setHiddenStrata, setShownTag, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
+import { Field, Select } from '@/components/ui/Field'
+import { tagCounts } from '@/map/tags/tags'
 import { LAYER_COLORS } from '@/map/layers/features'
 import { photoActions, usePhotos } from '@/map/photos/store'
 import { usePlanting } from '@/map/plants/store'
@@ -130,7 +132,9 @@ export default function LayersPanel() {
 
   const soilHidden = (soilCounts.bioindicators > 0 || soilCounts.samples > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
   const sectorsHidden = sectors.onMap && sectors.hiddenGroups.length > 0
-  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden || sectorsHidden
+  const shownTag = useDrawingState((s) => s.shownTag)
+  const tags = tagCounts(editor.features)
+  const somethingHidden = shownTag != null || hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden || sectorsHidden
 
   return (
     <div className="space-y-3">
@@ -231,6 +235,16 @@ export default function LayersPanel() {
           )}
         </li>
       </ul>
+      {/* One tag on its own (a flow, a phase): its elements and those with no tag. */}
+      {(tags.length > 0 || shownTag) && (
+        <Field label={t('tags.shown_label')} hint={t('tags.shown_hint')}>
+          <Select value={shownTag ?? ''} onChange={(e) => setShownTag(e.target.value || null)}>
+            <option value="">{t('tags.shown_all')}</option>
+            {shownTag && !tags.some(({ tag }) => tag.toLocaleLowerCase('fr') === shownTag.toLocaleLowerCase('fr')) && <option value={shownTag}>{shownTag}</option>}
+            {tags.map(({ tag }) => <option key={tag} value={tag}>{tag}</option>)}
+          </Select>
+        </Field>
+      )}
       {somethingHidden && (
         <button type="button" onClick={() => { showEverything(); photoActions.setShowOnMap(true); soilActions.setShowOnMap(true); sectorView.setHiddenGroups([]) }} className="text-sm font-medium text-prune-700 hover:underline">
           {t('drawing.layers_panel.show_all')}

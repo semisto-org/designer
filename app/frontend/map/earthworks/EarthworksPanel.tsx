@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/Button'
 import { HelpButton } from '@/components/help/HelpButton'
 import { formatNumber, t, translations } from '@/lib/i18n'
 import { elementFor } from '@/map/drawing/catalog'
-import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
 import { isDiggable, isDone, receiverGap, SOIL_PARTS, TRUCK_M3, WHEELBARROW_M3, type Destination } from '@/map/earthworks/earthworks'
 import { featureName, loadsText, m3, setArrowsShown, useArrowsShown, useEarthworks } from '@/map/earthworks/model'
@@ -25,7 +24,6 @@ const FATES = [
  */
 export default function EarthworksPanel() {
   const editor = useEditor()
-  const version = useDrawingState((s) => s.version)
   const { balance, byId, counted } = useEarthworks()
   const arrows = useArrowsShown()
   const { totals, digs, receivers } = balance
@@ -38,7 +36,7 @@ export default function EarthworksPanel() {
     try {
       const spec = elementFor('mound')!
       const mound = await editor.createFeature({
-        layer: spec.layer, kind: 'mound', geometry, properties: { ...spec.defaults }, ...(version ? { tags: [version] } : {}),
+        layer: spec.layer, kind: 'mound', geometry, properties: { ...spec.defaults },
       })
       editor.select(mound.properties.id)
     } catch (error) {

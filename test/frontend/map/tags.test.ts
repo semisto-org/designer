@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { addTag, groupByTag, hasTag, inVersion, normalizeTag, removeTag, tagCounts, UNTAGGED } from '../../../app/frontend/map/tags/tags.ts'
+import { addTag, groupByTag, hasTag, inTag, normalizeTag, removeTag, tagCounts, UNTAGGED } from '../../../app/frontend/map/tags/tags.ts'
 
 const f = (id: number, tags?: unknown) => ({ id, properties: { tags } })
 
@@ -37,10 +37,10 @@ test('grouping puts an element under each of its tags, then the untagged', () =>
   ])
 })
 
-test('a version shows its own elements and those every version shares (no tag)', () => {
-  const a = { properties: { tags: ['Version A'] } }
-  const b = { properties: { tags: ['Version B', 'phase 1'] } }
+test('a tag shown on its own keeps its elements and those with no tag', () => {
+  const a = { properties: { tags: ['Flux récolte'] } }
+  const b = { properties: { tags: ['Flux engins', 'phase 1'] } }
   const shared = { properties: { tags: [] } }
-  assert.deepEqual([a, b, shared].map((f) => inVersion(f, 'version a')), [true, false, true])
-  assert.deepEqual([a, b, shared].map((f) => inVersion(f, null)), [true, true, true])
+  assert.deepEqual([a, b, shared].map((f) => inTag(f, 'flux RÉCOLTE')), [true, false, true])
+  assert.deepEqual([a, b, shared].map((f) => inTag(f, null)), [true, true, true])
 })

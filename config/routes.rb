@@ -708,6 +708,15 @@ Rails.application.routes.draw do
   end
   # --- end presentations ---
 
+  # --- variants ---
+  # Project variants (« Projet 1 », « Projet 2 »), one retained.
+  resources :maps, only: [] do
+    resources :variants, only: %i[index create update destroy], controller: "maps/variants" do
+      post :duplicate, on: :member
+    end
+  end
+  # --- end variants ---
+
   # --- first-hours ---
   # The beta's « Premières heures »: « Un retour ? » from any page, the answer
   # to the session recording question and the replays it starts, the plan's

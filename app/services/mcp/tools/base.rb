@@ -151,6 +151,7 @@ module Mcp
               "layer" => feature.layer, "kind" => feature.kind, "name" => feature.name, "notes" => feature.notes,
               "status" => feature.status, "source" => feature.source, "rationale" => feature.rationale,
               "tags" => feature.tags.presence, "updated_at" => feature.updated_at&.iso8601,
+              "variant_id" => feature.variant_id,
               "permaculture_zone" => zone,
               # A support plant, from its sheet or its palette role: hatched on the map.
               "support" => (true if feature.plant? && feature.support_plant?(palette_role(feature)))
