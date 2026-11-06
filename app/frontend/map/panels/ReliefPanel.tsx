@@ -287,7 +287,7 @@ function MapOverlay({ overview }: { overview: ReliefOverview }) {
   const editor = useEditor()
   const mapId = editor.map.id
   const grid = overview.terrainGrid!
-  const { mode, computing, failed } = useReliefOverlay(mapId)
+  const { mode, computing, failed, dug } = useReliefOverlay(mapId)
 
   return (
     <section>
@@ -304,6 +304,9 @@ function MapOverlay({ overview }: { overview: ReliefOverview }) {
       ) : mode !== 'none' ? (
         <p className="mt-1 text-xs text-loam-500">{t(`relief.panel_ui.overlay_${mode}_legend`)}</p>
       ) : null}
+      {mode === 'flow' && !computing && !failed && (
+        <p className="mt-1 text-sm text-loam-600">{t(dug ? 'map_data.layers.relief.flow_dug' : 'map_data.layers.relief.flow_as_is')}</p>
+      )}
       <p className="mt-1 text-sm text-loam-400">{t('relief.panel_ui.overlay_also_in_layers')}</p>
     </section>
   )
