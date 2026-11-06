@@ -24,7 +24,8 @@ class PresentationTemplate
   def steps
     definition.fetch("steps").map do |step|
       i18n = "presentations.templates.#{key}.steps.#{step.fetch('key')}"
-      { "key" => step["key"], "title" => I18n.t("#{i18n}.title"), "note" => I18n.t("#{i18n}.note", default: nil), "shown" => true, "captured" => false, "view" => view(step) }
+      { "key" => step["key"], "title" => I18n.t("#{i18n}.title"), "note" => I18n.t("#{i18n}.note", default: nil), "shown" => true, "captured" => false,
+        "slide" => step["slide"] ? { "body" => "" } : nil, "view" => view(step) }.compact
     end
   end
 
@@ -39,7 +40,9 @@ class PresentationTemplate
     def view(step)
       {
         "panel" => step["panel"],
-        "hiddenLayers" => step["layers"] ? MapFeature::LAYERS - step["layers"] : [],
+        # Drawn zones (the forest garden as a zone…) stay on every view; « Existant »
+        # and « Projet » already keep a project zone out of the reading of the place.
+        "hiddenLayers" => step["layers"] ? MapFeature::LAYERS - step["layers"] - [ "drawings" ] : [],
         "hiddenKinds" => [],
         "hiddenStrata" => step["strata"] ? MapPresentation::STRATA - step["strata"] : [],
         "sectors" => step["sectors"],

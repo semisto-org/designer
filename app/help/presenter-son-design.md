@@ -23,6 +23,14 @@ Chaque étape vient avec une **vue par défaut** et une **note** : ce qu'on dit 
 
 Glisse une étape dans la liste pour la déplacer ; le crayon change le titre et la note. **Ajouter la vue actuelle** crée une étape de plus avec ce que tu vois.
 
+## Des diapositives de texte
+
+Certaines étapes se disent mieux avec des mots qu'avec la carte : la page de garde, les défis et atouts, les besoins et fonctions, la **raison d'être** de ce jardin-forêt, les prochaines étapes. Le modèle les prévoit déjà, marquées d'un **T** : clique sur le crayon et écris le **texte affiché**, quelques lignes, une idée par ligne (un tiret en début de ligne fait une liste). Pendant la présentation, il s'affiche en grand, comme une page de carnet posée sur la vue du lieu. **Ajouter une diapositive** en crée une de plus.
+
+Ton IA peut les rédiger pour toi, d'après la fiche projet et ce que la famille t'a dit : ses textes arrivent en **brouillons** dans le panneau, et rien n'est montré avant que tu cliques sur **Accepter**.
+
+Ta **note** reste la tienne : le client qui suit la présentation depuis son compte ne la voit jamais, pas plus que les brouillons.
+
 ## Une étape en 3D
 
 Certaines choses se comprennent mieux en relief : l'air froid qui coule la nuit au fond du vallon, la pente, l'ombre d'hiver. Clique sur l'étape, ouvre la **vue 3D** du terrain, place la caméra, choisis le fond, l'onglet (nuit, soleil…) et l'année des plantes, puis **Capturer la vue 3D**. Pendant la présentation, cette étape s'ouvre directement en 3D, et l'étape suivante te ramène à la carte. Le crayon permet de **retirer la vue 3D** d'une étape.
