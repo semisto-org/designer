@@ -6,6 +6,7 @@ import { hiddenPlantIds } from '@/map/drawing/hidden'
 import { drawingStore, initDrawingState, useDrawingState } from '@/map/drawing/store'
 import { applyLayerVisibility, installDrawingLayers } from '@/map/drawing/style'
 import { FEATURES_SOURCE } from '@/map/layers/features'
+import { applyFeatureLabelsVisibility } from '@/map/layers/labels'
 import { usePhotos } from '@/map/photos/store'
 import { usePlanting } from '@/map/plants/store'
 import { plantStrata } from '@/map/plants/strata'
@@ -57,6 +58,7 @@ export default function DrawingLayers() {
     const ensure = () => {
       if (map.getGlobalState?.()[DESIGN_MODE_STATE] !== mode.current) map.setGlobalStateProperty(DESIGN_MODE_STATE, mode.current)
       if (installDrawingLayers(map)) applyLayerVisibility(map, drawingStore.get().hiddenLayers, latest.current)
+      applyFeatureLabelsVisibility(map, drawingStore.get().labelsHidden)
     }
     ensure()
     map.on('styledata', ensure)
@@ -66,6 +68,9 @@ export default function DrawingLayers() {
   }, [map])
 
   useEffect(() => applyLayerVisibility(map, hidden, { moment, variant, tag, hiddenKinds, hiddenIds }), [map, hidden, moment, variant, tag, hiddenKinds, hiddenIds])
+  // « Noms sur la carte »: the names of elements and zones (plants: PlantsOverlay), shown on hover only when off (LabelPeek).
+  const labelsHidden = useDrawingState((s) => s.labelsHidden)
+  useEffect(() => applyFeatureLabelsVisibility(map, labelsHidden), [map, labelsHidden])
 
   // « Calques » from the map, in the column of map controls; the photos button joins it below.
   const openPanel = useRef(editor.openPanel)
@@ -94,7 +99,7 @@ export default function DrawingLayers() {
   const hiddenSoil = useDrawingState((s) => s.hiddenSoil)
   const soil = useSoil()
   const soilHidden = (soil.observations.length > 0 || soil.samples.length > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
-  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photosShown || soilHidden
+  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photosShown || soilHidden || labelsHidden
   useEffect(() => {
     control.current?.update(t(somethingHidden ? 'drawing.layers_panel.control_hidden' : 'drawing.layers_panel.control'), somethingHidden)
   }, [somethingHidden])

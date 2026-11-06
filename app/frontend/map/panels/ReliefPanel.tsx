@@ -9,7 +9,7 @@ import { api, ApiError } from '@/lib/api'
 import { formatArea, formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import KeylineFinder from '@/map/water/KeylineFinder'
-import { removeReliefOverlay, showReliefOverlay, type MapOverlayMode } from '@/relief/mapOverlay'
+import { chooseReliefOverlay, useReliefOverlay } from '@/relief/overlayStore'
 import { roofRainwater } from '@/relief/soil'
 import { ChoiceGroup } from '@/relief/ui'
 import type { MapFeature } from '@/types'
@@ -17,9 +17,6 @@ import type { ReliefOverview, WaterSettings } from '@/types/relief'
 
 const POLL_MS = 3000
 const ROOF_KINDS = new Set(['building', 'greenhouse', 'shelter', 'shed'])
-
-// The overlay chosen per map survives closing the panel (it stays on the map).
-const overlayModes = new Map<number, MapOverlayMode>()
 
 /** "Eau et relief": import the relief, open the 3D view, the key numbers and the roofs' rainwater. */
 export default function ReliefPanel() {
@@ -290,34 +287,14 @@ function MapOverlay({ overview }: { overview: ReliefOverview }) {
   const editor = useEditor()
   const mapId = editor.map.id
   const grid = overview.terrainGrid!
-  const [mode, setMode] = useState<MapOverlayMode>(() => overlayModes.get(mapId) ?? 'none')
-  const [computing, setComputing] = useState(false)
-  const [failed, setFailed] = useState(false)
-
-  async function choose(next: MapOverlayMode) {
-    setMode(next)
-    overlayModes.set(mapId, next)
-    setFailed(false)
-    if (next === 'none') return removeReliefOverlay(editor.instance)
-    setComputing(true)
-    try {
-      await showReliefOverlay(editor.instance, grid, next)
-    } catch (e) {
-      console.error(e)
-      setFailed(true)
-      overlayModes.set(mapId, 'none')
-      removeReliefOverlay(editor.instance)
-    } finally {
-      setComputing(false)
-    }
-  }
+  const { mode, computing, failed } = useReliefOverlay(mapId)
 
   return (
     <section>
       <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-loam-400">{t('relief.panel_ui.overlay')}</h3>
       <ChoiceGroup
         value={mode}
-        onChange={(value) => void choose(value)}
+        onChange={(value) => void chooseReliefOverlay(editor.instance, mapId, grid, value)}
         choices={(['none', 'flow', 'shade'] as const).map((value) => ({ value, label: t(`relief.panel_ui.overlay_${value}`) }))}
       />
       {computing ? (
@@ -327,6 +304,7 @@ function MapOverlay({ overview }: { overview: ReliefOverview }) {
       ) : mode !== 'none' ? (
         <p className="mt-1 text-xs text-loam-500">{t(`relief.panel_ui.overlay_${mode}_legend`)}</p>
       ) : null}
+      <p className="mt-1 text-sm text-loam-400">{t('relief.panel_ui.overlay_also_in_layers')}</p>
     </section>
   )
 }

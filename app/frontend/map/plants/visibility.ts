@@ -12,17 +12,20 @@ export const PLANT_NUMBER_LAYERS = ['plant-numbers-disc', 'plant-numbers-text']
  * source; the plant crowns and names live in sources of their own, so they
  * follow the « plants » layer here. Plants are named either by their name
  * (or code) beside the point, or by their number inside it, never both.
+ * With the names hidden (« Noms sur la carte » in « Calques »), they show on
+ * hover only (map/drawing/LabelPeek); the numbers stay on their dots.
  */
 export function applyPlantsVisibility(
   map: Pick<MapLibreMap, 'getLayer' | 'setLayoutProperty'>,
   hiddenLayers: string[],
   labelStyle: PlantLabelStyle = 'name',
+  labelsHidden = false,
 ) {
   const hidden = hiddenLayers.includes('plants')
   const numbered = labelStyle === 'number'
   const set = (id: string, shown: boolean) => {
     if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', shown ? 'visible' : 'none')
   }
-  for (const id of PLANT_OVERLAY_LAYERS) set(id, !hidden && !(numbered && id === 'plant-labels-text'))
+  for (const id of PLANT_OVERLAY_LAYERS) set(id, !hidden && !((numbered || labelsHidden) && id === 'plant-labels-text'))
   for (const id of PLANT_NUMBER_LAYERS) set(id, !hidden && numbered)
 }

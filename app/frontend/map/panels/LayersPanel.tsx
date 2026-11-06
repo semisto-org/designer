@@ -6,6 +6,7 @@ import { t, translations } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { layerStore, opacityOf, useLayerState, type LayerState } from '@/map/data/store'
 import AerialViewsChoice from '@/drone/AerialViewsChoice'
+import ReliefOverlaySection from '@/map/data/ReliefOverlaySection'
 import { LayerLegend } from '@/components/legend/LayerLegend'
 import type { RegionLayerData } from '@/types'
 
@@ -75,6 +76,8 @@ export default function LayersPanel() {
       )}
 
       <AerialViewsChoice />
+
+      <ReliefOverlaySection />
 
       <section aria-labelledby="layers-overlays-title">
         <div className="mb-1 flex items-center justify-between gap-2">

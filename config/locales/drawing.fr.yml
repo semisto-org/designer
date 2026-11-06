@@ -409,6 +409,8 @@ fr:
         one: "%{count} photo"
         other: "%{count} photos"
       sensitive: "Réseaux : jamais exportés ni publiés sans ton accord."
+      labels: "Noms sur la carte"
+      labels_on_hover: "au survol"
       soil:
         bioindicators: "Bio-indicatrices"
         samples: "Points de prélèvement de sol"
