@@ -36,14 +36,72 @@ overlay = lambda do |key, name, group, order, service:, layers:, opacity:, posit
   }
 end
 
-photo = lambda do |key, name, service, position, description:, max_zoom:, default: false|
+# Aerial photos: every flight the SPW publishes, from 1971 to today, so a
+# map can be read through time (the « Couches » panel shows them on a
+# timeline). Since 2006 most flights also have a false colour infrared twin
+# (`infrared_of`). Summer flights of 2022 and 2025 cover only part of
+# Wallonia (`partial`: Terranova checks each map's place before offering
+# them). Service list checked on 2026-11-06 (rest/services/IMAGERIE).
+photo = lambda do |key, name, service, position, description:, max_zoom:, default: false, year: nil, vintage: nil,
+                   season: nil, infrared_of: nil, partial: false|
   options = { "format" => "image/jpeg", "order" => position }
   options["default"] = true if default
+  options["year"] = year if year
+  options["vintage"] = vintage if vintage
+  options["season"] = season if season
+  options["infrared_of"] = infrared_of if infrared_of
+  options["partial"] = true if partial
   {
     key:, name:, group_name: "photos", category: "base", kind: "wms", url: wms.(service), layers: "0",
     identify_url: nil, attribution: spw_attribution, opacity: 1.0, position:, min_zoom: nil, max_zoom:,
     proxied: true, enabled: true, description:, options:
   }
+end
+
+infrared_note = "En infrarouge fausses couleurs : la végétation en pleine santé ressort en rouge vif, l'eau et les sols " \
+                "humides en sombre. Utile pour repérer les zones humides et les plantes qui souffrent."
+season_note = {
+  "spring" => "Arbres à peine en feuilles : on voit mieux le sol, les fossés et les haies.",
+  "summer" => "Arbres en feuilles : l'ombre qu'ils portent, les prés qui restent verts ou jaunissent."
+}
+partial_note = "Ce vol ne couvre qu'une partie de la Wallonie."
+
+# [key, service, short label, year, season, infrared twin?, partial?, max zoom, description]
+flights = [
+  [ "ortho_1971", "ORTHO_1971", "1971", 1971, nil, false, false, 18,
+    "Photo aérienne de 1971, en noir et blanc : haies, vergers et chemins disparus." ],
+  [ "ortho_1978", "ORTHO_1978_1990", "1978-1990", 1978, nil, false, false, 18,
+    "Photos aériennes de 1978 à 1990 : le terrain il y a une quarantaine d'années." ],
+  [ "ortho_1994", "ORTHO_1994_2000", "1994-2000", 1994, nil, false, false, 18,
+    "Photos aériennes de 1994 à 2000 : ce qui a changé en une génération." ],
+  [ "ortho_2001", "ORTHO_2001_2003", "2001-2003", 2001, nil, false, false, 18,
+    "Photos aériennes de 2001 à 2003 : le terrain au tournant du siècle." ],
+  [ "ortho_2006", "ORTHO_2006_2007", "2006-2007", 2006, nil, true, false, 18, nil ],
+  [ "ortho_2009", "ORTHO_2009_2010", "2009-2010", 2009, nil, true, false, 18, nil ],
+  [ "ortho_2012", "ORTHO_2012_2013", "2012-2013", 2012, nil, true, false, 19, nil ],
+  *(2015..2021).map { |year| [ "ortho_#{year}", "ORTHO_#{year}", year.to_s, year, nil, true, false, 19, nil ] },
+  [ "ortho_2022_printemps", "ORTHO_2022_PRINTEMPS", "printemps 2022", 2022, "spring", true, false, 19, nil ],
+  [ "ortho_2022_ete", "ORTHO_2022_ETE", "été 2022", 2022, "summer", true, true, 19, nil ],
+  [ "ortho_2023_ete", "ORTHO_2023_ETE", "été 2023", 2023, "summer", true, false, 19, nil ],
+  [ "ortho_2024", "ORTHO_2024", "2024", 2024, nil, true, false, 19, nil ],
+  [ "ortho_2025_printemps", "ORTHO_2025_PRINTEMPS", "printemps 2025", 2025, "spring", true, false, 19, nil ],
+  [ "ortho_2025_ete", "ORTHO_2025_ETE", "été 2025", 2025, "summer", true, true, 19, nil ],
+  [ "ortho_2026", "ORTHO_2026_PRINTEMPS", "printemps 2026", 2026, "spring", true, false, 19,
+    "Photo aérienne du printemps 2026 : le terrain tel qu'il est aujourd'hui." ]
+]
+
+photos = flights.each_with_index.flat_map do |(key, service, label, year, season, infrared, partial, max_zoom, description), index|
+  position = 20 + index
+  of_label = { "spring" => "du printemps #{year}", "summer" => "de l'été #{year}" }.fetch(season, "de #{label}")
+  description ||= [ "Photo aérienne #{of_label}.", season_note[season] ].compact.join(" ")
+  description = [ description, partial_note ].join(" ") if partial
+  name = season ? "Photo #{of_label}" : "Photo #{label}"
+  rgb = photo.(key, name, "IMAGERIE/#{service}", position, max_zoom:, default: key == "ortho_2026",
+               year:, vintage: label, season:, partial:, description:)
+  next [ rgb ] unless infrared
+
+  [ rgb, photo.("#{key}_ir", "#{name} en infrarouge", "IMAGERIE/#{service}_IR", position, max_zoom:,
+                year:, vintage: label, season:, partial:, infrared_of: key, description: infrared_note) ]
 end
 
 catalogue = [
@@ -66,12 +124,7 @@ catalogue = [
       }
     }
   },
-  photo.("ortho_2026", "Photo 2026", "IMAGERIE/ORTHO_2026_PRINTEMPS", 20, max_zoom: 19, default: true,
-         description: "Photo aérienne du printemps 2026 : le terrain tel qu'il est aujourd'hui."),
-  photo.("ortho_1994", "Photo 1994-2000", "IMAGERIE/ORTHO_1994_2000", 30, max_zoom: 18,
-         description: "Photos aériennes de 1994 à 2000 : ce qui a changé en une génération."),
-  photo.("ortho_1971", "Photo 1971", "IMAGERIE/ORTHO_1971", 40, max_zoom: 18,
-         description: "Photo aérienne de 1971, en noir et blanc : haies, vergers et chemins disparus."),
+  *photos,
 
   # -- Relief, sol et eau ------------------------------------------------
   overlay.("courbes", "Courbes de niveau", "terrain", 1,

@@ -118,6 +118,8 @@ jobs:
   test_shard:
     name: test (shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
+    # A shard takes about 3 minutes: past 30, something hangs.
+    timeout-minutes: 30
     # Two runners share the Ruby test files, so the suite (the longest job,
     # which production deploys wait for) takes about half the time.
     strategy:
@@ -135,8 +137,24 @@ jobs:
             --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD=postgres \
             postgis/postgis:16-3.4 > "$RUNNER_TEMP/postgis.log" 2>&1 &
 
+      # An Ubuntu mirror sometimes stalls mid-download and apt waits for it
+      # forever (shards stuck over an hour on 2026-11-06): each attempt is cut
+      # after 4 minutes and tried again, and the step gives up after 15.
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev ghostscript ffmpeg gdal-bin libreoffice-writer-nogui fonts-crosextra-carlito
+        timeout-minutes: 15
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt_options="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+          for attempt in 1 2 3; do
+            sudo -E timeout 240 apt-get $apt_options update &&
+              sudo -E timeout 240 apt-get $apt_options install --no-install-recommends -y libpq-dev libvips libheif-plugin-libde265 libgeos-dev ghostscript ffmpeg gdal-bin libreoffice-writer-nogui fonts-crosextra-carlito &&
+              exit 0
+            echo "apt attempt $attempt failed or stalled, retrying"
+            sudo dpkg --configure -a || true
+            sleep 5
+          done
+          exit 1
 
       # Packs imported drone views (AerialViews::Tiler), as in the Dockerfile.
       - name: Install pmtiles

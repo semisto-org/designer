@@ -27,11 +27,48 @@ tile = lambda do |key, name, group, layer, position:, description:, order:, cate
   }
 end
 
+# The IGN mosaics of each period, on the timeline of the « Couches » panel.
+# The yearly layers (ORTHOPHOTOS2021…) each cover only the départements
+# flown that year: the mosaics cover the whole country. The historical
+# ones (before 2000) have gaps (`partial`, transparent PNG outside the
+# scanned flights): Terranova checks each map's place before offering them.
+# Checked on 2026-11-06 from the WMTS GetCapabilities.
+periods = [
+  [ "1950_1965", "ORTHOIMAGERY.ORTHOPHOTOS.1950-1965", 1950, true, 18,
+    "Photos aériennes de 1950 à 1965, en noir et blanc : bocages, vergers et chemins d'il y a soixante-dix ans." ],
+  [ "1965_1980", "ORTHOIMAGERY.ORTHOPHOTOS.1965-1980", 1965, true, 18, nil ],
+  [ "1980_1995", "ORTHOIMAGERY.ORTHOPHOTOS.1980-1995", 1980, true, 18, nil ],
+  [ "2000_2005", "ORTHOIMAGERY.ORTHOPHOTOS2000-2005", 2000, false, 18, nil ],
+  [ "2006_2010", "ORTHOIMAGERY.ORTHOPHOTOS2006-2010", 2006, false, 18, nil ],
+  [ "2011_2015", "ORTHOIMAGERY.ORTHOPHOTOS2011-2015", 2011, false, 18, nil ],
+  [ "2016_2020", "ORTHOIMAGERY.ORTHOPHOTOS2016-2020", 2016, false, 18, nil ],
+  [ "2021_2023", "ORTHOIMAGERY.ORTHOPHOTOS2021-2023", 2021, false, 19, nil ]
+]
+photos = periods.each_with_index.map do |(suffix, layer, year, partial, max_zoom, description), index|
+  label = suffix.tr("_", "-")
+  options = { "year" => year, "vintage" => label }
+  options["partial"] = true if partial
+  description ||= "Photos aériennes de #{label.sub("-", " à ")} : comparer avec aujourd'hui ce qui a poussé, disparu ou changé."
+  description += " Ces photos ne couvrent pas toute la France." if partial
+  # The historical mosaics only have the style that turns their black
+  # margins transparent.
+  tile.("ortho_#{suffix}", "Photo #{label}", "photos", layer, category: "base", format: partial ? "image/png" : "image/jpeg",
+        style: partial ? "BDORTHOHISTORIQUE" : "normal",
+        opacity: 1.0, position: 21 + index, order: 21 + index, max_zoom:, options:, description:)
+end
+
 catalogue = [
   # -- Base maps ---------------------------------------------------------
-  tile.("ortho", "Photo aérienne", "photos", "ORTHOIMAGERY.ORTHOPHOTOS", category: "base", format: "image/jpeg",
-        opacity: 1.0, position: 20, order: 20, max_zoom: 19, options: { "default" => true },
+  *photos,
+  tile.("ortho", "Photo aérienne la plus récente", "photos", "ORTHOIMAGERY.ORTHOPHOTOS", category: "base", format: "image/jpeg",
+        opacity: 1.0, position: 30, order: 30, max_zoom: 19,
+        options: { "default" => true, "latest" => true, "vintage" => "la plus récente" },
         description: "La photo aérienne la plus récente de l'IGN : le terrain tel qu'il est aujourd'hui."),
+  tile.("ortho_irc", "Photo la plus récente en infrarouge", "photos", "ORTHOIMAGERY.ORTHOPHOTOS.IRC", category: "base",
+        format: "image/jpeg", opacity: 1.0, position: 30, order: 30, max_zoom: 19,
+        options: { "infrared_of" => "ortho", "latest" => true, "vintage" => "la plus récente" },
+        description: "En infrarouge fausses couleurs : la végétation en pleine santé ressort en rouge vif, l'eau et les sols " \
+                     "humides en sombre. Utile pour repérer les zones humides et les plantes qui souffrent."),
   tile.("plan_ign", "Plan IGN", "plan", "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", category: "base",
         opacity: 1.0, position: 15, order: 15, max_zoom: 19,
         description: "Le plan de l'IGN : routes, chemins, bâtiments, cours d'eau et lieux-dits."),
