@@ -57,8 +57,14 @@ export type PresentationStep = {
   shown: boolean
   /** The view was captured on this map (a template's default view is not). */
   captured: boolean
+  /** A text slide, shown large over the view: what the audience reads. */
+  slide?: { body: string }
+  /** A slide an AI drafted (MCP), waiting for an editor; `new`: the step itself is the draft. */
+  proposal?: SlideProposal
   view: PresentationView
 }
+
+export type SlideProposal = { title?: string; body: string; rationale?: string; new?: boolean; by?: string; at?: string }
 
 export type Presentation = {
   id: number

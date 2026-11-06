@@ -36,6 +36,7 @@ let state: State = {
 }
 const listeners = new Set<() => void>()
 let queue: Promise<unknown> = Promise.resolve()
+let saving = 0
 
 function set(patch: Partial<State>) {
   state = { ...state, ...patch }
@@ -63,8 +64,17 @@ function receive(data: PresentationsPayload) {
 }
 
 /** Loads the map's presentation once per map. */
-export async function loadPresentation(mapId: number) {
-  if (state.mapId === mapId && state.loaded) return
+export async function loadPresentation(mapId: number, { refresh = false } = {}) {
+  if (state.mapId === mapId && state.loaded) {
+    // A quiet refresh, unless a save is on its way or someone is presenting.
+    if (refresh && !state.presenting && !saving) {
+      try {
+        const data = await api<PresentationsPayload>(base(mapId))
+        if (state.mapId === mapId && !saving) receive(data)
+      } catch { /* keep what is on screen */ }
+    }
+    return
+  }
   state = { ...state, mapId, loaded: false, presentation: null, currentId: null }
   try {
     receive(await api<PresentationsPayload>(base(mapId)))
@@ -92,9 +102,13 @@ export function saveSteps(steps: PresentationStep[], onError: (message: string, 
   const { mapId, presentation } = state
   if (mapId == null || !presentation) return
   set({ presentation: { ...presentation, steps } })
+  saving += 1
   queue = queue.then(async () => {
     const current = state.presentation
-    if (!current || current.id !== presentation.id) return
+    if (!current || current.id !== presentation.id) {
+      saving -= 1
+      return
+    }
     try {
       const data = await api<PresentationsPayload>(`${base(mapId)}/${current.id}`, {
         method: 'PATCH',
@@ -110,6 +124,8 @@ export function saveSteps(steps: PresentationStep[], onError: (message: string, 
       } else {
         onError(error instanceof Error ? error.message : '', false)
       }
+    } finally {
+      saving -= 1
     }
   })
 }

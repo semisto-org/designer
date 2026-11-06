@@ -8,6 +8,7 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
 import { PresentationBar } from './PresentationBar'
+import { SlideView } from './SlideView'
 import { loadPresentation, markApplied, presentationStore, requestStep, restored, saveSteps, usePresentation } from './store'
 import { applyView, captureView } from './view'
 
@@ -44,11 +45,12 @@ export default function PresentationOverlay() {
     if (state.token === state.appliedToken) return
     const step = state.presentation?.steps.find((s) => s.id === state.currentId)
     if (!step) return markApplied()
-    if (step.view.relief) {
+    if (step.view.relief && !step.slide) {
       router.visit(`/maps/${editor.map.id}/relief`)
       return
     }
-    applyView(editor, step.view)
+    // A slide shows its place behind it; while preparing, the steps stay open.
+    applyView(editor, step.slide && !state.presenting ? { ...step.view, panel: editor.activePanel ?? undefined } : step.view)
     markApplied()
     // The editor object changes on every render; the request is what counts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,7 +58,18 @@ export default function PresentationOverlay() {
 
   const step = presentation?.steps.find((s) => s.id === currentId) ?? null
 
-  if (presenting) return <PresentationBar />
+  const place = editor.map.name
+  if (presenting) {
+    return (
+      <>
+        {step?.slide && <SlideView step={step} place={place} />}
+        <PresentationBar />
+      </>
+    )
+  }
+
+  // Preparing: a slide opens as it will be shown, until closed.
+  if (step?.slide) return <SlideView step={step} place={place} onClose={() => requestStep(null)} />
 
   // Preparing: a step was shown from the panel, which may have given way to the step's own panel.
   if (!step || editor.activePanel === 'present') return null
