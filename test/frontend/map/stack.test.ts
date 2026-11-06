@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { FEATURE_STACK, stackMoves } from '../../../app/frontend/map/layers/stack.ts'
+import { FEATURE_STACK, mustRaise, stackMoves } from '../../../app/frontend/map/layers/stack.ts'
 
 function apply(order: string[], moves: { id: string; before: string | undefined }[]): string[] {
   const out = [...order]
@@ -47,4 +47,20 @@ test('nothing moves when the order is right', () => {
   const order = apply(drifted, stackMoves(drifted))
   assert.deepEqual(stackMoves(order), [])
   assert.deepEqual(stackMoves(['osm']), [])
+})
+
+test('mustRaise: nothing to move once the pastilles are over the stack', () => {
+  const ids = ['plant-numbers-disc', 'plant-numbers-text']
+  assert.equal(mustRaise(['features-point', ...ids], ids), false)
+  // Layers outside the stack (photos, selection…) may sit above them.
+  assert.equal(mustRaise(['features-point', ...ids, 'photos-point'], ids), false)
+  // Not added yet: nothing to raise.
+  assert.equal(mustRaise(['features-point'], ids), false)
+})
+
+test('mustRaise: a stack layer drawn later covers the pastilles', () => {
+  const ids = ['plant-numbers-disc', 'plant-numbers-text']
+  assert.equal(mustRaise([...ids, 'features-point'], ids), true)
+  assert.equal(mustRaise(['plant-numbers-disc', 'features-label', 'plant-numbers-text'], ids), true)
+  assert.equal(mustRaise(['plant-numbers-text', 'plant-numbers-disc'], ids), true)
 })

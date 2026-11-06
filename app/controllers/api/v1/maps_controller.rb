@@ -1,5 +1,5 @@
 # The phone app's map list and, for one map, everything it keeps offline:
-# the map, its layer catalogue, features, photos and planting.
+# the map, its layer catalogue, features, photos, planting and soil sampling points.
 module Api
   module V1
     class MapsController < BaseController
@@ -26,6 +26,8 @@ module Api
           features: @map.features.where.not(status: "rejected").map(&:as_geojson),
           photos: @map.photos.includes(:uploaded_by, image_attachment: :blob).chronological.limit(2000).map(&:as_inertia),
           planting: PlantingState.new(@map),
+          # Soil sampling points, to photograph each one in the field (its photos are in `photos`).
+          soilSamples: @map.soil_samples.ordered.map { soil_sample_json(_1) },
           # Dated drone views, newest first, to lay over the base map (style ?drone=id).
           aerialViews: @map.aerial_views.ready.newest_first.map { aerial_view_json(_1) },
           # « Ta première heure »: the three missions outside, as the server last read them.
@@ -64,6 +66,11 @@ module Api
       end
 
       private
+        def soil_sample_json(sample)
+          { id: sample.id, label: sample.label, lng: sample.lng, lat: sample.lat, status: sample.status,
+            depthFromCm: sample.depth_from_cm, depthToCm: sample.depth_to_cm, sampledOn: sample.sampled_on&.iso8601 }
+        end
+
         def aerial_view_json(view)
           { id: view.id, name: view.name, capturedOn: view.captured_on.iso8601, attribution: view.attribution,
             minZoom: view.min_zoom, maxZoom: view.max_zoom, bounds: view.bounds }

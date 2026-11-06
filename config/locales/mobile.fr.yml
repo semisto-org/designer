@@ -497,6 +497,22 @@ fr:
         no_reading: "Aucune de ces plantes n'est dans la liste des bio-indicatrices : le relevé ne dit encore rien du sol."
         next: "Plus tu notes de plantes du même coin, plus la lecture est sûre. Tout est aussi dans le panneau Sol du site."
         done: "Terminer le relevé"
+    soil:
+      title: "Points de sol"
+      always: "Une photo du trou, toujours"
+      intro: "Le trou, la carotte posée au sol, le profil contre un mètre : la couleur, les cailloux, les racines et les traces d'eau s'y lisent des années plus tard, et ton IA sait les lire. Le point le plus proche vient d'abord."
+      none: "Cette carte n'a pas encore de point de prélèvement. Place-les sur le site, dans le panneau Sol."
+      status:
+        planned: "À prélever"
+        sampled: "Prélevé"
+      sampled_on: "Prélevé le %{date}"
+      depth: "%{from} à %{to} cm"
+      no_photo: "Pas encore de photo."
+      pending:
+        one: "1 photo attend d'être envoyée."
+        other: "%{count} photos attendent d'être envoyées."
+      add_photo: "Photographier ce point"
+      open_photo: "Ouvrir la photo du %{date}"
     record:
       title: "Relever"
       point: "Un point"
@@ -505,6 +521,11 @@ fr:
       bioindicator: "Une plante bio-indicatrice"
       bioindicator_intro: "Photographie les plantes sauvages d'un coin du terrain : ton IA les reconnaît et dit ce qu'elles racontent du sol. Pour une seule plante, Pl@ntNet aussi."
       bioindicator_button: "Photographier des plantes"
+      soil: "Points de sol"
+      soil_intro:
+        one: "Le point de prélèvement placé sur le site : photographie le trou et la carotte, la photo lui est liée."
+        other: "%{count} points de prélèvement placés sur le site : photographie le trou et la carotte de chacun, la photo lui est liée."
+      soil_button: "Photographier les points"
       trace: "Une trace"
       trace_intro: "Marche le long d'une haie, d'un chemin ou d'une limite. La trace continue écran éteint."
       trace_start: "Commencer la trace"

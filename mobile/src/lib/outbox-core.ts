@@ -23,7 +23,7 @@ export type NewFeature = {
 export type Op = Base & (
   | { type: 'createFeature'; tempId: number; feature: NewFeature }
   | { type: 'updateFeature'; featureId: FeatureRef; lockVersion: number; changes: FeatureChanges }
-  | { type: 'uploadPhoto'; file: string; lng: number | null; lat: number | null; takenAt: string | null; featureId: FeatureRef | null; caption?: string | null; bioindicatorStatus?: 'to_analyze'; heading?: number | null; retakeOf?: number | null }
+  | { type: 'uploadPhoto'; file: string; lng: number | null; lat: number | null; takenAt: string | null; featureId: FeatureRef | null; caption?: string | null; bioindicatorStatus?: 'to_analyze'; heading?: number | null; retakeOf?: number | null; soilSampleId?: number | null }
   | { type: 'createObservation'; featureId: FeatureRef; observedOn: string; kind?: ObservationKind; survival: Survival | null; vigor: number | null; note: string | null; photo: string | null }
   | { type: 'createHarvest'; featureId: FeatureRef; harvest: NewHarvest }
   | { type: 'createStorageReading'; featureId: FeatureRef; reading: NewStorageReading }

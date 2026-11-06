@@ -5,7 +5,7 @@ module Mcp
     module SoilHelpers
       private
         def find_sample!(map, id)
-          map.soil_samples.with_attached_lab_reports.find_by(id:) or raise ToolError, t("errors.soil_sample_not_found", id:)
+          map.soil_samples.with_attached_lab_reports.with_photos.find_by(id:) or raise ToolError, t("errors.soil_sample_not_found", id:)
         end
 
         def sample_json(sample)
@@ -16,6 +16,8 @@ module Mcp
             location: sample.location && [ sample.lng.round(Geo::PRECISION), sample.lat.round(Geo::PRECISION) ],
             results: sample.results.presence, other_results: sample.other_results.presence, notes: sample.notes,
             reports: sample.lab_reports.map { |report| { report_id: report.id, filename: report.filename.to_s, byte_size: report.byte_size } },
+            # The photos of the point (hole, core, profile), to look at with get_photo.
+            photos: sample.photos.map { |photo| { photo_id: photo.id, caption: photo.caption, taken_at: photo.taken_at&.iso8601, kind: photo.kind }.compact },
             draft_pending: sample.draft.pending? || nil
           }.compact
         end

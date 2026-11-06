@@ -715,6 +715,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_130000) do
     t.string "kind", default: "photo", null: false
     t.bigint "retake_of_id"
     t.bigint "drone_mission_id"
+    t.bigint "soil_sample_id"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["drone_mission_id"], name: "index_map_photos_on_drone_mission_id"
@@ -726,6 +727,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_130000) do
     t.index ["map_id"], name: "index_map_photos_on_map_id"
     t.index ["photo_album_id"], name: "index_map_photos_on_photo_album_id"
     t.index ["retake_of_id"], name: "index_map_photos_on_retake_of_id"
+    t.index ["soil_sample_id"], name: "index_map_photos_on_soil_sample_id"
     t.index ["uploaded_by_id"], name: "index_map_photos_on_uploaded_by_id"
   end
 
@@ -1929,6 +1931,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_130000) do
   add_foreign_key "map_photos", "map_photos", column: "retake_of_id", on_delete: :nullify
   add_foreign_key "map_photos", "maps"
   add_foreign_key "map_photos", "photo_albums", on_delete: :nullify
+  add_foreign_key "map_photos", "soil_samples", on_delete: :nullify
   add_foreign_key "map_photos", "users", column: "uploaded_by_id", on_delete: :nullify
   add_foreign_key "map_presentations", "maps", on_delete: :cascade
   add_foreign_key "map_publications", "maps"

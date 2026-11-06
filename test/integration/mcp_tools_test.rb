@@ -3,11 +3,13 @@ require_relative "../support/map_data_test_helper"
 require "test_helpers/mcp_test_helper"
 require "test_helpers/synthetic_terrain_helper"
 require "test_helpers/soil_photos_helper"
+require "test_helpers/photo_archive_test_helper"
 
 class McpToolsTest < ActionDispatch::IntegrationTest
   include MapDataTestHelper
   include SyntheticTerrainHelper
   include SoilPhotosHelper
+  include PhotoArchiveTestHelper
 
   setup do
     @map = maps(:ahinvaux)
@@ -364,6 +366,58 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal [ [ "sols", true ] ], data["layers"].map { |l| [ l["key"], l["identifiable"] ] }
     assert_equal "Ravin", data["layers"].sole.dig("legend", "items", 0, "label")
     assert_equal "wallonia", data.dig("region", "key")
+  end
+
+  test "get_region_layers lists the aerial photos through time" do
+    seed_wallonia_photos
+    stub_photo("ORTHO_2022_ETE", jpeg([ 255, 255, 255 ]))
+    data, error = call_tool(@viewer, "get_region_layers", { map_id: @map.id })
+    refute error
+    photos = data["aerial_photos"]
+    assert_equal %w[ortho_1971 ortho_2022_ete ortho_2026], photos.pluck("key")
+    assert_equal false, photos.second["covers_map"]
+    assert_equal "ortho_2026_ir", photos.last["infrared_key"]
+    assert_equal "ortho_2026", data["layers"].find { |l| l["key"] == "ortho_2026_ir" }["infrared_of"]
+  end
+
+  test "get_aerial_photo shows the terrain in one year, its outline in yellow" do
+    seed_wallonia_photos
+    stub_photo("ORTHO_1971", jpeg([ 90, 90, 90 ], size: 256))
+    body = mcp_request(@viewer, "tools/call", { name: "get_aerial_photo", arguments: { map_id: @map.id, photo: "ortho_1971" } })
+    result = body.fetch("result")
+    refute result["isError"], result.dig("content", 0, "text")
+    data = result["structuredContent"]
+    assert_equal [ "ortho_1971", 1971, false ], data.values_at("photo", "year", "infrared")
+    assert_equal %w[ortho_1971 ortho_2022_ete ortho_2026], data["other_photos"].pluck("key")
+    assert data["outline"]
+    image = result["content"].find { |c| c["type"] == "image" }
+    pixels = Vips::Image.new_from_buffer(Base64.decode64(image["data"]), "")
+    assert_operator pixels.width, :<=, 1024
+    assert_operator pixels.extract_band(0).max, :>, 200, "the yellow outline"
+    assert_requested :get, /ORTHO_1971\/MapServer\/WMSServer.*WIDTH=/
+  end
+
+  test "get_aerial_photo opens on the default photo, gives its infrared twin, refuses an unknown one" do
+    seed_wallonia_photos
+    stub_photo("ORTHO_2026_PRINTEMPS_IR", jpeg([ 200, 40, 40 ], size: 256))
+    data, error = call_tool(@viewer, "get_aerial_photo", { map_id: @map.id, infrared: true })
+    refute error
+    assert_equal [ "ortho_2026_ir", true ], data.values_at("photo", "infrared")
+
+    text, error = call_tool(@viewer, "get_aerial_photo", { map_id: @map.id, photo: "ortho_1971", infrared: true })
+    assert error
+    assert_match(/infrarouge/, text)
+    text, error = call_tool(@viewer, "get_aerial_photo", { map_id: @map.id, photo: "ortho_1850" })
+    assert error
+    assert_match(/ortho_1971/, text)
+  end
+
+  test "get_aerial_photo says when the region's service is down" do
+    seed_wallonia_photos
+    stub_request(:get, /ORTHO_2026_PRINTEMPS\/MapServer/).to_return(status: 503)
+    text, error = call_tool(@viewer, "get_aerial_photo", { map_id: @map.id })
+    assert error
+    assert_match(/ne répond pas/, text)
   end
 
   test "identify_at_point asks the region layers, near the terrain only" do

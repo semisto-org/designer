@@ -52,6 +52,8 @@ export type Photo = {
   lng: number | null
   lat: number | null
   featureId: number | null
+  /** The soil sampling point it was taken at (older bundles have none). */
+  soilSampleId?: number | null
   uploadedBy: string | null
   /** Where the camera faced, 0 = north, clockwise. */
   heading?: number | null
@@ -84,11 +86,25 @@ export type MapBundle = {
   features: MapFeature[]
   photos: Photo[]
   planting: Planting
+  /** Soil sampling points placed on the website, to photograph in the field (older bundles have none). */
+  soilSamples?: SoilSample[]
   /** Dated drone views of the map, newest first (older bundles have none). */
   aerialViews?: AerialView[]
   /** « Ta première heure »: the three missions outside (older bundles have none). */
   firstHour?: FirstHour | null
   syncedAt: string
+}
+
+/** A soil sampling point of the map (Sol panel on the website). */
+export type SoilSample = {
+  id: number
+  label: string
+  lng: number | null
+  lat: number | null
+  status: 'planned' | 'sampled'
+  depthFromCm: number
+  depthToCm: number
+  sampledOn: string | null
 }
 
 export type FirstHourMission = { key: 'water' | 'season' | 'living'; done: boolean; count: number; target?: number }

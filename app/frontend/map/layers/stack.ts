@@ -45,6 +45,21 @@ export function stackMoves(order: string[]): { id: string; before: string | unde
   return present.map((id) => ({ id, before }))
 }
 
+/**
+ * Whether `ids` (layers meant to sit over the stack, in that order) must be
+ * raised: true when one of them is missing from its place right after the
+ * previous one, or when a stack layer lies above them. Layers outside the
+ * stack may stay above. False when nothing needs to move, so a caller on
+ * every `styledata` moves nothing, and does not cause the next one.
+ */
+export function mustRaise(order: string[], ids: string[]): boolean {
+  const positions = ids.map((id) => order.indexOf(id))
+  if (positions.some((position) => position < 0)) return false
+  if (positions.some((position, i) => i > 0 && position !== positions[i - 1] + 1)) return true
+  const stack = new Set(FEATURE_STACK)
+  return order.slice(positions[positions.length - 1] + 1).some((id) => stack.has(id))
+}
+
 /** Puts the feature layers back in reading order (see FEATURE_STACK). */
 export function stackFeatureLayers(map: MapLibreMap) {
   if (!map.getStyle()) return
