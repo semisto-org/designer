@@ -33,6 +33,15 @@ fr:
       group_count: "%{on} / %{total}"
       identify_hint: "Touche la carte pour lire les données des couches affichées."
       empty: "Aucune couche de données n'est disponible pour cette région."
+      # Computed from this terrain's own relief, the same grid as the 3D view (ReliefOverlaySection).
+      relief:
+        title: "Le relief de ton terrain"
+        flow: "Axes d'écoulement"
+        flow_description: "Où la pluie se rassemble et file, calculé sur le relief de ton terrain. Plus le bleu est foncé, plus l'eau drainée est abondante ; bleu clair : les cuvettes où elle stagne. À vérifier sous la prochaine averse."
+        shade: "Ombrage du relief"
+        shade_description: "Les creux et les bosses, éclairés du nord-ouest comme sur une carte topographique."
+        not_imported: "Importe le relief de ton terrain pour voir ici ses axes d'écoulement, comme dans la vue 3D."
+        open_relief: "Ouvrir « Eau et relief »"
     legend:
       title: "Légende"
       show_all: "Voir les %{count} classes"

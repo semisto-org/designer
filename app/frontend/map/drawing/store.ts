@@ -19,6 +19,8 @@ export type DrawingState = {
   hiddenStrata: string[]
   /** Markers of the « Sol » module hidden here: `bioindicators`, `samples`. */
   hiddenSoil: string[]
+  /** Names written on the map (plants, zones, elements) hidden: they show on hover only. */
+  labelsHidden: boolean
   tool: DrawingTool
   shapeEditId: number | null
   /** Where the edit was asked from, and goes back to once done: a plant's card or the inspector. */
@@ -29,7 +31,7 @@ export type DrawingState = {
   version: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', version: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], labelsHidden: false, tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', version: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -53,6 +55,15 @@ export function useDrawingState<T>(select: (s: DrawingState) => T): T {
 type HiddenList = 'layers' | 'kinds' | 'strata' | 'soil'
 const storageKey = (mapId: number, list: HiddenList = 'layers') => `designer:map:${mapId}:hidden-${list}`
 const versionKey = (mapId: number) => `designer:map:${mapId}:version`
+const labelsKey = (mapId: number) => `designer:map:${mapId}:labels-hidden`
+
+function readLabelsHidden(mapId: number): boolean {
+  try {
+    return window.localStorage.getItem(labelsKey(mapId)) === '1'
+  } catch {
+    return false
+  }
+}
 
 function readList(mapId: number, list: HiddenList): string[] {
   try {
@@ -84,7 +95,7 @@ export function initDrawingState(mapId: number) {
   }
   drawingStore.set({
     mapId, hiddenLayers: hidden, hiddenKinds: readList(mapId, 'kinds'), hiddenStrata: readList(mapId, 'strata'), hiddenSoil: readList(mapId, 'soil'),
-    tool: null, shapeEditId: null, version,
+    labelsHidden: readLabelsHidden(mapId), tool: null, shapeEditId: null, version,
   })
 }
 
@@ -120,6 +131,18 @@ export function setHiddenSoil(soil: string[]) {
   writeList('soil', soil)
 }
 
+/** Hides the names written on the map (they then show on hover only), or shows them again; remembered per map. */
+export function setLabelsHidden(labelsHidden: boolean) {
+  drawingStore.set({ labelsHidden })
+  if (state.mapId == null) return
+  try {
+    if (labelsHidden) window.localStorage.setItem(labelsKey(state.mapId), '1')
+    else window.localStorage.removeItem(labelsKey(state.mapId))
+  } catch {
+    // Private mode or blocked storage: the choice lasts for this visit only.
+  }
+}
+
 /** Adds or removes one value of a hidden list. */
 export const toggled = (list: string[], value: string) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
 
@@ -130,8 +153,9 @@ export function revealForDrawing(layer: string, kind?: string) {
   if (kind && hiddenKinds.includes(kind)) setHiddenKinds(hiddenKinds.filter((k) => k !== kind))
 }
 
-/** « Tout afficher »: every layer, kind, strata and soil marker again. */
+/** « Tout afficher »: every layer, kind, strata, soil marker and name again. */
 export function showEverything() {
+  setLabelsHidden(false)
   setHiddenLayers([])
   setHiddenKinds([])
   setHiddenStrata([])

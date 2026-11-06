@@ -25,7 +25,7 @@ En France, le relief vient de l'IGN (RGE ALTI, au mètre, sol nu), avec la photo
 
 Une fois le relief prêt, le panneau affiche l'**Altitude** (du point le plus bas au plus haut), le **Dénivelé**, la **Pente moyenne** et les **Pentes les plus fortes** : un dixième du terrain est plus pentu que cette valeur.
 
-Sous **Sur la carte**, choisis **Écoulement** pour voir en bleu les axes où l'eau se rassemble et, en bleu clair, les cuvettes où elle stagne. **Ombrage** fait ressortir le modelé du terrain.
+Sous **Sur la carte**, choisis **Écoulement** pour voir en bleu les axes où l'eau se rassemble et, en bleu clair, les cuvettes où elle stagne. **Ombrage** fait ressortir le modelé du terrain. Les mêmes choix sont dans le panneau **Couches**, sous **Le relief de ton terrain** : **Axes d'écoulement** et **Ombrage du relief**. Ce sont les axes de la vue 3D, posés sur la carte à plat, pour dessiner une baissière ou une mare juste là où l'eau passe. Va ensuite les vérifier sous une vraie averse.
 
 ## Ce que ces calculs ne savent pas
 

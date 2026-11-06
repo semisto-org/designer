@@ -74,6 +74,7 @@ fr:
       warnings: "À savoir"
       overlay_shade_legend: "Ombrage du relief, éclairé du nord-ouest comme sur une carte topographique."
       overlay_failed: "La surimpression n'a pas pu être calculée."
+      overlay_also_in_layers: "Aussi dans « Couches », sous « Le relief de ton terrain »."
     page:
       title: "Relief et eau"
       back: "Retour à la carte"
