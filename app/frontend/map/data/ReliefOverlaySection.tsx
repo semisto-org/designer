@@ -73,7 +73,14 @@ export default function ReliefOverlaySection() {
                           {t('relief.panel_ui.overlay_loading')}
                         </span>
                       ) : (
-                        t(`map_data.layers.relief.${mode}_description`)
+                        <>
+                          {t(`map_data.layers.relief.${mode}_description`)}
+                          {on && mode === 'flow' && (
+                            <span className="mt-1 block text-loam-600">
+                              {t(state.dug ? 'map_data.layers.relief.flow_dug' : 'map_data.layers.relief.flow_as_is')}
+                            </span>
+                          )}
+                        </>
                       )}
                     </p>
                   </div>

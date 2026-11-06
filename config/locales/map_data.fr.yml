@@ -38,6 +38,8 @@ fr:
         title: "Le relief de ton terrain"
         flow: "Axes d'écoulement"
         flow_description: "Où la pluie se rassemble et file, calculé sur le relief de ton terrain. Plus le bleu est foncé, plus l'eau drainée est abondante ; bleu clair : les cuvettes où elle stagne. À vérifier sous la prochaine averse."
+        flow_dug: "Avec les ouvrages de l'eau de ton projet creusés dans le relief (mares, baissières, seuils…), comme dans la vue 3D. Passe en « Existant » pour voir le terrain tel qu'il est."
+        flow_as_is: "Le terrain tel qu'il est aujourd'hui. En « Projet », les ouvrages de l'eau que tu dessines détournent ces axes, comme dans la vue 3D."
         shade: "Ombrage du relief"
         shade_description: "Les creux et les bosses, éclairés du nord-ouest comme sur une carte topographique."
         not_imported: "Importe le relief de ton terrain pour voir ici ses axes d'écoulement, comme dans la vue 3D."

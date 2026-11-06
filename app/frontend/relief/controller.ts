@@ -14,7 +14,7 @@
 import type { Geometry } from 'geojson'
 import { buildingLayer, drawnBuildings, mergeBuildings, modelBuildings, sharesPlace, type BuildingData, type BuildingLayer, type BuildingsResponse, type BuildingVolume } from './buildings.ts'
 import { CANOPY_MAX, CANOPY_RAMP, FROST_RAMP, HYPSOMETRY, SUN_RAMP, WETNESS_RAMP, hexToRgb, ramp, type RGB } from './colors.ts'
-import { applyDesigns, downsampleCrest, downsampleDesigned, pointsAlong, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
+import { applyDesigns, downsampleCrest, downsampleDesigned, ringCells, type Design, type Footprint, type GridPoint } from './design.ts'
 import { polygonMask, toGrid, type GridMeta } from './grid.ts'
 import { coldAirField, coldLayer, type ColdAirField } from './coldAir.ts'
 import { analyzeDrainage, decodeGrid, downsample, RainSimulation, type Drainage } from './hydro.ts'
@@ -23,6 +23,7 @@ import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaT
 import type { NivaLights } from './nivaModel.ts'
 import { GRAFT_FORMS, GROWTH_YEARS, calendarYear, managedSize, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type PlantTraining, type ScenePlant, type GraftForm, type RootstockVigor } from './growth.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
+import { waterDesigns, type SoilEffect } from './waterDesigns.ts'
 import { landcoverRoles } from './roles.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
 import { buildSoilMaps, calibrateRates, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
@@ -187,39 +188,7 @@ export type BuildingsInfo = {
 }
 
 const AXIS_FRAME_BUDGET_MS = 11
-const POND_KINDS = new Set(['pond'])
-const SWALE_KINDS = new Set(['swale', 'keyline', 'ditch'])
-const SWALE_DEFAULTS: Record<string, { width: number; depth: number; berm: number }> = {
-  swale: { width: 2, depth: 0.5, berm: 0.4 },
-  keyline: { width: 1, depth: 0.3, berm: 0.2 },
-  ditch: { width: 1, depth: 0.5, berm: 0 },
-}
-// Structures across the flow, raised on the relief. A level crest holds a
-// pool in a gully; `seep` is the share of the flow a porous one lets
-// through below its crest (0: an earth bank); `pool` how far upstream the
-// water it holds reaches.
-const BARRIER_DEFAULTS: Record<string, { height: number; width: number; level: boolean; seep: number; pool: number }> = {
-  check_dam: { height: 0.4, width: 0.8, level: true, seep: 0.05, pool: 30 },
-  beaver_dam_analogue: { height: 0.6, width: 1, level: true, seep: 0.03, pool: 50 },
-  fascine: { height: 0.3, width: 0.5, level: false, seep: 0.15, pool: 5 },
-  hedge_bank: { height: 0.6, width: 1.5, level: false, seep: 0, pool: 5 },
-}
-const CHECK_DAM_SEEP: Record<string, number> = { dry_stone: 0.05, gabion: 0.08, wood: 0.02, brush: 0.12 }
-// What a work does to the soil it covers: hedge roots open it, dense grass
-// opens it and slows the water running over it (its highest speed, m/s).
-type SoilEffect = { rateFactor: number; speed?: number }
-const SOIL_EFFECTS: Record<string, SoilEffect> = {
-  hedge_bank: { rateFactor: 3 },
-  grass_strip: { rateFactor: 2.5, speed: 0.1 },
-  'grass_strip:lawn': { rateFactor: 1.5, speed: 0.3 },
-}
-
 const nextPaint = () => new Promise((resolve) => setTimeout(resolve, 30))
-
-function numberProp(value: unknown, fallback: number): number {
-  const n = typeof value === 'string' ? Number(value) : value
-  return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : fallback
-}
 
 export class ReliefController {
   options: ControllerOptions
@@ -710,50 +679,9 @@ export class ReliefController {
   // ---- The map's water design, dug into the relief -------------------------
 
   private designsFromFeatures(): Design[] {
-    const designs: Design[] = []
-    this.strips = []
-    this.designEffects.clear()
-    for (const feature of this.options.features) {
-      const props = (feature.properties ?? {}) as Record<string, unknown>
-      if (props.status && props.status !== 'active') continue
-      const kind = String(props.kind ?? '')
-      const id = (props.id as number | string | undefined) ?? designs.length
-      const geometry = feature.geometry
-      if (POND_KINDS.has(kind) && geometry?.type === 'Polygon') {
-        designs.push({
-          id, type: 'pond', ring: geometry.coordinates[0].map((p) => toGrid(this.meta, p)),
-          depth: numberProp(props.depth_m ?? props.depth, 1), berm: numberProp(props.berm, 0.3),
-        })
-      } else if (SWALE_KINDS.has(kind) && geometry?.type === 'LineString') {
-        // A keyline planted with trees or subsoiled is not dug.
-        if (kind === 'keyline' && props.use && props.use !== 'swale') continue
-        const defaults = SWALE_DEFAULTS[kind]
-        designs.push({
-          id, type: 'swale', points: geometry.coordinates.map((p) => toGrid(this.meta, p)),
-          width: numberProp(props.width_m ?? props.width, defaults.width), depth: numberProp(props.depth_m ?? props.depth, defaults.depth),
-          berm: props.berm === 0 ? 0 : numberProp(props.berm, defaults.berm),
-        })
-      } else if (BARRIER_DEFAULTS[kind] && geometry?.type === 'LineString') {
-        const defaults = BARRIER_DEFAULTS[kind]
-        const seep = kind === 'check_dam' ? CHECK_DAM_SEEP[String(props.material)] ?? defaults.seep : defaults.seep
-        designs.push({
-          id, type: 'barrier', points: geometry.coordinates.map((p) => toGrid(this.meta, p)),
-          height: numberProp(props.height_m, defaults.height), width: numberProp(props.width_m, defaults.width),
-          level: defaults.level, seep, pool: defaults.pool,
-        })
-        if (SOIL_EFFECTS[kind]) this.designEffects.set(id, SOIL_EFFECTS[kind])
-      } else if (kind === 'half_moon' && (geometry?.type === 'Point' || geometry?.type === 'LineString')) {
-        const centres = geometry.type === 'Point'
-          ? [toGrid(this.meta, geometry.coordinates)]
-          : pointsAlong(geometry.coordinates.map((p) => toGrid(this.meta, p)), numberProp(props.spacing_m, 5))
-        designs.push({
-          id, type: 'half_moon', centres, radius: numberProp(props.diameter_m, 3) / 2, depth: numberProp(props.depth_m, 0.2),
-        })
-      } else if (kind === 'grass_strip' && geometry?.type === 'Polygon') {
-        const effect = SOIL_EFFECTS[props.cover === 'lawn' ? 'grass_strip:lawn' : 'grass_strip']
-        this.strips.push({ id, ring: geometry.coordinates[0].map((p) => toGrid(this.meta, p)), effect })
-      }
-    }
+    const { designs, strips, effects } = waterDesigns(this.meta, this.options.features)
+    this.strips = strips
+    this.designEffects = effects
     return designs
   }
 

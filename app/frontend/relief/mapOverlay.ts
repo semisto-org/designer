@@ -1,9 +1,12 @@
 // The relief on the 2D editor map: flow axes and hollows, or a hillshade,
 // computed in the browser from the imported grid and laid on the map as an
 // image source (the grid is a Mercator rectangle, so it fits exactly).
+// The flow axes can be those of the relief dug with the map's water works
+// (« Projet » mode), like the 3D view, or of the terrain as it is.
 import type { Map as MapLibreMap, ImageSource } from 'maplibre-gl'
 import type { TerrainGridData } from '@/types/relief'
 import { imageCorners, type GridMeta } from './grid.ts'
+import { applyDesigns, type Design } from './design.ts'
 import { analyzeDrainage, decodeGrid } from './hydro.ts'
 import { drainageImage } from './overlay.ts'
 import { hillshade, shadePixels } from './shade.ts'
@@ -33,8 +36,18 @@ function loadHeights(grid: TerrainGridData): Promise<Float32Array> {
   return pending
 }
 
-async function renderImage(grid: TerrainGridData, mode: Exclude<MapOverlayMode, 'none'>): Promise<string> {
-  const key = `${grid.files.grid}:${mode}`
+/** A short fingerprint of the works dug, to cache one image per design. */
+export function designsKey(designs: readonly Design[]): string {
+  if (!designs.length) return ''
+  const text = JSON.stringify(designs)
+  let hash = 0
+  for (let i = 0; i < text.length; i++) hash = (Math.imul(31, hash) + text.charCodeAt(i)) | 0
+  return `${designs.length}:${(hash >>> 0).toString(36)}`
+}
+
+async function renderImage(grid: TerrainGridData, mode: Exclude<MapOverlayMode, 'none'>, designs: readonly Design[]): Promise<string> {
+  const dug = mode === 'flow' ? designs : []
+  const key = `${grid.files.grid}:${mode}:${designsKey(dug)}`
   const cached = images.get(key)
   if (cached) return cached
   const heights = await loadHeights(grid)
@@ -47,7 +60,8 @@ async function renderImage(grid: TerrainGridData, mode: Exclude<MapOverlayMode, 
   const context = canvas.getContext('2d')
   if (!context) throw new Error('no 2D canvas')
   if (mode === 'flow') {
-    const drainage = analyzeDrainage(heights, grid.cols, grid.rows, grid.cellSizeM)
+    const ground = dug.length ? applyDesigns(heights, grid.cols, grid.rows, grid.cellSizeM, [...dug]).heights : heights
+    const drainage = analyzeDrainage(ground, grid.cols, grid.rows, grid.cellSizeM)
     context.putImageData(drainageImage(drainage, meta, { axes: true, hollows: true }), 0, 0)
   } else {
     const pixels = shadePixels(hillshade(heights, grid.cols, grid.rows, grid.cellSizeM))
@@ -66,9 +80,9 @@ export function removeReliefOverlay(map: MapLibreMap) {
 }
 
 /** Shows the chosen overlay under the map's features (idempotent). */
-export async function showReliefOverlay(map: MapLibreMap, grid: TerrainGridData, mode: MapOverlayMode): Promise<void> {
+export async function showReliefOverlay(map: MapLibreMap, grid: TerrainGridData, mode: MapOverlayMode, designs: readonly Design[] = []): Promise<void> {
   if (mode === 'none') return removeReliefOverlay(map)
-  const url = await renderImage(grid, mode)
+  const url = await renderImage(grid, mode, designs)
   const coordinates = imageCorners(grid)
   const source = map.getSource(RELIEF_OVERLAY_ID) as ImageSource | undefined
   if (source) {
