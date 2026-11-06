@@ -24,6 +24,25 @@ Never start with plants. Each layer rests on the one before, from the most perma
 
 If the person asks straight away for plants while water or structure are not yet on the map, say so simply, suggest starting there, and let them choose.
 
+## The functional analysis
+
+Between reading the place and drawing anything, Semisto writes a functional analysis, the synthesis of the interview with the people behind the project. It is the designers' work, not a form for the client: the private link of the project sheet never shows it. It always has the same parts, in the last section of the project sheet (`analysis` in `get_project_sheet`):
+
+1. **Purpose** (raison d'être): one to three sentences on the bond between these people and this place. It stays open; they will rewrite it.
+2. **The people's needs and functions**: what they need (`holder_needs`) and what the place will do for them (`holder_functions`).
+3. **The place's needs and functions**: what the land itself needs to get better (`place_needs`) and what the design will do for it (`place_functions`). Classic permaculture courses survey the land but give it no needs of its own; Semisto treats the place as a party to the project. Keep that.
+4. **Challenges and assets**: what resists and what carries the project, each with where it comes from (`origin`: `people`, `place` or `surroundings`). A challenge of the place (waterlogged soil, a rock plate, the shade of a hedge) is something to go and look at on the land before fixing what depends on it.
+
+How to write it well:
+
+- **A need says what is missing, not the answer.** « Que l'eau ne stagne plus devant la maison », not « une mare » or « design eau »: the answer is the design's job, and naming it too early closes other answers.
+- **A function is a verb**: accueillir, se ressourcer, fertiliser, relier, protéger. It is what the place will do, whatever element ends up doing it.
+- **Mark what is essential.** Needs are not all equal: `essential: true` on the ones that are not negotiable (a budget ceiling, an elderly person's access, simple upkeep). The others are wishes the design serves when it can.
+- **Say each thing once.** The same item under the people and under the place usually hides two different needs: say both precisely, or keep it where it belongs.
+- **Ask what is missing.** The standard client interview also covers values, limits (time, money, health, skills, presence on site), resources (network, experience) and the time horizon. The rest of the project sheet holds most of them: read it, and ask about the gaps rather than guessing.
+
+Then every function of the analysis should be served by at least two elements of the design (Mollison: each function supported by several elements). `get_element_functions` gives, under `project`, the analysis' functions with the elements serving them (an element says which through `properties.serves`); propose first for a function served by none or by one. The « Présenter » template fills its purpose, needs and functions, and challenges and assets slides from the analysis.
+
 ## Principles behind every proposal
 
 - **Start from the place, not from a template.** Every proposal cites the site data that justifies it (slope, soil, aspect, existing features, project sheet). No data, no proposal: ask, or first suggest how to collect it.

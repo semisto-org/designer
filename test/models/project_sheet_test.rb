@@ -132,7 +132,7 @@ class ProjectSheetTest < ActiveSupport::TestCase
     assert_equal 33, progress[:sections]["budget"][:percent] # 1 of 3 counting fields
     assert_equal "partial", progress[:sections]["budget"][:status]
     assert_equal "ambitions", progress[:nextSection]
-    assert_equal ((100 + 33) / 11.0).round, progress[:percent]
+    assert_equal ((100 + 33) / 12.0).round, progress[:percent]
   end
 
   test "marking a section done makes it 100 percent without answers" do
@@ -145,7 +145,7 @@ class ProjectSheetTest < ActiveSupport::TestCase
 
   test "schema_json describes every section for the frontend" do
     schema = ProjectSheet.schema_json
-    assert_equal %w[who ambitions uses taste budget time skills constraints opportunities livestock calendar], schema[:sections].map { _1[:key] }
+    assert_equal %w[who ambitions uses taste budget time skills constraints opportunities livestock calendar analysis], schema[:sections].map { _1[:key] }
     budget = schema[:sections].find { _1[:key] == "budget" }[:fields].find { _1[:key] == "initial" }
     assert_equal "enum", budget[:type]
     assert_includes budget[:values], "up_to_2000"
@@ -191,11 +191,42 @@ class ProjectSheetTest < ActiveSupport::TestCase
         base = "journey.project.sections.#{section}.fields.#{field.key}"
         assert I18n.exists?("#{base}.label"), "label of #{section}.#{field.key}"
         field.values&.each { |value| assert I18n.exists?("#{base}.options.#{value}"), "option #{value} of #{section}.#{field.key}" }
-        field.item&.each do |item|
+        field.item&.reject(&:hidden)&.each do |item|
           assert I18n.exists?("#{base}.item.#{item.key}.label"), "item label #{section}.#{field.key}.#{item.key}"
           item.values&.each { |value| assert I18n.exists?("#{base}.item.#{item.key}.options.#{value}") }
         end
       end
     end
+  end
+
+  test "the functional analysis keeps essential needs, origins and a stable id per function" do
+    sheet = ProjectSheet.merge({}, { "analysis" => {
+      "purpose" => "Une belle œuvre, soutenant un jardin habité et vivant",
+      "holder_needs" => [ { "name" => "Entretien simple", "essential" => true }, { "name" => "Partage" } ],
+      "holder_functions" => [ { "name" => "Accueillir" }, { "name" => "Se ressourcer", "id" => "fown1" } ],
+      "place_functions" => [ { "name" => "Fertiliser" } ],
+      "challenges" => [ { "name" => "Hydromorphisme", "origin" => "place" }, { "name" => "Absence sur place", "origin" => "people" } ],
+      "assets" => [ { "name" => "Connaissance du voisinage", "origin" => "surroundings" } ]
+    } })
+    analysis = sheet.section("analysis")
+    assert_equal [ true, nil ], analysis["holder_needs"].map { _1["essential"] }
+    ids = sheet.project_functions.map { _1[:id] }
+    assert_equal 3, ids.uniq.size
+    assert_equal "fown1", ids[1]
+    assert_equal %w[holder holder place], sheet.project_functions.map { _1[:source] }
+    assert_equal [ "Hydromorphisme" ], sheet.place_challenges
+
+    # Resent without ids (an AI, an older form): the same names keep their ids.
+    resent = ProjectSheet.merge(sheet.to_h, { "analysis" => { "holder_functions" => [ { "name" => "accueillir" }, { "name" => "Transmettre" } ] } })
+    assert_equal ids.first, resent.project_functions.first[:id]
+    refute_includes ids, resent.project_functions.second[:id]
+
+    refute ProjectSheet.parse({ "analysis" => { "challenges" => [ { "name" => "Pente", "origin" => "moon" } ] } }).valid?
+    # The designers' work: never on the private link, nor in its progress.
+    refute ProjectSheet.schema_json(holder: true)[:sections].any? { _1[:key] == "analysis" }
+    assert_equal true, ProjectSheet.schema_json[:sections].find { _1[:key] == "analysis" }[:teamOnly]
+    refute sheet.progress(holder: true)[:sections].key?("analysis")
+    assert_equal({}, sheet.for_holder.to_h.except("meta"))
+    assert_equal({}, ProjectSheet.parse({ "analysis" => { "purpose" => "Écrit par le porteur" } }, holder: true).to_h)
   end
 end

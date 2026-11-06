@@ -1,10 +1,11 @@
 import { bbox as turfBbox } from '@turf/turf'
-import { Footprints, LocateFixed } from 'lucide-react'
+import clsx from 'clsx'
+import { Footprints, LocateFixed, NotebookPen } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
-import { Button } from '@/components/ui/Button'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import { useElementFunctions, type FunctionBalance, type FunctionEntry } from '@/map/functions/store'
+import { useElementFunctions, type FunctionBalance, type FunctionEntry, type ProjectFunction } from '@/map/functions/store'
 
 export const FUNCTIONS_HELP_SLUG = 'les-fonctions-des-elements'
 
@@ -12,7 +13,9 @@ export const FUNCTIONS_HELP_SLUG = 'les-fonctions-des-elements'
  * « Fonctions »: the element analysis of the design. Functions served by a
  * single element or by none come first, each with what to look for on the
  * land (what already does the job is often not drawn yet), then the needs
- * nothing on the place covers.
+ * nothing on the place covers. The project's own functions (the functional
+ * analysis of the project sheet) come first, with the elements serving them,
+ * and the challenges the place itself raises, to go and look at.
  */
 export default function FunctionsPanel() {
   const editor = useEditor()
@@ -51,6 +54,7 @@ export default function FunctionsPanel() {
       <HelpButton slug={FUNCTIONS_HELP_SLUG} label={t('element_functions.help')} className="-ml-2" />
       {failed && <p className="text-sm text-clay-500">{t('element_functions.error')}</p>}
       {!data && !failed && <p className="text-sm text-loam-400">{t('element_functions.loading')}</p>}
+      {data && <ProjectFunctions data={data.project} challenges={data.placeChallenges} entriesOf={entriesOf} focus={focus} mapId={editor.map.id} canEdit={editor.canEdit} />}
       {data && data.entries.length === 0 && <p className="text-sm text-loam-500">{t('element_functions.empty')}</p>}
 
       {data && data.entries.length > 0 && (
@@ -133,5 +137,83 @@ export default function FunctionsPanel() {
         </>
       )}
     </div>
+  )
+}
+
+/** The functions of the project's functional analysis, and the place's challenges. */
+function ProjectFunctions({ data, challenges, entriesOf, focus, mapId, canEdit }: {
+  data: ProjectFunction[]
+  challenges: string[]
+  entriesOf: (keys: string[]) => FunctionEntry[]
+  focus: (entries: FunctionEntry[]) => void
+  mapId: number
+  canEdit: boolean
+}) {
+  const sheetLink = (
+    <ButtonLink href={`/maps/${mapId}/project#analysis`} variant="ghost" size="sm" className="-ml-3">
+      <NotebookPen className="h-3.5 w-3.5" aria-hidden />
+      {t('element_functions.project.open_sheet')}
+    </ButtonLink>
+  )
+  const sources = (['holder', 'place'] as const).map((source) => ({ source, rows: data.filter((f) => f.source === source) })).filter((g) => g.rows.length > 0)
+
+  return (
+    <>
+      <section className="rounded-2xl bg-loam-50 p-3">
+        <h3 className="font-serif text-lg text-loam-900">{t('element_functions.project.title')}</h3>
+        {data.length === 0 ? (
+          <>
+            <p className="mt-1 text-sm text-loam-600">{t('element_functions.project.empty')}</p>
+            {canEdit && sheetLink}
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-loam-600">{t('element_functions.project.intro')}</p>
+            {sources.map(({ source, rows }) => (
+              <div key={source} className="mt-3">
+                <p className="text-sm font-medium text-loam-700">{t(`element_functions.project.sources.${source}`)}</p>
+                <ul className="mt-1 space-y-1.5">
+                  {rows.map((fn) => {
+                    const entries = entriesOf(fn.entries)
+                    return (
+                      <li key={fn.id} className={clsx('rounded-lg bg-white px-3 py-2 ring-1', fn.status === 'covered' ? 'ring-loam-200' : 'ring-humus-200')}>
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="text-sm font-semibold text-loam-900">{fn.name}</span>
+                          {fn.status === 'covered' && <span className="shrink-0 text-sm text-loam-500">{t('element_functions.project.covered', { count: fn.count })}</span>}
+                        </div>
+                        {fn.status === 'missing' && <p className="mt-0.5 text-sm text-humus-700">{t('element_functions.project.missing')}</p>}
+                        {fn.status === 'fragile' && <p className="mt-0.5 text-sm text-humus-700">{t('element_functions.project.fragile', { name: entries[0]?.label ?? '' })}</p>}
+                        {entries.length > 0 && (
+                          <Button variant="ghost" size="sm" onClick={() => focus(entries)} className="-ml-3 mt-0.5">
+                            <LocateFixed className="h-3.5 w-3.5" aria-hidden />
+                            {t('element_functions.show')}
+                          </Button>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
+            {canEdit && <div className="mt-2">{sheetLink}</div>}
+          </>
+        )}
+      </section>
+
+      {challenges.length > 0 && (
+        <section>
+          <h3 className="mb-1 text-sm font-semibold text-loam-900">{t('element_functions.place_challenges.title')}</h3>
+          <p className="mb-1.5 text-sm text-loam-600">{t('element_functions.place_challenges.intro')}</p>
+          <ul className="space-y-1">
+            {challenges.map((challenge, index) => (
+              <li key={index} className="flex items-start gap-1.5 text-sm text-loam-800">
+                <Footprints className="mt-0.5 h-4 w-4 shrink-0 text-leaf-700" aria-hidden />
+                {challenge}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
   )
 }

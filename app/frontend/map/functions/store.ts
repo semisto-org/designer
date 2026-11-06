@@ -17,6 +17,17 @@ export type FunctionEntry = {
   needs: string[]
   yields: string[]
   existing: boolean
+  /** Ids of the project's functions (functional analysis) the element serves. */
+  serves: string[]
+}
+/** A function of the project sheet's functional analysis, and the elements serving it. */
+export type ProjectFunction = {
+  id: string
+  name: string
+  source: 'holder' | 'place'
+  count: number
+  status: 'missing' | 'fragile' | 'covered'
+  entries: string[]
 }
 export type FunctionBalance = { function: string; count: number; status: 'missing' | 'fragile' | 'covered'; entries: string[]; existingOnly: boolean }
 export type FunctionsResponse = {
@@ -25,6 +36,8 @@ export type FunctionsResponse = {
   entries: FunctionEntry[]
   balance: FunctionBalance[]
   unmetNeeds: { resource: string; entries: string[] }[]
+  project: ProjectFunction[]
+  placeChallenges: string[]
 }
 
 /** Whether a feature takes part in the review (mirrors ElementFunctions.applies?). */

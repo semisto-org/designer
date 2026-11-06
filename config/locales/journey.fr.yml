@@ -136,6 +136,7 @@ fr:
       mark_done: "Marquer cette section comme terminée"
       unmark_done: "Section terminée, cliquer pour rouvrir"
       team_only: "Réservé à l'équipe : le porteur de projet ne le voit pas sur son lien."
+      team_section: "Le travail des concepteurs : le porteur de projet ne voit pas cette section sur son lien."
       team_notes:
         title_team: "Notes de l'équipe"
         title_pro: "Tes notes de pro"
@@ -590,6 +591,66 @@ fr:
                 as_budget_allows: "Petit à petit, selon le budget"
             notes:
               label: "Étapes et échéances"
+        analysis:
+          title: "Analyse fonctionnelle"
+          hint: "La synthèse de l'entretien, avant de dessiner : pourquoi ce projet, ce dont les personnes et le lieu ont besoin, les fonctions que le design devra remplir, puis ce qui résiste et ce qui porte."
+          fields:
+            purpose:
+              label: "Raison d'être"
+              hint: "Une à trois phrases qui disent le lien entre les personnes et ce lieu. Elles peuvent évoluer."
+              placeholder: "Une belle œuvre, soutenant un jardin habité et vivant…"
+            holder_needs:
+              label: "Besoins des porteurs de projet"
+              hint: "Ce dont les personnes ont besoin, sans dire encore comment y répondre : « que l'entretien reste simple », pas « une prairie fleurie ». Coche « Essentiel » pour ce qui ne se négocie pas."
+              add: "Ajouter un besoin"
+              remove: "Retirer ce besoin"
+              item: &analysis_need
+                name:
+                  label: "Besoin"
+                essential:
+                  label: "Essentiel"
+            holder_functions:
+              label: "Fonctions pour les porteurs de projet"
+              hint: "Ce que le lieu fera pour elles, en verbes : accueillir, se ressourcer, transmettre… Chaque fonction gagne à être remplie par au moins deux éléments de la carte."
+              add: "Ajouter une fonction"
+              remove: "Retirer cette fonction"
+              item: &analysis_function
+                name:
+                  label: "Fonction"
+            place_needs:
+              label: "Besoins du lieu"
+              hint: "Ce dont le terrain a besoin pour aller mieux : un sol qui se régénère, une eau qui ne stagne plus, des haies qui se relient."
+              add: "Ajouter un besoin"
+              remove: "Retirer ce besoin"
+              item: *analysis_need
+            place_functions:
+              label: "Fonctions pour le lieu"
+              hint: "Ce que le design fera pour le terrain : fertiliser, protéger, relier, accueillir la biodiversité…"
+              add: "Ajouter une fonction"
+              remove: "Retirer cette fonction"
+              item: *analysis_function
+            challenges:
+              label: "Défis"
+              hint: "Ce qui résiste. Dis d'où ça vient : un défi du lieu (sol, eau, ombre) se regarde sur le terrain."
+              add: "Ajouter un défi"
+              remove: "Retirer ce défi"
+              item: &analysis_factor
+                name:
+                  label: "En quelques mots"
+                origin:
+                  label: "D'où ça vient"
+                  options:
+                    people: "Des personnes"
+                    place: "Du lieu"
+                    surroundings: "Des alentours"
+            assets:
+              label: "Atouts"
+              hint: "Ce qui porte le projet : des personnes, du lieu ou des alentours."
+              add: "Ajouter un atout"
+              remove: "Retirer cet atout"
+              item: *analysis_factor
+            notes:
+              label: "Précisions"
 
     # ----- Passer à l'action (requests to Semisto) -----
     # The private link to the project sheet (editors), and the form it opens

@@ -19,7 +19,7 @@ module Maps
       presentation = @map.presentations.new(
         name: template&.name || t("presentations.panel_title"),
         template_key: template&.key,
-        steps: template&.steps || []
+        steps: template&.steps(map: @map) || []
       )
       if presentation.save
         render json: payload.merge(id: presentation.id), status: :created

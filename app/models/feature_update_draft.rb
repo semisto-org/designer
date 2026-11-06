@@ -114,7 +114,7 @@ class FeatureUpdateDraft < ApplicationRecord
     {
       id:, featureId: map_feature_id, batch:, summary:, rationale:, status:,
       clientName: client_name, authorName: created_by&.display_name,
-      changes: self.class.labeled(diff(feature)), proposedChanges: proposed_changes, createdAt: created_at.iso8601
+      changes: self.class.labeled(diff(feature), map:), proposedChanges: proposed_changes, createdAt: created_at.iso8601
     }
   end
 
@@ -132,13 +132,15 @@ class FeatureUpdateDraft < ApplicationRecord
     {
       id:, status:, rationale:, summary:, clientName: client_name, authorName: created_by&.display_name,
       reviewerName: reviewed_by&.display_name, reviewedAt: reviewed_at&.iso8601, createdAt: created_at.iso8601,
-      adjusted: status == "accepted" && applied_changes != proposed_changes, changes: self.class.labeled(changes)
+      adjusted: status == "accepted" && applied_changes != proposed_changes, changes: self.class.labeled(changes, map:)
     }
   end
 
   # Adds readable names next to catalogue ids (species, variety) in a diff,
   # for the person reviewing it.
-  def self.labeled(diff)
+  def self.labeled(diff, map: nil)
+    project_functions = diff.any? { _1[:field] == "properties.serves" } && map &&
+      ProjectSheet.parse(map.project, strict: false).project_functions.to_h { [ _1[:id], _1[:name] ] }
     ids = ->(field) { diff.select { |c| c[:field] == field }.flat_map { |c| [ c[:before], c[:after] ] }.compact.map(&:to_i) }
     species = PlantSpecies.where(id: ids.("properties.species_id")).includes(:common_names).index_by(&:id)
     varieties = PlantVariety.where(id: ids.("properties.variety_id")).includes(:species).index_by(&:id)
@@ -153,6 +155,7 @@ class FeatureUpdateDraft < ApplicationRecord
       when "properties.planted_on_precision" then I18n.t("feature_updates.precisions.#{value}", default: nil)
       when "properties.roof", "properties.ridge" then I18n.t("drawing.options.#{field.delete_prefix('properties.')}.#{value}", default: nil)
       when "properties.functions" then Array(value).map { |f| I18n.t("element_functions.names.#{f}", default: f.to_s) }.join(", ").presence
+      when "properties.serves" then project_functions&.values_at(*Array(value))&.compact&.join(", ").presence
       end
     end
     diff.map { |c| c.merge({ beforeLabel: name.(c[:field], c[:before]), afterLabel: name.(c[:field], c[:after]) }.compact) }

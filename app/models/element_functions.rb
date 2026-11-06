@@ -11,6 +11,10 @@
 #
 # Plants of one species count as one element: twelve apple trees fall to the
 # same disease, so they are one way of producing food, not twelve.
+#
+# The project's own functions (the functional analysis of the project
+# sheet: « S'émerveiller », « Accueillir la biodiversité »…) get the same
+# review, through the elements that say they serve them (`properties.serves`).
 class ElementFunctions
   FUNCTIONS = %w[food water fertility soil_protection windbreak shade microclimate habitat pollination wood fire_protection].freeze
   RESOURCES = %w[water organic_matter compost food wood heat].freeze
@@ -28,9 +32,9 @@ class ElementFunctions
   # Shapes of the editor shell (a zone, a line, a point): no default, the person says.
   GENERIC_KINDS = %w[zone line point].freeze
 
-  Entry = Data.define(:key, :label, :kind, :feature_ids, :functions, :origin, :needs, :yields, :existing) do
+  Entry = Data.define(:key, :label, :kind, :feature_ids, :functions, :origin, :needs, :yields, :existing, :serves) do
     def as_json(*)
-      { key:, label:, kind:, featureIds: feature_ids, functions:, origin:, needs:, yields:, existing: }
+      { key:, label:, kind:, featureIds: feature_ids, functions:, origin:, needs:, yields:, existing:, serves: }
     end
   end
 
@@ -46,6 +50,12 @@ class ElementFunctions
     value.is_a?(Array) ? value & FUNCTIONS : nil
   end
 
+  # The ids of the project's functions a person said the feature serves.
+  def self.serves(feature)
+    value = feature.properties["serves"]
+    value.is_a?(Array) ? value.grep(String) : []
+  end
+
   def self.normalize(values)
     FUNCTIONS & Array(values).map(&:to_s)
   end
@@ -59,7 +69,17 @@ class ElementFunctions
   end
 
   def as_json(*)
-    { functions: FUNCTIONS, enough: ENOUGH, entries: entries.map(&:as_json), balance:, unmetNeeds: unmet_needs }
+    { functions: FUNCTIONS, enough: ENOUGH, entries: entries.map(&:as_json), balance:, unmetNeeds: unmet_needs,
+      project:, placeChallenges: sheet.place_challenges }
+  end
+
+  # One row per function of the project's analysis: which elements serve it.
+  def project
+    sheet.project_functions.map do |function|
+      serving = entries.select { |e| e.serves.include?(function[:id]) }
+      status = serving.empty? ? "missing" : serving.size < ENOUGH ? "fragile" : "covered"
+      function.merge(count: serving.size, status:, entries: serving.map(&:key))
+    end
   end
 
   # One row per function: how many elements serve it, and which.
@@ -82,6 +102,10 @@ class ElementFunctions
   end
 
   private
+    def sheet
+      @sheet ||= ProjectSheet.parse(@map.project, strict: false)
+    end
+
     def features
       @features ||= @map.features.active.in_design.where.not(layer: MapFeature::ANNOTATION_LAYERS).includes(:patch_items).to_a.select { |f| self.class.applies?(f) }
     end
@@ -101,7 +125,8 @@ class ElementFunctions
         label = sp.common_name || sp.latin_name
         label = "#{label} ×#{group.size}" if group.size > 1
         Entry.new(key: "species:#{species_id}", label:, kind: "plant", feature_ids: group.map(&:id),
-          functions: species_functions([ sp ]), origin: "species", needs: [], yields: species_yields([ sp ]), existing: false)
+          functions: species_functions([ sp ]), origin: "species", needs: [], yields: species_yields([ sp ]), existing: false,
+          serves: group.flat_map { self.class.serves(_1) }.uniq)
       end
       grouped + others.map { |f| feature_entry(f) }
     end
@@ -115,7 +140,7 @@ class ElementFunctions
         key: "feature:#{feature.id}", label: label(feature, list), kind: feature.kind, feature_ids: [ feature.id ],
         functions: own || defaults, origin: own ? "own" : list ? "species" : "kind",
         needs: Array(element&.needs), yields: list ? species_yields(list) : Array(element&.yields),
-        existing: feature.layer == "existing"
+        existing: feature.layer == "existing", serves: self.class.serves(feature)
       )
     end
 

@@ -23,7 +23,7 @@ export type SchemaField = {
   tone?: 'positive' | 'negative'
 }
 
-export type ProjectSchema = { sections: { key: string; fields: SchemaField[] }[] }
+export type ProjectSchema = { sections: { key: string; fields: SchemaField[]; /** Filled by the team only (the functional analysis). */ teamOnly?: boolean }[] }
 
 // ----- Project sheet -----
 
