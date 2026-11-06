@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { api } from '@/lib/api'
 import type { ThreadSummary } from '@/types/collab'
+import { readThreadList } from './threadsPayload'
 
 /**
  * The map's discussions at a glance (counts, previews, unread flags), shared
@@ -20,8 +21,11 @@ function set(next: State) {
 
 export async function refreshThreads(mapId: number): Promise<void> {
   if (state.mapId !== mapId) set({ mapId, threads: [], commentEmails: true, loaded: false })
-  inflight ??= api<{ threads: ThreadSummary[]; commentEmails: boolean }>(`/maps/${mapId}/comments/threads`)
-    .then((data) => set({ mapId, threads: data.threads, commentEmails: data.commentEmails, loaded: true }))
+  inflight ??= api<unknown>(`/maps/${mapId}/comments/threads`)
+    .then((data) => {
+      const list = readThreadList(data)
+      if (list) set({ mapId, ...list, loaded: true })
+    })
     .catch(() => undefined) // a failed refresh keeps the last known list
     .finally(() => { inflight = null })
   return inflight
