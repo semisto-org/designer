@@ -94,7 +94,8 @@ export default function DrawingLayers() {
   const hiddenSoil = useDrawingState((s) => s.hiddenSoil)
   const soil = useSoil()
   const soilHidden = (soil.observations.length > 0 || soil.samples.length > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
-  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photosShown || soilHidden
+  const labelsHidden = useDrawingState((s) => s.labelsHidden)
+  const somethingHidden = labelsHidden || hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photosShown || soilHidden
   useEffect(() => {
     control.current?.update(t(somethingHidden ? 'drawing.layers_panel.control_hidden' : 'drawing.layers_panel.control'), somethingHidden)
   }, [somethingHidden])

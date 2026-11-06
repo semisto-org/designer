@@ -412,6 +412,10 @@ fr:
       soil:
         bioindicators: "Bio-indicatrices"
         samples: "Points de prélèvement de sol"
+      labels: "Étiquettes"
+      labels_shown: "noms écrits"
+      labels_hover: "au survol"
+      labels_hint: "Masquées, les noms des plantes, zones et éléments ne s'affichent qu'en passant sur l'élément, ou quand tu le sélectionnes."
 
     alerts:
       intro: "Des règles fixes et sourcées de ta région, vérifiées sur ton dessin."

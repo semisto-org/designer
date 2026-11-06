@@ -31,9 +31,14 @@ export type DrawingState = {
    * by « Présenter » steps. Project variants are map/variants.
    */
   shownTag: string | null
+  /**
+   * The names written on the map (plants, zones, ponds…) hidden: each one
+   * shows only while the pointer is over its element, or once selected.
+   */
+  labelsHidden: boolean
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', shownTag: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', shownTag: null, labelsHidden: false }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -58,6 +63,7 @@ type HiddenList = 'layers' | 'kinds' | 'strata' | 'soil'
 const storageKey = (mapId: number, list: HiddenList = 'layers') => `designer:map:${mapId}:hidden-${list}`
 // The former « Version » picker's key: the tag a viewer chose stays chosen.
 const shownTagKey = (mapId: number) => `designer:map:${mapId}:version`
+const labelsHiddenKey = (mapId: number) => `designer:map:${mapId}:labels-hidden`
 
 function readList(mapId: number, list: HiddenList): string[] {
   try {
@@ -87,9 +93,15 @@ export function initDrawingState(mapId: number) {
   } catch {
     shownTag = null
   }
+  let labelsHidden = false
+  try {
+    labelsHidden = window.localStorage.getItem(labelsHiddenKey(mapId)) === '1'
+  } catch {
+    labelsHidden = false
+  }
   drawingStore.set({
     mapId, hiddenLayers: hidden, hiddenKinds: readList(mapId, 'kinds'), hiddenStrata: readList(mapId, 'strata'), hiddenSoil: readList(mapId, 'soil'),
-    tool: null, shapeEditId: null, shownTag,
+    tool: null, shapeEditId: null, shownTag, labelsHidden,
   })
 }
 
@@ -100,6 +112,18 @@ export function setShownTag(tag: string | null) {
   try {
     if (tag) window.localStorage.setItem(shownTagKey(state.mapId), tag)
     else window.localStorage.removeItem(shownTagKey(state.mapId))
+  } catch {
+    // Private mode or blocked storage: the choice lasts for this visit only.
+  }
+}
+
+/** Hides the names on the map (shown on hover only), or shows them again; remembered per map. */
+export function setLabelsHidden(hidden: boolean) {
+  drawingStore.set({ labelsHidden: hidden })
+  if (state.mapId == null) return
+  try {
+    if (hidden) window.localStorage.setItem(labelsHiddenKey(state.mapId), '1')
+    else window.localStorage.removeItem(labelsHiddenKey(state.mapId))
   } catch {
     // Private mode or blocked storage: the choice lasts for this visit only.
   }
@@ -142,6 +166,7 @@ export function showEverything() {
   setHiddenStrata([])
   setHiddenSoil([])
   setShownTag(null)
+  setLabelsHidden(false)
 }
 
 /** Asks the drawing toolbar to let the user reshape a feature. */

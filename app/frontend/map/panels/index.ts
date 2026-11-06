@@ -81,6 +81,7 @@ import AlertsPanel from '@/map/drawing/AlertsPanel'
 import GpsAccuracyOverlay from '@/map/gps/GpsAccuracyOverlay'
 import GpsAccuracySection, { appliesToGpsPoint } from '@/map/gps/GpsAccuracySection'
 import DrawingLayers from '@/map/drawing/DrawingLayers'
+import HoverLabelsOverlay from '@/map/labels/HoverLabelsOverlay'
 import DrawingToolbar from '@/map/drawing/DrawingToolbar'
 import ElementSection, { appliesToElement } from '@/map/drawing/ElementSection'
 import ProjectStateSection, { appliesToProjectState } from '@/map/drawing/ProjectStateSection'
@@ -222,6 +223,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'canopy', component: CanopyOverlay, order: 3 },
   { id: 'harvests', component: HarvestsOverlay, order: 21 },
   { id: 'drawing-layers', component: DrawingLayers, order: 10 },
+  { id: 'hover-labels', component: HoverLabelsOverlay, order: 44 },
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },
   { id: 'aerial-views', component: AerialViewsOverlay, order: 1 },

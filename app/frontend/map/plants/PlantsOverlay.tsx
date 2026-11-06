@@ -308,7 +308,7 @@ function colorPoints(map: MapLibreMap, colors: PointColors) {
 function safeInstall(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   try {
     install(map, data)
-    applyPlantsVisibility(map, drawingStore.get().hiddenLayers, plantLabelStyleStore.get())
+    applyPlantsVisibility(map, drawingStore.get().hiddenLayers, plantLabelStyleStore.get(), drawingStore.get().labelsHidden)
   } catch {
     /* style not ready yet */
   }
@@ -325,6 +325,7 @@ export default function PlantsOverlay() {
   const { data, placing } = usePlanting(mapId)
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
+  const labelsHidden = useDrawingState((s) => s.labelsHidden)
   const editorRef = useRef(editor)
   editorRef.current = editor
   const map = editor.instance
@@ -351,7 +352,7 @@ export default function PlantsOverlay() {
   }, [map])
   useEffect(() => safeInstall(map, layers), [map, layers])
   // « Calques »: hiding the plants layer hides the crowns and their names too.
-  useEffect(() => applyPlantsVisibility(map, hidden, labelStyle), [map, hidden, labelStyle])
+  useEffect(() => applyPlantsVisibility(map, hidden, labelStyle, labelsHidden), [map, hidden, labelStyle, labelsHidden])
 
   // Planting quantities follow plants and patches: reload when they change.
   const signature = editor.features

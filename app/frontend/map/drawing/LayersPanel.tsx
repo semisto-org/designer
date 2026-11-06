@@ -1,12 +1,12 @@
 import clsx from 'clsx'
-import { Camera, ChevronDown, Compass, Eye, EyeOff, ShieldAlert } from 'lucide-react'
+import { Camera, ChevronDown, Compass, Eye, EyeOff, ShieldAlert, Tag } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { strataLabel } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { DESIGN_LAYERS, featureColor, layerColor } from '@/map/drawing/catalog'
 import { isPlantLike, strataKey, UNKNOWN_STRATA } from '@/map/drawing/hidden'
-import { setHiddenKinds, setHiddenLayers, setHiddenSoil, setHiddenStrata, setShownTag, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
+import { setHiddenKinds, setHiddenLayers, setHiddenSoil, setHiddenStrata, setLabelsHidden, setShownTag, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
 import { Field, Select } from '@/components/ui/Field'
 import { tagCounts } from '@/map/tags/tags'
 import { LAYER_COLORS } from '@/map/layers/features'
@@ -133,8 +133,9 @@ export default function LayersPanel() {
   const soilHidden = (soilCounts.bioindicators > 0 || soilCounts.samples > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
   const sectorsHidden = sectors.onMap && sectors.hiddenGroups.length > 0
   const shownTag = useDrawingState((s) => s.shownTag)
+  const labelsHidden = useDrawingState((s) => s.labelsHidden)
   const tags = tagCounts(editor.features)
-  const somethingHidden = shownTag != null || hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden || sectorsHidden
+  const somethingHidden = labelsHidden || shownTag != null || hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden || sectorsHidden
 
   return (
     <div className="space-y-3">
@@ -199,6 +200,21 @@ export default function LayersPanel() {
             onClick={() => photoActions.setShowOnMap(!photos.showOnMap)}
           />
           <span className="ml-1 w-9 shrink-0" aria-hidden />
+        </li>
+        {/* The names written on the map: hidden, each one shows on hover (map/labels/hover). */}
+        <li>
+          <div className="flex items-center">
+            <ToggleRow
+              shown={!labelsHidden}
+              label={t('drawing.layers_panel.labels')}
+              ariaLabel={t('drawing.layers_panel.toggle', { layer: t('drawing.layers_panel.labels') })}
+              marker={<Tag className={clsx('h-3.5 w-3.5 shrink-0 text-loam-600', labelsHidden && 'opacity-30')} aria-hidden />}
+              count={t(labelsHidden ? 'drawing.layers_panel.labels_hover' : 'drawing.layers_panel.labels_shown')}
+              onClick={() => setLabelsHidden(!labelsHidden)}
+            />
+            <span className="ml-1 w-9 shrink-0" aria-hidden />
+          </div>
+          {labelsHidden && <p className="mb-2 ml-7 text-sm text-loam-500">{t('drawing.layers_panel.labels_hint')}</p>}
         </li>
         {/* The sector analysis around the terrain: off unless asked, to present a design. */}
         <li>

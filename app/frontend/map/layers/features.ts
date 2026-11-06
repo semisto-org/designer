@@ -97,6 +97,10 @@ export function zoneLabelLayout(placement: 'point' | 'line-center') {
 const ZONE_MEASURE_COLOR = '#4d4a45'
 export const ZONE_LABEL_PAINT = { 'text-color': '#1a1a1a' }
 
+/** The zones and the lines (« Zone » tool) whose name and measure are written on a paper label. */
+export const ZONE_LABEL_FILTER = ['all', ['==', ['get', 'kind'], 'zone'], ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]], ['any', ['has', 'name'], ['has', 'zone_measure']]]
+export const LINE_LABEL_FILTER = ['all', ['==', ['get', 'kind'], 'line'], ['in', ['geometry-type'], ['literal', ['LineString', 'MultiLineString']]], ['any', ['has', 'name'], ['has', 'zone_measure']]]
+
 const isPlantPoint = ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['get', 'kind'], 'plant']]
 
 /**
@@ -189,7 +193,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'symbol',
     source: FEATURES_SOURCE,
     minzoom: 15,
-    filter: ['all', ['==', ['get', 'kind'], 'zone'], ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]], ['any', ['has', 'name'], ['has', 'zone_measure']]] as never,
+    filter: ZONE_LABEL_FILTER as never,
     layout: zoneLabelLayout('point') as never,
     paint: ZONE_LABEL_PAINT,
   })
@@ -198,7 +202,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     type: 'symbol',
     source: FEATURES_SOURCE,
     minzoom: 15,
-    filter: ['all', ['==', ['get', 'kind'], 'line'], ['in', ['geometry-type'], ['literal', ['LineString', 'MultiLineString']]], ['any', ['has', 'name'], ['has', 'zone_measure']]] as never,
+    filter: LINE_LABEL_FILTER as never,
     // Level, beside the middle of the path, as one writes along a hedge on a plan.
     layout: {
       ...zoneLabelLayout('line-center'),
