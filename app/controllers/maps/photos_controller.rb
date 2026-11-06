@@ -151,7 +151,7 @@ module Maps
       # Position arrives as lng/lat (read from the EXIF block by the browser, or
       # clicked on the map); empty values clear it.
       def photo_params
-        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :source, :location_source, :lng, :lat, :bioindicator_status, :retake_of_id)
+        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :soil_sample_id, :source, :location_source, :lng, :lat, :bioindicator_status, :retake_of_id)
         if raw.key?(:lng) || raw.key?(:lat)
           raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat])
         end

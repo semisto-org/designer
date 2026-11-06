@@ -11,7 +11,7 @@ class Maps::NewMapFlowTest < ActionDispatch::IntegrationTest
     sign_in_as users(:bob)
     get new_map_path, headers: inertia_headers
     props = JSON.parse(response.body)["props"]
-    assert_equal %w[plan ortho_2026 ortho_1994 ortho_1971], props["layers"].pluck("key")
+    assert_equal %w[plan ortho_2026], props["layers"].pluck("key"), "the plan and the default photo, not the whole timeline"
   end
 
   test "creates the map at the chosen address and opens the parcel picker" do

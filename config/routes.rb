@@ -366,6 +366,15 @@ Rails.application.routes.draw do
     end
   end
   # --- end weather_stations ---
+  # --- photo archive ---
+  # Which partial aerial flights have no photo over the map (PhotoArchive::Coverage).
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :photo_coverage, only: :show
+    end
+  end
+  # --- end photo archive ---
+
   # --- canopy ---
   resources :maps, only: [] do
     scope module: :maps do
@@ -436,6 +445,7 @@ Rails.application.routes.draw do
         end
         resources :reports, only: %i[show create destroy], controller: "soil_sample_reports"
         resource :draft, only: %i[update destroy], controller: "soil_sample_drafts"
+        resource :photos, only: %i[show update], controller: "soil_sample_photos"
       end
       resources :bioindicator_observations, only: %i[index create update destroy] do
         get :species, on: :collection

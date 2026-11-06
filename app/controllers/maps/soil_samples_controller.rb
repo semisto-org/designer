@@ -20,7 +20,7 @@ module Maps
     def index
       analyses = map_entitlements.analyses?
       render json: {
-        samples: @map.soil_samples.ordered.with_attached_lab_reports.map { |sample| sample.as_inertia(analyses:) },
+        samples: @map.soil_samples.ordered.with_attached_lab_reports.with_photos.map { |sample| sample.as_inertia(analyses:) },
         analyses:,
         fields: SoilSample::RESULT_FIELDS.map { |key, spec| { key:, unit: spec[:unit], min: spec[:range].min, max: spec[:range].max } },
         # Band limits, shown above the compare table: part of the analysis.

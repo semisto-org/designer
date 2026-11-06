@@ -64,6 +64,13 @@ class RegionLayer < ApplicationRecord
   def legend = option(:legend).presence
   def default? = option(:default) == true
 
+  # An aerial photo of the region's timeline (PhotoArchive): a base map of
+  # the « photos » group. Its infrared twin points to it (`infrared_of`); a
+  # flight that covers only part of the region is `partial`.
+  def photo? = base? && group_name == "photos"
+  def infrared? = option(:infrared_of).present?
+  def partial_coverage? = option(:partial) == true
+
   def identify_layers = option(:identify, :layers).presence || "all"
   def identify_formatter = option(:identify, :formatter).presence || key
   def identify_tolerance = (option(:identify, :tolerance) || 3).to_i

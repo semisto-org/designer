@@ -44,7 +44,7 @@ class TrialsController < ApplicationController
     cadastre = catalogue.detect { |l| l.role == "cadastre" }
     render inertia: "trials/show", props: {
       trial: @trial.as_inertia,
-      layers: [ *catalogue.bases, cadastre ].compact.uniq.map(&:as_inertia),
+      layers: [ *PhotoArchive.preview_bases(region), cadastre ].compact.uniq.map(&:as_inertia),
       cadastreLayer: cadastre&.key,
       knows: region_knowledge(catalogue),
       regionName: region.europe? ? nil : region.name,
