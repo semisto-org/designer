@@ -1,6 +1,7 @@
 import type { MapGeoJSONFeature, MapMouseEvent } from 'maplibre-gl'
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '@/lib/api'
+import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
   installWeatherStationLayers, linkToNearest, removeWeatherStationLayers, setWeatherStationLayersVisible, STATION_LAYER,
@@ -18,6 +19,7 @@ export default function WeatherStationsOverlay() {
   const editor = useEditor()
   const map = editor.instance
   const { showOnMap } = useWeatherStations()
+  const labelsHidden = useDrawingState((s) => s.labelsHidden)
   const [stations, setStations] = useState<StationsGeoJSON | null>(null)
   const center = editor.map.center
   const centerKey = center ? center.join(',') : ''
@@ -41,10 +43,10 @@ export default function WeatherStationsOverlay() {
     if (!stations?.available) return
     const timer = window.setTimeout(() => {
       installWeatherStationLayers(map, stations, link)
-      setWeatherStationLayersVisible(map, showOnMap)
+      setWeatherStationLayersVisible(map, showOnMap, labelsHidden)
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [map, stations, link, showOnMap])
+  }, [map, stations, link, showOnMap, labelsHidden])
   useEffect(() => () => removeWeatherStationLayers(map), [map])
 
   useEffect(() => {
