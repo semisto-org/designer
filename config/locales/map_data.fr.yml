@@ -33,6 +33,28 @@ fr:
       group_count: "%{on} / %{total}"
       identify_hint: "Touche la carte pour lire les données des couches affichées."
       empty: "Aucune couche de données n'est disponible pour cette région."
+    # The aerial photos through time (PhotoTimeline in « Couches »).
+    photos:
+      button: "Photo aérienne"
+      slider: "Année de la photo aérienne"
+      older: "Photo plus ancienne"
+      newer: "Photo plus récente"
+      today: "aujourd'hui"
+      latest: "la plus récente"
+      years_ago:
+        zero: "cette année"
+        one: "l'an dernier"
+        other: "il y a %{count} ans"
+      seasons:
+        spring: "Printemps"
+        summer: "Été"
+        winter: "Hiver"
+      infrared: "Infrarouge"
+      infrared_hint: "La végétation vigoureuse ressort en rouge, l'eau et les sols humides en sombre."
+      missing:
+        one: "1 vol partiel ne passe pas au-dessus de ton terrain : il n'est pas dans la liste."
+        other: "%{count} vols partiels ne passent pas au-dessus de ton terrain : ils ne sont pas dans la liste."
+      go_see: "Une haie, une mare, un chemin ont disparu ? Va voir sur place ce qu'il en reste."
     legend:
       title: "Légende"
       show_all: "Voir les %{count} classes"

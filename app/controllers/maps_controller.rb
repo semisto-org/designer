@@ -47,7 +47,7 @@ class MapsController < ApplicationController
     end
     region = Region.europe || Region.default
     render inertia: "maps/new", props: {
-      region: region.as_inertia, layers: region.catalogue.enabled.bases.map(&:as_inertia),
+      region: region.as_inertia, layers: PhotoArchive.preview_bases(region).map(&:as_inertia),
       # Where the map can go: my own maps or one of my teams, with their room.
       spaces: new_map_spaces.as_json
     }

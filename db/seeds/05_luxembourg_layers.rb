@@ -24,9 +24,35 @@ tile = lambda do |key, name, group, layer, position:, description:, order:, cate
   }
 end
 
+# Every flight geoportail.lu publishes, on the timeline of the « Couches »
+# panel (ortho_latest is the summer 2025 flight today, so that one has no
+# entry of its own). Checked on 2026-11-06 from the WMTS GetCapabilities.
+flights = [
+  [ "1967", 1967, nil, "Photo aérienne de 1967, en noir et blanc : haies, vergers et chemins disparus." ],
+  *[ 2001, 2004, 2007, 2010, 2013, 2016, 2017, 2018 ].map { |year| [ year.to_s, year, nil, nil ] },
+  [ "2019", 2019, nil, nil ], [ "2019_winter", 2019, "winter", nil ],
+  *[ 2020, 2021, 2022, 2023 ].map { |year| [ year.to_s, year, nil, nil ] },
+  [ "2025_winter", 2025, "winter", nil ]
+]
+photos = flights.map do |suffix, year, season, description|
+  label = season ? "hiver #{year}" : year.to_s
+  position = year < 2000 ? 16 : 20 + ((year - 2000) / 2)
+  tile.("ortho_#{suffix.sub("winter", "hiver")}", season ? "Photo d'hiver #{year}" : "Photo #{year}", "photos", "ortho_#{suffix}",
+        category: "base", ext: "jpeg", opacity: 1.0, position:, order: position,
+        options: { "year" => year, "vintage" => label, "season" => season }.compact,
+        description: description || (season ? "La photo aérienne de l'hiver #{year} : arbres nus, on voit le sol, les fossés et les haies." :
+                                               "Photo aérienne de #{year} : comparer avec aujourd'hui ce qui a poussé, disparu ou changé."))
+end
+photos << tile.("ortho_ir", "Photo 2010 en infrarouge", "photos", "ortho_irc", category: "base", ext: "jpeg",
+                opacity: 1.0, position: 25, order: 25, options: { "year" => 2010, "vintage" => "2010", "infrared_of" => "ortho_2010" },
+                description: "En infrarouge fausses couleurs (vol de 2010) : la végétation en pleine santé ressort en rouge vif, " \
+                             "l'eau et les sols humides en sombre. Utile pour repérer les zones humides et les plantes qui souffrent.")
+
 catalogue = [
-  tile.("ortho", "Photo aérienne", "photos", "ortho_latest", category: "base", ext: "jpeg",
-        opacity: 1.0, position: 20, order: 20, options: { "default" => true },
+  *photos,
+  tile.("ortho", "Photo aérienne la plus récente", "photos", "ortho_latest", category: "base", ext: "jpeg",
+        opacity: 1.0, position: 45, order: 45,
+        options: { "default" => true, "latest" => true, "vintage" => "la plus récente" },
         description: "La photo aérienne la plus récente du Luxembourg : le terrain tel qu'il est aujourd'hui."),
   tile.("topo", "Carte topographique", "plan", "topomap", category: "base", matrix: "GLOBAL_WEBMERCATOR",
         opacity: 1.0, position: 15, order: 15, max_zoom: 18,
