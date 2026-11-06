@@ -12,7 +12,7 @@ import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import { graftProperty, isPatch, isPlant, numberProperty, trainedCrown, trainingProperty } from '@/map/plants/properties'
 import { scheduleReload, setPlacing, usePlanting } from '@/map/plants/store'
 import { FEATURES_SOURCE, featureLabelFilter } from '@/map/layers/features'
-import { stackFeatureLayers } from '@/map/layers/stack'
+import { mustRaise, stackFeatureLayers } from '@/map/layers/stack'
 import { plantLabelRank, plantLabelText, plantLabelZoom, type PlantLabelStyle } from '@/map/plants/labelRank'
 import { plantLabelStyleStore, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS } from '@/map/plants/strata'
@@ -288,9 +288,16 @@ function install(map: MapLibreMap, data: ReturnType<typeof crownsOf>) {
   stackFeatureLayers(map)
 }
 
-/** The pastilles cover the plant's point, which the features layers may have drawn later. */
+/**
+ * The pastilles cover the plant's point, which the features layers may have
+ * drawn later. Moves them only when one of those layers sits above them: a
+ * move marks the style changed, and a move on every `styledata` would make
+ * the next one, keeping the map busy for as long as it is open.
+ */
 function raiseNumbers(map: MapLibreMap) {
-  for (const id of [`${NUMBERS}-disc`, `${NUMBERS}-text`]) if (map.getLayer(id)) map.moveLayer(id)
+  const ids = [`${NUMBERS}-disc`, `${NUMBERS}-text`]
+  if (!mustRaise(map.getLayersOrder(), ids)) return
+  for (const id of ids) map.moveLayer(id)
 }
 
 /**
@@ -336,12 +343,21 @@ export default function PlantsOverlay() {
   const latest = useRef(layers)
   latest.current = layers
   useEffect(() => {
-    const apply = () => safeInstall(map, latest.current)
+    // Only when a new style dropped our sources: `styledata` also follows
+    // every change made to the current style, our own included, and
+    // reinstalling then would send all the crowns to the worker again.
+    // Layers added since may still cover the plants: put the order back,
+    // which moves nothing when it already is right.
+    const apply = () => {
+      if (!map.getSource(CROWNS)) return safeInstall(map, latest.current)
+      raiseNumbers(map)
+      stackFeatureLayers(map)
+    }
     // The features source comes back after a style change: colour its points again.
     const onSource = (e: { sourceId?: string; sourceDataType?: string }) => {
       if (e.sourceId === FEATURES_SOURCE && e.sourceDataType === 'metadata') colorPoints(map, latest.current.points)
     }
-    apply()
+    safeInstall(map, latest.current)
     map.on('styledata', apply)
     map.on('sourcedata', onSource)
     return () => {
