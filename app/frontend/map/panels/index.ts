@@ -106,6 +106,7 @@ import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
 import FunctionsPanel from '@/map/functions/FunctionsPanel'
 import PresentationPanel from '@/map/presentation/PresentationPanel'
 import PresentationOverlay from '@/map/presentation/PresentationOverlay'
+import MapOpeningProbe from '@/map/performance/MapOpeningProbe'
 import FunctionsSection from '@/map/functions/FunctionsSection'
 import { appliesToFunctions } from '@/map/functions/store'
 
@@ -232,4 +233,5 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'earthworks', component: EarthworksOverlay, order: 12 },
   { id: 'sectors', component: SectorsOverlay, order: 13 },
   { id: 'presentation', component: PresentationOverlay, order: 95 },
+  { id: 'opening-probe', component: MapOpeningProbe, order: 200 },
 ]
