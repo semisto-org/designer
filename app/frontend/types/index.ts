@@ -152,6 +152,8 @@ export type MapFeatureProperties = {
   style: Record<string, unknown>
   /** Free tags shared by the map's elements (MapFeature::Tags). */
   tags?: string[]
+  /** The project variant it belongs to (map/variants); null: common to all, or on the ground. */
+  variant_id?: number | null
   lockVersion: number
   updatedAt: string
   [key: string]: unknown

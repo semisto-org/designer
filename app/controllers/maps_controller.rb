@@ -73,6 +73,8 @@ class MapsController < ApplicationController
       layers: @map.region.catalogue.enabled.map(&:as_inertia),
       features: @map.features.where.not(status: "rejected").map(&:as_geojson),
       mapEntitlements: map_entitlements.as_json,
+      # Project variants (« Projet 1 », « Projet 2 »): the map shows one at a time.
+      variants: @map.variants.as_json,
       # Dated drone views, newest first (« Couches », with the base maps),
       # and for editors the ones imported from a file, to follow them.
       aerialViews: @map.aerial_views.ready.map { _1.as_inertia(archive_url: archive_map_aerial_view_path(@map, _1)) },

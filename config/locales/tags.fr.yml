@@ -3,10 +3,10 @@
 # les groupent.
 fr:
   tags:
-    version: "Version"
-    version_all: "Toutes les versions"
-    version_hint: "Montrer sur la carte une seule version : les éléments de cette étiquette, et ceux sans étiquette, communs à toutes. Le plan PDF imprime la version choisie."
     title: "Étiquettes"
+    shown_label: "N’afficher qu’une étiquette"
+    shown_all: "Toutes les étiquettes"
+    shown_hint: "Ses éléments, et ceux sans étiquette. Pratique pour montrer un flux ou une phase à la fois ; le plan PDF suit. Pour comparer des idées de projet, utilise les variantes."
     placeholder: "Ajouter une étiquette (zone nord, phase 1…)"
     add_another: "Ajouter une étiquette"
     add: "Ajouter une étiquette"

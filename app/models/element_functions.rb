@@ -83,7 +83,7 @@ class ElementFunctions
 
   private
     def features
-      @features ||= @map.features.active.where.not(layer: MapFeature::ANNOTATION_LAYERS).includes(:patch_items).to_a.select { |f| self.class.applies?(f) }
+      @features ||= @map.features.active.in_design.where.not(layer: MapFeature::ANNOTATION_LAYERS).includes(:patch_items).to_a.select { |f| self.class.applies?(f) }
     end
 
     def species

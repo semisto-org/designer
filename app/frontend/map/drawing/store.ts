@@ -27,11 +27,15 @@ export type DrawingState = {
   shapeEditFrom: 'peek' | 'inspector'
   /** The tool the edit starts with: `extend` for « Continuer le tracé ». */
   shapeEditTool: PointTool
-  /** The tag shown as « version » on the map (null: everything). */
-  version: string | null
+  /**
+   * One tag shown on its own (« Flux récolte »…): elements carrying it, and
+   * those with no tag at all; null: every element. Set in « Calques », kept
+   * by « Présenter » steps. Project variants are map/variants.
+   */
+  shownTag: string | null
 }
 
-let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], labelsHidden: false, tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', version: null }
+let state: DrawingState = { mapId: null, hiddenLayers: [], hiddenKinds: [], hiddenStrata: [], hiddenSoil: [], labelsHidden: false, tool: null, shapeEditId: null, shapeEditFrom: 'inspector', shapeEditTool: 'move', shownTag: null }
 const listeners = new Set<() => void>()
 
 export const drawingStore = {
@@ -54,7 +58,8 @@ export function useDrawingState<T>(select: (s: DrawingState) => T): T {
 
 type HiddenList = 'layers' | 'kinds' | 'strata' | 'soil'
 const storageKey = (mapId: number, list: HiddenList = 'layers') => `designer:map:${mapId}:hidden-${list}`
-const versionKey = (mapId: number) => `designer:map:${mapId}:version`
+// The former « Version » picker's key: the tag a viewer chose stays chosen.
+const shownTagKey = (mapId: number) => `designer:map:${mapId}:version`
 const labelsKey = (mapId: number) => `designer:map:${mapId}:labels-hidden`
 
 function readLabelsHidden(mapId: number): boolean {
@@ -87,25 +92,25 @@ function writeList(list: HiddenList, values: string[]) {
 export function initDrawingState(mapId: number) {
   if (state.mapId === mapId) return
   const hidden = readList(mapId, 'layers')
-  let version: string | null = null
+  let shownTag: string | null = null
   try {
-    version = window.localStorage.getItem(versionKey(mapId)) || null
+    shownTag = window.localStorage.getItem(shownTagKey(mapId)) || null
   } catch {
-    version = null
+    shownTag = null
   }
   drawingStore.set({
     mapId, hiddenLayers: hidden, hiddenKinds: readList(mapId, 'kinds'), hiddenStrata: readList(mapId, 'strata'), hiddenSoil: readList(mapId, 'soil'),
-    labelsHidden: readLabelsHidden(mapId), tool: null, shapeEditId: null, version,
+    labelsHidden: readLabelsHidden(mapId), tool: null, shapeEditId: null, shownTag,
   })
 }
 
-/** Shows one version (a tag) on the map, or everything with null; remembered per map. */
-export function setVersion(version: string | null) {
-  drawingStore.set({ version })
+/** Shows one tag on its own (null: every element); remembered per map. */
+export function setShownTag(tag: string | null) {
+  drawingStore.set({ shownTag: tag })
   if (state.mapId == null) return
   try {
-    if (version) window.localStorage.setItem(versionKey(state.mapId), version)
-    else window.localStorage.removeItem(versionKey(state.mapId))
+    if (tag) window.localStorage.setItem(shownTagKey(state.mapId), tag)
+    else window.localStorage.removeItem(shownTagKey(state.mapId))
   } catch {
     // Private mode or blocked storage: the choice lasts for this visit only.
   }
@@ -160,6 +165,7 @@ export function showEverything() {
   setHiddenKinds([])
   setHiddenStrata([])
   setHiddenSoil([])
+  setShownTag(null)
 }
 
 /** Asks the drawing toolbar to let the user reshape a feature. */

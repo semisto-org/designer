@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -633,6 +633,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.datetime "updated_at", null: false
     t.string "tags", default: [], null: false, array: true
     t.datetime "deleted_at"
+    t.bigint "variant_id"
     t.index ["created_by_id"], name: "index_map_features_on_created_by_id"
     t.index ["deleted_at"], name: "index_map_features_on_deleted_at", where: "(deleted_at IS NOT NULL)"
     t.index ["geometry"], name: "index_map_features_on_geometry", using: :gist
@@ -640,6 +641,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["map_id", "status"], name: "index_map_features_on_map_id_and_status"
     t.index ["map_id"], name: "index_map_features_on_map_id"
     t.index ["updated_by_id"], name: "index_map_features_on_updated_by_id"
+    t.index ["variant_id"], name: "index_map_features_on_variant_id"
   end
 
   create_table "map_invitations", force: :cascade do |t|
@@ -840,6 +842,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["region_id"], name: "index_map_trials_on_region_id"
     t.index ["source_publication_id"], name: "index_map_trials_on_source_publication_id"
     t.index ["token"], name: "index_map_trials_on_token", unique: true
+  end
+
+  create_table "map_variants", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.integer "position", default: 0, null: false
+    t.boolean "retained", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_map_variants_on_map_id"
+    t.index ["map_id"], name: "index_map_variants_one_retained", unique: true, where: "retained"
   end
 
   create_table "maps", force: :cascade do |t|
@@ -1890,6 +1904,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "map_documents", "project_sheet_links", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "content_edited_by_id", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "uploaded_by_id", on_delete: :nullify
+  add_foreign_key "map_features", "map_variants", column: "variant_id", on_delete: :nullify
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
@@ -1920,6 +1935,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "map_trials", "maps", column: "adopted_map_id", on_delete: :nullify
   add_foreign_key "map_trials", "regions"
   add_foreign_key "map_trials", "users", column: "claimant_id", on_delete: :nullify
+  add_foreign_key "map_variants", "maps", on_delete: :cascade
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify

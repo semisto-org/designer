@@ -1,5 +1,5 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
-import { Apple, Presentation, Trees } from 'lucide-react'
+import { Apple, GitBranch, Presentation, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -37,7 +37,9 @@ import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
 import { FeedbackButton } from '@/components/feedback/FeedbackButton'
 import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
-import VersionPicker from '@/map/tags/VersionPicker'
+import VariantPicker from '@/map/variants/VariantPicker'
+import VariantsPanel from '@/map/variants/VariantsPanel'
+import VariantSection, { appliesToVariant } from '@/map/variants/VariantSection'
 import TimeStrip from '@/map/time/TimeStrip'
 import ShadeOverlay from '@/map/time/ShadeOverlay'
 import PalettePanel from '@/map/plants/PalettePanel'
@@ -131,6 +133,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'zones', label: 'permaculture_zones.panel_title', icon: Target, group: 'design', component: ZonesPanel, order: 10, essential: true },
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20, essential: true },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50, essential: true },
+  { id: 'variants', label: 'variants.panel_title', icon: GitBranch, group: 'design', component: VariantsPanel, order: 52 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
   { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: FunctionsPanel, order: 60 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
@@ -169,6 +172,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
   { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
   { id: 'project-state', applies: appliesToProjectState, component: ProjectStateSection, order: 16 },
+  { id: 'variant', applies: appliesToVariant, component: VariantSection, order: 16.5 },
   { id: 'implementation-phase', applies: appliesToPhase, component: PhaseSection, order: 17 },
   { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
   { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
@@ -197,7 +201,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'chat', component: MapChat, order: 91 },
   { id: 'welcome', component: WelcomeCard, order: 92 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
-  { id: 'version', component: VersionPicker, order: 25 },
+  { id: 'variant', component: VariantPicker, order: 25 },
   { id: 'time-strip', component: TimeStrip, order: 24 },
   { id: 'time-shade', component: ShadeOverlay, order: 19 },
   { id: 'tour', component: TourOverlay, order: 100 },

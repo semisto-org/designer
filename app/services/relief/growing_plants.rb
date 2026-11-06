@@ -29,7 +29,7 @@ module Relief
 
     private
       def plant_rows
-        @map.features.where(kind: PlantableFeature::PLANT, status: "active").order(:id).filter_map do |feature|
+        @map.features.in_design.where(kind: PlantableFeature::PLANT, status: "active").order(:id).filter_map do |feature|
           point = feature.geometry
           next unless point.respond_to?(:x)
 

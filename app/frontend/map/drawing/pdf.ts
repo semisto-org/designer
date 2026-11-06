@@ -10,7 +10,8 @@ import { applyLayerVisibility, installDrawingImages, TRANSIENT_PREFIX } from '@/
 import { BOUNDARY_SOURCE } from '@/map/layers/boundary'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { PARCELS_SOURCE } from '@/map/layers/parcels'
-import { inVersion } from '@/map/tags/tags'
+import { inTag } from '@/map/tags/tags'
+import { inVariant } from '@/map/variants/variants'
 import { isZoneKind } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
@@ -177,11 +178,11 @@ function applyTheme(map: MapLibreMap, theme: string) {
 
 /** `hiddenKinds` and `hiddenIds` (plants of a hidden strata): what « Calques » hides inside the shown layers; `theme`: the design layer of a thematic sheet. */
 type RenderOptions = {
-  center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[]
+  center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; variant?: number | null; tag?: string | null; hiddenKinds?: string[]; hiddenIds?: number[]
   theme?: string | null
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, version, hiddenKinds, hiddenIds, theme }: RenderOptions): Promise<string> {
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -205,7 +206,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
   try {
     installDrawingImages(map, source)
     await waitFor(map, 'load')
-    applyLayerVisibility(map, hiddenLayers, { activeOnly: true, version, hiddenKinds, hiddenIds })
+    applyLayerVisibility(map, hiddenLayers, { activeOnly: true, variant, tag, hiddenKinds, hiddenIds })
     if (theme) applyTheme(map, theme)
     await waitFor(map, 'idle')
     return map.getCanvas().toDataURL('image/jpeg', 0.92)
@@ -222,8 +223,8 @@ export type LegendEntry = { key: string; label: string; color: string; geometry:
 
 /** One entry per kind (and per named zone) drawn on the visible layers, in design layer order. */
 export function legendEntries(
-  features: MapFeature[], hiddenLayers: string[], withBoundary: boolean, version: string | null = null,
-  hiddenInside: { kinds?: string[]; ids?: number[] } = {},
+  features: MapFeature[], hiddenLayers: string[], withBoundary: boolean, variant: number | null = null,
+  hiddenInside: { kinds?: string[]; ids?: number[]; tag?: string | null } = {},
 ): LegendEntry[] {
   const hiddenKinds = hiddenInside.kinds ?? []
   const hiddenIds = new Set(hiddenInside.ids ?? [])
@@ -231,7 +232,7 @@ export function legendEntries(
     ? [{ key: 'boundary', label: t('drawing.pdf.boundary'), color: '#5b5781', geometry: 'LineString' }]
     : []
   const seen = new Set<string>()
-  const visible = features.filter((f) => f.properties.status === 'active' && !hiddenLayers.includes(f.properties.layer) && inVersion(f, version) &&
+  const visible = features.filter((f) => f.properties.status === 'active' && !hiddenLayers.includes(f.properties.layer) && inVariant(f.properties, variant) && inTag(f, hiddenInside.tag ?? null) &&
     !hiddenIds.has(f.properties.id) && !(f.properties.kind && hiddenKinds.includes(f.properties.kind)))
   for (const layer of DESIGN_LAYERS) {
     for (const feature of visible.filter((f) => f.properties.layer === layer)) {
@@ -359,7 +360,10 @@ export type PdfInput = {
   hiddenLayers: string[]
   hiddenKinds?: string[]
   hiddenIds?: number[]
-  version?: string | null
+  /** The project variant printed (map/variants): the common project and its own elements. */
+  variant?: number | null
+  /** The tag shown on its own in « Calques », if any. */
+  tag?: string | null
   author: string | null
   areaM2: number | null
   legend: LegendEntry[]
@@ -378,9 +382,9 @@ export const SHEET_LAYERS = ['existing', 'water', 'access', 'structures', 'plant
  * The sheets of a « Carnet de planches »: the overall plan, then each design
  * layer that has something to show on it, with only its own legend entries.
  */
-export function bookSheets(title: string, legend: LegendEntry[], features: MapFeature[], hiddenLayers: string[], version: string | null): Sheet[] {
+export function bookSheets(title: string, legend: LegendEntry[], features: MapFeature[], hiddenLayers: string[], variant: number | null, tag: string | null = null): Sheet[] {
   const drawn = new Set(features
-    .filter((f) => f.properties.status === 'active' && inVersion(f, version))
+    .filter((f) => f.properties.status === 'active' && inVariant(f.properties, variant) && inTag(f, tag))
     .map((f) => f.properties.layer))
   const themes = SHEET_LAYERS.filter((layer) => drawn.has(layer) && !hiddenLayers.includes(layer))
   return [
@@ -403,7 +407,7 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
   for (const [i, sheet] of sheets.entries()) {
     onProgress?.('map', { page: i + 1, pages: sheets.length })
     const image = await renderMap(source, {
-      center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers, version: input.version,
+      center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers, variant: input.variant, tag: input.tag,
       hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds, theme: sheet.theme,
     })
     onProgress?.('pdf', { page: i + 1, pages: sheets.length })

@@ -13,7 +13,7 @@ class Offer
              CASE WHEN ST_GeometryType(geometry) IN ('ST_Polygon', 'ST_MultiPolygon') THEN ST_Area(geometry::geography) END AS area,
              CASE WHEN ST_GeometryType(geometry) IN ('ST_LineString', 'ST_MultiLineString') THEN ST_Length(geometry::geography) END AS length
       FROM map_features
-      WHERE map_id = $1 AND status = 'active' AND deleted_at IS NULL AND layer <> 'networks'
+      WHERE map_id = $1 AND status = 'active' AND deleted_at IS NULL AND (variant_id IS NULL OR variant_id IN (SELECT id FROM map_variants WHERE retained)) AND layer <> 'networks'
         AND ST_GeometryType(geometry) IN ('ST_Polygon', 'ST_MultiPolygon', 'ST_LineString', 'ST_MultiLineString')
       ORDER BY id
     SQL
@@ -101,7 +101,7 @@ class Offer
     def suggestions
       @suggestions ||= begin
         sheet = map.project_sheet
-        counts = map.features.active.group(:kind).count
+        counts = map.features.active.in_design.group(:kind).count
         hints = {}
         hints["pond"] = "pond_drawn" if counts["pond"].to_i.positive?
         hints["existing_trees"] = "existing_trees_drawn" if counts["existing_tree"].to_i.positive?
