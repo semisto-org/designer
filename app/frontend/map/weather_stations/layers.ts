@@ -2,13 +2,12 @@ import type { Feature, FeatureCollection, LineString } from 'geojson'
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import type { StationsGeoJSON } from '@/types/weather_stations'
+import { STATION_LAYER, WEATHER_STATION_LAYER_IDS } from './visibility'
+
+export { setWeatherStationLayersVisible, STATION_LAYER, WEATHER_STATION_LAYER_IDS, WEATHER_STATION_NAME_LAYER } from './visibility'
 
 export const STATIONS_SOURCE = 'weather-stations'
 export const LINK_SOURCE = 'weather-stations-link'
-export const STATION_LAYER = 'weather-stations-icon'
-export const WEATHER_STATION_LAYER_IDS = [
-  'weather-stations-link-casing', 'weather-stations-link-line', 'weather-stations-halo', STATION_LAYER, 'weather-stations-label',
-] as const
 
 const ICON = 'weather-station'
 const ICON_NEAREST = 'weather-station-nearest'
@@ -150,12 +149,6 @@ export function installWeatherStationLayers(map: MapLibreMap, stations: Stations
     paint: label.paint,
   })
   raise(map)
-}
-
-export function setWeatherStationLayersVisible(map: Pick<MapLibreMap, 'getLayer' | 'setLayoutProperty'>, visible: boolean) {
-  WEATHER_STATION_LAYER_IDS.forEach((id) => {
-    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none')
-  })
 }
 
 export function removeWeatherStationLayers(map: MapLibreMap) {

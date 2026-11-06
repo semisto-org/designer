@@ -14,3 +14,14 @@ export function peekLabel(feature: Pick<MapFeature, 'properties'> | undefined, p
   }
   return typeof name === 'string' && name.trim() ? name.trim() : null
 }
+
+/**
+ * The name of a marker that is not a map element (a soil sampling point, a
+ * bio-indicator plant, a weather station): its `label`, else its `name`.
+ */
+export function markerPeekLabel(properties: Record<string, unknown> | null | undefined): string | null {
+  for (const value of [properties?.label, properties?.name]) {
+    if (typeof value === 'string' && value.trim()) return value.trim()
+  }
+  return null
+}
