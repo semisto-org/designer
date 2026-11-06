@@ -28,8 +28,9 @@ class MapsController < ApplicationController
         m.as_inertia(Current.user, role: roles[m.id], boundary: outline&.dig(:boundary), bbox: outline&.dig(:bbox))
           .merge(teamId: m.organization_id, sketch: sketches[m.id])
       end,
-      # The map worked on last opens large, with its next step (journey).
-      resume: maps.first && { mapId: maps.first.id, next: Journey.new(maps.first).next_action },
+      # The map I opened last opens large, with its next step (journey);
+      # never opened any yet: the map changed last.
+      resume: resume_json(maps),
       # Room for a new map among my own maps, and in each of my teams (a team
       # someone pays for has its own room, whatever my own plan).
       canCreate: new_map_spaces.find(nil).can_create?,
@@ -69,6 +70,7 @@ class MapsController < ApplicationController
   end
 
   def show
+    MapVisit.record(Current.user, @map) if request.format.html? && !impersonating?
     render inertia: "maps/show", props: {
       map: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?, chat: @map.chat_member?(Current.user)),
       layers: @map.region.catalogue.enabled.map(&:as_inertia),
@@ -126,6 +128,14 @@ class MapsController < ApplicationController
 
     def renaming?
       params[:map].respond_to?(:key?) && params[:map].key?(:name) && params[:map][:name].to_s.strip != @map.name
+    end
+
+    # One query for the whole list (see MapsController#index performance).
+    def resume_json(maps)
+      return nil if maps.empty?
+      opened = MapVisit.opened_at_by_map(Current.user, maps.map(&:id))
+      map = maps.select { |m| opened[m.id] }.max_by { |m| opened[m.id] } || maps.first
+      { mapId: map.id, next: Journey.new(map).next_action, openedAt: opened[map.id]&.iso8601 }
     end
 
     # Map#role_for for a whole list, in two queries instead of two a map.

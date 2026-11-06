@@ -24,6 +24,7 @@ class Map < ApplicationRecord
   belongs_to :organization, optional: true
   belongs_to :region
   has_many :memberships, class_name: "MapMembership", dependent: :destroy
+  has_many :visits, class_name: "MapVisit", dependent: :delete_all
   has_many :members, through: :memberships, source: :user
   has_many :invitations, class_name: "MapInvitation", dependent: :destroy
   has_many :features, class_name: "MapFeature", dependent: :destroy

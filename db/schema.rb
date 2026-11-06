@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_06_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_06_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -856,6 +856,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_120000) do
     t.datetime "updated_at", null: false
     t.index ["map_id"], name: "index_map_variants_on_map_id"
     t.index ["map_id"], name: "index_map_variants_one_retained", unique: true, where: "retained"
+  end
+
+  create_table "map_visits", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "map_id", null: false
+    t.datetime "opened_at", null: false
+    t.index ["map_id"], name: "index_map_visits_on_map_id"
+    t.index ["user_id", "map_id"], name: "index_map_visits_on_user_id_and_map_id", unique: true
   end
 
   create_table "maps", force: :cascade do |t|
@@ -1939,6 +1947,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_120000) do
   add_foreign_key "map_trials", "regions"
   add_foreign_key "map_trials", "users", column: "claimant_id", on_delete: :nullify
   add_foreign_key "map_variants", "maps", on_delete: :cascade
+  add_foreign_key "map_visits", "maps", on_delete: :cascade
+  add_foreign_key "map_visits", "users", on_delete: :cascade
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify

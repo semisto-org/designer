@@ -23,6 +23,48 @@ class MapsControllerTest < ActionDispatch::IntegrationTest
     assert_includes %w[item advance complete], props.dig("resume", "next", "type")
   end
 
+  test "« Mes cartes » resumes on the map I opened last, not the one a teammate changed last" do
+    user = users(:michael)
+    team = Organization.create_with_admin!(users(:alice), name: "Semisto")
+    team.memberships.create!(user:, role: "member")
+    mine = maps(:ahinvaux)
+    sign_in_as user
+
+    get maps_path, headers: inertia_headers
+    first = JSON.parse(response.body)["props"]
+    assert_nil first.dig("resume", "openedAt"), "never opened: the map changed last, said so"
+
+    get map_path(mine)
+    assert_response :success
+    assert MapVisit.exists?(user:, map: mine)
+    travel 1.minute
+    users(:alice).owned_maps.create!(name: "Lautenne", region: regions(:wallonia), organization: team)
+
+    get maps_path, headers: inertia_headers
+    props = JSON.parse(response.body)["props"]
+    assert_equal "Lautenne", props["maps"].first["name"], "the list still sorts by last change"
+    assert_equal mine.id, props.dig("resume", "mapId")
+    assert props.dig("resume", "openedAt").present?
+  end
+
+  test "opening a map again moves the visit, and an admin signed in as someone leaves none" do
+    user = users(:michael)
+    sign_in_as user
+    get map_path(maps(:ahinvaux))
+    first = MapVisit.find_by(user:, map: maps(:ahinvaux)).opened_at
+    travel 1.hour
+    get map_path(maps(:ahinvaux))
+    assert_operator MapVisit.find_by(user:, map: maps(:ahinvaux)).opened_at, :>, first
+    assert_equal 1, MapVisit.where(user:).count
+
+    admin = User.create!(email_address: "staff@example.org", admin: true, account_kind: "individual")
+    sign_in_as admin
+    post admin_user_impersonation_path(users(:alice))
+    alice_map = users(:alice).owned_maps.create!(name: "Le verger", region: regions(:wallonia))
+    get map_path(alice_map)
+    assert_not MapVisit.exists?(map: alice_map)
+  end
+
   test "the list gives each map the same outline, box and role as the editor, in a few queries" do
     user = users(:michael)
     sign_in_as user
