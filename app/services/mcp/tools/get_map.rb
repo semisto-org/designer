@@ -310,12 +310,13 @@ module Mcp
           }
         end
 
-        # How many sampling points, how many carry lab reports, and how many
+        # How many sampling points, how many carry lab reports or photos, and how many
         # wait for the review of values an AI read (get_soil_samples).
         def soil_samples(map)
           samples = map.soil_samples.with_attached_lab_reports.to_a
+          with_photos = map.photos.where(soil_sample_id: samples.map(&:id)).distinct.count(:soil_sample_id)
           {
-            total: samples.size, analysed: samples.count(&:analysed?),
+            total: samples.size, analysed: samples.count(&:analysed?), with_photos:,
             with_reports: samples.count { |s| s.lab_reports.attached? },
             drafts_pending: samples.count { |s| s.draft.pending? }
           }

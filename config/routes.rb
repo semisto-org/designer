@@ -436,6 +436,7 @@ Rails.application.routes.draw do
         end
         resources :reports, only: %i[show create destroy], controller: "soil_sample_reports"
         resource :draft, only: %i[update destroy], controller: "soil_sample_drafts"
+        resource :photos, only: %i[show update], controller: "soil_sample_photos"
       end
       resources :bioindicator_observations, only: %i[index create update destroy] do
         get :species, on: :collection

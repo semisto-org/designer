@@ -27,6 +27,16 @@ Un **point**, c'est un endroit où tu prélèves de la terre, avec ses résultat
 
 Pour la texture, deux valeurs suffisent, la troisième est déduite.
 
+### Photographier chaque point
+
+On fait toujours au moins une photo à chaque point : le trou, la carotte posée au sol, le profil contre un mètre. La couleur, l'épaisseur de la terre sombre, les cailloux, les racines et les taches de rouille ou de gris (l'eau qui stagne) s'y lisent encore des années plus tard. Un point **Prélevé** sans photo le signale par **Pas encore de photo**.
+
+- Sous **Photos du point**, touche **Ajouter une photo** : sur le téléphone, le navigateur propose aussi l'appareil photo. Une photo sans position GPS est placée sur le point.
+- Ou touche **Lier des photos de la carte** pour choisir des photos déjà envoyées : les plus proches du point viennent d'abord. Une photo n'appartient qu'à un point ; en cocher une déjà liée à un autre point l'y déplace.
+- Dans l'app Semisto Terranova, touche **Relever**, puis **Photographier les points** : le point le plus proche vient d'abord, et les photos partent dès que le réseau revient.
+
+Ton IA voit les photos de chaque point et peut les lire avec les résultats : « Regarde les photos des points de sol de ma carte et dis-moi ce que tu vois du sol. »
+
 ### Faire lire les rapports par ton IA
 
 Terranova ne lit pas les PDF lui-même, mais ton IA peut le faire. Une fois [ton IA reliée à Terranova](/help/connecter-son-ia), demande-lui par exemple : « Lis les rapports du laboratoire du point P1 de ma carte dans Semisto Terranova et propose les résultats. » Elle lit chaque PDF (même un scan), convertit les unités si besoin (un phosphore donné en P2O5, un potassium en mg/kg…) et dit d'où vient chaque valeur.

@@ -185,6 +185,20 @@ export const soilActions = {
     return saved
   },
 
+  /** The point's photos become exactly these (linked from the map's photos). */
+  async linkPhotos(mapId: number, id: number, photoIds: number[]): Promise<SoilSampleData> {
+    const saved = await api<SoilSampleData>(`/maps/${mapId}/soil_samples/${id}/photos`, { method: 'PUT', body: { photo_ids: photoIds } })
+    soilActions.upsertSample(saved)
+    return saved
+  },
+
+  /** A photo just sent from the point: shown with it at once, without reloading the points. */
+  addPhoto(sampleId: number, photo: MapPhotoData) {
+    const sample = state.samples.find((s) => s.id === sampleId)
+    if (!sample) return
+    soilActions.upsertSample({ ...sample, photos: [photo, ...sample.photos.filter((p) => p.id !== photo.id)] })
+  },
+
   /** Keeps or refuses values the AI proposed (« result:ph_water », « other:Plomb (Pb) », « lab »…). */
   async reviewDraft(mapId: number, id: number, review: { keep?: string[]; refuse?: string[] }): Promise<SoilSampleData> {
     const saved = await api<SoilSampleData>(`/maps/${mapId}/soil_samples/${id}/draft`, { method: 'PATCH', body: review })

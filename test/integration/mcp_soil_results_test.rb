@@ -37,7 +37,7 @@ class McpSoilResultsTest < ActionDispatch::IntegrationTest
   test "get_map counts the sampling points and their reports" do
     data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
     refute error
-    assert_equal({ "total" => 1, "analysed" => 1, "with_reports" => 1, "drafts_pending" => 0 }, data["soil_samples"])
+    assert_equal({ "total" => 1, "analysed" => 1, "with_photos" => 0, "with_reports" => 1, "drafts_pending" => 0 }, data["soil_samples"])
   end
 
   test "get_soil_samples lists the points, their reports and the typed fields" do
