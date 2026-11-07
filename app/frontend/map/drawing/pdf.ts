@@ -7,7 +7,7 @@ import { DESIGN_LAYERS, elementFor, featureColor, layerColor } from '@/map/drawi
 import { GHOST_RASTER_PAINT, ghostPaint, type ThemeTest } from '@/map/drawing/ghost'
 import { drawIcon } from '@/map/drawing/icons'
 import { applyLayerVisibility, installDrawingImages, TRANSIENT_PREFIX } from '@/map/drawing/style'
-import { BOUNDARY_SOURCE } from '@/map/layers/boundary'
+import { BOUNDARY_MASK_SOURCE, BOUNDARY_SOURCE } from '@/map/layers/boundary'
 import { FEATURES_SOURCE } from '@/map/layers/features'
 import { PARCELS_SOURCE } from '@/map/layers/parcels'
 import { inTag } from '@/map/tags/tags'
@@ -176,13 +176,24 @@ function applyTheme(map: MapLibreMap, theme: string) {
   }
 }
 
-/** `hiddenKinds` and `hiddenIds` (plants of a hidden strata): what « Calques » hides inside the shown layers; `theme`: the design layer of a thematic sheet. */
+/**
+ * `hiddenKinds` and `hiddenIds` (plants of a hidden strata): what « Calques » hides inside the shown layers; `theme`: the design layer of a thematic sheet;
+ * `hideBoundary`: the terrain's outline (line, fill and the presentation mask around it) is left out of the print.
+ */
 type RenderOptions = {
   center: [number, number]; scale: number; frame: Box; hiddenLayers: string[]; variant?: number | null; tag?: string | null; hiddenKinds?: string[]; hiddenIds?: number[]
-  theme?: string | null
+  theme?: string | null; hideBoundary?: boolean
 }
 
-export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme }: RenderOptions): Promise<string> {
+/** Hides every layer drawn from the terrain's outline. */
+function hideBoundaryLayers(map: MapLibreMap) {
+  for (const layer of map.getStyle().layers) {
+    const source = 'source' in layer ? layer.source : null
+    if (source === BOUNDARY_SOURCE || source === BOUNDARY_MASK_SOURCE) map.setLayoutProperty(layer.id, 'visibility', 'none')
+  }
+}
+
+export async function renderMap(source: MapLibreMap, { center, scale, frame, hiddenLayers, variant, tag, hiddenKinds, hiddenIds, theme, hideBoundary }: RenderOptions): Promise<string> {
   const widthCss = Math.round(mmToCss(frame.w))
   const heightCss = Math.round(mmToCss(frame.h))
   const pixelRatio = Math.min(PRINT_DPI / CSS_DPI, MAX_CANVAS_PX / Math.max(widthCss, heightCss))
@@ -208,6 +219,7 @@ export async function renderMap(source: MapLibreMap, { center, scale, frame, hid
     await waitFor(map, 'load')
     applyLayerVisibility(map, hiddenLayers, { activeOnly: true, variant, tag, hiddenKinds, hiddenIds })
     if (theme) applyTheme(map, theme)
+    if (hideBoundary) hideBoundaryLayers(map)
     await waitFor(map, 'idle')
     return map.getCanvas().toDataURL('image/jpeg', 0.92)
   } finally {
@@ -360,6 +372,8 @@ export type PdfInput = {
   hiddenLayers: string[]
   hiddenKinds?: string[]
   hiddenIds?: number[]
+  /** Leaves the terrain's outline out of the plan (its legend entry is left out by the caller). */
+  hideBoundary?: boolean
   /** The project variant printed (map/variants): the common project and its own elements. */
   variant?: number | null
   /** The tag shown on its own in « Calques », if any. */
@@ -408,7 +422,7 @@ export async function exportPdf(source: MapLibreMap, input: PdfInput, onProgress
     onProgress?.('map', { page: i + 1, pages: sheets.length })
     const image = await renderMap(source, {
       center: input.center, scale: input.scale, frame: layout.frame, hiddenLayers: input.hiddenLayers, variant: input.variant, tag: input.tag,
-      hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds, theme: sheet.theme,
+      hiddenKinds: input.hiddenKinds, hiddenIds: input.hiddenIds, theme: sheet.theme, hideBoundary: input.hideBoundary,
     })
     onProgress?.('pdf', { page: i + 1, pages: sheets.length })
     if (i > 0) doc.addPage()
