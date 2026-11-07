@@ -13,9 +13,10 @@ fr:
     covered_count:
       one: "%{count} élément"
       other: "%{count} éléments"
-    existing_only: "seulement par l'existant"
+    existing_only: "Seulement par l'existant"
     look_title: "Sur le terrain"
     show: "Voir sur la carte"
+    hide: "Ne plus montrer"
     unmet_title: "Besoins que rien ne couvre"
     unmet_intro: "Un besoin que rien sur le lieu ne couvre, c'est du travail ou un achat chaque année."
     unmet_row: "%{resource} pour %{names}"
