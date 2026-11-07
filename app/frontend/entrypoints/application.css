@@ -149,6 +149,9 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 @keyframes notebook-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes sheet-left { from { transform: translateX(100%); } to { transform: none; } }
+/* « Présenter »: the camera's flash when a view is captured (map/presentation/flash.ts). */
+@keyframes camera-flash { 0% { opacity: 0; } 12% { opacity: 0.8; } 100% { opacity: 0; } }
+.camera-flash { position: fixed; inset: 0; z-index: 120; pointer-events: none; background: white; animation: camera-flash 420ms ease-out forwards; }
 
 /* Home page time-lapse: text set straight on the watercolour keeps a paper halo. */
 .timelapse-halo { text-shadow: 0 0 22px var(--color-loam-50), 0 0 8px var(--color-loam-50), 0 0 3px var(--color-loam-50); }
