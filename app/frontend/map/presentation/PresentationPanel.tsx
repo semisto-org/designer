@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ArrowDown, ArrowUp, Bot, Camera, GripVertical, Mountain, Pencil, Play, Plus, Trash2, Type } from 'lucide-react'
+import { ArrowDown, ArrowUp, Bot, Camera, Copy, GripVertical, Mountain, Pencil, Play, Plus, Trash2, Type } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
@@ -9,6 +9,7 @@ import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { captureView } from './view'
+import { duplicateStep, MAX_STEPS } from './duplicate'
 import {
   deletePresentation, loadPresentation, newStepId, requestStep, saveSteps, shownSteps, startPresentation, usePresentation,
 } from './store'
@@ -102,6 +103,13 @@ export default function PresentationPanel() {
     const step: PresentationStep = { id: newStepId(), title: t('presentations.new_slide_title'), shown: true, captured: true, slide: { body: '' }, view: { ...captureView(editor), panel: undefined } }
     save([...steps, step])
     setEditing(step.id)
+  }
+  const duplicate = (step: PresentationStep) => {
+    const result = duplicateStep(steps, step.id, newStepId(), t('presentations.copy_title', { title: step.title }))
+    if (!result) return fail(t('presentations.errors.too_many', { count: MAX_STEPS }))
+    save(result.steps)
+    setEditing(result.copy.id)
+    editor.notify(t('presentations.duplicated', { title: step.title }))
   }
   const accept = (step: PresentationStep, proposal: SlideProposal) => {
     update(step.id, { title: proposal.title || step.title, slide: { body: proposal.body }, shown: true, proposal: undefined })
@@ -227,6 +235,7 @@ export default function PresentationPanel() {
                 last={index === steps.length - 1}
                 onChange={(patch) => update(step.id, patch)}
                 onMove={(by) => move(index, by)}
+                onDuplicate={steps.length < MAX_STEPS ? () => duplicate(step) : undefined}
                 onRemove={() => remove(step)}
                 onClose={() => setEditing(null)}
               />
@@ -256,8 +265,10 @@ export default function PresentationPanel() {
 }
 
 /** Title and note of a step, saved when the field is left; order and removal. */
-function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose, onDropRelief }: {
+function StepEditor({ step, first, last, onChange, onMove, onDuplicate, onRemove, onClose, onDropRelief }: {
   step: PresentationStep
+  /** Absent when the presentation is full. */
+  onDuplicate?: () => void
   onDropRelief: () => void
   first: boolean
   last: boolean
@@ -306,6 +317,9 @@ function StepEditor({ step, first, last, onChange, onMove, onRemove, onClose, on
         </IconButton>
         <IconButton size="sm" label={t('presentations.move_down')} disabled={last} onClick={() => onMove(1)}>
           <ArrowDown />
+        </IconButton>
+        <IconButton size="sm" label={t('presentations.duplicate')} disabled={!onDuplicate} onClick={onDuplicate}>
+          <Copy />
         </IconButton>
         <IconButton size="sm" tone="danger" label={t('presentations.delete')} onClick={onRemove}>
           <Trash2 />
