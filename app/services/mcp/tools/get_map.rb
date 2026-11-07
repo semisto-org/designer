@@ -216,7 +216,7 @@ module Mcp
                 { id: step["id"], title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: (step["note"] if editor?),
                   slide: step["slide"] && { text: step["slide"]["body"] },
                   pending_proposal: step["proposal"]&.slice("title", "body", "new"),
-                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"], mode: view["mode"], variant_id: view["variantId"], in_3d: view["relief"].present? || nil }.compact
+                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"], mode: view["mode"], variant_id: view["variantId"], in_3d: view["relief"].present? || nil, view_3d: view["relief"]&.slice("tab", "year", "night").presence }.compact
               end
             }
           end

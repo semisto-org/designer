@@ -33,7 +33,9 @@ Ta **note** reste la tienne : le client qui suit la présentation depuis son com
 
 ## Une étape en 3D
 
-Certaines choses se comprennent mieux en relief : l'air froid qui coule la nuit au fond du vallon, la pente, l'ombre d'hiver. Clique sur l'étape, ouvre la **vue 3D** du terrain, place la caméra, choisis le fond, l'onglet (nuit, soleil…) et l'année des plantes, puis **Capturer la vue 3D**. Pendant la présentation, cette étape s'ouvre directement en 3D, et l'étape suivante te ramène à la carte. Le crayon permet de **retirer la vue 3D** d'une étape.
+Certaines choses se comprennent mieux en relief : l'air froid qui coule la nuit au fond du vallon, la pente, l'ombre d'hiver. Clique sur l'étape, ouvre la **vue 3D** du terrain, place la caméra, choisis le fond, l'onglet (nuit, soleil…) et l'année des plantes, puis **Capturer la vue 3D**. Pendant la présentation, cette étape s'ouvre directement en 3D, et l'étape suivante te ramène à la carte. Une étape de nuit garde aussi l'heure à laquelle tu l'as capturée. Le crayon permet de **retirer la vue 3D** d'une étape.
+
+En présentant une étape en 3D, une petite barre en bas garde le temps sous la main : **Faire passer la nuit** pour que la personne voie l'air froid descendre la pente et s'accumuler dans les fonds jusqu'à l'aube, **Faire passer la journée** pour l'ombre qui tourne, ou **Faire pleuvoir**. Le curseur permet de revenir à une heure précise, et **Réglages de la vue** ouvre tous les réglages de la 3D sans quitter la présentation.
 
 ## Présenter
 

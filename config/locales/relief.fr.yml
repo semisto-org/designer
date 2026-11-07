@@ -108,6 +108,10 @@ fr:
         tip: "Une haie ou un mur en travers de la pente retient l'air froid au-dessus de lui ; une trouée le laisse filer. Garde les floraisons précoces hors de la nappe : plus haut sur la pente, elles gèlent moins."
         indicative: "Indicatif : tiré du relief, des haies et des bâtiments du modèle de surface. On voit où va l'air froid, pas sa température. Par nuit de vent, l'air se mélange et la nappe ne se forme pas."
         indicative_no_surface: "Indicatif : tiré du relief seul (pas de modèle de surface ici, donc sans les haies ni les bâtiments). On voit où va l'air froid, pas sa température. Par nuit de vent, l'air se mélange et la nappe ne se forme pas."
+      present:
+        label: "Le temps de cette vue"
+        settings: "Réglages de la vue"
+        hide_settings: "Masquer les réglages"
       empty:
         title: "Le relief n'est pas encore là"
         unavailable: "Le relief n'est pas encore disponible pour la région %{region}. Il arrivera région par région."

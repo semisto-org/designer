@@ -19,6 +19,8 @@ export type ReliefView = {
   tab?: 'view' | 'rain' | 'sun' | 'night'
   sun?: { mode: 'off' | 'instant' | 'day'; date: 'winter' | 'equinox' | 'summer' | 'today'; minutes: number }
   year?: number
+  /** The hour of the night, 0 (21:00) to 1 (dawn), on the night tab. */
+  night?: number
 }
 
 /**
