@@ -71,6 +71,9 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
   const [orientation, setOrientation] = useState<Orientation>('landscape')
   const [scaleChoice, setScaleChoice] = useState<number | 'fit'>('fit')
   const [withNetworks, setWithNetworks] = useState(false)
+  const hasBoundary = editor.map.boundary != null
+  const [withBoundary, setWithBoundary] = useState(true)
+  const showBoundary = hasBoundary && withBoundary
   // « Carnet de planches »: the overall plan, then one sheet per design layer.
   const [book, setBook] = useState(initialBook)
   const [step, setStep] = useState<Step>(null)
@@ -91,7 +94,7 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
   const frame = useMemo(() => frameGeometry(center, scale, layout.frame), [center[0], center[1], scale, paper, orientation]) // eslint-disable-line react-hooks/exhaustive-deps
   const ground = groundSize(scale, layout.frame)
   const hiddenLayers = [...new Set([...hidden, ...(withNetworks && editor.canEdit ? [] : ['networks'])])]
-  const legend = legendEntries(editor.features, hiddenLayers, editor.map.boundary != null, variant?.id ?? null, { kinds: hiddenKinds, ids: hiddenIds, tag })
+  const legend = legendEntries(editor.features, hiddenLayers, showBoundary, variant?.id ?? null, { kinds: hiddenKinds, ids: hiddenIds, tag })
   const sheets = bookSheets(title.trim() || editor.map.name, legend, editor.features, hiddenLayers, variant?.id ?? null, tag)
 
   // The sheet takes the inspector's place.
@@ -150,6 +153,7 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
         hiddenLayers,
         hiddenKinds,
         hiddenIds,
+        hideBoundary: !showBoundary,
         variant: variant?.id ?? null,
         tag,
         author: currentUser?.name ?? null,
@@ -220,6 +224,17 @@ export function PdfExportPanel({ onClose, initialBook = false }: { onClose: () =
           <p className="text-xs text-loam-500">
             {t('drawing.pdf.extent', { width: formatLength(ground.width), height: formatLength(ground.height) })}
           </p>
+          {hasBoundary && (
+            <label className="flex items-start gap-2 text-sm text-loam-700">
+              <input
+                type="checkbox"
+                checked={withBoundary}
+                onChange={(e) => setWithBoundary(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
+              />
+              {t('drawing.pdf.include_boundary')}
+            </label>
+          )}
           {editor.canEdit && (
             <label className="flex items-start gap-2 text-sm text-loam-700">
               <input
