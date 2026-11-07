@@ -1,10 +1,12 @@
 import { bbox as turfBbox } from '@turf/turf'
 import clsx from 'clsx'
+import { useState } from 'react'
 import { Footprints, LocateFixed, NotebookPen } from 'lucide-react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { useFeatureHighlight } from '@/map/functions/highlight'
 import { useElementFunctions, type FunctionBalance, type FunctionEntry, type ProjectFunction } from '@/map/functions/store'
 
 export const FUNCTIONS_HELP_SLUG = 'les-fonctions-des-elements'
@@ -22,18 +24,28 @@ export default function FunctionsPanel() {
   const { data, failed } = useElementFunctions()
   const byKey = new Map((data?.entries ?? []).map((e) => [e.key, e]))
   const entriesOf = (keys: string[]) => keys.flatMap((k) => byKey.get(k) ?? [])
+  const highlight = useFeatureHighlight(editor.instance)
+  // The row whose elements are put forward on the map; a second click lets go.
+  const [shown, setShown] = useState<string | null>(null)
 
-  function focus(entries: FunctionEntry[]) {
+  function focus(entries: FunctionEntry[], key: string) {
+    if (shown === key) {
+      setShown(null)
+      highlight.clear()
+      return
+    }
     const ids = new Set(entries.flatMap((e) => e.featureIds))
     const targets = editor.features.filter((f) => ids.has(f.properties.id))
     if (targets.length === 0) return
+    setShown(key)
+    highlight.show(targets)
     const [minX, minY, maxX, maxY] = turfBbox({ type: 'FeatureCollection', features: targets })
     const { clientWidth: w, clientHeight: h } = editor.instance.getContainer()
     const padding = w >= 768
       ? { top: 70, bottom: 50, left: Math.round(Math.min(400, w * 0.3)), right: Math.round(Math.min(360, w * 0.28)) }
-      : { top: 70, bottom: Math.round(h * 0.6), left: 30, right: 30 }
+      // Below the header and the « À faire » card, above the sheet.
+      : { top: 160, bottom: Math.round(h * 0.55), left: 30, right: 30 }
     editor.instance.fitBounds([minX, minY, maxX, maxY], { padding, maxZoom: 19, duration: 600 })
-    editor.select(targets[0].properties.id)
   }
 
   const fragile = data?.balance.filter((b) => b.status === 'fragile') ?? []
@@ -54,7 +66,7 @@ export default function FunctionsPanel() {
       <HelpButton slug={FUNCTIONS_HELP_SLUG} label={t('element_functions.help')} className="-ml-2" />
       {failed && <p className="text-sm text-clay-500">{t('element_functions.error')}</p>}
       {!data && !failed && <p className="text-sm text-loam-400">{t('element_functions.loading')}</p>}
-      {data && <ProjectFunctions data={data.project} challenges={data.placeChallenges} entriesOf={entriesOf} focus={focus} mapId={editor.map.id} canEdit={editor.canEdit} />}
+      {data && <ProjectFunctions data={data.project} challenges={data.placeChallenges} entriesOf={entriesOf} focus={focus} shown={shown} mapId={editor.map.id} canEdit={editor.canEdit} />}
       {data && data.entries.length === 0 && <p className="text-sm text-loam-500">{t('element_functions.empty')}</p>}
 
       {data && data.entries.length > 0 && (
@@ -70,10 +82,7 @@ export default function FunctionsPanel() {
                       <p className="text-sm font-semibold text-loam-900">{name(b)}</p>
                       <p className="mt-0.5 text-sm text-loam-600">{t('element_functions.fragile_one', { name: entries[0]?.label ?? '' })}</p>
                       {look(b)}
-                      <Button variant="ghost" size="sm" onClick={() => focus(entries)} className="-ml-3 mt-1">
-                        <LocateFixed className="h-3.5 w-3.5" aria-hidden />
-                        {t('element_functions.show')}
-                      </Button>
+                      <ShowButton active={shown === `fragile:${b.function}`} onClick={() => focus(entries, `fragile:${b.function}`)} className="-ml-3 mt-1" />
                     </li>
                   )
                 })}
@@ -99,17 +108,26 @@ export default function FunctionsPanel() {
             <section>
               <h3 className="mb-1.5 text-sm font-semibold text-loam-900">{t('element_functions.covered_title')}</h3>
               <ul className="divide-y divide-loam-100">
-                {covered.map((b) => (
-                  <li key={b.function}>
-                    <Button variant="ghost" size="sm" onClick={() => focus(entriesOf(b.entries))} className="w-full justify-between font-normal">
-                      <span className="text-loam-800">{name(b)}</span>
-                      <span className="text-loam-500">
-                        {t('element_functions.covered_count', { count: b.count })}
-                        {b.existingOnly && <span className="ml-1.5 text-humus-700">{t('element_functions.existing_only')}</span>}
-                      </span>
-                    </Button>
-                  </li>
-                ))}
+                {covered.map((b) => {
+                  const key = `covered:${b.function}`
+                  return (
+                    <li key={b.function}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-pressed={shown === key}
+                        onClick={() => focus(entriesOf(b.entries), key)}
+                        className={clsx('h-auto w-full !items-start !justify-between gap-3 rounded-lg text-left font-normal', shown === key && 'bg-humus-50 ring-1 ring-inset ring-humus-300')}
+                      >
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-loam-900">{name(b)}</span>
+                          {b.existingOnly && <span className="block text-humus-700">{t('element_functions.existing_only')}</span>}
+                        </span>
+                        <span className="shrink-0 text-right text-loam-500">{t('element_functions.covered_count', { count: b.count })}</span>
+                      </Button>
+                    </li>
+                  )
+                })}
               </ul>
             </section>
           )}
@@ -123,7 +141,7 @@ export default function FunctionsPanel() {
                   const entries = entriesOf(need.entries)
                   return (
                     <li key={need.resource}>
-                      <Button variant="ghost" size="sm" onClick={() => focus(entries)} className="-ml-3 h-auto text-left font-normal">
+                      <Button variant="ghost" size="sm" aria-pressed={shown === `need:${need.resource}`} onClick={() => focus(entries, `need:${need.resource}`)} className={clsx('-ml-3 h-auto !justify-start rounded-lg text-left font-normal', shown === `need:${need.resource}` && 'bg-humus-50 ring-1 ring-inset ring-humus-300')}>
                         {t('element_functions.unmet_row', { resource: t(`element_functions.resources.${need.resource}`), names: entries.map((e) => e.label).join(', ') })}
                       </Button>
                     </li>
@@ -141,11 +159,12 @@ export default function FunctionsPanel() {
 }
 
 /** The functions of the project's functional analysis, and the place's challenges. */
-function ProjectFunctions({ data, challenges, entriesOf, focus, mapId, canEdit }: {
+function ProjectFunctions({ data, challenges, entriesOf, focus, shown, mapId, canEdit }: {
   data: ProjectFunction[]
   challenges: string[]
   entriesOf: (keys: string[]) => FunctionEntry[]
-  focus: (entries: FunctionEntry[]) => void
+  focus: (entries: FunctionEntry[], key: string) => void
+  shown: string | null
   mapId: number
   canEdit: boolean
 }) {
@@ -184,10 +203,7 @@ function ProjectFunctions({ data, challenges, entriesOf, focus, mapId, canEdit }
                         {fn.status === 'missing' && <p className="mt-0.5 text-sm text-humus-700">{t('element_functions.project.missing')}</p>}
                         {fn.status === 'fragile' && <p className="mt-0.5 text-sm text-humus-700">{t('element_functions.project.fragile', { name: entries[0]?.label ?? '' })}</p>}
                         {entries.length > 0 && (
-                          <Button variant="ghost" size="sm" onClick={() => focus(entries)} className="-ml-3 mt-0.5">
-                            <LocateFixed className="h-3.5 w-3.5" aria-hidden />
-                            {t('element_functions.show')}
-                          </Button>
+                          <ShowButton active={shown === `project:${fn.id}`} onClick={() => focus(entries, `project:${fn.id}`)} className="-ml-3 mt-0.5" />
                         )}
                       </li>
                     )
@@ -215,5 +231,15 @@ function ProjectFunctions({ data, challenges, entriesOf, focus, mapId, canEdit }
         </section>
       )}
     </>
+  )
+}
+
+/** « Montrer sur la carte », pressed while its elements are put forward. */
+function ShowButton({ active, onClick, className }: { active: boolean; onClick: () => void; className?: string }) {
+  return (
+    <Button variant="ghost" size="sm" aria-pressed={active} onClick={onClick} className={clsx(className, active && 'bg-humus-50 ring-1 ring-inset ring-humus-300')}>
+      <LocateFixed className="h-3.5 w-3.5" aria-hidden />
+      {t(active ? 'element_functions.hide' : 'element_functions.show')}
+    </Button>
   )
 }
