@@ -22,6 +22,7 @@ import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import { GrowthBar, GrowthSection, PlantCard, WalkPad, useGrowthYear } from '@/relief/GrowthControls'
 import { RoofCard } from '@/relief/RoofCard'
+import { PresentationTimeControl } from '@/relief/PresentationTimeControl'
 import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
 import type { WalkKey } from '@/relief/scene'
 import { STRATA_COLORS } from '@/map/plants/strataColors'
@@ -574,6 +575,10 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     if (relief.exaggeration) patch.exaggeration = relief.exaggeration
     if (Object.keys(patch).length) updateView(patch)
     setTab(relief.tab ?? 'view')
+    setNightRunning(false)
+    setDayRunning(false)
+    setPresentSettings(false)
+    if (relief.night != null) updateColdNight(relief.night)
     if (relief.sun) updateSun(relief.sun)
     else if (sun.mode !== 'off') updateSun({ mode: 'off' })
     if (relief.year != null && plantCount > 0) growth.set(relief.year)
@@ -608,6 +613,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     if (!presentation || !step || !c || !view) return
     const relief: ReliefView = { ...(c.cameraView() ?? {}), base: view.base, exaggeration: view.exaggeration, tab }
     if (sun.mode !== 'off') relief.sun = { ...sun, minutes: Math.round(sun.minutes) }
+    if (tab === 'night') relief.night = Math.round(coldNight * NIGHT_STEPS) / NIGHT_STEPS
     if (plantCount > 0) relief.year = Math.round(growth.target)
     saveSteps(
       presentation.steps.map((s) => (s.id === step.id ? { ...s, view: { ...s.view, relief }, captured: true } : s)),
@@ -617,6 +623,11 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     setCaptureNote(t('presentations.captured', { title: step.title }))
   }
   const [captureNote, setCaptureNote] = useState<string | null>(null)
+  // While presenting, the settings stay hidden until the presenter asks.
+  const [presentSettings, setPresentSettings] = useState(false)
+  useEffect(() => {
+    if (!presenting) setPresentSettings(false)
+  }, [presenting])
   useEffect(() => {
     if (!captureNote) return
     const timer = setTimeout(() => setCaptureNote(null), 3000)
@@ -651,6 +662,46 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
 
       {/* Settings: a floating card on desktop, a bottom sheet on phones. */}
       {presenting && <PresentationBar />}
+      {presenting && ready && (
+        <PresentationTimeControl
+          tab={tab}
+          night={{
+            time: formatClock(nightClock(coldNight)),
+            value: Math.round(coldNight * NIGHT_STEPS),
+            min: 0,
+            max: NIGHT_STEPS,
+            step: 1,
+            running: nightRunning,
+            onChange: (step) => { setNightRunning(false); updateColdNight(step / NIGHT_STEPS) },
+            onToggle: toggleNight,
+          }}
+          day={sun.mode === 'instant' ? {
+            time: formatClock(sun.minutes),
+            value: sun.minutes,
+            min: sunWindow.min,
+            max: sunWindow.max,
+            step: 10,
+            running: dayRunning,
+            onChange: (minutes) => { setDayRunning(false); updateSun({ minutes }) },
+            onToggle: toggleDay,
+          } : undefined}
+          rain={{ playing, onPlay: togglePlay, onReset: resetRain }}
+          status={tab === 'night' ? nightStatus(coldNight, coldPeak) : null}
+          settingsOpen={presentSettings}
+          onSettings={() => {
+            setPresentSettings((open) => !open)
+            setPanelOpen(true)
+          }}
+          className={clsx(
+            'absolute inset-x-3 sm:left-1/2 sm:right-auto sm:w-[32rem] sm:-translate-x-1/2',
+            plantCount > 0 && plantsView.on && niva.mode !== 'driving'
+              ? 'bottom-[calc(8.5rem+env(safe-area-inset-bottom))] sm:bottom-24'
+              : 'bottom-[calc(0.75rem+env(safe-area-inset-bottom))] sm:bottom-3',
+            // On a phone the settings open as a bottom sheet: the bar goes up.
+            presentSettings && 'max-sm:bottom-auto max-sm:top-20',
+          )}
+        />
+      )}
       {!presenting && presentationStep && ready && (
         <div className="absolute inset-x-0 top-3 z-30 flex flex-col items-center gap-2 px-3 sm:left-[21rem] sm:right-28">
           <div className="flex max-w-full items-center gap-1 rounded-full bg-white py-1 pl-4 pr-1 shadow-[0_6px_16px_rgb(26_26_26/0.14)] ring-1 ring-loam-200">
@@ -674,7 +725,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
       <aside
         className={clsx(
           'absolute z-20 flex flex-col border-loam-200 bg-white/95 shadow-lg backdrop-blur',
-          presenting && 'hidden',
+          presenting && !presentSettings && 'hidden',
           'inset-x-0 bottom-0 max-h-[60dvh] rounded-t-2xl border-t pb-[env(safe-area-inset-bottom)]',
           'sm:inset-x-auto sm:bottom-auto sm:left-3 sm:top-3 sm:max-h-[calc(100%-1.5rem)] sm:w-80 sm:rounded-xl sm:border sm:pb-0',
         )}
@@ -1284,6 +1335,14 @@ function SunStatus({ info, marginM }: { info: SunInfo; marginM: number }) {
 
 // ---- Night tab: cold air -----------------------------------------------------------
 
+/** Where the cold air stands at this hour of the night. */
+function nightStatus(night: number, peak: number): string {
+  const time = formatClock(nightClock(night))
+  return peak > 0.05
+    ? t('relief.page.night.status', { time, depth: formatNumber(peak, 1) })
+    : t('relief.page.night.status_none', { time })
+}
+
 function NightTab({ night, peak, running, surface, onNight, onToggle }: {
   night: number
   peak: number
@@ -1310,11 +1369,7 @@ function NightTab({ night, peak, running, surface, onNight, onToggle }: {
         {running ? <Pause className="h-3.5 w-3.5" /> : <MoonStar className="h-3.5 w-3.5" />}
         {running ? t('relief.page.night.stop') : t('relief.page.night.play')}
       </Button>
-      <p className="text-sm text-loam-700" aria-live="polite">
-        {peak > 0.05
-          ? t('relief.page.night.status', { time, depth: formatNumber(peak, 1) })
-          : t('relief.page.night.status_none', { time })}
-      </p>
+      <p className="text-sm text-loam-700" aria-live="polite">{nightStatus(night, peak)}</p>
       <ul className="space-y-1.5 text-sm text-loam-600">
         <li className="flex gap-2"><span className="mt-1.5 h-2 w-6 shrink-0 rounded-full bg-gradient-to-r from-transparent via-loam-200 to-white" />{t('relief.page.night.legend_mist')}</li>
         <li className="flex gap-2"><span className="mt-1.5 h-2 w-6 shrink-0 rounded-full bg-loam-100" />{t('relief.page.night.legend_layer')}</li>

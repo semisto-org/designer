@@ -115,7 +115,8 @@ class MapPresentation < ApplicationRecord
   SUN_DATES = %w[winter equinox summer today].freeze
 
   # A view of the 3D relief: camera position and target in scene metres,
-  # ground, tab, sun and the plants' year. nil when the step has none.
+  # ground, tab, sun, the plants' year and the hour of the night (0 = 21:00,
+  # 1 = dawn). nil when the step has none.
   def self.clean_relief(relief)
     return nil if relief.nil?
     relief = relief.to_h.stringify_keys rescue (return nil)
@@ -133,7 +134,8 @@ class MapPresentation < ApplicationRecord
       "sun" => sun["mode"].presence_in(SUN_MODES) && sun["date"].presence_in(SUN_DATES) ? {
         "mode" => sun["mode"], "date" => sun["date"], "minutes" => Integer(sun["minutes"], exception: false)&.clamp(0, 1439) || 720
       } : nil,
-      "year" => Integer(relief["year"], exception: false)&.clamp(0, 100)
+      "year" => Integer(relief["year"], exception: false)&.clamp(0, 100),
+      "night" => Float(relief["night"], exception: false)&.then { _1.finite? ? _1.clamp(0, 1).round(3) : nil }
     }.compact.presence
   end
 

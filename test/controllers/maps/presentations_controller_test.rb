@@ -53,7 +53,7 @@ class Maps::PresentationsControllerTest < ActionDispatch::IntegrationTest
     presentation = @map.presentations.create!(name: "Lautenne")
     relief = {
       position: [ -120.456, 80, "95.2" ], target: [ 0, 12, 0 ], base: "frost", exaggeration: 40,
-      tab: "night", sun: { mode: "instant", date: "winter", minutes: 5000 }, year: 15, extra: "x"
+      tab: "night", sun: { mode: "instant", date: "winter", minutes: 5000 }, year: 15, night: 1.7, extra: "x"
     }
     steps = [ { id: "a", title: "Air froid", view: { relief: relief } }, { id: "b", title: "Caméra", view: { relief: { position: [ 1, 2 ], tab: "disco" } } } ]
     patch map_presentation_path(@map, presentation), params: { presentation: { steps:, lock_version: 0 } }, as: :json
@@ -61,9 +61,22 @@ class Maps::PresentationsControllerTest < ActionDispatch::IntegrationTest
 
     saved = presentation.reload.steps
     assert_equal({ "position" => [ -120.46, 80.0, 95.2 ], "target" => [ 0.0, 12.0, 0.0 ], "base" => "frost", "exaggeration" => 10.0,
-                   "tab" => "night", "sun" => { "mode" => "instant", "date" => "winter", "minutes" => 1439 }, "year" => 15 },
+                   "tab" => "night", "sun" => { "mode" => "instant", "date" => "winter", "minutes" => 1439 }, "year" => 15, "night" => 1.0 },
                  saved[0]["view"]["relief"])
     assert_not saved[1]["view"].key?("relief"), "a relief view with nothing usable is dropped"
+  end
+
+  test "a 3D step at night keeps its hour of the night" do
+    sign_in_as users(:michael)
+    presentation = @map.presentations.create!(name: "Lautenne")
+    steps = [ { id: "a", title: "Air froid", view: { relief: { tab: "night", night: "0.4167" } } },
+              { id: "b", title: "Nuit", view: { relief: { tab: "night", night: "minuit" } } } ]
+    patch map_presentation_path(@map, presentation), params: { presentation: { steps:, lock_version: 0 } }, as: :json
+    assert_response :success
+
+    saved = presentation.reload.steps
+    assert_equal({ "tab" => "night", "night" => 0.417 }, saved[0]["view"]["relief"])
+    assert_equal({ "tab" => "night" }, saved[1]["view"]["relief"], "an unreadable hour is left out")
   end
 
   test "a slide keeps its text; a viewer gets neither notes nor drafts" do
