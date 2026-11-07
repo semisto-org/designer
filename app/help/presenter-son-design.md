@@ -21,7 +21,7 @@ Chaque étape vient avec une **vue par défaut** et une **note** : ce qu'on dit 
 2. Règle la carte comme tu veux la montrer : zoom, calques, secteurs, année, un élément sélectionné.
 3. Clique sur **Capturer la vue actuelle**. Le point devient vert : la vue est ajustée à ce terrain.
 
-Glisse une étape dans la liste pour la déplacer ; le crayon change le titre et la note. **Ajouter la vue actuelle** crée une étape de plus avec ce que tu vois.
+Glisse une étape dans la liste pour la déplacer ; le crayon change le titre et la note. Sous le crayon, **Dupliquer l'étape** en pose une copie juste en dessous, avec la même vue, la même note et le même texte : pratique pour montrer deux fois le même cadrage, à l'existant puis au projet, ou d'une année à l'autre. **Ajouter la vue actuelle** crée une étape de plus avec ce que tu vois.
 
 ## Des diapositives de texte
 

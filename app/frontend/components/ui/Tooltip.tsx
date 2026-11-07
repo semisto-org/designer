@@ -10,8 +10,8 @@ export function Tooltip({ content, children, side = 'top', align = 'center', cla
   content: ReactNode
   children: ReactNode
   side?: 'top' | 'bottom'
-  /** `start` lines the bubble up with the trigger's left edge, for a trigger near the left of a clipped box. */
-  align?: 'center' | 'start'
+  /** `start` / `end` line the bubble up with the trigger's left / right edge, for a trigger near the side of a clipped box. */
+  align?: 'center' | 'start' | 'end'
   className?: string
 }) {
   const id = useId()
@@ -38,7 +38,7 @@ export function Tooltip({ content, children, side = 'top', align = 'center', cla
             'pointer-events-none absolute z-[80] w-max max-w-64 rounded-lg bg-loam-900 px-3 py-1.5 text-sm text-white shadow-lg',
             'animate-[notebook-in_180ms_ease-out] motion-reduce:animate-none',
             side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
-            align === 'start' ? 'left-0' : 'left-1/2 -translate-x-1/2',
+            align === 'start' ? 'left-0' : align === 'end' ? 'right-0' : 'left-1/2 -translate-x-1/2',
           )}
         >
           {content}

@@ -12,6 +12,7 @@ import { SlideView } from './SlideView'
 import { loadPresentation, markApplied, presentationStore, requestStep, restored, saveSteps, usePresentation } from './store'
 import { applyPresentRender, usePresentRender } from './render'
 import { applyView, captureView } from './view'
+import { cameraFlash } from './flash'
 
 /**
  * Always mounted in the editor. Shows the step asked for (or hands it to
@@ -102,6 +103,7 @@ export default function PresentationOverlay() {
       presentation.steps.map((s) => (s.id === step.id ? { ...s, view: captureView(editor), captured: true } : s)),
       (message) => editor.notify(message || t('presentations.save_failed'), 'error'),
     )
+    cameraFlash()
     editor.notify(t('presentations.captured', { title: step.title }))
   }
   return (

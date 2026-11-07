@@ -32,6 +32,7 @@ import type { OverlayFeature, OverlayOptions } from '@/relief/overlay'
 import { ChoiceGroup, GradientLegend, SectionTitle, Slider, Toggle } from '@/relief/ui'
 import type { MapData, MapFeature } from '@/types'
 import type { LandcoverClassData, ReliefOverview, SoilModel, TerrainGridData } from '@/types/relief'
+import { cameraFlash } from '@/map/presentation/flash'
 import { PresentationBar } from '@/map/presentation/PresentationBar'
 import { markApplied, presentationStore, requestStep, saveSteps, usePresentation } from '@/map/presentation/store'
 import type { ReliefView } from '@/map/presentation/types'
@@ -612,6 +613,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
       presentation.steps.map((s) => (s.id === step.id ? { ...s, view: { ...s.view, relief }, captured: true } : s)),
       () => setCaptureNote(t('presentations.save_failed')),
     )
+    cameraFlash()
     setCaptureNote(t('presentations.captured', { title: step.title }))
   }
   const [captureNote, setCaptureNote] = useState<string | null>(null)
