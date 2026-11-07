@@ -9,7 +9,7 @@ import { computedValues } from '@/map/drawing/computed'
 import { saveFeature } from '@/map/drawing/save'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
 import { linkedSourceId } from '@/map/water/store'
-import { isZoneKind, ROUNDING_DEFAULT, ROUNDING_MAX, ROUNDING_MIN, roundingLevel, ZONE_COLORS } from '@/map/zones/zones'
+import { isZoneKind, PATH_ROUNDING_DEFAULT, ROUNDING_DEFAULT, ROUNDING_MAX, ROUNDING_MIN, roundingLevel, ZONE_COLORS } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 import type { ElementField } from '@/types/drawing'
 
@@ -146,7 +146,8 @@ function RoundingControl({ feature, disabled, onSave }: {
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => setLevel(saved), [saved])
   useEffect(() => () => clearTimeout(timer.current), [])
-  const path = p.kind === 'line'
+  // Any line (a zone line, a path, a hedge, a track…) rounds its bends.
+  const path = feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString'
 
   function slide(next: number) {
     setLevel(next)
@@ -161,7 +162,9 @@ function RoundingControl({ feature, disabled, onSave }: {
           type="checkbox"
           checked={rounded}
           disabled={disabled}
-          onChange={(e) => onSave({ rounded: e.target.checked ? true : null })}
+          // A path starts rounder than a surface: its bends turn into curves at once.
+          onChange={(e) => onSave(!e.target.checked ? { rounded: null }
+            : path && p.rounding == null ? { rounded: true, rounding: PATH_ROUNDING_DEFAULT } : { rounded: true })}
           className="mt-0.5 h-4 w-4 rounded border-loam-300 text-prune-600 focus:ring-prune-500"
         />
         <span>{t(path ? 'zones.rounded_path' : p.kind === 'zone' ? 'zones.rounded' : 'zones.rounded_surface')}</span>
@@ -204,6 +207,7 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
   const computed = spec ? computedValues(feature, spec) : []
   const zone = isZoneKind(feature.properties.kind)
   const surface = feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon'
+  const line = feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString'
   // Zones take the soft palette of the plan; elements their own colour first.
   const swatches = zone
     ? ZONE_COLORS
@@ -288,7 +292,7 @@ export default function ElementSection({ feature }: { feature: MapFeature }) {
         </section>
       )}
 
-      {(zone || surface) && <RoundingControl feature={feature} disabled={!editor.canEdit} onSave={saveProperties} />}
+      {(zone || surface || line) && <RoundingControl feature={feature} disabled={!editor.canEdit} onSave={saveProperties} />}
 
       {zone && (
         <label className="flex items-start gap-2.5 text-sm text-loam-700">

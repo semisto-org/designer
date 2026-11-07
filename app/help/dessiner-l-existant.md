@@ -72,6 +72,7 @@ Touche un élément sur la carte, ou dans le panneau **Éléments** qui les list
 - des **Estimations** pour certains éléments : volume d'eau d'une mare, terre à apporter dans un bac surélevé, plants à prévoir pour une haie ;
 - sa **Couleur**, si tu veux la distinguer des autres ;
 - pour une surface (une mare, un massif, un bâtiment…), **Angles arrondis** : coche la case, puis glisse le curseur de **Léger** à **Fort**. Les angles s'adoucissent sur la carte, jusqu'à une forme ovale ; la surface et les estimations suivent la forme arrondie, et les points que tu as cliqués restent ceux que tu modifies.
+- pour un tracé (un chemin, un cheminement, une haie, une clôture…), **Adoucir les coudes du tracé** : coche la case et le chemin devient une courbe qui suit le terrain, comme on le trace au crayon ; le curseur va de **Léger** (des coudes à peine arrondis) à **Fort** (une courbe souple d'un bout à l'autre). La longueur suit la courbe. Pour un chemin sinueux, clique quelques points en plus là où il tourne : la courbe passe au plus près d'eux.
 
 Pour corriger un tracé, touche **Modifier la forme**, fais glisser les points (un point au milieu d'un côté en ajoute un), puis **Enregistrer la forme**. Pour ajouter ou retirer des points, les boutons de la barre (flèche, **+**, **−**) ou les touches d'Illustrator :
 

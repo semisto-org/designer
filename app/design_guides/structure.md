@@ -55,3 +55,5 @@ Structure trees are planted first: they take the longest. Fast-growing **pioneer
 ## What to propose as drafts
 
 Zones with `propose_zones` (and zone 5 with `propose_features`, layer `notes`, kind `permaculture_zone`); layer `structures` for shelters and greenhouses; layer `plants` for trees and hedges, with `species` and spacing (`spacing_m`) in `properties` when known. Each `rationale` cites the wind, sun, existing features or use that justifies the location.
+
+Paths (layer `access`) follow the land and the feet, not a ruler: a path that bends with the slope, around a tree or towards a view is drawn as a curve. Give it a few points at its turns and `rounded: true` with `rounding: 7` (1 is a hint of a curve, 10 a supple line from end to end); the map draws and measures the curve, the points stay the ones a person edits. The same goes for a hedge or a fence that follows a contour, and for a pond or a bed with soft corners. A path already drawn with sharp elbows is rounded with `propose_feature_updates` (`properties: { rounded: true, rounding: 7 }`).
