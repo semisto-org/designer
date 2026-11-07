@@ -63,6 +63,11 @@ fr:
     read_only: "Tu peux suivre la présentation ; seuls les éditeurs de la carte la modifient."
     none_yet: "Pas encore de présentation sur cette carte. Quand l'équipe en préparera une, tu pourras la suivre ici."
     nothing_shown: "Coche au moins une étape pour présenter."
+    plan_legend:
+      title: "Légende"
+      existing_trees: "Arbres déjà là"
+      water: "Eau"
+      paths: "Sentiers"
     bar:
       label: "Présentation"
       previous: "Étape précédente"

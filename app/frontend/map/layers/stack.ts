@@ -14,14 +14,14 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
  */
 export const FEATURE_STACK = [
   // The terrain's outline.
-  'boundary-fill', 'boundary-casing', 'boundary-line',
+  'boundary-mask', 'boundary-fill', 'boundary-casing', 'boundary-line',
   // Surfaces and lines: zones and other generic shapes, then the library's.
   'features-fill', 'features-line',
-  'drawing-fill', 'drawing-pattern', 'drawing-line-casing', 'drawing-line', 'drawing-line-arrow',
+  'drawing-fill', 'drawing-pattern', 'drawing-path-edge', 'drawing-path-ribbon', 'drawing-line-casing', 'drawing-line', 'drawing-line-arrow',
   // Plants: trees already there (true-size crowns), then the plants' crowns,
   // each sorted by strata within its layer (see PlantsOverlay).
   'drawing-crown',
-  'plant-crowns-fill', 'plant-crowns-reach', 'plant-crowns-support', 'plant-crowns-reach-line', 'plant-crowns-casing', 'plant-crowns-line',
+  'plant-crowns-shadow', 'plant-crowns-fill', 'plant-crowns-reach', 'plant-crowns-support', 'plant-crowns-reach-line', 'plant-crowns-casing', 'plant-crowns-line', 'plant-trunks',
   // Points and their glyphs, over the crowns they mark.
   'features-point', 'drawing-point', 'drawing-icon',
   // Names: measures, plants, then the other features (placed first, on top).

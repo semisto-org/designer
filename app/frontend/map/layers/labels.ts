@@ -1,4 +1,5 @@
 import type { Map as MapLibreMap, StyleImageMetadata, SymbolLayerSpecification } from 'maplibre-gl'
+import { isPresentRendering, isWorkingLayer } from '../presentation/renderRules.ts'
 
 /**
  * Marker labels: white text on a black pill at 70 % opacity, readable on
@@ -113,9 +114,11 @@ export function markerLabel(textField: Layout['text-field'], layout: Layout = {}
 export const FEATURE_LABEL_LAYERS = ['features-label', 'zone-labels', 'zone-labels-line']
 
 export function applyFeatureLabelsVisibility(map: Pick<MapLibreMap, 'getLayer' | 'getLayoutProperty' | 'setLayoutProperty'>, hidden: boolean) {
-  const visibility = hidden ? 'none' : 'visible'
+  const rendering = isPresentRendering(map)
   for (const id of FEATURE_LABEL_LAYERS) {
     if (!map.getLayer(id)) continue
+    // The « rendu présentation » keeps the working names hidden (map/presentation/render).
+    const visibility = hidden || (rendering && isWorkingLayer(id)) ? 'none' : 'visible'
     // Untouched layers say nothing (visible): only write a real change, styledata fires often.
     if ((map.getLayoutProperty(id, 'visibility') ?? 'visible') !== visibility) map.setLayoutProperty(id, 'visibility', visibility)
   }

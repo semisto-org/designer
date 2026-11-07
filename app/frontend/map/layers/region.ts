@@ -22,6 +22,34 @@ export type RegionView = {
   overlays: string[]
   opacity: Record<string, number>
   bounds: BBox | null
+  /** The « rendu présentation »: the photo or base map pales behind the plan. */
+  soften?: boolean
+}
+
+/** A paled base under a designer's plan: less colour, lighter, softer. */
+export const SOFT_BASE_PAINT: Record<string, number> = { 'raster-saturation': -0.55, 'raster-brightness-min': 0.2, 'raster-contrast': -0.2 }
+
+/** The paint a base raster had before it was softened, per map, to give back as it was. */
+const unsoftened = new WeakMap<MapLibreMap, Map<string, Record<string, unknown>>>()
+
+/**
+ * Pales a base raster for the « rendu présentation », or gives it back the
+ * paint it had (its style's own, or MapLibre's default). Untouched otherwise.
+ */
+function softenBase(map: MapLibreMap, id: string, soften: boolean) {
+  const saved = unsoftened.get(map) ?? new Map<string, Record<string, unknown>>()
+  unsoftened.set(map, saved)
+  if (soften) {
+    if (!saved.has(id)) saved.set(id, Object.fromEntries(Object.keys(SOFT_BASE_PAINT).map((key) => [key, map.getPaintProperty(id, key as 'raster-saturation')])))
+    for (const [key, value] of Object.entries(SOFT_BASE_PAINT)) {
+      if (map.getPaintProperty(id, key as 'raster-saturation') !== value) map.setPaintProperty(id, key as 'raster-saturation', value)
+    }
+    return
+  }
+  const before = saved.get(id)
+  if (!before) return
+  for (const [key, value] of Object.entries(before)) map.setPaintProperty(id, key as 'raster-saturation', value as number | undefined)
+  saved.delete(id)
 }
 
 type Entry = { key: string; position: number; ids: string[]; hiddenByStyle: Set<string> }
@@ -187,6 +215,9 @@ function applyVisibility(map: MapLibreMap, layers: RegionLayerData[], view: Regi
       map.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none')
       if (layer.category === 'overlay' && map.getLayer(id)?.type === 'raster') {
         map.setPaintProperty(id, 'raster-opacity', view.opacity[layer.key] ?? layer.opacity)
+      }
+      if (layer.category === 'base' && map.getLayer(id)?.type === 'raster') {
+        softenBase(map, id, view.soften === true)
       }
     })
   })

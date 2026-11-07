@@ -1,5 +1,5 @@
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
-import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, PLANNED_PLANT_EXPR, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
+import { IN_PRESENT_RENDER, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, PLANNED_PLANT_EXPR, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import { ensureLabelBackground, markerLabel, PAPER_LABEL_IMAGE } from '@/map/layers/labels'
 import { measure } from '@/map/editor/measure'
 import { stackFeatureLayers } from '@/map/layers/stack'
@@ -137,6 +137,8 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
   const draft = ['==', ['get', 'status'], 'draft']
   // A planned plant (not planted yet) is a hollow ring at 75 % opacity; a planted one is solid.
   const planned = PLANNED_PLANT_EXPR as never
+  // A plant drawn as a crown (map/plants/PlantsOverlay): the plan shows the crown, not its point.
+  const crownedPlant = ['all', ['==', ['get', 'layer'], 'plants'], ['==', ['feature-state', 'crowned'], true]] as never
   // A planned element (pond, hedge…) is a dashed outline over a fainter fill.
   const plannedElement = PLANNED_ELEMENT_EXPR as never
   // What the project takes away is still there: dotted and faded.
@@ -157,7 +159,7 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
     paint: {
       'line-color': color,
       'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, ['==', ['get', 'kind'], 'line'], 3, 2],
-      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], plannedElement, ['literal', [3, 2]], toRemove, ['literal', [0.6, 1.6]], ['literal', [1, 0]]] as never,
+      'line-dasharray': ['case', draft as never, ['literal', [2, 2]], ['all', plannedElement, ['!', IN_PRESENT_RENDER]], ['literal', [3, 2]], toRemove, ['literal', [0.6, 1.6]], ['literal', [1, 0]]] as never,
       'line-opacity': ['case', plannedElement, PLANNED_OPACITY, toRemove, TO_REMOVE_OPACITY, 1] as never,
     },
   })
@@ -171,8 +173,10 @@ export function installFeatureLayers(map: MapLibreMap, data: MapFeatureCollectio
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 20, 9],
       'circle-stroke-color': ['case', planned, pointColor, '#ffffff'] as never,
       'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 3, planned, 3, 1.5],
-      'circle-opacity': ['case', draft as never, 0.6, ['any', planned, plannedElement], PLANNED_OPACITY, 1],
-      'circle-stroke-opacity': ['case', planned, PLANNED_OPACITY, 1] as never,
+      // « Rendu présentation »: a plant is its crown, without the point at its
+      // foot; a vine or a plant without a crown keeps its point.
+      'circle-opacity': ['case', ['all', IN_PRESENT_RENDER, crownedPlant], 0, draft as never, 0.6, ['any', planned, plannedElement], PLANNED_OPACITY, 1] as never,
+      'circle-stroke-opacity': ['case', ['all', IN_PRESENT_RENDER, crownedPlant], 0, planned, PLANNED_OPACITY, 1] as never,
     },
   })
   map.addLayer({

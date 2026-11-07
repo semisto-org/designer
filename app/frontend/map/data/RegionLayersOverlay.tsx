@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useEditor } from '@/map/editor/EditorContext'
 import { layerStore, useLayerState, visibleOverlays } from '@/map/data/store'
 import { regionKeyOfSource, syncRegionLayers } from '@/map/layers/region'
+import { usePresentRender } from '@/map/presentation/render'
 
 // A layer is flagged unreachable after this many failed tiles: one stray
 // timeout should not mark a whole layer as down.
@@ -17,6 +18,8 @@ export default function RegionLayersOverlay() {
   const { instance, map, regionLayers } = useEditor()
   const state = useLayerState()
   const failures = useRef(new Map<string, number>())
+  // « Rendu présentation »: no analysis overlay over the plan, the base paled.
+  const render = usePresentRender()
 
   useLayoutEffect(() => {
     layerStore.init(map.id, regionLayers)
@@ -29,10 +32,10 @@ export default function RegionLayersOverlay() {
     syncRegionLayers(
       instance,
       regionLayers,
-      { base: state.base, overlays: visibleOverlays(state), opacity: state.opacity, bounds: map.region.bounds },
+      { base: state.base, overlays: render ? [] : visibleOverlays(state), opacity: state.opacity, bounds: map.region.bounds, soften: render },
       layerStore.markError,
     )
-  }, [instance, regionLayers, state, map.id, map.region.bounds])
+  }, [instance, regionLayers, state, map.id, map.region.bounds, render])
 
   useEffect(() => {
     const onError = (event: MapErrorEvent & { sourceId?: string }) => {

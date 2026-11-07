@@ -20,6 +20,45 @@ export const STRATA_COLORS: Record<Strata, string> = {
 }
 
 /**
+ * The same strata as washes of watercolour, for the « rendu présentation »
+ * (map/presentation/render): a designer's plan paints its trees in greens
+ * from deep to light, so the eye reads the layers of the forest garden from
+ * the canopy down, and keeps warm hues for what grows low.
+ */
+export const PLAN_STRATA_COLORS: Record<Strata, string> = {
+  canopy: '#35593f',
+  sub_canopy: '#7a9a3c',
+  shrub: '#c3c96a',
+  herbaceous: '#e0b85a',
+  ground_cover: '#8fb08a',
+  vine: '#8c6d99',
+  root: '#b48a58',
+  aquatic: '#6fa1c2',
+}
+
+/** The other washes of the « rendu présentation », shared by the map and its legend. */
+export const PLAN_COLORS = {
+  existingCrown: '#9a9784',
+  existingEdge: '#6d6a5c',
+  shadow: '#3a3a20',
+  water: '#7fa9b8',
+  waterEdge: '#3f6f86',
+  pathFill: '#ead7a6',
+  pathEdge: '#9c7b4c',
+  terrace: '#e4cf9c',
+  paper: '#f3ead6',
+  ink: '#4a4136',
+  trunk: '#4a3b2a',
+} as const
+
+/** A colour darkened by `amount` (0 to 1), for the rim of a painted crown. */
+export function darken(hex: string, amount: number): string {
+  const value = parseInt(hex.slice(1), 16)
+  const channel = (shift: number) => Math.round(((value >> shift) & 255) * (1 - amount))
+  return '#' + [16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, '0')).join('')
+}
+
+/**
  * Climbers grow up a tree, a wall or a trellis, not out over the ground: a
  * crown at their adult spread would cover what is under them. They show as
  * their point only (and, in 3D, on their support).

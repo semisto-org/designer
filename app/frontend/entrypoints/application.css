@@ -376,4 +376,5 @@ html[data-presenting] body header,
 html[data-presenting] #editor-rail,
 html[data-presenting] [data-zone="toolbar"],
 html[data-presenting] [data-zone="top"],
-html[data-presenting] [data-zone-card="journey"] { display: none !important; }
+html[data-presenting] [data-zone-card="journey"],
+html[data-presenting] [data-zone-card="variant"] { display: none !important; }
