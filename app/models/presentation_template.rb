@@ -33,18 +33,27 @@ class PresentationTemplate
     end
   end
 
-  # A slide's text from the analysis, in the slide's own form: a short
-  # heading line, then « - » lines. nil when the analysis says nothing of it.
+  # A slide's text from the analysis, in Markdown as the slide editor writes
+  # it: needs beside the functions they call for, challenges beside assets,
+  # in two-column tables as designers lay them out. nil when the analysis
+  # says nothing of it.
   def self.analysis_body(slide, sheet)
     analysis = sheet.section("analysis")
-    names = ->(list) { Array(analysis[list]).map { "- #{_1['name']}" } }
-    block = ->(heading, lines) { lines.any? ? [ I18n.t("presentations.analysis.#{heading}"), *lines ].join("\n") : nil }
+    names = ->(list) { Array(analysis[list]).map { _1["name"].to_s.squish.gsub("|", "\\|") }.compact_blank }
+    label = ->(key) { I18n.t("presentations.analysis.#{key}") }
+    table = lambda do |left, right, lefts, rights|
+      rows = [ lefts.size, rights.size ].max
+      next nil if rows.zero?
+      [ "| #{left} | #{right} |", "| --- | --- |", *Array.new(rows) { "| #{lefts[_1]} | #{rights[_1]} |" } ].join("\n")
+    end
+    titled = ->(key, body) { body && "### #{label.(key)}\n\n#{body}" }
     blocks = case slide
     when "purpose" then [ analysis["purpose"] ]
     when "functions"
-      [ block.("holder_needs", names.("holder_needs")), block.("place_needs", names.("place_needs")),
-        block.("functions", names.("holder_functions") + names.("place_functions")) ]
-    when "challenges" then [ block.("challenges", names.("challenges")), block.("assets", names.("assets")) ]
+      %w[holder place].map do |who|
+        titled.(who, table.(label.("needs"), label.("functions"), names.("#{who}_needs"), names.("#{who}_functions")))
+      end
+    when "challenges" then [ table.(label.("challenges"), label.("assets"), names.("challenges"), names.("assets")) ]
     else []
     end
     blocks.compact_blank.join("\n\n").presence&.truncate(MapPresentation::MAX_BODY)

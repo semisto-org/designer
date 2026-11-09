@@ -30,8 +30,9 @@ class PresentationTemplateTest < ActiveSupport::TestCase
     } }).to_h)
     steps = PresentationTemplate.find("pre_design").steps(map:).index_by { _1["key"] }
     assert_equal "Un jardin habité et vivant.", steps["purpose"]["slide"]["body"]
-    assert_equal "Vos besoins\n- Entretien simple\n\nLes fonctions du jardin-forêt\n- Fertiliser", steps["functions"]["slide"]["body"]
-    assert_equal "Les défis\n- Hydromorphisme", steps["challenges"]["slide"]["body"]
+    assert_equal "### Pour vous\n\n| Besoins | Fonctions |\n| --- | --- |\n| Entretien simple |  |\n\n" \
+                 "### Pour le lieu\n\n| Besoins | Fonctions |\n| --- | --- |\n|  | Fertiliser |", steps["functions"]["slide"]["body"]
+    assert_equal "| Défis | Atouts |\n| --- | --- |\n| Hydromorphisme |  |", steps["challenges"]["slide"]["body"]
     assert_equal "", steps["cover"]["slide"]["body"]
     assert_equal "", PresentationTemplate.find("pre_design").steps.find { _1["key"] == "purpose" }["slide"]["body"]
   end

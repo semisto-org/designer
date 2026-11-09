@@ -55,7 +55,7 @@ function editLink(editor: Editor) {
 }
 
 /** The writing tools, above the page, always in reach (also on a phone, where it scrolls sideways). */
-export function MarkdownToolbar({ editor }: { editor: Editor }) {
+export function MarkdownToolbar({ editor, className }: { editor: Editor; className?: string }) {
   // Re-render on selection changes only for what the buttons show.
   const state = useEditorState({
     editor,
@@ -67,7 +67,7 @@ export function MarkdownToolbar({ editor }: { editor: Editor }) {
   })
   let index = -1
   return (
-    <div className="sticky top-0 z-20 -mx-5 mb-6 sm:top-[4.25rem] border-b border-loam-900/10 bg-[#fbf8f1]/95 px-2 py-1.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border sm:px-2 print:hidden">
+    <div className={className ?? 'sticky top-0 z-20 -mx-5 mb-6 sm:top-[4.25rem] border-b border-loam-900/10 bg-[#fbf8f1]/95 px-2 py-1.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border sm:px-2 print:hidden'}>
       <div role="toolbar" aria-label={t('documents.markdown.toolbar.label')} className="flex items-center gap-0.5 overflow-x-auto">
         {TOOLS.map((group, g) => (
           <div key={g} className={clsx('flex shrink-0 items-center gap-0.5', g > 0 && 'ml-1 border-l border-loam-900/10 pl-1')}>

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ArrowDown, ArrowUp, Bot, Camera, Copy, GripVertical, Mountain, Pencil, Play, Plus, Trash2, Type } from 'lucide-react'
+import { ArrowDown, ArrowUp, Bot, Camera, Copy, GripVertical, Mountain, Pencil, PenLine, Play, Plus, Trash2, Type } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
@@ -11,7 +11,10 @@ import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { captureView } from './view'
 import { cameraFlash } from './flash'
-import { duplicateStep, MAX_STEPS } from './duplicate'
+import { duplicateStep, MAX_STEPS, splitSlideStep } from './duplicate'
+import { SlideBody } from './SlideBody'
+import { SlideEditorDialog } from './SlideEditorDialog'
+import { splitByHeadings } from './slideMarkdown'
 import {
   deletePresentation, loadPresentation, newStepId, requestStep, saveSteps, shownSteps, startPresentation, usePresentation,
 } from './store'
@@ -113,6 +116,13 @@ export default function PresentationPanel() {
     save(result.steps)
     setEditing(result.copy.id)
     editor.notify(t('presentations.duplicated', { title: step.title }))
+  }
+  const split = (step: PresentationStep, body: string) => {
+    const parts = splitByHeadings(body)
+    const result = splitSlideStep(steps, step.id, parts, newStepId)
+    if (!result) return fail(t('presentations.errors.too_many', { count: MAX_STEPS }))
+    save(result)
+    editor.notify(t('presentations.slide_editor.split_done', { count: result.length - steps.length + 1 }))
   }
   const accept = (step: PresentationStep, proposal: SlideProposal) => {
     update(step.id, { title: proposal.title || step.title, slide: { body: proposal.body }, shown: true, proposal: undefined })
@@ -237,6 +247,7 @@ export default function PresentationPanel() {
                 onChange={(patch) => update(step.id, patch)}
                 onMove={(by) => move(index, by)}
                 onDuplicate={steps.length < MAX_STEPS ? () => duplicate(step) : undefined}
+                onSplit={steps.length < MAX_STEPS ? (body) => split(step, body) : undefined}
                 onRemove={() => remove(step)}
                 onClose={() => setEditing(null)}
               />
@@ -272,10 +283,11 @@ function stepState(step: PresentationStep) {
 }
 
 /** Title and note of a step, saved when the field is left; order and removal. */
-function StepEditor({ step, first, last, onChange, onMove, onDuplicate, onRemove, onClose, onDropRelief }: {
+function StepEditor({ step, first, last, onChange, onMove, onDuplicate, onSplit, onRemove, onClose, onDropRelief }: {
   step: PresentationStep
   /** Absent when the presentation is full. */
   onDuplicate?: () => void
+  onSplit?: (body: string) => void
   onDropRelief: () => void
   first: boolean
   last: boolean
@@ -286,8 +298,7 @@ function StepEditor({ step, first, last, onChange, onMove, onDuplicate, onRemove
 }) {
   const [title, setTitle] = useState(step.title)
   const [note, setNote] = useState(step.note ?? '')
-  const [body, setBody] = useState(step.slide?.body ?? '')
-  useEffect(() => setBody(step.slide?.body ?? ''), [step.slide?.body])
+  const [writing, setWriting] = useState(false)
   useEffect(() => setTitle(step.title), [step.title])
   useEffect(() => setNote(step.note ?? ''), [step.note])
 
@@ -297,16 +308,33 @@ function StepEditor({ step, first, last, onChange, onMove, onDuplicate, onRemove
         <Input value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} onBlur={() => title.trim() && title !== step.title && onChange({ title: title.trim() })} />
       </Field>
       {step.slide && (
-        <Field label={t('presentations.slide_body_label')}>
-          <Textarea
-            rows={6}
-            value={body}
-            maxLength={4000}
-            placeholder={t('presentations.slide_body_placeholder')}
-            onChange={(e) => setBody(e.target.value)}
-            onBlur={() => body !== (step.slide?.body ?? '') && onChange({ slide: { body } })}
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-loam-800">{t('presentations.slide_body_label')}</p>
+          {step.slide.body ? (
+            <div
+              role="button" tabIndex={0} aria-label={t('presentations.slide_editor.open_edit')}
+              onClick={() => setWriting(true)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setWriting(true) } }}
+              className="relative max-h-44 cursor-text overflow-hidden rounded-lg bg-loam-50 px-3 py-2 ring-1 ring-loam-200 hover:ring-prune-300 focus-visible:outline-2 focus-visible:outline-prune-600"
+            >
+              <SlideBody body={step.slide.body} className="!text-sm" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-loam-50" aria-hidden />
+            </div>
+          ) : (
+            <p className="text-sm text-loam-500">{t('presentations.slide_body_placeholder')}</p>
+          )}
+          <Button variant="secondary" size="sm" onClick={() => setWriting(true)}>
+            <PenLine className="h-4 w-4" aria-hidden />
+            {t(step.slide.body ? 'presentations.slide_editor.open_edit' : 'presentations.slide_editor.open_write')}
+          </Button>
+          <SlideEditorDialog
+            step={step}
+            open={writing}
+            onClose={() => setWriting(false)}
+            onSave={(body) => onChange({ slide: { body } })}
+            onSplit={onSplit}
           />
-        </Field>
+        </div>
       )}
       <Field label={t('presentations.note_label')}>
         <Textarea rows={3} value={note} maxLength={4000} onChange={(e) => setNote(e.target.value)} onBlur={() => note !== (step.note ?? '') && onChange({ note })} />
@@ -349,7 +377,7 @@ function ProposalCard({ step, proposal, onAccept, onRefuse }: { step: Presentati
         {proposal.by && <span className="font-normal text-humus-700">· {proposal.by}</span>}
       </p>
       {proposal.title && proposal.title !== step.title && <p className="font-serif text-base text-loam-900">{proposal.title}</p>}
-      <p className="whitespace-pre-line text-sm text-loam-800">{proposal.body}</p>
+      <SlideBody body={proposal.body} className="max-h-72 overflow-y-auto !text-sm" />
       {proposal.rationale && <p className="text-sm text-loam-500">{proposal.rationale}</p>}
       {!proposal.new && step.slide?.body && <p className="text-sm text-loam-600">{t('presentations.proposal.replaces')}</p>}
       <div className="flex gap-2">

@@ -6,8 +6,9 @@
 # (PresentationTemplate) gives a first sequence with default views.
 #
 # A step can also be a text slide (`slide.body`, « raison d'être »,
-# « défis et atouts »…): its title and text are shown large over its view of
-# the place. An AI drafts slides through the MCP (propose_slides!): the
+# « défis et atouts »…): its title and text (Markdown: titles, lists,
+# tables, written in the slide editor or pasted from Word or a PDF) are
+# shown large over its view of the place. An AI drafts slides through the MCP (propose_slides!): the
 # draft waits in `proposal` until an editor accepts or refuses it. Notes and
 # drafts are the editors' own: viewers get the steps without them (for_viewer).
 #
@@ -15,7 +16,8 @@
 # are bounded, so the editor can save it whole.
 class MapPresentation < ApplicationRecord
   MAX_STEPS = 60
-  MAX_BODY = 4_000
+  # Markdown: titles, lists and the tables a pasted analysis brings.
+  MAX_BODY = 20_000
   MOMENTS = %w[arrival today year5 year15 year30].freeze
   SHADES = %w[june december].freeze
   # « Existant » or « Projet » (app/frontend/map/time/mode.ts).

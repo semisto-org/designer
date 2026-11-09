@@ -214,7 +214,7 @@ module Mcp
               steps: (editor? ? presentation.steps : presentation.for_viewer[:steps]).map do |step|
                 view = step["view"] || {}
                 { id: step["id"], title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: (step["note"] if editor?),
-                  slide: step["slide"] && { text: step["slide"]["body"] },
+                  slide: step["slide"] && { text: step["slide"]["body"], format: "markdown" },
                   pending_proposal: step["proposal"]&.slice("title", "body", "new"),
                   panel: view["panel"], sectors: view["sectors"], moment: view["moment"], mode: view["mode"], variant_id: view["variantId"], in_3d: view["relief"].present? || nil, view_3d: view["relief"]&.slice("tab", "year", "night").presence }.compact
               end

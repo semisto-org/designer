@@ -18,7 +18,7 @@ class McpPresentationsTest < ActionDispatch::IntegrationTest
     steps = presentations["list"].sole["steps"]
     assert_equal [ "Votre jardin-forêt", "Votre projet" ], steps.map { _1["title"] }
     assert_equal [ true, false ], steps.map { _1["shown"] }
-    assert_equal({ "text" => "" }, steps.first["slide"])
+    assert_equal({ "text" => "", "format" => "markdown" }, steps.first["slide"])
     assert_equal "project", steps.last["panel"]
     assert_equal false, steps.first["view_adjusted"]
   end
@@ -78,5 +78,19 @@ class McpPresentationsTest < ActionDispatch::IntegrationTest
 
     _, error = call_tool(personal_token(users(:alice)), "propose_presentation_slides", { map_id: map.id, slides: [ { body: "Texte", rationale: "Une raison assez longue" } ] })
     assert error, "a viewer cannot propose"
+  end
+
+  test "a slide keeps a long Markdown text whole: titles, lists and tables pasted from a document" do
+    map = maps(:ahinvaux)
+    rows = Array.new(300) { "| Besoin #{_1} | Fonction #{_1} |" }
+    body = "### Pour vous\n\n| Besoins | Fonctions |\n| --- | --- |\n#{rows.join("\n")}\n\n- **Sol** : stop aux engins lourds\n1. Cogestion avec Semisto"
+    assert_operator body.size, :>, 4_000
+    data, error = call_tool(personal_token(users(:michael)), "propose_presentation_slides", { map_id: map.id, slides: [
+      { title: "Analyse fonctionnelle", body:, rationale: "Le tableau des besoins et fonctions de l'analyse" }
+    ] })
+    refute error, data
+    step = map.presentations.sole.steps.find { _1.dig("proposal", "title") == "Analyse fonctionnelle" }
+    assert_equal body, step["proposal"]["body"]
+    assert_equal body, MapPresentation.clean_slide({ "body" => body })["body"]
   end
 end

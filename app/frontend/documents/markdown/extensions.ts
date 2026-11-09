@@ -1,4 +1,5 @@
-import type { Extensions } from '@tiptap/core'
+import { Extension, type Extensions } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import Image from '@tiptap/extension-image'
@@ -7,6 +8,7 @@ import { TableKit } from '@tiptap/extension-table'
 import { Placeholder } from '@tiptap/extensions'
 import { Markdown } from '@tiptap/markdown'
 import StarterKit from '@tiptap/starter-kit'
+import { cleanPastedHtml, looksLikeMarkdown, textToHtml } from '@/documents/markdown/paste'
 import type { CollabSession } from '@/documents/markdown/useCollab'
 
 /**
@@ -37,6 +39,7 @@ export function markdownExtensions({ placeholder, editable, collab }: {
     TableKit.configure({ table: { resizable: false } }),
     Image.configure({ inline: false }),
     ...(placeholder ? [Placeholder.configure({ placeholder })] : []),
+    ...(editable ? [PastedDocuments] : []),
     Markdown,
     ...(collab ? [
       Collaboration.configure({ document: collab.doc }),
@@ -57,3 +60,32 @@ function caret(user: Record<string, string>): HTMLElement {
   cursor.append(label)
   return cursor
 }
+
+/**
+ * A page written elsewhere, pasted as it is: Word's and LibreOffice's HTML
+ * cleaned of their office markup (lists rebuilt, tables given a header), a
+ * PDF's plain text given its titles, lists and numbered points back, and
+ * Markdown read as Markdown. See documents/markdown/paste.
+ */
+const PastedDocuments = Extension.create({
+  name: 'pastedDocuments',
+  transformPastedHTML: (html) => cleanPastedHtml(html),
+  addProseMirrorPlugins() {
+    const editor = this.editor
+    return [new Plugin({
+      key: new PluginKey('pastedDocuments'),
+      props: {
+        handlePaste: (view, event) => {
+          const data = event.clipboardData
+          if (!data || data.getData('text/html') || data.files.length) return false
+          if (view.state.selection.$from.parent.type.spec.code) return false
+          const text = data.getData('text/plain')
+          if (!text) return false
+          if (looksLikeMarkdown(text)) return editor.commands.insertContent(text, { contentType: 'markdown' })
+          const html = textToHtml(text)
+          return html ? editor.commands.insertContent(html) : false
+        },
+      },
+    })]
+  },
+})
