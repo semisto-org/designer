@@ -160,7 +160,7 @@ class MapDossier
 
     def project_json
       sheet = map.project_sheet
-      { values: sheet.to_h.except("meta"), percent: sheet.progress[:percent], schema: ProjectSheet.schema_json }
+      { values: sheet.without_personal.except("meta"), percent: sheet.progress[:percent], schema: ProjectSheet.schema_json }
     end
 
     # ── Terrain ──────────────────────────────────────────────────────────

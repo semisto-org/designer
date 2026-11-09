@@ -27,7 +27,7 @@ class JourneyTest < ActiveSupport::TestCase
                             "uses" => { "uses" => [ "eat_fresh" ], "presence" => "weekends" },
                             "meta" => { "done" => %w[taste budget time skills analysis] } })
     done = item(Journey.new(@map), "project_sheet")
-    assert_equal 67, done.progress
+    assert_equal 62, done.progress
     assert done.done, "60 percent is the threshold"
     @map.update!(project: {})
     assert_equal false, item(Journey.new(@map), "project_sheet").done

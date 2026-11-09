@@ -34,11 +34,11 @@ class McpToolsTest < ActionDispatch::IntegrationTest
   end
 
   test "get_map gives the boundary, parcels, project sheet and what the connection may do" do
-    @map.update!(project: { "goals" => [ "Autonomie fruitière" ] }, parcels: [ "91034A0123/00B000" ])
+    @map.update!(project: { "ambitions" => { "goals" => [ "food_autonomy" ] } }, parcels: [ "91034A0123/00B000" ])
     data, error = call_tool(@owner, "get_map", { map_id: @map.id })
     refute error
     assert_equal "MultiPolygon", data.dig("boundary", "type")
-    assert_equal [ "Autonomie fruitière" ], data.dig("project", "goals")
+    assert_equal [ "food_autonomy" ], data.dig("project", "ambitions", "goals")
     assert_equal [ "91034A0123/00B000" ], data["parcels"]
     assert_equal 2, data["centroid"].size
     assert data["area_m2"].positive?
@@ -834,6 +834,28 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal 33, budget["percent"]
     assert_empty data["pending_drafts"]
     assert_equal({ "percent" => 3 }, AiAction.last.result)
+  end
+
+  test "personal data of the sheet never reaches an AI, nor can an AI write it" do
+    @map.update!(project: { "who" => { "people" => [ { "name" => "Marie", "phone" => "0470 12 34 56", "email" => "marie@example.org" } ], "care" => "Allergie aux piqûres" } })
+    sheet, = call_tool(@owner, "get_project_sheet", { map_id: @map.id })
+    map, = call_tool(@owner, "get_map", { map_id: @map.id })
+    [ sheet, map ].each do |data|
+      refute_includes data.to_json, "0470"
+      refute_includes data.to_json, "marie@example.org"
+      refute_includes data.to_json, "piqûres"
+    end
+    assert_equal [ { "name" => "Marie" } ], map.dig("project", "who", "people")
+    refute sheet["sections"].first["fields"].any? { _1["key"] == "care" }
+
+    answers = [
+      { section: "who", field: "care", value: "Asthme", rationale: "Dit pendant l'entretien." },
+      { section: "who", field: "people", value: [ { name: "Marie", role: "lead", phone: "0499" } ], rationale: "Marie porte le projet." }
+    ]
+    data, error = call_tool(@owner, "propose_project_sheet", { map_id: @map.id, answers: })
+    refute error, data
+    assert_match(/donnée personnelle/, data["rejected"].first["error"])
+    assert_equal [ { "name" => "Marie", "role" => "lead" } ], @map.project_sheet_drafts.find_by(field: "people").value, "a phone an AI proposes is dropped"
   end
 
   test "the team's notes on the sheet go to the team only, never to a guest of the map" do

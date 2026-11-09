@@ -19,8 +19,11 @@ module TypedSchema
   # red), for pairs like « J'adore » / « Je n'aime pas ».
   # `team_only`: answered by the people working on the map, never shown to
   # (nor written by) the people behind the project on their private link.
-  Field = Data.define(:key, :type, :values, :range, :limit, :max, :exclusive, :item, :required, :counts, :hidden, :team_only, :tone) do
-    def initialize(key:, type:, values: nil, range: nil, limit: nil, max: nil, exclusive: [], item: nil, required: false, counts: true, hidden: false, team_only: false, tone: nil)
+  # `personal`: personal data (phone, e-mail, health): seen and written only
+  # by the people on the map and the private link, never handed to a
+  # dossier, an export or an AI (ProjectSheet#without_personal).
+  Field = Data.define(:key, :type, :values, :range, :limit, :max, :exclusive, :item, :required, :counts, :hidden, :team_only, :tone, :personal) do
+    def initialize(key:, type:, values: nil, range: nil, limit: nil, max: nil, exclusive: [], item: nil, required: false, counts: true, hidden: false, team_only: false, tone: nil, personal: false)
       super
     end
 
@@ -36,13 +39,14 @@ module TypedSchema
         json[:hidden] = true if hidden
         json[:teamOnly] = true if team_only
         json[:tone] = tone.to_s if tone
+        json[:personal] = true if personal
       end
     end
   end
 
   module_function
 
-  def text(key, limit: 2_000, required: false, counts: false, team_only: false, hidden: false) = Field.new(key:, type: :text, limit:, required:, counts:, team_only:, hidden:)
+  def text(key, limit: 2_000, required: false, counts: false, team_only: false, hidden: false, personal: false) = Field.new(key:, type: :text, limit:, required:, counts:, team_only:, hidden:, personal:)
   def enum(key, *values, required: false, counts: true) = Field.new(key:, type: :enum, values: values.map(&:to_s).freeze, required:, counts:)
   def multi(key, *values, exclusive: [], counts: true, team_only: false, tone: nil) = Field.new(key:, type: :multi, values: values.map(&:to_s).freeze, exclusive: Array(exclusive).map(&:to_s), counts:, team_only:, tone:)
   def integer(key, range, required: false, counts: true, hidden: false) = Field.new(key:, type: :integer, range:, required:, counts:, hidden:)

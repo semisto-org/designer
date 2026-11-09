@@ -24,7 +24,7 @@ module Mcp
           bbox: map.bbox&.map { |v| v.round(Geo::PRECISION) },
           boundary: Geo.encode(map.boundary),
           parcels: map.parcels,
-          project: map.project,
+          project: map.project_sheet.without_personal,
           project_percent: map.project_sheet.progress[:percent],
           project_drafts_pending: map.project_sheet_drafts.count,
           project_team_notes: project_team_notes(map),

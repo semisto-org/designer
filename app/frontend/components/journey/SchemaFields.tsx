@@ -317,6 +317,7 @@ function ListField({ field, texts, value, onChange, disabled }: {
                 <label htmlFor={inputId} className="block text-sm text-loam-700">{label}</label>
                 <Input
                   id={inputId} placeholder={itemTexts.placeholder} maxLength={item.limit}
+                  type={INPUT_TYPES[item.key] ?? 'text'} autoComplete={item.key === 'phone' ? 'tel' : item.key === 'email' ? 'email' : undefined}
                   disabled={disabled} className="mt-1" value={(row[item.key] as string) ?? ''}
                   onChange={(e) => update(index, item.key, e.target.value)}
                 />
@@ -337,6 +338,9 @@ function ListField({ field, texts, value, onChange, disabled }: {
     </div>
   )
 }
+
+/** Entry fields a phone opens with the right keyboard. */
+const INPUT_TYPES: Record<string, 'tel' | 'email'> = { phone: 'tel', email: 'email' }
 
 /** A value in words, with the labels of the locale: « Moins de 500 € », « Marie (porteuse) ». */
 export function describeValue(field: SchemaField, texts: Texts, value: unknown): string {

@@ -31,23 +31,44 @@ class ProjectSheet
       TypedSchema.list("people", [
         TypedSchema.text("name", limit: 80, required: true),
         TypedSchema.enum("role", *%w[lead partner family friend collective employee other]),
-        TypedSchema.text("note", limit: 200)
+        TypedSchema.text("note", limit: 200),
+        TypedSchema.text("phone", limit: 40, personal: true),
+        TypedSchema.text("email", limit: 120, personal: true)
       ], max: 12),
       TypedSchema.enum("profile", *%w[individual collective school business farm commune other]),
       TypedSchema.enum("experience", *%w[beginner some experienced professional]),
+      # Only what changes the garden (plants or insects to avoid, a way of
+      # moving about): never a diagnosis. Health data, so personal.
+      TypedSchema.text("care", limit: 500, personal: true),
       NOTES
     ],
     # Ambitions et objectifs.
     "ambitions" => [
       TypedSchema.multi("goals", *%w[food_autonomy biodiversity income education hospitality landscape climate_resilience soil_water wood_energy wellbeing]),
       TypedSchema.enum("main_goal", *%w[food_autonomy biodiversity income education hospitality landscape climate_resilience soil_water wood_energy wellbeing]),
-      NOTES
+      # The why, in the person's words: it feeds the purpose of the analysis.
+      TypedSchema.text("meaning", limit: 1_000),
+      NOTES,
+      # Not needed, but a joy: a wished need, not an essential one.
+      TypedSchema.text("bonus", limit: 500),
+      TypedSchema.text("inspirations", limit: 1_000)
     ],
     # Usages souhaités.
     "uses" => [
       TypedSchema.multi("uses", *%w[eat_fresh preserve forage_walk children_play relax gatherings work_outdoors teaching guests market_sales animals_care wood_craft medicinal wildlife_watch]),
       TypedSchema.enum("presence", *%w[daily several_per_week weekends holidays remote]),
+      # What the garden could give beyond food: guides the plant palette.
+      TypedSchema.multi("products", *%w[herbal_teas medicinal balms_hydrosols mushrooms basketry dyes firewood cut_flowers honey_plants fodder], counts: false),
       NOTES
+    ],
+    # Le lieu vu par les personnes qui y vivent : ce qui s'y passe déjà, ce
+    # qu'elles seules savent (eau, gel, vent), ce à quoi elles tiennent, son
+    # histoire. Ce que la personne a vu dehors pèse plus que les modèles.
+    "place" => [
+      TypedSchema.text("ongoing", limit: 1_000, counts: true),
+      TypedSchema.text("knowledge", limit: 2_000, counts: true),
+      TypedSchema.text("keep", limit: 1_000, counts: true),
+      TypedSchema.text("history", limit: 1_000)
     ],
     # Palette gustative : ce que chacun aime manger, la façon de cuisiner et
     # de conserver. Chaque personne du projet remplit sa ligne depuis le lien
@@ -58,7 +79,7 @@ class ProjectSheet
         TypedSchema.multi("loves", *FOOD_FAMILIES, tone: :positive),
         TypedSchema.multi("dislikes", *FOOD_FAMILIES, tone: :negative),
         TypedSchema.text("favorites", limit: 200),
-        TypedSchema.text("allergies", limit: 200)
+        TypedSchema.text("allergies", limit: 200, personal: true)
       ], max: 12),
       TypedSchema.multi("flavors", *%w[sweet tangy bitter aromatic nutty spicy]),
       TypedSchema.multi("kitchen", *%w[fresh cooking jams juice_cider drying fermenting syrups_liqueurs herbal_teas]),
@@ -114,7 +135,9 @@ class ProjectSheet
       TypedSchema.multi("planting_seasons", *%w[autumn winter spring]),
       TypedSchema.integer("start_year", 2020..2060),
       TypedSchema.enum("phasing", *%w[one_go two_three_years as_budget_allows]),
-      NOTES
+      NOTES,
+      # The last word of the sheet, before « J'ai terminé ».
+      TypedSchema.text("anything_else", limit: 2_000)
     ],
     # Analyse fonctionnelle (Semisto's design method, app/design_guides/method.md):
     # the purpose, then the needs and the functions of the people behind the
@@ -254,6 +277,41 @@ class ProjectSheet
   end
 
   def section(name) = values.fetch(name, {}).compact
+
+  # The sheet without its personal data (phones, e-mails, health): what a
+  # dossier, an export or an AI may read. Same shape as #to_h.
+  def without_personal
+    to_h.to_h do |name, fields|
+      next [ name, fields ] if name == "meta"
+      definitions = SECTIONS.fetch(name).index_by(&:key)
+      kept = fields.filter_map do |key, value|
+        field = definitions[key]
+        next if field.nil? || field.personal
+        value = value.map { |row| row.except(*self.class.personal_keys(field)) } if field.type == :list && value.is_a?(Array)
+        [ key, value ]
+      end.to_h
+      [ name, kept ]
+    end.reject { |name, fields| name != "meta" && fields.empty? }
+  end
+
+  # Keys of a list's entries that are personal.
+  def self.personal_keys(field) = Array(field.item).select(&:personal).map(&:key)
+
+  # A field that holds personal data, in itself or in its entries.
+  def self.personal?(field) = field.personal || personal_keys(field).any?
+
+  # An AI never sees personal data, so an answer it proposes for a list
+  # (« people », « tasters ») comes without it: entries of the new list keep
+  # the personal values of the current entry with the same name.
+  def self.keep_personal(field, current, proposed)
+    keys = personal_keys(field)
+    return proposed if keys.empty? || !proposed.is_a?(Array) || !current.is_a?(Array)
+    by_name = current.index_by { _1["name"].to_s.strip.downcase }
+    proposed.map do |row|
+      before = by_name[row["name"].to_s.strip.downcase]
+      before ? before.slice(*keys).merge(row.except(*keys)) : row.except(*keys)
+    end
+  end
 
   # The functions of the analysis, people's then place's: { id, name, source }.
   def project_functions
