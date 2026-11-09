@@ -11,7 +11,7 @@ import type { PresentationStep } from './types'
  * A text slide, full screen over its view of the place: the place's name,
  * the title, the text the audience reads (Markdown: titles, lists,
  * tables). A page of the field notebook laid on the map, which stays
- * visible around it; wider when it holds a table.
+ * visible around it; every slide has the same width, whatever it holds.
  */
 export function SlideView({ step, place, onClose }: { step: PresentationStep; place: string; onClose?: () => void }) {
   const body = step.slide?.body ?? ''
@@ -27,7 +27,7 @@ export function SlideView({ step, place, onClose }: { step: PresentationStep; pl
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-loam-900/35 p-4 pt-20 backdrop-blur-[2px] sm:p-10 sm:pt-24" data-presentation-slide>
-      <article className={clsx('relative max-h-full w-full overflow-y-auto', /^\s*\|/m.test(body) ? 'max-w-5xl' : 'max-w-3xl', 'rounded-2xl bg-loam-50 px-8 py-10 shadow-[0_24px_60px_rgb(26_26_26/0.35)] ring-1 ring-loam-200 sm:px-14 sm:py-14')}>
+      <article className={clsx('relative max-h-full w-full max-w-5xl overflow-y-auto', 'rounded-2xl bg-loam-50 px-8 py-10 shadow-[0_24px_60px_rgb(26_26_26/0.35)] ring-1 ring-loam-200 sm:px-14 sm:py-14')}>
         {onClose && (
           <IconButton label={t('presentations.done')} onClick={onClose} className="absolute right-3 top-3">
             <X />
