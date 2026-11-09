@@ -25,7 +25,9 @@ Glisse une étape dans la liste pour la déplacer ; le crayon change le titre et
 
 ## Des diapositives de texte
 
-Certaines étapes se disent mieux avec des mots qu'avec la carte : la page de garde, les défis et atouts, les besoins et fonctions, la **raison d'être** de ce jardin-forêt, les prochaines étapes. Le modèle les prévoit déjà, marquées d'un **T** : clique sur le crayon et écris le **texte affiché**, quelques lignes, une idée par ligne (un tiret en début de ligne fait une liste). Pendant la présentation, il s'affiche en grand, comme une page de carnet posée sur la vue du lieu. **Ajouter une diapositive** en crée une de plus.
+Certaines étapes se disent mieux avec des mots qu'avec la carte : la page de garde, les défis et atouts, les besoins et fonctions, la **raison d'être** de ce jardin-forêt, les prochaines étapes. Le modèle les prévoit déjà, marquées d'un **T** : clique sur le crayon puis sur **Écrire le texte** : une page à la taille de la diapositive s'ouvre, avec ses titres, son gras, ses listes à puces ou numérotées et ses tableaux.
+
+Tu as déjà écrit ton analyse dans Word ou ton pré-projet en PDF ? **Colle-le tel quel** : les titres, les puces, les numéros et les tableaux sont gardés (depuis un PDF, Terranova retrouve les listes et les titres que la copie a aplatis ; relis-les quand même). Un long texte avec plusieurs titres se coupe d'un clic en **une diapositive par titre**. Pendant la présentation, il s'affiche en grand, comme une page de carnet posée sur la vue du lieu. **Ajouter une diapositive** en crée une de plus.
 
 Ton IA peut les rédiger pour toi, d'après la fiche projet et ce que la famille t'a dit : ses textes arrivent en **brouillons** dans le panneau, et rien n'est montré avant que tu cliques sur **Accepter**.
 

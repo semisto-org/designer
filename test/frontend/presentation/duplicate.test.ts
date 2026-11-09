@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { duplicateStep, MAX_STEPS } from '../../../app/frontend/map/presentation/duplicate.ts'
+import { duplicateStep, MAX_STEPS, splitSlideStep } from '../../../app/frontend/map/presentation/duplicate.ts'
 import type { PresentationStep } from '../../../app/frontend/map/presentation/types.ts'
 
 const step = (id: string, extra: Partial<PresentationStep> = {}): PresentationStep => ({ id, title: id, shown: true, captured: true, view: {}, ...extra })
@@ -33,4 +33,20 @@ test('nothing is copied for an unknown step or a full presentation', () => {
   assert.equal(duplicateStep([step('a')], 'z', 'z2', 'z'), null)
   const full = Array.from({ length: MAX_STEPS }, (_, i) => step(String(i)))
   assert.equal(duplicateStep(full, '0', 'x', 'x'), null)
+})
+
+test('a slide cut at its titles: the first section stays, the others follow on the same view', () => {
+  const view = { hiddenLayers: ['notes'] }
+  const steps = [step('a'), step('b', { key: 'purpose', note: 'à dire', slide: { body: 'tout' }, view }), step('c')]
+  let n = 0
+  const result = splitSlideStep(steps, 'b', { lead: '', sections: [{ title: 'Sol', body: '- humus' }, { title: 'Eau', body: 'Drainer' }] }, () => `new${++n}`)
+  assert.ok(result)
+  assert.deepEqual(result.map((s) => [s.id, s.title, s.slide?.body]), [['a', 'a', undefined], ['b', 'Sol', '- humus'], ['new1', 'Eau', 'Drainer'], ['c', 'c', undefined]])
+  assert.equal(result[1].key, 'purpose')
+  assert.equal(result[2].key, undefined)
+  assert.deepEqual(result[2].view, view)
+  assert.notEqual(result[2].view, view)
+  const kept = splitSlideStep(steps, 'b', { lead: 'Intro', sections: [{ title: 'Sol', body: '' }] }, () => 'x')
+  assert.deepEqual(kept?.map((s) => [s.title, s.slide?.body]).slice(1, 3), [['b', 'Intro'], ['Sol', '']])
+  assert.equal(splitSlideStep(Array.from({ length: MAX_STEPS }, (_, i) => step(`s${i}`, { slide: { body: '' } })), 's0', { lead: 'x', sections: [{ title: 'y', body: '' }] }, () => 'z'), null)
 })

@@ -47,8 +47,13 @@ function focusFirstBlank(editor: Editor) {
  * `content`, shows where the others write, and says whose change it hands
  * back (`mine`), so that each edit is saved, and credited to its author.
  */
-export function MarkdownEditor({ content, editable, onChange, onReady, className, autofocus = false, collab }: {
+export function MarkdownEditor({ content, editable, onChange, onReady, className, autofocus = false, collab, prose = PAGE_PROSE, placeholder, toolbarClassName }: {
   content: string
+  /** The page's typography (a slide reads larger than a document). */
+  prose?: string
+  placeholder?: string
+  /** Where the toolbar sits, when not above a full page. */
+  toolbarClassName?: string
   editable: boolean
   /** Puts the cursor at the end of the text (a document just created). */
   autofocus?: boolean
@@ -60,12 +65,12 @@ export function MarkdownEditor({ content, editable, onChange, onReady, className
   const change = useRef(onChange)
   change.current = onChange
   const editor = useEditor({
-    extensions: markdownExtensions({ editable, collab: collab ?? undefined, placeholder: editable ? t('documents.markdown.placeholder') : undefined }),
+    extensions: markdownExtensions({ editable, collab: collab ?? undefined, placeholder: editable ? placeholder ?? t('documents.markdown.placeholder') : undefined }),
     ...(collab ? {} : { content, contentType: 'markdown' as const }),
     editable,
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
-    editorProps: { attributes: { lang: 'fr', class: clsx(PAGE_PROSE, 'outline-none', editable && 'min-h-[50vh]') } },
+    editorProps: { attributes: { lang: 'fr', class: clsx(prose, 'outline-none', editable && 'min-h-[50vh]') } },
     onCreate: ({ editor: e }) => { if (editable && autofocus) window.setTimeout(() => { if (!e.isDestroyed) focusFirstBlank(e) }) },
     onUpdate: ({ editor: e, transaction }) => {
       const sync = transaction.getMeta(ySyncPluginKey) as { isChangeOrigin?: boolean; isUndoRedoOperation?: boolean } | undefined
@@ -89,7 +94,7 @@ export function MarkdownEditor({ content, editable, onChange, onReady, className
   if (!editor) return null
   return (
     <div className={className}>
-      {editable && <MarkdownToolbar editor={editor} />}
+      {editable && <MarkdownToolbar editor={editor} className={toolbarClassName} />}
       <EditorContent editor={editor} />
     </div>
   )
