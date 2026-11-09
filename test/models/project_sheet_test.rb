@@ -132,7 +132,7 @@ class ProjectSheetTest < ActiveSupport::TestCase
     assert_equal 33, progress[:sections]["budget"][:percent] # 1 of 3 counting fields
     assert_equal "partial", progress[:sections]["budget"][:status]
     assert_equal "ambitions", progress[:nextSection]
-    assert_equal ((100 + 33) / 12.0).round, progress[:percent]
+    assert_equal ((100 + 33) / 13.0).round, progress[:percent]
   end
 
   test "marking a section done makes it 100 percent without answers" do
@@ -145,7 +145,7 @@ class ProjectSheetTest < ActiveSupport::TestCase
 
   test "schema_json describes every section for the frontend" do
     schema = ProjectSheet.schema_json
-    assert_equal %w[who ambitions uses taste budget time skills constraints opportunities livestock calendar analysis], schema[:sections].map { _1[:key] }
+    assert_equal %w[who ambitions uses place taste budget time skills constraints opportunities livestock calendar analysis], schema[:sections].map { _1[:key] }
     budget = schema[:sections].find { _1[:key] == "budget" }[:fields].find { _1[:key] == "initial" }
     assert_equal "enum", budget[:type]
     assert_includes budget[:values], "up_to_2000"
@@ -182,6 +182,42 @@ class ProjectSheetTest < ActiveSupport::TestCase
     patch = ProjectSheet.parse({ "taste" => { "designer_notes" => "Écrit par le porteur", "curiosity" => "familiar" } }, holder: true)
     assert patch.valid?
     assert_equal({ "taste" => { "curiosity" => "familiar" } }, patch.to_h)
+  end
+
+  test "the place seen by its people counts what they know, its history is a bonus" do
+    sheet = ProjectSheet.parse({ "place" => { "ongoing" => "La fête de la Saint-Jean", "knowledge" => "L'eau stagne en bas après une averse", "history" => "Un ancien verger" } })
+    section = sheet.progress[:sections]["place"]
+    assert_equal [ 2, 3, 67 ], section.values_at(:answered, :total, :percent)
+    assert_equal "Un ancien verger", sheet.section("place")["history"]
+  end
+
+  test "personal data stays on the sheet but never in its shareable form" do
+    sheet = ProjectSheet.parse({
+      "who" => { "people" => [ { "name" => "Marie", "role" => "lead", "phone" => "0470 12 34 56", "email" => "marie@example.org" } ], "care" => "Allergie aux piqûres de guêpe", "profile" => "individual" },
+      "taste" => { "tasters" => [ { "name" => "Lily", "loves" => %w[cherries], "allergies" => "Noix" } ] },
+      "calendar" => { "anything_else" => "Merci !" },
+      "meta" => { "done" => [ "who" ] }
+    })
+    assert sheet.valid?, sheet.errors
+    assert_equal "0470 12 34 56", sheet.section("who")["people"].first["phone"], "the people on the map read it"
+    shared = sheet.without_personal
+    assert_equal [ { "name" => "Marie", "role" => "lead" } ], shared.dig("who", "people")
+    assert_nil shared.dig("who", "care")
+    assert_equal "individual", shared.dig("who", "profile")
+    assert_equal [ { "name" => "Lily", "loves" => %w[cherries] } ], shared.dig("taste", "tasters")
+    assert_equal "Merci !", shared.dig("calendar", "anything_else")
+    assert_equal [ "who" ], shared.dig("meta", "done")
+    refute_includes shared.to_json, "0470"
+
+    holder = ProjectSheet.parse({ "who" => { "people" => [ { "name" => "Marie", "email" => "marie@example.org" } ], "care" => "Fauteuil" } }, holder: true)
+    assert_equal [ "marie@example.org", "Fauteuil" ], [ holder.section("who")["people"].first["email"], holder.section("who")["care"] ], "the private link writes them"
+  end
+
+  test "keep_personal: a list an AI proposes keeps the personal values of the same person" do
+    field = ProjectSheet::SECTIONS["who"].find { _1.key == "people" }
+    current = [ { "name" => "Marie", "role" => "lead", "phone" => "0470" }, { "name" => "Paul", "email" => "p@example.org" } ]
+    proposed = [ { "name" => "marie ", "role" => "partner" }, { "name" => "Zoé", "phone" => "invented" } ]
+    assert_equal [ { "phone" => "0470", "name" => "marie ", "role" => "partner" }, { "name" => "Zoé" } ], ProjectSheet.keep_personal(field, current, proposed)
   end
 
   test "every declared section, field and option has a French label" do

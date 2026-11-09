@@ -16,11 +16,21 @@ Avant de dessiner, il faut savoir **pour qui** et **pour quoi**. La **fiche proj
 
 Les deux présentations montrent la même fiche.
 
-## Douze sections, à ton rythme
+## Treize sections, à ton rythme
 
-**Qui**, **Ambitions**, **Usages**, **Palette gustative**, **Budget**, **Temps disponible**, **Compétences**, **Contraintes**, **Opportunités**, **Élevages**, **Calendrier** et **Analyse fonctionnelle**.
+**Qui**, **Ambitions**, **Usages**, **Ton lieu, vu par toi**, **Palette gustative**, **Budget**, **Temps disponible**, **Compétences**, **Contraintes**, **Opportunités**, **Élevages**, **Calendrier** et **Analyse fonctionnelle**.
 
 La plupart des questions se répondent en cochant des cases ou en choisissant une tranche (« 500 à 2 000 € », « Plusieurs fois par semaine »). Chaque section a aussi un champ libre pour le dire avec tes mots. « Je ne sais pas encore » est une réponse valable : mieux vaut l'assumer que deviner.
+
+## Ton lieu, vu par toi
+
+Personne ne connaît ton lieu comme toi. Avant de répondre, fais-en le tour dehors : ce qui s'y passe déjà et doit continuer, ce que toi seul·e sais (où l'eau stagne après la pluie, où le gel reste le matin, par où passe le vent), ce à quoi tu tiens et qu'il ne faut pas toucher, et ce que tu sais de son histoire. Ce que tu as vu sur place pèse plus que toutes les cartes.
+
+Dans **Ambitions**, trois questions vont plus loin sur le pourquoi : ce que le lieu représente pour toi, comment tu l'imagines dans dix ans (ce que tu y vois, y sens, y entends), ton petit plus rêvé, et ce qui t'inspire. Le dernier champ de la fiche, **Autre chose à nous dire ?**, accueille tout le reste.
+
+## Coordonnées et santé : des données à part
+
+Dans **Qui**, chaque personne peut laisser un téléphone et un e-mail, avec son accord. La question sur les plantes ou les insectes à éviter et sur l'accès ne demande que ce qui change le jardin, jamais un diagnostic. Ces réponses, comme les allergies de la palette gustative, ne sont lues que par les personnes qui travaillent sur la carte et sur le lien privé : elles n'apparaissent jamais dans le dossier imprimé, et ton IA ne les reçoit pas.
 
 ## L'analyse fonctionnelle
 

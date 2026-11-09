@@ -56,6 +56,8 @@ module Mcp
         return [ nil, I18n.t("mcp.sheet_errors.section", sections: ProjectSheet::SECTIONS.keys.join(", ")) ] unless fields
         definition = fields.find { |f| f.key == field }
         return [ nil, I18n.t("mcp.sheet_errors.field", section:, fields: fields.map(&:key).join(", ")) ] unless definition
+        return [ nil, I18n.t("mcp.sheet_errors.personal") ] if definition.personal
+        raw = raw.map { |row| row.is_a?(Hash) ? row.to_h.transform_keys(&:to_s).except(*ProjectSheet.personal_keys(definition)) : row } if raw.is_a?(Array)
         parsed = ProjectSheet.parse({ section => { field => raw } })
         return [ nil, I18n.t("mcp.sheet_errors.value", details: describe(definition)) ] unless parsed.valid?
         value = parsed.section(section)[field]

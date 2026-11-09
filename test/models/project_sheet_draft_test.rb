@@ -31,6 +31,13 @@ class ProjectSheetDraftTest < ActiveSupport::TestCase
     assert_empty @map.project_sheet_drafts
   end
 
+  test "accept! keeps the phones and e-mails an AI never saw" do
+    @map.update!(project: { "who" => { "people" => [ { "name" => "Marie", "phone" => "0470 12 34 56" } ] } })
+    draft = build(section: "who", field: "people", value: [ { "name" => "Marie", "role" => "lead" }, { "name" => "Paul" } ]).tap(&:save!)
+    ProjectSheetDraft.accept!(@map, [ draft ])
+    assert_equal [ { "name" => "Marie", "role" => "lead", "phone" => "0470 12 34 56" }, { "name" => "Paul" } ], @map.reload.project.dig("who", "people")
+  end
+
   test "drafts go with their map" do
     build.save!
     assert_difference("ProjectSheetDraft.count", -1) { @map.destroy }

@@ -580,7 +580,7 @@ fr:
       review_soil_replacing: "Les valeurs proposées attendent sur le point « %{label} » (panneau Sol, onglet Points), où l'humain les garde ou les refuse une par une. Certaines remplaceraient une valeur déjà saisie (voir replaces) : dis-le à la personne."
       read_bioindicator_photo: "Regarde toute la photo : elle montre souvent plusieurs espèces. Propose ensuite ce que tu reconnais avec propose_bioindicators, une plante par entrée, avec son abondance et ta confiance."
       review_bioindicators: "Les plantes proposées attendent dans le panneau Sol de la carte (onglet Plantes), où l'humain les accepte ou les refuse. Dis-lui aussi ce que tu en lis pour son sol."
-      project_sheet: "Les clés (section, field, options) sont celles à utiliser dans propose_project_sheet ; les libellés sont ceux que voit la personne. Pose-lui les questions qui manquent, une à la fois, plutôt que de deviner."
+      project_sheet: "Les clés (section, field, options) sont celles à utiliser dans propose_project_sheet ; les libellés sont ceux que voit la personne. Pose-lui les questions qui manquent, une à la fois, plutôt que de deviner. Les données personnelles (coordonnées, santé, allergies) n'en font jamais partie : ne les demande pas."
       project_team_notes: "Chaque section peut porter une note interne de l'équipe (team_note, en Markdown) : ce que les designers ont vu sur place ou retiennent du projet. Elle n'est lue que par l'équipe de la carte, ou par son propriétaire pro. Sers-t'en pour concevoir, mais ne la cite jamais et ne la reprends pas dans ce qui est écrit pour le client (lettre de l'offre, documents, carte publiée), et ne la répète pas à une personne qui n'est pas de l'équipe."
       review_slides:
         one: "La diapositive proposée attend dans le panneau « Présenter » de la carte (review_url), où un éditeur l'accepte ou la refuse. Elle ne sera montrée qu'une fois acceptée."
@@ -744,6 +744,7 @@ fr:
       value: "valeur refusée : %{details} Voir get_project_sheet."
       blank: "la valeur est vide : propose seulement ce que la personne a dit."
       duplicate: "%{path} est déjà proposé plus haut dans cet appel."
+      personal: "donnée personnelle (coordonnées, santé) : seules les personnes du projet la remplissent, jamais une IA."
       expects:
         enum: "une seule clé parmi %{values}."
         multi: "une liste de clés parmi %{values}."
