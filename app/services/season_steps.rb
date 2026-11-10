@@ -31,10 +31,11 @@ module SeasonSteps
     }
   end
 
-  # The steps of `maps` drawn on the twelve months from the start of this month.
+  # The steps of `maps` still to come or under way from the start of this
+  # month, however far ahead they go (a project planned over several years:
+  # the frieze scrolls to the last one).
   def coming(maps, today = Date.current)
-    from = today.beginning_of_month
-    Task.steps.where(map_id: maps).where(due_on: from..).where(starts_on: ..(from + 12.months)).order(:starts_on, :id)
+    Task.steps.where(map_id: maps).where(due_on: today.beginning_of_month..).order(:starts_on, :id)
   end
 
   def json(task)

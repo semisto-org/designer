@@ -381,3 +381,7 @@ html[data-presenting] [data-zone="toolbar"],
 html[data-presenting] [data-zone="top"],
 html[data-presenting] [data-zone-card="journey"],
 html[data-presenting] [data-zone-card="variant"] { display: none !important; }
+
+/* The season frieze's paper (SeasonFrieze): its box, and the lane names that
+   stay put while the months scroll under them. */
+.season-paper { background-color: #fffdf7; }

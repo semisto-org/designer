@@ -37,10 +37,13 @@ class Teams::BoardTest < ActiveSupport::TestCase
   test "the season: its window and its steps" do
     list = @map.task_lists.create!(name: "Saison")
     list.tasks.create!(title: "Plantation", step_kind: "plant", starts_on: Date.new(2026, 12, 1), due_on: Date.new(2027, 1, 15))
-    list.tasks.create!(title: "Trop tard", step_kind: "site", starts_on: Date.new(2028, 1, 1), due_on: Date.new(2028, 1, 8))
+    # Years ahead: the frieze scrolls to it.
+    list.tasks.create!(title: "Phase 3", step_kind: "site", starts_on: Date.new(2028, 1, 1), due_on: Date.new(2028, 1, 8))
+    # Over before this month: left out.
+    list.tasks.create!(title: "Passée", step_kind: "design", starts_on: Date.new(2026, 8, 1), due_on: Date.new(2026, 9, 20))
     data = board
     assert_equal({ opensOn: "2026-11-01", closesOn: "2027-02-28", inSeason: false, weeks: 3 }, data[:season])
-    assert_equal [ "Plantation" ], data[:steps].map { _1[:title] }
+    assert_equal [ "Plantation", "Phase 3" ], data[:steps].map { _1[:title] }
     assert board(Date.new(2027, 2, 1))[:season][:inSeason]
   end
 
