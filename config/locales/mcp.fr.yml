@@ -20,6 +20,7 @@ fr:
         Quand la personne veut garder sa carte hors de Terranova (sur le terrain sans réseau, une clé USB, une archive pour plus tard), prepare_offline_site prépare le site hors ligne : un dossier zip qui s'ouvre dans n'importe quel navigateur, sans compte ni connexion, avec le plan, le jardin au fil des années, les photos, les documents et les données.
         Les documents qu'envoient un compte Pro ou une équipe (l'offre, les documents des cartes) portent sa charte graphique : get_document_theme la lit ; quand la personne te demande de l'aligner sur son Design System ou sur sa marque, lis-les puis propose-la avec propose_document_theme (couleurs, polices de la liste, pied de page) : elle la prend ou la refuse sur la page « Charte graphique ».
         Pour l'équipe qui chiffre le projet, get_offer donne l'offre en cours et son document client bloc par bloc ; quand elle te demande la lettre « Votre projet », écris-la d'après la fiche projet, la carte et les documents de la visite, puis propose-la avec propose_offer_letter : elle la prend ou la refuse dans l'offre.
+        Pour l'équipe qui mène un projet (formules Pro et Team), « Temps et dépenses » suit les heures et les kilomètres de chacun face à l'offre acceptée : list_time_entries avec map_id dit où en est chaque phase, sans map_id les heures de la personne et ce qu'il lui reste à facturer ; quand elle te dit ce qu'elle a fait (« 3 h hier chez Dupont, 64 km »), note-le avec record_time_entries, puis rappelle-lui son relevé de prestations à joindre à sa facture. Après une visite de terrain (list_site_visits), propose-lui de noter le temps passé dehors. Jamais de tarif ni de marge, et rien de tout ça pour le client.
         list_site_visits donne les visites de terrain faites avec l'app mobile : quand, par qui, le compte rendu (un document Markdown, à lire avec get_document), l'enregistrement audio de la visite quand il y en a un (un document « Enregistrement audio de la visite du jj/mm/aaaa », que tu ne peux pas encore écouter : demande à la personne ce qui s'y est dit, ou sa transcription) et le tracé de la marche.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
@@ -185,6 +186,13 @@ fr:
           task_tag: "Étiquette des tâches, sans tenir compte des majuscules."
           task_feature_filter: "Seulement les tâches qui concernent l'un de ces éléments (identifiants donnés par list_features)."
           task_numbers_filter: "Seulement les tâches qui concernent l'un de ces plants, par leur numéro sur le plan."
+      list_time_entries:
+        title: "Lire le temps passé"
+        description: "« Temps et dépenses » (formules Pro et Team). Avec map_id : où en est chaque phase du projet face à la version acceptée de l'offre (envelope_hours et envelope_km, partagées par toute l'équipe ; over_hours : ce qui dépasse, calculé par Terranova), le temps de chacun par phase, ses kilomètres, et les heures notées (qui, quand, combien, facturables ou non et pourquoi : offered = offert, travel = déplacement, other = autre ; noted = noté, invoiced = facturé). Réservé à l'équipe qui mène le projet (éditeurs de la carte), jamais au client. Sans map_id : les heures de la personne connectée (« Mes heures », le mois en cours par défaut), ce qu'il lui reste à facturer par destinataire avec le lien de son relevé de prestations, et les projets où elle peut noter du temps. Jamais de tarif, de prix ni de marge. Phase commercial : avant l'acceptation de l'offre."
+        params:
+          time_map_id: "Identifiant de la carte (list_maps). Sans lui : les heures de la personne connectée, tous projets confondus."
+          time_from: "Premier jour (AAAA-MM-JJ) des heures listées."
+          time_to: "Dernier jour (AAAA-MM-JJ) des heures listées."
       list_propagation_requests:
         title: "Lire les demandes de multiplication"
         description: "Les demandes de greffons, de boutures, de graines ou de jeunes plants entre jardiniers (page « Multiplication »). places : les lieux dont l'utilisateur est propriétaire du lieu, avec ce qu'il y partage. received : les demandes reçues par ces lieux (qui demande, quoi, son message, can_answer s'il peut encore y répondre) ; sent : celles que l'utilisateur a envoyées, avec la région du lieu seulement. Statuts : pending (en attente), accepted, declined, withdrawn. Les adresses e-mail n'apparaissent qu'une fois la demande acceptée. Tu ne réponds pas et n'envoies rien toi-même : aide la personne à choisir et à écrire sa réponse, qu'elle envoie depuis la page (url)."
@@ -205,6 +213,21 @@ fr:
         description: "Le carnet de récolte de la carte (panneau « Récoltes ») : chaque arbre, arbuste ou grimpante fruitière, saison par saison (seasons : les 5 dernières jusqu'à season). Pour chaque plant et chaque saison, status picked (récolté), bore (fruits vus sur l'arbre, pas encore cueillis) ou none (regardé, aucun fruit) ; amount (light, normal, heavy), uses (juice : jus, cooking : compote et cuisson, fresh : à croquer, storage : mis en garde, other) et quantityKg. Une saison absente : rien de noté. followedSeasons : les années où l'équipe a noté au moins une ligne sur la carte ; quietSeasons : les saisons suivies d'affilée, jusqu'à la dernière, sans fruits vus ni cueillis ; watch : vrai à partir de watchSeasons (3), car beaucoup de variétés anciennes ne portent qu'une année sur deux. bearingFrom : l'année où un jeune plant devrait donner ses premiers fruits (avant, il n'est jamais compté). lines : les lignes de la saison, avec leur auteur. varieties : chaque variété du lieu avec ce qu'elle donne de mieux selon le catalogue (uses : fresh à croquer, cooking compote et cuisson, juice jus, cider cidre ou poiré, drying séchage), pickingMonth (mois de cueillette), eatingFromMonth et eatingUntilMonth (saison où on la mange), keeping (keeps : se garde en cave, weeks : quelques semaines, short : à manger ou cuire tout de suite, null : inconnu), la provenance de chaque valeur (souvent « à vérifier ») et here : ce que l'équipe en a déjà fait ici. Pour conseiller jus, compote ou table, pars de ce que le lieu a vécu (here, les notes des lignes), puis du catalogue, et dis d'où vient ton conseil."
         params:
           season: "Saison (année) à lire ; par défaut l'année en cours."
+      record_time_entries:
+        title: "Noter du temps"
+        description: "Note des heures pour la personne connectée, directement (ce ne sont pas des brouillons), quand elle te dit ce qu'elle a fait : « 3 h hier sur le projet Dupont, visite du terrain, 64 km aller-retour ». Toujours ses propres heures, jamais celles de quelqu'un d'autre, jamais comme déjà facturées ; elles apparaissent « Notées par ton IA » dans « Mes heures », où elle les modifie ou les supprime. Lis d'abord list_time_entries sans map_id pour les projets possibles et leur phase probable. N'invente rien : demande la date, la durée et le projet s'ils manquent. Une heure pas facturable porte un motif : offered (offert), travel (déplacement), other (autre, à expliquer dans note) ; le dépassement de l'enveloppe n'est pas un motif, Terranova le calcule. 50 lignes au plus par appel. Demande l'accès « brouillons », et le projet doit être d'une équipe ou d'un compte Pro avec la formule Pro ou Team."
+        params:
+          time_lines: "Les heures à noter, de 1 à 50."
+          worked_on: "Le jour travaillé (AAAA-MM-JJ)."
+          time_hours: "La durée en heures, par quart d'heure (2.5 pour 2 h 30)."
+          time_phase: "commercial (avant l'offre acceptée : visite, offre), pre_design, design ou implementation (mise en œuvre)."
+          time_billable: "false pour des heures qui ne seront pas facturées."
+          time_reason: "Pourquoi elles ne sont pas facturées : offered (offert), travel (déplacement), other (autre)."
+          time_note: "Ce qui a été fait, en quelques mots (repris sur le relevé de prestations)."
+          time_bill_to: "Qui paie ces heures (Semisto, une autre structure). Sans lui : le dernier destinataire de la personne sur ce projet, sinon l'équipe de la carte."
+          time_trip_km: "Kilomètres du trajet, aller-retour."
+          time_trip_from: "Départ du trajet."
+          time_trip_to: "Arrivée du trajet."
       record_harvests:
         title: "Noter des récoltes"
         description: "Note des lignes dans le carnet de récolte, directement (ce ne sont pas des brouillons), quand la personne te dit ce qu'elle a vu ou cueilli : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Chaque ligne vaut pour un ou plusieurs plants, désignés par feature_ids ou par leur numéro sur le plan (numbers, comme « 9.1 ») ; tous ses plants doivent exister, sinon la ligne est refusée avec sa raison. stage on_tree : les fruits vus sur l'arbre, amount obligatoire (none pour un arbre sans fruits) ; stage picked : la récolte, amount facultatif (jamais none), uses et quantity_kg facultatifs. N'invente rien : ne note que ce que la personne a dit, et demande la date si elle ne la donne pas. 50 lignes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte."
@@ -597,6 +620,7 @@ fr:
       review_sectors: "Les secteurs attendent la revue d'un humain dans l'éditeur de la carte (panneau « Secteurs »), qui accepte, ajuste ou refuse chacun."
       tasks_written: "Les tâches sont sur la page « Tâches » de la carte (url)."
       observations_written: "Les entrées sont dans le « Journal du plant », sur la fiche de chaque plant (cliquer le plant sur la carte, url)."
+      time_written: "Les heures sont dans « Mes heures » (url), marquées « Noté par ton IA » : la personne peut les relire, les modifier ou les supprimer."
       harvests_written: "Les lignes sont dans le panneau « Récoltes » de la carte (url) et sur la fiche de chaque plant."
       storage_written: "Les relevés sont sur la fiche de chaque lieu de stockage, dans l'éditeur de la carte (url)."
       tasks_assigned: "Les tâches sont sur la page « Tâches » de la carte (url). Les personnes à qui tu les as confiées reçoivent un e-mail."
@@ -607,6 +631,9 @@ fr:
       photos_attached: "Les photos sont sur la page « Photos » de la carte (url) ; celles qui ont un endroit apparaissent aussi sur la carte. L'appareil et la direction d'un drone sont lus dans la minute."
       photo_added: "La photo est sur la page « Photos » de la carte (url) ; placée, elle apparaît aussi sur la carte."
     errors:
+      time_not_allowed: "Le temps de ce projet est réservé à l'équipe qui le mène : l'équipe de la carte, ou ses éditeurs quand c'est la carte d'un compte Pro."
+      time_plan: "Le suivi du temps de ce projet demande la formule Pro ou Team de son propriétaire."
+      time_date: "« %{value} » n'est pas une date (AAAA-MM-JJ)."
       offer_not_allowed: "L'offre de cette carte est réservée à qui la chiffre : l'équipe de la carte, ou son propriétaire avec une formule pro."
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Terranova (OAuth) ou utilise un jeton personnel."
       invalid_token: "Ce jeton n'est pas valide, a expiré ou a été révoqué."
@@ -926,6 +953,10 @@ fr:
         one: "a retiré 1 brouillon"
         other: "a retiré %{count} brouillons"
       list_tasks: "a lu les tâches"
+      list_time_entries: "a lu le temps passé"
+      record_time_entries:
+        one: "a noté 1 ligne d'heures"
+        other: "a noté %{count} lignes d'heures"
       list_propagation_requests: "a lu les demandes de multiplication"
       list_harvests: "a lu le carnet de récolte"
       list_discussion: "a lu la discussion de la carte"

@@ -55,6 +55,7 @@ class Map < ApplicationRecord
   # The project's to-do lists (« Tâches »), see TaskList::Defaults.
   has_many :task_lists, -> { ordered }, dependent: :delete_all, inverse_of: :map
   has_many :tasks, dependent: :delete_all, inverse_of: :map
+  has_many :time_entries, dependent: :delete_all
   has_many :site_visits, -> { chronological }, dependent: :delete_all, inverse_of: :map
 
   # Ownership transfer proposals (« Transférer la carte »), kept as history.

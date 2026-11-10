@@ -708,6 +708,16 @@ Rails.application.routes.draw do
   end
   get "tasks", to: "tasks#index", as: :my_tasks
   # --- end tasks ---
+  # --- time entries ---
+  # « Temps et dépenses »: hours and trips per project (Pro and Team). The
+  # project's tab, « Mes heures » and the « relevé de prestations » to attach
+  # to one's invoice.
+  resources :maps, only: [] do
+    resources :time_entries, only: :index, controller: "maps/time_entries"
+  end
+  resource :time_statement, only: %i[show create destroy], path: "time_entries/statement", controller: "time_entries/statements"
+  resources :time_entries, only: %i[index create update destroy]
+  # --- end time entries ---
   # --- site visits ---
   # Walks on the land with the phone: closing one files its report (SiteVisit).
   resources :maps, only: [] do

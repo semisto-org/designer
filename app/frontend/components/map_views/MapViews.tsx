@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { CalendarRange, Camera, ChevronDown, ClipboardList, Files, Leaf, ListChecks, Map as MapIcon, MessageSquareText, Receipt } from 'lucide-react'
+import { CalendarRange, Camera, ChevronDown, ClipboardList, Clock, Files, Leaf, ListChecks, Map as MapIcon, MessageSquareText, Receipt } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useActiveTabInView } from '@/lib/activeTab'
 import { t } from '@/lib/i18n'
@@ -12,7 +12,7 @@ import { t } from '@/lib/i18n'
  * show them as tabs; the editor's header as a
  * small menu next to the map's name.
  */
-export type MapViewKey = 'map' | 'project' | 'palette' | 'implementation' | 'tasks' | 'photos' | 'documents' | 'offer' | 'forms'
+export type MapViewKey = 'map' | 'project' | 'palette' | 'implementation' | 'tasks' | 'photos' | 'documents' | 'offer' | 'time' | 'forms'
 
 const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'map', icon: MapIcon, path: '' },
@@ -23,15 +23,19 @@ const VIEWS: { key: MapViewKey; icon: typeof MapIcon; path: string }[] = [
   { key: 'photos', icon: Camera, path: '/photos' },
   { key: 'documents', icon: Files, path: '/documents' },
   { key: 'offer', icon: Receipt, path: '/offer' },
+  { key: 'time', icon: Clock, path: '/time_entries' },
   { key: 'forms', icon: MessageSquareText, path: '/forms' },
 ]
 
-type ViewMap = { teamId?: number | null; offerBuilder?: boolean }
+type ViewMap = { teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
 
 // « Formulaires » belongs to the team's maps (the forms are the team's);
-// « Offre » to whoever prices the project (the team, or a pro owner).
-const viewsFor = ({ teamId, offerBuilder }: ViewMap) =>
-  VIEWS.filter((v) => (v.key !== 'forms' || teamId != null) && (v.key !== 'offer' || offerBuilder === true))
+// « Offre » to whoever prices the project (the team, or a pro owner);
+// « Temps et dépenses » to the same people, and to an editor who notes
+// time there (`timeEntries`, given by that page).
+const viewsFor = ({ teamId, offerBuilder, timeEntries }: ViewMap) =>
+  VIEWS.filter((v) => (v.key !== 'forms' || teamId != null) && (v.key !== 'offer' || offerBuilder === true)
+    && (v.key !== 'time' || offerBuilder === true || timeEntries === true))
 
 export const mapViewHref = (mapId: number, key: MapViewKey) => `/maps/${mapId}${VIEWS.find((v) => v.key === key)!.path}`
 

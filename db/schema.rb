@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1859,6 +1859,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_230000) do
     t.index ["territory_id", "kind", "status"], name: "index_territory_items_on_territory_id_and_kind_and_status"
   end
 
+  create_table "time_entries", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "user_id", null: false
+    t.date "worked_on", null: false
+    t.integer "minutes", null: false
+    t.string "phase", null: false
+    t.boolean "billable", default: true, null: false
+    t.string "non_billable_reason"
+    t.text "note"
+    t.string "bill_to"
+    t.decimal "trip_km", precision: 7, scale: 1
+    t.string "trip_from"
+    t.string "trip_to"
+    t.datetime "invoiced_at"
+    t.string "invoice_number"
+    t.string "source", default: "web", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "worked_on"], name: "index_time_entries_on_map_id_and_worked_on"
+    t.index ["map_id"], name: "index_time_entries_on_map_id"
+    t.index ["user_id", "worked_on"], name: "index_time_entries_on_user_id_and_worked_on"
+    t.index ["user_id"], name: "index_time_entries_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.citext "email_address", null: false
     t.string "name"
@@ -2123,6 +2147,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_230000) do
   add_foreign_key "territory_items", "territories", on_delete: :cascade
   add_foreign_key "territory_items", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "territory_items", "users", column: "decided_by_id", on_delete: :nullify
+  add_foreign_key "time_entries", "maps", on_delete: :cascade
+  add_foreign_key "time_entries", "users", on_delete: :cascade
   add_foreign_key "users", "map_publications", column: "source_publication_id", on_delete: :nullify
   add_foreign_key "water_sources", "maps"
 end
