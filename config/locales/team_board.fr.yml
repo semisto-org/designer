@@ -93,6 +93,11 @@ fr:
         one: "Voir 1 projet plus ancien"
         other: "Voir les %{count} autres"
       hide_old: "Replier les plus anciens"
+      unfold_completed:
+        zero: "Déplier « Terminé » (aucun projet)"
+        one: "Déplier « Terminé » (1 projet)"
+        other: "Déplier « Terminé » (%{count} projets)"
+      fold_completed: "Replier « Terminé » sur le côté"
       promised: "Promis le %{date}"
       promised_what: "%{what} promis le %{date}"
       menu: "Actions pour « %{name} »"
