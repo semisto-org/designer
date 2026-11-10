@@ -25,6 +25,10 @@ class ProjectSheet
   FOOD_FAMILIES = %w[apples pears plums cherries peaches_apricots figs grapes kiwis persimmons quinces_medlars berries
     unusual_fruits nuts herbs perennial_vegetables edible_flowers mushrooms].freeze
 
+  # What the palette keeps out (who.keep_away). "stings" is not a toxicity:
+  # it leaves the melliferous need out of the suggestions.
+  KEEP_AWAY = %w[toxic_humans toxic_dogs toxic_cats stings].freeze
+
   SECTIONS = {
     # Qui : une ou plusieurs personnes.
     "who" => [
@@ -40,6 +44,12 @@ class ProjectSheet
       # Only what changes the garden (plants or insects to avoid, a way of
       # moving about): never a diagnosis. Health data, so personal.
       TypedSchema.text("care", limit: 500, personal: true),
+      # What the plant palette must rule out, without saying why: plants
+      # toxic for people (children, visitors) or for the household's pets,
+      # and fewer melliferous plants near where people live (stings). Read
+      # by PlantFit::Site, PaletteSuggestions and the AI; never a diagnosis,
+      # so not personal (the reason stays in `care`).
+      TypedSchema.multi("keep_away", *KEEP_AWAY, counts: false),
       NOTES
     ],
     # Ambitions et objectifs.

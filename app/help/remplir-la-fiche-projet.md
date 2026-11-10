@@ -30,7 +30,7 @@ Dans **Ambitions**, trois questions vont plus loin sur le pourquoi : ce que le l
 
 ## Coordonnées et santé : des données à part
 
-Dans **Qui**, chaque personne peut laisser un téléphone et un e-mail, avec son accord. La question sur les plantes ou les insectes à éviter et sur l'accès ne demande que ce qui change le jardin, jamais un diagnostic. Ces réponses, comme les allergies de la palette gustative, ne sont lues que par les personnes qui travaillent sur la carte et sur le lien privé : elles n'apparaissent jamais dans le dossier imprimé, et ton IA ne les reçoit pas.
+Dans **Qui**, chaque personne peut laisser un téléphone et un e-mail, avec son accord. La question sur les plantes ou les insectes à éviter et sur l'accès ne demande que ce qui change le jardin, jamais un diagnostic. Ces réponses, comme les allergies de la palette gustative, ne sont lues que par les personnes qui travaillent sur la carte et sur le lien privé : elles n'apparaissent jamais dans le dossier imprimé, et ton IA ne les reçoit pas. Juste en dessous, **Ce que la palette doit écarter** se coche sans rien expliquer : les plantes toxiques pour les enfants, les chiens ou les chats, les plantes mellifères près des lieux de vie. Les suggestions de la palette les écartent, et ton IA le sait, sans connaître la raison.
 
 ## L'analyse fonctionnelle
 

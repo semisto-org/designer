@@ -91,6 +91,7 @@ export function SiteSummary({ data, mapId }: { data: Pick<PaletteSuggestions, 's
         </p>
       )}
       {excluded.length > 0 && <p>{t('palette.fit.excluded', { list: excluded.join(', ') })}</p>}
+      {data.site.keepAway.includes('stings') && <p>{t('palette.fit.keep_away_stings')}</p>}
       {missing && <p className="text-loam-500"><MoreToFill mapId={mapId} /></p>}
     </div>
   )
