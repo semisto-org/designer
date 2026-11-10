@@ -156,7 +156,15 @@ class User < ApplicationRecord
     # request form, with a dot while requests wait for a first call.
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
       tourSeen: tour_seen_at.present?, accountKind: account_kind, newRequests: new_requests_count,
-      catalogueReviewer: can_review_catalogue?, propagation: propagation_summary, droneMissions: drone_missions_summary }
+      catalogueReviewer: can_review_catalogue?, propagation: propagation_summary, droneMissions: drone_missions_summary,
+      territories: territories_access? }
+  end
+
+  # The « Territoires » link shows once one of my teams was granted the
+  # module, or still holds territories after it was taken back.
+  def territories_access?
+    teams = Organization.where(id: organization_memberships.select(:organization_id))
+    teams.where.not(territory_module_granted_at: nil).or(teams.where(id: Territory.select(:organization_id))).exists?
   end
 
   # The « Missions drone » link shows once I booked a mission or I am a
