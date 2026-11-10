@@ -334,7 +334,8 @@ function CardMenu({ project, onMove, onSettings }: { project: BoardProject; onMo
   const pick = (fn: () => void) => () => { setOpen(false); fn() }
 
   return (
-    <div ref={ref} className="relative shrink-0">
+    // Shown on hover (or keyboard focus) where a mouse can hover; always on touch screens.
+    <div ref={ref} className={clsx('relative shrink-0', !open && 'pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-within:opacity-100')}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
