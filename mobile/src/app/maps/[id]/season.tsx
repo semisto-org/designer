@@ -5,7 +5,7 @@
 // photos. Goes through the outbox like a note, so it works without network.
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { display } from '@/lib/display'
 import { gpsProperties } from '@/lib/geo'
@@ -105,33 +105,32 @@ function SignForm({ mapId, sign, onBack, bottom }: { mapId: number; sign: Sign; 
 
   const located = fix && fix !== 'pending'
   return (
-    <KeyboardAvoidingView style={s.fill} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={[s.body, { paddingBottom: bottom + space.xl }]} keyboardShouldPersistTaps="handled">
-        <View style={s.titleRow}>
-          <Icon name="season" size={28} color={colors.prune700} />
-          <Text accessibilityRole="header" style={s.title} maxFontSizeMultiplier={MAX_FONT_SCALE}>{signLabel(sign)}</Text>
-        </View>
-        <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`mobile.season.hints.${sign}`)}</Text>
+    <ScrollView style={s.fill} contentContainerStyle={[s.body, { paddingBottom: bottom + space.xl }]} keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets>
+      <View style={s.titleRow}>
+        <Icon name="season" size={28} color={colors.prune700} />
+        <Text accessibilityRole="header" style={s.title} maxFontSizeMultiplier={MAX_FONT_SCALE}>{signLabel(sign)}</Text>
+      </View>
+      <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`mobile.season.hints.${sign}`)}</Text>
 
-        <Label>{t('mobile.season.when')}</Label>
-        <View style={s.chips}>
-          {DAYS.map((day) => <Chip key={day.key} label={t(`mobile.season.days.${day.key}`)} selected={ago === day.ago} onPress={() => setAgo(day.ago)} />)}
-        </View>
+      <Label>{t('mobile.season.when')}</Label>
+      <View style={s.chips}>
+        {DAYS.map((day) => <Chip key={day.key} label={t(`mobile.season.days.${day.key}`)} selected={ago === day.ago} onPress={() => setAgo(day.ago)} />)}
+      </View>
 
-        <Label>{t('mobile.season.text_label')}</Label>
-        <Input value={text} onChangeText={setText} placeholder={t('mobile.season.placeholder')} multiline accessibilityLabel={t('mobile.season.text_label')} />
+      <Label>{t('mobile.season.text_label')}</Label>
+      <Input value={text} onChangeText={setText} placeholder={t('mobile.season.placeholder')} multiline accessibilityLabel={t('mobile.season.text_label')} />
 
-        <Button variant="secondary" icon="photo" label={t('mobile.season.add_photo')} onPress={() => void addMedia()} />
-        {media.length > 0 && <Body muted>{t('mobile.season.photos', { count: media.length })}</Body>}
+      <Button variant="secondary" icon="photo" label={t('mobile.season.add_photo')} onPress={() => void addMedia()} />
+      {media.length > 0 && <Body muted>{t('mobile.season.photos', { count: media.length })}</Body>}
 
-        {fix === 'pending' ? <Body muted>{t('mobile.terrain.around_locating')}</Body>
-          : located ? <Body muted>{t('mobile.season.position', { accuracy: formatDistance(fix.accuracy ?? 10) })}</Body>
-            : <Notice tone="warning">{t('mobile.season.no_position')}</Notice>}
+      {fix === 'pending' ? <Body muted>{t('mobile.terrain.around_locating')}</Body>
+        : located ? <Body muted>{t('mobile.season.position', { accuracy: formatDistance(fix.accuracy ?? 10) })}</Body>
+          : <Notice tone="warning">{t('mobile.season.no_position')}</Notice>}
 
-        <Button icon="check" label={t('mobile.season.save')} onPress={() => void save()} disabled={!bundle} />
-        {onBack && <Button variant="ghost" label={t('mobile.common.back')} onPress={onBack} />}
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Button icon="check" label={t('mobile.season.save')} onPress={() => void save()} disabled={!bundle} />
+      {onBack && <Button variant="ghost" label={t('mobile.common.back')} onPress={onBack} />}
+    </ScrollView>
   )
 }
 

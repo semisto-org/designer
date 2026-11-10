@@ -144,7 +144,8 @@ export default function RecordScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled">
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets>
       {mode === 'point' && !point && !problem && <Notice>{t('mobile.plant.locating')}</Notice>}
       {mode === 'point' && point && (
         <Notice tone={point.accuracy && point.accuracy > 10 ? 'warning' : 'info'}>

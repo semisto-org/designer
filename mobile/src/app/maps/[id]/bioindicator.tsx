@@ -100,7 +100,8 @@ export default function BioindicatorScreen() {
 
   if (chosen) {
     return (
-      <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
         <Card style={{ gap: space.xs }}>
           <Text style={s.name}>{nameOf(chosen)}</Text>
           <Text style={s.latin}>{chosen.bioindicator?.latin ?? chosen.latinName}</Text>

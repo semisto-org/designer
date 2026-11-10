@@ -182,7 +182,7 @@ export default function SketchScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { gap: space.md, paddingBottom: 48 }]} scrollEnabled={!drawing}
-      keyboardShouldPersistTaps="handled">
+      keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
       <Stack.Screen options={{ title: sketch?.name ?? t('photo_sketches.title') }} />
       <View onLayout={(event) => setSurface(event.nativeEvent.layout.width)} style={{ alignItems: 'center' }}>
         {w > 0 && (
