@@ -34,6 +34,11 @@ production:
   photo_camera_backfill:
     command: "PhotoCameraJob.backfill"
     schedule: every 10 minutes
+  # Videos never checked for playback (uploaded before VideoPlaybackJob
+  # existed, or whose job was lost), one at a time: encoding is slow.
+  video_playback_backfill:
+    command: "VideoPlaybackJob.backfill"
+    schedule: every 10 minutes
   # First-page thumbnails of PDFs that arrived without one (sent through the
   # MCP server, or uploaded before the server drew them).
   map_document_thumbnail_backfill:
