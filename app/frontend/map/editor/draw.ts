@@ -14,6 +14,7 @@ import {
   type GeoJSONStoreGeometries,
 } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
+import { dragTolerances } from '@/map/editor/pointerTolerance'
 import { editableVertices, endIndex, extendClick, extendLine, insertVertex, removeVertex, sideAt, vertexAt, type LineEnd, type Pixel } from '@/map/editor/vertices'
 
 export type DrawShape = 'polygon' | 'linestring' | 'point' | 'rectangle' | 'freehand' | 'freehand-linestring'
@@ -74,6 +75,7 @@ const SHAPE_GEOMETRY: Record<DrawShape, Geometry['type']> = {
  */
 export class Drawer {
   private terra: TerraDraw
+  private adapter: TerraDrawMapLibreGLAdapter<MapLibreMap>
   private pending: { resolve: (g: Geometry | null) => void; options: DrawOptions; shape: DrawShape | null } | null = null
   private editedId: string | number | null = null
   private pointTool: PointTool = 'move'
@@ -102,8 +104,9 @@ export class Drawer {
         coordinates: { draggable: true, deletable: true, midpoints: true },
       },
     }
+    this.adapter = new TerraDrawMapLibreGLAdapter({ map })
     this.terra = new TerraDraw({
-      adapter: new TerraDrawMapLibreGLAdapter({ map }),
+      adapter: this.adapter,
       // Points of the shape being drawn; the shortcuts are the editor's (show.tsx).
       undoRedo: { modeLevel: new TerraDrawModeUndoRedo() },
       modes: [
@@ -168,6 +171,8 @@ export class Drawer {
     window.addEventListener('keydown', this.onKey, true)
     window.addEventListener('keyup', this.onKeyUp)
     window.addEventListener('blur', this.onBlur)
+    // Captured on the container, so it runs before Terra Draw's own pointerdown on the canvas.
+    map.getCanvasContainer().addEventListener('pointerdown', this.onPointerDown, true)
   }
 
   get active() {
@@ -268,10 +273,18 @@ export class Drawer {
   }
 
   destroy() {
+    this.map.getCanvasContainer().removeEventListener('pointerdown', this.onPointerDown, true)
     window.removeEventListener('keydown', this.onKey, true)
     window.removeEventListener('keyup', this.onKeyUp)
     window.removeEventListener('blur', this.onBlur)
     this.finish(null)
+  }
+
+  // A pencil or a finger slides a little between touching and lifting:
+  // Terra Draw has one tolerance for every pointer, set here per press
+  // (pointerTolerance.ts). Its fields are private, hence the cast.
+  private onPointerDown = (event: PointerEvent) => {
+    if (event.isPrimary) Object.assign(this.adapter as unknown as Record<string, number>, privateTolerances(event.pointerType))
   }
 
   /** A line or a polygon is being edited: it has points to add and remove. */
@@ -597,5 +610,14 @@ function roundGeometry(geometry: Geometry): Geometry {
     case 'LineString': return { ...geometry, coordinates: geometry.coordinates.map(round) }
     case 'Polygon': return { ...geometry, coordinates: geometry.coordinates.map((ring) => ring.map(round)) }
     default: return geometry
+  }
+}
+
+function privateTolerances(pointerType: string) {
+  const { minPixelDragDistance, minPixelDragDistanceSelecting, minPixelDragDistanceDrawing } = dragTolerances(pointerType)
+  return {
+    _minPixelDragDistance: minPixelDragDistance,
+    _minPixelDragDistanceSelecting: minPixelDragDistanceSelecting,
+    _minPixelDragDistanceDrawing: minPixelDragDistanceDrawing,
   }
 }
