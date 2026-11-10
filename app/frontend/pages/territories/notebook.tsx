@@ -14,7 +14,7 @@ import { installBoundary } from '@/map/layers/boundary'
 import { syncRegionLayers } from '@/map/layers/region'
 import { formatKm2 } from '@/territories/format'
 import { installTerritoryItems, type MapItem } from '@/territories/layers'
-import type { NotebookLead, NotebookMarker, NotebookProps } from '@/types/territories'
+import type { NotebookBasin, NotebookLead, NotebookMarker, NotebookProps } from '@/types/territories'
 
 const n = (key: string, options?: Record<string, string | number>) => t(`territories.notebook.${key}`, options)
 const v = (group: string, key: string) => t(`territories.show.values.${group}.${key}`)
@@ -93,7 +93,10 @@ export default function TerritoryNotebook(props: NotebookProps) {
             <NotebookMap {...props} />
           </MapView>
         </div>
-        <Markers markers={props.shows.markers} empty={n('no_markers')} />
+        {props.basins.length > 0 && <Basins basins={props.basins} />}
+        <ByBasin basins={props.basins} items={props.shows.markers} empty={n('no_markers')}>
+          {(markers) => <Markers markers={markers} empty="" />}
+        </ByBasin>
       </Part>
 
       <Part title={n('parts.seen')}>
@@ -110,14 +113,16 @@ export default function TerritoryNotebook(props: NotebookProps) {
       </Part>
 
       <Part title={n('parts.leads')}>
-        {props.leads.length === 0 ? <Empty>{n('no_leads')}</Empty> : (
-          <ol className="grid gap-4">{props.leads.map((lead) => <Lead key={lead.id} lead={lead} working={working} />)}</ol>
-        )}
+        <ByBasin basins={props.basins} items={props.leads} empty={n('no_leads')}>
+          {(leads) => <ol className="grid gap-4">{leads.map((lead) => <Lead key={lead.id} lead={lead} working={working} />)}</ol>}
+        </ByBasin>
         {working && props.hypotheses.length > 0 && (
           <div className="mt-6 rounded-2xl bg-humus-50/60 p-4 ring-1 ring-humus-200">
             <h3 className="text-lg">{n('hypotheses')}</h3>
             <p className="text-sm text-loam-600">{n('hypotheses_why')}</p>
-            <ol className="mt-3 grid gap-4">{props.hypotheses.map((lead) => <Lead key={lead.id} lead={lead} working />)}</ol>
+            <ByBasin basins={props.basins} items={props.hypotheses} empty="">
+              {(leads) => <ol className="mt-3 grid gap-4">{leads.map((lead) => <Lead key={lead.id} lead={lead} working />)}</ol>}
+            </ByBasin>
           </div>
         )}
         {props.waitingForFarmer > 0 && <p className="mt-4 text-sm text-humus-800">{n('waiting_farmer', { count: props.waitingForFarmer })}</p>}
@@ -195,6 +200,57 @@ function Part({ title, children }: { title: string; children: ReactNode }) {
 
 const Empty = ({ children }: { children: ReactNode }) => <p className="text-sm text-loam-500">{children}</p>
 
+/** The sub-basins, upstream first: where the evidence and the leads sit. */
+function Basins({ basins }: { basins: NotebookBasin[] }) {
+  return (
+    <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-loam-200">
+      <h3 className="text-lg">{n('basins')}</h3>
+      <p className="text-sm text-loam-600">{n('basins_why')}</p>
+      <ol className="mt-3 grid gap-2">
+        {basins.map((basin, index) => (
+          <li key={basin.id} className="flex gap-3">
+            <span className="w-6 shrink-0 font-serif text-xl font-semibold text-prune-800">{basin.order ?? index + 1}</span>
+            <div className="min-w-0">
+              <p>
+                <span className="font-medium">{basin.title}</span>
+                {basin.outlet && <span className="text-loam-500"> · {n('basin_outlet', { outlet: basin.outlet })}</span>}
+                {basin.areaKm2 != null && <span className="text-loam-500"> · {basin.areaKm2.toLocaleString('fr-BE')} km²</span>}
+              </p>
+              <p className="text-sm text-loam-600">{n('basin_markers', { count: basin.seenMarkers })} · {n('basin_leads', { count: basin.leads })}</p>
+              {basin.body && <p className="text-sm text-loam-700">{basin.body}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/**
+ * Entries grouped by sub-basin, upstream first, then those not yet placed in
+ * one. Without sub-basins, the list as it is.
+ */
+function ByBasin<T extends { id: number; basinId: number | null }>({ basins, items, empty, children }: {
+  basins: NotebookBasin[]; items: T[]; empty: string; children: (items: T[]) => ReactNode
+}) {
+  if (items.length === 0) return empty ? <p className="mt-3 text-sm text-loam-500">{empty}</p> : null
+  if (basins.length === 0) return <>{children(items)}</>
+  const groups = [
+    ...basins.map((basin) => ({ key: basin.id, title: `${basin.order ?? ''}${basin.order ? '. ' : ''}${basin.title}`, items: items.filter((item) => item.basinId === basin.id) })),
+    { key: 0, title: n('no_basin'), items: items.filter((item) => item.basinId == null) },
+  ].filter((group) => group.items.length > 0)
+  return (
+    <div className="mt-4 grid gap-5">
+      {groups.map((group) => (
+        <div key={group.key}>
+          <h3 className="text-lg text-prune-800">{group.title}</h3>
+          {children(group.items)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function Markers({ markers, empty }: { markers: NotebookMarker[]; empty: string }) {
   if (markers.length === 0) return empty ? <p className="mt-3 text-sm text-loam-500">{empty}</p> : null
   return (
@@ -268,7 +324,7 @@ function Editable({ territoryId, field, value, canEdit, placeholder, className }
 function NotebookMap({ territory, mapFeatures, baseLayer, overlays }: NotebookProps) {
   const instance = useMapInstance()
   const items: MapItem[] = useMemo(() => mapFeatures.map((feature) => {
-    const p = (feature.properties ?? {}) as { kind: 'marker' | 'lead'; id: number; title: string; proof?: string; sharp?: boolean }
+    const p = (feature.properties ?? {}) as { kind: MapItem['kind']; id: number; title: string; proof?: string; sharp?: boolean }
     return { id: p.id, kind: p.kind, status: 'active', geometry: feature.geometry as Geometry, proof: p.proof, sharp: p.sharp, title: p.title }
   }), [mapFeatures])
   const framed = useRef(false)

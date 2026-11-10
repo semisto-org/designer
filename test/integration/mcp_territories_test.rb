@@ -30,7 +30,7 @@ class McpTerritoriesTest < ActionDispatch::IntegrationTest
     data, error = call_tool(@token, "get_territory", { territory_id: @territory.id })
     refute error
     assert_equal "Yvoir", data["name"]
-    assert_equal %w[actor source expectation marker lead], data["dossier"].keys
+    assert_equal %w[actor source expectation basin marker lead], data["dossier"].keys
     assert_includes data["values"]["proof"], "confirmed"
     assert_match(/concordance/, data["rules"])
   end
@@ -46,6 +46,23 @@ class McpTerritoriesTest < ActionDispatch::IntegrationTest
     data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: [ finds[1].merge(title: "Autre titre") ] })
     assert error, "the same link twice is a duplicate"
     assert_match(/déjà au dossier/, data)
+  end
+
+  test "the AI proposes sub-basins, then attaches markers to the one already in the dossier" do
+    basins = [ { kind: "basin", title: "Vallon du Bocq", rationale: "Sous-bassin nommé par le contrat de rivière Haute-Meuse.", properties: { order: 1, outlet: "le Bocq" } } ]
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: basins })
+    refute error
+    basin_id = data["created"].sole["id"]
+
+    marker = { kind: "marker", title: "Coulée de boue, 2021", rationale: "Presse locale, juillet 2021.", geometry: inside_point, properties: { basin_id:, proof: "computed" } }
+    stray = marker.merge(title: "Autre coulée", properties: { basin_id: 999_999 })
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: [ marker, stray ] })
+    refute error
+    assert_equal basin_id, @territory.items.find(data["created"].sole["id"]).prop(:basin_id)
+    assert_equal [ 1 ], data["rejected"].map { _1["index"] }
+
+    data, = call_tool(@token, "get_territory", { territory_id: @territory.id })
+    assert_equal [ "Vallon du Bocq" ], data["dossier"]["basin"].map { _1["title"] }
   end
 
   test "withdraw_territory_drafts removes the AI's drafts, never what a person kept" do
