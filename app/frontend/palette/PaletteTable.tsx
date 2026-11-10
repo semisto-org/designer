@@ -54,7 +54,8 @@ export function PaletteTable({ groups, settings, canEdit, suppliers, onOpen, onS
 
   return (
     <div className="relative">
-    <div ref={frame} className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-loam-900/10 print:overflow-visible print:shadow-none print:ring-0">
+    {/* The frame scrolls both ways and fits the screen under the sticky toolbar, so the header stays in view: inside an overflow-x frame, a sticky header only sticks to the frame. */}
+    <div ref={frame} className="max-h-[calc(100dvh-5rem)] overflow-auto overscroll-x-contain rounded-2xl bg-white shadow-sm ring-1 ring-loam-900/10 print:max-h-none print:overflow-visible print:shadow-none print:ring-0">
       <table className="w-full min-w-max border-collapse text-sm">
         <thead className="sticky top-0 z-10 bg-loam-50/95 backdrop-blur">
           <tr>
