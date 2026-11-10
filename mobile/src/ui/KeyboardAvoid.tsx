@@ -1,19 +1,25 @@
 // Keeps the bottom of a screen (a chat composer, a save button) above the iOS keyboard.
 //
-// React Native's KeyboardAvoidingView compares the keyboard's position on the screen with the
-// view's layout relative to its parent. In a screen presented as a sheet (`presentation: 'modal'`)
-// the sheet starts below the status bar, so the two disagree by that offset and the keyboard ends
-// up covering the composer. This view measures itself in window coordinates every time the
-// keyboard moves, so it is right in a sheet, a full screen or a modal pushed on top of another.
+// For a view whose bottom edge is the bottom of the screen: a full screen, or a screen presented
+// as a sheet (`presentation: 'modal'`), which iOS always draws down to the bottom edge. The
+// keyboard then covers exactly its own height of that view, whatever the view's position.
+//
+// Neither React Native's KeyboardAvoidingView nor measureInWindow can be trusted in a sheet:
+// both work from the layout React knows, which starts at the top of the sheet, not below the
+// status bar where iOS actually draws it. The first version of this file measured the view and
+// still ended up about 60 pt short (PR #400).
 //
 // Android resizes the window itself (adjustResize), so nothing is done there.
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { AccessibilityInfo, Keyboard, LayoutAnimation, Platform, View, type KeyboardEvent, type StyleProp, type ViewStyle } from 'react-native'
+import { AccessibilityInfo, Dimensions, Keyboard, LayoutAnimation, Platform, View, type KeyboardEvent, type StyleProp, type ViewStyle } from 'react-native'
 
-/** How far the keyboard reaches into a view whose window frame is `top`/`height`. */
-export function keyboardOverlap(top: number, height: number, keyboardTop: number, reserved = 0): number {
-  if (keyboardTop <= 0) return 0
-  return Math.max(0, Math.round(top + height - keyboardTop - reserved))
+/**
+ * The padding that lifts content above a keyboard whose top edge is at `keyboardTop` on a screen
+ * `screenHeight` tall, less what the content already keeps. A keyboard sliding away (top at the
+ * bottom of the screen or below) gives zero.
+ */
+export function keyboardPadding(keyboardTop: number, screenHeight: number, reserved = 0): number {
+  return Math.max(0, Math.round(screenHeight - keyboardTop - reserved))
 }
 
 export function KeyboardAvoid({ style, reserved = 0, children }: {
@@ -22,7 +28,6 @@ export function KeyboardAvoid({ style, reserved = 0, children }: {
   reserved?: number
   children: ReactNode
 }) {
-  const ref = useRef<View>(null)
   const [bottom, setBottom] = useState(0)
   const reservedRef = useRef(reserved)
   reservedRef.current = reserved
@@ -48,7 +53,7 @@ export function KeyboardAvoid({ style, reserved = 0, children }: {
         void AccessibilityInfo.prefersCrossFadeTransitions().then((fade) => { if (fade) apply(0) })
         return
       }
-      ref.current?.measureInWindow((_x, top, _width, height) => apply(keyboardOverlap(top, height, screenY, reservedRef.current)))
+      apply(keyboardPadding(screenY, Dimensions.get('screen').height, reservedRef.current))
     }
     const subscriptions = [
       Keyboard.addListener('keyboardWillChangeFrame', (event) => update(event, false)),
@@ -61,7 +66,7 @@ export function KeyboardAvoid({ style, reserved = 0, children }: {
   }, [])
 
   return (
-    <View ref={ref} style={style}>
+    <View style={style}>
       <View style={{ flex: 1, paddingBottom: bottom }}>{children}</View>
     </View>
   )
