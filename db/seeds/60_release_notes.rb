@@ -3,6 +3,61 @@
 # /admin/release-notes afterwards and a deploy never puts them back.
 # Screenshots live next to this file (db/seeds/release_notes/<key>.webp).
 release_notes = [
+  # Entries sharing a day show the last created first: newest goes at the
+  # bottom of its day.
+  {
+    key: "app-terrain-en-test", published_on: "2026-11-11",
+    title: "Bientôt : l'app de terrain, pensée pour dehors",
+    body: <<~TEXT,
+      L'app Terranova a été repensée pour le terrain. Elle est en test avec quelques jardiniers, et arrive bientôt sur ton téléphone.
+
+      La carte en plein écran, et une seule fiche de carnet qui montre ce qui t'entoure, du plus proche au plus loin. Tu mesures une zone en touchant ses coins ou en marchant jusqu'à eux, tu enregistres une visite avec le son et le trajet de ta marche, tu reprends une photo depuis le même endroit pour glisser d'avant à après. Tu notes les signes des saisons : premier gel, givre qui reste, flaques, nids. Et « Il y a un an, ici » te rend tes photos du même jour, l'an dernier. Même sans réseau.
+    TEXT
+  },
+  {
+    key: "journal-plante", published_on: "2026-11-11",
+    title: "Le journal de chaque plante, et ses récoltes",
+    body: <<~TEXT,
+      Chaque plante a son journal daté : reprise, floraison, taille, dégât, maladie. Une ligne à chaque passage, et l'arbre raconte son histoire.
+
+      Le carnet de récolte dit quels arbres ont donné, saison après saison ; « Aucun fruit » se note d'un clic, et ça compte aussi. Une trogne, une cépée, un fruitier greffé et son porte-greffe se disent sur la fiche, et la plante grandit en conséquence.
+    TEXT
+    link_path: "/help/suivre-ses-recoltes", link_label: "Lire l'aide",
+    screenshot_alt: "La fiche d'un pommier : son journal (taille, plante en difficulté, floraison) et ce qu'il reste à faire."
+  },
+  {
+    key: "photos-aeriennes-temps", published_on: "2026-11-11",
+    title: "Ton terrain d'hier, vu d'avion",
+    body: <<~TEXT,
+      Dans « Couches », toutes les photos aériennes publiées par ta région se rangent sur une frise : en Wallonie, 21 vols depuis 1971, dont 17 aussi en infrarouge. Glisse d'une décennie à l'autre.
+
+      Une haie arrachée, un verger disparu, une mare comblée, un ancien chemin réapparaissent. Puis va voir sur place ce qu'il en reste : une souche, un creux humide, un alignement d'arbres.
+    TEXT
+    link_path: "/help/lire-les-couches-du-geoportail", link_label: "Lire l'aide",
+    screenshot_alt: "Un terrain sur la photo aérienne de 1971, en noir et blanc, avec la frise des vols jusqu'à aujourd'hui."
+  },
+  {
+    key: "discussion-carte", published_on: "2026-11-11",
+    title: "Une discussion par carte",
+    body: <<~TEXT,
+      Chaque carte a son fil de discussion, en direct, avec tous ceux qui y travaillent. Montre l'endroit précis du terrain dont tu parles, cite une plante ou une mare, joins une photo ou un document.
+
+      La cloche compte ce que tu n'as pas lu, et un e-mail te prévient si un message t'attend depuis dix minutes. Tu règles tout ça dans « Mon compte », et carte par carte.
+    TEXT
+    link_path: "/help/partager-et-commenter", link_label: "Lire l'aide",
+    screenshot_alt: "La discussion d'une carte : l'eau qui stagne au bout du chemin, un lien vers l'endroit, une mare et un pommier cités."
+  },
+  {
+    key: "frise-du-temps", published_on: "2026-11-11",
+    title: "La frise du temps, de ton arrivée à l'an 30",
+    body: <<~TEXT,
+      Au pied de la carte, une frise raconte la vie de ton jardin : le terrain à ton arrivée, aujourd'hui (chaque plante à son âge réel), puis les ans 5, 15 et 30. Les couronnes grandissent sous tes yeux.
+
+      Touche « Juin » ou « Décembre » : l'ombre de midi s'étend sous les arbres, à la taille qu'ils ont ce jour-là. Où le potager sera-t-il à l'ombre dans quinze ans ? Tu le vois avant de planter.
+    TEXT
+    link_path: "/help/planter-puis-observer", link_label: "Lire l'aide",
+    screenshot_alt: "Un jardin-forêt à l'an 30 : les couronnes du chêne, du noyer et des châtaigniers ont grandi, la frise est sur « An 30 »."
+  },
   {
     key: "freiner-l-eau", published_on: "2026-10-16",
     title: "Freiner l'eau : seuils, fascines, talus, demi-lunes",
