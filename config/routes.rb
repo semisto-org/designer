@@ -670,6 +670,8 @@ Rails.application.routes.draw do
   # teams' maps (/tasks).
   resources :maps, only: [] do
     resources :tasks, only: %i[index create update destroy], controller: "maps/tasks"
+    # The project's season steps (design, work site, planting) on its frieze.
+    resources :season_steps, only: %i[create update destroy], controller: "maps/season_steps"
     resources :task_lists, only: %i[create update destroy], controller: "maps/task_lists" do
       post :defaults, on: :collection
     end

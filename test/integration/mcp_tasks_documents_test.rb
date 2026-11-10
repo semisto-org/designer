@@ -58,9 +58,11 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     assert_equal TaskList::SEASON_KEY, Task.find(design["id"]).task_list.key
 
     map_data, = call_tool(@owner, "get_map", { map_id: @map.id })
-    season = map_data["team_season"]
-    assert_equal "offer", season["stage"]
+    assert_equal "offer", map_data.dig("team_season", "stage")
+    season = map_data["season"]
     assert_equal [ [ "design", true ], [ "plant", false ] ], season["steps"].map { _1.values_at("kind", "forecast") }
+    assert season["tasks_url"].end_with?("/maps/#{@map.id}/tasks")
+    assert season.dig("planting_window", "opens_on")
 
     data, error = call_tool(@owner, "update_tasks", { map_id: @map.id, tasks: [
       { task_id: design["id"], forecast: false, starts_on: "2026-12-08" },

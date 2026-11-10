@@ -10,16 +10,22 @@ import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import { hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
-import { formatMonth, monthOfDay, parseDay } from '@/tasks/dates'
-import { AssigneeBadge, assigneeKey, assigneeName, assigneeParams, CheckButton, DueBadge, FeatureChip, TagChip, TagEditor, YearStrip } from '@/tasks/parts'
+import { AssigneeBadge, assigneeKey, assigneeName, assigneeParams, CheckButton, DueBadge, FeatureChip, TagChip, TagEditor } from '@/tasks/parts'
 import type { Board, Participant, TaskData, TaskListData } from '@/tasks/types'
 import type { CurrentUser } from '@/types'
+import type { BoardStep, StepKind } from '@/types/teamBoard'
+import { toast } from '@/components/ui/toast'
+import { SeasonFrieze, type StepApi } from '@/season/SeasonFrieze'
 
 type Props = Board & {
   map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean }
   participants: Participant[]
   canEdit: boolean
   today: string
+  season: { opensOn: string; closesOn: string }
+  stepKinds: StepKind[]
+  /** A team project's stage on the team board (its new steps start as forecasts before the offer is signed). */
+  phase: string | null
 }
 
 // Semisto's default lists, in the order of the journey's steps (TaskList::Defaults).
@@ -32,17 +38,18 @@ const tagged = (task: TaskData) => ({ properties: { tags: task.tags } })
 
 /**
  * « Tâches » of a map: lists of tasks (Semisto's four by default, one per
- * step), each task with who does it, for when, and its tags. The year strip
- * above shows when things fall due, season by season. Editors manage
+ * step), each task with who does it, for when, and its tags. The season
+ * frieze above draws this project's design, work site and planting steps
+ * over the twelve months to come, the same steps the team board shows
+ * (SeasonFrieze); editors add, move and stretch them there. Editors manage
  * everything; the person a task is given to may tick it.
  */
-export default function MapTasks({ map, lists: initialLists, tasks: initialTasks, participants, canEdit, today }: Props) {
+export default function MapTasks({ map, lists: initialLists, tasks: initialTasks, participants, canEdit, today, season, stepKinds, phase }: Props) {
   const { currentUser } = usePage().props as unknown as { currentUser: CurrentUser }
   const [board, setBoard] = useState<Board>({ lists: initialLists, tasks: initialTasks })
   const [error, setError] = useState<string | null>(null)
   const [assignee, setAssignee] = useState<AssigneeFilter>('all')
   const [tag, setTag] = useState<string | null>(null)
-  const [month, setMonth] = useState<string | null>(null)
   const [showDone, setShowDone] = useState(false)
   const [overdueOnly, setOverdueOnly] = useState(false)
   // ?open=ID (from « Tâches » across maps) opens that task at once.
@@ -93,6 +100,43 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
   }
   const addDefaults = () => run(api(`${base}/task_lists/defaults`, { method: 'POST' }))
 
+  // The season steps are tasks of the board (its season list): one source
+  // for the frieze, the lists below and the team board.
+  const steps = useMemo<BoardStep[]>(() => board.tasks.filter((x) => x.stepKind && x.startsOn && x.dueOn).map((x) => ({
+    id: x.id, mapId: map.id, kind: x.stepKind as StepKind, title: x.title, startsOn: x.startsOn!, dueOn: x.dueOn!, done: Boolean(x.completedAt), forecast: Boolean(x.forecast),
+  })), [board.tasks, map.id])
+  const project = useMemo(() => [{ id: map.id, name: map.name, phase }], [map.id, map.name, phase])
+  const stepApi: StepApi = {
+    create: async (body) => { const res = await api<{ step: BoardStep; board: Board }>(`${base}/season_steps`, { method: 'POST', body: { step: body } }); setBoard(res.board); return res.step },
+    update: async (id, body) => { const res = await api<{ step: BoardStep; board: Board }>(`${base}/season_steps/${id}`, { method: 'PATCH', body: { step: body } }); setBoard(res.board); return res.step },
+    destroy: async (id) => { const res = await api<{ board: Board }>(`${base}/season_steps/${id}`, { method: 'DELETE' }); setBoard(res.board) },
+  }
+  const frieze = (
+    <SeasonFrieze
+      single
+      steps={steps}
+      projects={project}
+      season={season}
+      today={today}
+      stepKinds={stepKinds}
+      api={stepApi}
+      notify={(message, tone) => toast(message, { tone: tone === 'error' ? 'error' : 'success' })}
+      canEdit={canEdit}
+      frame={({ add, body, hasSteps }) => (
+        <section aria-labelledby="season-frieze-title" className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+            <div className="min-w-0">
+              <h2 id="season-frieze-title" className="font-serif text-2xl leading-tight text-loam-900">{t('team_board.season.title')}</h2>
+              <p className="mt-1 text-sm text-loam-500">{canEdit && hasSteps ? t('team_board.season.hint') : t('tasks.season.hint')}</p>
+            </div>
+            {add}
+          </div>
+          {body}
+        </section>
+      )}
+    />
+  )
+
   const tags = useMemo(() => tagCounts(board.tasks.map(tagged)), [board.tasks])
   const suggestions = useMemo(() => tags.map((c) => c.tag), [tags])
 
@@ -101,11 +145,10 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
     if (assignee === 'none' && task.assignee) return false
     if (assignee !== 'all' && assignee !== 'me' && assignee !== 'none' && assigneeKey(task.assignee) !== assignee) return false
     if (tag && !hasTag(tagged(task), tag)) return false
-    if (month && (!task.dueOn || monthOfDay(task.dueOn) !== month)) return false
     if (overdueOnly && (task.completedAt || !task.dueOn || task.dueOn >= today)) return false
     return true
   }
-  const filtering = assignee !== 'all' || tag != null || month != null || overdueOnly
+  const filtering = assignee !== 'all' || tag != null || overdueOnly
   const done = board.tasks.filter((x) => x.completedAt).length
   const overdue = board.tasks.filter((x) => !x.completedAt && x.dueOn && x.dueOn < today).length
   const visibleCount = board.tasks.filter((x) => matches(x) && (showDone || !x.completedAt)).length
@@ -119,8 +162,6 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
     if (sameListIndex === index) return
     void moveTask(task, list, sameListIndex >= 0 && sameListIndex < index ? index - 1 : index)
   }
-
-  const monthLabel = month ? formatMonth(parseDay(`${month}-01`).getFullYear(), parseDay(`${month}-01`).getMonth()) : ''
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -139,6 +180,8 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
 
       {error && <p role="alert" className="mt-4 rounded-xl bg-clay-50 px-4 py-2 text-sm text-clay-700">{error}</p>}
 
+      <div className="mt-6">{frieze}</div>
+
       {board.lists.length === 0 ? (
         <div className="mt-6">
           <EmptyState
@@ -155,10 +198,6 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
         </div>
       ) : (
         <>
-          <div className="mt-6">
-            <YearStrip tasks={board.tasks} today={today} month={month} onMonth={setMonth} />
-          </div>
-
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3" role="group" aria-label={t('tasks.filters.label')}>
             <label className="flex items-center gap-2 whitespace-nowrap text-sm text-loam-700">
               {t('tasks.filters.assignee')}
@@ -185,7 +224,6 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
                 {t('tasks.filters.overdue', { count: overdue })}
               </button>
             )}
-            {month && <span className="rounded-full bg-prune-50 px-2.5 py-1 text-sm font-medium text-prune-700">{t('tasks.year.month_filter', { month: monthLabel })}</span>}
           </div>
           {tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label={t('tags.filter_label')}>

@@ -1,4 +1,4 @@
-# The season's steps on the team board's timeline (design, work site,
+# The season's steps (SeasonSteps) on the team board's timeline (design, work site,
 # planting), kept as tasks of the map with a start and a due date: drawn,
 # moved and stretched from the board. A step may be a forecast
 # (« prévisionnel », a project still at the offer stage), confirmed later
@@ -13,9 +13,7 @@ module Teams
     def create
       map = @team.maps.active.find(params.require(:step).require(:map_id))
       return render_read_only if map.read_only_by_plan?
-      list = TaskList.season!(map, by: Current.user)
-      kind = step_params[:step_kind]
-      task = list.tasks.create!(step_params.merge(map:, created_by: Current.user, title: step_params[:title].presence || t("team_board.steps.#{kind}", default: kind.to_s)))
+      task = SeasonSteps.create!(map, step_params, by: Current.user)
       render json: { step: Teams::Board.step_json(task) }, status: :created
     rescue ActiveRecord::RecordInvalid => e
       render json: { message: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
@@ -42,7 +40,7 @@ module Teams
       def render_read_only = render(json: { message: t("maps.errors.read_only") }, status: :forbidden)
 
       def step_params
-        params.require(:step).permit(:title, :step_kind, :starts_on, :due_on, :forecast)
+        params.require(:step).permit(*SeasonSteps::PERMITTED)
       end
   end
 end
