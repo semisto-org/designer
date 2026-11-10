@@ -1,8 +1,10 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
-import { ChevronLeft, ChevronRight, FileText, Receipt } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileText, Plus, Receipt } from 'lucide-react'
+import { useState } from 'react'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
 import { confirmAction } from '@/components/ui/confirm'
+import { Dialog } from '@/components/ui/Dialog'
 import { toast } from '@/components/ui/toast'
 import { api, ApiError } from '@/lib/api'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -43,6 +45,7 @@ export default function MyHours({ month, today, entries, monthTotals, toInvoice,
   const { currentUser } = usePage().props as unknown as { currentUser: CurrentUser }
   const reload = () => router.reload({ only: ['entries', 'monthTotals', 'toInvoice', 'invoiced', 'maps', 'billToSuggestions'] })
   const thisMonth = today.slice(0, 7)
+  const [noting, setNoting] = useState(false)
 
   async function reopen(invoice: Invoiced) {
     const number = invoice.invoiceNumber ?? '—'
@@ -63,9 +66,12 @@ export default function MyHours({ month, today, entries, monthTotals, toInvoice,
   return (
     <div className="mx-auto max-w-4xl">
       <Head title={t('time_entries.mine.page_title')} />
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-3xl">{t('time_entries.mine.title')}</h1>
-        <HelpButton slug="suivre-son-temps-et-ses-kilometres" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl">{t('time_entries.mine.title')}</h1>
+          <HelpButton slug="suivre-son-temps-et-ses-kilometres" />
+        </div>
+        {maps.length > 0 && <Button onClick={() => setNoting(true)}><Plus className="h-4 w-4" aria-hidden />{t('time_entries.form.title')}</Button>}
       </div>
       <p className="mt-1 text-loam-600">{tf('time_entries.mine.intro')}</p>
 
@@ -98,15 +104,6 @@ export default function MyHours({ month, today, entries, monthTotals, toInvoice,
               </ul>
             )}
           </section>
-
-          {maps.length > 0 && (
-            <section aria-labelledby="note-time" className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-loam-900/10 sm:p-5">
-              <h2 id="note-time" className="font-serif text-xl font-semibold text-prune-800">{t('time_entries.form.title')}</h2>
-              <div className="mt-3">
-                <EntryForm projects={maps} catalog={catalog} billToSuggestions={billToSuggestions} today={today} onDone={reload} />
-              </div>
-            </section>
-          )}
 
           <section aria-labelledby="my-month" className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-loam-900/10 sm:p-5">
             <header className="flex flex-wrap items-center justify-between gap-2">
@@ -148,6 +145,12 @@ export default function MyHours({ month, today, entries, monthTotals, toInvoice,
           )}
         </div>
       )}
+
+      <Dialog open={noting} onClose={() => setNoting(false)} title={t('time_entries.form.title')} dismissOnBackdrop={false}>
+        {noting && (
+          <EntryForm projects={maps} catalog={catalog} billToSuggestions={billToSuggestions} today={today} autoFocus onDone={() => { setNoting(false); reload() }} onCancel={() => setNoting(false)} />
+        )}
+      </Dialog>
     </div>
   )
 }

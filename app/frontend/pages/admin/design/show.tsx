@@ -10,6 +10,7 @@ import { Field, Input } from '@/components/ui/Field'
 import { HandNote } from '@/components/ui/HandNote'
 import { IconButton } from '@/components/ui/IconButton'
 import { ChipButton } from '@/components/ui/ChipButton'
+import { Segmented } from '@/components/ui/Segmented'
 import { Pill, type PillTone } from '@/components/ui/Pill'
 import { PlaceSketch } from '@/components/ui/PlaceSketch'
 import { Sheet } from '@/components/ui/Sheet'
@@ -157,6 +158,10 @@ export default function AdminDesignPage({ guard }: { guard: Guard }) {
           </div>
         </Specimen>
 
+        <Specimen id="segmented" code="Segmented">
+          <SegmentedDemo />
+        </Specimen>
+
         <Specimen id="empty" code="CompanionEmpty">
           <CompanionEmpty
             title={k('sections.empty.heading')}
@@ -259,5 +264,17 @@ function GuardSection({ guard }: { guard: Guard }) {
         </>
       )}
     </section>
+  )
+}
+
+function SegmentedDemo() {
+  const [value, setValue] = useState<'yes' | 'no'>('yes')
+  return (
+    <Segmented
+      label={k('sections.segmented.title')}
+      value={value}
+      onChange={setValue}
+      options={[{ value: 'yes', label: k('sections.segmented.yes'), tone: 'leaf' }, { value: 'no', label: k('sections.segmented.no'), tone: 'humus' }]}
+    />
   )
 }

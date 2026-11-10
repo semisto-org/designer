@@ -45,6 +45,8 @@ export type PhaseEnvelope = {
   nonBillableHours: number
   invoicedHours: number
   km: number
+  firstOn: string | null
+  lastOn: string | null
   overHours: number | null
   usedPct: number | null
 }

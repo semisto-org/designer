@@ -16,11 +16,13 @@ export const formatKm = (km: number) => formatNumber(km)
 
 const dayFormat = new Intl.DateTimeFormat('fr-BE', { weekday: 'short', day: 'numeric', month: 'short' })
 const dateFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })
+const shortFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'short' })
 const monthFormat = new Intl.DateTimeFormat('fr-BE', { month: 'long', year: 'numeric' })
 
 const parse = (iso: string) => new Date(`${iso.slice(0, 10)}T12:00:00`)
 export const formatDay = (iso: string) => dayFormat.format(parse(iso))
 export const formatDate = (iso: string) => dateFormat.format(parse(iso))
+export const formatShortDate = (iso: string) => shortFormat.format(parse(iso))
 export const formatMonth = (month: string) => monthFormat.format(parse(`${month}-01`))
 
 /** « 2,5 » or « 2h30 » or « 2:30 » → minutes, rounded to the step; null when unreadable. */

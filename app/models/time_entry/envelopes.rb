@@ -33,6 +33,7 @@ class TimeEntry
           hours: hours(minutes), billableHours: hours(billable), nonBillableHours: hours(minutes - billable),
           invoicedHours: hours(noted.select(&:invoiced?).sum(&:minutes)),
           km: noted.sum { _1.trip_km.to_f }.round(1),
+          firstOn: noted.map(&:worked_on).min&.iso8601, lastOn: noted.map(&:worked_on).max&.iso8601,
           overHours: envelope_minutes && minutes > envelope_minutes ? hours(minutes - envelope_minutes) : nil,
           usedPct: envelope_minutes&.positive? ? (minutes * 100.0 / envelope_minutes).round : nil
         }

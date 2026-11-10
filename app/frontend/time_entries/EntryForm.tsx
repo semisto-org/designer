@@ -4,6 +4,7 @@ import { useId, useMemo, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import { ChipButton } from '@/components/ui/ChipButton'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
+import { Segmented } from '@/components/ui/Segmented'
 import { toast } from '@/components/ui/toast'
 import { api, ApiError } from '@/lib/api'
 import { formatNumber, t } from '@/lib/i18n'
@@ -22,6 +23,8 @@ type Props = {
   overHours?: Partial<Record<Phase, number | null>>
   onDone: (entry: TimeEntry) => void
   onCancel?: () => void
+  /** Put the cursor in the duration field at once (a form that opens on demand). */
+  autoFocus?: boolean
 }
 
 /**
@@ -29,7 +32,7 @@ type Props = {
  * Everything is filled in ahead (the project's likely phase, who pays,
  * the person's usual trip there): usually only the duration needs typing.
  */
-export function EntryForm({ projects, catalog, billToSuggestions, today, entry, overHours, onDone, onCancel }: Props) {
+export function EntryForm({ projects, catalog, billToSuggestions, today, entry, overHours, onDone, onCancel, autoFocus = false }: Props) {
   const id = useId()
   const first = projects.find((p) => p.id === entry?.mapId) ?? projects[0]
   const [mapId, setMapId] = useState(first?.id)
@@ -117,7 +120,7 @@ export function EntryForm({ projects, catalog, billToSuggestions, today, entry, 
           <Input type="date" value={workedOn} max={today} onChange={(e) => setWorkedOn(e.target.value)} required />
         </Field>
         <Field label={t('time_entries.form.duration')} error={errors.minutes} hint={minutes ? formatDuration(minutes) : t('time_entries.form.duration_hint')}>
-          <Input inputMode="decimal" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="2,5" required autoFocus={!entry} />
+          <Input inputMode="decimal" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="2,5" required autoFocus={autoFocus && !entry} />
         </Field>
       </div>
 
@@ -132,18 +135,21 @@ export function EntryForm({ projects, catalog, billToSuggestions, today, entry, 
       </Field>
 
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('time_entries.form.billable')}>
-          <ChipButton tone={billable ? 'leaf' : 'neutral'} pressed={billable} onClick={() => setBillable(true)}>{t('time_entries.form.billable')}</ChipButton>
-          <ChipButton tone={!billable ? 'humus' : 'neutral'} pressed={!billable} onClick={() => { setBillable(false); setReason((r) => r ?? 'offered') }}>{t('time_entries.form.not_billable')}</ChipButton>
-          {!billable && (
-            <>
-              <span className="ml-1 text-sm text-loam-600">{t('time_entries.form.reason')}</span>
-              {catalog.reasons.map((r) => (
-                <ChipButton key={r} tone={reason === r ? 'humus' : 'neutral'} pressed={reason === r} onClick={() => setReason(r)}>{t(`time_entries.reasons.${r}`)}</ChipButton>
-              ))}
-            </>
-          )}
-        </div>
+        <Segmented
+          label={t('time_entries.form.billable')}
+          value={billable ? 'yes' : 'no'}
+          onChange={(v) => { setBillable(v === 'yes'); if (v === 'no') setReason((r) => r ?? 'offered') }}
+          options={[{ value: 'yes', label: t('time_entries.form.billable'), tone: 'leaf' }, { value: 'no', label: t('time_entries.form.not_billable'), tone: 'humus' }]}
+        />
+        {!billable && (
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('time_entries.form.reason')}>
+            <span className="text-sm text-loam-600">{t('time_entries.form.reason')}</span>
+            {catalog.reasons.map((r) => (
+              <ChipButton key={r} tone={reason === r ? 'humus' : 'neutral'} pressed={reason === r} onClick={() => setReason(r)}>{t(`time_entries.reasons.${r}`)}</ChipButton>
+            ))}
+            <span className="basis-full text-sm text-loam-500">{t(`time_entries.reason_hints.${reason ?? 'other'}`)}</span>
+          </div>
+        )}
         {billable && over != null && over > 0 && (
           <p className="font-hand text-lg leading-snug text-humus-700">{t('time_entries.form.over_envelope', { hours: formatHours(over) })}</p>
         )}
