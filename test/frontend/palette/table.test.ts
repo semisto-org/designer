@@ -39,6 +39,15 @@ test('computed columns: what remains to plant and to buy', () => {
   assert.deepEqual(totals([apple, hazel], ['name', 'planned', 'amount_to_plant']), { planned: 15, amount_to_plant: 90 })
 })
 
+test('a plant with no plant drawn on the map is budgeted from its target, except seen through a tag', () => {
+  const hedge = row({ key: 'hh', name: 'Prunellier', strata: 'shrub', targetCount: 100, unitPrice: 1.2, inPalette: true })
+  assert.equal(cellValue(hedge, 'amount'), 120)
+  assert.equal(cellValue(hedge, 'amount_to_plant'), 120)
+  assert.equal(cellValue({ ...hedge, planned: 3 }, 'amount'), 3.6, 'drawn plants win over the target')
+  assert.equal(cellValue({ ...hedge, scoped: true }, 'amount'), 0, 'the target is for the whole map')
+  assert.equal(cellValue(hedge, 'to_plant'), 0, 'the map count stays the map count')
+})
+
 test('filters: status, search without accents, supplier whatever its case, what remains to plant', () => {
   assert.deepEqual(applyFilters(rows, { ...base.filters, statuses: ['planned', 'planting'] }).map((r) => r.key), ['a', 'h'])
   assert.deepEqual(applyFilters(rows, { ...base.filters, search: 'chene' }).map((r) => r.key), ['existing:Vieux chêne'])
