@@ -10,6 +10,7 @@ import type { BoardPhase, BoardProject } from '@/types/teamBoard'
 import { BoardSection, Faces, addDays, daysBetween, formatDay, useBoard } from './board'
 import { PhaseIcon, phaseTone } from './PhaseIcon'
 import { ProjectDialog } from './ProjectDialog'
+import { ProjectPreview } from './ProjectPreview'
 
 /** Beyond this, a project that has not left its column reads as stuck. */
 const STUCK_DAYS = 30
@@ -30,6 +31,7 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
   const { phases } = useBoard()
   const [moving, setMoving] = useState<{ project: BoardProject; phase: BoardPhase } | null>(null)
   const [editing, setEditing] = useState<BoardProject | null>(null)
+  const [previewing, setPreviewing] = useState<number | null>(null)
   const [over, setOver] = useState<BoardPhase | null>(null)
   const [dragged, setDragged] = useState<number | null>(null)
   const [showOld, setShowOld] = useState(false)
@@ -40,6 +42,7 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
 
   // Keep the dialogs on the latest version of their project.
   const editingNow = editing && (byId.get(editing.id) ?? null)
+  const previewNow = previewing != null ? (byId.get(previewing) ?? null) : null
 
   function drop(event: DragEvent, phase: BoardPhase) {
     event.preventDefault()
@@ -88,6 +91,7 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
                     onDragEnd={() => { setDragged(null); setOver(null) }}
                     onMove={(to) => setMoving({ project, phase: to })}
                     onSettings={() => setEditing(project)}
+                    onPreview={() => setPreviewing(project.id)}
                   />
                 ))}
                 {old.length > 0 && (
@@ -108,17 +112,25 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
       {closed.length > 0 && <ClosedProjects projects={closed} />}
       <MoveDialog move={moving} onClose={() => setMoving(null)} />
       <ProjectDialog project={editingNow} onClose={() => setEditing(null)} />
+      <ProjectPreview
+        project={previewNow}
+        onClose={() => setPreviewing(null)}
+        onSettings={(project) => setEditing(project)}
+        onNextStep={(project) => setMoving({ project, phase: project.phase })}
+      />
     </BoardSection>
   )
 }
 
-function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSettings }: {
+function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSettings, onPreview }: {
   project: BoardProject
   dragging: boolean
   onDragStart: (e: DragEvent) => void
   onDragEnd: () => void
   onMove: (phase: BoardPhase) => void
   onSettings: () => void
+  /** A click on the card opens its preview; the map is one more click away. */
+  onPreview: () => void
 }) {
   const { today } = useBoard()
   const days = Math.max(0, daysBetween(project.phaseChangedAt.slice(0, 10), today))
@@ -132,6 +144,7 @@ function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSett
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       aria-label={project.name}
+      onClick={(e) => { if (!(e.target as HTMLElement).closest('button, a, [role="menu"]')) onPreview() }}
       className={clsx(
         'group relative cursor-grab space-y-2 rounded-xl border border-loam-200 bg-[#fffdf7] p-2.5 shadow-[0_1px_0_var(--color-loam-200)] transition active:cursor-grabbing',
         'hover:border-loam-300 hover:shadow-md',
@@ -140,9 +153,10 @@ function ProjectCard({ project, dragging, onDragStart, onDragEnd, onMove, onSett
       )}
     >
       <div className="flex items-start gap-1">
-        <Link href={`/maps/${project.id}`} draggable={false} className="min-w-0 flex-1 font-serif text-lg leading-tight text-loam-900 hover:text-prune-700">
+        {/* design-lint-ok: the card's title is the way into its preview, drawn as the title it was */}
+        <button type="button" onClick={onPreview} draggable={false} aria-label={t('team_board.preview.open', { name: project.name })} className="min-w-0 flex-1 text-left font-serif text-lg leading-tight text-loam-900 hover:text-prune-700">
           {project.name}
-        </Link>
+        </button>
         <CardMenu project={project} onMove={onMove} onSettings={onSettings} />
       </div>
       <div className="flex items-center gap-2">

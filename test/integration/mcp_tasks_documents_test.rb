@@ -61,6 +61,9 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     season = map_data["team_season"]
     assert_equal "offer", season["stage"]
     assert_equal [ [ "design", true ], [ "plant", false ] ], season["steps"].map { _1.values_at("kind", "forecast") }
+    project = map_data["team_project"]
+    assert_equal [ "offer", "Offre" ], project.values_at("stage", "stage_label")
+    assert project.key?("task_lists")
 
     data, error = call_tool(@owner, "update_tasks", { map_id: @map.id, tasks: [
       { task_id: design["id"], forecast: false, starts_on: "2026-12-08" },

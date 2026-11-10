@@ -71,3 +71,46 @@ export type TeamBoardProps = {
   steps: BoardStep[]
   people: BoardMemberLoad[]
 }
+
+export type OfferStatus = 'saved' | 'sent' | 'accepted' | 'declined'
+
+/** An action of a project, as the preview shows it (Teams::ProjectPreview#task_json). */
+export type PreviewTask = {
+  id: number
+  title: string
+  dueOn: string | null
+  overdue: boolean
+  list: string | null
+  assignee: (Omit<BoardPerson, 'id'> & { id: number | null }) | null
+  completedAt: string | null
+  completedBy: string | null
+}
+
+/** What the team reads about a project before opening its map (Teams::ProjectPreview). */
+export type ProjectPreviewData = {
+  id: number
+  name: string
+  address: string | null
+  areaM2: number | null
+  phase: BoardPhase
+  phaseChangedAt: string
+  daysInPhase: number
+  onHoldSince: string | null
+  closedAt: string | null
+  closedReason: ClosedReason | null
+  promisedOn: string | null
+  promisedWhat: string | null
+  lead: BoardPerson | null
+  crew: BoardPerson[]
+  nextStep: PreviewTask | null
+  coming: PreviewTask[]
+  overdue: number
+  done: PreviewTask[]
+  lists: { id: number; name: string; done: number; total: number }[]
+  steps: BoardStep[]
+  mainGoal: string | null
+  /** null when the offer builder is not shown to this person. */
+  offer: { url: string; exists: boolean; version: string | null; status: OfferStatus | null; statusOn: string | null; versions: number } | null
+  request: { createdAt: string; name: string } | null
+  readOnly: boolean
+}

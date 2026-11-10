@@ -55,6 +55,7 @@ module Mcp
           publication: publication(map),
           implementation: implementation(map),
           team_season: team_season(map),
+          team_project: team_project(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           reader_guide: reader_guide,
@@ -242,6 +243,15 @@ module Mcp
                 ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
             end
           }
+        end
+
+        # What the team reads about the project before opening its map (the
+        # board's « Aperçu du projet »): next action and who carries it, what
+        # was done lately, task lists, project manager and crew, how far the
+        # offer went. For the team's members only; nil elsewhere.
+        def team_project(map)
+          return nil unless map.organization_id && !map.own_place && map.organization.member?(user)
+          Teams::ProjectPreview.new(map, user).for_mcp
         end
 
         def offer(map)

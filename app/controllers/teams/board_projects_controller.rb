@@ -5,7 +5,8 @@
 # next step, which becomes a dated task of the map (and an e-mail to the
 # person it is given to). Any member of the team does it, as they all edit
 # the team's maps. Answers with the board's view of the project; `show`
-# gives it to the map editor (« Partager » dialog) with the team's people.
+# gives it to the map editor (« Partager » dialog) with the team's people;
+# `preview` what the team reads before opening the map (Teams::ProjectPreview).
 module Teams
   class BoardProjectsController < ApplicationController
     include TeamScoped
@@ -19,6 +20,11 @@ module Teams
     def show
       board = Teams::Board.new(@team, Current.user)
       render json: { project: board.project(@map), **board.settings }
+    end
+
+    # The project's preview, opened from its card on the board.
+    def preview
+      render json: { preview: Teams::ProjectPreview.new(@map, Current.user).as_json }
     end
 
     def update
