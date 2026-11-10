@@ -764,6 +764,7 @@ fr:
               - "Les journaux du serveur : 12 mois au plus. Les rapports d'erreur chez Sentry : 90 jours au plus."
               - "Les liens et codes de connexion : 20 minutes, et ils ne servent qu'une fois."
               - "Un essai « Et chez toi ? » qui n'est pas devenu une carte : 48 heures, puis il est effacé lors du nettoyage de la nuit suivante."
+              - "Un compte créé à votre adresse (pour garder un essai ou recevoir un lien de connexion) mais jamais ouvert : 30 jours, puis il est effacé."
               - "Un fichier envoyé par votre assistant IA et jamais rattaché à une carte : 24 heures."
               - "Vos échanges avec nous (assistance, demandes) : le temps de les traiter, puis 3 ans au plus pour garder la trace de ce qui a été convenu, sauf s'ils font partie des pièces comptables."
               - "Vos retours : tant que votre compte existe."

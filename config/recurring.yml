@@ -62,6 +62,10 @@ production:
   sessions_idle_purge:
     command: "Session.purge_idle!"
     schedule: every day at 4:15am
+  # Accounts whose sign-in link was never used, 30 days on (privacy policy).
+  unused_accounts_purge:
+    command: "Accounts::UnusedPurge.call"
+    schedule: every day at 4:20am
   # « Et chez toi ? »: trials not kept within 48 hours.
   map_trials_sweep:
     command: "MapTrial.expired.delete_all"
