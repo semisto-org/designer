@@ -31,17 +31,33 @@ export function aerialSource(view: AerialView): RasterSourceSpecification {
   return { type: 'raster', tiles: [view.url], tileSize: 256, attribution, ...zooms }
 }
 
+// The address each installed source reads: a realigned view gets a new one
+// (its tiles changed), and its source is then rebuilt.
+const installed = new WeakMap<MapLibreMap, Map<string, string>>()
+
+function installedUrls(map: MapLibreMap): Map<string, string> {
+  let urls = installed.get(map)
+  if (!urls) installed.set(map, (urls = new Map()))
+  return urls
+}
+
 /**
  * Brings the map in line with the choice: the chosen view shown at
- * `opacity`, the others hidden, views that no longer exist removed.
+ * `opacity`, the others hidden, views that no longer exist removed. A view
+ * being realigned (`previewing`) stays hidden: its live preview stands in
+ * for it (drone/AlignOverlay).
  */
-export function syncAerialViews(map: MapLibreMap, views: AerialView[], viewId: number | null, opacity: number) {
-  const known = new Set(views.map((v) => v.id))
+export function syncAerialViews(map: MapLibreMap, views: AerialView[], viewId: number | null, opacity: number, previewing: number | null = null) {
+  const urls = installedUrls(map)
   map.getLayersOrder().forEach((id) => {
     const existing = aerialViewIdOf(id)
-    if (existing == null || known.has(existing)) return
+    if (existing == null) return
+    const view = views.find((v) => v.id === existing)
+    if (view && urls.get(id) === view.url) return
+    // Gone, or moved since (new tiles): taken down, put back below if shown.
     map.removeLayer(id)
     if (map.getSource(id)) map.removeSource(id)
+    urls.delete(id)
   })
 
   views.forEach((view) => {
@@ -51,8 +67,9 @@ export function syncAerialViews(map: MapLibreMap, views: AerialView[], viewId: n
       if (!shown) return
       if (!map.getSource(id)) map.addSource(id, aerialSource(view))
       map.addLayer({ id, type: 'raster', source: id, paint: { 'raster-opacity': opacity, 'raster-fade-duration': 150 } })
+      urls.set(id, view.url)
     }
-    map.setLayoutProperty(id, 'visibility', shown ? 'visible' : 'none')
+    map.setLayoutProperty(id, 'visibility', shown && view.id !== previewing ? 'visible' : 'none')
     if (shown) map.setPaintProperty(id, 'raster-opacity', opacity)
   })
 }

@@ -613,6 +613,7 @@ Rails.application.routes.draw do
       resources :aerial_views, only: %i[index create destroy] do
         member do
           post :complete
+          post :align
           get :archive
         end
       end

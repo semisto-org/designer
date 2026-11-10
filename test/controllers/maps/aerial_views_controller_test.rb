@@ -110,7 +110,8 @@ class Maps::AerialViewsControllerTest < ActionDispatch::IntegrationTest
 
     get map_path(@map), headers: inertia_headers
     props = response.parsed_body["props"]
-    assert_equal archive_map_aerial_view_path(@map, view), props["aerialViews"].sole["url"]
+    # The tiles' version: a realigned view gets a new address.
+    assert_equal "#{archive_map_aerial_view_path(@map, view)}?v=#{view.archive.blob.id}", props["aerialViews"].sole["url"]
     assert_equal [], props["aerialImports"], "a reader does not follow imports"
 
     sign_in_as users(:michael)
@@ -125,5 +126,44 @@ class Maps::AerialViewsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [], response.parsed_body.dig("props", "aerialViews")
     get archive_map_aerial_view_path(@map, view)
     assert_response :not_found
+  end
+
+  test "an editor realigns an imported view with landmark pairs; the tiles are cut again in the background" do
+    view = imported_view(@map, users(:michael), bytes: Random.bytes(10.kilobytes), status: "ready")
+    view.archive.attach(io: file_fixture("drone-view.pmtiles").open, filename: "vue.pmtiles", content_type: "application/vnd.pmtiles")
+    view.update!(bounds: { "west" => 4.875, "south" => 50.327, "east" => 4.877, "north" => 50.329 })
+    pair = { from: [ 4.876, 50.328 ], to: [ 4.87603, 50.32801 ] }
+
+    sign_in_as users(:alice)
+    post align_map_aerial_view_path(@map, view), params: { pairs: [ pair ] }, as: :json
+    assert_response :forbidden
+
+    sign_in_as users(:michael)
+    assert_enqueued_with(job: AerialViewRealignJob, args: [ view ]) do
+      post align_map_aerial_view_path(@map, view), params: { pairs: [ pair ] }, as: :json
+    end
+    assert_response :success
+    alignment = response.parsed_body.dig("aerialView", "alignment")
+    assert_equal [ "pending", 1, "Michael" ], alignment.values_at("status", "pairs", "by")
+    assert_equal [ [ 4.876, 50.328 ] ], view.reload.alignments.map { _1.dig("pairs", 0, "from") }
+
+    post align_map_aerial_view_path(@map, view), params: { pairs: [ pair ] }, as: :json
+    assert_response :unprocessable_content
+    assert_match "déjà en cours", response.parsed_body["message"]
+    delete map_aerial_view_path(@map, view), as: :json
+    assert_response :conflict, "not removed while its tiles are cut again"
+  end
+
+  test "a slip of the hand is refused with why" do
+    view = imported_view(@map, users(:michael), bytes: Random.bytes(10.kilobytes), status: "ready")
+    view.archive.attach(io: file_fixture("drone-view.pmtiles").open, filename: "vue.pmtiles", content_type: "application/vnd.pmtiles")
+    view.update!(bounds: { "west" => 4.875, "south" => 50.327, "east" => 4.877, "north" => 50.329 })
+    sign_in_as users(:michael)
+    assert_no_enqueued_jobs(only: AerialViewRealignJob) do
+      post align_map_aerial_view_path(@map, view), params: { pairs: [ { from: [ 4.876, 50.328 ], to: [ 4.886, 50.328 ] } ] }, as: :json
+    end
+    assert_response :unprocessable_content
+    assert_match "300 m", response.parsed_body["message"]
+    assert_empty view.reload.alignments
   end
 end

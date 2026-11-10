@@ -78,7 +78,8 @@ module Api
 
         # An xyz view's own tiles; a PMTiles archive's tiles cut out by AerialTilesController.
         def drone_source(view)
-          tiles = view.kind == "xyz" ? view.url : "#{api_v1_map_aerial_tile_url(@map, view.id, 0, 0, 0).delete_suffix('/0/0/0')}/{z}/{x}/{y}"
+          # `v` changes when the view is realigned: the phone never keeps tiles of a view since moved.
+          tiles = view.kind == "xyz" ? view.url : "#{api_v1_map_aerial_tile_url(@map, view.id, 0, 0, 0).delete_suffix('/0/0/0')}/{z}/{x}/{y}#{"?v=#{view.tiles_version}" if view.tiles_version}"
           bounds = view.bounds && %w[west south east north].map { view.bounds[_1] }
           { type: "raster", tiles: [ tiles ], tileSize: 256, minzoom: view.min_zoom || 0, maxzoom: view.max_zoom || 22,
             attribution: view.attribution, bounds: bounds&.all?(Numeric) ? bounds : nil }.compact

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -80,6 +80,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_180000) do
     t.bigint "source_upload_id"
     t.bigint "drone_mission_id"
     t.string "product", default: "orthophoto", null: false
+    t.jsonb "alignments", default: [], null: false
     t.index ["created_by_id"], name: "index_aerial_views_on_created_by_id"
     t.index ["drone_mission_id"], name: "index_aerial_views_on_drone_mission_id"
     t.index ["map_id", "captured_on"], name: "index_aerial_views_on_map_id_and_captured_on"

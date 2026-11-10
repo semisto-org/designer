@@ -1,9 +1,11 @@
 import { router } from '@inertiajs/react'
 import { useSyncExternalStore } from 'react'
+import { toast } from '@/components/ui/toast'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { aerialStore } from '@/drone/store'
 import { UploadAborted, uploadAerialView } from '@/drone/upload'
+import { aerialViewLabel } from '@/drone/format'
 import type { AerialImport } from '@/types/drone'
 
 /**
@@ -44,10 +46,12 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
   event.returnValue = t('drone.import.leave_warning')
 }
 
+const aligning = (view: AerialImport | undefined) => view?.alignment?.status === 'pending'
+
 function schedulePoll() {
   if (poll) clearTimeout(poll)
   poll = null
-  if (!state.imports.some((v) => v.status === 'processing')) return
+  if (!state.imports.some((v) => v.status === 'processing' || aligning(v))) return
   poll = setTimeout(refresh, POLL_MS)
 }
 
@@ -57,11 +61,19 @@ async function refresh() {
   try {
     const { aerialViews } = await api<{ aerialViews: AerialImport[] }>(`/maps/${mapId}/aerial_views`)
     if (state.mapId !== mapId) return
-    const before = new Map(state.imports.map((v) => [v.id, v.status]))
-    const nowReady = aerialViews.filter((v) => v.status === 'ready' && before.get(v.id) === 'processing')
+    const before = new Map(state.imports.map((v) => [v.id, v]))
+    const nowReady = aerialViews.filter((v) => v.status === 'ready' && before.get(v.id)?.status === 'processing')
+    // A realignment that just ended: its new tiles replace the old ones.
+    const realigned = aerialViews.filter((v) => aligning(before.get(v.id)) && !aligning(v))
     set({ imports: aerialViews })
+    realigned.forEach((view) => {
+      if (view.alignment?.status === 'done') toast(t('drone.align.done', { name: aerialViewLabel(view) }), { tone: 'success' })
+      else toast(t('drone.align.failed', { reason: t(`drone.align.errors.${view.alignment?.failure ?? 'conversion_failed'}`) }), { tone: 'error' })
+    })
     if (nowReady.length > 0) {
       router.reload({ only: ['aerialViews'], onSuccess: () => aerialStore.select(nowReady[0].id) })
+    } else if (realigned.some((v) => v.alignment?.status === 'done')) {
+      router.reload({ only: ['aerialViews'] })
     }
   } catch {
     // Offline for a moment: the next round tries again.
@@ -117,6 +129,12 @@ export const importsStore = {
 
   cancel() {
     abort?.abort()
+  },
+
+  /** A view the server just answered with (a realignment asked): followed until it is done. */
+  replace(view: AerialImport) {
+    upsert(view)
+    schedulePoll()
   },
 
   async remove(viewId: number) {

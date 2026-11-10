@@ -7,6 +7,9 @@
 #          with the file's MD5: the conversion starts (AerialViewImportJob)
 #   GET    /maps/:map_id/aerial_views              the imports, to follow them
 #   DELETE /maps/:map_id/aerial_views/:id          removes an imported view
+#   POST   /maps/:map_id/aerial_views/:id/align     « Recaler la vue »: the
+#          landmark pairs ({ pairs: [{ from: [lng, lat], to: [lng, lat] }] });
+#          the view is cut again where it belongs (AerialViewRealignJob)
 #
 # and, for everyone who sees the map, `archive`: a short-lived link to the
 # view's PMTiles archive. Views staff set up by their address stay on
@@ -23,8 +26,8 @@ module Maps
     before_action :set_map
     before_action :set_mission, except: :archive
     before_action :require_editor!, except: :archive, unless: -> { @mission }
-    before_action :set_view, only: %i[complete destroy archive]
-    before_action :require_import!, only: %i[complete destroy]
+    before_action :set_view, only: %i[complete destroy archive align]
+    before_action :require_import!, only: %i[complete destroy align]
 
     LINK_LIFETIME = 10.minutes
     CHECKSUM = %r{\A[A-Za-z0-9+/]{22}==\z}
@@ -80,9 +83,16 @@ module Maps
       render json: { aerialView: json(@view) }
     end
 
+    def align
+      @view.request_alignment!(params.permit(pairs: [ from: [], to: [] ]).fetch(:pairs, []).map(&:to_h), by: Current.user)
+      render json: { aerialView: json(@view) }
+    rescue AerialViews::Alignment::Invalid => invalid
+      render json: { message: t("drone.align.errors.#{invalid.code}") }, status: :unprocessable_content
+    end
+
     # Not while the conversion runs: it would write to a view that is gone.
     def destroy
-      return render json: { message: t("drone.import.errors.busy") }, status: :conflict if @view.status == "processing"
+      return render json: { message: t("drone.import.errors.busy") }, status: :conflict if @view.status == "processing" || @view.pending_alignment
       upload = @view.source_upload
       @view.destroy!
       upload&.discard!
