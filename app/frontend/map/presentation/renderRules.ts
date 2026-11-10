@@ -19,10 +19,12 @@ export function isWorkingLayer(id: string): boolean {
 }
 
 /**
- * Feature layers (« Calques ») left out of the plan: notes, free zones and
- * lines are the designer's working marks, not the client's plan.
+ * Feature layers (« Calques ») left out of the plan: notes are the designer's
+ * working marks, not the client's plan. Free zones and lines (« Dessins ») stay
+ * when the map shows them: named, coloured zones are part of what a designer
+ * presents (« Verger, 20 ares »), and the person hides them in « Calques ».
  */
-export const RENDER_HIDDEN_LAYERS = ['notes', 'drawings']
+export const RENDER_HIDDEN_LAYERS = ['notes']
 
 /** The layers hidden on the map: the viewer's choice, plus the working marks while presenting the project. */
 export function renderHiddenLayers(hidden: string[], render: boolean): string[] {
