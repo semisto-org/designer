@@ -45,6 +45,31 @@ async function pdfThumbnail(file: File): Promise<Blob | null> {
   }
 }
 
+/** How long a send may go without any progress before it is given up. */
+export const STALL_MS = 90_000
+const READ_CHECK_MS = 20_000
+
+/**
+ * Whether the browser can read the file it was given. A file still in the
+ * cloud (Drive, OneDrive, iCloud… not downloaded on this computer), moved
+ * or deleted since it was picked can't be read: Firefox then sends nothing
+ * and waits forever. Reading its first byte tells at once.
+ */
+export async function fileReadable(file: File): Promise<boolean> {
+  if (file.size === 0) return true
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      file.slice(0, 1).arrayBuffer().then(() => true),
+      new Promise<boolean>((resolve) => { timer = setTimeout(() => resolve(false), READ_CHECK_MS) }),
+    ])
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 function csrfToken(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''
 }
@@ -66,12 +91,26 @@ function send(endpoint: string, form: FormData, file: File, onProgress: (percent
     xhr.open('POST', endpoint)
     xhr.setRequestHeader('Accept', 'application/json')
     xhr.setRequestHeader('X-CSRF-Token', csrfToken())
-    xhr.upload.onprogress = (event) => event.lengthComputable && onProgress(Math.round((event.loaded / event.total) * 100))
-    xhr.onerror = () => {
-      finish('lost')
-      reportUploadFailure({ endpoint, file, status: 0, reason: 'network' })
-      reject(new Error(t('documents.errors.upload_failed')))
+    // No progress at all for STALL_MS: the file is not going out (or the
+    // connection is dead). Give up, so the row says so and the next file goes.
+    let stalled = false
+    let watchdog = setTimeout(() => { stalled = true; xhr.abort() }, STALL_MS)
+    const alive = () => {
+      clearTimeout(watchdog)
+      watchdog = setTimeout(() => { stalled = true; xhr.abort() }, STALL_MS)
     }
+    xhr.upload.onprogress = (event) => {
+      alive()
+      if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100))
+    }
+    xhr.onloadend = () => clearTimeout(watchdog)
+    const lost = (reason: 'network' | 'stalled') => {
+      finish('lost')
+      reportUploadFailure({ endpoint, file, status: 0, reason })
+      reject(new Error(t(reason === 'stalled' ? 'documents.errors.upload_stalled' : 'documents.errors.upload_failed', { name: file.name })))
+    }
+    xhr.onerror = () => lost('network')
+    xhr.onabort = () => lost(stalled ? 'stalled' : 'network')
     xhr.onload = () => {
       let body: Record<string, unknown> = {}
       try {
@@ -110,6 +149,11 @@ export function useDocumentUploads(endpoint: string, limits: DocumentLimits, onS
       setUploads((list) => [...list, { key, name: file.name, status: rejected ? 'error' : 'uploading', progress: 0, message: rejected ?? undefined }])
       if (rejected) return
       queue.current = queue.current.then(async () => {
+        if (!(await fileReadable(file))) {
+          reportUploadFailure({ endpoint, file, status: 0, reason: 'unreadable' })
+          patch(key, { status: 'error', message: t('documents.errors.unreadable', { name: file.name }) })
+          return
+        }
         const form = new FormData()
         form.append('document[file]', file)
         Object.entries(fields).forEach(([name, value]) => {

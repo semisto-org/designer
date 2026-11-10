@@ -6,8 +6,12 @@ export type UploadFailure = {
   file: File
   /** HTTP status, 0 when the connection was lost. */
   status: number
-  /** network · refused (4xx/5xx) · redirected (signed out, sent elsewhere) · not_a_document (a 2xx without the saved document) */
-  reason: 'network' | 'refused' | 'redirected' | 'not_a_document'
+  /**
+   * unreadable (the browser can't read the file: still in the cloud, moved) ·
+   * stalled (no progress for minutes) · network · refused (4xx/5xx) ·
+   * redirected (sent elsewhere) · not_a_document (a 2xx without the saved document)
+   */
+  reason: 'unreadable' | 'stalled' | 'network' | 'refused' | 'redirected' | 'not_a_document'
   code?: string
 }
 
