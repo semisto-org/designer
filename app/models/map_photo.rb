@@ -65,10 +65,16 @@ class MapPhoto < ApplicationRecord
     attachable.variant :large, resize_to_limit: [ 1800, 1800 ], format: :jpeg, saver: { strip: true, quality: 85 }
   end
 
+  # A video's copy every browser plays (H.264 MP4), when its own file is not
+  # one: made by VideoPlaybackJob, played by the photo viewer (`playback`
+  # says what was found). Not counted in StorageUsage: Terranova adds it.
+  has_one_attached :playable
+
   converts_heic :image
   before_validation :set_kind, :normalize_heading, :record_checksum, :clear_location_source_without_location, :retake_the_first
   before_destroy :hand_series_over
   after_create_commit -> { PhotoCameraJob.perform_later(self) }, if: -> { image.attached? }
+  after_create_commit -> { VideoPlaybackJob.perform_later(self) }, if: -> { video? && image.attached? }
 
   validates :caption, length: { maximum: 500 }
   validates :source, inclusion: { in: SOURCES }
@@ -127,6 +133,9 @@ class MapPhoto < ApplicationRecord
 
   def video? = kind == "video"
 
+  # The file a video player reads: the H.264 copy when there is one.
+  def player_blob = playable.attached? ? playable.blob : image.blob
+
   # The still (photos) or still frame (videos) of a named size, ready to serve.
   def still(size) = image.representation(size)
 
@@ -174,6 +183,8 @@ class MapPhoto < ApplicationRecord
       # Active Storage trusts the declared type when the bytes say nothing
       # specific: look at the file's first bytes ourselves.
       detected = pending_upload_type
+      # A WebM file's first bytes only say Matroska, the container it is built on.
+      detected = "video/webm" if detected == "application/x-matroska" && blob.content_type == "video/webm"
       types = VIDEO_TYPES.include?(blob.content_type) ? VIDEO_TYPES : CONTENT_TYPES
       unless types.include?(blob.content_type) && (detected.nil? || types.include?(detected))
         errors.add(:base, I18n.t("soil_photos.errors.not_a_media", name:, types: I18n.t("soil_photos.errors.media_types_label")))

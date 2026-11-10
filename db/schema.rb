@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -716,6 +716,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_120000) do
     t.bigint "retake_of_id"
     t.bigint "drone_mission_id"
     t.bigint "soil_sample_id"
+    t.string "playback"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["drone_mission_id"], name: "index_map_photos_on_drone_mission_id"

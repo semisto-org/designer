@@ -198,10 +198,12 @@ module OfflineSite
                   "takenAt" => (photo.taken_at || photo.created_at).iso8601, "dated" => photo.taken_at.present?,
                   "lng" => photo.lng, "lat" => photo.lat }
         if photo.video?
-          return skip(label, original.byte_size) unless fits?(original.byte_size)
-          entry["file"] = "photos/#{stem}#{original.filename.extension_with_delimiter}"
-          add_blob(entry["file"], original)
-          @packed_bytes += original.byte_size
+          # The copy every browser plays, when the video has one.
+          video = photo.player_blob
+          return skip(label, video.byte_size) unless fits?(video.byte_size)
+          entry["file"] = "photos/#{stem}#{video.filename.extension_with_delimiter}"
+          add_blob(entry["file"], video)
+          @packed_bytes += video.byte_size
           @summary["videos"] += 1
         else
           # The photo as the app shows it (JPEG, 1800 px, no EXIF), then,
