@@ -78,6 +78,22 @@ fr:
       add_defaults: "Ajouter les tâches de Semisto"
       add_list: "Créer ma propre liste"
     add_defaults_again: "Ajouter les tâches de Semisto"
+    # The « + » at the end of a task's line: who takes it on, in one click.
+    picker:
+      assign: "Confier cette tâche à quelqu'un"
+      change: "Confiée à %{name} : changer"
+      title: "Qui s'en charge ?"
+      me: "Moi"
+      lead: "Project Manager"
+      viewer: "lecture"
+      search: "Chercher une personne"
+      nobody_found: "Personne de ce nom sur la carte."
+      unassign: "Ne la confier à personne"
+      groups:
+        crew: "L'équipe du projet"
+        map: "Sur la carte"
+        team: "Le reste de l'équipe"
+        invited: "Invité·es, pas encore arrivé·es"
     task:
       add: "Ajouter une tâche"
       add_placeholder: "Une tâche, puis Entrée"

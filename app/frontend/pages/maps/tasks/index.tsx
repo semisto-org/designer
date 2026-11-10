@@ -10,7 +10,8 @@ import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { relativeTime } from '@/lib/relativeTime'
 import { hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
-import { AssigneeBadge, assigneeKey, assigneeName, assigneeParams, CheckButton, DueBadge, FeatureChip, TagChip, TagEditor } from '@/tasks/parts'
+import { AssigneePicker } from '@/tasks/AssigneePicker'
+import { assigneeKey, assigneeName, assigneeParams, CheckButton, DueBadge, FeatureChip, TagChip, TagEditor } from '@/tasks/parts'
 import type { Board, Participant, TaskData, TaskListData } from '@/tasks/types'
 import type { CurrentUser } from '@/types'
 import type { BoardStep, StepKind } from '@/types/teamBoard'
@@ -73,6 +74,15 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
 
   const updateTask = (task: TaskData, attrs: Record<string, unknown>) =>
     run(api(`${base}/tasks/${task.id}`, { method: 'PATCH', body: { task: attrs } }))
+
+  // From the « + » at the end of a line: the avatar changes at once, the
+  // server's board follows (and puts it back if the change is refused).
+  function assign(task: TaskData, key: string) {
+    const person = participants.find((p) => assigneeKey(p) === key)
+    const next = person ? { id: person.id, email: person.email, name: person.name, avatarUrl: person.avatarUrl, invited: person.id == null || undefined } : undefined
+    setBoard((b) => ({ ...b, tasks: b.tasks.map((x) => (x.id === task.id ? { ...x, assignee: next } : x)) }))
+    void updateTask(task, assigneeParams(key))
+  }
 
   async function toggle(task: TaskData) {
     const done = !task.completedAt
@@ -251,6 +261,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
                   key={list.id} list={list} mapId={map.id} all={all} shown={shown} today={today} canEdit={canEdit}
                   filtering={filtering} first={index === 0} last={index === board.lists.length - 1} hiddenDone={showDone ? 0 : all.filter((x) => x.completedAt && matches(x)).length}
                   openId={openId} setOpenId={setOpenId} currentUserId={currentUser.id}
+                  participants={participants} onAssign={assign}
                   onToggle={(task) => void toggle(task)} onCreate={(title) => createTask(list, title)}
                   onRename={(name) => updateList(list, { name })} onMove={(delta) => void updateList(list, { position: index + delta })}
                   onDelete={() => deleteList(list, all.length)}
@@ -285,11 +296,12 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
 }
 
 function ListSection({
-  list, mapId, all, shown, today, canEdit, filtering, first, last, hiddenDone, openId, setOpenId, currentUserId,
+  list, mapId, all, shown, today, canEdit, filtering, first, last, hiddenDone, openId, setOpenId, currentUserId, participants, onAssign,
   onToggle, onCreate, onRename, onMove, onDelete, dragId, setDragId, onDrop, renderDetail,
 }: {
   list: TaskListData; mapId: number; all: TaskData[]; shown: TaskData[]; today: string; canEdit: boolean; filtering: boolean; first: boolean; last: boolean; hiddenDone: number
   openId: number | null; setOpenId: (id: number | null) => void; currentUserId: number
+  participants: Participant[]; onAssign: (task: TaskData, key: string) => void
   onToggle: (task: TaskData) => void; onCreate: (title: string) => Promise<boolean>
   onRename: (name: string) => Promise<boolean>; onMove: (delta: number) => void; onDelete: () => void
   dragId: number | null; setDragId: (id: number | null) => void; onDrop: (e: DragEvent, index: number) => void
@@ -387,6 +399,7 @@ function ListSection({
             <TaskRow
               task={task} mapId={mapId} today={today} open={openId === task.id} canEdit={canEdit}
               canTick={canEdit || task.assignee?.id === currentUserId}
+              participants={participants} currentUserId={currentUserId} onAssign={(key) => onAssign(task, key)}
               onToggle={() => onToggle(task)} onOpen={() => setOpenId(openId === task.id ? null : task.id)}
               onDragStart={() => setDragId(task.id)} onDragEnd={() => setDragId(null)}
             />
@@ -413,9 +426,10 @@ function MenuItem({ icon: Icon, label, onClick, danger }: { icon: typeof Pencil;
 /** Elements shown on a task's line; the rest are counted (all of them in its detail). */
 const MAX_FEATURE_CHIPS = 6
 
-function TaskRow({ task, mapId, today, open, canEdit, canTick, onToggle, onOpen, onDragStart, onDragEnd }: {
+function TaskRow({ task, mapId, today, open, canEdit, canTick, participants, currentUserId, onToggle, onOpen, onAssign, onDragStart, onDragEnd }: {
   task: TaskData; mapId: number; today: string; open: boolean; canEdit: boolean; canTick: boolean
-  onToggle: () => void; onOpen: () => void; onDragStart: () => void; onDragEnd: () => void
+  participants: Participant[]; currentUserId: number
+  onToggle: () => void; onOpen: () => void; onAssign: (key: string) => void; onDragStart: () => void; onDragEnd: () => void
 }) {
   const done = !!task.completedAt
   return (
@@ -456,10 +470,9 @@ function TaskRow({ task, mapId, today, open, canEdit, canTick, onToggle, onOpen,
             )}
           </div>
         )}
-        {(task.tags.length > 0 || task.dueOn || task.assignee || task.features) && (
+        {(task.tags.length > 0 || task.dueOn || task.features) && (
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {task.dueOn && <DueBadge due={task.dueOn} today={today} done={done} />}
-            {task.assignee && <AssigneeBadge name={assigneeName(task.assignee)} url={task.assignee.avatarUrl} withName />}
             {task.features?.slice(0, MAX_FEATURE_CHIPS).map((f) => <FeatureChip key={f.id} mapId={mapId} feature={f} />)}
             {task.features && task.features.length > MAX_FEATURE_CHIPS && (
               <span className="text-sm text-loam-500">{t('tasks.task.more_features', { count: task.features.length - MAX_FEATURE_CHIPS })}</span>
@@ -468,6 +481,9 @@ function TaskRow({ task, mapId, today, open, canEdit, canTick, onToggle, onOpen,
           </div>
         )}
       </div>
+      {!done || task.assignee ? (
+        <AssigneePicker assignee={task.assignee} participants={participants} currentUserId={currentUserId} canEdit={canEdit} onAssign={onAssign} />
+      ) : null}
     </div>
   )
 }
