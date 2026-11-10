@@ -41,8 +41,13 @@ export type Board = { lists: TaskListData[]; tasks: TaskData[]; seeded?: boolean
  */
 export type Assignee = { id?: number; email?: string; name: string; avatarUrl?: string; invited?: boolean }
 
-/** Someone a task can be given to; invitees have an `email` and no `id`. */
-export type Participant = { id?: number; email?: string; name: string; role: string }
+/**
+ * Someone a task can be given to; invitees have an `email` and no `id`.
+ * `group` says where the picker shows them (TaskBoard#participants): the
+ * project's team (`crew`, `lead` for its Project Manager), the people of the
+ * map itself (`map`, viewers included), the rest of the team (`team`).
+ */
+export type Participant = { id?: number; email?: string; name: string; role: string; group?: 'crew' | 'map' | 'team'; avatarUrl?: string; lead?: boolean }
 
 /** A task on the cross-map page, with its map and list. */
 export type TaskWithMap = TaskData & { map: { id: number; name: string }; listName: string }

@@ -91,6 +91,21 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     assert_equal [ task.id ], data["tasks"].map { _1["id"] }
   end
 
+  test "list_tasks says who is on the project's team, and « nobody » leaves out tasks waiting for an invitee" do
+    team = make_team("Design Labs", admin: users(:michael), members: [ users(:bob) ])
+    @map.update!(organization: team)
+    @map.update_board!(lead_id: users(:bob).id)
+    @map.invitations.create!(email_address: "dana@example.org", role: "editor", invited_by: users(:michael))
+    TaskList::Defaults.seed!(@map)
+    waiting = @map.tasks.first
+    waiting.update!(invitee_email: "dana@example.org")
+
+    data, = call_tool(@owner, "list_tasks", { map_id: @map.id, assignee: "nobody" })
+    refute_includes data["tasks"].map { _1["id"] }, waiting.id
+    assert_equal [ "crew", "map", "team", nil ], data["participants"].map { _1["group"] }
+    assert data["participants"].first["lead"]
+  end
+
   test "create_tasks writes tasks in a list found or made by name, and e-mails the person given one" do
     TaskList::Defaults.seed!(@map)
     first = @map.task_lists.first
