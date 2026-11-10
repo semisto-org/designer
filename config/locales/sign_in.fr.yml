@@ -7,6 +7,7 @@ fr:
     link_sent: "Un lien et un code de connexion ont été envoyés à %{email}."
     invalid_email: "Cette adresse e-mail ne semble pas valide."
     signed_in: "Tu es connecté."
+    signed_out: "Tu n'es plus connecté sur ce navigateur : rien n'a été enregistré. Recharge la page pour te reconnecter, puis réessaie."
     link_expired: "Ce lien a expiré ou a déjà servi. Demandes-en un nouveau."
     code_invalid: "Ce code n'est pas le bon, ou il a expiré. Vérifie-le, ou demande un nouvel e-mail."
     password_invalid: "Adresse e-mail ou mot de passe incorrect."

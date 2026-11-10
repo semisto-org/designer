@@ -12,7 +12,7 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
 
   test "requires sign in" do
     get map_photos_path(@map), headers: json_headers
-    assert_redirected_to new_session_path
+    assert_response :unauthorized
   end
 
   test "someone outside the map gets nothing" do

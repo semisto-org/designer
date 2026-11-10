@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import { trackWrite, writeOutcome } from '@/lib/saveStatus'
 import { formatMegabytes } from '@/map/photos/format'
+import { reportUploadFailure } from '@/documents/uploadFailure'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
 
 export type DocumentUpload = {
@@ -44,11 +45,45 @@ async function pdfThumbnail(file: File): Promise<Blob | null> {
   }
 }
 
+/** How long a send may go without any progress before it is given up. */
+export const STALL_MS = 90_000
+const READ_CHECK_MS = 20_000
+
+/**
+ * Whether the browser can read the file it was given. A file still in the
+ * cloud (Drive, OneDrive, iCloud… not downloaded on this computer), moved
+ * or deleted since it was picked can't be read: Firefox then sends nothing
+ * and waits forever. Reading its first byte tells at once.
+ */
+export async function fileReadable(file: File): Promise<boolean> {
+  if (file.size === 0) return true
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      file.slice(0, 1).arrayBuffer().then(() => true),
+      new Promise<boolean>((resolve) => { timer = setTimeout(() => resolve(false), READ_CHECK_MS) }),
+    ])
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 function csrfToken(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''
 }
 
-function send(endpoint: string, form: FormData, onProgress: (percent: number) => void): Promise<MapDocumentData> {
+/**
+ * A 2xx is a saved document only if it says so: a redirect (to the sign-in
+ * page, say) is followed by the browser and also ends in a 200, whose HTML
+ * body is no document at all.
+ */
+export function isSavedDocument(body: unknown): body is MapDocumentData {
+  return typeof body === 'object' && body !== null && typeof (body as { id?: unknown }).id === 'number'
+}
+
+function send(endpoint: string, form: FormData, file: File, onProgress: (percent: number) => void): Promise<MapDocumentData> {
   // Counted by the editor header's « Enregistré » until the file has arrived.
   const finish = trackWrite()
   return new Promise((resolve, reject) => {
@@ -56,21 +91,40 @@ function send(endpoint: string, form: FormData, onProgress: (percent: number) =>
     xhr.open('POST', endpoint)
     xhr.setRequestHeader('Accept', 'application/json')
     xhr.setRequestHeader('X-CSRF-Token', csrfToken())
-    xhr.upload.onprogress = (event) => event.lengthComputable && onProgress(Math.round((event.loaded / event.total) * 100))
-    xhr.onerror = () => {
-      finish('lost')
-      reject(new Error(t('documents.errors.upload_failed')))
+    // No progress at all for STALL_MS: the file is not going out (or the
+    // connection is dead). Give up, so the row says so and the next file goes.
+    let stalled = false
+    let watchdog = setTimeout(() => { stalled = true; xhr.abort() }, STALL_MS)
+    const alive = () => {
+      clearTimeout(watchdog)
+      watchdog = setTimeout(() => { stalled = true; xhr.abort() }, STALL_MS)
     }
+    xhr.upload.onprogress = (event) => {
+      alive()
+      if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100))
+    }
+    xhr.onloadend = () => clearTimeout(watchdog)
+    const lost = (reason: 'network' | 'stalled') => {
+      finish('lost')
+      reportUploadFailure({ endpoint, file, status: 0, reason })
+      reject(new Error(t(reason === 'stalled' ? 'documents.errors.upload_stalled' : 'documents.errors.upload_failed', { name: file.name })))
+    }
+    xhr.onerror = () => lost('network')
+    xhr.onabort = () => lost(stalled ? 'stalled' : 'network')
     xhr.onload = () => {
-      finish(writeOutcome(xhr.status))
       let body: Record<string, unknown> = {}
       try {
         body = JSON.parse(xhr.responseText)
       } catch {
-        // Not JSON (proxy error page): the status says enough.
+        // Not JSON (proxy error page, sign-in page after a redirect): the status says the rest.
       }
-      if (xhr.status >= 200 && xhr.status < 300) resolve(body as unknown as MapDocumentData)
-      else reject(new Error(typeof body.message === 'string' ? body.message : t('documents.errors.upload_failed')))
+      const saved = xhr.status >= 200 && xhr.status < 300 && isSavedDocument(body)
+      // A 2xx that is not a document saved nothing: the header must not say « Enregistré ».
+      finish(saved ? 'ok' : xhr.status >= 300 ? writeOutcome(xhr.status) : 'lost')
+      if (saved) return resolve(body as MapDocumentData)
+      const redirected = xhr.responseURL !== '' && new URL(xhr.responseURL).pathname !== new URL(endpoint, window.location.href).pathname
+      reportUploadFailure({ endpoint, file, status: xhr.status, reason: redirected ? 'redirected' : xhr.status < 300 ? 'not_a_document' : 'refused', code: typeof body.code === 'string' ? body.code : undefined })
+      reject(new Error(typeof body.message === 'string' ? body.message : t('documents.errors.upload_failed')))
     }
     xhr.send(form)
   })
@@ -95,6 +149,11 @@ export function useDocumentUploads(endpoint: string, limits: DocumentLimits, onS
       setUploads((list) => [...list, { key, name: file.name, status: rejected ? 'error' : 'uploading', progress: 0, message: rejected ?? undefined }])
       if (rejected) return
       queue.current = queue.current.then(async () => {
+        if (!(await fileReadable(file))) {
+          reportUploadFailure({ endpoint, file, status: 0, reason: 'unreadable' })
+          patch(key, { status: 'error', message: t('documents.errors.unreadable', { name: file.name }) })
+          return
+        }
         const form = new FormData()
         form.append('document[file]', file)
         Object.entries(fields).forEach(([name, value]) => {
@@ -106,7 +165,7 @@ export function useDocumentUploads(endpoint: string, limits: DocumentLimits, onS
           if (thumb) form.append('document[thumbnail]', thumb, 'apercu.jpg')
         }
         try {
-          const saved = await send(endpoint, form, (progress) => patch(key, { progress }))
+          const saved = await send(endpoint, form, file, (progress) => patch(key, { progress }))
           setUploads((list) => list.filter((u) => u.key !== key))
           onSaved(saved)
         } catch (error) {

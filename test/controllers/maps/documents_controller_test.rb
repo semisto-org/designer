@@ -24,11 +24,25 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "requires sign in, and someone outside the map gets nothing" do
-    get map_documents_path(@map), headers: json_headers
+    get map_documents_path(@map)
     assert_redirected_to new_session_path
+    get map_documents_path(@map), headers: json_headers
+    assert_response :unauthorized
+    assert_equal "signed_out", response.parsed_body["code"]
     sign_in_as users(:bob)
     get map_documents_path(@map), headers: json_headers
     assert_response :not_found
+  end
+
+  # Signed out in another tab: the upload must fail out loud. A redirect to
+  # the sign-in page was followed by the browser and read as a success.
+  test "an upload from a signed-out browser is refused as signed out, not redirected" do
+    assert_no_difference -> { MapDocument.count } do
+      post map_documents_path(@map), params: { document: { file: fixture_file_upload("rapport_labo.pdf", "application/pdf") } },
+        headers: { "Accept" => "application/json" }
+    end
+    assert_response :unauthorized
+    assert_equal I18n.t("sessions.signed_out"), response.parsed_body["message"]
   end
 
   test "the library page lists the documents for a viewer, read-only" do

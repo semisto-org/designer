@@ -7,7 +7,7 @@ class FeedbacksControllerTest < ActionDispatch::IntegrationTest
 
   test "requires sign in" do
     post feedback_path, params: { feedback: { message: "Bonjour" } }, as: :json
-    assert_response :redirect
+    assert_response :unauthorized
     assert_equal 0, Feedback.count
   end
 
