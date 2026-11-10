@@ -535,6 +535,26 @@ Rails.application.routes.draw do
   end
   # --- end teams ---
 
+  # --- territories ---
+  # « Territoires »: a commune read whole (the module Semisto grants a team),
+  # its dossier and the « carnet du territoire ».
+  get "territories/communes", to: "territories#communes_search", as: :territory_communes
+  resources :territories, only: %i[index create show update] do
+    member do
+      post :archive
+      post :unarchive
+      get :notebook
+    end
+    resources :items, only: %i[create update destroy], controller: "territories/items" do
+      member do
+        post :accept
+        post :reject
+        get :file
+      end
+    end
+  end
+  # --- end territories ---
+
   # --- dossier ---
   # The printable project dossier (page and its JSON).
   resources :maps, only: [] do
@@ -641,6 +661,8 @@ Rails.application.routes.draw do
     post "plan-gifts", to: "plan_gifts#create_all", as: :plan_gifts
     post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
+    # « Équipes »: every team and the modules Semisto grants it (« Territoire »).
+    resources :teams, only: %i[index update]
     # « Carnets ouverts »: the maps the public site's gallery shows.
     resources :gallery, only: %i[index update]
     get "tech", to: "tech#show", as: :tech
