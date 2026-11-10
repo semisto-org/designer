@@ -137,6 +137,7 @@ module Mcp
             version: publication.version, published_at: publication.published_at.iso8601,
             unpublished_at: publication.unpublished_at&.iso8601, stale: publication.stale?,
             shown_layers: publication.options["feature_layers"], hides_address: publication.options["hide_address"],
+            shows_growth: publication.options.fetch("show_growth", true) != false,
             views: publication.views_count, places_tried: publication.trials.count, gardens_started: publication.sourced_users.count,
             note: t("notes.publication")
           }.compact

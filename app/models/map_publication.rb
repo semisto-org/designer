@@ -49,6 +49,9 @@ class MapPublication < ApplicationRecord
       "show_aerial_view" => flag.call("show_aerial_view", false),
       # The sector analysis around the terrain (sun, winds, views…), to present the design.
       "show_sectors" => flag.call("show_sectors", false),
+      # The years bar and the garden growing on arrival. A planting plan
+      # for a commune is read as it is: the owner can turn it off.
+      "show_growth" => flag.call("show_growth", true),
       # The owner's consent to « Carnets ouverts » on the public site.
       "in_gallery" => flag.call("in_gallery", false)
     }
@@ -202,6 +205,7 @@ class MapPublication < ApplicationRecord
         regionName: data.dig("region", "name"), locality:
       },
       growth: snapshot["growth"],
+      showGrowth: options.fetch("show_growth", true) != false,
       sectors: snapshot["sectors"],
       features: { type: "FeatureCollection", features: features },
       layers: region_layers.map { |layer| public_layer(layer) },
