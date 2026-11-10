@@ -411,7 +411,7 @@ hex-color	1	app/frontend/pages/teams/forms.tsx
 native-confirm	3	app/frontend/pages/teams/forms.tsx
 small-text	1	app/frontend/pages/teams/index.tsx
 bare-button	3	app/frontend/pages/teams/show.tsx
-hex-color	2	app/frontend/pages/teams/show.tsx
+hex-color	1	app/frontend/pages/teams/show.tsx
 native-confirm	5	app/frontend/pages/teams/show.tsx
 small-text	9	app/frontend/pages/teams/show.tsx
 bare-button	1	app/frontend/pages/welcomes/show.tsx

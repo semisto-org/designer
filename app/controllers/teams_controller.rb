@@ -10,6 +10,14 @@ class TeamsController < ApplicationController
   before_action :set_team, only: %i[show update destroy]
   before_action :require_team_admin!, only: %i[update destroy]
 
+  # « Équipe » in the main menu: straight to the board of the team opened
+  # last (the first one joined before any visit); « Mes équipes » without one.
+  def home
+    membership = Current.user.organization_memberships
+      .order(Arel.sql("board_opened_at DESC NULLS LAST"), :created_at, :id).first
+    redirect_to membership ? team_board_path(membership.organization_id) : teams_path
+  end
+
   def index
     memberships = Current.user.organization_memberships.includes(:organization).to_a
     ids = memberships.map(&:organization_id)
@@ -48,7 +56,7 @@ class TeamsController < ApplicationController
     name = @team.name
     @team.destroy!
     Organization.purge_lost_access(users:, maps:)
-    redirect_to teams_path, notice: t("teams.deleted", name:), status: :see_other
+    redirect_to team_home_path, notice: t("teams.deleted", name:), status: :see_other
   end
 
   private

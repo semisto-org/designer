@@ -16,10 +16,10 @@ Un bureau d'études, une association, un groupe en formation : quand plusieurs p
 
 ## Créer une équipe et inviter
 
-1. Depuis *Mon compte*, ouvre **Équipes** puis donne un nom à ton équipe. Tu en es l'administrateur.
-2. Sur la page de l'équipe, invite tes collègues par adresse e-mail. Chacun reçoit un lien valable 30 jours ; il se connecte (avec Google ou un lien par e-mail) et rejoint l'équipe.
+1. Depuis *Mon compte*, ouvre **Équipes** puis donne un nom à ton équipe. Tu en es l'administrateur. Déjà dans une équipe ? Clique sur son nom, en haut de son tableau, puis **Nouvelle équipe**.
+2. Sur la page des paramètres de l'équipe, invite tes collègues par adresse e-mail. Chacun reçoit un lien valable 30 jours ; il se connecte (avec Google ou un lien par e-mail) et rejoint l'équipe.
 
-Une fois membre d'une équipe, le lien **Équipes** apparaît dans le menu principal.
+Une fois membre d'une équipe, le lien **Équipe** apparaît dans le menu principal. Il ouvre directement le [tableau de l'équipe](/help/tableau-de-l-equipe), celui de la dernière équipe que tu as ouverte si tu en as plusieurs. Le nom de l'équipe, en haut à gauche, te fait passer à une autre ; **Paramètres de l'équipe**, en haut à droite, mène aux membres, aux invitations, aux cartes et au forfait.
 
 ## Deux rôles dans l'équipe
 

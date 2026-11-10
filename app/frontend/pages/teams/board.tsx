@@ -1,8 +1,9 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowLeft } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
+import { ButtonLink } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { BoardContext, patchProject, type BoardContextValue, type NextStep, type ProjectChange } from '@/team_board/board'
 import { Frieze } from '@/team_board/Frieze'
@@ -10,6 +11,7 @@ import { People } from '@/team_board/People'
 import { Places } from '@/team_board/Places'
 import { Requests } from '@/team_board/Requests'
 import { Season } from '@/team_board/Season'
+import { TeamSwitcher } from '@/team_board/TeamSwitcher'
 import type { BoardProject, TeamBoardProps } from '@/types/teamBoard'
 
 type Toast = { id: number; message: string; tone: 'info' | 'error' }
@@ -85,12 +87,16 @@ export default function TeamBoard(props: TeamBoardProps) {
         <Head title={`${t('team_board.title')} · ${team.name}`} />
 
         <header className="space-y-4">
+          {/* The team (and the others, one click away) on the left; its settings, rarely needed, on the right. */}
           <div className="flex items-center justify-between gap-3">
-            <Link href={`/teams/${team.id}`} className="inline-flex items-center gap-1.5 text-sm text-loam-500 hover:text-loam-900">
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              {t('team_board.back')}
-            </Link>
-            <HelpButton slug="tableau-de-l-equipe" />
+            <TeamSwitcher current={team} teams={props.myTeams} />
+            <div className="flex shrink-0 items-center gap-1">
+              <ButtonLink href={`/teams/${team.id}`} variant="ghost" size="sm">
+                <Settings className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only sm:not-sr-only">{t('team_board.settings')}</span>
+              </ButtonLink>
+              <HelpButton slug="tableau-de-l-equipe" />
+            </div>
           </div>
           <h1 className="font-serif text-4xl leading-tight text-loam-900 sm:text-5xl">{t('team_board.title')}</h1>
         </header>

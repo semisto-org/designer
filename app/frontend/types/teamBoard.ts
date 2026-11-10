@@ -70,4 +70,6 @@ export type TeamBoardProps = {
   places: BoardProject[]
   steps: BoardStep[]
   people: BoardMemberLoad[]
+  /** Every team I belong to, for the switcher at the top. */
+  myTeams: { id: number; name: string }[]
 }

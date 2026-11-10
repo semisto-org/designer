@@ -384,7 +384,7 @@ function appPages(user: TeamAwareUser | null): SwitcherPage[] {
     { key: 'maps', label: t('nav.maps'), href: '/maps', keywords: t('quick_switcher.keywords.maps') },
     { key: 'new_map', label: t('maps.index.new'), href: '/maps/new', keywords: t('quick_switcher.keywords.new_map') },
     { key: 'tasks', label: t('tasks.nav'), href: '/tasks', keywords: t('quick_switcher.keywords.tasks') },
-    ...(user.teamsCount ? [{ key: 'teams', label: t('teams.nav'), href: '/teams', keywords: t('quick_switcher.keywords.teams') }] : []),
+    ...(user.teamsCount ? [{ key: 'teams', label: t('teams.nav'), href: '/team', keywords: t('quick_switcher.keywords.teams') }] : []),
     ...(user.newRequests != null ? [{ key: 'requests', label: t('request_forms.nav'), href: '/request_forms' }] : []),
     { key: 'plants', label: t('nav.plants'), href: '/plants', keywords: t('quick_switcher.keywords.plants') },
     { key: 'help', label: t('nav.help'), href: '/help', keywords: t('quick_switcher.keywords.help') },

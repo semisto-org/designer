@@ -26,7 +26,7 @@ module Teams
       end
 
       if leaving
-        redirect_to teams_path, notice: t("teams.members.left", name: @team.name), status: :see_other
+        redirect_to team_home_path, notice: t("teams.members.left", name: @team.name), status: :see_other
       else
         redirect_to team_path(@team), notice: t("teams.members.removed", name: @membership.user.display_name), status: :see_other
       end
