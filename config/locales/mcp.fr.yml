@@ -241,6 +241,7 @@ fr:
           expense_paid_by: "rebilled (refacturée au client), team (à charge de l'équipe), client (payée par le client) ou designer (avancée par un designer)."
           expense_supplier: "Le fournisseur : pépinière, scierie, magasin…"
           expense_note: "Une précision utile."
+          time_phase: "La phase du projet où la dépense compte : commercial, pre_design, design ou implementation (mise en œuvre)."
       record_harvests:
         title: "Noter des récoltes"
         description: "Note des lignes dans le carnet de récolte, directement (ce ne sont pas des brouillons), quand la personne te dit ce qu'elle a vu ou cueilli : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Chaque ligne vaut pour un ou plusieurs plants, désignés par feature_ids ou par leur numéro sur le plan (numbers, comme « 9.1 ») ; tous ses plants doivent exister, sinon la ligne est refusée avec sa raison. stage on_tree : les fruits vus sur l'arbre, amount obligatoire (none pour un arbre sans fruits) ; stage picked : la récolte, amount facultatif (jamais none), uses et quantity_kg facultatifs. N'invente rien : ne note que ce que la personne a dit, et demande la date si elle ne la donne pas. 50 lignes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte."
