@@ -5,7 +5,7 @@ category: Partager et collaborer
 order: 74
 ---
 
-Le tableau de l'équipe sert à la réunion opérationnelle : on le lit de haut en bas, en une demi-heure. Tu l'ouvres depuis la page de ton équipe, « Tableau de l'équipe ». Tous les membres de l'équipe le voient et le modifient.
+Le tableau de l'équipe sert à la réunion opérationnelle : on le lit de haut en bas, en une demi-heure. Tu l'ouvres d'un clic sur **Équipe**, dans le menu principal : il s'ouvre sur la dernière équipe où tu étais, et son nom, en haut à gauche, te fait passer à une autre. Tous les membres de l'équipe le voient et le modifient.
 
 ## Les nouvelles demandes, d'abord
 

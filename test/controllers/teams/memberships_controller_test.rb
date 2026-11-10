@@ -64,7 +64,7 @@ class Teams::MembershipsControllerTest < ActionDispatch::IntegrationTest
     CommentSubscription.subscribe(@member, map)
     sign_in_as @member
     delete team_membership_path(@team, @member_membership)
-    assert_redirected_to teams_path
+    assert_redirected_to team_home_path
     assert_equal I18n.t("teams.members.left", name: @team.name), flash[:notice]
     assert_nil map.role_for(@member)
     assert_not CommentSubscription.exists?(user: @member, commentable: map)
@@ -82,7 +82,7 @@ class Teams::MembershipsControllerTest < ActionDispatch::IntegrationTest
 
     @member_membership.update!(role: "admin")
     delete team_membership_path(@team, @admin_membership)
-    assert_redirected_to teams_path
+    assert_redirected_to team_home_path
     assert_not @team.member?(@admin)
   end
 

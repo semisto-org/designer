@@ -21,9 +21,12 @@ fr:
   team_board:
     nav: "Tableau"
     title: "Tableau de l'équipe"
-    open: "Tableau de l'équipe"
-    open_hint: "Les nouvelles demandes, les projets de l'équipe sur une frise et la saison qui vient."
-    back: "Retour à l'équipe"
+    settings: "Paramètres de l'équipe"
+    switcher:
+      open: "Changer d'équipe"
+      title: "Mes équipes"
+      current: "Équipe ouverte"
+      create: "Nouvelle équipe"
     follow_up_list: "Suivi du projet"
     season_list: "Calendrier de la saison"
     phases:

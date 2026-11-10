@@ -491,6 +491,8 @@ Rails.application.routes.draw do
   # Teams ("équipes"): members edit every map of the team. The invitation
   # link comes first so "invitations" is never read as a team id.
   get "teams/invitations/:token", to: "team_invitations#show", as: :accept_team_invitation
+  # The main menu's « Équipe »: the board of the team I opened last.
+  get "team", to: "teams#home", as: :team_home
   resources :teams, only: %i[index create show update destroy] do
     scope module: :teams do
       resources :memberships, only: %i[update destroy]
