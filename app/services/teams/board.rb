@@ -15,9 +15,6 @@ module Teams
     LOAD_DAYS = 28
     # Projects in these phases no longer count in a member's load.
     SETTLED_PHASES = %w[co_management completed].freeze
-    # Bare-root planting: 1 November to the end of February.
-    PLANTING_OPENS = [ 11, 1 ].freeze
-    PLANTING_CLOSES = [ 2, -1 ].freeze
 
     def initialize(team, user, today: Date.current)
       @team = team
@@ -29,7 +26,7 @@ module Teams
       {
         team: { id: @team.id, name: @team.name, role: @team.role_for(@user) },
         today: @today.iso8601,
-        season: season_json,
+        season: SeasonSteps.window_json(@today),
         requestForm: form && { id: form.id, slug: form.slug, active: form.active },
         requests: requests.map { |r| request_json(r) },
         **settings,
@@ -48,10 +45,7 @@ module Teams
       { members: members_json, phases: MapBoard::PHASES, closedReasons: MapBoard::CLOSED_REASONS, stepKinds: Task::STEP_KINDS }
     end
 
-    def self.step_json(task)
-      { id: task.id, mapId: task.map_id, kind: task.step_kind, title: task.title,
-        startsOn: task.starts_on.iso8601, dueOn: task.due_on.iso8601, done: task.done?, forecast: task.forecast }
-    end
+    def self.step_json(task) = SeasonSteps.json(task)
 
     private
       def form = defined?(@form) ? @form : (@form = RequestForm.find_by(owner: @team))
@@ -118,32 +112,10 @@ module Teams
 
       # The steps drawn on the twelve months from the start of this month.
       def steps
-        from = @today.beginning_of_month
-        @steps ||= Task.steps.where(map_id: ids).where(due_on: from..).where(starts_on: ..(from + 12.months))
-                       .order(:starts_on, :id).to_a
+        @steps ||= SeasonSteps.coming(ids, @today).to_a
       end
 
-      def step_json(task) = self.class.step_json(task)
-
-      # This season's or the coming season's planting window.
-      def season
-        @season ||= begin
-          closes_this_year = Date.new(@today.year, *PLANTING_CLOSES)
-          if @today <= closes_this_year
-            Date.new(@today.year - 1, *PLANTING_OPENS)..closes_this_year
-          else
-            Date.new(@today.year, *PLANTING_OPENS)..Date.new(@today.year + 1, *PLANTING_CLOSES)
-          end
-        end
-      end
-
-      def season_json
-        in_season = season.cover?(@today)
-        {
-          opensOn: season.begin.iso8601, closesOn: season.end.iso8601, inSeason: in_season,
-          weeks: ((in_season ? season.end - @today : season.begin - @today).to_i / 7.0).ceil
-        }
-      end
+      def step_json(task) = SeasonSteps.json(task)
 
       def request_json(r)
         {

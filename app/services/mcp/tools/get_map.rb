@@ -54,6 +54,7 @@ module Mcp
           presentations: presentations(map),
           publication: publication(map),
           implementation: implementation(map),
+          season: season(map),
           team_season: team_season(map),
           team_project: team_project(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
@@ -228,21 +229,28 @@ module Mcp
           }
         end
 
-        # A team project on the team board: its stage and the steps of
-        # « La saison qui vient » from the start of this month, forecasts
-        # (an offer not signed yet) included. nil off a team or for its places.
-        def team_season(map)
-          return nil unless map.organization_id && !map.own_place
-          from = Date.current.beginning_of_month
-          steps = map.tasks.steps.where(due_on: from..).order(:starts_on)
+        # The project's season steps (SeasonSteps: design, work site,
+        # planting) from the start of this month, forecasts (an offer not
+        # signed yet) included, as the frieze of its « Tâches » page draws
+        # them, with the bare-root planting window.
+        def season(map)
+          window = SeasonSteps.window
           {
-            stage: map.board_phase, promised_on: map.promised_on&.iso8601,
-            board_url: "#{origin}/teams/#{map.organization_id}/board",
-            steps: steps.map do |task|
+            tasks_url: "#{map_url(map)}/tasks",
+            planting_window: { opens_on: window.begin.iso8601, closes_on: window.end.iso8601 },
+            steps: map.tasks.steps.where(due_on: Date.current.beginning_of_month..).order(:starts_on, :id).map do |task|
               { task_id: task.id, kind: task.step_kind, title: task.title, starts_on: task.starts_on.iso8601,
                 ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
             end
           }
+        end
+
+        # A team project on the team board: its stage, the date promised to
+        # the client and the board, whose « La saison qui vient » draws the
+        # same steps as `season`. nil off a team or for its places.
+        def team_season(map)
+          return nil unless map.organization_id && !map.own_place
+          { stage: map.board_phase, promised_on: map.promised_on&.iso8601, board_url: "#{origin}/teams/#{map.organization_id}/board" }
         end
 
         # What the team reads about the project before opening its map (the

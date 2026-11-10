@@ -16,7 +16,10 @@ export type TaskData = {
   /** For a default task: whether the map already shows it done (Journey). */
   mapSaysDone?: boolean
   dueOn?: string
-  /** A season step of the team board pencilled in before the offer is signed. */
+  /** A season step (design, work site, planting) starts on this day too. */
+  startsOn?: string
+  stepKind?: 'design' | 'site' | 'plant'
+  /** A season step pencilled in before the offer is signed. */
   forecast?: boolean
   assignee?: Assignee
   completedAt?: string
