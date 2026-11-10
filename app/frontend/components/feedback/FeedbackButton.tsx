@@ -1,14 +1,24 @@
 import { MessageCircleHeart } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { IconButton } from '@/components/ui/IconButton'
 import { openFeedback } from '@/components/feedback/openFeedback'
+import { STEPS_ASIDE_FOR_PAGE_BAR } from '@/components/MyBar'
 import { t } from '@/lib/i18n'
 
-/** « Un retour ? » in a header (the app's, the editor's): opens FeedbackDialog. */
-export function FeedbackButton() {
+/**
+ * « Un retour ? » as a round button: floating at the bottom right of the
+ * app's pages (`floating`), or in the map editor's header, where a floating
+ * circle would cover the map's own controls. Opens FeedbackDialog.
+ */
+export function FeedbackButton({ floating = false }: { floating?: boolean }) {
   return (
-    <Button variant="ghost" size="sm" onClick={openFeedback} aria-haspopup="dialog" title={t('feedback.button')} className="shrink-0">
-      <MessageCircleHeart className="h-4 w-4" aria-hidden />
-      <span className="sr-only sm:not-sr-only">{t('feedback.button')}</span>
-    </Button>
+    <IconButton
+      label={t('feedback.button')}
+      tone="prune"
+      onClick={openFeedback}
+      aria-haspopup="dialog"
+      className={floating ? 'fixed bottom-4 right-4 z-40 h-12 w-12 bg-white shadow-lg ring-1 ring-loam-900/10 hover:bg-prune-50 sm:bottom-5 sm:right-6 print:hidden [&_svg]:h-6 [&_svg]:w-6 ' + STEPS_ASIDE_FOR_PAGE_BAR : undefined}
+    >
+      <MessageCircleHeart />
+    </IconButton>
   )
 }

@@ -46,7 +46,7 @@ function Toaster() {
   }, [])
   const dismiss = (id: number) => setItems((list) => list.filter((i) => i.id !== id))
   return (
-    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-16 z-[90] flex flex-col items-center gap-2 px-4 md:bottom-8">
+    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-24 z-[90] flex flex-col items-center gap-2 px-4">
       {items.map((item) => <Slip key={item.id} item={item} onDismiss={() => dismiss(item.id)} />)}
     </div>
   )
