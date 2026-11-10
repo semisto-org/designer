@@ -1,10 +1,11 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowRight, CalendarCheck, ExternalLink, Moon, MoreHorizontal, RotateCcw, Settings2, Trees } from 'lucide-react'
+import { ArrowRight, CalendarCheck, ChevronDown, ChevronsLeft, ChevronsRight, ChevronUp, ExternalLink, Moon, MoreHorizontal, RotateCcw, Settings2, Trees } from 'lucide-react'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Field, Input, Select } from '@/components/ui/Field'
+import { IconButton } from '@/components/ui/IconButton'
 import { t } from '@/lib/i18n'
 import type { BoardPhase, BoardProject } from '@/types/teamBoard'
 import { BoardSection, Faces, addDays, daysBetween, formatDay, useBoard } from './board'
@@ -19,6 +20,12 @@ const PROMISE_SOON_DAYS = 14
 const DRAG_TYPE = 'application/x-board-project'
 /** « Terminé » shows the projects completed within these days; older ones fold. */
 const RECENT_DAYS = 90
+/** Remembers, per browser, whether « Terminé » was unfolded. */
+const COMPLETED_OPEN_KEY = 'team-board:completed-open'
+
+function readCompletedOpen() {
+  try { return window.localStorage.getItem(COMPLETED_OPEN_KEY) === '1' } catch { return false }
+}
 
 /**
  * Every team project on one timeline, from the request to completion. A
@@ -35,6 +42,13 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
   const [over, setOver] = useState<BoardPhase | null>(null)
   const [dragged, setDragged] = useState<number | null>(null)
   const [showOld, setShowOld] = useState(false)
+  // « Terminé » is folded into a narrow strip by default: the work in
+  // progress gets the room, and the finished projects stay one click away.
+  const [completedOpen, setCompletedOpen] = useState(readCompletedOpen)
+  function toggleCompleted(next: boolean) {
+    setCompletedOpen(next)
+    try { window.localStorage.setItem(COMPLETED_OPEN_KEY, next ? '1' : '0') } catch { /* private window: not remembered */ }
+  }
   const { today } = useBoard()
   const open = projects.filter((p) => !p.closedAt)
   const closed = projects.filter((p) => p.closedAt)
@@ -57,7 +71,7 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
       {projects.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-loam-300 bg-[#fffdf7] px-5 py-4 font-hand text-xl leading-snug text-loam-500">{t('team_board.frieze.empty')}</p>
       ) : (
-        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid gap-3 md:grid-cols-3 xl:flex">
           {phases.map((phase) => {
             const all = open.filter((p) => p.phase === phase)
               .sort((a, b) => phase === 'completed'
@@ -66,14 +80,47 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
             // Finished long ago: folded at the bottom of « Terminé », so the column stays short.
             const old = phase === 'completed' ? all.filter((p) => daysBetween(p.phaseChangedAt.slice(0, 10), today) > RECENT_DAYS) : []
             const column = showOld ? all : all.filter((p) => !old.includes(p))
+            const dropTarget = {
+              onDragOver: (e: DragEvent) => { if (dragged != null) { e.preventDefault(); setOver(phase) } },
+              onDragLeave: (e: DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(null) },
+              onDrop: (e: DragEvent) => drop(e, phase),
+            }
+            if (phase === 'completed' && !completedOpen) {
+              // Folded: a narrow strip on the side (a bar on smaller screens),
+              // still a place to drop a finished project.
+              return (
+                <div
+                  key={phase}
+                  {...dropTarget}
+                  className={clsx(
+                    'flex rounded-2xl transition-colors xl:w-14 xl:flex-none',
+                    over === phase ? 'bg-prune-50 ring-2 ring-prune-300 ring-inset' : 'bg-loam-100/70 hover:bg-loam-200/60',
+                  )}
+                >
+                  {/* design-lint-ok: the whole folded column is the button that unfolds it */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCompleted(true)}
+                    aria-expanded={false}
+                    aria-label={t('team_board.frieze.unfold_completed', { count: all.length })}
+                    title={t('team_board.frieze.unfold_completed', { count: all.length })}
+                    className="flex w-full items-center gap-1.5 rounded-2xl p-3 text-sm font-semibold text-loam-800 focus-visible:outline-2 focus-visible:outline-prune-600 xl:flex-col xl:gap-3 xl:px-0 xl:py-3"
+                  >
+                    <PhaseIcon phase={phase} className={clsx('h-6 w-6 shrink-0', all.length ? phaseTone(phase) : 'text-loam-300')} />
+                    <span className="xl:[writing-mode:vertical-rl]">{t(`team_board.phases.${phase}`)}</span>
+                    <span className="ml-auto rounded-full bg-white px-2 text-sm font-semibold text-loam-600 tabular-nums xl:order-first xl:ml-0">{all.length}</span>
+                    <ChevronDown className="h-4 w-4 shrink-0 text-loam-400 xl:hidden" aria-hidden />
+                    <ChevronsLeft className="mt-auto hidden h-4 w-4 shrink-0 text-loam-400 xl:block" aria-hidden />
+                  </button>
+                </div>
+              )
+            }
             return (
               <div
                 key={phase}
-                onDragOver={(e) => { if (dragged != null) { e.preventDefault(); setOver(phase) } }}
-                onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(null) }}
-                onDrop={(e) => drop(e, phase)}
+                {...dropTarget}
                 className={clsx(
-                  'flex min-w-0 flex-col gap-2 rounded-2xl p-2 transition-colors',
+                  'flex min-w-0 flex-col gap-2 rounded-2xl p-2 transition-colors xl:flex-1 xl:basis-0',
                   over === phase ? 'bg-prune-50 ring-2 ring-prune-300 ring-inset' : 'bg-loam-100/70',
                 )}
               >
@@ -81,6 +128,11 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
                   <PhaseIcon phase={phase} className={clsx('h-6 w-6', column.length ? phaseTone(phase) : 'text-loam-300')} />
                   {t(`team_board.phases.${phase}`)}
                   <span className="ml-auto rounded-full bg-white px-2 text-sm font-semibold text-loam-600 tabular-nums">{all.length}</span>
+                  {phase === 'completed' && (
+                    <IconButton size="sm" label={t('team_board.frieze.fold_completed')} aria-expanded onClick={() => toggleCompleted(false)} className="-my-1 -mr-1">
+                      <ChevronUp className="xl:hidden" /><ChevronsRight className="hidden xl:block" />
+                    </IconButton>
+                  )}
                 </h3>
                 {column.map((project) => (
                   <ProjectCard
