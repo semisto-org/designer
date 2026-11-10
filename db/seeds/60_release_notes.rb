@@ -8,7 +8,7 @@ release_notes = [
   {
     key: "app-terrain-en-test", published_on: "2026-11-11",
     title: "Bientôt : l'app de terrain, pensée pour dehors",
-    body: <<~TEXT,
+    body: <<~TEXT
       L'app Terranova a été repensée pour le terrain. Elle est en test avec quelques jardiniers, et arrive bientôt sur ton téléphone.
 
       La carte en plein écran, et une seule fiche de carnet qui montre ce qui t'entoure, du plus proche au plus loin. Tu mesures une zone en touchant ses coins ou en marchant jusqu'à eux, tu enregistres une visite avec le son et le trajet de ta marche, tu reprends une photo depuis le même endroit pour glisser d'avant à après. Tu notes les signes des saisons : premier gel, givre qui reste, flaques, nids. Et « Il y a un an, ici » te rend tes photos du même jour, l'an dernier. Même sans réseau.
