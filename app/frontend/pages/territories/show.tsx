@@ -64,7 +64,7 @@ export default function TerritoryShow(props: TerritoryShowProps) {
 
   const list = byKind(tab)
   return (
-    <div className="flex h-dvh flex-col bg-loam-100 md:flex-row">
+    <div className="fixed inset-0 flex flex-col overflow-clip overscroll-none bg-loam-100 md:flex-row">
       <Head title={territory.name} />
       <Flash />
       <div className="relative h-[45dvh] shrink-0 md:h-auto md:min-w-0 md:flex-1">

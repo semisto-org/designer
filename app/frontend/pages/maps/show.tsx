@@ -61,8 +61,11 @@ type Props = {
 /** The map editor: full-screen map, panel rail, inspector of the selection. */
 export default function MapShow(props: Props) {
   const [map, setMap] = useState(props.map)
+  // Pinned to the viewport and clipped, never scrollable: a find in page (Ctrl+F),
+  // a focus or a scrollIntoView inside a panel used to scroll the whole page,
+  // lifting the editor and leaving an empty band at the bottom.
   return (
-    <div className="flex h-dvh flex-col bg-loam-100">
+    <div className="fixed inset-0 flex flex-col overflow-clip overscroll-none bg-loam-100">
       <Head title={map.name} />
       <Flash />
       <header className="flex h-[52px] shrink-0 items-center gap-3.5 border-b border-loam-900/10 bg-white px-3 md:px-4">
