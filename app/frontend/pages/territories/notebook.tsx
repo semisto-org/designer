@@ -265,7 +265,7 @@ function Editable({ territoryId, field, value, canEdit, placeholder, className }
   )
 }
 
-function NotebookMap({ territory, mapFeatures, baseLayer }: NotebookProps) {
+function NotebookMap({ territory, mapFeatures, baseLayer, overlays }: NotebookProps) {
   const instance = useMapInstance()
   const items: MapItem[] = useMemo(() => mapFeatures.map((feature) => {
     const p = (feature.properties ?? {}) as { kind: 'marker' | 'lead'; id: number; title: string; proof?: string; sharp?: boolean }
@@ -274,7 +274,11 @@ function NotebookMap({ territory, mapFeatures, baseLayer }: NotebookProps) {
   const framed = useRef(false)
   useEffect(() => {
     if (!instance) return
-    if (baseLayer) syncRegionLayers(instance, [baseLayer], { base: baseLayer.key, overlays: [], opacity: {}, bounds: territory.region?.bounds ?? null }, () => undefined)
+    if (baseLayer) {
+      syncRegionLayers(instance, [baseLayer, ...overlays], {
+        base: baseLayer.key, overlays: overlays.map((layer) => layer.key), opacity: {}, bounds: territory.region?.bounds ?? null,
+      }, () => undefined)
+    }
     const apply = () => {
       installBoundary(instance, territory.boundary)
       installTerritoryItems(instance, items, null)
@@ -288,6 +292,6 @@ function NotebookMap({ territory, mapFeatures, baseLayer }: NotebookProps) {
     // The children mount once the style is loaded; tiles still loading
     // (isStyleLoaded() is then false) do not stop sources from being added.
     apply()
-  }, [instance, territory, items, baseLayer])
+  }, [instance, territory, items, baseLayer, overlays])
   return null
 }

@@ -50,6 +50,23 @@ class TerritoryNotebookTest < ActiveSupport::TestCase
     refute working[:mapFeatures].any? { _1[:properties][:title] == "Hypothèse" }, "a hypothesis is never on the map"
   end
 
+  test "a lead the farmer refused or is weighing stays out of the public version, and is never drawn on the field" do
+    farmer = ->(answer) { { contacted_on: "2026-11-02", answer: } }
+    add("lead", "Haie acceptée", land: "agricultural", seen_on_site: true, geometry: inside_point, farmer: farmer.("yes"))
+    add("lead", "Haie refusée", land: "agricultural", seen_on_site: true, geometry: inside_point, farmer: farmer.("no"))
+    add("lead", "Haie en réflexion", land: "agricultural", seen_on_site: true, geometry: inside_point, farmer: farmer.("thinking"))
+    add("lead", "Foncier inconnu", seen_on_site: true, geometry: inside_point)
+
+    assert_equal [ "Haie acceptée" ], notebook("public")[:leads].map { _1[:title] }
+
+    working = notebook("working")
+    assert_equal [ "Haie acceptée", "Haie en réflexion", "Haie refusée" ], working[:leads].map { _1[:title] }.sort
+    assert_equal 1, working[:waitingForFarmer]
+    drawn = working[:mapFeatures].map { _1[:properties][:title] }
+    refute_includes drawn, "Haie refusée"
+    assert_includes drawn, "Haie en réflexion"
+  end
+
   test "expectations name their sources" do
     source = add("source", "PCDN 2016", url: "https://example.org/pcdn.pdf")
     add("expectation", "Restaurer les haies", year: 2016, source_ids: [ source.id ])
