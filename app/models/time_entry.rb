@@ -61,6 +61,10 @@ class TimeEntry < ApplicationRecord
 
   def self.usable_by?(map, user) = shown_to?(map, user) && enabled_for?(map)
 
+  # Whether the « Temps et dépenses » tab shows: for the team (or its
+  # upsell), and for the client once the team shows them the project.
+  def self.tab_for?(map, user) = shown_to?(map, user) || ProjectExpense.client_view?(map, user)
+
   # The maps where this person may log time now, most recently used first.
   def self.maps_for(user)
     maps = Map.active.where(owner_id: user.id)

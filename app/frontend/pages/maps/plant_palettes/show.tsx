@@ -29,7 +29,7 @@ type Preset = { key: string; name: string; settings: ViewSettings }
 type Current = { kind: 'preset'; key: string } | { kind: 'view'; id: number }
 
 type Props = {
-  map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean; country?: string | null; areaM2?: number | null }
+  map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean; country?: string | null; areaM2?: number | null }
   rows: PaletteRow[]
   plants: PlantLine[]
   tags: string[]

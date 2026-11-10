@@ -50,3 +50,17 @@ export function statementHref(billTo: string | null, from?: string | null, to?: 
   if (to) params.set('to', to)
   return `/time_entries/statement?${params.toString()}`
 }
+
+const euroFormat = new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' })
+const euroRound = new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+/** 125050 → « 1 250,50 € »; `round` drops the cents for totals. */
+export const formatEuros = (cents: number, round = false) => (round ? euroRound : euroFormat).format(cents / 100)
+/** 1250 → « 12,5 », for the amount field. */
+export const amountInput = (cents: number) => new Intl.NumberFormat('fr-BE', { maximumFractionDigits: 2, useGrouping: false }).format(cents / 100)
+/** « 12,50 » → 1250; null when unreadable. */
+export function parseAmount(text: string): number | null {
+  const value = text.trim().replace(/\s/g, '').replace(',', '.').replace('€', '')
+  if (!/^\d+(\.\d{1,2})?$/.test(value)) return null
+  const cents = Math.round(Number(value) * 100)
+  return cents > 0 ? cents : null
+}

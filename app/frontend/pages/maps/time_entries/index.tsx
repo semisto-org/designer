@@ -14,12 +14,13 @@ import { formatNumber, t } from '@/lib/i18n'
 import { EntryForm } from '@/time_entries/EntryForm'
 import { EntryList } from '@/time_entries/EntryList'
 import { formatDuration, formatHours, formatShortDate } from '@/time_entries/format'
-import type { Catalog, Envelopes, PhaseEnvelope, ProjectChoice, TimeEntry } from '@/time_entries/types'
+import { ExpensesSection, SharingCard } from '@/time_entries/ExpensesSection'
+import type { Catalog, Envelopes, Expense, ExpenseCatalog, ExpenseSummary, PhaseEnvelope, ProjectChoice, TimeEntry } from '@/time_entries/types'
 import type { CurrentUser } from '@/types'
 import type { SketchGeometry } from '@/types/myMaps'
 
 type Props = {
-  map: { id: number; name: string; role: string; teamId: number | null; offerBuilder: boolean }
+  map: { id: number; name: string; role: string; teamId: number | null; offerBuilder: boolean; teamName?: string | null }
   place: { id: number; name: string; boundary?: SketchGeometry | null; areaM2?: number | null }
   canUse: boolean
   canUpgrade: boolean
@@ -30,6 +31,11 @@ type Props = {
   billToSuggestions?: string[]
   catalog?: Catalog
   today?: string
+  expenses?: Expense[]
+  expenseSummary?: ExpenseSummary
+  expenseCatalog?: ExpenseCatalog
+  sharedWithClient?: boolean
+  hasViewers?: boolean
 }
 
 /**
@@ -55,6 +61,7 @@ export default function ProjectTime(props: Props) {
 
   const { envelopes, entries, me, catalog, today } = props
   const reload = () => router.reload({ only: ['envelopes', 'entries', 'me', 'billToSuggestions'] })
+  const reloadExpenses = () => router.reload({ only: ['expenses', 'expenseSummary', 'sharedWithClient'] })
   const overHours = Object.fromEntries(envelopes.phases.map((p) => [p.key, p.overHours]))
   const shown = envelopes.phases.filter((p) => p.envelopeHours != null || p.hours > 0)
 
@@ -191,6 +198,15 @@ export default function ProjectTime(props: Props) {
           </div>
         )}
       </section>
+
+      {props.expenses && props.expenseSummary && props.expenseCatalog && (
+        <ExpensesSection
+          mapId={map.id} expenses={props.expenses} summary={props.expenseSummary} catalog={props.expenseCatalog} today={today}
+          teamName={map.teamName} canWrite={!!props.canWrite} onChanged={reloadExpenses}
+        />
+      )}
+
+      {props.canWrite && <SharingCard mapId={map.id} shared={!!props.sharedWithClient} hasViewers={!!props.hasViewers} onChanged={reloadExpenses} />}
 
       <Dialog open={noting} onClose={() => setNoting(false)} title={t('time_entries.form.title')} dismissOnBackdrop={false}>
         {noting && (

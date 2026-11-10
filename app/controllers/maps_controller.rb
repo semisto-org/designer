@@ -87,7 +87,7 @@ class MapsController < ApplicationController
       # The « carnet de route » ends on Claude: already plugged in, or how to.
       aiConnected: Current.user.ai_connected?,
       # The « Offre » panel: for teams and professional accounts only.
-      offerBuilder: Offer.shown_to?(@map, Current.user),
+      offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user),
       # Just joined from an invitation or the share link: greeted once.
       welcome: welcome_props
     }

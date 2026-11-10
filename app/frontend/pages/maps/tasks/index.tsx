@@ -19,7 +19,7 @@ import { toast } from '@/components/ui/toast'
 import { SeasonFrieze, type StepApi } from '@/season/SeasonFrieze'
 
 type Props = Board & {
-  map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean }
+  map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
   participants: Participant[]
   canEdit: boolean
   today: string

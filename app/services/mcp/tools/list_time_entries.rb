@@ -26,6 +26,7 @@ module Mcp
 
       private
         def project(map, from, to)
+          return client(map) if ProjectExpense.client_view?(map, user)
           raise ToolError, t("errors.time_not_allowed") unless TimeEntry.shown_to?(map, user)
           raise ToolError, t("errors.time_plan") unless TimeEntry.enabled_for?(map)
           all = map.time_entries.includes(:user).to_a
@@ -38,8 +39,47 @@ module Mcp
             totals: envelopes.totals.transform_keys { _1.to_s.underscore },
             people: envelopes.people.map { { name: _1[:name], hours: _1[:hours], billable_hours: _1[:billableHours], km: _1[:km], trips: _1[:trips], by_phase: _1[:byPhase] } },
             entries: listed.sort_by { [ _1.worked_on, _1.id ] }.reverse.first(MAX_ENTRIES).map { entry_json(_1, person: true) },
-            entries_count: listed.size
+            entries_count: listed.size,
+            expenses: map.project_expenses.includes(:user).order(spent_on: :desc, id: :desc).map { expense_json(_1, person: true) },
+            expense_summary: expense_summary(map),
+            expense_categories: ProjectExpense::CATEGORIES, payers: ProjectExpense::PAYERS,
+            shown_to_client: map.time_shared_with_client
           }
+        end
+
+        # The client's view (« Montrer au client » on): progress per phase in
+        # %, the expenses and who paid them. Never names, hours or rates.
+        def client(map)
+          envelopes = TimeEntry::Envelopes.new(map)
+          summary = ProjectExpense::Summary.new(map)
+          {
+            map_id: map.id, url: "#{map_url(map)}/time_entries", view: "client",
+            phases: envelopes.phases.select { _1[:envelopeHours].to_f.positive? && _1[:enabledInOffer] != false }
+                              .map { { phase: _1[:key], progress_pct: [ _1[:usedPct].to_i, 100 ].min } },
+            expenses: map.project_expenses.order(spent_on: :desc, id: :desc).map { expense_json(_1, person: false) },
+            by_payer: summary.by_payer.map { { paid_by: _1[:paidBy], amount_eur: _1[:amountCents] / 100.0 } },
+            total_eur: summary.totals[:amountCents] / 100.0,
+            entries_count: 0
+          }
+        end
+
+        def expense_summary(map)
+          summary = ProjectExpense::Summary.new(map)
+          {
+            total_eur: summary.totals[:amountCents] / 100.0, total_with_vat_eur: summary.totals[:totalCents] / 100.0,
+            planned_eur: summary.totals[:plannedCents]&.then { _1 / 100.0 },
+            by_payer: summary.by_payer.map { { paid_by: _1[:paidBy], amount_eur: _1[:amountCents] / 100.0 } },
+            by_group: summary.by_group.map { { group: _1[:group], amount_eur: _1[:amountCents] / 100.0, planned_eur: _1[:plannedCents]&.then { |c| c / 100.0 }, over_eur: _1[:overCents]&.then { |c| c / 100.0 } } }
+          }
+        end
+
+        def expense_json(expense, person:)
+          {
+            id: expense.id, spent_on: expense.spent_on.iso8601, label: expense.label, supplier: expense.supplier,
+            category: expense.category, phase: expense.phase, amount_eur: expense.amount, vat_rate: expense.vat_rate,
+            paid_by: expense.paid_by, note: expense.note, receipt: expense.receipt.attached?,
+            person: (expense.user&.display_name if person)
+          }.compact
         end
 
         def mine(from, to)

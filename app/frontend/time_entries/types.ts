@@ -57,3 +57,35 @@ export type Envelopes = {
   totals: { hours: number; billableHours: number; nonBillableHours: number; km: number; envelopeHours: number | null; envelopeKm: number | null }
   people: { userId: number; name: string; hours: number; billableHours: number; km: number; trips: number; byPhase: Record<Phase, number> }[]
 }
+
+export type ExpenseCategory = 'plants' | 'mulch' | 'protections' | 'amendments' | 'small_material' | 'analysis' | 'rental' | 'other'
+export type Payer = 'rebilled' | 'team' | 'client' | 'designer'
+
+export type Expense = {
+  id: number
+  mapId: number
+  spentOn: string
+  label: string
+  supplier: string | null
+  category: ExpenseCategory
+  phase: Phase | null
+  amountCents: number
+  vatRate: number
+  vatCents: number
+  totalCents: number
+  paidBy: Payer
+  note: string | null
+  source: 'web' | 'mcp' | 'app'
+  mine: boolean
+  receipt: { name: string; contentType: string; url: string | null } | null
+  userId?: number | null
+  userName?: string | null
+}
+
+export type ExpenseCatalog = { categories: ExpenseCategory[]; payers: Payer[]; vatRates: number[]; phases: Phase[] }
+
+export type ExpenseSummary = {
+  byPayer: { paidBy: Payer; amountCents: number; totalCents: number; count: number }[]
+  byGroup: { group: 'plants' | 'supplies' | 'other'; amountCents: number; plannedCents: number | null; overCents: number | null }[]
+  totals: { amountCents: number; vatCents: number; totalCents: number; plannedCents: number | null }
+}

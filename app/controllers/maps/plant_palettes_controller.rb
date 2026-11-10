@@ -16,7 +16,7 @@ module Maps
         format.html do
           render inertia: "maps/plant_palettes/show", props: palette.as_json.merge(
             map: { id: @map.id, name: @map.name, role: @role, teamId: @map.organization_id,
-                   offerBuilder: Offer.shown_to?(@map, Current.user), country: @map.country_code, areaM2: @map.area_m2 },
+                   offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user), country: @map.country_code, areaM2: @map.area_m2 },
             views: @map.plant_palette_views.map(&:as_json),
             presets: PlantPaletteView.presets_json,
             schema: { columns: PlantPaletteView::COLUMNS, groups: PlantPaletteView::GROUPS },

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -915,6 +915,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
     t.datetime "chat_digest_at"
     t.datetime "first_hour_started_at"
     t.bigint "board_section_id"
+    t.boolean "time_shared_with_client", default: false, null: false
     t.index ["board_section_id"], name: "index_maps_on_board_section_id"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
@@ -1463,6 +1464,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
     t.integer "eating_until_month"
     t.index ["species_id"], name: "index_plant_varieties_on_species_id"
     t.index ["terranova_id"], name: "index_plant_varieties_on_terranova_id", unique: true
+  end
+
+  create_table "project_expenses", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.bigint "user_id"
+    t.date "spent_on", null: false
+    t.string "label", null: false
+    t.string "supplier"
+    t.string "category", null: false
+    t.string "phase"
+    t.integer "amount_cents", null: false
+    t.integer "vat_rate", default: 21, null: false
+    t.string "paid_by", null: false
+    t.text "note"
+    t.string "source", default: "web", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id", "spent_on"], name: "index_project_expenses_on_map_id_and_spent_on"
+    t.index ["map_id"], name: "index_project_expenses_on_map_id"
+    t.index ["user_id"], name: "index_project_expenses_on_user_id"
   end
 
   create_table "project_requests", force: :cascade do |t|
@@ -2097,6 +2118,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
   add_foreign_key "plant_species", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "plant_value_checks", "plant_species", column: "species_id", on_delete: :cascade
   add_foreign_key "plant_varieties", "plant_species", column: "species_id", on_delete: :cascade
+  add_foreign_key "project_expenses", "maps", on_delete: :cascade
+  add_foreign_key "project_expenses", "users", on_delete: :nullify
   add_foreign_key "project_requests", "maps", on_delete: :nullify
   add_foreign_key "project_requests", "regions"
   add_foreign_key "project_requests", "request_forms", on_delete: :cascade

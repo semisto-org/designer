@@ -20,7 +20,7 @@ import { groupByTag, hasTag, tagCounts, UNTAGGED } from '@/map/tags/tags'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
 
 type Props = {
-  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean }
+  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
   documents: MapDocumentData[]
   canEdit: boolean
   limits: DocumentLimits
