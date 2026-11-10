@@ -192,7 +192,6 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
                       heading={<>
                         <span className="min-w-0 truncate font-hand text-xl leading-none text-loam-800">{section.name}</span>
                         <span className="h-px flex-1 bg-loam-300" aria-hidden />
-                        <span className="text-sm text-loam-500 tabular-nums">{inside.length}</span>
                         <SectionMenu section={section} first={i === 0} last={i === ownSections.length - 1} onRename={() => setNaming({ phase, section })} />
                       </>}
                     >
@@ -212,7 +211,6 @@ export function Frieze({ projects }: { projects: BoardProject[] }) {
                         <Moon className="h-4 w-4" aria-hidden />{t('team_board.sections.on_hold')}
                       </span>
                       <span className="h-px flex-1 border-t border-dashed border-loam-300" aria-hidden />
-                      <span className="text-sm text-loam-500 tabular-nums">{asleep.length}</span>
                     </>}
                   >
                     {asleep.map(card)}
