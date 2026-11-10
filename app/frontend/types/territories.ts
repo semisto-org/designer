@@ -1,7 +1,7 @@
 import type { Feature, Geometry, MultiPolygon } from 'geojson'
 import type { BBox, LngLat, RegionData, RegionLayerData } from '@/types'
 
-export type TerritoryItemKind = 'actor' | 'source' | 'expectation' | 'marker' | 'lead'
+export type TerritoryItemKind = 'actor' | 'source' | 'expectation' | 'basin' | 'marker' | 'lead'
 export type TerritoryItemStatus = 'draft' | 'active' | 'rejected'
 export type Proof = 'computed' | 'seen' | 'confirmed'
 export type LeadRank = 'soil' | 'slow' | 'structure'
@@ -25,6 +25,9 @@ export type TerritoryItemProperties = {
   year?: number
   source_ids?: number[]
   validated?: boolean
+  order?: number
+  outlet?: string
+  basin_id?: number
   occurred_on?: string
   proof?: Proof
   marker_kind?: string
@@ -106,10 +109,22 @@ export type CommuneCandidate = { id: string; name: string; detail: string | null
 
 type SourceRef = { id: number; title: string; url: string | null; author: string | null; publishedOn: string | null }
 
+export type NotebookBasin = {
+  id: number
+  title: string
+  body: string | null
+  order: number | null
+  outlet: string | null
+  areaKm2: number | null
+  seenMarkers: number
+  leads: number
+}
+
 export type NotebookLead = {
   id: number
   title: string
   body: string | null
+  basinId: number | null
   rank: LeadRank | null
   theme: LeadTheme | null
   land: LandType
@@ -125,7 +140,7 @@ export type NotebookLead = {
   geometry?: Geometry | null
 }
 
-export type NotebookMarker = { id: number; title: string; body: string | null; occurredOn: string | null; proof: Proof; markerKind: string | null; sources: SourceRef[] }
+export type NotebookMarker = { id: number; title: string; body: string | null; basinId: number | null; occurredOn: string | null; proof: Proof; markerKind: string | null; sources: SourceRef[] }
 
 export type NotebookProps = {
   version: 'working' | 'public'
@@ -136,6 +151,7 @@ export type NotebookProps = {
     actors: { id: number; title: string; body: string | null; organization: string | null; function: string | null; metOn: string | null }[]
     expectations: { id: number; title: string; body: string | null; year: number | null; validated: boolean; sources: SourceRef[] }[]
   }
+  basins: NotebookBasin[]
   shows: { markers: NotebookMarker[] }
   seen: { markers: NotebookMarker[]; leads: { id: number; title: string; seenOn: string | null }[] }
   leads: NotebookLead[]
