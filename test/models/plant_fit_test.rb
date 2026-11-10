@@ -9,9 +9,10 @@ class PlantFitTest < ActiveSupport::TestCase
 
   def site = PlantFit::Site.new(Map.find(@map.id))
 
-  def sheet!(constraints: {}, livestock: nil)
+  def sheet!(constraints: {}, livestock: nil, keep_away: nil)
     project = { "constraints" => constraints }
     project["livestock"] = { "species" => livestock } if livestock
+    project["who"] = { "keep_away" => keep_away } if keep_away
     @map.update!(project:)
   end
 
@@ -95,5 +96,30 @@ class PlantFitTest < ActiveSupport::TestCase
     assert_equal 1, json[:excluded][:toxic]
     assert_equal 1, json[:excluded][:invasive]
     assert json[:suggestions].first.key?(:fit)
+  end
+
+  test "the sheet's « keep away » rules out plants toxic for people and pets" do
+    plant_species(:comfrey).update!(toxic_for: %w[humans])
+    assert_nil site.excluded_by(plant_species(:comfrey))
+    sheet!(keep_away: %w[toxic_humans toxic_cats])
+    assert_equal %w[humans cats], site.toxic_for
+    assert_equal "toxic", site.excluded_by(plant_species(:comfrey))
+    result = PaletteSuggestions.new(Map.find(@map.id))
+    assert_not result.suggestions.map { |s| s.species.latin_name }.include?("Symphytum officinale")
+    assert_equal 1, result.as_json[:excluded][:toxic]
+    assert_equal %w[toxic_humans toxic_cats], result.as_json[:site][:keepAway]
+  end
+
+  test "keeping stings away drops the melliferous need from the suggestions" do
+    assert_includes PaletteSuggestions.new(Map.find(@map.id)).send(:needs).map(&:first), "mellifere"
+    sheet!(keep_away: %w[stings])
+    assert_not_includes PaletteSuggestions.new(Map.find(@map.id)).send(:needs).map(&:first), "mellifere"
+  end
+
+  test "« keep away » is not personal: the AI reads it, the reason stays private" do
+    sheet = ProjectSheet.parse({ "who" => { "keep_away" => %w[stings], "care" => "Allergie aux piqûres" } })
+    shared = sheet.without_personal
+    assert_equal %w[stings], shared.dig("who", "keep_away")
+    assert_nil shared.dig("who", "care")
   end
 end

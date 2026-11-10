@@ -325,6 +325,8 @@ export type SiteSignalOrigin = 'climate' | 'patches' | 'sheet' | 'soil_samples'
 export type SiteProfile = {
   signals: Partial<Record<FitCriterionKey, { values: (string | number)[]; origin: SiteSignalOrigin }>>
   toxicFor: string[]
+  /** What the project sheet asks the palette to keep away (who.keep_away). */
+  keepAway: string[]
   country: string | null
 }
 

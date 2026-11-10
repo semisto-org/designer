@@ -234,6 +234,14 @@ fr:
               label: "Des plantes ou des insectes à éviter, ou un besoin d'accès particulier ?"
               hint: "Seulement ce qui change le jardin : une allergie aux piqûres, des plantes toxiques à tenir loin des petits, une marche difficile, une poussette, un fauteuil. Facultatif, et jamais lu par une IA."
               placeholder: "Rien de particulier, ou…"
+            keep_away:
+              label: "Ce que la palette doit écarter"
+              hint: "Les suggestions de plantes et ton IA en tiennent compte, sans savoir pourquoi."
+              options:
+                toxic_humans: "Les plantes toxiques (enfants, visiteurs)"
+                toxic_dogs: "Les plantes toxiques pour les chiens"
+                toxic_cats: "Les plantes toxiques pour les chats"
+                stings: "Les plantes mellifères près des lieux de vie (abeilles, guêpes)"
             notes:
               label: "Quelques mots sur toi"
               placeholder: "Ce qui t'a amené·e à ce projet…"
