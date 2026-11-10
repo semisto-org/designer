@@ -5,7 +5,7 @@
 // by theme.
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { display } from '@/lib/display'
 import { formatDistance, t } from '@/lib/i18n'
@@ -67,29 +67,28 @@ export default function VisitNote() {
 
   const located = fix && fix !== 'pending'
   return (
-    <KeyboardAvoidingView style={s.fill} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={[s.body, { paddingBottom: insets.bottom + space.xl }]} keyboardShouldPersistTaps="handled">
-        <View style={s.titleRow}>
-          <Icon name={theme ?? 'other'} size={28} color={colors.prune700} />
-          <Text accessibilityRole="header" style={s.title} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`mobile.visit.themes.${theme ?? 'other'}`)}</Text>
-        </View>
-        <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`mobile.visit.hints.${theme ?? 'other'}`)}</Text>
+    <ScrollView style={s.fill} contentContainerStyle={[s.body, { paddingBottom: insets.bottom + space.xl }]} keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets>
+      <View style={s.titleRow}>
+        <Icon name={theme ?? 'other'} size={28} color={colors.prune700} />
+        <Text accessibilityRole="header" style={s.title} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`mobile.visit.themes.${theme ?? 'other'}`)}</Text>
+      </View>
+      <Text style={s.hand} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`mobile.visit.hints.${theme ?? 'other'}`)}</Text>
 
-        <Label>{t('mobile.visit.text_label')}</Label>
-        <Input value={text} onChangeText={(value) => { setText(value); setProblem(null) }} placeholder={t('mobile.visit.placeholder')}
-          multiline autoFocus accessibilityLabel={t('mobile.visit.text_label')} />
+      <Label>{t('mobile.visit.text_label')}</Label>
+      <Input value={text} onChangeText={(value) => { setText(value); setProblem(null) }} placeholder={t('mobile.visit.placeholder')}
+        multiline autoFocus accessibilityLabel={t('mobile.visit.text_label')} />
 
-        <Button variant="secondary" icon="photo" label={t('mobile.visit.add_photo')} onPress={() => void addMedia()} />
-        {media.length > 0 && <Body muted>{t('mobile.visit.photos', { count: media.length })}</Body>}
+      <Button variant="secondary" icon="photo" label={t('mobile.visit.add_photo')} onPress={() => void addMedia()} />
+      {media.length > 0 && <Body muted>{t('mobile.visit.photos', { count: media.length })}</Body>}
 
-        {fix === 'pending' ? <Body muted>{t('mobile.terrain.around_locating')}</Body>
-          : located ? <Body muted>{t('mobile.visit.position', { accuracy: formatDistance(fix.accuracy ?? 10) })}</Body>
-            : <Notice tone="warning">{t('mobile.visit.no_position')}</Notice>}
-        {problem && <Notice tone="error">{problem}</Notice>}
+      {fix === 'pending' ? <Body muted>{t('mobile.terrain.around_locating')}</Body>
+        : located ? <Body muted>{t('mobile.visit.position', { accuracy: formatDistance(fix.accuracy ?? 10) })}</Body>
+          : <Notice tone="warning">{t('mobile.visit.no_position')}</Notice>}
+      {problem && <Notice tone="error">{problem}</Notice>}
 
-        <Button icon="check" label={t('mobile.visit.save')} onPress={() => void save()} disabled={!visit || !bundle} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Button icon="check" label={t('mobile.visit.save')} onPress={() => void save()} disabled={!visit || !bundle} />
+    </ScrollView>
   )
 }
 

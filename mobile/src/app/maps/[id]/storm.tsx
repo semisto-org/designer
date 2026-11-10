@@ -207,7 +207,7 @@ export default function StormScreen() {
         </View>
       ) : (
         <View style={[s.sheet, { paddingBottom: insets.bottom + 12 }]}>
-          <ScrollView contentContainerStyle={{ gap: space.sm, padding: space.md }} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={{ gap: space.sm, padding: space.md }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
             <Label>{t('mobile.storm.rain')}</Label>
             <View style={s.chips}>
               {RAINS.map((value) => <Chip key={value} label={t(`mobile.storm.rains.${value}`)} selected={rain === value} onPress={() => setRain(rain === value ? null : value)} />)}
