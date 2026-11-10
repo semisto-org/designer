@@ -129,4 +129,31 @@ class Maps::ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal false, response.parsed_body["canEdit"]
   end
+
+  test "personal data (phones, e-mails, health) is read only by the people who write the sheet" do
+    @map.update!(project: {
+      "who" => { "people" => [ { "name" => "Lou", "phone" => "0470 12 34 56", "email" => "lou@example.org" } ],
+                 "care" => "Allergie aux piqûres de guêpe", "profile" => "individual" },
+      "taste" => { "tasters" => [ { "name" => "Lou", "allergies" => "Noisettes" } ] }
+    })
+    @map.memberships.create!(user: users(:bob), role: "editor")
+    sign_in_as users(:bob)
+    get map_project_path(@map), as: :json
+    who = response.parsed_body.dig("project", "who")
+    assert_equal "0470 12 34 56", who.dig("people", 0, "phone")
+    assert_equal "Allergie aux piqûres de guêpe", who["care"]
+
+    sign_in_as users(:alice)
+    [ -> { get map_project_path(@map), as: :json }, -> { get map_project_path(@map), headers: inertia_headers } ].each do |request|
+      request.call
+      assert_response :success
+      body = response.parsed_body
+      project = body["props"] ? body["props"]["project"] : body["project"]
+      assert_equal [ { "name" => "Lou" } ], project.dig("who", "people")
+      assert_equal "individual", project.dig("who", "profile")
+      assert_nil project.dig("who", "care")
+      assert_equal [ { "name" => "Lou" } ], project.dig("taste", "tasters")
+      %w[0470 lou@example.org guêpe Noisettes].each { |secret| assert_not_includes response.body, secret }
+    end
+  end
 end
