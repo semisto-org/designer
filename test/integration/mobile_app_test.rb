@@ -139,7 +139,8 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     assert_response :success
     style = response.parsed_body
     assert_equal %w[background base drone], style["layers"].map { _1["id"] }
-    assert_equal "http://www.example.com/api/v1/maps/#{@map.id}/aerial_views/#{imported.id}/tiles/{z}/{x}/{y}", style.dig("sources", "drone", "tiles", 0)
+    assert_equal "http://www.example.com/api/v1/maps/#{@map.id}/aerial_views/#{imported.id}/tiles/{z}/{x}/{y}?v=#{imported.tiles_version}", style.dig("sources", "drone", "tiles", 0),
+      "the archive's version: a realigned view gets new tile addresses"
     assert_equal [ 17, 18, [ 4.874, 50.326, 4.876, 50.328 ] ], style.dig("sources", "drone").values_at("minzoom", "maxzoom", "bounds")
 
     get "/api/v1/maps/#{@map.id}/style", params: { drone: linked.id, base: "ortho" }, headers: bearer(token)
