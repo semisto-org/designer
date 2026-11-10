@@ -28,10 +28,12 @@ type Inbox = { items: InboxItem[]; total: number; enabled: boolean }
  * is the one in front of me. Turned off in « Mon compte », it still lists
  * the messages but stays quiet.
  *
+ * In the My Bar (`placement="up"`) its list opens upwards.
+ *
  * In the map editor, `currentMapId` is the map open: its discussion has its
  * own button, so its messages do not toast, and its line opens the dock.
  */
-export function NotificationBell({ currentMapId, onOpenCurrent }: { currentMapId?: number; onOpenCurrent?: () => void }) {
+export function NotificationBell({ currentMapId, onOpenCurrent, placement = 'down' }: { currentMapId?: number; onOpenCurrent?: () => void; placement?: 'down' | 'up' }) {
   const [inbox, setInbox] = useState<Inbox | null>(null)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -110,7 +112,7 @@ export function NotificationBell({ currentMapId, onOpenCurrent }: { currentMapId
       </IconButton>
 
       {open && (
-        <div role="dialog" aria-label={t('notifications.bell')} className="fixed inset-x-4 top-16 z-50 rounded-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem] bg-white p-2 shadow-lg ring-1 ring-loam-200">
+        <div role="dialog" aria-label={t('notifications.bell')} className={(placement === 'up' ? 'bottom-20 sm:bottom-full sm:mb-3' : 'top-16 sm:top-full sm:mt-2') + ' fixed inset-x-4 z-50 rounded-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:w-[22rem] bg-white p-2 shadow-lg ring-1 ring-loam-200'}>
           <div className="flex items-center justify-between gap-2 px-3 pb-1 pt-2">
             <p className="whitespace-nowrap font-hand text-lg text-leaf-600">{t('notifications.title')}</p>
             {(inbox?.items.length ?? 0) > 0 && (
@@ -124,7 +126,7 @@ export function NotificationBell({ currentMapId, onOpenCurrent }: { currentMapId
               <p className="text-loam-500">{t('notifications.empty_hint')}</p>
             </div>
           )}
-          <ul className="max-h-[60vh] space-y-1 overflow-y-auto">
+          <ul className="max-h-[55vh] space-y-1 overflow-y-auto">
             {inbox?.items.map((item) => (
               <li key={item.mapId}>
                 <Link

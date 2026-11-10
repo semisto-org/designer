@@ -346,7 +346,7 @@ export default function MapPhotos({ map, canEdit }: Props) {
       </div>
 
       {selecting && (
-        <div role="region" aria-label={t('photo_pages.selection')} className="fixed inset-x-3 bottom-3 z-40 mx-auto flex max-w-3xl flex-wrap items-center gap-2 rounded-2xl bg-loam-900 px-4 py-3 text-white shadow-xl">
+        <div data-page-bar role="region" aria-label={t('photo_pages.selection')} className="fixed inset-x-3 bottom-3 z-40 mx-auto flex max-w-3xl flex-wrap items-center gap-2 rounded-2xl bg-loam-900 px-4 py-3 text-white shadow-xl">
           <span className="text-sm font-medium">{t('photo_pages.selected', { count: selected.size })}</span>
           <button type="button" className="text-sm text-loam-300 underline-offset-2 hover:underline" onClick={() => setSelected(new Set(ordered.map((p) => p.id)))}>{t('photo_pages.select_all')}</button>
           <span className="flex-1" />

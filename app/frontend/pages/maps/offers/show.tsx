@@ -167,7 +167,7 @@ function Builder({ map, team, offer, measures: initialMeasures, result: initialR
       </div>
 
       {/* On a phone the total sits at the end of a long page: keep it in sight. */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-loam-200 bg-white/95 px-4 py-2.5 backdrop-blur lg:hidden print:hidden">
+      <div data-page-bar-mobile className="fixed inset-x-0 bottom-0 z-20 border-t border-loam-200 bg-white/95 px-4 py-2.5 backdrop-blur lg:hidden print:hidden">
         <div className="flex items-center justify-between gap-3">
           <span className="min-w-0">
             <span className="block text-sm text-loam-500">{t('offers.totals.total')}</span>

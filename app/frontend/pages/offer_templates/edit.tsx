@@ -224,7 +224,7 @@ export default function OfferTemplateEdit({ template, account, vocabulary, docum
         />
       </Section>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-loam-200 bg-white/95 px-4 py-3 backdrop-blur">
+      <div data-page-bar className="fixed inset-x-0 bottom-0 z-20 border-t border-loam-200 bg-white/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2">
           <button type="button" onClick={destroy} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm text-clay-600 hover:bg-clay-50">
             <Trash2 className="h-4 w-4" aria-hidden />{t('offer_templates.edit.delete')}
