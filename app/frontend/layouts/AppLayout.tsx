@@ -22,6 +22,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { href: '/maps', label: t('nav.maps') },
     ...(currentUser ? [{ href: '/tasks', label: t('tasks.nav') }] : []),
     ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/team', label: t('teams.nav') }] : []),
+    ...((currentUser as TeamAwareUser | null)?.territories ? [{ href: '/territories', label: t('territories.nav') }] : []),
     ...(newRequests != null ? [{ href: '/request_forms', label: t('request_forms.nav'), dot: newRequests > 0 }] : []),
     { href: '/plants', label: t('nav.plants') },
     ...(propagation ? [{ href: '/propagation', label: t('propagation.nav'), dot: propagation.waiting > 0 }] : []),
