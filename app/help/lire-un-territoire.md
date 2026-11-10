@@ -27,7 +27,7 @@ Connecte ton IA à Terranova (voir [Connecter son IA](/help/connecter-son-ia)), 
 
 ## Les règles du carnet
 
-- Une piste sur terre agricole, ou dont le foncier n'est pas encore connu, n'entre pas au carnet du collège avant la rencontre avec l'exploitant et sa réponse. La version publique laisse de côté une piste que l'exploitant a refusée ou qu'il réfléchit encore. Tant qu'il n'a pas dit oui, elle reste une **zone floue** sur la carte.
+- Une piste sur terre agricole, ou dont le foncier n'est pas encore connu, n'entre pas au carnet du collège avant la rencontre avec l'exploitant et sa réponse. Seule exception, une pratique de sol (couvert d'hiver, rotation, travail en travers de la pente) : elle y entre tout de suite, sans tracé et sans nommer de parcelle, et n'apparaît dans la version publique qu'après le oui de l'exploitant. La version publique laisse de côté une piste que l'exploitant a refusée ou qu'il réfléchit encore. Tant qu'il n'a pas dit oui, elle reste une **zone floue** sur la carte.
 - Une piste pas encore vue sur place est une **hypothèse** : elle figure à part dans le carnet de travail, jamais sur sa carte ni dans la version publique.
 - Une piste sans gestionnaire est **orpheline** : dis qui l'entretient, combien d'heures par an, pour combien d'années.
 

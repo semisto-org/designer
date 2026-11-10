@@ -141,11 +141,19 @@ class TerritoryItem < ApplicationRecord
   # said yes; a fuzzy zone otherwise.
   def sharp? = prop(:land) == "public" || farmer_answer == "yes"
 
-  # A lead on farmland reaches the collège only once the farmer was met and
-  # answered: learning about it from the council sets the fire. Land nobody
-  # has named yet is held back the same way, so leaving the default never
-  # slips a lead past the rule.
-  def waiting_for_farmer? = kind == "lead" && %w[agricultural unknown].include?(prop(:land) || "unknown") && !farmer_contacted?
+  # Farmland, or land nobody has named yet (leaving the default never slips
+  # a lead past the farmer rule).
+  def on_farmland? = %w[agricultural unknown].include?(prop(:land) || "unknown")
+
+  # A soil practice (winter cover, rotation, working across the slope) on
+  # farmland: it comes first and names no one, so it reaches the working
+  # notebook before the farmer answers, without outline; the public version
+  # still waits for their yes.
+  def soil_practice? = kind == "lead" && prop(:rank) == "soil" && on_farmland?
+
+  # Any other lead on farmland reaches the collège only once the farmer was
+  # met and answered: learning about it from the council sets the fire.
+  def waiting_for_farmer? = kind == "lead" && on_farmland? && !soil_practice? && !farmer_contacted?
 
   def as_inertia
     {

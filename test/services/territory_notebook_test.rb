@@ -67,6 +67,20 @@ class TerritoryNotebookTest < ActiveSupport::TestCase
     assert_includes drawn, "Haie en réflexion"
   end
 
+  test "a soil practice on farmland enters the working notebook without outline, and the public one only after yes" do
+    add("lead", "Couvert d'hiver", rank: "soil", land: "agricultural", seen_on_site: true, geometry: inside_point)
+    add("lead", "Sens du travail", rank: "soil", land: "agricultural", seen_on_site: true, geometry: inside_point,
+                                   farmer: { contacted_on: "2026-11-02", answer: "yes" })
+
+    working = notebook("working")
+    assert_equal [ "Couvert d'hiver", "Sens du travail" ], working[:leads].map { _1[:title] }.sort
+    assert_equal 0, working[:waitingForFarmer]
+    assert_nil working[:leads].find { _1[:title] == "Couvert d'hiver" }[:geometry]
+    assert_equal [ "Sens du travail" ], working[:mapFeatures].map { _1[:properties][:title] }
+
+    assert_equal [ "Sens du travail" ], notebook("public")[:leads].map { _1[:title] }
+  end
+
   test "expectations name their sources" do
     source = add("source", "PCDN 2016", url: "https://example.org/pcdn.pdf")
     add("expectation", "Restaurer les haies", year: 2016, source_ids: [ source.id ])

@@ -60,6 +60,14 @@ class TerritoryItemTest < ActiveSupport::TestCase
     assert lead(land: "unknown").waiting_for_farmer?
   end
 
+  test "a soil practice on farmland does not wait for the farmer" do
+    soil = lead(land: "agricultural", rank: "soil")
+    assert soil.soil_practice?
+    refute soil.waiting_for_farmer?
+    refute lead(land: "public", rank: "soil").soil_practice?
+    assert lead(rank: "soil").soil_practice?, "unknown land counts as farmland"
+  end
+
   test "accept and reject record who decided" do
     item = @territory.items.create!(kind: "expectation", title: "Haies", status: "draft", source: "ai", rationale: "Tiré du PCDN.")
     item.accept!(users(:michael))

@@ -50,9 +50,10 @@ class TerritoryNotebook
     def of(kind) = @items.select { |item| item.kind == kind.to_s }
 
     # The public version leaves out a lead its farmer or owner refused or is
-    # still weighing: publishing it would answer for them.
+    # still weighing, and a soil practice on farmland until the farmer said
+    # yes: publishing it would answer for them.
     def leads
-      @leads ||= of(:lead).reject { |item| item.waiting_for_farmer? || (public? && %w[no thinking].include?(item.farmer_answer)) }
+      @leads ||= of(:lead).reject { |item| item.waiting_for_farmer? || (public? && held_from_public?(item)) }
                           .sort_by { |item| [ TerritoryItem::RANKS.index(item.prop(:rank)) || TerritoryItem::RANKS.size, item.created_at ] }
     end
 
@@ -99,10 +100,15 @@ class TerritoryNotebook
       }
     end
 
-    # The public version draws leads on public land only; a lead whose farmer
-    # said no is never drawn on their field.
+    def held_from_public?(item)
+      %w[no thinking].include?(item.farmer_answer) || (item.soil_practice? && item.farmer_answer != "yes")
+    end
+
+    # The public version draws leads on public land only. A lead whose farmer
+    # said no is never drawn on their field, nor a soil practice before yes.
     def drawable?(item)
-      item.geometry && item.seen_on_site? && item.farmer_answer != "no" && (!public? || item.prop(:land) == "public")
+      item.geometry && item.seen_on_site? && item.farmer_answer != "no" &&
+        !(item.soil_practice? && item.farmer_answer != "yes") && (!public? || item.prop(:land) == "public")
     end
 
     def map_features
