@@ -10,9 +10,9 @@ class Maps::SoilSamplesControllerTest < ActionDispatch::IntegrationTest
 
   RESULTS = { ph_water: "5,2", organic_matter_pct: 4.1, c_n_ratio: 14, sand_pct: 20, silt_pct: 65, clay_pct: 15 }.freeze
 
-  test "a signed-out visitor is sent to sign in, someone outside the map gets nothing" do
+  test "a signed-out visitor is told so, someone outside the map gets nothing" do
     get map_soil_samples_path(@map), as: :json
-    assert_redirected_to new_session_path
+    assert_response :unauthorized
     sign_in_as users(:bob)
     get map_soil_samples_path(@map), as: :json
     assert_response :not_found

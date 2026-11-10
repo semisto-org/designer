@@ -47,7 +47,14 @@ module Authentication
       found&.impersonation_expired? ? end_impersonation(found, reason: "expired") : found
     end
 
+    # A page goes to the sign-in form. A JSON request (an upload, a save from
+    # the editor) is told it is signed out: a redirect would be followed by
+    # the browser to the sign-in page, answered 200, and read as a success
+    # while nothing was saved.
     def request_authentication
+      if request.format.json?
+        return render json: { message: t("sessions.signed_out"), code: "signed_out" }, status: :unauthorized
+      end
       session[:return_to_after_authenticating] = request.url
       redirect_to new_session_path
     end

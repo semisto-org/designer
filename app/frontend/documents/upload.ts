@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import { trackWrite, writeOutcome } from '@/lib/saveStatus'
 import { formatMegabytes } from '@/map/photos/format'
+import { reportUploadFailure } from '@/documents/uploadFailure'
 import type { DocumentLimits, MapDocumentData } from '@/types/documents'
 
 export type DocumentUpload = {
@@ -48,7 +49,16 @@ function csrfToken(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''
 }
 
-function send(endpoint: string, form: FormData, onProgress: (percent: number) => void): Promise<MapDocumentData> {
+/**
+ * A 2xx is a saved document only if it says so: a redirect (to the sign-in
+ * page, say) is followed by the browser and also ends in a 200, whose HTML
+ * body is no document at all.
+ */
+export function isSavedDocument(body: unknown): body is MapDocumentData {
+  return typeof body === 'object' && body !== null && typeof (body as { id?: unknown }).id === 'number'
+}
+
+function send(endpoint: string, form: FormData, file: File, onProgress: (percent: number) => void): Promise<MapDocumentData> {
   // Counted by the editor header's « Enregistré » until the file has arrived.
   const finish = trackWrite()
   return new Promise((resolve, reject) => {
@@ -59,18 +69,23 @@ function send(endpoint: string, form: FormData, onProgress: (percent: number) =>
     xhr.upload.onprogress = (event) => event.lengthComputable && onProgress(Math.round((event.loaded / event.total) * 100))
     xhr.onerror = () => {
       finish('lost')
+      reportUploadFailure({ endpoint, file, status: 0, reason: 'network' })
       reject(new Error(t('documents.errors.upload_failed')))
     }
     xhr.onload = () => {
-      finish(writeOutcome(xhr.status))
       let body: Record<string, unknown> = {}
       try {
         body = JSON.parse(xhr.responseText)
       } catch {
-        // Not JSON (proxy error page): the status says enough.
+        // Not JSON (proxy error page, sign-in page after a redirect): the status says the rest.
       }
-      if (xhr.status >= 200 && xhr.status < 300) resolve(body as unknown as MapDocumentData)
-      else reject(new Error(typeof body.message === 'string' ? body.message : t('documents.errors.upload_failed')))
+      const saved = xhr.status >= 200 && xhr.status < 300 && isSavedDocument(body)
+      // A 2xx that is not a document saved nothing: the header must not say « Enregistré ».
+      finish(saved ? 'ok' : xhr.status >= 300 ? writeOutcome(xhr.status) : 'lost')
+      if (saved) return resolve(body as MapDocumentData)
+      const redirected = xhr.responseURL !== '' && new URL(xhr.responseURL).pathname !== new URL(endpoint, window.location.href).pathname
+      reportUploadFailure({ endpoint, file, status: xhr.status, reason: redirected ? 'redirected' : xhr.status < 300 ? 'not_a_document' : 'refused', code: typeof body.code === 'string' ? body.code : undefined })
+      reject(new Error(typeof body.message === 'string' ? body.message : t('documents.errors.upload_failed')))
     }
     xhr.send(form)
   })
@@ -106,7 +121,7 @@ export function useDocumentUploads(endpoint: string, limits: DocumentLimits, onS
           if (thumb) form.append('document[thumbnail]', thumb, 'apercu.jpg')
         }
         try {
-          const saved = await send(endpoint, form, (progress) => patch(key, { progress }))
+          const saved = await send(endpoint, form, file, (progress) => patch(key, { progress }))
           setUploads((list) => list.filter((u) => u.key !== key))
           onSaved(saved)
         } catch (error) {

@@ -77,7 +77,7 @@ class Maps::PlantIdentificationsControllerTest < ActionDispatch::IntegrationTest
 
   test "requires sign in" do
     with_plantnet_key { identify }
-    assert_redirected_to new_session_path
+    assert_response :unauthorized
     assert_not_requested :any, //
   end
 

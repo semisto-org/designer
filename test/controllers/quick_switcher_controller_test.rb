@@ -3,7 +3,7 @@ require "test_helper"
 class QuickSwitcherControllerTest < ActionDispatch::IntegrationTest
   test "requires sign in" do
     get quick_switcher_path
-    assert_redirected_to new_session_path
+    assert_response :unauthorized
   end
 
   test "lists the maps I own, the ones shared with me and my teams' maps, newest first" do
