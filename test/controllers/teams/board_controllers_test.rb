@@ -164,4 +164,46 @@ class Teams::BoardControllersTest < ActionDispatch::IntegrationTest
     patch team_board_request_path(@team, other), params: { request: { status: "declined", decline_note: "Trop loin" } }, as: :json
     assert_equal [ "declined", "Trop loin" ], other.reload.values_at(:status, :decline_note)
   end
+
+  test "a member adds, renames, orders and deletes the sections of a column" do
+    sign_in_as users(:bob)
+    post team_board_sections_path(@team), params: { section: { phase: "design", name: "Pré-design" } }, as: :json
+    assert_response :created
+    pre = response.parsed_body.dig("section", "id")
+    post team_board_sections_path(@team), params: { section: { phase: "design", name: "Design détaillé" } }, as: :json
+    detail = response.parsed_body.dig("section", "id")
+    assert_equal [ "Pré-design", "Design détaillé" ], response.parsed_body["sections"].map { _1["name"] }
+
+    patch team_board_section_path(@team, detail), params: { section: { shift: -1, name: "Détaillé" } }, as: :json
+    assert_response :success
+    assert_equal [ "Détaillé", "Pré-design" ], response.parsed_body["sections"].map { _1["name"] }
+
+    patch team_board_project_path(@team, @map), params: { project: { section_id: pre } }, as: :json
+    assert_response :success
+    assert_equal pre, response.parsed_body.dig("project", "sectionId")
+
+    get team_board_path(@team), headers: inertia_headers
+    props = response.parsed_body["props"]
+    assert_equal [ "Détaillé", "Pré-design" ], props["sections"].map { _1["name"] }
+    assert_equal pre, props["projects"].first["sectionId"]
+
+    delete team_board_section_path(@team, pre), as: :json
+    assert_response :success
+    assert_equal [ "Détaillé" ], response.parsed_body["sections"].map { _1["name"] }
+    assert_nil @map.reload.board_section_id
+  end
+
+  test "a section of another column or team is refused, and strangers see nothing" do
+    sign_in_as users(:michael)
+    offer = @team.board_sections.create!(phase: "offer", name: "Envoyée")
+    patch team_board_project_path(@team, @map), params: { project: { section_id: offer.id } }, as: :json
+    assert_response :unprocessable_entity
+    post team_board_sections_path(@team), params: { section: { phase: "design", name: "" } }, as: :json
+    assert_response :unprocessable_entity
+
+    sign_in_as users(:alice)
+    patch team_board_section_path(@team, offer), params: { section: { name: "Pirate" } }, as: :json
+    assert_response :not_found
+    assert_equal "Envoyée", offer.reload.name
+  end
 end

@@ -4,7 +4,8 @@ module Teams
   #
   # 1. the new requests of the team's form, the oldest first;
   # 2. every team map on one timeline, from request to completion, with its
-  #    project manager, who works on it and the date promised to the client;
+  #    project manager, who works on it and the date promised to the client,
+  #    a column split into the team's sections (BoardSection) when it has any;
   # 3. the season: design, work site and planting steps over twelve months;
   # 4. who carries what: how many projects each member is involved in;
   # 5. the team's own places (MapBoard), which have no phase.
@@ -42,12 +43,16 @@ module Teams
 
     # What the project settings need besides the project (map editor).
     def settings
-      { members: members_json, phases: MapBoard::PHASES, closedReasons: MapBoard::CLOSED_REASONS, stepKinds: Task::STEP_KINDS }
+      { members: members_json, phases: MapBoard::PHASES, closedReasons: MapBoard::CLOSED_REASONS, stepKinds: Task::STEP_KINDS,
+        sections: sections.map(&:as_board_json) }
     end
 
     def self.step_json(task) = SeasonSteps.json(task)
 
     private
+      # The team's sections, column by column, in their order.
+      def sections = @sections ||= @team.board_sections.ordered.to_a
+
       def form = defined?(@form) ? @form : (@form = RequestForm.find_by(owner: @team))
 
       # Requests nobody has turned into a map or declined yet.
@@ -84,6 +89,7 @@ module Teams
           sketch: sketches[map.id],
           phase: map.board_phase,
           ownPlace: map.own_place,
+          sectionId: map.board_section_id,
           phaseChangedAt: (map.phase_changed_at || map.created_at).iso8601,
           lead: map.lead && person(map.lead),
           crew: map.crew.reject { |u| u.id == map.lead_id }.sort_by(&:display_name).map { |u| person(u) },

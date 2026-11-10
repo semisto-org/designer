@@ -260,12 +260,18 @@ module Mcp
           }
         end
 
-        # A team project on the team board: its stage, the date promised to
-        # the client and the board, whose « La saison qui vient » draws the
-        # same steps as `season`. nil off a team or for its places.
+        # A team project on the team board: its stage, the team's section of
+        # that column it sits in (BoardSection, such as « Pré-design ») among
+        # the column's sections, on hold or not, the date promised to the
+        # client and the board, whose « La saison qui vient » draws the same
+        # steps as `season`. nil off a team or for its places.
         def team_season(map)
           return nil unless map.organization_id && !map.own_place
-          { stage: map.board_phase, promised_on: map.promised_on&.iso8601, board_url: "#{origin}/teams/#{map.organization_id}/board" }
+          {
+            stage: map.board_phase, section: map.board_section&.name,
+            stage_sections: map.organization.board_sections.where(phase: map.board_phase).ordered.pluck(:name),
+            on_hold: map.on_hold?, promised_on: map.promised_on&.iso8601, board_url: "#{origin}/teams/#{map.organization_id}/board"
+          }
         end
 
         # What the team reads about the project before opening its map (the

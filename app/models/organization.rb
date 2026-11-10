@@ -19,6 +19,8 @@ class Organization < ApplicationRecord
   has_many :users, through: :memberships
   has_many :invitations, class_name: "OrganizationInvitation", dependent: :destroy
   has_many :maps, dependent: :nullify
+  # The sections of the team board's columns (BoardSection).
+  has_many :board_sections, dependent: :delete_all
   has_many :offer_templates, as: :owner, dependent: :destroy
   has_one :request_form, as: :owner, dependent: :destroy
   has_one :form_inbox, dependent: :destroy

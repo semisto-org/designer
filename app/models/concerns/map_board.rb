@@ -13,6 +13,12 @@
 # leaves the timeline, the season and everyone's load, and is listed apart
 # on the board; its phase is kept should it become a project again.
 #
+# A team may split a column into sections of its own (BoardSection, such as
+# « Pré-design » and « Design détaillé » in « Design »): a project sits in at
+# most one section of its phase, and leaves it when it changes phase or
+# team. On hold, it shows in the column's « En veille » and keeps its section
+# for when it wakes.
+#
 # The project's next step is not stored here: it is the map's first pending
 # task with a date (Task), so it has a person, a date and an e-mail.
 module MapBoard
@@ -25,6 +31,7 @@ module MapBoard
 
   included do
     belongs_to :lead, class_name: "User", optional: true
+    belongs_to :board_section, optional: true
     has_many :assignments, class_name: "MapAssignment", dependent: :delete_all
     has_many :crew, through: :assignments, source: :user
 
@@ -33,9 +40,14 @@ module MapBoard
     validates :closed_note, length: { maximum: NOTE_MAX_LENGTH }
     validates :promised_what, length: { maximum: PROMISED_WHAT_MAX_LENGTH }
     validate :lead_takes_part, if: -> { lead_id && will_save_change_to_lead_id? }
+    validate :section_of_its_column, if: -> { board_section_id && (will_save_change_to_board_section_id? || will_save_change_to_phase?) }
 
     normalizes :closed_note, :promised_what, with: ->(text) { text.to_s.squish.presence }
 
+    # Another column or another team: the section stays behind. Runs before
+    # validation, so the section's check sees the cleared section.
+    before_validation -> { self.board_section_id = nil },
+      if: -> { board_section_id && !will_save_change_to_board_section_id? && (will_save_change_to_phase? || will_save_change_to_organization_id?) }
     before_save -> { self.phase_changed_at = Time.current }, if: :will_save_change_to_phase?
     # Moving to another phase wakes a project, unless the same change puts it on hold.
     before_save -> { self.on_hold_since = nil }, if: -> { (will_save_change_to_phase? && !will_save_change_to_on_hold_since?) || (will_save_change_to_closed_at? && closed_at) }
@@ -54,11 +66,13 @@ module MapBoard
   # Changes how the board shows this map. Attributes: phase, lead_id,
   # crew_ids (people of the team who work on it), promised_on,
   # promised_what, on_hold (bool), closed_reason + closed_note (close),
-  # reopen (bool), own_place (bool).
+  # reopen (bool), own_place (bool), section_id (a section of the project's
+  # column after the change, blank for none).
   def update_board!(attrs)
     attrs = attrs.to_h.symbolize_keys
     transaction do
       self.phase = attrs[:phase] if attrs[:phase].present?
+      self.board_section_id = attrs[:section_id].presence if attrs.key?(:section_id)
       self.lead_id = attrs[:lead_id].presence if attrs.key?(:lead_id)
       self.promised_on = attrs[:promised_on].presence if attrs.key?(:promised_on)
       self.promised_what = attrs[:promised_what] if attrs.key?(:promised_what)
@@ -94,5 +108,11 @@ module MapBoard
   private
     def lead_takes_part
       errors.add(:lead, :not_a_participant) unless crew_candidates.exists?(id: lead_id)
+    end
+
+    def section_of_its_column
+      section = board_section
+      errors.add(:board_section, :not_in_this_column) unless section && organization_id &&
+        section.organization_id == organization_id && section.phase == board_phase
     end
 end

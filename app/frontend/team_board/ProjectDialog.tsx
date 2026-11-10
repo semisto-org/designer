@@ -7,22 +7,23 @@ import { Dialog } from '@/components/ui/Dialog'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import type { BoardPhase, BoardProject, ClosedReason } from '@/types/teamBoard'
-import { useBoard } from './board'
+import { columnSections, useBoard } from './board'
 
 /**
  * A team project's settings: who leads it, who of the team works on it
  * (their faces show on the board), the date promised to the client, its
- * phase, on hold or awake, closed or reopened; or one of the team's own
+ * phase and its section in that column, on hold or awake, closed or reopened; or one of the team's own
  * places, which has none of the client settings. Opened from the board and
  * from the map's « Partager » dialog.
  */
 export function ProjectDialog({ project, onClose }: { project: BoardProject | null; onClose: () => void }) {
-  const { members, phases, closedReasons, saveProject } = useBoard()
+  const { members, phases, closedReasons, sections, saveProject } = useBoard()
   const [lead, setLead] = useState('')
   const [crew, setCrew] = useState<number[]>([])
   const [promisedOn, setPromisedOn] = useState('')
   const [promisedWhat, setPromisedWhat] = useState('')
   const [phase, setPhase] = useState<BoardPhase>('design')
+  const [section, setSection] = useState('')
   const [onHold, setOnHold] = useState(false)
   const [ownPlace, setOwnPlace] = useState(false)
   const [closing, setClosing] = useState(false)
@@ -38,6 +39,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
     setPromisedOn(project.promisedOn ?? '')
     setPromisedWhat(project.promisedWhat ?? '')
     setPhase(project.phase)
+    setSection(project.sectionId != null ? String(project.sectionId) : '')
     setOnHold(!!project.onHoldSince)
     setOwnPlace(project.ownPlace)
     setClosing(false)
@@ -67,6 +69,7 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
     promised_on: promisedOn || null,
     promised_what: promisedWhat || null,
     phase,
+    section_id: section ? Number(section) : null,
     ...(onHold !== !!project.onHoldSince ? { on_hold: onHold } : {}),
   })
 
@@ -164,11 +167,19 @@ export function ProjectDialog({ project, onClose }: { project: BoardProject | nu
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('team_board.project.phase')}>
-              <Select value={phase} onChange={(e) => setPhase(e.target.value as BoardPhase)}>
+              <Select value={phase} onChange={(e) => { setPhase(e.target.value as BoardPhase); setSection('') }}>
                 {phases.map((p) => <option key={p} value={p}>{t(`team_board.phases.${p}`)}</option>)}
               </Select>
             </Field>
-            <label className={clsx('flex cursor-pointer items-start gap-3 self-end rounded-xl px-3 py-2 ring-1 ring-inset', onHold ? 'bg-loam-100 ring-loam-400' : 'ring-loam-200')}>
+            {columnSections(sections, phase).length > 0 && (
+              <Field label={t('team_board.sections.label')}>
+                <Select value={section} onChange={(e) => setSection(e.target.value)}>
+                  <option value="">{t('team_board.sections.none')}</option>
+                  {columnSections(sections, phase).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </Select>
+              </Field>
+            )}
+            <label className={clsx('flex cursor-pointer items-start gap-3 self-end rounded-xl px-3 py-2 ring-1 ring-inset', columnSections(sections, phase).length > 0 && 'sm:col-span-2', onHold ? 'bg-loam-100 ring-loam-400' : 'ring-loam-200')}>
               <input type="checkbox" checked={onHold} onChange={(e) => setOnHold(e.target.checked)} className="mt-1 h-4 w-4 accent-prune-600" />
               <span className="text-sm">
                 <span className="flex items-center gap-1.5 font-medium text-loam-800"><Moon className="h-4 w-4" aria-hidden />{t('team_board.project.on_hold')}</span>
