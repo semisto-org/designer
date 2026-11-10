@@ -7,6 +7,7 @@ import type { CommentData, ThreadData, ThreadType } from '@/types/collab'
 import { Avatar } from './Avatar'
 import { CommentBody } from './CommentBody'
 import { CommentComposer } from './CommentComposer'
+import { isBareTap, ownActionsClass } from './ownActions'
 import { refreshThreads } from './threadsStore'
 import { timeAgo } from './time'
 
@@ -25,6 +26,7 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
   const [failed, setFailed] = useState(false)
   const [editing, setEditing] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
+  const [revealed, setRevealed] = useState<number | null>(null)
   const lastRead = useRef<string | null>(null)
 
   const load = useCallback(async () => {
@@ -135,7 +137,14 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
       ) : (
         <ol className="space-y-3">
           {thread.comments.map((comment) => (
-            <li key={comment.id} id={`comment-${comment.id}`} className="flex gap-2">
+            <li
+              key={comment.id}
+              id={`comment-${comment.id}`}
+              className="group flex gap-2"
+              onClick={comment.canEdit || comment.canDelete
+                ? (event) => { if (isBareTap(event)) setRevealed((current) => (current === comment.id ? null : comment.id)) }
+                : undefined}
+            >
               <Avatar name={comment.author.name} url={comment.author.avatarUrl} />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-baseline gap-x-2 text-xs text-loam-500">
@@ -172,15 +181,19 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
                       <span aria-hidden="true">👏</span>
                       {comment.applause.count > 0 && <span>{comment.applause.count}</span>}
                     </button>
-                    {comment.canEdit && (
-                      <button type="button" onClick={() => setEditing(comment.id)} className="rounded p-1.5 hover:bg-loam-100" aria-label={t('common.edit')} title={t('common.edit')}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                    {comment.canDelete && (
-                      <button type="button" onClick={() => void remove(comment)} className="rounded p-1.5 hover:bg-loam-100 hover:text-clay-500" aria-label={t('common.delete')} title={t('common.delete')}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                    {(comment.canEdit || comment.canDelete) && (
+                      <span className={'flex items-center gap-1 ' + ownActionsClass(revealed === comment.id)}>
+                        {comment.canEdit && (
+                          <button type="button" onClick={() => setEditing(comment.id)} className="rounded p-1.5 hover:bg-loam-100" aria-label={t('common.edit')} title={t('common.edit')}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        {comment.canDelete && (
+                          <button type="button" onClick={() => void remove(comment)} className="rounded p-1.5 hover:bg-loam-100 hover:text-clay-500" aria-label={t('common.delete')} title={t('common.delete')}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </span>
                     )}
                   </div>
                 )}
