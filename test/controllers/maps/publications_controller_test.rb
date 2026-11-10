@@ -1,7 +1,10 @@
 require "test_helper"
 require_relative "../../test_helpers/collab_test_helper"
+require_relative "../../test_helpers/photo_archive_test_helper"
 
 class Maps::PublicationsControllerTest < ActionDispatch::IntegrationTest
+  include PhotoArchiveTestHelper
+
   setup do
     @map = maps(:ahinvaux)
     @owner = users(:michael)
@@ -35,6 +38,17 @@ class Maps::PublicationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal true, json["defaults"]["options"]["hide_networks"]
     assert_equal MapFeature::LAYERS, json["featureLayers"].map { |l| l["key"] }
     assert_equal({ "ortho" => false, "gaz" => true }, json["regionLayers"].to_h { |l| [ l["key"], l["sensitive"] ] })
+  end
+
+  test "a partial flight with no photo over the map is not offered as a base" do
+    seed_wallonia_photos
+    stub_photo("ORTHO_2022_ETE", jpeg([ 255, 255, 255 ]))
+    sign_in_as @owner
+    get map_publication_path(@map), as: :json
+    keys = json["regionLayers"].map { |l| l["key"] }
+    assert_includes keys, "ortho_2026"
+    assert_not_includes keys, "ortho_2022_ete"
+    assert_not_includes keys, "ortho_2022_ete_ir"
   end
 
   test "?public=1 adds what the public view shows, to paint the video from, while it is live" do

@@ -1,8 +1,9 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import clsx from 'clsx'
-import { ArrowLeft } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
+import { ButtonLink } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { BoardContext, patchProject, type BoardContextValue, type NextStep, type ProjectChange } from '@/team_board/board'
 import { Frieze } from '@/team_board/Frieze'
@@ -10,7 +11,8 @@ import { People } from '@/team_board/People'
 import { Places } from '@/team_board/Places'
 import { Requests } from '@/team_board/Requests'
 import { Season } from '@/team_board/Season'
-import type { BoardProject, TeamBoardProps } from '@/types/teamBoard'
+import { TeamSwitcher } from '@/team_board/TeamSwitcher'
+import type { BoardPhase, BoardProject, BoardSection, TeamBoardProps } from '@/types/teamBoard'
 
 type Toast = { id: number; message: string; tone: 'info' | 'error' }
 
@@ -27,6 +29,14 @@ export default function TeamBoard(props: TeamBoardProps) {
   useEffect(() => setMaps([...props.projects, ...props.places]), [props.projects, props.places])
   const projects = useMemo(() => maps.filter((m) => !m.ownPlace), [maps])
   const places = useMemo(() => maps.filter((m) => m.ownPlace), [maps])
+  const [sections, setSections] = useState(props.sections)
+  useEffect(() => setSections(props.sections), [props.sections])
+  const setColumnSections = useCallback((phase: BoardPhase, list: BoardSection[]) => {
+    setSections((all) => [...all.filter((s) => s.phase !== phase), ...list])
+    // A deleted section lets its projects go loose in the column.
+    const kept = new Set(list.map((s) => s.id))
+    setMaps((all) => all.map((m) => (m.phase === phase && m.sectionId != null && !kept.has(m.sectionId) ? { ...m, sectionId: null } : m)))
+  }, [])
   const [toast, setToast] = useState<Toast | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -44,7 +54,8 @@ export default function TeamBoard(props: TeamBoardProps) {
   const saveProject = useCallback(async (project: BoardProject, change: ProjectChange, nextStep?: NextStep) => {
     const now = new Date().toISOString()
     const optimistic: BoardProject = { ...project }
-    if (change.phase && change.phase !== project.phase) Object.assign(optimistic, { phase: change.phase, phaseChangedAt: now, onHoldSince: null })
+    if (change.phase && change.phase !== project.phase) Object.assign(optimistic, { phase: change.phase, phaseChangedAt: now, onHoldSince: null, sectionId: null })
+    if (change.section_id !== undefined) optimistic.sectionId = change.section_id
     if (change.on_hold !== undefined) optimistic.onHoldSince = change.on_hold ? now : null
     if (change.closed_reason) Object.assign(optimistic, { closedAt: now, closedReason: change.closed_reason })
     if (change.reopen) Object.assign(optimistic, { closedAt: null, closedReason: null, closedNote: null })
@@ -74,10 +85,12 @@ export default function TeamBoard(props: TeamBoardProps) {
     phases: props.phases,
     closedReasons: props.closedReasons,
     stepKinds: props.stepKinds,
+    sections,
+    setColumnSections,
     members: props.members,
     notify,
     saveProject,
-  }), [team.id, today, props.phases, props.closedReasons, props.stepKinds, props.members, notify, saveProject])
+  }), [team.id, today, props.phases, props.closedReasons, props.stepKinds, sections, setColumnSections, props.members, notify, saveProject])
 
   return (
     <BoardContext.Provider value={context}>
@@ -85,12 +98,16 @@ export default function TeamBoard(props: TeamBoardProps) {
         <Head title={`${t('team_board.title')} · ${team.name}`} />
 
         <header className="space-y-4">
+          {/* The team (and the others, one click away) on the left; its settings, rarely needed, on the right. */}
           <div className="flex items-center justify-between gap-3">
-            <Link href={`/teams/${team.id}`} className="inline-flex items-center gap-1.5 text-sm text-loam-500 hover:text-loam-900">
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              {t('team_board.back')}
-            </Link>
-            <HelpButton slug="tableau-de-l-equipe" />
+            <TeamSwitcher current={team} teams={props.myTeams} />
+            <div className="flex shrink-0 items-center gap-1">
+              <ButtonLink href={`/teams/${team.id}`} variant="ghost" size="sm">
+                <Settings className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only sm:not-sr-only">{t('team_board.settings')}</span>
+              </ButtonLink>
+              <HelpButton slug="tableau-de-l-equipe" />
+            </div>
           </div>
           <h1 className="font-serif text-4xl leading-tight text-loam-900 sm:text-5xl">{t('team_board.title')}</h1>
         </header>
@@ -104,7 +121,7 @@ export default function TeamBoard(props: TeamBoardProps) {
         <Places places={places} />
       </div>
 
-      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4">
         {toast && (
           <p key={toast.id} role={toast.tone === 'error' ? 'alert' : 'status'} className={clsx(
             'rounded-full px-4 py-2 text-sm font-semibold shadow-lg',

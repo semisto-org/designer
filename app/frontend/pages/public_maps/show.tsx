@@ -24,7 +24,7 @@ export default function PublicMapShow(props: PublicMapProps) {
   }, [])
 
   return (
-    <div className="flex h-dvh flex-col bg-loam-100">
+    <div className="fixed inset-0 flex flex-col overflow-clip overscroll-none bg-loam-100">
       <Head title={props.title}>
         <meta name="robots" content="noindex, nofollow" />
       </Head>

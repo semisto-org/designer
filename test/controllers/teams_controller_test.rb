@@ -27,6 +27,35 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ { "id" => @team.id, "name" => "Semisto", "role" => "member", "membersCount" => 2, "mapsCount" => 1 } ], props["teams"]
   end
 
+  test "« Équipe » opens the board of the team I opened last" do
+    other = make_team("Autre équipe", admin: @outsider, members: [ @member ])
+    sign_in_as @member
+    get team_home_path
+    assert_redirected_to team_board_path(@team) # no visit yet: the first team joined
+
+    get team_board_path(other)
+    get team_home_path
+    assert_redirected_to team_board_path(other)
+
+    get team_board_path(@team)
+    get team_home_path
+    assert_redirected_to team_board_path(@team)
+  end
+
+  test "« Équipe » without any team: « Mes équipes »" do
+    sign_in_as @outsider
+    get team_home_path
+    assert_redirected_to teams_path
+  end
+
+  test "the board lists my teams for its switcher, and only mine" do
+    make_team("Zèbre", admin: @member)
+    make_team("Pas la mienne", admin: @outsider)
+    sign_in_as @member
+    get team_board_path(@team), headers: inertia_headers
+    assert_equal [ "Semisto", "Zèbre" ], props["myTeams"].map { _1["name"] }
+  end
+
   test "creates a team with me as its admin" do
     sign_in_as @outsider
     assert_difference -> { Organization.count } do
@@ -112,7 +141,7 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     assert_difference -> { Organization.count } => -1, -> { Map.count } => 0 do
       delete team_path(@team)
     end
-    assert_redirected_to teams_path
+    assert_redirected_to team_home_path
     assert_nil @map.reload.organization_id
     assert_equal "owner", @map.role_for(@admin)
     assert_nil @map.role_for(@member)

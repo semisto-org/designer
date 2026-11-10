@@ -32,7 +32,7 @@ fr:
             email_address:
               already_member: "fait déjà partie de l'équipe"
   teams:
-    nav: "Équipes"
+    nav: "Équipe"
     roles:
       admin: "Administrateur"
       member: "Membre"
@@ -62,7 +62,7 @@ fr:
       create_hint: "Tu en seras l'administrateur. Créer une équipe est gratuit."
       create: "Créer l'équipe"
     show:
-      back: "Mes équipes"
+      back: "Tableau de l'équipe"
       your_role: "Tu es %{role}"
       rename: "Renommer"
       rename_title: "Renommer l'équipe"

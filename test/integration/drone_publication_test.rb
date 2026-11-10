@@ -74,7 +74,7 @@ class DronePublicationTest < ActionDispatch::IntegrationTest
     view.archive.attach(io: file_fixture("drone-view.pmtiles").open, filename: "vue.pmtiles", content_type: "application/vnd.pmtiles")
     publication = publish("show_aerial_view" => "1")
     assert_equal view.id, publication.snapshot["aerial_view_id"]
-    assert_equal "/p/#{publication.token}/aerial-view", public_props(publication).dig("aerialView", "url")
+    assert_equal "/p/#{publication.token}/aerial-view?v=#{view.tiles_version}", public_props(publication).dig("aerialView", "url")
 
     get public_map_aerial_view_path(publication.token)
     assert_response :redirect

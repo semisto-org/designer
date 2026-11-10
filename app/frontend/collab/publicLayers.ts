@@ -16,6 +16,11 @@ export function installPublicLayers(map: MapLibreMap, layers: PublicLayer[]): ()
   const base = layers.find((l) => l.category === 'base')
   const shown = [...(base ? [base] : []), ...layers.filter((l) => l.category === 'overlay')]
   const added: string[] = []
+  // Right above the OpenStreetMap fallback, under whatever is already
+  // drawn (boundary, features, garden): installed late, a photo must never
+  // cover the plan.
+  const before = (map.getStyle()?.layers ?? [])
+    .find((l) => l.type !== 'background' && l.id !== 'osm' && !shown.some((s) => id(s) === l.id))?.id
   for (const layer of shown) {
     if (map.getSource(id(layer))) continue
     map.addSource(id(layer), {
@@ -26,7 +31,7 @@ export function installPublicLayers(map: MapLibreMap, layers: PublicLayer[]): ()
       ...(layer.maxZoom != null ? { maxzoom: layer.maxZoom } : {}),
       ...(layer.attribution ? { attribution: layer.attribution } : {}),
     })
-    map.addLayer({ id: id(layer), type: 'raster', source: id(layer), paint: { 'raster-opacity': layer.category === 'base' ? 1 : layer.opacity } })
+    map.addLayer({ id: id(layer), type: 'raster', source: id(layer), paint: { 'raster-opacity': layer.category === 'base' ? 1 : layer.opacity } }, before)
     added.push(id(layer))
   }
   if (base && map.getLayer('osm')) map.setLayoutProperty('osm', 'visibility', 'none')

@@ -1,6 +1,8 @@
 import { usePage } from '@inertiajs/react'
 import type { ErrorEvent as MapErrorEvent, MapSourceDataEvent } from 'maplibre-gl'
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useAlign } from '@/drone/align'
+import AlignOverlay from '@/drone/AlignOverlay'
 import { importsStore } from '@/drone/imports'
 import { aerialStore, useAerialState } from '@/drone/store'
 import { placeAerialLayers, syncAerialViews } from '@/drone/layers'
@@ -28,13 +30,14 @@ function useAerialImportsProp(): AerialImport[] {
 /**
  * Applies the drone-view choice of « Couches » to MapLibre, whether the
  * panel is open or not, keeps the views above the base map, and watches
- * their tiles. Renders nothing.
+ * their tiles. Renders only « Recaler la vue » while a view is realigned.
  */
 export default function AerialViewsOverlay() {
   const { instance, map, regionLayers } = useEditor()
   const views = useAerialViews()
   const imports = useAerialImportsProp()
   const state = useAerialState()
+  const aligning = useAlign().viewId
   const health = useRef(new Map<number, { errors: number; loaded: boolean }>())
 
   useLayoutEffect(() => {
@@ -47,9 +50,9 @@ export default function AerialViewsOverlay() {
 
   useEffect(() => {
     if (state.mapId !== map.id) return
-    syncAerialViews(instance, views, state.viewId, state.opacity)
+    syncAerialViews(instance, views, state.viewId, state.opacity, aligning)
     placeAerialLayers(instance, regionLayers)
-  }, [instance, views, state.mapId, state.viewId, state.opacity, map.id, regionLayers])
+  }, [instance, views, state.mapId, state.viewId, state.opacity, map.id, regionLayers, aligning])
 
   // Choosing a view again gives it a fresh chance.
   useEffect(() => {
@@ -91,5 +94,5 @@ export default function AerialViewsOverlay() {
     }
   }, [instance, views])
 
-  return null
+  return <AlignOverlay views={views} />
 }

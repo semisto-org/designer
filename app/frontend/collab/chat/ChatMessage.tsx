@@ -13,6 +13,7 @@ import { photoUrl } from '@/map/photos/format'
 import { photoActions } from '@/map/photos/store'
 import type { ChatDocument, CommentData, Mentionable } from '@/types/collab'
 import { Avatar } from '../Avatar'
+import { ownActionsClass, revealOnTap } from '../ownActions'
 import { geometryCenter } from '../geometry'
 import { timeAgo } from '../time'
 import { ChatComposer, type ChatDraft } from './ChatComposer'
@@ -61,9 +62,14 @@ export function ChatMessage({ comment, members, highlighted, editing, busy, onEd
   )
   const inline = new Set(tokens.flatMap((token) => (token.kind === 'feature' ? [token.id] : [])))
   const others = features.filter((f) => !inline.has(f.id))
+  const ownActions = comment.canEdit || comment.canDelete
+  const [revealed, setRevealed] = useState(false)
 
   return (
-    <article className={clsx('flex gap-2 rounded-lg transition-colors duration-700', highlighted && 'bg-humus-50 ring-4 ring-humus-50')}>
+    <article
+      className={clsx('group flex gap-2 rounded-lg transition-colors duration-700', highlighted && 'bg-humus-50 ring-4 ring-humus-50')}
+      onClick={ownActions ? (event) => revealOnTap(event, setRevealed) : undefined}
+    >
       <Avatar name={comment.author.name} url={comment.author.avatarUrl} />
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-baseline gap-x-2 text-sm text-loam-500">
@@ -152,8 +158,12 @@ export function ChatMessage({ comment, members, highlighted, editing, busy, onEd
               <span aria-hidden="true">👏</span>
               {comment.applause.count > 0 && <span>{comment.applause.count}</span>}
             </ChipButton>
-            {comment.canEdit && <IconButton size="sm" label={t('common.edit')} onClick={onEdit}><Pencil /></IconButton>}
-            {comment.canDelete && <IconButton size="sm" tone="danger" label={t('common.delete')} onClick={onRemove}><Trash2 /></IconButton>}
+            {ownActions && (
+              <span className={clsx('flex items-center gap-1', ownActionsClass(revealed))}>
+                {comment.canEdit && <IconButton size="sm" label={t('common.edit')} onClick={onEdit}><Pencil /></IconButton>}
+                {comment.canDelete && <IconButton size="sm" tone="danger" label={t('common.delete')} onClick={onRemove}><Trash2 /></IconButton>}
+              </span>
+            )}
           </div>
         )}
       </div>

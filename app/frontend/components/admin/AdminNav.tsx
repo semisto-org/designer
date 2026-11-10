@@ -7,6 +7,7 @@ const ITEMS = [
   { href: '/admin/first-hours', key: 'first_hours' },
   { href: '/admin/users', key: 'users' },
   { href: '/admin/maps', key: 'maps' },
+  { href: '/admin/teams', key: 'teams' },
   { href: '/admin/gallery', key: 'gallery' },
   { href: '/admin/requests', key: 'requests' },
   { href: '/admin/invoice-requests', key: 'invoices' },

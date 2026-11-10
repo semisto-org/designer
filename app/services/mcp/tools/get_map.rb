@@ -45,6 +45,7 @@ module Mcp
           documents: map.documents.count,
           site_visits: site_visits(map),
           photos: map.photos.count,
+          drone_views: drone_views(map),
           discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
           first_hour: first_hour(map),
@@ -55,7 +56,9 @@ module Mcp
           presentations: presentations(map),
           publication: publication(map),
           implementation: implementation(map),
+          season: season(map),
           team_season: team_season(map),
+          team_project: team_project(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           reader_guide: reader_guide,
@@ -87,6 +90,20 @@ module Mcp
           article = HelpArticle.find(MapInvitationMailer::READER_GUIDE) or return nil
           { slug: article.slug, title: article.title, url: "#{origin}/help/#{article.slug}", note: t("notes.reader_guide") }
         end
+
+      # The map's drone views, newest first, and how well each one lines up
+      # (« Recaler la vue », done by a person in the editor, never by the AI).
+      def drone_views(map)
+        map.aerial_views.ready.newest_first.map do |view|
+          done = view.alignments.select { _1["status"] == "done" }
+          {
+            id: view.id, name: view.name, captured_on: view.captured_on.iso8601, product: view.product,
+            realignable: view.alignable?,
+            realigned: (done.any? ? { count: done.size, last_at: done.last["finished_at"] || done.last["at"], shift_m: done.last["shift_m"], landmarks: done.last["pairs"].size } : nil),
+            realigning: view.pending_alignment.present? || nil
+          }.compact
+        end
+      end
 
       # The walks made with the phone; list_site_visits gives each one.
       def site_visits(map)
@@ -228,17 +245,16 @@ module Mcp
           }
         end
 
-        # A team project on the team board: its stage and the steps of
-        # « La saison qui vient » from the start of this month, forecasts
-        # (an offer not signed yet) included. nil off a team or for its places.
-        def team_season(map)
-          return nil unless map.organization_id && !map.own_place
-          from = Date.current.beginning_of_month
-          steps = map.tasks.steps.where(due_on: from..).order(:starts_on)
+        # The project's season steps (SeasonSteps: design, work site,
+        # planting) from the start of this month, forecasts (an offer not
+        # signed yet) included, as the frieze of its « Tâches » page draws
+        # them, with the bare-root planting window.
+        def season(map)
+          window = SeasonSteps.window
           {
-            stage: map.board_phase, promised_on: map.promised_on&.iso8601,
-            board_url: "#{origin}/teams/#{map.organization_id}/board",
-            steps: steps.map do |task|
+            tasks_url: "#{map_url(map)}/tasks",
+            planting_window: { opens_on: window.begin.iso8601, closes_on: window.end.iso8601 },
+            steps: map.tasks.steps.where(due_on: Date.current.beginning_of_month..).order(:starts_on, :id).map do |task|
               { task_id: task.id, kind: task.step_kind, title: task.title, starts_on: task.starts_on.iso8601,
                 ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
             end
@@ -256,6 +272,29 @@ module Mcp
             hours: envelopes.totals[:hours], km: envelopes.totals[:km],
             phases: envelopes.phases.filter_map { |p| { phase: p[:key], hours: p[:hours], envelope_hours: p[:envelopeHours], over_hours: p[:overHours] }.compact if p[:hours].positive? || p[:envelopeHours] }
           }
+        end
+
+        # A team project on the team board: its stage, the team's section of
+        # that column it sits in (BoardSection, such as « Pré-design ») among
+        # the column's sections, on hold or not, the date promised to the
+        # client and the board, whose « La saison qui vient » draws the same
+        # steps as `season`. nil off a team or for its places.
+        def team_season(map)
+          return nil unless map.organization_id && !map.own_place
+          {
+            stage: map.board_phase, section: map.board_section&.name,
+            stage_sections: map.organization.board_sections.where(phase: map.board_phase).ordered.pluck(:name),
+            on_hold: map.on_hold?, promised_on: map.promised_on&.iso8601, board_url: "#{origin}/teams/#{map.organization_id}/board"
+          }
+        end
+
+        # What the team reads about the project before opening its map (the
+        # board's « Aperçu du projet »): next action and who carries it, what
+        # was done lately, task lists, project manager and crew, how far the
+        # offer went. For the team's members only; nil elsewhere.
+        def team_project(map)
+          return nil unless map.organization_id && !map.own_place && map.organization.member?(user)
+          Teams::ProjectPreview.new(map, user).for_mcp
         end
 
         def offer(map)

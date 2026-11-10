@@ -19,9 +19,14 @@ class Organization < ApplicationRecord
   has_many :users, through: :memberships
   has_many :invitations, class_name: "OrganizationInvitation", dependent: :destroy
   has_many :maps, dependent: :nullify
+  # The sections of the team board's columns (BoardSection).
+  has_many :board_sections, dependent: :delete_all
   has_many :offer_templates, as: :owner, dependent: :destroy
   has_one :request_form, as: :owner, dependent: :destroy
   has_one :form_inbox, dependent: :destroy
+  # « Territoire »: granted by Semisto from the admin (Admin::TeamsController),
+  # never turned on by the team itself.
+  has_many :territories, dependent: :destroy
 
   normalizes :name, with: ->(n) { n.to_s.squish }
   validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }
@@ -35,6 +40,18 @@ class Organization < ApplicationRecord
     transaction do
       create!(name:).tap { |team| team.memberships.create!(user:, role: "admin") }
     end
+  end
+
+  def territory_module? = territory_module_granted_at.present?
+
+  def grant_territory_module!
+    update!(territory_module_granted_at: Time.current) unless territory_module?
+  end
+
+  # The territories stay readable, read-only, until it is granted again:
+  # nothing is taken hostage.
+  def revoke_territory_module!
+    update!(territory_module_granted_at: nil)
   end
 
   def membership_for(user)

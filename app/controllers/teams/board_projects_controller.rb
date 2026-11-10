@@ -1,11 +1,12 @@
 # A team map on the team board: its phase (dragged from one column to
-# another), lead and crew, the date promised to the client, on hold or
+# another) and its section in that column, lead and crew, the date promised to the client, on hold or
 # awake, closed (« Sans suite ») or reopened, one of the team's own places
 # or a client project. A move may carry the project's
 # next step, which becomes a dated task of the map (and an e-mail to the
 # person it is given to). Any member of the team does it, as they all edit
 # the team's maps. Answers with the board's view of the project; `show`
-# gives it to the map editor (« Partager » dialog) with the team's people.
+# gives it to the map editor (« Partager » dialog) with the team's people;
+# `preview` what the team reads before opening the map (Teams::ProjectPreview).
 module Teams
   class BoardProjectsController < ApplicationController
     include TeamScoped
@@ -19,6 +20,11 @@ module Teams
     def show
       board = Teams::Board.new(@team, Current.user)
       render json: { project: board.project(@map), **board.settings }
+    end
+
+    # The project's preview, opened from its card on the board.
+    def preview
+      render json: { preview: Teams::ProjectPreview.new(@map, Current.user).as_json }
     end
 
     def update
@@ -43,7 +49,7 @@ module Teams
       end
 
       def project_params
-        params.fetch(:project, {}).permit(:phase, :lead_id, :promised_on, :promised_what, :on_hold, :closed_reason, :closed_note, :reopen, :own_place, crew_ids: [])
+        params.fetch(:project, {}).permit(:phase, :lead_id, :promised_on, :promised_what, :on_hold, :closed_reason, :closed_note, :reopen, :own_place, :section_id, crew_ids: [])
       end
 
       def create_next_step!

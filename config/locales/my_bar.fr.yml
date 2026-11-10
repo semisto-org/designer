@@ -1,0 +1,5 @@
+# The « My Bar »: a bar fixed at the bottom of the app's pages with what
+# concerns the signed-in person (their account, their tasks, their bell).
+fr:
+  my_bar:
+    label: "Ce qui te concerne"

@@ -5,7 +5,7 @@ category: Partager et collaborer
 order: 74
 ---
 
-Le tableau de l'équipe sert à la réunion opérationnelle : on le lit de haut en bas, en une demi-heure. Tu l'ouvres depuis la page de ton équipe, « Tableau de l'équipe ». Tous les membres de l'équipe le voient et le modifient.
+Le tableau de l'équipe sert à la réunion opérationnelle : on le lit de haut en bas, en une demi-heure. Tu l'ouvres d'un clic sur **Équipe**, dans le menu principal : il s'ouvre sur la dernière équipe où tu étais, et son nom, en haut à gauche, te fait passer à une autre. Tous les membres de l'équipe le voient et le modifient.
 
 ## Les nouvelles demandes, d'abord
 
@@ -26,7 +26,32 @@ Chaque carte de l'équipe est un projet, posé dans une des six colonnes : Deman
 - « **12 j** » dit depuis quand le projet est dans sa colonne. Au-delà d'un mois, le chiffre s'allume : le projet s'enlise peut-être.
 - La **date promise** au client passe en rouge deux semaines avant l'échéance.
 - « Terminé » montre les projets terminés depuis moins de trois mois ; les plus anciens se déplient avec « Voir les … autres ».
-- Un projet **en veille** garde sa colonne, en grisé, en fin de colonne. Un projet **sans suite** (offre refusée, pas de réponse) quitte la frise et se range sous elle, d'où on peut le reprendre.
+- Un projet **en veille** garde sa colonne et descend dans « En veille », toujours en bas de la colonne, en grisé. Glisse-le là pour le mettre en veille, ou ressors-le pour le réveiller. Un projet **sans suite** (offre refusée, pas de réponse) quitte la frise et se range sous elle, d'où on peut le reprendre.
+
+## Les sections d'une colonne
+
+Une colonne peut se ranger en **sections** à vous. Au Design Labs, par exemple, « Design » se sépare en « Pré-design » et « Design détaillé ».
+
+- Le **+** à côté du nom de la colonne ajoute une section.
+- **Glisse une carte** sur une section pour l'y ranger ; elle n'a pas besoin de nouvelle étape, puisqu'elle reste dans sa colonne. Sur téléphone, « Ranger dans » du menu « … » de la carte fait la même chose.
+- Le menu « … » d'une section la renomme, la monte, la descend ou la supprime. Ses projets restent alors dans la colonne, hors section.
+- Un projet qui change de colonne quitte sa section. En veille, il garde la sienne pour son réveil.
+- « **En veille** » n'est pas une section : elle reste en bas de chaque colonne et ne se renomme pas.
+
+Ton IA sait dans quelle section est un projet : demande-lui où en sont les pré-designs.
+
+## L'aperçu d'un projet
+
+Clique sur une carte de la frise : son **aperçu** s'ouvre, sans quitter le tableau. C'est ce qu'on regarde ensemble en réunion :
+
+- **où en est le projet** sur les six étapes, et depuis combien de jours ;
+- **la prochaine action**, qui s'en occupe et pour quand, puis les suivantes et celles en retard. S'il n'y en a pas, « Poser la prochaine étape » la fixe tout de suite ;
+- **qui est sur le projet** : le Project Manager et l'équipe ;
+- **ce qui est promis** au client, et **où en est l'offre** (enregistrée, envoyée, acceptée, refusée ; jamais son montant) ;
+- **ce qui a déjà été fait**, et l'avancement de chaque liste de tâches ;
+- **sa saison** : le design, le chantier et la plantation des mois qui viennent.
+
+En bas, deux portes : **Ouvrir l'offre**, mise en avant tant que l'offre n'est pas acceptée, et **Ouvrir la carte**, pour travailler ensemble sur le lieu. Ton IA lit le même résumé : demande-lui où en est un projet.
 
 ## Les réglages d'un projet
 
@@ -38,7 +63,7 @@ Toutes les cartes de l'équipe ne sont pas des projets de clients : le jardin-fo
 
 ## La saison qui vient
 
-Les douze mois à venir, projet par projet, avec la fenêtre de plantation à racines nues (de novembre à février) en vert. Trois sortes d'étapes : **design**, **chantier** et **plantation**.
+Les douze mois à venir, projet par projet, avec la fenêtre de plantation à racines nues (de novembre à février) en vert. Un projet planifié sur plusieurs années (une phase en 2027, une autre en 2028…) allonge la frise jusqu'au mois de sa dernière étape : fais-la défiler vers la droite, ou clique sur « La frise continue jusqu'en… ». Les noms des projets restent à leur place pendant le défilement. Trois sortes d'étapes : **design**, **chantier** et **plantation**.
 
 - Fais **glisser** une étape pour la déplacer, tire un de ses **bords** pour l'étendre. Le pas est la semaine.
 - Au clavier, les flèches déplacent l'étape d'une semaine ; avec Maj, elles l'allongent ou la raccourcissent.
@@ -50,7 +75,7 @@ Un projet encore au stade de l'offre peut déjà prendre sa place dans la saison
 
 Quand l'offre est signée, clique sur l'étape et choisis **Confirmer l'étape** : elle prend sa couleur pleine. Ton IA peut aussi poser ces étapes prévisionnelles pour toi, et les confirmer quand tu le lui dis.
 
-Chaque étape est aussi une tâche datée de sa carte, dans « Tâches ».
+Chaque étape est aussi une tâche datée de sa carte. La page « Tâches » de chaque carte montre la même frise, pour ce seul projet, avec une rangée par sorte d'étape : on y ajoute, déplace et modifie ses étapes, et le tableau de l'équipe suit aussitôt.
 
 ## La charge de chacun
 

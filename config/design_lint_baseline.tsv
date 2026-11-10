@@ -411,7 +411,7 @@ hex-color	1	app/frontend/pages/teams/forms.tsx
 native-confirm	3	app/frontend/pages/teams/forms.tsx
 small-text	1	app/frontend/pages/teams/index.tsx
 bare-button	3	app/frontend/pages/teams/show.tsx
-hex-color	2	app/frontend/pages/teams/show.tsx
+hex-color	1	app/frontend/pages/teams/show.tsx
 native-confirm	5	app/frontend/pages/teams/show.tsx
 small-text	9	app/frontend/pages/teams/show.tsx
 bare-button	1	app/frontend/pages/welcomes/show.tsx
@@ -441,10 +441,10 @@ bare-button	1	app/frontend/relief/NivaControls.tsx
 small-text	8	app/frontend/relief/NivaControls.tsx
 bare-button	1	app/frontend/relief/ui.tsx
 small-text	8	app/frontend/relief/ui.tsx
-bare-button	5	app/frontend/tasks/parts.tsx
-small-text	2	app/frontend/tasks/parts.tsx
+bare-button	3	app/frontend/tasks/parts.tsx
+small-text	1	app/frontend/tasks/parts.tsx
 hex-color	2	app/frontend/team_board/board.tsx
-bare-button	8	app/frontend/team_board/Frieze.tsx
+bare-button	6	app/frontend/team_board/Frieze.tsx
 hex-color	3	app/frontend/team_board/Frieze.tsx
 hex-color	1	app/frontend/team_board/MapProjectSection.tsx
 hex-color	1	app/frontend/team_board/People.tsx
@@ -452,8 +452,6 @@ hex-color	3	app/frontend/team_board/PhaseIcon.tsx
 bare-button	1	app/frontend/team_board/Places.tsx
 hex-color	1	app/frontend/team_board/Places.tsx
 hex-color	2	app/frontend/team_board/Requests.tsx
-bare-button	1	app/frontend/team_board/Season.tsx
-hex-color	1	app/frontend/team_board/Season.tsx
 native-confirm	1	app/frontend/teams/MapTeamSection.tsx
 small-text	4	app/frontend/teams/MapTeamSection.tsx
 native-confirm	1	app/frontend/transfer/MapTransferSection.tsx
