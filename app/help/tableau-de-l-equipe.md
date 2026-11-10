@@ -28,6 +28,19 @@ Chaque carte de l'équipe est un projet, posé dans une des six colonnes : Deman
 - « Terminé » montre les projets terminés depuis moins de trois mois ; les plus anciens se déplient avec « Voir les … autres ».
 - Un projet **en veille** garde sa colonne, en grisé, en fin de colonne. Un projet **sans suite** (offre refusée, pas de réponse) quitte la frise et se range sous elle, d'où on peut le reprendre.
 
+## L'aperçu d'un projet
+
+Clique sur une carte de la frise : son **aperçu** s'ouvre, sans quitter le tableau. C'est ce qu'on regarde ensemble en réunion :
+
+- **où en est le projet** sur les six étapes, et depuis combien de jours ;
+- **la prochaine action**, qui s'en occupe et pour quand, puis les suivantes et celles en retard. S'il n'y en a pas, « Poser la prochaine étape » la fixe tout de suite ;
+- **qui est sur le projet** : le Project Manager et l'équipe ;
+- **ce qui est promis** au client, et **où en est l'offre** (enregistrée, envoyée, acceptée, refusée ; jamais son montant) ;
+- **ce qui a déjà été fait**, et l'avancement de chaque liste de tâches ;
+- **sa saison** : le design, le chantier et la plantation des mois qui viennent.
+
+En bas, deux portes : **Ouvrir l'offre**, mise en avant tant que l'offre n'est pas acceptée, et **Ouvrir la carte**, pour travailler ensemble sur le lieu. Ton IA lit le même résumé : demande-lui où en est un projet.
+
 ## Les réglages d'un projet
 
 Clique sur les visages d'une carte, ou choisis « Le projet » dans son menu : le Project Manager, qui y travaille, la date promise et ce qui est promis, la phase, la mise en veille. Les mêmes réglages s'ouvrent depuis la carte elle-même, dans « Partager ».

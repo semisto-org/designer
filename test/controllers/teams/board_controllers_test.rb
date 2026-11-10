@@ -88,6 +88,22 @@ class Teams::BoardControllersTest < ActionDispatch::IntegrationTest
     assert_equal [ users(:bob), users(:michael) ].map(&:id).sort, response.parsed_body["members"].map { _1["id"] }.sort
   end
 
+  test "a card of the board opens the project's preview" do
+    @map.update_board!(lead_id: users(:bob).id)
+    @map.task_lists.create!(name: "Suivi").tasks.create!(title: "Envoyer l'offre", due_on: Date.current + 3, assignee: users(:bob))
+    sign_in_as users(:bob)
+    get preview_team_board_project_path(@team, @map), as: :json
+    assert_response :success
+    preview = response.parsed_body["preview"]
+    assert_equal [ @map.id, "design", "Envoyer l'offre" ], [ preview["id"], preview["phase"], preview.dig("nextStep", "title") ]
+    assert_equal users(:bob).id, preview.dig("lead", "id")
+    assert_equal "/maps/#{@map.id}/offer", preview.dig("offer", "url")
+
+    sign_in_as users(:alice)
+    get preview_team_board_project_path(@team, @map), as: :json
+    assert_response :not_found
+  end
+
   test "season steps are drawn, moved, stretched and removed" do
     sign_in_as users(:bob)
     post team_board_steps_path(@team), as: :json,
