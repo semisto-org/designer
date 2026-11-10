@@ -66,11 +66,14 @@ class Maps::CommentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, comment.applauses.count
   end
 
-  test "signed-out requests are redirected to sign in" do
+  test "signed-out requests are told they are signed out" do
     get map_comments_path(@map), as: :json
-    assert_redirected_to new_session_path
-    post map_comments_path(@map), params: { comment: { body: "x" } }, as: :json
-    assert_redirected_to new_session_path
+    assert_response :unauthorized
+    assert_no_difference -> { Comment.count } do
+      post map_comments_path(@map), params: { comment: { body: "x" } }, as: :json
+    end
+    assert_response :unauthorized
+    assert_equal "signed_out", response.parsed_body["code"]
   end
 
   test "a thread belongs to its own map: a feature of another map is a 404" do

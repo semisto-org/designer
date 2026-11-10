@@ -205,6 +205,8 @@ fr:
       thumbnail: "L'aperçu du document est illisible."
       link_elsewhere: "Ce lien appartient à une autre carte."
       upload_failed: "L'envoi a échoué. Vérifie ta connexion et réessaie."
+      upload_stalled: "L'envoi de « %{name} » n'avançait plus : on l'a arrêté. Vérifie ta connexion et réessaie."
+      unreadable: "Ton navigateur n'arrive pas à lire « %{name} ». S'il est dans un dossier synchronisé (Drive, OneDrive, iCloud, Dropbox…), ouvre-le une fois sur ton ordinateur pour qu'il soit téléchargé, puis réessaie."
       generic: "Ça n'a pas fonctionné. Vérifie ta connexion et réessaie."
   photo_pages:
     page_title: "Photos · %{map}"

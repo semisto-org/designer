@@ -36,15 +36,24 @@ import { plantPeek } from '@/map/plants/peek'
 import { isPlant } from '@/map/plants/properties'
 import { idsWithin, selectionMove, toggled } from '@/map/selection/move'
 import { DEFAULT_MOMENT, shownMoment, timeline as timelineOf } from '@/map/time/moment'
-import { initTime, setMoment, setSeason, useTime } from '@/map/time/store'
+import { initTime, setMode, setMoment, setSeason, timeStore, useTime } from '@/map/time/store'
+import { modeForStage } from '@/map/time/mode'
+import { ModeSwitch } from '@/map/time/ModeSwitch'
+import { isPlanned } from '@/map/scenario'
 import type { EntitlementsData, MapData, MapFeature, MapStage, RegionLayerData } from '@/types'
 import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
+import { usePresentation } from '@/map/presentation/store'
+import { initVariants, shownVariantId } from '@/map/variants/store'
+import type { MapVariant } from '@/map/variants/variants'
+import { alignStore } from '@/drone/align'
 
 type Props = {
   map: MapData
   layers: RegionLayerData[]
   features: MapFeature[]
   mapEntitlements: EntitlementsData
+  /** The project variants (map/variants); one is retained. */
+  variants?: MapVariant[]
   /** The « Offre » panel: for teams and professional accounts only. */
   offerBuilder?: boolean
 }
@@ -52,8 +61,11 @@ type Props = {
 /** The map editor: full-screen map, panel rail, inspector of the selection. */
 export default function MapShow(props: Props) {
   const [map, setMap] = useState(props.map)
+  // Pinned to the viewport and clipped, never scrollable: a find in page (Ctrl+F),
+  // a focus or a scrollIntoView inside a panel used to scroll the whole page,
+  // lifting the editor and leaving an empty band at the bottom.
   return (
-    <div className="flex h-dvh flex-col bg-loam-100">
+    <div className="fixed inset-0 flex flex-col overflow-clip overscroll-none bg-loam-100">
       <Head title={map.name} />
       <Flash />
       <header className="flex h-[52px] shrink-0 items-center gap-3.5 border-b border-loam-900/10 bg-white px-3 md:px-4">
@@ -68,6 +80,7 @@ export default function MapShow(props: Props) {
         {(map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived && <SaveIndicator />}
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />
+        <div id="editor-header-mode" className="hidden shrink-0 md:block" />
         <div className="flex-1" />
         <div id="editor-header-actions" className="flex shrink-0 items-center gap-1 sm:gap-2" />
       </header>
@@ -122,7 +135,7 @@ function featureFromUrl(features: MapFeature[]): MapFeature | null {
   return features.find((f) => f.properties.id === id) ?? null
 }
 
-function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, offerBuilder = false }: Props & { setMap: (m: MapData) => void }) {
+function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, variants = [], offerBuilder = false }: Props & { setMap: (m: MapData) => void }) {
   const instance = useMapInstance() as MapLibreMap
   const [features, setFeatures] = useState<MapFeature[]>(initial)
   const [arrival] = useState(() => featureFromUrl(initial))
@@ -131,12 +144,15 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const [multiSelect, setMultiSelect] = useState(false)
   // The time strip (map/time): the moment is remembered per map and read by
   // the layers through the editor; a moment already behind the garden falls back to today.
-  useLayoutEffect(() => initTime(map.id), [map.id])
+  useLayoutEffect(() => initTime(map.id, map.stage), [map.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => initVariants(map.id, variants), [map.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const time = useTime()
   const [today] = useState(localDay)
   const timeline = useMemo(() => timelineOf(features.map((f) => f.properties), today, map.createdAt ?? today), [features, today, map.createdAt])
   const moment = time.mapId === map.id ? shownMoment(time.moment, timeline) : DEFAULT_MOMENT
   const shade = time.mapId === map.id ? time.season : null
+  // « Existant » or « Projet » (map/time/mode): what the map shows today and what one draws.
+  const mode = time.mapId === map.id ? time.mode : modeForStage(map.stage)
   // `?panel=palette` opens a panel on arrival (links from the « Tâches » view).
   const [activePanel, setActivePanel] = useState<string | null>(() => panelFromUrl() ?? (map.boundary ? null : 'terrain'))
   // A guide's « Ouvrir le panneau… » button asks for a panel (components/help/actions).
@@ -156,7 +172,10 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error'; action?: NotifyAction } | null>(null)
   const toastTimer = useRef<number | undefined>(undefined)
   const drawer = useRef<Drawer | null>(null)
-  const canEdit = (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived
+  const mayEdit = (map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived
+  // While presenting, the map and the element cards are read-only: a click shows, never moves or edits.
+  const presenting = usePresentation((s) => s.presenting)
+  const canEdit = mayEdit && !presenting
 
   useEffect(() => {
     drawer.current = new Drawer(instance)
@@ -240,7 +259,8 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       return feature ? area(feature) : Infinity
     }
     // The click that ends a drawing (double-click) must not select what lies under it.
-    const busy = () => drawer.current?.active || selectionMove.active || performance.now() - drawEndedAt.current < 400
+    // « Recaler la vue » takes the clicks for its landmarks.
+    const busy = () => drawer.current?.active || selectionMove.active || performance.now() - drawEndedAt.current < 400 || alignStore.get().viewId != null
     // Shift+click (or a tap while « Sélectionner plusieurs » is on) adds the
     // element to the selection, or takes it out, to move them together.
     const toggleAt = (point: { x: number; y: number }) => {
@@ -389,9 +409,17 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       multiSelect,
       setMultiSelect,
       async createFeature(input: NewFeature) {
-        const feature = await api<MapFeature>(base, { method: 'POST', body: { feature: input } })
+        // Drawn in « Projet » while variants exist: it belongs to the variant shown (the server keeps it common once on the ground).
+        const variant = timeStore.get().mode === 'project' && input.variant_id === undefined ? shownVariantId() : null
+        const body = variant != null ? { ...input, variant_id: variant } : input
+        const feature = await api<MapFeature>(base, { method: 'POST', body: { feature: body } })
         upsertFeatures([feature])
         tracked.create(feature)
+        // A project placed while looking at the land alone (a plant from the palette…): show the project, or it would vanish.
+        if (timeStore.get().mode === 'existing' && feature.properties.status === 'active' && isPlanned(feature.properties)) {
+          setMode('project')
+          notify(t('design_mode.switched'))
+        }
         return feature
       },
       async updateFeature(id: number, patch: FeaturePatch) {
@@ -451,17 +479,23 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       activePanel,
       openPanel: setActivePanel,
       focusStage,
-      focusStep: setPickedStage,
+      focusStep: (stage: MapStage | null) => {
+        setPickedStage(stage)
+        // Observing and mapping read the land as it is; designing and planting work on the project.
+        if (stage) setMode(modeForStage(stage))
+      },
       notify,
       moment,
       timeline,
       setMoment,
+      mode,
+      setMode,
       shade,
       setShade: setSeason,
     }
-  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade])
+  }, [map, setMap, instance, layers, mapEntitlements, canEdit, features, selectedId, selection, multiSelect, drawing, drawingShape, activePanel, focusStage, notify, upsertFeatures, removeFeatures, tracked, history, step, shapeStep, moment, timeline, shade, mode])
 
-  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? canEdit : p.requires === 'offers' ? canEdit && offerBuilder : map.role === 'owner'))
+  const visiblePanels = PANELS.filter((p) => !p.requires || (p.requires === 'editor' ? mayEdit : p.requires === 'offers' ? mayEdit && offerBuilder : map.role === 'owner'))
   const panel = visiblePanels.find((p) => p.id === activePanel)
   const wideScreen = useMediaQuery(MODAL_PANEL_QUERY)
   const wideRail = useMediaQuery('(min-width: 768px)')
@@ -526,8 +560,17 @@ function HeaderActions() {
 
 function HeaderSteps() {
   const [target, setTarget] = useState<HTMLElement | null>(null)
-  useEffect(() => setTarget(document.getElementById('editor-header-steps')), [])
-  return target ? createPortal(<StageStepper />, target) : null
+  const [modeTarget, setModeTarget] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    setTarget(document.getElementById('editor-header-steps'))
+    setModeTarget(document.getElementById('editor-header-mode'))
+  }, [])
+  return (
+    <>
+      {target && createPortal(<StageStepper />, target)}
+      {modeTarget && createPortal(<ModeSwitch />, modeTarget)}
+    </>
+  )
 }
 
 function RailPortal({ panels }: { panels: Parameters<typeof EditorRail>[0]['panels'] }) {

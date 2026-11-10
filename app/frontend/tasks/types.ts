@@ -16,7 +16,10 @@ export type TaskData = {
   /** For a default task: whether the map already shows it done (Journey). */
   mapSaysDone?: boolean
   dueOn?: string
-  /** A season step of the team board pencilled in before the offer is signed. */
+  /** A season step (design, work site, planting) starts on this day too. */
+  startsOn?: string
+  stepKind?: 'design' | 'site' | 'plant'
+  /** A season step pencilled in before the offer is signed. */
   forecast?: boolean
   assignee?: Assignee
   completedAt?: string
@@ -38,8 +41,13 @@ export type Board = { lists: TaskListData[]; tasks: TaskData[]; seeded?: boolean
  */
 export type Assignee = { id?: number; email?: string; name: string; avatarUrl?: string; invited?: boolean }
 
-/** Someone a task can be given to; invitees have an `email` and no `id`. */
-export type Participant = { id?: number; email?: string; name: string; role: string }
+/**
+ * Someone a task can be given to; invitees have an `email` and no `id`.
+ * `group` says where the picker shows them (TaskBoard#participants): the
+ * project's team (`crew`, `lead` for its Project Manager), the people of the
+ * map itself (`map`, viewers included), the rest of the team (`team`).
+ */
+export type Participant = { id?: number; email?: string; name: string; role: string; group?: 'crew' | 'map' | 'team'; avatarUrl?: string; lead?: boolean }
 
 /** A task on the cross-map page, with its map and list. */
 export type TaskWithMap = TaskData & { map: { id: number; name: string }; listName: string }

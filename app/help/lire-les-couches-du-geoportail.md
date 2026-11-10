@@ -17,10 +17,10 @@ Ailleurs en Europe, la carte s'ouvre avec des **couches européennes**, disponib
 
 ## En France, au Luxembourg, à Bruxelles et en Flandre
 
-- **France** : photo aérienne et plan IGN, relief ombré du LiDAR HD, courbes de niveau, pentes, cours d'eau, carte des sols, forêts, cadastre, parcellaire agricole, Natura 2000 et ZNIEFF.
-- **Luxembourg** : photo aérienne, carte topographique, relief ombré du LiDAR 2019 et cadastre.
-- **Bruxelles** : la photo aérienne la plus récente et celle de 2004 (UrbIS), et le cadastre fédéral du SPF Finances.
-- **Flandre** : la photo d'hiver la plus récente (arbres presque nus), celle de l'été 2024, celle de 1971 et la carte de Ferraris (vers 1777), le relief ombré du LiDAR, la carte des sols et le cadastre fédéral.
+- **France** : photos aériennes de l'IGN par période depuis 1950 et plan IGN, relief ombré du LiDAR HD, courbes de niveau, pentes, cours d'eau, carte des sols, forêts, cadastre, parcellaire agricole, Natura 2000 et ZNIEFF.
+- **Luxembourg** : photos aériennes depuis 1967, carte topographique, relief ombré du LiDAR 2019 et cadastre.
+- **Bruxelles** : les photos aériennes d'UrbIS de 2004 à aujourd'hui, et le cadastre fédéral du SPF Finances.
+- **Flandre** : chaque photo d'hiver depuis 2000 (arbres presque nus), les photos d'été tous les trois ans depuis 2009, celles de 1971 et de 1979-1990, la carte de Ferraris (vers 1777), le relief ombré du LiDAR, la carte des sols et le cadastre fédéral.
 
 Dans ces régions, les parcelles se choisissent sur la carte comme en Wallonie, mais un clic sur une couche ne lit pas encore la donnée : c'est pour l'instant propre au Géoportail wallon.
 
@@ -31,8 +31,15 @@ Une couche est un dessin ; **la donnée se lit en cliquant**. En Wallonie, quand
 ## Fond de carte : plan et photos aériennes
 
 - **Plan** : un fond neutre, avec routes, bâtiments, cours d'eau et noms de lieux. Il s'imprime bien.
-- **Photo 2026** : la photo aérienne du printemps 2026, la plus récente, pour repérer arbres, haies, bâtiments et chemins.
-- **Photo 1994-2000** et **Photo 1971** : pour comprendre l'histoire du lieu. Une haie arrachée, un verger disparu, une mare comblée : le passé explique souvent le sol d'aujourd'hui.
+- **Photo aérienne** : la carte s'ouvre sur la photo la plus récente (en Wallonie, celle du printemps 2026), pour repérer arbres, haies, bâtiments et chemins.
+
+Sous le bouton **Photo aérienne**, une **frise des années** parcourt toutes les photos publiées par ta région : en Wallonie, chaque vol du SPW depuis **1971**. Fais glisser le curseur (ou utilise les flèches) et la carte remonte le temps sous tes yeux. Une haie arrachée, un verger disparu, une mare comblée, un chemin oublié : le passé explique souvent le sol d'aujourd'hui. Puis va voir sur place ce qu'il en reste : une souche, un talus, un creux plus humide.
+
+- **La saison compte** : une photo de **printemps** ou d'**hiver** montre le sol entre les arbres encore nus (fossés, haies, anciens chemins) ; une photo d'**été** montre les arbres en feuilles, leur ombre, les prés qui restent verts ou jaunissent.
+- **Infrarouge** : depuis 2006 en Wallonie, la plupart des vols existent aussi en infrarouge fausses couleurs. Coche **Infrarouge** : la végétation vigoureuse ressort en rouge vif, l'eau et les sols humides en sombre. Pratique pour repérer une zone humide ou des arbres qui souffrent.
+- **Vols partiels** : certains vols ne couvrent qu'une partie de la région (les photos d'été 2022 et 2025 en Wallonie, les plus anciennes mosaïques de l'IGN). Terranova vérifie s'ils passent au-dessus de ton terrain et retire de la frise ceux qui l'ignorent.
+
+Ton IA peut aussi regarder ces photos, année par année, avec le contour de ton terrain tracé dessus : demande-lui ce qui a changé depuis 1971.
 
 ## Relief, sol et eau
 

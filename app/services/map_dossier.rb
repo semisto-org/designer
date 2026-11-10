@@ -105,7 +105,7 @@ class MapDossier
 
     def shown_features
       @shown_features ||= begin
-        scope = map.features.active.order(:layer, :id)
+        scope = map.features.active.in_design.order(:layer, :id)
         scope = scope.where.not(layer: SENSITIVE_LAYERS) unless include_networks?
         scope.to_a
       end
@@ -160,7 +160,7 @@ class MapDossier
 
     def project_json
       sheet = map.project_sheet
-      { values: sheet.to_h.except("meta"), percent: sheet.progress[:percent], schema: ProjectSheet.schema_json }
+      { values: sheet.without_personal.except("meta"), percent: sheet.progress[:percent], schema: ProjectSheet.schema_json }
     end
 
     # ── Terrain ──────────────────────────────────────────────────────────
@@ -239,7 +239,7 @@ class MapDossier
       observations = map.bioindicator_observations.active.recent.to_a
       {
         analyses: analyses?,
-        samples: map.soil_samples.ordered.with_attached_lab_reports.map { |s| s.as_inertia(analyses: analyses?) },
+        samples: map.soil_samples.ordered.with_attached_lab_reports.with_photos.map { |s| s.as_inertia(analyses: analyses?) },
         fields: SoilSample::RESULT_FIELDS.map { |key, spec| { key:, unit: spec[:unit] } },
         provenance: SoilAnalysis::Interpretation::PROVENANCE,
         bioindicators: {

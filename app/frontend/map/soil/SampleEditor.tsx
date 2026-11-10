@@ -8,6 +8,7 @@ import { visibleOffset } from '@/map/visiblePadding'
 import { RESULT_GROUPS, today } from '@/map/soil/format'
 import ResultsDraftReview from '@/map/soil/ResultsDraftReview'
 import SampleReading from '@/map/soil/SampleReading'
+import SamplePhotos from '@/map/soil/SamplePhotos'
 import SampleReports from '@/map/soil/SampleReports'
 import { soilActions, useSoil, type SamplePayload } from '@/map/soil/store'
 import type { SoilOtherResult, SoilResultKey, SoilSampleData } from '@/types/soil_photos'
@@ -214,6 +215,8 @@ export default function SampleEditor({ sample, onClose }: { sample: SoilSampleDa
           </div>
         </div>
       </fieldset>
+
+      <SamplePhotos sample={sample} />
 
       <SampleReports sample={sample} onError={setError} />
 

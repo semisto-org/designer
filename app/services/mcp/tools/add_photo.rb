@@ -20,7 +20,8 @@ module Mcp
           heading: { type: "number", minimum: 0, maximum: 360, description: :heading },
           album_id: { type: "integer", minimum: 1, description: :album_id },
           album_name: PLACE_PROPERTIES[:album_name],
-          feature_id: { type: "integer", minimum: 1, description: :photo_feature_id }
+          feature_id: { type: "integer", minimum: 1, description: :photo_feature_id },
+          soil_sample_id: { type: "integer", minimum: 1, description: :photo_soil_sample_id }
         },
         required: %w[map_id image_base64]
       )

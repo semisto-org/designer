@@ -22,4 +22,5 @@ export type ResumeStep =
   | { type: 'advance'; stage: string }
   | { type: 'complete' }
 
-export type Resume = { mapId: number; next: ResumeStep }
+/** openedAt: when I last opened it; null = never (it is the map changed last). */
+export type Resume = { mapId: number; next: ResumeStep; openedAt?: string | null }

@@ -1,0 +1,394 @@
+fr:
+  admin:
+    nav:
+      teams: "Équipes"
+    teams:
+      title: "Équipes"
+      intro: "Toutes les équipes, et les modules que Semisto leur attribue. « Territoire » permet de lire une commune entière et d'en tirer un carnet pour le collège communal ; une équipe ne peut pas l'activer elle-même. Le reprendre laisse ses territoires lisibles, sans modification possible."
+      empty: "Aucune équipe pour l'instant"
+      granted_on: "Territoire depuis le %{date}"
+      grant: "Attribuer « Territoire »"
+      revoke: "Reprendre « Territoire »"
+      revoke_confirm:
+        title: "Reprendre « Territoire » à %{name} ?"
+        body: "Ses territoires restent lisibles par l'équipe, mais plus personne ne peut les modifier ni en ouvrir de nouveaux. Tu peux le rattribuer à tout moment."
+      members:
+        one: "1 membre"
+        other: "%{count} membres"
+      maps:
+        zero: "aucune carte"
+        one: "1 carte"
+        other: "%{count} cartes"
+      territories:
+        one: "1 territoire actif (%{archived} archivé·s)"
+        other: "%{count} territoires actifs (%{archived} archivé·s)"
+      flash:
+        granted: "« Territoire » est attribué à %{name}."
+        revoked: "« Territoire » est repris à %{name}. Ses territoires restent lisibles."
+    dashboard:
+      events:
+        actions:
+          territory_module_granted: "a attribué « Territoire » à"
+          territory_module_revoked: "a repris « Territoire » à"
+
+  activerecord:
+    models:
+      territory: "Territoire"
+      territory_item: "Élément du dossier"
+    attributes:
+      territory:
+        name: "Nom"
+        boundary: "Limite"
+      territory_item:
+        title: "Titre"
+        body: "Texte"
+        rationale: "Justification"
+        geometry: "Emplacement"
+        file: "Fichier"
+    errors:
+      models:
+        territory:
+          attributes:
+            boundary:
+              too_large: "est trop grande pour une commune (800 km² au plus)"
+              empty: "est vide"
+        territory_item:
+          attributes:
+            geometry:
+              invalid: "ne convient pas à ce type d'élément"
+              outside: "est hors du territoire (à plus de 5 km de sa limite)"
+            file:
+              invalid: "ne peut être joint qu'à une source"
+              too_large: "dépasse 30 Mo"
+
+  territories:
+    nav: "Territoires"
+    errors:
+      module_off: "Le module « Territoire » n'est pas attribué à cette équipe. Semisto peut l'activer pour vous."
+      archived: "Ce territoire est archivé : il reste lisible, mais ne se modifie plus."
+      communes_unavailable: "La recherche de communes ne répond pas pour l'instant. Réessaie dans quelques minutes."
+      commune_not_found: "Cette commune n'a pas été retrouvée. Cherche-la à nouveau par son nom."
+      stale: "Quelqu'un d'autre vient de modifier cet élément. Recharge la page pour voir sa version."
+      not_a_draft: "Cet élément n'est plus une proposition."
+      invalid: "Cet élément n'a pas pu être enregistré."
+    flash:
+      created: "Le territoire « %{name} » est ouvert. Commence par qui y travaille déjà."
+      saved: "Enregistré."
+      archived: "« %{name} » est archivé. Il reste lisible et ne compte plus comme territoire actif."
+      unarchived: "« %{name} » est de nouveau actif."
+      item_created: "Ajouté au dossier."
+      item_saved: "Enregistré."
+      item_deleted: "Retiré du dossier."
+      accepted: "Proposition gardée."
+      rejected: "Proposition écartée."
+
+    index:
+      title: "Territoires"
+      intro: "Lire une commune entière, son eau et ce qui y pousse, pour décider où agir. On conçoit ensuite sous-bassin par sous-bassin, sur des cartes de terrain."
+      new: "Ouvrir un territoire"
+      empty_title: "Aucun territoire ouvert"
+      empty_why: "Un territoire, c'est une commune lue à son échelle : ses écoulements, ce qui a disparu depuis 1971, ce que ses propres plans demandent déjà. On commence toujours par rencontrer ceux qui y travaillent."
+      locked_title: "Le module « Territoire » n'est attribué à aucune de tes équipes"
+      locked_why: "Il est réservé aux équipes à qui Semisto l'attribue (frais annuels par territoire actif). Écris-nous si ton équipe veut l'essayer sur une commune."
+      archived: "Archivés"
+      archived_badge: "archivé"
+      updated: "mis à jour le %{date}"
+      counts: "%{leads} pistes · %{markers} repères · %{sources} sources"
+      drafts:
+        one: "1 proposition à revoir"
+        other: "%{count} propositions à revoir"
+      create:
+        title: "Ouvrir un territoire"
+        why: "Choisis la commune par son nom : Terranova reprend sa limite et la région de ses couches."
+        team: "Équipe"
+        commune: "Commune"
+        commune_placeholder: "Yvoir, Ciney, Gesves…"
+        search: "Chercher"
+        searching: "Recherche…"
+        none: "Aucune commune de ce nom dans les régions couvertes."
+        pick: "Choisis la bonne commune"
+        name: "Nom du territoire"
+        name_hint: "Par défaut, le nom de la commune."
+        submit: "Ouvrir ce territoire"
+        boundary_note: "Limite communale d'OpenStreetMap (ODbL), simplifiée à une vingtaine de mètres."
+
+    show:
+      back: "Territoires"
+      area: "%{area} · %{team}"
+      read_only: "Lecture seule"
+      archived_note: "Ce territoire est archivé. Il reste lisible ; « Réactiver » le rend modifiable s'il compte de nouveau comme territoire actif."
+      module_off_note: "Le module « Territoire » n'est plus attribué à cette équipe : le dossier reste lisible, sans modification."
+      notebook: "Carnet du territoire"
+      archive: "Archiver"
+      unarchive: "Réactiver"
+      archive_confirm:
+        title: "Archiver « %{name} » ?"
+        body: "Le territoire reste lisible par l'équipe et ne compte plus comme territoire actif. Tu pourras le réactiver."
+      map:
+        base: "Fond"
+        plan: "Plan"
+        year: "Photo %{year}"
+        overlays: "Ce qu'on lit"
+        team_maps: "Cartes de l'équipe"
+        legend_fuzzy: "Zone floue : terrain privé ou agricole, l'exploitant n'a pas encore dit oui"
+        legend_sharp: "Tracé net : foncier public, ou accord de l'exploitant"
+        place: "Clique sur la carte pour placer l'élément"
+        place_cancel: "Annuler"
+        layers_title: "Couches"
+        groups:
+          photos: "Photos aériennes"
+          terrain: "Relief, sols et eau"
+          milieux: "Milieux et foncier"
+          plan: "Plan"
+          other: "Autres couches"
+      tabs:
+        actors: "Qui y travaille"
+        sources: "Sources"
+        expectations: "Attentes"
+        markers: "Repères"
+        leads: "Pistes"
+      drafts:
+        title:
+          one: "1 proposition de ton IA"
+          other: "%{count} propositions de ton IA"
+        why: "Ton IA propose, tu décides : garde ce qui tient, écarte le reste."
+        accept: "Garder"
+        reject: "Écarter"
+        rationale: "Pourquoi"
+      add: "Ajouter"
+      edit: "Modifier"
+      delete: "Retirer"
+      delete_confirm: "Retirer « %{title} » du dossier ?"
+      save: "Enregistrer"
+      cancel: "Annuler"
+      place_on_map: "Placer sur la carte"
+      placed: "Placé sur la carte"
+      remove_place: "Retirer de la carte"
+      from_ai: "proposé par l'IA"
+      empty:
+        actors:
+          title: "Commence par ceux qui y travaillent déjà"
+          why: "Avant toute recherche, rencontre la cellule érosion (GISER en Wallonie), le contrat de rivière, l'agent environnement de la commune. Leur travail est la base du carnet : on le relie, on ne le refait pas."
+        sources:
+          title: "Aucune source pour l'instant"
+          why: "Plans communaux, contrat de rivière, presse sur les inondations, comptes rendus du conseil : demande à ton IA de les chercher (grille de recherche ci-dessous), elle les propose ici avec leur auteur, leur date et leurs droits."
+        expectations:
+          title: "Ce que le territoire demande déjà"
+          why: "Chaque attente vient d'un document que la commune a voté. Note son année : un plan de 2012 n'est plus forcément une attente, fais-la confirmer par l'administration."
+        markers:
+          title: "Aucun repère daté"
+          why: "Une inondation rue du Moulin en 2021, une mare comblée : place-les sur la carte avec leur source. Un axe calculé qui tombe dessus est une concordance à vérifier, pas une preuve : va voir, si possible sous la pluie."
+        leads:
+          title: "Aucune piste d'aménagement"
+          why: "D'abord le sol (couverture d'hiver, sens du travail), puis ralentir l'eau en haut du bassin, puis seulement les ouvrages. Une piste donne un ordre de grandeur ; on la dimensionne quand elle devient une carte de terrain."
+      research:
+        title: "Grille de recherche pour ton IA"
+        why: "Demande à ton IA (Claude, ChatGPT, Le Chat…) connectée à Terranova de chercher sur ce territoire. Elle propose chaque trouvaille ici, avec sa source ; tu gardes ou tu écartes."
+        prompt: "Phrase à donner à ton IA"
+        prompt_text: "Ouvre le territoire « %{name} » dans Terranova (get_territory), suis sa grille de recherche et propose-moi les sources, attentes et repères que tu trouves, chacun avec sa source et sa date."
+      fields:
+        title: "Titre"
+        body: "Ce qu'il faut savoir"
+        organization: "Organisme"
+        function: "Fonction"
+        met_on: "Rencontré le"
+        contact: "Contact"
+        url: "Lien"
+        author: "Auteur"
+        published_on: "Date de publication"
+        excerpts: "Extraits"
+        rights: "Droits"
+        source_kind: "Type de document"
+        file: "Copie du fichier (si ses droits le permettent)"
+        year: "Année du document"
+        source_ids: "Sources"
+        validated: "Confirmée par l'administration"
+        occurred_on: "Quand (année ou date)"
+        proof: "Niveau de preuve"
+        marker_kind: "Ce qui s'est passé"
+        rank: "Rang"
+        theme: "Thème"
+        land: "Foncier"
+        magnitude: "Ordre de grandeur"
+        magnitude_hint: "« ≈ 400 m de haie », « ≈ 300 m³ retenus » : pas de dimensionnement ici."
+        expectation_ids: "Répond aux attentes"
+        seen_on_site: "Vue sur place"
+        seen_on: "Vue le"
+        farmer: "Exploitant ou propriétaire"
+        farmer_contacted_on: "Contacté le"
+        farmer_answer: "Sa réponse"
+        farmer_note: "Ce qu'il a dit"
+        keeper: "Qui l'entretient"
+        keeper_role: "Gestionnaire (une fonction, pas une personne)"
+        keeper_gestures: "Gestes d'entretien"
+        keeper_hours: "Heures par an"
+        keeper_agreement: "Convention foncière"
+        keeper_lifespan: "Durée de vie (années)"
+        decision: "Décision"
+        decision_status: "Le collège"
+        decision_reason: "Raison"
+        decision_on: "Le"
+        first_step: "Par où commencer"
+        this_winter: "Faisable cet hiver"
+      values:
+        rights:
+          open: "Libre de réutilisation"
+          restricted: "Droits réservés (lien seulement)"
+          unknown: "Droits inconnus"
+        source_kind:
+          plan: "Plan communal ou régional"
+          council: "Conseil communal"
+          press: "Presse"
+          map: "Carte ancienne"
+          study: "Étude"
+          call: "Appel à projets"
+          other: "Autre"
+        proof:
+          computed: "Calculé"
+          seen: "Vu sur place"
+          confirmed: "Confirmé (témoin ou pluie)"
+        marker_kind:
+          flood: "Inondation"
+          mudflow: "Coulée de boue"
+          erosion: "Érosion"
+          lost_pond: "Mare disparue"
+          lost_hedge: "Haie disparue"
+          spring: "Source"
+          other: "Autre"
+        rank:
+          soil: "1. Pratiques du sol"
+          slow: "2. Ralentir en haut du bassin"
+          structure: "3. Ouvrages"
+        rank_short:
+          soil: "Sol"
+          slow: "Ralentir"
+          structure: "Ouvrage"
+        theme:
+          water: "L'eau"
+          tree: "L'arbre nourricier"
+        land:
+          public: "Public"
+          agricultural: "Agricole"
+          private: "Privé"
+          unknown: "À préciser"
+        farmer_answer:
+          "yes": "Oui"
+          "no": "Non"
+          thinking: "Il réfléchit"
+        decision:
+          retained: "Retenue"
+          postponed: "Reportée"
+          dismissed: "Écartée"
+        first_step:
+          "1": "Première action"
+          "2": "Deuxième action"
+          "3": "Troisième action"
+        none: "—"
+      badges:
+        orphan: "orpheline"
+        orphan_why: "Sans gestionnaire, la piste meurt après la subvention : qui la cure, la recèpe, avec quel budget ?"
+        hypothesis: "à vérifier sur place"
+        waiting_farmer: "attend l'exploitant"
+        waiting_farmer_why: "Elle n'entre pas dans le carnet du collège avant un contact avec l'exploitant et sa réponse. Un foncier pas encore connu compte comme agricole."
+        concordance: "concordance à vérifier"
+        this_winter: "cet hiver"
+
+    notebook:
+      title: "Carnet du territoire"
+      working: "Carnet de travail"
+      public: "Version publique"
+      working_stamp: "Carnet de travail du collège, ne pas diffuser · %{date}"
+      public_stamp: "Version publique · %{date}"
+      print: "Imprimer ou enregistrer en PDF"
+      back: "Retour au territoire"
+      switch_public: "Voir la version publique"
+      switch_working: "Voir le carnet de travail"
+      intro_placeholder: "Une introduction en quelques lignes : pourquoi ce carnet, pour qui, avec qui il a été fait."
+      disclaimer: "Ce carnet n'est pas une étude hydraulique. Il donne des ordres de grandeur pour décider où agir ; chaque piste est dimensionnée plus tard, sur place. Quand des biens ou des personnes sont exposés, il renvoie vers un bureau d'ingénieurs."
+      boundary_source: "Limite : %{label} (%{licence})."
+      parts:
+        says: "1. Ce que le territoire dit"
+        shows: "2. Ce que la carte montre"
+        seen: "3. Ce qu'on a vu sur place"
+        leads: "4. Les pistes d'aménagement"
+        start: "5. Par où commencer"
+        decision: "Décision de principe"
+        sources: "Sources"
+      actors: "Ceux qui y travaillent déjà"
+      expectations: "Ce que ses propres plans demandent"
+      expectation_not_validated: "à confirmer par l'administration"
+      no_actors: "Personne n'a encore été rencontré. C'est la première étape."
+      no_expectations: "Aucune attente relevée."
+      no_markers: "Aucun repère daté."
+      no_seen: "Rien n'a encore été vu sur place."
+      no_leads: "Aucune piste vue sur place pour l'instant."
+      no_start: "Les trois premières actions ne sont pas encore choisies."
+      hypotheses: "Hypothèses à vérifier sur place"
+      hypotheses_why: "Pas encore vues sur le terrain : elles ne figurent pas sur la carte."
+      waiting_farmer:
+        one: "1 piste sur terre agricole, ou au foncier pas encore connu, attend la rencontre avec son exploitant ; elle n'apparaît pas ici."
+        other: "%{count} pistes sur terre agricole, ou au foncier pas encore connu, attendent la rencontre avec leur exploitant ; elles n'apparaissent pas ici."
+      lead:
+        where: "Foncier"
+        why: "Pourquoi"
+        answers: "Répond à"
+        magnitude: "Ordre de grandeur"
+        agreement: "Qui doit être d'accord"
+        farmer_answer: "Exploitant : %{answer}, le %{date}"
+        farmer_missing: "Exploitant pas encore rencontré"
+        keeper: "Qui l'entretient"
+        keeper_line: "%{role} · %{hours} h par an · %{lifespan} ans"
+        no_keeper: "Personne n'est encore désigné : piste orpheline."
+        seen_on: "Vue sur place le %{date}"
+      decision_table:
+        lead: "Piste"
+        status: "Décision"
+        reason: "Raison"
+        date: "Date"
+        undecided: "à décider"
+      next_step: "Étape suivante"
+      next_step_budget: "Budget de l'étape suivante"
+      next_step_placeholder: "Ce que le collège décide de lancer, et avec qui."
+      budget_placeholder: "Le budget de cette étape seulement (pas de montant par ouvrage)."
+      sources_rights: "Droits : %{rights}"
+
+  mcp:
+    tools:
+      list_territories:
+        title: "Lister les territoires"
+        description: "Les territoires des équipes de l'utilisateur (module « Territoire » : une commune lue en entier pour décider où agir) : nom, équipe, surface en km², région, archivé ou non, modifiable ou non, et ce que contient leur dossier par type (actor, source, expectation, marker, lead), avec les brouillons en attente. Passe ensuite l'identifiant à get_territory."
+      get_territory:
+        title: "Lire un territoire"
+        description: "Un territoire en entier : limite de la commune en GeoJSON, emprise, centre, couches de la région lisibles ici (sols, ruissellement, plan de secteur, parcellaire agricole, photos aériennes depuis 1971…), cartes de terrain de l'équipe dans la commune (get_map les lit), et son dossier par type : actor (qui y travaille déjà : à rencontrer avant toute recherche), source (document trouvé : lien, auteur, date, droits, extraits), expectation (ce que la commune a déjà voté, avec son année et ses sources), marker (fait daté et localisable, avec son niveau de preuve : computed, seen, confirmed), lead (piste d'aménagement : rang soil, slow ou structure, thème water ou tree, foncier, ordre de grandeur, réponse de l'exploitant, qui l'entretient, décision du collège). research_grid dit quoi chercher sur ce territoire et où ; rules donne les règles du carnet à respecter dans tes propositions. Avant de proposer, lis aussi get_design_guide avec le chapitre « territory »."
+      propose_territory_items:
+        title: "Proposer au dossier d'un territoire"
+        description: "Pose en brouillons ce que tu as trouvé sur un territoire : personnes et organismes à rencontrer (actor), documents (source : properties.url, author, published_on, rights open, restricted ou unknown, source_kind, excerpts : quelques phrases citées, jamais le document entier), attentes votées par la commune (expectation : properties.year, source_ids), faits datés et localisés (marker : geometry Point, properties.occurred_on, proof, marker_kind, source_ids), pistes d'aménagement (lead : properties.rank, theme, land, magnitude, expectation_ids ; geometry Point, LineString ou Polygon). Chaque brouillon porte sa justification (rationale) : d'où vient l'information et pourquoi elle compte ici. Un axe d'écoulement calculé qui tombe sur une inondation racontée est une concordance à vérifier (proof computed), jamais une preuve. Ne dimensionne aucun ouvrage : un ordre de grandeur seulement. L'humain garde ou écarte chaque brouillon sur la page du territoire. Un doublon (même type et même titre, ou même lien) est refusé."
+      withdraw_territory_drafts:
+        title: "Retirer des brouillons d'un territoire"
+        description: "Retire des brouillons que tu as proposés au dossier d'un territoire et que personne n'a encore revus (item_ids donnés par get_territory). Ce qu'une personne a gardé ne se retire pas."
+    params:
+      territory_id: "Identifiant du territoire, donné par list_territories."
+      territory_items: "Les éléments à proposer au dossier, chacun avec sa justification."
+      territory_item_kind: "actor (qui y travaille), source (document), expectation (attente votée), marker (fait daté et localisé), lead (piste d'aménagement)."
+      territory_item_title: "Titre court : « Cellule GISER », « PCDN d'Yvoir (2016) », « Inondation rue du Moulin, juillet 2021 », « Haie sur talus en tête du vallon de… »."
+      territory_item_body: "Ce qu'il faut savoir, en quelques phrases : résumé d'une source, pourquoi une piste, ce qui s'est passé."
+      territory_item_rationale: "D'où vient l'information (lien, page, date) et pourquoi elle compte pour ce territoire."
+      territory_item_geometry: "GeoJSON en WGS84 [longitude, latitude] : Point pour un repère ; Point, LineString ou Polygon pour une piste. Rien pour les autres types. À moins de 5 km de la limite du territoire."
+      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; marker → occurred_on, proof, marker_kind, source_ids ; lead → rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years}. Les autres clés sont ignorées."
+      territory_item_ids: "Identifiants des brouillons à retirer (dossier dans get_territory)."
+    errors:
+      territory_not_found: "Territoire %{id} introuvable, ou tu ne fais pas partie de son équipe. list_territories donne les tiens."
+      territory_archived: "Ce territoire est archivé : il se lit, mais on n'y propose plus rien."
+      territory_module_off: "Le module « Territoire » n'est pas attribué à l'équipe de ce territoire : il se lit, mais on n'y propose plus rien."
+      territory_duplicate: "déjà au dossier (élément %{id})"
+      territory_geometry: "géométrie GeoJSON illisible"
+    notes:
+      territories: "Un territoire se lit en entier avec get_territory. On y décide où agir ; on conçoit ensuite sous-bassin par sous-bassin, sur des cartes de terrain."
+      review_territory_items: "Les brouillons attendent sur la page du territoire (review_url), où la personne garde ou écarte chacun. Dis-lui que rien n'entre dans le carnet sans elle, et invite-la à aller voir sur place les repères et les pistes avant de les montrer au collège."
+      territory_rules: "1. On rencontre d'abord ceux qui travaillent déjà sur le territoire (actor) : le carnet relie leur travail, il ne le refait pas. 2. Chaque attente, source et repère porte sa source et sa date ; un document ancien est une attente à confirmer par l'administration. 3. Un axe calculé qui croise un fait raconté est une concordance à vérifier (proof computed) : seul le terrain la change en seen ou confirmed. 4. D'abord le sol (rank soil : couverture d'hiver, sens du travail), puis ralentir en haut du bassin (slow), puis les ouvrages (structure). 5. Ordre de grandeur seulement, jamais de dimensionnement ; quand des biens ou des personnes sont exposés, renvoie vers un bureau d'ingénieurs. 6. Une piste sur terre agricole n'entre au carnet du collège qu'après la rencontre avec l'exploitant et sa réponse ; elle reste une zone floue tant qu'il n'a pas dit oui. 7. Une piste sans gestionnaire est orpheline. 8. Jamais de nom de propriétaire tiré du cadastre : seulement le type de foncier (public, agricultural, private)."
+  ai_journal:
+    actions:
+      list_territories: "a listé les territoires"
+      get_territory: "a lu un territoire"
+      propose_territory_items: "a proposé des éléments au dossier d'un territoire"
+      withdraw_territory_drafts: "a retiré des brouillons d'un territoire"

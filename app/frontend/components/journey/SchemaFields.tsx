@@ -24,13 +24,15 @@ export type Texts = {
  * server and in the locale file is all it takes to show it here.
  * `aside` adds something under a field's label (an AI's proposal…).
  */
-export function SchemaFields({ fields, values, onChange, prefix, disabled = false, aside }: {
+export function SchemaFields({ fields, values, onChange, prefix, disabled = false, aside, teamSection = false }: {
   fields: SchemaField[]
   values: Record<string, unknown>
   onChange: (key: string, value: unknown) => void
   prefix: string
   disabled?: boolean
   aside?: (field: SchemaField, texts: Texts) => ReactNode
+  /** The whole section is the team's: said once above, not under every field. */
+  teamSection?: boolean
 }) {
   return (
     <div className="space-y-6">
@@ -45,6 +47,7 @@ export function SchemaFields({ fields, values, onChange, prefix, disabled = fals
             onChange={(v) => onChange(field.key, v)}
             disabled={disabled}
             aside={aside?.(field, texts)}
+            teamSection={teamSection}
           />
         )
       })}
@@ -52,15 +55,16 @@ export function SchemaFields({ fields, values, onChange, prefix, disabled = fals
   )
 }
 
-function FieldBlock({ field, texts, value, onChange, disabled, aside }: {
-  field: SchemaField; texts: Texts; value: unknown; onChange: (v: unknown) => void; disabled: boolean; aside?: ReactNode
+function FieldBlock({ field, texts, value, onChange, disabled, aside, teamSection }: {
+  field: SchemaField; texts: Texts; value: unknown; onChange: (v: unknown) => void; disabled: boolean; aside?: ReactNode; teamSection: boolean
 }) {
+  const teamOnly = field.teamOnly && !teamSection
   const id = useId()
   const grouped = field.type === 'multi' || field.type === 'enum' || field.type === 'list'
-  const hint = (texts.hint || field.teamOnly) && (
+  const hint = (texts.hint || teamOnly) && (
     <>
       {texts.hint && <p id={`${id}-hint`} className="mt-0.5 text-sm text-loam-500">{texts.hint}</p>}
-      {field.teamOnly && (
+      {teamOnly && (
         <p className="mt-0.5 flex items-center gap-1 text-sm text-loam-500">
           <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />{t('journey.project.team_only')}
         </p>
@@ -216,7 +220,7 @@ function ListField({ field, texts, value, onChange, disabled }: {
   const itemFields = (field.item ?? []).filter((f) => !f.hidden)
   // One line for the name and the short choices; free text and multiple
   // choices go underneath, one per line.
-  const main = itemFields.filter((f) => f.key === 'name' || f.type === 'enum' || f.type === 'integer')
+  const main = itemFields.filter((f) => f.key === 'name' || f.type === 'enum' || f.type === 'integer' || f.type === 'boolean')
   const below = itemFields.filter((f) => !main.includes(f))
   const canAdd = !disabled && rows.length < (field.max ?? 20)
 
@@ -232,6 +236,9 @@ function ListField({ field, texts, value, onChange, disabled }: {
   function add() {
     const row: Row = { name: '' }
     if (itemFields.some((f) => f.key === 'quantity')) row.quantity = 1
+    // A hidden id (a function of the analysis that map elements point to) is
+    // given here, so the next autosave already carries it.
+    if ((field.item ?? []).some((f) => f.key === 'id' && f.hidden)) row.id = `f${Math.random().toString(36).slice(2, 10)}`
     onChange([...rows, row])
   }
 
@@ -253,6 +260,13 @@ function ListField({ field, texts, value, onChange, disabled }: {
                     <option value="">{label}</option>
                     {(item.values ?? []).map((v) => <option key={v} value={v}>{itemTexts.options?.[v] ?? v}</option>)}
                   </Select>
+                )
+              }
+              if (item.type === 'boolean') {
+                return (
+                  <Chip key={item.key} kind="checkbox" checked={row[item.key] === true} disabled={disabled} onToggle={() => update(index, item.key, row[item.key] === true ? null : true)}>
+                    {label}
+                  </Chip>
                 )
               }
               if (item.type === 'integer') {
@@ -303,6 +317,7 @@ function ListField({ field, texts, value, onChange, disabled }: {
                 <label htmlFor={inputId} className="block text-sm text-loam-700">{label}</label>
                 <Input
                   id={inputId} placeholder={itemTexts.placeholder} maxLength={item.limit}
+                  type={INPUT_TYPES[item.key] ?? 'text'} autoComplete={item.key === 'phone' ? 'tel' : item.key === 'email' ? 'email' : undefined}
                   disabled={disabled} className="mt-1" value={(row[item.key] as string) ?? ''}
                   onChange={(e) => update(index, item.key, e.target.value)}
                 />
@@ -323,6 +338,9 @@ function ListField({ field, texts, value, onChange, disabled }: {
     </div>
   )
 }
+
+/** Entry fields a phone opens with the right keyboard. */
+const INPUT_TYPES: Record<string, 'tel' | 'email'> = { phone: 'tel', email: 'email' }
 
 /** A value in words, with the labels of the locale: « Moins de 500 € », « Marie (porteuse) ». */
 export function describeValue(field: SchemaField, texts: Texts, value: unknown): string {

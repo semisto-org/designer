@@ -108,7 +108,12 @@ module Maps
       size = "large" if size == "video" && !@photo.video?
       attachment = @photo.image
       return head :not_found unless attachment.attached?
-      target = %w[original video].include?(size) ? attachment : @photo.still(size.to_sym).processed
+      target = case size
+      when "original" then attachment
+      # A video's H.264 copy when its own file is not one every browser plays.
+      when "video" then @photo.player_blob
+      else @photo.still(size.to_sym).processed
+      end
       redirect_to storage_link(target, download: params[:download].present?), allow_other_host: true
     rescue StandardError => error
       # A file libvips (or ffmpeg) cannot read still has its original.
@@ -151,7 +156,7 @@ module Maps
       # Position arrives as lng/lat (read from the EXIF block by the browser, or
       # clicked on the map); empty values clear it.
       def photo_params
-        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :source, :location_source, :lng, :lat, :bioindicator_status, :retake_of_id)
+        raw = params.require(:photo).permit(:image, :caption, :taken_at, :heading, :photo_album_id, :map_feature_id, :soil_sample_id, :source, :location_source, :lng, :lat, :bioindicator_status, :retake_of_id)
         if raw.key?(:lng) || raw.key?(:lat)
           raw[:location] = MapPhoto.point_from(raw[:lng], raw[:lat])
         end

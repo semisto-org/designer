@@ -26,11 +26,12 @@ Les brouillons proposés par une IA ne sont pas imprimés.
    - **Ajuster au terrain** cadre tout le terrain sur la feuille et indique l'échelle retenue ;
    - ou une échelle fixe : 1:100, 1:200, 1:250, 1:500, 1:1 000, 1:2 000 ou 1:2 500. Déplace alors la carte : le **cadre orange** montre ce qui sera imprimé.
 6. Lis l'**Emprise imprimée**, la taille réelle couverte par la feuille, par exemple « 60 m × 42 m ».
-7. Touche **Créer le PDF**. Le plan se met en page puis se télécharge.
+7. Garde ou décoche **Montrer le contour du terrain** (voir plus bas).
+8. Touche **Créer le PDF**. Le plan se met en page puis se télécharge.
 
 ## Ce que contient le plan
 
-- la carte, à l'échelle choisie, avec la limite du terrain ;
+- la carte, à l'échelle choisie, avec le contour du terrain (sauf si tu le masques) ;
 - une barre d'échelle et la flèche du **N** ;
 - un cartouche avec le titre, la **Date**, l'**Auteur** et la **Surface du terrain** ;
 - la **Légende** des éléments dessinés ;
@@ -54,6 +55,10 @@ Quelle échelle choisir ?
 - **1:100 ou 1:200** pour un potager, une mare, une terrasse ;
 - **1:500** pour un jardin de quelques ares ;
 - **1:1 000 et au-delà** pour une parcelle d'un hectare ou plus.
+
+## Masquer le contour du terrain
+
+Le contour du terrain est imprimé par défaut, avec sa ligne dans la légende. Décoche **Montrer le contour du terrain** quand le trait gêne : un plan de détail d'un massif, une feuille où tu redessineras la limite à la main, ou un dossier où la limite cadastrale n'est pas encore sûre. Le cadrage **Ajuster au terrain** reste calé sur le terrain, même sans son contour.
 
 ## Les réseaux
 

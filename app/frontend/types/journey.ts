@@ -21,9 +21,11 @@ export type SchemaField = {
   teamOnly?: boolean
   /** Colours the chosen options of a multiple choice (« J'adore » / « Je n'aime pas »). */
   tone?: 'positive' | 'negative'
+  /** Personal data (phone, e-mail, health): never in a dossier, an export or an AI's hands. */
+  personal?: boolean
 }
 
-export type ProjectSchema = { sections: { key: string; fields: SchemaField[] }[] }
+export type ProjectSchema = { sections: { key: string; fields: SchemaField[]; /** Filled by the team only (the functional analysis). */ teamOnly?: boolean }[] }
 
 // ----- Project sheet -----
 

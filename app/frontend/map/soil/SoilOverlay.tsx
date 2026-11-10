@@ -26,6 +26,7 @@ export default function SoilOverlay() {
   const { samples, observations, suggestions, showOnMap, openId, placing } = state
   const hiddenLayers = useDrawingState((s) => s.hiddenLayers)
   const hiddenSoil = useDrawingState((s) => s.hiddenSoil)
+  const labelsHidden = useDrawingState((s) => s.labelsHidden)
 
   useEffect(() => {
     soilActions.load(editor.map.id)
@@ -40,10 +41,10 @@ export default function SoilOverlay() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       installSoilLayers(map, { samples: sampleData, observations: observationData, suggestions: suggestionData })
-      setSoilLayersVisible(map, soilVisibility({ showOnMap, suggesting: suggestions != null, hiddenLayers, hiddenSoil }))
+      setSoilLayersVisible(map, soilVisibility({ showOnMap, suggesting: suggestions != null, hiddenLayers, hiddenSoil }), labelsHidden)
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [map, sampleData, observationData, suggestionData, showOnMap, suggestions, hiddenLayers, hiddenSoil])
+  }, [map, sampleData, observationData, suggestionData, showOnMap, suggestions, hiddenLayers, hiddenSoil, labelsHidden])
   useEffect(() => () => removeSoilLayers(map), [map])
   useEffect(() => { highlightSample(map, openId) }, [map, openId, sampleData])
 

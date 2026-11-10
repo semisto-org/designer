@@ -74,6 +74,7 @@ fr:
       warnings: "À savoir"
       overlay_shade_legend: "Ombrage du relief, éclairé du nord-ouest comme sur une carte topographique."
       overlay_failed: "La surimpression n'a pas pu être calculée."
+      overlay_also_in_layers: "Aussi dans « Couches », sous « Le relief de ton terrain »."
     page:
       title: "Relief et eau"
       back: "Retour à la carte"
@@ -107,6 +108,10 @@ fr:
         tip: "Une haie ou un mur en travers de la pente retient l'air froid au-dessus de lui ; une trouée le laisse filer. Garde les floraisons précoces hors de la nappe : plus haut sur la pente, elles gèlent moins."
         indicative: "Indicatif : tiré du relief, des haies et des bâtiments du modèle de surface. On voit où va l'air froid, pas sa température. Par nuit de vent, l'air se mélange et la nappe ne se forme pas."
         indicative_no_surface: "Indicatif : tiré du relief seul (pas de modèle de surface ici, donc sans les haies ni les bâtiments). On voit où va l'air froid, pas sa température. Par nuit de vent, l'air se mélange et la nappe ne se forme pas."
+      present:
+        label: "Le temps de cette vue"
+        settings: "Réglages de la vue"
+        hide_settings: "Masquer les réglages"
       empty:
         title: "Le relief n'est pas encore là"
         unavailable: "Le relief n'est pas encore disponible pour la région %{region}. Il arrivera région par région."
@@ -172,6 +177,9 @@ fr:
         buildings_planned:
           one: "Celui en projet a un toit mauve : son ombre compte déjà."
           other: "%{count} en projet, au toit mauve : leur ombre compte déjà."
+        buildings_modelled:
+          one: "Un bâtiment du modèle 3D de la région, avec son vrai toit."
+          other: "%{count} bâtiments du modèle 3D de la région, avec leur vrai toit."
         buildings_click: "Clique sur un bâtiment pour régler son toit."
         trees: "Arbres en relief"
         trees_hint: "La canopée du modèle de surface, à sa vraie hauteur."
@@ -262,11 +270,17 @@ fr:
           close: "Fermer"
       roof:
         title_osm: "Bâtiment voisin"
+        title_model: "Bâtiment mesuré"
         source:
+          model: "Son vrai toit, tiré du modèle 3D des bâtiments publié par la région : %{height} m au plus haut, gouttières à %{eaves} m."
           surface: "Lu sur OpenStreetMap, hauteur mesurée sur le modèle de surface : %{height} m."
           tags: "Lu sur OpenStreetMap, hauteur d'après ses étages : %{height} m."
           guess: "Lu sur OpenStreetMap, hauteur estimée d'après son type : %{height} m."
         take_over_intro: "Son toit est deviné. Pour le régler toi-même, ajoute-le à ta carte : il garde sa forme et devient un bâtiment existant que tu peux modifier."
+        take_over_model: "Ce toit est le vrai. Pour en montrer un autre dans ton projet (une rehausse, une toiture verte), ajoute-le à ta carte : il devient un toit simple que tu règles toi-même."
+        take_over_drawn: "Ce bâtiment est sur ta carte, et la 3D lui donne le toit mesuré par la région. Pour en montrer un autre dans ton projet, règle-le toi-même."
+        back_to_model: "Revenir au vrai toit"
+        back_to_model_hint: "La région a mesuré ce toit : tu peux revenir à sa vraie forme quand tu veux."
         take_over: "Régler son toit"
         taking_over: "Ajout à ta carte…"
         viewer: "Seuls les éditeurs de la carte peuvent régler les toits."

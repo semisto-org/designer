@@ -32,7 +32,7 @@ fr:
               too_many_tags: "ne peuvent pas dépasser %{count}"
               tag_too_long: "doivent faire %{count} caractères au plus chacune"
   tasks:
-    nav: "Tâches"
+    nav: "Mes tâches"
     view: "Tâches"
     page_title: "Tâches · %{map}"
     title: "Tâches"
@@ -40,21 +40,8 @@ fr:
     intro: "Ce qu'il reste à faire pour que ce jardin pousse : qui s'en charge, et pour quand."
     read_only: "Tu peux lire les tâches de cette carte et cocher celles qui te sont assignées."
     # The year strip: when tasks fall due, season by season.
-    year:
-      title: "L'année du projet"
-      hint: "Les tâches à faire, mois par mois. Touche un mois pour n'afficher que ses échéances."
-      now: "Maintenant"
-      due_count:
-        zero: "Rien à rendre"
-        one: "1 tâche"
-        other: "%{count} tâches"
-      seasons:
-        winter: "Hiver"
-        spring: "Printemps"
-        summer: "Été"
-        autumn: "Automne"
-      month_filter: "Échéances de %{month}"
-      clear_month: "Tous les mois"
+    season:
+      hint: "Le design, le chantier et la plantation de ce projet, sur les douze mois qui viennent, avec la fenêtre de plantation à racines nues."
       planting_window: "Saison de plantation"
     filters:
       label: "Filtrer les tâches"
@@ -91,6 +78,22 @@ fr:
       add_defaults: "Ajouter les tâches de Semisto"
       add_list: "Créer ma propre liste"
     add_defaults_again: "Ajouter les tâches de Semisto"
+    # The « + » at the end of a task's line: who takes it on, in one click.
+    picker:
+      assign: "Confier cette tâche à quelqu'un"
+      change: "Confiée à %{name} : changer"
+      title: "Qui s'en charge ?"
+      me: "Moi"
+      lead: "Project Manager"
+      viewer: "lecture"
+      search: "Chercher une personne"
+      nobody_found: "Personne de ce nom sur la carte."
+      unassign: "Ne la confier à personne"
+      groups:
+        crew: "L'équipe du projet"
+        map: "Sur la carte"
+        team: "Le reste de l'équipe"
+        invited: "Invité·es, pas encore arrivé·es"
     task:
       add: "Ajouter une tâche"
       add_placeholder: "Une tâche, puis Entrée"

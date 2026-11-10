@@ -63,7 +63,7 @@ module Collab
       end
 
       def features
-        @features ||= @map.features.active.where(layer: layers).where.not(kind: "sector").order(:id)
+        @features ||= @map.features.active.in_design.where(layer: layers).where.not(kind: "sector").order(:id)
           .select { |feature| published?(feature) }.map { |feature| serialize(feature) }
       end
 
@@ -75,7 +75,7 @@ module Collab
         return nil unless @options["show_sectors"] == true
         center = @map.center
         return nil unless center
-        drawn = @map.features.active.where(kind: "sector").order(:id).filter_map do |feature|
+        drawn = @map.features.active.in_design.where(kind: "sector").order(:id).filter_map do |feature|
           from, to = Sectors::Arc.directions(feature, [ center.x, center.y ])
           next unless from
           type = Sectors::Arc::TYPES.include?(feature.properties["sector_type"]) ? feature.properties["sector_type"] : "other"

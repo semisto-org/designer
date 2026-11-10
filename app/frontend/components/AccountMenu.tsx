@@ -11,7 +11,7 @@ import type { CurrentUser, SharedProps } from '@/types'
  * also find « Administration » here: it is not a feature, so it stays out of
  * the main menu.
  */
-export function AccountMenu({ user }: { user: CurrentUser }) {
+export function AccountMenu({ user, placement = 'down' }: { user: CurrentUser; placement?: 'down' | 'up' }) {
   const { otherAccounts = [], impersonation } = usePage().props as unknown as SharedProps
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -51,7 +51,7 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
       </button>
 
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-loam-200">
+        <div role="menu" className={(placement === 'up' ? 'bottom-full left-0 mb-3' : 'right-0 top-full mt-2') + ' absolute z-50 w-72 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-loam-200'}>
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <Avatar name={user.name} url={user.avatarUrl} size="lg" />
             <div className="min-w-0 flex-1">

@@ -1,5 +1,5 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
-import { Apple, Trees } from 'lucide-react'
+import { Apple, GitBranch, Presentation, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
 import CanopyPanel from '@/map/canopy/CanopyPanel'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
@@ -37,7 +37,9 @@ import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
 import { FeedbackButton } from '@/components/feedback/FeedbackButton'
 import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
-import VersionPicker from '@/map/tags/VersionPicker'
+import VariantPicker from '@/map/variants/VariantPicker'
+import VariantsPanel from '@/map/variants/VariantsPanel'
+import VariantSection, { appliesToVariant } from '@/map/variants/VariantSection'
 import TimeStrip from '@/map/time/TimeStrip'
 import ShadeOverlay from '@/map/time/ShadeOverlay'
 import PalettePanel from '@/map/plants/PalettePanel'
@@ -79,6 +81,8 @@ import AlertsPanel from '@/map/drawing/AlertsPanel'
 import GpsAccuracyOverlay from '@/map/gps/GpsAccuracyOverlay'
 import GpsAccuracySection, { appliesToGpsPoint } from '@/map/gps/GpsAccuracySection'
 import DrawingLayers from '@/map/drawing/DrawingLayers'
+import LabelPeek from '@/map/drawing/LabelPeek'
+import ReliefWorksSync from '@/map/data/ReliefWorksSync'
 import DrawingToolbar from '@/map/drawing/DrawingToolbar'
 import ElementSection, { appliesToElement } from '@/map/drawing/ElementSection'
 import ProjectStateSection, { appliesToProjectState } from '@/map/drawing/ProjectStateSection'
@@ -101,6 +105,9 @@ import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
 import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
 import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
 import FunctionsPanel from '@/map/functions/FunctionsPanel'
+import PresentationPanel from '@/map/presentation/PresentationPanel'
+import PresentationOverlay from '@/map/presentation/PresentationOverlay'
+import MapOpeningProbe from '@/map/performance/MapOpeningProbe'
 import FunctionsSection from '@/map/functions/FunctionsSection'
 import { appliesToFunctions } from '@/map/functions/store'
 
@@ -128,6 +135,7 @@ export const PANELS: EditorPanel[] = [
   { id: 'zones', label: 'permaculture_zones.panel_title', icon: Target, group: 'design', component: ZonesPanel, order: 10, essential: true },
   { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20, essential: true },
   { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50, essential: true },
+  { id: 'variants', label: 'variants.panel_title', icon: GitBranch, group: 'design', component: VariantsPanel, order: 52 },
   { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
   { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: FunctionsPanel, order: 60 },
   { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
@@ -139,6 +147,7 @@ export const PANELS: EditorPanel[] = [
   // Échanger (no number)
   { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10, essential: true },
   { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: OfferPanel, requires: 'offers', order: 15 },
+  { id: 'present', label: 'presentations.panel_title', icon: Presentation, group: 'share', component: PresentationPanel, order: 17, essential: true },
   { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20, essential: true },
   { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
 ]
@@ -165,6 +174,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
   { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
   { id: 'project-state', applies: appliesToProjectState, component: ProjectStateSection, order: 16 },
+  { id: 'variant', applies: appliesToVariant, component: VariantSection, order: 16.5 },
   { id: 'implementation-phase', applies: appliesToPhase, component: PhaseSection, order: 17 },
   { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
   { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
@@ -193,7 +203,7 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'chat', component: MapChat, order: 91 },
   { id: 'welcome', component: WelcomeCard, order: 92 },
   { id: 'journey-chip', component: JourneyOverlay, order: 20 },
-  { id: 'version', component: VersionPicker, order: 25 },
+  { id: 'variant', component: VariantPicker, order: 25 },
   { id: 'time-strip', component: TimeStrip, order: 24 },
   { id: 'time-shade', component: ShadeOverlay, order: 19 },
   { id: 'tour', component: TourOverlay, order: 100 },
@@ -215,6 +225,8 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'canopy', component: CanopyOverlay, order: 3 },
   { id: 'harvests', component: HarvestsOverlay, order: 21 },
   { id: 'drawing-layers', component: DrawingLayers, order: 10 },
+  { id: 'label-peek', component: LabelPeek, order: 43 },
+  { id: 'relief-works', component: ReliefWorksSync, order: 44 },
   { id: 'drawing-toolbar', component: DrawingToolbar, order: 40 },
   { id: 'drawing-live', component: LiveSync, order: 90 },
   { id: 'aerial-views', component: AerialViewsOverlay, order: 1 },
@@ -222,4 +234,6 @@ export const OVERLAYS: EditorSlot[] = [
   { id: 'gps-accuracy', component: GpsAccuracyOverlay, order: 15 },
   { id: 'earthworks', component: EarthworksOverlay, order: 12 },
   { id: 'sectors', component: SectorsOverlay, order: 13 },
+  { id: 'presentation', component: PresentationOverlay, order: 95 },
+  { id: 'opening-probe', component: MapOpeningProbe, order: 200 },
 ]

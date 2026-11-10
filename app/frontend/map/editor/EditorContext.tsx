@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react'
 import type { DrawOptions, DrawShape, PointTool } from '@/map/editor/draw'
 import type { Season } from '@/map/time/growth'
 import type { Moment, Timeline } from '@/map/time/moment'
+import type { DesignMode } from '@/map/time/mode'
 import type {
   EntitlementsData, FeatureLayer, MapData, MapFeature, MapFeatureProperties, MapStage, RegionLayerData,
 } from '@/types'
@@ -18,6 +19,8 @@ export type NewFeature = {
   style?: Record<string, unknown>
   status?: 'active' | 'draft'
   tags?: string[]
+  /** The project variant it belongs to (map/variants); null: common to all. */
+  variant_id?: number | null
 }
 
 /** swap_number: a plant taking a number another plant holds gives it its own (the other comes back in `swapped`). */
@@ -99,6 +102,14 @@ export type Editor = {
   moment: Moment
   timeline: Timeline
   setMoment: (moment: Moment) => void
+  /**
+   * « Existant » (the land alone; what one draws is on the ground) or
+   * « Projet » (the project over the faded land; what one draws is a
+   * project). Picking a step sets it; « Arrivée » brings « Existant », the
+   * years to come « Projet » (map/time/mode).
+   */
+  mode: DesignMode
+  setMode: (mode: DesignMode) => void
   shade: Season | null
   setShade: (season: Season | null) => void
 }

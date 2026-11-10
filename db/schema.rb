@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -80,6 +80,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.bigint "source_upload_id"
     t.bigint "drone_mission_id"
     t.string "product", default: "orthophoto", null: false
+    t.jsonb "alignments", default: [], null: false
     t.index ["created_by_id"], name: "index_aerial_views_on_created_by_id"
     t.index ["drone_mission_id"], name: "index_aerial_views_on_drone_mission_id"
     t.index ["map_id", "captured_on"], name: "index_aerial_views_on_map_id_and_captured_on"
@@ -239,6 +240,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["map_id"], name: "index_bioindicator_observations_on_map_id"
     t.index ["map_photo_id"], name: "index_bioindicator_observations_on_map_photo_id"
     t.index ["observed_by_id"], name: "index_bioindicator_observations_on_observed_by_id"
+  end
+
+  create_table "board_sections", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "phase", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "phase", "position"], name: "index_board_sections_on_organization_id_and_phase_and_position"
   end
 
   create_table "comment_reads", force: :cascade do |t|
@@ -633,6 +644,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.datetime "updated_at", null: false
     t.string "tags", default: [], null: false, array: true
     t.datetime "deleted_at"
+    t.bigint "variant_id"
     t.index ["created_by_id"], name: "index_map_features_on_created_by_id"
     t.index ["deleted_at"], name: "index_map_features_on_deleted_at", where: "(deleted_at IS NOT NULL)"
     t.index ["geometry"], name: "index_map_features_on_geometry", using: :gist
@@ -640,6 +652,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["map_id", "status"], name: "index_map_features_on_map_id_and_status"
     t.index ["map_id"], name: "index_map_features_on_map_id"
     t.index ["updated_by_id"], name: "index_map_features_on_updated_by_id"
+    t.index ["variant_id"], name: "index_map_features_on_variant_id"
   end
 
   create_table "map_invitations", force: :cascade do |t|
@@ -713,6 +726,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.string "kind", default: "photo", null: false
     t.bigint "retake_of_id"
     t.bigint "drone_mission_id"
+    t.bigint "soil_sample_id"
+    t.string "playback"
     t.index "((location)::geography)", name: "index_map_photos_on_location_geography", using: :gist
     t.index ["derived_from_id"], name: "index_map_photos_on_derived_from_id"
     t.index ["drone_mission_id"], name: "index_map_photos_on_drone_mission_id"
@@ -724,7 +739,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["map_id"], name: "index_map_photos_on_map_id"
     t.index ["photo_album_id"], name: "index_map_photos_on_photo_album_id"
     t.index ["retake_of_id"], name: "index_map_photos_on_retake_of_id"
+    t.index ["soil_sample_id"], name: "index_map_photos_on_soil_sample_id"
     t.index ["uploaded_by_id"], name: "index_map_photos_on_uploaded_by_id"
+  end
+
+  create_table "map_presentations", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.string "template_key"
+    t.jsonb "steps", default: [], null: false
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_map_presentations_on_map_id"
   end
 
   create_table "map_publications", force: :cascade do |t|
@@ -831,6 +858,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["token"], name: "index_map_trials_on_token", unique: true
   end
 
+  create_table "map_variants", force: :cascade do |t|
+    t.bigint "map_id", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.integer "position", default: 0, null: false
+    t.boolean "retained", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_map_variants_on_map_id"
+    t.index ["map_id"], name: "index_map_variants_one_retained", unique: true, where: "retained"
+  end
+
+  create_table "map_visits", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "map_id", null: false
+    t.datetime "opened_at", null: false
+    t.index ["map_id"], name: "index_map_visits_on_map_id"
+    t.index ["user_id", "map_id"], name: "index_map_visits_on_user_id_and_map_id", unique: true
+  end
+
   create_table "maps", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -867,6 +914,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.datetime "plan_printed_at"
     t.datetime "chat_digest_at"
     t.datetime "first_hour_started_at"
+    t.bigint "board_section_id"
+    t.index ["board_section_id"], name: "index_maps_on_board_section_id"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
@@ -1025,6 +1074,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.string "role", default: "member", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "board_opened_at"
     t.index ["organization_id", "user_id"], name: "index_organization_memberships_on_organization_id_and_user_id", unique: true
     t.index ["organization_id"], name: "index_organization_memberships_on_organization_id"
     t.index ["user_id"], name: "index_organization_memberships_on_user_id"
@@ -1038,6 +1088,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.bigint "billing_user_id"
     t.jsonb "document_theme", default: {}, null: false
     t.jsonb "document_theme_draft"
+    t.datetime "territory_module_granted_at"
     t.index ["billing_user_id"], name: "index_organizations_on_billing_user_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
@@ -1768,6 +1819,47 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
     t.index ["task_list_id"], name: "index_tasks_on_task_list_id"
   end
 
+  create_table "territories", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "region_id"
+    t.bigint "created_by_id"
+    t.string "name", null: false
+    t.geometry "boundary", limit: {:srid=>4326, :type=>"multi_polygon"}, null: false
+    t.geometry "center", limit: {:srid=>4326, :type=>"st_point"}, null: false
+    t.float "area_m2", null: false
+    t.jsonb "boundary_source", default: {}, null: false
+    t.jsonb "notebook", default: {}, null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["boundary"], name: "index_territories_on_boundary", using: :gist
+    t.index ["created_by_id"], name: "index_territories_on_created_by_id"
+    t.index ["organization_id"], name: "index_territories_on_organization_id"
+    t.index ["region_id"], name: "index_territories_on_region_id"
+  end
+
+  create_table "territory_items", force: :cascade do |t|
+    t.bigint "territory_id", null: false
+    t.string "kind", null: false
+    t.string "status", default: "active", null: false
+    t.string "source", default: "human", null: false
+    t.string "title", null: false
+    t.text "body"
+    t.text "rationale"
+    t.geometry "geometry", limit: {:srid=>4326, :type=>"geometry"}
+    t.jsonb "properties", default: {}, null: false
+    t.bigint "created_by_id"
+    t.bigint "decided_by_id"
+    t.datetime "decided_at"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_territory_items_on_created_by_id"
+    t.index ["decided_by_id"], name: "index_territory_items_on_decided_by_id"
+    t.index ["geometry"], name: "index_territory_items_on_geometry", using: :gist
+    t.index ["territory_id", "kind", "status"], name: "index_territory_items_on_territory_id_and_kind_and_status"
+  end
+
   create_table "users", force: :cascade do |t|
     t.citext "email_address", null: false
     t.string "name"
@@ -1842,6 +1934,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "bioindicator_observations", "map_photos", on_delete: :nullify
   add_foreign_key "bioindicator_observations", "maps"
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
+  add_foreign_key "board_sections", "organizations", on_delete: :cascade
   add_foreign_key "comment_reads", "users"
   add_foreign_key "comment_subscriptions", "users"
   add_foreign_key "comments", "map_documents", on_delete: :nullify
@@ -1880,6 +1973,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "map_documents", "project_sheet_links", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "content_edited_by_id", on_delete: :nullify
   add_foreign_key "map_documents", "users", column: "uploaded_by_id", on_delete: :nullify
+  add_foreign_key "map_features", "map_variants", column: "variant_id", on_delete: :nullify
   add_foreign_key "map_features", "maps"
   add_foreign_key "map_features", "users", column: "created_by_id"
   add_foreign_key "map_features", "users", column: "updated_by_id"
@@ -1896,7 +1990,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "map_photos", "map_photos", column: "retake_of_id", on_delete: :nullify
   add_foreign_key "map_photos", "maps"
   add_foreign_key "map_photos", "photo_albums", on_delete: :nullify
+  add_foreign_key "map_photos", "soil_samples", on_delete: :nullify
   add_foreign_key "map_photos", "users", column: "uploaded_by_id", on_delete: :nullify
+  add_foreign_key "map_presentations", "maps", on_delete: :cascade
   add_foreign_key "map_publications", "maps"
   add_foreign_key "map_publications", "users", column: "published_by_id"
   add_foreign_key "map_share_links", "maps"
@@ -1909,6 +2005,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "map_trials", "maps", column: "adopted_map_id", on_delete: :nullify
   add_foreign_key "map_trials", "regions"
   add_foreign_key "map_trials", "users", column: "claimant_id", on_delete: :nullify
+  add_foreign_key "map_variants", "maps", on_delete: :cascade
+  add_foreign_key "map_visits", "maps", on_delete: :cascade
+  add_foreign_key "map_visits", "users", on_delete: :cascade
+  add_foreign_key "maps", "board_sections", on_delete: :nullify
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify
@@ -2018,6 +2118,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   add_foreign_key "tasks", "users", column: "assignee_id", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "completed_by_id", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "territories", "organizations", on_delete: :cascade
+  add_foreign_key "territories", "regions", on_delete: :nullify
+  add_foreign_key "territories", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "territory_items", "territories", on_delete: :cascade
+  add_foreign_key "territory_items", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "territory_items", "users", column: "decided_by_id", on_delete: :nullify
   add_foreign_key "users", "map_publications", column: "source_publication_id", on_delete: :nullify
   add_foreign_key "water_sources", "maps"
 end

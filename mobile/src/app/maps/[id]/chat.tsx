@@ -10,7 +10,7 @@ import * as Linking from 'expo-linking'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
+  ActivityIndicator, Alert, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { chat, useChat } from '@/lib/chat'
@@ -32,6 +32,7 @@ import { useMapBundle } from '@/state/useMapBundle'
 import { useOnline, useOutbox } from '@/state/sync'
 import { whereLabel } from '@/terrain/SheetContent'
 import { Icon, type IconName } from '@/ui/Icon'
+import { KeyboardAvoid } from '@/ui/KeyboardAvoid'
 import { Body, Button, IconButton, MAX_FONT_SCALE, Notice } from '@/ui/kit'
 import { RemoteImage } from '@/ui/RemoteImage'
 import { colors, fonts, radius, shadows, space, touch, type } from '@/ui/theme'
@@ -102,7 +103,7 @@ export default function ChatScreen() {
   const closed = state.status === 'closed' || (bundle && bundle.map.chat === false)
 
   return (
-    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoid style={s.screen} reserved={Math.max(0, insets.bottom - space.sm)}>
       <View style={[s.header, { paddingTop: Platform.OS === 'android' ? insets.top + space.sm : space.md }]}>
         <View style={{ flex: 1 }}>
           <Text accessibilityRole="header" style={s.title} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.chat.title')}</Text>
@@ -155,7 +156,7 @@ export default function ChatScreen() {
           }))}
           bottomInset={insets.bottom} onMe={setMe} />
       )}
-    </KeyboardAvoidingView>
+    </KeyboardAvoid>
   )
 }
 

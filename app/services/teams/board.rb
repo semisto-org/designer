@@ -4,7 +4,8 @@ module Teams
   #
   # 1. the new requests of the team's form, the oldest first;
   # 2. every team map on one timeline, from request to completion, with its
-  #    project manager, who works on it and the date promised to the client;
+  #    project manager, who works on it and the date promised to the client,
+  #    a column split into the team's sections (BoardSection) when it has any;
   # 3. the season: design, work site and planting steps over twelve months;
   # 4. who carries what: how many projects each member is involved in;
   # 5. the team's own places (MapBoard), which have no phase.
@@ -15,9 +16,6 @@ module Teams
     LOAD_DAYS = 28
     # Projects in these phases no longer count in a member's load.
     SETTLED_PHASES = %w[co_management completed].freeze
-    # Bare-root planting: 1 November to the end of February.
-    PLANTING_OPENS = [ 11, 1 ].freeze
-    PLANTING_CLOSES = [ 2, -1 ].freeze
 
     def initialize(team, user, today: Date.current)
       @team = team
@@ -29,7 +27,7 @@ module Teams
       {
         team: { id: @team.id, name: @team.name, role: @team.role_for(@user) },
         today: @today.iso8601,
-        season: season_json,
+        season: SeasonSteps.window_json(@today),
         requestForm: form && { id: form.id, slug: form.slug, active: form.active },
         requests: requests.map { |r| request_json(r) },
         **settings,
@@ -45,15 +43,16 @@ module Teams
 
     # What the project settings need besides the project (map editor).
     def settings
-      { members: members_json, phases: MapBoard::PHASES, closedReasons: MapBoard::CLOSED_REASONS, stepKinds: Task::STEP_KINDS }
+      { members: members_json, phases: MapBoard::PHASES, closedReasons: MapBoard::CLOSED_REASONS, stepKinds: Task::STEP_KINDS,
+        sections: sections.map(&:as_board_json) }
     end
 
-    def self.step_json(task)
-      { id: task.id, mapId: task.map_id, kind: task.step_kind, title: task.title,
-        startsOn: task.starts_on.iso8601, dueOn: task.due_on.iso8601, done: task.done?, forecast: task.forecast }
-    end
+    def self.step_json(task) = SeasonSteps.json(task)
 
     private
+      # The team's sections, column by column, in their order.
+      def sections = @sections ||= @team.board_sections.ordered.to_a
+
       def form = defined?(@form) ? @form : (@form = RequestForm.find_by(owner: @team))
 
       # Requests nobody has turned into a map or declined yet.
@@ -90,6 +89,7 @@ module Teams
           sketch: sketches[map.id],
           phase: map.board_phase,
           ownPlace: map.own_place,
+          sectionId: map.board_section_id,
           phaseChangedAt: (map.phase_changed_at || map.created_at).iso8601,
           lead: map.lead && person(map.lead),
           crew: map.crew.reject { |u| u.id == map.lead_id }.sort_by(&:display_name).map { |u| person(u) },
@@ -118,32 +118,10 @@ module Teams
 
       # The steps drawn on the twelve months from the start of this month.
       def steps
-        from = @today.beginning_of_month
-        @steps ||= Task.steps.where(map_id: ids).where(due_on: from..).where(starts_on: ..(from + 12.months))
-                       .order(:starts_on, :id).to_a
+        @steps ||= SeasonSteps.coming(ids, @today).to_a
       end
 
-      def step_json(task) = self.class.step_json(task)
-
-      # This season's or the coming season's planting window.
-      def season
-        @season ||= begin
-          closes_this_year = Date.new(@today.year, *PLANTING_CLOSES)
-          if @today <= closes_this_year
-            Date.new(@today.year - 1, *PLANTING_OPENS)..closes_this_year
-          else
-            Date.new(@today.year, *PLANTING_OPENS)..Date.new(@today.year + 1, *PLANTING_CLOSES)
-          end
-        end
-      end
-
-      def season_json
-        in_season = season.cover?(@today)
-        {
-          opensOn: season.begin.iso8601, closesOn: season.end.iso8601, inSeason: in_season,
-          weeks: ((in_season ? season.end - @today : season.begin - @today).to_i / 7.0).ceil
-        }
-      end
+      def step_json(task) = SeasonSteps.json(task)
 
       def request_json(r)
         {

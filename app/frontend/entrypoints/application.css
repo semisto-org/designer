@@ -149,6 +149,9 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
 @keyframes notebook-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes sheet-left { from { transform: translateX(100%); } to { transform: none; } }
+/* « Présenter »: the camera's flash when a view is captured (map/presentation/flash.ts). */
+@keyframes camera-flash { 0% { opacity: 0; } 12% { opacity: 0.8; } 100% { opacity: 0; } }
+.camera-flash { position: fixed; inset: 0; z-index: 120; pointer-events: none; background: white; animation: camera-flash 420ms ease-out forwards; }
 
 /* Home page time-lapse: text set straight on the watercolour keeps a paper halo. */
 .timelapse-halo { text-shadow: 0 0 22px var(--color-loam-50), 0 0 8px var(--color-loam-50), 0 0 3px var(--color-loam-50); }
@@ -368,3 +371,17 @@ h1.text-lg, h2.text-lg { font-size: 1.35rem; line-height: 1.7rem; }
   .offer-document h2, .offer-document h3 { break-after: avoid; }
   .offer-document li { break-inside: avoid; }
 }
+
+/* « Présenter » (map/presentation): while presenting full screen, the editor's
+   chrome steps aside and the map, its open panel, the time strip and the
+   legend stay; the guide card and the floating notices wait. */
+html[data-presenting] body header,
+html[data-presenting] #editor-rail,
+html[data-presenting] [data-zone="toolbar"],
+html[data-presenting] [data-zone="top"],
+html[data-presenting] [data-zone-card="journey"],
+html[data-presenting] [data-zone-card="variant"] { display: none !important; }
+
+/* The season frieze's paper (SeasonFrieze): its box, and the lane names that
+   stay put while the months scroll under them. */
+.season-paper { background-color: #fffdf7; }

@@ -78,7 +78,7 @@ export default function TrialShow(props: TrialShowProps) {
   const lowPoint = reading.status === 'done' ? reading.reading.low_point ?? null : null
 
   return (
-    <div className="flex h-dvh flex-col bg-loam-100 md:flex-row">
+    <div className="fixed inset-0 flex flex-col overflow-clip overscroll-none bg-loam-100 md:flex-row">
       <Head title={t('trials.show.title')}>
         <meta name="robots" content="noindex, nofollow" />
       </Head>

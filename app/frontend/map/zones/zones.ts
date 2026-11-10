@@ -83,6 +83,12 @@ type Position = number[]
 export const ROUNDING_MIN = 1
 export const ROUNDING_MAX = 10
 export const ROUNDING_DEFAULT = 3
+/**
+ * The level a line starts at when its bends are rounded: a path, a hedge
+ * or a track drawn in a few clicks reads at once as a curve that follows
+ * the land, not as a broken line with softened elbows.
+ */
+export const PATH_ROUNDING_DEFAULT = 7
 /** Segments of a rounded corner: enough to read as a curve at plan zoom, more for a wide one. */
 const CORNER_STEPS = 6
 const CORNER_STEPS_MAX = 24

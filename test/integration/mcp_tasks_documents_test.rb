@@ -58,9 +58,14 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     assert_equal TaskList::SEASON_KEY, Task.find(design["id"]).task_list.key
 
     map_data, = call_tool(@owner, "get_map", { map_id: @map.id })
-    season = map_data["team_season"]
-    assert_equal "offer", season["stage"]
+    assert_equal "offer", map_data.dig("team_season", "stage")
+    season = map_data["season"]
     assert_equal [ [ "design", true ], [ "plant", false ] ], season["steps"].map { _1.values_at("kind", "forecast") }
+    assert season["tasks_url"].end_with?("/maps/#{@map.id}/tasks")
+    assert season.dig("planting_window", "opens_on")
+    project = map_data["team_project"]
+    assert_equal [ "offer", "Offre" ], project.values_at("stage", "stage_label")
+    assert project.key?("task_lists")
 
     data, error = call_tool(@owner, "update_tasks", { map_id: @map.id, tasks: [
       { task_id: design["id"], forecast: false, starts_on: "2026-12-08" },
@@ -84,6 +89,21 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     task.update!(completed: true)
     data, = call_tool(@viewer, "list_tasks", { map_id: @map.id, status: "done" })
     assert_equal [ task.id ], data["tasks"].map { _1["id"] }
+  end
+
+  test "list_tasks says who is on the project's team, and « nobody » leaves out tasks waiting for an invitee" do
+    team = make_team("Design Labs", admin: users(:michael), members: [ users(:bob) ])
+    @map.update!(organization: team)
+    @map.update_board!(lead_id: users(:bob).id)
+    @map.invitations.create!(email_address: "dana@example.org", role: "editor", invited_by: users(:michael))
+    TaskList::Defaults.seed!(@map)
+    waiting = @map.tasks.first
+    waiting.update!(invitee_email: "dana@example.org")
+
+    data, = call_tool(@owner, "list_tasks", { map_id: @map.id, assignee: "nobody" })
+    refute_includes data["tasks"].map { _1["id"] }, waiting.id
+    assert_equal [ "crew", "map", "team", nil ], data["participants"].map { _1["group"] }
+    assert data["participants"].first["lead"]
   end
 
   test "create_tasks writes tasks in a list found or made by name, and e-mails the person given one" do
@@ -345,5 +365,22 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     assert error
     assert_match(/Markdown/, text)
     assert_equal "a,b", @map.documents.find(data["id"]).file.download
+  end
+
+  test "list_maps and get_map tell the team project's column and the team's section of it" do
+    team = make_team("Design Labs", admin: users(:michael))
+    @map.update!(organization: team)
+    team.board_sections.create!(phase: "design", name: "Pré-design")
+    detail = team.board_sections.create!(phase: "design", name: "Design détaillé")
+    @map.update_board!(section_id: detail.id)
+
+    data, error = call_tool(@owner, "list_maps", {})
+    refute error
+    listed = data["maps"].find { _1["id"] == @map.id }
+    assert_equal({ "stage" => "design", "section" => "Design détaillé", "on_hold" => false, "closed" => false }, listed["team_board"])
+
+    map_data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    season = map_data["team_season"]
+    assert_equal [ "Design détaillé", [ "Pré-design", "Design détaillé" ], false ], season.values_at("section", "stage_sections", "on_hold")
   end
 end

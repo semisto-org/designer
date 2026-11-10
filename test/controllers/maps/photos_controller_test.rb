@@ -12,7 +12,7 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
 
   test "requires sign in" do
     get map_photos_path(@map), headers: json_headers
-    assert_redirected_to new_session_path
+    assert_response :unauthorized
   end
 
   test "someone outside the map gets nothing" do
@@ -397,6 +397,18 @@ class Maps::PhotosControllerTest < ActionDispatch::IntegrationTest
     encoded = response.location[%r{/disk/([^/]+)/}, 1]
     data = ActiveStorage.verifier.verified(encoded, purpose: :blob_key)
     assert_not_equal photo.image.blob.key, data[:key] || data["key"], "a photo's size=video is not its original"
+  end
+
+  test "image: a converted video plays from its H.264 copy; editors still get the original" do
+    video = create_photo(file: "terrain_hevc.mp4", type: "video/mp4")
+    VideoPlaybackJob.perform_now(video)
+    key = ->(location) { ActiveStorage.verifier.verified(location[%r{/disk/([^/]+)/}, 1], purpose: :blob_key).then { |data| data[:key] || data["key"] } }
+    sign_in_as users(:alice)
+    get image_map_photo_path(@map, video, size: "video")
+    assert_equal video.reload.playable.blob.key, key.(response.location)
+    sign_in_as users(:michael)
+    get image_map_photo_path(@map, video, size: "original")
+    assert_equal video.image.blob.key, key.(response.location)
   end
 
   test "a video has no sketches nor renderings" do

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Check, CircleAlert, LoaderCircle, Sparkles, X } from 'lucide-react'
+import { Check, CircleAlert, LoaderCircle, Lock, Sparkles, X } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
 import { describeValue, SchemaFields, type Texts } from '@/components/journey/SchemaFields'
 import { Button } from '@/components/ui/Button'
@@ -174,8 +174,14 @@ export function SectionBody({ sheet, schema, section, canEdit, teamNotes }: {
   return (
     <div>
       <p className="text-sm text-loam-600">{t(`journey.project.sections.${section}.hint`)}</p>
+      {definition.teamOnly && (
+        <p className="mt-2 flex items-center gap-1.5 text-sm text-loam-500">
+          <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />{t('journey.project.team_section')}
+        </p>
+      )}
       <div className="mt-5">
         <SchemaFields
+          teamSection={definition.teamOnly}
           fields={definition.fields}
           values={values}
           onChange={(key, value) => sheet.setField(section, key, value)}

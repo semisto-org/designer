@@ -30,7 +30,7 @@ module Relief
 
     private
       def roof_area_and_count
-        row = @map.features.active.where(kind: ROOF_KINDS)
+        row = @map.features.active.in_design.where(kind: ROOF_KINDS)
           .where("ST_GeometryType(geometry) IN ('ST_Polygon', 'ST_MultiPolygon')")
           .pick(Arel.sql("COALESCE(SUM(ST_Area(geometry::geography)), 0)"), Arel.sql("COUNT(*)"))
         [ row[0].to_f, row[1].to_i ]

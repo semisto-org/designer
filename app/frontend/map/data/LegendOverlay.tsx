@@ -12,6 +12,9 @@ import { setHiddenStrata, toggled, useDrawingState } from '@/map/drawing/store'
 import { numberRanges } from '@/map/plants/labelRank'
 import { isPlant, numberProperty } from '@/map/plants/properties'
 import { drawsCrown, plantIsSupport, plantStrata, STRATA_COLORS, strataCounts, type StrataCount } from '@/map/plants/strata'
+import { PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
+import { usePresentRender } from '@/map/presentation/render'
+import { isHiddenInRender, RIBBON_KINDS } from '@/map/presentation/renderRules'
 import { setPlantLabelStyle, usePlantLabelStyle } from '@/map/plants/labelStyle'
 import { usePlanting } from '@/map/plants/store'
 import { isPlannedPlant, PLANNED_OPACITY } from '@/map/scenario'
@@ -42,7 +45,7 @@ type PlantLegend = { counts: StrataCount[]; unknown: number; planned: boolean; s
  * numbers by species, first number first.
  */
 function usePlantStrata(): PlantLegend {
-  const { features, map, moment, timeline } = useEditor()
+  const { features, map, moment, timeline, mode } = useEditor()
   const { data } = usePlanting(map.id)
   const hidden = useDrawingState((s) => s.hiddenLayers)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
@@ -53,7 +56,7 @@ function usePlantStrata(): PlantLegend {
   let planned = false
   let support = false
   for (const feature of features) {
-    if (!isPlant(feature) || feature.properties.status === 'rejected' || !inMoment(feature.properties, moment, timeline.arrival)) continue
+    if (!isPlant(feature) || feature.properties.status === 'rejected' || !inMoment(feature.properties, moment, timeline.arrival, mode)) continue
     const s = plantStrata(feature, data)
     if (data && !s) unknown += 1
     if (hiddenStrata.includes(strataKey(s))) {
@@ -102,12 +105,15 @@ export default function LegendOverlay() {
   const open = crowded ? unfolded : choice ?? wide
 
   const plants = usePlantStrata()
+  const render = usePresentRender()
   const shown = visibleOverlays(state)
   // The « Couches » panel shows the data legends itself; the strata stay here.
   const layers = activePanel === 'layers' ? [] : regionLayers
     .filter((layer) => layer.category === 'overlay' && shown.includes(layer.key) && hasLegend(layer))
     .sort((a, b) => (b.position ?? 0) - (a.position ?? 0))
   const sections = layers.length + (plants.counts.length > 0 || plants.unknown > 0 ? 1 : 0)
+  // « Rendu présentation »: the plan's own legend, without the working controls.
+  if (render) return <PlanLegend counts={plants.counts} />
   if (sections === 0) return null
 
   const toggle = () => {
@@ -278,6 +284,70 @@ function CrownSwatch({ color, planned = false, crown = true, support = false }: 
       )}
       {crown && <circle cx="9" cy="9" r="7" fill="none" stroke={color} strokeWidth="1.75" strokeDasharray={planned ? '3 2.2' : undefined} />}
       <circle cx="9" cy="9" r={crown ? 2.2 : 4} fill={planned ? '#ffffff' : color} stroke={planned ? color : '#ffffff'} strokeWidth="1" />
+    </svg>
+  )
+}
+
+/**
+ * The legend of the plan while presenting the project, as a designer draws
+ * it in the corner of a sheet: the strata in their watercolour washes, the
+ * trees already there, the water and the paths, only what the plan shows.
+ */
+function PlanLegend({ counts }: { counts: StrataCount[] }) {
+  const { features, mode, moment, timeline } = useEditor()
+  const hidden = useDrawingState((s) => s.hiddenLayers)
+  const hiddenKinds = useDrawingState((s) => s.hiddenKinds)
+  const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
+  const shows = (layer: string, test: (kind: string, geometry: string) => boolean) => !hidden.includes(layer) && features.some((f) =>
+    f.properties.layer === layer && f.properties.status !== 'rejected' && !hiddenKinds.includes(f.properties.kind)
+    && test(f.properties.kind, f.geometry.type) && inMoment(f.properties, moment, timeline.arrival, mode))
+  const rows: { key: string; label: string; count?: number; swatch: React.ReactNode }[] = [
+    ...counts.filter(({ strata }) => drawsCrown(strata) && !hidden.includes('plants') && !hiddenStrata.includes(strataKey(strata))).map(({ strata, count }) => ({
+      key: strata as string, label: strataLabel(strata), count,
+      swatch: <Wash color={PLAN_STRATA_COLORS[strata]} trunk={strata === 'canopy' || strata === 'sub_canopy'} />,
+    })),
+    ...(shows('existing', (kind) => kind === 'existing_tree') ? [{ key: 'existing', label: t('presentations.plan_legend.existing_trees'), swatch: <Wash color={PLAN_COLORS.existingCrown} opacity={0.25} edge={PLAN_COLORS.existingEdge} shadow={false} /> }] : []),
+    ...(shows('water', (kind, geometry) => geometry === 'Polygon' && !isHiddenInRender(kind)) ? [{ key: 'water', label: t('presentations.plan_legend.water'), swatch: <Wash color={PLAN_COLORS.water} round={false} edge={PLAN_COLORS.waterEdge} /> }] : []),
+    ...(shows('access', (kind, geometry) => geometry === 'LineString' && RIBBON_KINDS.includes(kind)) ? [{ key: 'paths', label: t('presentations.plan_legend.paths'), swatch: <Ribbon /> }] : []),
+  ]
+  if (rows.length === 0) return null
+  return (
+    <ZoneCard id="legend" zone="bottom" order={2} className="md:ml-auto">
+      <section aria-label={t('presentations.plan_legend.title')} className="rounded-2xl bg-loam-50/95 px-4 py-3 shadow-lg ring-1 ring-loam-900/10 backdrop-blur">
+        <h3 className="mb-2 font-serif text-lg text-loam-900">{t('presentations.plan_legend.title')}</h3>
+        <ul className="space-y-1.5">
+          {rows.map((row) => (
+            <li key={row.key} className="flex items-center gap-2.5 text-sm text-loam-800">
+              {row.swatch}
+              <span className="flex-1">{row.label}</span>
+              {row.count !== undefined && <span className="tabular-nums text-loam-500">{row.count}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </ZoneCard>
+  )
+}
+
+/** A watercolour wash: a crown (round) or a pond. */
+function Wash({ color, round = true, edge, opacity = 0.85, shadow = round, trunk = false }: { color: string; round?: boolean; edge?: string; opacity?: number; shadow?: boolean; trunk?: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+      {shadow && <circle cx="9.5" cy="8.5" r="7.5" fill={PLAN_COLORS.shadow} fillOpacity="0.18" />}
+      {round
+        ? <circle cx="10" cy="10.5" r="7.5" fill={color} fillOpacity={opacity} stroke={edge} strokeWidth={edge ? 1.2 : 0} />
+        : <path d="M3 11c0-4 4-7 8-6.5s6 3 5.5 6.5-4 5-8 4.5S3 14 3 11z" fill={color} fillOpacity={opacity} stroke={edge} strokeWidth={edge ? 1.4 : 0} />}
+      {trunk && <circle cx="10" cy="10.5" r="1.4" fill={PLAN_COLORS.trunk} />}
+    </svg>
+  )
+}
+
+/** A path as the plan draws it: a pale ribbon with a soft edge. */
+function Ribbon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+      <path d="M2 15c5-1 6-9 16-10" fill="none" stroke={PLAN_COLORS.pathEdge} strokeWidth="6" strokeLinecap="round" strokeOpacity="0.55" />
+      <path d="M2 15c5-1 6-9 16-10" fill="none" stroke={PLAN_COLORS.pathFill} strokeWidth="4" strokeLinecap="round" />
     </svg>
   )
 }

@@ -59,7 +59,8 @@ export default function FeatureScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled">
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets>
       <Stack.Screen options={{ title: featureTitle(feature, bundle.planting) }} />
       <Card style={{ gap: space.xs }}>
         <Text style={s.kicker}>{layerLabel(feature.properties.layer)} · {kindLabel(feature.properties.kind)}</Text>

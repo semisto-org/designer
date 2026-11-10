@@ -144,6 +144,8 @@ export function PlantFeatureSheet({ map, entitlements, canEdit, featureId, onClo
       moment: 'today',
       timeline: timelineOf((features ?? []).map((f) => f.properties), today, map.createdAt ?? today),
       setMoment: () => {},
+      mode: 'project',
+      setMode: () => {},
       shade: null,
       setShade: () => {},
     }

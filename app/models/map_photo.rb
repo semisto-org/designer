@@ -44,6 +44,8 @@ class MapPhoto < ApplicationRecord
   belongs_to :uploaded_by, class_name: "User", optional: true
   belongs_to :album, class_name: "PhotoAlbum", foreign_key: :photo_album_id, inverse_of: :photos, optional: true
   belongs_to :map_feature, optional: true
+  # Taken at a soil sampling point (the hole, the core, the profile).
+  belongs_to :soil_sample, optional: true, inverse_of: :photos
   has_many :bioindicator_observations, foreign_key: :map_photo_id, inverse_of: :photo, dependent: :nullify
   has_many :sketches, -> { ordered }, class_name: "PhotoSketch", dependent: :destroy, inverse_of: :photo
   has_many :renderings, class_name: "PhotoRendering", dependent: :destroy, inverse_of: :photo
@@ -63,10 +65,16 @@ class MapPhoto < ApplicationRecord
     attachable.variant :large, resize_to_limit: [ 1800, 1800 ], format: :jpeg, saver: { strip: true, quality: 85 }
   end
 
+  # A video's copy every browser plays (H.264 MP4), when its own file is not
+  # one: made by VideoPlaybackJob, played by the photo viewer (`playback`
+  # says what was found). Not counted in StorageUsage: Terranova adds it.
+  has_one_attached :playable
+
   converts_heic :image
   before_validation :set_kind, :normalize_heading, :record_checksum, :clear_location_source_without_location, :retake_the_first
   before_destroy :hand_series_over
   after_create_commit -> { PhotoCameraJob.perform_later(self) }, if: -> { image.attached? }
+  after_create_commit -> { VideoPlaybackJob.perform_later(self) }, if: -> { video? && image.attached? }
 
   validates :caption, length: { maximum: 500 }
   validates :source, inclusion: { in: SOURCES }
@@ -125,6 +133,9 @@ class MapPhoto < ApplicationRecord
 
   def video? = kind == "video"
 
+  # The file a video player reads: the H.264 copy when there is one.
+  def player_blob = playable.attached? ? playable.blob : image.blob
+
   # The still (photos) or still frame (videos) of a named size, ready to serve.
   def still(size) = image.representation(size)
 
@@ -137,7 +148,7 @@ class MapPhoto < ApplicationRecord
     {
       id:, kind:, caption:, takenAt: taken_at&.iso8601, createdAt: created_at.iso8601,
       lng:, lat:, heading:, source:, locationSource: location_source,
-      albumId: photo_album_id, featureId: map_feature_id, sketchesCount: sketches_count,
+      albumId: photo_album_id, featureId: map_feature_id, soilSampleId: soil_sample_id, sketchesCount: sketches_count,
       derivedFromId: derived_from_id, renderingStyle: rendering_style, retakeOfId: retake_of_id,
       camera: camera.presence,
       width: meta["width"], height: meta["height"], durationS: meta["duration"]&.to_f&.round,
@@ -172,6 +183,8 @@ class MapPhoto < ApplicationRecord
       # Active Storage trusts the declared type when the bytes say nothing
       # specific: look at the file's first bytes ourselves.
       detected = pending_upload_type
+      # A WebM file's first bytes only say Matroska, the container it is built on.
+      detected = "video/webm" if detected == "application/x-matroska" && blob.content_type == "video/webm"
       types = VIDEO_TYPES.include?(blob.content_type) ? VIDEO_TYPES : CONTENT_TYPES
       unless types.include?(blob.content_type) && (detected.nil? || types.include?(detected))
         errors.add(:base, I18n.t("soil_photos.errors.not_a_media", name:, types: I18n.t("soil_photos.errors.media_types_label")))
@@ -227,6 +240,7 @@ class MapPhoto < ApplicationRecord
     def album_and_feature_belong_to_map
       errors.add(:base, I18n.t("soil_photos.errors.album_elsewhere")) if album && album.map_id != map_id
       errors.add(:base, I18n.t("soil_photos.errors.feature_elsewhere")) if map_feature && map_feature.map_id != map_id
+      errors.add(:base, I18n.t("soil_photos.errors.soil_sample_elsewhere")) if soil_sample && soil_sample.map_id != map_id
     end
 
     def megabytes(bytes)

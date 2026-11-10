@@ -1,7 +1,7 @@
 module Mcp
   module Tools
     # The photos of the terrain, newest first: caption, date, place and
-    # direction, album, linked element. get_photo shows one.
+    # direction, album, linked element or soil sampling point. get_photo shows one.
     class ListPhotos < Base
       include PhotoHelpers
 
@@ -13,6 +13,7 @@ module Mcp
           map_id: { type: "integer", minimum: 1, description: :map_id },
           album_id: { type: "integer", minimum: 1, description: :album_id },
           feature_id: { type: "integer", minimum: 1, description: :photo_feature_id },
+          soil_sample_id: { type: "integer", minimum: 1, description: :list_soil_sample_photos },
           unplaced: { type: "boolean", default: false, description: :unplaced },
           limit: { type: "integer", minimum: 1, maximum: MAX_LIMIT, default: DEFAULT_LIMIT, description: :limit },
           after_id: { type: "integer", minimum: 0, description: :photo_after }
@@ -21,11 +22,12 @@ module Mcp
       )
       hints
 
-      def perform(map_id:, album_id: nil, feature_id: nil, unplaced: false, limit: DEFAULT_LIMIT, after_id: nil)
+      def perform(map_id:, album_id: nil, feature_id: nil, soil_sample_id: nil, unplaced: false, limit: DEFAULT_LIMIT, after_id: nil)
         map = find_map!(map_id)
         scope = map.photos.includes(:album, :uploaded_by, image_attachment: :blob)
         scope = scope.where(photo_album_id: album_id) if album_id
         scope = scope.where(map_feature_id: feature_id) if feature_id
+        scope = scope.where(soil_sample_id:) if soil_sample_id
         scope = scope.unlocated if unplaced
         total = scope.count
         ordered = scope.chronological.to_a

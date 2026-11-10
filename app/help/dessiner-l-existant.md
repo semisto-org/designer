@@ -29,7 +29,7 @@ Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Exi
 ## Dessiner un élément
 
 1. En haut de la carte, touche **Éléments**.
-2. Dans « Que veux-tu dessiner ? », dis d'abord si l'élément est **Sur le terrain** ou **En projet**, puis choisis la couche et l'élément. Tes éléments **Récents** sont proposés en premier.
+2. Dans « Que veux-tu dessiner ? », vérifie en haut que tu es en **Existant** (ce qui est déjà là) ou en **Projet** (ce qui est à venir), puis choisis la couche et l'élément. Tes éléments **Récents** sont proposés en premier.
 3. Suis l'indication affichée, selon la forme de l'élément :
    - **un point** (arbre, puits, compteur) : touche la carte à l'endroit voulu ;
    - **une ligne** (haie, fossé, chemin) : clique point par point, puis double-clique ou touche **Terminer** ;
@@ -39,9 +39,18 @@ Un arbre déjà en place se dessine comme **Arbre existant**, dans la couche Exi
 
 L'élément est ajouté à la carte et sa fiche s'ouvre.
 
+## Existant ou projet : ce que montre la carte
+
+En haut de la carte, à côté des étapes (au téléphone, en tête de la frise du temps), **Existant | Projet** dit ce que tu regardes et ce que tu dessines :
+
+- **Existant** montre le terrain tel qu'il est, sans le projet : ce que tu dessines est déjà là. C'est le mode des étapes **Observer** et **Cartographier**.
+- **Projet** met le projet au premier plan et l'existant en retrait, plus pâle : ce que tu dessines est **en projet**. C'est le mode des étapes **Concevoir** et **Planter**.
+
+Choisir une étape règle le mode ; tu peux basculer à tout moment, par exemple pendant une présentation : l'existant pour expliquer l'analyse, puis le projet. L'**Arrivée** de la frise du temps se regarde en Existant, les années à venir (**An 5**, **An 15**, **An 30**) en Projet.
+
 ## Placer ce qui n'existe pas encore
 
-Une maison à construire, une serre prévue l'an prochain, une mare à creuser : choisis **En projet** en haut de « Que veux-tu dessiner ? ». Seuls les éléments qui peuvent encore se construire sont proposés (dans la couche Existant, le **Bâtiment** et le **Mur ou muret**). Terranova retient ton choix pour le prochain élément.
+Une maison à construire, une serre prévue l'an prochain, une mare à creuser : passe en **Projet** (en haut de la carte ou de « Que veux-tu dessiner ? »). Seuls les éléments qui peuvent encore se construire sont proposés, avec les notes (dans la couche Existant, le **Bâtiment** et le **Mur ou muret**).
 
 Un élément en projet se dessine en pointillés et n'apparaît pas sur le terrain « Arrivée » de la frise du temps. Il n'est **pas montré sur la carte publique**, sauf si tu choisis d'y [montrer aussi le projet](/help/publier-sa-carte). Un bâtiment en projet (bâtiment, abri, cabane ou remise, serre, stockage des fruits, poulailler) se lève aussi dans la [vue 3D](/help/la-vue-3d-du-terrain), avec un toit mauve, à la hauteur notée dans sa fiche : son ombre compte déjà, pour concevoir autour de lui avant qu'il soit là.
 
@@ -63,6 +72,7 @@ Touche un élément sur la carte, ou dans le panneau **Éléments** qui les list
 - des **Estimations** pour certains éléments : volume d'eau d'une mare, terre à apporter dans un bac surélevé, plants à prévoir pour une haie ;
 - sa **Couleur**, si tu veux la distinguer des autres ;
 - pour une surface (une mare, un massif, un bâtiment…), **Angles arrondis** : coche la case, puis glisse le curseur de **Léger** à **Fort**. Les angles s'adoucissent sur la carte, jusqu'à une forme ovale ; la surface et les estimations suivent la forme arrondie, et les points que tu as cliqués restent ceux que tu modifies.
+- pour un tracé (un chemin, un cheminement, une haie, une clôture…), **Adoucir les coudes du tracé** : coche la case et le chemin devient une courbe qui suit le terrain, comme on le trace au crayon ; le curseur va de **Léger** (des coudes à peine arrondis) à **Fort** (une courbe souple d'un bout à l'autre). La longueur suit la courbe. Pour un chemin sinueux, clique quelques points en plus là où il tourne : la courbe passe au plus près d'eux.
 
 Pour corriger un tracé, touche **Modifier la forme**, fais glisser les points (un point au milieu d'un côté en ajoute un), puis **Enregistrer la forme**. Pour ajouter ou retirer des points, les boutons de la barre (flèche, **+**, **−**) ou les touches d'Illustrator :
 

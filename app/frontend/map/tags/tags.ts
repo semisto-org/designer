@@ -42,13 +42,13 @@ export function removeTag(tags: string[], tag: string): string[] {
 }
 
 /**
- * Shown when the map displays one version (a tag): elements carrying that
- * tag, and those carrying no tag at all, which belong to every version
- * (the boundary's surroundings, existing trees…).
+ * Shown while one tag is shown on its own (« Calques »): elements carrying
+ * it, and those carrying no tag at all (the boundary's surroundings,
+ * existing trees…).
  */
-export function inVersion(item: Tagged, version: string | null): boolean {
-  if (version == null) return true
-  return tagsOf(item).length === 0 || hasTag(item, version)
+export function inTag(item: Tagged, tag: string | null): boolean {
+  if (tag == null) return true
+  return tagsOf(item).length === 0 || hasTag(item, tag)
 }
 
 export type TagCount = { tag: string; count: number }

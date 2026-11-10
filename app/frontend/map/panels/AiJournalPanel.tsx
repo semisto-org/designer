@@ -70,6 +70,7 @@ function describe(action: AiActionData): string {
     case 'propose_palette': return t('ai_journal.actions.propose_palette', { count: n('created') })
     case 'propose_project_sheet': return t('ai_journal.actions.propose_project_sheet', { count: n('created') })
     case 'propose_phases': return t('ai_journal.actions.propose_phases', { count: n('created') })
+    case 'propose_presentation_slides': return t('ai_journal.actions.propose_presentation_slides', { count: n('created') })
     case 'propose_bioindicators': return t('ai_journal.actions.propose_bioindicators', { count: n('created') })
     case 'propose_soil_results': return t('ai_journal.actions.propose_soil_results', { count: n('created') })
     case 'withdraw_draft': return t('ai_journal.actions.withdraw_draft', { count: n('withdrawn') })

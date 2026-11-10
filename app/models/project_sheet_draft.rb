@@ -18,7 +18,11 @@ class ProjectSheetDraft < ApplicationRecord
   def self.accept!(map, drafts)
     sheet = nil
     map.with_lock do
-      patch = drafts.each_with_object({}) { |d, acc| (acc[d.section] ||= {})[d.field] = d.value }
+      current = ProjectSheet.parse(map.project, strict: false)
+      patch = drafts.each_with_object({}) do |d, acc|
+        field = ProjectSheet::SECTIONS[d.section].find { _1.key == d.field }
+        (acc[d.section] ||= {})[d.field] = ProjectSheet.keep_personal(field, current.section(d.section)[d.field], d.value)
+      end
       sheet = ProjectSheet.merge(map.project, patch)
       map.update!(project: sheet.to_h)
       where(id: drafts.map(&:id)).delete_all

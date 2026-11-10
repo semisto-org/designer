@@ -20,8 +20,10 @@ module Mcp
     # placed_by_terranova: the geometries were drawn by Terranova itself
     # (the arcs of propose_sectors, which go round the terrain a little
     # outside it), so they skip the check against the boundary.
-    def initialize(map:, user:, placed_by_terranova: false)
+    # variant: the project variant (MapVariant) the drafts belong to; nil: common to all.
+    def initialize(map:, user:, placed_by_terranova: false, variant: nil)
       @map = map
+      @variant = variant
       @user = user
       @placed_by_terranova = placed_by_terranova
     end
@@ -136,7 +138,7 @@ module Mcp
           tags: Array(item[:tags]),
           style: item[:color].to_s.match?(/\A#\h{6}\z/) ? { "color" => item[:color].downcase } : {},
           geometry: parse(item[:geometry]),
-          status: "draft", source: "ai",
+          status: "draft", source: "ai", variant: @variant,
           created_by: @user, updated_by: @user
         )
       end

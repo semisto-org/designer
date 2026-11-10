@@ -6,6 +6,7 @@ module Mcp
     # What an AI needs to fill the sheet from a conversation or a transcript.
     # For the map's team (or its pro owner) only, each section also carries
     # the team's internal note (ProjectSheetNote), never meant for the client.
+    # Personal data (phones, e-mails, health) is never part of it.
     class GetProjectSheet < Base
       arguments(
         properties: { map_id: { type: "integer", minimum: 1, description: :map_id } },
@@ -16,6 +17,7 @@ module Mcp
       def perform(map_id:)
         map = find_map!(map_id)
         sheet = map.project_sheet
+        @values = sheet.without_personal
         progress = sheet.progress
         @team_notes = map.project_sheet_notes.includes(:updated_by).index_by(&:section) if ProjectSheetNote.audience?(map, user)
         {
@@ -39,7 +41,7 @@ module Mcp
             hint: I18n.t("#{texts}.hint", default: nil),
             percent: progress[:sections][key][:percent],
             done: sheet.done?(key),
-            fields: fields.reject(&:hidden).map { |f| field_json(f, "#{texts}.fields.#{f.key}", sheet.section(key)[f.key]) },
+            fields: fields.reject { _1.hidden || _1.personal }.map { |f| field_json(f, "#{texts}.fields.#{f.key}", @values.dig(key, f.key)) },
             team_note: team_note_json(@team_notes&.[](key))
           }.compact
         end
@@ -57,7 +59,7 @@ module Mcp
             max_length: field.type == :text ? field.limit : nil,
             max_entries: field.max,
             team_only: field.team_only || nil,
-            item: field.item&.reject(&:hidden)&.map { |i| field_json(i, "#{texts}.item.#{i.key}", nil).except(:value) },
+            item: field.item&.reject { _1.hidden || _1.personal }&.map { |i| field_json(i, "#{texts}.item.#{i.key}", nil).except(:value) },
             value:
           }.compact
         end

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { displayGeometry, isRounded, isZoneKind, nextZoneColor, roundedGeometry, ROUNDING_DEFAULT, ROUNDING_MAX, roundingLevel, ZONE_COLORS, zoneAreaText, zoneLengthText, zoneMeasureText } from '../../../app/frontend/map/zones/zones.ts'
+import { displayGeometry, isRounded, isZoneKind, nextZoneColor, PATH_ROUNDING_DEFAULT, roundedGeometry, ROUNDING_DEFAULT, ROUNDING_MAX, roundingLevel, ZONE_COLORS, zoneAreaText, zoneLengthText, zoneMeasureText } from '../../../app/frontend/map/zones/zones.ts'
 
 const nbsp = (text: string) => text.replace(/ | /g, ' ')
 
@@ -76,6 +76,26 @@ test('a rounded path keeps its two ends', () => {
   assert.deepEqual(line[0], [0, 0])
   assert.deepEqual(line[line.length - 1], [0.001, 0.001])
   assert.ok(line.length > 3)
+})
+
+test('a rounded path turns into a curve: shorter than its elbows, longer than a straight line, ends kept', () => {
+  // A zigzag garden path, four legs of about 20 m.
+  const d = 20 / 111_320
+  const path = { type: 'LineString', coordinates: [[4.9, LAT], [4.9 + d, LAT + d], [4.9 + 2 * d, LAT], [4.9 + 3 * d, LAT + d], [4.9 + 4 * d, LAT]] }
+  const kx = 111_320 * Math.cos((LAT * Math.PI) / 180)
+  const length = (line: number[][]) => line.slice(1).reduce((sum, p, i) => sum + Math.hypot((p[0] - line[i][0]) * kx, (p[1] - line[i][1]) * 111_320), 0)
+  const curve = (level: number) => (roundedGeometry(path as never, level) as { coordinates: number[][] }).coordinates
+  const soft = curve(ROUNDING_DEFAULT)
+  const supple = curve(PATH_ROUNDING_DEFAULT)
+  assert.deepEqual(supple[0], path.coordinates[0])
+  assert.deepEqual(supple[supple.length - 1], path.coordinates[4])
+  const clicked = length(path.coordinates)
+  const chord = (4 * d) * kx
+  assert.ok(length(supple) < length(soft) && length(soft) < clicked, 'a path rounds more than a zone by default')
+  assert.ok(length(supple) > chord, 'the curve still follows the bends')
+  const inner = path.coordinates.slice(1, -1).map((p) => p.join(','))
+  assert.ok(supple.every((p) => !inner.includes(p.join(','))), 'no elbow left')
+  assert.ok(PATH_ROUNDING_DEFAULT > ROUNDING_DEFAULT && PATH_ROUNDING_DEFAULT <= ROUNDING_MAX)
 })
 
 test('any surface that asks for it is rounded, a pond as well as a zone', () => {

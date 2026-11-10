@@ -62,6 +62,13 @@ class McpSiteDataTest < ActionDispatch::IntegrationTest
     SiteRules::MapReport.define_method(:initialize, original)
   end
 
+  test "the buildings around the place, with their heights" do
+    stub_request(:get, %r{\Ahttps://overpass-api\.de/api/interpreter}).to_return(status: 200, body: { elements: [] }.to_json)
+    data, error = call_tool(@owner, "get_site_data", { map_id: @map.id, topics: %w[buildings] })
+    refute error
+    assert_equal({ "available" => true, "source" => "openstreetmap", "count" => 0 }, data["buildings"].slice("available", "source", "count"))
+  end
+
   test "only for people with a role on the map" do
     text, error = call_tool(@stranger, "get_site_data", { map_id: @map.id })
     assert error

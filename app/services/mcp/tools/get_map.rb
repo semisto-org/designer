@@ -24,12 +24,13 @@ module Mcp
           bbox: map.bbox&.map { |v| v.round(Geo::PRECISION) },
           boundary: Geo.encode(map.boundary),
           parcels: map.parcels,
-          project: map.project,
+          project: map.project_sheet.without_personal,
           project_percent: map.project_sheet.progress[:percent],
           project_drafts_pending: map.project_sheet_drafts.count,
           project_team_notes: project_team_notes(map),
           elements: element_counts(map),
           tags: tag_counts(map),
+          variants: variants(map),
           palette: palette(map),
           palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
@@ -44,15 +45,19 @@ module Mcp
           documents: map.documents.count,
           site_visits: site_visits(map),
           photos: map.photos.count,
+          drone_views: drone_views(map),
           discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
           first_hour: first_hour(map),
           offer: offer(map),
           sectors: sectors(map),
           exports: exports(map),
+          presentations: presentations(map),
           publication: publication(map),
           implementation: implementation(map),
+          season: season(map),
           team_season: team_season(map),
+          team_project: team_project(map),
           known_kinds: I18n.t("editor.kinds", default: {}),
           layers: MapFeature::LAYERS.index_with { |layer| I18n.t("editor.layers.#{layer}", default: layer) },
           reader_guide: reader_guide,
@@ -84,6 +89,20 @@ module Mcp
           article = HelpArticle.find(MapInvitationMailer::READER_GUIDE) or return nil
           { slug: article.slug, title: article.title, url: "#{origin}/help/#{article.slug}", note: t("notes.reader_guide") }
         end
+
+      # The map's drone views, newest first, and how well each one lines up
+      # (« Recaler la vue », done by a person in the editor, never by the AI).
+      def drone_views(map)
+        map.aerial_views.ready.newest_first.map do |view|
+          done = view.alignments.select { _1["status"] == "done" }
+          {
+            id: view.id, name: view.name, captured_on: view.captured_on.iso8601, product: view.product,
+            realignable: view.alignable?,
+            realigned: (done.any? ? { count: done.size, last_at: done.last["finished_at"] || done.last["at"], shift_m: done.last["shift_m"], landmarks: done.last["pairs"].size } : nil),
+            realigning: view.pending_alignment.present? || nil
+          }.compact
+        end
+      end
 
       # The walks made with the phone; list_site_visits gives each one.
       def site_visits(map)
@@ -201,21 +220,67 @@ module Mcp
           }
         end
 
-        # A team project on the team board: its stage and the steps of
-        # « La saison qui vient » from the start of this month, forecasts
-        # (an offer not signed yet) included. nil off a team or for its places.
-        def team_season(map)
-          return nil unless map.organization_id && !map.own_place
-          from = Date.current.beginning_of_month
-          steps = map.tasks.steps.where(due_on: from..).order(:starts_on)
+        # The « Présenter » sequences of the map: each step a view of the map
+        # (panel, layers, sectors, moment) or a text slide, with the presenter's note. The
+        # panel opens at panel_url, where the person presents full screen.
+        def presentations(map)
+          list = map.presentations.map do |presentation|
+            {
+              id: presentation.id, name: presentation.name, template: presentation.template_key,
+              # Notes and drafts are the presenter's: a viewer (often the client) gets neither.
+              steps: (editor? ? presentation.steps : presentation.for_viewer[:steps]).map do |step|
+                view = step["view"] || {}
+                { id: step["id"], title: step["title"], shown: step["shown"], view_adjusted: step["captured"], note: (step["note"] if editor?),
+                  slide: step["slide"] && { text: step["slide"]["body"], format: "markdown" },
+                  pending_proposal: step["proposal"]&.slice("title", "body", "new"),
+                  panel: view["panel"], sectors: view["sectors"], moment: view["moment"], mode: view["mode"], variant_id: view["variantId"], in_3d: view["relief"].present? || nil, view_3d: view["relief"]&.slice("tab", "year", "night").presence }.compact
+              end
+            }
+          end
           {
-            stage: map.board_phase, promised_on: map.promised_on&.iso8601,
-            board_url: "#{origin}/teams/#{map.organization_id}/board",
-            steps: steps.map do |task|
+            list:,
+            templates: PresentationTemplate.all.map { { key: _1.key, name: _1.name } },
+            panel_url: "#{map_url(map)}?panel=present"
+          }
+        end
+
+        # The project's season steps (SeasonSteps: design, work site,
+        # planting) from the start of this month, forecasts (an offer not
+        # signed yet) included, as the frieze of its « Tâches » page draws
+        # them, with the bare-root planting window.
+        def season(map)
+          window = SeasonSteps.window
+          {
+            tasks_url: "#{map_url(map)}/tasks",
+            planting_window: { opens_on: window.begin.iso8601, closes_on: window.end.iso8601 },
+            steps: map.tasks.steps.where(due_on: Date.current.beginning_of_month..).order(:starts_on, :id).map do |task|
               { task_id: task.id, kind: task.step_kind, title: task.title, starts_on: task.starts_on.iso8601,
                 ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
             end
           }
+        end
+
+        # A team project on the team board: its stage, the team's section of
+        # that column it sits in (BoardSection, such as « Pré-design ») among
+        # the column's sections, on hold or not, the date promised to the
+        # client and the board, whose « La saison qui vient » draws the same
+        # steps as `season`. nil off a team or for its places.
+        def team_season(map)
+          return nil unless map.organization_id && !map.own_place
+          {
+            stage: map.board_phase, section: map.board_section&.name,
+            stage_sections: map.organization.board_sections.where(phase: map.board_phase).ordered.pluck(:name),
+            on_hold: map.on_hold?, promised_on: map.promised_on&.iso8601, board_url: "#{origin}/teams/#{map.organization_id}/board"
+          }
+        end
+
+        # What the team reads about the project before opening its map (the
+        # board's « Aperçu du projet »): next action and who carries it, what
+        # was done lately, task lists, project manager and crew, how far the
+        # offer went. For the team's members only; nil elsewhere.
+        def team_project(map)
+          return nil unless map.organization_id && !map.own_place && map.organization.member?(user)
+          Teams::ProjectPreview.new(map, user).for_mcp
         end
 
         def offer(map)
@@ -287,12 +352,13 @@ module Mcp
           }
         end
 
-        # How many sampling points, how many carry lab reports, and how many
+        # How many sampling points, how many carry lab reports or photos, and how many
         # wait for the review of values an AI read (get_soil_samples).
         def soil_samples(map)
           samples = map.soil_samples.with_attached_lab_reports.to_a
+          with_photos = map.photos.where(soil_sample_id: samples.map(&:id)).distinct.count(:soil_sample_id)
           {
-            total: samples.size, analysed: samples.count(&:analysed?),
+            total: samples.size, analysed: samples.count(&:analysed?), with_photos:,
             with_reports: samples.count { |s| s.lab_reports.attached? },
             drafts_pending: samples.count { |s| s.draft.pending? }
           }
@@ -378,6 +444,18 @@ module Mcp
             updates_pending: map.feature_update_drafts.pending.count,
             hidden_layers: [ "networks" ],
             hidden_note: t(editor? ? "notes.networks_on_request" : "notes.networks_hidden")
+          }
+        end
+
+        # The project variants (« Projet 1 », « Projet 2 »): each keeps its
+        # own elements, the common project is in all; the retained one is
+        # what the palette, the offer, the implementation plan and the 3D count.
+        def variants(map)
+          own = map.features.where.not(status: "rejected").where.not(variant_id: nil).group(:variant_id).count
+          {
+            list: map.variants.map { |v| v.as_json.merge(own_elements: own[v.id].to_i) },
+            note: t(map.variants.any? ? "notes.variants" : "notes.no_variants"),
+            panel_url: "#{map_url(map)}?panel=variants"
           }
         end
 

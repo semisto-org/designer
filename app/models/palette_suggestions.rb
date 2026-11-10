@@ -3,8 +3,10 @@
 # missing strata, melliferous plants).
 #
 # Known facts rule a species out (less hardy than the zone, invasive in the
-# country, toxic for the project's animals: PlantFit::Site#excluded_by); a
-# species whose hardiness is unknown stays, marked « ? ». Inside each need,
+# country, toxic for the project's animals or for the people and pets its
+# sheet keeps away: PlantFit::Site#excluded_by); a sheet that keeps stings
+# away drops the melliferous need. A species whose hardiness is unknown
+# stays, marked « ? ». Inside each need,
 # species are ranked by their PlantFit tier (fits everywhere the site can be
 # judged, then fits with unknowns, then one misfit), natives first.
 class PaletteSuggestions
@@ -86,7 +88,7 @@ class PaletteSuggestions
       (KEY_STRATA - present).each do |strata|
         found << [ "strata_#{strata}", candidates.where("#{PlantSearch::STRATA_SQL} = ?", strata) ]
       end
-      found << [ "mellifere", candidates.where("'mellifere' = ANY(plant_species.eco_services)") ]
+      found << [ "mellifere", candidates.where("'mellifere' = ANY(plant_species.eco_services)") ] unless site.avoid_stings?
       found << [ "edible", candidates.where("plant_species.edible_rating >= 4") ]
       found
     end

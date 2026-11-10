@@ -31,7 +31,7 @@ module Mcp
         scope = scope.pending if status == "pending"
         scope = scope.done if status == "done"
         scope = scope.where(assignee: user) if assignee == "me"
-        scope = scope.where(assignee_id: nil) if assignee == "nobody"
+        scope = scope.where(assignee_id: nil, invitee_email: nil) if assignee == "nobody"
         scope = scope.tagged(tag) if tag
         if feature_ids.present? || numbers.present?
           about = features_for(map, { "feature_ids" => feature_ids, "numbers" => numbers }.compact)

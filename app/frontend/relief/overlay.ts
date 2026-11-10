@@ -6,6 +6,7 @@
 
 import type { Feature, Geometry, Position } from 'geojson'
 import { axisColor } from './colors.ts'
+import { displayGeometry } from '../map/zones/zones.ts'
 import type { Drainage } from './hydro.ts'
 import { toMercator, type GridMeta } from './grid.ts'
 
@@ -54,7 +55,7 @@ export function drainageImage(drainage: Pick<Drainage, 'accumulation' | 'depress
   return image
 }
 
-export type OverlayFeature = Feature<Geometry, { color?: unknown; layer?: string; kind?: string; style?: Record<string, unknown> | null } | null>
+export type OverlayFeature = Feature<Geometry, { color?: unknown; layer?: string; kind?: string; style?: Record<string, unknown> | null; rounded?: unknown; rounding?: unknown } | null>
 
 /**
  * Draw the overlay: drainage raster (scaled to the canvas), the map's
@@ -99,7 +100,7 @@ export function drawOverlay(
       const color = (typeof own === 'string' && own) || colors[props?.layer ?? ''] || '#fafaf9'
       context.strokeStyle = color
       context.fillStyle = color
-      drawGeometry(context, feature.geometry, project, pxPerMetre)
+      drawGeometry(context, feature.geometry ? displayGeometry(feature) : null, project, pxPerMetre)
     }
     context.globalAlpha = 1
   }

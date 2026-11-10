@@ -47,7 +47,7 @@ class SuccessionBalance
     attr_reader :map, :quantities, :today
 
     def features
-      @features ||= map.features.where(kind: PlantableFeature::PLANT, status: "active").to_a
+      @features ||= map.features.in_design.where(kind: PlantableFeature::PLANT, status: "active").to_a
                        .select(&:plant_species_id)
     end
 

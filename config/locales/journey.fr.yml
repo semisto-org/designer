@@ -136,6 +136,7 @@ fr:
       mark_done: "Marquer cette section comme terminée"
       unmark_done: "Section terminée, cliquer pour rouvrir"
       team_only: "Réservé à l'équipe : le porteur de projet ne le voit pas sur son lien."
+      team_section: "Le travail des concepteurs : le porteur de projet ne voit pas cette section sur son lien."
       team_notes:
         title_team: "Notes de l'équipe"
         title_pro: "Tes notes de pro"
@@ -188,7 +189,7 @@ fr:
           fields:
             people:
               label: "Les personnes du projet"
-              hint: "Ajoute toutes les personnes concernées, même celles qui aident de temps en temps."
+              hint: "Ajoute toutes les personnes concernées, même celles qui aident de temps en temps. Leurs coordonnées, avec leur accord, ne sont lues que par les personnes qui travaillent sur ta carte : jamais dans le dossier, ni par une IA."
               add: "Ajouter une personne"
               remove: "Retirer cette personne"
               item:
@@ -206,6 +207,12 @@ fr:
                     other: "Autre"
                 note:
                   label: "Précision"
+                phone:
+                  label: "Téléphone"
+                  placeholder: "Facultatif"
+                email:
+                  label: "E-mail"
+                  placeholder: "Facultatif"
             profile:
               label: "Tu es"
               options:
@@ -223,6 +230,18 @@ fr:
                 some: "Quelques saisons de potager"
                 experienced: "Jardinier·ère confirmé·e"
                 professional: "Professionnel·le"
+            care:
+              label: "Des plantes ou des insectes à éviter, ou un besoin d'accès particulier ?"
+              hint: "Seulement ce qui change le jardin : une allergie aux piqûres, des plantes toxiques à tenir loin des petits, une marche difficile, une poussette, un fauteuil. Facultatif, et jamais lu par une IA."
+              placeholder: "Rien de particulier, ou…"
+            keep_away:
+              label: "Ce que la palette doit écarter"
+              hint: "Les suggestions de plantes et ton IA en tiennent compte, sans savoir pourquoi."
+              options:
+                toxic_humans: "Les plantes toxiques (enfants, visiteurs)"
+                toxic_dogs: "Les plantes toxiques pour les chiens"
+                toxic_cats: "Les plantes toxiques pour les chats"
+                stings: "Les plantes mellifères près des lieux de vie (abeilles, guêpes)"
             notes:
               label: "Quelques mots sur toi"
               placeholder: "Ce qui t'a amené·e à ce projet…"
@@ -247,9 +266,20 @@ fr:
             main_goal:
               label: "Le plus important pour toi"
               options: *goals
+            meaning:
+              label: "Que représente ce lieu pour toi, et que voudrais-tu y transmettre ?"
+              placeholder: "Ce lieu, pour moi, c'est…"
             notes:
-              label: "Ta vision, avec tes mots"
-              placeholder: "Dans dix ans, je vois…"
+              label: "Imagine ton lieu dans dix ans : qu'y vois-tu, qu'y sens-tu, qu'y entends-tu ?"
+              placeholder: "Des couleurs, des odeurs, des bruits, des gens…"
+            bonus:
+              label: "Ton petit plus rêvé"
+              hint: "Pas indispensable, mais ça te ferait plaisir."
+              placeholder: "Une cabane dans un arbre, un banc sous un tilleul…"
+            inspirations:
+              label: "Ce qui t'inspire"
+              hint: "Un jardin que tu as visité et aimé, des comptes que tu suis, des mots-clés, des livres. Colle des liens si tu veux."
+              placeholder: "Le jardin de…, #foodforest, …"
         uses:
           title: "Usages"
           hint: "Comment veux-tu vivre ce jardin au quotidien ?"
@@ -280,9 +310,43 @@ fr:
                 weekends: "Les week-ends"
                 holidays: "Pendant les congés"
                 remote: "Rarement, le terrain est loin"
+            products:
+              label: "Ce que ton jardin pourrait te donner, au-delà de manger"
+              hint: "Plusieurs choix possibles : on en tiendra compte dans le choix des plantes."
+              options:
+                herbal_teas: "Tisanes"
+                medicinal: "Plantes médicinales"
+                balms_hydrosols: "Baumes et hydrolats"
+                mushrooms: "Champignons"
+                basketry: "Osier pour la vannerie"
+                dyes: "Plantes à teinture"
+                firewood: "Bois de chauffage"
+                cut_flowers: "Fleurs à couper"
+                honey_plants: "Fleurs pour les abeilles"
+                fodder: "Fourrage pour les animaux"
             notes:
               label: "Précisions"
               placeholder: "Une journée idéale au jardin…"
+        place:
+          title: "Ton lieu, vu par toi"
+          hint: "Personne ne connaît ton lieu comme toi. Fais-en le tour, dehors, avant de répondre : ce que tu as vu pèse plus que toutes les cartes."
+          fields:
+            ongoing:
+              label: "Ce qui se passe déjà ici et doit continuer"
+              hint: "Des fêtes, un marché, les jeux des enfants, le passage du tracteur, le linge qui sèche…"
+              placeholder: "Chaque été, on…"
+            knowledge:
+              label: "Ce que toi seul·e sais de ton lieu"
+              hint: "Où l'eau stagne après la pluie, où le gel reste le matin, par où passe le vent, où la neige fond d'abord, ton coin préféré."
+              placeholder: "Après une grosse pluie, le bas du terrain…"
+            keep:
+              label: "Ce à quoi tu tiens, et qu'il ne faut pas toucher"
+              hint: "Un arbre, une vue, un coin secret, un vieux mur."
+              placeholder: "Le vieux noyer près de la maison…"
+            history:
+              label: "Ce que tu sais de l'histoire du lieu"
+              hint: "Un ancien verger, une prairie, des remblais, ce qu'en disent les voisins ou les anciens propriétaires."
+              placeholder: "Avant nous, c'était…"
         taste:
           title: "Palette gustative"
           hint: "Ce que chacun aime manger, et ce que tu feras des récoltes. Un jardin-forêt nourrit des générations (un châtaignier donne pendant des siècles) : autant qu'il donne ce qui régale chacun."
@@ -323,7 +387,7 @@ fr:
                   placeholder: "Une variété d'enfance, un plat, un fruit à retrouver…"
                 allergies:
                   label: "Allergies ou intolérances"
-                  placeholder: "Aucune, ou lesquelles"
+                  placeholder: "Aucune, ou celles qui changent le jardin"
             flavors:
               label: "Les saveurs qui te plaisent"
               options:
@@ -590,6 +654,69 @@ fr:
                 as_budget_allows: "Petit à petit, selon le budget"
             notes:
               label: "Étapes et échéances"
+            anything_else:
+              label: "Autre chose à nous dire ?"
+              placeholder: "Une question, une envie, un doute…"
+        analysis:
+          title: "Analyse fonctionnelle"
+          hint: "La synthèse de l'entretien, avant de dessiner : pourquoi ce projet, ce dont les personnes et le lieu ont besoin, les fonctions que le design devra remplir, puis ce qui résiste et ce qui porte."
+          fields:
+            purpose:
+              label: "Raison d'être"
+              hint: "Une à trois phrases qui disent le lien entre les personnes et ce lieu. Elles peuvent évoluer."
+              placeholder: "Une belle œuvre, soutenant un jardin habité et vivant…"
+            holder_needs:
+              label: "Besoins des porteurs de projet"
+              hint: "Ce dont les personnes ont besoin, sans dire encore comment y répondre : « que l'entretien reste simple », pas « une prairie fleurie ». Coche « Essentiel » pour ce qui ne se négocie pas."
+              add: "Ajouter un besoin"
+              remove: "Retirer ce besoin"
+              item: &analysis_need
+                name:
+                  label: "Besoin"
+                essential:
+                  label: "Essentiel"
+            holder_functions:
+              label: "Fonctions pour les porteurs de projet"
+              hint: "Ce que le lieu fera pour elles, en verbes : accueillir, se ressourcer, transmettre… Chaque fonction gagne à être remplie par au moins deux éléments de la carte."
+              add: "Ajouter une fonction"
+              remove: "Retirer cette fonction"
+              item: &analysis_function
+                name:
+                  label: "Fonction"
+            place_needs:
+              label: "Besoins du lieu"
+              hint: "Ce dont le terrain a besoin pour aller mieux : un sol qui se régénère, une eau qui ne stagne plus, des haies qui se relient."
+              add: "Ajouter un besoin"
+              remove: "Retirer ce besoin"
+              item: *analysis_need
+            place_functions:
+              label: "Fonctions pour le lieu"
+              hint: "Ce que le design fera pour le terrain : fertiliser, protéger, relier, accueillir la biodiversité…"
+              add: "Ajouter une fonction"
+              remove: "Retirer cette fonction"
+              item: *analysis_function
+            challenges:
+              label: "Défis"
+              hint: "Ce qui résiste. Dis d'où ça vient : un défi du lieu (sol, eau, ombre) se regarde sur le terrain."
+              add: "Ajouter un défi"
+              remove: "Retirer ce défi"
+              item: &analysis_factor
+                name:
+                  label: "En quelques mots"
+                origin:
+                  label: "D'où ça vient"
+                  options:
+                    people: "Des personnes"
+                    place: "Du lieu"
+                    surroundings: "Des alentours"
+            assets:
+              label: "Atouts"
+              hint: "Ce qui porte le projet : des personnes, du lieu ou des alentours."
+              add: "Ajouter un atout"
+              remove: "Retirer cet atout"
+              item: *analysis_factor
+            notes:
+              label: "Précisions"
 
     # ----- Passer à l'action (requests to Semisto) -----
     # The private link to the project sheet (editors), and the form it opens

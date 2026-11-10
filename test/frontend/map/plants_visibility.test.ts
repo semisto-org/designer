@@ -46,3 +46,24 @@ test('hiding the plants layer hides the numbers too', () => {
   applyPlantsVisibility(map as never, ['plants'], 'number')
   assert.ok(Object.values(map.visibility).every((v) => v === 'none'))
 })
+
+test('« Noms sur la carte » off hides the plant names, not their crowns or numbers', () => {
+  const map = fakeMap([...PLANT_OVERLAY_LAYERS, ...PLANT_NUMBER_LAYERS])
+  applyPlantsVisibility(map as never, [], 'name', true)
+  assert.equal(map.visibility['plant-labels-text'], 'none')
+  assert.equal(map.visibility['plant-crowns-fill'], 'visible')
+  applyPlantsVisibility(map as never, [], 'number', true)
+  for (const id of PLANT_NUMBER_LAYERS) assert.equal(map.visibility[id], 'visible')
+  applyPlantsVisibility(map as never, [], 'name', false)
+  assert.equal(map.visibility['plant-labels-text'], 'visible')
+})
+
+test('while the plan is presented, names and numbers stay hidden and the crowns show', () => {
+  const map = { ...fakeMap([...PLANT_OVERLAY_LAYERS, ...PLANT_NUMBER_LAYERS]), getGlobalState: () => ({ presentRender: true }) }
+  applyPlantsVisibility(map, [], 'name')
+  assert.equal(map.visibility['plant-labels-text'], 'none')
+  assert.equal(map.visibility['plant-crowns-fill'], 'visible')
+  assert.equal(map.visibility['plant-trunks'], 'visible')
+  applyPlantsVisibility(map, [], 'number')
+  assert.equal(map.visibility['plant-numbers-disc'], 'none')
+})

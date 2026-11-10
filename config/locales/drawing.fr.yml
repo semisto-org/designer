@@ -409,6 +409,8 @@ fr:
         one: "%{count} photo"
         other: "%{count} photos"
       sensitive: "Réseaux : jamais exportés ni publiés sans ton accord."
+      labels: "Noms sur la carte"
+      labels_on_hover: "au survol"
       soil:
         bioindicators: "Bio-indicatrices"
         samples: "Points de prélèvement de sol"
@@ -508,6 +510,7 @@ fr:
       book_file: "carnet"
       rendering_sheet: "Planche %{page} sur %{pages}…"
       sheet_number: "Planche %{page} / %{pages}"
+      include_boundary: "Montrer le contour du terrain"
       include_networks: "Inclure les réseaux (eau, gaz, électricité, Ethernet)"
       extent: "Emprise imprimée : %{width} × %{height}"
       fit_scale: "Échelle retenue : 1:%{scale}"

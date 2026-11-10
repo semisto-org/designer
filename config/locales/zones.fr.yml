@@ -15,7 +15,7 @@ fr:
     hint_path: "Clique point par point le tracé. Double-clique ou touche « Terminer » pour finir."
     created: "Zone ajoutée à la carte. Dessine la suivante, ou touche « Fermer »."
     created_unnamed: "Zone ajoutée. Donne-lui un nom dans sa fiche : il s'écrira sur la carte."
-    in_version: "Elle rejoindra la version « %{version} » affichée sur la carte."
+    in_variant: "Elle rejoindra la variante « %{variant} » affichée sur la carte."
     rounded: "Arrondir les angles, comme un tracé à la main"
     rounded_path: "Adoucir les coudes du tracé"
     rounded_surface: "Angles arrondis"

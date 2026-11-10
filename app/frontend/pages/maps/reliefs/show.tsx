@@ -1,11 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react'
 import clsx from 'clsx'
 import {
-  ArrowLeft, CloudRain, Crosshair, Download, Eye, Loader2, Menu, Moon, MoonStar, Pause, Play, RotateCcw, Sun, SunMedium, X,
+  ArrowLeft, Camera, CloudRain, Crosshair, Download, Eye, Loader2, Menu, Moon, MoonStar, Pause, Play, RotateCcw, Sun, SunMedium, X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
+import { IconButton } from '@/components/ui/IconButton'
 import { Flash } from '@/components/ui/Flash'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
@@ -21,6 +22,7 @@ import { Compass } from '@/relief/Compass'
 import { NivaDashboard, NivaPad, NivaSection, type NivaSettings } from '@/relief/NivaControls'
 import { GrowthBar, GrowthSection, PlantCard, WalkPad, useGrowthYear } from '@/relief/GrowthControls'
 import { RoofCard } from '@/relief/RoofCard'
+import { PresentationTimeControl } from '@/relief/PresentationTimeControl'
 import { GROWTH_YEARS, yearsBetween, type GrowingPlantsData } from '@/relief/growth'
 import type { WalkKey } from '@/relief/scene'
 import { STRATA_COLORS } from '@/map/plants/strataColors'
@@ -31,6 +33,10 @@ import type { OverlayFeature, OverlayOptions } from '@/relief/overlay'
 import { ChoiceGroup, GradientLegend, SectionTitle, Slider, Toggle } from '@/relief/ui'
 import type { MapData, MapFeature } from '@/types'
 import type { LandcoverClassData, ReliefOverview, SoilModel, TerrainGridData } from '@/types/relief'
+import { cameraFlash } from '@/map/presentation/flash'
+import { PresentationBar } from '@/map/presentation/PresentationBar'
+import { markApplied, presentationStore, requestStep, saveSteps, usePresentation } from '@/map/presentation/store'
+import type { ReliefView } from '@/map/presentation/types'
 
 type Props = {
   map: MapData
@@ -554,6 +560,80 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
     setRoofPick(c.drawnBuilding(feature.properties.id))
   }
 
+  // ---- « Présenter »: a step with a 3D view is shown here; the others,
+  // and the end of a presentation, go back to the map.
+  const presenting = usePresentation((s) => s.presenting && s.mapId === map.id)
+  const presentationToken = usePresentation((s) => s.token)
+  const presentationRestore = usePresentation((s) => s.restore)
+  const presentationStep = usePresentation((s) => (s.mapId === map.id ? s.presentation?.steps.find((step) => step.id === s.currentId) ?? null : null))
+
+  function applyRelief(relief: ReliefView) {
+    const c = controller.current
+    if (!c) return
+    const patch: Partial<ViewState> = {}
+    if (relief.base) patch.base = relief.base as BaseLayer
+    if (relief.exaggeration) patch.exaggeration = relief.exaggeration
+    if (Object.keys(patch).length) updateView(patch)
+    setTab(relief.tab ?? 'view')
+    setNightRunning(false)
+    setDayRunning(false)
+    setPresentSettings(false)
+    if (relief.night != null) updateColdNight(relief.night)
+    if (relief.sun) updateSun(relief.sun)
+    else if (sun.mode !== 'off') updateSun({ mode: 'off' })
+    if (relief.year != null && plantCount > 0) growth.set(relief.year)
+    if (relief.position && relief.target) c.setCameraView(relief.position, relief.target)
+    else c.resetView()
+  }
+
+  useEffect(() => {
+    const state = presentationStore.get()
+    if (!ready || state.mapId !== map.id) return
+    if (state.restore) {
+      router.visit(`/maps/${map.id}`)
+      return
+    }
+    if (state.token === state.appliedToken) return
+    const step = state.presentation?.steps.find((s) => s.id === state.currentId)
+    if (!step) return markApplied()
+    if (!step.view.relief) {
+      router.visit(`/maps/${map.id}`)
+      return
+    }
+    applyRelief(step.view.relief)
+    markApplied()
+    // The request is what counts; the setters read the latest state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presentationToken, presentationRestore, ready, map.id])
+
+  function captureRelief() {
+    const { presentation } = presentationStore.get()
+    const step = presentationStep
+    const c = controller.current
+    if (!presentation || !step || !c || !view) return
+    const relief: ReliefView = { ...(c.cameraView() ?? {}), base: view.base, exaggeration: view.exaggeration, tab }
+    if (sun.mode !== 'off') relief.sun = { ...sun, minutes: Math.round(sun.minutes) }
+    if (tab === 'night') relief.night = Math.round(coldNight * NIGHT_STEPS) / NIGHT_STEPS
+    if (plantCount > 0) relief.year = Math.round(growth.target)
+    saveSteps(
+      presentation.steps.map((s) => (s.id === step.id ? { ...s, view: { ...s.view, relief }, captured: true } : s)),
+      () => setCaptureNote(t('presentations.save_failed')),
+    )
+    cameraFlash()
+    setCaptureNote(t('presentations.captured', { title: step.title }))
+  }
+  const [captureNote, setCaptureNote] = useState<string | null>(null)
+  // While presenting, the settings stay hidden until the presenter asks.
+  const [presentSettings, setPresentSettings] = useState(false)
+  useEffect(() => {
+    if (!presenting) setPresentSettings(false)
+  }, [presenting])
+  useEffect(() => {
+    if (!captureNote) return
+    const timer = setTimeout(() => setCaptureNote(null), 3000)
+    return () => clearTimeout(timer)
+  }, [captureNote])
+
   const loadingLabel = loading === 'failed' ? t('relief.page.loading.failed')
     : loading === 'webgl' ? t('relief.page.loading.webgl')
       : loading ? t(`relief.page.loading.${loading}`) : null
@@ -581,9 +661,71 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
       )}
 
       {/* Settings: a floating card on desktop, a bottom sheet on phones. */}
+      {presenting && <PresentationBar />}
+      {presenting && ready && (
+        <PresentationTimeControl
+          tab={tab}
+          night={{
+            time: formatClock(nightClock(coldNight)),
+            value: Math.round(coldNight * NIGHT_STEPS),
+            min: 0,
+            max: NIGHT_STEPS,
+            step: 1,
+            running: nightRunning,
+            onChange: (step) => { setNightRunning(false); updateColdNight(step / NIGHT_STEPS) },
+            onToggle: toggleNight,
+          }}
+          day={sun.mode === 'instant' ? {
+            time: formatClock(sun.minutes),
+            value: sun.minutes,
+            min: sunWindow.min,
+            max: sunWindow.max,
+            step: 10,
+            running: dayRunning,
+            onChange: (minutes) => { setDayRunning(false); updateSun({ minutes }) },
+            onToggle: toggleDay,
+          } : undefined}
+          rain={{ playing, onPlay: togglePlay, onReset: resetRain }}
+          status={tab === 'night' ? nightStatus(coldNight, coldPeak) : null}
+          settingsOpen={presentSettings}
+          onSettings={() => {
+            setPresentSettings((open) => !open)
+            setPanelOpen(true)
+          }}
+          className={clsx(
+            'absolute inset-x-3 sm:left-1/2 sm:right-auto sm:w-[32rem] sm:-translate-x-1/2',
+            plantCount > 0 && plantsView.on && niva.mode !== 'driving'
+              ? 'bottom-[calc(8.5rem+env(safe-area-inset-bottom))] sm:bottom-24'
+              : 'bottom-[calc(0.75rem+env(safe-area-inset-bottom))] sm:bottom-3',
+            // On a phone the settings open as a bottom sheet: the bar goes up.
+            presentSettings && 'max-sm:bottom-auto max-sm:top-20',
+          )}
+        />
+      )}
+      {!presenting && presentationStep && ready && (
+        <div className="absolute inset-x-0 top-3 z-30 flex flex-col items-center gap-2 px-3 sm:left-[21rem] sm:right-28">
+          <div className="flex max-w-full items-center gap-1 rounded-full bg-white py-1 pl-4 pr-1 shadow-[0_6px_16px_rgb(26_26_26/0.14)] ring-1 ring-loam-200">
+            <span className="min-w-0 truncate text-sm text-loam-800">{presentationStep.title}</span>
+            {canEdit && (
+              <Button variant="ghost" size="sm" onClick={captureRelief}>
+                <Camera className="h-4 w-4" aria-hidden />
+                {t('presentations.capture_relief')}
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => router.visit(`/maps/${map.id}?panel=present`)}>
+              {t('presentations.back_to_map')}
+            </Button>
+            <IconButton size="sm" label={t('presentations.done')} onClick={() => requestStep(null)}>
+              <X />
+            </IconButton>
+          </div>
+          {captureNote && <p className="rounded-full bg-leaf-700 px-3 py-1 text-sm text-white shadow">{captureNote}</p>}
+        </div>
+      )}
       <aside
         className={clsx(
           'absolute z-20 flex flex-col border-loam-200 bg-white/95 shadow-lg backdrop-blur',
+          presenting && !presentSettings && 'hidden',
           'inset-x-0 bottom-0 max-h-[60dvh] rounded-t-2xl border-t pb-[env(safe-area-inset-bottom)]',
           'sm:inset-x-auto sm:bottom-auto sm:left-3 sm:top-3 sm:max-h-[calc(100%-1.5rem)] sm:w-80 sm:rounded-xl sm:border sm:pb-0',
         )}
@@ -728,6 +870,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
           mapId={map.id}
           pick={roofPick}
           feature={roofPick.featureId != null ? featureList.current.find((f) => f.properties.id === roofPick.featureId) ?? null : null}
+          drawnFeature={roofPick.drawnId != null ? featureList.current.find((f) => f.properties.id === roofPick.drawnId) ?? null : null}
           canEdit={canEdit}
           onFeature={onFeature}
           onClose={() => setRoofPick(null)}
@@ -792,7 +935,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
           {t('relief.page.niva.placing')}
         </p>
       )}
-      {ready && !probe && !plantInfo && !nivaActive && walk === 'off' && (
+      {ready && !presenting && !probe && !plantInfo && !nivaActive && walk === 'off' && (
         <p className={clsx(
           'pointer-events-none absolute left-1/2 z-10 hidden -translate-x-1/2 rounded-full bg-white/80 px-3 py-1 text-[0.7rem] text-loam-500 md:block',
           plantCount > 0 && plantsView.on ? 'bottom-24' : 'bottom-3',
@@ -873,6 +1016,7 @@ function ViewTab({ view, update, terrain, zRange, landcoverClasses, buildings, o
             onChange={(buildingsOn) => update({ buildingsOn })}
             label={t('relief.page.view.buildings')}
             hint={[
+              buildings.modelled ? t('relief.page.view.buildings_modelled', { count: buildings.modelled }) : null,
               buildings.count ? (buildings.measured
                 ? t('relief.page.view.buildings_measured', { count: buildings.count, measured: buildings.measured })
                 : t('relief.page.view.buildings_hint', { count: buildings.count })) : null,
@@ -1191,6 +1335,14 @@ function SunStatus({ info, marginM }: { info: SunInfo; marginM: number }) {
 
 // ---- Night tab: cold air -----------------------------------------------------------
 
+/** Where the cold air stands at this hour of the night. */
+function nightStatus(night: number, peak: number): string {
+  const time = formatClock(nightClock(night))
+  return peak > 0.05
+    ? t('relief.page.night.status', { time, depth: formatNumber(peak, 1) })
+    : t('relief.page.night.status_none', { time })
+}
+
 function NightTab({ night, peak, running, surface, onNight, onToggle }: {
   night: number
   peak: number
@@ -1217,11 +1369,7 @@ function NightTab({ night, peak, running, surface, onNight, onToggle }: {
         {running ? <Pause className="h-3.5 w-3.5" /> : <MoonStar className="h-3.5 w-3.5" />}
         {running ? t('relief.page.night.stop') : t('relief.page.night.play')}
       </Button>
-      <p className="text-sm text-loam-700" aria-live="polite">
-        {peak > 0.05
-          ? t('relief.page.night.status', { time, depth: formatNumber(peak, 1) })
-          : t('relief.page.night.status_none', { time })}
-      </p>
+      <p className="text-sm text-loam-700" aria-live="polite">{nightStatus(night, peak)}</p>
       <ul className="space-y-1.5 text-sm text-loam-600">
         <li className="flex gap-2"><span className="mt-1.5 h-2 w-6 shrink-0 rounded-full bg-gradient-to-r from-transparent via-loam-200 to-white" />{t('relief.page.night.legend_mist')}</li>
         <li className="flex gap-2"><span className="mt-1.5 h-2 w-6 shrink-0 rounded-full bg-loam-100" />{t('relief.page.night.legend_layer')}</li>

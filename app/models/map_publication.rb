@@ -140,7 +140,22 @@ class MapPublication < ApplicationRecord
   def region_layers
     layers = map.region.catalogue.enabled.where(key: snapshot.fetch("region_layer_keys", [])).to_a
     layers = layers.reject { |layer| Collab::PublicSnapshot.sensitive_region_layer?(layer) } if options["hide_networks"]
-    layers
+    covered_photos(layers)
+  end
+
+  # A partial flight (Wallonia's summer 2022 and 2025…) chosen as the base
+  # but with no photo over the map would leave the visitor on a white page:
+  # the region's default photo stands in for it.
+  def covered_photos(layers)
+    return layers unless layers.any?(&:partial_coverage?)
+    uncovered = PhotoArchive::Coverage.uncovered(map)
+    return layers if uncovered.empty?
+    kept = layers.reject { |layer| uncovered.include?(layer.key) }
+    if layers.any? { |layer| layer.base? && uncovered.include?(layer.key) } && kept.none?(&:base?)
+      fallback = PhotoArchive.layers(map.region).find(&:default?)
+      kept.unshift(fallback) if fallback
+    end
+    kept
   end
 
   def region_layer(key) = region_layers.find { |layer| layer.key == key }

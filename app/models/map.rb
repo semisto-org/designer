@@ -24,9 +24,12 @@ class Map < ApplicationRecord
   belongs_to :organization, optional: true
   belongs_to :region
   has_many :memberships, class_name: "MapMembership", dependent: :destroy
+  has_many :visits, class_name: "MapVisit", dependent: :delete_all
   has_many :members, through: :memberships, source: :user
   has_many :invitations, class_name: "MapInvitation", dependent: :destroy
   has_many :features, class_name: "MapFeature", dependent: :destroy
+  # Variants of the project (MapVariant); one is retained.
+  has_many :variants, -> { ordered }, class_name: "MapVariant", dependent: :delete_all, inverse_of: :map
   has_many :trashed_features, -> { trashed }, class_name: "MapFeature", dependent: :destroy
   has_many :feature_update_drafts, dependent: :delete_all
   has_many :project_sheet_drafts, -> { ordered }, dependent: :delete_all, inverse_of: :map
@@ -46,6 +49,7 @@ class Map < ApplicationRecord
   has_one :financial_plan, dependent: :destroy
   has_one :offer, dependent: :destroy
   has_many :implementation_phases, -> { ordered }, dependent: :delete_all, inverse_of: :map
+  has_many :presentations, -> { ordered }, class_name: "MapPresentation", dependent: :delete_all, inverse_of: :map
   # Dated aerial views (« Vues drone ») set up by Semisto, newest first.
   has_many :aerial_views, -> { newest_first }, dependent: :destroy, inverse_of: :map
   # The project's to-do lists (« Tâches »), see TaskList::Defaults.

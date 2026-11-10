@@ -5,7 +5,8 @@ class PlantFit
   # signal remembers where it comes from, so the person can see why.
   #
   # Known facts rule a species out (`excluded_by`): less hardy than the
-  # zone, invasive in the country, toxic for the animals of the project.
+  # zone, invasive in the country, toxic for the animals of the project or
+  # for what its sheet asks to keep away (children, pets).
   # Everything else becomes a criterion of PlantFit, judged or unknown.
   class Site
     # Project sheet livestock → PlantVocabulary toxic_for keys.
@@ -48,10 +49,24 @@ class PlantFit
       }.compact
     end
 
-    # Toxicity keys of the animals the project keeps.
+    # Project sheet who.keep_away → PlantVocabulary toxic_for keys.
+    KEEP_AWAY_TOXICITY = { "toxic_humans" => "humans", "toxic_dogs" => "dogs", "toxic_cats" => "cats" }.freeze
+
+    # Toxicity keys of the animals the project keeps and of what its sheet
+    # asks to keep away (people, pets).
     def toxic_for
-      @toxic_for ||= Array(sheet_section("livestock")["species"]).filter_map { |s| LIVESTOCK_TOXICITY[s] }.uniq
+      @toxic_for ||= begin
+        animals = Array(sheet_section("livestock")["species"]).filter_map { |s| LIVESTOCK_TOXICITY[s] }
+        (animals + keep_away.filter_map { |k| KEEP_AWAY_TOXICITY[k] }).uniq
+      end
     end
+
+    # What the project sheet asks the palette to keep away (who.keep_away).
+    def keep_away = @keep_away ||= Array(sheet_section("who")["keep_away"])
+
+    # Fewer melliferous plants near where people live: no « melliferous »
+    # need among the suggestions.
+    def avoid_stings? = keep_away.include?("stings")
 
     # Why a known fact rules the species out, or nil.
     def excluded_by(species)
@@ -63,7 +78,7 @@ class PlantFit
 
     def fit(species) = PlantFit.new(species, signals.map { |key, signal| criterion(key, signal, species) })
 
-    def as_json(*) = { signals: signals.transform_values(&:as_json), toxicFor: toxic_for, country: }
+    def as_json(*) = { signals: signals.transform_values(&:as_json), toxicFor: toxic_for, keepAway: keep_away, country: }
 
     private
       def criterion(key, signal, species)

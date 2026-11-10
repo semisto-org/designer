@@ -1,7 +1,10 @@
 require "test_helper"
 require_relative "../test_helpers/collab_test_helper"
+require_relative "../test_helpers/photo_archive_test_helper"
 
 class MapPublicationTest < ActiveSupport::TestCase
+  include PhotoArchiveTestHelper
+
   setup do
     @map = maps(:ahinvaux)
     @owner = users(:michael)
@@ -178,6 +181,24 @@ class MapPublicationTest < ActiveSupport::TestCase
     # a layer disabled by the region stops being served too
     base.update!(enabled: false)
     assert_empty publication.reload.region_layers
+  end
+
+  test "a partial flight that misses the map gives way to the region's default photo" do
+    seed_wallonia_photos
+    stub_photo("ORTHO_2022_ETE", jpeg([ 255, 255, 255 ]))
+    publication = publish(options: { "region_layers" => %w[ortho_2022_ete] })
+    assert_equal %w[ortho_2022_ete], publication.snapshot["region_layer_keys"]
+    assert_equal %w[ortho_2026], publication.region_layers.map(&:key)
+    assert_equal "ortho_2026", publication.as_public[:layers].first[:key]
+    assert_equal "ortho_2026", publication.region_layer("ortho_2026")&.key
+    assert_nil publication.region_layer("ortho_2022_ete")
+  end
+
+  test "a partial flight over the map stays the base" do
+    seed_wallonia_photos
+    stub_photo("ORTHO_2022_ETE", jpeg)
+    publication = publish(options: { "region_layers" => %w[ortho_2022_ete] })
+    assert_equal %w[ortho_2022_ete], publication.region_layers.map(&:key)
   end
 
   test "as_public: tile urls point to the proxy of this publication, never to the provider" do

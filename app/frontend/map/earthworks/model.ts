@@ -1,10 +1,10 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { formatNumber, t } from '@/lib/i18n'
-import { useDrawingState } from '@/map/drawing/store'
 import { useEditor } from '@/map/editor/EditorContext'
 import { measure } from '@/map/editor/measure'
 import { earthworksBalance, type Balance, type Measure } from '@/map/earthworks/earthworks'
-import { inVersion } from '@/map/tags/tags'
+import { inVariant } from '@/map/variants/variants'
+import { shownVariantId, useVariants } from '@/map/variants/store'
 import { displayGeometry } from '@/map/zones/zones'
 import type { MapFeature } from '@/types'
 
@@ -32,20 +32,20 @@ export function measureOf(feature: MapFeature): Measure {
   return measure(displayGeometry(feature))
 }
 
-/** The features the balance counts: active ones of the version shown on the map. */
-export function countedFeatures(features: MapFeature[], version: string | null): MapFeature[] {
-  return features.filter((f) => f.properties.status === 'active' && inVersion(f, version))
+/** The features the balance counts: active ones of the project variant shown on the map. */
+export function countedFeatures(features: MapFeature[], variant: number | null): MapFeature[] {
+  return features.filter((f) => f.properties.status === 'active' && inVariant(f.properties, variant))
 }
 
-/** The earthworks balance of the open map, as the person sees it (version picker included). */
+/** The earthworks balance of the open map, as the person sees it (variant shown included). */
 export function useEarthworks(): { balance: Balance; byId: Map<number, MapFeature>; counted: MapFeature[] } {
   const { features } = useEditor()
-  const version = useDrawingState((s) => s.version)
+  const variant = useVariants(shownVariantId)
   return useMemo(() => {
-    const counted = countedFeatures(features, version)
+    const counted = countedFeatures(features, variant)
     const balance = earthworksBalance(counted.map((f) => ({ id: f.properties.id, kind: f.properties.kind, properties: f.properties, measure: measureOf(f) })))
     return { balance, byId: new Map(features.map((f) => [f.properties.id, f])), counted }
-  }, [features, version])
+  }, [features, variant])
 }
 
 // --- « Montrer sur la carte où va la terre » (per viewer, kept in localStorage) ---

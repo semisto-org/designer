@@ -7,9 +7,10 @@ class MapsController < ApplicationController
 
   def index
     # A new account first says who it designs for (welcome page), unless it
-    # came in with its place already (a trial kept): then the question waits
-    # for its second map (#new).
-    return redirect_to welcome_path if request.format.html? && ask_account_kind? && Current.user.owned_maps.none?
+    # already has maps to open: its place came in with it (a trial kept), or
+    # a team or a map was shared with it. The question then waits for its
+    # next new map (#new), so « Mes cartes » always opens on those maps.
+    return redirect_to welcome_path if request.format.html? && ask_account_kind? && !has_maps_already?
 
     maps = Map.active.where(id: Current.user.map_memberships.select(:map_id))
       .or(Map.active.where(organization_id: Current.user.organization_memberships.select(:organization_id)))
@@ -27,8 +28,9 @@ class MapsController < ApplicationController
         m.as_inertia(Current.user, role: roles[m.id], boundary: outline&.dig(:boundary), bbox: outline&.dig(:bbox))
           .merge(teamId: m.organization_id, sketch: sketches[m.id])
       end,
-      # The map worked on last opens large, with its next step (journey).
-      resume: maps.first && { mapId: maps.first.id, next: Journey.new(maps.first).next_action },
+      # The map I opened last opens large, with its next step (journey);
+      # never opened any yet: the map changed last.
+      resume: resume_json(maps),
       # Room for a new map among my own maps, and in each of my teams (a team
       # someone pays for has its own room, whatever my own plan).
       canCreate: new_map_spaces.find(nil).can_create?,
@@ -41,13 +43,13 @@ class MapsController < ApplicationController
   end
 
   def new
-    if ask_account_kind? && Current.user.owned_maps.exists?
+    if ask_account_kind? && has_maps_already?
       session[:after_welcome] = new_map_path
       return redirect_to welcome_path
     end
     region = Region.europe || Region.default
     render inertia: "maps/new", props: {
-      region: region.as_inertia, layers: region.catalogue.enabled.bases.map(&:as_inertia),
+      region: region.as_inertia, layers: PhotoArchive.preview_bases(region).map(&:as_inertia),
       # Where the map can go: my own maps or one of my teams, with their room.
       spaces: new_map_spaces.as_json
     }
@@ -68,11 +70,14 @@ class MapsController < ApplicationController
   end
 
   def show
+    MapVisit.record(Current.user, @map) if request.format.html? && !impersonating?
     render inertia: "maps/show", props: {
       map: @map.as_inertia(Current.user).merge(readOnlyByPlan: @map.read_only_by_plan?, chat: @map.chat_member?(Current.user)),
       layers: @map.region.catalogue.enabled.map(&:as_inertia),
       features: @map.features.where.not(status: "rejected").map(&:as_geojson),
       mapEntitlements: map_entitlements.as_json,
+      # Project variants (« Projet 1 », « Projet 2 »): the map shows one at a time.
+      variants: @map.variants.as_json,
       # Dated drone views, newest first (« Couches », with the base maps),
       # and for editors the ones imported from a file, to follow them.
       aerialViews: @map.aerial_views.ready.map { _1.as_inertia(archive_url: archive_map_aerial_view_path(@map, _1)) },
@@ -125,6 +130,14 @@ class MapsController < ApplicationController
       params[:map].respond_to?(:key?) && params[:map].key?(:name) && params[:map][:name].to_s.strip != @map.name
     end
 
+    # One query for the whole list (see MapsController#index performance).
+    def resume_json(maps)
+      return nil if maps.empty?
+      opened = MapVisit.opened_at_by_map(Current.user, maps.map(&:id))
+      map = maps.select { |m| opened[m.id] }.max_by { |m| opened[m.id] } || maps.first
+      { mapId: map.id, next: Journey.new(map).next_action, openedAt: opened[map.id]&.iso8601 }
+    end
+
     # Map#role_for for a whole list, in two queries instead of two a map.
     def archived_maps_json
       Current.user.owned_maps.where.not(archived_at: nil).includes(organization: :billing_user).order(archived_at: :desc).limit(200).map do |map|
@@ -163,4 +176,7 @@ class MapsController < ApplicationController
     end
 
     def ask_account_kind? = !Current.user.account_kind_chosen? && !impersonating?
+
+    # Mine (archived ones too), shared with me, or my teams' maps.
+    def has_maps_already? = Current.user.owned_maps.exists? || Current.user.openable_maps.exists?
 end

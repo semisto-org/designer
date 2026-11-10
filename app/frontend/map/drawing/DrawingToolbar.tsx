@@ -165,10 +165,8 @@ export default function DrawingToolbar() {
     if (drawingStore.get().tool === 'draw') drawingStore.set({ tool: null })
     if (!geometry) return
     try {
-      // Drawn while a version is shown: it belongs to that version.
-      const version = drawingStore.get().version
       const properties = { ...spec.defaults, ...(planned ? { planned: true } : {}) }
-      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties, ...(version ? { tags: [version] } : {}) })
+      const feature = await latest.current.createFeature({ layer: spec.layer, kind: spec.kind, geometry, properties })
       latest.current.select(feature.properties.id)
       // A line finished too early (a double click, Enter) goes on from where it stopped.
       const extend = geometry.type === 'LineString' && !created

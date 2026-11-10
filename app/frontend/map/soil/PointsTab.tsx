@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Bot, ChevronDown, FlaskConical, Loader2, MapPin, MapPinOff, Plus, Sparkles } from 'lucide-react'
+import { Bot, Camera, ChevronDown, FlaskConical, Loader2, MapPin, MapPinOff, Plus, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Field'
@@ -90,8 +90,14 @@ function SampleItem({ sample, open }: { sample: SoilSampleData; open: boolean })
               sample.status === 'sampled' && sample.sampledOn ? t('soil.points.sampled_on', { date: formatDate(sample.sampledOn) }) : t(`soil.points.status.${sample.status}`),
               t('soil.points.depth', { from: sample.depthFromCm, to: sample.depthToCm }),
               resultCount > 0 ? t('soil.points.results_count', { count: resultCount }) : null,
+              sample.photos.length > 0 ? t('soil.points.photos_count', { count: sample.photos.length }) : null,
             ].filter(Boolean).join(' · ')}
           </span>
+          {sample.status === 'sampled' && sample.photos.length === 0 && (
+            <span className="mt-1 mr-1 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-humus-100 px-2 py-0.5 text-sm font-medium text-humus-800">
+              <Camera className="h-3.5 w-3.5" aria-hidden />{t('soil.points.no_photo')}
+            </span>
+          )}
           {sample.draft && (
             <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-prune-100 px-2 py-0.5 text-sm font-medium text-prune-800">
               <Bot className="h-3.5 w-3.5" aria-hidden />{t('soil.points.ai_pending')}

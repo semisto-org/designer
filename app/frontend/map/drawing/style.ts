@@ -10,10 +10,13 @@ import { COLOR_SWATCHES, ELEMENTS } from '@/map/drawing/catalog'
 import { composeFilter, hiddenTests } from '@/map/drawing/hidden'
 import { drawIcon, ICON_NAMES } from '@/map/drawing/icons'
 import { FEATURES_SOURCE } from '@/map/layers/features'
-import { PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
+import { GROUND_IN_PROJECT_FACTOR, IN_PRESENT_RENDER, PLANNED_ELEMENT_EXPR, PLANNED_OPACITY, TO_REMOVE_EXPR, TO_REMOVE_OPACITY } from '@/map/scenario'
 import type { ElementSpec } from '@/types/drawing'
 import { ensureSupportHatch } from '@/map/plants/supportHatch'
+import { PLAN_COLORS, PLAN_STRATA_COLORS } from '@/map/plants/strataColors'
 import { stackFeatureLayers } from '@/map/layers/stack'
+import { variantFilter } from '@/map/variants/variants'
+import { RENDER_HIDDEN_KINDS, RIBBON_KINDS } from '@/map/presentation/renderRules'
 
 /**
  * Per-kind styling of the element library on a MapLibre map: fills,
@@ -89,16 +92,37 @@ const patterned = LIBRARY.filter((e) => e.fill?.pattern)
 const cased = LIBRARY.filter((e) => e.line?.casing)
 const crowned = LIBRARY.filter((e) => e.crown)
 const arrowed = LIBRARY.filter((e) => e.line?.arrows)
+const isRibbon = expr(['in', ['get', 'kind'], ['literal', RIBBON_KINDS]])
+/** Ground one walks on, painted like the paths in the « rendu présentation ». */
+const isGround = expr(['in', ['get', 'kind'], ['literal', ['terrace', 'parking']]])
+const isWater = expr(['==', ['get', 'layer'], 'water'])
+const isPolygon = expr(['==', ['geometry-type'], 'Polygon'])
+/** Hedges, drawn on the plan as a continuous soft band of foliage. */
+const isHedge = expr(['in', ['get', 'kind'], ['literal', ['hedge', 'windbreak', 'existing_hedge', 'hedge_bank']]])
+const isCrowned = expr(['in', ['get', 'kind'], ['literal', crowned.map((e) => e.kind)]])
+const PLAN_EXISTING_CROWN = PLAN_COLORS.existingCrown
+const PLAN_EXISTING_EDGE = PLAN_COLORS.existingEdge
+const ribbonFilter = ['all', ['==', ['geometry-type'], 'LineString'], isRibbon] as unknown as FilterSpecification
 const pointKinds = LIBRARY.filter((e) => e.geometries.includes('Point'))
 
-/** Opacity factor: hidden while its shape is edited, faded when a draft, still a project or to be taken away. */
-const visibleFactor = expr(['case', editing, 0, isDraft, 0.5, isPlannedElement, PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1])
+/**
+ * Opacity factor: hidden while its shape is edited, faded when a draft, still
+ * a project or to be taken away; what is on the ground fades behind the
+ * project while the editor shows « Projet » (unless selected).
+ */
+const inRender = expr(IN_PRESENT_RENDER)
+const isTechnical = expr(['in', ['get', 'kind'], ['literal', RENDER_HIDDEN_KINDS]])
+const visibleFactor = expr(['*',
+  ['case', editing, 0, ['all', inRender, isTechnical], 0, isDraft, 0.5, ['all', isPlannedElement, ['!', inRender]], PLANNED_OPACITY, isToRemove, TO_REMOVE_OPACITY, 1],
+  ['case', selected, 1, GROUND_IN_PROJECT_FACTOR]])
 /**
  * A planned element keeps its own dash if it has one, else draws dashed:
  * « not there yet ». What the project takes away draws dotted: « on its way out ».
  */
 const plannedDash = expr(['case',
   isToRemove, ['literal', [0.6, 1.6]],
+  // A designer's plan draws the project as it will be: solid.
+  inRender, ['case', isHedge, ['literal', [1, 0]], lineDash],
   ['all', isPlannedElement, ['!', ['in', ['get', 'kind'], ['literal', LIBRARY.filter((e) => e.line?.dash).map((e) => e.kind)]]]], ['literal', [3, 2]],
   lineDash])
 
@@ -121,12 +145,17 @@ function pixelsPerMeter(zoom: number, latitude: number) {
   return (512 * 2 ** zoom) / (40075016.686 * Math.cos((latitude * Math.PI) / 180))
 }
 
-const DRAWING_LAYER_IDS = ['drawing-fill', 'drawing-pattern', 'drawing-crown', 'drawing-line-casing', 'drawing-line', 'drawing-line-arrow', 'drawing-point', 'drawing-icon', 'drawing-measure-label']
+const DRAWING_LAYER_IDS = ['drawing-fill', 'drawing-pattern', 'drawing-crown', 'drawing-path-edge', 'drawing-path-ribbon', 'drawing-line-casing', 'drawing-line', 'drawing-line-arrow', 'drawing-point', 'drawing-icon', 'drawing-measure-label']
 
 function drawingLayers(latitude: number): LayerSpecification[] {
   const crownProperties = [...new Set(crowned.map((e) => e.crown as string))]
   const crownDiameter = expr(['to-number', ['coalesce', ...crownProperties.map((p) => ['get', p]), 0], 0])
   const crownRadius = (zoom: number) => expr(['*', ['/', crownDiameter, 2], pixelsPerMeter(zoom, latitude)])
+  // The ribbon's width on screen: its width on the ground, plus `extraM` of edge.
+  const ribbonWidth = (extraM: number) => {
+    const widthM = expr(['+', ['to-number', ['coalesce', ['get', 'width_m'], 1.2], 1.2], extraM])
+    return expr(['interpolate', ['exponential', 2], ['zoom'], 12, ['*', widthM, pixelsPerMeter(12, latitude)], 24, ['*', widthM, pixelsPerMeter(24, latitude)]])
+  }
   return [
     {
       id: 'drawing-fill',
@@ -134,8 +163,11 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       source: FEATURES_SOURCE,
       filter: libraryFilter(['Polygon']),
       paint: {
-        'fill-color': featureColorExpr,
-        'fill-opacity': expr(['*', ['+', fillOpacity, ['case', selected, 0.1, 0]], visibleFactor, ['case', ['in', ['get', 'kind'], ['literal', patterned.map((e) => e.kind)]], 0.6, 1]]),
+        // « Rendu présentation »: water reads as water, a full soft blue; a
+        // terrace or a yard is ground one walks on, the paths' sand.
+        'fill-color': expr(['case', ['all', inRender, isGround], PLAN_COLORS.terrace, ['all', inRender, isWater], PLAN_COLORS.water, featureColorExpr]),
+        'fill-opacity': expr(['case', ['all', inRender, isWater], ['*', 0.8, visibleFactor], ['all', inRender, isGround], ['*', 0.95, visibleFactor],
+          ['*', ['+', fillOpacity, ['case', selected, 0.1, 0]], visibleFactor, ['case', ['in', ['get', 'kind'], ['literal', patterned.map((e) => e.kind)]], 0.6, 1]]]),
       },
     },
     {
@@ -145,7 +177,8 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       filter: libraryFilter(['Polygon'], patterned),
       paint: {
         'fill-pattern': expr(['concat', 'drawing-', byKind((e) => e.fill?.pattern, 'hatch', patterned), '-', ['downcase', featureColorExpr]]),
-        'fill-opacity': expr(['*', 0.9, visibleFactor]),
+        // The plan paints flat washes: no hatching, no dots.
+        'fill-opacity': expr(['*', ['case', inRender, 0, 0.9], visibleFactor]),
       },
     },
     {
@@ -155,12 +188,41 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       filter: libraryFilter(['Point'], crowned),
       paint: {
         'circle-radius': expr(['interpolate', ['exponential', 2], ['zoom'], 12, crownRadius(12), 24, crownRadius(24)]),
-        'circle-color': featureColorExpr,
-        'circle-opacity': expr(['*', ['case', selected, 0.3, 0.2], visibleFactor]),
-        'circle-stroke-color': featureColorExpr,
-        'circle-stroke-width': 1,
-        'circle-stroke-opacity': expr(['*', 0.7, visibleFactor]),
+        // « Rendu présentation »: as on a designer's plan, what is already
+        // there is drawn in grey line, what the project brings in colour.
+        'circle-color': expr(['case', inRender, PLAN_EXISTING_CROWN, featureColorExpr]),
+        'circle-opacity': expr(['*', ['case', inRender, 0.22, selected, 0.3, 0.2], visibleFactor]),
+        'circle-stroke-color': expr(['case', inRender, PLAN_EXISTING_EDGE, featureColorExpr]),
+        'circle-stroke-width': expr(['case', inRender, 1.2, 1]),
+        'circle-stroke-opacity': expr(['*', ['case', inRender, 0.8, 0.7], visibleFactor]),
         'circle-pitch-alignment': 'map',
+      },
+    },
+    // « Rendu présentation »: paths and tracks as ribbons at their real
+    // width (width_m), a pale band with a soft edge, as on a designer's plan.
+    {
+      id: 'drawing-path-edge',
+      type: 'line',
+      source: FEATURES_SOURCE,
+      filter: ribbonFilter,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': PLAN_COLORS.pathEdge,
+        'line-width': ribbonWidth(0.35),
+        'line-opacity': expr(['*', ['case', inRender, 0.55, 0], visibleFactor]),
+        'line-blur': 1,
+      },
+    },
+    {
+      id: 'drawing-path-ribbon',
+      type: 'line',
+      source: FEATURES_SOURCE,
+      filter: ribbonFilter,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': PLAN_COLORS.pathFill,
+        'line-width': ribbonWidth(0),
+        'line-opacity': expr(['*', ['case', inRender, 0.95, 0], visibleFactor]),
       },
     },
     {
@@ -172,7 +234,7 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       paint: {
         'line-color': byKind((e) => e.line?.casing, '#ffffff', cased),
         'line-width': zoomScaled(expr(['+', lineWidth, 3]), [[14, 0.4], [18, 1], [21, 1.6]], 2),
-        'line-opacity': expr(['*', 0.9, visibleFactor]),
+        'line-opacity': expr(['*', 0.9, visibleFactor, ['case', ['all', inRender, isRibbon], 0, 1]]),
       },
     },
     {
@@ -182,9 +244,15 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       filter: libraryFilter(['LineString', 'Polygon']),
       layout: { 'line-join': 'round' },
       paint: {
-        'line-color': featureColorExpr,
-        'line-width': zoomScaled(expr(['case', ['==', ['geometry-type'], 'Polygon'], ['min', lineWidth, 2.5], lineWidth]), [[14, 0.4], [18, 1], [21, 1.6]], 2),
-        'line-opacity': expr(['*', lineOpacity, visibleFactor]),
+        // « Rendu présentation »: water keeps its line in a deep slate blue; the
+        // outline of any other surface is a fine ink line, its fill says the rest.
+        'line-color': expr(['case', ['all', inRender, isHedge], ['case', ['==', ['get', 'kind'], 'existing_hedge'], PLAN_COLORS.existingCrown, PLAN_STRATA_COLORS.sub_canopy],
+          ['all', inRender, isWater], PLAN_COLORS.waterEdge, ['all', inRender, isPolygon], PLAN_COLORS.ink, featureColorExpr]),
+        'line-width': expr(['interpolate', ['linear'], ['zoom'], ...([[14, 0.4], [18, 1], [21, 1.6]] as [number, number][]).flatMap(([zoom, factor]) => [zoom,
+          ['case', ['all', inRender, isPolygon], ['case', isWater, 1.6, 0.8],
+            ['+', ['*', ['case', isPolygon, ['min', lineWidth, 2.5], lineWidth], factor], ['case', selected, 2, 0]]]])]),
+        'line-blur': expr(['case', ['all', inRender, isWater, isPolygon], 0.8, ['all', inRender, isHedge], 2, 0]),
+        'line-opacity': expr(['*', lineOpacity, visibleFactor, ['case', ['all', inRender, isRibbon], 0, ['all', inRender, isPolygon, ['!', isWater]], 0.5, 1]]),
         'line-dasharray': plannedDash as never,
       },
     },
@@ -204,7 +272,7 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
-      paint: { 'icon-opacity': visibleFactor },
+      paint: { 'icon-opacity': expr(['case', inRender, 0, visibleFactor]) },
     },
     {
       id: 'drawing-point',
@@ -214,10 +282,10 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       paint: {
         'circle-radius': pointRadius,
         'circle-color': featureColorExpr,
-        'circle-opacity': visibleFactor,
+        'circle-opacity': expr(['case', ['all', inRender, isCrowned], 0, visibleFactor]),
         'circle-stroke-color': expr(['case', selected, '#1b1712', '#ffffff']),
         'circle-stroke-width': expr(['case', selected, 2.5, 1.5]),
-        'circle-stroke-opacity': visibleFactor,
+        'circle-stroke-opacity': expr(['case', ['all', inRender, isCrowned], 0, visibleFactor]),
       },
     },
     {
@@ -232,7 +300,7 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       },
-      paint: { 'icon-opacity': visibleFactor },
+      paint: { 'icon-opacity': expr(['case', ['all', inRender, isCrowned], 0, visibleFactor]) },
     },
     {
       id: 'drawing-measure-label',
@@ -457,13 +525,13 @@ export function installDrawingLayers(map: MapLibreMap): boolean {
 // --- Visibility of the design layers ("Calques") -----------------------------
 
 /**
- * MapLibre twin of `inVersion`: no tag, or the version's tag (any case).
- * Tags arrive as an array, or as its JSON text past the source's max zoom:
- * both read the same once written out and lowercased.
+ * MapLibre twin of `inTag`: no tag, or the tag shown (any case). Tags
+ * arrive as an array, or as its JSON text past the source's max zoom: both
+ * read the same once written out and lowercased.
  */
-function versionFilter(version: string): unknown {
+function tagFilter(tag: string): unknown {
   const tags = ['downcase', ['to-string', ['coalesce', ['get', 'tags'], ['literal', []]]]]
-  return ['any', ['==', tags, '[]'], ['in', JSON.stringify(version.toLocaleLowerCase('fr')), tags]]
+  return ['any', ['==', tags, '[]'], ['in', JSON.stringify(tag.toLocaleLowerCase('fr')), tags]]
 }
 
 /** Per layer: its own filter, the test « Calques » adds, and the filter last set from both. */
@@ -475,20 +543,22 @@ const visibilityState = new WeakMap<MapLibreMap, Map<string, VisibilityEntry>>()
  * drawn from the features source, whoever added it, by combining its own
  * filter with a test on the feature's `layer`. With `moment` (the time
  * strip's filter, map/time/moment), what that moment leaves out is hidden too. With a
- * `version` (a tag), only elements carrying it, or no tag at all, show.
+ * `variant` (map/variants), only the common project and that variant's own elements show;
+ * with a `tag`, only elements carrying it, or no tag at all.
  */
 export function applyLayerVisibility(
   map: MapLibreMap,
   hidden: string[],
-  options: { activeOnly?: boolean; moment?: unknown[] | null; version?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] } = {},
+  options: { activeOnly?: boolean; moment?: unknown[] | null; variant?: number | null; tag?: string | null; hiddenKinds?: string[]; hiddenIds?: number[] } = {},
 ) {
   const hiddenKinds = options.hiddenKinds ?? []
   const hiddenIds = options.hiddenIds ?? []
   const store = visibilityState.get(map) ?? new Map<string, VisibilityEntry>()
   visibilityState.set(map, store)
   const moment = options.moment ?? null
-  const version = options.version ? versionFilter(options.version) : null
-  const key = `${options.activeOnly ? 'active:' : ''}${moment ? `m=${JSON.stringify(moment)}:` : ''}${options.version ? `v=${options.version}:` : ''}${[...hidden].sort().join(',')}|${[...hiddenKinds].sort().join(',')}|${hiddenIds.join(',')}`
+  const variant = variantFilter(options.variant ?? null)
+  const tag = options.tag ? tagFilter(options.tag) : null
+  const key = `${options.activeOnly ? 'active:' : ''}${moment ? `m=${JSON.stringify(moment)}:` : ''}${variant ? `v=${options.variant}:` : ''}${tag ? `t=${options.tag}:` : ''}${[...hidden].sort().join(',')}|${[...hiddenKinds].sort().join(',')}|${hiddenIds.join(',')}`
   for (const id of map.getLayersOrder()) {
     if (map.getLayer(id)?.source !== FEATURES_SOURCE) continue
     let entry = store.get(id)
@@ -504,7 +574,8 @@ export function applyLayerVisibility(
     // Printed plans leave out drafts (AI proposals) and rejected features.
     if (options.activeOnly) tests.push(['==', ['coalesce', ['get', 'status'], 'active'], 'active'])
     if (moment) tests.push(moment)
-    if (version) tests.push(version)
+    if (variant) tests.push(variant)
+    if (tag) tests.push(tag)
     tests.push(...hiddenTests(hiddenKinds, hiddenIds))
     const test = tests.length === 0 ? null : tests.length === 1 ? tests[0] : ['all', ...tests]
     const filter = composeFilter(entry.original, test)

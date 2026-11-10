@@ -1,9 +1,8 @@
 import { Link, usePage } from '@inertiajs/react'
 import { LifeBuoy, Search, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { AccountMenu } from '@/components/AccountMenu'
 import { FeedbackButton } from '@/components/feedback/FeedbackButton'
-import { NotificationBell } from '@/components/notifications/NotificationBell'
+import { MyBar } from '@/components/MyBar'
 import { Flash } from '@/components/ui/Flash'
 import { Wordmark } from '@/components/Logo'
 import { t } from '@/lib/i18n'
@@ -20,8 +19,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const droneMissions = (currentUser as TeamAwareUser | null)?.droneMissions
   const nav = [
     { href: '/maps', label: t('nav.maps') },
-    ...(currentUser ? [{ href: '/tasks', label: t('tasks.nav') }] : []),
-    ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/teams', label: t('teams.nav') }] : []),
+    ...((currentUser as TeamAwareUser | null)?.teamsCount ? [{ href: '/team', label: t('teams.nav') }] : []),
+    ...((currentUser as TeamAwareUser | null)?.territories ? [{ href: '/territories', label: t('territories.nav') }] : []),
     ...(newRequests != null ? [{ href: '/request_forms', label: t('request_forms.nav'), dot: newRequests > 0 }] : []),
     { href: '/plants', label: t('nav.plants') },
     ...(propagation ? [{ href: '/propagation', label: t('propagation.nav'), dot: propagation.waiting > 0 }] : []),
@@ -62,7 +61,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               >
                 <Search className="h-4 w-4" aria-hidden />
                 <span className="sr-only">{t('quick_switcher.open')}</span>
-                <kbd className="hidden rounded-md border border-loam-900/15 px-1.5 font-sans text-sm leading-5 text-loam-500 lg:block">{shortcutLabel()}</kbd>
               </button>
             )}
             {/* Help and news are not tools: they sit with the account, apart from the features. */}
@@ -77,14 +75,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 )}
               </AsideLink>
             )}
-            {currentUser && <FeedbackButton />}
-            {currentUser && <NotificationBell />}
-            {currentUser && <span aria-hidden className="mx-1 h-6 w-px bg-loam-900/10 sm:mx-2" />}
-            {currentUser && <AccountMenu user={currentUser} />}
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      {/* Room at the bottom so the My Bar never hides the end of a page. */}
+      <main className={'mx-auto max-w-6xl px-4 py-8' + (currentUser ? ' pb-28' : '')}>{children}</main>
+      {currentUser && <MyBar user={currentUser} />}
+      {currentUser && <FeedbackButton floating />}
     </div>
   )
 }

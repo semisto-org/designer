@@ -1,13 +1,17 @@
 import clsx from 'clsx'
-import { AlertTriangle, Drone, EyeOff } from 'lucide-react'
+import { AlertTriangle, Crosshair, Drone, EyeOff, Hourglass } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { HelpButton } from '@/components/help/HelpButton'
+import { Button } from '@/components/ui/Button'
+import { alignStore } from '@/drone/align'
 import { AerialImports } from '@/drone/AerialImports'
 import { useAerialViews } from '@/drone/AerialViewsOverlay'
-import { aerialViewLabel } from '@/drone/format'
+import { aerialViewLabel, formatCaptureDate } from '@/drone/format'
+import { useImports } from '@/drone/imports'
 import { aerialStore, useAerialState } from '@/drone/store'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
+import { useMediaQuery } from '@/lib/useMediaQuery'
 
 export const DRONE_HELP_SLUG = 'la-vue-drone'
 
@@ -64,9 +68,54 @@ export default function AerialViewsChoice() {
           />
         )
       )}
+      {selected && canEdit && <Realign viewId={selected.id} />}
       {views.length > 0 && <p className="mt-2 text-sm text-loam-500">{t(views.length > 1 ? 'drone.layers.hint_many' : 'drone.layers.hint_one')}</p>}
       {canEdit && <AerialImports empty={views.length === 0} />}
     </section>
+  )
+}
+
+/**
+ * « Recaler la vue » under the view shown, for a view imported on the map
+ * (its tiles live with the map's files): the button, or the realignment
+ * under way, and when it was last realigned.
+ */
+function Realign({ viewId }: { viewId: number }) {
+  const { imports } = useImports()
+  const { openPanel } = useEditor()
+  // On a phone the panel covers the map: landmarks are placed with it closed.
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const view = imports.find((v) => v.id === viewId)
+  if (!view || view.status !== 'ready' || !view.bounds) return null
+  const last = view.alignment
+
+  if (last?.status === 'pending') {
+    return (
+      <p className="mt-3 flex items-start gap-2 rounded-lg bg-loam-50 px-3 py-2 text-sm text-loam-700 ring-1 ring-inset ring-loam-200" role="status">
+        <Hourglass className="mt-0.5 h-4 w-4 shrink-0 text-loam-500" aria-hidden="true" />
+        {t('drone.align.pending')}
+      </p>
+    )
+  }
+  const start = () => {
+    alignStore.start(viewId)
+    if (!isDesktop) openPanel(null)
+  }
+  return (
+    <div className="mt-3">
+      <Button variant="secondary" size="sm" onClick={start} className="w-full justify-center">
+        <Crosshair className="h-4 w-4" aria-hidden="true" />
+        {t('drone.align.button')}
+      </Button>
+      {last?.status === 'done' && (
+        <p className="mt-1.5 text-sm text-loam-500">
+          {t('drone.align.last_done', { date: formatCaptureDate(last.at), by: last.by ?? '', meters: (last.shiftM ?? 0).toLocaleString('fr-BE', { maximumFractionDigits: 1 }) })}
+        </p>
+      )}
+      {last?.status === 'failed' && (
+        <p className="mt-1.5 text-sm text-clay-700">{t('drone.align.failed', { reason: t(`drone.align.errors.${last.failure ?? 'conversion_failed'}`) })}</p>
+      )}
+    </div>
   )
 }
 

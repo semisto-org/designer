@@ -20,6 +20,9 @@ class SoilSample < ApplicationRecord
   belongs_to :map
   belongs_to :created_by, class_name: "User", optional: true
   has_many_attached :lab_reports
+  # Photos of the point (the hole, the core, the profile): at least one is
+  # always taken in the field. A photo belongs to one point at most.
+  has_many :photos, -> { chronological }, class_name: "MapPhoto", inverse_of: :soil_sample, dependent: :nullify
 
   validates :label, presence: true, length: { maximum: 80 }
   validates :status, inclusion: { in: STATUSES }
@@ -31,6 +34,7 @@ class SoilSample < ApplicationRecord
   validate :lab_reports_are_pdfs
 
   scope :ordered, -> { order(:id) }
+  scope :with_photos, -> { includes(photos: [ :uploaded_by, { image_attachment: :blob } ]) }
 
   # Results arrive from forms as strings, with commas: store clean numbers,
   # only known keys, and remember what could not be read.
@@ -75,6 +79,7 @@ class SoilSample < ApplicationRecord
       results: results.slice(*RESULT_KEYS), notes:,
       otherResults: other_results,
       reports: lab_reports.map { |report| { id: report.id, filename: report.filename.to_s, byteSize: report.byte_size } },
+      photos: photos.map(&:as_inertia),
       draft: draft.as_inertia,
       createdAt: created_at.iso8601,
       # The reading (bands, explanations, texture class) is an analysis: paid.

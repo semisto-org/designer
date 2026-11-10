@@ -2,13 +2,13 @@ import type { Feature, FeatureCollection, Point } from 'geojson'
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
 import { ensureLabelBackground, markerLabel } from '@/map/layers/labels'
 import type { BioObservation, SoilSampleData, SuggestedPoint } from '@/types/soil_photos'
+import { OBSERVATION_LAYER, SAMPLE_LAYER, SUGGESTION_LAYER } from './visibility'
+
+export { OBSERVATION_LAYER, SAMPLE_LAYER, setSoilLayersVisible, SOIL_NAME_LAYERS, SOIL_PEEK_LAYERS, SUGGESTION_LAYER } from './visibility'
 
 export const SAMPLES_SOURCE = 'soil-samples'
 export const SUGGESTIONS_SOURCE = 'soil-suggestions'
 export const OBSERVATIONS_SOURCE = 'soil-observations'
-export const SAMPLE_LAYER = 'soil-samples-circle'
-export const OBSERVATION_LAYER = 'soil-observations-circle'
-export const SUGGESTION_LAYER = 'soil-suggestions-circle'
 export const SOIL_LAYER_IDS = [
   'soil-samples-halo', SAMPLE_LAYER, 'soil-samples-label',
   OBSERVATION_LAYER, 'soil-observations-label',
@@ -110,22 +110,6 @@ export function installSoilLayers(map: MapLibreMap, data: { samples: Collection;
     paint: { 'text-color': '#ffffff' },
   })
   raise(map)
-}
-
-/** Which soil layers each switch shows: a marker always goes with its name. */
-const LAYERS_OF = {
-  samples: ['soil-samples-halo', SAMPLE_LAYER, 'soil-samples-label'],
-  bioindicators: [OBSERVATION_LAYER, 'soil-observations-label'],
-  suggestions: [SUGGESTION_LAYER, 'soil-suggestions-rank'],
-} as const
-
-export function setSoilLayersVisible(
-  map: Pick<MapLibreMap, 'getLayer' | 'setLayoutProperty'>,
-  visible: { samples: boolean; bioindicators: boolean; suggestions: boolean },
-) {
-  for (const [group, ids] of Object.entries(LAYERS_OF) as [keyof typeof LAYERS_OF, readonly string[]][]) {
-    ids.forEach((id) => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', visible[group] ? 'visible' : 'none'))
-  }
 }
 
 export function highlightSample(map: MapLibreMap, id: number | null) {

@@ -31,7 +31,7 @@ Search Semisto's catalogue (`search_plants`, `get_plant`) and check for each spe
 - **Mature size**: `heightMaxM`, `spreadMaxM`, `crownM`, for spacing.
 - **What it brings**: `edibleParts`, `edibleRating`, `ecoServices`, and what matters in the project sheet.
 - **Native or invasive**: `nativeCountries`, `invasiveCountries`. Never an invasive species in the site's country.
-- **Toxicity** (`toxicFor`) if children or animals use the place.
+- **Toxicity** (`toxicFor`) if children or animals use the place. The project sheet says what the palette must keep away (`project.who.keep_away` in `get_map`, `site.keepAway` in `search_plants`): `toxic_humans`, `toxic_dogs` and `toxic_cats` rule out the species toxic for them (`excludedBy: "toxic"`), never propose one; `stings` asks for few melliferous plants near where people live: keep flowering hedges and bee plants away from the terrace, the house and the play area, and say so in the rationale. The reason behind these answers is personal and never given to you: do not ask for it.
 
 Each catalogue value has a source: cite it when it grounds a choice. If a value is missing, say so rather than inventing it.
 

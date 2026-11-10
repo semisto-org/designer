@@ -3,7 +3,7 @@ require "test_helper"
 class Account::ToursControllerTest < ActionDispatch::IntegrationTest
   test "requires sign in" do
     patch account_tour_path, as: :json
-    assert_response :redirect
+    assert_response :unauthorized
   end
 
   test "remembers the first time the carnet de route was closed" do

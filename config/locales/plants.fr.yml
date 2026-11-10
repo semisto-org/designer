@@ -414,11 +414,12 @@ fr:
         one: "%{count} invasive dans ton pays"
         other: "%{count} invasives dans ton pays"
       excluded_toxic:
-        one: "%{count} toxique pour tes animaux"
-        other: "%{count} toxiques pour tes animaux"
+        one: "%{count} toxique pour tes proches ou tes animaux"
+        other: "%{count} toxiques pour tes proches ou tes animaux"
+      keep_away_stings: "Pas de suggestion de plantes mellifères, comme le demande ta fiche projet : place celles que tu choisis loin des lieux de vie."
       excluded_by:
         invasive: "Invasive ici"
-        toxic: "Toxique pour tes animaux"
+        toxic: "Toxique pour tes proches ou tes animaux"
       more: "Donne une exposition à tes patchs et décris ton sol dans la %{sheet} : les suggestions en tiendront compte."
     reasons:
       nitrogen: "Fixe l'azote et nourrit le sol"

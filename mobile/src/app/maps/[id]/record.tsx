@@ -14,6 +14,7 @@ import { decodePoints } from '@/lib/measure'
 import { outbox } from '@/lib/outbox'
 import { currentTrace, onFixes, startTrace, stopTrace, type Fix } from '@/lib/trace'
 import type { Geometry, Position } from '@/lib/types'
+import { useMapBundle } from '@/state/useMapBundle'
 import { Body, Button, Card, Chip, Input, Label, Notice, styles } from '@/ui/kit'
 import { colors, fonts, space } from '@/ui/theme'
 
@@ -24,6 +25,7 @@ export default function RecordScreen() {
   // From « Mesurer »: the measured points (and their shape), or walk straight away.
   const params = useLocalSearchParams<{ id: string; points?: string; shape?: string; walk?: string }>()
   const mapId = Number(params.id)
+  const soilPoints = useMapBundle(mapId).bundle?.soilSamples?.length ?? 0
   const resumed = currentTrace()
   const [measured] = useState(() => decodePoints(params.points))
   const [mode, setMode] = useState<Mode>(resumed?.mapId === mapId ? 'tracing' : measured.length >= 2 ? 'trace' : 'choose')
@@ -109,6 +111,13 @@ export default function RecordScreen() {
           <Body muted>{t('mobile.record.bioindicator_intro')}</Body>
           <Button label={t('mobile.record.bioindicator_button')} onPress={() => router.replace({ pathname: '/maps/[id]/bioindicator', params: { id: String(mapId) } })} />
         </Card>
+        {soilPoints > 0 && (
+          <Card style={{ gap: space.sm }}>
+            <Text style={s.cardTitle}>{t('mobile.record.soil')}</Text>
+            <Body muted>{t('mobile.record.soil_intro', { count: soilPoints })}</Body>
+            <Button label={t('mobile.record.soil_button')} onPress={() => router.replace({ pathname: '/maps/[id]/soil', params: { id: String(mapId) } })} />
+          </Card>
+        )}
         {problem && <Notice tone="error">{problem}</Notice>}
       </ScrollView>
     )
@@ -135,7 +144,8 @@ export default function RecordScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled">
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 48 }]} keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets>
       {mode === 'point' && !point && !problem && <Notice>{t('mobile.plant.locating')}</Notice>}
       {mode === 'point' && point && (
         <Notice tone={point.accuracy && point.accuracy > 10 ? 'warning' : 'info'}>

@@ -10,6 +10,7 @@ module Mcp
         properties: {
           map_id: { type: "integer", minimum: 1, description: :map_id },
           summary: { type: "string", maxLength: 1000, description: :summary },
+          variant_id: { type: "integer", minimum: 1, description: :variant_id },
           features: {
             type: "array", minItems: 1, maxItems: DraftProposal::MAX_FEATURES, description: :features,
             items: {
@@ -46,12 +47,13 @@ module Mcp
       )
       hints(read_only: false, destructive: false, idempotent: false)
 
-      def perform(map_id:, features:, summary: nil)
+      def perform(map_id:, features:, summary: nil, variant_id: nil)
         map = find_map!(map_id)
         require_drafts_scope!
         require_editor!
         require_ai_drafts_plan!(map)
-        outcome = DraftProposal.new(map:, user:).call(features)
+        variant = variant_id && (map.variants.find_by(id: variant_id) or raise ToolError, t("errors.unknown_variant"))
+        outcome = DraftProposal.new(map:, user:, variant:).call(features)
         if outcome.created.empty?
           details = outcome.rejected.first(10).map { |r| "##{r[:index]} : #{r[:error]}" }.join(" ; ")
           raise ToolError, t("errors.nothing_created", details:)

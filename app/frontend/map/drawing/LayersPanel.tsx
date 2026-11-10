@@ -1,12 +1,14 @@
 import clsx from 'clsx'
-import { Camera, ChevronDown, Compass, Eye, EyeOff, ShieldAlert } from 'lucide-react'
+import { Camera, ChevronDown, Compass, Eye, EyeOff, ShieldAlert, Tag } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { strataLabel } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { DESIGN_LAYERS, featureColor, layerColor } from '@/map/drawing/catalog'
 import { isPlantLike, strataKey, UNKNOWN_STRATA } from '@/map/drawing/hidden'
-import { setHiddenKinds, setHiddenLayers, setHiddenSoil, setHiddenStrata, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
+import { setHiddenKinds, setHiddenLayers, setHiddenSoil, setHiddenStrata, setLabelsHidden, setShownTag, showEverything, toggled, useDrawingState } from '@/map/drawing/store'
+import { Field, Select } from '@/components/ui/Field'
+import { tagCounts } from '@/map/tags/tags'
 import { LAYER_COLORS } from '@/map/layers/features'
 import { photoActions, usePhotos } from '@/map/photos/store'
 import { usePlanting } from '@/map/plants/store'
@@ -37,6 +39,7 @@ export default function LayersPanel() {
   const hiddenKinds = useDrawingState((s) => s.hiddenKinds)
   const hiddenStrata = useDrawingState((s) => s.hiddenStrata)
   const hiddenSoil = useDrawingState((s) => s.hiddenSoil)
+  const labelsHidden = useDrawingState((s) => s.labelsHidden)
   const soil = useSoil()
   const { data: planting } = usePlanting(editor.map.id)
   const photos = usePhotos()
@@ -130,7 +133,9 @@ export default function LayersPanel() {
 
   const soilHidden = (soilCounts.bioindicators > 0 || soilCounts.samples > 0) && (hiddenSoil.length > 0 || !soil.showOnMap)
   const sectorsHidden = sectors.onMap && sectors.hiddenGroups.length > 0
-  const somethingHidden = hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden || sectorsHidden
+  const shownTag = useDrawingState((s) => s.shownTag)
+  const tags = tagCounts(editor.features)
+  const somethingHidden = shownTag != null || hidden.length > 0 || hiddenKinds.length > 0 || hiddenStrata.length > 0 || !photos.showOnMap || soilHidden || sectorsHidden || labelsHidden
 
   return (
     <div className="space-y-3">
@@ -196,6 +201,18 @@ export default function LayersPanel() {
           />
           <span className="ml-1 w-9 shrink-0" aria-hidden />
         </li>
+        {/* The names written on the map: off, each one shows on hover only (LabelPeek). */}
+        <li className="flex items-center">
+          <ToggleRow
+            shown={!labelsHidden}
+            label={t('drawing.layers_panel.labels')}
+            ariaLabel={t('drawing.layers_panel.toggle', { layer: t('drawing.layers_panel.labels') })}
+            marker={<Tag className={clsx('h-3.5 w-3.5 shrink-0 text-loam-600', labelsHidden && 'opacity-30')} aria-hidden />}
+            count={labelsHidden ? t('drawing.layers_panel.labels_on_hover') : ''}
+            onClick={() => setLabelsHidden(!labelsHidden)}
+          />
+          <span className="ml-1 w-9 shrink-0" aria-hidden />
+        </li>
         {/* The sector analysis around the terrain: off unless asked, to present a design. */}
         <li>
           <div className="flex items-center">
@@ -231,6 +248,16 @@ export default function LayersPanel() {
           )}
         </li>
       </ul>
+      {/* One tag on its own (a flow, a phase): its elements and those with no tag. */}
+      {(tags.length > 0 || shownTag) && (
+        <Field label={t('tags.shown_label')} hint={t('tags.shown_hint')}>
+          <Select value={shownTag ?? ''} onChange={(e) => setShownTag(e.target.value || null)}>
+            <option value="">{t('tags.shown_all')}</option>
+            {shownTag && !tags.some(({ tag }) => tag.toLocaleLowerCase('fr') === shownTag.toLocaleLowerCase('fr')) && <option value={shownTag}>{shownTag}</option>}
+            {tags.map(({ tag }) => <option key={tag} value={tag}>{tag}</option>)}
+          </Select>
+        </Field>
+      )}
       {somethingHidden && (
         <button type="button" onClick={() => { showEverything(); photoActions.setShowOnMap(true); soilActions.setShowOnMap(true); sectorView.setHiddenGroups([]) }} className="text-sm font-medium text-prune-700 hover:underline">
           {t('drawing.layers_panel.show_all')}

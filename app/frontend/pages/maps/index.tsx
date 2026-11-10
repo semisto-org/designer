@@ -67,7 +67,7 @@ export default function MapsIndex({ maps, canCreate, teams = [], incomingTransfe
         </div>
       ) : (
         <>
-          {resumed && resume && <ResumeCard map={resumed} next={resume.next} />}
+          {resumed && resume && <ResumeCard map={resumed} next={resume.next} openedAt={resume.openedAt} />}
           {own.length > 0 && (
             <section className="mt-12">
               {resumed && (

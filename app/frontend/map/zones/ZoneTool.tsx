@@ -7,7 +7,8 @@ import { t } from '@/lib/i18n'
 import { useEditor, type Editor } from '@/map/editor/EditorContext'
 import { featureColor } from '@/map/drawing/catalog'
 import { StepBackButton } from '@/map/drawing/StepBackButton'
-import { revealForDrawing, useDrawingState } from '@/map/drawing/store'
+import { revealForDrawing } from '@/map/drawing/store'
+import { useShownVariant } from '@/map/variants/store'
 import { isZoneKind, nextZoneColor, ZONE_COLORS, type ZoneKind } from '@/map/zones/zones'
 
 /** Zones and lines go to the « Dessins » layer: they annotate the plan for the client. */
@@ -28,7 +29,9 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(() => nextZoneColor(used()))
   const [drawing, setDrawing] = useState<ZoneKind | null>(null)
-  const version = useDrawingState((s) => s.version)
+  // Drawn in « Projet » while variants exist: it belongs to the variant shown (the editor's createFeature).
+  const variant = useShownVariant()
+  const inVariant = editor.mode === 'project' ? variant : null
   const nameInput = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -45,8 +48,6 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
     const label = name.trim()
     try {
       const feature = await latest.current.createFeature({
-        // Drawn while a version is shown: it belongs to that version.
-        ...(version ? { tags: [version] } : {}),
         layer: ZONE_LAYER, kind, geometry, properties: kind === 'zone' ? { rounded: true } : {}, style: { color }, ...(label ? { name: label } : {}),
       })
       latest.current.select(feature.properties.id)
@@ -75,7 +76,7 @@ export function ZoneTool({ onClose }: { onClose: () => void }) {
   return (
     <div className="pointer-events-auto rounded-xl bg-white p-3 shadow-xl ring-1 ring-loam-200" role="region" aria-label={t('zones.title')}>
       <p className="text-sm text-loam-600">{t('zones.intro')}</p>
-      {version && <p className="mt-2 rounded-lg bg-prune-50 px-2.5 py-1.5 text-sm text-prune-800">{t('zones.in_version', { version })}</p>}
+      {inVariant && <p className="mt-2 rounded-lg bg-prune-50 px-2.5 py-1.5 text-sm text-prune-800">{t('zones.in_variant', { variant: inVariant.name })}</p>}
       <label className="mt-3 block">
         <span className="text-sm font-medium text-loam-800">{t('zones.name')}</span>
         <Input

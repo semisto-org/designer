@@ -366,6 +366,15 @@ Rails.application.routes.draw do
     end
   end
   # --- end weather_stations ---
+  # --- photo archive ---
+  # Which partial aerial flights have no photo over the map (PhotoArchive::Coverage).
+  resources :maps, only: [] do
+    scope module: :maps do
+      resource :photo_coverage, only: :show
+    end
+  end
+  # --- end photo archive ---
+
   # --- canopy ---
   resources :maps, only: [] do
     scope module: :maps do
@@ -436,6 +445,7 @@ Rails.application.routes.draw do
         end
         resources :reports, only: %i[show create destroy], controller: "soil_sample_reports"
         resource :draft, only: %i[update destroy], controller: "soil_sample_drafts"
+        resource :photos, only: %i[show update], controller: "soil_sample_photos"
       end
       resources :bioindicator_observations, only: %i[index create update destroy] do
         get :species, on: :collection
@@ -481,6 +491,8 @@ Rails.application.routes.draw do
   # Teams ("équipes"): members edit every map of the team. The invitation
   # link comes first so "invitations" is never read as a team id.
   get "teams/invitations/:token", to: "team_invitations#show", as: :accept_team_invitation
+  # The main menu's « Équipe »: the board of the team I opened last.
+  get "team", to: "teams#home", as: :team_home
   resources :teams, only: %i[index create show update destroy] do
     scope module: :teams do
       resources :memberships, only: %i[update destroy]
@@ -499,8 +511,13 @@ Rails.application.routes.draw do
       # The team board (« Tableau de l'équipe »): new requests, projects on
       # one timeline, the season's steps, who carries what.
       resource :board, only: :show do
-        resources :projects, only: %i[show update], controller: "board_projects"
+        resources :projects, only: %i[show update], controller: "board_projects" do
+          # « Aperçu du projet »: what the team reads before opening the map.
+          get :preview, on: :member
+        end
         resources :steps, only: %i[create update destroy], controller: "board_steps"
+        # The team's own sections inside a column (« Pré-design », « Design détaillé »…).
+        resources :sections, only: %i[create update destroy], controller: "board_sections"
         resources :requests, only: :update, controller: "board_requests" do
           post :qualify, on: :member
         end
@@ -519,6 +536,26 @@ Rails.application.routes.draw do
     resource :team, only: :update, controller: "maps/teams"
   end
   # --- end teams ---
+
+  # --- territories ---
+  # « Territoires »: a commune read whole (the module Semisto grants a team),
+  # its dossier and the « carnet du territoire ».
+  get "territories/communes", to: "territories#communes_search", as: :territory_communes
+  resources :territories, only: %i[index create show update] do
+    member do
+      post :archive
+      post :unarchive
+      get :notebook
+    end
+    resources :items, only: %i[create update destroy], controller: "territories/items" do
+      member do
+        post :accept
+        post :reject
+        get :file
+      end
+    end
+  end
+  # --- end territories ---
 
   # --- dossier ---
   # The printable project dossier (page and its JSON).
@@ -578,6 +615,7 @@ Rails.application.routes.draw do
       resources :aerial_views, only: %i[index create destroy] do
         member do
           post :complete
+          post :align
           get :archive
         end
       end
@@ -626,6 +664,8 @@ Rails.application.routes.draw do
     post "plan-gifts", to: "plan_gifts#create_all", as: :plan_gifts
     post "plan-gifts/:id/revoke", to: "plan_gifts#revoke", as: :revoke_plan_gift, constraints: { id: /\d+/ }
     resources :maps, only: :index
+    # « Équipes »: every team and the modules Semisto grants it (« Territoire »).
+    resources :teams, only: %i[index update]
     # « Carnets ouverts »: the maps the public site's gallery shows.
     resources :gallery, only: %i[index update]
     get "tech", to: "tech#show", as: :tech
@@ -660,6 +700,8 @@ Rails.application.routes.draw do
   # teams' maps (/tasks).
   resources :maps, only: [] do
     resources :tasks, only: %i[index create update destroy], controller: "maps/tasks"
+    # The project's season steps (design, work site, planting) on its frieze.
+    resources :season_steps, only: %i[create update destroy], controller: "maps/season_steps"
     resources :task_lists, only: %i[create update destroy], controller: "maps/task_lists" do
       post :defaults, on: :collection
     end
@@ -700,6 +742,22 @@ Rails.application.routes.draw do
     end
   end
   # --- end implementation ---
+
+  # --- presentations ---
+  # « Présenter »: a map's sequences of views to walk a client through.
+  resources :maps, only: [] do
+    resources :presentations, only: %i[index create update destroy], controller: "maps/presentations"
+  end
+  # --- end presentations ---
+
+  # --- variants ---
+  # Project variants (« Projet 1 », « Projet 2 »), one retained.
+  resources :maps, only: [] do
+    resources :variants, only: %i[index create update destroy], controller: "maps/variants" do
+      post :duplicate, on: :member
+    end
+  end
+  # --- end variants ---
 
   # --- first-hours ---
   # The beta's « Premières heures »: « Un retour ? » from any page, the answer

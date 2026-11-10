@@ -18,6 +18,7 @@ fr:
     hints:
       arrival: "Le terrain à ton arrivée, avant ce que tu y as planté et construit."
       today: "Ce qui est en terre, à son âge réel. Le projet, en pointillés, à sa taille adulte."
+      today_existing: "Le terrain tel qu’il est aujourd’hui : ce qui est en terre, à son âge réel, sans le projet."
       today_drafts: "Ce qui est en terre, à son âge réel. Les propositions de l’IA t’attendent dans le futur."
       future: "Ton jardin %{years} ans après sa première plantation : les plants prévus mis en terre à partir de %{season}."
       future_drafts: "Ton jardin %{years} ans après sa première plantation, avec les propositions de l’IA à revoir."

@@ -14,14 +14,14 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
  */
 export const FEATURE_STACK = [
   // The terrain's outline.
-  'boundary-fill', 'boundary-casing', 'boundary-line',
+  'boundary-mask', 'boundary-fill', 'boundary-casing', 'boundary-line',
   // Surfaces and lines: zones and other generic shapes, then the library's.
   'features-fill', 'features-line',
-  'drawing-fill', 'drawing-pattern', 'drawing-line-casing', 'drawing-line', 'drawing-line-arrow',
+  'drawing-fill', 'drawing-pattern', 'drawing-path-edge', 'drawing-path-ribbon', 'drawing-line-casing', 'drawing-line', 'drawing-line-arrow',
   // Plants: trees already there (true-size crowns), then the plants' crowns,
   // each sorted by strata within its layer (see PlantsOverlay).
   'drawing-crown',
-  'plant-crowns-fill', 'plant-crowns-reach', 'plant-crowns-support', 'plant-crowns-reach-line', 'plant-crowns-casing', 'plant-crowns-line',
+  'plant-crowns-shadow', 'plant-crowns-fill', 'plant-crowns-reach', 'plant-crowns-support', 'plant-crowns-reach-line', 'plant-crowns-casing', 'plant-crowns-line', 'plant-trunks',
   // Points and their glyphs, over the crowns they mark.
   'features-point', 'drawing-point', 'drawing-icon',
   // Names: measures, plants, then the other features (placed first, on top).
@@ -43,6 +43,21 @@ export function stackMoves(order: string[]): { id: string; before: string | unde
   const stack = new Set(FEATURE_STACK)
   const before = order.slice(top + 1).find((id) => !stack.has(id))
   return present.map((id) => ({ id, before }))
+}
+
+/**
+ * Whether `ids` (layers meant to sit over the stack, in that order) must be
+ * raised: true when one of them is missing from its place right after the
+ * previous one, or when a stack layer lies above them. Layers outside the
+ * stack may stay above. False when nothing needs to move, so a caller on
+ * every `styledata` moves nothing, and does not cause the next one.
+ */
+export function mustRaise(order: string[], ids: string[]): boolean {
+  const positions = ids.map((id) => order.indexOf(id))
+  if (positions.some((position) => position < 0)) return false
+  if (positions.some((position, i) => i > 0 && position !== positions[i - 1] + 1)) return true
+  const stack = new Set(FEATURE_STACK)
+  return order.slice(positions[positions.length - 1] + 1).some((id) => stack.has(id))
 }
 
 /** Puts the feature layers back in reading order (see FEATURE_STACK). */

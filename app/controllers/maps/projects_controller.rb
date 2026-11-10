@@ -29,11 +29,11 @@ module Maps
         {
           map: { id: @map.id, name: @map.name, role: @role, address: @map.address, teamId: @map.organization_id,
                  offerBuilder: Offer.shown_to?(@map, Current.user) },
-          project: sheet.to_h,
+          project: editor? ? sheet.to_h : sheet.without_personal,
           progress: sheet.progress,
           schema: ProjectSheet.schema_json,
           drafts: @map.project_sheet_drafts.includes(:created_by).map(&:as_json),
-          canEdit: %w[owner editor].include?(@role),
+          canEdit: editor?,
           formLink: form_link_props,
           teamNotes: ProjectSheetNote.props_for(@map, Current.user),
           documents: @map.documents.from_project_sheet.newest_first
@@ -43,9 +43,15 @@ module Maps
         }
       end
 
+      # Phones, e-mails and health (fields marked `personal`) are read only by
+      # the people who write the sheet: its owner and editors (team members
+      # included). Viewers, commenters and an admin answering a request get
+      # the sheet without them, like the dossier and the AI.
+      def editor? = %w[owner editor].include?(@role)
+
       # The private link for the people behind the project: editors only.
       def form_link_props
-        return nil unless %w[owner editor].include?(@role)
+        return nil unless editor?
         @map.project_sheet_link&.as_json_for_editor(project_form_url(@map.project_sheet_link.token))
       end
   end

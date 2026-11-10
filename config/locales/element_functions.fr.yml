@@ -13,12 +13,29 @@ fr:
     covered_count:
       one: "%{count} élément"
       other: "%{count} éléments"
-    existing_only: "seulement par l'existant"
+    existing_only: "Seulement par l'existant"
     look_title: "Sur le terrain"
     show: "Voir sur la carte"
+    hide: "Ne plus montrer"
     unmet_title: "Besoins que rien ne couvre"
     unmet_intro: "Un besoin que rien sur le lieu ne couvre, c'est du travail ou un achat chaque année."
     unmet_row: "%{resource} pour %{names}"
+    project:
+      title: "Les fonctions de ton projet"
+      intro: "Tirées de l'analyse fonctionnelle de la fiche projet. Pour dire qu'un élément en sert une, touche-le sur la carte."
+      empty: "Écris les besoins et les fonctions de ton projet dans l'analyse fonctionnelle de la fiche : elles viendront ici, avec les éléments qui les servent."
+      open_sheet: "Ouvrir l'analyse fonctionnelle"
+      sources:
+        holder: "Pour les porteurs de projet"
+        place: "Pour le lieu"
+      missing: "Aucun élément ne la sert encore."
+      fragile: "Un seul élément la sert : %{name}."
+      covered:
+        one: "%{count} élément"
+        other: "%{count} éléments"
+    place_challenges:
+      title: "Défis du lieu à regarder dehors"
+      intro: "Ce que le terrain lui-même oppose au projet. Va le voir avant de figer ce qui en dépend."
     plants_note: "Les plants d'une même espèce comptent pour un : douze pommiers tombent malades ensemble."
     section:
       title: "Fonctions"
@@ -63,3 +80,4 @@ fr:
       heat: "de la chaleur"
     errors:
       unknown: "Une des fonctions de cet élément n'est pas connue."
+      serves: "Les fonctions du projet servies par cet élément ne sont pas lisibles."
