@@ -17,9 +17,14 @@ test('working marks step aside, the plan stays', () => {
   }
 })
 
-test('notes and free drawings leave the plan, without losing what the person hid', () => {
+test('notes leave the plan, without losing what the person hid', () => {
   assert.deepEqual(renderHiddenLayers(['water'], false), ['water'])
-  assert.deepEqual(renderHiddenLayers(['water', 'notes'], true).sort(), ['drawings', 'notes', 'water'])
+  assert.deepEqual(renderHiddenLayers(['water', 'notes'], true).sort(), ['notes', 'water'])
+})
+
+test('free drawings stay in the plan while the map shows them', () => {
+  assert.deepEqual(renderHiddenLayers(['water'], true).sort(), ['notes', 'water'])
+  assert.deepEqual(renderHiddenLayers(['drawings'], true).sort(), ['drawings', 'notes'])
 })
 
 test('measures and observations are not part of the plan', () => {
