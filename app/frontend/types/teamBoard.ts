@@ -7,12 +7,17 @@ export type RequestStatus = 'new' | 'called' | 'visited' | 'offer_sent'
 
 export type BoardPerson = { id: number; name: string; avatarUrl: string | null }
 
+/** A team's own section inside a column of the board (BoardSection#as_board_json). */
+export type BoardSection = { id: number; phase: BoardPhase; name: string; position: number }
+
 /** A team map on the board (Teams::Board#project_json). */
 export type BoardProject = ListedMap & {
   phase: BoardPhase
   phaseChangedAt: string
   /** One of the team's own places (its food forest, its nursery…): off the timeline. */
   ownPlace: boolean
+  /** The section of its column it sits in, or null. */
+  sectionId: number | null
   lead: BoardPerson | null
   crew: BoardPerson[]
   promisedOn: string | null
@@ -65,6 +70,7 @@ export type TeamBoardProps = {
   phases: BoardPhase[]
   closedReasons: ClosedReason[]
   stepKinds: StepKind[]
+  sections: BoardSection[]
   members: (BoardPerson & { you: boolean })[]
   projects: BoardProject[]
   places: BoardProject[]

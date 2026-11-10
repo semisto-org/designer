@@ -6,6 +6,9 @@ fr:
     attributes:
       map:
         lead: "Le Project Manager"
+        board_section: "La section"
+      board_section:
+        name: "Le nom de la section"
       task:
         starts_on: "Le début"
     errors:
@@ -14,6 +17,10 @@ fr:
           attributes:
             lead:
               not_a_participant: "doit faire partie de l'équipe ou de la carte"
+            board_section:
+              not_in_this_column: "doit être une section de la colonne du projet"
+        board_section:
+          too_many_sections: "Une colonne garde %{count} sections au plus."
         task:
           attributes:
             starts_on:
@@ -128,6 +135,38 @@ fr:
       move_without_step: "Déplacer sans étape"
       saved: "C'est enregistré."
       error: "Ça n'a pas marché. Réessaie."
+    sections:
+      label: "Section"
+      none: "Hors section"
+      add: "Ajouter une section à « %{phase} »"
+      new_title: "Nouvelle section dans « %{phase} »"
+      new_hint: "Une section range les projets de la colonne en groupes à vous. « En veille » reste toujours en bas."
+      rename_title: "Renommer la section"
+      name: "Nom de la section"
+      examples:
+        request: "À rappeler, visite prévue…"
+        offer: "À rédiger, envoyée…"
+        design: "Pré-design, design détaillé…"
+        implementation: "Préparation, chantier…"
+        co_management: "Première année, suivi léger…"
+        completed: "Photos à envoyer…"
+      create: "Ajouter la section"
+      save: "Renommer"
+      created: "La section est là."
+      rename: "Renommer"
+      up: "Monter"
+      down: "Descendre"
+      delete: "Supprimer la section"
+      delete_confirm: "Supprimer la section « %{name} » ?"
+      delete_body: "Ses projets restent dans la colonne, hors section."
+      deleted: "Section supprimée."
+      menu: "Actions pour la section « %{name} »"
+      place_in: "Ranger dans"
+      on_hold: "En veille"
+      on_hold_hint: "Toujours en bas de la colonne : les projets en veille, qui gardent leur section pour leur réveil."
+      drop_to_hold: "Dépose ici pour mettre en veille"
+      hold: "Mettre en veille"
+      wake: "Réveiller le projet"
     preview:
       open: "Voir l'aperçu de « %{name} »"
       loading: "On rassemble le projet…"

@@ -12,7 +12,7 @@ import { Places } from '@/team_board/Places'
 import { Requests } from '@/team_board/Requests'
 import { Season } from '@/team_board/Season'
 import { TeamSwitcher } from '@/team_board/TeamSwitcher'
-import type { BoardProject, TeamBoardProps } from '@/types/teamBoard'
+import type { BoardPhase, BoardProject, BoardSection, TeamBoardProps } from '@/types/teamBoard'
 
 type Toast = { id: number; message: string; tone: 'info' | 'error' }
 
@@ -29,6 +29,14 @@ export default function TeamBoard(props: TeamBoardProps) {
   useEffect(() => setMaps([...props.projects, ...props.places]), [props.projects, props.places])
   const projects = useMemo(() => maps.filter((m) => !m.ownPlace), [maps])
   const places = useMemo(() => maps.filter((m) => m.ownPlace), [maps])
+  const [sections, setSections] = useState(props.sections)
+  useEffect(() => setSections(props.sections), [props.sections])
+  const setColumnSections = useCallback((phase: BoardPhase, list: BoardSection[]) => {
+    setSections((all) => [...all.filter((s) => s.phase !== phase), ...list])
+    // A deleted section lets its projects go loose in the column.
+    const kept = new Set(list.map((s) => s.id))
+    setMaps((all) => all.map((m) => (m.phase === phase && m.sectionId != null && !kept.has(m.sectionId) ? { ...m, sectionId: null } : m)))
+  }, [])
   const [toast, setToast] = useState<Toast | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -46,7 +54,8 @@ export default function TeamBoard(props: TeamBoardProps) {
   const saveProject = useCallback(async (project: BoardProject, change: ProjectChange, nextStep?: NextStep) => {
     const now = new Date().toISOString()
     const optimistic: BoardProject = { ...project }
-    if (change.phase && change.phase !== project.phase) Object.assign(optimistic, { phase: change.phase, phaseChangedAt: now, onHoldSince: null })
+    if (change.phase && change.phase !== project.phase) Object.assign(optimistic, { phase: change.phase, phaseChangedAt: now, onHoldSince: null, sectionId: null })
+    if (change.section_id !== undefined) optimistic.sectionId = change.section_id
     if (change.on_hold !== undefined) optimistic.onHoldSince = change.on_hold ? now : null
     if (change.closed_reason) Object.assign(optimistic, { closedAt: now, closedReason: change.closed_reason })
     if (change.reopen) Object.assign(optimistic, { closedAt: null, closedReason: null, closedNote: null })
@@ -76,10 +85,12 @@ export default function TeamBoard(props: TeamBoardProps) {
     phases: props.phases,
     closedReasons: props.closedReasons,
     stepKinds: props.stepKinds,
+    sections,
+    setColumnSections,
     members: props.members,
     notify,
     saveProject,
-  }), [team.id, today, props.phases, props.closedReasons, props.stepKinds, props.members, notify, saveProject])
+  }), [team.id, today, props.phases, props.closedReasons, props.stepKinds, sections, setColumnSections, props.members, notify, saveProject])
 
   return (
     <BoardContext.Provider value={context}>

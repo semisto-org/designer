@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -240,6 +240,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_210000) do
     t.index ["map_id"], name: "index_bioindicator_observations_on_map_id"
     t.index ["map_photo_id"], name: "index_bioindicator_observations_on_map_photo_id"
     t.index ["observed_by_id"], name: "index_bioindicator_observations_on_observed_by_id"
+  end
+
+  create_table "board_sections", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "phase", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "phase", "position"], name: "index_board_sections_on_organization_id_and_phase_and_position"
   end
 
   create_table "comment_reads", force: :cascade do |t|
@@ -904,6 +914,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_210000) do
     t.datetime "plan_printed_at"
     t.datetime "chat_digest_at"
     t.datetime "first_hour_started_at"
+    t.bigint "board_section_id"
+    t.index ["board_section_id"], name: "index_maps_on_board_section_id"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
     t.index ["organization_id"], name: "index_maps_on_organization_id"
@@ -1921,6 +1933,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_210000) do
   add_foreign_key "bioindicator_observations", "map_photos", on_delete: :nullify
   add_foreign_key "bioindicator_observations", "maps"
   add_foreign_key "bioindicator_observations", "users", column: "observed_by_id", on_delete: :nullify
+  add_foreign_key "board_sections", "organizations", on_delete: :cascade
   add_foreign_key "comment_reads", "users"
   add_foreign_key "comment_subscriptions", "users"
   add_foreign_key "comments", "map_documents", on_delete: :nullify
@@ -1994,6 +2007,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_210000) do
   add_foreign_key "map_variants", "maps", on_delete: :cascade
   add_foreign_key "map_visits", "maps", on_delete: :cascade
   add_foreign_key "map_visits", "users", on_delete: :cascade
+  add_foreign_key "maps", "board_sections", on_delete: :nullify
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify

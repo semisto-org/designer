@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { createContext, useContext, type ReactNode } from 'react'
 import { Avatar } from '@/collab/Avatar'
 import { api } from '@/lib/api'
-import type { BoardPerson, BoardPhase, BoardProject, ClosedReason, StepKind } from '@/types/teamBoard'
+import type { BoardPerson, BoardPhase, BoardProject, BoardSection, ClosedReason, StepKind } from '@/types/teamBoard'
 
 /** What every part of the team board shares: the team, today, its people, and how to save a project. */
 export type BoardContextValue = {
@@ -11,6 +11,10 @@ export type BoardContextValue = {
   phases: BoardPhase[]
   closedReasons: ClosedReason[]
   stepKinds: StepKind[]
+  /** The team's sections, every column, in their order. */
+  sections: BoardSection[]
+  /** Replaces the sections of one column (after a change of them); absent where they are only read. */
+  setColumnSections?: (phase: BoardPhase, sections: BoardSection[]) => void
   members: (BoardPerson & { you: boolean })[]
   notify: (message: string, tone?: 'info' | 'error') => void
   /** Saves a change of a project (optimistic), and its next step when given. */
@@ -28,6 +32,8 @@ export type ProjectChange = {
   closed_note?: string | null
   reopen?: boolean
   own_place?: boolean
+  /** A section of the project's column after the change; null for none. */
+  section_id?: number | null
 }
 export type NextStep = { title: string; assignee_id: number | null; due_on: string }
 
@@ -47,6 +53,12 @@ export function patchProject(teamId: number, mapId: number, project: ProjectChan
     body: { project, ...(nextStep ? { next_step: nextStep } : {}) },
   })
 }
+
+export const sectionsBase = (teamId: number) => `${boardBase(teamId)}/sections`
+
+/** The sections of one column, in their order. */
+export const columnSections = (sections: BoardSection[], phase: BoardPhase) =>
+  sections.filter((s) => s.phase === phase).sort((a, b) => a.position - b.position || a.id - b.id)
 
 // --- days -----------------------------------------------------------------
 // Dates travel as ISO days (2026-10-12). Noon keeps a day whole across time zones.

@@ -366,4 +366,22 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     assert_match(/Markdown/, text)
     assert_equal "a,b", @map.documents.find(data["id"]).file.download
   end
+
+  test "list_maps and get_map tell the team project's column and the team's section of it" do
+    team = make_team("Design Labs", admin: users(:michael))
+    @map.update!(organization: team)
+    team.board_sections.create!(phase: "design", name: "Pré-design")
+    detail = team.board_sections.create!(phase: "design", name: "Design détaillé")
+    @map.update_board!(section_id: detail.id)
+
+    data, error = call_tool(@owner, "list_maps", {})
+    refute error
+    listed = data["maps"].find { _1["id"] == @map.id }
+    assert_equal({ "stage" => "design", "section" => "Design détaillé", "on_hold" => false, "closed" => false }, listed["team_board"])
+
+    map_data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    season = map_data["team_season"]
+    assert_equal [ "Design détaillé", [ "Pré-design", "Design détaillé" ], false ], season.values_at("section", "stage_sections", "on_hold")
+  end
+
 end

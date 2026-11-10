@@ -516,6 +516,8 @@ Rails.application.routes.draw do
           get :preview, on: :member
         end
         resources :steps, only: %i[create update destroy], controller: "board_steps"
+        # The team's own sections inside a column (« Pré-design », « Design détaillé »…).
+        resources :sections, only: %i[create update destroy], controller: "board_sections"
         resources :requests, only: :update, controller: "board_requests" do
           post :qualify, on: :member
         end

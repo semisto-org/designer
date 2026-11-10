@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import { t } from '@/lib/i18n'
-import type { BoardPerson, BoardPhase, BoardProject, ClosedReason, StepKind } from '@/types/teamBoard'
+import type { BoardPerson, BoardPhase, BoardProject, BoardSection, ClosedReason, StepKind } from '@/types/teamBoard'
 import { BoardContext, Faces, boardBase, formatDay, patchProject, type BoardContextValue, type ProjectChange } from './board'
 import { PhaseIcon, phaseTone } from './PhaseIcon'
 import { ProjectDialog } from './ProjectDialog'
 
-type Payload = { project: BoardProject; members: (BoardPerson & { you: boolean })[]; phases: BoardPhase[]; closedReasons: ClosedReason[]; stepKinds: StepKind[] }
+type Payload = { project: BoardProject; members: (BoardPerson & { you: boolean })[]; phases: BoardPhase[]; closedReasons: ClosedReason[]; stepKinds: StepKind[]; sections: BoardSection[] }
 
 /**
  * « Le projet d'équipe » in a team map's « Partager » dialog: who leads it,
@@ -42,6 +42,7 @@ export function MapProjectSection({ teamId, mapId, canEdit, notify }: { teamId: 
     phases: data.phases,
     closedReasons: data.closedReasons,
     stepKinds: data.stepKinds,
+    sections: data.sections,
     members: data.members,
     notify,
     saveProject,
@@ -69,6 +70,10 @@ export function MapProjectSection({ teamId, mapId, canEdit, notify }: { teamId: 
           <span className="inline-flex items-center gap-1 text-sm text-loam-700">
             <PhaseIcon phase={project.phase} className={`h-5 w-5 ${phaseTone(project.phase)}`} />
             {project.closedAt ? t('team_board.frieze.closed_one') : t(`team_board.phases.${project.phase}`)}
+            {!project.closedAt && project.sectionId != null && (() => {
+              const section = data.sections.find((s) => s.id === project.sectionId)
+              return section ? ` · ${section.name}` : null
+            })()}
             {project.onHoldSince && !project.closedAt && ` · ${t('team_board.frieze.on_hold')}`}
           </span>
           {project.promisedOn && (

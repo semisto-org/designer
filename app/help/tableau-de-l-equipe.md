@@ -26,7 +26,19 @@ Chaque carte de l'équipe est un projet, posé dans une des six colonnes : Deman
 - « **12 j** » dit depuis quand le projet est dans sa colonne. Au-delà d'un mois, le chiffre s'allume : le projet s'enlise peut-être.
 - La **date promise** au client passe en rouge deux semaines avant l'échéance.
 - « Terminé » montre les projets terminés depuis moins de trois mois ; les plus anciens se déplient avec « Voir les … autres ».
-- Un projet **en veille** garde sa colonne, en grisé, en fin de colonne. Un projet **sans suite** (offre refusée, pas de réponse) quitte la frise et se range sous elle, d'où on peut le reprendre.
+- Un projet **en veille** garde sa colonne et descend dans « En veille », toujours en bas de la colonne, en grisé. Glisse-le là pour le mettre en veille, ou ressors-le pour le réveiller. Un projet **sans suite** (offre refusée, pas de réponse) quitte la frise et se range sous elle, d'où on peut le reprendre.
+
+## Les sections d'une colonne
+
+Une colonne peut se ranger en **sections** à vous. Au Design Labs, par exemple, « Design » se sépare en « Pré-design » et « Design détaillé ».
+
+- Le **+** à côté du nom de la colonne ajoute une section.
+- **Glisse une carte** sur une section pour l'y ranger ; elle n'a pas besoin de nouvelle étape, puisqu'elle reste dans sa colonne. Sur téléphone, « Ranger dans » du menu « … » de la carte fait la même chose.
+- Le menu « … » d'une section la renomme, la monte, la descend ou la supprime. Ses projets restent alors dans la colonne, hors section.
+- Un projet qui change de colonne quitte sa section. En veille, il garde la sienne pour son réveil.
+- « **En veille** » n'est pas une section : elle reste en bas de chaque colonne et ne se renomme pas.
+
+Ton IA sait dans quelle section est un projet : demande-lui où en sont les pré-designs.
 
 ## L'aperçu d'un projet
 
