@@ -126,8 +126,8 @@ fr:
       existing: "Arbres existants de cette espèce, conservés et vivants."
       planned: "Plants isolés et lignes des massifs dessinés sur la carte."
       to_plant: "Prévus moins ceux déjà en terre."
-      amount: "Prévus × prix unitaire."
-      amount_to_plant: "À planter × prix unitaire."
+      amount: "Prévus × prix unitaire. Tant qu'aucun plant n'est dessiné sur la carte (une haie, un massif encore à détailler), l'objectif × prix unitaire."
+      amount_to_plant: "À planter × prix unitaire. Tant qu'aucun plant n'est dessiné sur la carte, l'objectif moins ce qui est en terre."
       survival_rate: "Établies et en difficulté, sur les plants observés."
       size: "Taille ou contenant commandé : 60/80 racines nues, C3, baliveau…"
     cells:

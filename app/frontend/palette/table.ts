@@ -60,6 +60,8 @@ export type PaletteRow = {
   survival: { established: number; struggling: number; dead: number }
   byTag: Record<string, TagSlot>
   untagged: TagSlot
+  /** Set on a row seen through one tag: the palette's target is for the whole map, so it does not apply. */
+  scoped?: boolean
 }
 
 export type Filters = {
@@ -86,6 +88,19 @@ const lower = (s: string) => s.toLocaleLowerCase('fr')
 const fold = (s: string) => lower(s.normalize('NFD').replace(/[̀-ͯ]/g, ''))
 
 export const toPlant = (row: PaletteRow) => Math.max(0, row.planned - row.planted)
+
+/**
+ * Whether the budget counts the palette's target instead of the map: a
+ * hedge or a small-fruit bed is often budgeted before its plants are drawn
+ * one by one, and would otherwise cost nothing.
+ */
+export const budgetsTarget = (row: PaletteRow) => row.planned === 0 && !row.scoped && (row.targetCount ?? 0) > 0
+
+/** Plants the budget counts: those planned on the map, else the target. */
+export const budgetQuantity = (row: PaletteRow) => (budgetsTarget(row) ? row.targetCount! : row.planned)
+
+/** Plants still to buy: those planned and not yet in the ground, else the target minus what is in the ground. */
+export const toBuyQuantity = (row: PaletteRow) => (budgetsTarget(row) ? Math.max(0, row.targetCount! - row.planted) : toPlant(row))
 
 export function statusOf(row: Pick<PaletteRow, 'existing' | 'planned' | 'planted'>): PlantStatus {
   if (row.planned === 0) return row.existing > 0 ? 'existing' : 'chosen'
@@ -115,7 +130,7 @@ function slotFor(row: PaletteRow, tag: string): TagSlot | null {
 export function scopeRow(row: PaletteRow, tag: string): PaletteRow | null {
   const slot = slotFor(row, tag)
   if (!slot || slot.existing + slot.planned + slot.placed === 0) return null
-  return { ...row, existing: slot.existing, planned: slot.planned, planted: slot.planted, placed: slot.placed, patches: slot.patches }
+  return { ...row, existing: slot.existing, planned: slot.planned, planted: slot.planted, placed: slot.placed, patches: slot.patches, scoped: true }
 }
 
 /** Raw value of a column, for sorting, totals and the CSV. */
@@ -147,8 +162,8 @@ export function cellValue(row: PaletteRow, column: string): string | number | bo
     case 'size': return row.size ?? null
     case 'supplier': return row.supplier ?? null
     case 'unit_price': return row.unitPrice ?? null
-    case 'amount': return row.unitPrice == null ? null : round2(row.planned * row.unitPrice)
-    case 'amount_to_plant': return row.unitPrice == null ? null : round2(toPlant(row) * row.unitPrice)
+    case 'amount': return row.unitPrice == null ? null : round2(budgetQuantity(row) * row.unitPrice)
+    case 'amount_to_plant': return row.unitPrice == null ? null : round2(toBuyQuantity(row) * row.unitPrice)
     case 'planted_dates': return row.plantedFrom ?? null
     case 'established': return row.survival.established
     case 'struggling': return row.survival.struggling
