@@ -40,21 +40,8 @@ fr:
     intro: "Ce qu'il reste à faire pour que ce jardin pousse : qui s'en charge, et pour quand."
     read_only: "Tu peux lire les tâches de cette carte et cocher celles qui te sont assignées."
     # The year strip: when tasks fall due, season by season.
-    year:
-      title: "L'année du projet"
-      hint: "Les tâches à faire, mois par mois. Touche un mois pour n'afficher que ses échéances."
-      now: "Maintenant"
-      due_count:
-        zero: "Rien à rendre"
-        one: "1 tâche"
-        other: "%{count} tâches"
-      seasons:
-        winter: "Hiver"
-        spring: "Printemps"
-        summer: "Été"
-        autumn: "Automne"
-      month_filter: "Échéances de %{month}"
-      clear_month: "Tous les mois"
+    season:
+      hint: "Le design, le chantier et la plantation de ce projet, sur les douze mois qui viennent, avec la fenêtre de plantation à racines nues."
       planting_window: "Saison de plantation"
     filters:
       label: "Filtrer les tâches"

@@ -25,7 +25,12 @@ module Maps
                    offerBuilder: Offer.shown_to?(@map, Current.user) },
             participants: board.participants,
             canEdit: can_edit?,
-            today: Date.current.iso8601
+            today: Date.current.iso8601,
+            season: SeasonSteps.window_json,
+            stepKinds: Task::STEP_KINDS,
+            # Only a team project has a stage: its steps start as forecasts
+            # while the offer is not signed.
+            phase: (@map.board_phase if @map.organization_id && !@map.own_place)
           )
         end
         format.json do

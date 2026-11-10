@@ -4,8 +4,8 @@ import { useId, useState, type KeyboardEvent } from 'react'
 import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { addTag, MAX_TAG_LENGTH, MAX_TAGS, removeTag } from '@/map/tags/tags'
-import { dueOf, formatMonth, formatMonthShort, isPlantingMonth, monthOfDay, seasonOf, yearAhead, type Day, type Season } from '@/tasks/dates'
-import type { Assignee, Participant, TaskData, TaskFeature } from '@/tasks/types'
+import { dueOf, type Day, type Season } from '@/tasks/dates'
+import type { Assignee, Participant, TaskFeature } from '@/tasks/types'
 
 /** A stable key for who a task goes to: `u<id>`, or `e<email>` for an invitee. */
 export function assigneeKey(person: Assignee | Participant | null | undefined): string {
@@ -128,66 +128,6 @@ export const SEASON_TINT: Record<Season, string> = {
   spring: 'bg-leaf-50',
   summer: 'bg-humus-50',
   autumn: 'bg-clay-50/70',
-}
-
-/**
- * « L'année du projet »: the twelve months ahead, tinted by season, with
- * how many tasks fall due in each and the bare-root planting window. A
- * month filters the lists to its due dates.
- */
-export function YearStrip({ tasks, today, month, onMonth }: {
-  tasks: TaskData[]; today: Day; month: string | null; onMonth: (month: string | null) => void
-}) {
-  const months = yearAhead(today)
-  const counts = new Map<string, number>()
-  for (const task of tasks) {
-    if (task.completedAt || !task.dueOn || task.dueOn < today) continue
-    const key = monthOfDay(task.dueOn)
-    counts.set(key, (counts.get(key) ?? 0) + 1)
-  }
-  return (
-    <section aria-labelledby="year-strip-title" className="rounded-2xl bg-white/70 px-4 py-3 ring-1 ring-loam-900/10">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id="year-strip-title" className="font-serif text-lg font-semibold text-prune-800">{t('tasks.year.title')}</h2>
-        {month
-          ? <button type="button" onClick={() => onMonth(null)} className="text-sm font-medium text-prune-700 hover:underline">{t('tasks.year.clear_month')}</button>
-          : <p className="hidden text-sm text-loam-500 sm:block">{t('tasks.year.hint')}</p>}
-      </div>
-      <div className="-mx-1 mt-2 overflow-x-auto px-1 pb-1">
-        <ol className="grid min-w-[42rem] grid-cols-12 gap-1">
-          {months.map(({ key, year, month: m }, i) => {
-            const count = counts.get(key) ?? 0
-            const active = month === key
-            const season = seasonOf(m)
-            const newSeason = i === 0 || seasonOf(months[i - 1].month) !== season
-            return (
-              <li key={key} className="flex flex-col">
-                <span className="h-5 whitespace-nowrap text-sm text-loam-500">{newSeason ? t(`tasks.year.seasons.${season}`) : ''}</span>
-                <button
-                  type="button" onClick={() => onMonth(active ? null : key)} aria-pressed={active}
-                  aria-label={`${formatMonth(year, m)} ${year} : ${t('tasks.year.due_count', { count })}`}
-                  className={clsx(
-                    'flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors',
-                    SEASON_TINT[season],
-                    active ? 'ring-2 ring-prune-600' : i === 0 ? 'ring-[1.5px] ring-prune-300' : 'hover:ring-1 hover:ring-loam-400',
-                  )}
-                >
-                  <span className={clsx('text-sm capitalize', i === 0 ? 'font-semibold text-prune-800' : 'text-loam-700')}>
-                    {formatMonthShort(year, m)}
-                  </span>
-                  {count > 0 && <span className="min-w-5 rounded-full bg-prune-600 px-1.5 text-[13px] font-semibold leading-5 tabular-nums text-white">{count}</span>}
-                </button>
-                <span className={clsx('mt-1 h-1 rounded-full', isPlantingMonth(m) ? 'bg-leaf-500' : 'bg-transparent')} aria-hidden />
-              </li>
-            )
-          })}
-        </ol>
-      </div>
-      <p className="mt-2 flex items-center gap-2 text-sm text-loam-500">
-        <span className="inline-block h-1 w-6 rounded-full bg-leaf-500" aria-hidden />{t('tasks.year.planting_window')}
-      </p>
-    </section>
-  )
 }
 
 /** An element a task is about: opens the map on it. */

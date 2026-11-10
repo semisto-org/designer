@@ -50,7 +50,7 @@ Un projet encore au stade de l'offre peut déjà prendre sa place dans la saison
 
 Quand l'offre est signée, clique sur l'étape et choisis **Confirmer l'étape** : elle prend sa couleur pleine. Ton IA peut aussi poser ces étapes prévisionnelles pour toi, et les confirmer quand tu le lui dis.
 
-Chaque étape est aussi une tâche datée de sa carte, dans « Tâches ».
+Chaque étape est aussi une tâche datée de sa carte. La page « Tâches » de chaque carte montre la même frise, pour ce seul projet, avec une rangée par sorte d'étape : on y ajoute, déplace et modifie ses étapes, et le tableau de l'équipe suit aussitôt.
 
 ## La charge de chacun
 
