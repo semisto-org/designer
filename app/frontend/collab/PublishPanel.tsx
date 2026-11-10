@@ -232,6 +232,10 @@ export default function PublishPanel() {
             <Toggle checked={options.show_sectors ?? false} onChange={(v) => setOptions({ ...options, show_sectors: v })} label={t('collab.publish.show_sectors')} />
           </div>
           <p className="mt-1 text-sm text-loam-500">{t('collab.publish.show_sectors_hint')}</p>
+          <div className="mt-2">
+            <Toggle checked={options.show_growth ?? true} onChange={(v) => setOptions({ ...options, show_growth: v })} label={t('collab.publish.show_growth')} />
+          </div>
+          <p className="mt-1 text-sm text-loam-500">{t('collab.publish.show_growth_hint')}</p>
         </fieldset>
 
         <fieldset>

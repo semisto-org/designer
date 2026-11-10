@@ -78,7 +78,7 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
         {published.sectors && map.center && <PublicSectorArcs sectors={published.sectors} center={map.center} bbox={map.bbox} hidden={hiddenSectorGroups} />}
       </MapView>
       {props.description && <About text={props.description} />}
-      {props.growth && plants.length > 0 && (
+      {props.growth && plants.length > 0 && published.showGrowth !== false && (
         <GardenControls
           origin={props.growth.origin}
           today={today}
@@ -90,7 +90,7 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
       )}
       <Legend
         {...props}
-        raised={plants.length > 0}
+        raised={plants.length > 0 && published.showGrowth !== false}
         plantGroups={legend}
         showNumbers={showNumbers}
         onShowNumbers={setShowNumbers}
