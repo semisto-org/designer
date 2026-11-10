@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react'
 import clsx from 'clsx'
-import { Check, Plus, Trash2 } from 'lucide-react'
+import { ArrowRight, Check, Plus, Trash2 } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -27,6 +27,9 @@ const stepStyle = (step: { kind: StepKind; forecast?: boolean }) => (step.foreca
 // Projects whose offer is not signed yet: their new steps start as forecasts.
 const unsigned = (project?: SeasonProject) => project?.phase === 'request' || project?.phase === 'offer'
 const monthName = new Intl.DateTimeFormat('fr-BE', { month: 'short' })
+const monthYear = new Intl.DateTimeFormat('fr-BE', { month: 'long', year: 'numeric' })
+// Twelve months fill the frieze's width; later ones scroll in from the right.
+const VISIBLE_MONTHS = 12
 
 /** A project the frieze draws steps for: a map, with its stage when it has one. */
 export type SeasonProject = { id: number; name: string; phase?: string | null; closedAt?: string | null }
@@ -71,30 +74,41 @@ export function SeasonFrieze({ steps: initial, projects, single = false, season,
   const [newFor, setNewFor] = useState<{ projectId: number | null; kind?: StepKind }>({ projectId: null })
   const drag = useRef<Drag | null>(null)
   const [dragId, setDragId] = useState<number | null>(null)
+  const scroller = useRef<HTMLDivElement | null>(null)
+  // Whether months still wait to the right of what the frieze shows.
+  const [more, setMore] = useState(false)
+  const onScroll = () => {
+    const el = scroller.current
+    setMore(Boolean(el && el.scrollLeft + el.clientWidth < el.scrollWidth - 4))
+  }
 
   const from = isoDay(new Date(toDate(today).getFullYear(), toDate(today).getMonth(), 1, 12))
-  const to = isoDay(new Date(toDate(from).getFullYear(), toDate(from).getMonth() + 12, 1, 12))
+  // Twelve months at least, and up to the month the last step ends in: a
+  // project planned over several years (2027, 2028…) scrolls to its end.
+  const lastDue = steps.reduce((last, s) => (s.dueOn > last ? s.dueOn : last), from)
+  const count = Math.max(VISIBLE_MONTHS, (toDate(lastDue).getFullYear() - toDate(from).getFullYear()) * 12 + toDate(lastDue).getMonth() - toDate(from).getMonth() + 1)
+  const to = isoDay(new Date(toDate(from).getFullYear(), toDate(from).getMonth() + count, 1, 12))
   const total = daysBetween(from, to)
   const pct = (iso: string) => `${(Math.min(total, Math.max(0, daysBetween(from, iso))) / total) * 100}%`
   const span = (a: string, b: string) => `${(Math.max(0, Math.min(total, daysBetween(from, b) + 1) - Math.max(0, daysBetween(from, a))) / total) * 100}%`
 
-  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => {
+  const months = useMemo(() => Array.from({ length: count }, (_, i) => {
     const d = new Date(toDate(from).getFullYear(), toDate(from).getMonth() + i, 1, 12)
-    return { iso: isoDay(d), label: monthName.format(d) }
-  }), [from])
+    return { iso: isoDay(d), label: monthName.format(d), year: i === 0 || d.getMonth() === 0 ? d.getFullYear() : null }
+  }), [from, count])
 
-  // Bare-root planting windows (1 November to the end of February) that fall in the twelve months.
+  // Bare-root planting windows (1 November to the end of February) that fall in the months shown.
   const windows = useMemo(() => {
     const opens = toDate(season.opensOn)
-    return [0, 1].map((n) => ({
+    return Array.from({ length: Math.ceil(count / 12) + 1 }, (_, n) => n).map((n) => ({
       from: isoDay(new Date(opens.getFullYear() + n, opens.getMonth(), opens.getDate(), 12)),
       // The last day of the closing month, leap years included.
       to: isoDay(new Date(toDate(season.closesOn).getFullYear() + n, toDate(season.closesOn).getMonth() + 1, 0, 12)),
     })).filter((w) => w.to >= from && w.from < to)
-  }, [season, from, to])
+  }, [season, from, to, count])
 
-  // Only the steps that touch the twelve months.
-  const shown = steps.filter((s) => s.dueOn >= from && s.startsOn < to)
+  // Only the steps still to come or under way.
+  const shown = steps.filter((s) => s.dueOn >= from)
   const live = projects.filter((p) => !p.closedAt)
   const byStart = (a: BoardStep, b: BoardStep) => a.startsOn.localeCompare(b.startsOn)
   const lanes: Lane[] = single
@@ -180,6 +194,9 @@ export function SeasonFrieze({ steps: initial, projects, single = false, season,
   const todayAt = pct(today)
   // Under five weeks, a bar is too short for its name; nine in the narrower lanes of a single project.
   const narrow = (step: BoardStep) => daysBetween(step.startsOn, step.dueOn) < (single ? 63 : 35)
+  // The frieze stops with the last step's month: a short step near the end
+  // writes its name before it.
+  const nearEnd = (step: BoardStep) => daysBetween(step.dueOn, to) < 75
   const label = (step: BoardStep) => (step.forecast ? t('team_board.season.forecast_label', { title: step.title }) : step.title)
   const anyForecast = shown.some((s) => s.forecast)
   const labelColumn = single ? 'grid-cols-[8.5rem_1fr]' : 'grid-cols-[11rem_1fr]'
@@ -191,98 +208,123 @@ export function SeasonFrieze({ steps: initial, projects, single = false, season,
     </Button>
   )
 
+  // The lane names and the padding (rem), and the narrowest twelve months.
+  const aside = single ? 11.25 : 13.75
+  const narrowest = single ? 44 : 52
+  const longer = count > VISIBLE_MONTHS
+  const width = longer
+    ? { width: `calc(${aside}rem + (100% - ${aside}rem) * ${count / VISIBLE_MONTHS})`, minWidth: `${aside + (narrowest - aside) * (count / VISIBLE_MONTHS)}rem` }
+    : { minWidth: `${narrowest}rem` }
+  const lastMonth = monthYear.format(toDate(lastDue))
+  useEffect(onScroll, [count, steps.length])
+
   const body = (
     <>
-      <div className="overflow-x-auto rounded-2xl border border-loam-200 bg-[#fffdf7] shadow-[0_1px_0_var(--color-loam-200)]">
-        <div className={clsx('px-4 pt-3 pb-4', single ? 'min-w-[44rem]' : 'min-w-[52rem]')}>
-          <div className={clsx('grid gap-x-3', labelColumn)}>
-            <span />
-            <div className="relative h-7 border-b border-loam-200">
-              {months.map((m) => (
-                <span key={m.iso} style={{ left: pct(m.iso) }} className="absolute top-0 h-full border-l border-loam-200 pl-1.5 text-sm text-loam-500 first-letter:uppercase">{m.label}</span>
-              ))}
-            </div>
-          </div>
-          <div className="relative">
-            {/* The planting window, the months and today, behind every lane. */}
-            <div aria-hidden="true" className={clsx('pointer-events-none absolute inset-y-0 right-0', single ? 'left-[calc(8.5rem+0.75rem)]' : 'left-[calc(11rem+0.75rem)]')}>
-              {windows.map((w) => (
-                <span key={w.from} style={{ left: pct(w.from), width: span(w.from, w.to) }} className="absolute inset-y-0 bg-leaf-100/60" />
-              ))}
-              {months.slice(1).map((m) => <span key={m.iso} style={{ left: pct(m.iso) }} className="absolute inset-y-0 border-l border-dashed border-loam-200" />)}
-              <span style={{ left: todayAt }} className="absolute inset-y-0 border-l-2 border-clay-400" />
-            </div>
-            {lanes.length === 0 ? (
-              <p className="relative py-8 text-center font-hand text-xl text-loam-500">{empty}</p>
-            ) : (
-              <ul className="relative">
-                {lanes.map((lane) => (
-                  <li key={lane.key} className={clsx('grid items-center gap-x-3 border-b border-dashed border-loam-200/70 py-1.5 last:border-b-0', labelColumn)}>
-                    <span className="flex min-w-0 items-center gap-1">
-                      <span className="min-w-0 flex-1 truncate">{lane.label}</span>
-                      {canEdit && (
-                        <IconButton size="sm" label={lane.addLabel} onClick={() => { setNewFor({ projectId: lane.projectId, kind: lane.kind }); setEditing('new') }} className="h-6 w-6 text-loam-400 hover:text-prune-700">
-                          <Plus />
-                        </IconButton>
-                      )}
-                    </span>
-                    <div data-lane className="relative h-8">
-                      {lane.steps.map((step) => (
-                        <Fragment key={step.id}>
-                          <div
-                            data-step
-                            role={canEdit ? 'button' : undefined}
-                            tabIndex={canEdit ? 0 : undefined}
-                            aria-label={`${label(step)} : ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
-                            title={`${label(step)} · ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
-                            onPointerDown={(e) => down(e, step, 'move')}
-                            onPointerMove={move}
-                            onPointerUp={() => up(step)}
-                            onPointerCancel={() => { drag.current = null; setDragId(null) }}
-                            onKeyDown={(e) => key(e, step)}
-                            style={{ left: pct(step.startsOn), width: span(step.startsOn, step.dueOn) }}
-                            className={clsx(
-                              'group absolute inset-y-0.5 flex items-center overflow-hidden rounded-full px-3 text-sm font-semibold whitespace-nowrap select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600',
-                              canEdit && 'cursor-grab touch-none',
-                              stepStyle(step),
-                              !step.forecast && 'shadow-sm',
-                              step.done && 'opacity-50',
-                              dragId === step.id && 'cursor-grabbing ring-2 ring-loam-900/30',
-                            )}
-                          >
-                            {canEdit && <span onPointerDown={(e) => down(e, step, 'start')} className="absolute inset-y-0 left-0 w-2.5 cursor-ew-resize hover:bg-white/30" />}
-                            {!narrow(step) && <span className="truncate">{step.title}</span>}
-                            {canEdit && <span onPointerDown={(e) => down(e, step, 'end')} className="absolute inset-y-0 right-0 w-2.5 cursor-ew-resize hover:bg-white/30" />}
-                          </div>
-                          {/* A short step writes its name beside it, in pencil. */}
-                          {narrow(step) && (
-                            <span aria-hidden="true" style={{ left: `calc(${pct(step.startsOn)} + ${span(step.startsOn, step.dueOn)} + 0.375rem)` }} className="pointer-events-none absolute inset-y-0 flex items-center text-sm font-medium whitespace-nowrap text-loam-700">
-                              {step.title}
-                            </span>
-                          )}
-                        </Fragment>
-                      ))}
-                    </div>
-                  </li>
+      <div className="relative">
+        <div ref={scroller} onScroll={onScroll} className="season-paper overflow-x-auto rounded-2xl border border-loam-200 shadow-[0_1px_0_var(--color-loam-200)]">
+          <div style={width} className="px-4 pt-3 pb-4">
+            <div className={clsx('grid gap-x-3', labelColumn)}>
+              <span className="season-paper sticky left-0 z-20 -mr-3 -ml-4 self-stretch pr-3 pl-4" />
+              <div className="relative h-12 border-b border-loam-200">
+                {/* Each year written over its first month, so 2027 and 2028 never mix. */}
+                {months.filter((m) => m.year).map((m) => (
+                  <span key={`y${m.iso}`} style={{ left: pct(m.iso) }} className="absolute top-0 pl-1.5 font-serif text-base font-semibold text-loam-700">{m.year}</span>
                 ))}
-              </ul>
-            )}
-            {single && !hasSteps && lanes.length > 0 && (
-              <p className="relative mt-2 text-center font-hand text-xl text-loam-500">{empty}</p>
-            )}
+                {months.map((m) => (
+                  <span key={m.iso} style={{ left: pct(m.iso) }} className="absolute bottom-0 h-7 border-l border-loam-200 pl-1.5 text-sm text-loam-500 first-letter:uppercase">{m.label}</span>
+                ))}
+              </div>
+            </div>
+            <div className="relative">
+              {/* The planting window, the months and today, behind every lane. */}
+              <div aria-hidden="true" className={clsx('pointer-events-none absolute inset-y-0 right-0', single ? 'left-[calc(8.5rem+0.75rem)]' : 'left-[calc(11rem+0.75rem)]')}>
+                {windows.map((w) => (
+                  <span key={w.from} style={{ left: pct(w.from), width: span(w.from, w.to) }} className="absolute inset-y-0 bg-leaf-100/60" />
+                ))}
+                {months.slice(1).map((m) => <span key={m.iso} style={{ left: pct(m.iso) }} className="absolute inset-y-0 border-l border-dashed border-loam-200" />)}
+                <span style={{ left: todayAt }} className="absolute inset-y-0 border-l-2 border-clay-400" />
+              </div>
+              {lanes.length === 0 ? (
+                <p className="relative py-8 text-center font-hand text-xl text-loam-500">{empty}</p>
+              ) : (
+                <ul className="relative">
+                  {lanes.map((lane) => (
+                    <li key={lane.key} className={clsx('grid items-center gap-x-3 border-b border-dashed border-loam-200/70 py-1.5 last:border-b-0', labelColumn)}>
+                      <span className="season-paper sticky left-0 z-20 -my-1.5 -mr-3 -ml-4 flex min-w-0 items-center gap-1 self-stretch py-1.5 pr-3 pl-4">
+                        <span className="min-w-0 flex-1 truncate">{lane.label}</span>
+                        {canEdit && (
+                          <IconButton size="sm" label={lane.addLabel} onClick={() => { setNewFor({ projectId: lane.projectId, kind: lane.kind }); setEditing('new') }} className="h-6 w-6 text-loam-400 hover:text-prune-700">
+                            <Plus />
+                          </IconButton>
+                        )}
+                      </span>
+                      <div data-lane className="relative h-8">
+                        {lane.steps.map((step) => (
+                          <Fragment key={step.id}>
+                            <div
+                              data-step
+                              role={canEdit ? 'button' : undefined}
+                              tabIndex={canEdit ? 0 : undefined}
+                              aria-label={`${label(step)} : ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
+                              title={`${label(step)} · ${formatDay(step.startsOn)} – ${formatDay(step.dueOn)}`}
+                              onPointerDown={(e) => down(e, step, 'move')}
+                              onPointerMove={move}
+                              onPointerUp={() => up(step)}
+                              onPointerCancel={() => { drag.current = null; setDragId(null) }}
+                              onKeyDown={(e) => key(e, step)}
+                              style={{ left: pct(step.startsOn), width: span(step.startsOn, step.dueOn) }}
+                              className={clsx(
+                                'group absolute inset-y-0.5 flex items-center overflow-hidden rounded-full px-3 text-sm font-semibold whitespace-nowrap select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-prune-600',
+                                canEdit && 'cursor-grab touch-none',
+                                // Under way since before this month: cut square on the left.
+                                step.startsOn < from && 'rounded-l-none',
+                                stepStyle(step),
+                                !step.forecast && 'shadow-sm',
+                                step.done && 'opacity-50',
+                                dragId === step.id && 'cursor-grabbing ring-2 ring-loam-900/30',
+                              )}
+                            >
+                              {canEdit && <span onPointerDown={(e) => down(e, step, 'start')} className="absolute inset-y-0 left-0 w-2.5 cursor-ew-resize hover:bg-white/30" />}
+                              {!narrow(step) && <span className="truncate">{step.title}</span>}
+                              {canEdit && <span onPointerDown={(e) => down(e, step, 'end')} className="absolute inset-y-0 right-0 w-2.5 cursor-ew-resize hover:bg-white/30" />}
+                            </div>
+                            {/* A short step writes its name beside it, in pencil (before it at the frieze's end). */}
+                            {narrow(step) && (
+                              <span aria-hidden="true" style={nearEnd(step) ? { right: `calc(100% - ${pct(step.startsOn)} + 0.375rem)` } : { left: `calc(${pct(step.startsOn)} + ${span(step.startsOn, step.dueOn)} + 0.375rem)` }} className="pointer-events-none absolute inset-y-0 flex items-center text-sm font-medium whitespace-nowrap text-loam-700">
+                                {step.title}
+                              </span>
+                            )}
+                          </Fragment>
+                        ))}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {single && !hasSteps && lanes.length > 0 && (
+                <p className="relative mt-2 text-center font-hand text-xl text-loam-500">{empty}</p>
+              )}
+            </div>
           </div>
-          <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-loam-500">
-            {!single && stepKinds.map((kind) => (
-              <span key={kind} className="inline-flex items-center gap-1.5"><span className={clsx('h-3 w-5 rounded-full', KIND_STYLE[kind])} />{t(`team_board.steps.${kind}`)}</span>
-            ))}
-            {anyForecast && (
-              <span className="inline-flex items-center gap-1.5"><span className="h-3 w-5 rounded-full border border-dashed border-loam-500 bg-[repeating-linear-gradient(135deg,var(--color-loam-200)_0_3px,transparent_3px_6px)]" />{t('team_board.season.forecast_legend')}</span>
-            )}
-            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-5 rounded-sm bg-leaf-100" />{t('team_board.season.window')}</span>
-            <span className="inline-flex items-center gap-1.5"><span className="h-3 border-l-2 border-clay-400" />{t('team_board.season.today')}</span>
-          </p>
         </div>
+        {/* Later months wait to the right: the paper fades into them. */}
+        {more && <span aria-hidden="true" className="pointer-events-none absolute inset-y-px right-px w-16 rounded-r-2xl bg-gradient-to-l from-loam-100 to-transparent" />}
       </div>
+      <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-loam-500">
+        {!single && stepKinds.map((kind) => (
+          <span key={kind} className="inline-flex items-center gap-1.5"><span className={clsx('h-3 w-5 rounded-full', KIND_STYLE[kind])} />{t(`team_board.steps.${kind}`)}</span>
+        ))}
+        {anyForecast && (
+          <span className="inline-flex items-center gap-1.5"><span className="h-3 w-5 rounded-full border border-dashed border-loam-500 bg-[repeating-linear-gradient(135deg,var(--color-loam-200)_0_3px,transparent_3px_6px)]" />{t('team_board.season.forecast_legend')}</span>
+        )}
+        <span className="inline-flex items-center gap-1.5"><span className="h-3 w-5 rounded-sm bg-leaf-100" />{t('team_board.season.window')}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-3 border-l-2 border-clay-400" />{t('team_board.season.today')}</span>
+        {longer && (
+          <Button variant="ghost" size="sm" className="-my-1" onClick={() => scroller.current?.scrollTo({ left: scroller.current.scrollWidth, behavior: 'smooth' })}>
+            {t('team_board.season.continues', { month: lastMonth })}<ArrowRight className="h-4 w-4" aria-hidden />
+          </Button>
+        )}
+      </p>
       {canEdit && (
         <StepDialog
           step={editing}

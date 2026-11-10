@@ -15,4 +15,10 @@ class SeasonStepsTest < ActiveSupport::TestCase
     assert_includes SeasonSteps.coming([ map.id ], Date.new(2026, 11, 10)), task
     refute_includes SeasonSteps.coming([ map.id ], Date.new(2027, 1, 10)), task
   end
+
+  test "a step years ahead still comes: the frieze scrolls to it" do
+    map = maps(:ahinvaux)
+    later = SeasonSteps.create!(map, { step_kind: "plant", starts_on: "2029-01-08", due_on: "2029-02-25" }, by: users(:michael))
+    assert_includes SeasonSteps.coming([ map.id ], Date.new(2026, 11, 10)), later
+  end
 end

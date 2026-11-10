@@ -51,7 +51,7 @@ Toutes les cartes de l'équipe ne sont pas des projets de clients : le jardin-fo
 
 ## La saison qui vient
 
-Les douze mois à venir, projet par projet, avec la fenêtre de plantation à racines nues (de novembre à février) en vert. Trois sortes d'étapes : **design**, **chantier** et **plantation**.
+Les douze mois à venir, projet par projet, avec la fenêtre de plantation à racines nues (de novembre à février) en vert. Un projet planifié sur plusieurs années (une phase en 2027, une autre en 2028…) allonge la frise jusqu'au mois de sa dernière étape : fais-la défiler vers la droite, ou clique sur « La frise continue jusqu'en… ». Les noms des projets restent à leur place pendant le défilement. Trois sortes d'étapes : **design**, **chantier** et **plantation**.
 
 - Fais **glisser** une étape pour la déplacer, tire un de ses **bords** pour l'étendre. Le pas est la semaine.
 - Au clavier, les flèches déplacent l'étape d'une semaine ; avec Maj, elles l'allongent ou la raccourcissent.
