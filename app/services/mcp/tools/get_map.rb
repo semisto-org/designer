@@ -392,13 +392,14 @@ module Mcp
         end
 
         # What the plants with a price cost: what is left to buy (not yet in
-        # the ground) and the whole, as the palette page header shows them.
+        # the ground) and the whole, as the palette page header shows them
+        # (plants drawn on the map, else the palette's target).
         def palette_budget(map)
           priced = palette_rows(map).select { _1[:unitPrice] }
           return nil if priced.empty?
           {
-            to_buy_eur: priced.sum { _1[:unitPrice] * [ _1[:planned] - _1[:planted], 0 ].max }.round(2),
-            total_eur: priced.sum { _1[:unitPrice] * _1[:planned] }.round(2)
+            to_buy_eur: priced.sum { _1[:unitPrice] * PlantPalette.to_buy_quantity(_1) }.round(2),
+            total_eur: priced.sum { _1[:unitPrice] * PlantPalette.budget_quantity(_1) }.round(2)
           }
         end
 

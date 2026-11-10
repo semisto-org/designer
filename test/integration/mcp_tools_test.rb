@@ -210,6 +210,12 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal({ "to_buy_eur" => 10.0, "total_eur" => 20.0 }, data["palette_budget"])
   end
 
+  test "get_map budgets a plant with no plant drawn on the map from its target" do
+    @map.palette_items.create!(species: plant_species(:alder), unit_price: 1.2, target_count: 100)
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal({ "to_buy_eur" => 120.0, "total_eur" => 120.0 }, data["palette_budget"])
+  end
+
   test "get_map gives the bio-indicator plants noted on the terrain and what they point to" do
     @map.bioindicator_observations.create!(catalog_key: "ortie", abundance: "dominant", location: [ 4.906, 50.341 ])
     data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
