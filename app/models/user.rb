@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_many :organizations, through: :organization_memberships
   has_many :map_memberships, dependent: :destroy
   has_many :map_visits, dependent: :delete_all
+  has_many :time_entries, dependent: :delete_all
   has_many :maps, through: :map_memberships
   has_many :comments, foreign_key: :author_id, inverse_of: :author, dependent: :restrict_with_error
   has_many :comment_subscriptions, dependent: :destroy
@@ -156,7 +157,9 @@ class User < ApplicationRecord
     # request form, with a dot while requests wait for a first call.
     { id:, name: display_name, email: email_address, avatarUrl: avatar_url, admin:, teamsCount: organization_memberships.count,
       tourSeen: tour_seen_at.present?, accountKind: account_kind, newRequests: new_requests_count,
-      catalogueReviewer: can_review_catalogue?, propagation: propagation_summary, droneMissions: drone_missions_summary }
+      catalogueReviewer: can_review_catalogue?, propagation: propagation_summary, droneMissions: drone_missions_summary,
+      # « Mes heures » in the avatar menu: for professionals, team members and whoever noted time.
+      timeEntries: professional? || organization_memberships.exists? || time_entries.exists? }
   end
 
   # The « Missions drone » link shows once I booked a mission or I am a

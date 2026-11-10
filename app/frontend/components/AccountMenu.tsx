@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react'
-import { Check, LogOut, Plus, ShieldCheck, UserRound } from 'lucide-react'
+import { Check, Clock, LogOut, Plus, ShieldCheck, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import type { CurrentUser, SharedProps } from '@/types'
@@ -64,6 +64,12 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
             <UserRound className="h-4 w-4 text-loam-400" aria-hidden="true" />
             {t('account.title')}
           </Link>
+          {user.timeEntries && (
+            <Link href="/time_entries" className={item} onClick={() => setOpen(false)}>
+              <Clock className="h-4 w-4 text-loam-400" aria-hidden="true" />
+              {t('time_entries.nav')}
+            </Link>
+          )}
           {user.admin && (
             <Link href="/admin" className={item} onClick={() => setOpen(false)}>
               <ShieldCheck className="h-4 w-4 text-loam-400" aria-hidden="true" />

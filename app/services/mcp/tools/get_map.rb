@@ -49,6 +49,7 @@ module Mcp
           observation_year: MapFeature::SeasonSign.observation_year(map),
           first_hour: first_hour(map),
           offer: offer(map),
+          time_entries: time_entries(map),
           sectors: sectors(map),
           exports: exports(map),
           presentations: presentations(map),
@@ -241,6 +242,19 @@ module Mcp
               { task_id: task.id, kind: task.step_kind, title: task.title, starts_on: task.starts_on.iso8601,
                 ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
             end
+          }
+        end
+
+        # « Temps et dépenses », in one line per phase: hours noted against
+        # the accepted offer's envelope. For the project's team only, never
+        # its client; list_time_entries has the detail.
+        def time_entries(map)
+          return nil unless TimeEntry.usable_by?(map, user)
+          envelopes = TimeEntry::Envelopes.new(map)
+          {
+            url: "#{map_url(map)}/time_entries", offer_version: envelopes.version_json&.dig(:label),
+            hours: envelopes.totals[:hours], km: envelopes.totals[:km],
+            phases: envelopes.phases.filter_map { |p| { phase: p[:key], hours: p[:hours], envelope_hours: p[:envelopeHours], over_hours: p[:overHours] }.compact if p[:hours].positive? || p[:envelopeHours] }
           }
         end
 

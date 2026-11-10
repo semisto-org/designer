@@ -11,6 +11,7 @@ fr:
       photos: "Photos"
       documents: "Documents"
       offer: "Offre"
+      time: "Temps et dépenses"
       forms: "Formulaires"
   documents:
     page_title: "Documents · %{map}"
