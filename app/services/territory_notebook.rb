@@ -49,8 +49,10 @@ class TerritoryNotebook
   private
     def of(kind) = @items.select { |item| item.kind == kind.to_s }
 
+    # The public version leaves out a lead its farmer or owner refused or is
+    # still weighing: publishing it would answer for them.
     def leads
-      @leads ||= of(:lead).reject(&:waiting_for_farmer?)
+      @leads ||= of(:lead).reject { |item| item.waiting_for_farmer? || (public? && %w[no thinking].include?(item.farmer_answer)) }
                           .sort_by { |item| [ TerritoryItem::RANKS.index(item.prop(:rank)) || TerritoryItem::RANKS.size, item.created_at ] }
     end
 
@@ -97,9 +99,10 @@ class TerritoryNotebook
       }
     end
 
-    # The public version draws leads on public land only.
+    # The public version draws leads on public land only; a lead whose farmer
+    # said no is never drawn on their field.
     def drawable?(item)
-      item.geometry && item.seen_on_site? && (!public? || item.prop(:land) == "public")
+      item.geometry && item.seen_on_site? && item.farmer_answer != "no" && (!public? || item.prop(:land) == "public")
     end
 
     def map_features

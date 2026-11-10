@@ -289,7 +289,7 @@ fr:
         orphan_why: "Sans gestionnaire, la piste meurt après la subvention : qui la cure, la recèpe, avec quel budget ?"
         hypothesis: "à vérifier sur place"
         waiting_farmer: "attend l'exploitant"
-        waiting_farmer_why: "Elle n'entre pas dans le carnet du collège avant un contact avec l'exploitant et sa réponse."
+        waiting_farmer_why: "Elle n'entre pas dans le carnet du collège avant un contact avec l'exploitant et sa réponse. Un foncier pas encore connu compte comme agricole."
         concordance: "concordance à vérifier"
         this_winter: "cet hiver"
 
@@ -326,8 +326,8 @@ fr:
       hypotheses: "Hypothèses à vérifier sur place"
       hypotheses_why: "Pas encore vues sur le terrain : elles ne figurent pas sur la carte."
       waiting_farmer:
-        one: "1 piste sur terre agricole attend encore la rencontre avec son exploitant ; elle n'apparaît pas ici."
-        other: "%{count} pistes sur terre agricole attendent encore la rencontre avec leur exploitant ; elles n'apparaissent pas ici."
+        one: "1 piste sur terre agricole, ou au foncier pas encore connu, attend la rencontre avec son exploitant ; elle n'apparaît pas ici."
+        other: "%{count} pistes sur terre agricole, ou au foncier pas encore connu, attendent la rencontre avec leur exploitant ; elles n'apparaissent pas ici."
       lead:
         where: "Foncier"
         why: "Pourquoi"

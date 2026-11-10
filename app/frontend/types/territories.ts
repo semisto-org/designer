@@ -147,4 +147,6 @@ export type NotebookProps = {
   mapFeatures: Feature[]
   canEdit: boolean
   baseLayer: RegionLayerData | null
+  /** The overlays a territory opens with (where water concentrates). */
+  overlays: RegionLayerData[]
 }

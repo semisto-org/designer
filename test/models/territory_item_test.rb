@@ -56,6 +56,8 @@ class TerritoryItemTest < ActiveSupport::TestCase
     assert lead(land: "agricultural", farmer: { contacted_on: "2026-11-02" }).waiting_for_farmer?
     refute lead(land: "agricultural", farmer: { contacted_on: "2026-11-02", answer: "no" }).waiting_for_farmer?
     refute lead(land: "public").waiting_for_farmer?
+    assert lead.waiting_for_farmer?, "land nobody named yet waits like farmland"
+    assert lead(land: "unknown").waiting_for_farmer?
   end
 
   test "accept and reject record who decided" do

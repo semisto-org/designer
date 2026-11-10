@@ -47,7 +47,7 @@ Theme (`theme`): `water`, or `tree` for the food tree (hedges, orchards, edible 
 
 ## 5. The rules of the notebook
 
-- A lead on farmland reaches the collège only after the farmer was met and answered. Until the farmer (or owner) says yes, it is drawn as a **fuzzy zone**, never as a line on a parcel. On public land, it is a sharp outline.
+- A lead on farmland reaches the collège only after the farmer was met and answered; so does a lead whose `land` is still unknown, so always say whose land it is. The public notebook leaves out a lead its farmer or owner refused or is still weighing. Until the farmer (or owner) says yes, it is drawn as a **fuzzy zone**, never as a line on a parcel. On public land, it is a sharp outline.
 - A lead not yet seen on site is a **hypothesis**: it appears in the working notebook, apart, and never on its map; never in the public version.
 - Every lead needs a **keeper**: a role (not a person), maintenance gestures, hours per year, the land agreement, its lifespan. Without one it is « orpheline »: who clears the pond in year 8, who coppices the hedge, on which budget? Ask the question in your rationale.
 - The notebook ends with a decision in principle: each lead retained, postponed or dismissed, with its reason and date, and the budget of the next step only. No amount per structure.

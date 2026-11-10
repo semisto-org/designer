@@ -116,6 +116,7 @@ class TerritoriesControllerTest < ActionDispatch::IntegrationTest
     territory.items.create!(kind: "lead", title: "Haie à voir", properties: { land: "public" })
     sign_in_as @member
     get notebook_territory_path(territory), headers: inertia_headers
+    assert_kind_of Array, props["overlays"]
     assert_equal [ "working", [ "Haie à voir" ] ], [ props["version"], props["hypotheses"].map { _1["title"] } ]
     get notebook_territory_path(territory, version: "public"), headers: inertia_headers
     assert_equal [ "public", [] ], [ props["version"], props["hypotheses"] ]

@@ -90,7 +90,8 @@ class TerritoriesController < ApplicationController
     version = params[:version] == "public" ? "public" : "working"
     render inertia: "territories/notebook", props: TerritoryNotebook.new(@territory, version:).as_inertia.merge(
       canEdit: @territory.editable_by?(Current.user),
-      baseLayer: @territory.readable_layers.find { |layer| layer.category == "base" && layer.kind == "style" }&.as_inertia
+      baseLayer: @territory.readable_layers.find { |layer| layer.category == "base" && layer.kind == "style" }&.as_inertia,
+      overlays: @territory.readable_layers.select { |layer| layer.options["territory_default"] == true }.map(&:as_inertia)
     )
   end
 

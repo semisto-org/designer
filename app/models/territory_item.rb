@@ -142,8 +142,10 @@ class TerritoryItem < ApplicationRecord
   def sharp? = prop(:land) == "public" || farmer_answer == "yes"
 
   # A lead on farmland reaches the collège only once the farmer was met and
-  # answered: learning about it from the council sets the fire.
-  def waiting_for_farmer? = kind == "lead" && prop(:land) == "agricultural" && !farmer_contacted?
+  # answered: learning about it from the council sets the fire. Land nobody
+  # has named yet is held back the same way, so leaving the default never
+  # slips a lead past the rule.
+  def waiting_for_farmer? = kind == "lead" && %w[agricultural unknown].include?(prop(:land) || "unknown") && !farmer_contacted?
 
   def as_inertia
     {
