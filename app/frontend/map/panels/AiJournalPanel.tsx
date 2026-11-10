@@ -37,6 +37,7 @@ const ICONS: Record<string, typeof Bot> = {
   get_photo: Camera,
   add_photo: Camera,
   update_photos: Camera,
+  update_palette_budget: NotebookPen,
   delete_photos: Camera,
   create_upload: Upload,
   attach_photos: Camera,
@@ -80,6 +81,7 @@ function describe(action: AiActionData): string {
     case 'record_plant_observations': return t('ai_journal.actions.record_plant_observations', { count: n('created') })
     case 'record_storage_readings': return t('ai_journal.actions.record_storage_readings', { count: n('created') })
     case 'update_photos': return t('ai_journal.actions.update_photos', { count: n('updated') })
+    case 'update_palette_budget': return t('ai_journal.actions.update_palette_budget', { count: n('updated') })
     case 'delete_photos': return t('ai_journal.actions.delete_photos', { count: n('deleted') })
     case 'create_upload': return t('ai_journal.actions.create_upload', { count: n('prepared') })
     case 'attach_photos': return t('ai_journal.actions.attach_photos', { count: n('attached') })
