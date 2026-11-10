@@ -206,5 +206,4 @@ class Teams::BoardControllersTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_equal "Envoyée", offer.reload.name
   end
-
 end

@@ -383,5 +383,4 @@ class McpTasksDocumentsTest < ActionDispatch::IntegrationTest
     season = map_data["team_season"]
     assert_equal [ "Design détaillé", [ "Pré-design", "Design détaillé" ], false ], season.values_at("section", "stage_sections", "on_hold")
   end
-
 end
