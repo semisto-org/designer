@@ -50,6 +50,20 @@ Chaque nouvelle mission ajoute une vue datée à côté des précédentes : rien
 
 Pour remonter plus loin, garde la vue drone et choisis une photo ancienne comme **Fond de carte** (Photo 1971, Photo 1994-2000), puis baisse l'opacité de la vue drone : hier et aujourd'hui se superposent. Voir [Lire les couches du Géoportail](/help/lire-les-couches-du-geoportail).
 
+## Recaler une vue décalée
+
+Le GPS d'un drone grand public se trompe souvent de quelques mètres : la vue arrive alors à côté du cadastre ou de la photo aérienne, et ce que tu dessines dessus serait décalé d'autant. Tu peux la remettre à sa place sans réimporter le fichier.
+
+1. Dans **Couches**, sous **Vues drone**, choisis la vue, puis clique sur **Recaler la vue**.
+2. Clique un point bien net de la vue drone : un coin de bâtiment, un piquet, l'angle d'une clôture.
+3. La vue devient transparente : clique l'endroit où ce point se trouve vraiment, sur le fond de carte ou le cadastre. La vue suit aussitôt.
+4. Si la vue est aussi un peu tournée, pose un deuxième repère à l'autre bout du terrain (trois au plus). Glisse un repère pour affiner.
+5. Clique sur **Recaler la vue**. Terranova refait les tuiles à la nouvelle place en quelques minutes ; l'ancienne position reste affichée en attendant.
+
+Tu peux recaler une vue autant de fois que tu veux. Seules les vues importées sur la carte se recalent ; pour une vue posée par Semisto, écris-nous.
+
+**Sur le terrain** : avant ton prochain vol, plante un piquet ou pose une bâche claire à deux coins opposés du terrain. Ces repères se voient du ciel et te serviront à recaler la vue en une minute.
+
 ## Qui voit la vue drone ?
 
 Elle fait partie de ta carte : toutes les personnes avec qui tu partages cette carte la voient, qu'elles puissent la modifier ou seulement la consulter.

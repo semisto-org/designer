@@ -45,6 +45,7 @@ module Mcp
           documents: map.documents.count,
           site_visits: site_visits(map),
           photos: map.photos.count,
+          drone_views: drone_views(map),
           discussion: discussion(map),
           observation_year: MapFeature::SeasonSign.observation_year(map),
           first_hour: first_hour(map),
@@ -88,6 +89,20 @@ module Mcp
           article = HelpArticle.find(MapInvitationMailer::READER_GUIDE) or return nil
           { slug: article.slug, title: article.title, url: "#{origin}/help/#{article.slug}", note: t("notes.reader_guide") }
         end
+
+      # The map's drone views, newest first, and how well each one lines up
+      # (« Recaler la vue », done by a person in the editor, never by the AI).
+      def drone_views(map)
+        map.aerial_views.ready.newest_first.map do |view|
+          done = view.alignments.select { _1["status"] == "done" }
+          {
+            id: view.id, name: view.name, captured_on: view.captured_on.iso8601, product: view.product,
+            realignable: view.alignable?,
+            realigned: (done.any? ? { count: done.size, last_at: done.last["finished_at"] || done.last["at"], shift_m: done.last["shift_m"], landmarks: done.last["pairs"].size } : nil),
+            realigning: view.pending_alignment.present? || nil
+          }.compact
+        end
+      end
 
       # The walks made with the phone; list_site_visits gives each one.
       def site_visits(map)

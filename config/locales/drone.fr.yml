@@ -120,6 +120,42 @@ fr:
         busy: "La vue est en préparation : attends qu'elle soit prête pour la retirer."
         network: "L'envoi a été coupé. Vérifie ta connexion, puis réessaie."
 
+    # « Recaler la vue » (Couches panel, then a bar over the map): landmark
+    # pairs that line an imported view up with the map.
+    align:
+      button: "Recaler la vue"
+      title: "Recaler « %{name} »"
+      pick_from: "Clique un point bien net de la vue drone : un coin de bâtiment, un piquet, l'angle d'une clôture."
+      pick_to: "Clique maintenant l'endroit où ce point se trouve vraiment, sur le fond de carte ou le cadastre."
+      ready_one: "La vue suit ton repère. Glisse le repère pour affiner, ou pose un deuxième repère à l'autre bout du terrain pour corriger aussi l'angle."
+      ready_many: "La vue suit tes %{count} repères. Glisse-les pour affiner, puis recale la vue."
+      shift: "Déplacement : %{meters} m."
+      outdoor_tip: "Rien de net sur la photo ? Avant le prochain vol, plante un piquet ou pose une bâche claire à deux coins du terrain : ils serviront de repères."
+      see_through: "Voir la carte sous la vue drone"
+      see_view: "Voir la vue drone en entier"
+      remove_last: "Retirer le dernier repère"
+      marker_from: "Repère %{n}, sur la vue drone"
+      marker_to: "Repère %{n}, à sa vraie place"
+      cancel: "Annuler"
+      submit: "Recaler la vue"
+      saving: "Envoi…"
+      pending: "Recalage en cours : la vue se pose à sa nouvelle place dans quelques minutes. Tu peux continuer à travailler."
+      done: "« %{name} » est recalée."
+      failed: "Le recalage n'a pas abouti. %{reason}"
+      last_done: "Recalée le %{date} par %{by} (déplacée de %{meters} m)."
+      errors:
+        busy: "Un recalage est déjà en cours sur cette vue : attends qu'il soit fini."
+        not_alignable: "Seule une vue importée sur la carte peut être recalée."
+        no_pairs: "Pose au moins un repère : un point de la vue drone, puis sa vraie place."
+        too_many_pairs: "Trois repères suffisent."
+        bad_point: "Un repère est hors de la carte : recommence-le."
+        too_far: "Ce recalage déplacerait la vue de plus de 300 m : vérifie que chaque repère montre le même point des deux côtés."
+        too_distorted: "Ces repères tourneraient ou étireraient trop la vue : vérifie que chaque repère montre le même point des deux côtés."
+        too_close: "Tes repères sont trop proches pour corriger l'angle : place-les aux deux bouts du terrain."
+        empty: "Les tuiles de la vue sont introuvables. Écris à Semisto."
+        conversion_failed: "La préparation des nouvelles tuiles a échoué. Réessaie ; si cela recommence, écris à Semisto."
+        network: "La demande n'est pas partie. Vérifie ta connexion, puis réessaie."
+
     # « Publier » panel (owner) and the public view (/p/:token).
     publish:
       legend: "Vue drone"

@@ -28,6 +28,8 @@ class AerialView < ApplicationRecord
   # What a person may import: a drone orthomosaic covers a few hectares in
   # a few hundred megabytes; this leaves room for a large estate at 3 cm.
   MAX_UPLOAD_BYTES = 10.gigabytes
+  # A realignment still « running » after this was lost (a restart).
+  STALE_ALIGNMENT = 6.hours
   UPLOAD_EXTENSIONS = %w[.tif .tiff .mbtiles .pmtiles].freeze
   # Why an import stopped (drone.import.failures.* in the interface).
   FAILURES = %w[upload_incomplete upload_expired unsupported_format not_georeferenced not_raster empty source_unreachable conversion_failed].freeze
@@ -75,6 +77,39 @@ class AerialView < ApplicationRecord
 
   def ready? = status == "ready"
 
+  # « Recaler la vue »: only a view whose archive Terranova keeps can be cut
+  # again (AerialViews::Realign); a view staff set up by its address cannot.
+  def alignable? = imported? && ready? && archive.attached? && bounds.present?
+
+  # The realignment waiting for its new tiles, if any.
+  def pending_alignment
+    entry = alignments.last
+    entry if entry && entry["status"] == "pending"
+  end
+
+  # Records the landmark pairs someone placed; AerialViewRealignJob does the rest.
+  def request_alignment!(pairs, by:)
+    raise AerialViews::Alignment::Invalid.new("busy") if pending_alignment && Time.zone.parse(pending_alignment["at"].to_s).to_i > STALE_ALIGNMENT.ago.to_i
+    raise AerialViews::Alignment::Invalid.new("not_alignable") unless alignable?
+    finish_alignment!("failed", failure: "conversion_failed") if pending_alignment
+    alignment = AerialViews::Alignment.new(pairs).check!(bounds)
+    entry = { "pairs" => alignment.pairs.map { { "from" => _1[:from], "to" => _1[:to] } }, "status" => "pending",
+              "by_id" => by&.id, "by" => by&.display_name, "at" => Time.current.iso8601 }
+    update!(alignments: alignments + [ entry ])
+    AerialViewRealignJob.perform_later(self)
+    entry
+  end
+
+  def finish_alignment!(status, **details)
+    entry = pending_alignment or return
+    done = entry.merge("status" => status, "finished_at" => Time.current.iso8601).merge(details.transform_keys(&:to_s).compact)
+    update!(alignments: alignments[0...-1] + [ done ])
+  end
+
+  # Changes whenever the tiles do, so browsers and the phone never keep
+  # the tiles of a view since moved.
+  def tiles_version = archive.attached? ? archive.blob.id : nil
+
   def in_progress? = %w[uploading processing].include?(status)
 
   # Stops an import, says why, and lets go of what was sent.
@@ -97,11 +132,12 @@ class AerialView < ApplicationRecord
   # checks who asks (the caller builds it: the map's or the public page's).
   def as_inertia(archive_url: nil)
     json = {
-      id:, name:, capturedOn: captured_on.iso8601, kind:, product:, url: imported? ? archive_url : url, attribution:,
+      id:, name:, capturedOn: captured_on.iso8601, kind:, product:, url: imported? ? versioned(archive_url) : url, attribution:,
       minZoom: min_zoom, maxZoom: max_zoom
     }
     return json unless imported?
-    json.merge(status:, failure:, bounds:, filename: source_filename, byteSize: source_byte_size, createdBy: created_by&.display_name)
+    json.merge(status:, failure:, bounds:, filename: source_filename, byteSize: source_byte_size, createdBy: created_by&.display_name,
+      alignment: alignment_json)
   end
 
   def as_admin_json
@@ -112,6 +148,20 @@ class AerialView < ApplicationRecord
   end
 
   private
+    def versioned(path)
+      return path if path.blank? || tiles_version.nil?
+      "#{path}#{path.include?('?') ? '&' : '?'}v=#{tiles_version}"
+    end
+
+    # The last realignment, for the editor: running, done (how far the view
+    # moved) or failed (why), and how many times the view was realigned.
+    def alignment_json
+      last = alignments.last
+      return nil unless last
+      { status: last["status"], failure: last["failure"], shiftM: last["shift_m"], pairs: last["pairs"].size,
+        by: last["by"], at: last["at"], count: alignments.count { _1["status"] == "done" } }
+    end
+
     def url_without_placeholders
       PLACEHOLDERS.reduce(url.to_s) { |text, placeholder| text.gsub(placeholder, "0") }
     end

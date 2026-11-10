@@ -3,7 +3,7 @@
 # memory and the disk the rest of the app needs.
 class AerialViewImportJob < ApplicationJob
   queue_as :default
-  limits_concurrency to: 1, key: ->(_view) { "aerial_view_import" }, duration: 6.hours if respond_to?(:limits_concurrency)
+  limits_concurrency to: 1, key: ->(_view) { "aerial_view_import" }, group: "aerial_views", duration: 6.hours if respond_to?(:limits_concurrency)
   discard_on ActiveRecord::RecordNotFound
 
   def perform(view)

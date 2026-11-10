@@ -29,6 +29,21 @@ export type AerialImport = Omit<AerialView, 'url'> & {
   filename: string
   byteSize: number
   createdBy: string | null
+  /** The last « Recaler la vue », if the view was ever realigned. */
+  alignment: AerialAlignment | null
+}
+
+/** A realignment: running, done (how far the view moved, in metres) or failed (why: drone.align.errors.*). */
+export type AerialAlignment = {
+  status: 'pending' | 'done' | 'failed'
+  failure: string | null
+  shiftM: number | null
+  /** Landmark pairs it used (1 to 3). */
+  pairs: number
+  by: string | null
+  at: string
+  /** Realignments done on this view so far. */
+  count: number
 }
 
 /** Staff screen: a view with where it lives and who added it. */

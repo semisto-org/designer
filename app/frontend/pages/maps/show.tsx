@@ -45,6 +45,7 @@ import { OPEN_EDITOR_PANEL } from '@/components/help/actions'
 import { usePresentation } from '@/map/presentation/store'
 import { initVariants, shownVariantId } from '@/map/variants/store'
 import type { MapVariant } from '@/map/variants/variants'
+import { alignStore } from '@/drone/align'
 
 type Props = {
   map: MapData
@@ -255,7 +256,8 @@ function EditorShell({ map, setMap, layers, features: initial, mapEntitlements, 
       return feature ? area(feature) : Infinity
     }
     // The click that ends a drawing (double-click) must not select what lies under it.
-    const busy = () => drawer.current?.active || selectionMove.active || performance.now() - drawEndedAt.current < 400
+    // « Recaler la vue » takes the clicks for its landmarks.
+    const busy = () => drawer.current?.active || selectionMove.active || performance.now() - drawEndedAt.current < 400 || alignStore.get().viewId != null
     // Shift+click (or a tap while « Sélectionner plusieurs » is on) adds the
     // element to the selection, or takes it out, to move them together.
     const toggleAt = (point: { x: number; y: number }) => {

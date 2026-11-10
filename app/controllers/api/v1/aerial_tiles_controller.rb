@@ -21,7 +21,8 @@ module Api
         return head :no_content unless tile
 
         bytes, type = tile
-        # A view never changes once ready: the phone may keep the tile.
+        # A view's tiles change only when it is realigned, and its tile address
+        # then changes too (`v`): the phone may keep the tile.
         expires_in 30.days, public: false
         send_data bytes, type:, disposition: :inline
       rescue AerialViews::PmtilesReader::Unreadable, Faraday::Error, ActiveStorage::FileNotFoundError => error
