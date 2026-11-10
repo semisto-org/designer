@@ -38,11 +38,16 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
   // When the owner shows the project, the visitor switches between the land today and the project (project first).
   const project = useMemo(() => hasProject(published.features as never), [published.features])
   const [situation, setSituation] = useState<Situation>('project')
-  const props = useMemo(() => {
-    if (!project) return published
-    const features = featuresIn(published.features as never, situation) as PublicMapProps['features']
-    return { ...published, features, growth: published.growth ? growthIn(published.growth, features as never) : published.growth }
-  }, [published, project, situation])
+  // `published` is a new object at every render (the rest of the props):
+  // the memo keys on its stable parts, so the layers below are not torn
+  // down and rebuilt each time the garden's year moves.
+  const { features: publishedFeatures, growth: publishedGrowth } = published
+  const shown = useMemo(() => {
+    if (!project) return { features: publishedFeatures, growth: publishedGrowth }
+    const features = featuresIn(publishedFeatures as never, situation) as PublicMapProps['features']
+    return { features, growth: publishedGrowth ? growthIn(publishedGrowth, features as never) : publishedGrowth }
+  }, [publishedFeatures, publishedGrowth, project, situation])
+  const props = { ...published, ...shown }
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const selected = props.features.features.find((f) => f.properties.id === selectedId) ?? null
   const plants = useMemo(() => (props.growth ? gardenPlants(props.growth) : []), [props.growth])
@@ -103,17 +108,22 @@ export function PublicMapView({ className, mapStyle, ...published }: PublicMapPr
 function PublicLayers({ layers, features, map, aerialView, selectedId, onSelect }: PublicMapProps & { selectedId: number | null; onSelect: (id: number | null) => void }) {
   const instance = useMapInstance()
 
+  // The photos and region layers, under everything drawn (see installPublicLayers).
   useEffect(() => {
     if (!instance) return
     const remove = installPublicLayers(instance, layers)
     const removeAerial = aerialView ? installPublicAerialView(instance, aerialView, layers) : null
-    installBoundary(instance, map.boundary)
-    installFeatureLayers(instance, features as never)
     return () => {
       removeAerial?.()
       remove()
     }
-  }, [instance, layers, aerialView, features, map.boundary])
+  }, [instance, layers, aerialView])
+
+  useEffect(() => {
+    if (!instance) return
+    installBoundary(instance, map.boundary)
+    installFeatureLayers(instance, features as never)
+  }, [instance, features, map.boundary])
 
   useEffect(() => {
     if (!instance || selectedId == null) return
