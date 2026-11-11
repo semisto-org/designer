@@ -15,17 +15,19 @@ Before any research, the team meets the people already working on the territory:
 
 ## 2. Sources and expectations
 
-Follow the research grid. For each document you find, propose a `source`: link, author, publication date, a short summary, a few quoted excerpts (never the whole text), its rights (`open` when its licence allows a copy, `restricted` otherwise, `unknown` when you cannot tell). Prefer the official page over a copy.
+Follow the research grid. For each document you find, propose a `source`: link, author, publication date, a short summary, a few quoted excerpts as a list of short quotes (never the whole text), its rights (`open` when its licence allows a copy, `restricted` otherwise, `unknown` when you cannot tell). Prefer the official page over a copy.
 
 From the documents the commune voted, extract `expectation` drafts: what the territory already asked for (a hedge network, fewer mudflows, an orchard on public land), each with its year and its `source_ids`. An old plan is an expectation **to be confirmed by the administration**: say its age.
 
 What you find online can be outdated or wrong. Say so in the rationale when a source is weak, old or second-hand.
 
+What is not online has to be asked for: an opinion of the erosion unit, the river contract's inventory of obstacles, the complaints the commune received after a flood. Propose each as a `request`: what (`request_kind`: `document` or `info`), from whom (`from`, and `actor_id` when that person is in the dossier), and where it stands (`state`: `to_ask`, `asked`, `received`, `refused`). Once it arrives, the document becomes a `source`, and the request points to it (`source_id`).
+
 ## 3. Sub-basins, from upstream down
 
 The commune decides; the sub-basin is where water is read and designed. Split the territory into its sub-basins (« sous-bassins versants », 1 to 10 km² each): the river contract and the regional runoff layers name the valleys. Propose each as a `basin` draft with its `order` (1 for the most upstream, then going down), its `outlet` (the stream or river it flows into) and, when you have it, its outline as a Polygon. Its upstream part may lie in a neighbouring commune: say so, water does not stop at the boundary.
 
-Then attach every marker and every lead to its sub-basin with `basin_id`. A `basin_id` must point to a sub-basin already in the dossier, so propose the sub-basins first and the markers and leads in a second call, once the person kept them. The notebook groups everything by sub-basin, upstream first, and shows how many markers were seen or confirmed in each: that is where the collège sees where to act first.
+Then attach every marker and every lead to its sub-basin with `basin_id`. A `basin_id` points to a sub-basin of the dossier, a draft included. To attach a marker to a sub-basin you propose in the same call, give the sub-basin a `ref` (« bocq ») and the marker `basin_ref: "bocq"` instead of the id; `actor_ref`, `source_ref`, `source_refs` and `expectation_refs` work the same way. The order of the drafts in the call does not matter. The notebook groups everything by sub-basin, upstream first, and shows how many markers were seen or confirmed in each: that is where the collège sees where to act first.
 
 ## 4. Dated markers, and what proves them
 
@@ -62,5 +64,7 @@ Theme (`theme`): `water`, or `tree` for the food tree (hedges, orchards, edible 
 ## How to propose
 
 `propose_territory_items` takes up to 40 drafts at a time, each with a rationale that says where the information comes from and why it matters here. Duplicates (same kind and title, or the same link) are refused. `withdraw_territory_drafts` removes your own drafts nobody reviewed yet.
+
+What a person kept belongs to the people. To correct it (the land of a lead once its owner is known, a marker someone saw on site, a keeper found), propose a change with `propose_territory_updates`: only the fields that change, `null` to empty one, `keeper`, `farmer` and `decision` completed key by key. To remove an entry (a source found twice), use `propose_territory_deletions`. The person accepts each change field by field on the territory's page; a new proposal replaces the one waiting on the same entry, and `withdraw_territory_drafts` takes it back with `update_ids`. Never propose a duplicate to get around a kept entry.
 
 Then invite the team outside: to meet the people, to walk the sub-basin with the farmers, to look at the markers during the next heavy rain. The notebook is worth what was seen on site.

@@ -13,7 +13,7 @@ Il est réservé aux équipes à qui Semisto l'attribue (frais annuels par terri
 
 Dans **Territoires**, clique sur **Ouvrir un territoire**, tape le nom de la commune et choisis-la dans la liste. Terranova reprend sa limite (OpenStreetMap) et les couches de sa région : photos aériennes depuis 1971, ruissellement, sols, plan de secteur, parcellaire agricole.
 
-## Le dossier, en six onglets
+## Le dossier, en sept onglets
 
 - **Qui y travaille** : commence ici. Rencontre la cellule érosion, le contrat de rivière, l'agent environnement. Le carnet relie leur travail, il ne le refait pas.
 - **Sources** : les documents trouvés, avec leur auteur, leur date et leurs droits. Une copie du fichier seulement si ses droits le permettent.
@@ -21,10 +21,13 @@ Dans **Territoires**, clique sur **Ouvrir un territoire**, tape le nom de la com
 - **Sous-bassins** : la commune décide, le sous-bassin se conçoit. Nomme chaque vallon (le contrat de rivière les connaît) et numérote-les depuis le plus en amont. Chaque repère et chaque piste s'y rattache, et le carnet les présente de l'amont vers l'aval.
 - **Repères** : un fait daté et placé sur la carte (une inondation, une mare comblée), avec son niveau de preuve : calculé, vu sur place, confirmé par un témoin ou sous la pluie.
 - **Pistes** : d'abord le sol, puis ralentir l'eau en haut du bassin, puis les ouvrages. Un ordre de grandeur, jamais un dimensionnement.
+- **À obtenir** : ce qu'il faut encore demander (un avis de la cellule érosion, l'inventaire du contrat de rivière), à qui, et où on en est. Le document reçu devient une source.
 
 ## Ton IA cherche, tu décides
 
 Connecte ton IA à Terranova (voir [Connecter son IA](/help/connecter-son-ia)), puis donne-lui la phrase de l'onglet **Sources**. Elle suit la grille de recherche de la région et propose chaque trouvaille en brouillon, avec sa raison. Tu **gardes** ou tu **écartes** chacune, en haut du dossier.
+
+Ce que tu as gardé, ton IA ne le change pas : elle te **propose une modification** (le foncier d'une piste, un gestionnaire, un repère vu sur place) ou un retrait. Elle apparaît en haut du dossier, champ par champ : coche ce que tu acceptes, le reste ne bouge pas.
 
 ## Les règles du carnet
 

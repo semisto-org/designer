@@ -2,7 +2,8 @@ module Mcp
   module Tools
     # A territory whole: the commune's boundary, the region's layers that can
     # be read there, the team's maps inside it, its dossier (people met,
-    # sources, expectations, markers, leads, drafts included), the research
+    # sources, expectations, sub-basins, markers, leads, requests, drafts and
+    # pending changes included), the research
     # grid of its region and the rules of the « carnet du territoire ».
     class GetTerritory < Base
       include TerritoryAccess
@@ -15,7 +16,7 @@ module Mcp
 
       def perform(territory_id:)
         territory = find_territory!(territory_id)
-        items = territory.items.not_rejected.with_attached_file.order(:kind, :created_at).to_a
+        items = territory.items.not_rejected.with_attached_file.includes(:pending_update).order(:kind, :created_at).to_a
         {
           id: territory.id, name: territory.name, team: territory.organization.name,
           area_km2: (territory.area_m2 / 1_000_000).round(2), bbox: territory.bbox,
@@ -30,8 +31,10 @@ module Mcp
           values: {
             proof: TerritoryItem::PROOFS, marker_kind: TerritoryItem::MARKER_KINDS, source_kind: TerritoryItem::SOURCE_KINDS,
             rights: TerritoryItem::RIGHTS, rank: TerritoryItem::RANKS, theme: TerritoryItem::THEMES, land: TerritoryItem::LANDS,
-            farmer_answer: TerritoryItem::FARMER_ANSWERS, decision: TerritoryItem::DECISIONS
+            farmer_answer: TerritoryItem::FARMER_ANSWERS, decision: TerritoryItem::DECISIONS,
+            request_kind: TerritoryItem::REQUEST_KINDS, request_state: TerritoryItem::REQUEST_STATES
           },
+          properties_by_kind: TerritoryItem::SCHEMA.transform_values { |schema| schema_keys(schema) },
           rules: t("notes.territory_rules"),
           url: territory_url(territory),
           notebook_urls: { working: "#{territory_url(territory)}/notebook", public: "#{territory_url(territory)}/notebook?version=public" }
@@ -39,6 +42,17 @@ module Mcp
       end
 
       private
+        # Each kind's keys, with their type or allowed values.
+        def schema_keys(schema)
+          schema.transform_values do |type|
+            case type
+            when Hash then schema_keys(type)
+            when Array then type
+            else type.to_s
+            end
+          end
+        end
+
         def summarize_arguments(arguments) = { territory_id: arguments[:territory_id] }
         def summarize_result(data) = { territory_id: data[:id], items: data[:dossier].values.sum(&:size) }
     end

@@ -9,12 +9,13 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { t } from '@/lib/i18n'
 import { formatDate } from '@/lib/money'
 import type { TerritoryItem } from '@/types/territories'
+import { UpdateReview } from './UpdateReview'
 
 const v = (group: string, key: string) => t(`territories.show.values.${group}.${key}`)
 const date = (iso?: string | null) => (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso) ? formatDate(iso) : iso)
 
 /** One entry of the dossier, as read; a draft from the AI carries its reason and the two choices. */
-export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelect, titles }: {
+export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelect, titles, review = false }: {
   item: TerritoryItem
   territoryId: number
   canEdit: boolean
@@ -23,6 +24,8 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
   onSelect: () => void
   /** Titles of the other entries, by id (sources, expectations). */
   titles: Map<number, string>
+  /** Shows the change an AI proposed to this entry, to accept field by field. */
+  review?: boolean
 }) {
   const p = item.properties
   const base = `/territories/${territoryId}/items/${item.id}`
@@ -72,7 +75,16 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
       line(fl('decision'), p.decision?.status ? `${v('decision', p.decision.status)}${p.decision.reason ? `, ${p.decision.reason}` : ''}${p.decision.decided_on ? ` (${date(p.decision.decided_on)})` : ''}` : null)
       line(fl('first_step'), p.first_step ? v('first_step', String(p.first_step)) : null)
       break
+    case 'request':
+      line(fl('request_kind'), p.request_kind && v('request_kind', p.request_kind))
+      line(fl('from'), p.from)
+      line(fl('actor_id'), p.actor_id ? titles.get(p.actor_id) : null)
+      line(fl('asked_on'), date(p.asked_on))
+      line(fl('received_on'), date(p.received_on))
+      line(fl('source_id'), p.source_id ? titles.get(p.source_id) : null)
+      break
   }
+  const excerpts = Array.isArray(p.excerpts) ? p.excerpts : typeof p.excerpts === 'string' ? [p.excerpts] : []
 
   return (
     <li
@@ -84,6 +96,10 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
           <p className="flex flex-wrap items-center gap-1.5">
             <span className="font-medium text-loam-900">{item.title}</span>
             {item.kind === 'basin' && p.order && <Pill tone="lichen">{t('territories.show.badges.basin_order', { order: p.order })}</Pill>}
+            {item.kind === 'request' && (
+              <Pill tone={p.state === 'received' ? 'leaf' : p.state === 'refused' ? 'clay' : p.state === 'asked' ? 'lichen' : 'humus'}>{v('request_state', p.state ?? 'to_ask')}</Pill>
+            )}
+            {item.pendingUpdate && !review && <Pill tone="humus" icon={<Bot aria-hidden />}>{t('territories.show.updates.pending')}</Pill>}
             {item.kind === 'marker' && (
               <Pill tone={p.proof === 'confirmed' ? 'prune' : p.proof === 'seen' ? 'leaf' : 'humus'}>{v('proof', p.proof ?? 'computed')}</Pill>
             )}
@@ -116,7 +132,9 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
             </a>
           )}
           {item.body && <p className="mt-2 whitespace-pre-line text-sm text-loam-700">{item.body}</p>}
-          {item.kind === 'source' && p.excerpts && <blockquote className="mt-2 border-l-2 border-loam-300 pl-3 text-sm text-loam-600">{p.excerpts}</blockquote>}
+          {item.kind === 'source' && excerpts.map((excerpt, i) => (
+            <blockquote key={i} className="mt-2 border-l-2 border-loam-300 pl-3 text-sm text-loam-600">{excerpt}</blockquote>
+          ))}
           {lines.length > 0 && <div className="mt-2 grid gap-0.5 text-sm text-loam-700">{lines}</div>}
           {item.status === 'draft' && item.rationale && (
             <p className="mt-2 rounded-lg bg-white/80 p-2 text-sm text-loam-700 ring-1 ring-humus-200">
@@ -130,7 +148,8 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
           </Tooltip>
         )}
       </div>
-      {canEdit && (
+      {review && item.pendingUpdate && <UpdateReview item={item} update={item.pendingUpdate} territoryId={territoryId} canEdit={canEdit} titles={titles} />}
+      {canEdit && !review && (
         <div className="mt-3 flex flex-wrap justify-end gap-2">
           {item.status === 'draft' ? (
             <>

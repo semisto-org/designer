@@ -19,6 +19,12 @@ const THEMES = ['water', 'tree']
 const LANDS = ['public', 'agricultural', 'private', 'unknown']
 const ANSWERS = ['yes', 'no', 'thinking']
 const DECISIONS = ['retained', 'postponed', 'dismissed']
+const REQUEST_KINDS = ['document', 'info']
+const REQUEST_STATES = ['to_ask', 'asked', 'received', 'refused']
+
+/** One excerpt per paragraph: a blank line between two. */
+const splitExcerpts = (text: string) => text.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean)
+const joinExcerpts = (excerpts: unknown) => (Array.isArray(excerpts) ? excerpts.join('\n\n') : typeof excerpts === 'string' ? excerpts : '')
 
 type Props = {
   territoryId: number
@@ -29,16 +35,19 @@ type Props = {
   expectations: TerritoryItem[]
   /** The territory's sub-basins, upstream first, that a marker or a lead belongs to. */
   basins: TerritoryItem[]
+  /** The people and organisations a request is addressed to. */
+  actors: TerritoryItem[]
   /** Asks the map for one click; resolves the point, or null when cancelled. */
   place: (done: (geometry: Geometry | null) => void) => void
   onDone: () => void
 }
 
 /** Adds or changes one entry of the dossier, with the fields its kind keeps. */
-export function ItemForm({ territoryId, kind, item, sources, expectations, basins, place, onDone }: Props) {
+export function ItemForm({ territoryId, kind, item, sources, expectations, basins, actors, place, onDone }: Props) {
   const [title, setTitle] = useState(item?.title ?? '')
   const [body, setBody] = useState(item?.body ?? '')
-  const [props, setProps] = useState<TerritoryItemProperties>(item?.properties ?? (kind === 'marker' ? { proof: 'computed' } : kind === 'lead' ? { rank: 'soil', theme: 'water', land: 'unknown' } : {}))
+  const [props, setProps] = useState<TerritoryItemProperties>(item?.properties ?? (kind === 'marker' ? { proof: 'computed' } : kind === 'lead' ? { rank: 'soil', theme: 'water', land: 'unknown' } : kind === 'request' ? { request_kind: 'document', state: 'to_ask' } : {}))
+  const [excerpts, setExcerpts] = useState(joinExcerpts(item?.properties.excerpts))
   const [geometry, setGeometry] = useState<Geometry | null>(item?.geometry ?? null)
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
@@ -53,7 +62,7 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
     setBusy(true)
     const data: Record<string, string | number | File> = {
       kind, title: title.trim(), body,
-      properties: JSON.stringify(props),
+      properties: JSON.stringify(kind === 'source' ? { ...props, excerpts: splitExcerpts(excerpts) } : props),
       geometry: geometry ? JSON.stringify(geometry) : '',
       tab: kind,
     }
@@ -136,7 +145,7 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
           {choice(f('source_kind'), props.source_kind, SOURCE_KINDS, 'source_kind', (x) => set('source_kind', x), true)}
           {choice(f('rights'), props.rights ?? 'unknown', RIGHTS, 'rights', (x) => set('rights', x as TerritoryItemProperties['rights']))}
         </div>
-        <Field label={f('excerpts')}><Textarea rows={3} value={props.excerpts ?? ''} onChange={(e) => set('excerpts', e.target.value)} /></Field>
+        <Field label={f('excerpts')} hint={f('excerpts_hint')}><Textarea rows={4} value={excerpts} onChange={(e) => setExcerpts(e.target.value)} /></Field>
         {props.rights === 'open' && (
           <Field label={f('file')} hint={item?.file?.name}>
             <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
@@ -234,6 +243,32 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
             {f('this_winter')}
           </label>
         </Group>
+      </>
+    )
+  }
+
+  if (kind === 'request') {
+    const pick = (key: 'actor_id' | 'source_id', list: TerritoryItem[]) => list.length > 0 && (
+      <Field label={f(key)}>
+        <Select value={props[key] ?? ''} onChange={(e) => set(key, e.target.value ? Number(e.target.value) : undefined)}>
+          <option value="">{t('territories.show.values.none')}</option>
+          {list.map((other) => <option key={other.id} value={other.id}>{other.title}</option>)}
+        </Select>
+      </Field>
+    )
+    fields = (
+      <>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {choice(f('request_kind'), props.request_kind, REQUEST_KINDS, 'request_kind', (x) => set('request_kind', x as TerritoryItemProperties['request_kind']))}
+          {choice(f('state'), props.state ?? 'to_ask', REQUEST_STATES, 'request_state', (x) => set('state', x as TerritoryItemProperties['state']))}
+        </div>
+        <Field label={f('from')}><Input value={props.from ?? ''} onChange={(e) => set('from', e.target.value)} placeholder={f('from_placeholder')} /></Field>
+        {pick('actor_id', actors)}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label={f('asked_on')}><Input type="date" value={props.asked_on ?? ''} onChange={(e) => set('asked_on', e.target.value)} /></Field>
+          <Field label={f('received_on')}><Input type="date" value={props.received_on ?? ''} onChange={(e) => set('received_on', e.target.value)} /></Field>
+        </div>
+        {props.state === 'received' && pick('source_id', sources)}
       </>
     )
   }

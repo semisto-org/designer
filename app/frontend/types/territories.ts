@@ -1,7 +1,7 @@
 import type { Feature, Geometry, MultiPolygon } from 'geojson'
 import type { BBox, LngLat, RegionData, RegionLayerData } from '@/types'
 
-export type TerritoryItemKind = 'actor' | 'source' | 'expectation' | 'basin' | 'marker' | 'lead'
+export type TerritoryItemKind = 'actor' | 'source' | 'expectation' | 'basin' | 'marker' | 'lead' | 'request'
 export type TerritoryItemStatus = 'draft' | 'active' | 'rejected'
 export type Proof = 'computed' | 'seen' | 'confirmed'
 export type LeadRank = 'soil' | 'slow' | 'structure'
@@ -19,7 +19,7 @@ export type TerritoryItemProperties = {
   url?: string
   author?: string
   published_on?: string
-  excerpts?: string
+  excerpts?: string[]
   rights?: 'open' | 'restricted' | 'unknown'
   source_kind?: string
   year?: number
@@ -44,6 +44,24 @@ export type TerritoryItemProperties = {
   first_step?: number
   this_winter?: boolean
   map_id?: number
+  request_kind?: 'document' | 'info'
+  from?: string
+  actor_id?: number
+  state?: 'to_ask' | 'asked' | 'received' | 'refused'
+  asked_on?: string
+  received_on?: string
+  source_id?: number
+}
+
+/** A change an AI proposed to a kept entry, field by field (`properties.keeper.role`), or its removal. */
+export type TerritoryItemUpdate = {
+  id: number
+  rationale: string
+  deletion: boolean
+  clientName: string | null
+  authorName: string | null
+  changes: { field: string; before: unknown; after: unknown }[]
+  createdAt: string
 }
 
 export type TerritoryItem = {
@@ -60,6 +78,7 @@ export type TerritoryItem = {
   orphan: boolean
   sharp: boolean | null
   waitingForFarmer: boolean
+  pendingUpdate: TerritoryItemUpdate | null
   createdAt: string
   updatedAt: string
   lockVersion: number

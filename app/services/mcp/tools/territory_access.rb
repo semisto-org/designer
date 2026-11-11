@@ -26,7 +26,8 @@ module Mcp
             file: item.file.attached? ? item.file.filename.to_s : nil,
             orphan: (item.orphan? if item.kind == "lead"),
             sharp: (item.sharp? if item.kind == "lead"),
-            waiting_for_farmer: (true if item.waiting_for_farmer?)
+            waiting_for_farmer: (true if item.waiting_for_farmer?),
+            pending_update: item.pending_update&.then { |u| { id: u.id, deletion: u.deletion?, rationale: u.rationale, changes: u.diff(item) } }
           }.compact
         end
     end

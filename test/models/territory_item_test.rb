@@ -85,4 +85,30 @@ class TerritoryItemTest < ActiveSupport::TestCase
     assert_equal [ "active", users(:michael) ], [ item.status, item.decided_by ]
     assert item.decided_at
   end
+
+  test "a source keeps its excerpts as a list, even when they come as one text" do
+    source = @territory.items.create!(kind: "source", title: "PCDN", properties: { excerpts: [ " Une haie. ", "", 3 ] })
+    assert_equal [ "Une haie.", "3" ], source.prop(:excerpts)
+    source.update!(properties: { excerpts: "Premier extrait.\n\nSecond extrait." })
+    assert_equal [ "Premier extrait.", "Second extrait." ], source.prop(:excerpts)
+    source.update!(properties: { excerpts: '["A", "B"]' })
+    assert_equal %w[A B], source.prop(:excerpts)
+  end
+
+  test "a request says what to obtain, from whom, and where it stands" do
+    giser = @territory.items.create!(kind: "actor", title: "Cellule GISER")
+    request = @territory.items.create!(kind: "request", title: "Avis sur la coulée de 2021", properties: { request_kind: "document", actor_id: giser.id, state: "asked", asked_on: "2026-11-02", from: "GISER" })
+    assert_equal({ "request_kind" => "document", "actor_id" => giser.id, "state" => "asked", "asked_on" => "2026-11-02", "from" => "GISER" }, request.properties)
+    refute @territory.items.new(kind: "request", title: "Inventaire", properties: { actor_id: request.id }).valid?, "actor_id points to an actor"
+  end
+
+  test "an entry that leaves the dossier is no longer pointed to" do
+    basin = @territory.items.create!(kind: "basin", title: "Vallon du Bocq")
+    source = @territory.items.create!(kind: "source", title: "Presse")
+    marker = @territory.items.create!(kind: "marker", title: "Coulée", properties: { basin_id: basin.id, source_ids: [ source.id ] })
+    basin.destroy!
+    source.reject!(users(:michael))
+    assert_equal({}, marker.reload.properties)
+    assert marker.update(title: "Coulée de boue")
+  end
 end

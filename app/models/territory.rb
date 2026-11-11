@@ -20,6 +20,7 @@ class Territory < ApplicationRecord
   belongs_to :region, optional: true
   belongs_to :created_by, class_name: "User", optional: true
   has_many :items, class_name: "TerritoryItem", dependent: :delete_all
+  has_many :item_updates, class_name: "TerritoryItemUpdate", dependent: :delete_all
 
   normalizes :name, with: ->(n) { n.to_s.squish }
   validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }

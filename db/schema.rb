@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -1837,6 +1837,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
     t.index ["region_id"], name: "index_territories_on_region_id"
   end
 
+  create_table "territory_item_updates", force: :cascade do |t|
+    t.bigint "territory_id", null: false
+    t.bigint "territory_item_id"
+    t.string "item_title", null: false
+    t.string "batch", null: false
+    t.jsonb "proposed_changes", default: {}, null: false
+    t.text "rationale", null: false
+    t.string "status", default: "pending", null: false
+    t.string "client_name"
+    t.bigint "created_by_id"
+    t.bigint "reviewed_by_id"
+    t.datetime "reviewed_at"
+    t.jsonb "applied_changes"
+    t.jsonb "previous_values"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_territory_item_updates_on_created_by_id"
+    t.index ["reviewed_by_id"], name: "index_territory_item_updates_on_reviewed_by_id"
+    t.index ["territory_id", "status"], name: "index_territory_item_updates_on_territory_id_and_status"
+    t.index ["territory_item_id"], name: "index_territory_item_updates_on_territory_item_id"
+    t.index ["territory_item_id"], name: "index_territory_item_updates_one_pending", unique: true, where: "((status)::text = 'pending'::text)"
+  end
+
   create_table "territory_items", force: :cascade do |t|
     t.bigint "territory_id", null: false
     t.string "kind", null: false
@@ -2144,6 +2167,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_230500) do
   add_foreign_key "territories", "organizations", on_delete: :cascade
   add_foreign_key "territories", "regions", on_delete: :nullify
   add_foreign_key "territories", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "territory_item_updates", "territories", on_delete: :cascade
+  add_foreign_key "territory_item_updates", "territory_items", on_delete: :nullify
+  add_foreign_key "territory_item_updates", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "territory_item_updates", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "territory_items", "territories", on_delete: :cascade
   add_foreign_key "territory_items", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "territory_items", "users", column: "decided_by_id", on_delete: :nullify

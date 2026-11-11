@@ -59,6 +59,8 @@ fr:
               outside: "est hors du territoire (à plus de 5 km de sa limite)"
             properties:
               basin: "renvoie à un sous-bassin qui n'est pas dans ce territoire"
+              actor: "renvoie à une personne ou un organisme qui n'est pas dans ce dossier"
+              source: "renvoie à une source qui n'est pas dans ce dossier"
             file:
               invalid: "ne peut être joint qu'à une source"
               too_large: "dépasse 30 Mo"
@@ -73,6 +75,7 @@ fr:
       stale: "Quelqu'un d'autre vient de modifier cet élément. Recharge la page pour voir sa version."
       not_a_draft: "Cet élément n'est plus une proposition."
       invalid: "Cet élément n'a pas pu être enregistré."
+      no_field_chosen: "Coche au moins un changement à appliquer, ou écarte la proposition."
     flash:
       created: "Le territoire « %{name} » est ouvert. Commence par qui y travaille déjà."
       saved: "Enregistré."
@@ -83,6 +86,9 @@ fr:
       item_deleted: "Retiré du dossier."
       accepted: "Proposition gardée."
       rejected: "Proposition écartée."
+      update_accepted: "Modification appliquée."
+      update_deleted: "Retiré du dossier, comme proposé."
+      update_rejected: "Modification écartée : l'élément reste tel quel."
 
     index:
       title: "Territoires"
@@ -150,6 +156,7 @@ fr:
         basins: "Sous-bassins"
         markers: "Repères"
         leads: "Pistes"
+        requests: "À obtenir"
       drafts:
         title:
           one: "1 proposition de ton IA"
@@ -158,6 +165,20 @@ fr:
         accept: "Garder"
         reject: "Écarter"
         rationale: "Pourquoi"
+      updates:
+        title:
+          one: "1 modification proposée par ton IA"
+          other: "%{count} modifications proposées par ton IA"
+        why: "Sur des éléments que tu as déjà gardés. Coche ce que tu acceptes, champ par champ ; le reste ne bouge pas."
+        deletion: "Ton IA propose de retirer cet élément du dossier."
+        apply: "Appliquer la sélection"
+        apply_deletion: "Retirer"
+        reject: "Écarter"
+        pending: "modification proposée"
+        empty_value: "vide"
+        place_changed: "nouvel emplacement"
+        place_removed: "retiré de la carte"
+        delete_confirm: "Retirer « %{title} » du dossier, comme ton IA le propose ?"
       add: "Ajouter"
       edit: "Modifier"
       delete: "Retirer"
@@ -187,6 +208,9 @@ fr:
         leads:
           title: "Aucune piste d'aménagement"
           why: "D'abord le sol (couverture d'hiver, sens du travail), puis ralentir l'eau en haut du bassin, puis seulement les ouvrages. Une piste donne un ordre de grandeur ; on la dimensionne quand elle devient une carte de terrain."
+        requests:
+          title: "Rien à obtenir pour l'instant"
+          why: "Un avis de la cellule GISER, l'inventaire du contrat de rivière, un relevé des plaintes à la commune : note ici ce qu'il faut demander, et à qui. Quand le document arrive, il devient une source."
       research:
         title: "Grille de recherche pour ton IA"
         why: "Demande à ton IA (Claude, ChatGPT, Le Chat…) connectée à Terranova de chercher sur ce territoire. Elle propose chaque trouvaille ici, avec sa source ; tu gardes ou tu écartes."
@@ -240,6 +264,16 @@ fr:
         basin_order: "Ordre depuis l'amont"
         basin_order_hint: "1 pour le plus en amont, puis en descendant."
         outlet: "Se jette dans"
+        excerpts_hint: "Un extrait par paragraphe : laisse une ligne vide entre deux extraits."
+        request_kind: "Ce qu'il faut obtenir"
+        from: "Auprès de qui"
+        from_placeholder: "Cellule GISER, service environnement de la commune…"
+        geometry: "Emplacement"
+        actor_id: "Personne ou organisme du dossier"
+        state: "Où on en est"
+        asked_on: "Demandé le"
+        received_on: "Reçu le"
+        source_id: "Devenu la source"
       values:
         rights:
           open: "Libre de réutilisation"
@@ -293,7 +327,18 @@ fr:
           "1": "Première action"
           "2": "Deuxième action"
           "3": "Troisième action"
+        request_kind:
+          document: "Un document"
+          info: "Une information"
+        request_state:
+          to_ask: "À demander"
+          asked: "Demandé"
+          received: "Reçu"
+          refused: "Refusé"
         none: "—"
+        boolean:
+          "true": "oui"
+          "false": "non"
       badges:
         orphan: "orpheline"
         orphan_why: "Sans gestionnaire, la piste meurt après la subvention : qui la cure, la recèpe, avec quel budget ?"
@@ -379,39 +424,77 @@ fr:
     tools:
       list_territories:
         title: "Lister les territoires"
-        description: "Les territoires des équipes de l'utilisateur (module « Territoire » : une commune lue en entier pour décider où agir) : nom, équipe, surface en km², région, archivé ou non, modifiable ou non, et ce que contient leur dossier par type (actor, source, expectation, basin, marker, lead), avec les brouillons en attente. Passe ensuite l'identifiant à get_territory."
+        description: "Les territoires des équipes de l'utilisateur (module « Territoire » : une commune lue en entier pour décider où agir) : nom, équipe, surface en km², région, archivé ou non, modifiable ou non, et ce que contient leur dossier par type (actor, source, expectation, basin, marker, lead, request), avec les brouillons en attente. Passe ensuite l'identifiant à get_territory."
       get_territory:
         title: "Lire un territoire"
-        description: "Un territoire en entier : limite de la commune en GeoJSON, emprise, centre, couches de la région lisibles ici (sols, ruissellement, plan de secteur, parcellaire agricole, photos aériennes depuis 1971…), cartes de terrain de l'équipe dans la commune (get_map les lit), et son dossier par type : actor (qui y travaille déjà : à rencontrer avant toute recherche), basin (sous-bassin versant, l'unité de conception : order 1 pour le plus en amont, outlet, contour facultatif), source (document trouvé : lien, auteur, date, droits, extraits), expectation (ce que la commune a déjà voté, avec son année et ses sources), marker (fait daté et localisable, avec son niveau de preuve : computed, seen, confirmed), lead (piste d'aménagement : rang soil, slow ou structure, thème water ou tree, foncier, ordre de grandeur, réponse de l'exploitant, qui l'entretient, décision du collège). research_grid dit quoi chercher sur ce territoire et où ; rules donne les règles du carnet à respecter dans tes propositions. Avant de proposer, lis aussi get_design_guide avec le chapitre « territory »."
+        description: "Un territoire en entier : limite de la commune en GeoJSON, emprise, centre, couches de la région lisibles ici (sols, ruissellement, plan de secteur, parcellaire agricole, photos aériennes depuis 1971…), cartes de terrain de l'équipe dans la commune (get_map les lit), et son dossier par type : actor (qui y travaille déjà : à rencontrer avant toute recherche), basin (sous-bassin versant, l'unité de conception : order 1 pour le plus en amont, outlet, contour facultatif), source (document trouvé : lien, auteur, date, droits, extraits), expectation (ce que la commune a déjà voté, avec son année et ses sources), marker (fait daté et localisable, avec son niveau de preuve : computed, seen, confirmed), lead (piste d'aménagement : rang soil, slow ou structure, thème water ou tree, foncier, ordre de grandeur, réponse de l'exploitant, qui l'entretient, décision du collège), request (document ou information à obtenir, auprès de qui, où on en est). Chaque élément gardé porte, s'il y en a une, la modification que tu as proposée et qui attend (pending_update). properties_by_kind donne les attributs de chaque type et leurs valeurs. research_grid dit quoi chercher sur ce territoire et où ; rules donne les règles du carnet à respecter dans tes propositions. Avant de proposer, lis aussi get_design_guide avec le chapitre « territory »."
       propose_territory_items:
         title: "Proposer au dossier d'un territoire"
-        description: "Pose en brouillons ce que tu as trouvé sur un territoire : personnes et organismes à rencontrer (actor), documents (source : properties.url, author, published_on, rights open, restricted ou unknown, source_kind, excerpts : quelques phrases citées, jamais le document entier), attentes votées par la commune (expectation : properties.year, source_ids), sous-bassins versants (basin : properties.order depuis l'amont, outlet ; geometry Polygon facultative), faits datés et localisés (marker : geometry Point, properties.basin_id, occurred_on, proof, marker_kind, source_ids), pistes d'aménagement (lead : properties.basin_id, rank, theme, land, magnitude, expectation_ids ; geometry Point, LineString ou Polygon). Un basin_id renvoie à un sous-bassin déjà au dossier : propose d'abord les sous-bassins, puis rattache-leur repères et pistes dans un second appel. Chaque brouillon porte sa justification (rationale) : d'où vient l'information et pourquoi elle compte ici. Un axe d'écoulement calculé qui tombe sur une inondation racontée est une concordance à vérifier (proof computed), jamais une preuve. Ne dimensionne aucun ouvrage : un ordre de grandeur seulement. L'humain garde ou écarte chaque brouillon sur la page du territoire. Un doublon (même type et même titre, ou même lien) est refusé."
+        description: "Pose en brouillons ce que tu as trouvé sur un territoire : personnes et organismes à rencontrer (actor), documents (source : properties.url, author, published_on, rights open, restricted ou unknown, source_kind, excerpts : une liste de quelques phrases citées, jamais le document entier), attentes votées par la commune (expectation : properties.year, source_ids), sous-bassins versants (basin : properties.order depuis l'amont, outlet ; geometry Polygon facultative), faits datés et localisés (marker : geometry Point, properties.basin_id, occurred_on, proof, marker_kind, source_ids), pistes d'aménagement (lead : properties.basin_id, rank, theme, land, magnitude, expectation_ids ; geometry Point, LineString ou Polygon), documents ou informations à obtenir (request : properties.request_kind document ou info, from, actor_id, state to_ask, asked, received ou refused). Un basin_id renvoie à un sous-bassin du dossier, brouillon compris. Pour renvoyer à un brouillon du même appel, donne-lui un ref (« b1 ») et utilise basin_ref, actor_ref, source_ref, source_refs ou expectation_refs à la place de l'identifiant : les sous-bassins et leurs repères partent ensemble. Chaque brouillon porte sa justification (rationale) : d'où vient l'information et pourquoi elle compte ici. Un axe d'écoulement calculé qui tombe sur une inondation racontée est une concordance à vérifier (proof computed), jamais une preuve. Ne dimensionne aucun ouvrage : un ordre de grandeur seulement. L'humain garde ou écarte chaque brouillon sur la page du territoire. Un doublon (même type et même titre, ou même lien) est refusé."
+      propose_territory_updates:
+        title: "Proposer des modifications au dossier d'un territoire"
+        description: "Propose de modifier des éléments qu'une personne a déjà gardés dans le dossier d'un territoire (identifiants dans get_territory) : title, body, geometry (null la retire) ou une partie de properties (seules les clés données changent ; null retire une valeur ; keeper, farmer et decision se complètent clé par clé). Exemples : le foncier d'une piste une fois le propriétaire connu, son gestionnaire, le niveau de preuve d'un repère vu sur place, les extraits d'une source. Chaque modification porte sa justification. Rien ne change avant qu'une personne l'accepte, en entier ou champ par champ, sur la page du territoire. Une nouvelle proposition remplace celle qui attendait sur le même élément. Un brouillon ne se modifie pas ainsi : retire-le (withdraw_territory_drafts) et propose-le à nouveau."
+      propose_territory_deletions:
+        title: "Proposer de retirer des éléments d'un territoire"
+        description: "Propose de retirer du dossier d'un territoire des éléments qu'une personne a gardés (une source en double, un repère placé deux fois), avec une justification commune. Rien n'est retiré avant qu'une personne l'accepte sur la page du territoire. Un brouillon se retire directement avec withdraw_territory_drafts."
       withdraw_territory_drafts:
         title: "Retirer des brouillons d'un territoire"
-        description: "Retire des brouillons que tu as proposés au dossier d'un territoire et que personne n'a encore revus (item_ids donnés par get_territory). Ce qu'une personne a gardé ne se retire pas."
+        description: "Retire des brouillons que tu as proposés au dossier d'un territoire et que personne n'a encore revus (item_ids), et les modifications ou retraits que tu as proposés et qui attendent encore (update_ids, donnés par propose_territory_updates ou pending_update dans get_territory). Ce qu'une personne a gardé ne se retire pas."
     params:
       territory_id: "Identifiant du territoire, donné par list_territories."
       territory_items: "Les éléments à proposer au dossier, chacun avec sa justification."
-      territory_item_kind: "actor (qui y travaille), source (document), expectation (attente votée), basin (sous-bassin versant), marker (fait daté et localisé), lead (piste d'aménagement)."
+      territory_item_kind: "actor (qui y travaille), source (document), expectation (attente votée), basin (sous-bassin versant), marker (fait daté et localisé), lead (piste d'aménagement), request (document ou information à obtenir)."
       territory_item_title: "Titre court : « Cellule GISER », « PCDN d'Yvoir (2016) », « Inondation rue du Moulin, juillet 2021 », « Haie sur talus en tête du vallon de… »."
       territory_item_body: "Ce qu'il faut savoir, en quelques phrases : résumé d'une source, pourquoi une piste, ce qui s'est passé."
       territory_item_rationale: "D'où vient l'information (lien, page, date) et pourquoi elle compte pour ce territoire."
       territory_item_geometry: "GeoJSON en WGS84 [longitude, latitude] : Point pour un repère ; Point, LineString ou Polygon pour une piste ; Polygon pour un sous-bassin (facultatif). Rien pour les autres types. À moins de 5 km de la limite du territoire."
-      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; basin → order (1 = le plus en amont), outlet ; marker → basin_id, occurred_on, proof, marker_kind, source_ids ; lead → basin_id, rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years}. Les autres clés sont ignorées."
+      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; basin → order (1 = le plus en amont), outlet ; marker → basin_id, occurred_on, proof, marker_kind, source_ids ; lead → basin_id, rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years} ; request → request_kind, from, actor_id, state, asked_on, received_on, source_id. Pour renvoyer à un brouillon du même appel : basin_ref, actor_ref, source_ref, source_refs, expectation_refs (son ref). Les autres clés sont ignorées."
       territory_item_ids: "Identifiants des brouillons à retirer (dossier dans get_territory)."
+      territory_item_ref: "Un nom court pour ce brouillon (« b1 », « giser »), qu'un autre brouillon du même appel peut citer (basin_ref, actor_ref, source_ref, source_refs, expectation_refs)."
+      territory_updates: "Les modifications, une par élément, chacune avec sa justification."
+      territory_item_id: "Identifiant d'un élément gardé du dossier (get_territory)."
+      territory_changes: "Ce qui change : title, body, geometry (GeoJSON, null la retire), properties (seules les clés données ; null retire une valeur ; voir properties_by_kind dans get_territory)."
+      territory_deletion_ids: "Identifiants des éléments gardés à retirer (get_territory)."
+      territory_deletion_rationale: "Pourquoi les retirer : doublon, erreur, document retiré par son auteur…"
+      territory_update_ids: "Identifiants des modifications ou retraits proposés à retirer (propose_territory_updates, propose_territory_deletions ou pending_update dans get_territory)."
     errors:
       territory_not_found: "Territoire %{id} introuvable, ou tu ne fais pas partie de son équipe. list_territories donne les tiens."
       territory_archived: "Ce territoire est archivé : il se lit, mais on n'y propose plus rien."
       territory_module_off: "Le module « Territoire » n'est pas attribué à l'équipe de ce territoire : il se lit, mais on n'y propose plus rien."
       territory_duplicate: "déjà au dossier (élément %{id})"
       territory_geometry: "géométrie GeoJSON illisible"
+      territory_ref_twice: "le ref « %{ref} » est déjà donné à un autre brouillon de cet appel"
+      territory_ref_unknown: "aucun brouillon de cet appel ne porte le ref « %{ref} »"
+      territory_ref_failed: "renvoie au brouillon « %{ref} », qui n'a pas été créé"
+      territory_nothing_to_withdraw: "Donne item_ids (brouillons) ou update_ids (modifications proposées)."
+    territory_update_errors:
+      empty: "aucune modification donnée"
+      fields: "champs inconnus : %{fields} (seulement %{allowed})"
+      title: "le titre doit faire de 2 à %{max} caractères"
+      text: "%{field} doit être un texte"
+      geometry: "géométrie GeoJSON illisible"
+      properties: "properties doit être un objet non vide"
+      property: "« %{key} » n'est pas un attribut de %{kind} (seulement %{allowed})"
+      group: "« %{key} » doit être un objet"
+      value: "valeur illisible pour « %{key} » (attendu : %{type})"
+      value_in: "valeur inconnue pour « %{key} » (seulement %{allowed})"
+      not_found: "élément %{id} introuvable dans ce dossier"
+      draft: "l'élément %{id} est encore un brouillon : retire-le (withdraw_territory_drafts) et propose-le à nouveau"
+      draft_deletion: "l'élément %{id} est encore un brouillon : withdraw_territory_drafts le retire"
+      twice: "l'élément %{id} apparaît deux fois dans cet appel"
+      same_as_current: "l'élément a déjà ces valeurs"
+      already_pending: "la même proposition attend déjà (%{id})"
     notes:
       territories: "Un territoire se lit en entier avec get_territory. On y décide où agir ; on conçoit ensuite sous-bassin par sous-bassin, sur des cartes de terrain."
+      review_territory_updates: "Les modifications attendent sur la page du territoire (review_url), en haut du dossier : la personne coche ce qu'elle accepte, champ par champ. Rien ne change sans elle."
+      review_territory_deletions: "Les retraits attendent sur la page du territoire (review_url) : rien n'est retiré avant que la personne l'accepte."
       review_territory_items: "Les brouillons attendent sur la page du territoire (review_url), où la personne garde ou écarte chacun. Dis-lui que rien n'entre dans le carnet sans elle, et invite-la à aller voir sur place les repères et les pistes avant de les montrer au collège."
-      territory_rules: "1. On rencontre d'abord ceux qui travaillent déjà sur le territoire (actor) : le carnet relie leur travail, il ne le refait pas. 2. Chaque attente, source et repère porte sa source et sa date ; un document ancien est une attente à confirmer par l'administration. 3. Un axe calculé qui croise un fait raconté est une concordance à vérifier (proof computed) : seul le terrain la change en seen ou confirmed. 4. D'abord le sol (rank soil : couverture d'hiver, sens du travail), puis ralentir en haut du bassin (slow), puis les ouvrages (structure). 5. Ordre de grandeur seulement, jamais de dimensionnement ; quand des biens ou des personnes sont exposés, renvoie vers un bureau d'ingénieurs. 6. Une piste sur terre agricole (ou au foncier inconnu) n'entre au carnet du collège qu'après la rencontre avec l'exploitant et sa réponse ; elle reste une zone floue tant qu'il n'a pas dit oui. Seule exception, une pratique du sol (rank soil) : elle y entre sans tracé et sans nommer de ferme ni de parcelle, et la version publique attend le oui. 7. Une piste sans gestionnaire est orpheline. 8. Jamais de nom de propriétaire tiré du cadastre : seulement le type de foncier (public, agricultural, private). 9. L'eau se lit par sous-bassin, de l'amont vers l'aval : rattache chaque repère et chaque piste à son sous-bassin (basin_id)."
+      territory_rules: "1. On rencontre d'abord ceux qui travaillent déjà sur le territoire (actor) : le carnet relie leur travail, il ne le refait pas. 2. Chaque attente, source et repère porte sa source et sa date ; un document ancien est une attente à confirmer par l'administration. 3. Un axe calculé qui croise un fait raconté est une concordance à vérifier (proof computed) : seul le terrain la change en seen ou confirmed. 4. D'abord le sol (rank soil : couverture d'hiver, sens du travail), puis ralentir en haut du bassin (slow), puis les ouvrages (structure). 5. Ordre de grandeur seulement, jamais de dimensionnement ; quand des biens ou des personnes sont exposés, renvoie vers un bureau d'ingénieurs. 6. Une piste sur terre agricole (ou au foncier inconnu) n'entre au carnet du collège qu'après la rencontre avec l'exploitant et sa réponse ; elle reste une zone floue tant qu'il n'a pas dit oui. Seule exception, une pratique du sol (rank soil) : elle y entre sans tracé et sans nommer de ferme ni de parcelle, et la version publique attend le oui. 7. Une piste sans gestionnaire est orpheline. 8. Jamais de nom de propriétaire tiré du cadastre : seulement le type de foncier (public, agricultural, private). 9. L'eau se lit par sous-bassin, de l'amont vers l'aval : rattache chaque repère et chaque piste à son sous-bassin (basin_id). 10. Ce qu'il faut encore obtenir (un avis, un inventaire, une information) est une request, avec à qui le demander ; une fois reçu, le document devient une source (source_id). 11. Un élément gardé appartient aux personnes : pour le corriger, propose une modification (propose_territory_updates) ou un retrait (propose_territory_deletions), jamais un doublon."
   ai_journal:
     actions:
       list_territories: "a listé les territoires"
       get_territory: "a lu un territoire"
       propose_territory_items: "a proposé des éléments au dossier d'un territoire"
+      propose_territory_updates: "a proposé des modifications au dossier d'un territoire"
+      propose_territory_deletions: "a proposé de retirer des éléments d'un territoire"
       withdraw_territory_drafts: "a retiré des brouillons d'un territoire"

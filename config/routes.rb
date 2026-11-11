@@ -554,6 +554,12 @@ Rails.application.routes.draw do
         get :file
       end
     end
+    resources :item_updates, only: [], path: "updates", controller: "territories/item_updates" do
+      member do
+        post :accept
+        post :reject
+      end
+    end
   end
   # --- end territories ---
 

@@ -47,7 +47,7 @@ class TerritoriesController < ApplicationController
   end
 
   def show
-    items = @territory.items.not_rejected.with_attached_file.order(:created_at).to_a
+    items = @territory.items.not_rejected.with_attached_file.includes(pending_update: :created_by).order(:created_at).to_a
     render inertia: "territories/show", props: {
       territory: @territory.as_inertia,
       items: items.map(&:as_inertia),
