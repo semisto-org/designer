@@ -16,7 +16,7 @@ import { formatMonth, formatMonthShort, isPlantingMonth, seasonOf } from '@/task
 import { SEASON_TINT } from '@/tasks/parts'
 
 type Props = {
-  map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean }
+  map: { id: number; name: string; role: string; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
   plan: ImplementationPlan
   canEdit: boolean
   today: string

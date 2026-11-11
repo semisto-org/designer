@@ -12,7 +12,7 @@ module Maps
       inbox = team&.form_inbox
       render inertia: "maps/forms/index", props: {
         map: { id: @map.id, name: @map.name, role: @role, teamId: @map.organization_id,
-               offerBuilder: Offer.shown_to?(@map, Current.user) },
+               offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user) },
         team: team && { id: team.id, name: team.name, admin: team.admin?(Current.user) },
         connected: inbox.present?,
         canEdit: editor?,

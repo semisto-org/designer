@@ -18,6 +18,7 @@ class User < ApplicationRecord
   has_many :map_memberships, dependent: :destroy
   has_many :map_visits, dependent: :delete_all
   has_many :time_entries, dependent: :delete_all
+  has_many :project_expenses, dependent: :nullify
   has_many :maps, through: :map_memberships
   has_many :comments, foreign_key: :author_id, inverse_of: :author, dependent: :restrict_with_error
   has_many :comment_subscriptions, dependent: :destroy

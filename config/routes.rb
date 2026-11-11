@@ -715,6 +715,10 @@ Rails.application.routes.draw do
   # to one's invoice.
   resources :maps, only: [] do
     resources :time_entries, only: :index, controller: "maps/time_entries"
+    resources :project_expenses, only: %i[create update destroy], path: "expenses", controller: "maps/project_expenses" do
+      get :receipt, on: :member
+    end
+    resource :time_sharing, only: :update, controller: "maps/time_sharings"
   end
   resource :time_statement, only: %i[show create destroy], path: "time_entries/statement", controller: "time_entries/statements"
   resources :time_entries, only: %i[index create update destroy]

@@ -22,7 +22,7 @@ module Maps
         format.html do
           render inertia: "maps/tasks/index", props: board.as_json.merge(
             map: { id: @map.id, name: @map.name, role: @role, teamId: @map.organization_id,
-                   offerBuilder: Offer.shown_to?(@map, Current.user) },
+                   offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user) },
             participants: board.participants,
             canEdit: can_edit?,
             today: Date.current.iso8601,

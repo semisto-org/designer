@@ -300,7 +300,7 @@ export type OfferCatalog = {
   adjustmentPresets: { key: string; pct: number; phase: AdjustmentPhase }[]
 }
 
-export type OfferMap = { id: number; name: string; address: string | null; areaM2: number | null; role?: string; teamId?: number | null; offerBuilder?: boolean }
+export type OfferMap = { id: number; name: string; address: string | null; areaM2: number | null; role?: string; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
 
 export type OfferPageProps = {
   map: OfferMap
