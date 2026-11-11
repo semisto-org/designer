@@ -21,7 +21,7 @@ import { uploadActions, useUploads } from '@/map/photos/upload'
 import type { MapPhotoData, PhotoAlbumData } from '@/types/soil_photos'
 
 type Props = {
-  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean }
+  map: { id: number; name: string; role: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
   canEdit: boolean
 }
 

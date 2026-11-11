@@ -55,7 +55,7 @@ type Props = {
   /** The project variants (map/variants); one is retained. */
   variants?: MapVariant[]
   /** The « Offre » panel: for teams and professional accounts only. */
-  offerBuilder?: boolean
+  offerBuilder?: boolean; timeEntries?: boolean
 }
 
 /** The map editor: full-screen map, panel rail, inspector of the selection. */
@@ -76,7 +76,7 @@ export default function MapShow(props: Props) {
           <MapName map={map} setMap={setMap} />
           {map.areaM2 != null && <span className="hidden shrink-0 text-[13px] text-loam-400 sm:inline">{headerArea(map.areaM2)}</span>}
         </div>
-        <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} />
+        <MapViewMenu mapId={map.id} teamId={map.teamId} offerBuilder={props.offerBuilder} timeEntries={props.timeEntries} />
         {(map.role === 'owner' || map.role === 'editor') && !map.readOnlyByPlan && !map.archived && <SaveIndicator />}
         <div className="flex-1" />
         <div id="editor-header-steps" className="hidden shrink-0 md:block" />

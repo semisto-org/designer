@@ -20,7 +20,7 @@ fr:
         Quand la personne veut garder sa carte hors de Terranova (sur le terrain sans réseau, une clé USB, une archive pour plus tard), prepare_offline_site prépare le site hors ligne : un dossier zip qui s'ouvre dans n'importe quel navigateur, sans compte ni connexion, avec le plan, le jardin au fil des années, les photos, les documents et les données.
         Les documents qu'envoient un compte Pro ou une équipe (l'offre, les documents des cartes) portent sa charte graphique : get_document_theme la lit ; quand la personne te demande de l'aligner sur son Design System ou sur sa marque, lis-les puis propose-la avec propose_document_theme (couleurs, polices de la liste, pied de page) : elle la prend ou la refuse sur la page « Charte graphique ».
         Pour l'équipe qui chiffre le projet, get_offer donne l'offre en cours et son document client bloc par bloc ; quand elle te demande la lettre « Votre projet », écris-la d'après la fiche projet, la carte et les documents de la visite, puis propose-la avec propose_offer_letter : elle la prend ou la refuse dans l'offre.
-        Pour l'équipe qui mène un projet (formules Pro et Team), « Temps et dépenses » suit les heures et les kilomètres de chacun face à l'offre acceptée : list_time_entries avec map_id dit où en est chaque phase, sans map_id les heures de la personne et ce qu'il lui reste à facturer ; quand elle te dit ce qu'elle a fait (« 3 h hier chez Dupont, 64 km »), note-le avec record_time_entries, puis rappelle-lui son relevé de prestations à joindre à sa facture. Après une visite de terrain (list_site_visits), propose-lui de noter le temps passé dehors. Jamais de tarif ni de marge, et rien de tout ça pour le client.
+        Pour l'équipe qui mène un projet (formules Pro et Team), « Temps et dépenses » suit les heures et les kilomètres de chacun face à l'offre acceptée : list_time_entries avec map_id dit où en est chaque phase, sans map_id les heures de la personne et ce qu'il lui reste à facturer ; quand elle te dit ce qu'elle a fait (« 3 h hier chez Dupont, 64 km »), note-le avec record_time_entries, puis rappelle-lui son relevé de prestations à joindre à sa facture. Après une visite de terrain (list_site_visits), propose-lui de noter le temps passé dehors. Quand elle te dit ce qu'elle a acheté pour un projet (plants, paillage, protections…), note-le avec record_project_expenses, avec qui le paie. Jamais de tarif ni de marge. Le client ne voit rien de tout ça, sauf si l'équipe a activé « Montrer au client » : list_time_entries lui donne alors l'avancement de chaque phase en % et les dépenses, et il peut noter ses propres achats.
         list_site_visits donne les visites de terrain faites avec l'app mobile : quand, par qui, le compte rendu (un document Markdown, à lire avec get_document), l'enregistrement audio de la visite quand il y en a un (un document « Enregistrement audio de la visite du jj/mm/aaaa », que tu ne peux pas encore écouter : demande à la personne ce qui s'y est dit, ou sa transcription) et le tracé de la marche.
         Les réseaux (eau, gaz, électricité, câbles) sont masqués par défaut. Chaque appel est inscrit au journal IA de la carte, visible par son propriétaire.
     params:
@@ -205,7 +205,7 @@ fr:
           task_numbers_filter: "Seulement les tâches qui concernent l'un de ces plants, par leur numéro sur le plan."
       list_time_entries:
         title: "Lire le temps passé"
-        description: "« Temps et dépenses » (formules Pro et Team). Avec map_id : où en est chaque phase du projet face à la version acceptée de l'offre (envelope_hours et envelope_km, partagées par toute l'équipe ; over_hours : ce qui dépasse, calculé par Terranova), le temps de chacun par phase, ses kilomètres, et les heures notées (qui, quand, combien, facturables ou non et pourquoi : offered = offert, travel = déplacement, other = autre ; noted = noté, invoiced = facturé). Réservé à l'équipe qui mène le projet (éditeurs de la carte), jamais au client. Sans map_id : les heures de la personne connectée (« Mes heures », le mois en cours par défaut), ce qu'il lui reste à facturer par destinataire avec le lien de son relevé de prestations, et les projets où elle peut noter du temps. Jamais de tarif, de prix ni de marge. Phase commercial : avant l'acceptation de l'offre."
+        description: "« Temps et dépenses » (formules Pro et Team). Avec map_id : où en est chaque phase du projet face à la version acceptée de l'offre (envelope_hours et envelope_km, partagées par toute l'équipe ; over_hours : ce qui dépasse, calculé par Terranova), le temps de chacun par phase, ses kilomètres, et les heures notées (qui, quand, combien, facturables ou non et pourquoi : offered = offert, travel = déplacement, other = autre ; noted = noté, invoiced = facturé). Réservé à l'équipe qui mène le projet (éditeurs de la carte), jamais au client. Sans map_id : les heures de la personne connectée (« Mes heures », le mois en cours par défaut), ce qu'il lui reste à facturer par destinataire avec le lien de son relevé de prestations, et les projets où elle peut noter du temps. Avec map_id viennent aussi les dépenses du projet (expenses : quoi, fournisseur, catégorie, montant HTVA en euros, taux de TVA, qui paie : rebilled = refacturée au client, team = à charge de l'équipe, client = payée par le client, designer = avancée par un designer) et expense_summary (total, par payeur, et par groupe plants / supplies / other face à ce que l'offre acceptée prévoyait), et shown_to_client (l'équipe montre l'avancement au client). Jamais de tarif horaire, de prix de vente ni de marge. Phase commercial : avant l'acceptation de l'offre. Pour un lecteur de la carte (le client) quand l'équipe a activé « Montrer au client » : view client, l'avancement de chaque phase en % (progress_pct) et les dépenses, sans noms ni heures."
         params:
           time_map_id: "Identifiant de la carte (list_maps). Sans lui : les heures de la personne connectée, tous projets confondus."
           time_from: "Premier jour (AAAA-MM-JJ) des heures listées."
@@ -245,6 +245,20 @@ fr:
           time_trip_km: "Kilomètres du trajet, aller-retour."
           time_trip_from: "Départ du trajet."
           time_trip_to: "Arrivée du trajet."
+      record_project_expenses:
+        title: "Noter des dépenses"
+        description: "Note des dépenses d'un projet, directement (ce ne sont pas des brouillons), quand la personne te dit ce qu'elle a acheté : « 40 m³ de broyat chez Dupont, 480 € HTVA, à refacturer ». Elles apparaissent « Notées par ton IA » dans « Temps et dépenses » du projet, où l'équipe les modifie ou les supprime. Montant toujours hors TVA (amount_eur) ; sans vat_rate, 6 % pour les plants et 21 % pour le reste. Qui paie (paid_by) : rebilled (achetée par l'équipe, refacturée au client), team (à charge de l'équipe), client (achetée par le client lui-même), designer (avancée par un designer, à lui rembourser). N'invente rien : demande le montant et qui paie s'ils manquent. Réservé à l'équipe du projet (formules Pro et Team) ; un lecteur de la carte (le client) ne note que ses propres achats (paid_by client), et seulement si l'équipe a activé « Montrer au client ». Le justificatif s'ajoute dans Terranova. 50 lignes au plus par appel ; demande l'accès « brouillons »."
+        params:
+          expense_lines: "Les dépenses à noter, de 1 à 50."
+          expense_spent_on: "Le jour de l'achat (AAAA-MM-JJ)."
+          expense_label: "Ce qui a été acheté, en quelques mots."
+          expense_amount: "Le montant hors TVA, en euros."
+          expense_vat_rate: "Le taux de TVA en % (0, 6, 12 ou 21)."
+          expense_category: "plants, mulch (paillage), protections, amendments (compost, amendements), small_material (petit matériel), analysis (analyses), rental (location) ou other."
+          expense_paid_by: "rebilled (refacturée au client), team (à charge de l'équipe), client (payée par le client) ou designer (avancée par un designer)."
+          expense_supplier: "Le fournisseur : pépinière, scierie, magasin…"
+          expense_note: "Une précision utile."
+          time_phase: "La phase du projet où la dépense compte : commercial, pre_design, design ou implementation (mise en œuvre)."
       record_harvests:
         title: "Noter des récoltes"
         description: "Note des lignes dans le carnet de récolte, directement (ce ne sont pas des brouillons), quand la personne te dit ce qu'elle a vu ou cueilli : « les arbres 7, 9 et 12 ont été pressés en jus le 12 octobre ». Chaque ligne vaut pour un ou plusieurs plants, désignés par feature_ids ou par leur numéro sur le plan (numbers, comme « 9.1 ») ; tous ses plants doivent exister, sinon la ligne est refusée avec sa raison. stage on_tree : les fruits vus sur l'arbre, amount obligatoire (none pour un arbre sans fruits) ; stage picked : la récolte, amount facultatif (jamais none), uses et quantity_kg facultatifs. N'invente rien : ne note que ce que la personne a dit, et demande la date si elle ne la donne pas. 50 lignes au plus par appel. Demande l'accès « brouillons », le rôle d'éditeur ou de propriétaire, et le forfait de la carte."
@@ -650,6 +664,7 @@ fr:
       tasks_written: "Les tâches sont sur la page « Tâches » de la carte (url)."
       observations_written: "Les entrées sont dans le « Journal du plant », sur la fiche de chaque plant (cliquer le plant sur la carte, url)."
       time_written: "Les heures sont dans « Mes heures » (url), marquées « Noté par ton IA » : la personne peut les relire, les modifier ou les supprimer."
+      expenses_written: "Les dépenses sont dans « Temps et dépenses » du projet (url), marquées « Notée par ton IA » : rappelle à la personne d'y joindre le ticket."
       harvests_written: "Les lignes sont dans le panneau « Récoltes » de la carte (url) et sur la fiche de chaque plant."
       storage_written: "Les relevés sont sur la fiche de chaque lieu de stockage, dans l'éditeur de la carte (url)."
       tasks_assigned: "Les tâches sont sur la page « Tâches » de la carte (url). Les personnes à qui tu les as confiées reçoivent un e-mail."
@@ -663,6 +678,7 @@ fr:
       time_not_allowed: "Le temps de ce projet est réservé à l'équipe qui le mène : l'équipe de la carte, ou ses éditeurs quand c'est la carte d'un compte Pro."
       time_plan: "Le suivi du temps de ce projet demande la formule Pro ou Team de son propriétaire."
       time_date: "« %{value} » n'est pas une date (AAAA-MM-JJ)."
+      expense_not_allowed: "Les dépenses de ce projet sont notées par l'équipe qui le mène. Le client n'y note que ses propres achats (paid_by client), quand l'équipe lui montre le projet."
       offer_not_allowed: "L'offre de cette carte est réservée à qui la chiffre : l'équipe de la carte, ou son propriétaire avec une formule pro."
       unauthorized: "Connexion requise : autorise ce client depuis Semisto Terranova (OAuth) ou utilise un jeton personnel."
       invalid_token: "Ce jeton n'est pas valide, a expiré ou a été révoqué."
@@ -1001,6 +1017,9 @@ fr:
       record_time_entries:
         one: "a noté 1 ligne d'heures"
         other: "a noté %{count} lignes d'heures"
+      record_project_expenses:
+        one: "a noté 1 dépense"
+        other: "a noté %{count} dépenses"
       list_propagation_requests: "a lu les demandes de multiplication"
       list_harvests: "a lu le carnet de récolte"
       list_discussion: "a lu la discussion de la carte"

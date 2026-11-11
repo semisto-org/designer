@@ -271,6 +271,7 @@ module Mcp
           {
             url: "#{map_url(map)}/time_entries", offer_version: envelopes.version_json&.dig(:label),
             hours: envelopes.totals[:hours], km: envelopes.totals[:km],
+            expenses_eur: map.project_expenses.sum(:amount_cents) / 100.0, shown_to_client: map.time_shared_with_client,
             phases: envelopes.phases.filter_map { |p| { phase: p[:key], hours: p[:hours], envelope_hours: p[:envelopeHours], over_hours: p[:overHours] }.compact if p[:hours].positive? || p[:envelopeHours] }
           }
         end

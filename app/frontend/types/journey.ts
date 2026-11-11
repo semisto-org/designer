@@ -62,7 +62,7 @@ export type ProjectDraft = {
 }
 
 export type ProjectPayload = {
-  map: { id: number; name: string; role: string | null; address: string | null; teamId?: number | null; offerBuilder?: boolean }
+  map: { id: number; name: string; role: string | null; address: string | null; teamId?: number | null; offerBuilder?: boolean; timeEntries?: boolean }
   project: ProjectData
   progress: ProjectProgress
   schema: ProjectSchema

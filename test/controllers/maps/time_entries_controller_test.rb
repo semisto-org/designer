@@ -29,4 +29,29 @@ class Maps::TimeEntriesControllerTest < ActionDispatch::IntegrationTest
     get map_time_entries_path(@map), headers: inertia_headers
     assert_redirected_to map_path(@map)
   end
+
+  test "once shown the project, the client reads progress and expenses, never names or hours" do
+    @map.time_entries.create!(user: @designer, worked_on: Date.current, minutes: 120, phase: "design")
+    @map.project_expenses.create!(user: @designer, spent_on: Date.current, label: "Broyat", category: "mulch", amount_cents: 48_000, paid_by: "rebilled")
+    @map.update!(time_shared_with_client: true)
+    sign_in_as users(:alice)
+    get map_time_entries_path(@map), headers: inertia_headers
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "maps/time_entries/client", body["component"]
+    props = body["props"]
+    assert_equal [ "Broyat" ], props["expenses"].map { _1["label"] }
+    refute props.key?("entries")
+    refute props.to_json.include?(@designer.display_name)
+  end
+
+  test "the team reads the expenses and whether the client sees them" do
+    @map.project_expenses.create!(user: @designer, spent_on: Date.current, label: "Broyat", category: "mulch", amount_cents: 48_000, paid_by: "client")
+    sign_in_as @designer
+    get map_time_entries_path(@map), headers: inertia_headers
+    props = response.parsed_body["props"]
+    assert_equal 48_000, props["expenseSummary"]["totals"]["amountCents"]
+    assert_equal false, props["sharedWithClient"]
+    assert props["hasViewers"]
+  end
 end

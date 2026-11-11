@@ -73,7 +73,7 @@ export function MapViewHeader({ map, current }: { map: ViewMap & { id: number; n
 }
 
 /** In the editor's header: « Carte ▾ », to reach the other views of the project. */
-export function MapViewMenu({ mapId, teamId, offerBuilder }: ViewMap & { mapId: number }) {
+export function MapViewMenu({ mapId, teamId, offerBuilder, timeEntries }: ViewMap & { mapId: number }) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -101,7 +101,7 @@ export function MapViewMenu({ mapId, teamId, offerBuilder }: ViewMap & { mapId: 
       </button>
       {open && (
         <ul role="menu" className="absolute left-0 top-full z-50 mt-1.5 w-56 rounded-xl bg-white p-1 shadow-lg ring-1 ring-loam-900/10">
-          {viewsFor({ teamId, offerBuilder }).map(({ key, icon: Icon }) => (
+          {viewsFor({ teamId, offerBuilder, timeEntries }).map(({ key, icon: Icon }) => (
             <li key={key} role="none">
               {key === 'map' ? (
                 <span role="menuitem" aria-current="page" className="flex items-center gap-2.5 rounded-lg bg-prune-50 px-3 py-2 text-sm font-medium text-prune-700">
