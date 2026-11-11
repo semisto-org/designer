@@ -91,6 +91,11 @@ fr:
           before: "La"
           inline: "#Haie fruitière"
           after: "a bien repris."
+        segmented:
+          title: "Choix côte à côte"
+          use: "Deux ou trois choix qui s’excluent, le choisi soulevé comme un papier : facturable ou pas."
+          "yes": "Facturable"
+          "no": "Pas facturable"
         empty:
           title: "État vide du compagnon"
           use: "Un écran vide dit quoi regarder d'abord, et pourquoi."

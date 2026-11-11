@@ -124,6 +124,8 @@ export type PublicationOptions = {
   show_aerial_view?: boolean
   /** The sector analysis around the terrain, to present the design; off by default. */
   show_sectors?: boolean
+  /** The years bar and the garden growing on arrival; on by default. */
+  show_growth?: boolean
   /** The owner's consent to « Carnets ouverts » on the public site; off by default. */
   in_gallery?: boolean
 }
@@ -194,6 +196,8 @@ export type PublicMapProps = {
   }
   /** How the published plants grow, for the years bar (absent from older snapshots). */
   growth?: PublicGrowth | null
+  /** False when the owner turned the years bar off: the garden stays as it is today. */
+  showGrowth?: boolean
   features: FeatureCollection<Geometry, MapFeatureProperties>
   layers: PublicLayer[]
   /** The drone view the owner chose to show (drone area): tiles straight from Semisto's host. */

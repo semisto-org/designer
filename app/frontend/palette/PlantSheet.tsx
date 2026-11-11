@@ -10,7 +10,7 @@ import { t } from '@/lib/i18n'
 import { StrataDot } from '@/map/plants/strata'
 import { ExclusionFlag } from '@/palette/Fit'
 import { displayValue, formatEuro, plantedAgeLabel } from '@/palette/format'
-import { toPlant, type PaletteRow } from '@/palette/table'
+import { budgetQuantity, toPlant, type PaletteRow } from '@/palette/table'
 import type { SpeciesSheet, Strata } from '@/types/plants'
 
 type PlantOnLand = { id: number; number: number | null; name: string | null; tags: string[]; plantedOn: string | null; plantedPrecision: string | null; inPatch: boolean; survival: string | null; vigor: number | null; observedOn: string | null }
@@ -100,7 +100,7 @@ export function PlantSheet({ mapId, row, country, onClose }: { mapId: number; ro
                     {row.size && <Pair label={t('plant_palette.columns.size')}>{row.size}</Pair>}
                     {row.supplier && <Pair label={t('plant_palette.columns.supplier')}>{row.supplier}</Pair>}
                     {row.unitPrice != null && <Pair label={t('plant_palette.columns.unit_price')}>{formatEuro(row.unitPrice)}</Pair>}
-                    {row.unitPrice != null && row.planned > 0 && <Pair label={t('plant_palette.columns.amount')}>{formatEuro(row.unitPrice * row.planned)}</Pair>}
+                    {row.unitPrice != null && budgetQuantity(row) > 0 && <Pair label={t('plant_palette.columns.amount')}>{formatEuro(row.unitPrice * budgetQuantity(row))}</Pair>}
                     {row.notes && <Pair label={t('plant_palette.columns.notes')}><span className="whitespace-pre-line">{row.notes}</span></Pair>}
                   </dl>
                 </div>

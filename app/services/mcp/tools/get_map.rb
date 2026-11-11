@@ -50,6 +50,7 @@ module Mcp
           observation_year: MapFeature::SeasonSign.observation_year(map),
           first_hour: first_hour(map),
           offer: offer(map),
+          time_entries: time_entries(map),
           sectors: sectors(map),
           exports: exports(map),
           presentations: presentations(map),
@@ -137,6 +138,7 @@ module Mcp
             version: publication.version, published_at: publication.published_at.iso8601,
             unpublished_at: publication.unpublished_at&.iso8601, stale: publication.stale?,
             shown_layers: publication.options["feature_layers"], hides_address: publication.options["hide_address"],
+            shows_growth: publication.options.fetch("show_growth", true) != false,
             views: publication.views_count, places_tried: publication.trials.count, gardens_started: publication.sourced_users.count,
             note: t("notes.publication")
           }.compact
@@ -257,6 +259,19 @@ module Mcp
               { task_id: task.id, kind: task.step_kind, title: task.title, starts_on: task.starts_on.iso8601,
                 ends_on: task.due_on.iso8601, forecast: task.forecast, done: task.done? }
             end
+          }
+        end
+
+        # « Temps et dépenses », in one line per phase: hours noted against
+        # the accepted offer's envelope. For the project's team only, never
+        # its client; list_time_entries has the detail.
+        def time_entries(map)
+          return nil unless TimeEntry.usable_by?(map, user)
+          envelopes = TimeEntry::Envelopes.new(map)
+          {
+            url: "#{map_url(map)}/time_entries", offer_version: envelopes.version_json&.dig(:label),
+            hours: envelopes.totals[:hours], km: envelopes.totals[:km],
+            phases: envelopes.phases.filter_map { |p| { phase: p[:key], hours: p[:hours], envelope_hours: p[:envelopeHours], over_hours: p[:overHours] }.compact if p[:hours].positive? || p[:envelopeHours] }
           }
         end
 
@@ -413,13 +428,14 @@ module Mcp
         end
 
         # What the plants with a price cost: what is left to buy (not yet in
-        # the ground) and the whole, as the palette page header shows them.
+        # the ground) and the whole, as the palette page header shows them
+        # (plants drawn on the map, else the palette's target).
         def palette_budget(map)
           priced = palette_rows(map).select { _1[:unitPrice] }
           return nil if priced.empty?
           {
-            to_buy_eur: priced.sum { _1[:unitPrice] * [ _1[:planned] - _1[:planted], 0 ].max }.round(2),
-            total_eur: priced.sum { _1[:unitPrice] * _1[:planned] }.round(2)
+            to_buy_eur: priced.sum { _1[:unitPrice] * PlantPalette.to_buy_quantity(_1) }.round(2),
+            total_eur: priced.sum { _1[:unitPrice] * PlantPalette.budget_quantity(_1) }.round(2)
           }
         end
 

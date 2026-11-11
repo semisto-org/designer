@@ -24,8 +24,8 @@ import { ITEM_LAYER_IDS, installTeamMaps, installTerritoryItems, type MapItem } 
 import type { RegionLayerData } from '@/types'
 import type { TerritoryItemKind, TerritoryShowProps } from '@/types/territories'
 
-const TABS: TerritoryItemKind[] = ['actor', 'source', 'expectation', 'marker', 'lead']
-const TAB_KEYS: Record<TerritoryItemKind, string> = { actor: 'actors', source: 'sources', expectation: 'expectations', marker: 'markers', lead: 'leads' }
+const TABS: TerritoryItemKind[] = ['actor', 'source', 'expectation', 'basin', 'marker', 'lead']
+const TAB_KEYS: Record<TerritoryItemKind, string> = { actor: 'actors', source: 'sources', expectation: 'expectations', basin: 'basins', marker: 'markers', lead: 'leads' }
 const RANK_ORDER = ['soil', 'slow', 'structure']
 
 /** A territory: the commune read on the map, and its dossier on the side. */
@@ -41,10 +41,14 @@ export default function TerritoryShow(props: TerritoryShowProps) {
   const drafts = items.filter((item) => item.status === 'draft')
   const byKind = (kind: TerritoryItemKind) => {
     const list = items.filter((item) => item.kind === kind && item.status === 'active')
-    return kind === 'lead' ? [...list].sort((a, b) => RANK_ORDER.indexOf(a.properties.rank ?? '') - RANK_ORDER.indexOf(b.properties.rank ?? '')) : list
+    if (kind === 'lead') return [...list].sort((a, b) => RANK_ORDER.indexOf(a.properties.rank ?? '') - RANK_ORDER.indexOf(b.properties.rank ?? ''))
+    if (kind === 'basin') return [...list].sort((a, b) => (a.properties.order ?? Infinity) - (b.properties.order ?? Infinity))
+    return list
   }
   const sources = items.filter((item) => item.kind === 'source' && item.status !== 'rejected')
   const expectations = items.filter((item) => item.kind === 'expectation' && item.status !== 'rejected')
+  const basins = items.filter((item) => item.kind === 'basin' && item.status !== 'rejected')
+    .sort((a, b) => (a.properties.order ?? Infinity) - (b.properties.order ?? Infinity))
   const titles = useMemo(() => new Map(items.map((item) => [item.id, item.title])), [items])
 
   const place = useCallback((done: (g: Geometry | null) => void) => setPlacing(() => done), [])
@@ -87,7 +91,7 @@ export default function TerritoryShow(props: TerritoryShowProps) {
         )}
       </div>
 
-      <aside className="min-h-0 flex-1 overflow-y-auto bg-white md:w-[30rem] md:flex-none md:border-l md:border-loam-200">
+      <aside className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-white md:w-[30rem] md:flex-none md:border-l md:border-loam-200">
         <header className="border-b border-loam-100 px-5 pb-4 pt-5">
           <h1 className="text-3xl">{territory.name}</h1>
           <p className="mt-1 text-sm text-loam-500">{t('territories.show.area', { area: formatKm2(territory.areaM2), team: territory.teamName })}</p>
@@ -107,9 +111,9 @@ export default function TerritoryShow(props: TerritoryShowProps) {
           <section className="border-b border-loam-100 px-5 py-4">
             <h2 className="flex items-center gap-2 text-lg"><Sparkles className="h-4 w-4 text-humus-600" aria-hidden />{t('territories.show.drafts.title', { count: drafts.length })}</h2>
             <p className="mt-1 text-sm text-loam-600">{t('territories.show.drafts.why')}</p>
-            <ul className="mt-3 grid gap-3">
+            <ul className="mt-3 grid grid-cols-1 gap-3">
               {drafts.map((item) => editing === item.id
-                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} place={place} onDone={() => setEditing(null)} /></li>
+                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} basins={basins} place={place} onDone={() => setEditing(null)} /></li>
                 : <ItemCard key={item.id} item={item} territoryId={territory.id} canEdit={canEdit} selected={selected === item.id} onEdit={() => setEditing(item.id)} onSelect={() => select(item.id)} titles={titles} />)}
             </ul>
           </section>
@@ -132,14 +136,14 @@ export default function TerritoryShow(props: TerritoryShowProps) {
             <Button size="sm" variant="secondary" className="mb-3" onClick={() => setEditing('new')}><Plus className="h-4 w-4" aria-hidden />{t('territories.show.add')}</Button>
           )}
           {editing === 'new' && (
-            <div className="mb-3"><ItemForm territoryId={territory.id} kind={tab} sources={sources} expectations={expectations} place={place} onDone={() => setEditing(null)} /></div>
+            <div className="mb-3"><ItemForm territoryId={territory.id} kind={tab} sources={sources} expectations={expectations} basins={basins} place={place} onDone={() => setEditing(null)} /></div>
           )}
           {list.length === 0 && editing !== 'new' ? (
             <CompanionEmpty title={t(`territories.show.empty.${TAB_KEYS[tab]}.title`)} why={t(`territories.show.empty.${TAB_KEYS[tab]}.why`)} />
           ) : (
-            <ul className="grid gap-3">
+            <ul className="grid grid-cols-1 gap-3">
               {list.map((item) => editing === item.id
-                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} place={place} onDone={() => setEditing(null)} /></li>
+                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} basins={basins} place={place} onDone={() => setEditing(null)} /></li>
                 : <ItemCard key={item.id} item={item} territoryId={territory.id} canEdit={canEdit} selected={selected === item.id} onEdit={() => setEditing(item.id)} onSelect={() => select(item.id)} titles={titles} />)}
             </ul>
           )}
@@ -215,8 +219,8 @@ function TerritoryLayers({ territory, items, layers, teamMaps, selected, onSelec
   }, [instance, territory.bbox])
 
   const mapItems: MapItem[] = useMemo(() => items
-    .filter((item) => item.geometry && (item.kind === 'marker' || item.kind === 'lead'))
-    .map((item) => ({ id: item.id, kind: item.kind as 'marker' | 'lead', status: item.status, geometry: item.geometry as Geometry, proof: item.properties.proof, sharp: item.sharp, title: item.title })), [items])
+    .filter((item) => item.geometry && (item.kind === 'marker' || item.kind === 'lead' || item.kind === 'basin'))
+    .map((item) => ({ id: item.id, kind: item.kind as MapItem['kind'], status: item.status, geometry: item.geometry as Geometry, proof: item.properties.proof, sharp: item.sharp, title: item.title })), [items])
 
   useEffect(() => {
     if (!instance) return

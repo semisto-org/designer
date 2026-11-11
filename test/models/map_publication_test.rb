@@ -201,6 +201,13 @@ class MapPublicationTest < ActiveSupport::TestCase
     assert_equal %w[ortho_2022_ete], publication.region_layers.map(&:key)
   end
 
+  test "the years bar is shown unless the owner turns it off" do
+    assert_equal true, publish.as_public[:showGrowth]
+    off = publish(options: { "show_growth" => false })
+    assert_equal false, off.options["show_growth"]
+    assert_equal false, off.as_public[:showGrowth]
+  end
+
   test "as_public: tile urls point to the proxy of this publication, never to the provider" do
     @map.region.layers.create!(key: "ortho", name: "Orthophoto", url: "https://secret-provider.example/wms", kind: "wms",
                                category: "base", layers: "ORTHO", attribution: "© SPW", legend_url: "https://example.org/legend.png")

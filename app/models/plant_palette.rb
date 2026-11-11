@@ -19,6 +19,21 @@ class PlantPalette
 
   attr_reader :map
 
+  # The budget counts the plants drawn on the map or, while none is drawn
+  # (a hedge or a bed still to detail), the palette's target; as
+  # budgetQuantity in app/frontend/palette/table.ts.
+  def self.budget_quantity(row)
+    budgets_target?(row) ? row[:targetCount] : row[:planned].to_i
+  end
+
+  # What is still to buy: planned and not in the ground, else the target
+  # minus what is in the ground.
+  def self.to_buy_quantity(row)
+    budgets_target?(row) ? [ row[:targetCount] - row[:planted].to_i, 0 ].max : [ row[:planned].to_i - row[:planted].to_i, 0 ].max
+  end
+
+  def self.budgets_target?(row) = row[:planned].to_i.zero? && row[:targetCount].to_i.positive?
+
   def initialize(map)
     @map = map
   end

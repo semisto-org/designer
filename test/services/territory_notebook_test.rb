@@ -81,6 +81,23 @@ class TerritoryNotebookTest < ActiveSupport::TestCase
     assert_equal [ "Sens du travail" ], notebook("public")[:leads].map { _1[:title] }
   end
 
+  test "sub-basins come upstream first, with what was seen in each, and group markers and leads" do
+    lower = add("basin", "Vallée basse", order: 2, outlet: "la Meuse")
+    upper = add("basin", "Vallon amont", geometry: commune_square(size: 0.02), order: 1, outlet: "le Bocq")
+    add("marker", "Coulée vue", proof: "seen", basin_id: upper.id, geometry: inside_point)
+    add("marker", "Calculé", proof: "computed", basin_id: upper.id)
+    add("lead", "Haie publique", land: "public", seen_on_site: true, basin_id: lower.id)
+    add("lead", "Sans bassin", land: "public", seen_on_site: true)
+
+    working = notebook("working")
+    assert_equal [ "Vallon amont", "Vallée basse" ], working[:basins].map { _1[:title] }
+    amont = working[:basins].first
+    assert_equal [ 1, 1, "le Bocq" ], [ amont[:seenMarkers], working[:basins].last[:leads], amont[:outlet] ]
+    assert amont[:areaKm2] > 1
+    assert_equal({ "Haie publique" => lower.id, "Sans bassin" => nil }, working[:leads].to_h { [ _1[:title], _1[:basinId] ] })
+    assert_includes working[:mapFeatures].map { _1[:properties][:kind] }, "basin"
+  end
+
   test "expectations name their sources" do
     source = add("source", "PCDN 2016", url: "https://example.org/pcdn.pdf")
     add("expectation", "Restaurer les haies", year: 2016, source_ids: [ source.id ])

@@ -9,7 +9,7 @@ import { formatPrice } from '@/lib/money'
 import type { SharedProps } from '@/types'
 import type { SketchGeometry } from '@/types/myMaps'
 
-export type GateFeature = 'relief' | 'climate' | 'soil' | 'pdf' | 'dossier_terrain' | 'dossier_climate' | 'dossier_soil'
+export type GateFeature = 'relief' | 'climate' | 'soil' | 'pdf' | 'dossier_terrain' | 'dossier_climate' | 'dossier_soil' | 'time'
 
 type Props = {
   feature: GateFeature
@@ -49,7 +49,8 @@ export function plansHref({ plan, returnTo }: { plan?: string; returnTo?: string
  */
 export function PlanGate({ feature, place, canUpgrade, panel, children, body, className }: Props) {
   const { currentUser, env } = usePage().props as unknown as SharedProps
-  const pro = currentUser?.accountKind === 'professional'
+  // The time of a team's projects is a Pro and Team feature, whoever reads it.
+  const pro = currentUser?.accountKind === 'professional' || feature === 'time'
   const plan = pro ? 'atelier' : 'yearly'
   const price = pro
     ? t('plan_gates.price_pro', { price: formatPrice(env.planPrices.atelier) })

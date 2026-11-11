@@ -32,6 +32,7 @@ class TerritoryNotebook
       intro: @territory.notebook_text(:intro),
       generatedOn: Date.current.iso8601,
       says: { actors: of(:actor).map { |item| actor(item) }, expectations: of(:expectation).map { |item| expectation(item) } },
+      basins: basins.map { |item| basin(item) },
       shows: { markers: markers.map { |item| marker(item) } },
       seen: { markers: markers.select { |item| %w[seen confirmed].include?(item.prop(:proof)) }.map { |item| marker(item) },
               leads: leads.select(&:seen_on_site?).map { |item| { id: item.id, title: item.title, seenOn: item.prop(:seen_on) } } },
@@ -57,6 +58,31 @@ class TerritoryNotebook
                           .sort_by { |item| [ TerritoryItem::RANKS.index(item.prop(:rank)) || TerritoryItem::RANKS.size, item.created_at ] }
     end
 
+    # Upstream first, as the person numbered them; unnumbered ones last.
+    def basins
+      @basins ||= of(:basin).sort_by { |item| [ item.prop(:order) || Float::INFINITY, item.title ] }
+    end
+
+    def basin(item)
+      inside = ->(list) { list.count { |x| x.prop(:basin_id) == item.id } }
+      {
+        id: item.id, title: item.title, body: item.body, order: item.prop(:order), outlet: item.prop(:outlet),
+        areaKm2: item.geometry && area_km2(item),
+        seenMarkers: inside.(markers.select { |x| %w[seen confirmed].include?(x.prop(:proof)) }),
+        leads: inside.(public? ? leads.select(&:seen_on_site?) : leads)
+      }
+    end
+
+    def area_km2(item)
+      m2 = TerritoryItem.connection.select_value(TerritoryItem.sanitize_sql_array([ "SELECT ST_Area(ST_GeomFromEWKT(?)::geography)", "SRID=4326;#{item.geometry.as_text}" ]))
+      (m2.to_f / 1_000_000).round(1)
+    end
+
+    def basin_id(item)
+      id = item.prop(:basin_id)
+      id if id && basins.any? { |basin| basin.id == id }
+    end
+
     def markers
       @markers ||= of(:marker).select { |item| !public? || %w[seen confirmed].include?(item.prop(:proof)) }
     end
@@ -76,7 +102,7 @@ class TerritoryNotebook
     end
 
     def marker(item)
-      { id: item.id, title: item.title, body: item.body, occurredOn: item.prop(:occurred_on), proof: item.prop(:proof) || "computed",
+      { id: item.id, title: item.title, body: item.body, basinId: basin_id(item), occurredOn: item.prop(:occurred_on), proof: item.prop(:proof) || "computed",
         markerKind: item.prop(:marker_kind), sources: source_refs(item.prop(:source_ids)) }
     end
 
@@ -88,7 +114,7 @@ class TerritoryNotebook
     def lead(item)
       expectations = of(:expectation).index_by(&:id)
       {
-        id: item.id, title: item.title, body: item.body,
+        id: item.id, title: item.title, body: item.body, basinId: basin_id(item),
         rank: item.prop(:rank), theme: item.prop(:theme), land: item.prop(:land) || "unknown", magnitude: item.prop(:magnitude),
         answers: Array(item.prop(:expectation_ids)).filter_map { |id| expectations[id]&.title },
         seenOnSite: item.seen_on_site?, seenOn: item.prop(:seen_on),
@@ -112,7 +138,10 @@ class TerritoryNotebook
     end
 
     def map_features
-      features = markers.select(&:geometry).map do |item|
+      outlines = basins.select(&:geometry).map do |item|
+        { type: "Feature", geometry: item.geometry_geojson, properties: { kind: "basin", id: item.id, title: item.title, order: item.prop(:order) } }
+      end
+      features = outlines + markers.select(&:geometry).map do |item|
         { type: "Feature", geometry: item.geometry_geojson, properties: { kind: "marker", id: item.id, title: item.title, proof: item.prop(:proof) || "computed" } }
       end
       features + leads.select { |item| drawable?(item) }.map do |item|

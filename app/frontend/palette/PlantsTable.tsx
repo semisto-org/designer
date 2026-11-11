@@ -133,7 +133,7 @@ export function PlantsTable({ mapId, plants, tags, canEdit, onSaved, onPlantedCh
           {plants.length === 0 ? t('plant_palette.plants.none') : t('plant_palette.plants.empty')}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-loam-900/10 print:overflow-visible print:shadow-none print:ring-0">
+        <div className="max-h-[calc(100dvh-2rem)] overflow-auto overscroll-x-contain rounded-2xl bg-white shadow-sm ring-1 ring-loam-900/10 print:max-h-none print:overflow-visible print:shadow-none print:ring-0">
           <table ref={table} className="w-full min-w-max border-collapse text-sm">
             <thead className="sticky top-0 z-10 bg-loam-50/95 backdrop-blur">
               <tr>

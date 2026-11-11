@@ -14,7 +14,7 @@ import { installBoundary } from '@/map/layers/boundary'
 import { syncRegionLayers } from '@/map/layers/region'
 import { formatKm2 } from '@/territories/format'
 import { installTerritoryItems, type MapItem } from '@/territories/layers'
-import type { NotebookLead, NotebookMarker, NotebookProps } from '@/types/territories'
+import type { NotebookBasin, NotebookLead, NotebookMarker, NotebookProps } from '@/types/territories'
 
 const n = (key: string, options?: Record<string, string | number>) => t(`territories.notebook.${key}`, options)
 const v = (group: string, key: string) => t(`territories.show.values.${group}.${key}`)
@@ -57,7 +57,7 @@ export default function TerritoryNotebook(props: NotebookProps) {
       <Part title={n('parts.says')}>
         <h3 className="text-lg">{n('actors')}</h3>
         {props.says.actors.length === 0 ? <Empty>{n('no_actors')}</Empty> : (
-          <ul className="mt-2 grid gap-2">
+          <ul className="mt-2 grid grid-cols-1 gap-2">
             {props.says.actors.map((actor) => (
               <li key={actor.id}>
                 <span className="font-medium">{actor.title}</span>
@@ -71,7 +71,7 @@ export default function TerritoryNotebook(props: NotebookProps) {
         )}
         <h3 className="mt-5 text-lg">{n('expectations')}</h3>
         {props.says.expectations.length === 0 ? <Empty>{n('no_expectations')}</Empty> : (
-          <ul className="mt-2 grid gap-3">
+          <ul className="mt-2 grid grid-cols-1 gap-3">
             {props.says.expectations.map((expectation) => (
               <li key={expectation.id}>
                 <p>
@@ -93,7 +93,10 @@ export default function TerritoryNotebook(props: NotebookProps) {
             <NotebookMap {...props} />
           </MapView>
         </div>
-        <Markers markers={props.shows.markers} empty={n('no_markers')} />
+        {props.basins.length > 0 && <Basins basins={props.basins} />}
+        <ByBasin basins={props.basins} items={props.shows.markers} empty={n('no_markers')}>
+          {(markers) => <Markers markers={markers} empty="" />}
+        </ByBasin>
       </Part>
 
       <Part title={n('parts.seen')}>
@@ -101,7 +104,7 @@ export default function TerritoryNotebook(props: NotebookProps) {
           <>
             <Markers markers={props.seen.markers} empty="" />
             {props.seen.leads.length > 0 && (
-              <ul className="mt-2 grid gap-1 text-sm">
+              <ul className="mt-2 grid grid-cols-1 gap-1 text-sm">
                 {props.seen.leads.map((lead) => <li key={lead.id}>{lead.title}{lead.seenOn && <span className="text-loam-500"> · {n('lead.seen_on', { date: date(lead.seenOn) })}</span>}</li>)}
               </ul>
             )}
@@ -110,14 +113,16 @@ export default function TerritoryNotebook(props: NotebookProps) {
       </Part>
 
       <Part title={n('parts.leads')}>
-        {props.leads.length === 0 ? <Empty>{n('no_leads')}</Empty> : (
-          <ol className="grid gap-4">{props.leads.map((lead) => <Lead key={lead.id} lead={lead} working={working} />)}</ol>
-        )}
+        <ByBasin basins={props.basins} items={props.leads} empty={n('no_leads')}>
+          {(leads) => <ol className="grid grid-cols-1 gap-4">{leads.map((lead) => <Lead key={lead.id} lead={lead} working={working} />)}</ol>}
+        </ByBasin>
         {working && props.hypotheses.length > 0 && (
           <div className="mt-6 rounded-2xl bg-humus-50/60 p-4 ring-1 ring-humus-200">
             <h3 className="text-lg">{n('hypotheses')}</h3>
             <p className="text-sm text-loam-600">{n('hypotheses_why')}</p>
-            <ol className="mt-3 grid gap-4">{props.hypotheses.map((lead) => <Lead key={lead.id} lead={lead} working />)}</ol>
+            <ByBasin basins={props.basins} items={props.hypotheses} empty="">
+              {(leads) => <ol className="mt-3 grid grid-cols-1 gap-4">{leads.map((lead) => <Lead key={lead.id} lead={lead} working />)}</ol>}
+            </ByBasin>
           </div>
         )}
         {props.waitingForFarmer > 0 && <p className="mt-4 text-sm text-humus-800">{n('waiting_farmer', { count: props.waitingForFarmer })}</p>}
@@ -125,7 +130,7 @@ export default function TerritoryNotebook(props: NotebookProps) {
 
       <Part title={n('parts.start')}>
         {props.firstSteps.length === 0 ? <Empty>{n('no_start')}</Empty> : (
-          <ol className="grid gap-2">
+          <ol className="grid grid-cols-1 gap-2">
             {props.firstSteps.map((step) => (
               <li key={step.id} className="flex flex-wrap items-center gap-2">
                 <span className="font-serif text-xl font-semibold text-prune-800">{step.order}.</span>
@@ -195,10 +200,61 @@ function Part({ title, children }: { title: string; children: ReactNode }) {
 
 const Empty = ({ children }: { children: ReactNode }) => <p className="text-sm text-loam-500">{children}</p>
 
+/** The sub-basins, upstream first: where the evidence and the leads sit. */
+function Basins({ basins }: { basins: NotebookBasin[] }) {
+  return (
+    <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-loam-200">
+      <h3 className="text-lg">{n('basins')}</h3>
+      <p className="text-sm text-loam-600">{n('basins_why')}</p>
+      <ol className="mt-3 grid grid-cols-1 gap-2">
+        {basins.map((basin, index) => (
+          <li key={basin.id} className="flex gap-3">
+            <span className="w-6 shrink-0 font-serif text-xl font-semibold text-prune-800">{basin.order ?? index + 1}</span>
+            <div className="min-w-0">
+              <p>
+                <span className="font-medium">{basin.title}</span>
+                {basin.outlet && <span className="text-loam-500"> · {n('basin_outlet', { outlet: basin.outlet })}</span>}
+                {basin.areaKm2 != null && <span className="text-loam-500"> · {basin.areaKm2.toLocaleString('fr-BE')} km²</span>}
+              </p>
+              <p className="text-sm text-loam-600">{n('basin_markers', { count: basin.seenMarkers })} · {n('basin_leads', { count: basin.leads })}</p>
+              {basin.body && <p className="text-sm text-loam-700">{basin.body}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/**
+ * Entries grouped by sub-basin, upstream first, then those not yet placed in
+ * one. Without sub-basins, the list as it is.
+ */
+function ByBasin<T extends { id: number; basinId: number | null }>({ basins, items, empty, children }: {
+  basins: NotebookBasin[]; items: T[]; empty: string; children: (items: T[]) => ReactNode
+}) {
+  if (items.length === 0) return empty ? <p className="mt-3 text-sm text-loam-500">{empty}</p> : null
+  if (basins.length === 0) return <>{children(items)}</>
+  const groups = [
+    ...basins.map((basin) => ({ key: basin.id, title: `${basin.order ?? ''}${basin.order ? '. ' : ''}${basin.title}`, items: items.filter((item) => item.basinId === basin.id) })),
+    { key: 0, title: n('no_basin'), items: items.filter((item) => item.basinId == null) },
+  ].filter((group) => group.items.length > 0)
+  return (
+    <div className="mt-4 grid grid-cols-1 gap-5">
+      {groups.map((group) => (
+        <div key={group.key}>
+          <h3 className="text-lg text-prune-800">{group.title}</h3>
+          {children(group.items)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function Markers({ markers, empty }: { markers: NotebookMarker[]; empty: string }) {
   if (markers.length === 0) return empty ? <p className="mt-3 text-sm text-loam-500">{empty}</p> : null
   return (
-    <ul className="mt-3 grid gap-2">
+    <ul className="mt-3 grid grid-cols-1 gap-2">
       {markers.map((marker) => (
         <li key={marker.id}>
           <p className="flex flex-wrap items-center gap-1.5">
@@ -225,7 +281,7 @@ function Lead({ lead, working }: { lead: NotebookLead; working: boolean }) {
         {lead.theme && <Pill>{v('theme', lead.theme)}</Pill>}
         {lead.orphan && <Pill tone="clay">{t('territories.show.badges.orphan')}</Pill>}
       </p>
-      <dl className="mt-2 grid gap-1 text-sm sm:grid-cols-[10rem_1fr]">
+      <dl className="mt-2 grid grid-cols-1 gap-1 text-sm sm:grid-cols-[10rem_1fr]">
         <dt className="text-loam-500">{n('lead.where')}</dt><dd>{v('land', lead.land)}</dd>
         {lead.body && <><dt className="text-loam-500">{n('lead.why')}</dt><dd className="whitespace-pre-line">{lead.body}</dd></>}
         {lead.answers.length > 0 && <><dt className="text-loam-500">{n('lead.answers')}</dt><dd>{lead.answers.join(' · ')}</dd></>}
@@ -268,7 +324,7 @@ function Editable({ territoryId, field, value, canEdit, placeholder, className }
 function NotebookMap({ territory, mapFeatures, baseLayer, overlays }: NotebookProps) {
   const instance = useMapInstance()
   const items: MapItem[] = useMemo(() => mapFeatures.map((feature) => {
-    const p = (feature.properties ?? {}) as { kind: 'marker' | 'lead'; id: number; title: string; proof?: string; sharp?: boolean }
+    const p = (feature.properties ?? {}) as { kind: MapItem['kind']; id: number; title: string; proof?: string; sharp?: boolean }
     return { id: p.id, kind: p.kind, status: 'active', geometry: feature.geometry as Geometry, proof: p.proof, sharp: p.sharp, title: p.title }
   }), [mapFeatures])
   const framed = useRef(false)

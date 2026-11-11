@@ -17,6 +17,8 @@ export type CurrentUser = {
   tourSeen?: boolean
   /** Designs their own place or for clients (welcome page); null until chosen. */
   accountKind?: 'individual' | 'professional' | null
+  /** « Mes heures » shows in the avatar menu. */
+  timeEntries?: boolean
 }
 
 export type OtherAccount = { sessionId: number; name: string; email: string; avatarUrl: string | null }

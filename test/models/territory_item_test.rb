@@ -68,6 +68,17 @@ class TerritoryItemTest < ActiveSupport::TestCase
     assert lead(rank: "soil").soil_practice?, "unknown land counts as farmland"
   end
 
+  test "a marker or a lead points to a sub-basin of its own territory" do
+    basin = @territory.items.create!(kind: "basin", title: "Vallon du Bocq", properties: { order: "1", outlet: "le Bocq" }, geometry: commune_square(size: 0.02))
+    assert_equal({ "order" => 1, "outlet" => "le Bocq" }, basin.properties)
+    assert @territory.items.create(kind: "marker", title: "Coulée", properties: { basin_id: basin.id }).persisted?
+
+    other = make_territory(make_team("Autre", admin: users(:michael)))
+    stray = other.items.create(kind: "lead", title: "Haie", properties: { basin_id: basin.id })
+    assert stray.errors.include?(:properties)
+    refute @territory.items.new(kind: "basin", title: "Point", geometry: inside_point).valid?, "a sub-basin is an area"
+  end
+
   test "accept and reject record who decided" do
     item = @territory.items.create!(kind: "expectation", title: "Haies", status: "draft", source: "ai", rationale: "Tiré du PCDN.")
     item.accept!(users(:michael))

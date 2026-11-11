@@ -210,6 +210,55 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal({ "to_buy_eur" => 10.0, "total_eur" => 20.0 }, data["palette_budget"])
   end
 
+  test "update_palette_budget notes the price, size, supplier and target of palette lines, and nothing else" do
+    hazel = @map.palette_items.create!(species: plant_species(:alder), target_count: 100, role: "hedge", unit_price: 2, supplier: "Ancienne")
+    draft = @map.palette_items.create!(species: plant_species(:apple), status: "draft", source: "ai", rationale: "Proposé par l'IA.")
+    items = [
+      { palette_item_id: hazel.id, unit_price: 1.2, size: "60/90 racines nues", supplier: nil, target_count: 120 },
+      { palette_item_id: draft.id, unit_price: 5 },
+      { palette_item_id: 999_999, unit_price: 5 }
+    ]
+    data, error = call_tool(@owner, "update_palette_budget", { map_id: @map.id, items: })
+    refute error, data
+    hazel.reload
+    assert_equal [ 1.2, "60/90 racines nues", nil, 120, "hedge" ], [ hazel.unit_price.to_f, hazel.size, hazel.supplier, hazel.target_count, hazel.role ]
+    assert_equal [ 1, 2 ], data["rejected"].map { _1["index"] }
+    assert_match(/introuvable/, data["rejected"][0]["error"])
+    assert_nil draft.reload.unit_price, "a draft waits for the human"
+    assert_equal({ "updated" => 1, "rejected" => 2 }, AiAction.last.result)
+    assert_equal "http://www.example.com/maps/#{@map.id}/palette", data["url"]
+
+    _, error = call_tool(@owner, "update_palette_budget", { map_id: @map.id, items: [ { palette_item_id: hazel.id, role: "food" } ] })
+    assert error, "only budget fields"
+    text, error = call_tool(@viewer, "update_palette_budget", { map_id: @map.id, items: [ { palette_item_id: hazel.id, unit_price: 3 } ] })
+    assert error, text
+    assert_equal 1.2, hazel.reload.unit_price.to_f
+  end
+
+  test "update_palette_budget prices a species drawn on the map that is not in the palette yet" do
+    elder = plant_species(:apple)
+    @map.features.create!(layer: "plants", kind: "plant", geometry: { "type" => "Point", "coordinates" => [ 4.905, 50.3402 ] },
+                          properties: { "species_id" => elder.id })
+    data, error = call_tool(@owner, "update_palette_budget", { map_id: @map.id, items: [
+      { species_id: elder.id, unit_price: 18, supplier: "Pépinière du coin" },
+      { species_id: 999_999, unit_price: 1 },
+      { unit_price: 1, size: "pot" }
+    ] })
+    refute error, data
+    item = @map.palette_items.find_by!(species: elder, variety_id: nil)
+    assert_equal [ 18.0, "Pépinière du coin", "active", users(:michael) ], [ item.unit_price.to_f, item.supplier, item.status, item.created_by ]
+    assert_equal [ 1, 2 ], data["rejected"].map { _1["index"] }
+
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal 18.0, data["palette_budget"]["total_eur"]
+  end
+
+  test "get_map budgets a plant with no plant drawn on the map from its target" do
+    @map.palette_items.create!(species: plant_species(:alder), unit_price: 1.2, target_count: 100)
+    data, = call_tool(@owner, "get_map", { map_id: @map.id })
+    assert_equal({ "to_buy_eur" => 120.0, "total_eur" => 120.0 }, data["palette_budget"])
+  end
+
   test "get_map gives the bio-indicator plants noted on the terrain and what they point to" do
     @map.bioindicator_observations.create!(catalog_key: "ortie", abundance: "dominant", location: [ 4.906, 50.341 ])
     data, error = call_tool(@viewer, "get_map", { map_id: @map.id })
