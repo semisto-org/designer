@@ -17,6 +17,8 @@
 # Per region (settings, read through `region.setting`):
 # - geocoder.provider = ban: France's national address base answers first
 #   (every house number), the providers above after it.
+# - geocoder.provider = icar (+ geocoder.icar.url): Wallonia's official
+#   address register (Providers::Geocoder::Icar) answers first.
 # - geocoder.house_numbers = ban: on the European base, a query with a
 #   number first asks the same base for an exact French house number, so a
 #   new map in France finds its house before its region is known.
@@ -98,6 +100,9 @@ module Providers
       def regional_adapters(query, region)
         return [] unless region
         return [ Ban.new ] if region.setting("geocoder", "provider") == "ban"
+        if region.setting("geocoder", "provider") == "icar" && (url = region.setting("geocoder", "icar", "url")).present?
+          return [ Icar.new(url:) ]
+        end
         return [ Ban.new(min_score: 0.8, house_numbers_only: true) ] if region.setting("geocoder", "house_numbers") == "ban" && query.match?(/\d/)
         []
       end

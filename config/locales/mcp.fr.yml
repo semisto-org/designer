@@ -99,20 +99,33 @@ fr:
       get_feature:
         title: "Lire un élément"
         description: "Un élément de la carte : géométrie, attributs, justification s'il a été proposé par une IA, et mesures (surface en m², longueur et périmètre en m). Pour un plant : son état d'après sa dernière reprise notée (state), les 20 dernières entrées de son journal (journal, journal_total ; list_plant_observations pour tout lire) et sa croissance (growth) : taille adulte et années pour l'atteindre (adult, indicative quand une valeur vient d'une moyenne de strate), conduite, âge aujourd'hui, hauteur et étalement de sa couronne aujourd'hui (today) puis 1, 5, 15 et 30 ans après sa plantation (by_age, null pour une plante de soutien déjà retirée) : la même courbe que la frise du temps de l'éditeur et la vue 3D. Sers-t'en pour juger l'ombre, les distances de plantation et ce que la personne verra dans 5, 15 ou 30 ans. Pour un tuyau, un fossé, une baissière ou une ligne d'irrigation : water_links dit l'élément d'où il part (from) et celui où il arrive (to), et la chute d'eau entre les deux (drop_m : la hauteur de l'élément de départ au-dessus du sol, properties.above_ground_m d'une cuve, plus la pente du terrain) avec la pression à l'arrivée (pressure_bar, sans les pertes dans le tuyau) ; relief false quand le relief n'est pas importé et que seule la hauteur compte. Pour une cuve, une mare ou un toit : water_links.links liste les lignes qui en partent (out) ou y arrivent (in)."
+      geocode:
+        title: "Trouver une adresse"
+        description: "Une adresse, un lieu-dit ou le nom d'une ferme → des points candidats [lng, lat], avec leur emprise (bbox) quand c'est une rue ou un village. Le registre officiel de la région répond d'abord quand il existe (en Wallonie ICAR, le registre des adresses du SPW, avec chaque numéro de maison ; en France la Base Adresse Nationale), OpenStreetMap ensuite. Avec map_id ou territory_id, chaque candidat dit s'il tombe dans le lieu (inside) et à quelle distance de sa limite (distance_m, 0 dedans). Sers-t'en pour placer un repère cité par la presse ou un compte rendu (« rue du Moulin », « ferme de Bauche ») avant de le proposer, et dis dans la justification d'où vient le point."
+        params:
+          address: "L'adresse ou le nom du lieu, le plus complet possible : « Rue du Moulin 12, 5530 Yvoir », « Ferme de Bauche, Yvoir »."
+        note: "Le premier candidat est le plus proche de ce qui a été tapé. Un lieu-dit peut avoir plusieurs homonymes dans la région : vérifie inside, et la commune dans label."
+        nothing: "Aucun candidat. Essaie sans le numéro, avec le nom de la commune, ou avec l'orthographe du panneau (« Fond » ou « Fonds »)."
       get_region_layers:
         title: "Couches de la région"
-        description: "Catalogue des couches de données de la région de la carte (en Wallonie, celles du Géoportail : sols, relief, zones inondables, plan de secteur, cadastre…) : clé, nom, groupe, et si la couche s'interroge en un point avec identify_at_point. aerial_photos liste les photos aériennes de la région, de la plus ancienne à la plus récente (année, saison, jumelle infrarouge, et covers_map: false pour un vol partiel qui ne passe pas au-dessus du terrain) : get_aerial_photo en montre une."
+        description: "Avec map_id ou territory_id (un territoire, sans les réseaux). Catalogue des couches de données de la région de la carte (en Wallonie, celles du Géoportail : sols, relief, zones inondables, plan de secteur, cadastre…) : clé, nom, groupe, et si la couche s'interroge en un point avec identify_at_point. aerial_photos liste les photos aériennes de la région, de la plus ancienne à la plus récente (année, saison, jumelle infrarouge, et covers_map: false pour un vol partiel qui ne passe pas au-dessus du terrain, ou du centre du territoire) : get_aerial_photo en montre une."
       get_aerial_photo:
         title: "Voir le terrain d'avion, année par année"
-        description: "Le terrain vu d'avion, en image (nord en haut, contour de la carte et ses abords), dans l'une des photos aériennes de la région : en Wallonie chaque vol du SPW depuis 1971, en Flandre, à Bruxelles et au Luxembourg chaque vol publié, en France les mosaïques de l'IGN depuis 1950. Sans photo, la photo par défaut (la plus récente). Compare deux années pour lire l'histoire du lieu : haies, vergers, mares, chemins et fossés disparus, bois qui a poussé, prairie labourée. En infrarouge fausses couleurs (infrared), la végétation vigoureuse ressort en rouge vif, l'eau et les sols humides en sombre. Ce que tu y vois reste à vérifier sur place : dis-le, et invite la personne à aller voir."
+        description: "Le terrain vu d'avion, en image (nord en haut, contour de la carte et ses abords), dans l'une des photos aériennes de la région. Avec territory_id, toute la commune ; avec un point (lng, lat) et span_m, un carré de span_m mètres autour de lui, n'importe où dans la carte ou le territoire, pour regarder de près un vallon, une ferme ou un repère (bbox dit ce que montre l'image) : en Wallonie chaque vol du SPW depuis 1971, en Flandre, à Bruxelles et au Luxembourg chaque vol publié, en France les mosaïques de l'IGN depuis 1950. Sans photo, la photo par défaut (la plus récente). Compare deux années pour lire l'histoire du lieu : haies, vergers, mares, chemins et fossés disparus, bois qui a poussé, prairie labourée. En infrarouge fausses couleurs (infrared), la végétation vigoureuse ressort en rouge vif, l'eau et les sols humides en sombre. Ce que tu y vois reste à vérifier sur place : dis-le, et invite la personne à aller voir."
         params:
           photo: "Clé de la photo (aerial_photos de get_region_layers, ou other_photos d'un appel précédent). Par défaut : la plus récente."
           infrared: "true pour la jumelle infrarouge de cette photo, quand elle existe."
+          lng: "Longitude WGS84 du centre de l'image, dans la carte ou le territoire (avec lat). Par défaut : tout le lieu."
+          lat: "Latitude WGS84 du centre de l'image (avec lng)."
+          span_m: "Côté de l'image en mètres autour du point (120 à 5000). Par défaut : 400."
         outline: "Le contour de la carte est tracé en jaune."
+        outline_territory: "La limite du territoire est tracée en jaune."
+        point_needs_both: "Donne lng et lat ensemble."
+        span_needs_point: "span_m va avec un point (lng et lat)."
         note: "Une photo aérienne montre ce qu'on voyait d'avion ce jour-là : une haie peut s'y cacher sous l'ombre d'un bois, une ancienne mare n'être plus qu'une tache plus verte. Ce que tu en déduis reste une piste à vérifier sur le terrain."
       identify_at_point:
         title: "Interroger les couches en un point"
-        description: "Ce que disent les couches de la région en un point du terrain : type de sol, aléa d'inondation, affectation au plan de secteur, parcelle cadastrale… Le point doit se trouver à moins de 1 km du terrain. Sans layers, toutes les couches interrogeables sont interrogées."
+        description: "Ce que disent les couches de la région en un point du terrain (map_id) ou du territoire (territory_id) : type de sol, aléa d'inondation, affectation au plan de secteur, parcelle cadastrale… Le point doit se trouver à moins de 1 km du terrain, ou dans le territoire (1 km au-delà de sa limite au plus). Sans layers, toutes les couches interrogeables sont interrogées."
         params:
           layers: "Clés des couches à interroger (voir get_region_layers). Par défaut : toutes les couches interrogeables."
       get_site_data:
@@ -125,8 +138,12 @@ fr:
         description: "La courbe de niveau qui passe par un point du terrain (là où le sol reste à la même hauteur), calculée sur le relief téléchargé par la personne et coupée au contour du terrain : une LineString GeoJSON, son altitude et sa longueur. Trace-la avant de proposer une baissière, une keyline, une haie en travers de la pente ou un chemin qui suit le relief, et reprends sa géométrie dans propose_features : une baissière hors courbe concentre l'eau au lieu de l'infiltrer. Sans relief téléchargé, l'outil le dit : demande alors à la personne de le télécharger dans le panneau « Eau et relief »."
       get_catchment:
         title: "Bassin versant"
-        description: "Le bassin versant d'une mare, d'une baissière ou d'un jardin de pluie (feature_id), ou d'un point où l'on pourrait en creuser un (lng, lat) : la surface dont le ruissellement finit là, calculée sur le relief téléchargé par la personne. Donne sa surface (dont la part sur le terrain), son contour GeoJSON, la pluie qui y tombe par an, le volume de l'ouvrage et la pluie qui le remplit si tout ruisselle (fill_rain_mm : sous 15 mm, il déborde à chaque grosse averse ; au-delà de 50, il se remplit lentement). beyond_relief vrai : le bassin continue au-delà du relief téléchargé, la surface est un minimum ; demande alors à la personne d'où vient l'eau en amont. infiltration_mm_h : la vitesse mesurée par le test d'infiltration le plus proche (à infiltration_distance_m mètres, ou la médiane des tests de la carte si aucun n'est à moins de 50 m) ; empties_in_h : en combien d'heures une baissière ou un jardin de pluie se vide dans le sol. Utilise-le avant de proposer ou de dimensionner une mare, une baissière ou leur trop-plein."
+        description: "Sur une carte (map_id) ou n'importe où dans un territoire (territory_id, avec un point). Le bassin versant d'une mare, d'une baissière ou d'un jardin de pluie (feature_id), ou d'un point où l'on pourrait en creuser un (lng, lat) : la surface dont le ruissellement finit là, calculée sur le relief téléchargé par la personne. Donne sa surface (dont la part sur le terrain), son contour GeoJSON, la pluie qui y tombe par an, le volume de l'ouvrage et la pluie qui le remplit si tout ruisselle (fill_rain_mm : sous 15 mm, il déborde à chaque grosse averse ; au-delà de 50, il se remplit lentement). beyond_relief vrai : le bassin continue au-delà du relief téléchargé, la surface est un minimum ; demande alors à la personne d'où vient l'eau en amont. infiltration_mm_h : la vitesse mesurée par le test d'infiltration le plus proche (à infiltration_distance_m mètres, ou la médiane des tests de la carte si aucun n'est à moins de 50 m) ; empties_in_h : en combien d'heures une baissière ou un jardin de pluie se vide dans le sol. Utilise-le avant de proposer ou de dimensionner une mare, une baissière ou leur trop-plein."
         missing_target: "Donne feature_id (une mare, une baissière ou un jardin de pluie) ou un point (lng et lat)."
+        missing_point: "Sur un territoire, donne un point (lng et lat) : le bassin versant de ce point est calculé sur le relief du territoire."
+        relief_pending: "Le relief de ce territoire se prépare (%{progress} %) : c'est la première fois qu'on y calcule un bassin versant. Réessaie dans quelques minutes."
+        relief_failed: "Le relief de ce territoire n'a pas pu être préparé : %{error} Réessaie dans une heure."
+        territory_note: "Calculé sur un relief grossier de toute la commune (cell_size_m) : bon pour suivre l'eau d'un vallon à l'autre et comparer des bassins, pas pour dimensionner un ouvrage. Le point est déplacé vers le fond de vallée à moins de 90 m (outlet), là où passe le plus d'eau : vérifie qu'il tombe bien sur le cours d'eau ou le vallon voulu. Sur une carte de terrain, le relief fin donne la mesure juste."
       find_keypoints:
         title: "Trouver les points clés"
         description: "Les points clés (keypoints, P.A. Yeomans) des vallons du terrain, calculés sur le relief téléchargé par la personne : là où le fond d'un vallon cesse de descendre raide (slope_above_pct) pour descendre doucement (slope_below_pct). Chacun donne la surface qui y draine (catchment_m2), le fond du vallon (valley, LineString) et sa keyline : la courbe de niveau qui passe par lui, coupée au contour du terrain. Une baissière ou une ligne d'arbres posée sur la keyline recueille l'eau du vallon et la répand vers les croupes ; les lignes parallèles se tracent au-dessus et en dessous, à égale distance. Reprends la géométrie de la keyline dans propose_features (couche water, type keyline) et explique à la personne pourquoi ce point. Une liste vide : aucun vallon ne casse nettement sa pente sur ce terrain ; une baissière sur une courbe choisie avec trace_contour reste possible."
@@ -712,6 +729,12 @@ fr:
       identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Terranova."
       identify_layer_failed: "Le service de cette couche n'a pas répondu."
       point_too_far: "Le point doit se trouver à moins de %{distance} m du terrain de la carte."
+      point_outside_territory: "Le point doit se trouver dans le territoire, ou à moins de %{distance} m de sa limite."
+      map_or_territory: "Donne map_id (une carte) ou territory_id (un territoire), l'un des deux."
+      no_region: "Ce lieu n'appartient encore à aucune région de Terranova."
+      no_relief_provider: "La région de ce territoire n'a pas encore de relief dans Terranova."
+      geocoder_off: "La recherche d'adresse n'est pas configurée sur ce serveur Terranova."
+      geocoder_unavailable: "Le service de recherche d'adresse ne répond pas pour le moment. Réessaie dans une minute."
       no_identifiable_layer: "Aucune couche interrogeable ne correspond, pour la région de cette carte."
       plants_unavailable: "Le catalogue des plantes n'est pas encore disponible sur Semisto Terranova."
       plant_not_found: "Plante %{id} introuvable dans le catalogue."
@@ -928,6 +951,7 @@ fr:
       get_site_data: "a lu les données du lieu"
       trace_contour: "a tracé une courbe de niveau"
       get_catchment: "a calculé un bassin versant"
+      geocode: "a cherché une adresse"
       find_keypoints: "a cherché les points clés des vallons"
       trace_parallels: "a tracé les parallèles d'une keyline"
       get_storm_observations: "a lu les relevés d'averse"

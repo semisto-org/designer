@@ -25,23 +25,29 @@ module Relief
         def format_km2(value) = ActiveSupport::NumberHelper.number_to_rounded(value, precision: 1, delimiter: " ", separator: ",")
     end
 
-    def self.extent_for(bbox, margin_m: DEFAULT_MARGIN_M, max_cells: MAX_CELLS)
-      new(margin_m:, max_cells:).extent_for(bbox)
+    # A territory (a whole commune, 20 to 100 km²): coarse enough for the
+    # drainage to run on the server (FlowGrid) without resampling.
+    TERRITORY_CELL_SIZES = [ 10.0, 15.0, 20.0, 30.0 ].freeze
+    TERRITORY_MARGIN_M = 2000.0
+
+    def self.extent_for(bbox, margin_m: DEFAULT_MARGIN_M, max_cells: MAX_CELLS, cell_sizes: CELL_SIZES)
+      new(margin_m:, max_cells:, cell_sizes:).extent_for(bbox)
     end
 
-    def initialize(margin_m: DEFAULT_MARGIN_M, max_cells: MAX_CELLS)
+    def initialize(margin_m: DEFAULT_MARGIN_M, max_cells: MAX_CELLS, cell_sizes: CELL_SIZES)
       @margin_m = margin_m.to_f
       @max_cells = max_cells
+      @cell_sizes = cell_sizes
     end
 
     def extent_for(bbox)
-      CELL_SIZES.each do |size|
+      @cell_sizes.each do |size|
         extent = Extent.around(bbox, cell_size_m: size, margin_m: @margin_m)
         return extent if extent.cells <= @max_cells
       end
-      coarsest = Extent.around(bbox, cell_size_m: CELL_SIZES.last, margin_m: @margin_m)
+      coarsest = Extent.around(bbox, cell_size_m: @cell_sizes.last, margin_m: @margin_m)
       area_km2 = coarsest.width_m * coarsest.height_m / 1_000_000.0
-      max_km2 = @max_cells * CELL_SIZES.last**2 / 1_000_000.0
+      max_km2 = @max_cells * @cell_sizes.last**2 / 1_000_000.0
       raise TooLarge.new(area_km2, max_km2)
     end
   end

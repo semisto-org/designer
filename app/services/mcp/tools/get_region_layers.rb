@@ -1,18 +1,25 @@
 module Mcp
   module Tools
     class GetRegionLayers < Base
+      include PlaceAccess
+
       arguments(
-        properties: { map_id: { type: "integer", minimum: 1, description: :map_id } },
-        required: %w[map_id]
+        properties: {
+          map_id: { type: "integer", minimum: 1, description: :map_id },
+          territory_id: { type: "integer", minimum: 1, description: :territory_id }
+        }
       )
       hints
 
-      def perform(map_id:)
-        map = find_map!(map_id)
-        layers = map.region.catalogue.enabled.to_a
-        uncovered = PhotoArchive::Coverage.uncovered(map)
+      def perform(map_id: nil, territory_id: nil)
+        place = find_place!(map_id, territory_id)
+        region = require_region!(place)
+        layers = place_layers(place)
+        # A partial flight is judged at the place's center (for a territory,
+        # a point inside the commune).
+        uncovered = PhotoArchive::Coverage.uncovered(place)
         {
-          region: { key: map.region.key, name: map.region.name, country_code: map.region.country_code },
+          region: { key: region.key, name: region.name, country_code: region.country_code },
           identify_available: layers.any?(&:identifiable?),
           layers: layers.map do |layer|
             {
@@ -22,7 +29,7 @@ module Mcp
             }.merge(photo_json(layer)).compact
           end,
           # The flights through time, oldest first: get_aerial_photo shows any of them.
-          aerial_photos: PhotoArchive.vintages(map.region, uncovered:).presence
+          aerial_photos: PhotoArchive.vintages(region, uncovered:).presence
         }.compact
       end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -791,7 +791,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
   end
 
   create_table "map_terrains", force: :cascade do |t|
-    t.bigint "map_id", null: false
+    t.bigint "map_id"
     t.string "status", default: "pending", null: false
     t.string "provider"
     t.string "crs", default: "EPSG:3857", null: false
@@ -816,7 +816,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
     t.text "error"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "territory_id"
     t.index ["map_id"], name: "index_map_terrains_on_map_id", unique: true
+    t.index ["territory_id"], name: "index_map_terrains_on_territory_id", unique: true
+    t.check_constraint "num_nonnulls(map_id, territory_id) = 1", name: "map_terrains_one_owner"
   end
 
   create_table "map_transfers", force: :cascade do |t|
@@ -1859,6 +1862,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
     t.index ["region_id"], name: "index_territories_on_region_id"
   end
 
+  create_table "territory_item_updates", force: :cascade do |t|
+    t.bigint "territory_id", null: false
+    t.bigint "territory_item_id"
+    t.string "item_title", null: false
+    t.string "batch", null: false
+    t.jsonb "proposed_changes", default: {}, null: false
+    t.text "rationale", null: false
+    t.string "status", default: "pending", null: false
+    t.string "client_name"
+    t.bigint "created_by_id"
+    t.bigint "reviewed_by_id"
+    t.datetime "reviewed_at"
+    t.jsonb "applied_changes"
+    t.jsonb "previous_values"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_territory_item_updates_on_created_by_id"
+    t.index ["reviewed_by_id"], name: "index_territory_item_updates_on_reviewed_by_id"
+    t.index ["territory_id", "status"], name: "index_territory_item_updates_on_territory_id_and_status"
+    t.index ["territory_item_id"], name: "index_territory_item_updates_on_territory_item_id"
+    t.index ["territory_item_id"], name: "index_territory_item_updates_one_pending", unique: true, where: "((status)::text = 'pending'::text)"
+  end
+
   create_table "territory_items", force: :cascade do |t|
     t.bigint "territory_id", null: false
     t.string "kind", null: false
@@ -2043,6 +2069,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
   add_foreign_key "map_share_links", "maps"
   add_foreign_key "map_share_links", "users", column: "created_by_id"
   add_foreign_key "map_terrains", "maps"
+  add_foreign_key "map_terrains", "territories", on_delete: :cascade
   add_foreign_key "map_transfers", "maps", on_delete: :cascade
   add_foreign_key "map_transfers", "users", column: "from_user_id", on_delete: :cascade
   add_foreign_key "map_transfers", "users", column: "to_user_id", on_delete: :cascade
@@ -2168,6 +2195,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
   add_foreign_key "territories", "organizations", on_delete: :cascade
   add_foreign_key "territories", "regions", on_delete: :nullify
   add_foreign_key "territories", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "territory_item_updates", "territories", on_delete: :cascade
+  add_foreign_key "territory_item_updates", "territory_items", on_delete: :nullify
+  add_foreign_key "territory_item_updates", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "territory_item_updates", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "territory_items", "territories", on_delete: :cascade
   add_foreign_key "territory_items", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "territory_items", "users", column: "decided_by_id", on_delete: :nullify

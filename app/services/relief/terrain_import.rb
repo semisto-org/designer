@@ -8,6 +8,10 @@ module Relief
   # the ortho texture (each optional: a failure there leaves a warning, not a
   # failed import).
   #
+  # A territory's relief is the terrain model only, on a coarse grid
+  # (GridPolicy::TERRITORY_CELL_SIZES) with a wider margin: what the MCP's
+  # get_catchment needs to follow water across a commune.
+  #
   # Chunks of points are fetched on a few threads (the SPW answers in ~9 s
   # per chunk; sequentially a square kilometre would take a quarter of an
   # hour). Workers only do HTTP; this thread writes the progress.
@@ -15,30 +19,36 @@ module Relief
     class Failure < StandardError; end
 
     OPTIONAL = %i[surface landcover].freeze
+    # A territory's coarse cells are spread over kilometres: the SPW's cost
+    # follows the area a request touches, not its number of points, and a
+    # map's 20,000-point chunk across a commune ends in a gateway timeout.
+    # 1,500 points at 30 m answer in about 6 s.
+    TERRITORY_CHUNK = 1_500
 
     def initialize(terrain, provider: nil, logger: Rails.logger)
       @terrain = terrain
-      @map = terrain.map
-      @provider = provider || Providers::Elevation.for(@map.region)
+      @owner = terrain.owner
+      @territory = @owner.is_a?(Territory)
+      @provider = provider || Providers::Elevation.for(@owner.region)
       @logger = logger
     end
 
     def call
       raise Failure, I18n.t("relief.errors.unavailable") unless @provider
-      raise Failure, I18n.t("relief.errors.no_boundary") unless @map.boundary
+      raise Failure, I18n.t("relief.errors.no_boundary") unless @owner.boundary
 
-      @extent = GridPolicy.extent_for(@map.bbox, margin_m: margin_m)
+      @extent = grid_policy.extent_for(@owner.bbox)
       start!
       @warnings = []
       @sources = {}
       @done = 0
-      @total = datasets.size * chunks.size + (@provider.dataset?(:texture) ? 1 : 0)
+      @total = datasets.size * chunks.size + (!@territory && @provider.dataset?(:texture) ? 1 : 0)
 
       heights = fetch(:terrain)
       packed = Raster.pack_heights(heights)
       attach(:grid, packed.bytes, "terrain.bin")
       @sources["terrain"] = @provider.dataset_label(:terrain)
-      stats = Stats.new(heights, @extent, Mask.for_geometry(@map.boundary, @extent)).call
+      stats = Stats.new(heights, @extent, Mask.for_geometry(@owner.boundary, @extent)).call
 
       surface = optional(:surface) { Raster.pack_heights(fetch(:surface)) }
       attach(:surface, surface.bytes, "surface.bin") if surface
@@ -61,27 +71,35 @@ module Relief
           "texture" => texture && { "width" => texture[:width], "height" => texture[:height] }
         }.compact
       )
-      BuildingsWarmJob.perform_later(@map)
+      BuildingsWarmJob.perform_later(@owner) unless @territory
       @terrain
     rescue GridPolicy::TooLarge, Failure => e
       fail!(e.message)
     rescue StandardError => e
-      @logger.error("[relief] import of map #{@map.id} failed: #{e.class}: #{e.message}")
+      @logger.error("[relief] import of #{label} failed: #{e.class}: #{e.message}")
       Sentry.capture_exception(e) if defined?(Sentry) && Sentry.initialized?
       fail!(I18n.t("relief.errors.provider_failed"))
     end
 
     private
-      def margin_m
-        (@map.region.setting(:relief, :margin_m) || GridPolicy::DEFAULT_MARGIN_M).to_f
+      def grid_policy
+        if @territory
+          margin = @owner.region&.setting(:territory, :relief_margin_m) || GridPolicy::TERRITORY_MARGIN_M
+          GridPolicy.new(margin_m: margin, max_cells: FlowGrid::MAX_CELLS, cell_sizes: GridPolicy::TERRITORY_CELL_SIZES)
+        else
+          GridPolicy.new(margin_m: (@owner.region.setting(:relief, :margin_m) || GridPolicy::DEFAULT_MARGIN_M).to_f)
+        end
       end
+
+      def label = "#{@territory ? "territory" : "map"} #{@owner.id}"
 
       def datasets
-        @datasets ||= [ :terrain, *OPTIONAL.select { |name| @provider.dataset?(name) } ]
+        @datasets ||= [ :terrain, *(@territory ? [] : OPTIONAL.select { |name| @provider.dataset?(name) }) ]
       end
 
+
       def chunks
-        @chunks ||= (0...@extent.cells).each_slice(@provider.chunk_size).to_a
+        @chunks ||= (0...@extent.cells).each_slice(@territory ? [ TERRITORY_CHUNK, @provider.chunk_size ].min : @provider.chunk_size).to_a
       end
 
       def start!
@@ -141,13 +159,13 @@ module Relief
       # An optional layer that fails leaves a warning (the relief stays
       # usable without shadows of trees or land cover).
       def optional(name)
-        return nil unless @provider.dataset?(name)
+        return nil if @territory || !@provider.dataset?(name)
 
         result = yield
         @sources[name.to_s] = @provider.dataset_label(name)
         result
       rescue StandardError => e
-        @logger.warn("[relief] #{name} of map #{@map.id} skipped: #{e.class}: #{e.message}")
+        @logger.warn("[relief] #{name} of #{label} skipped: #{e.class}: #{e.message}")
         @warnings << I18n.t("relief.warnings.#{name}")
         nil
       end

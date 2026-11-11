@@ -29,27 +29,32 @@ module Relief
 
     Result = Data.define(:geometry, :area_m2, :inside_boundary_m2, :beyond_relief, :cell_size_m,
                          :capacity_m3, :fill_rain_mm, :annual_rain_m3, :annual_rainfall_mm,
-                         :infiltration_mm_h, :infiltration_distance_m, :empties_in_h) do
+                         :infiltration_mm_h, :infiltration_distance_m, :empties_in_h, :outlet) do
       def as_json(*)
         {
           geometry:, areaM2: area_m2, insideBoundaryM2: inside_boundary_m2, beyondRelief: beyond_relief,
           cellSizeM: cell_size_m, capacityM3: capacity_m3, fillRainMm: fill_rain_mm,
           annualRainM3: annual_rain_m3, annualRainfallMm: annual_rainfall_mm,
-          infiltrationMmH: infiltration_mm_h, infiltrationDistanceM: infiltration_distance_m, emptiesInH: empties_in_h
-        }
+          infiltrationMmH: infiltration_mm_h, infiltrationDistanceM: infiltration_distance_m, emptiesInH: empties_in_h,
+          outlet:
+        }.compact
       end
     end
 
     def self.applies_to?(feature) = KINDS.include?(feature.kind)
 
     # A feature, or a point (lng/lat) for a place where nothing is drawn yet.
-    def initialize(map, feature: nil, lng: nil, lat: nil, heights: nil)
+    # `snap_m`: a point moves to the cell within that distance where the
+    # most water passes, so a point read on a river map lands on the valley
+    # floor of a coarse grid instead of the slope beside it (`outlet`).
+    def initialize(map, feature: nil, lng: nil, lat: nil, heights: nil, snap_m: nil)
       @map = map
       @terrain = map.terrain
       @feature = feature
       @lng = lng&.to_f
       @lat = lat&.to_f
       @raw = heights
+      @snap_m = snap_m&.to_f
     end
 
     def call
@@ -61,10 +66,10 @@ module Relief
 
     private
       def cache_key
-        target = @feature ? [ @feature.id, @feature.lock_version ] : [ @lng.round(6), @lat.round(6) ]
+        target = @feature ? [ @feature.id, @feature.lock_version ] : [ @lng.round(6), @lat.round(6), @snap_m ]
         settings = @map.effective_water_settings.slice("annual_rainfall_mm")
         tests = Digest::SHA1.hexdigest(@map.infiltration_measurements.to_json)[0, 12]
-        [ "relief/catchment/v2", @terrain.id, @terrain.version, @map.boundary && Digest::SHA1.hexdigest(@map.boundary.as_text)[0, 12], settings, tests, *target ]
+        [ "relief/catchment/v3", @terrain.id, @terrain.version, @map.boundary && Digest::SHA1.hexdigest(@map.boundary.as_text)[0, 12], settings, tests, *target ]
       end
 
       def compute
@@ -72,7 +77,16 @@ module Relief
         targets = target_cells
         raise Error, :outside_relief if targets.empty?
 
-        inside = upstream(targets, @grid.receivers)
+        outlet = nil
+        if @snap_m && !@feature
+          best = target_cells(@snap_m).max_by { |i| @grid.accumulation[i] }
+          if best && !targets.include?(best)
+            targets = [ best ]
+            outlet = @grid.lng_lat(best).map { |v| v.round(6) }
+          end
+        end
+
+        inside = upstream(targets, @grid.receivers, @grid.local_receivers)
         cells = (0...@n).select { |i| inside[i] }
         area = cells.size * @cell_m**2
         boundary_mask = @map.boundary ? Mask.for_geometry(@map.boundary, @extent) : nil
@@ -95,7 +109,8 @@ module Relief
           annual_rainfall_mm: rainfall,
           infiltration_mm_h: infiltration,
           infiltration_distance_m: distance,
-          empties_in_h: empties
+          empties_in_h: empties,
+          outlet:
         )
       end
 
@@ -137,12 +152,12 @@ module Relief
 
       # Grid cells under the element: its surface, its line widened to its
       # width, or a disc around a point; never less than about one cell.
-      def target_cells
-        Mask.for_geometry(target_area, @extent).each_byte.with_index.filter_map { |byte, i| i if byte == 1 && @heights[i] }
+      def target_cells(radius = nil)
+        Mask.for_geometry(target_area(radius), @extent).each_byte.with_index.filter_map { |byte, i| i if byte == 1 && @heights[i] }
       end
 
-      def target_area
-        radius = @cell_m * 0.75
+      def target_area(snap = nil)
+        radius = snap || @cell_m * 0.75
         geometry, radius =
           if @feature
             line = @feature.geometry.geometry_type == RGeo::Feature::LineString
@@ -158,13 +173,16 @@ module Relief
         GeoJsonGeometry::FACTORY.parse_wkt(wkt)
       end
 
-      # Every cell whose water reaches one of `targets`.
-      def upstream(targets, receiver)
+      # Every cell whose water reaches one of `targets`, along the routes
+      # out of the hollows and along each cell's own slope.
+      def upstream(targets, *receivers)
         donors = Array.new(@n)
-        receiver.each_with_index do |to, i|
-          next if to.negative?
+        receivers.uniq.each do |receiver|
+          receiver.each_with_index do |to, i|
+            next if to.negative?
 
-          (donors[to] ||= []) << i
+            (donors[to] ||= []) << i
+          end
         end
         inside = Array.new(@n, false)
         queue = targets.dup

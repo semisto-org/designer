@@ -24,8 +24,8 @@ import { ITEM_LAYER_IDS, installTeamMaps, installTerritoryItems, type MapItem } 
 import type { RegionLayerData } from '@/types'
 import type { TerritoryItemKind, TerritoryShowProps } from '@/types/territories'
 
-const TABS: TerritoryItemKind[] = ['actor', 'source', 'expectation', 'basin', 'marker', 'lead']
-const TAB_KEYS: Record<TerritoryItemKind, string> = { actor: 'actors', source: 'sources', expectation: 'expectations', basin: 'basins', marker: 'markers', lead: 'leads' }
+const TABS: TerritoryItemKind[] = ['actor', 'source', 'expectation', 'basin', 'marker', 'lead', 'request']
+const TAB_KEYS: Record<TerritoryItemKind, string> = { actor: 'actors', source: 'sources', expectation: 'expectations', basin: 'basins', marker: 'markers', lead: 'leads', request: 'requests' }
 const RANK_ORDER = ['soil', 'slow', 'structure']
 
 /** A territory: the commune read on the map, and its dossier on the side. */
@@ -39,6 +39,7 @@ export default function TerritoryShow(props: TerritoryShowProps) {
   const [layersOpen, setLayersOpen] = useState(false)
 
   const drafts = items.filter((item) => item.status === 'draft')
+  const proposals = items.filter((item) => item.status === 'active' && item.pendingUpdate)
   const byKind = (kind: TerritoryItemKind) => {
     const list = items.filter((item) => item.kind === kind && item.status === 'active')
     if (kind === 'lead') return [...list].sort((a, b) => RANK_ORDER.indexOf(a.properties.rank ?? '') - RANK_ORDER.indexOf(b.properties.rank ?? ''))
@@ -49,6 +50,7 @@ export default function TerritoryShow(props: TerritoryShowProps) {
   const expectations = items.filter((item) => item.kind === 'expectation' && item.status !== 'rejected')
   const basins = items.filter((item) => item.kind === 'basin' && item.status !== 'rejected')
     .sort((a, b) => (a.properties.order ?? Infinity) - (b.properties.order ?? Infinity))
+  const actors = items.filter((item) => item.kind === 'actor' && item.status !== 'rejected')
   const titles = useMemo(() => new Map(items.map((item) => [item.id, item.title])), [items])
 
   const place = useCallback((done: (g: Geometry | null) => void) => setPlacing(() => done), [])
@@ -113,8 +115,20 @@ export default function TerritoryShow(props: TerritoryShowProps) {
             <p className="mt-1 text-sm text-loam-600">{t('territories.show.drafts.why')}</p>
             <ul className="mt-3 grid grid-cols-1 gap-3">
               {drafts.map((item) => editing === item.id
-                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} basins={basins} place={place} onDone={() => setEditing(null)} /></li>
+                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} basins={basins} actors={actors} place={place} onDone={() => setEditing(null)} /></li>
                 : <ItemCard key={item.id} item={item} territoryId={territory.id} canEdit={canEdit} selected={selected === item.id} onEdit={() => setEditing(item.id)} onSelect={() => select(item.id)} titles={titles} />)}
+            </ul>
+          </section>
+        )}
+
+        {proposals.length > 0 && (
+          <section className="border-b border-loam-100 px-5 py-4">
+            <h2 className="flex items-center gap-2 text-lg"><Sparkles className="h-4 w-4 text-humus-600" aria-hidden />{t('territories.show.updates.title', { count: proposals.length })}</h2>
+            <p className="mt-1 text-sm text-loam-600">{t('territories.show.updates.why')}</p>
+            <ul className="mt-3 grid gap-3">
+              {proposals.map((item) => (
+                <ItemCard key={item.id} item={item} territoryId={territory.id} canEdit={canEdit} selected={selected === item.id} onEdit={() => setEditing(item.id)} onSelect={() => select(item.id)} titles={titles} review />
+              ))}
             </ul>
           </section>
         )}
@@ -136,14 +150,14 @@ export default function TerritoryShow(props: TerritoryShowProps) {
             <Button size="sm" variant="secondary" className="mb-3" onClick={() => setEditing('new')}><Plus className="h-4 w-4" aria-hidden />{t('territories.show.add')}</Button>
           )}
           {editing === 'new' && (
-            <div className="mb-3"><ItemForm territoryId={territory.id} kind={tab} sources={sources} expectations={expectations} basins={basins} place={place} onDone={() => setEditing(null)} /></div>
+            <div className="mb-3"><ItemForm territoryId={territory.id} kind={tab} sources={sources} expectations={expectations} basins={basins} actors={actors} place={place} onDone={() => setEditing(null)} /></div>
           )}
           {list.length === 0 && editing !== 'new' ? (
             <CompanionEmpty title={t(`territories.show.empty.${TAB_KEYS[tab]}.title`)} why={t(`territories.show.empty.${TAB_KEYS[tab]}.why`)} />
           ) : (
             <ul className="grid grid-cols-1 gap-3">
               {list.map((item) => editing === item.id
-                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} basins={basins} place={place} onDone={() => setEditing(null)} /></li>
+                ? <li key={item.id}><ItemForm territoryId={territory.id} kind={item.kind} item={item} sources={sources} expectations={expectations} basins={basins} actors={actors} place={place} onDone={() => setEditing(null)} /></li>
                 : <ItemCard key={item.id} item={item} territoryId={territory.id} canEdit={canEdit} selected={selected === item.id} onEdit={() => setEditing(item.id)} onSelect={() => select(item.id)} titles={titles} />)}
             </ul>
           )}

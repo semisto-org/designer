@@ -23,13 +23,18 @@
 #                structures), theme (water or the food tree), land type,
 #                order of magnitude only, the farmer's answer, its keeper
 #                and the decision taken on it.
+# - request:     a document or a piece of information still to obtain
+#                (a GISER opinion, the river contract's inventory), from
+#                whom, and where it stands: to ask, asked, received, refused.
 #
 # Like map features, an AI proposes items as drafts with a rationale (MCP
-# propose_territory_items); a person accepts or rejects them one by one.
+# propose_territory_items); a person accepts or rejects them one by one. A
+# change to a kept entry, or its removal, is proposed the same way
+# (TerritoryItemUpdate) and reviewed field by field.
 class TerritoryItem < ApplicationRecord
   include GeoJsonGeometry
 
-  KINDS = %w[actor source expectation basin marker lead].freeze
+  KINDS = %w[actor source expectation basin marker lead request].freeze
   STATUSES = %w[draft active rejected].freeze
   SOURCES = %w[human ai].freeze
   TITLE_MAX_LENGTH = 200
@@ -45,12 +50,16 @@ class TerritoryItem < ApplicationRecord
   LANDS = %w[public agricultural private unknown].freeze
   FARMER_ANSWERS = %w[yes no thinking].freeze
   DECISIONS = %w[retained postponed dismissed].freeze
+  REQUEST_KINDS = %w[document info].freeze
+  REQUEST_STATES = %w[to_ask asked received refused].freeze
+  EXCERPTS_MAX = 20
+  EXCERPT_MAX_LENGTH = 1500
 
   # The keys each kind keeps in `properties`, with their type. Anything else
   # is dropped, so neither a form nor an AI can stuff the column.
   SCHEMA = {
     "actor" => { "organization" => :string, "function" => :string, "met_on" => :date, "contact" => :string },
-    "source" => { "url" => :url, "author" => :string, "published_on" => :string, "excerpts" => :text,
+    "source" => { "url" => :url, "author" => :string, "published_on" => :string, "excerpts" => :texts,
                   "rights" => RIGHTS, "source_kind" => SOURCE_KINDS },
     "expectation" => { "year" => :integer, "source_ids" => :ids, "validated" => :boolean },
     "basin" => { "order" => :integer, "outlet" => :string },
@@ -62,14 +71,24 @@ class TerritoryItem < ApplicationRecord
       "keeper" => { "role" => :string, "gestures" => :string, "hours_per_year" => :integer, "agreement" => :string, "lifespan_years" => :integer },
       "decision" => { "status" => DECISIONS, "reason" => :string, "decided_on" => :date },
       "first_step" => :integer, "this_winter" => :boolean, "map_id" => :integer
+    },
+    "request" => {
+      "request_kind" => REQUEST_KINDS, "from" => :string, "actor_id" => :integer, "state" => REQUEST_STATES,
+      "asked_on" => :date, "received_on" => :date, "source_id" => :integer
     }
   }.freeze
+  # The keys that point to another entry of the same territory, and the kind
+  # that entry must be.
+  REFERENCES = { "basin_id" => "basin", "actor_id" => "actor", "source_id" => "source" }.freeze
+  REFERENCE_LISTS = { "source_ids" => "source", "expectation_ids" => "expectation" }.freeze
   STRING_MAX = 500
 
   belongs_to :territory, touch: true
   belongs_to :created_by, class_name: "User", optional: true
   belongs_to :decided_by, class_name: "User", optional: true
   has_one_attached :file
+  has_many :updates, class_name: "TerritoryItemUpdate"
+  has_one :pending_update, -> { where(status: "pending") }, class_name: "TerritoryItemUpdate"
 
   validates :kind, inclusion: { in: KINDS }
   validates :status, inclusion: { in: STATUSES }
@@ -79,10 +98,11 @@ class TerritoryItem < ApplicationRecord
   validates :rationale, presence: true, if: -> { source == "ai" }
   validate :geometry_fits_kind
   validate :file_fits
-  validate :basin_exists
+  validate :references_exist
 
   normalizes :title, with: ->(t) { t.to_s.squish }
   before_validation :clean_properties
+  after_destroy :forget_references
 
   scope :drafts, -> { where(status: "draft") }
   scope :kept, -> { where(status: "active") }
@@ -110,12 +130,23 @@ class TerritoryItem < ApplicationRecord
     when Array then value.to_s.presence_in(type)
     when :string then value.to_s.squish.first(STRING_MAX).presence
     when :text then value.to_s.strip.first(BODY_MAX_LENGTH).presence
+    when :texts then texts(value)
     when :url then (url = value.to_s.strip).match?(%r{\Ahttps?://\S+\z}i) ? url.first(2000) : nil
     when :date then (Date.iso8601(value.to_s).iso8601 rescue nil)
     when :integer then (Integer(value.to_s, 10) rescue nil)
     when :boolean then value.nil? || value == "" ? nil : ActiveModel::Type::Boolean.new.cast(value)
     when :ids then Array(value).filter_map { |v| Integer(v.to_s, 10) rescue nil }.uniq.first(50)
     end
+  end
+
+  # A list of short texts (the excerpts of a source). A text alone is split
+  # on its blank lines; a JSON list sent as text is read as the list.
+  def self.texts(value)
+    if value.is_a?(String)
+      parsed = (JSON.parse(value) rescue nil) if value.strip.start_with?("[")
+      value = parsed.is_a?(Array) ? parsed : value.split(/\n\s*\n/)
+    end
+    Array(value).filter_map { |text| text.to_s.strip.first(EXCERPT_MAX_LENGTH).presence if text.is_a?(String) || text.is_a?(Numeric) }.first(EXCERPTS_MAX)
   end
 
   def geometry=(value)
@@ -132,6 +163,7 @@ class TerritoryItem < ApplicationRecord
 
   def reject!(user)
     update!(status: "rejected", decided_by: user, decided_at: Time.current)
+    forget_references
   end
 
   def prop(*path) = properties.dig(*path.map(&:to_s))
@@ -169,6 +201,7 @@ class TerritoryItem < ApplicationRecord
       properties:,
       file: file.attached? ? { name: file.filename.to_s, byteSize: file.byte_size } : nil,
       orphan: orphan?, sharp: kind == "lead" ? sharp? : nil, waitingForFarmer: waiting_for_farmer?,
+      pendingUpdate: pending_update&.as_review_json(self),
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601, lockVersion: lock_version
     }
   end
@@ -200,11 +233,38 @@ class TerritoryItem < ApplicationRecord
       errors.add(:geometry, :outside) unless near
     end
 
-    # A marker or a lead points to a sub-basin of the same territory.
-    def basin_exists
-      id = prop(:basin_id)
-      return if id.nil? || territory.nil?
-      errors.add(:properties, :basin) unless territory.items.where(kind: "basin").where.not(status: "rejected").exists?(id)
+    # A marker or a lead points to a sub-basin of the same territory, a
+    # request to an actor and to the source it became. Checked when the
+    # pointer changes only, so an entry removed later never blocks the
+    # others (forget_references clears it anyway).
+    def references_exist
+      return if territory.nil?
+      before = properties_was.is_a?(Hash) ? properties_was : {}
+      REFERENCES.each do |key, kind|
+        id = properties[key]
+        next if id.nil? || (persisted? && before[key] == id)
+        errors.add(:properties, :"#{key.delete_suffix('_id')}") unless territory.items.where(kind:).where.not(status: "rejected").where.not(id: self.id).exists?(id)
+      end
+    end
+
+    # Once an entry leaves the dossier, nothing points to it any more.
+    def forget_references
+      return if territory_id.nil?
+      keys = (REFERENCES.select { |_, kind| kind == self.kind }.keys + REFERENCE_LISTS.select { |_, kind| kind == self.kind }.keys)
+      return if keys.empty?
+      TerritoryItem.where(territory_id:).where.not(id:).where("properties ?| array[:keys]", keys:).find_each do |other|
+        cleaned = other.properties.dup
+        keys.each do |key|
+          next unless cleaned.key?(key)
+          if cleaned[key].is_a?(Array)
+            cleaned[key] = cleaned[key] - [ id ]
+            cleaned.delete(key) if cleaned[key].empty?
+          elsif cleaned[key] == id
+            cleaned.delete(key)
+          end
+        end
+        other.update_columns(properties: cleaned) if cleaned != other.properties
+      end
     end
 
     def file_fits
