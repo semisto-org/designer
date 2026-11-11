@@ -1,6 +1,9 @@
 # The relief of a map (see the migration): import state, grid geometry and
 # the rasters as Active Storage blobs. The browser reads the rasters as typed
 # arrays and computes drainage, rain, sun and station on its own.
+#
+# A territory (« Territoire ») has one too, coarser and terrain only, read by
+# the MCP's get_catchment: exactly one of map and territory is set.
 class MapTerrain < ApplicationRecord
   STATUSES = %w[pending running ready failed].freeze
   FILES = %w[grid surface landcover texture].freeze
@@ -8,7 +11,8 @@ class MapTerrain < ApplicationRecord
   # restarted mid-job) and can be relaunched.
   STALE_AFTER = 45.minutes
 
-  belongs_to :map
+  belongs_to :map, optional: true
+  belongs_to :territory, optional: true
 
   has_one_attached :grid
   has_one_attached :surface
@@ -16,6 +20,10 @@ class MapTerrain < ApplicationRecord
   has_one_attached :texture
 
   validates :status, inclusion: { in: STATUSES }
+  validate :one_owner
+
+  # The map or the territory whose relief this is.
+  def owner = map || territory
 
   def ready? = status == "ready"
   def failed? = status == "failed"
@@ -76,4 +84,9 @@ class MapTerrain < ApplicationRecord
       fetchedAt: fetched_at&.iso8601
     }
   end
+
+  private
+    def one_owner
+      errors.add(:base, I18n.t("relief.errors.one_owner")) unless [ map_id || map, territory_id || territory ].compact.size == 1
+    end
 end

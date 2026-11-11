@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -791,7 +791,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
   end
 
   create_table "map_terrains", force: :cascade do |t|
-    t.bigint "map_id", null: false
+    t.bigint "map_id"
     t.string "status", default: "pending", null: false
     t.string "provider"
     t.string "crs", default: "EPSG:3857", null: false
@@ -816,7 +816,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
     t.text "error"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "territory_id"
     t.index ["map_id"], name: "index_map_terrains_on_map_id", unique: true
+    t.index ["territory_id"], name: "index_map_terrains_on_territory_id", unique: true
+    t.check_constraint "num_nonnulls(map_id, territory_id) = 1", name: "map_terrains_one_owner"
   end
 
   create_table "map_transfers", force: :cascade do |t|
@@ -2045,6 +2048,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
   add_foreign_key "map_share_links", "maps"
   add_foreign_key "map_share_links", "users", column: "created_by_id"
   add_foreign_key "map_terrains", "maps"
+  add_foreign_key "map_terrains", "territories", on_delete: :cascade
   add_foreign_key "map_transfers", "maps", on_delete: :cascade
   add_foreign_key "map_transfers", "users", column: "from_user_id", on_delete: :cascade
   add_foreign_key "map_transfers", "users", column: "to_user_id", on_delete: :cascade

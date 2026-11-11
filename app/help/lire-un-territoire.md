@@ -27,6 +27,8 @@ Dans **Territoires**, clique sur **Ouvrir un territoire**, tape le nom de la com
 
 Connecte ton IA à Terranova (voir [Connecter son IA](/help/connecter-son-ia)), puis donne-lui la phrase de l'onglet **Sources**. Elle suit la grille de recherche de la région et propose chaque trouvaille en brouillon, avec sa raison. Tu **gardes** ou tu **écartes** chacune, en haut du dossier.
 
+En Wallonie, ton IA lit aussi ce que publie le SPW sur l'eau de la commune : chaque cours d'eau avec sa catégorie et son gestionnaire (la Région, la province, la commune ou les riverains), les axes où l'eau descend après la pluie et les sous-bassins officiels, qu'elle te propose comme point de départ. Elle peut regarder n'importe quel coin de la commune sur les photos aériennes depuis 1971, retrouver une adresse citée dans la presse dans le registre officiel des adresses, et suivre le chemin de l'eau depuis un point.
+
 Ce que tu as gardé, ton IA ne le change pas : elle te **propose une modification** (le foncier d'une piste, un gestionnaire, un repère vu sur place) ou un retrait. Elle apparaît en haut du dossier, champ par champ : coche ce que tu acceptes, le reste ne bouge pas.
 
 ## Les règles du carnet

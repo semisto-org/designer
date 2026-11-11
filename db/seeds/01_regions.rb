@@ -34,7 +34,45 @@ regions = {
   "wallonia" => {
     name: "Wallonie", country_code: "BE", default_zoom: 8, center: factory.point(4.87, 50.47),
     bounds: "POLYGON((2.84 49.49, 6.41 49.49, 6.41 50.82, 2.84 50.82, 2.84 49.49))",
-    settings: { "attribution" => "Géoportail de la Wallonie, SPW", "crs" => "EPSG:31370" }
+    settings: {
+      "attribution" => "Géoportail de la Wallonie, SPW", "crs" => "EPSG:31370",
+      # ICAR, the official register of addresses (Providers::Geocoder::Icar).
+      "geocoder" => { "provider" => "icar", "icar" => { "url" => "https://geoservices.wallonie.be/arcgis/rest/services/DONNEES_BASE/ICAR_ADR_PT/MapServer" } },
+      # What the SPW publishes about streams and basins (TerritoryHydrography,
+      # MCP tool get_hydrography). Managers follow the law of 1967 on
+      # non-navigable watercourses (Code de l'eau).
+      "hydrography" => {
+        "attribution" => "SPW — Réseau hydrographique wallon (RHW), LIDAXES, secteurs PARIS 2016-2021, masses d'eau de surface",
+        "watercourses" => {
+          "url" => "https://geoservices.wallonie.be/arcgis/rest/services/EAU/LIDAXES/MapServer",
+          "layers" => [ 5, 6, 7, 8, 9 ], "category_field" => "CATEG", "name_fields" => %w[NOMB NOMA], "number_field" => "NUMATLAS",
+          "categories" => {
+            "NA" => { "key" => "navigable", "label" => "Voie navigable", "manager" => "SPW Mobilité et Infrastructures (voies hydrauliques)" },
+            "01" => { "key" => "category_1", "label" => "Cours d'eau non navigable de 1re catégorie",
+                      "manager" => "Région wallonne (SPW Agriculture, Ressources naturelles et Environnement, Direction des cours d'eau non navigables)" },
+            "02" => { "key" => "category_2", "label" => "Cours d'eau non navigable de 2e catégorie", "manager" => "La province (service technique provincial)" },
+            "03" => { "key" => "category_3", "label" => "Cours d'eau non navigable de 3e catégorie", "manager" => "La commune" },
+            "NC" => { "key" => "unclassified", "label" => "Cours d'eau non classé", "manager" => "Les propriétaires riverains" },
+            "ND" => { "key" => "undefined", "label" => "Catégorie non définie à l'atlas des cours d'eau" }
+          }
+        },
+        "runoff_axes" => {
+          "url" => "https://geoservices.wallonie.be/arcgis/rest/services/EAU/LIDAXES/MapServer/1", "label" => "LIDAXES (SPW, MNT LiDAR 2013-2014)",
+          "class_field" => "grid_code", "default_min_class" => 3,
+          "classes" => { "1" => "3 à 10 ha", "2" => "10 à 20 ha", "3" => "20 à 50 ha", "4" => "50 à 100 ha", "5" => "plus de 100 ha" }
+        },
+        "sub_basins" => {
+          "url" => "https://geoservices.wallonie.be/arcgis/rest/services/EAU/SECTEURS_PARIS_1621/MapServer/1", "label" => "secteur PARIS",
+          "id_field" => "SECT_PARIS", "water_body_field" => "MAS_EAU_SURF",
+          "sectors_url" => "https://geoservices.wallonie.be/arcgis/rest/services/EAU/SECTEURS_PARIS_1621/MapServer/0",
+          "watercourse_field" => "COURS_EAU", "outlet_field" => "REPERE_AVA", "outlet_x" => "X_LB72_AVAL", "outlet_y" => "Y_LB72_AVAL", "outlet_srid" => 31370
+        },
+        "water_bodies" => {
+          "url" => "https://geoservices.wallonie.be/arcgis/rest/services/EAU/MESU/MapServer/2",
+          "id_field" => "ID_RW_MESU", "name_field" => "NOM_MESU", "area_field" => "AREA_KM2", "sheet_field" => "FICHE_PDF_MESU_FR"
+        }
+      }
+    }
   },
   "flanders" => {
     name: "Flandre", country_code: "BE", default_zoom: 8, center: factory.point(4.3, 51.0),

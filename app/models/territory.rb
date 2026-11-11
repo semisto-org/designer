@@ -21,6 +21,8 @@ class Territory < ApplicationRecord
   belongs_to :created_by, class_name: "User", optional: true
   has_many :items, class_name: "TerritoryItem", dependent: :delete_all
   has_many :item_updates, class_name: "TerritoryItemUpdate", dependent: :delete_all
+  # A coarse relief of the whole commune, for get_catchment (Relief::TerrainImport).
+  has_one :terrain, class_name: "MapTerrain", dependent: :destroy
 
   normalizes :name, with: ->(n) { n.to_s.squish }
   validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }
@@ -72,6 +74,15 @@ class Territory < ApplicationRecord
   def research_grid
     Array(region&.setting("territory", "research_grid"))
   end
+
+  # What Relief::Catchment reads from its place: the region's rainfall, and
+  # no infiltration test (those are measured on a map's own ground).
+  def effective_water_settings
+    defaults = region&.setting(:hydrology)
+    HasTerrain::GENERIC_HYDROLOGY.merge(defaults.is_a?(Hash) ? defaults : {}).slice(*HasTerrain::WATER_KEYS)
+  end
+
+  def infiltration_measurements = []
 
   def notebook_text(key) = notebook.is_a?(Hash) ? notebook[key.to_s].to_s : ""
 

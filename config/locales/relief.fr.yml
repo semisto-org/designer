@@ -4,6 +4,7 @@ fr:
     panel: "Eau et relief"
     errors:
       unavailable: "Le relief n'est pas encore disponible pour cette région."
+      one_owner: "Un relief appartient à une carte ou à un territoire, jamais aux deux."
       no_boundary: "Dessine d'abord le contour du terrain : le relief se télécharge autour de lui."
       too_large: "Le terrain est trop étendu pour le relief détaillé (%{area} km² avec la marge autour, au plus %{max} km²). Dessine un contour plus resserré."
       provider_failed: "Le service du relief n'a pas répondu correctement. Réessaie dans quelques minutes."

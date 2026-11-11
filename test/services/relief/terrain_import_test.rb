@@ -1,8 +1,10 @@
 require "test_helper"
 require_relative "../../test_helpers/relief_test_helper"
+require "test_helpers/territories_test_helper"
 
 class Relief::TerrainImportTest < ActiveSupport::TestCase
   include ReliefTestHelper
+  include ActiveJob::TestHelper
 
   setup do
     configure_relief_region
@@ -91,5 +93,34 @@ class Relief::TerrainImportTest < ActiveSupport::TestCase
     configure_relief_region
     ReliefImportJob.perform_now(@terrain)
     assert_equal "ready", @terrain.reload.status
+  end
+
+  test "a territory's relief: the terrain model only, on a coarse grid, without buildings" do
+    stub_spw
+    region = regions(:wallonia)
+    region.update!(settings: region.settings.merge("territory" => region.settings.fetch("territory", {}).merge("relief_margin_m" => 100)))
+    territory = make_territory(make_team("Semisto", admin: users(:michael)), size: 0.01)
+    terrain = territory.create_terrain!
+
+    assert_no_enqueued_jobs(only: BuildingsWarmJob) do
+      Relief::TerrainImport.new(terrain, provider: instant_provider).call
+    end
+    terrain.reload
+    assert_equal "ready", terrain.status, terrain.error
+    assert_equal 10.0, terrain.cell_size_m
+    assert_equal 100.0, terrain.margin_m
+    assert terrain.grid.attached?
+    assert_not terrain.surface.attached?
+    assert_not terrain.landcover.attached?
+    assert_not terrain.texture.attached?
+    assert_not_requested :post, "#{ReliefTestHelper::MNS}/identify"
+    assert_equal territory, terrain.owner
+  end
+
+  test "a terrain belongs to a map or a territory, never both" do
+    territory = make_territory(make_team("Semisto", admin: users(:michael)))
+    assert_not MapTerrain.new(map: @map, territory:).valid?
+    assert_not MapTerrain.new.valid?
+    assert MapTerrain.new(territory:).valid?
   end
 end

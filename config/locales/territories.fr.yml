@@ -66,6 +66,9 @@ fr:
               too_large: "dépasse 30 Mo"
 
   territories:
+    hydrography:
+      outlet_at: "%{watercourse}, %{landmark}"
+      draft_rationale: "Bassin contributif du %{source} %{id} (SPW) : %{area} km², dont %{inside} km² dans la commune. Contour officiel, à parcourir avec le contrat de rivière."
     nav: "Territoires"
     errors:
       module_off: "Le module « Territoire » n'est pas attribué à cette équipe. Semisto peut l'activer pour vous."
@@ -437,6 +440,13 @@ fr:
       propose_territory_deletions:
         title: "Proposer de retirer des éléments d'un territoire"
         description: "Propose de retirer du dossier d'un territoire des éléments qu'une personne a gardés (une source en double, un repère placé deux fois), avec une justification commune. Rien n'est retiré avant qu'une personne l'accepte sur la page du territoire. Un brouillon se retire directement avec withdraw_territory_drafts."
+      get_hydrography:
+        title: "L'eau d'un territoire"
+        description: "Ce que l'autorité de l'eau de la région publie sur les cours d'eau et les bassins d'un territoire (en Wallonie, le SPW). watercourses : chaque cours d'eau qui traverse la commune, avec son nom, sa catégorie légale (navigable, category_1, category_2, category_3, unclassified), son gestionnaire (manager : qui l'entretient et à qui demander une autorisation), son numéro à l'atlas et sa longueur dans la commune. runoff_axes : les axes de ruissellement concentré (LIDAXES), groupés par classe de surface collectée en amont (by_class, à partir de min_class ; classes_available dit ce que vaut chaque classe), avec leur tracé. water_bodies : les bassins des masses d'eau de surface (limites officielles, 30 à 150 km²), avec leur fiche PDF. sub_basins : les bassins contributifs des secteurs de cours d'eau (en Wallonie les secteurs PARIS, 0,5 à 20 km² : l'échelle de conception d'un territoire), chacun avec son contour officiel, sa surface, sa part dans la commune, ce qui en est en amont hors commune, le secteur où il se jette (flows_into), un ordre suggéré depuis l'amont et un brouillon basin prêt pour propose_territory_items (draft, avec son ref : les repères du même appel le citent par basin_ref). Relis chaque brouillon avant de le proposer : regroupe les petits secteurs d'un même vallon, corrige l'ordre si le terrain le contredit, et dis d'où vient le contour. Sans contours (outlines: false), la réponse est bien plus légère."
+        params:
+          min_runoff_class: "Plus petite classe d'axes de ruissellement à rendre (1 à 5 ; voir classes_available). Par défaut 3 en Wallonie : 20 ha collectés en amont et plus."
+          outlines: "false pour ne pas rendre les tracés et les contours (seulement les noms, les longueurs et les surfaces). Par défaut : true."
+        note: "Ces couches sont celles de l'administration : un cours d'eau a pu être déplacé, un axe de ruissellement est calculé sur le relief, pas observé. Le gestionnaire est celui que prévoit la loi pour la catégorie : la commune confirme qui intervient vraiment. Propose les sous-bassins en brouillons, et invite l'équipe à les parcourir avec le contrat de rivière."
       withdraw_territory_drafts:
         title: "Retirer des brouillons d'un territoire"
         description: "Retire des brouillons que tu as proposés au dossier d'un territoire et que personne n'a encore revus (item_ids), et les modifications ou retraits que tu as proposés et qui attendent encore (update_ids, donnés par propose_territory_updates ou pending_update dans get_territory). Ce qu'une personne a gardé ne se retire pas."
@@ -467,6 +477,8 @@ fr:
       territory_ref_unknown: "aucun brouillon de cet appel ne porte le ref « %{ref} »"
       territory_ref_failed: "renvoie au brouillon « %{ref} », qui n'a pas été créé"
       territory_nothing_to_withdraw: "Donne item_ids (brouillons) ou update_ids (modifications proposées)."
+      hydrography_not_configured: "La région de ce territoire ne publie pas encore ses cours d'eau et ses bassins dans Terranova."
+      hydrography_unavailable: "Le service de l'administration de l'eau ne répond pas pour le moment. Réessaie dans quelques minutes."
     territory_update_errors:
       empty: "aucune modification donnée"
       fields: "champs inconnus : %{fields} (seulement %{allowed})"
@@ -494,6 +506,7 @@ fr:
     actions:
       list_territories: "a listé les territoires"
       get_territory: "a lu un territoire"
+      get_hydrography: "a lu les cours d'eau et les bassins d'un territoire"
       propose_territory_items: "a proposé des éléments au dossier d'un territoire"
       propose_territory_updates: "a proposé des modifications au dossier d'un territoire"
       propose_territory_deletions: "a proposé de retirer des éléments d'un territoire"

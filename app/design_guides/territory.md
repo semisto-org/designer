@@ -9,6 +9,8 @@ A territory is a commune read whole, for its council (the collège communal) to 
 
 Read the territory with `get_territory` first. It gives the commune's boundary, the region's layers that can be read there, the team's field maps inside it, the dossier and the research grid of the region.
 
+The tools that read a place work on the whole commune with `territory_id`: `get_region_layers` (without the networks), `identify_at_point` (any point inside, or up to 1 km beyond the line), `get_aerial_photo` (the whole commune, or a square of `span_m` metres around a point, to look closer at a valley or a farm through the decades) and `get_catchment` (the catchment of any point, on a coarse relief of the commune prepared on the first call: come back a few minutes later). `geocode` turns an address or a place name from a press article into a point, and says whether it falls in the territory.
+
 ## 1. People first
 
 Before any research, the team meets the people already working on the territory: in Wallonia the GISER erosion unit (it writes opinions after mudflows), the river contract of the sub-basin, the municipal environment officer, the farm advisers. Propose them as `actor` drafts, with what they already studied or built. The notebook **links** their work; it never redoes it, and never contradicts it without saying so. Two diverging opinions in front of a council lead to nothing being done.
@@ -25,7 +27,9 @@ What is not online has to be asked for: an opinion of the erosion unit, the rive
 
 ## 3. Sub-basins, from upstream down
 
-The commune decides; the sub-basin is where water is read and designed. Split the territory into its sub-basins (« sous-bassins versants », 1 to 10 km² each): the river contract and the regional runoff layers name the valleys. Propose each as a `basin` draft with its `order` (1 for the most upstream, then going down), its `outlet` (the stream or river it flows into) and, when you have it, its outline as a Polygon. Its upstream part may lie in a neighbouring commune: say so, water does not stop at the boundary.
+The commune decides; the sub-basin is where water is read and designed. Split the territory into its sub-basins (« sous-bassins versants », 1 to 10 km² each): the river contract and the regional runoff layers name the valleys.
+
+Start from `get_hydrography`: the watercourses crossing the commune with their legal category and who manages them (in Wallonia: the Region for 1st category, the province for 2nd, the commune for 3rd, the riparian owners for the unclassified ones; the commune confirms who actually intervenes), the runoff axes by upstream area, the official water bodies, and the contributive basins of the river sectors. Each sub-basin comes with a ready `basin` draft (title, official outline, suggested `order`, `outlet`, `ref`): read them before proposing, merge the small sectors of one valley into one sub-basin, fix the order where the ground says otherwise, and keep the `ref` so the markers of the same call can use `basin_ref`. Propose each as a `basin` draft with its `order` (1 for the most upstream, then going down), its `outlet` (the stream or river it flows into) and, when you have it, its outline as a Polygon. Its upstream part may lie in a neighbouring commune: say so, water does not stop at the boundary.
 
 Then attach every marker and every lead to its sub-basin with `basin_id`. A `basin_id` points to a sub-basin of the dossier, a draft included. To attach a marker to a sub-basin you propose in the same call, give the sub-basin a `ref` (« bocq ») and the marker `basin_ref: "bocq"` instead of the id; `actor_ref`, `source_ref`, `source_refs` and `expectation_refs` work the same way. The order of the drafts in the call does not matter. The notebook groups everything by sub-basin, upstream first, and shows how many markers were seen or confirmed in each: that is where the collège sees where to act first.
 
