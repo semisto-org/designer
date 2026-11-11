@@ -91,6 +91,25 @@ class Maps::DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert doc.thumbnail.attached?
   end
 
+  # The phone app opens a message's PDF in the system browser, which has no
+  # token: it asks for the short-lived link as JSON instead of a redirect.
+  test "the phone app gets a document's link as JSON, with the same access rules" do
+    doc = create_document(in_library: false, origin: "chat")
+    token = ->(user) { { "Authorization" => "Bearer #{OauthAccessToken.issue!(user:, client: MobileApp.client, scopes: MobileApp::SCOPES, resource: nil).plaintext_token}", "Accept" => "application/json" } }
+
+    get file_map_document_path(@map, doc, size: "original"), headers: token.(users(:michael))
+    assert_response :success
+    assert_match %r{/rails/active_storage/}, response.parsed_body["url"]
+    assert response.parsed_body["expiresAt"].present?
+
+    get file_map_document_path(@map, doc, size: "original"), headers: token.(users(:alice))
+    assert_response :not_found
+
+    # Without asking for JSON, it is still a redirect.
+    get file_map_document_path(@map, doc, size: "download"), headers: token.(users(:michael)).except("Accept")
+    assert_response :redirect
+  end
+
   test "a file joined to a message stays out of the library, for the discussion's members, until added" do
     sign_in_as users(:michael)
     assert_no_difference -> { @map.documents.count } do

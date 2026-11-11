@@ -2,7 +2,7 @@
 // from screen readers (the button around an icon carries the label).
 import {
   Apple, Aperture, Bandage, Bug, Flower2, Scissors, Wrench, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
-  Eye, EyeOff, Fence, Leaf, Snowflake, Sun, SunSnow, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Mic, Navigation2, NotebookPen, PenLine, PawPrint, Pause, Route, Ruler, ScanSearch, Shovel, Sprout,
+  Eye, EyeOff, Fence, FileText, Leaf, Snowflake, Sun, SunSnow, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Mic, Navigation2, NotebookPen, PenLine, PawPrint, Pause, Route, Ruler, ScanSearch, Shovel, Sprout,
   SkipForward, Square, ChevronDown, MessagesSquare, SendHorizontal, User, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
 import { colors } from './theme'
@@ -20,7 +20,7 @@ const ICONS = {
   info: Info, warning: TriangleAlert, error: CircleAlert,
   visit: Flag, ticked: SquareCheck, unticked: Square, sound: Mic, walk: Route, pause: Pause,
   heading: Navigation2, arrived: MapPinCheck, skip: SkipForward,
-  retake: Images, ghost: Eye, ghostOff: EyeOff, shutter: Aperture, sketch: PenLine,
+  document: FileText, retake: Images, ghost: Eye, ghostOff: EyeOff, shutter: Aperture, sketch: PenLine,
   // The themes of a site visit's notes (lib/visit-core.ts).
   wish: Heart, water: Droplets, soil: Layers2, tree: TreeDeciduous, fauna: PawPrint, climate: Wind,
   neighbours: Fence, history: Hourglass, question: CircleQuestionMark, other: NotebookPen,
