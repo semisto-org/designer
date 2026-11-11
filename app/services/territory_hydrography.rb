@@ -135,6 +135,9 @@ class TerritoryHydrography
     end
 
     # [[key, GeoJSON line], …] → [[key, metres inside the commune, GeoJSON inside]]
+    # A line wholly inside is kept as it is: on the PostGIS 16-3.4 image of
+    # the CI, the intersection of a north–south line lying inside the
+    # boundary came back empty.
     def clip_lines(pairs)
       pairs = pairs.select { |_, geometry| geometry }
       return [] if pairs.empty?
@@ -143,7 +146,8 @@ class TerritoryHydrography
       sql = <<~SQL.squish
         WITH t AS (SELECT ST_GeomFromEWKT(:boundary) AS b),
         f AS (SELECT (e->>'k')::int AS k, ST_SetSRID(ST_GeomFromGeoJSON(e->>'g'), 4326) AS geom FROM jsonb_array_elements(CAST(:rows AS jsonb)) e),
-        g AS (SELECT k, ST_Intersection(ST_Collect(f.geom), t.b) AS inside FROM f, t GROUP BY k, t.b)
+        c AS (SELECT k, CASE WHEN ST_CoveredBy(f.geom, t.b) THEN f.geom ELSE ST_Intersection(f.geom, t.b) END AS inside FROM f, t),
+        g AS (SELECT k, ST_Collect(inside) AS inside FROM c WHERE NOT ST_IsEmpty(inside) GROUP BY k)
         SELECT k, ST_Length(inside::geography) AS m, #{geometry_sql('ST_LineMerge(ST_CollectionExtract(inside, 2))')} AS g
         FROM g WHERE NOT ST_IsEmpty(inside) AND ST_Length(inside::geography) > 1
       SQL

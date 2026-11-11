@@ -13,6 +13,9 @@ module Mcp
       include PlaceAccess
 
       MAX_DISTANCE_M = 1000
+      # On a territory's coarse relief, a point read on a river map moves to
+      # the valley floor within this distance (`outlet` says where).
+      TERRITORY_SNAP_M = 90
 
       arguments(
         properties: {
@@ -40,7 +43,7 @@ module Mcp
               require_point_near!(place, lng, lat, MAX_DISTANCE_M)
               territory_relief!(place)
             end
-            Relief::Catchment.new(place, lng:, lat:)
+            Relief::Catchment.new(place, lng:, lat:, snap_m: (TERRITORY_SNAP_M if territory?(place)))
           else
             raise ToolError, t("tools.get_catchment.missing_target")
           end
@@ -51,7 +54,7 @@ module Mcp
           capacity_m3: result.capacity_m3, fill_rain_mm: result.fill_rain_mm,
           annual_rainfall_mm: result.annual_rainfall_mm, annual_rain_m3: result.annual_rain_m3,
           infiltration_mm_h: result.infiltration_mm_h, infiltration_distance_m: result.infiltration_distance_m, empties_in_h: result.empties_in_h,
-          cell_size_m: result.cell_size_m, geometry: result.geometry,
+          cell_size_m: result.cell_size_m, outlet: result.outlet, geometry: result.geometry,
           note: (t("tools.get_catchment.territory_note") if territory?(place))
         }.compact
       rescue Relief::Catchment::Error => e

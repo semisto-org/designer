@@ -117,6 +117,28 @@ class Relief::CatchmentTest < ActiveSupport::TestCase
     assert_nil result.fill_rain_mm
   end
 
+  test "water that fills a hollow on the way goes on down the valley" do
+    valley = ->(dx, dy) { 200 + dx.abs * 0.1 + dy * 0.05 }
+    synthetic_terrain(@map, &valley)
+    plain = Relief::Catchment.new(@map, feature: pond_at(0, -20, size_m: 6, depth_m: 1)).call.area_m2
+    Rails.cache.clear
+    # A dip of the valley floor upstream of the pond, like the noise of a
+    # river's water surface on a coarse grid.
+    synthetic_terrain(@map) { |dx, dy| valley.call(dx, dy) - (Math.hypot(dx, dy - 15) < 3 ? 0.6 : 0) }
+    result = Relief::Catchment.new(@map, feature: pond_at(0, -20, size_m: 6, depth_m: 1)).call
+    assert_in_delta plain, result.area_m2, plain * 0.05, "the dip does not swallow the valley above it"
+  end
+
+  test "a point beside a valley floor can move onto it" do
+    synthetic_terrain(@map) { |dx, dy| 200 + dx.abs * 0.1 + dy * 0.05 }
+    east = 12 / (111_320 * Math.cos(@centre.y * Math::PI / 180))
+    beside = Relief::Catchment.new(@map, lng: @centre.x + east, lat: @centre.y).call
+    snapped = Relief::Catchment.new(@map, lng: @centre.x + east, lat: @centre.y, snap_m: 20).call
+    assert_nil beside.outlet
+    assert_operator snapped.area_m2, :>, beside.area_m2 * 5
+    assert_in_delta @centre.x, snapped.outlet.first, 2 / 70_000.0, "on the valley axis"
+  end
+
   test "explains why there is no catchment" do
     pond = pond_at(0, 0, size_m: 4, depth_m: 1)
     assert_equal :no_relief, assert_raises(Relief::Catchment::Error) { Relief::Catchment.new(@map, feature: pond).call }.key

@@ -38,6 +38,13 @@ module Relief
       @receivers ||= drainage
     end
 
+    # Where each cell's own slope leads (a pit: along the flood). Unlike
+    # `receivers`, it can loop between a pit and the way out of it.
+    def local_receivers
+      receivers
+      @local
+    end
+
     # Number of cells whose water passes through each cell, itself included.
     def accumulation
       @accumulation ||= begin
@@ -119,8 +126,21 @@ module Relief
       end
 
       # The downstream cell of each cell (-1 where water leaves the relief).
+      #
+      # A cell drains down its steepest slope; a pit spills along the route
+      # of the flood. That route climbs out of the depression, and its cells'
+      # own steepest slopes lead straight back into it: left alone, the
+      # water of a pit goes round a loop and never reaches the valley below
+      # (a river on a 30 m grid, whose water surface is a flat of noise,
+      # broke into thousands of such loops). So the route out of each pit,
+      # up to its spill cell, follows the flood too, and these receivers form
+      # no loop. The cells of that route keep their own slope in
+      # `local_receivers`: rain falling on them still runs into the hollow
+      # (Relief::Catchment walks upstream along both).
       def drainage
         receiver = flood_receivers
+        flood = receiver.dup
+        pits = []
         cols = @cols
         rows = @rows
         @n.times do |i|
@@ -146,7 +166,23 @@ module Relief
               best = j
             end
           end
-          receiver[i] = best if best
+          if best
+            receiver[i] = best
+          else
+            pits << i
+          end
+        end
+        @local = receiver.dup
+        on_route = Array.new(@n, false)
+        pits.each do |pit|
+          k = pit
+          until k.negative? || on_route[k]
+            on_route[k] = true
+            receiver[k] = flood[k]
+            break if k != pit && @filled[k] <= @heights[k]
+
+            k = flood[k]
+          end
         end
         receiver
       end
