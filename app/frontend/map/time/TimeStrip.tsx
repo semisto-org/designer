@@ -1,7 +1,8 @@
 import clsx from 'clsx'
-import { ChevronDown, Hourglass, Sun } from 'lucide-react'
+import { ChevronDown, Hourglass, Minimize2, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { IconButton } from '@/components/ui/IconButton'
 import { formatDate } from '@/components/plants/format'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
@@ -21,6 +22,26 @@ const DOT: Record<Moment, string> = {
   year5: 'h-2.5 w-2.5',
   year15: 'h-3.5 w-3.5',
   year30: 'h-4 w-4',
+}
+
+/** The viewer's choice to keep the strip folded into its pill, on every map. */
+const FOLDED_KEY = 'designer.time_strip.folded'
+
+function storedFolded(): boolean {
+  try {
+    return window.localStorage.getItem(FOLDED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function storeFolded(folded: boolean) {
+  try {
+    if (folded) window.localStorage.setItem(FOLDED_KEY, '1')
+    else window.localStorage.removeItem(FOLDED_KEY)
+  } catch {
+    // Private browsing: the choice lasts until the page closes.
+  }
 }
 
 const yearOf = (date: string) => date.slice(0, 4)
@@ -81,6 +102,8 @@ export default function TimeStrip() {
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [width, setWidth] = useState(Infinity)
   const [unfolded, setUnfolded] = useState(false)
+  // « Replier »: the viewer put the strip away; the pill keeps saying which moment the map shows.
+  const [putAway, setPutAway] = useState(storedFolded)
 
   useEffect(() => {
     const element = container
@@ -107,7 +130,14 @@ export default function TimeStrip() {
   const drafts = features.some((f) => f.properties.status === 'draft')
   const beside = activePanel != null || selected != null
   // Observing is about the land as it is today: the strip shrinks to a pill so it hides less of the map.
-  const folded = observing || (beside && width < FULL_WIDTH)
+  const squeezed = observing || (beside && width < FULL_WIDTH)
+  const folded = putAway || squeezed
+  const putAwayOnly = putAway && !squeezed
+  const setPutAwayStored = (next: boolean) => {
+    setPutAway(next)
+    storeFolded(next)
+    setUnfolded(false)
+  }
 
   const card = (
     <section
@@ -120,6 +150,11 @@ export default function TimeStrip() {
         <Hourglass className="h-4 w-4 shrink-0 text-prune-600" aria-hidden />
         <p className="min-w-0 flex-1 truncate font-serif text-lg leading-tight text-loam-900" aria-live="polite">{title(moment, timeline)}</p>
         <ShadePicker />
+        {!folded && (
+          <IconButton size="sm" label={t('time_strip.put_away')} onClick={() => setPutAwayStored(true)} className="-mr-1">
+            <Minimize2 aria-hidden />
+          </IconButton>
+        )}
       </div>
       <p className="hidden text-sm leading-snug text-loam-600 md:block">{hint(moment, timeline, drafts, editor.mode)}</p>
       {editor.shade && <p className="hidden text-sm leading-snug text-loam-500 md:block">{t(`time_strip.shade.note.${editor.shade}`)}</p>}
@@ -136,9 +171,16 @@ export default function TimeStrip() {
           {unfolded && (
             <div className={clsx('absolute bottom-full mb-2 w-[29rem] max-w-[calc(100vw-1rem)]', observing ? 'left-1/2 -translate-x-1/2' : 'right-0')}>{card}</div>
           )}
-          <Button variant="secondary" size="sm" className="shadow-md" aria-expanded={unfolded} onClick={() => setUnfolded(!unfolded)} title={t(unfolded ? 'time_strip.close' : 'time_strip.open')}>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="shadow-md"
+            aria-expanded={unfolded}
+            onClick={() => (putAwayOnly ? setPutAwayStored(false) : setUnfolded(!unfolded))}
+            title={t(putAwayOnly ? 'time_strip.bring_back' : unfolded ? 'time_strip.close' : 'time_strip.open')}
+          >
             <Hourglass className="h-4 w-4 text-prune-600" aria-hidden />
-            {observing ? pillLabel(moment, timeline) : t(`time_strip.stops.${moment}`)}
+            {observing || putAway ? pillLabel(moment, timeline) : t(`time_strip.stops.${moment}`)}
             <ChevronDown className={clsx('h-4 w-4 transition-transform', unfolded ? '' : 'rotate-180')} aria-hidden />
           </Button>
         </div>
