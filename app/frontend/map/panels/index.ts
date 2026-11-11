@@ -100,6 +100,7 @@ import InfiltrationSection, { appliesToInfiltration } from '@/map/water/Infiltra
 import KeylineSection, { appliesToKeyline } from '@/map/water/KeylineSection'
 import StormSection, { appliesToStorm } from '@/map/water/StormSection'
 import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
+import LinksSection, { appliesToLinks } from '@/map/water/LinksSection'
 import TagsSection from '@/map/tags/TagsSection'
 import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
 import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
@@ -178,6 +179,7 @@ export const INSPECTOR_SECTIONS: InspectorSection[] = [
   { id: 'implementation-phase', applies: appliesToPhase, component: PhaseSection, order: 17 },
   { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
   { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
+  { id: 'water-links', applies: appliesToLinks, component: LinksSection, order: 23.5 },
   { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
   { id: 'keyline', applies: appliesToKeyline, component: KeylineSection, order: 23 },
   { id: 'storm', applies: appliesToStorm, component: StormSection, order: 18 },

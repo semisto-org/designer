@@ -90,6 +90,7 @@ fr:
       invalid_value: "%{field} de « %{kind} » n'est pas valide."
 
     fields:
+      above_ground_m: "Hauteur au-dessus du sol"
       sector_type: "Type de secteur"
       height_m: "Hauteur"
       floors: "Niveaux"
@@ -273,6 +274,9 @@ fr:
 
     computed:
       title: "Estimations"
+      gravity_pressure:
+        label: "Pression au pied de la cuve"
+        hint: "Environ 0,1 bar par mètre de hauteur, cuve pleine. Raccorde un tuyau à la cuve pour voir la chute jusqu'à l'arrivée, pente comprise."
       pond_volume:
         label: "Volume d'eau"
         hint: "Surface × profondeur × 0,5, pour des berges en pente douce."
@@ -302,6 +306,8 @@ fr:
         hint: "Surface du parc ÷ effectif."
       liters: "%{value} L"
       cubic_meters: "%{value} m³"
+      bar: "%{value} bar"
+      pressure_from_height: "%{pressure} (%{height} de chute)"
       plants: { one: "%{count} plant", other: "%{count} plants" }
       half_moons: { one: "%{count} demi-lune", other: "%{count} demi-lunes" }
       per_head: "%{value} par animal"

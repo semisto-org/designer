@@ -152,8 +152,14 @@ module Imports
           feature.assign_attributes(
             layer: target.layer, kind: target.kind, name: target.name, notes: target.notes,
             status: "active", source: "human", geometry: target.geometry,
-            properties: target.properties.merge(water_source_link(target), "import" => { "source" => SOURCE, "type" => type, "id" => row["id"] })
+            properties: target.properties.merge(water_source_link(target), link_ends(feature), "import" => { "source" => SOURCE, "type" => type, "id" => row["id"] })
           )
+        end
+
+        # The ends a pipe snapped to (MapFeature::WaterLinks), or the ones the
+        # person chose since: Claudy knows nothing of them, a new run keeps them.
+        def link_ends(feature)
+          feature.new_record? ? {} : feature.properties.to_h.slice(*MapFeature::WaterLinks::ENDS.keys)
         end
 
         # A tap fed by a Claudy water source is linked to the map's source of
