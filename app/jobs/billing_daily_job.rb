@@ -1,5 +1,5 @@
 # Runs every day in production (config/recurring.yml): renewal reminders for
-# yearly passes, the end of the AI drafts trial, the pilots' share of drone
+# yearly passes and yearly subscriptions, the end of the AI drafts trial, the pilots' share of drone
 # missions delivered a week ago without a word from the client, and the
 # removal of old, already processed webhook payloads.
 class BillingDailyJob < ApplicationJob
@@ -8,6 +8,7 @@ class BillingDailyJob < ApplicationJob
   def perform
     return unless Billing.enabled?
     Billing::RenewalReminders.call
+    Billing::SubscriptionRenewalReminders.call
     Billing::AiTrialReminders.call
     DroneMission.release_due_payouts!
     DroneMission.refund_undelivered!

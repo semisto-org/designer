@@ -43,7 +43,7 @@ class FeedbacksControllerTest < ActionDispatch::IntegrationTest
 
   test "an admin signed in as someone cannot write in their name" do
     sign_in_as User.create!(email_address: "staff@example.org", name: "Staff", admin: true)
-    post admin_user_impersonation_path(users(:alice))
+    post admin_user_impersonation_path(users(:alice)), params: { motive: "request", motive_note: "Asked for help by e-mail" }
     post feedback_path, params: { feedback: { message: "Test" } }, as: :json
     assert_equal 0, Feedback.count
   end

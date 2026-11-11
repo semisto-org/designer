@@ -89,7 +89,7 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
   return (
     <li
       id={`item-${item.id}`}
-      className={clsx('rounded-2xl bg-white p-4 ring-1 transition', selected ? 'ring-2 ring-prune-500' : 'ring-loam-200', item.status === 'draft' && 'bg-humus-50/60 ring-humus-200')}
+      className={clsx('min-w-0 break-words rounded-2xl bg-white p-4 ring-1 transition [overflow-wrap:anywhere]', selected ? 'ring-2 ring-prune-500' : 'ring-loam-200', item.status === 'draft' && 'bg-humus-50/60 ring-humus-200')}
     >
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">

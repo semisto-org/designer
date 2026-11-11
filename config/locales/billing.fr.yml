@@ -256,6 +256,13 @@ fr:
           one: "%{count} de tes cartes est désormais en lecture seule, car elle dépasse la formule gratuite. Renouvelle le forfait pour la modifier à nouveau."
           other: "%{count} de tes cartes sont désormais en lecture seule, car elles dépassent la formule gratuite. Renouvelle le forfait pour les modifier à nouveau."
         free_ok: "Ta première carte reste entièrement modifiable, comme avant."
+    subscription_renewal:
+      subject: "Ton abonnement %{plan} se renouvelle le %{date}"
+      body: "Ton abonnement %{plan} annuel se renouvellera automatiquement le %{date}, pour une nouvelle année au prix de %{price} TVA comprise, prélevé avec le même moyen de paiement."
+      keep: "Si tu veux continuer, tu n'as rien à faire."
+      cancel: "Si tu préfères t'arrêter, résilie avant cette date depuis « Formule et facturation » : c'est sans frais, et ton abonnement court jusqu'au %{date}. Rien n'est prélevé ensuite."
+      cta: "Gérer mon abonnement"
+      after: "Même sans abonnement, tes cartes restent lisibles, exportables et commentables ; rien n'est jamais supprimé."
     ai_trial_ending:
       subject: "Ton essai des brouillons de ton IA se termine le %{date}"
       body: "Depuis bientôt deux semaines, ton IA peut poser des brouillons sur tes cartes Semisto Terranova. Ton essai se termine le %{date}."

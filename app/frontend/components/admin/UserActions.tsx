@@ -1,8 +1,10 @@
 import { router, usePage } from '@inertiajs/react'
 import { Gift, Leaf, ShieldCheck, ShieldOff, UserRoundCheck } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { PlanGift } from '@/components/admin/PlanGift'
 import { Button } from '@/components/ui/Button'
+import { Dialog } from '@/components/ui/Dialog'
+import { Field, Select, Textarea } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import type { SharedProps } from '@/types'
 import type { AdminUserRow } from '@/types/admin'
@@ -29,13 +31,53 @@ function IconButton({ label, pressed, onClick, className, children }: {
   )
 }
 
+/**
+ * « Se connecter en tant que » asks why first: at the person's request or for
+ * an abuse, plus a note. The server refuses without both and logs them.
+ */
+function ImpersonateDialog({ user, open, onClose }: { user: AdminUserRow; open: boolean; onClose: () => void }) {
+  const [motive, setMotive] = useState('')
+  const [note, setNote] = useState('')
+  const [sending, setSending] = useState(false)
+  const ready = motive !== '' && note.trim() !== ''
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    if (!ready) return
+    setSending(true)
+    router.post(`/admin/users/${user.id}/impersonation`, { motive, motive_note: note.trim() }, { onFinish: () => setSending(false) })
+  }
+  return (
+    <Dialog open={open} onClose={onClose} dismissOnBackdrop={false} title={t('admin.impersonation.motive.title', { name: user.name })}>
+      <form onSubmit={submit} className="space-y-4">
+        <p className="text-sm text-loam-600">{t('admin.impersonation.motive.intro')}</p>
+        <Field label={t('admin.impersonation.motive.label')}>
+          <Select value={motive} onChange={(e) => setMotive(e.target.value)} required>
+            <option value="" disabled>{t('admin.impersonation.motive.choose')}</option>
+            <option value="request">{t('admin.impersonation.motive.request')}</option>
+            <option value="abuse">{t('admin.impersonation.motive.abuse')}</option>
+          </Select>
+        </Field>
+        <Field label={t('admin.impersonation.motive.note_label')} hint={t('admin.impersonation.motive.note_hint')}>
+          <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={500} required />
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="ghost" onClick={onClose}>{t('admin.impersonation.motive.cancel')}</Button>
+          <Button type="submit" disabled={!ready || sending}>{t('admin.impersonation.motive.submit')}</Button>
+        </div>
+      </form>
+    </Dialog>
+  )
+}
+
 /** « Se connecter en tant que », the admin role, the catalogue reviewer role and « Offrir une formule », for one account. */
 export function UserActions({ user, onGive }: Props) {
   const { currentUser } = usePage().props as unknown as SharedProps
   const self = currentUser?.id === user.id
   const aligned = Boolean(onGive)
 
-  const impersonate = () => router.post(`/admin/users/${user.id}/impersonation`)
+  const [asking, setAsking] = useState(false)
+  const impersonate = () => setAsking(true)
+  const dialog = <ImpersonateDialog user={user} open={asking} onClose={() => setAsking(false)} />
   const toggleAdmin = () => {
     const message = user.admin ? t('admin.users.confirm_revoke', { name: user.name }) : t('admin.users.confirm_grant', { name: user.name })
     if (!window.confirm(message)) return
@@ -88,6 +130,7 @@ export function UserActions({ user, onGive }: Props) {
         {adminButton || <span />}
         {reviewerButton}
         {giftButton}
+        {dialog}
       </div>
     )
   }
@@ -103,6 +146,7 @@ export function UserActions({ user, onGive }: Props) {
       {adminButton}
       {reviewerButton}
       <PlanGift user={user} />
+      {dialog}
     </div>
   )
 }

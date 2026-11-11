@@ -43,6 +43,9 @@ export type AdminEventRow = {
   admin: { id: number | null; name: string | null }
   target: { id: number | null; name: string } | null
   reason: 'stopped' | 'expired' | 'sign_out' | null
+  /** « Se connecter en tant que »: why the admin opened the account. */
+  motive: 'request' | 'abuse' | null
+  motiveNote: string | null
 }
 
 export type AdminStats = {
