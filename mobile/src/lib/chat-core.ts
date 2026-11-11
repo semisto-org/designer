@@ -23,8 +23,43 @@ export type ChatMessage = {
   location?: Position | null
   /** A photo of the map joined to the message. */
   photo?: { id: number; caption: string | null; video: boolean } | null
+  /** A file joined to the message on the website: a pasted screenshot, a PDF… */
+  document?: ChatDocument | null
   canEdit: boolean
   canDelete: boolean
+}
+
+/** A file joined to a message (Collab::CommentSerializer#document_json). */
+export type ChatDocument = {
+  id: number
+  title: string
+  filename: string | null
+  kind: string
+  byteSize: number | null
+  inLibrary: boolean
+  previewUrl: string | null
+  downloadUrl: string
+}
+
+/**
+ * Whether the phone shows the file itself in the message: a picture the
+ * server can scale (JPEG, PNG, WebP, GIF). Anything else is a card that
+ * opens the file.
+ */
+export function showsAsPicture(document: Pick<ChatDocument, 'kind' | 'previewUrl'>): boolean {
+  return document.kind === 'image' && !!document.previewUrl
+}
+
+/** The file's path on the server at a size (thumb, large, original, download). */
+export function documentPath(mapId: number, documentId: number, size: 'thumb' | 'large' | 'original' | 'download'): string {
+  return `/maps/${mapId}/documents/${documentId}/file?size=${size}`
+}
+
+/** « 1,2 Mo », « 340 ko »: a file's weight, to know before opening it on the terrain. */
+export function fileSize(bytes: number | null | undefined): string | null {
+  if (!bytes || bytes <= 0) return null
+  if (bytes < 1000 * 1000) return `${Math.max(1, Math.round(bytes / 1000))} ko`
+  return `${(bytes / 1_000_000).toFixed(1).replace('.', ',')} Mo`
 }
 
 /** Someone who can be @mentioned. */

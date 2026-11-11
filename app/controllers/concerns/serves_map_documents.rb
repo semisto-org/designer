@@ -18,12 +18,20 @@ module ServesMapDocuments
       target, disposition = document.served(size)
       return head :not_found unless target
       expires_in DOCUMENT_LINK_LIFETIME - 1.minute, private: true
-      redirect_to stored_file_url(target, expires_in: DOCUMENT_LINK_LIFETIME, disposition:), allow_other_host: true
+      send_document_link stored_file_url(target, expires_in: DOCUMENT_LINK_LIFETIME, disposition:)
     rescue ActiveStorage::Error, Vips::Error, ImageProcessing::Error => error
       # An image libvips cannot read still has its original.
       Rails.logger.warn("[documents] no #{size} for document #{document.id}: #{error.class}: #{error.message}")
       return head :not_found if size == "thumb"
-      redirect_to stored_file_url(document.file, expires_in: DOCUMENT_LINK_LIFETIME, disposition: :attachment), allow_other_host: true
+      send_document_link stored_file_url(document.file, expires_in: DOCUMENT_LINK_LIFETIME, disposition: :attachment)
+    end
+
+    # A browser follows the redirect. The phone app asks for JSON instead and
+    # hands the link to the system browser, which carries no token: the link
+    # itself is the short-lived permission.
+    def send_document_link(url)
+      return render(json: { url:, expiresAt: DOCUMENT_LINK_LIFETIME.from_now.iso8601 }) if request.format.json?
+      redirect_to url, allow_other_host: true
     end
 
     def document_limits
