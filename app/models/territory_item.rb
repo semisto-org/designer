@@ -8,6 +8,11 @@
 #                its rights allow it.
 # - expectation: what the territory already asked for in its own documents,
 #                with the sources it comes from.
+# - basin:       a sub-basin (« sous-bassin versant »), the unit of design:
+#                the commune decides, the sub-basin is where water is read
+#                from upstream to downstream. Its `order` runs from the most
+#                upstream (1) down; its outline is optional. Markers and
+#                leads point to theirs with `basin_id`.
 # - marker:      a dated, locatable fact (a flood in a street, a pond filled
 #                in) with its level of proof: computed, seen on site,
 #                confirmed by a witness or in the rain. A computed flow line
@@ -24,7 +29,7 @@
 class TerritoryItem < ApplicationRecord
   include GeoJsonGeometry
 
-  KINDS = %w[actor source expectation marker lead].freeze
+  KINDS = %w[actor source expectation basin marker lead].freeze
   STATUSES = %w[draft active rejected].freeze
   SOURCES = %w[human ai].freeze
   TITLE_MAX_LENGTH = 200
@@ -48,9 +53,10 @@ class TerritoryItem < ApplicationRecord
     "source" => { "url" => :url, "author" => :string, "published_on" => :string, "excerpts" => :text,
                   "rights" => RIGHTS, "source_kind" => SOURCE_KINDS },
     "expectation" => { "year" => :integer, "source_ids" => :ids, "validated" => :boolean },
-    "marker" => { "occurred_on" => :string, "proof" => PROOFS, "marker_kind" => MARKER_KINDS, "source_ids" => :ids },
+    "basin" => { "order" => :integer, "outlet" => :string },
+    "marker" => { "basin_id" => :integer, "occurred_on" => :string, "proof" => PROOFS, "marker_kind" => MARKER_KINDS, "source_ids" => :ids },
     "lead" => {
-      "rank" => RANKS, "theme" => THEMES, "land" => LANDS, "magnitude" => :string,
+      "basin_id" => :integer, "rank" => RANKS, "theme" => THEMES, "land" => LANDS, "magnitude" => :string,
       "expectation_ids" => :ids, "seen_on_site" => :boolean, "seen_on" => :date,
       "farmer" => { "contacted_on" => :date, "answer" => FARMER_ANSWERS, "note" => :string },
       "keeper" => { "role" => :string, "gestures" => :string, "hours_per_year" => :integer, "agreement" => :string, "lifespan_years" => :integer },
@@ -73,6 +79,7 @@ class TerritoryItem < ApplicationRecord
   validates :rationale, presence: true, if: -> { source == "ai" }
   validate :geometry_fits_kind
   validate :file_fits
+  validate :basin_exists
 
   normalizes :title, with: ->(t) { t.to_s.squish }
   before_validation :clean_properties
@@ -180,6 +187,8 @@ class TerritoryItem < ApplicationRecord
       when "lead"
         allowed = [ RGeo::Feature::Point, RGeo::Feature::LineString, RGeo::Feature::Polygon, RGeo::Feature::MultiPolygon, RGeo::Feature::MultiLineString ]
         errors.add(:geometry, :invalid) unless allowed.include?(type)
+      when "basin"
+        errors.add(:geometry, :invalid) unless [ RGeo::Feature::Polygon, RGeo::Feature::MultiPolygon ].include?(type)
       else
         errors.add(:geometry, :invalid)
       end
@@ -189,6 +198,13 @@ class TerritoryItem < ApplicationRecord
         "SRID=4326;#{geometry.as_text}", "SRID=4326;#{territory.boundary.as_text}"
       ]))
       errors.add(:geometry, :outside) unless near
+    end
+
+    # A marker or a lead points to a sub-basin of the same territory.
+    def basin_exists
+      id = prop(:basin_id)
+      return if id.nil? || territory.nil?
+      errors.add(:properties, :basin) unless territory.items.where(kind: "basin").where.not(status: "rejected").exists?(id)
     end
 
     def file_fits

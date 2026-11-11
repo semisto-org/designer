@@ -57,6 +57,8 @@ fr:
             geometry:
               invalid: "ne convient pas à ce type d'élément"
               outside: "est hors du territoire (à plus de 5 km de sa limite)"
+            properties:
+              basin: "renvoie à un sous-bassin qui n'est pas dans ce territoire"
             file:
               invalid: "ne peut être joint qu'à une source"
               too_large: "dépasse 30 Mo"
@@ -145,6 +147,7 @@ fr:
         actors: "Qui y travaille"
         sources: "Sources"
         expectations: "Attentes"
+        basins: "Sous-bassins"
         markers: "Repères"
         leads: "Pistes"
       drafts:
@@ -175,6 +178,9 @@ fr:
         expectations:
           title: "Ce que le territoire demande déjà"
           why: "Chaque attente vient d'un document que la commune a voté. Note son année : un plan de 2012 n'est plus forcément une attente, fais-la confirmer par l'administration."
+        basins:
+          title: "Découpe la commune en sous-bassins"
+          why: "La commune décide, le sous-bassin se conçoit : l'eau se lit de l'amont vers l'aval. Nomme chaque vallon (le contrat de rivière les connaît), numérote-les depuis le plus en amont, puis rattache-y repères et pistes."
         markers:
           title: "Aucun repère daté"
           why: "Une inondation rue du Moulin en 2021, une mare comblée : place-les sur la carte avec leur source. Un axe calculé qui tombe dessus est une concordance à vérifier, pas une preuve : va voir, si possible sous la pluie."
@@ -230,6 +236,10 @@ fr:
         decision_on: "Le"
         first_step: "Par où commencer"
         this_winter: "Faisable cet hiver"
+        basin_id: "Sous-bassin"
+        basin_order: "Ordre depuis l'amont"
+        basin_order_hint: "1 pour le plus en amont, puis en descendant."
+        outlet: "Se jette dans"
       values:
         rights:
           open: "Libre de réutilisation"
@@ -291,6 +301,7 @@ fr:
         waiting_farmer: "attend l'exploitant"
         waiting_farmer_why: "Elle n'entre pas dans le carnet du collège avant un contact avec l'exploitant et sa réponse. Un foncier pas encore connu compte comme agricole."
         concordance: "concordance à vérifier"
+        basin_order: "n° %{order} depuis l'amont"
         this_winter: "cet hiver"
 
     notebook:
@@ -314,6 +325,18 @@ fr:
         start: "5. Par où commencer"
         decision: "Décision de principe"
         sources: "Sources"
+      basins: "Les sous-bassins, de l'amont vers l'aval"
+      basins_why: "La commune décide, le sous-bassin se conçoit : chaque repère et chaque piste y est rattaché."
+      basin_markers:
+        zero: "aucun repère vu ou confirmé"
+        one: "1 repère vu ou confirmé"
+        other: "%{count} repères vus ou confirmés"
+      basin_leads:
+        zero: "aucune piste"
+        one: "1 piste"
+        other: "%{count} pistes"
+      basin_outlet: "se jette dans %{outlet}"
+      no_basin: "Hors sous-bassin"
       actors: "Ceux qui y travaillent déjà"
       expectations: "Ce que ses propres plans demandent"
       expectation_not_validated: "à confirmer par l'administration"
@@ -356,25 +379,25 @@ fr:
     tools:
       list_territories:
         title: "Lister les territoires"
-        description: "Les territoires des équipes de l'utilisateur (module « Territoire » : une commune lue en entier pour décider où agir) : nom, équipe, surface en km², région, archivé ou non, modifiable ou non, et ce que contient leur dossier par type (actor, source, expectation, marker, lead), avec les brouillons en attente. Passe ensuite l'identifiant à get_territory."
+        description: "Les territoires des équipes de l'utilisateur (module « Territoire » : une commune lue en entier pour décider où agir) : nom, équipe, surface en km², région, archivé ou non, modifiable ou non, et ce que contient leur dossier par type (actor, source, expectation, basin, marker, lead), avec les brouillons en attente. Passe ensuite l'identifiant à get_territory."
       get_territory:
         title: "Lire un territoire"
-        description: "Un territoire en entier : limite de la commune en GeoJSON, emprise, centre, couches de la région lisibles ici (sols, ruissellement, plan de secteur, parcellaire agricole, photos aériennes depuis 1971…), cartes de terrain de l'équipe dans la commune (get_map les lit), et son dossier par type : actor (qui y travaille déjà : à rencontrer avant toute recherche), source (document trouvé : lien, auteur, date, droits, extraits), expectation (ce que la commune a déjà voté, avec son année et ses sources), marker (fait daté et localisable, avec son niveau de preuve : computed, seen, confirmed), lead (piste d'aménagement : rang soil, slow ou structure, thème water ou tree, foncier, ordre de grandeur, réponse de l'exploitant, qui l'entretient, décision du collège). research_grid dit quoi chercher sur ce territoire et où ; rules donne les règles du carnet à respecter dans tes propositions. Avant de proposer, lis aussi get_design_guide avec le chapitre « territory »."
+        description: "Un territoire en entier : limite de la commune en GeoJSON, emprise, centre, couches de la région lisibles ici (sols, ruissellement, plan de secteur, parcellaire agricole, photos aériennes depuis 1971…), cartes de terrain de l'équipe dans la commune (get_map les lit), et son dossier par type : actor (qui y travaille déjà : à rencontrer avant toute recherche), basin (sous-bassin versant, l'unité de conception : order 1 pour le plus en amont, outlet, contour facultatif), source (document trouvé : lien, auteur, date, droits, extraits), expectation (ce que la commune a déjà voté, avec son année et ses sources), marker (fait daté et localisable, avec son niveau de preuve : computed, seen, confirmed), lead (piste d'aménagement : rang soil, slow ou structure, thème water ou tree, foncier, ordre de grandeur, réponse de l'exploitant, qui l'entretient, décision du collège). research_grid dit quoi chercher sur ce territoire et où ; rules donne les règles du carnet à respecter dans tes propositions. Avant de proposer, lis aussi get_design_guide avec le chapitre « territory »."
       propose_territory_items:
         title: "Proposer au dossier d'un territoire"
-        description: "Pose en brouillons ce que tu as trouvé sur un territoire : personnes et organismes à rencontrer (actor), documents (source : properties.url, author, published_on, rights open, restricted ou unknown, source_kind, excerpts : quelques phrases citées, jamais le document entier), attentes votées par la commune (expectation : properties.year, source_ids), faits datés et localisés (marker : geometry Point, properties.occurred_on, proof, marker_kind, source_ids), pistes d'aménagement (lead : properties.rank, theme, land, magnitude, expectation_ids ; geometry Point, LineString ou Polygon). Chaque brouillon porte sa justification (rationale) : d'où vient l'information et pourquoi elle compte ici. Un axe d'écoulement calculé qui tombe sur une inondation racontée est une concordance à vérifier (proof computed), jamais une preuve. Ne dimensionne aucun ouvrage : un ordre de grandeur seulement. L'humain garde ou écarte chaque brouillon sur la page du territoire. Un doublon (même type et même titre, ou même lien) est refusé."
+        description: "Pose en brouillons ce que tu as trouvé sur un territoire : personnes et organismes à rencontrer (actor), documents (source : properties.url, author, published_on, rights open, restricted ou unknown, source_kind, excerpts : quelques phrases citées, jamais le document entier), attentes votées par la commune (expectation : properties.year, source_ids), sous-bassins versants (basin : properties.order depuis l'amont, outlet ; geometry Polygon facultative), faits datés et localisés (marker : geometry Point, properties.basin_id, occurred_on, proof, marker_kind, source_ids), pistes d'aménagement (lead : properties.basin_id, rank, theme, land, magnitude, expectation_ids ; geometry Point, LineString ou Polygon). Un basin_id renvoie à un sous-bassin déjà au dossier : propose d'abord les sous-bassins, puis rattache-leur repères et pistes dans un second appel. Chaque brouillon porte sa justification (rationale) : d'où vient l'information et pourquoi elle compte ici. Un axe d'écoulement calculé qui tombe sur une inondation racontée est une concordance à vérifier (proof computed), jamais une preuve. Ne dimensionne aucun ouvrage : un ordre de grandeur seulement. L'humain garde ou écarte chaque brouillon sur la page du territoire. Un doublon (même type et même titre, ou même lien) est refusé."
       withdraw_territory_drafts:
         title: "Retirer des brouillons d'un territoire"
         description: "Retire des brouillons que tu as proposés au dossier d'un territoire et que personne n'a encore revus (item_ids donnés par get_territory). Ce qu'une personne a gardé ne se retire pas."
     params:
       territory_id: "Identifiant du territoire, donné par list_territories."
       territory_items: "Les éléments à proposer au dossier, chacun avec sa justification."
-      territory_item_kind: "actor (qui y travaille), source (document), expectation (attente votée), marker (fait daté et localisé), lead (piste d'aménagement)."
+      territory_item_kind: "actor (qui y travaille), source (document), expectation (attente votée), basin (sous-bassin versant), marker (fait daté et localisé), lead (piste d'aménagement)."
       territory_item_title: "Titre court : « Cellule GISER », « PCDN d'Yvoir (2016) », « Inondation rue du Moulin, juillet 2021 », « Haie sur talus en tête du vallon de… »."
       territory_item_body: "Ce qu'il faut savoir, en quelques phrases : résumé d'une source, pourquoi une piste, ce qui s'est passé."
       territory_item_rationale: "D'où vient l'information (lien, page, date) et pourquoi elle compte pour ce territoire."
-      territory_item_geometry: "GeoJSON en WGS84 [longitude, latitude] : Point pour un repère ; Point, LineString ou Polygon pour une piste. Rien pour les autres types. À moins de 5 km de la limite du territoire."
-      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; marker → occurred_on, proof, marker_kind, source_ids ; lead → rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years}. Les autres clés sont ignorées."
+      territory_item_geometry: "GeoJSON en WGS84 [longitude, latitude] : Point pour un repère ; Point, LineString ou Polygon pour une piste ; Polygon pour un sous-bassin (facultatif). Rien pour les autres types. À moins de 5 km de la limite du territoire."
+      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; basin → order (1 = le plus en amont), outlet ; marker → basin_id, occurred_on, proof, marker_kind, source_ids ; lead → basin_id, rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years}. Les autres clés sont ignorées."
       territory_item_ids: "Identifiants des brouillons à retirer (dossier dans get_territory)."
     errors:
       territory_not_found: "Territoire %{id} introuvable, ou tu ne fais pas partie de son équipe. list_territories donne les tiens."
@@ -385,7 +408,7 @@ fr:
     notes:
       territories: "Un territoire se lit en entier avec get_territory. On y décide où agir ; on conçoit ensuite sous-bassin par sous-bassin, sur des cartes de terrain."
       review_territory_items: "Les brouillons attendent sur la page du territoire (review_url), où la personne garde ou écarte chacun. Dis-lui que rien n'entre dans le carnet sans elle, et invite-la à aller voir sur place les repères et les pistes avant de les montrer au collège."
-      territory_rules: "1. On rencontre d'abord ceux qui travaillent déjà sur le territoire (actor) : le carnet relie leur travail, il ne le refait pas. 2. Chaque attente, source et repère porte sa source et sa date ; un document ancien est une attente à confirmer par l'administration. 3. Un axe calculé qui croise un fait raconté est une concordance à vérifier (proof computed) : seul le terrain la change en seen ou confirmed. 4. D'abord le sol (rank soil : couverture d'hiver, sens du travail), puis ralentir en haut du bassin (slow), puis les ouvrages (structure). 5. Ordre de grandeur seulement, jamais de dimensionnement ; quand des biens ou des personnes sont exposés, renvoie vers un bureau d'ingénieurs. 6. Une piste sur terre agricole n'entre au carnet du collège qu'après la rencontre avec l'exploitant et sa réponse ; elle reste une zone floue tant qu'il n'a pas dit oui. 7. Une piste sans gestionnaire est orpheline. 8. Jamais de nom de propriétaire tiré du cadastre : seulement le type de foncier (public, agricultural, private)."
+      territory_rules: "1. On rencontre d'abord ceux qui travaillent déjà sur le territoire (actor) : le carnet relie leur travail, il ne le refait pas. 2. Chaque attente, source et repère porte sa source et sa date ; un document ancien est une attente à confirmer par l'administration. 3. Un axe calculé qui croise un fait raconté est une concordance à vérifier (proof computed) : seul le terrain la change en seen ou confirmed. 4. D'abord le sol (rank soil : couverture d'hiver, sens du travail), puis ralentir en haut du bassin (slow), puis les ouvrages (structure). 5. Ordre de grandeur seulement, jamais de dimensionnement ; quand des biens ou des personnes sont exposés, renvoie vers un bureau d'ingénieurs. 6. Une piste sur terre agricole (ou au foncier inconnu) n'entre au carnet du collège qu'après la rencontre avec l'exploitant et sa réponse ; elle reste une zone floue tant qu'il n'a pas dit oui. Seule exception, une pratique du sol (rank soil) : elle y entre sans tracé et sans nommer de ferme ni de parcelle, et la version publique attend le oui. 7. Une piste sans gestionnaire est orpheline. 8. Jamais de nom de propriétaire tiré du cadastre : seulement le type de foncier (public, agricultural, private). 9. L'eau se lit par sous-bassin, de l'amont vers l'aval : rattache chaque repère et chaque piste à son sous-bassin (basin_id)."
   ai_journal:
     actions:
       list_territories: "a listé les territoires"

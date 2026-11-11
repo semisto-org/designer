@@ -13,11 +13,12 @@ Il est réservé aux équipes à qui Semisto l'attribue (frais annuels par terri
 
 Dans **Territoires**, clique sur **Ouvrir un territoire**, tape le nom de la commune et choisis-la dans la liste. Terranova reprend sa limite (OpenStreetMap) et les couches de sa région : photos aériennes depuis 1971, ruissellement, sols, plan de secteur, parcellaire agricole.
 
-## Le dossier, en cinq onglets
+## Le dossier, en six onglets
 
 - **Qui y travaille** : commence ici. Rencontre la cellule érosion, le contrat de rivière, l'agent environnement. Le carnet relie leur travail, il ne le refait pas.
 - **Sources** : les documents trouvés, avec leur auteur, leur date et leurs droits. Une copie du fichier seulement si ses droits le permettent.
 - **Attentes** : ce que la commune a déjà voté. Note l'année : un plan ancien se fait confirmer par l'administration.
+- **Sous-bassins** : la commune décide, le sous-bassin se conçoit. Nomme chaque vallon (le contrat de rivière les connaît) et numérote-les depuis le plus en amont. Chaque repère et chaque piste s'y rattache, et le carnet les présente de l'amont vers l'aval.
 - **Repères** : un fait daté et placé sur la carte (une inondation, une mare comblée), avec son niveau de preuve : calculé, vu sur place, confirmé par un témoin ou sous la pluie.
 - **Pistes** : d'abord le sol, puis ralentir l'eau en haut du bassin, puis les ouvrages. Un ordre de grandeur, jamais un dimensionnement.
 

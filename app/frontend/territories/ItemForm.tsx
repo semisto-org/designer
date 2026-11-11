@@ -27,13 +27,15 @@ type Props = {
   /** Sources and expectations a marker, an expectation or a lead can point to. */
   sources: TerritoryItem[]
   expectations: TerritoryItem[]
+  /** The territory's sub-basins, upstream first, that a marker or a lead belongs to. */
+  basins: TerritoryItem[]
   /** Asks the map for one click; resolves the point, or null when cancelled. */
   place: (done: (geometry: Geometry | null) => void) => void
   onDone: () => void
 }
 
 /** Adds or changes one entry of the dossier, with the fields its kind keeps. */
-export function ItemForm({ territoryId, kind, item, sources, expectations, place, onDone }: Props) {
+export function ItemForm({ territoryId, kind, item, sources, expectations, basins, place, onDone }: Props) {
   const [title, setTitle] = useState(item?.title ?? '')
   const [body, setBody] = useState(item?.body ?? '')
   const [props, setProps] = useState<TerritoryItemProperties>(item?.properties ?? (kind === 'marker' ? { proof: 'computed' } : kind === 'lead' ? { rank: 'soil', theme: 'water', land: 'unknown' } : {}))
@@ -84,6 +86,15 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, place
       <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)}>
         {blank && <option value="">{t('territories.show.values.none')}</option>}
         {values.map((key) => <option key={key} value={key}>{v(group, key)}</option>)}
+      </Select>
+    </Field>
+  )
+
+  const basinPick = basins.length > 0 && (
+    <Field label={f('basin_id')}>
+      <Select value={props.basin_id ?? ''} onChange={(e) => set('basin_id', e.target.value ? Number(e.target.value) : undefined)}>
+        <option value="">{t('territories.show.values.none')}</option>
+        {basins.map((basin) => <option key={basin.id} value={basin.id}>{basin.properties.order ? `${basin.properties.order}. ` : ''}{basin.title}</option>)}
       </Select>
     </Field>
   )
@@ -146,9 +157,19 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, place
         {pickIds('source_ids', sources, f('source_ids'))}
       </>
     )
+  } else if (kind === 'basin') {
+    fields = (
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label={f('basin_order')} hint={f('basin_order_hint')}>
+          <Input type="number" min={1} max={99} value={props.order ?? ''} onChange={(e) => set('order', e.target.value ? Number(e.target.value) : undefined)} />
+        </Field>
+        <Field label={f('outlet')}><Input value={props.outlet ?? ''} onChange={(e) => set('outlet', e.target.value)} placeholder="le Bocq" /></Field>
+      </div>
+    )
   } else if (kind === 'marker') {
     fields = (
       <>
+        {basinPick}
         <div className="grid gap-3 sm:grid-cols-3">
           {choice(f('marker_kind'), props.marker_kind, MARKER_KINDS, 'marker_kind', (x) => set('marker_kind', x), true)}
           <Field label={f('occurred_on')}><Input value={props.occurred_on ?? ''} onChange={(e) => set('occurred_on', e.target.value)} placeholder="2021-07-14" /></Field>
@@ -162,6 +183,7 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, place
     const needsFarmer = props.land === 'agricultural' || props.land === 'private'
     fields = (
       <>
+        {basinPick}
         <div className="grid gap-3 sm:grid-cols-3">
           {choice(f('rank'), props.rank, RANKS, 'rank', (x) => set('rank', x as TerritoryItemProperties['rank']))}
           {choice(f('theme'), props.theme, THEMES, 'theme', (x) => set('theme', x as TerritoryItemProperties['theme']))}

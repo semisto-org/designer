@@ -21,7 +21,13 @@ From the documents the commune voted, extract `expectation` drafts: what the ter
 
 What you find online can be outdated or wrong. Say so in the rationale when a source is weak, old or second-hand.
 
-## 3. Dated markers, and what proves them
+## 3. Sub-basins, from upstream down
+
+The commune decides; the sub-basin is where water is read and designed. Split the territory into its sub-basins (« sous-bassins versants », 1 to 10 km² each): the river contract and the regional runoff layers name the valleys. Propose each as a `basin` draft with its `order` (1 for the most upstream, then going down), its `outlet` (the stream or river it flows into) and, when you have it, its outline as a Polygon. Its upstream part may lie in a neighbouring commune: say so, water does not stop at the boundary.
+
+Then attach every marker and every lead to its sub-basin with `basin_id`. A `basin_id` must point to a sub-basin already in the dossier, so propose the sub-basins first and the markers and leads in a second call, once the person kept them. The notebook groups everything by sub-basin, upstream first, and shows how many markers were seen or confirmed in each: that is where the collège sees where to act first.
+
+## 4. Dated markers, and what proves them
 
 A locatable fact (a flood in a street, a pond filled in, a hedge that disappeared since the 1971 aerial photo) becomes a `marker`: a Point, its date (`occurred_on`), its kind and its sources. Its `proof` has three levels:
 
@@ -31,7 +37,7 @@ A locatable fact (a flood in a street, a pond filled in, a hedge that disappeare
 
 A computed flow line that meets a told flood is a **concordance to check**, never a proof: every valley floor has a flow line. A 1 m terrain model ignores culverts, bridges, ditches and drains, takes a road embankment for a dam and a plough furrow for a channel, and knows nothing of the soil; on loam, this year's crops decide whether a field sends mud, more than the relief. Only the field turns `computed` into `seen` or `confirmed`.
 
-## 4. Leads, soil first
+## 5. Leads, soil first
 
 A `lead` is a layout lead (« piste d'aménagement »). Propose them in this order (`rank`):
 
@@ -45,7 +51,7 @@ Each lead says where (`land`: public, agricultural, private, never an owner's na
 
 Theme (`theme`): `water`, or `tree` for the food tree (hedges, orchards, edible forests on public or farmland).
 
-## 5. The rules of the notebook
+## 6. The rules of the notebook
 
 - A lead on farmland reaches the collège only after the farmer was met and answered; so does a lead whose `land` is still unknown, so always say whose land it is. The exception is a soil practice (`rank: soil`: winter cover, rotation, working across the slope): it comes first and names no one, so it enters the working notebook before the farmer answers, without any outline or parcel, and stays out of the public version until the farmer says yes. Never name a farm or a parcel in its title or text. The public notebook leaves out a lead its farmer or owner refused or is still weighing. Until the farmer (or owner) says yes, it is drawn as a **fuzzy zone**, never as a line on a parcel. On public land, it is a sharp outline.
 - A lead not yet seen on site is a **hypothesis**: it appears in the working notebook, apart, and never on its map; never in the public version.

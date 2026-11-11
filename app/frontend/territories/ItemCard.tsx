@@ -54,12 +54,17 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
       line(fl('year'), p.year)
       line(fl('source_ids'), refs(p.source_ids))
       break
+    case 'basin':
+      line(fl('outlet'), p.outlet)
+      break
     case 'marker':
+      line(fl('basin_id'), p.basin_id ? titles.get(p.basin_id) : null)
       line(fl('marker_kind'), p.marker_kind && v('marker_kind', p.marker_kind))
       line(fl('occurred_on'), date(p.occurred_on))
       line(fl('source_ids'), refs(p.source_ids))
       break
     case 'lead':
+      line(fl('basin_id'), p.basin_id ? titles.get(p.basin_id) : null)
       line(fl('magnitude'), p.magnitude)
       line(fl('expectation_ids'), refs(p.expectation_ids))
       line(fl('farmer'), p.farmer?.answer ? `${v('farmer_answer', p.farmer.answer)}${p.farmer.contacted_on ? `, ${date(p.farmer.contacted_on)}` : ''}${p.farmer.note ? ` (${p.farmer.note})` : ''}` : null)
@@ -78,6 +83,7 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-1.5">
             <span className="font-medium text-loam-900">{item.title}</span>
+            {item.kind === 'basin' && p.order && <Pill tone="lichen">{t('territories.show.badges.basin_order', { order: p.order })}</Pill>}
             {item.kind === 'marker' && (
               <Pill tone={p.proof === 'confirmed' ? 'prune' : p.proof === 'seen' ? 'leaf' : 'humus'}>{v('proof', p.proof ?? 'computed')}</Pill>
             )}

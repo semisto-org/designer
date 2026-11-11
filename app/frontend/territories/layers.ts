@@ -7,13 +7,14 @@ import type { Feature, FeatureCollection, Geometry, MultiPolygon } from 'geojson
  * line on a parcel); a lead on public land, or agreed, is a sharp outline.
  * Markers are dots coloured by their proof: computed (attention), seen on
  * site (alive), confirmed (plum). A draft is paler, with an amber ring.
+ * A sub-basin is a dashed plum outline under everything else.
  */
 export const ITEMS_SOURCE = 'territory-items'
 export const TEAM_MAPS_SOURCE = 'territory-team-maps'
 
 export type MapItem = {
   id: number
-  kind: 'marker' | 'lead'
+  kind: 'basin' | 'marker' | 'lead'
   status: string
   geometry: Geometry
   proof?: string | null
@@ -28,6 +29,7 @@ const HUMUS = '#c47f17'
 const INK = '#1a1a1a'
 
 export const ITEM_LAYER_IDS = [
+  'territory-basin-line',
   'territory-lead-fuzzy-area', 'territory-lead-fuzzy-line', 'territory-lead-fuzzy-point',
   'territory-lead-sharp-area', 'territory-lead-sharp-outline', 'territory-lead-sharp-line', 'territory-lead-sharp-point',
   'territory-marker', 'territory-selected',
@@ -57,6 +59,14 @@ export function installTerritoryItems(map: MapLibreMap, items: MapItem[], select
     source.setData(data)
   } else {
     map.addSource(ITEMS_SOURCE, { type: 'geojson', data })
+    map.addLayer({ id: 'territory-basin-casing', type: 'line', source: ITEMS_SOURCE,
+      filter: ['==', ['get', 'kind'], 'basin'] as never,
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': '#ffffff', 'line-width': 4.5, 'line-opacity': opacity(0.7) as never } })
+    map.addLayer({ id: 'territory-basin-line', type: 'line', source: ITEMS_SOURCE,
+      filter: ['==', ['get', 'kind'], 'basin'] as never,
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': PRUNE, 'line-width': 2.5, 'line-dasharray': [3, 2], 'line-opacity': opacity(0.95) as never } })
     // Fuzzy zones: the blur says « somewhere around here », not « this parcel ».
     map.addLayer({ id: 'territory-lead-fuzzy-area', type: 'fill', source: ITEMS_SOURCE,
       filter: ['all', isLead, ['!', isSharp], geom('Polygon')] as never,

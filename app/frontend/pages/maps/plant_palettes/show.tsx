@@ -18,7 +18,7 @@ import type { PlantLine } from '@/palette/plants'
 import { PlantsTable } from '@/palette/PlantsTable'
 import { SuggestionsSheet } from '@/palette/Suggestions'
 import {
-  cellValue, crownArea, GROWTH_YEARS, normalizeSettings, sameSettings, scopeOf, toCsv, toPlant, UNTAGGED, viewGroups,
+  budgetQuantity, cellValue, crownArea, GROWTH_YEARS, normalizeSettings, sameSettings, scopeOf, toBuyQuantity, toCsv, UNTAGGED, viewGroups,
   type PaletteRow, type ViewSettings,
 } from '@/palette/table'
 import { Popover, Toolbar } from '@/palette/Toolbar'
@@ -502,8 +502,8 @@ function Summary({ rows, areaM2 }: { rows: PaletteRow[]; areaM2: number | null }
   const planted = rows.reduce((s, r) => s + r.planted, 0)
   const existing = rows.reduce((s, r) => s + r.existing, 0)
   // What is left to buy leads, as in the Budget view; the full cost, plants in the ground included, follows.
-  const budget = rows.reduce((s, r) => s + (r.unitPrice == null ? 0 : r.unitPrice * r.planned), 0)
-  const toBuy = rows.reduce((s, r) => s + (r.unitPrice == null ? 0 : r.unitPrice * toPlant(r)), 0)
+  const budget = rows.reduce((s, r) => s + (r.unitPrice == null ? 0 : r.unitPrice * budgetQuantity(r)), 0)
+  const toBuy = rows.reduce((s, r) => s + (r.unitPrice == null ? 0 : r.unitPrice * toBuyQuantity(r)), 0)
   const stages = GROWTH_YEARS.map((years) => ({ years, area: crownArea(rows, years) }))
   const largest = Math.max(1, ...stages.map((s) => s.area))
   const showGrowth = areaM2 != null && areaM2 > 0 && largest > 1
