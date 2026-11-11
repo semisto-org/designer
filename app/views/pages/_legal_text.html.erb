@@ -5,7 +5,7 @@
 <article id="prerendered" class="mx-auto max-w-3xl px-4 py-12">
   <h1><%= t("#{scope}.title") %></h1>
   <p><%= t("#{scope}.lead") %></p>
-  <p><%= t("site.common.draft_banner") %>. <%= t("site.common.updated", date: t("site.legal.updated_on")) %></p>
+  <p><%= t("site.common.updated", date: t("site.legal.updated_on")) %></p>
   <% Array(t("#{scope}.sections", deep_interpolation: true, **vars)).each_with_index do |section, index| %>
     <section>
       <h2><%= index + 1 %>. <%= section[:title] %></h2>

@@ -10,9 +10,17 @@ class MailBccInterceptorTest < ActionMailer::TestCase
 
   test "copies a real application e-mail (registered for every mailer)" do
     ENV["MAIL_BCC_ADDRESS"] = "hello@semisto.org"
-    mail = MagicLinkMailer.sign_in(users(:michael)).deliver_now
+    mail = AccountMailer.deletion_confirmation(users(:michael)).deliver_now
+    assert_includes mail.bcc, "hello@semisto.org"
+  end
+
+  test "never copies a sign-in link or code, and drops the marker header" do
+    ENV["MAIL_BCC_ADDRESS"] = "hello@semisto.org"
+    mail = MagicLinkMailer.sign_in(users(:michael), code: "123456").deliver_now
     assert_equal [ "michael@example.org" ], mail.to
-    assert_equal [ "hello@semisto.org" ], mail.bcc
+    assert_nil mail.bcc
+    assert_not_includes mail.smtp_envelope_to, "hello@semisto.org"
+    assert_nil mail.header[MailBccInterceptor::NO_COPY_HEADER]
   end
 
   test "adds nothing when the variable is unset or blank" do
