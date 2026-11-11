@@ -43,7 +43,7 @@ class Account::ReplayConsentsControllerTest < ActionDispatch::IntegrationTest
 
   test "never asked, recorded or answered while an admin is signed in as someone" do
     sign_in_as User.create!(email_address: "staff@example.org", name: "Staff", admin: true)
-    post admin_user_impersonation_path(users(:alice))
+    post admin_user_impersonation_path(users(:alice)), params: { motive: "request", motive_note: "Asked for help by e-mail" }
     with_replay_env do
       get account_path, headers: inertia_headers
       assert_equal "off", response.parsed_body.dig("props", "sessionReplay")

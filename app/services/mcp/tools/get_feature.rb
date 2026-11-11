@@ -20,7 +20,8 @@ module Mcp
           measures: measures.reject { |_, v| v.zero? },
           created_at: feature.created_at.iso8601,
           **plant_journal(feature),
-          **plant_growth(feature)
+          **plant_growth(feature),
+          **water_links(map, feature)
         )
       end
 
@@ -46,6 +47,13 @@ module Mcp
           return {} unless feature.plant?
           growth = PlantGrowth::Projection.new(feature).as_json
           growth ? { growth: } : {}
+        end
+
+        # For a pipe, ditch or swale: what it connects and the drop along it;
+        # for a tank or a pond: the lines that leave it or reach it.
+        def water_links(map, feature)
+          return {} unless WaterLinks::Report.applies?(feature, map)
+          { water_links: WaterLinks::Report.new(map, feature, editor: editor?).as_json.deep_transform_keys { _1.to_s.underscore } }
         end
 
         def summarize_result(data) = { feature_id: data[:id], layer: data.dig(:properties, "layer") }

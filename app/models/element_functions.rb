@@ -16,7 +16,7 @@
 # sheet: « S'émerveiller », « Accueillir la biodiversité »…) get the same
 # review, through the elements that say they serve them (`properties.serves`).
 class ElementFunctions
-  FUNCTIONS = %w[food water fertility soil_protection windbreak shade microclimate habitat pollination wood fire_protection].freeze
+  FUNCTIONS = %w[food water irrigation livestock_watering fertility soil_protection windbreak shade microclimate habitat pollination wood fire_protection].freeze
   RESOURCES = %w[water organic_matter compost food wood heat].freeze
   # A function served by fewer elements than this is fragile: one failure and it is gone.
   ENOUGH = 2

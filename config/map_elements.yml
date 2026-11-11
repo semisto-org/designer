@@ -24,6 +24,9 @@
 #   pickable  false when the kind is created by a tool, not from the library
 #   contour   true when the line can follow the contour through a clicked point
 #             (« Suivre la courbe », from the map's relief)
+#   links     true when the line carries water from one element to another (pipe,
+#             ditch, swale…): its ends snap to the tank, pond or roof they touch
+#             (`properties.from_id`, `to_id`, MapFeature::WaterLinks)
 #
 # Labels are in config/locales/drawing.fr.yml: editor.kinds.<kind>,
 # drawing.fields.<field>, drawing.options.<field>.<option>.
@@ -142,6 +145,7 @@ layers:
         functions: [water, soil_protection]
         yields: [water]
         contour: true
+        links: true
         icon: spline
         color: "#2b7bb9"
         line: { width: 5, casing: "#ffffff" }
@@ -169,6 +173,7 @@ layers:
         geometry: LineString
         functions: [water]
         yields: [water]
+        links: true
         icon: route
         color: "#1f5f8b"
         line: { width: 3, dash: [3, 1] }
@@ -178,6 +183,7 @@ layers:
           - { key: depth_m, type: number, unit: m, min: 0.1, max: 5, step: 0.05 }
       overflow_pipe:
         geometry: LineString
+        links: true
         icon: move-right
         color: "#1f5f8b"
         line: { width: 3, dash: [1.5, 1], casing: "#ffffff", arrows: true }
@@ -189,7 +195,9 @@ layers:
           - { key: depth_cm, type: integer, unit: cm, min: 0, max: 500 }
       irrigation_line:
         geometry: LineString
+        functions: [irrigation]
         needs: [water]
+        links: true
         icon: shower-head
         color: "#3b8fc4"
         line: { width: 2, dash: [1, 1.5] }
@@ -212,7 +220,7 @@ layers:
           - { key: head_m, type: number, unit: m, min: 0, max: 500, step: 0.5 }
       water_tank:
         geometry: Point
-        functions: [water, fire_protection]
+        functions: [water, irrigation, fire_protection]
         needs: [water]
         yields: [water]
         icon: cylinder
@@ -221,6 +229,8 @@ layers:
         fields:
           - { key: capacity_l, type: integer, unit: L, min: 0, max: 1000000, step: 100 }
           - { key: tank_type, type: select, options: [buried, above_ground, ibc] }
+          - { key: above_ground_m, type: number, unit: m, min: 0, max: 30, step: 0.1 }
+        computed: [gravity_pressure]
       well:
         geometry: Point
         functions: [water]
@@ -565,6 +575,7 @@ layers:
     elements:
       water_pipe:
         geometry: LineString
+        links: true
         icon: git-commit-horizontal
         color: "#2563eb"
         line: { width: 2.5, dash: [3, 1.5] }

@@ -26,7 +26,7 @@ Sous chaque fonction fragile ou absente, le panneau te dit **quoi regarder dehor
 
 ## Ajuster les fonctions d'un élément
 
-Touche un élément sur la carte. Dans l'inspecteur, la section **Fonctions** montre celles que Terranova propose d'après son type (une mare : eau, abri pour la faune, microclimat, protection incendie) ou d'après le catalogue pour une plante. Touche une fonction pour l'ajouter ou la retirer : une haie qui sert aussi de coupe-feu, un arbre gardé pour son ombre. **Revenir aux fonctions proposées** efface tes choix.
+Touche un élément sur la carte. Dans l'inspecteur, la section **Fonctions** montre celles que Terranova propose d'après son type (une mare : eau, abri pour la faune, microclimat, protection incendie) ou d'après le catalogue pour une plante. Touche une fonction pour l'ajouter ou la retirer : une haie qui sert aussi de coupe-feu, un arbre gardé pour son ombre, une cuve qui sert à l'**irrigation** et à l'**abreuvement** des animaux. **Revenir aux fonctions proposées** efface tes choix.
 
 La section dit aussi **ce qu'il demande** et **ce qu'il donne** : un toit donne de l'eau, une cuve en demande, la haie donne du bois et de la matière organique.
 

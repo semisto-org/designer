@@ -1253,6 +1253,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_000000) do
     t.datetime "synced_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "renewal_reminded_for"
     t.index ["stripe_subscription_id"], name: "index_plan_subscriptions_on_stripe_subscription_id", unique: true
     t.index ["user_id"], name: "index_plan_subscriptions_on_user_id"
   end

@@ -33,4 +33,6 @@ fr:
         december: "En gris-prune, l’ombre de midi le 21 décembre, sur un terrain plat : elle s’étire vers le nord."
     open: "Changer de moment"
     close: "Refermer la frise"
+    put_away: "Replier la frise du temps"
+    bring_back: "Déplier la frise du temps"
     draft_shown: "Ce brouillon de l’IA est un projet : la carte passe à l’an %{years} pour te le montrer."

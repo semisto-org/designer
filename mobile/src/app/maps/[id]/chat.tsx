@@ -15,11 +15,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { chat, useChat } from '@/lib/chat'
 import {
-  chatFeatureLabel, citedIds, continues, insertToken, matchCitables, matchMembers, tokenizeChat, typedQuery,
-  type Citable, type ChatMember, type ChatMessage,
+  chatFeatureLabel, citedIds, continues, documentPath, fileSize, insertToken, matchCitables, matchMembers, showsAsPicture, tokenizeChat, typedQuery,
+  type Citable, type ChatDocument, type ChatMember, type ChatMessage,
 } from '@/lib/chat-core'
 import { kindLabel } from '@/lib/elements'
 import { anchor, bearing, distance } from '@/lib/geo'
+import { openDocument } from '@/lib/documents'
 import { haptics } from '@/lib/haptics'
 import { formatDate, formatTime, t } from '@/lib/i18n'
 import { currentHeading, currentPositionWithAccuracy } from '@/lib/location'
@@ -143,6 +144,9 @@ export default function ChatScreen() {
                 onFeature={(id) => showOnMap({ kind: 'feature', id })}
                 onSpot={(position) => showOnMap({ kind: 'spot', position, messageId: item.message.id })}
                 onPhoto={(photoId) => router.push({ pathname: '/maps/[id]/photo/[photoId]', params: { id: String(mapId), photoId: String(photoId) } })}
+                onDocument={(document) => showsAsPicture(document)
+                  ? router.push({ pathname: '/maps/[id]/document/[documentId]', params: { id: String(mapId), documentId: String(document.id), title: document.title } })
+                  : void openDocument(mapId, document.id).catch(() => Alert.alert(t(online ? 'mobile.chat.document_failed' : 'mobile.chat.document_offline')))}
                 onLongPress={item.message.canDelete ? () => remove(item.message) : undefined} />
             : <PendingRow op={item.op} online={online} />}
         />
@@ -172,9 +176,10 @@ function EmptyChat() {
   )
 }
 
-function MessageRow({ mapId, message, previous, handles, me, highlighted, onFeature, onSpot, onPhoto, onLongPress }: {
+function MessageRow({ mapId, message, previous, handles, me, highlighted, onFeature, onSpot, onPhoto, onDocument, onLongPress }: {
   mapId: number; message: ChatMessage; previous?: ChatMessage; handles: string[]; me: Position | null; highlighted: boolean
-  onFeature: (id: number) => void; onSpot: (position: Position) => void; onPhoto: (photoId: number) => void; onLongPress?: () => void
+  onFeature: (id: number) => void; onSpot: (position: Position) => void; onPhoto: (photoId: number) => void
+  onDocument: (document: ChatDocument) => void; onLongPress?: () => void
 }) {
   const same = continues(previous, message)
   const newDay = !previous || previous.createdAt.slice(0, 10) !== message.createdAt.slice(0, 10)
@@ -214,6 +219,7 @@ function MessageRow({ mapId, message, previous, handles, me, highlighted, onFeat
             {message.photo.video && <View style={s.play} pointerEvents="none"><Text style={s.playMark}>▶</Text></View>}
           </Pressable>
         )}
+        {message.document && <DocumentAttachment mapId={mapId} document={message.document} onPress={() => onDocument(message.document!)} />}
         {(where || features.some((f) => !tokens.some((tk) => tk.kind === 'feature' && tk.id === f.id))) && (
           <View style={s.chips}>
             {where && message.location && <PointChip icon="point" label={where} onPress={() => onSpot(message.location!)} />}
@@ -227,6 +233,31 @@ function MessageRow({ mapId, message, previous, handles, me, highlighted, onFeat
         )}
       </Pressable>
     </View>
+  )
+}
+
+/**
+ * A file joined on the website: a picture shows as itself (tap to read it
+ * in full), anything else as a card with its name and weight that opens it.
+ */
+function DocumentAttachment({ mapId, document, onPress }: { mapId: number; document: ChatDocument; onPress: () => void }) {
+  if (showsAsPicture(document)) {
+    return (
+      <Pressable onPress={onPress} accessibilityRole="imagebutton" accessibilityLabel={`${document.title}, ${t('mobile.chat.document_view')}`}>
+        <RemoteImage path={documentPath(mapId, document.id, 'thumb')} style={s.photo} />
+      </Pressable>
+    )
+  }
+  const size = fileSize(document.byteSize)
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${document.title}, ${t('mobile.chat.document_open')}`}
+      style={({ pressed }) => [s.file, pressed && { opacity: 0.8 }]}>
+      <Icon name="document" size={24} color={colors.prune700} />
+      <View style={{ flex: 1 }}>
+        <Text style={s.fileName} numberOfLines={2} maxFontSizeMultiplier={MAX_FONT_SCALE}>{document.filename || document.title}</Text>
+        {size && <Text style={s.time} maxFontSizeMultiplier={MAX_FONT_SCALE}>{size}</Text>}
+      </View>
+    </Pressable>
   )
 }
 
@@ -398,6 +429,11 @@ const s = StyleSheet.create({
   cited: { fontFamily: fonts.bold, color: colors.leaf700, textDecorationLine: 'underline' },
   link: { color: colors.prune700, textDecorationLine: 'underline' },
   photo: { width: 220, height: 165, borderRadius: radius.md, marginTop: space.xs },
+  file: {
+    flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: touch.min, maxWidth: 280, marginTop: space.xs,
+    paddingHorizontal: space.md, paddingVertical: space.sm, borderRadius: radius.md, borderWidth: 1, borderColor: colors.prune200, backgroundColor: colors.white,
+  },
+  fileName: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 20, color: colors.prune700 },
   play: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
   playMark: { color: colors.white, fontSize: 32 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },

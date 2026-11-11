@@ -1,0 +1,8 @@
+<p><%= t("billing_mailer.greeting", name: @user.display_name) %></p>
+<p><%= t("billing_mailer.subscription_renewal.body", plan: @plan_name, date: @renews_on, price: @price) %></p>
+<p><%= t("billing_mailer.subscription_renewal.keep") %></p>
+<p><%= t("billing_mailer.subscription_renewal.cancel", date: @renews_on) %></p>
+<p><a href="<%= @billing_url %>" style="display:inline-block;padding:12px 20px;background:#5b5781;color:#fff;border-radius:999px;text-decoration:none;font-weight:600"><%= t("billing_mailer.subscription_renewal.cta") %></a></p>
+<p style="color:#6b6257;font-size:13px"><%= t("billing_mailer.subscription_renewal.after") %></p>
+<%= render "mail_supports" %>
+<p><%= t("billing_mailer.signature") %><br><%= t("billing_mailer.team") %></p>

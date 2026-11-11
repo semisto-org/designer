@@ -1,5 +1,5 @@
 import {
-  chatFeatureLabel, citedIds, continues, insertToken, matchCitables, matchMembers, pinnedHere, removeMessage, tokenizeChat, typedQuery,
+  chatFeatureLabel, citedIds, continues, documentPath, fileSize, showsAsPicture, insertToken, matchCitables, matchMembers, pinnedHere, removeMessage, tokenizeChat, typedQuery,
   unreadSince, upsertMessage, type ChatMessage,
 } from '../chat-core'
 
@@ -76,5 +76,23 @@ describe('what was said where one stands', () => {
   it('keeps the pinned messages close by, nearest first', () => {
     const list = [message(1, { location: [4.9501, 50.32] }), message(2, { location: [4.95, 50.32] }), message(3, { location: [4.96, 50.32] }), message(4)]
     expect(pinnedHere(list, [4.95, 50.32]).map((m) => m.message.id)).toEqual([2, 1])
+  })
+})
+
+describe('a file joined to a message', () => {
+  test('a picture the server scales shows as itself, anything else as a card', () => {
+    expect(showsAsPicture({ kind: 'image', previewUrl: '/maps/2/documents/502/file?size=large' })).toBe(true)
+    expect(showsAsPicture({ kind: 'image', previewUrl: null })).toBe(false) // HEIC, TIFF: no preview
+    expect(showsAsPicture({ kind: 'pdf', previewUrl: '/maps/2/documents/9/file?size=original' })).toBe(false)
+  })
+
+  test('its path at each size', () => {
+    expect(documentPath(2, 502, 'thumb')).toBe('/maps/2/documents/502/file?size=thumb')
+  })
+
+  test('its weight, in French', () => {
+    expect(fileSize(null)).toBeNull()
+    expect(fileSize(340_200)).toBe('340 ko')
+    expect(fileSize(1_234_567)).toBe('1,2 Mo')
   })
 })

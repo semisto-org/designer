@@ -35,6 +35,8 @@ export type ElementSpec = {
   pickable: boolean
   /** The line can follow the contour through a clicked point (« Suivre la courbe »). */
   contour?: boolean
+  /** The line carries water between two elements: its ends snap to them (`from_id`, `to_id`). */
+  links?: boolean
   /** What the element does in the design, proposed from its kind (absent: left out of the functions review). */
   functions?: string[]
   needs?: string[]
