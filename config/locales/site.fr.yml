@@ -24,10 +24,10 @@ fr:
         description: "Semisto Terranova est un logiciel libre (AGPL-3.0). Le code, les sources de données et leurs licences, en toute transparence."
       privacy:
         title: "Politique de confidentialité"
-        description: "Quelles données Semisto Terranova collecte, pourquoi, qui les héberge et comment exercer vos droits. Projet à valider."
+        description: "Quelles données Semisto Terranova collecte, pourquoi, qui les héberge et comment exercer vos droits."
       terms:
         title: "Conditions d'utilisation"
-        description: "Les conditions d'utilisation de Semisto Terranova : compte, formules, paiement, contenus et responsabilités. Projet à valider."
+        description: "Les conditions d'utilisation de Semisto Terranova : compte, formules, paiement, contenus et responsabilités."
       help:
         title: "Centre d'aide"
         description: "Des guides concrets pour créer sa première carte, lire les couches du Géoportail, dessiner l'existant, construire sa palette et connecter son IA."
@@ -40,8 +40,6 @@ fr:
       included: "Inclus"
       not_included: "Non inclus"
       contact: "Écrire à Semisto"
-      draft_banner: "Projet — à valider"
-      draft_note: "Ce texte est un projet de travail. Il sera relu par un juriste avant l'ouverture des paiements et peut encore changer."
       updated: "Dernière mise à jour : %{date}"
     nav:
       menu: "Menu principal"
@@ -663,7 +661,7 @@ fr:
         cta: "Ouvrir une discussion"
         url: "https://github.com/semisto-org/designer/issues"
     legal:
-      updated_on: "20 octobre 2026"
+      updated_on: "11 novembre 2026"
       privacy:
         title: "Politique de confidentialité"
         lead: "Ce que Semisto Terranova collecte, pourquoi, qui l'héberge, combien de temps nous le gardons, et comment exercer vos droits."
