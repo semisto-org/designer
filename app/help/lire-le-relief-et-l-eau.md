@@ -41,6 +41,7 @@ Le relief sert ensuite à toute la conception de l'eau, chacun dans son guide :
 - [Tracer sur la courbe et le keyline](/help/tracer-sur-la-courbe-et-le-keyline) : poser une baissière, une haie ou une keyline bien de niveau.
 - [Le bassin versant et l'infiltration](/help/le-bassin-versant-et-l-infiltration) : dimensionner une mare, mesurer ce que boit le sol, freiner l'eau.
 - [Le bilan de l'eau](/help/le-bilan-de-l-eau) : noter l'eau pendant l'averse, le bilan mois par mois, la pluie des toits.
+- [Raccorder les éléments de l'eau](/help/raccorder-les-elements-de-l-eau) : la hauteur d'une cuve, ce que relie chaque tuyau, et la pression que donne la gravité.
 
 ## Pour aller plus loin
 

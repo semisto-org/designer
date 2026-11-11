@@ -1,0 +1,20 @@
+fr:
+  water_links:
+    title: "Raccordements"
+    from: "Part de"
+    to: "Arrive à"
+    none: "Rien"
+    snapped: "Un bout tracé à moins de 2 m d'une cuve, d'une mare ou d'un toit s'y raccorde tout seul. Redessiner la ligne relit ses bouts."
+    drop: "Chute d'eau : %{value}"
+    drop_detail: "dont %{height} de hauteur au départ et %{slope} de pente"
+    drop_height_only: "Sans le relief du terrain, je ne compte que la hauteur au départ."
+    pressure: "Environ %{value} à l'arrivée, sans compter les pertes dans le tuyau."
+    uphill: "L'arrivée est plus haute que le départ : l'eau n'y ira pas seule, il faut une pompe."
+    pressure_hint: "Un goutte-à-goutte prévu pour la gravité marche dès 1 à 2 m de chute ; un goutte-à-goutte classique en demande une dizaine (1 bar)."
+    links_title: "Raccordé à"
+    out: "%{link} vers %{other}"
+    in: "%{link} depuis %{other}"
+    nowhere: "nulle part"
+    look: "Va voir sur place par où l'eau passe vraiment : un raccord qui fuit, un tuyau pincé ou un fossé bouché changent tout le reste."
+    errors:
+      unknown_end: "Un bout de la ligne est raccordé à un élément qui n'est pas sur cette carte."

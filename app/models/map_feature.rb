@@ -10,6 +10,7 @@ class MapFeature < ApplicationRecord
   include MapFeature::Trash
   include MapFeature::Broadcasts
   include MapFeature::WaterSourceLink
+  include MapFeature::WaterLinks
   include MapFeature::Tags
   include MapFeature::PlantNumber
   include MapFeature::SoilDestination
