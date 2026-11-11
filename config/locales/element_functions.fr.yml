@@ -50,6 +50,8 @@ fr:
     names:
       food: "Nourriture"
       water: "Eau"
+      irrigation: "Irrigation"
+      livestock_watering: "Abreuvement"
       fertility: "Fertilité"
       soil_protection: "Protection du sol"
       windbreak: "Brise-vent"
@@ -62,6 +64,8 @@ fr:
     look:
       food: "Cueille ce qui pousse déjà : un vieux pommier, des mûres dans la haie, de l'ail des ours au bord du bois. Note-le sur la carte."
       water: "Après une averse, va voir où l'eau coule, où elle reste et d'où elle sort. Un toit, un creux, une source discrète comptent."
+      irrigation: "Un soir de sécheresse, note ce que tu arroses à la main, d'où tu portes l'eau et combien d'arrosoirs : c'est ce qu'une cuve en hauteur ou une mare pourrait faire à ta place."
+      livestock_watering: "Suis tes animaux une journée chaude : où vont-ils boire, combien de fois, et qui remplit l'abreuvoir ? Un abreuvoir à niveau constant au bout d'un tuyau, c'est une corvée en moins."
       fertility: "Regarde où l'herbe est plus verte et plus haute, et où poussent orties et trèfles : ils disent où le sol est déjà riche."
       soil_protection: "Cherche la terre nue, les rigoles et l'eau boueuse après la pluie : c'est là que le sol part."
       windbreak: "Un jour de vent d'ouest, puis de nord-est, fais le tour : où le vent tape, et derrière quoi on est à l'abri ?"

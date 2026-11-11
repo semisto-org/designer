@@ -14,6 +14,13 @@ function volume(m3: number): string {
   return `${t('drawing.computed.cubic_meters', { value: formatNumber(Math.round(m3 * 10) / 10) })} (${liters})`
 }
 
+/** Static pressure of a column of water: about 0.1 bar per metre (WaterLinks::Report). */
+export const BAR_PER_M = 0.0981
+
+export function bar(value: number): string {
+  return t('drawing.computed.bar', { value: formatNumber(Math.round(value * 100) / 100) })
+}
+
 /** Half-moons of a feature: one for a point, one every `spacing_m` along a line. */
 export function halfMoonCount(p: Record<string, unknown>, m: { length: number | null }): number | null {
   if (m.length == null) return 1
@@ -39,6 +46,10 @@ const FORMULAS: Record<string, (p: Record<string, unknown>, m: { area: number | 
     const depth = num(p.depth_m)
     if (count == null || !diameter || !depth) return null
     return volume(count * (Math.PI * (diameter / 2) ** 2 / 2) * depth * 0.5)
+  },
+  gravity_pressure: (p) => {
+    const height = num(p.above_ground_m)
+    return height ? t('drawing.computed.pressure_from_height', { pressure: bar(height * BAR_PER_M), height: `${formatNumber(height)} m` }) : null
   },
   rain_garden_volume: (p, m) => (m.area != null && num(p.depth_m) != null ? volume(m.area * num(p.depth_m)!) : null),
   raised_bed_soil: (p, m) => (m.area != null && num(p.height_m) != null ? volume(m.area * num(p.height_m)!) : null),
