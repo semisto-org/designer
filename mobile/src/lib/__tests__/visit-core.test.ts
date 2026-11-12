@@ -1,4 +1,4 @@
-import { clock, countByTheme, minutesSince, noteFeature, questionsOf, TITLE_MAX, visitDay, visitNotes, walked } from '../visit-core'
+import { clock, countByTheme, duration, minutesSince, parseKm, stepMinutes, visitMinutes, noteFeature, questionsOf, TITLE_MAX, visitDay, visitNotes, walked } from '../visit-core'
 import type { MapBundle, MapFeature } from '../types'
 
 const visit = { key: 'visit-1234abcd', startedAt: '2026-10-18T14:00:00Z' }
@@ -61,5 +61,25 @@ describe('what the phone records of the walk', () => {
     expect(clock(3729)).toBe('1:02:09')
     expect(walked(349.6)).toBe('350 m')
     expect(walked(1234)).toBe('1,2 km')
+  })
+})
+
+describe('the hours of a visit', () => {
+  it('rounds the visit to the nearest quarter hour, at least one, at most a day', () => {
+    expect(visitMinutes('2026-11-12T09:00:00Z', new Date('2026-11-12T10:38:00Z'))).toBe(105)
+    expect(visitMinutes('2026-11-12T09:00:00Z', new Date('2026-11-12T10:37:00Z'))).toBe(90)
+    expect(visitMinutes('2026-11-12T09:00:00Z', new Date('2026-11-12T09:04:00Z'))).toBe(15)
+    expect(visitMinutes('2026-11-12T09:00:00Z', new Date('2026-11-14T09:00:00Z'))).toBe(24 * 60)
+  })
+
+  it('steps by a quarter hour without leaving the day', () => {
+    expect(stepMinutes(105, 1)).toBe(120)
+    expect(stepMinutes(15, -1)).toBe(15)
+    expect(stepMinutes(24 * 60, 1)).toBe(24 * 60)
+  })
+
+  it('writes durations and reads kilometres the French way', () => {
+    expect([duration(45), duration(120), duration(105)]).toEqual(['45 min', '2 h', '1 h 45'])
+    expect([parseKm('64'), parseKm('12,5'), parseKm(''), parseKm('abc'), parseKm('-3')]).toEqual([64, 12.5, null, null, null])
   })
 })

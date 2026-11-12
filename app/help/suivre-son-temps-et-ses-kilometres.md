@@ -16,7 +16,7 @@ Depuis ton avatar, ouvre **Mes heures**, ou l'onglet **Temps et dépenses** d'un
 - **Le trajet** : coche « J'ai fait un trajet » et note les kilomètres aller-retour, d'où tu partais et où tu allais. Terranova retient ton trajet habituel vers chaque lieu.
 - **Facturé à** : Semisto, une autre structure… Ton relevé se prépare destinataire par destinataire.
 
-Tu reviens d'une visite de terrain ? Note-la le jour même : le temps passé dehors est celui qu'on oublie le plus vite.
+Tu reviens d'une visite de terrain ? Note-la le jour même : le temps passé dehors est celui qu'on oublie le plus vite. Avec l'app Semisto Terranova sur ton téléphone, c'est fait en clôturant la visite : la durée (arrondie au quart d'heure), la phase et ton trajet habituel sont préremplis, tu n'as qu'à vérifier. Même sans réseau, les heures partent dès qu'il revient.
 
 ## Où en est le projet
 

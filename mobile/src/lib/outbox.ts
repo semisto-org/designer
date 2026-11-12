@@ -5,7 +5,7 @@ import { chat } from './chat'
 import type { ChatMessage } from './chat-core'
 import { storageReadingBody } from './fruitStore'
 import { harvestBody } from './harvests'
-import { emptyOutbox, filesOf, flush, nextTempId, retry, retryDelayMs, type FlushResult, type NewFeature, type Op, type OutboxState, type Transport } from './outbox-core'
+import { emptyOutbox, filesOf, flush, nextTempId, retry, retryDelayMs, type FlushResult, type NewFeature, type NewTimeEntry, type Op, type OutboxState, type Transport } from './outbox-core'
 import { mediaFile } from './media'
 import { report } from './monitoring'
 import { deletePhoto, keptFile, readJson, writeJson } from './storage'
@@ -244,10 +244,21 @@ const transport: Transport = {
       site_visit: { key: op.key, started_at: op.startedAt, ended_at: op.endedAt, question_ids: questionIds, ...(op.track?.length ? { track: op.track } : {}) },
     }, once(key))
   },
+  async createTimeEntry(mapId, entry, key) {
+    await api('POST', '/time_entries', { source: 'app', time_entry: timeEntryBody(mapId, entry) }, once(key))
+  },
   // An hour of speech weighs about 30 MB: like a video, it is given up only when it stops moving.
   async uploadVisitAudio(mapId, op, key) {
     await api('POST', `/maps/${mapId}/site_visits/${encodeURIComponent(op.key)}/audio`, form('site_visit', {
       audio: { uri: present(op.file), name: 'visite.m4a', type: 'audio/mp4' }, started_at: op.startedAt, seconds: op.seconds,
     }), upload(key))
   },
+}
+
+/** A line of hours as POST /time_entries takes it: billable, the server picks its recipient. */
+export function timeEntryBody(mapId: number, entry: NewTimeEntry) {
+  return {
+    map_id: mapId, worked_on: entry.workedOn, minutes: entry.minutes, phase: entry.phase, billable: true, note: entry.note,
+    ...(entry.tripKm ? { trip_km: entry.tripKm, trip_from: entry.tripFrom, trip_to: entry.tripTo } : {}),
+  }
 }

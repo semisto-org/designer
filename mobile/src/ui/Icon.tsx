@@ -1,7 +1,7 @@
 // The app's icons: Lucide (the website's set), one stroke for all, hidden
 // from screen readers (the button around an icon carries the label).
 import {
-  Apple, Aperture, Bandage, Bug, Flower2, Scissors, Wrench, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
+  Apple, Aperture, Car, Clock, Minus, Plus, Bandage, Bug, Flower2, Scissors, Wrench, BookOpen, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, CircleQuestionMark, CloudOff, CloudRainWind, CloudUpload, Droplet, Droplets,
   Eye, EyeOff, Fence, FileText, Leaf, Snowflake, Sun, SunSnow, Flag, Footprints, Heart, HeartPulse, Hourglass, Images, Info, Layers, Layers2, LocateFixed, MapPin, MapPinCheck, Mic, Navigation2, NotebookPen, PenLine, PawPrint, Pause, Route, Ruler, ScanSearch, Shovel, Sprout,
   SkipForward, Square, ChevronDown, MessagesSquare, SendHorizontal, User, SquareCheck, TreeDeciduous, TriangleAlert, Undo2, Waves, Wind, X, type LucideIcon,
 } from 'lucide-react-native'
@@ -18,7 +18,7 @@ const ICONS = {
   flows: Waves, pools: Droplet, seeps: Droplets,
   synced: CircleCheck, sending: CloudUpload, offline: CloudOff,
   info: Info, warning: TriangleAlert, error: CircleAlert,
-  visit: Flag, ticked: SquareCheck, unticked: Square, sound: Mic, walk: Route, pause: Pause,
+  visit: Flag, time: Clock, minus: Minus, plus: Plus, car: Car, ticked: SquareCheck, unticked: Square, sound: Mic, walk: Route, pause: Pause,
   heading: Navigation2, arrived: MapPinCheck, skip: SkipForward,
   document: FileText, retake: Images, ghost: Eye, ghostOff: EyeOff, shutter: Aperture, sketch: PenLine,
   // The themes of a site visit's notes (lib/visit-core.ts).
