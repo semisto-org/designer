@@ -45,6 +45,25 @@ class Maps::TimeEntriesControllerTest < ActionDispatch::IntegrationTest
     refute props.to_json.include?(@designer.display_name)
   end
 
+  test "the client reads what the team bought without its price, supplier or note" do
+    @map.project_expenses.create!(user: @designer, spent_on: Date.current, label: "Plants de haie", supplier: "Pépinière Dupont",
+                                  note: "Garder la marge pour nous", category: "plants", amount_cents: 18_000, paid_by: "rebilled")
+    @map.project_expenses.create!(user: users(:alice), spent_on: Date.current, label: "Paille", category: "mulch", amount_cents: 3_000, paid_by: "client")
+    @map.update!(time_shared_with_client: true)
+    sign_in_as users(:alice)
+    get map_time_entries_path(@map), headers: inertia_headers
+    props = response.parsed_body["props"]
+    text = props.to_json
+    refute text.include?("Pépinière Dupont")
+    refute text.include?("marge")
+    refute text.include?("18000")
+    hedge = props["expenses"].find { _1["label"] == "Plants de haie" }
+    assert_nil hedge["amountCents"]
+    assert_equal 3_000, props["expenses"].find { _1["label"] == "Paille" }["amountCents"]
+    assert_equal 3_000, props["totals"]["amountCents"]
+    assert_equal({ "rebilled" => nil, "client" => 3_000 }, props["byPayer"].to_h { [ _1["paidBy"], _1["amountCents"] ] })
+  end
+
   test "the team reads the expenses and whether the client sees them" do
     @map.project_expenses.create!(user: @designer, spent_on: Date.current, label: "Broyat", category: "mulch", amount_cents: 48_000, paid_by: "client")
     sign_in_as @designer

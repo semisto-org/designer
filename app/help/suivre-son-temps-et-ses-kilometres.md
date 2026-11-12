@@ -37,7 +37,7 @@ Joins le ticket en photo ou en PDF : il reste avec la dépense. En haut de la se
 
 ## Montrer au client
 
-En bas de l'onglet, **Montrer au client** ouvre une page « Avancement du projet » aux lecteurs de la carte : l'avancement de chaque phase en %, les dépenses et qui les paie. Ton client peut y ajouter ses propres achats, avec leur ticket. Il ne voit jamais les noms, les heures, les tarifs ni les tickets de l'équipe. Tu le désactives d'un geste.
+En bas de l'onglet, **Montrer au client** ouvre une page « Avancement du projet » aux lecteurs de la carte : l'avancement de chaque phase en %, les dépenses et qui les paie. Ton client peut y ajouter ses propres achats, avec leur ticket. Il ne voit jamais les noms, les heures, les tarifs ni les tickets de l'équipe, ni le prix d'achat, le fournisseur et la note de ce que l'équipe a acheté : il lit ce qui a été acheté et qui le paie, et le montant de ses propres achats. Ta note reste donc pour l'équipe. Tu le désactives d'un geste.
 
 ## Préparer sa facture
 

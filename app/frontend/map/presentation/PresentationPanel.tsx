@@ -144,14 +144,14 @@ export default function PresentationPanel() {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-loam-600">{t('presentations.intro')}</p>
+      <p className="text-sm text-loam-600">{t(canEdit ? 'presentations.intro' : 'presentations.intro_viewer')}</p>
       <HelpButton slug="presenter-son-design" label={t('presentations.help')} className="-ml-2" />
       <div className="flex items-center gap-3">
         <Button disabled={shown.length === 0} onClick={() => startPresenting(captureView(editor))}>
           <Play className="h-4 w-4" aria-hidden />
           {t('presentations.present')}
         </Button>
-        <span className="text-sm text-loam-500">{t('presentations.shown_count', { count: shown.length, total: steps.length })}</span>
+        {canEdit && <span className="text-sm text-loam-500">{t('presentations.shown_count', { count: shown.length, total: steps.length })}</span>}
       </div>
       {canEdit && pending > 0 && (
         <p className="flex items-center gap-2 rounded-lg bg-humus-50 px-3 py-2 text-sm text-humus-900">

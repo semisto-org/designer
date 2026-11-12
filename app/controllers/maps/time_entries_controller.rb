@@ -67,7 +67,8 @@ module Maps
       end
 
       # What the client reads: progress per phase (capped at 100 %), the
-      # expenses (never who noted them) and what each payer carries.
+      # expenses (never who noted them, nor the team's prices, suppliers and
+      # notes) and how many lines each payer carries.
       def client_view
         envelopes = TimeEntry::Envelopes.new(@map)
         expenses = load_expenses
@@ -80,7 +81,7 @@ module Maps
           version: envelopes.version_json&.slice(:label),
           phases:,
           expenses: expenses.map { expense_json(_1, client: true) },
-          byPayer: summary.by_payer, totals: summary.totals.except(:plannedCents),
+          **summary.for_client,
           canWrite: writable?, expenseCatalog: expense_catalog.merge(payers: [ "client" ]),
           today: Date.current.iso8601
         }

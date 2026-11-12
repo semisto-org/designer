@@ -25,7 +25,11 @@ type Props = {
   onChanged: () => void
 }
 
-/** The project's expenses, newest first: what, who paid, how much before VAT. */
+/**
+ * The project's expenses, newest first: what, who paid, how much before VAT.
+ * On the client's page, what the team bought comes without its price,
+ * supplier or note (the server leaves them out).
+ */
 export function ExpenseList({ mapId, expenses, catalog, today, teamName, client = false, canWrite, onChanged }: Props) {
   const [editing, setEditing] = useState<Expense | null>(null)
   const suppliers = expenses.map((e) => e.supplier).filter((s): s is string => !!s)
@@ -33,7 +37,7 @@ export function ExpenseList({ mapId, expenses, catalog, today, teamName, client 
   async function remove(expense: Expense) {
     const ok = await confirmAction({
       title: t('time_entries.expenses.delete_title'),
-      body: t('time_entries.expenses.delete_body', { label: expense.label, amount: formatEuros(expense.amountCents), date: formatDate(expense.spentOn) }),
+      body: t('time_entries.expenses.delete_body', { label: expense.label, amount: formatEuros(expense.amountCents ?? 0), date: formatDate(expense.spentOn) }),
       confirmLabel: t('time_entries.expenses.delete'),
       tone: 'danger',
     })
@@ -62,7 +66,7 @@ export function ExpenseList({ mapId, expenses, catalog, today, teamName, client 
                       <span className="font-medium">{expense.label}</span>
                       {expense.supplier && <span className="text-loam-500"> · {expense.supplier}</span>}
                     </p>
-                    <p className="shrink-0 text-right font-semibold tabular-nums text-loam-900">{formatEuros(expense.amountCents)}</p>
+                    {expense.amountCents != null && <p className="shrink-0 text-right font-semibold tabular-nums text-loam-900">{formatEuros(expense.amountCents)}</p>}
                   </div>
                   {expense.note && <p className="mt-0.5 text-sm text-loam-600">{expense.note}</p>}
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -76,7 +80,7 @@ export function ExpenseList({ mapId, expenses, catalog, today, teamName, client 
                     )}
                     {expense.source === 'mcp' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><Sparkles className="h-3.5 w-3.5" aria-hidden />{t('time_entries.expenses.by_ai')}</span>}
                     {expense.source === 'app' && <span className="inline-flex items-center gap-1 text-sm text-loam-500"><Smartphone className="h-3.5 w-3.5" aria-hidden />{t('time_entries.entry.by_app')}</span>}
-                    <span className="ml-auto text-sm tabular-nums text-loam-500">{t('time_entries.expenses.vat_line', { rate: expense.vatRate, total: formatEuros(expense.totalCents) })}</span>
+                    {expense.totalCents != null && <span className="ml-auto text-sm tabular-nums text-loam-500">{t('time_entries.expenses.vat_line', { rate: expense.vatRate, total: formatEuros(expense.totalCents) })}</span>}
                   </div>
                 </div>
               </div>

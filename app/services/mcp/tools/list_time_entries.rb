@@ -48,7 +48,8 @@ module Mcp
         end
 
         # The client's view (« Montrer au client » on): progress per phase in
-        # %, the expenses and who paid them. Never names, hours or rates.
+        # %, the expenses and who paid them. Never names, hours or rates, nor
+        # the team's purchase prices, suppliers and notes.
         def client(map)
           envelopes = TimeEntry::Envelopes.new(map)
           summary = ProjectExpense::Summary.new(map)
@@ -56,9 +57,9 @@ module Mcp
             map_id: map.id, url: "#{map_url(map)}/time_entries", view: "client",
             phases: envelopes.phases.select { _1[:envelopeHours].to_f.positive? && _1[:enabledInOffer] != false }
                               .map { { phase: _1[:key], progress_pct: [ _1[:usedPct].to_i, 100 ].min } },
-            expenses: map.project_expenses.order(spent_on: :desc, id: :desc).map { expense_json(_1, person: false) },
-            by_payer: summary.by_payer.map { { paid_by: _1[:paidBy], amount_eur: _1[:amountCents] / 100.0 } },
-            total_eur: summary.totals[:amountCents] / 100.0,
+            expenses: map.project_expenses.order(spent_on: :desc, id: :desc).map { client_expense_json(_1) },
+            by_payer: summary.for_client[:byPayer].map { { paid_by: _1[:paidBy], count: _1[:count], amount_eur: _1[:amountCents]&.then { |c| c / 100.0 } }.compact },
+            own_purchases_eur: summary.for_client[:totals][:amountCents] / 100.0,
             entries_count: 0
           }
         end
@@ -79,6 +80,17 @@ module Mcp
             category: expense.category, phase: expense.phase, amount_eur: expense.amount, vat_rate: expense.vat_rate,
             paid_by: expense.paid_by, note: expense.note, receipt: expense.receipt.attached?,
             person: (expense.user&.display_name if person)
+          }.compact
+        end
+
+        # The same line as the client's page shows it (ProjectExpense#as_json
+        # with client: true): never the team's prices, suppliers or notes.
+        def client_expense_json(expense)
+          json = expense.as_json(client: true, viewer: user)
+          {
+            id: expense.id, spent_on: json[:spentOn], label: json[:label], supplier: json[:supplier],
+            category: json[:category], amount_eur: json[:amountCents]&.then { _1 / 100.0 },
+            vat_rate: (json[:vatRate] if json[:amountCents]), paid_by: json[:paidBy], note: json[:note], mine: json[:mine]
           }.compact
         end
 

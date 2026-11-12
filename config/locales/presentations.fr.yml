@@ -10,6 +10,7 @@ fr:
       challenges: "Défis"
       assets: "Atouts"
     intro: "Montre ton design pas à pas : chaque étape remet la carte dans la vue que tu as choisie. Coche ce qui parle à ce lieu, décoche le reste, glisse une étape pour la déplacer."
+    intro_viewer: "L’équipe a préparé ce parcours pour te montrer le design pas à pas : chaque étape remet la carte dans sa vue. Lance-le, ou ouvre une étape pour la regarder à ton rythme."
     empty_title: "Prépare ta présentation"
     empty_body: "Pars du déroulé de pré-design de Semisto (le lieu, l'analyse, la proposition couche par couche, la suite), puis ajuste chaque vue sur ce terrain."
     start_template: "Partir du modèle « %{name} »"
