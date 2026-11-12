@@ -34,6 +34,7 @@ fr:
             title:
               blank: "ne peut pas être vide"
   collab:
+    network_error: "La connexion a coupé, rien n'a été enregistré. Réessaie dès qu'elle revient."
     panels:
       discussions: "Discussions"
       publish: "Publier"

@@ -148,7 +148,11 @@ export const ChatComposer = forwardRef<ChatComposerHandle, {
   async function submit() {
     const body = text.trim()
     if (!body || busy || (sending && !photo) || docSending) return
-    await onSubmit({ body, featureIds: citedIds(body, cited.current), location, photoId: photo?.id ?? null, documentId: doc?.id ?? null })
+    try {
+      await onSubmit({ body, featureIds: citedIds(body, cited.current), location, photoId: photo?.id ?? null, documentId: doc?.id ?? null })
+    } catch {
+      return // The chat already said why; the text stays for another try.
+    }
     setText('')
     setCursor(0)
     setLocation(null)
