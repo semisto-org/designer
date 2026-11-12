@@ -195,6 +195,8 @@ fr:
         phase: "Phase"
         no_phase: "Aucune en particulier"
         note: "Note"
+        note_hint: "Pour l’équipe : le client ne la lit jamais, ni le prix d’achat ni le fournisseur."
+        note_hint_client: "Pour toi et l’équipe."
         receipt: "Justificatif (photo ou PDF)"
         receipt_take: "Joindre le ticket"
         receipt_keep: "Garder %{name}"
@@ -222,7 +224,11 @@ fr:
       not_started: "Pas encore commencée"
       last_on: "dernier passage le %{date}"
       expenses_title: "Les dépenses"
-      expenses_intro: "Ce qui a été acheté pour ton jardin, et qui l’a payé. Tu peux ajouter tes propres achats : ils comptent dans le projet."
+      expenses_intro: "Ce qui a été acheté pour ton jardin, et qui l’a payé. Le montant de ce que l’équipe achète figure sur sa facture. Tu peux ajouter tes propres achats : ils comptent dans le projet."
+      own_total: "Tes achats"
+      lines:
+        one: "1 achat"
+        other: "%{count} achats"
       empty: "Pas encore de dépense notée."
       payers:
         rebilled: "Sur ta facture"

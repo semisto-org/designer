@@ -75,8 +75,16 @@ class ProjectExpense < ApplicationRecord
   def total_cents = amount_cents + vat_cents
   def offer_group = OFFER_GROUPS.fetch(category, "other")
 
+  # What the client may read of a line: the amount and the supplier of
+  # their own purchases only. What the team bought (rebilled, kept, advanced)
+  # comes without its purchase price or supplier, which would show the
+  # team's margin (Michael, 2026-11-12).
+  def priced_for_client? = paid_by == "client"
+
   # For the team: everything. For the client (`client: true`): never who
-  # noted it, and the receipt only of their own purchases.
+  # noted it, never a note someone else wrote (the team's notes are its
+  # own), the receipt only of their own lines, and the amount and supplier
+  # only of their own purchases (priced_for_client?).
   def as_json(client: false, viewer: nil, receipt_url: nil)
     json = {
       id:, mapId: map_id, spentOn: spent_on.iso8601, label:, supplier:, category:, phase:,
@@ -86,6 +94,8 @@ class ProjectExpense < ApplicationRecord
     }
     return json.merge(userId: user_id, userName: user&.display_name) unless client
     json[:receipt] = nil unless json[:mine]
+    json[:note] = nil unless json[:mine]
+    json.merge!(supplier: nil, amountCents: nil, vatCents: nil, totalCents: nil) unless priced_for_client?
     json
   end
 

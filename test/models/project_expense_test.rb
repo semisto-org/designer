@@ -49,6 +49,40 @@ class ProjectExpenseTest < ActiveSupport::TestCase
     assert_nil json[:receipt]
   end
 
+  test "the client never reads the team's purchase price, supplier or note, only those of their own purchases" do
+    alice = users(:alice)
+    team = expense(supplier: "Pépinière Dupont", note: "Garder la marge pour nous").tap(&:save!)
+    json = team.as_json(client: true, viewer: alice)
+    assert_equal "Broyat", json[:label]
+    assert_equal "rebilled", json[:paidBy]
+    assert_nil json[:supplier]
+    assert_nil json[:note]
+    assert_nil json[:amountCents]
+    assert_nil json[:vatCents]
+    assert_nil json[:totalCents]
+    refute team.as_json(client: true, viewer: alice).to_json.include?("48000")
+
+    noted_by_team = expense(paid_by: "client", supplier: "Brico", note: "Ils ont payé tard").tap(&:save!)
+    json = noted_by_team.as_json(client: true, viewer: alice)
+    assert_equal [ 48_000, "Brico" ], json.values_at(:amountCents, :supplier)
+    assert_nil json[:note], "a note someone else wrote stays theirs"
+
+    own = expense(user: alice, paid_by: "client", supplier: "Brico", note: "Pour la haie").tap(&:save!)
+    assert_equal [ 48_000, "Brico", "Pour la haie" ], own.as_json(client: true, viewer: alice).values_at(:amountCents, :supplier, :note)
+
+    assert_equal "Pépinière Dupont", team.as_json(viewer: users(:michael))[:supplier], "the team still reads everything"
+  end
+
+  test "the client's summary counts the team's lines without their amounts, and totals their own purchases" do
+    expense(amount_cents: 120_000).save!
+    expense(amount_cents: 30_000, paid_by: "client").save!
+    view = ProjectExpense::Summary.new(@map).for_client
+    rebilled = view[:byPayer].find { _1[:paidBy] == "rebilled" }
+    assert_equal [ nil, nil, 1 ], rebilled.values_at(:amountCents, :totalCents, :count)
+    assert_equal 30_000, view[:byPayer].find { _1[:paidBy] == "client" }[:amountCents]
+    assert_equal 30_000, view[:totals][:amountCents]
+  end
+
   test "the summary weighs plants and supplies against the accepted offer, and adds up each payer" do
     offer = Offer.build_for(@map)
     offer.save!

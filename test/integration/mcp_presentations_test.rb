@@ -10,7 +10,7 @@ class McpPresentationsTest < ActionDispatch::IntegrationTest
     map.presentations.create!(name: template.name, template_key: template.key, steps: template.steps.first(2))
     map.presentations.first.update!(steps: map.presentations.first.steps.map.with_index { |s, i| i == 1 ? s.merge("shown" => false) : s })
 
-    data, error = call_tool(personal_token(users(:alice)), "get_map", { map_id: map.id })
+    data, error = call_tool(personal_token(users(:michael)), "get_map", { map_id: map.id })
     refute error, data
     presentations = data["presentations"]
     assert_match %r{/maps/#{map.id}\?panel=present\z}, presentations["panel_url"]
@@ -23,10 +23,11 @@ class McpPresentationsTest < ActionDispatch::IntegrationTest
     assert_equal false, steps.first["view_adjusted"]
   end
 
-  test "a viewer's AI gets the steps without the presenter's notes or the drafts" do
+  test "a viewer's AI gets only the kept steps, without the presenter's notes or the drafts" do
     map = maps(:ahinvaux)
     map.presentations.create!(name: "Pré-design", steps: [
       { id: "a", title: "Votre projet", note: "Rappelle leurs mots" },
+      { id: "c", title: "Analyse (brouillon)", shown: false, slide: { body: "Thomas semble moins motivé" } },
       { id: "b", title: "Brouillon", shown: false, slide: { body: "" }, proposal: { body: "Texte", new: true } }
     ])
 
@@ -35,6 +36,7 @@ class McpPresentationsTest < ActionDispatch::IntegrationTest
     steps = data["presentations"]["list"].sole["steps"]
     assert_equal [ "Votre projet" ], steps.map { _1["title"] }
     assert_nil steps.first["note"]
+    refute data.to_json.include?("moins motivé")
 
     data, = call_tool(personal_token(users(:michael)), "get_map", { map_id: map.id })
     steps = data["presentations"]["list"].sole["steps"]

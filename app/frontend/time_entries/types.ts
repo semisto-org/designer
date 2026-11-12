@@ -69,10 +69,10 @@ export type Expense = {
   supplier: string | null
   category: ExpenseCategory
   phase: Phase | null
-  amountCents: number
+  amountCents: number | null
   vatRate: number
-  vatCents: number
-  totalCents: number
+  vatCents: number | null
+  totalCents: number | null
   paidBy: Payer
   note: string | null
   source: 'web' | 'mcp' | 'app'

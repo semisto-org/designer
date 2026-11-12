@@ -42,7 +42,7 @@ export function ExpenseForm({ mapId, catalog, today, teamName, client = false, s
   const id = useId()
   const [label, setLabel] = useState(expense?.label ?? '')
   const [spentOn, setSpentOn] = useState(expense?.spentOn ?? today)
-  const [amount, setAmount] = useState(expense ? amountInput(expense.amountCents) : '')
+  const [amount, setAmount] = useState(expense?.amountCents != null ? amountInput(expense.amountCents) : '')
   const [category, setCategory] = useState<ExpenseCategory>(expense?.category ?? 'plants')
   const [vatRate, setVatRate] = useState(expense?.vatRate ?? defaultVat(expense?.category ?? 'plants'))
   const [vatTouched, setVatTouched] = useState(expense != null)
@@ -154,7 +154,7 @@ export function ExpenseForm({ mapId, catalog, today, teamName, client = false, s
         </Field>
       )}
 
-      <Field label={t('time_entries.expenses.form.note')} error={errors.note}>
+      <Field label={t('time_entries.expenses.form.note')} hint={t(client ? 'time_entries.expenses.form.note_hint_client' : 'time_entries.expenses.form.note_hint')} error={errors.note}>
         <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} maxLength={1000} />
       </Field>
 

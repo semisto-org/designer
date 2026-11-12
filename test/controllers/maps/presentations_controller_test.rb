@@ -101,6 +101,22 @@ class Maps::PresentationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Un lieu qui nourrit", steps.first.dig("slide", "body")
   end
 
+  test "a viewer follows only the steps the presenter kept" do
+    @map.presentations.create!(name: "Lautenne", steps: [
+      { "id" => "a", "title" => "Le lieu", "shown" => true },
+      { "id" => "b", "title" => "Analyse fonctionnelle (brouillon)", "shown" => false, "slide" => { "body" => "Thomas semble moins motivé" } },
+      { "id" => "c", "title" => "Synthèse" }
+    ])
+    sign_in_as users(:alice)
+    get map_presentations_path(@map), as: :json
+    assert_equal %w[a c], response.parsed_body["presentations"].sole["steps"].map { _1["id"] }
+    refute response.body.include?("moins motivé")
+
+    sign_in_as users(:michael)
+    get map_presentations_path(@map), as: :json
+    assert_equal %w[a b c], response.parsed_body["presentations"].sole["steps"].map { _1["id"] }, "the presenter keeps every step"
+  end
+
   test "a stale save answers the presentation as it stands" do
     sign_in_as users(:michael)
     presentation = @map.presentations.create!(name: "Lautenne")

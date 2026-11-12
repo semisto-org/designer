@@ -67,6 +67,12 @@ class McpTimeEntriesTest < ActionDispatch::IntegrationTest
     assert_equal "client", data["view"]
     assert_equal 3, data["expenses"].size
     refute data["expenses"].any? { _1.key?("person") }
+    refute data.to_json.include?("Scierie"), "the team's supplier stays the team's"
+    broyat = data["expenses"].find { _1["label"] == "Broyat" }
+    refute broyat.key?("amount_eur"), "nor its purchase price"
+    assert_equal 30.0, data["expenses"].find { _1["label"] == "Paille" }["amount_eur"]
+    assert_equal 30.0, data["own_purchases_eur"]
+    refute data["by_payer"].find { _1["paid_by"] == "rebilled" }.key?("amount_eur")
 
     data, error = call_tool(@designer, "list_time_entries", { map_id: @map.id })
     refute error, data

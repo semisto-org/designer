@@ -40,6 +40,16 @@ class ProjectExpense
 
     def as_json(*) = { byPayer: by_payer, byGroup: by_group, totals: }
 
+    # The client's side: how many lines each payer carries, the amounts of
+    # their own purchases only, and those as the total. What the team
+    # bought, rebilled or offered stays without a price (purchase prices
+    # would show its margin).
+    def for_client
+      payers = by_payer.map { _1[:paidBy] == "client" ? _1 : _1.merge(amountCents: nil, totalCents: nil) }
+      own = expenses.select(&:priced_for_client?)
+      { byPayer: payers, totals: { amountCents: own.sum(&:amount_cents), vatCents: own.sum(&:vat_cents), totalCents: own.sum(&:total_cents) } }
+    end
+
     private
       def planned_cents(group)
         return nil unless @version

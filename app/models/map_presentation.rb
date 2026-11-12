@@ -149,10 +149,13 @@ class MapPresentation < ApplicationRecord
     { id:, name:, templateKey: template_key, steps:, lockVersion: lock_version, updatedAt: updated_at&.iso8601 }
   end
 
-  # What a viewer of the map (the client) follows: the steps without the
-  # presenter's notes and without the drafts nobody accepted yet.
+  # What a viewer of the map (the client) follows: only the steps the
+  # presenter kept (a step they unticked may hold a draft not meant for the
+  # client, Michael 2026-11-12), without the presenter's notes and without
+  # the drafts nobody accepted yet.
   def for_viewer
-    as_json.merge(steps: steps.reject { _1.dig("proposal", "new") }.map { _1.except("note", "proposal") })
+    kept = steps.reject { _1["shown"] == false || _1.dig("proposal", "new") }
+    as_json.merge(steps: kept.map { _1.except("note", "proposal") })
   end
 
   Draft = Struct.new(:index, :step_id, :title, :body, :rationale, :after, keyword_init: true)

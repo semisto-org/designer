@@ -18,7 +18,9 @@ type Props = {
   version: { label: string } | null
   phases: { key: Phase; pct: number; started: boolean; lastOn: string | null }[]
   expenses: Expense[]
-  byPayer: { paidBy: Payer; amountCents: number; totalCents: number; count: number }[]
+  /** Amounts only on the client's own purchases: what the team bought comes without its price. */
+  byPayer: { paidBy: Payer; amountCents: number | null; totalCents: number | null; count: number }[]
+  /** The client's own purchases. */
   totals: { amountCents: number; vatCents: number; totalCents: number }
   canWrite: boolean
   expenseCatalog: ExpenseCatalog
@@ -86,13 +88,21 @@ export default function ClientProgress({ map, version, phases, expenses, byPayer
         ) : (
           <>
             <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="font-serif text-3xl font-semibold leading-none tabular-nums text-prune-800">{t('time_entries.expenses.total', { amount: formatEuros(totals.amountCents, true) })}</p>
-                <p className="mt-1 text-sm text-loam-500">{formatEuros(totals.totalCents, true)} TVAC</p>
-              </div>
+              {totals.amountCents > 0 && (
+                <div>
+                  <p className="text-sm text-loam-600">{t('time_entries.client.own_total')}</p>
+                  <p className="font-serif text-3xl font-semibold leading-none tabular-nums text-prune-800">{t('time_entries.expenses.total', { amount: formatEuros(totals.amountCents, true) })}</p>
+                  <p className="mt-1 text-sm text-loam-500">{formatEuros(totals.totalCents, true)} TVAC</p>
+                </div>
+              )}
               <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
                 {byPayer.map((line) => (
-                  <li key={line.paidBy} className="text-loam-700">{payerLabel(line.paidBy, map.teamName, true)} <span className="font-semibold tabular-nums text-loam-900">{formatEuros(line.amountCents, true)}</span></li>
+                  <li key={line.paidBy} className="text-loam-700">
+                    {payerLabel(line.paidBy, map.teamName, true)}{' '}
+                    <span className="font-semibold tabular-nums text-loam-900">
+                      {line.amountCents != null ? formatEuros(line.amountCents, true) : t('time_entries.client.lines', { count: line.count })}
+                    </span>
+                  </li>
                 ))}
               </ul>
             </div>
