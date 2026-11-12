@@ -5,7 +5,7 @@ import { track } from '@/lib/analytics'
 import { sentryEnabled } from '@/lib/sentry'
 import { useEditor } from '@/map/editor/EditorContext'
 import { isPlant } from '@/map/plants/properties'
-import { openingSpeed, plausibleProps, staysBusy, type Device, type OpeningMeasure } from '@/map/performance/opening'
+import { busySeconds, openingSpeed, plausibleProps, staysBusy, type Device, type OpeningMeasure } from '@/map/performance/opening'
 
 const IDLE_WATCH_MS = 10_000
 const GIVE_UP_MS = 60_000
@@ -55,22 +55,24 @@ export default function MapOpeningProbe() {
   useEffect(() => {
     const start = performance.now()
     let done = false
-    let idleRedraws: number | null = null
+    let idleAt: number | null = null
+    const renders: number[] = []
     let touched = false
     const timers: number[] = []
-    const onRender = () => { if (idleRedraws != null) idleRedraws++ }
-    const onTouch = () => { touched = true }
-    const container = map.getContainer()
+    const onRender = () => { if (idleAt != null) renders.push(performance.now()) }
+    // Anywhere on the page: a panel or a card opening also moves the map.
+    const onTouch = () => { if (idleAt != null) touched = true }
     const inputs = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const
 
-    const report = (toIdleMs: number, idleAt: number) => {
+    const report = (toIdleMs: number, until: number, watched: boolean) => {
       if (done) return
       done = true
       const features = latest.current.features
       const measure: OpeningMeasure = {
         toIdleMs: Math.round(toIdleMs),
-        longTasksMs: longTasksBetween(start, idleAt),
-        idleRedraws: touched ? null : idleRedraws,
+        longTasksMs: longTasksBetween(start, until),
+        idleRedraws: watched && !touched ? renders.length : null,
+        idleBusySeconds: watched && !touched ? busySeconds(renders, until, IDLE_WATCH_MS / 1000) : null,
         pageAgeMs: Math.round(start),
         features: features.length,
         plants: features.filter(isPlant).length,
@@ -90,17 +92,17 @@ export default function MapOpeningProbe() {
     }
 
     const onIdle = () => {
-      const idleAt = performance.now()
-      idleRedraws = 0
+      const at = performance.now()
+      idleAt = at
       map.on('render', onRender)
-      timers.push(window.setTimeout(() => report(idleAt - start, idleAt), IDLE_WATCH_MS))
+      timers.push(window.setTimeout(() => report(at - start, at, true), IDLE_WATCH_MS))
     }
 
     try {
-      inputs.forEach((name) => container.addEventListener(name, onTouch, { passive: true }))
+      inputs.forEach((name) => document.addEventListener(name, onTouch, { passive: true, capture: true }))
       map.once('idle', onIdle)
       // A tile server that never answers keeps `idle` away: report what we have.
-      timers.push(window.setTimeout(() => report(GIVE_UP_MS, performance.now()), GIVE_UP_MS))
+      timers.push(window.setTimeout(() => report(GIVE_UP_MS, performance.now(), false), GIVE_UP_MS))
     } catch {
       // Measuring never breaks the page.
     }
@@ -108,7 +110,7 @@ export default function MapOpeningProbe() {
       timers.forEach((id) => window.clearTimeout(id))
       map.off('idle', onIdle)
       map.off('render', onRender)
-      inputs.forEach((name) => container.removeEventListener(name, onTouch))
+      inputs.forEach((name) => document.removeEventListener(name, onTouch, { capture: true }))
     }
   }, [map])
 

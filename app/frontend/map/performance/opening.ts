@@ -8,8 +8,10 @@ export type OpeningMeasure = {
   toIdleMs: number
   /** Main-thread tasks over 50 ms in that window (Chromium only, else null). */
   longTasksMs: number | null
-  /** Redraws in the 10 s after `idle` without anyone touching the map: should be 0. */
+  /** Redraws in the 10 s after `idle`, when nobody touched the page: should be 0. */
   idleRedraws: number | null
+  /** Of those 10 seconds, how many had at least one redraw: a loop fills them all. */
+  idleBusySeconds: number | null
   /** How long the page had been open when the map was created: small on a full load. */
   pageAgeMs: number
   features: number
@@ -27,8 +29,12 @@ export type Device = {
 /** Over either, the opening counts as slow and is reported to Sentry. */
 export const SLOW_TO_IDLE_MS = 8000
 export const SLOW_LONG_TASKS_MS = 3000
-/** A map left alone should stop drawing; a few redraws are fades and late tiles. */
-export const BUSY_IDLE_REDRAWS = 10
+/**
+ * A map left alone should stop drawing. One camera move or a late tile is a
+ * burst of redraws within a second or two (a card folding moves the map's
+ * padding, for instance); a loop keeps drawing second after second.
+ */
+export const BUSY_IDLE_SECONDS = 8
 
 export type Speed = 'fast' | 'ok' | 'slow'
 
@@ -40,7 +46,17 @@ export function openingSpeed(m: OpeningMeasure): Speed {
 
 /** True when the map kept drawing while nobody touched it (a loop like PR #369's). */
 export function staysBusy(m: OpeningMeasure): boolean {
-  return (m.idleRedraws ?? 0) >= BUSY_IDLE_REDRAWS
+  return (m.idleBusySeconds ?? 0) >= BUSY_IDLE_SECONDS
+}
+
+/** How many of the one-second slots after `idleAt` saw at least one redraw. */
+export function busySeconds(renderTimes: number[], idleAt: number, seconds: number): number {
+  const slots = new Set<number>()
+  for (const at of renderTimes) {
+    const slot = Math.floor((at - idleAt) / 1000)
+    if (slot >= 0 && slot < seconds) slots.add(slot)
+  }
+  return slots.size
 }
 
 /** The kind of graphics chip, from WebGL's renderer string. */
