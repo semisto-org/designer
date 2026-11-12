@@ -1,9 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { gpuClass, openingSpeed, plausibleProps, sizeBucket, staysBusy, type OpeningMeasure } from '../../../app/frontend/map/performance/opening.ts'
+import { busySeconds, gpuClass, openingSpeed, plausibleProps, sizeBucket, staysBusy, type OpeningMeasure } from '../../../app/frontend/map/performance/opening.ts'
 
 const measure = (over: Partial<OpeningMeasure> = {}): OpeningMeasure => ({
-  toIdleMs: 1500, longTasksMs: 300, idleRedraws: 0, pageAgeMs: 200, features: 120, plants: 80, ...over,
+  toIdleMs: 1500, longTasksMs: 300, idleRedraws: 0, idleBusySeconds: 0, pageAgeMs: 200, features: 120, plants: 80, ...over,
 })
 
 test('openingSpeed: by time to idle or by main-thread long tasks', () => {
@@ -15,11 +15,22 @@ test('openingSpeed: by time to idle or by main-thread long tasks', () => {
   assert.equal(openingSpeed(measure({ longTasksMs: null })), 'fast')
 })
 
-test('staysBusy: a map that keeps drawing while nobody touches it', () => {
-  assert.equal(staysBusy(measure({ idleRedraws: 2 })), false)
-  assert.equal(staysBusy(measure({ idleRedraws: 37 })), true)
-  // Someone moved the map: the count says nothing.
-  assert.equal(staysBusy(measure({ idleRedraws: null })), false)
+test('staysBusy: a map that keeps drawing second after second', () => {
+  // A card folding moves the map: one burst of 40 redraws, then quiet.
+  assert.equal(staysBusy(measure({ idleRedraws: 41, idleBusySeconds: 1 })), false)
+  assert.equal(staysBusy(measure({ idleRedraws: 37, idleBusySeconds: 10 })), true)
+  // Someone touched the page: the count says nothing.
+  assert.equal(staysBusy(measure({ idleRedraws: null, idleBusySeconds: null })), false)
+})
+
+test('busySeconds: one-second slots with a redraw', () => {
+  assert.equal(busySeconds([], 1000, 10), 0)
+  // A burst: 40 redraws within half a second.
+  assert.equal(busySeconds(Array.from({ length: 40 }, (_, i) => 1200 + i * 12), 1000, 10), 1)
+  // A loop: four redraws a second for ten seconds.
+  assert.equal(busySeconds(Array.from({ length: 40 }, (_, i) => 1000 + i * 250), 1000, 10), 10)
+  // Before idle or after the window: not counted.
+  assert.equal(busySeconds([500, 11_500], 1000, 10), 0)
 })
 
 test('gpuClass: from the WebGL renderer string', () => {
