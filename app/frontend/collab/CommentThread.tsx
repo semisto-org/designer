@@ -1,6 +1,6 @@
 import { Bell, BellOff, Pencil, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { CommentData, ThreadData, ThreadType } from '@/types/collab'
@@ -59,7 +59,7 @@ export function CommentThread({ type, id, emptyHint }: { type: ThreadType; id: n
     document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ block: 'center' })
   }, [loaded])
 
-  const fail = (error: unknown) => editor.notify(error instanceof Error ? error.message : t('collab.comments.error'), 'error')
+  const fail = (error: unknown) => editor.notify(error instanceof ApiError ? error.message : t('collab.network_error'), 'error')
 
   async function post(body: string) {
     setBusy(true)

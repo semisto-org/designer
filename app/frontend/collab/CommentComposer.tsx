@@ -83,7 +83,11 @@ export function CommentComposer({ members, notified, initial = '', placeholder, 
   async function submit() {
     const body = text.trim()
     if (!body || busy) return
-    await onSubmit(body)
+    try {
+      await onSubmit(body)
+    } catch {
+      return // The thread already said why; the text stays for another try.
+    }
     setText('')
     setCursor(0)
   }

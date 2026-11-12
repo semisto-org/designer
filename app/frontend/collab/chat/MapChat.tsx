@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { IconButton } from '@/components/ui/IconButton'
 import { toast } from '@/components/ui/toast'
 import { confirmAction } from '@/components/ui/confirm'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { cable } from '@/lib/cable'
 import { t } from '@/lib/i18n'
 import { useFileDrag } from '@/lib/useFileDrag'
@@ -159,7 +159,7 @@ export default function MapChat() {
     return () => window.removeEventListener('keydown', onKey)
   }, [member, editor.drawing])
 
-  const fail = (error: unknown) => editor.notify(error instanceof Error ? error.message : t('collab.chat.error'), 'error')
+  const fail = (error: unknown) => editor.notify(error instanceof ApiError ? error.message : t('collab.network_error'), 'error')
 
   async function post(draft: ChatDraft) {
     setBusy(true)
