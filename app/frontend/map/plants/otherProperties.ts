@@ -8,7 +8,7 @@ export const SHOWN_PLANT_KEYS: ReadonlySet<string> = new Set([
   'id', 'layer', 'kind', 'name', 'notes', 'status', 'source', 'rationale', 'style', 'lockVersion', 'updatedAt', 'tags',
   // The plant sheet, its photos and its GPS check.
   'species_id', 'variety_id', 'planted_on', 'planted_on_precision', 'training', 'graft_form', 'trunk_height',
-  'rootstock_vigor', 'rootstock', 'count', 'number', 'cover_photo_id', 'gps_checked', 'gps_accuracy_m', 'planned', 'built_on',
+  'rootstock_vigor', 'rootstock', 'count', 'nursery_form', 'number', 'cover_photo_id', 'gps_checked', 'gps_accuracy_m', 'planned', 'built_on',
   // Its phase in the implementation plan (« Mise en œuvre »).
   'phase_id',
 ])

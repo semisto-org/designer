@@ -17,6 +17,20 @@ La fiche affiche alors « Planté le … ». Une erreur ? **Annuler** retire la 
 
 Un arbre planté avant ton arrivée, dont personne ne connaît l'année ? Touche plutôt **Déjà en terre, date inconnue** : il compte comme planté, et la vue 3D le montre déjà adulte. Si tu ne connais que l'année, tape-la dans la vue **Plant par plant** de la [palette végétale](/help/la-palette-vegetale-en-tableau). Dans la [liste de plants](/help/la-liste-de-plants-et-la-commande), le nombre de plants plantés se met à jour.
 
+## Planter sur place, avec le téléphone
+
+Le jour où tu poses les plants sur le terrain, l'app Terranova les note là où tu te tiens.
+
+1. Debout à l'endroit du trou, touche **Planter** sur la carte.
+2. Cherche l'espèce comme sur l'étiquette : la palette de la carte vient d'abord, puis tout le catalogue. Avec le nom de la variété (« pommier reinette »), Terranova la retrouve souvent toute seule.
+3. Écris la **Variété** lue sur l'étiquette : une que le catalogue connaît, ou une nouvelle.
+4. Dis **comment il arrive** : racines nues, en pot ou en motte.
+5. Choisis **À planter** pour préparer la plantation, ou **Planté en 2025** pour un plant déjà en terre depuis une saison ou deux.
+
+L'espèce et sa variété rejoignent la palette de la carte, avec le contenant : la palette suit ce qui se passe vraiment sur le terrain. Le jour de la plantation, ouvre la fiche du plant et touche **Planté aujourd'hui**.
+
+Le GPS d'un téléphone se trompe de 3 à 5 mètres. Pour des plants serrés, ajuste leur place ensuite sur la vue aérienne ou la vue drone.
+
 ## La frise du temps
 
 Sur la carte, un plant planté a une couronne pleine ; un plant encore **en projet** est un peu transparent : couronne en pointillés, à peine teintée, et point creux en son centre.

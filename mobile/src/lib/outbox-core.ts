@@ -18,6 +18,8 @@ export type NewFeature = {
   notes?: string | null
   properties: Record<string, unknown>
   geometry: Geometry
+  /** « Planter »: the plant joins the map's palette, with the cultivar named on its label. */
+  palette?: { variety_name?: string; size?: string }
 }
 
 export type Op = Base & (

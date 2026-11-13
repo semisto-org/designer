@@ -15,7 +15,7 @@ module Maps
 
     def create
       feature = @map.features.new(feature_params.merge(created_by: Current.user, updated_by: Current.user))
-      if feature.save
+      if planting_from_the_land(feature).save
         # A note taken on a visit with the phone: the visit begins with it.
         SiteVisit.for_note!(feature, by: Current.user)
         render json: feature.as_geojson, status: :created
@@ -49,6 +49,14 @@ module Maps
     end
 
     private
+      # The phone's « Planter » sends `palette` with a plant: it joins the
+      # palette, with the cultivar named on the nursery label.
+      def planting_from_the_land(feature)
+        palette = params[:palette]
+        return feature unless palette.respond_to?(:permit)
+        FieldPlanting.new(map: @map, feature:, user: Current.user, **palette.permit(:variety_name, :size).to_h.symbolize_keys)
+      end
+
       def set_feature
         @feature = @map.features.find(params[:id])
       end

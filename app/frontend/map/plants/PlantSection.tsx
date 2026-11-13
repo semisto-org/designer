@@ -18,6 +18,10 @@ import type { MapFeature } from '@/types'
 const TRAININGS = ['free', 'pollard', 'coppice', 'chop_and_drop'] as const
 
 /** Inspector section of a plant: its species (from the palette), crown, training and planting date. */
+
+/** How the plant came from the nursery, noted with the phone's « Planter ». */
+const NURSERY_FORMS = new Set(['bare_root', 'pot', 'root_ball'])
+
 export default function PlantSection({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
   const { data } = usePlanting(editor.map.id)
@@ -274,6 +278,12 @@ export default function PlantSection({ feature }: { feature: MapFeature }) {
           ].filter(Boolean).join(', ')}</span>
         </p>
       ) : null)}
+
+      {NURSERY_FORMS.has(String(feature.properties.nursery_form)) && (
+        <p className="text-loam-600">
+          {t('plant_feature.nursery_form.label')} : <span className="font-medium text-loam-900">{t(`plant_feature.nursery_form.${feature.properties.nursery_form}`)}</span>
+        </p>
+      )}
 
       {plantedOn ? (
         <div className="flex items-center justify-between gap-2 rounded-lg bg-leaf-50 p-2 text-sm text-leaf-800">
