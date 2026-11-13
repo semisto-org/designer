@@ -182,7 +182,7 @@ const upload = (key: string) => {
 }
 
 const transport: Transport = {
-  createFeature: (mapId, feature, key) => api<MapFeature>('POST', `/maps/${mapId}/features`, { feature }, once(key)),
+  createFeature: (mapId, { palette, ...feature }, key) => api<MapFeature>('POST', `/maps/${mapId}/features`, palette ? { feature, palette } : { feature }, once(key)),
   updateFeature: (mapId, featureId, body) => api<MapFeature>('PATCH', `/maps/${mapId}/features/${featureId}`, { feature: body }),
   async uploadPhoto(mapId, op, featureId, key) {
     const located = op.lng !== null && op.lat !== null
