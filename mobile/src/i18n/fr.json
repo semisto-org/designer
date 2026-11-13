@@ -969,6 +969,12 @@
     }
   },
   "plant_feature": {
+    "nursery_form": {
+      "label": "Arrivé",
+      "bare_root": "à racines nues",
+      "pot": "en pot",
+      "root_ball": "en motte"
+    },
     "other_properties": {
       "title": "Autres informations",
       "hint": "Notées par ton IA ou venues d'un import. Elles ne changent rien d'autre sur la carte."
