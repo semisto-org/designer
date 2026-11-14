@@ -5,6 +5,7 @@
 import * as Crypto from 'expo-crypto'
 import { useSyncExternalStore } from 'react'
 import { outbox } from './outbox'
+import type { NewTimeEntry } from './outbox-core'
 import { readJson, writeJson } from './storage'
 import type { Visit } from './visit-core'
 import { visitAudio } from './visitAudio'
@@ -69,14 +70,18 @@ export const visits = {
     patch(mapId, { tracking: false })
   },
 
-  /** Ends the visit: the server files its report and turns `questionIds` into tasks. */
-  async close(mapId: number, questionIds: number[]) {
+  /**
+   * Ends the visit: the server files its report and turns `questionIds` into
+   * tasks; `time`, when the person keeps it, goes into « Temps et dépenses ».
+   */
+  async close(mapId: number, questionIds: number[], time: NewTimeEntry | null = null) {
     const visit = visits.get(mapId)
     if (!visit) return
     const sound = visit.audio ? await visitAudio.finish(visit.audio.file) : null
     const track = await visitTrack.finish(visit.key)
     if (sound) outbox.add({ type: 'uploadVisitAudio', mapId, key: visit.key, startedAt: visit.startedAt, file: sound.file, seconds: sound.seconds })
     outbox.add({ type: 'closeVisit', mapId, key: visit.key, startedAt: visit.startedAt, endedAt: new Date().toISOString(), questionIds, ...(track.length ? { track } : {}) })
+    if (time) outbox.add({ type: 'createTimeEntry', mapId, entry: time })
     const { [String(mapId)]: _closed, ...rest } = all()
     write(rest)
   },

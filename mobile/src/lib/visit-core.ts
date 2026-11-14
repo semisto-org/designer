@@ -82,3 +82,34 @@ export function walked(meters: number): string {
   if (meters < 1000) return `${Math.round(meters)} m`
   return `${(meters / 1000).toFixed(1).replace('.', ',')} km`
 }
+
+/** The longest a line of hours can be: one day. */
+export const DAY_MINUTES = 24 * 60
+
+/**
+ * How long the visit lasted, as hours are noted: rounded to the nearest
+ * step (a quarter of an hour), never less than one step nor more than a day.
+ */
+export function visitMinutes(startedAt: string, endedAt = new Date(), step = 15): number {
+  const minutes = Math.max(0, (endedAt.getTime() - new Date(startedAt).getTime()) / 60_000)
+  return Math.min(DAY_MINUTES, Math.max(step, Math.round(minutes / step) * step))
+}
+
+/** One step more or less, within a step and a day. */
+export function stepMinutes(minutes: number, delta: number, step = 15): number {
+  return Math.min(DAY_MINUTES, Math.max(step, minutes + delta * step))
+}
+
+/** « 45 min », « 2 h », « 1 h 45 »: a duration as the timesheet writes it. */
+export function duration(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m} min`
+  return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')}`
+}
+
+/** « 64 », « 12,5 » → kilometres, or null when it is not a distance. */
+export function parseKm(text: string): number | null {
+  const km = Number(text.trim().replace(',', '.'))
+  return Number.isFinite(km) && km > 0 && km <= 2000 ? Math.round(km * 10) / 10 : null
+}

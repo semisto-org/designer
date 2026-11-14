@@ -221,7 +221,23 @@
         "notification_title": "Visite en cours",
         "notification_body": "Semisto Terranova enregistre le tracé de ta visite."
       },
-      "keep_going": "Continuer la visite"
+      "keep_going": "Continuer la visite",
+      "time": {
+        "title": "Ton temps sur place",
+        "keep": "Noter ce temps dans « Temps et dépenses »",
+        "duration": "Durée",
+        "duration_hint": "Du début de la visite à maintenant, arrondie au quart d'heure.",
+        "less": "Un quart d'heure de moins",
+        "more": "Un quart d'heure de plus",
+        "phase": "Phase",
+        "trip": "J'ai fait un trajet",
+        "trip_km": "Kilomètres aller-retour",
+        "trip_usual": "Ton trajet habituel : %{from} → %{to}",
+        "billable": "Facturable, à %{bill_to}. Tu peux tout corriger ensuite dans « Mes heures ».",
+        "billable_nobody": "Facturable. Tu peux tout corriger ensuite dans « Mes heures ».",
+        "note": "Visite de terrain",
+        "closed": "Ton temps sur place (%{duration}) rejoindra « Mes heures » dès que le téléphone l’aura envoyé."
+      }
     },
     "tour": {
       "title": "Tournée de plantation",
@@ -778,6 +794,7 @@
         "createComment": "Commentaire",
         "closeVisit": "Fin de visite et compte rendu",
         "uploadVisitAudio": "Enregistrement audio de la visite",
+        "createTimeEntry": "Heures de la visite",
         "chatMessage": "Message de la discussion"
       }
     },
@@ -1596,6 +1613,14 @@
         "label": "Piétinement",
         "hint": "Passages fréquents (pas, animaux, engins) : le sol est tassé en surface."
       }
+    }
+  },
+  "time_entries": {
+    "phases": {
+      "commercial": "Commercial",
+      "pre_design": "Pré-design",
+      "design": "Design",
+      "implementation": "Mise en œuvre"
     }
   }
 }

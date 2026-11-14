@@ -4,6 +4,7 @@ module Api
   module V1
     class MapsController < BaseController
       include MapScoped
+      include TimeEntryForms
 
       before_action :set_map, only: %i[show style]
 
@@ -32,6 +33,9 @@ module Api
           aerialViews: @map.aerial_views.ready.newest_first.map { aerial_view_json(_1) },
           # « Ta première heure »: the three missions outside, as the server last read them.
           firstHour: Maps::FirstHourMissions.new(@map).as_json,
+          # « Temps et dépenses », for a Pro or Team project's team: what the end of a
+          # site visit needs to note its hours and trip (nil when they can't).
+          timesheet: timesheet_json,
           syncedAt: Time.current.iso8601
         }
       end
@@ -66,6 +70,13 @@ module Api
       end
 
       private
+        def timesheet_json
+          return unless TimeEntry.usable_by?(@map, Current.user) && !@map.read_only_by_plan? && !@map.archived?
+          choice = time_entry_choice(@map)
+          { defaultPhase: choice[:defaultPhase], billTo: choice[:billTo], usualTrip: choice[:usualTrip],
+            phases: TimeEntry::PHASES, stepMinutes: TimeEntry::STEP_MINUTES }
+        end
+
         def soil_sample_json(sample)
           { id: sample.id, label: sample.label, lng: sample.lng, lat: sample.lat, status: sample.status,
             depthFromCm: sample.depth_from_cm, depthToCm: sample.depth_to_cm, sampledOn: sample.sampled_on&.iso8601 }

@@ -92,7 +92,18 @@ export type MapBundle = {
   aerialViews?: AerialView[]
   /** « Ta première heure »: the three missions outside (older bundles have none). */
   firstHour?: FirstHour | null
+  /** « Temps et dépenses », only for a Pro or Team project's team (older bundles have none). */
+  timesheet?: Timesheet | null
   syncedAt: string
+}
+
+/** What the end of a site visit needs to note its hours: the person's likely phase, recipient and usual trip here. */
+export type Timesheet = {
+  defaultPhase: string
+  billTo: string | null
+  usualTrip: { km: number; from: string | null; to: string | null } | null
+  phases: string[]
+  stepMinutes: number
 }
 
 /** A soil sampling point of the map (Sol panel on the website). */

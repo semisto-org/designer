@@ -31,6 +31,7 @@ function transport(overrides: Partial<Transport> = {}) {
     createBioindicator: async (_m, op) => { calls.push(`bioindicator ${op.observation.speciesName}`) },
     closeVisit: async (_m, op, questionIds) => { calls.push(`visit ${op.key} [${questionIds.join(',')}]`) },
     uploadVisitAudio: async (_m, op) => { calls.push(`audio ${op.key}`) },
+    createTimeEntry: async (_m, entry) => { calls.push(`time ${entry.minutes} ${entry.phase} ${entry.tripKm ?? '-'}`) },
     ...overrides,
   }
   return { t, calls }
@@ -279,6 +280,17 @@ describe('uploadVisitAudio', () => {
     expect(sent).toEqual(['file:///visit.m4a'])
     expect(result.state.ops).toEqual([])
     expect(filesOf(audio)).toEqual(['file:///visit.m4a'])
+  })
+})
+
+describe('createTimeEntry', () => {
+  it('notes the hours of the visit after its report', async () => {
+    const { t, calls } = transport()
+    const close: Op = { id: 'c', mapId: 1, createdAt: at, type: 'closeVisit', key: 'visit-1234abcd', startedAt: at, endedAt: at, questionIds: [] }
+    const time: Op = { id: 't', mapId: 1, createdAt: at, type: 'createTimeEntry', entry: { workedOn: '2026-10-04', minutes: 105, phase: 'design', note: 'Visite de terrain', tripKm: 64, tripFrom: 'Yvoir', tripTo: 'Erpent' } }
+    const result = await flush(state([close, time]), t)
+    expect(calls).toEqual(['visit visit-1234abcd []', 'time 105 design 64'])
+    expect(result.state.ops).toEqual([])
   })
 })
 

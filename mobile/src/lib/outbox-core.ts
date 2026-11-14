@@ -36,7 +36,20 @@ export type Op = Base & (
   | { type: 'closeVisit'; key: string; startedAt: string; endedAt: string; questionIds: FeatureRef[]; track?: [number, number][] }
   // The sound of the walk, filed in the documents; queued just before closeVisit so the report can name it.
   | { type: 'uploadVisitAudio'; key: string; startedAt: string; file: string; seconds: number | null }
+  // The hours of a site visit, noted in « Temps et dépenses » (the server picks who they are billed to).
+  | { type: 'createTimeEntry'; entry: NewTimeEntry }
 )
+
+/** A line of hours noted on the phone, at the end of a site visit. */
+export type NewTimeEntry = {
+  workedOn: string
+  minutes: number
+  phase: string
+  note: string | null
+  tripKm: number | null
+  tripFrom: string | null
+  tripTo: string | null
+}
 
 /** A wild plant noted from its photo (identified by Pl@ntNet, confirmed by the person). */
 export type NewBioindicator = {
@@ -149,6 +162,7 @@ export type Transport = {
   createBioindicator(mapId: number, op: Extract<Op, { type: 'createBioindicator' }>, key: string): Promise<void>
   closeVisit(mapId: number, op: Extract<Op, { type: 'closeVisit' }>, questionIds: number[], key: string): Promise<void>
   uploadVisitAudio(mapId: number, op: Extract<Op, { type: 'uploadVisitAudio' }>, key: string): Promise<void>
+  createTimeEntry(mapId: number, entry: NewTimeEntry, key: string): Promise<void>
 }
 
 type HttpError = { status: number; body?: Record<string, unknown> | null; message?: string }
@@ -311,6 +325,8 @@ async function send(state: OutboxState, op: Op, transport: Transport, versions: 
       return transport.closeVisit(op.mapId, op, op.questionIds.map((ref) => resolveId(state, ref)!).filter((id) => id > 0), op.id)
     case 'uploadVisitAudio':
       return transport.uploadVisitAudio(op.mapId, op, op.id)
+    case 'createTimeEntry':
+      return transport.createTimeEntry(op.mapId, op.entry, op.id)
   }
 }
 

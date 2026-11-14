@@ -1,6 +1,7 @@
 require "test_helper"
 require "test_helpers/mcp_test_helper"
 require "test_helpers/drone_test_helper"
+require "test_helpers/teams_test_helper"
 
 # Semisto's phone app: sign-in through OAuth (consent, code + PKCE, token
 # with the APP scope), then its bearer token on the app's own endpoints and
@@ -8,6 +9,7 @@ require "test_helpers/drone_test_helper"
 class MobileAppTest < ActionDispatch::IntegrationTest
   include McpTestHelper
   include DroneTestHelper
+  include TeamsTestHelper
 
   setup do
     @verifier = SecureRandom.urlsafe_base64(48)
@@ -194,6 +196,30 @@ class MobileAppTest < ActionDispatch::IntegrationTest
     assert CommentRead.exists?(user: users(:michael), commentable: @map), "opening the discussion marks it read"
   end
 
+  test "after a site visit: the bundle carries the timesheet for the project's team, and the hours are noted once" do
+    assert_nil bundle_for(users(:michael))["timesheet"], "a personal map has no timesheet"
+
+    @map.update!(organization: make_team("Semisto", admin: users(:michael), members: [ users(:bob) ]))
+    users(:bob).time_entries.create!(map: @map, worked_on: Date.current - 3, minutes: 60, phase: "design", trip_km: 64, trip_from: "Yvoir", trip_to: "Erpent", source: "web")
+    sheet = bundle_for(users(:bob))["timesheet"]
+    assert_equal "design", sheet["defaultPhase"]
+    assert_equal "Semisto", sheet["billTo"]
+    assert_equal({ "km" => 64.0, "from" => "Yvoir", "to" => "Erpent" }, sheet["usualTrip"])
+    assert_equal TimeEntry::PHASES, sheet["phases"]
+    assert_nil bundle_for(users(:alice))["timesheet"], "never for the map's viewer"
+
+    entry = { map_id: @map.id, worked_on: Date.current.iso8601, minutes: 105, phase: "design", billable: true, note: "Visite de terrain", trip_km: 64, trip_from: "Yvoir", trip_to: "Erpent" }
+    headers = bearer(app_token(users(:bob))).merge("Idempotency-Key" => "time-1")
+    assert_difference -> { users(:bob).time_entries.count }, 1 do
+      2.times do
+        post "/time_entries", params: { time_entry: entry, source: "app" }, headers:, as: :json
+        assert_response :created
+      end
+    end
+    noted = users(:bob).time_entries.order(:id).last
+    assert_equal [ "app", 105, "Semisto" ], [ noted.source, noted.minutes, noted.bill_to ]
+  end
+
   test "a change sent twice with the same Idempotency-Key is made once, and the first answer comes back" do
     token = app_token(users(:michael))
     feature = { layer: "notes", kind: "note", name: "Repère", geometry: { type: "Point", coordinates: [ 4.95, 50.32 ] } }
@@ -332,6 +358,12 @@ class MobileAppTest < ActionDispatch::IntegrationTest
 
     def app_token(user)
       OauthAccessToken.issue!(user:, client: MobileApp.client, scopes: MobileApp::SCOPES, resource: nil).plaintext_token
+    end
+
+    def bundle_for(user)
+      get "/api/v1/maps/#{@map.id}", headers: bearer(app_token(user))
+      assert_response :success
+      response.parsed_body
     end
 
     def bearer(token) = { "Authorization" => "Bearer #{token}" }

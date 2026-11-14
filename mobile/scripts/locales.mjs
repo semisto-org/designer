@@ -28,6 +28,7 @@ const SHARED = [
   ['photo_sketches'],
   ['soil', 'abundances'],
   ['soil', 'indicators'],
+  ['time_entries', 'phases'],
 ]
 
 function deepMerge(target, source) {
