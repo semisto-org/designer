@@ -40,6 +40,7 @@ import { VisitRecord } from '@/terrain/VisitRecord'
 import { chooseMedia } from '@/ui/chooseMedia'
 import { Icon } from '@/ui/Icon'
 import { Body, Button, IconButton, Notice } from '@/ui/kit'
+import { cameraPadding, useLayout } from '@/ui/layout'
 import { Sheet, type SheetLevel } from '@/ui/Sheet'
 import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, shadows, space, touch, type } from '@/ui/theme'
@@ -58,7 +59,10 @@ export default function Terrain() {
   const [located, setLocated] = useState<'yes' | 'pending' | 'denied'>('pending')
   const [follow, setFollow] = useState(false)
   const [noting, setNoting] = useState(false)
-  const [level, setLevel] = useState<SheetLevel>(0)
+  // On a tablet the notebook is a column beside the map, open at rest; on a phone it rests folded.
+  const layout = useLayout()
+  const rest: SheetLevel = layout.wide ? 1 : 0
+  const [level, setLevel] = useState<SheetLevel>(rest)
   const shown = useDisplay(mapId)
   const mapStyle = useMapStyle(mapId, bundle)
   const visit = useVisit(mapId)
@@ -119,7 +123,7 @@ export default function Terrain() {
   useEffect(() => {
     if (!target || !bundle) return
     display.reveal(mapId, target.feature.properties, bundle.planting)
-    camera.current?.easeTo({ center: anchor(target.feature.geometry), duration: 500, padding: { top: 120, bottom: 320, left: 0, right: 0 } })
+    camera.current?.easeTo({ center: anchor(target.feature.geometry), duration: 500, padding: cameraPadding(layout, 320) })
   }, [targetId]) // eslint-disable-line react-hooks/exhaustive-deps
   const visitNoted = useMemo(() => (bundle && visit ? visitNotes(bundle, visit.key) : []), [bundle, visit])
 
@@ -137,8 +141,8 @@ export default function Terrain() {
     if (focus.kind === 'spot') {
       setSpot(focus.messageId)
       setSelectedId(null)
-      setLevel(0)
-      camera.current?.easeTo({ center: focus.position, zoom: 19, duration: 500, padding: { top: 120, bottom: 240, left: 0, right: 0 } })
+      setLevel(rest)
+      camera.current?.easeTo({ center: focus.position, zoom: 19, duration: 500, padding: cameraPadding(layout, 240) })
     } else {
       const feature = bundle?.features.find((f) => f.id === focus.id)
       if (!feature) { toast(t('mobile.chat.feature_gone'), { tone: 'info' }); return }
@@ -147,9 +151,9 @@ export default function Terrain() {
       setNoting(false)
       setSelectedId(feature.id)
       setLevel(1)
-      camera.current?.easeTo({ center: anchor(feature.geometry), duration: 500, padding: { top: 120, bottom: 360, left: 0, right: 0 } })
+      camera.current?.easeTo({ center: anchor(feature.geometry), duration: 500, padding: cameraPadding(layout, 360) })
     }
-  }), [bundle, mapId])
+  }), [bundle, mapId, layout.wide, layout.panel]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!bundle) {
     return (
@@ -187,15 +191,15 @@ export default function Terrain() {
     setSelectedId(feature.id)
     setLevel(1)
     setFollow(false)
-    camera.current?.easeTo({ center: anchor(feature.geometry), duration: 400, padding: { top: 120, bottom: 360, left: 0, right: 0 } })
+    camera.current?.easeTo({ center: anchor(feature.geometry), duration: 400, padding: cameraPadding(layout, 360) })
   }
-  const unselect = () => { setSelectedId(null); setLevel(0) }
+  const unselect = () => { setSelectedId(null); setLevel(rest) }
 
   // A walk on the land: every note taken until « Terminer » joins its report.
   const startVisit = () => {
     visits.start(mapId)
     setNoting(false)
-    setLevel(0)
+    setLevel(rest)
     toast(t('mobile.visit.start'), { body: t('mobile.visit.start_hint'), tone: 'info' })
   }
 
@@ -244,7 +248,7 @@ export default function Terrain() {
     setSelectedId(null)
     setNoting(false)
     setTouring(true)
-    setLevel(0)
+    setLevel(rest)
   }
   const endTour = () => { setTouring(false); setHeading(null) }
 
@@ -272,7 +276,7 @@ export default function Terrain() {
         onRegionWillChange={(e) => { if (e.nativeEvent.userInteraction) setFollow(false) }}>
         <Camera
           ref={camera}
-          initialViewState={bbox ? { bounds: bbox, padding: { top: insets.top + 88, bottom: 200, left: 24, right: 24 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }}
+          initialViewState={bbox ? { bounds: bbox, padding: layout.wide ? cameraPadding(layout, 0, insets.top + 88) : { top: insets.top + 88, bottom: 200, left: 24, right: 24 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }}
           trackUserLocation={follow ? 'heading' : undefined}
           onTrackUserLocationChange={(e) => setFollow(!!e.nativeEvent.trackUserLocation)}
         />
@@ -286,7 +290,8 @@ export default function Terrain() {
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
         <IconButton icon="back" label={t('mobile.common.back')} onPress={() => router.back()} />
         <Pressable
-          style={s.titleChip}
+          // On a tablet the name sits over the notebook column, the map's buttons at the far right.
+          style={[s.titleChip, layout.wide && { flex: 0, width: layout.panel - touch.field - space.sm }]}
           accessibilityRole="button"
           accessibilityHint={t('mobile.outbox.title')}
           onPress={() => go('/maps/[id]/outbox')}
@@ -297,6 +302,7 @@ export default function Terrain() {
             <Text style={[s.headerSub, { color: sync.color }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>{sync.label}</Text>
           </View>
         </Pressable>
+        {layout.wide && <View style={{ flex: 1 }} />}
         <IconButton icon="display" label={hidesMore(shown) ? t('mobile.terrain.hides_more') : t('mobile.display.open')} dot={hidesMore(shown)}
           onPress={() => go('/maps/[id]/display')} />
         <IconButton icon="follow" label={t('mobile.terrain.follow')} active={follow} onPress={() => setFollow((v) => !v)} />
@@ -316,7 +322,7 @@ export default function Terrain() {
       )}
 
       {/* The map's sources (aerial photo, base map), on paper like the rest, under the back button. */}
-      <Pressable style={[s.credits, { top: insets.top + 72 }]} onPress={() => mapRef.current?.showAttribution()} hitSlop={6}
+      <Pressable style={[s.credits, layout.wide ? { left: undefined, right: space.md, bottom: Math.max(space.md, insets.bottom) } : { top: insets.top + 72 }]} onPress={() => mapRef.current?.showAttribution()} hitSlop={6}
         accessibilityRole="button" accessibilityLabel={t('mobile.terrain.credits')}>
         <Icon name="info" size={18} color={colors.loam600} />
       </Pressable>
@@ -326,6 +332,7 @@ export default function Terrain() {
         onLevel={setLevel}
         bottomInset={insets.bottom}
         topInset={insets.top + touch.field + 24}
+        docked={layout.wide ? { width: layout.panel } : undefined}
         top={
           <>
             {bundle.map.readOnlyByPlan && <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}><Notice tone="warning">{t('mobile.maps.read_only_by_plan')}</Notice></View>}
@@ -343,7 +350,7 @@ export default function Terrain() {
                     onEnd={() => go('/maps/[id]/visit-end')} recorder={<VisitRecord mapId={mapId} visit={visit} />} />
                 : noting
                   ? <NoteTop onChoose={note} onClose={() => setNoting(false)} />
-                  : <RestTop editable={editable} onNote={() => { setNoting(true); setLevel(0) }} onVisit={startVisit} />}
+                  : <RestTop editable={editable} onNote={() => { setNoting(true); setLevel(rest) }} onVisit={startVisit} />}
           </>
         }
       >

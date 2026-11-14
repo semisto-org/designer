@@ -21,6 +21,7 @@ import { Icon } from '@/ui/Icon'
 import { Body, Button, Chip, Input, Label, MAX_FONT_SCALE, Notice } from '@/ui/kit'
 import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, space, touch, type } from '@/ui/theme'
+import { readable } from '@/ui/layout'
 
 const DAYS = [{ key: 'today', ago: 0 }, { key: 'yesterday', ago: 1 }, { key: 'two_days', ago: 2 }] as const
 
@@ -136,7 +137,7 @@ function SignForm({ mapId, sign, onBack, bottom }: { mapId: number; sign: Sign; 
 
 const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.paper },
-  body: { padding: space.lg, gap: space.md },
+  body: { padding: space.lg, gap: space.md, ...readable },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   title: { ...type.title, color: colors.loam900, flex: 1 },
   hand: { ...type.hand, color: colors.prune700 },

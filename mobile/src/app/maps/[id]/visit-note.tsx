@@ -20,6 +20,7 @@ import { Icon } from '@/ui/Icon'
 import { Body, Button, Input, Label, MAX_FONT_SCALE, Notice } from '@/ui/kit'
 import { toast } from '@/ui/Toast'
 import { colors, space, type } from '@/ui/theme'
+import { readable } from '@/ui/layout'
 
 export default function VisitNote() {
   const params = useLocalSearchParams<{ id: string; theme?: string }>()
@@ -94,7 +95,7 @@ export default function VisitNote() {
 
 const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.paper },
-  body: { padding: space.lg, gap: space.md },
+  body: { padding: space.lg, gap: space.md, ...readable },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   title: { ...type.title, color: colors.loam900, flex: 1 },
   hand: { ...type.hand, color: colors.prune700 },

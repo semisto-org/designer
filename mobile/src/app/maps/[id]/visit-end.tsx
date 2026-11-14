@@ -22,6 +22,7 @@ import { Icon } from '@/ui/Icon'
 import { Body, Button, Chip, IconButton, Input, MAX_FONT_SCALE } from '@/ui/kit'
 import { toast } from '@/ui/Toast'
 import { colors, fonts, space, touch, type } from '@/ui/theme'
+import { readable } from '@/ui/layout'
 
 export default function VisitEnd() {
   const mapId = Number(useLocalSearchParams<{ id: string }>().id)
@@ -180,7 +181,7 @@ export default function VisitEnd() {
 
 const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.paper },
-  body: { padding: space.lg, gap: space.sm },
+  body: { padding: space.lg, gap: space.sm, ...readable },
   section: { ...type.mapName, color: colors.loam900, marginTop: space.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: touch.min, paddingVertical: space.xs, borderBottomWidth: 1, borderBottomColor: colors.loam100 },
   rowTitle: { flex: 1, fontSize: 16, fontFamily: fonts.medium, color: colors.loam900 },

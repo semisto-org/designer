@@ -4,6 +4,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native'
 import { haptics } from '@/lib/haptics'
 import { Icon, type IconName } from './Icon'
+import { readable } from './layout'
 import { colors, fonts, radius, shadow, shadows, space, touch, type } from './theme'
 
 // Text grows with the phone's text size, up to a point where layouts still hold.
@@ -151,5 +152,6 @@ export const styles = StyleSheet.create({
   },
   chipSelected: { backgroundColor: colors.prune600, borderColor: colors.prune600 },
   screen: { flex: 1, backgroundColor: colors.loam50 },
-  content: { padding: space.lg, gap: space.md },
+  // On a tablet a screen's content keeps a readable width, centred.
+  content: { padding: space.lg, gap: space.md, ...readable },
 })
