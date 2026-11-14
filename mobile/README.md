@@ -111,6 +111,10 @@ What it does, for the maps one belongs to:
 
 No purchase happens in the app: plans are managed on the website.
 
+## iPad
+
+The phone turns only in portrait; an iPad turns in every orientation (`UISupportedInterfaceOrientations~ipad` in `app.json`, so changing it needs a new native build). From a window 700 points wide (`ui/layout.ts`, iPad in both orientations and in a wide Split View), the terrain's notebook becomes a column on the left beside the map instead of the bottom sheet, the camera keeps that column clear, the panels of « Mesurer » and « Pendant l'averse » become a card in the same place, and lists and forms keep a readable width (680 points, centred). Android stays in portrait for now.
+
 ## How it talks to the server
 
 - Sign-in is the server's OAuth 2.1 (code + PKCE) with the fixed public

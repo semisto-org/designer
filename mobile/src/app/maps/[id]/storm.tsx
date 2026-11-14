@@ -21,7 +21,8 @@ import { chooseMedia, type MediaChoice } from '@/ui/chooseMedia'
 import { Body, Button, Chip, IconButton, Input, Label, Notice } from '@/ui/kit'
 import { Icon, type IconName } from '@/ui/Icon'
 import { toast } from '@/ui/Toast'
-import { colors, fonts, radius, shadow, space } from '@/ui/theme'
+import { colors, fonts, radius, shadow, space, touch } from '@/ui/theme'
+import { cameraPadding, floatingPanel, useLayout } from '@/ui/layout'
 
 const WATER = '#0e8fd6'
 const TOOLS: Array<{ water: StormWater; icon: IconName }> = [
@@ -38,6 +39,7 @@ export default function StormScreen() {
   const mapStyle = useMapStyle(mapId, bundle)
   const shown = useDisplay(mapId)
   const insets = useSafeAreaInsets()
+  const layout = useLayout()
   const mapRef = useRef<MapRef>(null)
   const [observedAt] = useState(() => new Date().toISOString())
   const [tool, setTool] = useState<StormWater | null>('flows')
@@ -146,12 +148,15 @@ export default function StormScreen() {
   }
 
   const bbox = bundle.map.bbox
+  // On a tablet the tools sit in a card on the left, beside the map.
+  const float = floatingPanel(layout)
+  const bottomPad = float ? space.md : insets.bottom + 12
   const counts = (['flows', 'pools', 'seeps'] as const).map((water) => [water, marks.filter((m) => m.water === water).length] as const)
 
   return (
     <View style={s.fill}>
       <Map ref={mapRef} style={s.fill} mapStyle={mapStyle} logo={false} attributionPosition={{ bottom: 8, left: 8 }}>
-        <Camera initialViewState={bbox ? { bounds: bbox, padding: { top: 120, bottom: 260, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }} />
+        <Camera initialViewState={bbox ? { bounds: bbox, padding: layout.wide ? cameraPadding(layout, 0) : { top: 120, bottom: 260, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }} />
         <FeatureLayers bundle={bundle} display={shown} selectedId={null} onSelect={() => {}} />
         <GeoJSONSource id="storm-marks" data={drawn}>
           <Layer id="storm-fill" type="fill" filter={['==', ['geometry-type'], 'Polygon']} paint={{ 'fill-color': WATER, 'fill-opacity': 0.3 }} />
@@ -172,14 +177,14 @@ export default function StormScreen() {
 
       <View style={[s.header, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
         <IconButton icon="back" label={t('mobile.common.back')} onPress={leave} />
-        <View style={s.headerCard}>
+        <View style={[s.headerCard, layout.wide && { flex: 0, width: layout.panel - touch.field - space.sm }]}>
           <Text style={s.headerTitle}>{t('mobile.storm.title')}</Text>
           <Text style={s.headerSub}>{tool && step === 'draw' ? t(`mobile.storm.hint_${tool}`) : t('mobile.storm.hint_pan')}</Text>
         </View>
       </View>
 
       {step === 'draw' ? (
-        <View style={[s.bottom, { paddingBottom: insets.bottom + 12 }]}>
+        <View style={[s.bottom, float && { paddingHorizontal: 0 }, float, { paddingBottom: float ? 0 : bottomPad }]}>
           {problem && <Notice tone="warning">{problem}</Notice>}
           <View style={s.tools}>
             {TOOLS.map(({ water, icon }) => (
@@ -206,7 +211,7 @@ export default function StormScreen() {
           <Button label={t('mobile.storm.next')} disabled={marks.length === 0} onPress={() => { setTool(null); setStep('details') }} />
         </View>
       ) : (
-        <View style={[s.sheet, { paddingBottom: insets.bottom + 12 }]}>
+        <View style={[s.sheet, float, { paddingBottom: bottomPad }]}>
           <ScrollView contentContainerStyle={{ gap: space.sm, padding: space.md }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
             <Label>{t('mobile.storm.rain')}</Label>
             <View style={s.chips}>

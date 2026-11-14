@@ -2,6 +2,8 @@
 // At its lowest it shows only its top (`top`, measured), then half the
 // screen, then nearly all of it. Dragged by its top, or tapped there; a
 // screen reader moves it with swipe up and down (an adjustable control).
+// On a tablet (`docked`) it is a column on the left beside the map: folded
+// to its top, or open from under the header to the bottom of the screen.
 import { useEffect, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -15,7 +17,7 @@ export type SheetLevel = 0 | 1 | 2
 
 const HANDLE = 28
 
-export function Sheet({ level, onLevel, top, children, bottomInset, topInset }: {
+export function Sheet({ level, onLevel, top, children, bottomInset, topInset, docked }: {
   level: SheetLevel
   onLevel: (level: SheetLevel) => void
   /** Always visible: the sheet's lowest height is this part's height. */
@@ -25,12 +27,17 @@ export function Sheet({ level, onLevel, top, children, bottomInset, topInset }: 
   bottomInset: number
   /** Room kept above the sheet at its highest (the header). */
   topInset: number
+  /** A tablet: the sheet is a column of this width on the left, above the bottom inset. */
+  docked?: { width: number }
 }) {
   const screen = useWindowDimensions().height
   const [topHeight, setTopHeight] = useState(140)
   const reduced = useReducedMotion()
-  const peek = HANDLE + topHeight + bottomInset
-  const heights = [peek, Math.max(peek, screen * 0.5), Math.max(peek, screen - topInset)]
+  // Docked, the column floats above the home indicator: the inset is a margin, not padding.
+  const margin = Math.max(space.md, bottomInset)
+  const peek = HANDLE + topHeight + (docked ? space.sm : bottomInset)
+  const full = Math.max(peek, screen - topInset - (docked ? margin : 0))
+  const heights = docked ? [peek, full, full] : [peek, Math.max(peek, screen * 0.5), full]
   const height = useSharedValue(heights[level])
   const start = useSharedValue(0)
 
@@ -77,7 +84,7 @@ export function Sheet({ level, onLevel, top, children, bottomInset, topInset }: 
   }
 
   return (
-    <Animated.View style={[s.sheet, animated]}>
+    <Animated.View style={[s.sheet, docked && [s.docked, { width: docked.width, bottom: margin }], animated]}>
       <GestureDetector gesture={pan}>
         <View>
           <Pressable
@@ -94,7 +101,7 @@ export function Sheet({ level, onLevel, top, children, bottomInset, topInset }: 
           <View onLayout={measure}>{top}</View>
         </View>
       </GestureDetector>
-      <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: bottomInset + space.lg }} scrollEnabled={level > 0}>
+      <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: (docked ? 0 : bottomInset) + space.lg }} scrollEnabled={level > 0}>
         {children}
       </ScrollView>
     </Animated.View>
@@ -107,6 +114,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.paper, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet,
     borderWidth: 1, borderBottomWidth: 0, borderColor: colors.loam200, ...shadows.lg,
   },
+  docked: { left: space.md, right: undefined, borderRadius: radius.sheet, borderBottomWidth: 1 },
   handleZone: { height: HANDLE, alignItems: 'center', justifyContent: 'center' },
   handle: { width: 44, height: 5, borderRadius: 3, backgroundColor: colors.loam300 },
   body: { flex: 1 },

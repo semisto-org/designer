@@ -19,7 +19,8 @@ import { useMapBundle } from '@/state/useMapBundle'
 import { useMapStyle } from '@/state/useMapStyle'
 import { Icon } from '@/ui/Icon'
 import { Body, Button, Chip, IconButton, MAX_FONT_SCALE, Notice } from '@/ui/kit'
-import { colors, fonts, radius, shadows, space, type } from '@/ui/theme'
+import { colors, fonts, radius, shadows, space, touch, type } from '@/ui/theme'
+import { cameraPadding, floatingPanel, useLayout } from '@/ui/layout'
 
 const FONT = ['Noto Sans Regular']
 
@@ -29,6 +30,7 @@ export default function MeasureScreen() {
   const mapStyle = useMapStyle(mapId, bundle)
   const shown = useDisplay(mapId)
   const insets = useSafeAreaInsets()
+  const layout = useLayout()
   const [points, setPoints] = useState<Position[]>([])
   const [shape, setShape] = useState<MeasureShape>('LineString')
   const [locating, setLocating] = useState(false)
@@ -103,7 +105,7 @@ export default function MeasureScreen() {
     <View style={s.fill}>
       <Map style={s.fill} mapStyle={mapStyle} logo={false} attributionPosition={{ top: insets.top + 72, left: 8 }}
         onPress={(e) => add(e.nativeEvent.lngLat)}>
-        <Camera initialViewState={bbox ? { bounds: bbox, padding: { top: 120, bottom: 300, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }} />
+        <Camera initialViewState={bbox ? { bounds: bbox, padding: layout.wide ? cameraPadding(layout, 0) : { top: 120, bottom: 300, left: 30, right: 30 } } : { center: bundle.map.center ?? [4.95, 50.32], zoom: bundle.map.zoom ?? 17 }} />
         <FeatureLayers bundle={bundle} display={shown} selectedId={null} />
         <GeoJSONSource id="measure" data={drawn}>
           <Layer id="measure-fill" type="fill" filter={['==', ['geometry-type'], 'Polygon']} paint={{ 'fill-color': colors.prune600, 'fill-opacity': 0.2 }} />
@@ -122,13 +124,13 @@ export default function MeasureScreen() {
 
       <View style={[s.header, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
         <IconButton icon="back" label={t('mobile.common.back')} onPress={leave} />
-        <View style={s.headerCard}>
+        <View style={[s.headerCard, layout.wide && { flex: 0, width: layout.panel - touch.field - space.sm }]}>
           <Text style={s.headerTitle} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.measure.title')}</Text>
           {hint && <Text style={s.headerSub} maxFontSizeMultiplier={MAX_FONT_SCALE}>{hint}</Text>}
         </View>
       </View>
 
-      <View style={[s.panel, { paddingBottom: insets.bottom + space.md }]}>
+      <View style={[s.panel, floatingPanel(layout), { paddingBottom: layout.wide ? space.md : insets.bottom + space.md }]}>
         <View style={s.readout} accessible accessibilityLiveRegion="polite" accessibilityLabel={[big, small].filter(Boolean).join(', ')}>
           <View style={{ flex: 1 }}>
             <Text style={s.big} maxFontSizeMultiplier={1.3}>{big}</Text>
