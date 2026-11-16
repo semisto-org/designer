@@ -16,17 +16,18 @@ class McpListTeamsTest < ActionDispatch::IntegrationTest
     data, error = call_tool(personal_token(@admin), "list_teams")
     assert_not error, data
     team = data["teams"].sole
-    assert_equal [ @team.id, "admin", true ], team.values_at("id", "role", "can_see_activity")
+    assert_equal [ @team.id, "admin" ], team.values_at("id", "role")
     bob = team["members"].find { |m| m["name"] == "Bob" }
     assert_equal 3, bob["days_since_active"]
     assert bob["last_active_at"]
     assert_not_includes data.to_json, @member.email_address
   end
 
-  test "a member reads the members, not their activity" do
+  test "a member reads the members and their activity too" do
+    @admin.update_column(:last_active_at, 10.days.ago)
     data, = call_tool(personal_token(@member), "list_teams")
     team = data["teams"].sole
-    assert_equal false, team["can_see_activity"]
-    assert team["members"].none? { |m| m.key?("last_active_at") }
+    assert_equal [ @team.id, "member" ], team.values_at("id", "role")
+    assert_equal 10, team["members"].find { |m| m["name"] == "Michael" }["days_since_active"]
   end
 end
