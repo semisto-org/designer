@@ -75,7 +75,7 @@ class Teams::AgentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Léa", @team.reload.team_agent.name
 
     get team_path(@team), headers: inertia_headers
-    assert_equal({ "name" => "Léa", "ready" => true }, response.parsed_body["props"]["colleague"])
+    assert_equal({ "name" => "Léa", "avatarUrl" => nil, "ready" => true }, response.parsed_body["props"]["colleague"])
   end
 
   test "an admin switches her on map by map; nobody else does, and never on another team's map" do
@@ -113,7 +113,7 @@ class Teams::AgentsControllerTest < ActionDispatch::IntegrationTest
     assert_enqueued_jobs 1, only: AgentRunJob
 
     get map_comments_path(map), params: { commentable_type: "Map", commentable_id: map.id }, as: :json
-    assert_equal({ "id" => agent.id, "name" => "Léa", "canAsk" => true }, json["colleague"])
+    assert_equal({ "id" => agent.id, "name" => "Léa", "avatarUrl" => nil, "canAsk" => true }, json["colleague"])
     assert_equal({ "id" => -agent.id, "name" => "Léa", "handle" => "Léa", "avatarUrl" => nil, "agent" => true }, json["members"].first)
     signed = json["comments"].find { _1["id"] == answer.id }
     assert_equal "Léa", signed["author"]["name"]

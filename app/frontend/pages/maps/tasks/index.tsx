@@ -92,7 +92,7 @@ export default function MapTasks({ map, lists: initialLists, tasks: initialTasks
     const person = participants.find((p) => assigneeKey(p) === key)
     const next = person
       ? person.agentId != null
-        ? { agentId: person.agentId, name: person.name, agent: true, working: true }
+        ? { agentId: person.agentId, name: person.name, avatarUrl: person.avatarUrl, agent: true, working: true }
         : { id: person.id, email: person.email, name: person.name, avatarUrl: person.avatarUrl, invited: person.id == null || undefined }
       : undefined
     setBoard((b) => ({ ...b, tasks: b.tasks.map((x) => (x.id === task.id ? { ...x, assignee: next } : x)) }))

@@ -503,6 +503,7 @@ Rails.application.routes.draw do
       # where an admin switched her on.
       resource :agent, path: "collegue", only: %i[show update] do
         resources :maps, only: :update, controller: "agent_maps"
+        resource :avatar, only: %i[update destroy], controller: "agent_avatars"
       end
       # The logo printed at the top of the team maps' documents.
       resource :logo, only: %i[update destroy]

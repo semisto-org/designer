@@ -14,7 +14,7 @@ module Collab
         {
           mapId: map.id, mapName: map.name, unread:, mentions:,
           lastAt: last.created_at.iso8601,
-          last: { author: last.author_name, avatarUrl: (last.author.avatar_url unless last.by_agent?), body: last.body.squish.truncate(EXCERPT) },
+          last: { author: last.author_name, avatarUrl: (last.by_agent? ? last.agent.avatar_url : last.author.avatar_url), body: last.body.squish.truncate(EXCERPT) },
           url: "/maps/#{map.id}?discussion=#{map.comment_key}"
         }
       end

@@ -8,6 +8,16 @@ fr:
     money: "%{amount} $"
     flash:
       saved: "C'est enregistré."
+    avatar:
+      label: "Son avatar"
+      hint: "JPEG, PNG, WebP ou HEIC, jusqu'à 10 Mo. On le recadre en carré. L'étincelle reste dans le coin, pour qu'on la reconnaisse toujours comme une IA."
+      hint_no_agent: "Donne-lui d'abord un prénom, tu choisiras son avatar ensuite."
+      choose: "Choisir une image"
+      change: "Changer d'image"
+      remove: "Retirer"
+      uploading: "Envoi…"
+      saved: "L'avatar de %{name} est enregistré."
+      removed: "L'avatar de %{name} est retiré."
     tool_errors:
       unknown: "L'outil %{name} n'existe pas pour toi."
       other_map: "Tu travailles sur la carte %{id} seulement, pour cette demande."

@@ -39,7 +39,7 @@ Et elle te dira toujours **ce qu'il faut aller vérifier sur place** avant de d�
 
 Sa page se trouve dans l'équipe, à la ligne « Collègue IA » de la liste des membres.
 
-- **Sa fiche** : son prénom, et les consignes de l'équipe (le ton, vos habitudes). Elles complètent la fiche de base de Semisto, qui fixe son métier et ses limites et ne se retire pas.
+- **Sa fiche** : son prénom, son avatar (une image de votre choix ; l'étincelle reste dans le coin pour qu'on la reconnaisse comme une IA), et les consignes de l'équipe (le ton, vos habitudes). Elles complètent la fiche de base de Semisto, qui fixe son métier et ses limites et ne se retire pas.
 - **La clé** : elle réfléchit avec Claude, d'Anthropic, grâce à la clé API de l'équipe. C'est l'équipe qui paie ce qu'elle consomme, directement à Anthropic ; Terranova n'ajoute rien. Un abonnement Claude Team ne donne pas de clé : elle se crée sur console.anthropic.com. La clé est chiffrée et n'est plus jamais affichée.
 - **Le plafond mensuel** : au plafond, elle s'arrête, le dit en clair et rend la tâche. La jauge montre où en est le mois.
 - **Les cartes** : elle n'est active sur **aucune carte par défaut**. Active-la carte par carte ; les personnes de la carte le voient en haut de la discussion. Si un client ne veut pas d'IA sur son projet, laisse simplement sa carte inactive.

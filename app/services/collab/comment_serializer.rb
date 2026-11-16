@@ -46,14 +46,14 @@ module Collab
       # The team's colleague, for the members of her team only (a negative id
       # keeps her apart from the people).
       colleague = @map.colleague_for(@user)
-      people.unshift({ id: -colleague.id, name: colleague.name, handle: colleague.handle, avatarUrl: nil, agent: true }) if colleague
+      people.unshift({ id: -colleague.id, name: colleague.name, handle: colleague.handle, avatarUrl: colleague.avatar_url, agent: true }) if colleague
       people
     end
 
     # The colleague on this map, as everyone in its discussion sees her.
     def colleague
       agent = @map.colleague
-      agent && { id: agent.id, name: agent.name, canAsk: @map.colleague_for(@user).present? }
+      agent && { id: agent.id, name: agent.name, avatarUrl: agent.avatar_url, canAsk: @map.colleague_for(@user).present? }
     end
 
     # How a cited element reads in a message: its name, or its kind and number.
@@ -67,7 +67,7 @@ module Collab
 
     private
       def author_json(comment)
-        return { id: 0, name: comment.agent.name, avatarUrl: nil } if comment.by_agent?
+        return { id: 0, name: comment.agent.name, avatarUrl: comment.agent.avatar_url } if comment.by_agent?
         { id: comment.author_id, name: comment.author.display_name, avatarUrl: comment.author.avatar_url }
       end
 

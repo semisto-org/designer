@@ -111,7 +111,7 @@ function Members({ members, admin, base, colleague }: { members: TeamMember[]; a
         {/* « Collègue IA »: a member of another kind, listed with the team once Semisto opened the module. */}
         {colleague && (
           <li className="flex flex-wrap items-center gap-3 py-3">
-            <Avatar name={colleague.name ?? ''} agent className="h-9 w-9" />
+            <Avatar name={colleague.name ?? ''} url={colleague.avatarUrl} agent className="h-9 w-9" />
             <div className="min-w-0 flex-1 basis-40">
               <p className="flex items-center gap-2 truncate text-sm font-medium text-loam-900">
                 {colleague.name ?? t('agents.team_card.title')}

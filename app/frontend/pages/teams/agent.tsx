@@ -1,6 +1,7 @@
-import { Head, Link, router, useForm } from '@inertiajs/react'
-import { ArrowLeft, Check, KeyRound, ListChecks, MapPinned, MessageSquareText, PencilRuler, Sparkles, TreeDeciduous } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react'
+import { ArrowLeft, Check, KeyRound, ListChecks, MapPinned, MessageSquareText, PencilRuler, TreeDeciduous } from 'lucide-react'
+import { useRef, useState, type ReactNode } from 'react'
+import { Avatar } from '@/collab/Avatar'
 import { HelpButton } from '@/components/help/HelpButton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -39,9 +40,7 @@ export default function TeamAgentPage({ team, agent, ready, hasKey, maps, usage,
       </Link>
 
       <header className="flex flex-wrap items-start gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-leaf-100 text-leaf-800">
-          <Sparkles className="h-7 w-7" aria-hidden="true" />
-        </span>
+        <Avatar name={name ?? ''} url={agent?.avatarUrl} agent className="h-14 w-14" />
         <div className="min-w-0 flex-1 basis-64">
           <p className="text-sm text-loam-500">{t('agents.page.eyebrow', { team: team.name })}</p>
           <h1 className="break-words text-2xl">{name ? t('agents.page.heading_named', { name }) : t('agents.page.heading_new')}</h1>
@@ -118,6 +117,50 @@ function IdentityRead({ agent }: { agent: TeamAgent }) {
   )
 }
 
+// Her picture, chosen by a team admin once she has a name. HEIC from an
+// iPhone is converted on the server; the sparkle stays in the corner.
+function AvatarPicker({ agent, base }: { agent: TeamAgent | null; base: string }) {
+  const input = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
+  const error = (usePage().props.errors as unknown as Record<string, string> | undefined)?.avatar
+  const upload = (file: File) => {
+    setBusy(true)
+    router.post(`${base}/collegue/avatar`, { _method: 'patch', agent: { avatar: file } }, {
+      forceFormData: true, preserveScroll: true, onFinish: () => setBusy(false),
+    })
+  }
+
+  return (
+    <div className="mt-3 flex items-start gap-4">
+      <Avatar name={agent?.name ?? ''} url={agent?.avatarUrl} agent className="h-16 w-16" />
+      <div className="min-w-0 flex-1 text-sm text-loam-500">
+        <p className="font-medium text-loam-900">{t('agents.avatar.label')}</p>
+        {agent && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button variant="secondary" size="sm" disabled={busy} onClick={() => input.current?.click()}>
+              {busy ? t('agents.avatar.uploading') : agent.avatarUrl ? t('agents.avatar.change') : t('agents.avatar.choose')}
+            </Button>
+            {agent.avatarUrl && (
+              <Button variant="ghost" size="sm" disabled={busy} onClick={() => router.delete(`${base}/collegue/avatar`, { preserveScroll: true })}>
+                {t('agents.avatar.remove')}
+              </Button>
+            )}
+          </div>
+        )}
+        <p className={error ? 'mt-1.5 text-clay-700' : 'mt-1.5'}>{error ?? t(agent ? 'agents.avatar.hint' : 'agents.avatar.hint_no_agent')}</p>
+      </div>
+      <input
+        ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={(event) => {
+          const file = event.target.files?.[0]
+          if (file) upload(file)
+          event.target.value = ''
+        }}
+      />
+    </div>
+  )
+}
+
 function IdentityForm({ agent, base, limits }: { agent: TeamAgent | null; base: string; limits: AgentPageProps['limits'] }) {
   const form = useForm({ name: agent?.name ?? '', instructions: agent?.instructions ?? '', active: agent?.active ?? true })
   return (
@@ -126,8 +169,9 @@ function IdentityForm({ agent, base, limits }: { agent: TeamAgent | null; base: 
         <h2 className="text-base">{t('agents.page.identity.title')}</h2>
         <HandNote tone="leaf">{t('agents.page.identity.base')}</HandNote>
       </div>
+      <AvatarPicker agent={agent} base={base} />
       <form
-        className="mt-3 space-y-4"
+        className="mt-4 space-y-4"
         onSubmit={(event) => {
           event.preventDefault()
           form.transform((data) => ({ agent: data }))

@@ -15,6 +15,15 @@ class TeamAgent < ApplicationRecord
   belongs_to :created_by, class_name: "User", optional: true
   has_many :runs, class_name: "AgentRun", dependent: :destroy
 
+  # Her picture, chosen by a team admin. Without one she is a sparkle on a
+  # leaf disc; with one the « IA » marks stay around it (Avatar, AgentByline).
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_fill: [ User::AVATAR_SIZE, User::AVATAR_SIZE ], format: :jpeg, saver: { strip: true, quality: 85 }
+  end
+  include HeicAttachment
+  converts_heic :avatar
+  validate :avatar_is_acceptable
+
   normalizes :name, with: ->(name) { name.to_s.squish }
   normalizes :instructions, with: ->(text) { text.to_s.strip.presence }
 
@@ -33,11 +42,24 @@ class TeamAgent < ApplicationRecord
     body.to_s.match?(/(?<![[:alnum:]_@])@#{Regexp.escape(handle)}(?![[:alnum:]_])/i)
   end
 
+  # Served like a person's picture (AvatarsController), by the blob's signed id.
+  def avatar_url
+    return unless avatar.attached? && avatar.blob.persisted?
+    Rails.application.routes.url_helpers.avatar_path(avatar.blob.signed_id)
+  end
+
   def as_json(*)
-    { id:, name:, instructions:, active: }
+    { id:, name:, instructions:, active:, avatarUrl: avatar_url }
   end
 
   private
+    def avatar_is_acceptable
+      return unless avatar.attached?
+      blob = avatar.blob
+      errors.add(:avatar, I18n.t("account.avatar.errors.type")) unless User::AVATAR_TYPES.include?(blob.content_type)
+      errors.add(:avatar, I18n.t("account.avatar.errors.size", max: User::AVATAR_MAX_BYTES / 1.megabyte)) if blob.byte_size > User::AVATAR_MAX_BYTES
+    end
+
     # « @Marie » must not hesitate between a person and the colleague.
     def name_of_no_member
       return unless organization

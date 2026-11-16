@@ -1,6 +1,7 @@
 import clsx from 'clsx'
-import { Calendar, Check, MapPin, Sparkles, X } from 'lucide-react'
+import { Calendar, Check, MapPin, X } from 'lucide-react'
 import { useId, useState, type KeyboardEvent } from 'react'
+import { Avatar } from '@/collab/Avatar'
 import { inputClass } from '@/components/ui/Field'
 import { t } from '@/lib/i18n'
 import { addTag, MAX_TAG_LENGTH, MAX_TAGS, removeTag } from '@/map/tags/tags'
@@ -65,7 +66,7 @@ export function initials(name: string): string {
 export function AssigneeBadge({ name, url, withName, agent }: { name: string; url?: string | null; withName?: boolean; agent?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-sm text-loam-700" title={agent ? `${name} · ${t('agents.tasks.group')}` : name}>
-      {agent ? <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-leaf-100 text-leaf-800" aria-hidden><Sparkles className="h-3.5 w-3.5" /></span> : url ? <img src={url} alt="" referrerPolicy="no-referrer" className="h-6 w-6 shrink-0 rounded-full object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-prune-100 text-[13px] font-semibold text-prune-700" aria-hidden>
+      {agent ? <Avatar name={name} url={url} agent className="h-6 w-6" /> : url ? <img src={url} alt="" referrerPolicy="no-referrer" className="h-6 w-6 shrink-0 rounded-full object-cover" /> : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-prune-100 text-[13px] font-semibold text-prune-700" aria-hidden>
         {initials(name)}
       </span>}
       <span className={withName ? '' : 'sr-only'}>{name}</span>

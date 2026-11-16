@@ -48,7 +48,7 @@ export type ThreadData = {
   lastReadAt: string | null
   members: Mentionable[]
   /** The team's AI colleague when she is switched on for this map; `canAsk` for the members of her team. */
-  colleague?: { id: number; name: string; canAsk: boolean } | null
+  colleague?: { id: number; name: string; avatarUrl?: string | null; canAsk: boolean } | null
   /** Who my next comment will e-mail (mentions aside); null for the map's live discussion. */
   notified?: string[] | null
   commentEmails: boolean

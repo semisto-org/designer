@@ -1,5 +1,5 @@
 /** « Collègue IA »: the AI member of a team (TeamAgent) and her page (Teams::AgentPayload). */
-export type TeamAgent = { id: number; name: string; instructions: string | null; active: boolean }
+export type TeamAgent = { id: number; name: string; instructions: string | null; active: boolean; avatarUrl: string | null }
 
 export type AgentRunRow = {
   id: number

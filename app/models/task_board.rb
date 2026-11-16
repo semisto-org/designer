@@ -44,7 +44,7 @@ class TaskBoard
     end
     people = people.sort_by.with_index { |person, i| [ order.index(person[:group]), person[:lead] ? 0 : 1, i ] }
     colleague = map.colleague_for(for_user)
-    people.unshift({ agentId: colleague.id, name: colleague.name, role: "agent", group: "agent" }) if colleague
+    people.unshift({ agentId: colleague.id, name: colleague.name, avatarUrl: colleague.avatar_url, role: "agent", group: "agent" }.compact) if colleague
     people + map.invitee_emails.sort.map { |email| { email:, name: email, role: "invited" } }
   end
 

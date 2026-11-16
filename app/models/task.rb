@@ -136,7 +136,7 @@ class Task < ApplicationRecord
     # for its account (« invité·e »).
     def assignee_json
       if agent
-        { agentId: agent.id, name: agent.name, agent: true, working: AgentRun.open.where(source: self).exists? }
+        { agentId: agent.id, name: agent.name, avatarUrl: agent.avatar_url, agent: true, working: AgentRun.open.where(source: self).exists? }.compact
       elsif assignee
         { id: assignee.id, name: assignee.display_name, avatarUrl: assignee.avatar_url }.compact
       elsif invitee_email
