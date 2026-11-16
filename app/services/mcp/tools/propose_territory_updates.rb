@@ -4,8 +4,9 @@ module Mcp
     # already kept: a lead's land once the owner is known, its keeper, a
     # marker's proof once someone saw it, a source's excerpts. Nothing
     # changes until a person accepts it on the territory's page, all of it or
-    # field by field. A new proposal replaces the entry's pending one;
-    # withdraw_territory_drafts withdraws it (update_ids).
+    # field by field. A new proposal completes the entry's pending one, field
+    # by field (`replace: true` starts it over); withdraw_territory_drafts
+    # withdraws it (update_ids).
     class ProposeTerritoryUpdates < Base
       include TerritoryAccess
 
@@ -30,7 +31,8 @@ module Mcp
                     properties: { type: "object", minProperties: 1 }
                   }
                 },
-                rationale: { type: "string", minLength: 10, maxLength: 3000, description: :territory_item_rationale }
+                rationale: { type: "string", minLength: 10, maxLength: 3000, description: :territory_item_rationale },
+                replace: { type: "boolean", description: :territory_update_replace }
               }
             }
           }
@@ -57,7 +59,14 @@ module Mcp
             next
           end
           seen << item.id
+          raw["changes"], error = with_official_outline(territory, item, raw["changes"])
+          if error
+            rejected << { index:, item_id: item.id, error: }
+            next
+          end
           changes, error = TerritoryItemUpdate.normalize(item, raw["changes"])
+          merged = !raw["replace"] && pending[item.id] && !pending[item.id].deletion? && changes.present?
+          changes = TerritoryItemUpdate.merge(item, pending[item.id], changes) if merged
           error ||= candidate_error(item, changes) if changes.present?
           if error
             rejected << { index:, item_id: item.id, error: }
@@ -66,7 +75,9 @@ module Mcp
           elsif pending[item.id]&.proposed_changes == changes
             unchanged << { index:, item_id: item.id, reason: t("territory_update_errors.already_pending", id: pending[item.id].id) }
           else
-            valid << [ index, item, changes, raw["rationale"].to_s.strip ]
+            rationale = raw["rationale"].to_s.strip
+            rationale = "#{pending[item.id].rationale}\n\n#{rationale}".first(TerritoryItem::BODY_MAX_LENGTH) if merged && !pending[item.id].rationale.include?(rationale)
+            valid << [ index, item, changes, rationale, merged ]
           end
         end
         if valid.empty? && unchanged.empty?
@@ -75,14 +86,15 @@ module Mcp
 
         created = TerritoryItemUpdate.transaction do
           batch = SecureRandom.uuid
-          valid.map do |index, item, changes, rationale|
+          valid.map do |index, item, changes, rationale, merged|
             replaced = pending[item.id]
             replaced&.update!(status: "withdrawn")
             update = territory.item_updates.create!(
               territory_item: item, item_title: item.title, batch:, proposed_changes: changes, rationale:,
               created_by: user, client_name: principal.client_name&.first(100)
             )
-            { index:, id: update.id, item_id: item.id, fields: TerritoryItemUpdate.leaves(changes).map(&:first), replaces: replaced&.id }.compact
+            { index:, id: update.id, item_id: item.id, fields: TerritoryItemUpdate.leaves(changes).map(&:first),
+              (merged ? :completes : :replaces) => replaced&.id }.compact
           end
         end
         {
@@ -92,6 +104,23 @@ module Mcp
       end
 
       private
+        # A basin given new paris_sector_ids takes their official outline.
+        def with_official_outline(territory, item, changes)
+          ids = changes.is_a?(Hash) ? changes.dig("properties", "paris_sector_ids") : nil
+          return [ changes, nil ] unless item.kind == "basin" && ids.is_a?(Array) && ids.any?
+
+          @hydrography ||= TerritoryHydrography.new(territory)
+          return [ nil, t("errors.hydrography_not_configured") ] unless @hydrography.available?
+
+          outline = @hydrography.outline_of(ids)
+          return [ nil, t("errors.territory_sectors_missing", ids: outline[:missing].join(", ")) ] if outline[:missing].any?
+
+          properties = changes["properties"].merge("paris_sector_ids" => outline[:sector_ids], "area_km2" => outline[:area_km2])
+          [ changes.merge("geometry" => outline[:geometry], "properties" => properties), nil ]
+        rescue TerritoryHydrography::Unavailable
+          [ nil, t("errors.hydrography_unavailable") ]
+        end
+
         def item_error(id, item, seen)
           return t("territory_update_errors.not_found", id:) if item.nil? || item.status == "rejected"
           return t("territory_update_errors.draft", id:) if item.draft?

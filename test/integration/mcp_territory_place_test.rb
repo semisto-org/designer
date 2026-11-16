@@ -214,4 +214,47 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
     assert error
     assert_match(/ne répond pas/, text)
   end
+
+  # Beauvechain, 13/11/2026: copying 13 polygons by hand, and testing
+  # « point in polygon » by hand to know which sub-basin a place is in.
+  test "a basin names its official sectors and gets their outline; a point says which sub-basin and sector it falls in" do
+    seed_wallonia_layers
+    eau = "https://geoservices.wallonie.be/arcgis/rest/services/EAU"
+    regions(:wallonia).update!(settings: regions(:wallonia).settings.merge("hydrography" => {
+      "attribution" => "SPW (test)",
+      "sub_basins" => { "url" => "#{eau}/SECTEURS_PARIS_1621/MapServer/1", "label" => "secteur PARIS", "id_field" => "SECT_PARIS",
+                        "water_body_field" => "MAS_EAU_SURF", "sectors_url" => "#{eau}/SECTEURS_PARIS_1621/MapServer/0", "watercourse_field" => "COURS_EAU" }
+    }))
+    box = ->(w, s, e, n) { { type: "Polygon", coordinates: [ [ [ w, s ], [ e, s ], [ e, n ], [ w, n ], [ w, s ] ] ] } }
+    x0, y0 = YVOIR[:lng], YVOIR[:lat]
+    stub_request(:get, %r{#{eau}/SECTEURS_PARIS_1621/MapServer/1/query}).to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: {
+      type: "FeatureCollection", features: [
+        { type: "Feature", properties: { SECT_PARIS: "DyGe163", MAS_EAU_SURF: "DG06R" }, geometry: box.(x0, y0, x0 + 0.025, y0 + 0.05) },
+        { type: "Feature", properties: { SECT_PARIS: "DyGe164", MAS_EAU_SURF: "DG06R" }, geometry: box.(x0 + 0.025, y0, x0 + 0.05, y0 + 0.05) }
+      ]
+    }.to_json)
+    stub_request(:get, %r{#{eau}/SECTEURS_PARIS_1621/MapServer/0/query}).to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: {
+      features: [ { attributes: { SECT_PARIS: "DyGe163", COURS_EAU: "Le Nodebais" } } ]
+    }.to_json)
+
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: [
+      { kind: "basin", ref: "nodebais", title: "Vallon du Nodebais", rationale: "Deux secteurs PARIS d'un même vallon, regroupés.",
+        properties: { order: 1, paris_sector_ids: %w[DyGe163 DyGe164] } },
+      { kind: "basin", title: "Introuvable", rationale: "Un code qui n'existe pas ici.", properties: { paris_sector_ids: %w[XxXx999] } }
+    ] })
+    refute error, data
+    created = data["created"].sole
+    assert_equal %w[DyGe163 DyGe164], created.dig("outline", "sector_ids")
+    basin = TerritoryItem.find(created["id"])
+    assert_includes [ RGeo::Feature::Polygon, RGeo::Feature::MultiPolygon ], basin.geometry.geometry_type
+    assert_in_delta 19.6, basin.prop(:area_km2), 1.5
+    assert_match(/XxXx999/, data["rejected"].sole["error"])
+
+    stub_request(:get, %r{\Ahttps://geoservices\.wallonie\.be/arcgis/rest/services/SOL_SOUS_SOL/CNSW/MapServer/identify}).to_return(json_response("identify_sols.json"))
+    point = { lng: x0 + 0.01, lat: y0 + 0.01 }
+    data, error = call_tool(@token, "identify_at_point", { territory_id: @territory.id, layers: %w[sols], **point })
+    refute error, data
+    assert_equal [ basin.id ], data.dig("water", "basins").pluck("id")
+    assert_equal [ "DyGe163", "Le Nodebais" ], data.dig("water", "paris_sector").values_at("id", "watercourse")
+  end
 end

@@ -38,7 +38,7 @@ module Mcp
           Rails.error.report(e, handled: true, context: { mcp_tool: "identify_at_point", layer: layer.key })
           { layer: layer.key, name: layer.name, error: t("errors.identify_layer_failed") }
         end
-        { point: [ lng, lat ], results: }
+        { point: [ lng, lat ], water: (water_context(place, lng, lat) if territory?(place)), results: }.compact
       end
 
       private

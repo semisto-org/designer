@@ -22,4 +22,11 @@ class Mcp::RegionIdentifyTest < ActiveSupport::TestCase
       Mcp::RegionIdentify.identify(layer: wallonia_layer("sols"), lng: 4.9055, lat: 50.3405)
     end
   end
+
+  # The SPW's ancient forests often answer after the map's 6 s.
+  test "a slow layer is asked once more, alone, with more time" do
+    stub_request(:get, %r{SOL_SOUS_SOL/CNSW/MapServer/identify}).to_timeout.then.to_return(json_response("identify_sols.json"))
+    result = Mcp::RegionIdentify.identify(layer: wallonia_layer("sols"), lng: 4.9055, lat: 50.3405)
+    assert_equal "ok", result[:status]
+  end
 end

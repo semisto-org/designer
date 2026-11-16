@@ -87,13 +87,22 @@ export function UpdateReview({ item, update, territoryId, canEdit, titles }: {
           ))}
         </ul>
       )}
+      {update.supersededBy && (
+        <div className="mt-2 text-sm text-loam-700">
+          <p className="font-medium text-loam-900">{u('superseded_by')}</p>
+          <ul className="mt-1 grid gap-0.5">
+            {update.supersededBy.map((r) => <li key={r.id}>{r.title ?? `#${r.id}`} · {u(`replacement_status.${r.status === 'rejected' ? 'removed' : r.status}`)}</li>)}
+          </ul>
+          {update.blocked && <p className="mt-1 text-humus-800">{u('superseded_waiting')}</p>}
+        </div>
+      )}
       <p className="mt-2 text-sm text-loam-700">
         <span className="font-medium text-humus-800">{t('territories.show.drafts.rationale')} : </span>{update.rationale}
       </p>
       {canEdit && (
         <div className="mt-3 flex flex-wrap justify-end gap-2">
           <Button size="sm" variant="ghost" onClick={reject}>{u('reject')}</Button>
-          <Button size="sm" variant={update.deletion ? 'danger' : 'primary'} onClick={accept} disabled={!update.deletion && chosen.length === 0}>
+          <Button size="sm" variant={update.deletion ? 'danger' : 'primary'} onClick={accept} disabled={(!update.deletion && chosen.length === 0) || update.blocked}>
             {update.deletion && <Trash2 className="h-4 w-4" aria-hidden />}
             {update.deletion ? u('apply_deletion') : u('apply')}
           </Button>

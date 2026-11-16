@@ -63,7 +63,7 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
     case 'marker':
       line(fl('basin_id'), p.basin_id ? titles.get(p.basin_id) : null)
       line(fl('marker_kind'), p.marker_kind && v('marker_kind', p.marker_kind))
-      line(fl('occurred_on'), date(p.occurred_on))
+      line(fl('occurred_on'), item.occurredLabel ?? date(p.occurred_on))
       line(fl('source_ids'), refs(p.source_ids))
       break
     case 'lead':

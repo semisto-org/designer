@@ -490,7 +490,7 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     stub_request(:get, SPW_REST).to_return(status: 503)
     data, error = call_tool(@owner, "identify_at_point", { map_id: @map.id, lng: 4.907, lat: 50.341, layers: %w[sols] })
     refute error
-    assert_match(/pas encore disponible/, data["results"].sole["error"])
+    assert_match(/n.a pas répondu à temps/, data["results"].sole["error"])
   end
 
   test "trace_contour gives the contour line through a point, or asks for the relief" do

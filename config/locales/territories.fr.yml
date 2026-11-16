@@ -66,9 +66,21 @@ fr:
               too_large: "dépasse 30 Mo"
 
   territories:
+    seasons:
+      spring: "printemps %{year}"
+      summer: "été %{year}"
+      autumn: "automne %{year}"
+      winter: "hiver %{year}"
     hydrography:
       outlet_at: "%{watercourse}, %{landmark}"
       draft_rationale: "Bassin contributif du %{source} %{id} (SPW) : %{area} km², dont %{inside} km² dans la commune. Contour officiel, à parcourir avec le contrat de rivière."
+      sectors_rationale: "Contour officiel attaché par Terranova : %{source} %{ids} (SPW), %{area} km² au total, dont %{inside} km² dans la commune."
+      issues:
+        invalid_sector: "Le secteur « %{id} » de la couche officielle n'a ni nom ni exutoire (%{area} km², dont %{inside} km² dans la commune) : il est laissé de côté. Ne le propose pas comme sous-bassin."
+        unnamed: "%{length} km de cours d'eau sans nom (%{category}%{atlas}) : demande son nom à la commune ou au contrat de rivière avant de le citer."
+        atlas: ", n° %{number} à l'atlas"
+        uncovered: "%{area} km² de la commune ne sont couverts par aucun %{source} : un versant qui part directement chez le voisin. Masses d'eau qui le couvrent : %{bodies}. Dessine ce sous-bassin à la main, ou rattache-le au vallon voisin après une visite."
+        no_body: "aucune"
     nav: "Territoires"
     errors:
       module_off: "Le module « Territoire » n'est pas attribué à cette équipe. Semisto peut l'activer pour vous."
@@ -79,6 +91,7 @@ fr:
       not_a_draft: "Cet élément n'est plus une proposition."
       invalid: "Cet élément n'a pas pu être enregistré."
       no_field_chosen: "Coche au moins un changement à appliquer, ou écarte la proposition."
+      superseded_waiting: "Ce retrait attend que ses remplaçants soient gardés : %{titles}."
     flash:
       created: "Le territoire « %{name} » est ouvert. Commence par qui y travaille déjà."
       saved: "Enregistré."
@@ -189,6 +202,12 @@ fr:
         place_changed: "nouvel emplacement"
         place_removed: "retiré de la carte"
         delete_confirm: "Retirer « %{title} » du dossier, comme ton IA le propose ?"
+        superseded_by: "Remplacé par :"
+        superseded_waiting: "Garde d'abord ses remplaçants : le retrait n'est possible qu'ensuite."
+        replacement_status:
+          draft: "à revoir"
+          active: "gardé"
+          removed: "retiré"
       add: "Ajouter"
       edit: "Modifier"
       delete: "Retirer"
@@ -243,7 +262,10 @@ fr:
         year: "Année du document"
         source_ids: "Sources"
         validated: "Confirmée par l'administration"
-        occurred_on: "Quand (année ou date)"
+        occurred_on: "Quand (2021-07-14, 2021-07 ou 2021)"
+        occurred_precision: "Précision de la date"
+        paris_sector_ids: "Secteurs officiels (PARIS)"
+        area_km2: "Surface (km²)"
         proof: "Niveau de preuve"
         marker_kind: "Ce qui s'est passé"
         rank: "Rang"
@@ -297,6 +319,11 @@ fr:
           study: "Étude"
           call: "Appel à projets"
           other: "Autre"
+        occurred_precision:
+          day: "Le jour"
+          month: "Le mois"
+          season: "La saison"
+          year: "L'année"
         proof:
           computed: "Calculé"
           seen: "Vu sur place"
@@ -443,16 +470,19 @@ fr:
         description: "Pose en brouillons ce que tu as trouvé sur un territoire : personnes et organismes à rencontrer (actor), documents (source : properties.url, author, published_on, rights open, restricted ou unknown, source_kind, excerpts : une liste de quelques phrases citées, jamais le document entier), attentes votées par la commune (expectation : properties.year, source_ids), sous-bassins versants (basin : properties.order depuis l'amont, outlet ; geometry Polygon facultative), faits datés et localisés (marker : geometry Point, properties.basin_id, occurred_on, proof, marker_kind, source_ids), pistes d'aménagement (lead : properties.basin_id, rank, theme, land, magnitude, expectation_ids ; geometry Point, LineString ou Polygon), documents ou informations à obtenir (request : properties.request_kind document ou info, from, actor_id, state to_ask, asked, received ou refused). Un basin_id renvoie à un sous-bassin du dossier, brouillon compris. Pour renvoyer à un brouillon du même appel, donne-lui un ref (« b1 ») et utilise basin_ref, actor_ref, source_ref, source_refs ou expectation_refs à la place de l'identifiant : les sous-bassins et leurs repères partent ensemble. Chaque brouillon porte sa justification (rationale) : d'où vient l'information et pourquoi elle compte ici. Un axe d'écoulement calculé qui tombe sur une inondation racontée est une concordance à vérifier (proof computed), jamais une preuve. Ne dimensionne aucun ouvrage : un ordre de grandeur seulement. L'humain garde ou écarte chaque brouillon sur la page du territoire. Un doublon (même type et même titre, ou même lien) est refusé."
       propose_territory_updates:
         title: "Proposer des modifications au dossier d'un territoire"
-        description: "Propose de modifier des éléments qu'une personne a déjà gardés dans le dossier d'un territoire (identifiants dans get_territory) : title, body, geometry (null la retire) ou une partie de properties (seules les clés données changent ; null retire une valeur ; keeper, farmer et decision se complètent clé par clé). Exemples : le foncier d'une piste une fois le propriétaire connu, son gestionnaire, le niveau de preuve d'un repère vu sur place, les extraits d'une source. Chaque modification porte sa justification. Rien ne change avant qu'une personne l'accepte, en entier ou champ par champ, sur la page du territoire. Une nouvelle proposition remplace celle qui attendait sur le même élément. Un brouillon ne se modifie pas ainsi : retire-le (withdraw_territory_drafts) et propose-le à nouveau."
+        description: "Propose de modifier des éléments qu'une personne a déjà gardés dans le dossier d'un territoire (identifiants dans get_territory) : title, body, geometry (null la retire) ou une partie de properties (seules les clés données changent ; null retire une valeur ; keeper, farmer et decision se complètent clé par clé). Exemples : le foncier d'une piste une fois le propriétaire connu, son gestionnaire, le niveau de preuve d'un repère vu sur place, les extraits d'une source. Chaque modification porte sa justification. Rien ne change avant qu'une personne l'accepte, en entier ou champ par champ, sur la page du territoire. Une nouvelle proposition complète, champ par champ, celle qui attendait sur le même élément (replace: true la remplace en entier) : inutile de renvoyer les champs déjà proposés. Un brouillon ne se modifie pas ainsi : retire-le (withdraw_territory_drafts) et propose-le à nouveau."
       propose_territory_deletions:
         title: "Proposer de retirer des éléments d'un territoire"
-        description: "Propose de retirer du dossier d'un territoire des éléments qu'une personne a gardés (une source en double, un repère placé deux fois), avec une justification commune. Rien n'est retiré avant qu'une personne l'accepte sur la page du territoire. Un brouillon se retire directement avec withdraw_territory_drafts."
+        description: "Propose de retirer du dossier d'un territoire des éléments qu'une personne a gardés (une source en double, un repère placé deux fois), avec une justification commune. Rien n'est retiré avant qu'une personne l'accepte sur la page du territoire. Pour un retrait qui dépend d'un remplacement (un sous-bassin redessiné en deux), donne superseded_by : les identifiants des remplaçants, brouillons compris ; le retrait ne s'accepte qu'une fois chacun d'eux gardé. Un brouillon se retire directement avec withdraw_territory_drafts."
       get_hydrography:
         title: "L'eau d'un territoire"
-        description: "Ce que l'autorité de l'eau de la région publie sur les cours d'eau et les bassins d'un territoire (en Wallonie, le SPW). watercourses : chaque cours d'eau qui traverse la commune, avec son nom, sa catégorie légale (navigable, category_1, category_2, category_3, unclassified), son gestionnaire (manager : qui l'entretient et à qui demander une autorisation), son numéro à l'atlas et sa longueur dans la commune. runoff_axes : les axes de ruissellement concentré (LIDAXES), groupés par classe de surface collectée en amont (by_class, à partir de min_class ; classes_available dit ce que vaut chaque classe), avec leur tracé. water_bodies : les bassins des masses d'eau de surface (limites officielles, 30 à 150 km²), avec leur fiche PDF. sub_basins : les bassins contributifs des secteurs de cours d'eau (en Wallonie les secteurs PARIS, 0,5 à 20 km² : l'échelle de conception d'un territoire), chacun avec son contour officiel, sa surface, sa part dans la commune, ce qui en est en amont hors commune, le secteur où il se jette (flows_into), un ordre suggéré depuis l'amont et un brouillon basin prêt pour propose_territory_items (draft, avec son ref : les repères du même appel le citent par basin_ref). Relis chaque brouillon avant de le proposer : regroupe les petits secteurs d'un même vallon, corrige l'ordre si le terrain le contredit, et dis d'où vient le contour. Sans contours (outlines: false), la réponse est bien plus légère."
+        description: "Ce que l'autorité de l'eau de la région publie sur les cours d'eau et les bassins d'un territoire (en Wallonie, le SPW). watercourses : chaque cours d'eau qui traverse la commune, avec son nom (unnamed vrai s'il n'en a pas), sa catégorie légale (navigable, category_1, category_2, category_3, unclassified), son gestionnaire (manager : qui l'entretient et à qui demander une autorisation), son numéro à l'atlas et sa longueur dans la commune. runoff_axes : les axes de ruissellement concentré (LIDAXES), groupés par classe de surface collectée en amont (by_class, à partir de min_class ; classes_available dit ce que vaut chaque classe), avec leur tracé. water_bodies : les bassins des masses d'eau de surface (limites officielles, 30 à 150 km²), avec leur fiche PDF. sub_basins : les bassins contributifs des secteurs de cours d'eau (en Wallonie les secteurs PARIS, 0,5 à 20 km² : l'échelle de conception d'un territoire), chacun avec son contour officiel, sa surface, sa part dans la commune, ce qui en est en amont hors commune, le secteur où il se jette (flows_into), un ordre suggéré depuis l'amont et un brouillon basin prêt pour propose_territory_items (draft, avec son ref et properties.paris_sector_ids : le serveur y attache lui-même le contour officiel, ne le recopie pas ; pour regrouper plusieurs secteurs d'un même vallon, mets leurs codes ensemble dans paris_sector_ids d'un seul brouillon). issues dit ce que les couches laissent flou : un secteur invalide écarté (invalid_sector, à ne pas proposer), les cours d'eau sans nom (unnamed_watercourse) et la part de la commune qu'aucun secteur ne couvre (uncovered, avec les masses d'eau qui la couvrent et son contour). La réponse avec contours est lourde : choisis les parties (sections), les secteurs (sector_ids) et la simplification (simplify_m). Relis chaque brouillon avant de le proposer : regroupe les petits secteurs d'un même vallon, corrige l'ordre si le terrain le contredit."
         params:
           min_runoff_class: "Plus petite classe d'axes de ruissellement à rendre (1 à 5 ; voir classes_available). Par défaut 3 en Wallonie : 20 ha collectés en amont et plus."
           outlines: "false pour ne pas rendre les tracés et les contours (seulement les noms, les longueurs et les surfaces). Par défaut : true."
+          sections: "Les parties à rendre : watercourses, runoff_axes, water_bodies, sub_basins. Par défaut : toutes. issues vient avec les parties qu'il concerne."
+          sector_ids: "Seulement ces secteurs dans sub_basins (codes PARIS, « DyGe163 ») ; missing_sector_ids dit ceux qui n'ont pas été trouvés autour de la commune."
+          simplify_m: "Tolérance de simplification des tracés et des contours, en mètres (par défaut environ 5 m). 20 à 50 m suffisent pour situer un sous-bassin."
         note: "Ces couches sont celles de l'administration : un cours d'eau a pu être déplacé, un axe de ruissellement est calculé sur le relief, pas observé. Le gestionnaire est celui que prévoit la loi pour la catégorie : la commune confirme qui intervient vraiment. Propose les sous-bassins en brouillons, et invite l'équipe à les parcourir avec le contrat de rivière."
       withdraw_territory_drafts:
         title: "Retirer des brouillons d'un territoire"
@@ -465,7 +495,7 @@ fr:
       territory_item_body: "Ce qu'il faut savoir, en quelques phrases : résumé d'une source, pourquoi une piste, ce qui s'est passé."
       territory_item_rationale: "D'où vient l'information (lien, page, date) et pourquoi elle compte pour ce territoire."
       territory_item_geometry: "GeoJSON en WGS84 [longitude, latitude] : Point pour un repère ; Point, LineString ou Polygon pour une piste ; Polygon pour un sous-bassin (facultatif). Rien pour les autres types. À moins de 5 km de la limite du territoire."
-      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; basin → order (1 = le plus en amont), outlet ; marker → basin_id, occurred_on, proof, marker_kind, source_ids ; lead → basin_id, rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years} ; request → request_kind, from, actor_id, state, asked_on, received_on, source_id. Pour renvoyer à un brouillon du même appel : basin_ref, actor_ref, source_ref, source_refs, expectation_refs (son ref). Les autres clés sont ignorées."
+      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; basin → order (1 = le plus en amont), outlet, paris_sector_ids (codes des secteurs officiels, « DyGe163 » : le serveur attache leur contour, uni s'il y en a plusieurs, et calcule area_km2 ; ne donne alors pas de geometry) ; marker → basin_id, occurred_on (« 2021-07-14 », « 2025-07 » ou « 2025 »), occurred_precision (day, month, season ou year : « l'été 2025 » = occurred_on 2025-07, occurred_precision season), proof, marker_kind, source_ids ; lead → basin_id (sans lui, un repère ou une piste placé reçoit le sous-bassin du dossier où il tombe, basin_id_auto dans la réponse), rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years} ; request → request_kind, from, actor_id, state, asked_on, received_on, source_id. Pour renvoyer à un brouillon du même appel : basin_ref, actor_ref, source_ref, source_refs, expectation_refs (son ref). Les autres clés sont ignorées."
       territory_item_ids: "Identifiants des brouillons à retirer (dossier dans get_territory)."
       territory_item_ref: "Un nom court pour ce brouillon (« b1 », « giser »), qu'un autre brouillon du même appel peut citer (basin_ref, actor_ref, source_ref, source_refs, expectation_refs)."
       territory_updates: "Les modifications, une par élément, chacune avec sa justification."
@@ -473,12 +503,15 @@ fr:
       territory_changes: "Ce qui change : title, body, geometry (GeoJSON, null la retire), properties (seules les clés données ; null retire une valeur ; voir properties_by_kind dans get_territory)."
       territory_deletion_ids: "Identifiants des éléments gardés à retirer (get_territory)."
       territory_deletion_rationale: "Pourquoi les retirer : doublon, erreur, document retiré par son auteur…"
+      territory_superseded_by: "Les éléments qui les remplacent (brouillons compris, par exemple les sous-bassins redessinés) : le retrait ne pourra être accepté qu'une fois chacun d'eux gardé."
+      territory_update_replace: "true pour remplacer en entier la modification qui attend sur cet élément ; par défaut, la nouvelle la complète champ par champ."
       territory_update_ids: "Identifiants des modifications ou retraits proposés à retirer (propose_territory_updates, propose_territory_deletions ou pending_update dans get_territory)."
     errors:
       territory_not_found: "Territoire %{id} introuvable, ou tu ne fais pas partie de son équipe. list_territories donne les tiens."
       territory_archived: "Ce territoire est archivé : il se lit, mais on n'y propose plus rien."
       territory_module_off: "Le module « Territoire » n'est pas attribué à l'équipe de ce territoire : il se lit, mais on n'y propose plus rien."
       territory_duplicate: "déjà au dossier (élément %{id})"
+      territory_sectors_missing: "secteurs introuvables autour de la commune : %{ids} (vérifie les codes dans get_hydrography)"
       territory_geometry: "géométrie GeoJSON illisible"
       territory_ref_twice: "le ref « %{ref} » est déjà donné à un autre brouillon de cet appel"
       territory_ref_unknown: "aucun brouillon de cet appel ne porte le ref « %{ref} »"
@@ -488,6 +521,8 @@ fr:
       hydrography_unavailable: "Le service de l'administration de l'eau ne répond pas pour le moment. Réessaie dans quelques minutes."
     territory_update_errors:
       empty: "aucune modification donnée"
+      superseded_unknown: "superseded_by : ces éléments ne sont pas dans le dossier : %{ids}."
+      superseded_self: "superseded_by : un élément ne peut pas se remplacer lui-même."
       fields: "champs inconnus : %{fields} (seulement %{allowed})"
       title: "le titre doit faire de 2 à %{max} caractères"
       text: "%{field} doit être un texte"

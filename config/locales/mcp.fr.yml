@@ -744,7 +744,7 @@ fr:
       too_many_pending_updates: "La carte a déjà %{pending} modifications en attente (au plus %{max}). Attends que l'humain les revoie avant d'en proposer d'autres."
       withdraw_nothing: "Passe feature_ids (éléments en brouillon) ou update_ids (modifications proposées)."
       bbox: "bbox doit valoir [ouest, sud, est, nord] en degrés WGS84, avec ouest < est et sud < nord."
-      identify_unavailable: "L'interrogation des couches de la région n'est pas encore disponible sur Semisto Terranova."
+      identify_unavailable: "Le service de la région n'a pas répondu à temps pour cette couche (deux essais). Réessaie plus tard avec layers: [cette couche] seule."
       identify_layer_failed: "Le service de cette couche n'a pas répondu."
       point_too_far: "Le point doit se trouver à moins de %{distance} m du terrain de la carte."
       point_outside_territory: "Le point doit se trouver dans le territoire, ou à moins de %{distance} m de sa limite."

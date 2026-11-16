@@ -14,6 +14,7 @@ const SOURCE_KINDS = ['plan', 'council', 'press', 'map', 'study', 'call', 'other
 const RIGHTS = ['open', 'restricted', 'unknown']
 const PROOFS = ['computed', 'seen', 'confirmed']
 const MARKER_KINDS = ['flood', 'mudflow', 'erosion', 'lost_pond', 'lost_hedge', 'spring', 'other']
+const PRECISIONS = ['day', 'month', 'season', 'year']
 const RANKS = ['soil', 'slow', 'structure']
 const THEMES = ['water', 'tree']
 const LANDS = ['public', 'agricultural', 'private', 'unknown']
@@ -183,6 +184,7 @@ export function ItemForm({ territoryId, kind, item, sources, expectations, basin
           {choice(f('marker_kind'), props.marker_kind, MARKER_KINDS, 'marker_kind', (x) => set('marker_kind', x), true)}
           <Field label={f('occurred_on')}><Input value={props.occurred_on ?? ''} onChange={(e) => set('occurred_on', e.target.value)} placeholder="2021-07-14" /></Field>
           {choice(f('proof'), props.proof ?? 'computed', PROOFS, 'proof', (x) => set('proof', x as TerritoryItemProperties['proof']))}
+          {choice(f('occurred_precision'), props.occurred_precision, PRECISIONS, 'occurred_precision', (x) => set('occurred_precision', (x || undefined) as TerritoryItemProperties['occurred_precision']), true)}
         </div>
         {pickIds('source_ids', sources, f('source_ids'))}
         {placeButton}
