@@ -2,8 +2,10 @@
 # `height.call(dx, dy)` gives the height in metres at `dx` metres east and `dy`
 # metres north of the boundary's centre (nil for no data).
 module SyntheticTerrainHelper
-  def synthetic_terrain(map, cell_size_m: 1.0, margin_m: 10, &height)
-    extent = Relief::Extent.around(map.bbox, cell_size_m:, margin_m:)
+  # `window`: a territory's fine window (Relief::DetailWindow) instead of
+  # the place's own relief.
+  def synthetic_terrain(map, cell_size_m: 1.0, margin_m: 10, window: nil, &height)
+    extent = window ? window.extent : Relief::Extent.around(map.bbox, cell_size_m:, margin_m:)
     centre = map.boundary.centroid
     cx, cy = Relief::Mercator.forward(centre.x, centre.y)
     scale = Math.cos(extent.lat0 * Math::PI / 180)
@@ -12,7 +14,7 @@ module SyntheticTerrainHelper
       height.call((x - cx) * scale, (y - cy) * scale)
     end
     packed = Relief::Raster.pack_heights(heights)
-    terrain = map.terrain || map.build_terrain
+    terrain = window ? map.detail_terrains.find_or_initialize_by(detail_key: window.key) : (map.terrain || map.build_terrain)
     terrain.update!(
       status: "ready", crs: "EPSG:3857", west: extent.west, north: extent.north, step: extent.step,
       cols: extent.cols, rows: extent.rows, cell_size_m: extent.cell_size_m, lat0: extent.lat0, margin_m: extent.margin_m,

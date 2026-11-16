@@ -155,6 +155,49 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
     assert_equal "pending", terrain.reload.status
   end
 
+  test "get_catchment on a territory prefers its fine window at 5 m, once ready, and launches it beside the coarse relief" do
+    configure_relief_region
+    window = Relief::DetailWindow.for_point(@inside[:lng], @inside[:lat])
+    # A ridge across the commune's centre, the point on its southern slope:
+    # its catchment stops at the ridge, well inside the window.
+    valley = ->(dx, dy) { 200 + dx.abs * 0.01 - dy.abs * 0.05 }
+    synthetic_terrain(@territory, cell_size_m: 20, margin_m: 200, &valley)
+
+    data = nil
+    assert_enqueued_with(job: ReliefImportJob) do
+      data, = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    end
+    assert_equal "coarse", data["relief"]
+    assert_match(/relief fin \(5 m\) autour de ce point se prépare/, data["note"])
+    assert_equal "pending", @territory.detail_terrains.find_by!(detail_key: window.key).status
+
+    synthetic_terrain(@territory, window:, &valley)
+    data, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    refute error, data
+    assert_equal "fine", data["relief"]
+    assert_equal 5.0, data["cell_size_m"]
+    assert_match(/rue ou à travers une parcelle/, data["note"])
+  end
+
+  test "get_flow_axes reads the axes of a territory's fine window, prepared on the first call" do
+    configure_relief_region
+    text, error = nil
+    assert_enqueued_with(job: ReliefImportJob) do
+      text, error = call_tool(@token, "get_flow_axes", { territory_id: @territory.id, **@inside })
+    end
+    assert error
+    assert_match(/se prépare/, text)
+
+    synthetic_terrain(@territory, window: Relief::DetailWindow.for_point(@inside[:lng], @inside[:lat])) { |dx, dy| 200 + dy * 0.02 + dx.abs * 0.05 }
+    data, error = call_tool(@token, "get_flow_axes", { territory_id: @territory.id, **@inside, min_drained_m2: 50_000 })
+    refute error, data
+    assert_equal 5.0, data["cell_size_m"]
+    assert_operator data["count"], :>=, 1
+    assert_equal "FeatureCollection", data.dig("axes", "type")
+    assert data.dig("axes", "features").all? { |f| f.dig("properties", "drained_m2") >= 50_000 }
+    assert_match(/après une averse/, data["note"])
+  end
+
   test "get_catchment on a territory of a region without relief says so" do
     text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
     assert error

@@ -47,9 +47,11 @@ module Relief
     # `snap_m`: a point moves to the cell within that distance where the
     # most water passes, so a point read on a river map lands on the valley
     # floor of a coarse grid instead of the slope beside it (`outlet`).
-    def initialize(map, feature: nil, lng: nil, lat: nil, heights: nil, snap_m: nil)
+    # `terrain`: another relief of the place than its own (a territory's fine
+    # window, Relief::DetailWindow).
+    def initialize(map, feature: nil, lng: nil, lat: nil, heights: nil, snap_m: nil, terrain: nil)
       @map = map
-      @terrain = map.terrain
+      @terrain = terrain || map.terrain
       @feature = feature
       @lng = lng&.to_f
       @lat = lat&.to_f
