@@ -1,4 +1,4 @@
-import { featureTitle, inkOn, pointIcon, STRATA_COLORS, strataColor, PLANTED_COLOR } from '../elements'
+import { featureTitle, inkOn, pointIcon, STRATA_COLORS, strataColor, PLANTED_COLOR, varietyName } from '../elements'
 import type { MapFeature, Planting } from '../types'
 
 const feature = (properties: Record<string, unknown>): MapFeature =>
@@ -38,5 +38,15 @@ describe('featureTitle for a season sign', () => {
   it('names the sign when nobody gave it a name', () => {
     expect(featureTitle(sign({ sign: 'snow_melts_first' }))).not.toBe(featureTitle(sign({})))
     expect(featureTitle(sign({ name: 'Bande sans neige', sign: 'snow_melts_first' }))).toBe('Bande sans neige')
+  })
+})
+
+describe('a plant read again on its label', () => {
+  const planting = { species: { 3: { id: 3, latinName: 'Malus domestica', commonName: 'Pommier', strata: null } }, varieties: { 8: { id: 8, speciesId: 3, name: 'Reinette grise' } }, palette: [] } as Planting
+  it('names the cultivar of the map, else the one just typed until the server answers', () => {
+    expect(varietyName(feature({ kind: 'plant', species_id: 3, variety_id: 8 }), planting)).toBe('Reinette grise')
+    expect(varietyName(feature({ kind: 'plant', species_id: 3, variety_id: 8, variety_label: 'Boskoop' }), planting)).toBe('Boskoop')
+    expect(varietyName(feature({ kind: 'plant', species_id: 3, variety_id: 8, variety_label: null }), planting)).toBeNull()
+    expect(featureTitle(feature({ kind: 'plant', species_id: 99, species_label: 'Poirier' }), planting)).toBe('Poirier')
   })
 })

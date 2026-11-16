@@ -94,8 +94,17 @@ export function speciesName(planting: Planting | undefined, speciesId: unknown):
 
 /** What a person reads for a feature: its name, else its species, else its sign (a season sign), else its kind. */
 export function featureTitle(feature: MapFeature, planting?: Planting): string {
-  return feature.properties.name || speciesName(planting, feature.properties.species_id) || signName(feature) || kindLabel(feature.properties.kind)
+  return feature.properties.name || speciesName(planting, feature.properties.species_id) || pendingLabel(feature.properties.species_label) || signName(feature) || kindLabel(feature.properties.kind)
 }
+
+/** A plant's cultivar: the one just read on its label (until the server answers), else the map's. */
+export function varietyName(feature: MapFeature, planting?: Planting): string | null {
+  const p = feature.properties
+  if ('variety_label' in p) return pendingLabel(p.variety_label)
+  return p.variety_id ? planting?.varieties[String(p.variety_id)]?.name ?? null : null
+}
+
+const pendingLabel = (value: unknown) => (typeof value === 'string' && value ? value : null)
 
 /** « Neige qui fond d'abord » for a season sign noted without a name (by an AI, say). */
 function signName(feature: MapFeature): string | null {

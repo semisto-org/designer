@@ -136,7 +136,9 @@ describe('terrain sheet', () => {
 
   it('on the planting round, leads to the plant, then says « Tu y es »', () => {
     const target = { feature: { ...plant, properties: { ...plant.properties, planted_on: undefined, number: 12 } }, meters: 7.2, bearing: 45, direction: 'NE' as const }
-    const props = { left: 5, skippedLeft: 0, planting, accuracy: 3, heading: 0, located: true, onPlanted: jest.fn(), onPlantedHere: jest.fn(), onSkip: jest.fn(), onEnd: jest.fn() }
+    const onPlanted = jest.fn()
+    const gestures = [{ key: 'planted', icon: 'planted' as const, label: 'Planté !', onPress: onPlanted, primary: true }]
+    const props = { round: 'plant' as const, left: 5, skippedLeft: 0, planting, accuracy: 3, heading: 0, located: true, gestures, onEnd: jest.fn() }
     let far!: ReturnType<typeof create>
     let near!: ReturnType<typeof create>
     act(() => { far = create(<TourTop {...props} target={target} />) })
@@ -146,14 +148,27 @@ describe('terrain sheet', () => {
     expect(texts(near)).toContain('Tu y es')
     const planted = near.root.findAll((n) => n.props.accessibilityLabel === 'Planté !' && n.props.onPress)[0]
     act(() => planted.props.onPress())
-    expect(props.onPlanted).toHaveBeenCalled()
+    expect(onPlanted).toHaveBeenCalled()
+  })
+
+  it('on the take round, says what the plant said last spring and how much is left to see', () => {
+    const target = { feature: plant, meters: 1, bearing: 0, direction: 'N' as const }
+    let tree!: ReturnType<typeof create>
+    act(() => {
+      tree = create(<TourTop round="take" target={target} left={3} skippedLeft={0} planting={planting} accuracy={3} heading={null} located
+        note="2025 : en difficulté" gestures={[]} onEnd={() => {}} />)
+    })
+    const all = texts(tree).join(' ')
+    expect(all).toMatch(/Tournée de reprise · encore 3 à voir/)
+    expect(all).toMatch(/2025 : en difficulté/)
+    expect(all).toMatch(/bourgeons/)
   })
 
   it('says when everything is planted', () => {
     let tree!: ReturnType<typeof create>
     act(() => {
-      tree = create(<TourTop target={null} left={0} skippedLeft={0} planting={planting} accuracy={3} heading={null} located
-        onPlanted={() => {}} onPlantedHere={() => {}} onSkip={() => {}} onEnd={() => {}} />)
+      tree = create(<TourTop round="plant" target={null} left={0} skippedLeft={0} planting={planting} accuracy={3} heading={null} located
+        gestures={[]} onEnd={() => {}} />)
     })
     expect(texts(tree)).toContain('Tout est planté')
   })

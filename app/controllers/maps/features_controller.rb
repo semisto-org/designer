@@ -25,7 +25,8 @@ module Maps
     end
 
     def update
-      if @feature.update(update_params.merge(updated_by: Current.user))
+      @feature.assign_attributes(update_params.merge(updated_by: Current.user))
+      if planting_from_the_land(@feature, params.dig(:feature, :palette)).save
         # A renumbered plant that swapped numbers sends the other plant too.
         swapped = @feature.swapped_with
         render json: swapped ? @feature.as_geojson.merge(swapped: swapped.as_geojson) : @feature.as_geojson
@@ -50,9 +51,10 @@ module Maps
 
     private
       # The phone's « Planter » sends `palette` with a plant: it joins the
-      # palette, with the cultivar named on the nursery label.
-      def planting_from_the_land(feature)
-        palette = params[:palette]
+      # palette, with the cultivar named on the nursery label. On an update
+      # (the label read again on the land: another cultivar, another species)
+      # it comes inside `feature`.
+      def planting_from_the_land(feature, palette = params[:palette])
         return feature unless palette.respond_to?(:permit)
         FieldPlanting.new(map: @map, feature:, user: Current.user, **palette.permit(:variety_name, :size).to_h.symbolize_keys)
       end

@@ -34,6 +34,7 @@ module Mcp
           palette: palette(map),
           palette_budget: palette_budget(map),
           palette_drafts_pending: map.palette_drafts.count,
+          planting_round: PlantingRound.new(map).as_json,
           place: place(map),
           succession: SuccessionBalance.new(map).as_json,
           bioindicators: bioindicators(map),
