@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import clsx from 'clsx'
 import { Check, MapPinned, MessageCircleHeart, PenLine, PhoneCall, Printer, Sprout, Video } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { FeedbackStatusPill, type FeedbackStatusKey } from '@/components/feedback/FeedbackStatus'
 import { AdminNav } from '@/components/admin/AdminNav'
 import { Card, EmptyState } from '@/components/ui/Card'
 import { Pill } from '@/components/ui/Pill'
@@ -40,6 +41,10 @@ type FeedbackRow = {
   createdAt: string
   map: { id: number; name: string } | null
   replayUrl: string | null
+  screenshotUrl: string | null
+  context: Record<string, string> | null
+  appVersion: string | null
+  status: FeedbackStatusKey
   author: { id: number; name: string; email: string }
 }
 type Props = {
@@ -127,7 +132,10 @@ export default function AdminFirstHours({ days, periods, report, feedbacks, repl
 
         <section aria-labelledby="first-hours-feedbacks">
           <h2 id="first-hours-feedbacks" className="flex items-center gap-2 text-lg"><MessageCircleHeart className="h-5 w-5 text-prune-600" aria-hidden />{t('admin.first_hours.feedbacks_title')}</h2>
-          <p className="mt-1 text-sm text-loam-500">{t('admin.first_hours.feedbacks_intro')}</p>
+          <p className="mt-1 text-sm text-loam-500">
+            {t('admin.first_hours.feedbacks_intro')}{' '}
+            <Link href="/admin/feedbacks" className="font-medium text-prune-700 hover:underline">{t('admin.first_hours.feedbacks_triage')}</Link>
+          </p>
           {feedbacks.length === 0 ? (
             <div className="mt-3"><EmptyState title={t('admin.first_hours.feedbacks_empty')} /></div>
           ) : (
@@ -216,10 +224,19 @@ function FeedbackCard({ feedback }: { feedback: FeedbackRow }) {
     <li>
       <Card className="p-4!">
         <p className="flex flex-wrap items-center gap-x-2 text-sm text-loam-500">
+          <FeedbackStatusPill status={feedback.status} />
           <Link href={`/admin/users?q=${encodeURIComponent(feedback.author.email)}`} className="font-medium text-loam-900 hover:text-prune-700 hover:underline">{feedback.author.name}</Link>
           {meta.map((item, index) => <span key={index}>· {item}</span>)}
         </p>
         <p className="mt-2 whitespace-pre-line text-loam-800">{feedback.message}</p>
+        {feedback.screenshotUrl && (
+          <a href={feedback.screenshotUrl} target="_blank" rel="noopener noreferrer" className="mt-3 block w-fit">
+            <img src={feedback.screenshotUrl} alt={t('admin.first_hours.screenshot')} loading="lazy" className="max-h-64 max-w-full rounded-lg ring-1 ring-loam-200 hover:ring-prune-400" />
+          </a>
+        )}
+        {(feedback.context || feedback.appVersion) && (
+          <p className="mt-2 text-sm text-loam-500">{[browserName(feedback.context?.user_agent), feedback.context?.viewport, feedback.context?.language, feedback.appVersion && t('admin.first_hours.version', { version: feedback.appVersion.slice(0, 7) })].filter(Boolean).join(' · ')}</p>
+        )}
         {(feedback.map || feedback.wantsCall || feedback.replayUrl) && (
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
             {feedback.wantsCall && <Pill tone="humus" icon={<PhoneCall aria-hidden />}>{t('admin.first_hours.wants_call')}</Pill>}
@@ -234,4 +251,12 @@ function FeedbackCard({ feedback }: { feedback: FeedbackRow }) {
       </Card>
     </li>
   )
+}
+
+/** A short name for a browser, from its user agent: enough to reproduce a bug. */
+function browserName(userAgent: string | undefined): string | null {
+  if (!userAgent) return null
+  const os = /iPhone|iPad/.test(userAgent) ? 'iOS' : /Android/.test(userAgent) ? 'Android' : /Mac OS X/.test(userAgent) ? 'macOS' : /Windows/.test(userAgent) ? 'Windows' : /Linux/.test(userAgent) ? 'Linux' : null
+  const browser = /Edg\//.test(userAgent) ? 'Edge' : /Firefox\//.test(userAgent) ? 'Firefox' : /Chrome\//.test(userAgent) ? 'Chrome' : /Safari\//.test(userAgent) ? 'Safari' : null
+  return [browser, os].filter(Boolean).join(' ') || null
 }

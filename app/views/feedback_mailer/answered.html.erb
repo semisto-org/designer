@@ -1,0 +1,9 @@
+<p><%= t(".hello", name: @user.display_name) %></p>
+<p><%= t(".status.#{@feedback.status}") %></p>
+<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #d9d2c5;background:#f7f4ee;color:#6b6257;white-space:pre-line"><%= @feedback.message.truncate(600) %></blockquote>
+<% if @feedback.reply.present? %>
+  <p><strong><%= t(".reply", name: @feedback.handled_by&.display_name || "Semisto") %></strong></p>
+  <p style="white-space:pre-line"><%= @feedback.reply %></p>
+<% end %>
+<p><%= link_to t(".all"), @feedbacks_url %></p>
+<p style="color:#6b6257;font-size:13px"><%= t(".thanks") %></p>

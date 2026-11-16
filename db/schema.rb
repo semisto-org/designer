@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -440,8 +440,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
     t.string "sentry_replay_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "context", default: {}, null: false
+    t.string "app_version"
+    t.string "status", default: "received", null: false
+    t.text "reply"
+    t.datetime "status_changed_at"
+    t.datetime "author_notified_at"
+    t.bigint "handled_by_id"
     t.index ["created_at"], name: "index_feedbacks_on_created_at"
+    t.index ["handled_by_id"], name: "index_feedbacks_on_handled_by_id"
     t.index ["map_id"], name: "index_feedbacks_on_map_id"
+    t.index ["status"], name: "index_feedbacks_on_status"
     t.index ["user_id"], name: "index_feedbacks_on_user_id"
   end
 
@@ -2023,6 +2032,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
   add_foreign_key "feature_update_drafts", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "feature_update_drafts", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "feedbacks", "maps", on_delete: :nullify
+  add_foreign_key "feedbacks", "users", column: "handled_by_id", on_delete: :nullify
   add_foreign_key "feedbacks", "users", on_delete: :cascade
   add_foreign_key "financial_plans", "maps"
   add_foreign_key "financial_plans", "users", column: "updated_by_id"

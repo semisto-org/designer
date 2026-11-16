@@ -661,7 +661,7 @@ fr:
         cta: "Ouvrir une discussion"
         url: "https://github.com/semisto-org/designer/issues"
     legal:
-      updated_on: "11 novembre 2026"
+      updated_on: "16 novembre 2026"
       privacy:
         title: "Politique de confidentialité"
         lead: "Ce que Semisto Terranova collecte, pourquoi, qui l'héberge, combien de temps nous le gardons, et comment exercer vos droits."
@@ -681,7 +681,7 @@ fr:
               - "Les personnes que vous invitez : l'adresse e-mail des personnes à qui vous partagez une carte, que vous invitez dans une équipe ou à qui vous confiez une tâche."
               - "Vos paiements : la formule achetée, le montant, la TVA, la date, le code promotionnel éventuel et l'adresse de facturation. Le paiement lui-même est traité par Stripe : nous ne voyons ni ne conservons votre numéro de carte. Si vous demandez à payer sur facture, nous recevons aussi le nom et l'adresse de l'organisation, son numéro d'entreprise, l'adresse e-mail de facturation et le numéro de bon de commande."
               - "Vos demandes : ce que vous nous écrivez (assistance, suppression de compte, commande de plants, mission drone, demande de réalisation ou de cogestion) et nos réponses."
-              - "Vos retours : le message que vous envoyez avec « Un retour ? », la page et, le cas échéant, la carte où vous étiez, et, si vous le cochez, votre accord pour que nous vous appelions."
+              - "Vos retours : le message que vous envoyez avec « Un retour ? », la page et, le cas échéant, la carte où vous étiez, une description technique de votre navigateur (son nom et sa version, la taille de l'écran et de la fenêtre, la langue et le fuseau horaire), la version de Terranova, et, si vous le choisissez, la capture d'écran que vous recadrez et annotez et votre accord pour que nous vous appelions ; puis le statut que nous leur donnons et notre réponse."
               - "Pendant la bêta, et seulement si vous l'acceptez : l'enregistrement de vos premières séances par Sentry (les écrans, les clics et la carte affichée), lié au seul numéro de votre compte, jamais à votre nom ni à votre adresse e-mail. Ce que vous tapez, vos textes, vos photos et vidéos, et les noms et adresses des autres personnes restent masqués. La question vous est posée une fois, et vous pouvez changer d'avis dans « Mon compte »."
               - "Des données techniques : l'adresse IP et le navigateur utilisés pour chaque connexion à votre compte, et les journaux du serveur, utiles à la sécurité et au dépannage."
               - "Un essai « Et chez toi ? », sans compte : l'adresse que vous tapez, les parcelles choisies et ce que Terranova lit du terrain (pente, orientation). Si vous créez ensuite un compte, l'essai devient votre première carte ; sinon il est effacé après 48 heures."

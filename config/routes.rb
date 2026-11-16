@@ -785,6 +785,7 @@ Rails.application.routes.draw do
   # to the session recording question and the replays it starts, the plan's
   # first print, and the staff page that reads them all.
   post "feedback", to: "feedbacks#create", as: :feedback
+  get "feedback", to: "feedbacks#index", as: :feedbacks
   namespace :account do
     resource :replay_consent, only: :update
     resources :session_replays, only: :create
@@ -796,6 +797,7 @@ Rails.application.routes.draw do
   end
   namespace :admin do
     get "first-hours", to: "first_hours#show", as: :first_hours
+    resources :feedbacks, only: %i[index update]
   end
   # --- end first-hours ---
 
