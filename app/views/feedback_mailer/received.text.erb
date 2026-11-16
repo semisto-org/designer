@@ -5,6 +5,10 @@
 
 <%= t(".map", name: @map.name, url: map_url(@map)) %>
 <% end %>
+<% if @screenshot %>
+
+<%= t(".screenshot") %>
+<% end %>
 <% if @feedback.wants_call %>
 
 <%= t(".wants_call") %>

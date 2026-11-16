@@ -22,4 +22,12 @@ class FeedbackMailerTest < ActionMailer::TestCase
     assert_includes html, "&lt;b&gt;Contour&lt;/b&gt;"
     assert_includes html, "href=\"http://example.com/maps/#{map.id}\""
   end
+
+  test "received: carries the annotated screenshot" do
+    feedback = users(:alice).feedbacks.create!(message: "Ici")
+    feedback.screenshot.attach(io: file_fixture("plant.png").open, filename: "capture.png", content_type: "image/png")
+    mail = FeedbackMailer.received(feedback).tap(&:deliver_now)
+    assert_equal [ "capture-#{feedback.id}.png" ], mail.attachments.map(&:filename)
+    assert_includes mail.text_part.body.to_s, "capture annotée est jointe"
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -440,6 +440,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
     t.string "sentry_replay_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "context", default: {}, null: false
+    t.string "app_version"
     t.index ["created_at"], name: "index_feedbacks_on_created_at"
     t.index ["map_id"], name: "index_feedbacks_on_map_id"
     t.index ["user_id"], name: "index_feedbacks_on_user_id"

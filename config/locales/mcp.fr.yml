@@ -225,6 +225,13 @@ fr:
       get_notifications:
         title: "Ce qui m'attend dans les discussions"
         description: "Ce qui attend la personne connectée dans les discussions de toutes ses cartes, comme la cloche en haut de l'écran : chaque carte avec des messages non lus (unread, compté selon son réglage sur cette carte : tous les messages, seulement ses mentions, ou rien), mentions (les messages qui la nomment), le dernier message (auteur, texte, date) et le lien qui ouvre la discussion. channels : où un message la prévient (bell : la cloche de Terranova, email, phone : l'app sur son téléphone, phones : combien de téléphones reliés) ; email_delay_minutes : un message non lu part par e-mail après ce délai, une mention tout de suite. Sers-t'en quand la personne demande ce qu'elle a raté ou ce qu'on attend d'elle ; puis list_discussion pour lire une carte. Lecture seule : les réglages se changent dans « Mon compte » (settings_url) et, carte par carte, avec la cloche de la discussion."
+      list_feedback:
+        title: "Lire les retours sur Terranova"
+        description: "Les retours envoyés avec « Un retour ? » (le bouton rond en bas à droite, ou dans l'en-tête de l'éditeur), du plus récent au plus ancien. Pour la personne connectée : ses propres retours (scope mine) ; pour l'équipe de Semisto : tous (scope everyone, avec l'auteur). Chaque retour : message, page_url (la page où elle était), map (la carte ouverte), wants_call (veut bien qu'on l'appelle), screenshot (vrai si une capture recadrée et annotée au crayon est jointe), context (navigateur, taille de fenêtre et d'écran, langue, fuseau) et app_version (le commit déployé). Avec feedback_id : ce retour seul, et sa capture comme image à regarder ; les traits de couleur sont ceux de la personne, ils montrent ce qu'elle veut dire. Sers-t'en pour trier les retours (bug, idée, question), les regrouper par thème, retrouver la page en cause et préparer une réponse que la personne enverra par e-mail. Lecture seule."
+        params:
+          feedback_id: "Un retour précis (id donné par la liste) : il revient avec sa capture."
+          feedback_since: "Seulement les retours depuis ce jour, AAAA-MM-JJ."
+          feedback_limit: "Combien de retours au plus (20 par défaut, 50 au plus)."
       list_harvests:
         title: "Lire le carnet de récolte"
         description: "Le carnet de récolte de la carte (panneau « Récoltes ») : chaque arbre, arbuste ou grimpante fruitière, saison par saison (seasons : les 5 dernières jusqu'à season). Pour chaque plant et chaque saison, status picked (récolté), bore (fruits vus sur l'arbre, pas encore cueillis) ou none (regardé, aucun fruit) ; amount (light, normal, heavy), uses (juice : jus, cooking : compote et cuisson, fresh : à croquer, storage : mis en garde, other) et quantityKg. Une saison absente : rien de noté. followedSeasons : les années où l'équipe a noté au moins une ligne sur la carte ; quietSeasons : les saisons suivies d'affilée, jusqu'à la dernière, sans fruits vus ni cueillis ; watch : vrai à partir de watchSeasons (3), car beaucoup de variétés anciennes ne portent qu'une année sur deux. bearingFrom : l'année où un jeune plant devrait donner ses premiers fruits (avant, il n'est jamais compté). lines : les lignes de la saison, avec leur auteur. varieties : chaque variété du lieu avec ce qu'elle donne de mieux selon le catalogue (uses : fresh à croquer, cooking compote et cuisson, juice jus, cider cidre ou poiré, drying séchage), pickingMonth (mois de cueillette), eatingFromMonth et eatingUntilMonth (saison où on la mange), keeping (keeps : se garde en cave, weeks : quelques semaines, short : à manger ou cuire tout de suite, null : inconnu), la provenance de chaque valeur (souvent « à vérifier ») et here : ce que l'équipe en a déjà fait ici. Pour conseiller jus, compote ou table, pars de ce que le lieu a vécu (here, les notes des lignes), puis du catalogue, et dis d'où vient ton conseil."
@@ -694,6 +701,8 @@ fr:
       unknown_variant: "Cette variante n'existe pas sur la carte. get_map donne ses variantes (variants)."
       discussion_closed: "La discussion de cette carte est réservée à ses membres (propriétaire, éditeurs, équipe et lecteurs que le propriétaire y a ajoutés). L'utilisateur n'en fait pas partie : il peut demander au propriétaire de l'y ajouter, dans « Partager »."
       discussion_date: "date « %{value} » illisible : AAAA-MM-JJ attendu."
+      invalid_date: "date « %{value} » illisible : AAAA-MM-JJ attendu."
+      feedback_not_found: "Retour %{id} introuvable, ou il n'est pas à toi. list_feedback sans feedback_id donne la liste."
       search_plants_needs_query: "Donne query (un nom de plante), map_id (les suggestions pour ce terrain), ou les deux."
       feature_not_found: "Élément %{id} introuvable sur cette carte."
       palette_item_not_found: "Ligne de palette %{id} introuvable sur cette carte (ou encore en brouillon)."
@@ -1024,6 +1033,7 @@ fr:
       list_harvests: "a lu le carnet de récolte"
       list_discussion: "a lu la discussion de la carte"
       get_notifications: "a lu ce qui l'attend dans les discussions"
+      list_feedback: "a lu les retours sur Terranova"
       record_harvests:
         one: "a noté 1 récolte"
         other: "a noté %{count} récoltes"

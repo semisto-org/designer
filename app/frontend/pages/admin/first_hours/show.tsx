@@ -40,6 +40,9 @@ type FeedbackRow = {
   createdAt: string
   map: { id: number; name: string } | null
   replayUrl: string | null
+  screenshotUrl: string | null
+  context: Record<string, string> | null
+  appVersion: string | null
   author: { id: number; name: string; email: string }
 }
 type Props = {
@@ -220,6 +223,14 @@ function FeedbackCard({ feedback }: { feedback: FeedbackRow }) {
           {meta.map((item, index) => <span key={index}>· {item}</span>)}
         </p>
         <p className="mt-2 whitespace-pre-line text-loam-800">{feedback.message}</p>
+        {feedback.screenshotUrl && (
+          <a href={feedback.screenshotUrl} target="_blank" rel="noopener noreferrer" className="mt-3 block w-fit">
+            <img src={feedback.screenshotUrl} alt={t('admin.first_hours.screenshot')} loading="lazy" className="max-h-64 max-w-full rounded-lg ring-1 ring-loam-200 hover:ring-prune-400" />
+          </a>
+        )}
+        {(feedback.context || feedback.appVersion) && (
+          <p className="mt-2 text-sm text-loam-500">{[browserName(feedback.context?.user_agent), feedback.context?.viewport, feedback.context?.language, feedback.appVersion && t('admin.first_hours.version', { version: feedback.appVersion.slice(0, 7) })].filter(Boolean).join(' · ')}</p>
+        )}
         {(feedback.map || feedback.wantsCall || feedback.replayUrl) && (
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
             {feedback.wantsCall && <Pill tone="humus" icon={<PhoneCall aria-hidden />}>{t('admin.first_hours.wants_call')}</Pill>}
@@ -234,4 +245,12 @@ function FeedbackCard({ feedback }: { feedback: FeedbackRow }) {
       </Card>
     </li>
   )
+}
+
+/** A short name for a browser, from its user agent: enough to reproduce a bug. */
+function browserName(userAgent: string | undefined): string | null {
+  if (!userAgent) return null
+  const os = /iPhone|iPad/.test(userAgent) ? 'iOS' : /Android/.test(userAgent) ? 'Android' : /Mac OS X/.test(userAgent) ? 'macOS' : /Windows/.test(userAgent) ? 'Windows' : /Linux/.test(userAgent) ? 'Linux' : null
+  const browser = /Edg\//.test(userAgent) ? 'Edge' : /Firefox\//.test(userAgent) ? 'Firefox' : /Chrome\//.test(userAgent) ? 'Chrome' : /Safari\//.test(userAgent) ? 'Safari' : null
+  return [browser, os].filter(Boolean).join(' ') || null
 }

@@ -22,4 +22,20 @@ class FeedbackTest < ActiveSupport::TestCase
     user.destroy!
     assert_not Feedback.exists?(feedback.id)
   end
+
+  test "keeps only the known context keys, as short strings, and the deployed commit" do
+    feedback = users(:alice).feedbacks.new(message: "ok", context: { "viewport" => "390×844", "pixel_ratio" => 3, "cookie" => "secret", "language" => "" })
+    assert_equal({ "viewport" => "390×844", "pixel_ratio" => "3" }, feedback.context)
+    with_env("SOURCE_COMMIT" => "0123456789abcdef") { feedback.save! }
+    assert_equal "0123456789ab", feedback.app_version
+  end
+
+  private
+    def with_env(values)
+      previous = values.keys.to_h { |key| [ key, ENV[key] ] }
+      values.each { |key, value| ENV[key] = value }
+      yield
+    ensure
+      previous.each { |key, value| ENV[key] = value }
+    end
 end

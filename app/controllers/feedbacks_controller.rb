@@ -1,13 +1,20 @@
 # POST /feedback — « Un retour ? »: what a person wants to tell us, from any
-# page of the app or from the editor (components/feedback/FeedbackDialog).
+# page of the app or from the editor (components/feedback/FeedbackDialog),
+# as JSON or as a form with the screenshot they annotated.
 # Staff read it in « Premières heures » (/admin/first-hours).
 class FeedbacksController < ApplicationController
   forbid_while_impersonating
   rate_limit to: 20, within: 1.hour, with: -> { render json: { message: t("feedback.rate_limited") }, status: :too_many_requests }
 
   def create
-    feedback = Current.user.feedbacks.new(params.require(:feedback).permit(:message, :path, :wants_call, :sentry_replay_id))
+    attributes = params.require(:feedback).permit(:message, :path, :wants_call, :sentry_replay_id, :screenshot, context: Feedback::CONTEXT_KEYS)
+    feedback = Current.user.feedbacks.new(attributes.except(:screenshot))
     feedback.map = readable_map
+    if (file = attributes[:screenshot]).respond_to?(:content_type)
+      # The bytes decide, not the name the browser gave the file.
+      return render json: { message: t("feedback.screenshot.invalid") }, status: :unprocessable_entity unless Feedback::SCREENSHOT_TYPES.include?(Marcel::MimeType.for(Pathname(file.path)))
+      feedback.screenshot.attach(file)
+    end
     if feedback.save
       FeedbackMailer.received(feedback).deliver_later
       render json: { id: feedback.id }, status: :created

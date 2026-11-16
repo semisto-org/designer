@@ -3,6 +3,9 @@
 <% if @map %>
   <p><%= t(".map", name: @map.name, url: map_url(@map)) %></p>
 <% end %>
+<% if @screenshot %>
+  <p><%= t(".screenshot") %></p>
+<% end %>
 <% if @feedback.wants_call %>
   <p><strong><%= t(".wants_call") %></strong></p>
 <% end %>
