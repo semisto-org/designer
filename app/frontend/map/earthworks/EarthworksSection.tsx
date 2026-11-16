@@ -6,17 +6,13 @@ import { elementFor, storedProperties } from '@/map/drawing/catalog'
 import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
 import {
-  DESTINATION_KEY, DESTINATIONS, destinationOf, excavation, isDiggable, isDone, isReceiving, receiverGap, SOIL_PARTS, topsoilCm,
+  DESTINATION_KEY, DESTINATIONS, destinationOf, excavation, isDiggable, isDone, receiverGap, SOIL_PARTS, topsoilCm,
   type Balance, type Receiver, type SoilPart,
 } from '@/map/earthworks/earthworks'
 import { featureName, loadsText, m3, measureOf, useEarthworks } from '@/map/earthworks/model'
 import type { MapFeature } from '@/types'
 
 /** Diggable elements (pond, swale, sunken path…) and those that receive soil (mound, raised bed, zone). */
-export function appliesToEarthworks(feature: MapFeature): boolean {
-  return isDiggable(feature.properties.kind) || isReceiving(feature.properties.kind)
-}
-
 const NEW_MOUND = '__new_mound'
 const TIPS: Record<string, string> = { pond: 'tip_pond', swale: 'tip_swale', path: 'tip_path', track: 'tip_path' }
 

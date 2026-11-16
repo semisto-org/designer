@@ -8,11 +8,14 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
 import { PresentationBar } from './PresentationBar'
-import { SlideView } from './SlideView'
 import { loadPresentation, markApplied, presentationStore, requestStep, restored, saveSteps, usePresentation } from './store'
 import { applyPresentRender, usePresentRender } from './render'
 import { applyView, captureView } from './view'
 import { cameraFlash } from './flash'
+import { deferred } from '@/map/panels/deferred'
+
+// A text slide renders its Markdown with the document editor: fetched when a slide first shows.
+const SlideView = deferred(() => import('./SlideView').then((m) => ({ default: m.SlideView })), 'none')
 
 /**
  * Always mounted in the editor. Shows the step asked for (or hands it to

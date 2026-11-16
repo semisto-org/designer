@@ -1,189 +1,132 @@
 import { Bot, Camera, Waypoints, Compass, Target, Shovel, FileImage, Files, ClipboardList, CloudSun, Droplets, Eye, FlaskConical, Globe, Handshake, Layers3, ListChecks, Map as MapIcon, Receipt, MapPinned, Mountain, PiggyBank, Route, ShieldAlert, Sprout, Sun, TriangleAlert } from 'lucide-react'
 import { Apple, GitBranch, Presentation, Trees } from 'lucide-react'
 import { isAnnotationLayer } from '@/map/scenario'
-import CanopyPanel from '@/map/canopy/CanopyPanel'
+import { appliesToCatchment, appliesToEarthworks, appliesToElement, appliesToFruitStore, appliesToGpsPoint, appliesToInfiltration, appliesToKeyline, appliesToLinks, appliesToPhase, appliesToProjectState, appliesToStorm, appliesToVariant, appliesToZone } from '@/map/panels/applies'
+import { deferred } from '@/map/panels/deferred'
+import { isSector } from '@/map/sectors/SectorsOverlay'
+import { isLinkable as appliesToWaterSource } from '@/map/water/store'
 import CanopyOverlay from '@/map/canopy/CanopyOverlay'
 import type { EditorPanel, EditorSlot, InspectorSection } from '@/map/panels/registry'
-import TerrainPanel from '@/map/panels/TerrainPanel'
-import ElementsPanel from '@/map/panels/ElementsPanel'
 import CollabOverlay from '@/collab/CollabOverlay'
-import DiscussionSection from '@/collab/DiscussionSection'
-import DiscussionsPanel from '@/collab/DiscussionsPanel'
 import { DiscussionsIcon } from '@/collab/DiscussionsIcon'
-import PublishPanel from '@/collab/PublishPanel'
 import ShareButton from '@/collab/ShareButton'
 import ChatToggle from '@/collab/chat/ChatToggle'
 import EditorNotificationBell from '@/collab/chat/EditorNotificationBell'
 import MapChat from '@/collab/chat/MapChat'
 import WelcomeCard from '@/collab/welcome/WelcomeCard'
-import JourneyPanel from '@/map/panels/JourneyPanel'
 import JourneyOverlay from '@/map/panels/JourneyOverlay'
 import TourOverlay from '@/map/tour/TourOverlay'
 import FirstHourOverlay from '@/map/first_hour/FirstHourOverlay'
-import ProjectPanel from '@/map/panels/ProjectPanel'
-import ActionsPanel from '@/map/panels/ActionsPanel'
-import LayersPanel from '@/map/panels/LayersPanel'
 import RegionLayersOverlay from '@/map/data/RegionLayersOverlay'
 import PhotoLimitOverlay from '@/map/data/PhotoLimitOverlay'
 import IdentifyOverlay from '@/map/data/IdentifyOverlay'
 import LegendOverlay from '@/map/data/LegendOverlay'
-import AiJournalPanel from '@/map/panels/AiJournalPanel'
 import AiProposalsOverlay from '@/map/drafts/AiProposalsOverlay'
 import PendingUpdatesLayer from '@/map/feature_updates/PendingUpdatesLayer'
-import UpdateReviewSection from '@/map/feature_updates/UpdateReviewSection'
-import DraftReviewSection from '@/map/drafts/DraftReviewSection'
-import ReliefPanel from '@/map/panels/ReliefPanel'
 import ReadOnlyNotice from '@/map/panels/ReadOnlyNotice'
 import HelpAction from '@/map/panels/HelpAction'
 import { FeedbackButton } from '@/components/feedback/FeedbackButton'
 import ShortcutsSheet, { ShortcutsButton } from '@/map/shortcuts/ShortcutsSheet'
 import VariantPicker from '@/map/variants/VariantPicker'
-import VariantsPanel from '@/map/variants/VariantsPanel'
-import VariantSection, { appliesToVariant } from '@/map/variants/VariantSection'
 import TimeStrip from '@/map/time/TimeStrip'
 import ShadeOverlay from '@/map/time/ShadeOverlay'
-import PalettePanel from '@/map/plants/PalettePanel'
-import OfferPanel from '@/map/panels/OfferPanel'
-import PlantListPanel from '@/map/plants/PlantListPanel'
-import PlantSection from '@/map/plants/PlantSection'
-import ObservationsSection from '@/map/plants/ObservationsSection'
-import HarvestsPanel from '@/map/harvests/HarvestsPanel'
-import HarvestsSection from '@/map/harvests/HarvestsSection'
 import HarvestsOverlay from '@/map/harvests/HarvestsOverlay'
-import StorageSection, { appliesToFruitStore } from '@/map/storage/StorageSection'
-import PatchSection from '@/map/plants/PatchSection'
-import IdentifySection from '@/map/plants/IdentifySection'
 import PlantsOverlay from '@/map/plants/PlantsOverlay'
 import SelectionOverlay from '@/map/selection/SelectionOverlay'
 import PlantPeekOverlay from '@/map/plants/PlantPeekOverlay'
-import PlantPhotosSection from '@/map/plants/PlantPhotosSection'
 import { isPatch, isPlant } from '@/map/plants/properties'
-import OtherPropertiesSection from '@/map/plants/OtherPropertiesSection'
-import FeatureTasksSection from '@/map/tasks/FeatureTasksSection'
-import ClimatePanel from '@/map/panels/ClimatePanel'
-import SunPanel from '@/map/sun/SunPanel'
-import SectorInspector from '@/map/sectors/SectorInspector'
-import SectorsPanel, { isSector } from '@/map/sectors/SectorsPanel'
 import SectorsOverlay from '@/map/sectors/SectorsOverlay'
-import ZonesPanel from '@/map/zones/ZonesPanel'
-import ZoneSection, { appliesToZone } from '@/map/zones/ZoneSection'
-import SiteRulesPanel from '@/map/site_rules/SiteRulesPanel'
-import FinancesPanel from '@/map/panels/FinancesPanel'
-import PhotosPanel from '@/map/photos/PhotosPanel'
-import DocumentsPanel from '@/map/documents/DocumentsPanel'
-import PhotosInspector from '@/map/photos/PhotosInspector'
 import PhotosOverlay from '@/map/photos/PhotosOverlay'
-import SoilPanel from '@/map/soil/SoilPanel'
 import SoilOverlay from '@/map/soil/SoilOverlay'
 import WeatherStationsOverlay from '@/map/weather_stations/WeatherStationsOverlay'
 import WeatherNowOverlay from '@/map/weather_now/WeatherNowOverlay'
-import AlertsPanel from '@/map/drawing/AlertsPanel'
 import GpsAccuracyOverlay from '@/map/gps/GpsAccuracyOverlay'
-import GpsAccuracySection, { appliesToGpsPoint } from '@/map/gps/GpsAccuracySection'
 import DrawingLayers from '@/map/drawing/DrawingLayers'
 import LabelPeek from '@/map/drawing/LabelPeek'
 import ReliefWorksSync from '@/map/data/ReliefWorksSync'
 import DrawingToolbar from '@/map/drawing/DrawingToolbar'
-import ElementSection, { appliesToElement } from '@/map/drawing/ElementSection'
-import ProjectStateSection, { appliesToProjectState } from '@/map/drawing/ProjectStateSection'
-import PhaseSection, { appliesToPhase } from '@/map/implementation/PhaseSection'
 import ExportMenu from '@/map/drawing/ExportMenu'
-import DrawingLayersPanel from '@/map/drawing/LayersPanel'
 import LiveSync from '@/map/drawing/LiveSync'
 import AerialViewsOverlay from '@/drone/AerialViewsOverlay'
 import TransferNotice from '@/transfer/TransferNotice'
-import WaterSourcesPanel from '@/map/water/WaterSourcesPanel'
-import PlanImagesPanel from '@/map/plan_images/PlanImagesPanel'
 import PlanImagesOverlay from '@/map/plan_images/PlanImagesOverlay'
-import CatchmentSection, { appliesToCatchment } from '@/map/water/CatchmentSection'
-import InfiltrationSection, { appliesToInfiltration } from '@/map/water/InfiltrationSection'
-import KeylineSection, { appliesToKeyline } from '@/map/water/KeylineSection'
-import StormSection, { appliesToStorm } from '@/map/water/StormSection'
-import WaterSourceSection, { appliesToWaterSource } from '@/map/water/WaterSourceSection'
-import LinksSection, { appliesToLinks } from '@/map/water/LinksSection'
-import TagsSection from '@/map/tags/TagsSection'
-import EarthworksPanel from '@/map/earthworks/EarthworksPanel'
-import EarthworksSection, { appliesToEarthworks } from '@/map/earthworks/EarthworksSection'
 import EarthworksOverlay from '@/map/earthworks/EarthworksOverlay'
-import FunctionsPanel from '@/map/functions/FunctionsPanel'
-import PresentationPanel from '@/map/presentation/PresentationPanel'
 import PresentationOverlay from '@/map/presentation/PresentationOverlay'
 import MapOpeningProbe from '@/map/performance/MapOpeningProbe'
-import FunctionsSection from '@/map/functions/FunctionsSection'
 import { appliesToFunctions } from '@/map/functions/store'
 
 // Register editor panels here (one line per panel, keep groups together).
 export const PANELS: EditorPanel[] = [
-  { id: 'journey', label: 'journey.panel.title', icon: Route, group: 'observe', component: JourneyPanel, order: 1, hiddenFromRail: true },
+  { id: 'journey', label: 'journey.panel.title', icon: Route, group: 'observe', component: deferred(() => import('@/map/panels/JourneyPanel')), order: 1, hiddenFromRail: true },
   // 1. Observer
-  { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'observe', component: ProjectPanel, order: 5, modal: true, essential: true },
-  { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'observe', component: LayersPanel, order: 10, essential: true },
-  { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'observe', component: ReliefPanel, order: 30, essential: true },
-  { id: 'sun', label: 'sun.panel_title', icon: Sun, group: 'observe', component: SunPanel, order: 35, essential: true },
-  { id: 'sectors', label: 'sectors.panel_title', icon: Compass, group: 'observe', component: SectorsPanel, order: 37 },
-  { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'observe', component: ClimatePanel, order: 40 },
-  { id: 'site-rules', label: 'site_rules.panel_title', icon: ShieldAlert, group: 'observe', component: SiteRulesPanel, order: 50 },
-  { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: SoilPanel, order: 60 },
-  { id: 'canopy', label: 'canopy.panel_title', icon: Trees, group: 'observe', component: CanopyPanel, order: 65 },
-  { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'observe', component: PhotosPanel, order: 70, essential: true },
-  { id: 'documents', label: 'documents.title', icon: Files, group: 'observe', component: DocumentsPanel, order: 75 },
+  { id: 'project', label: 'journey.project.title', icon: ClipboardList, group: 'observe', component: deferred(() => import('@/map/panels/ProjectPanel')), order: 5, modal: true, essential: true },
+  { id: 'layers', label: 'map_data.panels.layers', icon: MapIcon, group: 'observe', component: deferred(() => import('@/map/panels/LayersPanel')), order: 10, essential: true },
+  { id: 'relief', label: 'relief.panel', icon: Mountain, group: 'observe', component: deferred(() => import('@/map/panels/ReliefPanel')), order: 30, essential: true },
+  { id: 'sun', label: 'sun.panel_title', icon: Sun, group: 'observe', component: deferred(() => import('@/map/sun/SunPanel')), order: 35, essential: true },
+  { id: 'sectors', label: 'sectors.panel_title', icon: Compass, group: 'observe', component: deferred(() => import('@/map/sectors/SectorsPanel')), order: 37 },
+  { id: 'climate', label: 'climate.panel_title', icon: CloudSun, group: 'observe', component: deferred(() => import('@/map/panels/ClimatePanel')), order: 40 },
+  { id: 'site-rules', label: 'site_rules.panel_title', icon: ShieldAlert, group: 'observe', component: deferred(() => import('@/map/site_rules/SiteRulesPanel')), order: 50 },
+  { id: 'soil', label: 'soil.panel_label', icon: FlaskConical, group: 'observe', component: deferred(() => import('@/map/soil/SoilPanel')), order: 60 },
+  { id: 'canopy', label: 'canopy.panel_title', icon: Trees, group: 'observe', component: deferred(() => import('@/map/canopy/CanopyPanel')), order: 65 },
+  { id: 'photos', label: 'soil_photos.panel_label', icon: Camera, group: 'observe', component: deferred(() => import('@/map/photos/PhotosPanel')), order: 70, essential: true },
+  { id: 'documents', label: 'documents.title', icon: Files, group: 'observe', component: deferred(() => import('@/map/documents/DocumentsPanel')), order: 75 },
   // 2. Cartographier
-  { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: TerrainPanel, order: 10, essential: true },
-  { id: 'plan-images', label: 'plan_images.panel_title', icon: FileImage, group: 'map', component: PlanImagesPanel, order: 20 },
-  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'map', component: ElementsPanel, order: 30, essential: true },
-  { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'map', component: DrawingLayersPanel, order: 40 },
+  { id: 'terrain', label: 'editor.panels.terrain', icon: MapPinned, group: 'map', component: deferred(() => import('@/map/panels/TerrainPanel')), order: 10, essential: true },
+  { id: 'plan-images', label: 'plan_images.panel_title', icon: FileImage, group: 'map', component: deferred(() => import('@/map/plan_images/PlanImagesPanel')), order: 20 },
+  { id: 'elements', label: 'editor.panels.elements', icon: Layers3, group: 'map', component: deferred(() => import('@/map/panels/ElementsPanel')), order: 30, essential: true },
+  { id: 'drawing-layers', label: 'drawing.panels.layers', icon: Eye, group: 'map', component: deferred(() => import('@/map/drawing/LayersPanel')), order: 40 },
   // 3. Concevoir
-  { id: 'zones', label: 'permaculture_zones.panel_title', icon: Target, group: 'design', component: ZonesPanel, order: 10, essential: true },
-  { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: PalettePanel, order: 20, essential: true },
-  { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: WaterSourcesPanel, order: 50, essential: true },
-  { id: 'variants', label: 'variants.panel_title', icon: GitBranch, group: 'design', component: VariantsPanel, order: 52 },
-  { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: EarthworksPanel, order: 55 },
-  { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: FunctionsPanel, order: 60 },
-  { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: AlertsPanel, order: 70 },
+  { id: 'zones', label: 'permaculture_zones.panel_title', icon: Target, group: 'design', component: deferred(() => import('@/map/zones/ZonesPanel')), order: 10, essential: true },
+  { id: 'palette', label: 'editor.panels.palette', icon: Sprout, group: 'design', component: deferred(() => import('@/map/plants/PalettePanel')), order: 20, essential: true },
+  { id: 'water-sources', label: 'water_sources.panel_title', icon: Droplets, group: 'design', component: deferred(() => import('@/map/water/WaterSourcesPanel')), order: 50, essential: true },
+  { id: 'variants', label: 'variants.panel_title', icon: GitBranch, group: 'design', component: deferred(() => import('@/map/variants/VariantsPanel')), order: 52 },
+  { id: 'earthworks', label: 'earthworks.panel_title', icon: Shovel, group: 'design', component: deferred(() => import('@/map/earthworks/EarthworksPanel')), order: 55 },
+  { id: 'functions', label: 'element_functions.panel_title', icon: Waypoints, group: 'design', component: deferred(() => import('@/map/functions/FunctionsPanel')), order: 60 },
+  { id: 'drawing-alerts', label: 'drawing.panels.alerts', icon: TriangleAlert, group: 'design', component: deferred(() => import('@/map/drawing/AlertsPanel')), order: 70 },
   // 4. Planter
-  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: PlantListPanel, order: 10, essential: true },
-  { id: 'harvests', label: 'plant_harvests.panel_title', icon: Apple, group: 'plant', component: HarvestsPanel, order: 15 },
-  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'plant', component: FinancesPanel, order: 20 },
-  { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: ActionsPanel, order: 30 },
+  { id: 'plant-list', label: 'editor.panels.plant_list', icon: ListChecks, group: 'plant', component: deferred(() => import('@/map/plants/PlantListPanel')), order: 10, essential: true },
+  { id: 'harvests', label: 'plant_harvests.panel_title', icon: Apple, group: 'plant', component: deferred(() => import('@/map/harvests/HarvestsPanel')), order: 15 },
+  { id: 'finances', label: 'finances.panel_title', icon: PiggyBank, group: 'plant', component: deferred(() => import('@/map/panels/FinancesPanel')), order: 20 },
+  { id: 'actions', label: 'journey.requests.panel_title', icon: Handshake, group: 'plant', component: deferred(() => import('@/map/panels/ActionsPanel')), order: 30 },
   // Échanger (no number)
-  { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: DiscussionsPanel, order: 10, essential: true },
-  { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: OfferPanel, requires: 'offers', order: 15 },
-  { id: 'present', label: 'presentations.panel_title', icon: Presentation, group: 'share', component: PresentationPanel, order: 17, essential: true },
-  { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: PublishPanel, requires: 'owner', order: 20, essential: true },
-  { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: AiJournalPanel, requires: 'owner', order: 80 },
+  { id: 'discussions', label: 'collab.panels.discussions', icon: DiscussionsIcon, group: 'share', component: deferred(() => import('@/collab/DiscussionsPanel')), order: 10, essential: true },
+  { id: 'offer', label: 'offers.panel.title', icon: Receipt, group: 'share', component: deferred(() => import('@/map/panels/OfferPanel')), requires: 'offers', order: 15 },
+  { id: 'present', label: 'presentations.panel_title', icon: Presentation, group: 'share', component: deferred(() => import('@/map/presentation/PresentationPanel')), order: 17, essential: true },
+  { id: 'publish', label: 'collab.panels.publish', icon: Globe, group: 'share', component: deferred(() => import('@/collab/PublishPanel')), requires: 'owner', order: 20, essential: true },
+  { id: 'ai-journal', label: 'ai_journal.title', icon: Bot, group: 'share', component: deferred(() => import('@/map/panels/AiJournalPanel')), requires: 'owner', order: 80 },
 ]
 
 // Register inspector sections for a selected feature here.
 export const INSPECTOR_SECTIONS: InspectorSection[] = [
-  { id: 'discussion', applies: () => true, component: DiscussionSection, order: 90 },
-  { id: 'draft-review', applies: (f) => f.properties.status === 'draft', component: DraftReviewSection, order: 5 },
-  { id: 'update-review', applies: (f) => f.properties.status === 'active', component: UpdateReviewSection, order: 6 },
-  { id: 'plant', applies: isPlant, component: PlantSection, order: 20 },
-  { id: 'plant-observations', applies: isPlant, component: ObservationsSection, order: 21 },
-  { id: 'plant-harvests', applies: isPlant, component: HarvestsSection, order: 20.5 },
-  { id: 'fruit-store', applies: appliesToFruitStore, component: StorageSection, order: 20.5 },
-  { id: 'plant-identify', applies: isPlant, component: IdentifySection, order: 22 },
-  { id: 'plant-other-properties', applies: isPlant, component: OtherPropertiesSection, order: 23 },
-  { id: 'feature-tasks', applies: (f) => f.properties.status === 'active' && !isAnnotationLayer(f.properties.layer), component: FeatureTasksSection, order: 21.5 },
-  { id: 'patch', applies: isPatch, component: PatchSection, order: 20 },
-  { id: 'photos', applies: (f) => !isPlant(f), component: PhotosInspector, order: 70 },
-  { id: 'plant-photos', applies: isPlant, component: PlantPhotosSection, placement: 'top' },
-  { id: 'sector', applies: isSector, component: SectorInspector, order: 20 },
-  { id: 'permaculture-zone', applies: appliesToZone, component: ZoneSection, order: 17 },
-  { id: 'drawing-element', applies: appliesToElement, component: ElementSection, order: 20 },
-  { id: 'water-source', applies: appliesToWaterSource, component: WaterSourceSection, order: 19 },
-  { id: 'gps-accuracy', applies: appliesToGpsPoint, component: GpsAccuracySection, order: 10 },
-  { id: 'tags', applies: () => true, component: TagsSection, order: 15 },
-  { id: 'project-state', applies: appliesToProjectState, component: ProjectStateSection, order: 16 },
-  { id: 'variant', applies: appliesToVariant, component: VariantSection, order: 16.5 },
-  { id: 'implementation-phase', applies: appliesToPhase, component: PhaseSection, order: 17 },
-  { id: 'earthworks', applies: appliesToEarthworks, component: EarthworksSection, order: 25 },
-  { id: 'catchment', applies: appliesToCatchment, component: CatchmentSection, order: 24 },
-  { id: 'water-links', applies: appliesToLinks, component: LinksSection, order: 23.5 },
-  { id: 'infiltration', applies: appliesToInfiltration, component: InfiltrationSection, order: 18 },
-  { id: 'keyline', applies: appliesToKeyline, component: KeylineSection, order: 23 },
-  { id: 'storm', applies: appliesToStorm, component: StormSection, order: 18 },
-  { id: 'functions', applies: appliesToFunctions, component: FunctionsSection, order: 26 },
+  { id: 'discussion', applies: () => true, component: deferred(() => import('@/collab/DiscussionSection'), 'none'), order: 90 },
+  { id: 'draft-review', applies: (f) => f.properties.status === 'draft', component: deferred(() => import('@/map/drafts/DraftReviewSection'), 'none'), order: 5 },
+  { id: 'update-review', applies: (f) => f.properties.status === 'active', component: deferred(() => import('@/map/feature_updates/UpdateReviewSection'), 'none'), order: 6 },
+  { id: 'plant', applies: isPlant, component: deferred(() => import('@/map/plants/PlantSection'), 'none'), order: 20 },
+  { id: 'plant-observations', applies: isPlant, component: deferred(() => import('@/map/plants/ObservationsSection'), 'none'), order: 21 },
+  { id: 'plant-harvests', applies: isPlant, component: deferred(() => import('@/map/harvests/HarvestsSection'), 'none'), order: 20.5 },
+  { id: 'fruit-store', applies: appliesToFruitStore, component: deferred(() => import('@/map/storage/StorageSection'), 'none'), order: 20.5 },
+  { id: 'plant-identify', applies: isPlant, component: deferred(() => import('@/map/plants/IdentifySection'), 'none'), order: 22 },
+  { id: 'plant-other-properties', applies: isPlant, component: deferred(() => import('@/map/plants/OtherPropertiesSection'), 'none'), order: 23 },
+  { id: 'feature-tasks', applies: (f) => f.properties.status === 'active' && !isAnnotationLayer(f.properties.layer), component: deferred(() => import('@/map/tasks/FeatureTasksSection'), 'none'), order: 21.5 },
+  { id: 'patch', applies: isPatch, component: deferred(() => import('@/map/plants/PatchSection'), 'none'), order: 20 },
+  { id: 'photos', applies: (f) => !isPlant(f), component: deferred(() => import('@/map/photos/PhotosInspector'), 'none'), order: 70 },
+  { id: 'plant-photos', applies: isPlant, component: deferred(() => import('@/map/plants/PlantPhotosSection'), 'none'), placement: 'top' },
+  { id: 'sector', applies: isSector, component: deferred(() => import('@/map/sectors/SectorInspector'), 'none'), order: 20 },
+  { id: 'permaculture-zone', applies: appliesToZone, component: deferred(() => import('@/map/zones/ZoneSection'), 'none'), order: 17 },
+  { id: 'drawing-element', applies: appliesToElement, component: deferred(() => import('@/map/drawing/ElementSection'), 'none'), order: 20 },
+  { id: 'water-source', applies: appliesToWaterSource, component: deferred(() => import('@/map/water/WaterSourceSection'), 'none'), order: 19 },
+  { id: 'gps-accuracy', applies: appliesToGpsPoint, component: deferred(() => import('@/map/gps/GpsAccuracySection'), 'none'), order: 10 },
+  { id: 'tags', applies: () => true, component: deferred(() => import('@/map/tags/TagsSection'), 'none'), order: 15 },
+  { id: 'project-state', applies: appliesToProjectState, component: deferred(() => import('@/map/drawing/ProjectStateSection'), 'none'), order: 16 },
+  { id: 'variant', applies: appliesToVariant, component: deferred(() => import('@/map/variants/VariantSection'), 'none'), order: 16.5 },
+  { id: 'implementation-phase', applies: appliesToPhase, component: deferred(() => import('@/map/implementation/PhaseSection'), 'none'), order: 17 },
+  { id: 'earthworks', applies: appliesToEarthworks, component: deferred(() => import('@/map/earthworks/EarthworksSection'), 'none'), order: 25 },
+  { id: 'catchment', applies: appliesToCatchment, component: deferred(() => import('@/map/water/CatchmentSection'), 'none'), order: 24 },
+  { id: 'water-links', applies: appliesToLinks, component: deferred(() => import('@/map/water/LinksSection'), 'none'), order: 23.5 },
+  { id: 'infiltration', applies: appliesToInfiltration, component: deferred(() => import('@/map/water/InfiltrationSection'), 'none'), order: 18 },
+  { id: 'keyline', applies: appliesToKeyline, component: deferred(() => import('@/map/water/KeylineSection'), 'none'), order: 23 },
+  { id: 'storm', applies: appliesToStorm, component: deferred(() => import('@/map/water/StormSection'), 'none'), order: 18 },
+  { id: 'functions', applies: appliesToFunctions, component: deferred(() => import('@/map/functions/FunctionsSection'), 'none'), order: 26 },
 ]
 
 // Top bar actions (right side), e.g. share, export.

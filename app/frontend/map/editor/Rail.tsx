@@ -3,6 +3,7 @@ import { Check, ChevronUp, Ellipsis, PanelLeftClose, PanelLeftOpen } from 'lucid
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { IconButton } from '@/components/ui/IconButton'
+import { preload } from '@/map/panels/deferred'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { GuidePill } from '@/map/editor/GuidePill'
@@ -167,9 +168,9 @@ export function EditorRail({ panels }: RailProps) {
                     aria-label={collapsed ? name : undefined}
                     aria-pressed={open}
                     onClick={() => editor.openPanel(open ? null : p.id)}
-                    onMouseEnter={(e) => showTip(name, e.currentTarget)}
+                    onMouseEnter={(e) => { preload(p.component); showTip(name, e.currentTarget) }}
                     onMouseLeave={() => setTip(null)}
-                    onFocus={(e) => showTip(name, e.currentTarget)}
+                    onFocus={(e) => { preload(p.component); showTip(name, e.currentTarget) }}
                     onBlur={() => setTip(null)}
                     className={clsx(
                       'relative flex items-center rounded-lg transition-colors active:scale-[0.98]',
@@ -254,6 +255,7 @@ export function EditorBar({ panels }: RailProps) {
               title={t(p.label)}
               aria-label={t(p.label)}
               aria-pressed={editor.activePanel === p.id}
+              onPointerDown={() => preload(p.component)}
               onClick={() => editor.openPanel(editor.activePanel === p.id ? null : p.id)}
               className={clsx(
                 'relative grid h-9 w-9 shrink-0 place-items-center rounded-lg',

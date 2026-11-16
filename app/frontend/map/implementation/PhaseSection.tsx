@@ -6,19 +6,12 @@ import { t } from '@/lib/i18n'
 import { storedProperties } from '@/map/drawing/catalog'
 import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
-import { isPlanned } from '@/map/scenario'
 import type { MapFeature } from '@/types'
 
-const DESIGN_LAYERS = new Set(['water', 'access', 'structures', 'plants', 'animals', 'networks'])
 
 type PhaseOption = { id: number; name: string }
 
 /** Work still to do (or already given a phase) on a design layer. */
-export function appliesToPhase(feature: MapFeature): boolean {
-  const p = feature.properties
-  return p.status === 'active' && DESIGN_LAYERS.has(p.layer) && (isPlanned(p) || typeof p.phase_id === 'number')
-}
-
 // The phases of a map, fetched once per map and shared by every selection.
 const cache = new Map<number, Promise<PhaseOption[]>>()
 function loadPhases(mapId: number, fresh = false): Promise<PhaseOption[]> {

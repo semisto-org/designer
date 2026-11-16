@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatNumber, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
-import { COLOR_SWATCHES, elementFor, featureColor, GENERIC_KINDS, storedProperties } from '@/map/drawing/catalog'
+import { COLOR_SWATCHES, elementFor, featureColor, storedProperties } from '@/map/drawing/catalog'
 import { computedValues } from '@/map/drawing/computed'
 import { saveFeature } from '@/map/drawing/save'
 import ShapeEditButton from '@/map/drawing/ShapeEditButton'
@@ -14,12 +14,6 @@ import type { MapFeature } from '@/types'
 import type { ElementField } from '@/types/drawing'
 
 /** Library elements and generic shapes get this inspector section. */
-export function appliesToElement(feature: MapFeature): boolean {
-  // A sector is edited in its own panel, which keeps its arc and colour in step with its type.
-  if (feature.properties.kind === 'sector') return false
-  return elementFor(feature.properties.kind) != null || GENERIC_KINDS.includes(feature.properties.kind)
-}
-
 function display(field: ElementField, value: unknown): string {
   if (value == null || value === '') return t('drawing.element.none')
   if (field.type === 'select') return t(`drawing.options.${field.key}.${value}`)

@@ -5,24 +5,15 @@ import { Field, Select } from '@/components/ui/Field'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import { formatNumber, t } from '@/lib/i18n'
-import { ELEMENTS, storedProperties } from '@/map/drawing/catalog'
+import { storedProperties } from '@/map/drawing/catalog'
 import { bar } from '@/map/drawing/computed'
 import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
+import { isEndpoint, isLink, receives } from '@/map/panels/applies'
 import type { MapFeature } from '@/types'
 
-// Twins of MapFeature::WaterLinks (ENDPOINT_LAYERS, ENDPOINT_GEOMETRIES, LINE_GEOMETRIES).
-const ENDPOINT_LAYERS = ['existing', 'water', 'structures', 'animals', 'networks']
-const ENDPOINT_GEOMETRIES = ['Point', 'Polygon', 'MultiPolygon']
-const LINE_GEOMETRIES = ['LineString', 'MultiLineString']
 const CHOICES = 12
 type EndKey = 'from_id' | 'to_id'
-
-const isLink = (f: MapFeature) => ELEMENTS[f.properties.kind]?.links === true
-/** A swale or a ditch: water can be led into it anywhere along it. */
-const receives = (f: MapFeature) => ELEMENTS[f.properties.kind]?.receives === true && LINE_GEOMETRIES.includes(f.geometry.type)
-const isEndpoint = (f: MapFeature) =>
-  ENDPOINT_LAYERS.includes(f.properties.layer) && ((ENDPOINT_GEOMETRIES.includes(f.geometry.type) && !isLink(f)) || receives(f))
 
 /** Metres from a point to an element: to its nearest point for a line, to its middle otherwise. */
 function distanceTo(point: number[], f: MapFeature): number {
@@ -32,11 +23,6 @@ function distanceTo(point: number[], f: MapFeature): number {
     return Math.min(...f.geometry.coordinates.map((line) => turf.pointToLineDistance(p, turf.lineString(line), { units: 'meters' })))
   }
   return turf.distance(p, turf.pointOnFeature(f), { units: 'meters' })
-}
-
-/** Pipes, ditches, swales… and the tanks, ponds, roofs and swales they can connect. */
-export function appliesToLinks(feature: MapFeature): boolean {
-  return feature.properties.status !== 'rejected' && (isLink(feature) || isEndpoint(feature))
 }
 
 /** GET /maps/:id/water_links/:feature_id (WaterLinks::Report). */

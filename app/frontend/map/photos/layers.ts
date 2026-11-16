@@ -39,7 +39,7 @@ function canvasImage(size: number, draw: (ctx: CanvasRenderingContext2D, size: n
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size
-  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+  const ctx = canvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
   draw(ctx, size)
   return ctx.getImageData(0, 0, size, size)
 }

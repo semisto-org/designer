@@ -18,7 +18,9 @@ export function railsLocales(): Plugin {
       if (!id.endsWith('.yml') && !id.endsWith('.yaml')) return null
       const tree = parse(code) as Record<string, unknown>
       const data = id.includes('/config/locales/') ? browserLocales(tree) : tree
-      return { code: `export default ${JSON.stringify(data)}`, map: null }
+      // A string handed to JSON.parse is read several times faster than the
+      // same object written as JavaScript: these trees weigh hundreds of KB.
+      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(data))})`, map: null }
     },
   }
 }
