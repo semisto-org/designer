@@ -168,6 +168,18 @@ class Relief::TerrainImportTest < ActiveSupport::TestCase
     assert_equal territory, terrain.owner
   end
 
+  test "a territory's fine window is asked in chunks of a few thousand points, apart from the commune's coarse relief" do
+    territory = make_territory(make_team("Semisto", admin: users(:michael)), size: 0.02)
+    window = Relief::DetailWindow.for_point(YVOIR[:lng] + 0.01, YVOIR[:lat] + 0.01)
+    terrain = territory.detail_terrains.create!(detail_key: window.key)
+    import = Relief::TerrainImport.new(terrain, provider: instant_provider)
+
+    assert_equal [ Relief::DetailWindow::CHUNK, instant_provider.chunk_size ].min, import.send(:chunk_size)
+    assert_nil territory.reload.terrain, "the coarse relief of the commune stays apart"
+    assert_equal [ terrain ], territory.detail_terrains.to_a
+    assert_raises(ActiveRecord::RecordNotUnique, "one import per window") { territory.detail_terrains.create!(detail_key: window.key) }
+  end
+
   test "a terrain belongs to a map or a territory, never both" do
     territory = make_territory(make_team("Semisto", admin: users(:michael)))
     assert_not MapTerrain.new(map: @map, territory:).valid?
