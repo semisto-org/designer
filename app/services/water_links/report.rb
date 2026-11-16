@@ -10,7 +10,8 @@
 # counted: an order of magnitude to choose drip or a pump, not a pipe sizing.
 #
 # For any other element (a tank, a pond), `links` lists the lines that leave
-# it or reach it.
+# it or reach it; a swale or a ditch has both, its own ends and the pipes
+# that pour into it.
 module WaterLinks
   class Report
     BAR_PER_M = 0.0981
@@ -30,7 +31,9 @@ module WaterLinks
     end
 
     def as_json(*)
-      @feature.water_link? ? link_json : { links: links_json }
+      return { links: links_json } unless @feature.water_link?
+      return link_json unless MapElements.receiving_line_kinds.include?(@feature.kind)
+      link_json.merge(links: links_json)
     end
 
     private

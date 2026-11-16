@@ -9,6 +9,7 @@ fr:
     move: "Déplacer ensemble"
     clear: "Désélectionner"
     move_hint: "Fais glisser la sélection orange à la bonne place : chaque élément garde sa distance aux autres. Puis enregistre."
+    move_hint_one: "Fais glisser l'élément orange d'un bloc à la bonne place : sa forme ne change pas. Puis enregistre."
     save: "Enregistrer la position"
     cancel: "Annuler"
     moved:
@@ -24,7 +25,7 @@ fr:
       placed:
         one: "1 copie posée. ⌘Z (Ctrl+Z) la retire."
         other: "%{count} copies posées. ⌘Z (Ctrl+Z) retire la dernière."
-      beside: "Copie posée à côté de l’original : fais-la glisser à sa place avec « Déplacer » (touche M)."
+      beside: "Copie posée à côté de l’original : fais-la glisser d’un bloc à sa place, puis « Enregistrer la position »."
     delete_planned:
       undo_hint: "Tu pourras revenir en arrière avec ⌘Z (Ctrl+Z)."
       plants:

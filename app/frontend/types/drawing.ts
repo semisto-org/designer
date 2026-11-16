@@ -37,6 +37,8 @@ export type ElementSpec = {
   contour?: boolean
   /** The line carries water between two elements: its ends snap to them (`from_id`, `to_id`). */
   links?: boolean
+  /** Water can be led into the line anywhere along it (a swale, a ditch): a link may start or end on it. */
+  receives?: boolean
   /** What the element does in the design, proposed from its kind (absent: left out of the functions review). */
   functions?: string[]
   needs?: string[]

@@ -15,6 +15,23 @@ export function translateGeometry(geometry: Geometry, from: Position, to: Positi
 /** True while a selection is being dragged: map clicks then neither select nor toggle. */
 export const selectionMove = { active: false }
 
+type MoveListener = (geometries: Map<number, Geometry>) => void
+const moveListeners = new Set<MoveListener>()
+
+/**
+ * « Déplacer » on one line or surface (the inspector, a fresh copy): the
+ * selection bar takes it and lets the person drag it whole, as a selection
+ * moved together, instead of point by point (Eric, November 2026).
+ */
+export function requestMove(geometries: Map<number, Geometry>) {
+  moveListeners.forEach((listener) => listener(geometries))
+}
+
+export function onMoveRequest(listener: MoveListener): () => void {
+  moveListeners.add(listener)
+  return () => { moveListeners.delete(listener) }
+}
+
 /** Ids after a Shift+click (or a tap in « Sélectionner plusieurs »): the element joins the selection, or leaves it. */
 export function toggled(selection: number[], id: number, alreadySelected: number | null): number[] {
   const base = selection.length || alreadySelected == null ? selection : [alreadySelected]

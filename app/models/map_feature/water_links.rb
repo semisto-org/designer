@@ -3,7 +3,9 @@
 # leaves and reaches: `properties.from_id` at its first point, `to_id` at its
 # last one. The person draws as usual: an end drawn within SNAP_M of a tank,
 # a pond, a roof, a paddock… snaps to it, and the inspector lets them change
-# it. Reshaping the line reads its ends again, unless the same save names
+# it. A swale or a ditch takes water anywhere along it (`receives: true` in
+# the library): a pipe can end on it, or a ditch start from it, but a tank or
+# a pond drawn as close wins the snap. Reshaping the line reads its ends again, unless the same save names
 # them; a blank value says « connected to nothing ».
 #
 # WaterLinks::Report turns a link into the drop between its ends (a tank's
@@ -17,6 +19,7 @@ module MapFeature::WaterLinks
   # raised bed, a paddock, a tap). Plants and annotations are not endpoints.
   ENDPOINT_LAYERS = %w[existing water structures animals networks].freeze
   ENDPOINT_GEOMETRIES = %w[ST_Point ST_Polygon ST_MultiPolygon].freeze
+  LINE_GEOMETRIES = %w[ST_LineString ST_MultiLineString].freeze
 
   included do
     before_validation :snap_water_link_ends
@@ -27,15 +30,19 @@ module MapFeature::WaterLinks
     # Elements of the map a link can start from or end at, nearest first to
     # a point (lng, lat) when given.
     def water_link_endpoints(map, near: nil, within: nil, except: nil)
-      scope = map.features.where.not(status: "rejected").where(layer: ENDPOINT_LAYERS)
-        .where.not(kind: MapElements.link_kinds)
+      areas = map.features.where.not(kind: MapElements.link_kinds)
         .where("ST_GeometryType(map_features.geometry) IN (?)", ENDPOINT_GEOMETRIES)
+      lines = map.features.where(kind: MapElements.receiving_line_kinds)
+        .where("ST_GeometryType(map_features.geometry) IN (?)", LINE_GEOMETRIES)
+      scope = map.features.where.not(status: "rejected").where(layer: ENDPOINT_LAYERS).merge(areas.or(lines))
       scope = scope.where.not(id: except) if except
       return scope unless near
 
       point = sanitize_sql_array([ "ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography", *near.map(&:to_f) ])
       scope = scope.where("ST_DWithin(map_features.geometry::geography, #{point}, ?)", within) if within
-      scope.order(Arel.sql("ST_Distance(map_features.geometry::geography, #{point})"))
+      # A tank or a pond before the swale that runs past it, then the nearest.
+      line_last = sanitize_sql_array([ "ST_GeometryType(map_features.geometry) IN (?)", LINE_GEOMETRIES ])
+      scope.order(Arel.sql("(#{line_last}) ASC, ST_Distance(map_features.geometry::geography, #{point})"))
     end
   end
 

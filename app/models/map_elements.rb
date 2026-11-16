@@ -24,7 +24,7 @@ class MapElements
   end
 
   # functions is nil for kinds left out of the functions review (ElementFunctions).
-  Element = Data.define(:kind, :layer, :geometries, :defaults, :fields, :pickable, :functions, :needs, :yields, :links) do
+  Element = Data.define(:kind, :layer, :geometries, :defaults, :fields, :pickable, :functions, :needs, :yields, :links, :receives) do
     def field(key) = fields.find { |f| f.key == key.to_s }
   end
 
@@ -46,6 +46,12 @@ class MapElements
       @link_kinds ||= elements.values.select(&:links).map(&:kind).freeze
     end
 
+    # Lines water can be led into anywhere along them (a swale, a ditch): a
+    # link may end on them, or start from them, as on a pond.
+    def receiving_line_kinds
+      @receiving_line_kinds ||= elements.values.select(&:receives).map(&:kind).freeze
+    end
+
     def kinds_for(layer)
       elements.values.select { |e| e.layer == layer.to_s }.map(&:kind)
     end
@@ -60,7 +66,7 @@ class MapElements
     end
 
     def reload!
-      @catalog = @elements = @link_kinds = nil
+      @catalog = @elements = @link_kinds = @receiving_line_kinds = nil
     end
 
     # Adds errors to a MapFeature that does not match the library.
@@ -98,7 +104,8 @@ class MapElements
               functions: spec.key?("functions") ? Array(spec["functions"]).freeze : nil,
               needs: Array(spec["needs"]).freeze,
               yields: Array(spec["yields"]).freeze,
-              links: spec["links"] == true
+              links: spec["links"] == true,
+              receives: spec["receives"] == true
             )
           end
         end.freeze

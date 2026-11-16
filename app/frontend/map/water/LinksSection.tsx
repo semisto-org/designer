@@ -11,17 +11,30 @@ import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
 import type { MapFeature } from '@/types'
 
-// Twins of MapFeature::WaterLinks (ENDPOINT_LAYERS, ENDPOINT_GEOMETRIES).
+// Twins of MapFeature::WaterLinks (ENDPOINT_LAYERS, ENDPOINT_GEOMETRIES, LINE_GEOMETRIES).
 const ENDPOINT_LAYERS = ['existing', 'water', 'structures', 'animals', 'networks']
 const ENDPOINT_GEOMETRIES = ['Point', 'Polygon', 'MultiPolygon']
+const LINE_GEOMETRIES = ['LineString', 'MultiLineString']
 const CHOICES = 12
 type EndKey = 'from_id' | 'to_id'
 
 const isLink = (f: MapFeature) => ELEMENTS[f.properties.kind]?.links === true
+/** A swale or a ditch: water can be led into it anywhere along it. */
+const receives = (f: MapFeature) => ELEMENTS[f.properties.kind]?.receives === true && LINE_GEOMETRIES.includes(f.geometry.type)
 const isEndpoint = (f: MapFeature) =>
-  ENDPOINT_LAYERS.includes(f.properties.layer) && ENDPOINT_GEOMETRIES.includes(f.geometry.type) && !isLink(f)
+  ENDPOINT_LAYERS.includes(f.properties.layer) && ((ENDPOINT_GEOMETRIES.includes(f.geometry.type) && !isLink(f)) || receives(f))
 
-/** Pipes, ditches, swales… and the tanks, ponds and roofs they can connect. */
+/** Metres from a point to an element: to its nearest point for a line, to its middle otherwise. */
+function distanceTo(point: number[], f: MapFeature): number {
+  const p = turf.point(point)
+  if (f.geometry.type === 'LineString') return turf.pointToLineDistance(p, turf.lineString(f.geometry.coordinates), { units: 'meters' })
+  if (f.geometry.type === 'MultiLineString') {
+    return Math.min(...f.geometry.coordinates.map((line) => turf.pointToLineDistance(p, turf.lineString(line), { units: 'meters' })))
+  }
+  return turf.distance(p, turf.pointOnFeature(f), { units: 'meters' })
+}
+
+/** Pipes, ditches, swales… and the tanks, ponds, roofs and swales they can connect. */
 export function appliesToLinks(feature: MapFeature): boolean {
   return feature.properties.status !== 'rejected' && (isLink(feature) || isEndpoint(feature))
 }
@@ -48,7 +61,14 @@ const label = (f: MapFeature) => f.properties.name || t(`editor.kinds.${f.proper
  * outlet. On a tank or a pond: the links that leave it or reach it.
  */
 export default function LinksSection({ feature }: { feature: MapFeature }) {
-  return isLink(feature) ? <LinkEnds feature={feature} /> : <LinkedTo feature={feature} />
+  if (!isLink(feature)) return <LinkedTo feature={feature} />
+  // A swale has its own ends, and the pipes that pour into it.
+  return (
+    <>
+      <LinkEnds feature={feature} />
+      {receives(feature) && <LinkedTo feature={feature} />}
+    </>
+  )
 }
 
 function LinkEnds({ feature }: { feature: MapFeature }) {
@@ -63,9 +83,8 @@ function LinkEnds({ feature }: { feature: MapFeature }) {
     const endpoints = editor.features.filter((f) => f.properties.id !== feature.properties.id && f.properties.status !== 'rejected' && isEndpoint(f))
     const near = (point: number[] | undefined) => {
       if (!point) return endpoints.slice(0, CHOICES)
-      const p = turf.point(point)
       return endpoints
-        .map((f) => ({ f, d: turf.distance(p, turf.pointOnFeature(f), { units: 'meters' }) }))
+        .map((f) => ({ f, d: distanceTo(point, f) }))
         .sort((a, b) => a.d - b.d)
         .slice(0, CHOICES)
         .map(({ f }) => f)
