@@ -100,13 +100,11 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
               <Pill tone={p.state === 'received' ? 'leaf' : p.state === 'refused' ? 'clay' : p.state === 'asked' ? 'lichen' : 'humus'}>{v('request_state', p.state ?? 'to_ask')}</Pill>
             )}
             {item.pendingUpdate && !review && <Pill tone="humus" icon={<Bot aria-hidden />}>{t('territories.show.updates.pending')}</Pill>}
-            {item.kind === 'marker' && (
-              <Pill tone={p.proof === 'confirmed' ? 'prune' : p.proof === 'seen' ? 'leaf' : 'humus'}>{v('proof', p.proof ?? 'computed')}</Pill>
-            )}
-            {item.kind === 'marker' && (p.proof ?? 'computed') === 'computed' && <Pill tone="humus">{t('territories.show.badges.concordance')}</Pill>}
+            {item.verification && <VerificationPill item={item} titles={titles} />}
+            {item.kind === 'marker' && item.verification === 'desk' && <Pill tone="humus">{t('territories.show.badges.concordance')}</Pill>}
+            {p.confirm_with_id && titles.get(p.confirm_with_id) && <Pill tone="lichen">{t('territories.show.badges.confirm_with', { actor: titles.get(p.confirm_with_id) ?? '' })}</Pill>}
             {item.kind === 'lead' && p.rank && <Pill tone="lichen">{v('rank_short', p.rank)}</Pill>}
             {item.kind === 'lead' && p.land && <Pill>{v('land', p.land)}</Pill>}
-            {item.kind === 'lead' && !p.seen_on_site && <Pill tone="humus">{t('territories.show.badges.hypothesis')}</Pill>}
             {item.orphan && (
               <Tooltip content={t('territories.show.badges.orphan_why')}>
                 <span><Pill tone="clay">{t('territories.show.badges.orphan')}</Pill></span>
@@ -167,4 +165,17 @@ export function ItemCard({ item, territoryId, canEdit, selected, onEdit, onSelec
       )}
     </li>
   )
+}
+
+/** « Vu au bureau », « Confirmé par un acteur : GISER, 12 nov. », « Vu sur place, 3 nov. ». */
+function VerificationPill({ item, titles }: { item: TerritoryItem; titles: Map<number, string> }) {
+  const p = item.properties
+  const level = item.verification ?? 'desk'
+  const label = v('verification', level)
+  const by = level === 'actor' ? (p.verified_by_id ? titles.get(p.verified_by_id) : null) ?? p.verified_by : level === 'site' ? p.verified_by : null
+  const when = date(p.verified_on)
+  const text = level === 'desk' ? label
+    : by ? t('territories.show.badges.verification_by', { level: label, by, date: when ?? '' })
+      : t('territories.show.badges.verification_on', { level: label, date: when ?? '' })
+  return <Pill tone={level === 'site' ? 'leaf' : level === 'actor' ? 'prune' : 'humus'} className="max-w-full whitespace-normal!">{text}</Pill>
 }

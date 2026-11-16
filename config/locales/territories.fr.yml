@@ -61,6 +61,9 @@ fr:
               basin: "renvoie à un sous-bassin qui n'est pas dans ce territoire"
               actor: "renvoie à une personne ou un organisme qui n'est pas dans ce dossier"
               source: "renvoie à une source qui n'est pas dans ce dossier"
+              verified_by: "renvoie à un acteur qui n'est pas dans ce dossier"
+              confirm_with: "renvoie à un acteur qui n'est pas dans ce dossier"
+              verifier_missing: "doivent dire qui a confirmé : un acteur du dossier ou un nom"
             file:
               invalid: "ne peut être joint qu'à une source"
               too_large: "dépasse 30 Mo"
@@ -100,6 +103,7 @@ fr:
       item_created: "Ajouté au dossier."
       item_saved: "Enregistré."
       item_deleted: "Retiré du dossier."
+      verified: "Noté. Le carnet en tient compte."
       accepted: "Proposition gardée."
       rejected: "Proposition écartée."
       update_accepted: "Modification appliquée."
@@ -150,6 +154,9 @@ fr:
       archived_note: "Ce territoire est archivé. Il reste lisible ; « Réactiver » le rend modifiable s'il compte de nouveau comme territoire actif."
       module_off_note: "Le module « Territoire » n'est plus attribué à cette équipe : le dossier reste lisible, sans modification."
       notebook: "Carnet du territoire"
+      confirmations: "À confirmer"
+      confirmations_count: "À confirmer · %{count}"
+      verification_line: "Vus au bureau : %{desk} · confirmés : %{actor} · vus sur place : %{site}"
       archive: "Archiver"
       unarchive: "Réactiver"
       archive_confirm:
@@ -306,6 +313,16 @@ fr:
         asked_on: "Demandé le"
         received_on: "Reçu le"
         source_id: "Devenu la source"
+        verification: "Vérification"
+        verification_level: "Où en est-on"
+        verified_by_id: "Confirmé par (acteur du dossier)"
+        verified_by: "Ou par qui (un nom, un riverain…)"
+        verified_by_site: "Vu par"
+        verified_on: "Le"
+        confirm_with_id: "À confirmer avec"
+        confirm_question: "La question à lui poser"
+        confirm_question_placeholder: "« Le fossé déborde-t-il ici à chaque orage ? »"
+        verification_hint: "Le tri au bureau ne valide qu'une cohérence : une piste n'entre dans la version publique du carnet qu'une fois confirmée par un acteur ou vue sur place."
       values:
         rights:
           open: "Libre de réutilisation"
@@ -372,6 +389,10 @@ fr:
           asked: "Demandé"
           received: "Reçu"
           refused: "Refusé"
+        verification:
+          desk: "Vu au bureau"
+          actor: "Confirmé par un acteur"
+          site: "Vu sur place"
         none: "—"
         boolean:
           "true": "oui"
@@ -383,6 +404,9 @@ fr:
         waiting_farmer: "attend l'exploitant"
         waiting_farmer_why: "Elle n'entre pas dans le carnet du collège avant un contact avec l'exploitant et sa réponse. Un foncier pas encore connu compte comme agricole."
         concordance: "concordance à vérifier"
+        verification_by: "%{level} : %{by}, %{date}"
+        verification_on: "%{level}, %{date}"
+        confirm_with: "à confirmer avec %{actor}"
         basin_order: "n° %{order} depuis l'amont"
         this_winter: "cet hiver"
 
@@ -426,10 +450,10 @@ fr:
       no_expectations: "Aucune attente relevée."
       no_markers: "Aucun repère daté."
       no_seen: "Rien n'a encore été vu sur place."
-      no_leads: "Aucune piste vue sur place pour l'instant."
+      no_leads: "Aucune piste confirmée par un acteur ni vue sur place pour l'instant."
       no_start: "Les trois premières actions ne sont pas encore choisies."
-      hypotheses: "Hypothèses à vérifier sur place"
-      hypotheses_why: "Pas encore vues sur le terrain : elles ne figurent pas sur la carte."
+      hypotheses: "Hypothèses vues au bureau seulement"
+      hypotheses_why: "Ni confirmées par un acteur ni vues sur le terrain : elles ne figurent pas sur la carte ni dans la version publique."
       waiting_farmer:
         one: "1 piste sur terre agricole, ou au foncier pas encore connu, attend la rencontre avec son exploitant ; elle n'apparaît pas ici."
         other: "%{count} pistes sur terre agricole, ou au foncier pas encore connu, attendent la rencontre avec leur exploitant ; elles n'apparaissent pas ici."
@@ -445,6 +469,13 @@ fr:
         keeper_line: "%{role} · %{hours} h par an · %{lifespan} ans"
         no_keeper: "Personne n'est encore désigné : piste orpheline."
         seen_on: "Vue sur place le %{date}"
+        verified_actor: "Confirmée par %{by} le %{date}"
+        verified_actor_anonymous: "Confirmée par un acteur du territoire le %{date}"
+        verified_site: "Vue sur place le %{date}"
+        verified_site_by: "Vue sur place par %{by} le %{date}"
+      to_confirm:
+        one: "1 élément attend l'avis d'un acteur : voir la liste « À confirmer »."
+        other: "%{count} éléments attendent l'avis d'un acteur : voir la liste « À confirmer »."
       decision_table:
         lead: "Piste"
         status: "Décision"
@@ -457,6 +488,50 @@ fr:
       budget_placeholder: "Le budget de cette étape seulement (pas de montant par ouvrage)."
       sources_rights: "Droits : %{rights}"
 
+    confirmations:
+      title: "À confirmer"
+      page_title: "À confirmer · %{name}"
+      back: "Retour au territoire"
+      print: "Imprimer ou enregistrer en PDF"
+      print_short: "PDF"
+      intro: "Ce qu'on a lu au bureau, à faire confirmer par ceux qui connaissent la commune. Emporte une feuille par acteur à la réunion, coche ses réponses, puis note-les ici d'un clic."
+      generated: "%{team} · %{date}"
+      all_actors: "Tous les acteurs"
+      one_actor: "Sa feuille seulement"
+      sheet_for: "À confirmer avec %{actor}"
+      sheet_intro: "Ce que nous avons lu sur la carte et dans les documents, sans encore l'avoir vu sur place. Votre avis nous dit ce qui tient."
+      met_on: "rencontré le %{date}"
+      question: "Question"
+      answer_yes: "C'est juste"
+      answer_fix: "À corriger"
+      answer_unknown: "Ne sait pas"
+      notes: "Notes"
+      confirm: "Confirmé par %{actor}"
+      unlist: "Retirer de sa liste"
+      seen: "Vu sur place"
+      ask: "Demander à…"
+      ask_none: "Choisir un acteur"
+      open_map: "Ouvrir sur une carte"
+      point: "%{lat}, %{lng}"
+      basin: "Sous-bassin : %{basin}"
+      kinds:
+        lead: "Piste"
+        marker: "Repère"
+        expectation: "Attente"
+        basin: "Sous-bassin"
+      to_visit:
+        title: "À aller voir sur place"
+        why: "Personne à qui le demander : c'est le terrain qui répondra. Emporte cette liste lors de la prochaine visite, de préférence après une pluie."
+      unassigned:
+        title: "Sans personne à qui demander"
+        why: "Choisis l'acteur du dossier qui connaît le mieux chacun de ces éléments. S'il n'y en a pas, va d'abord le rencontrer."
+      empty:
+        title: "Rien n'attend l'avis d'un acteur"
+        why: "Sur chaque piste, repère ou attente, choisis « À confirmer avec » et la question à poser. La liste se range par acteur, prête pour la réunion."
+      no_actors: "Le dossier ne compte encore aucun acteur : ajoute d'abord ceux qui y travaillent (onglet « Qui y travaille »)."
+      counts: "En attente d'un avis : %{waiting} · à voir sur place : %{visit} · confirmés : %{confirmed} · vus sur place : %{seen}"
+      footer: "Carnet du territoire · document de travail, ne pas diffuser"
+
   mcp:
     tools:
       list_territories:
@@ -464,13 +539,13 @@ fr:
         description: "Les territoires des équipes de l'utilisateur (module « Territoire » : une commune lue en entier pour décider où agir) : nom, équipe, surface en km², région, archivé ou non, modifiable ou non, et ce que contient leur dossier par type (actor, source, expectation, basin, marker, lead, request), avec les brouillons en attente. Passe ensuite l'identifiant à get_territory."
       get_territory:
         title: "Lire un territoire"
-        description: "Un territoire en entier : limite de la commune en GeoJSON, emprise, centre, couches de la région lisibles ici (sols, ruissellement, plan de secteur, parcellaire agricole, photos aériennes depuis 1971…), cartes de terrain de l'équipe dans la commune (get_map les lit), et son dossier par type : actor (qui y travaille déjà : à rencontrer avant toute recherche), basin (sous-bassin versant, l'unité de conception : order 1 pour le plus en amont, outlet, contour facultatif), source (document trouvé : lien, auteur, date, droits, extraits), expectation (ce que la commune a déjà voté, avec son année et ses sources), marker (fait daté et localisable, avec son niveau de preuve : computed, seen, confirmed), lead (piste d'aménagement : rang soil, slow ou structure, thème water ou tree, foncier, ordre de grandeur, réponse de l'exploitant, qui l'entretient, décision du collège), request (document ou information à obtenir, auprès de qui, où on en est). Chaque élément gardé porte, s'il y en a une, la modification que tu as proposée et qui attend (pending_update). properties_by_kind donne les attributs de chaque type et leurs valeurs. relief dit où en est le relief de la commune, que get_catchment prépare au premier appel (status none, queued, running avec progress, retrying avec error et retry_at, failed avec error, ready) ; research_grid dit quoi chercher sur ce territoire et où ; rules donne les règles du carnet à respecter dans tes propositions. Avant de proposer, lis aussi get_design_guide avec le chapitre « territory »."
+        description: "Un territoire en entier : limite de la commune en GeoJSON, emprise, centre, couches de la région lisibles ici (sols, ruissellement, plan de secteur, parcellaire agricole, photos aériennes depuis 1971…), cartes de terrain de l'équipe dans la commune (get_map les lit), et son dossier par type : actor (qui y travaille déjà : à rencontrer avant toute recherche), basin (sous-bassin versant, l'unité de conception : order 1 pour le plus en amont, outlet, contour facultatif), source (document trouvé : lien, auteur, date, droits, extraits), expectation (ce que la commune a déjà voté, avec son année et ses sources), marker (fait daté et localisable, avec son niveau de preuve : computed, seen, confirmed, qui suit verification), lead (piste d'aménagement : rang soil, slow ou structure, thème water ou tree, foncier, ordre de grandeur, réponse de l'exploitant, qui l'entretient, décision du collège), request (document ou information à obtenir, auprès de qui, où on en est). Chaque élément gardé porte, s'il y en a une, la modification que tu as proposée et qui attend (pending_update), et chaque attente, sous-bassin, repère ou piste son niveau de vérification (verification : desk vu au bureau, actor confirmé par un acteur, site vu sur place). to_confirm range par acteur ce qui attend son avis (by_actor, avec la question à lui poser), ce qui ne peut se vérifier que sur place (to_visit, avec un point) et ce qui n'a encore personne à qui le demander (unassigned) ; confirmations_url est la feuille à imprimer pour la réunion. properties_by_kind donne les attributs de chaque type et leurs valeurs. relief dit où en est le relief de la commune, que get_catchment prépare au premier appel (status none, queued, running avec progress, retrying avec error et retry_at, failed avec error, ready) ; research_grid dit quoi chercher sur ce territoire et où ; rules donne les règles du carnet à respecter dans tes propositions. Avant de proposer, lis aussi get_design_guide avec le chapitre « territory »."
       propose_territory_items:
         title: "Proposer au dossier d'un territoire"
         description: "Pose en brouillons ce que tu as trouvé sur un territoire : personnes et organismes à rencontrer (actor), documents (source : properties.url, author, published_on, rights open, restricted ou unknown, source_kind, excerpts : une liste de quelques phrases citées, jamais le document entier), attentes votées par la commune (expectation : properties.year, source_ids), sous-bassins versants (basin : properties.order depuis l'amont, outlet ; geometry Polygon facultative), faits datés et localisés (marker : geometry Point, properties.basin_id, occurred_on, proof, marker_kind, source_ids), pistes d'aménagement (lead : properties.basin_id, rank, theme, land, magnitude, expectation_ids ; geometry Point, LineString ou Polygon), documents ou informations à obtenir (request : properties.request_kind document ou info, from, actor_id, state to_ask, asked, received ou refused). Un basin_id renvoie à un sous-bassin du dossier, brouillon compris. Pour renvoyer à un brouillon du même appel, donne-lui un ref (« b1 ») et utilise basin_ref, actor_ref, source_ref, source_refs ou expectation_refs à la place de l'identifiant : les sous-bassins et leurs repères partent ensemble. Chaque brouillon porte sa justification (rationale) : d'où vient l'information et pourquoi elle compte ici. Un axe d'écoulement calculé qui tombe sur une inondation racontée est une concordance à vérifier (proof computed), jamais une preuve. Ne dimensionne aucun ouvrage : un ordre de grandeur seulement. L'humain garde ou écarte chaque brouillon sur la page du territoire. Un doublon (même type et même titre, ou même lien) est refusé."
       propose_territory_updates:
         title: "Proposer des modifications au dossier d'un territoire"
-        description: "Propose de modifier des éléments qu'une personne a déjà gardés dans le dossier d'un territoire (identifiants dans get_territory) : title, body, geometry (null la retire) ou une partie de properties (seules les clés données changent ; null retire une valeur ; keeper, farmer et decision se complètent clé par clé). Exemples : le foncier d'une piste une fois le propriétaire connu, son gestionnaire, le niveau de preuve d'un repère vu sur place, les extraits d'une source. Chaque modification porte sa justification. Rien ne change avant qu'une personne l'accepte, en entier ou champ par champ, sur la page du territoire. Une nouvelle proposition complète, champ par champ, celle qui attendait sur le même élément (replace: true la remplace en entier) : inutile de renvoyer les champs déjà proposés. Un brouillon ne se modifie pas ainsi : retire-le (withdraw_territory_drafts) et propose-le à nouveau."
+        description: "Propose de modifier des éléments qu'une personne a déjà gardés dans le dossier d'un territoire (identifiants dans get_territory) : title, body, geometry (null la retire) ou une partie de properties (seules les clés données changent ; null retire une valeur ; keeper, farmer et decision se complètent clé par clé). Exemples : le foncier d'une piste une fois le propriétaire connu, son gestionnaire, le niveau de vérification d'un élément que la personne te dit confirmé ou vu (verification actor avec verified_by_id ou verified_by, ou site, et verified_on), l'acteur à qui le faire confirmer (confirm_with_id) et la question à lui poser (confirm_question), les extraits d'une source. Chaque modification porte sa justification. Rien ne change avant qu'une personne l'accepte, en entier ou champ par champ, sur la page du territoire. Une nouvelle proposition complète, champ par champ, celle qui attendait sur le même élément (replace: true la remplace en entier) : inutile de renvoyer les champs déjà proposés. Un brouillon ne se modifie pas ainsi : retire-le (withdraw_territory_drafts) et propose-le à nouveau."
       propose_territory_deletions:
         title: "Proposer de retirer des éléments d'un territoire"
         description: "Propose de retirer du dossier d'un territoire des éléments qu'une personne a gardés (une source en double, un repère placé deux fois), avec une justification commune. Rien n'est retiré avant qu'une personne l'accepte sur la page du territoire. Pour un retrait qui dépend d'un remplacement (un sous-bassin redessiné en deux), donne superseded_by : les identifiants des remplaçants, brouillons compris ; le retrait ne s'accepte qu'une fois chacun d'eux gardé. Un brouillon se retire directement avec withdraw_territory_drafts."
@@ -495,7 +570,7 @@ fr:
       territory_item_body: "Ce qu'il faut savoir, en quelques phrases : résumé d'une source, pourquoi une piste, ce qui s'est passé."
       territory_item_rationale: "D'où vient l'information (lien, page, date) et pourquoi elle compte pour ce territoire."
       territory_item_geometry: "GeoJSON en WGS84 [longitude, latitude] : Point pour un repère ; Point, LineString ou Polygon pour une piste ; Polygon pour un sous-bassin (facultatif). Rien pour les autres types. À moins de 5 km de la limite du territoire."
-      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; basin → order (1 = le plus en amont), outlet, paris_sector_ids (codes des secteurs officiels, « DyGe163 » : le serveur attache leur contour, uni s'il y en a plusieurs, et calcule area_km2 ; ne donne alors pas de geometry) ; marker → basin_id, occurred_on (« 2021-07-14 », « 2025-07 » ou « 2025 »), occurred_precision (day, month, season ou year : « l'été 2025 » = occurred_on 2025-07, occurred_precision season), proof, marker_kind, source_ids ; lead → basin_id (sans lui, un repère ou une piste placé reçoit le sous-bassin du dossier où il tombe, basin_id_auto dans la réponse), rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years} ; request → request_kind, from, actor_id, state, asked_on, received_on, source_id. Pour renvoyer à un brouillon du même appel : basin_ref, actor_ref, source_ref, source_refs, expectation_refs (son ref). Les autres clés sont ignorées."
+      territory_item_properties: "Les attributs du type (voir values dans get_territory) : actor → organization, function, met_on, contact ; source → url, author, published_on, rights, source_kind, excerpts ; expectation → year, source_ids, validated ; basin → order (1 = le plus en amont), outlet, paris_sector_ids (codes des secteurs officiels, « DyGe163 » : le serveur attache leur contour, uni s'il y en a plusieurs, et calcule area_km2 ; ne donne alors pas de geometry) ; marker → basin_id, occurred_on (« 2021-07-14 », « 2025-07 » ou « 2025 »), occurred_precision (day, month, season ou year : « l'été 2025 » = occurred_on 2025-07, occurred_precision season), proof, marker_kind, source_ids ; lead → basin_id (sans lui, un repère ou une piste placé reçoit le sous-bassin du dossier où il tombe, basin_id_auto dans la réponse), rank, theme, land, magnitude, expectation_ids, seen_on_site, keeper {role, gestures, hours_per_year, agreement, lifespan_years} ; request → request_kind, from, actor_id, state, asked_on, received_on, source_id. Vérification, pour expectation, basin, marker et lead : verification (desk = vu au bureau, par défaut ; actor = confirmé par un acteur, avec verified_by_id ou verified_by, et verified_on ; site = vu sur place, avec verified_by et verified_on), confirm_with_id (l'acteur du dossier à qui le faire confirmer) et confirm_question (la question précise à lui poser). Pour renvoyer à un brouillon du même appel : basin_ref, actor_ref, source_ref, source_refs, expectation_refs, confirm_with_ref, verified_by_ref (son ref). Les autres clés sont ignorées."
       territory_item_ids: "Identifiants des brouillons à retirer (dossier dans get_territory)."
       territory_item_ref: "Un nom court pour ce brouillon (« b1 », « giser »), qu'un autre brouillon du même appel peut citer (basin_ref, actor_ref, source_ref, source_refs, expectation_refs)."
       territory_updates: "Les modifications, une par élément, chacune avec sa justification."
@@ -543,7 +618,7 @@ fr:
       review_territory_updates: "Les modifications attendent sur la page du territoire (review_url), en haut du dossier : la personne coche ce qu'elle accepte, champ par champ. Rien ne change sans elle."
       review_territory_deletions: "Les retraits attendent sur la page du territoire (review_url) : rien n'est retiré avant que la personne l'accepte."
       review_territory_items: "Les brouillons attendent sur la page du territoire (review_url), où la personne garde ou écarte chacun. Dis-lui que rien n'entre dans le carnet sans elle, et invite-la à aller voir sur place les repères et les pistes avant de les montrer au collège."
-      territory_rules: "1. On rencontre d'abord ceux qui travaillent déjà sur le territoire (actor) : le carnet relie leur travail, il ne le refait pas. 2. Chaque attente, source et repère porte sa source et sa date ; un document ancien est une attente à confirmer par l'administration. 3. Un axe calculé qui croise un fait raconté est une concordance à vérifier (proof computed) : seul le terrain la change en seen ou confirmed. 4. D'abord le sol (rank soil : couverture d'hiver, sens du travail), puis ralentir en haut du bassin (slow), puis les ouvrages (structure). 5. Ordre de grandeur seulement, jamais de dimensionnement ; quand des biens ou des personnes sont exposés, renvoie vers un bureau d'ingénieurs. 6. Une piste sur terre agricole (ou au foncier inconnu) n'entre au carnet du collège qu'après la rencontre avec l'exploitant et sa réponse ; elle reste une zone floue tant qu'il n'a pas dit oui. Seule exception, une pratique du sol (rank soil) : elle y entre sans tracé et sans nommer de ferme ni de parcelle, et la version publique attend le oui. 7. Une piste sans gestionnaire est orpheline. 8. Jamais de nom de propriétaire tiré du cadastre : seulement le type de foncier (public, agricultural, private). 9. L'eau se lit par sous-bassin, de l'amont vers l'aval : rattache chaque repère et chaque piste à son sous-bassin (basin_id). 10. Ce qu'il faut encore obtenir (un avis, un inventaire, une information) est une request, avec à qui le demander ; une fois reçu, le document devient une source (source_id). 11. Un élément gardé appartient aux personnes : pour le corriger, propose une modification (propose_territory_updates) ou un retrait (propose_territory_deletions), jamais un doublon."
+      territory_rules: "1. On rencontre d'abord ceux qui travaillent déjà sur le territoire (actor) : le carnet relie leur travail, il ne le refait pas. 2. Chaque attente, source et repère porte sa source et sa date ; un document ancien est une attente à confirmer par l'administration. 3. Un axe calculé qui croise un fait raconté est une concordance à vérifier (verification desk) : seul un acteur (actor) ou le terrain (site) la confirme ; proof suit le niveau. 4. D'abord le sol (rank soil : couverture d'hiver, sens du travail), puis ralentir en haut du bassin (slow), puis les ouvrages (structure). 5. Ordre de grandeur seulement, jamais de dimensionnement ; quand des biens ou des personnes sont exposés, renvoie vers un bureau d'ingénieurs. 6. Une piste sur terre agricole (ou au foncier inconnu) n'entre au carnet du collège qu'après la rencontre avec l'exploitant et sa réponse ; elle reste une zone floue tant qu'il n'a pas dit oui. Seule exception, une pratique du sol (rank soil) : elle y entre sans tracé et sans nommer de ferme ni de parcelle, et la version publique attend le oui. 7. Une piste sans gestionnaire est orpheline. 8. Jamais de nom de propriétaire tiré du cadastre : seulement le type de foncier (public, agricultural, private). 9. L'eau se lit par sous-bassin, de l'amont vers l'aval : rattache chaque repère et chaque piste à son sous-bassin (basin_id). 10. Ce qu'il faut encore obtenir (un avis, un inventaire, une information) est une request, avec à qui le demander ; une fois reçu, le document devient une source (source_id). 11. Un élément gardé appartient aux personnes : pour le corriger, propose une modification (propose_territory_updates) ou un retrait (propose_territory_deletions), jamais un doublon. 12. Le tri au bureau ne valide qu'une cohérence : l'équipe ne connaît souvent pas la commune. Tout ce que tu proposes reste verification desk (vu au bureau) ; ne pose actor ou site que si la personne te dit qui l'a confirmé ou vu, et quand (jamais d'après un document ni d'après ton propre calcul). Pour chaque piste, repère ou attente, désigne l'acteur du dossier qui le sait (confirm_with_id ou confirm_with_ref) et la question à lui poser (confirm_question, une seule, fermée si possible). to_confirm range ce qui attend par acteur, et ce que personne ne peut confirmer à part le terrain (to_visit) : propose à la personne d'y aller. 13. Une piste n'entre dans la version publique du carnet qu'une fois confirmée par un acteur ou vue sur place (verification actor ou site)."
   ai_journal:
     actions:
       list_territories: "a listé les territoires"

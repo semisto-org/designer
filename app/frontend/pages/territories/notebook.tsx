@@ -126,6 +126,9 @@ export default function TerritoryNotebook(props: NotebookProps) {
           </div>
         )}
         {props.waitingForFarmer > 0 && <p className="mt-4 text-sm text-humus-800">{n('waiting_farmer', { count: props.waitingForFarmer })}</p>}
+        {working && props.toConfirm > 0 && (
+          <p className="mt-2 text-sm text-prune-800 print:hidden"><Link href={`/territories/${territory.id}/confirmations`} className="hover:underline">{n('to_confirm', { count: props.toConfirm })}</Link></p>
+        )}
       </Part>
 
       <Part title={n('parts.start')}>
@@ -260,8 +263,8 @@ function Markers({ markers, empty }: { markers: NotebookMarker[]; empty: string 
           <p className="flex flex-wrap items-center gap-1.5">
             <span className="font-medium">{marker.title}</span>
             {marker.occurredOn && <span className="text-loam-500">· {date(marker.occurredOn)}</span>}
-            <Pill tone={marker.proof === 'confirmed' ? 'prune' : marker.proof === 'seen' ? 'leaf' : 'humus'}>{v('proof', marker.proof)}</Pill>
-            {marker.proof === 'computed' && <Pill tone="humus">{t('territories.show.badges.concordance')}</Pill>}
+            <Pill tone={marker.verification.level === 'actor' ? 'prune' : marker.verification.level === 'site' ? 'leaf' : 'humus'}>{v('verification', marker.verification.level)}</Pill>
+            {marker.verification.level === 'desk' && <Pill tone="humus">{t('territories.show.badges.concordance')}</Pill>}
           </p>
           {marker.body && <p className="text-sm text-loam-700">{marker.body}</p>}
           {marker.sources.length > 0 && <p className="text-sm text-loam-500">{marker.sources.map((s) => s.title).join(' · ')}</p>}
@@ -269,6 +272,12 @@ function Markers({ markers, empty }: { markers: NotebookMarker[]; empty: string 
       ))}
     </ul>
   )
+}
+
+function verificationLine({ level, by, on }: NotebookLead['verification']) {
+  const when = date(on)
+  if (level === 'site') return by ? n('lead.verified_site_by', { by, date: when }) : n('lead.verified_site', { date: when })
+  return by ? n('lead.verified_actor', { by, date: when }) : n('lead.verified_actor_anonymous', { date: when })
 }
 
 function Lead({ lead, working }: { lead: NotebookLead; working: boolean }) {
@@ -296,7 +305,7 @@ function Lead({ lead, working }: { lead: NotebookLead; working: boolean }) {
           ? <>{n('lead.keeper_line', { role: keeper.role, hours: keeper.hours_per_year ?? '?', lifespan: keeper.lifespan_years ?? '?' })}{keeper.gestures && <span className="text-loam-600"> · {keeper.gestures}</span>}{keeper.agreement && <span className="text-loam-600"> · {keeper.agreement}</span>}</>
           : <span className="text-clay-700">{n('lead.no_keeper')}</span>}
         </dd>
-        {lead.seenOn && <><dt className="text-loam-500" /><dd className="text-loam-500">{n('lead.seen_on', { date: date(lead.seenOn) })}</dd></>}
+        {lead.verification.level !== 'desk' && <><dt className="text-loam-500" /><dd className="text-loam-500">{verificationLine(lead.verification)}</dd></>}
       </dl>
     </li>
   )

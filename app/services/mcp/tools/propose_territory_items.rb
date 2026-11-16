@@ -22,7 +22,8 @@ module Mcp
 
       MAX_ITEMS = 40
       # A reference to a draft of the same call, and the key it fills.
-      REFS = { "basin_ref" => "basin_id", "actor_ref" => "actor_id", "source_ref" => "source_id" }.freeze
+      REFS = { "basin_ref" => "basin_id", "actor_ref" => "actor_id", "source_ref" => "source_id",
+               "confirm_with_ref" => "confirm_with_id", "verified_by_ref" => "verified_by_id" }.freeze
       REF_LISTS = { "source_refs" => "source_ids", "expectation_refs" => "expectation_ids" }.freeze
 
       requirement :propose

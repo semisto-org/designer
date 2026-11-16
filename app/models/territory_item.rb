@@ -27,6 +27,16 @@
 #                (a GISER opinion, the river contract's inventory), from
 #                whom, and where it stands: to ask, asked, received, refused.
 #
+# Every claim about the land (an expectation, a sub-basin, a marker, a lead)
+# carries how far it was checked (`verification`, Michael 2026-11-16): seen
+# at the desk only (« vu au bureau », the default: most teams do not know the
+# commune they read), confirmed by an actor of the dossier (who, when), or
+# seen on site (by whom, when). `confirm_with_id` names the actor to ask next;
+# the « à confirmer avec » sheet groups those by actor for a meeting
+# (TerritoryConfirmations). A lead reaches the public notebook only once
+# confirmed or seen. A marker's older `proof` and a lead's `seen_on_site`
+# follow the level both ways, so nothing written before is lost.
+#
 # Like map features, an AI proposes items as drafts with a rationale (MCP
 # propose_territory_items); a person accepts or rejects them one by one. A
 # change to a kept entry, or its removal, is proposed the same way
@@ -56,6 +66,15 @@ class TerritoryItem < ApplicationRecord
   # occurred_on then holds the first day of the period.
   PRECISIONS = %w[day month season year].freeze
   SEASON_STARTS = { "spring" => "03-21", "summer" => "06-21", "autumn" => "09-21", "winter" => "12-21" }.freeze
+  # « vu au bureau », « confirmé par un acteur », « vu sur place ».
+  VERIFICATIONS = %w[desk actor site].freeze
+  VERIFIABLE_KINDS = %w[expectation basin marker lead].freeze
+  VERIFICATION_SCHEMA = {
+    "verification" => VERIFICATIONS, "verified_by_id" => :integer, "verified_by" => :string, "verified_on" => :date,
+    "confirm_with_id" => :integer, "confirm_question" => :string
+  }.freeze
+  # A marker's proof says the same thing in its own words.
+  PROOF_OF_LEVEL = { "desk" => "computed", "actor" => "confirmed", "site" => "seen" }.freeze
   EXCERPTS_MAX = 20
   EXCERPT_MAX_LENGTH = 1500
 
@@ -65,17 +84,18 @@ class TerritoryItem < ApplicationRecord
     "actor" => { "organization" => :string, "function" => :string, "met_on" => :date, "contact" => :string },
     "source" => { "url" => :url, "author" => :string, "published_on" => :string, "excerpts" => :texts,
                   "rights" => RIGHTS, "source_kind" => SOURCE_KINDS },
-    "expectation" => { "year" => :integer, "source_ids" => :ids, "validated" => :boolean },
-    "basin" => { "order" => :integer, "outlet" => :string, "paris_sector_ids" => :codes, "area_km2" => :number },
+    "expectation" => { "year" => :integer, "source_ids" => :ids, "validated" => :boolean, **VERIFICATION_SCHEMA },
+    "basin" => { "order" => :integer, "outlet" => :string, "paris_sector_ids" => :codes, "area_km2" => :number, **VERIFICATION_SCHEMA },
     "marker" => { "basin_id" => :integer, "occurred_on" => :string, "occurred_precision" => PRECISIONS, "proof" => PROOFS,
-                  "marker_kind" => MARKER_KINDS, "source_ids" => :ids },
+                  "marker_kind" => MARKER_KINDS, "source_ids" => :ids, **VERIFICATION_SCHEMA },
     "lead" => {
       "basin_id" => :integer, "rank" => RANKS, "theme" => THEMES, "land" => LANDS, "magnitude" => :string,
       "expectation_ids" => :ids, "seen_on_site" => :boolean, "seen_on" => :date,
       "farmer" => { "contacted_on" => :date, "answer" => FARMER_ANSWERS, "note" => :string },
       "keeper" => { "role" => :string, "gestures" => :string, "hours_per_year" => :integer, "agreement" => :string, "lifespan_years" => :integer },
       "decision" => { "status" => DECISIONS, "reason" => :string, "decided_on" => :date },
-      "first_step" => :integer, "this_winter" => :boolean, "map_id" => :integer
+      "first_step" => :integer, "this_winter" => :boolean, "map_id" => :integer,
+      **VERIFICATION_SCHEMA
     },
     "request" => {
       "request_kind" => REQUEST_KINDS, "from" => :string, "actor_id" => :integer, "state" => REQUEST_STATES,
@@ -84,7 +104,8 @@ class TerritoryItem < ApplicationRecord
   }.freeze
   # The keys that point to another entry of the same territory, and the kind
   # that entry must be.
-  REFERENCES = { "basin_id" => "basin", "actor_id" => "actor", "source_id" => "source" }.freeze
+  REFERENCES = { "basin_id" => "basin", "actor_id" => "actor", "source_id" => "source",
+                 "verified_by_id" => "actor", "confirm_with_id" => "actor" }.freeze
   REFERENCE_LISTS = { "source_ids" => "source", "expectation_ids" => "expectation" }.freeze
   STRING_MAX = 500
 
@@ -104,6 +125,7 @@ class TerritoryItem < ApplicationRecord
   validate :geometry_fits_kind
   validate :file_fits
   validate :references_exist
+  validate :verification_names_who
 
   normalizes :title, with: ->(t) { t.to_s.squish }
   before_validation :clean_properties
@@ -203,6 +225,27 @@ class TerritoryItem < ApplicationRecord
     iso
   end
 
+  # --- verification ---
+
+  def verifiable? = VERIFIABLE_KINDS.include?(kind)
+
+  # How far the entry was checked: desk, actor or site. An entry written
+  # before the levels existed reads its marker's proof or its lead's visit.
+  def verification_level
+    return nil unless verifiable?
+    prop(:verification) || legacy_level || "desk"
+  end
+
+  # Confirmed by an actor, or seen on site: what a public notebook may show.
+  def confirmed? = %w[actor site].include?(verification_level)
+
+  # Who checked it, as the dossier names them: the actor's entry, or a name.
+  def verifier_name(actors = nil)
+    id = prop(:verified_by_id)
+    actor = id && (actors ? actors[id] : territory.items.find_by(id:, kind: "actor"))
+    actor&.title || prop(:verified_by)
+  end
+
   # --- leads ---
 
   # No keeper, no lead: who maintains it in year 8 is where projects die.
@@ -235,6 +278,7 @@ class TerritoryItem < ApplicationRecord
       geometry: geometry_geojson,
       properties:, occurredLabel: (occurred_label if kind == "marker"),
       file: file.attached? ? { name: file.filename.to_s, byteSize: file.byte_size } : nil,
+      verification: verification_level,
       orphan: orphan?, sharp: kind == "lead" ? sharp? : nil, waitingForFarmer: waiting_for_farmer?,
       pendingUpdate: pending_update&.as_review_json(self),
       createdAt: created_at.iso8601, updatedAt: updated_at.iso8601, lockVersion: lock_version
@@ -245,6 +289,57 @@ class TerritoryItem < ApplicationRecord
     def clean_properties
       self.properties = self.class.clean(kind, properties)
       normalize_occurrence if kind == "marker"
+      sync_verification if verifiable?
+    end
+
+    def legacy_level
+      case kind
+      when "lead" then "site" if prop(:seen_on_site) == true
+      when "marker" then PROOF_OF_LEVEL.key(prop(:proof)).then { |level| level == "desk" ? nil : level }
+      end
+    end
+
+    # The level and the older words for it (a marker's proof, a lead's visit)
+    # follow each other: the one that changed wins. A level without a date
+    # takes today's; back at the desk, who and when are dropped; confirmed
+    # by the very actor it waited for, it leaves that actor's list.
+    def sync_verification
+      before = properties_was.is_a?(Hash) ? properties_was : {}
+      level = properties["verification"]
+      legacy_changed =
+        case kind
+        when "lead" then properties["seen_on_site"] != before["seen_on_site"] || properties["seen_on"] != before["seen_on"]
+        when "marker" then properties["proof"] != before["proof"]
+        end
+      if level.nil? || (legacy_changed && level == before["verification"])
+        level = legacy_level || "desk"
+        properties["verified_on"] = properties["seen_on"] if level == "site" && kind == "lead" && properties["seen_on"]
+      end
+      properties["verification"] = level
+      if level == "desk"
+        properties.except!("verified_by_id", "verified_by", "verified_on")
+      else
+        properties["verified_on"] ||= Date.current.iso8601
+        properties.delete("verified_by_id") if level == "site"
+        properties.except!("confirm_with_id", "confirm_question") if level == "actor" && properties["verified_by_id"].present? && properties["verified_by_id"] == properties["confirm_with_id"]
+      end
+      case kind
+      when "lead"
+        if level == "site"
+          properties["seen_on_site"] = true
+          properties["seen_on"] = properties["verified_on"]
+        else
+          properties.except!("seen_on_site", "seen_on")
+        end
+      when "marker"
+        properties["proof"] = PROOF_OF_LEVEL.fetch(level)
+      end
+    end
+
+    # « Confirmé par un acteur » says by whom: an actor of the dossier or a name.
+    def verification_names_who
+      return unless verifiable? && properties["verification"] == "actor"
+      errors.add(:properties, :verifier_missing) if properties["verified_by_id"].blank? && properties["verified_by"].blank?
     end
 
     # occurred_on « 2025 », « 2025-07 » or a day, with its precision

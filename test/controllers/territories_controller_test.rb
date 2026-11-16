@@ -121,4 +121,25 @@ class TerritoriesControllerTest < ActionDispatch::IntegrationTest
     get notebook_territory_path(territory, version: "public"), headers: inertia_headers
     assert_equal [ "public", [] ], [ props["version"], props["hypotheses"] ]
   end
+
+  test "the « à confirmer » sheet groups by actor, one actor at a time if asked" do
+    territory = make_territory(@team)
+    giser = territory.items.create!(kind: "actor", title: "Cellule GISER", properties: { organization: "SPW" })
+    river = territory.items.create!(kind: "actor", title: "Contrat de rivière")
+    territory.items.create!(kind: "lead", title: "Haie sur talus", properties: { confirm_with_id: giser.id, confirm_question: "Le talus déborde-t-il ?" })
+    territory.items.create!(kind: "marker", title: "Coulée 2021", properties: { confirm_with_id: river.id }, geometry: inside_point)
+    territory.items.create!(kind: "marker", title: "Mare comblée", geometry: inside_point)
+    sign_in_as @member
+    get confirmations_territory_path(territory), headers: inertia_headers
+    assert_equal "territories/confirmations", response.parsed_body["component"]
+    assert_equal [ "Cellule GISER", "Contrat de rivière" ], props["byActor"].map { _1["actor"]["title"] }.sort
+    assert_equal "Le talus déborde-t-il ?", props["byActor"].find { _1["actor"]["id"] == giser.id }["items"].sole["question"]
+    assert_equal [ "Mare comblée" ], props["toVisit"].map { _1["title"] }
+    assert_equal 2, props["counts"]["waiting"]
+    assert props["theme"]["headingColor"].present?
+
+    get confirmations_territory_path(territory, actor: giser.id), headers: inertia_headers
+    assert_equal [ "Cellule GISER" ], props["byActor"].map { _1["actor"]["title"] }
+    assert_empty props["toVisit"]
+  end
 end
