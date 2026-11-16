@@ -834,7 +834,10 @@ export class ReliefController {
 
   setParticles(on: boolean) {
     this.view.particles = on
-    if (this.scene) this.scene.particlesOn = on
+    if (this.scene) {
+      this.scene.particlesOn = on
+      this.scene.loop.invalidate()
+    }
   }
 
   /** The mesh shows trees and roofs, or the bare terrain. */
@@ -1086,6 +1089,8 @@ export class ReliefController {
     if (!this.scene) return
     if (!this.simulation) this.buildSimulations()
     this.playing = true
+    // The scene draws on demand: the rain's steps run at its next frames.
+    this.scene.loop.invalidate()
   }
 
   pause() { this.playing = false }
