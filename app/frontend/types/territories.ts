@@ -111,6 +111,18 @@ export type TerritoryShowProps = {
   researchGrid: ResearchTopic[]
   canEdit: boolean
   moduleGranted: boolean
+  relief: TerritoryReliefState
+}
+
+/** Where the commune's relief stands (Relief::TerritoryRelief, read by the AI's catchments). */
+export type TerritoryReliefState = {
+  status: 'none' | 'queued' | 'running' | 'stalled' | 'retrying' | 'failed' | 'ready'
+  progress?: number
+  error?: string
+  attempts?: number
+  max_attempts?: number
+  retry_at?: string
+  cell_size_m?: number
 }
 
 export type TerritorySummary = {

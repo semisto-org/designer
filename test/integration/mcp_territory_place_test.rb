@@ -98,7 +98,8 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
       text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
     end
     assert error
-    assert_match(/se prépare/, text)
+    assert_match(/en file d'attente/, text)
+    assert_match(/"status":"queued"/, text)
     assert_equal "pending", @territory.reload.terrain.status
 
     # While it runs, no second import.
@@ -114,6 +115,35 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
     text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, feature_id: 1 })
     assert error
     assert_match(/lng et lat/, text)
+  end
+
+  test "get_catchment on a territory says why its relief failed and when it retries, and relaunches only when asked" do
+    configure_relief_region
+    terrain = @territory.create_terrain!(status: "failed", error: "Le service du relief n'a pas répondu correctement.", attempts: 2,
+                                         retry_at: 25.minutes.from_now, metadata: { "retriable" => true })
+    text, error = nil
+    assert_no_enqueued_jobs(only: ReliefImportJob) do
+      text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    end
+    assert error
+    assert_match(/essai 2 sur 4/, text)
+    assert_match(/n'a pas répondu/, text)
+    assert_match(/se relance seule le/, text)
+
+    terrain.update!(retry_at: nil, attempts: 4)
+    text, = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    assert_match(/après 4 essais/, text)
+    assert_match(/retry_relief/, text)
+    assert_equal "failed", @territory.reload.terrain.status
+
+    assert_enqueued_with(job: ReliefImportJob) do
+      text, = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside, retry_relief: true })
+    end
+    assert_match(/en file d'attente/, text)
+    assert_equal 0, terrain.reload.attempts
+
+    data, = call_tool(@token, "get_territory", { territory_id: @territory.id })
+    assert_equal "queued", data.dig("relief", "status")
   end
 
   test "get_catchment on a territory of a region without relief says so" do

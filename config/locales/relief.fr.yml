@@ -8,6 +8,7 @@ fr:
       no_boundary: "Dessine d'abord le contour du terrain : le relief se télécharge autour de lui."
       too_large: "Le terrain est trop étendu pour le relief détaillé (%{area} km² avec la marge autour, au plus %{max} km²). Dessine un contour plus resserré."
       provider_failed: "Le service du relief n'a pas répondu correctement. Réessaie dans quelques minutes."
+      mostly_missing: "Le service du relief n'a rendu aucune hauteur pour %{share} % du lieu."
       already_running: "Le relief est déjà en cours de téléchargement."
       unknown_soil: "Ce type de sol n'existe pas pour cette région."
       out_of_range: "%{field} : la valeur doit être comprise entre %{min} et %{max}."

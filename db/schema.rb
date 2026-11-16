@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -826,6 +826,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_160000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "territory_id"
+    t.integer "attempts", default: 0, null: false
+    t.datetime "queued_at"
+    t.datetime "retry_at"
     t.index ["map_id"], name: "index_map_terrains_on_map_id", unique: true
     t.index ["territory_id"], name: "index_map_terrains_on_territory_id", unique: true
     t.check_constraint "num_nonnulls(map_id, territory_id) = 1", name: "map_terrains_one_owner"

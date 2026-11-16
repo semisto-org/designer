@@ -105,6 +105,7 @@ export default function TerritoryShow(props: TerritoryShowProps) {
             )}
             {!canEdit && <Pill icon={<Lock aria-hidden />}>{t('territories.show.read_only')}</Pill>}
           </div>
+          <ReliefLine relief={props.relief} />
           {territory.archived && <p className="mt-3 rounded-lg bg-loam-50 p-3 text-sm text-loam-700">{t('territories.show.archived_note')}</p>}
           {!territory.archived && !props.moduleGranted && <p className="mt-3 rounded-lg bg-humus-50 p-3 text-sm text-humus-800">{t('territories.show.module_off_note')}</p>}
         </header>
@@ -170,6 +171,18 @@ export default function TerritoryShow(props: TerritoryShowProps) {
         </section>
       </aside>
     </div>
+  )
+}
+
+/** Where the commune's relief stands: the AI's catchments wait for it. */
+function ReliefLine({ relief }: { relief: TerritoryShowProps['relief'] }) {
+  if (relief.status === 'none') return null
+  const retryAt = relief.retry_at ? new Date(relief.retry_at).toLocaleString('fr-BE', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : ''
+  const tone = relief.status === 'failed' || relief.status === 'retrying' ? 'text-clay-700' : 'text-loam-500'
+  return (
+    <p className={`mt-2 text-sm ${tone}`}>
+      {t(`territories.show.relief.${relief.status}`, { progress: relief.progress ?? 0, error: relief.error ?? '', retry_at: retryAt, attempts: relief.attempts ?? 0, max: relief.max_attempts ?? 0, cell: relief.cell_size_m ?? '' })}
+    </p>
   )
 }
 

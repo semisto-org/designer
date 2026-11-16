@@ -69,6 +69,57 @@ class Relief::TerrainImportTest < ActiveSupport::TestCase
     assert_not @terrain.grid.attached?
   end
 
+  test "cells beyond the region's outline are not asked; a place mostly without heights fails, worth a retry" do
+    region = regions(:wallonia)
+    # The region ends 3 km south of the territory: its north margin is in the neighbour's land.
+    region.update!(outline: RGeo::Geos.factory(srid: 4326).parse_wkt("MULTIPOLYGON(((4.0 50.0, 5.5 50.0, 5.5 50.3, 4.0 50.3, 4.0 50.0)))"))
+    region.update!(settings: region.settings.merge("relief" => region.settings["relief"].merge("coverage_buffer_m" => 0),
+                                                   "territory" => { "relief_margin_m" => 100 }))
+    asked = []
+    stub_request(:post, "#{ReliefTestHelper::MNT}/identify").to_return do |request|
+      points = JSON.parse(URI.decode_www_form(request.body).to_h.fetch("geometry")).fetch("points")
+      asked.concat(points)
+      { status: 200, body: { results: points.map { { "attributes" => { "Pixel Value" => "200" } } } }.to_json }
+    end
+    territory = make_territory(make_team("Semisto", admin: users(:michael)), size: 0.01)
+    terrain = territory.create_terrain!
+    Relief::TerrainImport.new(terrain, provider: instant_provider).call
+
+    assert asked.empty?, "#{asked.size} points asked beyond the outline"
+    assert_equal "failed", terrain.reload.status
+    assert_match(/aucune hauteur pour 100 %/, terrain.error)
+    assert terrain.retriable?
+  end
+
+  test "a territory's relief that fails retries on its own, later and later; a map's waits for its button" do
+    stub_request(:post, "#{ReliefTestHelper::MNT}/identify").to_return(status: 500)
+    region = regions(:wallonia)
+    region.update!(settings: region.settings.merge("territory" => { "relief_margin_m" => 100 }, "relief" => region.settings["relief"].merge("threads" => 1)))
+    territory = make_territory(make_team("Semisto", admin: users(:michael)), size: 0.01)
+    terrain = territory.create_terrain!
+    provider = instant_provider
+    with_provider(provider) do
+      assert_enqueued_with(job: ReliefImportJob) { ReliefImportJob.perform_now(terrain) }
+    end
+    terrain.reload
+    assert_equal "failed", terrain.status
+    assert_equal 1, terrain.attempts
+    assert_in_delta 5.minutes.from_now, terrain.retry_at, 5
+    assert_equal "retrying", terrain.state[:status]
+
+    terrain.update!(attempts: 3)
+    with_provider(provider) do
+      assert_no_enqueued_jobs(only: ReliefImportJob) { ReliefImportJob.perform_now(terrain) }
+    end
+    assert_equal "failed", terrain.reload.state[:status]
+    assert_equal 4, terrain.attempts
+
+    with_provider(provider) do
+      assert_no_enqueued_jobs(only: ReliefImportJob) { ReliefImportJob.perform_now(@terrain) }
+    end
+    assert_nil @terrain.reload.retry_at
+  end
+
   test "refuses a region without provider and a map without boundary" do
     elsewhere = Region.create!(key: "luxembourg", name: "Luxembourg", country_code: "LU")
     @map.update!(region: elsewhere)
@@ -123,4 +174,14 @@ class Relief::TerrainImportTest < ActiveSupport::TestCase
     assert_not MapTerrain.new.valid?
     assert MapTerrain.new(territory:).valid?
   end
+
+  private
+    # The job builds its own provider: hand it one that does not wait between attempts.
+    def with_provider(provider)
+      original = Providers::Elevation.method(:for)
+      Providers::Elevation.define_singleton_method(:for) { |*_args, **_options| provider }
+      yield
+    ensure
+      Providers::Elevation.define_singleton_method(:for, original)
+    end
 end

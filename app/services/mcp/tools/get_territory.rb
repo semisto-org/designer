@@ -27,6 +27,7 @@ module Mcp
           team_maps: territory.team_maps.map { |map| { id: map.id, name: map.name, area_m2: map.area_m2&.round, url: map_url(map) } },
           dossier: TerritoryItem::KINDS.index_with { |kind| items.select { |item| item.kind == kind }.map { |item| item_json(item) } },
           notebook: territory.notebook,
+          relief: Relief::TerritoryRelief.new(territory).state,
           research_grid: territory.research_grid,
           values: {
             proof: TerritoryItem::PROOFS, marker_kind: TerritoryItem::MARKER_KINDS, source_kind: TerritoryItem::SOURCE_KINDS,
