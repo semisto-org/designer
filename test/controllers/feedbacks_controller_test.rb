@@ -68,4 +68,18 @@ class FeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_equal 0, Feedback.count
   end
+
+  test "« Mes retours » lists the person's own feedback with its status and Semisto's answer" do
+    mine = users(:alice).feedbacks.create!(message: "Le contour ?", status: "done", reply: "C'est réglé.")
+    users(:bob).feedbacks.create!(message: "Pas à Alice")
+    sign_in_as users(:alice)
+    get feedbacks_path, headers: inertia_headers
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "feedbacks/index", body["component"]
+    row = body["props"]["feedbacks"].sole
+    assert_equal mine.id, row["id"]
+    assert_equal "done", row["status"]
+    assert_equal "C'est réglé.", row["reply"]
+  end
 end

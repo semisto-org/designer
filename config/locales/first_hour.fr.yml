@@ -13,7 +13,7 @@ fr:
     send: "Envoyer"
     sending: "Envoi…"
     cancel: "Annuler"
-    sent: "Merci ! Ton retour est bien arrivé chez Semisto."
+    sent: "Merci ! Ton retour est bien arrivé chez Semisto. Tu suivras sa suite dans « Mes retours »."
     error: "Ton retour n'est pas parti. Réessaie dans un instant."
     rate_limited: "Tu nous as déjà beaucoup écrit cette heure-ci : réessaie un peu plus tard."
     capture:
@@ -36,10 +36,50 @@ fr:
       alt: "Ta capture, recadrée et annotée"
       edit: "Recadrer ou dessiner"
       remove: "Retirer la capture"
+    statuses:
+      received: "Reçu"
+      reviewing: "À l'étude"
+      planned: "Prévu"
+      done: "En ligne"
+      declined: "Pas pour maintenant"
+    status_hints:
+      received: "Bien arrivé : quelqu'un de Semisto va le lire."
+      reviewing: "On regarde de près ce que tu nous as montré."
+      planned: "C'est décidé : on va le faire."
+      done: "C'est fait et en ligne. Merci de nous l'avoir signalé !"
+      declined: "Pas pour maintenant : la réponse de Semisto dit pourquoi."
+    mine:
+      nav: "Mes retours"
+      title: "Mes retours"
+      intro: "Ce que tu as dit à Semisto avec « Un retour ? », et ce qu'il en est devenu. Quand un retour change de statut ou reçoit une réponse, tu reçois aussi un e-mail."
+      new: "Un nouveau retour"
+      empty_title: "Tu ne nous as encore rien écrit"
+      empty_body: "Un bouton qui se cache, une idée sur le terrain, un mot qui t'a fait sourire : le petit bouton rond en bas à droite de chaque page nous l'envoie, avec une capture si tu veux."
+      sent_on: "Envoyé %{when}"
+      from_page: "depuis %{page}"
+      reply_from: "La réponse de %{name}"
+      screenshot: "Ta capture"
     screenshot:
       invalid: "La capture n'est pas une image : reprends-la."
       too_large: "La capture est trop lourde : recadre-la un peu plus."
   feedback_mailer:
+    answered:
+      subject:
+        received: "Ton retour sur Terranova : on t'a répondu"
+        reviewing: "Ton retour sur Terranova : on t'a répondu"
+        planned: "Ton retour sur Terranova : c'est prévu"
+        done: "Ton retour sur Terranova : c'est en ligne"
+        declined: "Ton retour sur Terranova : notre réponse"
+      hello: "Bonjour %{name},"
+      status:
+        received: "Merci pour ton retour sur Terranova. Voici notre réponse."
+        reviewing: "Nous regardons de près ce que tu nous as écrit."
+        planned: "Bonne nouvelle : ce que tu nous as écrit est prévu, nous allons le faire."
+        done: "Ce que tu nous as signalé est réglé et en ligne : tu peux aller voir."
+        declined: "Nous avons bien lu ton retour, mais ce ne sera pas pour maintenant."
+      reply: "La réponse de %{name} :"
+      all: "Tous tes retours et leur suite"
+      thanks: "Merci de nous aider à faire grandir Terranova. Tu peux répondre directement à cet e-mail."
     received:
       subject: "Un retour sur Terranova de %{name}"
       body: "%{name} (%{email}) a écrit depuis %{page} :"
@@ -78,6 +118,23 @@ fr:
   admin:
     nav:
       first_hours: "Premières heures"
+      feedbacks: "Retours"
+    feedbacks:
+      title: "Retours"
+      intro: "Ce que les gens nous disent avec « Un retour ? ». Donne un statut et, si c'est utile, quelques mots : la personne les retrouve dans « Mes retours » et reçoit un e-mail quand c'est prévu, en ligne, pas pour maintenant, ou quand tu lui réponds."
+      filter: "Filtrer par statut"
+      filters:
+        awaiting: "À traiter"
+        all: "Tous"
+      empty: "Rien ici pour le moment."
+      status: "Statut"
+      reply: "Ta réponse (visible par la personne)"
+      reply_placeholder: "Merci ! C'est corrigé : le bouton est maintenant en haut du panneau."
+      notify: "Prévenir %{name} par e-mail"
+      notified: "Prévenu·e %{when}"
+      handled_by: "Traité par %{name}"
+      save: "Enregistrer"
+      saved: "Retour mis à jour."
     first_hours:
       title: "Premières heures"
       intro: "Comment les personnes inscrites récemment ont commencé : leur première carte, le contour, la première plante et le plan imprimé, comptés depuis l'inscription. Avec leurs retours et les séances qu'elles nous ont permis d'enregistrer."
@@ -128,6 +185,7 @@ fr:
       feedbacks_title: "Les retours"
       feedbacks_intro: "Les 50 derniers messages envoyés avec « Un retour ? »."
       feedbacks_empty: "Aucun retour pour l'instant."
+      feedbacks_triage: "Les trier et y répondre"
       wants_call: "Veut bien un appel"
       watch: "Voir la séance"
       screenshot: "Capture annotée jointe au retour"

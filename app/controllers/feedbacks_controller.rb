@@ -1,10 +1,19 @@
 # POST /feedback — « Un retour ? »: what a person wants to tell us, from any
 # page of the app or from the editor (components/feedback/FeedbackDialog),
 # as JSON or as a form with the screenshot they annotated.
-# Staff read it in « Premières heures » (/admin/first-hours).
+# Staff read and answer it in « Retours » (/admin/feedbacks); the person
+# follows it in « Mes retours » (GET /feedback).
 class FeedbacksController < ApplicationController
   forbid_while_impersonating
-  rate_limit to: 20, within: 1.hour, with: -> { render json: { message: t("feedback.rate_limited") }, status: :too_many_requests }
+  rate_limit to: 20, within: 1.hour, only: :create, with: -> { render json: { message: t("feedback.rate_limited") }, status: :too_many_requests }
+
+  # « Mes retours »: what the person told Semisto and what became of it.
+  def index
+    feedbacks = Current.user.feedbacks.newest_first.includes(:map, :handled_by, screenshot_attachment: :blob)
+    render inertia: "feedbacks/index", props: {
+      feedbacks: feedbacks.map { |feedback| feedback.as_owner_json.merge(repliedBy: feedback.reply.present? ? feedback.handled_by&.display_name : nil) }
+    }
+  end
 
   def create
     attributes = params.require(:feedback).permit(:message, :path, :wants_call, :sentry_replay_id, :screenshot, context: Feedback::CONTEXT_KEYS)

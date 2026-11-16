@@ -11,17 +11,19 @@ module Mcp
       arguments(
         properties: {
           feedback_id: { type: "integer", minimum: 1, description: :feedback_id },
+          status: { type: "string", enum: Feedback::STATUSES + %w[awaiting], description: :feedback_status },
           since: { type: "string", format: "date", description: :feedback_since },
           limit: { type: "integer", minimum: 1, maximum: LIMIT, description: :feedback_limit }
         }
       )
       hints
 
-      def perform(feedback_id: nil, since: nil, limit: 20)
+      def perform(feedback_id: nil, status: nil, since: nil, limit: 20)
         return one(feedback_id) if feedback_id
 
         scope = visible.newest_first.includes(:user, :map, screenshot_attachment: :blob)
         scope = scope.where(created_at: Date.iso8601(since).beginning_of_day..) if since
+        scope = status == "awaiting" ? scope.awaiting : scope.where(status:) if status
         { scope: user.admin? ? "everyone" : "mine", feedback: scope.limit(limit).map { |feedback| feedback_json(feedback) } }
       rescue Date::Error
         raise ToolError, t("errors.invalid_date", value: since)
@@ -43,6 +45,7 @@ module Mcp
             page_url: feedback.path && "#{origin}#{feedback.path}",
             map: feedback.map && { id: feedback.map.id, name: feedback.map.name },
             wants_call: feedback.wants_call,
+            status: feedback.status, reply: feedback.reply, status_changed_at: feedback.status_changed_at&.iso8601,
             screenshot: feedback.screenshot.attached?,
             context: feedback.context.presence,
             app_version: feedback.app_version

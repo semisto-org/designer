@@ -43,4 +43,14 @@ class McpFeedbackTest < ActionDispatch::IntegrationTest
     assert error
     assert_match "hier", text
   end
+
+  test "the status and Semisto's answer are read, and can filter the list" do
+    @mine.update!(status: "done", reply: "Corrigé.")
+    data, = call_tool(personal_token(users(:alice)), "list_feedback", { status: "done" })
+    row = data["feedback"].sole
+    assert_equal "done", row["status"]
+    assert_equal "Corrigé.", row["reply"]
+    data, = call_tool(personal_token(users(:alice)), "list_feedback", { status: "awaiting" })
+    assert_empty data["feedback"]
+  end
 end

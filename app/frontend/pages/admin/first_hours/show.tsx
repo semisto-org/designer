@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import clsx from 'clsx'
 import { Check, MapPinned, MessageCircleHeart, PenLine, PhoneCall, Printer, Sprout, Video } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { FeedbackStatusPill, type FeedbackStatusKey } from '@/components/feedback/FeedbackStatus'
 import { AdminNav } from '@/components/admin/AdminNav'
 import { Card, EmptyState } from '@/components/ui/Card'
 import { Pill } from '@/components/ui/Pill'
@@ -43,6 +44,7 @@ type FeedbackRow = {
   screenshotUrl: string | null
   context: Record<string, string> | null
   appVersion: string | null
+  status: FeedbackStatusKey
   author: { id: number; name: string; email: string }
 }
 type Props = {
@@ -130,7 +132,10 @@ export default function AdminFirstHours({ days, periods, report, feedbacks, repl
 
         <section aria-labelledby="first-hours-feedbacks">
           <h2 id="first-hours-feedbacks" className="flex items-center gap-2 text-lg"><MessageCircleHeart className="h-5 w-5 text-prune-600" aria-hidden />{t('admin.first_hours.feedbacks_title')}</h2>
-          <p className="mt-1 text-sm text-loam-500">{t('admin.first_hours.feedbacks_intro')}</p>
+          <p className="mt-1 text-sm text-loam-500">
+            {t('admin.first_hours.feedbacks_intro')}{' '}
+            <Link href="/admin/feedbacks" className="font-medium text-prune-700 hover:underline">{t('admin.first_hours.feedbacks_triage')}</Link>
+          </p>
           {feedbacks.length === 0 ? (
             <div className="mt-3"><EmptyState title={t('admin.first_hours.feedbacks_empty')} /></div>
           ) : (
@@ -219,6 +224,7 @@ function FeedbackCard({ feedback }: { feedback: FeedbackRow }) {
     <li>
       <Card className="p-4!">
         <p className="flex flex-wrap items-center gap-x-2 text-sm text-loam-500">
+          <FeedbackStatusPill status={feedback.status} />
           <Link href={`/admin/users?q=${encodeURIComponent(feedback.author.email)}`} className="font-medium text-loam-900 hover:text-prune-700 hover:underline">{feedback.author.name}</Link>
           {meta.map((item, index) => <span key={index}>· {item}</span>)}
         </p>

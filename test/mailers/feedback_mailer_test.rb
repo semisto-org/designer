@@ -30,4 +30,15 @@ class FeedbackMailerTest < ActionMailer::TestCase
     assert_equal [ "capture-#{feedback.id}.png" ], mail.attachments.map(&:filename)
     assert_includes mail.text_part.body.to_s, "capture annotée est jointe"
   end
+
+  test "answered: to the author, with the status, the reply and a link to « Mes retours »" do
+    admin = User.create!(email_address: "staff@example.org", name: "Staff", admin: true)
+    feedback = users(:alice).feedbacks.create!(message: "Le bouton est caché", status: "done", reply: "Il est revenu en haut.", handled_by: admin)
+    mail = FeedbackMailer.answered(feedback).tap(&:deliver_now)
+    assert_equal [ "alice@example.org" ], mail.to
+    assert_equal [ Billing.contact_email ], mail.reply_to
+    assert_equal "Ton retour sur Terranova : c'est en ligne", mail.subject
+    text = mail.text_part.body.to_s
+    [ "réglé et en ligne", "Le bouton est caché", "La réponse de Staff", "Il est revenu en haut.", "http://example.com/feedback" ].each { assert_includes text, _1 }
+  end
 end
