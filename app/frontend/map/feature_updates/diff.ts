@@ -91,7 +91,7 @@ export function shownValue(change: FeatureUpdateChange, side: 'before' | 'after'
   if (value == null || value === '' || (Array.isArray(value) && value.length === 0)) return { kind: 'empty' }
   if (change.field === 'geometry') return { kind: 'geometry' }
   if (label) return { kind: 'text', text: label }
-  if (Array.isArray(value)) return { kind: 'text', text: value.join(', ') }
+  if (Array.isArray(value)) return { kind: 'text', text: value.map((v) => (v && typeof v === 'object' ? JSON.stringify(v) : String(v))).join(', ') }
   if (typeof value === 'string' && DATE.test(value)) {
     const date = new Date(`${value}T12:00:00Z`)
     return { kind: 'text', text: new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date) }
@@ -105,7 +105,9 @@ export function adjustable(change: FeatureUpdateChange): boolean {
   // A list of functions is adjusted on the element itself, once accepted.
   if (change.field === 'geometry' || change.field === 'delete' || change.field === 'properties.functions') return false
   const after = change.after
-  return after == null || ['string', 'number', 'boolean'].includes(typeof after) || Array.isArray(after)
+  const primitive = (v: unknown) => ['string', 'number', 'boolean'].includes(typeof v)
+  // A list of objects (several soil destinations) is adjusted on the element itself.
+  return after == null || primitive(after) || (Array.isArray(after) && after.every(primitive))
 }
 
 /** The text an input starts with for an adjustable field. */

@@ -99,8 +99,9 @@ export default function EarthworksOverlay() {
       if (!from || hiddenLayers.includes(from.properties.layer)) continue
       const volumes = new Map<number, number>()
       for (const part of SOIL_PARTS) {
-        const to = dig.to[part]
-        if (typeof to === 'number') volumes.set(to, (volumes.get(to) ?? 0) + dig.excavation[part])
+        for (const share of dig.to[part]) {
+          if (typeof share.to === 'number' && share.volume > 0.005) volumes.set(share.to, (volumes.get(share.to) ?? 0) + share.volume)
+        }
       }
       for (const [id, volume] of volumes) {
         const target = byId.get(id)

@@ -28,6 +28,8 @@ Dug soil takes about a quarter more room than in the ground (a third or more for
 
 Each dug element names a destination for its topsoil (`topsoil_to`) and its subsoil (`subsoil_to`): the id of a receiving feature of the map, or `berm`, `spread`, `stockpile`, `removed`.
 
+A part can also go to several places, as a list: `subsoil_to: [{ "to": 3012 }, { "to": 3014 }, { "to": "spread", "m3": 4 }]`. An entry with `m3` takes that volume (in place) first; the others share the rest according to the room left in each mound or bed (its capacity minus what other digs already send it), and what no receiver can hold goes to the entries without a capacity (a zone, `berm`, `spread`, `stockpile`, `removed`). So one pond can fill three mounds without anyone doing the sums. To change the destinations of an existing element, use `propose_feature_updates` with the whole list.
+
 1. **Right next to the hole** (`berm`): the downhill berm of a swale (subsoil first, topsoil on top to plant it), the banks of a pond, a bank along a sunken path that also shelters it from the wind. No transport at all. New swales start with this destination.
 2. **A mound or a bank of the design** (`mound`, with `height_m` and a `purpose`: growing bed, bank for a hedge, windbreak, screen, play): it holds about half its footprint × its height. A raised bed (`raised_bed`) is filled to the brim. A mound placed where it serves twice (sheltering a planting from the wind, framing a sitting place) beats a heap in a corner.
 3. **Spread on site** (`spread`, or on a zone of the map, which then shows the thickness obtained): a few centimetres over a meadow or a future planting area. More than 10 to 15 cm smothers the grass and the soil life below.

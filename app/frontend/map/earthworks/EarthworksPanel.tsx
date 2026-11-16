@@ -109,8 +109,13 @@ export default function EarthworksPanel() {
                       <span className="tabular-nums text-loam-700">{m3(dig.excavation.volume)}</span>
                     </span>
                     {SOIL_PARTS.filter((part) => dig.excavation[part] > 0.005).map((part) => (
-                      <span key={part} className={dig.to[part] == null ? 'block text-humus-800' : 'block text-loam-600'}>
-                        {t(`earthworks.parts.${part}`)} {m3(dig.excavation[part])} → {destination(dig.to[part])}
+                      <span key={part} className={dig.undecided[part] > 0.05 ? 'block text-humus-800' : 'block text-loam-600'}>
+                        {t(`earthworks.parts.${part}`)} {m3(dig.excavation[part])} → {dig.to[part].length === 0 ? destination(null)
+                          : dig.to[part].length === 1 && dig.undecided[part] <= 0.05 ? destination(dig.to[part][0].to)
+                            : [
+                              ...dig.to[part].map((share) => t('earthworks.section.share', { name: destination(share.to), volume: m3(share.volume) })),
+                              ...(dig.undecided[part] > 0.05 ? [t('earthworks.section.share', { name: destination(null), volume: m3(dig.undecided[part]) })] : []),
+                            ].join(', ')}
                       </span>
                     ))}
                   </button>
