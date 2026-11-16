@@ -17,6 +17,9 @@ module Relief
   # hour). Workers only do HTTP; this thread writes the progress.
   class TerrainImport
     class Failure < StandardError; end
+    # The provider answered, but not for enough of the place: worth another
+    # try later, unlike a missing boundary or a place too large.
+    class Incomplete < Failure; end
 
     OPTIONAL = %i[surface landcover].freeze
     # A territory's coarse cells are spread over kilometres: the SPW's cost
@@ -24,6 +27,13 @@ module Relief
     # map's 20,000-point chunk across a commune ends in a gateway timeout.
     # 1,500 points at 30 m answer in about 6 s.
     TERRITORY_CHUNK = 1_500
+    # The region's outline is simplified and its rasters run past it: cells
+    # farther than this beyond it are not asked (they are no data), the
+    # others are, and a short answer there is split (ArcgisElevation).
+    COVERAGE_BUFFER_M = 1_000
+    # Above this share of the place without heights, the relief is refused
+    # rather than handed over full of holes.
+    MAX_MISSING_SHARE = 0.2
 
     def initialize(terrain, provider: nil, logger: Rails.logger)
       @terrain = terrain
@@ -38,6 +48,7 @@ module Relief
       raise Failure, I18n.t("relief.errors.no_boundary") unless @owner.boundary
 
       @extent = grid_policy.extent_for(@owner.bbox)
+      @covered = coverage_mask
       start!
       @warnings = []
       @sources = {}
@@ -45,6 +56,7 @@ module Relief
       @total = datasets.size * chunks.size + (!@territory && @provider.dataset?(:texture) ? 1 : 0)
 
       heights = fetch(:terrain)
+      check_coverage!(heights)
       packed = Raster.pack_heights(heights)
       attach(:grid, packed.bytes, "terrain.bin")
       @sources["terrain"] = @provider.dataset_label(:terrain)
@@ -73,12 +85,14 @@ module Relief
       )
       BuildingsWarmJob.perform_later(@owner) unless @territory
       @terrain
+    rescue Incomplete => e
+      fail!(e.message, retriable: true)
     rescue GridPolicy::TooLarge, Failure => e
       fail!(e.message)
     rescue StandardError => e
       @logger.error("[relief] import of #{label} failed: #{e.class}: #{e.message}")
       Sentry.capture_exception(e) if defined?(Sentry) && Sentry.initialized?
-      fail!(I18n.t("relief.errors.provider_failed"))
+      fail!(I18n.t("relief.errors.provider_failed"), retriable: true)
     end
 
     private
@@ -98,8 +112,39 @@ module Relief
       end
 
 
+      # Only the cells the provider's region covers are asked (a territory's
+      # 2 km margin runs into the neighbouring region, whose relief another
+      # service holds).
       def chunks
-        @chunks ||= (0...@extent.cells).each_slice(@territory ? [ TERRITORY_CHUNK, @provider.chunk_size ].min : @provider.chunk_size).to_a
+        @chunks ||= (0...@extent.cells).select { |index| covered?(index) }.each_slice(@territory ? [ TERRITORY_CHUNK, @provider.chunk_size ].min : @provider.chunk_size).to_a
+      end
+
+      def coverage_mask
+        source = @owner.region&.setting_region(:relief)
+        return nil unless source && !source.europe?
+
+        buffer = (source.setting(:relief, :coverage_buffer_m) || COVERAGE_BUFFER_M).to_f
+        outline = source.outline_buffered(buffer)
+        outline && Mask.for_geometry(outline, @extent)
+      end
+
+      def covered?(index) = @covered.nil? || @covered.getbyte(index) == 1
+
+      # The place itself must have its heights: a few holes on a border are
+      # fine, a relief mostly empty is a failure that says so.
+      def check_coverage!(heights)
+        inside = Mask.for_geometry(@owner.boundary, @extent)
+        total = 0
+        missing = 0
+        heights.each_with_index do |z, index|
+          next unless inside.getbyte(index) == 1
+
+          total += 1
+          missing += 1 if z.nil?
+        end
+        return if total.zero? || missing <= total * MAX_MISSING_SHARE
+
+        raise Incomplete, I18n.t("relief.errors.mostly_missing", share: (100.0 * missing / total).round)
       end
 
       def start!
@@ -174,8 +219,8 @@ module Relief
         @terrain.public_send(name).attach(io: StringIO.new(bytes), filename:, content_type:, identify: false)
       end
 
-      def fail!(message)
-        @terrain.update!(status: "failed", error: message, progress: 0)
+      def fail!(message, retriable: false)
+        @terrain.update!(status: "failed", error: message, progress: 0, metadata: @terrain.metadata.merge("retriable" => retriable))
         @terrain
       end
   end

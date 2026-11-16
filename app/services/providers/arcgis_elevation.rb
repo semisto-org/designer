@@ -19,6 +19,11 @@ module Providers
     READ_TIMEOUT = 90
     ATTEMPTS = 3
     CHUNK = 20_000
+    # A short answer is what the SPW gives for points outside its rasters (a
+    # margin that runs into Flanders): the chunk is split in two until each
+    # half answers in full, and a piece this small that is still short is
+    # left as no data. A few dozen extra requests on a border, at most.
+    SPLIT_FLOOR = 16
     TEXTURE_MAX_PX = 4096
     RETRIABLE = [ Error, JSON::ParserError, Faraday::TimeoutError, Faraday::ConnectionFailed,
                   Faraday::ServerError, Faraday::SSLError ].freeze
@@ -44,25 +49,20 @@ module Providers
     def dataset_url(name) = config.dig("datasets", name.to_s, "url")
 
     # One value per point (EPSG:3857 [x, y]), in the order of the points. A
-    # short answer would shift the whole grid: refuse rather than guess.
+    # short answer would shift the whole grid: never guess which points are
+    # missing. The SPW leaves out points beyond its rasters, so a short answer
+    # splits the chunk in halves; a long one is refused.
     def sample(name, points, extent)
-      url = dataset_url(name) or raise Error, "dataset #{name} not configured"
-      params = {
-        f: "json", geometryType: "esriGeometryMultipoint", sr: "3857", layers: "all:0", tolerance: "0",
-        returnGeometry: "false", imageDisplay: "1000,1000,96",
-        mapExtent: extent.mercator_bbox.map { |v| v.round(3) }.join(","),
-        geometry: { points: points.map { |x, y| [ x.round(3), y.round(3) ] }, spatialReference: { wkid: 3857 } }.to_json
-      }
-      parser = name.to_s == "landcover" ? method(:parse_class) : method(:parse_height)
-      with_retries do
-        body = JSON.parse(post("#{url}/identify", params))
-        raise Error, body["error"].to_json if body["error"]
+      return [] if points.empty?
 
-        results = body["results"] || []
-        raise Error, "#{results.size} values for #{points.size} points" unless results.size == points.size
+      results = identify(name, points, extent)
+      return results.map { |result| parser(name).call(result["attributes"]) } if results.size == points.size
+      raise Error, "#{results.size} values for #{points.size} points" if results.size > points.size
+      return Array.new(points.size) if points.size <= SPLIT_FLOOR
 
-        results.map { |result| parser.call(result["attributes"]) }
-      end
+      half = points.size / 2
+      Rails.logger.info("[relief] #{results.size} values for #{points.size} points: split in two")
+      sample(name, points.first(half), extent) + sample(name, points.drop(half), extent)
     end
 
     # The ortho on the exact extent of the cell centres. The image keeps the
@@ -84,6 +84,24 @@ module Providers
     end
 
     private
+      def identify(name, points, extent)
+        url = dataset_url(name) or raise Error, "dataset #{name} not configured"
+        params = {
+          f: "json", geometryType: "esriGeometryMultipoint", sr: "3857", layers: "all:0", tolerance: "0",
+          returnGeometry: "false", imageDisplay: "1000,1000,96",
+          mapExtent: extent.mercator_bbox.map { |v| v.round(3) }.join(","),
+          geometry: { points: points.map { |x, y| [ x.round(3), y.round(3) ] }, spatialReference: { wkid: 3857 } }.to_json
+        }
+        with_retries do
+          body = JSON.parse(post("#{url}/identify", params))
+          raise Error, body["error"].to_json if body["error"]
+
+          body["results"] || []
+        end
+      end
+
+      def parser(name) = name.to_s == "landcover" ? method(:parse_class) : method(:parse_height)
+
       def with_retries
         attempt = 0
         begin

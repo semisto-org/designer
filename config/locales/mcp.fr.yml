@@ -141,8 +141,16 @@ fr:
         description: "Sur une carte (map_id) ou n'importe où dans un territoire (territory_id, avec un point). Le bassin versant d'une mare, d'une baissière ou d'un jardin de pluie (feature_id), ou d'un point où l'on pourrait en creuser un (lng, lat) : la surface dont le ruissellement finit là, calculée sur le relief téléchargé par la personne. Donne sa surface (dont la part sur le terrain), son contour GeoJSON, la pluie qui y tombe par an, le volume de l'ouvrage et la pluie qui le remplit si tout ruisselle (fill_rain_mm : sous 15 mm, il déborde à chaque grosse averse ; au-delà de 50, il se remplit lentement). beyond_relief vrai : le bassin continue au-delà du relief téléchargé, la surface est un minimum ; demande alors à la personne d'où vient l'eau en amont. infiltration_mm_h : la vitesse mesurée par le test d'infiltration le plus proche (à infiltration_distance_m mètres, ou la médiane des tests de la carte si aucun n'est à moins de 50 m) ; empties_in_h : en combien d'heures une baissière ou un jardin de pluie se vide dans le sol. Utilise-le avant de proposer ou de dimensionner une mare, une baissière ou leur trop-plein."
         missing_target: "Donne feature_id (une mare, une baissière ou un jardin de pluie) ou un point (lng et lat)."
         missing_point: "Sur un territoire, donne un point (lng et lat) : le bassin versant de ce point est calculé sur le relief du territoire."
-        relief_pending: "Le relief de ce territoire se prépare (%{progress} %) : c'est la première fois qu'on y calcule un bassin versant. Réessaie dans quelques minutes."
-        relief_failed: "Le relief de ce territoire n'a pas pu être préparé : %{error} Réessaie dans une heure."
+        params:
+          retry_relief: "true pour relancer tout de suite la préparation du relief d'un territoire après un échec (sinon elle se relance seule, plus tard)."
+        relief:
+          none: "Le relief de ce territoire n'est pas encore demandé."
+          queued: "Le relief de ce territoire est en file d'attente depuis le %{queued_at} : c'est la première fois qu'on y calcule un bassin versant. Réessaie dans quelques minutes."
+          running: "Le relief de ce territoire se télécharge (%{progress} %, commencé le %{started_at}). Réessaie dans quelques minutes."
+          stalled: "La préparation du relief de ce territoire s'est arrêtée sans finir ; elle est relancée."
+          retrying: "La préparation du relief de ce territoire a échoué (essai %{attempts} sur %{max}) : %{error} Elle se relance seule le %{retry_at}."
+          failed: "La préparation du relief de ce territoire a échoué après %{attempts} essais : %{error} Passe retry_relief: true pour la relancer maintenant ; sinon elle se relancera d'elle-même plus tard."
+          state: "État : %{state}"
         territory_note: "Calculé sur un relief grossier de toute la commune (cell_size_m) : bon pour suivre l'eau d'un vallon à l'autre et comparer des bassins, pas pour dimensionner un ouvrage. Le point est déplacé vers le fond de vallée à moins de 90 m (outlet), là où passe le plus d'eau : vérifie qu'il tombe bien sur le cours d'eau ou le vallon voulu. Sur une carte de terrain, le relief fin donne la mesure juste."
       find_keypoints:
         title: "Trouver les points clés"

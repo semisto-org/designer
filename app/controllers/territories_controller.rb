@@ -55,7 +55,8 @@ class TerritoriesController < ApplicationController
       teamMaps: @territory.team_maps.map { |map| { id: map.id, name: map.name, boundary: map.geometry_geojson(:boundary), areaM2: map.area_m2 } },
       researchGrid: @territory.research_grid,
       canEdit: @territory.editable_by?(Current.user),
-      moduleGranted: @territory.organization.territory_module?
+      moduleGranted: @territory.organization.territory_module?,
+      relief: Relief::TerritoryRelief.new(@territory).state
     }
   end
 

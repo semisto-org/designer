@@ -23,12 +23,13 @@ module Mcp
           territory_id: { type: "integer", minimum: 1, description: :territory_id },
           feature_id: { type: "integer", minimum: 1, description: :feature_id },
           lng: { type: "number", minimum: -180, maximum: 180, description: :lng },
-          lat: { type: "number", minimum: -90, maximum: 90, description: :lat }
+          lat: { type: "number", minimum: -90, maximum: 90, description: :lat },
+          retry_relief: { type: "boolean", description: :retry_relief }
         }
       )
       hints
 
-      def perform(map_id: nil, territory_id: nil, feature_id: nil, lng: nil, lat: nil)
+      def perform(map_id: nil, territory_id: nil, feature_id: nil, lng: nil, lat: nil, retry_relief: false)
         place = find_place!(map_id, territory_id)
         raise ToolError, t("tools.get_catchment.missing_point") if territory?(place) && (feature_id || lng.nil? || lat.nil?)
 
@@ -41,7 +42,7 @@ module Mcp
           elsif lng && lat
             if territory?(place)
               require_point_near!(place, lng, lat, MAX_DISTANCE_M)
-              territory_relief!(place)
+              territory_relief!(place, force: retry_relief)
             end
             Relief::Catchment.new(place, lng:, lat:, snap_m: (TERRITORY_SNAP_M if territory?(place)))
           else
@@ -62,21 +63,24 @@ module Mcp
       end
 
       private
-        # The territory's relief, imported on first use (and again after a
-        # failed or dead import). Raises while it is not ready yet.
-        def territory_relief!(territory)
-          terrain = territory.terrain
-          return if terrain&.ready? && terrain.grid.attached?
+        # The territory's relief, imported on first use (Relief::TerritoryRelief).
+        # Raises, with where the import stands, while it is not ready.
+        def territory_relief!(territory, force: false)
           raise ToolError, t("errors.no_relief_provider") unless territory.region && Providers::Elevation.for(territory.region)
 
-          if terrain.nil? || !terrain.in_progress?
-            raise ToolError, t("tools.get_catchment.relief_failed", error: terrain.error) if terrain&.failed? && terrain.updated_at > 1.hour.ago
+          relief = Relief::TerritoryRelief.new(territory)
+          relief.ensure!(force:)
+          return if relief.ready?
 
-            terrain ||= territory.build_terrain
-            terrain.update!(status: "pending", progress: 0, error: nil)
-            ReliefImportJob.perform_later(terrain)
-          end
-          raise ToolError, t("tools.get_catchment.relief_pending", progress: terrain.progress.to_i)
+          raise ToolError, relief_message(relief.state)
+        end
+
+        def relief_message(state)
+          time = ->(iso) { iso && I18n.l(Time.zone.parse(iso).in_time_zone("Europe/Brussels"), format: "%d/%m à %H:%M") }
+          key = "tools.get_catchment.relief.#{state[:status]}"
+          t(key, progress: state[:progress].to_i, error: state[:error].to_s, attempts: state[:attempts], max: state[:max_attempts],
+                 retry_at: time.call(state[:retry_at]), queued_at: time.call(state[:queued_at]), started_at: time.call(state[:started_at])) +
+            " " + t("tools.get_catchment.relief.state", state: state.to_json)
         end
 
         def summarize_result(data) = { area_m2: data[:area_m2], feature_id: data[:feature_id] }.compact
