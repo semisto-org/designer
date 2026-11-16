@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react'
-import { ImagePlus, Users, X } from 'lucide-react'
+import { ImagePlus, Sparkles, Users, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { IconButton } from '@/components/ui/IconButton'
 import { toast } from '@/components/ui/toast'
@@ -262,8 +262,17 @@ export default function MapChat() {
               <h2 className="font-serif text-lg leading-tight text-loam-900">{t('collab.chat.title')}</h2>
               <p className="mt-0.5 flex items-center gap-1 text-sm text-loam-500" title={t('collab.chat.who')}>
                 <Users className="h-4 w-4 shrink-0" />
-                {t('collab.chat.members', { count: (thread?.members.length ?? 0) + 1 })}
+                {t('collab.chat.members', { count: (thread?.members.filter((m) => !m.agent).length ?? 0) + 1 })}
               </p>
+              {thread?.colleague && (
+                <p className="mt-1 flex items-start gap-1 text-sm text-leaf-800">
+                  <Sparkles className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  <span>
+                    {t('agents.chat.active', { name: thread.colleague.name })}{' '}
+                    <span className="text-loam-500">{t(thread.colleague.canAsk ? 'agents.chat.active_hint_member' : 'agents.chat.active_hint_other', { name: thread.colleague.name })}</span>
+                  </span>
+                </p>
+              )}
             </div>
             {thread && (
               <ChatNotifyMenu level={thread.level ?? (thread.subscribed ? 'all' : 'mentions')} onChange={(level) => void changeLevel(level)} />

@@ -27,7 +27,7 @@ module Collab
     end
 
     def recipients
-      members = @map.chat_participants.where.not(id: @comment.author_id).to_a
+      members = @map.chat_participants.where.not(id: @comment.human_author_id).to_a
       levels = CommentSubscription.chat_levels(members, @map)
       members.select do |user|
         case levels[user.id]

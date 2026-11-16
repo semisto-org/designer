@@ -21,6 +21,8 @@ Interface labels are quoted in French, as they appear in the app.
 | Variable | Role |
 |---|---|
 | `SECRET_KEY_BASE` | Session encryption key (`bin/rails secret`). |
+| `AR_ENCRYPTION_PRIMARY_KEY`, `AR_ENCRYPTION_DETERMINISTIC_KEY`, `AR_ENCRYPTION_KEY_DERIVATION_SALT` | Optional. Keys of Active Record encryption (a team's AI API key, « Collègue IA »), from `bin/rails db:encryption:init`. Without them they are derived from `SECRET_KEY_BASE`: changing that secret then makes the stored keys unreadable (teams enter theirs again). |
+| `AGENT_CONCURRENCY` | Threads of the `agents` job queue (« Collègue IA » runs), 2 by default. |
 | `DATABASE_URL` | `postgres://user:password@host:5432/designer_production` (`postgis://` accepted). The database name is required: the other three derive from it. |
 | `APP_HOST` | `terranova.semisto.org` (e-mail links, OAuth, sitemap). It is also the only accepted host name: any other domain gets a 403 error, except `/up`. |
 | `MAIL_FROM` | Sender, e.g. `Semisto Terranova <designer@semisto.org>`. |

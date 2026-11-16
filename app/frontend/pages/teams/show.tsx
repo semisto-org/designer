@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Avatar } from '@/collab/Avatar'
 import { HelpButton } from '@/components/help/HelpButton'
 import { DocumentThemeLink } from '@/components/documents/DocumentThemeLink'
-import { Button } from '@/components/ui/Button'
+import { Button, ButtonLink } from '@/components/ui/Button'
+import { Pill } from '@/components/ui/Pill'
 import { Card } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatArea, t } from '@/lib/i18n'
@@ -17,7 +18,7 @@ const dateTimeFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month:
 const formatDateTime = (iso: string) => dateTimeFormat.format(new Date(iso))
 
 /** A team's page: members and roles, invitations, the team's maps, leaving. */
-export default function TeamShow({ team, members, maps, billing, invitations, maxNameLength }: TeamPageProps) {
+export default function TeamShow({ team, colleague, members, maps, billing, invitations, maxNameLength }: TeamPageProps) {
   const admin = team.role === 'admin'
   const base = `/teams/${team.id}`
   const me = members.find((m) => m.you)
@@ -41,7 +42,7 @@ export default function TeamShow({ team, members, maps, billing, invitations, ma
         <ArrowRight className="h-5 w-5 shrink-0 text-loam-400 group-hover:text-prune-600" aria-hidden="true" />
       </Link>
 
-      <Members members={members} admin={admin} base={base} />
+      <Members members={members} admin={admin} base={base} colleague={colleague} />
       {admin && <Invite invitations={invitations ?? []} base={base} />}
       <Maps maps={maps} paid={Boolean(billing.payer)} />
       <BillingCard billing={billing} admin={admin} base={base} />
@@ -101,7 +102,7 @@ function TeamHeader({ team, admin, base, maxNameLength }: { team: TeamPageProps[
   )
 }
 
-function Members({ members, admin, base }: { members: TeamMember[]; admin: boolean; base: string }) {
+function Members({ members, admin, base, colleague }: { members: TeamMember[]; admin: boolean; base: string; colleague?: TeamPageProps['colleague'] }) {
   return (
     <Card>
       <h2 className="flex items-center justify-between gap-2 text-base">
@@ -110,6 +111,20 @@ function Members({ members, admin, base }: { members: TeamMember[]; admin: boole
       </h2>
       <ul className="mt-3 divide-y divide-loam-100">
         {members.map((member) => <MemberRow key={member.id} member={member} admin={admin} base={base} />)}
+        {/* « Collègue IA »: a member of another kind, listed with the team once Semisto opened the module. */}
+        {colleague && (
+          <li className="flex flex-wrap items-center gap-3 py-3">
+            <Avatar name={colleague.name ?? ''} url={colleague.avatarUrl} agent className="h-9 w-9" />
+            <div className="min-w-0 flex-1 basis-40">
+              <p className="flex items-center gap-2 truncate text-sm font-medium text-loam-900">
+                {colleague.name ?? t('agents.team_card.title')}
+                <Pill tone="leaf" className="!px-1.5 !py-0">{t('agents.badge')}</Pill>
+              </p>
+              <p className="text-sm text-loam-500">{colleague.ready && colleague.name ? t('agents.team_card.ready', { name: colleague.name }) : t('agents.team_card.not_ready')}</p>
+            </div>
+            <ButtonLink href={`${base}/collegue`} variant="secondary" size="sm">{t(colleague.name ? 'agents.team_card.open' : (admin ? 'agents.team_card.set_up' : 'agents.team_card.open'))}</ButtonLink>
+          </li>
+        )}
       </ul>
     </Card>
   )

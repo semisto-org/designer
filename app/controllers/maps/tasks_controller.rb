@@ -23,7 +23,7 @@ module Maps
           render inertia: "maps/tasks/index", props: board.as_json.merge(
             map: { id: @map.id, name: @map.name, role: @role, teamId: @map.organization_id,
                    offerBuilder: Offer.shown_to?(@map, Current.user), timeEntries: TimeEntry.tab_for?(@map, Current.user) },
-            participants: board.participants,
+            participants: board.participants(for_user: Current.user),
             canEdit: can_edit?,
             today: Date.current.iso8601,
             season: SeasonSteps.window_json,
@@ -48,6 +48,7 @@ module Maps
       task.completed_by = Current.user if task.completed_at
       if task.save
         notify_assignee(task) if task.assigned?
+        Agents::Wake.for_task(task, by: Current.user)
         render json: { task: task.as_json, board: TaskBoard.new(@map) }, status: :created
       else
         render_errors task
@@ -55,17 +56,19 @@ module Maps
     end
 
     def update
-      reassigned = false
+      reassigned = confided = false
       Task.transaction do
         attributes = editable_params
         @task.assign_attributes(attributes.except(:feature_ids))
         @task.features = linked_features if attributes.key?(:feature_ids)
         @task.completed_by = Current.user if @task.completed_at_changed? && @task.completed_at
         reassigned = (@task.assignee_id_changed? && @task.assignee_id) || (@task.invitee_email_changed? && @task.invitee_email)
+        confided = @task.agent_id_changed? && @task.agent_id
         @task.save!
         move if params[:task]&.key?(:position) || params[:task]&.key?(:task_list_id)
       end
       notify_assignee(@task) if reassigned
+      Agents::Wake.for_task(@task, by: Current.user) if confided
       render json: { task: @task.as_json, board: TaskBoard.new(@map) }
     rescue ActiveRecord::RecordInvalid
       render_errors @task
@@ -93,7 +96,11 @@ module Maps
       end
 
       def task_params
-        params.require(:task).permit(:title, :notes, :assignee_id, :invitee_email, :due_on, :completed, tags: [], feature_ids: [])
+        permitted = params.require(:task).permit(:title, :notes, :assignee_id, :invitee_email, :agent_id, :due_on, :completed, tags: [], feature_ids: [])
+        # Only a member of her team gives a task to the colleague (taking one
+        # back from her is open to every editor).
+        permitted.delete(:agent_id) if permitted[:agent_id].present? && !@map.colleague_for(Current.user)
+        permitted
       end
 
       def editable_params
@@ -114,7 +121,7 @@ module Maps
       end
 
       def notify_assignee(task)
-        return if task.assignee_id && task.assignee == Current.user
+        return if task.agent_id || (task.assignee_id && task.assignee == Current.user)
         TaskMailer.assigned(task, Current.user).deliver_later
       end
   end

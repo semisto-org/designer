@@ -88,6 +88,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
     t.index ["source_upload_id"], name: "index_aerial_views_on_source_upload_id"
   end
 
+  create_table "agent_runs", force: :cascade do |t|
+    t.bigint "team_agent_id", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "map_id", null: false
+    t.bigint "requested_by_id", null: false
+    t.string "source_type", null: false
+    t.bigint "source_id", null: false
+    t.string "status", default: "queued", null: false
+    t.string "model"
+    t.integer "turns", default: 0, null: false
+    t.integer "tool_calls", default: 0, null: false
+    t.jsonb "tools_used", default: [], null: false
+    t.bigint "input_tokens", default: 0, null: false
+    t.bigint "output_tokens", default: 0, null: false
+    t.bigint "cache_read_tokens", default: 0, null: false
+    t.bigint "cache_write_tokens", default: 0, null: false
+    t.bigint "cost_micros", default: 0, null: false
+    t.bigint "reply_comment_id"
+    t.string "error"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["map_id"], name: "index_agent_runs_on_map_id"
+    t.index ["organization_id", "created_at"], name: "index_agent_runs_on_organization_id_and_created_at"
+    t.index ["organization_id"], name: "index_agent_runs_on_organization_id"
+    t.index ["requested_by_id"], name: "index_agent_runs_on_requested_by_id"
+    t.index ["source_type", "source_id"], name: "index_agent_runs_on_source_type_and_source_id"
+    t.index ["team_agent_id", "source_id"], name: "index_agent_runs_once_per_comment", unique: true, where: "((source_type)::text = 'Comment'::text)"
+    t.index ["team_agent_id"], name: "index_agent_runs_on_team_agent_id"
+  end
+
   create_table "ai_actions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "map_id"
@@ -291,6 +323,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
     t.geometry "location", limit: {:srid=>4326, :type=>"st_point"}
     t.bigint "map_photo_id"
     t.bigint "map_document_id"
+    t.bigint "agent_id"
+    t.bigint "mentioned_agent_ids", default: [], null: false, array: true
+    t.index ["agent_id"], name: "index_comments_on_agent_id"
     t.index ["author_id"], name: "index_comments_on_author_id"
     t.index ["commentable_type", "commentable_id", "created_at"], name: "index_comments_on_thread"
     t.index ["map_document_id"], name: "index_comments_on_map_document_id"
@@ -932,6 +967,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
     t.datetime "first_hour_started_at"
     t.bigint "board_section_id"
     t.boolean "time_shared_with_client", default: false, null: false
+    t.datetime "agent_enabled_at"
+    t.bigint "agent_enabled_by_id"
     t.index ["board_section_id"], name: "index_maps_on_board_section_id"
     t.index ["boundary"], name: "index_maps_on_boundary", using: :gist
     t.index ["lead_id"], name: "index_maps_on_lead_id"
@@ -1106,6 +1143,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
     t.jsonb "document_theme", default: {}, null: false
     t.jsonb "document_theme_draft"
     t.datetime "territory_module_granted_at"
+    t.datetime "agents_module_granted_at"
+    t.string "agent_provider", default: "anthropic", null: false
+    t.text "agent_api_key"
+    t.string "agent_api_key_hint"
+    t.integer "agent_monthly_budget_cents", default: 2000, null: false
     t.index ["billing_user_id"], name: "index_organizations_on_billing_user_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
@@ -1846,6 +1888,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
     t.string "step_kind"
     t.citext "invitee_email"
     t.boolean "forecast", default: false, null: false
+    t.bigint "agent_id"
+    t.index ["agent_id"], name: "index_tasks_on_agent_id"
     t.index ["assignee_id", "completed_at"], name: "index_tasks_on_assignee_id_and_completed_at"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"
@@ -1854,6 +1898,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
     t.index ["map_id"], name: "index_tasks_on_map_id"
     t.index ["task_list_id", "position"], name: "index_tasks_on_task_list_id_and_position"
     t.index ["task_list_id"], name: "index_tasks_on_task_list_id"
+  end
+
+  create_table "team_agents", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "name", null: false
+    t.text "instructions"
+    t.boolean "active", default: true, null: false
+    t.bigint "created_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_team_agents_on_created_by_id"
+    t.index ["organization_id"], name: "index_team_agents_on_organization_id", unique: true
   end
 
   create_table "territories", force: :cascade do |t|
@@ -2003,6 +2059,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
   add_foreign_key "aerial_views", "mcp_uploads", column: "source_upload_id", on_delete: :nullify
   add_foreign_key "aerial_views", "plan_purchases", on_delete: :nullify
   add_foreign_key "aerial_views", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "agent_runs", "maps", on_delete: :cascade
+  add_foreign_key "agent_runs", "organizations", on_delete: :cascade
+  add_foreign_key "agent_runs", "team_agents", on_delete: :cascade
+  add_foreign_key "agent_runs", "users", column: "requested_by_id", on_delete: :cascade
   add_foreign_key "ai_actions", "maps", on_delete: :cascade
   add_foreign_key "ai_actions", "users", on_delete: :cascade
   add_foreign_key "api_tokens", "users", on_delete: :cascade
@@ -2025,6 +2085,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
   add_foreign_key "comments", "map_documents", on_delete: :nullify
   add_foreign_key "comments", "map_photos", on_delete: :nullify
   add_foreign_key "comments", "maps"
+  add_foreign_key "comments", "team_agents", column: "agent_id", on_delete: :nullify
   add_foreign_key "comments", "users", column: "author_id"
   add_foreign_key "drone_missions", "drone_pilots", on_delete: :restrict
   add_foreign_key "drone_missions", "maps", on_delete: :restrict
@@ -2098,6 +2159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
   add_foreign_key "maps", "board_sections", on_delete: :nullify
   add_foreign_key "maps", "organizations"
   add_foreign_key "maps", "regions"
+  add_foreign_key "maps", "users", column: "agent_enabled_by_id", on_delete: :nullify
   add_foreign_key "maps", "users", column: "lead_id", on_delete: :nullify
   add_foreign_key "maps", "users", column: "owner_id"
   add_foreign_key "mcp_uploads", "active_storage_blobs", column: "blob_id", on_delete: :cascade
@@ -2204,9 +2266,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
   add_foreign_key "task_lists", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "tasks", "maps", on_delete: :cascade
   add_foreign_key "tasks", "task_lists", on_delete: :cascade
+  add_foreign_key "tasks", "team_agents", column: "agent_id", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "assignee_id", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "completed_by_id", on_delete: :nullify
   add_foreign_key "tasks", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "team_agents", "organizations"
+  add_foreign_key "team_agents", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "territories", "organizations", on_delete: :cascade
   add_foreign_key "territories", "regions", on_delete: :nullify
   add_foreign_key "territories", "users", column: "created_by_id", on_delete: :nullify

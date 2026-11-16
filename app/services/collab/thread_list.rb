@@ -15,9 +15,9 @@ module Collab
       comments = comments.where.not(commentable_type: "Map") unless chat_member?
       counts = comments.group(:commentable_type, :commentable_id).count
       latest = comments.select("DISTINCT ON (comments.commentable_type, comments.commentable_id) comments.*")
-        .order(:commentable_type, :commentable_id, created_at: :desc, id: :desc).includes(:author)
+        .order(:commentable_type, :commentable_id, created_at: :desc, id: :desc).includes(:author, :agent)
         .index_by { |c| [ c.commentable_type, c.commentable_id ] }
-      from_others = comments.where.not(author_id: @user.id).group(:commentable_type, :commentable_id).maximum(:created_at)
+      from_others = comments.not_written_by(@user).group(:commentable_type, :commentable_id).maximum(:created_at)
       reads = CommentRead.where(user: @user).index_by { |r| [ r.commentable_type, r.commentable_id ] }
       subscribed = CommentSubscription.where(user: @user).pluck(:commentable_type, :commentable_id).to_set
 
@@ -34,7 +34,7 @@ module Collab
           layer: (record.layer if record.respond_to?(:layer)), kind: (record.kind if record.respond_to?(:kind)),
           count: counts[key] || 0,
           lastCommentAt: last&.created_at&.iso8601,
-          lastAuthorName: last&.author&.display_name,
+          lastAuthorName: last&.author_name,
           preview: last && last.body.squish.truncate(PREVIEW),
           unread: newest_foreign.present? && (seen.nil? || newest_foreign > seen),
           subscribed: key[0] == "Map" ? CommentSubscription.chat_subscribed?(@user, @map) : subscribed.include?(key)

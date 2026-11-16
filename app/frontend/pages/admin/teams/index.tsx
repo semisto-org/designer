@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react'
-import { Map as MapIcon } from 'lucide-react'
+import { Map as MapIcon, Sparkles } from 'lucide-react'
 import { AdminNav } from '@/components/admin/AdminNav'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Card'
@@ -15,6 +15,8 @@ type Row = {
   mapsCount: number
   /** When Semisto granted « Territoire », or null. */
   territoryModule: string | null
+  /** When Semisto opened « Collègue IA » for the team, or null. */
+  agentsModule: string | null
   territoriesActive: number
   territoriesArchived: number
 }
@@ -31,6 +33,18 @@ export default function AdminTeams({ teams }: { teams: Row[] }) {
       if (!ok) return
     }
     router.patch(`/admin/teams/${team.id}`, { territory_module: value }, { preserveScroll: true })
+  }
+
+  const setAgents = async (team: Row, value: 'grant' | 'revoke') => {
+    if (value === 'revoke') {
+      const ok = await confirmAction({
+        title: t('admin.teams.agents.revoke_confirm.title', { name: team.name }),
+        body: t('admin.teams.agents.revoke_confirm.body'),
+        confirmLabel: t('admin.teams.agents.revoke'),
+      })
+      if (!ok) return
+    }
+    router.patch(`/admin/teams/${team.id}`, { agents_module: value }, { preserveScroll: true })
   }
 
   return (
@@ -55,6 +69,12 @@ export default function AdminTeams({ teams }: { teams: Row[] }) {
                       {t('admin.teams.granted_on', { date: formatDate(team.territoryModule) })}
                     </span>
                   )}
+                  {team.agentsModule && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-leaf-100 px-2.5 py-0.5 text-sm font-medium text-leaf-800">
+                      <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                      {t('admin.teams.agents.granted_on', { date: formatDate(team.agentsModule) })}
+                    </span>
+                  )}
                 </p>
                 <p className="mt-1 text-sm text-loam-500">
                   {[
@@ -69,6 +89,9 @@ export default function AdminTeams({ teams }: { teams: Row[] }) {
               {team.territoryModule
                 ? <Button size="sm" variant="secondary" onClick={() => set(team, 'revoke')}>{t('admin.teams.revoke')}</Button>
                 : <Button size="sm" onClick={() => set(team, 'grant')}>{t('admin.teams.grant')}</Button>}
+              {team.agentsModule
+                ? <Button size="sm" variant="secondary" onClick={() => setAgents(team, 'revoke')}>{t('admin.teams.agents.revoke')}</Button>
+                : <Button size="sm" onClick={() => setAgents(team, 'grant')}>{t('admin.teams.agents.grant')}</Button>}
             </li>
           ))}
         </ul>

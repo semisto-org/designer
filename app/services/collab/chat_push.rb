@@ -36,7 +36,7 @@ module Collab
         {
           to: device.token,
           title: @comment.map.name,
-          body: I18n.t(mention ? "collab.chat.push.mention" : "collab.chat.push.message", author: @comment.author.display_name, body: @comment.body.squish.truncate(BODY_MAX)),
+          body: I18n.t(mention ? "collab.chat.push.mention" : "collab.chat.push.message", author: @comment.author_name, body: @comment.body.squish.truncate(BODY_MAX)),
           sound: "default",
           channelId: "discussion",
           data: { type: "chat", mapId: @comment.map_id, commentId: @comment.id }

@@ -106,8 +106,12 @@ module Mcp
 
         # Sensitive layers (networks) are hidden unless an editor asks.
         def networks_visible?(requested)
-          requested && editor?
+          requested && sees_networks?
         end
+
+        # Editors read the networks; a team's colleague never does: they do
+        # not leave Terranova for a model's provider.
+        def sees_networks? = editor? && !principal.agent?
 
         def require_drafts_scope!
           raise ToolError, t("errors.scope_drafts") unless principal.drafts?

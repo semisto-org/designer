@@ -12,6 +12,8 @@ module Teams
     def as_json(*)
       data = {
         team: { id: @team.id, name: @team.name, role: @membership.role, createdAt: @team.created_at.iso8601, logoUrl: @team.logo_url },
+        # « Collègue IA »: shown once Semisto granted the module to the team.
+        colleague: (@team.agents_module? ? { name: @team.team_agent&.name, avatarUrl: @team.team_agent&.avatar_url, ready: @team.colleague.present? } : nil),
         members: members,
         maps: maps,
         billing: billing,

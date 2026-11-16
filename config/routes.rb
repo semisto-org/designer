@@ -499,6 +499,12 @@ Rails.application.routes.draw do
       resources :memberships, only: %i[update destroy]
       # « Forfait de l'équipe »: an admin's plan pays for every team map.
       resource :billing, only: %i[update destroy]
+      # « Collègue IA »: the team's AI colleague, her settings and the maps
+      # where an admin switched her on.
+      resource :agent, path: "collegue", only: %i[show update] do
+        resources :maps, only: :update, controller: "agent_maps"
+        resource :avatar, only: %i[update destroy], controller: "agent_avatars"
+      end
       # The logo printed at the top of the team maps' documents.
       resource :logo, only: %i[update destroy]
       # « Charte graphique » of the team's documents (admins change it).
