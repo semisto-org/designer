@@ -19,7 +19,7 @@ Never start with plants. Each layer rests on the one before, from the most perma
 4. **Access**: paths, vehicle track, gates, following the relief and the water, not the other way round. A path is also a water catcher: laid on a ridge or with a gentle fall, it can lead its runoff to a swale or a pond (chapter `water`).
 5. **Structure**: large trees, hedges and windbreaks, edges, clearings and zones (chapter `structure`).
 6. **Soil**: build it before planting, with cover, mulch, green manures and support plants that keep feeding it (chapter `soil`). Send the person out with a spade first: what they see in the hole beats any map.
-7. **Plants**: the palette and the guilds, layer by layer, support plants among the productive ones (chapter `palette`).
+7. **Plants**: the palette and the guilds, layer by layer, support plants among the productive ones (chapter `palette`), then planting day and the take check of the first springs (chapter `planting`).
 8. **Time**: at every step, think of year 1, 5, 15 and 30, and of the 2050 climate (chapter `climate`).
 
 If the person asks straight away for plants while water or structure are not yet on the map, say so simply, suggest starting there, and let them choose.
@@ -71,4 +71,4 @@ Every project has a season frieze on its « Tâches » page (« La saison qui vi
 
 ## Other chapters
 
-`get_design_guide` with `topic`: `water`, `earthworks`, `structure`, `soil`, `palette`, `climate`.
+`get_design_guide` with `topic`: `water`, `earthworks`, `structure`, `soil`, `palette`, `planting`, `climate`.

@@ -2,8 +2,11 @@
 // label: the species (the map's first, then the whole catalogue), the
 // cultivar, how it came (bare root, pot, root ball) and when it goes in.
 // It joins the map's palette on the way, so the palette follows the land.
-import { router, useLocalSearchParams } from 'expo-router'
-import { useEffect, useMemo, useState } from 'react'
+// With a featureId, « Relire l'étiquette »: the same label read again for a
+// plant already on the map (the nursery sent another cultivar, or another
+// species); the plant keeps its place, its date and its journal.
+import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { api } from '@/lib/api'
 import { catalogueOnly, cleanVariety, NURSERY_FORMS, pastYears, plantingProperties, varietySuggestions, type CatalogueSpecies, type NurseryForm, type PlantingWhen } from '@/lib/fieldPlanting'
@@ -11,12 +14,14 @@ import { gpsProperties } from '@/lib/geo'
 import { formatDistance, t, todayIso } from '@/lib/i18n'
 import { currentPositionWithAccuracy } from '@/lib/location'
 import { display } from '@/lib/display'
+import { varietyName as featureVariety } from '@/lib/elements'
 import { outbox } from '@/lib/outbox'
 import { speciesChoices } from '@/lib/species'
 import type { Position } from '@/lib/types'
 import { useOnline } from '@/state/sync'
 import { useMapBundle } from '@/state/useMapBundle'
 import { Body, Button, Chip, Input, Label, Notice, styles } from '@/ui/kit'
+import { toast } from '@/ui/Toast'
 import { colors, fonts, radius, space } from '@/ui/theme'
 
 // A planting round places many plants the same way: the next one starts
@@ -27,8 +32,9 @@ let lastForm: NurseryForm | null = null
 const MAX_LOCAL = 8
 
 export default function PlantScreen() {
-  const params = useLocalSearchParams<{ id: string; speciesId?: string; speciesName?: string; speciesLatin?: string }>()
+  const params = useLocalSearchParams<{ id: string; speciesId?: string; speciesName?: string; speciesLatin?: string; featureId?: string }>()
   const mapId = Number(params.id)
+  const editing = params.featureId ? Number(params.featureId) : null
   // Coming from « Identifier »: the species Pl@ntNet found, maybe not yet in the map's list.
   const identified: CatalogueSpecies | null = params.speciesId ? { id: Number(params.speciesId), latinName: params.speciesLatin ?? '', commonName: params.speciesName ?? null, strata: null } : null
   const { bundle } = useMapBundle(mapId)
@@ -44,7 +50,20 @@ export default function PlantScreen() {
   const [form, setForm] = useState<NurseryForm | null>(lastForm)
   const [when, setWhen] = useState<PlantingWhen>(identified ? { type: 'planned' } : lastWhen)
 
-  useEffect(() => { currentPositionWithAccuracy().then((f) => setFix(f ?? 'none')) }, [])
+  useEffect(() => { if (!editing) currentPositionWithAccuracy().then((f) => setFix(f ?? 'none')) }, [editing])
+
+  // Reading the label again: start from what the plant says today.
+  const feature = editing ? bundle?.features.find((f) => f.id === editing) ?? null : null
+  const filled = useRef(false)
+  useEffect(() => {
+    if (!feature || filled.current || !bundle) return
+    filled.current = true
+    const known = bundle.planting.species[String(feature.properties.species_id)]
+    if (known) setSpecies(known)
+    setVariety(featureVariety(feature, bundle.planting) ?? '')
+    const nursery = feature.properties.nursery_form
+    setForm((NURSERY_FORMS as readonly unknown[]).includes(nursery) ? nursery as NurseryForm : null)
+  }, [feature, bundle])
 
   const local = useMemo(() => speciesChoices(bundle?.planting, query), [bundle, query])
 
@@ -84,7 +103,23 @@ export default function PlantScreen() {
     if (sp.namedVarieties?.length === 1) setVariety(sp.namedVarieties[0].name)
   }
 
+  const relabel = () => {
+    if (!feature || !species) return
+    const changed = species.id !== feature.properties.species_id
+    outbox.add({
+      type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion,
+      changes: {
+        patch: { species_id: species.id, nursery_form: form, ...(changed || !varietyName ? { variety_id: null } : {}) },
+        palette: { ...(varietyName ? { variety_name: varietyName } : {}), ...(form ? { size: t(`mobile.plant.forms.${form}`) } : {}) },
+        label: { species: species.commonName ?? species.latinName, variety: varietyName || null },
+      },
+    })
+    toast(t('mobile.plant.label_saved'))
+    router.back()
+  }
+
   const save = () => {
+    if (editing) { relabel(); return }
     if (!fix || fix === 'none') return
     lastWhen = when
     lastForm = form
@@ -107,9 +142,11 @@ export default function PlantScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ padding: space.lg, gap: space.sm }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
-      {fix === null && <Notice>{t('mobile.plant.locating')}</Notice>}
-      {fix === 'none' && <Notice tone="error">{t('mobile.plant.no_position')}</Notice>}
-      {fix && fix !== 'none' && (
+      {editing && <Stack.Screen options={{ title: t('mobile.plant.label_title') }} />}
+      {editing && <Body muted>{t('mobile.plant.label_intro')}</Body>}
+      {!editing && fix === null && <Notice>{t('mobile.plant.locating')}</Notice>}
+      {!editing && fix === 'none' && <Notice tone="error">{t('mobile.plant.no_position')}</Notice>}
+      {!editing && fix && fix !== 'none' && (
         <Notice tone={fix.accuracy && fix.accuracy > 10 ? 'warning' : 'info'}>
           {fix.accuracy ? t('mobile.plant.position', { accuracy: formatDistance(fix.accuracy) }) : t('mobile.plant.position_unknown_accuracy')}
         </Notice>
@@ -146,6 +183,7 @@ export default function PlantScreen() {
               {suggestions.map((name) => <Chip key={name} label={name} selected={name === varietyName} onPress={() => setVariety(name)} />)}
             </View>
           )}
+          {editing && varietyName ? <Button variant="ghost" label={t('mobile.plant.no_variety')} onPress={() => setVariety('')} /> : null}
           <Body muted>{t('mobile.plant.palette_hint')}</Body>
         </>
       )}
@@ -157,18 +195,23 @@ export default function PlantScreen() {
         ))}
       </View>
 
-      <Label>{t('mobile.plant.when.title')}</Label>
-      <View style={s.chips}>
-        <Chip role="radio" label={t('mobile.plant.when.planned')} selected={when.type === 'planned'} onPress={() => setWhen({ type: 'planned' })} />
-        <Chip role="radio" label={t('mobile.plant.when.today')} selected={when.type === 'today'} onPress={() => setWhen({ type: 'today' })} />
-        {pastYears(today).map((year) => (
-          <Chip key={year} role="radio" label={t('mobile.plant.when.year', { year })} selected={when.type === 'year' && when.year === year} onPress={() => setWhen({ type: 'year', year })} />
-        ))}
-        <Chip role="radio" label={t('mobile.plant.when.unknown')} selected={when.type === 'unknown'} onPress={() => setWhen({ type: 'unknown' })} />
-      </View>
-      {when.type === 'planned' && <Body muted>{t('mobile.plant.when.planned_hint')}</Body>}
+      {!editing && (
+        <>
+          <Label>{t('mobile.plant.when.title')}</Label>
+          <View style={s.chips}>
+            <Chip role="radio" label={t('mobile.plant.when.planned')} selected={when.type === 'planned'} onPress={() => setWhen({ type: 'planned' })} />
+            <Chip role="radio" label={t('mobile.plant.when.today')} selected={when.type === 'today'} onPress={() => setWhen({ type: 'today' })} />
+            {pastYears(today).map((year) => (
+              <Chip key={year} role="radio" label={t('mobile.plant.when.year', { year })} selected={when.type === 'year' && when.year === year} onPress={() => setWhen({ type: 'year', year })} />
+            ))}
+            <Chip role="radio" label={t('mobile.plant.when.unknown')} selected={when.type === 'unknown'} onPress={() => setWhen({ type: 'unknown' })} />
+          </View>
+          {when.type === 'planned' && <Body muted>{t('mobile.plant.when.planned_hint')}</Body>}
+        </>
+      )}
 
-      <Button style={{ marginTop: space.md }} label={t('mobile.plant.save')} disabled={!fix || fix === 'none'} onPress={save} />
+      <Button style={{ marginTop: space.md }} label={editing ? t('mobile.plant.label_save') : t('mobile.plant.save')}
+        disabled={editing ? !feature || !species : !fix || fix === 'none'} onPress={save} />
     </ScrollView>
   )
 }

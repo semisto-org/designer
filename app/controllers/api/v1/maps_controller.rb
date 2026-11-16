@@ -27,6 +27,8 @@ module Api
           features: @map.features.where.not(status: "rejected").map(&:as_geojson),
           photos: @map.photos.includes(:uploaded_by, image_attachment: :blob).chronological.limit(2000).map(&:as_inertia),
           planting: PlantingState.new(@map),
+          # The spring take check: the young plants to lead to, with their last check.
+          takeRound: PlantingRound.new(@map).take_json,
           # Soil sampling points, to photograph each one in the field (its photos are in `photos`).
           soilSamples: @map.soil_samples.ordered.map { soil_sample_json(_1) },
           # Dated drone views, newest first, to lay over the base map (style ?drone=id).

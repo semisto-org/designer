@@ -51,6 +51,21 @@ describe('nextTempId', () => {
   })
 })
 
+describe('the label read again on the land', () => {
+  it('shows the new cultivar and species at once, and sends the palette without the label', async () => {
+    const op: Op = {
+      id: 'l', mapId: 1, createdAt: at, type: 'updateFeature', featureId: 5, lockVersion: 2,
+      changes: { patch: { species_id: 9, variety_id: null }, palette: { variety_name: 'Gris de Bruxelles' }, label: { species: 'Poirier', variety: 'Gris de Bruxelles' } },
+    }
+    const shown = applyPending(bundle([plant(5)]), state([op])).features[0]
+    expect(shown.properties).toMatchObject({ species_id: 9, variety_id: null, species_label: 'Poirier', variety_label: 'Gris de Bruxelles' })
+    const bodies: Record<string, unknown>[] = []
+    const { t } = transport({ updateFeature: async (_m, id, body) => { bodies.push(body); return plant(id) } })
+    await flush(state([op]), t)
+    expect(bodies[0]).toEqual({ palette: { variety_name: 'Gris de Bruxelles' }, properties_patch: { species_id: 9, variety_id: null }, lock_version: 2 })
+  })
+})
+
 describe('applyPending', () => {
   it('shows new features and changes before they are sent', () => {
     const ops: Op[] = [

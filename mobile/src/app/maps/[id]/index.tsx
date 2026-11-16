@@ -14,15 +14,15 @@ import { hidesMore, isShown } from '@/lib/display-core'
 import { memoryOf } from '@/lib/memory'
 import { observationYear, signsToLookFor } from '@/lib/season'
 import { firstHourMissions } from '@/lib/firstHour'
-import { anchor, boundsOf } from '@/lib/geo'
-import { t, todayIso } from '@/lib/i18n'
+import { anchor, boundsOf, gpsProperties } from '@/lib/geo'
+import { formatDate, formatDistance, t, todayIso } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
 import { pickFeatureId } from '@/lib/pick'
 import { photosHere } from '@/lib/retake'
 import { around, whereFrom } from '@/lib/terrain'
-import { canEdit, type MapFeature, type Position } from '@/lib/types'
+import { canEdit, type MapFeature, type Position, type Survival } from '@/lib/types'
 import { haptics } from '@/lib/haptics'
-import { arrived, nextTarget, remaining } from '@/lib/tour'
+import { arrived, lastCheck, nextTarget, remaining, takeDue, toPlant, type Round } from '@/lib/tour'
 import { useVisit, visits } from '@/lib/visit'
 import { visitNotes } from '@/lib/visit-core'
 import { FeatureLayers } from '@/map/FeatureLayers'
@@ -67,7 +67,9 @@ export default function Terrain() {
   const mapStyle = useMapStyle(mapId, bundle)
   const visit = useVisit(mapId)
   const [accuracy, setAccuracy] = useState<number | null>(null)
-  const [touring, setTouring] = useState(false)
+  // A round on the land: the planting round, or the spring take check.
+  const [round, setRound] = useState<Round | null>(null)
+  const touring = round !== null
   const [skipped, setSkipped] = useState<ReadonlySet<number>>(new Set())
   const [heading, setHeading] = useState<number | null>(null)
 
@@ -114,7 +116,11 @@ export default function Terrain() {
   const memory = useMemo(() => (bundle ? memoryOf({ photos: bundle.photos, features: bundle.features }) : null), [bundle])
   const firstHour = useMemo(() => (bundle ? firstHourMissions(bundle.firstHour, bundle.features) : null), [bundle])
   const seasons = useMemo(() => (bundle ? { seasons: observationYear(bundle.features), lookFor: signsToLookFor(bundle.features) } : null), [bundle])
-  const target = useMemo(() => (touring && bundle && me ? nextTarget(bundle.features, me, skipped) : null), [touring, bundle, me, skipped])
+  const toCheck = useMemo(() => (bundle ? takeDue(bundle.takeRound, bundle.features, pending) : new Set<number>()), [bundle, pending])
+  const target = useMemo(() => {
+    if (!round || !bundle || !me) return null
+    return nextTarget(bundle.features, me, skipped, round === 'take' ? (f) => toCheck.has(f.id) : toPlant)
+  }, [round, bundle, me, skipped, toCheck])
   const toPlantCount = useMemo(() => (bundle ? remaining(bundle.features) : 0), [bundle])
   const here = target ? arrived(target.meters, accuracy) : false
   const targetId = target?.feature.id ?? null
@@ -243,14 +249,83 @@ export default function Terrain() {
     })
   }
 
-  const startTour = () => {
+  const startTour = (which: Round = 'plant') => {
     setSkipped(new Set())
     setSelectedId(null)
     setNoting(false)
-    setTouring(true)
+    setRound(which)
     setLevel(rest)
   }
-  const endTour = () => { setTouring(false); setHeading(null) }
+  const endTour = () => { setRound(null); setHeading(null) }
+
+  // The plant is not quite where it was drawn: it goes where the person stands.
+  const moveHere = (feature: MapFeature) => {
+    if (!me) { toast(t('mobile.terrain.no_position'), { tone: 'info' }); return }
+    const op = outbox.add({
+      type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion,
+      changes: { patch: gpsProperties(accuracy), geometry: { type: 'Point', coordinates: me } },
+    })
+    haptics.success()
+    toast(t('mobile.terrain.moved_toast', { accuracy: formatDistance(Math.max(1, accuracy ?? 3)) }), {
+      action: {
+        label: t('mobile.terrain.undo'),
+        onPress: () => {
+          if (outbox.get().ops.some((o) => o.id === op.id)) outbox.discard(op.id)
+          else outbox.add({ type: 'updateFeature', mapId, featureId: feature.id, lockVersion: feature.properties.lockVersion, changes: { geometry: feature.geometry } })
+          toast(t('mobile.terrain.undone'), { tone: 'info' })
+        },
+      },
+    })
+  }
+
+  // The label read again on the land: another cultivar, or another species.
+  const relabel = (feature: MapFeature) => go('/maps/[id]/plant', { featureId: String(feature.id) })
+
+  // The take round: one look, one gesture, the next plant.
+  const noteTake = (feature: MapFeature, survival: Survival) => {
+    const op = outbox.add({ type: 'createObservation', mapId, featureId: feature.id, observedOn: todayIso(), kind: 'follow_up', survival, vigor: null, note: null, photo: null })
+    const label = t(`mobile.take.${survival}`)
+    if (survival === 'established') haptics.success()
+    toast(t('mobile.take.saved', { survival: label.toLowerCase() }), {
+      body: survival === 'established' ? undefined : t(`mobile.take.${survival}_hint`),
+      action: {
+        label: t('mobile.terrain.undo'),
+        onPress: () => {
+          // Still waiting to go out: it never reaches the journal. Once sent, it is an entry of the journal, deleted from the plant's sheet.
+          if (outbox.get().ops.some((o) => o.id === op.id)) { outbox.discard(op.id); toast(t('mobile.terrain.undone'), { tone: 'info' }) }
+          else go('/maps/[id]/features/[featureId]', { featureId: String(feature.id) })
+        },
+      },
+    })
+  }
+
+  const roundGestures = (feature: MapFeature): QuickAction[] => round === 'take'
+    ? [
+        { key: 'established', icon: 'plant', label: t('mobile.take.established'), onPress: () => noteTake(feature, 'established'), primary: here },
+        { key: 'struggling', icon: 'warning', label: t('mobile.take.struggling'), onPress: () => noteTake(feature, 'struggling') },
+        { key: 'dead', icon: 'dead', label: t('mobile.take.dead'), onPress: () => noteTake(feature, 'dead') },
+        { key: 'skip', icon: 'skip', label: t('mobile.tour.skip'), onPress: () => setSkipped((all) => new Set([...all, feature.id])), ghost: true },
+      ]
+    : [
+        { key: 'planted', icon: 'planted', label: t('mobile.tour.planted'), onPress: () => markPlanted(feature, { message: t('mobile.tour.planted_toast') }), primary: here },
+        { key: 'here', icon: 'point', label: t('mobile.tour.planted_here'), hint: t('mobile.tour.planted_here_hint'),
+          onPress: () => { if (me) markPlanted(feature, { at: me, message: t('mobile.tour.moved_toast') }) } },
+        { key: 'label', icon: 'label', label: t('mobile.tour.label'), hint: t('mobile.tour.label_hint'), onPress: () => relabel(feature) },
+        { key: 'skip', icon: 'skip', label: t('mobile.tour.skip'), onPress: () => setSkipped((all) => new Set([...all, feature.id])), ghost: true },
+      ]
+
+  // On the take round, a word about the plant: when it went in, and what its last check said.
+  const takeNote = (feature: MapFeature): string | null => {
+    if (round !== 'take') return null
+    const last = lastCheck(bundle.takeRound, feature.id)
+    const planted = typeof feature.properties.planted_on === 'string'
+      ? t('mobile.take.planted', { when: feature.properties.planted_on_precision === 'year' ? feature.properties.planted_on.slice(0, 4) : formatDate(feature.properties.planted_on) })
+      : null
+    const before = last?.lastObservedOn && last.lastSurvival
+      ? t('mobile.take.last', { year: last.lastObservedOn.slice(0, 4), survival: t(`mobile.take.${last.lastSurvival}`).toLowerCase() })
+      : null
+    return [planted, before].filter(Boolean).join(' · ') || null
+  }
 
   const quickActions = (feature: MapFeature): QuickAction[] => {
     const open = () => go('/maps/[id]/features/[featureId]', { featureId: String(feature.id) })
@@ -260,6 +335,9 @@ export default function Terrain() {
     if (isPlant && !feature.properties.planted_on) list.push({ key: 'planted', icon: 'planted', label: t('mobile.terrain.planted_today'), onPress: () => markPlanted(feature), primary: true })
     if (isPlant && feature.properties.planted_on) list.push({ key: 'follow', icon: 'followUp', label: t('mobile.terrain.follow_up'), onPress: open, primary: true })
     list.push({ key: 'photo', icon: 'photo', label: t('mobile.actions.photo'), onPress: () => void addPhoto(feature) })
+    // Corrected on the spot: a point that is not where it stands on the land, a label read again.
+    if (feature.geometry.type === 'Point' && me) list.push({ key: 'here', icon: 'here', label: t('mobile.terrain.move_here'), hint: t('mobile.terrain.move_here_hint'), onPress: () => moveHere(feature) })
+    if (isPlant) list.push({ key: 'label', icon: 'label', label: t('mobile.terrain.label'), hint: t('mobile.tour.label_hint'), onPress: () => relabel(feature) })
     if (isPlant) list.push({ key: 'identify', icon: 'identify', label: t('mobile.actions.identify'), onPress: () => go('/maps/[id]/identify', { featureId: String(feature.id) }) })
     return list
   }
@@ -336,12 +414,10 @@ export default function Terrain() {
         top={
           <>
             {bundle.map.readOnlyByPlan && <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}><Notice tone="warning">{t('mobile.maps.read_only_by_plan')}</Notice></View>}
-            {touring && editable && !selected
-              ? <TourTop target={target} left={toPlantCount} skippedLeft={skipped.size} planting={bundle.planting} accuracy={accuracy} heading={heading}
-                  located={located === 'yes'} onEnd={endTour}
-                  onPlanted={() => target && markPlanted(target.feature, { message: t('mobile.tour.planted_toast') })}
-                  onPlantedHere={() => target && me && markPlanted(target.feature, { at: me, message: t('mobile.tour.moved_toast') })}
-                  onSkip={() => target && setSkipped((all) => new Set([...all, target.feature.id]))} />
+            {round && editable && !selected
+              ? <TourTop round={round} target={target} left={round === 'take' ? toCheck.size : toPlantCount} skippedLeft={skipped.size} planting={bundle.planting}
+                  accuracy={accuracy} heading={heading} located={located === 'yes'} onEnd={endTour}
+                  note={target ? takeNote(target.feature) : null} gestures={target ? roundGestures(target.feature) : []} />
               : selected
               ? <FeatureTop mapId={mapId} feature={selected} planting={bundle.planting} photo={photosOf(selected)[0] ?? null} where={where}
                   gestures={quickActions(selected)} onClose={unselect} />
@@ -360,7 +436,8 @@ export default function Terrain() {
               onPhoto={(photo) => go('/maps/[id]/photo/[photoId]', { photoId: String(photo.id) })} />
           : visit && editable
             ? <VisitBody notes={visitNoted} planting={bundle.planting} onPick={pick} />
-            : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={startTour} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
+            : <RestBody toPlant={editable && !touring ? toPlantCount : 0} onTour={() => startTour('plant')}
+                toCheck={editable && !touring && bundle.takeRound?.open ? toCheck.size : 0} onTake={() => startTour('take')} around={nearby} located={located} planting={bundle.planting} onPick={pick} viewer={!editable && !bundle.map.readOnlyByPlan}
                 mapId={mapId} photosHere={shotHere} memory={memory} week={week} saidHere={saidHere} onSaid={openChat}
                 firstHour={editable && firstHour ? {
                   data: firstHour,

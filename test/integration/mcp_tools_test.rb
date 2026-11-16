@@ -208,6 +208,10 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_equal [ 2, 1, 1, 10.0 ], entry.values_at("planned", "planted", "to_plant", "unit_price_eur")
     assert_equal "invasive", entry["excluded_by"]
     assert_equal({ "to_buy_eur" => 10.0, "total_eur" => 20.0 }, data["palette_budget"])
+    # The planting season, as the phone's rounds walk it.
+    assert_operator data["planting_round"]["to_plant"], :>=, 1
+    assert_equal PlantingRound.new(@map).as_json.deep_stringify_keys, data["planting_round"]
+    assert_equal %w[checked due open since], data["planting_round"]["take"].keys.sort
   end
 
   test "update_palette_budget notes the price, size, supplier and target of palette lines, and nothing else" do

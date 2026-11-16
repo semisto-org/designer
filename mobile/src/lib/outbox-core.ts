@@ -78,6 +78,10 @@ export type FeatureChanges = {
   patch?: Record<string, unknown>
   properties?: Record<string, unknown>
   geometry?: Geometry
+  /** The nursery label read again on the land: the plant's (new) cultivar joins the palette. */
+  palette?: { variety_name?: string; size?: string }
+  /** What to show until the server answers (a cultivar or species the map doesn't know yet); never sent. */
+  label?: { species?: string | null; variety?: string | null }
 }
 
 export type OutboxState = {
@@ -137,6 +141,8 @@ function applyChanges(feature: MapFeature, changes: FeatureChanges): MapFeature 
     properties: {
       ...(changes.properties ? { ...reserved, ...changes.properties } : feature.properties),
       ...changes.patch,
+      ...(changes.label && 'species' in changes.label ? { species_label: changes.label.species } : {}),
+      ...(changes.label && 'variety' in changes.label ? { variety_label: changes.label.variety } : {}),
       ...(changes.name !== undefined ? { name: changes.name } : {}),
       ...(changes.notes !== undefined ? { notes: changes.notes } : {}),
       pending: true,
@@ -289,7 +295,7 @@ async function send(state: OutboxState, op: Op, transport: Transport, versions: 
     }
     case 'updateFeature': {
       const featureId = id(op.featureId)!
-      const { patch, ...changes } = op.changes
+      const { patch, label: _label, ...changes } = op.changes
       const body = { ...changes, ...(patch ? { properties_patch: patch } : {}), lock_version: versions.get(featureId) ?? op.lockVersion }
       let updated: MapFeature
       try {

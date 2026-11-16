@@ -3,7 +3,7 @@
 // chosen, that feature with its age, where it stands and the gestures it asks.
 import type { ReactNode } from 'react'
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native'
-import { featureColor, featureTitle, kindLabel, speciesName } from '@/lib/elements'
+import { featureColor, featureTitle, kindLabel, speciesName, varietyName } from '@/lib/elements'
 import { formatDate, formatDay, formatDistance, formatTime, seasonOf, t } from '@/lib/i18n'
 import { haptics } from '@/lib/haptics'
 import { ageLabel, monthCard, plantedAge, type Direction, type Nearby } from '@/lib/terrain'
@@ -12,7 +12,7 @@ import { isSign, missingSeasons, observationTime, seenLabel, signLabel, signsOfM
 import type { WeekReport } from '@/lib/week'
 import type { SpotPhotos } from '@/lib/retake'
 import type { ChatMessage } from '@/lib/chat-core'
-import { arrived, arrowAngle, type Target } from '@/lib/tour'
+import { arrived, arrowAngle, type Round, type Target } from '@/lib/tour'
 import { THEMES, minutesSince, themeOf, type Theme, type Visit } from '@/lib/visit-core'
 import type { FirstHour, FirstHourMission, MapFeature, Photo, Planting } from '@/lib/types'
 import { Icon, type IconName } from '@/ui/Icon'
@@ -37,9 +37,11 @@ export function featureLine(feature: MapFeature, planting: Planting | undefined,
   // In the ground since a date nobody knows: no age to tell.
   const unknown = !!feature.properties.planted_on && feature.properties.planted_on_precision === 'unknown'
   const age = unknown ? null : plantedAge(feature.properties.planted_on)
+  const variety = varietyName(feature, planting)
   return [
     unknown ? t('plant_feature.planted_unknown') : age ? ageLabel(age) : t('mobile.feature.to_plant'),
     feature.properties.name ? speciesName(planting, feature.properties.species_id) : null,
+    variety ? `'${variety}'` : null,
   ].filter(Boolean).join(' · ')
 }
 
@@ -63,10 +65,12 @@ export function RestTop({ editable, onNote, onVisit }: { editable: boolean; onNo
   )
 }
 
-export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, mapId, photosHere = [], onPhoto, memory, week, year, firstHour, saidHere = [], onSaid }: {
+export function RestBody({ around, located, planting, onPick, viewer, toPlant = 0, onTour, toCheck = 0, onTake, mapId, photosHere = [], onPhoto, memory, week, year, firstHour, saidHere = [], onSaid }: {
   around: Nearby[]; located: 'yes' | 'pending' | 'denied'; planting: Planting | undefined; onPick: (feature: MapFeature) => void; viewer: boolean
   /** Plants of the design still to put in the ground, for the planting round. */
   toPlant?: number; onTour?: () => void
+  /** Young plants whose take is still to check this spring. */
+  toCheck?: number; onTake?: () => void
   /** Photos already taken where one stands: what can be taken again here. */
   mapId?: number; photosHere?: SpotPhotos[]; onPhoto?: (photo: Photo) => void
   /** « Il y a un an, ici »: this date in an earlier year. */
@@ -89,6 +93,14 @@ export function RestBody({ around, located, planting, onPick, viewer, toPlant = 
           <Body>{t('mobile.tour.invite', { count: toPlant })}</Body>
           <Body muted>{t('mobile.tour.invite_hint')}</Body>
           <Button icon="planted" label={t('mobile.tour.start')} onPress={onTour} />
+        </View>
+      )}
+      {toCheck > 0 && onTake && (
+        <View style={s.invite}>
+          <Text accessibilityRole="header" style={s.section} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.take.title')}</Text>
+          <Body>{t('mobile.take.invite', { count: toCheck })}</Body>
+          <Body muted>{t('mobile.take.invite_hint')}</Body>
+          <Button icon="followUp" label={t('mobile.take.start')} onPress={onTake} />
         </View>
       )}
       {firstHour && <FirstHourCard {...firstHour} />}
@@ -380,37 +392,47 @@ export function VisitBody({ notes, planting, onPick }: { notes: MapFeature[]; pl
  * distance in large figures, then « Tu y es » once close enough; and the
  * gestures « Planté ! », « Planté ici », « Passer ».
  */
-export function TourTop({ target, left, skippedLeft, planting, accuracy, heading, located, onPlanted, onPlantedHere, onSkip, onEnd }: {
-  target: Target | null; left: number; skippedLeft: number; planting: Planting | undefined
+/**
+ * A round on the land, the arrow to the next plant and its gestures: the
+ * planting round (« Planté ! », « Planté ici », the label read again) or the
+ * spring take check (« Repris », « En difficulté », « Mort »).
+ */
+export function TourTop({ round, target, left, skippedLeft, planting, accuracy, heading, located, note, gestures, onEnd }: {
+  round: Round; target: Target | null; left: number; skippedLeft: number; planting: Planting | undefined
   accuracy: number | null; heading: number | null; located: boolean
-  onPlanted: () => void; onPlantedHere: () => void; onSkip: () => void; onEnd: () => void
+  /** A line about the plant, under its name (its last check, on the take round). */
+  note?: string | null
+  gestures: QuickAction[]; onEnd: () => void
 }) {
+  const k = round === 'take' ? 'mobile.take' : 'mobile.tour'
   if (!target) {
     return (
       <View style={s.top}>
         <View style={s.titleRow}>
           <Text accessibilityRole="header" style={[s.monthTitle, { flex: 1 }]} maxFontSizeMultiplier={MAX_FONT_SCALE}>
-            {located ? t('mobile.tour.done_title') : t('mobile.tour.title')}
+            {located ? t(`${k}.done_title`) : t(`${k}.title`)}
           </Text>
           <IconButton icon="close" label={t('mobile.tour.end')} onPress={onEnd} size={touch.min} />
         </View>
-        <Body muted>{!located ? t('mobile.tour.no_position') : skippedLeft > 0 ? t('mobile.tour.skipped_left', { count: skippedLeft }) : t('mobile.tour.done')}</Body>
+        <Body muted>{!located ? t('mobile.tour.no_position') : skippedLeft > 0 ? t(`${k}.skipped_left`, { count: skippedLeft }) : t(`${k}.done`)}</Body>
       </View>
     )
   }
   const here = arrived(target.meters, accuracy)
   const angle = arrowAngle(target.bearing, heading)
   const title = featureTitle(target.feature, planting)
+  const variety = varietyName(target.feature, planting)
   const number = target.feature.properties.number
   const direction = t(`mobile.terrain.directions.${target.direction}`)
   const where = here ? t('mobile.tour.here') : t('mobile.tour.far', { distance: formatDistance(target.meters), direction })
   return (
     <View style={s.top}>
       <View style={s.titleRow}>
-        <Text style={[s.hand, { flex: 1 }]} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t('mobile.tour.title')} · {t('mobile.tour.left', { count: left })}</Text>
+        <Text style={[s.hand, { flex: 1 }]} maxFontSizeMultiplier={MAX_FONT_SCALE}>{t(`${k}.title`)} · {t(`${k}.left`, { count: left })}</Text>
         <IconButton icon="close" label={t('mobile.tour.end')} onPress={onEnd} size={touch.min} />
       </View>
-      <View style={s.titleRow} accessible accessibilityLiveRegion="polite" accessibilityLabel={[title, number ? t('mobile.tour.number', { number: String(number) }) : null, where].filter(Boolean).join(', ')}>
+      <View style={s.titleRow} accessible accessibilityLiveRegion="polite"
+        accessibilityLabel={[title, variety, number ? t('mobile.tour.number', { number: String(number) }) : null, where, note].filter(Boolean).join(', ')}>
         <View style={[s.compass, here && s.compassHere]}>
           {here
             ? <Icon name="arrived" size={40} color={colors.white} />
@@ -419,18 +441,17 @@ export function TourTop({ target, left, skippedLeft, planting, accuracy, heading
         <View style={{ flex: 1 }}>
           <Text style={[s.distanceBig, here && { color: colors.leaf700 }]} maxFontSizeMultiplier={1.3}>{here ? t('mobile.tour.here') : formatDistance(target.meters)}</Text>
           <Text style={s.featureTitle} numberOfLines={2} maxFontSizeMultiplier={MAX_FONT_SCALE}>
-            {number ? `${t('mobile.tour.number', { number: String(number) })} · ` : ''}{title}
+            {number ? `${t('mobile.tour.number', { number: String(number) })} · ` : ''}{title}{variety ? ` '${variety}'` : ''}
           </Text>
           <Text style={s.meta} maxFontSizeMultiplier={MAX_FONT_SCALE}>
-            {here ? t('mobile.tour.here_hint', { accuracy: formatDistance(Math.max(1, accuracy ?? 2)) }) : angle === null ? t('mobile.tour.no_heading', { direction }) : direction}
+            {here ? t(`${k}.here_hint`, { accuracy: formatDistance(Math.max(1, accuracy ?? 2)) }) : angle === null ? t('mobile.tour.no_heading', { direction }) : direction}
           </Text>
+          {note ? <Text style={s.meta} maxFontSizeMultiplier={MAX_FONT_SCALE}>{note}</Text> : null}
         </View>
       </View>
       <View style={s.gestures}>
-        <Button icon="planted" label={t('mobile.tour.planted')} onPress={onPlanted} variant={here ? 'primary' : 'secondary'} style={s.gesture} />
-        <Button icon="point" label={t('mobile.tour.planted_here')} onPress={onPlantedHere} variant="secondary" style={s.gesture}
-          accessibilityHint={t('mobile.tour.planted_here_hint')} />
-        <Button icon="skip" label={t('mobile.tour.skip')} onPress={onSkip} variant="ghost" style={s.gesture} />
+        {gestures.map((g) => <Button key={g.key} icon={g.icon} label={g.label} variant={g.primary ? 'primary' : g.ghost ? 'ghost' : 'secondary'} onPress={g.onPress} style={s.gesture}
+          accessibilityHint={g.hint} />)}
       </View>
     </View>
   )
@@ -438,7 +459,7 @@ export function TourTop({ target, left, skippedLeft, planting, accuracy, heading
 
 // ── A feature ──────────────────────────────────────────────────────────
 
-export type QuickAction = { key: string; icon: IconName; label: string; onPress: () => void; primary?: boolean }
+export type QuickAction = { key: string; icon: IconName; label: string; onPress: () => void; primary?: boolean; ghost?: boolean; hint?: string }
 
 export function FeatureTop({ mapId, feature, planting, photo, where, gestures, onClose }: {
   mapId: number; feature: MapFeature; planting: Planting | undefined; photo: Photo | null
@@ -460,7 +481,7 @@ export function FeatureTop({ mapId, feature, planting, photo, where, gestures, o
       </View>
       {gestures.length > 0 && (
         <View style={s.gestures}>
-          {gestures.map((g) => <Button key={g.key} icon={g.icon} label={g.label} variant={g.primary ? 'primary' : 'secondary'} onPress={g.onPress} style={s.gesture} />)}
+          {gestures.map((g) => <Button key={g.key} icon={g.icon} label={g.label} variant={g.primary ? 'primary' : 'secondary'} onPress={g.onPress} style={s.gesture} accessibilityHint={g.hint} />)}
         </View>
       )}
     </View>
