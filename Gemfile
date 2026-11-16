@@ -18,7 +18,7 @@ gem "inertia_rails", "~> 3.22"
 gem "vite_rails", "~> 3.11"
 
 # Sign in with Google; magic links and one-time codes are built in
-gem "omniauth", "~> 2.1"
+gem "omniauth", "~> 2.2"
 gem "omniauth-google-oauth2", "~> 1.2"
 gem "omniauth-rails_csrf_protection", "~> 2.0"
 gem "omniauth-apple", "~> 1.4"
