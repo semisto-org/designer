@@ -105,4 +105,25 @@ class TerritoryNotebookTest < ActiveSupport::TestCase
     assert_equal [ "PCDN 2016" ], expectation[:sources].map { _1[:title] }
     refute expectation[:validated]
   end
+
+  test "a lead confirmed by an actor reaches the public notebook, named by their organisation only" do
+    giser = add("actor", "Jean Dupont", organization: "Cellule GISER")
+    add("lead", "Haie confirmée", land: "public", verification: "actor", verified_by_id: giser.id, verified_on: "2026-11-10", geometry: inside_point)
+    add("lead", "Fascine par un riverain", land: "public", verification: "actor", verified_by: "Mme Lambert")
+    add("lead", "Lue au bureau", land: "public", confirm_with_id: giser.id)
+
+    working = notebook("working")
+    assert_equal [ "Fascine par un riverain", "Haie confirmée" ], working[:leads].map { _1[:title] }.sort
+    assert_equal [ "Lue au bureau" ], working[:hypotheses].map { _1[:title] }
+    assert_equal 1, working[:toConfirm]
+    assert_equal({ level: "actor", by: "Jean Dupont", on: "2026-11-10" }, working[:leads].find { _1[:title] == "Haie confirmée" }[:verification])
+
+    public_notebook = notebook("public")
+    leads = public_notebook[:leads].index_by { _1[:title] }
+    assert_equal [ "Fascine par un riverain", "Haie confirmée" ], leads.keys.sort
+    assert_equal "Cellule GISER", leads["Haie confirmée"][:verification][:by]
+    assert_nil leads["Fascine par un riverain"][:verification][:by], "a free name never goes public"
+    assert_equal 0, public_notebook[:toConfirm]
+    assert public_notebook[:mapFeatures].any? { _1[:properties][:title] == "Haie confirmée" }
+  end
 end

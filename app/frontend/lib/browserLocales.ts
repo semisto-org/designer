@@ -1,4 +1,4 @@
-// Every page downloads the whole interface tree (see i18n.ts), so the
+// The interface tree is downloaded by the browser (see i18n.ts), so the
 // subtrees only the server reads stay out of the browser bundle: e-mails,
 // the Claudy and Immich imports, the phone app's own strings, and the MCP
 // server's tool descriptions (the browser only shows tool titles; /docs/mcp

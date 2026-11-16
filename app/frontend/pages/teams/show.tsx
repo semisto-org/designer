@@ -9,10 +9,13 @@ import { Pill } from '@/components/ui/Pill'
 import { Card } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { formatArea, t } from '@/lib/i18n'
+import { relativeTime } from '@/lib/relativeTime'
 import type { TeamBilling, TeamInvitation, TeamMap, TeamMember, TeamPageProps, TeamRole } from '@/types/teams'
 
 const dateFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })
 const formatDate = (iso: string) => dateFormat.format(new Date(iso))
+const dateTimeFormat = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+const formatDateTime = (iso: string) => dateTimeFormat.format(new Date(iso))
 
 /** A team's page: members and roles, invitations, the team's maps, leaving. */
 export default function TeamShow({ team, colleague, members, maps, billing, invitations, maxNameLength }: TeamPageProps) {
@@ -146,11 +149,12 @@ function MemberRow({ member, admin, base }: { member: TeamMember; admin: boolean
       <div className="min-w-0 flex-1 basis-40">
         <p className="truncate text-sm font-medium text-loam-900">
           {member.name}
-          {member.you && <span className="ml-1.5 text-xs font-normal text-loam-400">{t('teams.show.you')}</span>}
+          {member.you && <span className="ml-1.5 text-sm font-normal text-loam-400">{t('teams.show.you')}</span>}
         </p>
-        <p className="truncate text-xs text-loam-500">
+        <p className="truncate text-sm text-loam-500">
           {[member.email, member.mapsCount > 0 ? t('teams.show.maps_owned', { count: member.mapsCount }) : null].filter(Boolean).join(' · ')}
         </p>
+        {admin && !member.you && <LastActive iso={member.lastActiveAt} />}
       </div>
       <div className="flex items-center gap-1">
         {canChangeRole ? (
@@ -184,6 +188,20 @@ function MemberRow({ member, admin, base }: { member: TeamMember; admin: boolean
         )}
       </div>
     </li>
+  )
+}
+
+const DAY = 24 * 3600 * 1000
+const QUIET_AFTER_DAYS = 30
+
+/** « Dernière activité il y a 3 jours » on the site, the phone app or through an AI; a member away for a month shows it. */
+function LastActive({ iso }: { iso: string | null }) {
+  if (!iso) return <p className="text-sm text-loam-400">{t('teams.show.never_active')}</p>
+  const quiet = Date.now() - new Date(iso).getTime() > QUIET_AFTER_DAYS * DAY
+  return (
+    <p className={`text-sm ${quiet ? 'text-humus-700' : 'text-loam-500'}`} title={t('teams.show.last_active_title', { date: formatDateTime(iso) })}>
+      <time dateTime={iso}>{t('teams.show.last_active', { when: relativeTime(iso) })}</time>
+    </p>
   )
 }
 

@@ -243,4 +243,33 @@ class McpTerritoriesTest < ActionDispatch::IntegrationTest
     assert_equal basin["id"], marker["basin_id_auto"]
     assert_equal basin["id"], TerritoryItem.find(marker["id"]).prop(:basin_id)
   end
+
+  test "the AI names who to ask and the question; get_territory lists what waits, actor by actor" do
+    items = [
+      { kind: "actor", ref: "giser", title: "Cellule GISER", rationale: "Rend des avis après les coulées de boue." },
+      { kind: "lead", title: "Fascine en haut du vallon", rationale: "Axe de ruissellement concentré au-dessus de la rue.",
+        properties: { land: "public", rank: "slow", confirm_with_ref: "giser", confirm_question: "La coulée de 2021 venait-elle de ce champ ?" } },
+      { kind: "marker", title: "Mare disparue", rationale: "Visible sur la photo de 1971, plus en 2020.", geometry: inside_point }
+    ]
+    data, error = call_tool(@token, "propose_territory_items", { territory_id: @territory.id, items: })
+    refute error, data
+    @territory.items.drafts.each { _1.accept!(users(:bob)) }
+    actor = @territory.items.find_by!(kind: "actor")
+
+    data, error = call_tool(@token, "get_territory", { territory_id: @territory.id })
+    refute error, data
+    waiting = data["to_confirm"]["by_actor"].sole
+    assert_equal [ actor.id, "La coulée de 2021 venait-elle de ce champ ?" ], [ waiting["actor_id"], waiting["items"].sole["question"] ]
+    assert_equal [ "Mare disparue" ], data["to_confirm"]["to_visit"].map { _1["title"] }
+    assert_equal %w[desk actor site], data["values"]["verification"]
+    assert_equal "desk", data["dossier"]["lead"].sole["verification"]
+    assert data["confirmations_url"].end_with?("/territories/#{@territory.id}/confirmations")
+
+    lead = @territory.items.find_by!(kind: "lead")
+    data, error = call_tool(@token, "propose_territory_updates", { territory_id: @territory.id, updates: [
+      { item_id: lead.id, rationale: "Confirmé par la cellule GISER à la réunion du 16 novembre.", changes: { properties: { verification: "actor", verified_by_id: actor.id, verified_on: "2026-11-16" } } }
+    ] })
+    refute error, data
+    assert_equal "desk", lead.reload.verification_level, "nothing changes before a person accepts"
+  end
 end

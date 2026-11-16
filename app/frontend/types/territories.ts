@@ -9,6 +9,9 @@ export type LeadTheme = 'water' | 'tree'
 export type LandType = 'public' | 'agricultural' | 'private' | 'unknown'
 export type FarmerAnswer = 'yes' | 'no' | 'thinking'
 export type LeadDecision = 'retained' | 'postponed' | 'dismissed'
+/** « vu au bureau », « confirmé par un acteur », « vu sur place » (TerritoryItem::VERIFICATIONS). */
+export type VerificationLevel = 'desk' | 'actor' | 'site'
+export type Verification = { level: VerificationLevel; by: string | null; on: string | null }
 
 /** The `properties` of a dossier entry; each kind keeps its own keys (TerritoryItem::SCHEMA). */
 export type TerritoryItemProperties = {
@@ -54,6 +57,12 @@ export type TerritoryItemProperties = {
   asked_on?: string
   received_on?: string
   source_id?: number
+  verification?: VerificationLevel
+  verified_by_id?: number
+  verified_by?: string
+  verified_on?: string
+  confirm_with_id?: number
+  confirm_question?: string
 }
 
 /** A change an AI proposed to a kept entry, field by field (`properties.keeper.role`), or its removal. */
@@ -81,6 +90,8 @@ export type TerritoryItem = {
   geometry: Geometry | null
   properties: TerritoryItemProperties
   file: { name: string; byteSize: number } | null
+  /** Null for actors, sources and requests, which make no claim about the land. */
+  verification: VerificationLevel | null
   orphan: boolean
   sharp: boolean | null
   waitingForFarmer: boolean
@@ -119,7 +130,10 @@ export type TerritoryShowProps = {
   canEdit: boolean
   moduleGranted: boolean
   relief: TerritoryReliefState
+  verification: VerificationCounts
 }
+
+export type VerificationCounts = { waiting: number; toVisit: number; unassigned: number; confirmed: number; seen: number; desk: number }
 
 /** Where the commune's relief stands (Relief::TerritoryRelief, read by the AI's catchments). */
 export type TerritoryReliefState = {
@@ -175,10 +189,11 @@ export type NotebookLead = {
   orphan: boolean
   decision: TerritoryItemProperties['decision'] | null
   sharp: boolean
+  verification: Verification
   geometry?: Geometry | null
 }
 
-export type NotebookMarker = { id: number; title: string; body: string | null; basinId: number | null; occurredOn: string | null; proof: Proof; markerKind: string | null; sources: SourceRef[] }
+export type NotebookMarker = { id: number; title: string; body: string | null; basinId: number | null; occurredOn: string | null; proof: Proof; markerKind: string | null; sources: SourceRef[]; verification: Verification }
 
 export type NotebookProps = {
   version: 'working' | 'public'
@@ -195,6 +210,8 @@ export type NotebookProps = {
   leads: NotebookLead[]
   hypotheses: NotebookLead[]
   waitingForFarmer: number
+  /** Entries waiting for an actor's opinion (working version only). */
+  toConfirm: number
   firstSteps: { id: number; title: string; order: number; thisWinter: boolean }[]
   decision: { nextStep: string; budget: string }
   sources: (SourceRef & { sourceKind: string | null; rights: string })[]
@@ -203,4 +220,34 @@ export type NotebookProps = {
   baseLayer: RegionLayerData | null
   /** The overlays a territory opens with (where water concentrates). */
   overlays: RegionLayerData[]
+}
+
+export type ConfirmationActor = { id: number; title: string; organization: string | null; function: string | null; contact: string | null; metOn: string | null }
+
+export type ConfirmationEntry = {
+  id: number
+  kind: 'lead' | 'marker' | 'expectation' | 'basin'
+  title: string
+  body: string | null
+  question: string | null
+  level: VerificationLevel
+  basin: string | null
+  land?: LandType | null
+  occurredLabel?: string | null
+  /** [lng, lat] of a point on it, to find it on site. */
+  point: [number, number] | null
+  lockVersion: number
+}
+
+export type ConfirmationsProps = {
+  territory: Pick<TerritoryData, 'id' | 'name' | 'teamName' | 'areaM2'>
+  generatedOn: string
+  actorId: number | null
+  byActor: { actor: ConfirmationActor; items: ConfirmationEntry[] }[]
+  toVisit: ConfirmationEntry[]
+  unassigned: ConfirmationEntry[]
+  actors: ConfirmationActor[]
+  counts: VerificationCounts
+  canEdit: boolean
+  theme: import('@/types/documentThemes').DocumentTheme
 }

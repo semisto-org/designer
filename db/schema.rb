@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -864,8 +864,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_180000) do
     t.integer "attempts", default: 0, null: false
     t.datetime "queued_at"
     t.datetime "retry_at"
+    t.string "detail_key"
     t.index ["map_id"], name: "index_map_terrains_on_map_id", unique: true
-    t.index ["territory_id"], name: "index_map_terrains_on_territory_id", unique: true
+    t.index ["territory_id", "detail_key"], name: "index_map_terrains_on_territory_id_and_detail_key", unique: true, where: "(territory_id IS NOT NULL)", nulls_not_distinct: true
     t.check_constraint "num_nonnulls(map_id, territory_id) = 1", name: "map_terrains_one_owner"
   end
 
@@ -2029,6 +2030,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_180000) do
     t.jsonb "document_theme_draft"
     t.boolean "chat_notify_app", default: true, null: false
     t.boolean "chat_notify_push", default: true, null: false
+    t.datetime "last_active_at"
     t.index ["apple_uid"], name: "index_users_on_apple_uid", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true

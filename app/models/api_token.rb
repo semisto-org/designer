@@ -45,6 +45,7 @@ class ApiToken < ApplicationRecord
   # Throttled so a busy agent does not write on every call.
   def record_use!
     update_column(:last_used_at, Time.current) if last_used_at.nil? || last_used_at < 1.minute.ago
+    user.active!
   end
 
   def as_inertia

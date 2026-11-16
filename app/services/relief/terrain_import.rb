@@ -39,6 +39,8 @@ module Relief
       @terrain = terrain
       @owner = terrain.owner
       @territory = @owner.is_a?(Territory)
+      # A fine window of a territory (5 m around a point), beside its coarse relief.
+      @detail = terrain.detail_key && DetailWindow.from_key(terrain.detail_key)
       @provider = provider || Providers::Elevation.for(@owner.region)
       @logger = logger
     end
@@ -47,7 +49,7 @@ module Relief
       raise Failure, I18n.t("relief.errors.unavailable") unless @provider
       raise Failure, I18n.t("relief.errors.no_boundary") unless @owner.boundary
 
-      @extent = grid_policy.extent_for(@owner.bbox)
+      @extent = @detail ? @detail.extent : grid_policy.extent_for(@owner.bbox)
       @covered = coverage_mask
       start!
       @warnings = []
@@ -105,7 +107,7 @@ module Relief
         end
       end
 
-      def label = "#{@territory ? "territory" : "map"} #{@owner.id}"
+      def label = "#{@territory ? "territory" : "map"} #{@owner.id}#{" window #{@detail.key}" if @detail}"
 
       def datasets
         @datasets ||= [ :terrain, *(@territory ? [] : OPTIONAL.select { |name| @provider.dataset?(name) }) ]
@@ -116,7 +118,14 @@ module Relief
       # 2 km margin runs into the neighbouring region, whose relief another
       # service holds).
       def chunks
-        @chunks ||= (0...@extent.cells).select { |index| covered?(index) }.each_slice(@territory ? [ TERRITORY_CHUNK, @provider.chunk_size ].min : @provider.chunk_size).to_a
+        @chunks ||= (0...@extent.cells).select { |index| covered?(index) }.each_slice(chunk_size).to_a
+      end
+
+      def chunk_size
+        limit = if @detail then DetailWindow::CHUNK
+        elsif @territory then TERRITORY_CHUNK
+        end
+        limit ? [ limit, @provider.chunk_size ].min : @provider.chunk_size
       end
 
       def coverage_mask
@@ -132,12 +141,14 @@ module Relief
 
       # The place itself must have its heights: a few holes on a border are
       # fine, a relief mostly empty is a failure that says so.
+      # A window is checked on the cells the provider covers: one on the
+      # region's border may lie half beyond the commune.
       def check_coverage!(heights)
-        inside = Mask.for_geometry(@owner.boundary, @extent)
+        inside = @detail ? @covered : Mask.for_geometry(@owner.boundary, @extent)
         total = 0
         missing = 0
         heights.each_with_index do |z, index|
-          next unless inside.getbyte(index) == 1
+          next unless inside.nil? || inside.getbyte(index) == 1
 
           total += 1
           missing += 1 if z.nil?

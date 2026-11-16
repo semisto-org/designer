@@ -553,11 +553,13 @@ Rails.application.routes.draw do
       post :archive
       post :unarchive
       get :notebook
+      get :confirmations
     end
     resources :items, only: %i[create update destroy], controller: "territories/items" do
       member do
         post :accept
         post :reject
+        post :verify
         get :file
       end
     end
