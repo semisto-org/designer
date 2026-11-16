@@ -15,12 +15,15 @@ import {
 } from '@/map/photos/layers'
 import { PhotoHostContext, type PhotoHost } from '@/map/photos/host'
 import { PhotoCompare } from '@/map/photos/PhotoCompare'
-import { PhotoLightbox } from '@/map/photos/PhotoLightbox'
 import { photoMarkersVisible } from '@/map/photos/shown'
 import { getPhotosState, photoActions, usePhotos } from '@/map/photos/store'
+import { deferred } from '@/map/panels/deferred'
 import type { MapPhotoData } from '@/types/soil_photos'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
+
+// Fetched the first time a photo opens: the editor opens without it.
+const PhotoLightbox = deferred<{ order?: MapPhotoData[] }>(() => import('@/map/photos/PhotoLightbox').then((m) => ({ default: m.PhotoLightbox })), 'none')
 
 /**
  * Always mounted in the editor: loads the photos, draws their markers on the
@@ -252,7 +255,7 @@ export default function PhotosOverlay() {
         </ZoneCard>
       )}
       <PhotoHostContext.Provider value={host}>
-        <PhotoLightbox order={group} />
+        {openId != null && <PhotoLightbox order={group} />}
         <PhotoCompare />
       </PhotoHostContext.Provider>
     </>

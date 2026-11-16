@@ -86,6 +86,8 @@ fr:
     loading: "Chargement…"
   editor:
     panels_nav: "Panneaux de la carte"
+    load_failed: "Terranova a été mis à jour pendant que la carte était ouverte. Recharge la page pour ouvrir cet outil : tout ce que tu as dessiné est enregistré."
+    reload: "Recharger la page"
     rail:
       share: "Échanger"
       collapse: "Réduire en icônes"

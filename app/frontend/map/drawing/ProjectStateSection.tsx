@@ -11,11 +11,6 @@ import { BUILDING_KINDS, canBePlanned, canBeRemoved, isPlannedElement, isToRemov
 import type { MapFeature } from '@/types'
 
 /** Accepted elements other than plants: ponds, hedges, paths, buildings, existing trees… */
-export function appliesToProjectState(feature: MapFeature): boolean {
-  const p = feature.properties
-  return p.status === 'active' && (canBePlanned(p.layer, p.kind) || canBeRemoved(p.layer, p.kind))
-}
-
 /**
  * Inspector section « Sur le terrain »: whether the element is already
  * there, still a project, or there today but taken away by the project.

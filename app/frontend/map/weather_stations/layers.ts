@@ -38,7 +38,7 @@ function stationIcon(size: number, nearest: boolean): ImageData | null {
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size
-  const g = canvas.getContext('2d')
+  const g = canvas.getContext('2d', { willReadFrequently: true })
   if (!g) return null
   const s = size
   const ink = nearest ? '#ffffff' : INK

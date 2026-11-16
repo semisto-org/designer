@@ -3,8 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import { t } from '@/lib/i18n'
 import { RevealLabel } from '@/components/ui/RevealLabel'
 import { useEditor } from '@/map/editor/EditorContext'
-import { OfflineSiteDialog } from '@/map/drawing/OfflineSiteDialog'
-import { PdfExportPanel } from '@/map/drawing/PdfExportPanel'
+import { deferred } from '@/map/panels/deferred'
+
+// The PDF maker and the offline site are fetched when first asked for.
+const PdfExportPanel = deferred<{ onClose: () => void; initialBook?: boolean }>(() => import('@/map/drawing/PdfExportPanel').then((m) => ({ default: m.PdfExportPanel })), 'none')
+const OfflineSiteDialog = deferred<{ mapId: number; onClose: () => void }>(() => import('@/map/drawing/OfflineSiteDialog').then((m) => ({ default: m.OfflineSiteDialog })), 'none')
 
 /**
  * `?export=plan` or `?export=book` (the links an AI gives through the MCP)

@@ -7,7 +7,6 @@ import { useEditor } from '@/map/editor/EditorContext'
 import { linkedSourceId, loadWaterSources, useWaterSources } from '@/map/water/store'
 import type { MapFeature } from '@/types'
 
-export { isLinkable as appliesToWaterSource } from '@/map/water/store'
 
 /**
  * Inspector section of a tap: the water source feeding it, chosen among the

@@ -12,7 +12,6 @@ import { useEditor } from '@/map/editor/EditorContext'
 import type { MapFeature } from '@/types'
 import { classOf, measure, nextReadingMinutes, type InfiltrationMethod, type Reading } from './infiltration'
 
-export const appliesToInfiltration = (feature: MapFeature) => feature.properties.kind === 'infiltration_test'
 
 type HistoryEntry = { on: string; rate_mm_h: number }
 

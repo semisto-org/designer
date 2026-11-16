@@ -11,7 +11,6 @@ import { useEditor } from '@/map/editor/EditorContext'
 import type { MapFeature } from '@/types'
 import { seasonOf, soilState, stormHistory, toLocalInput, waterOf, type StormCheck, type StormRelief } from './storm'
 
-export const appliesToStorm = (feature: MapFeature) => feature.properties.kind === 'storm_observation' && feature.properties.status !== 'rejected'
 
 const WATER = '#0e8fd6'
 // Under this rate (mm/h), the soil itself is slow to drink.
