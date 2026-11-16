@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { distance } from '@turf/turf'
 import type { Point, Polygon } from 'geojson'
-import { idsWithin, toggled, translateGeometry } from '../../../app/frontend/map/selection/move.ts'
+import { idsWithin, onMoveRequest, requestMove, toggled, translateGeometry } from '../../../app/frontend/map/selection/move.ts'
 
 const from = [4.95, 50.32]
 const to = [4.9503, 50.3201]
@@ -52,4 +52,13 @@ test('a Shift+drag box takes what lies entirely inside it, not the wide zone it 
   ]
   // Element 3 is inside but hidden (no hit): it stays out too.
   assert.deepEqual(idsWithin(features, [{ id: 1 }, { id: 2 }, { id: null }], box), [1])
+})
+
+test('« Déplacer » on one element hands its shape to the selection bar, until it stops listening', () => {
+  const heard: number[][] = []
+  const stop = onMoveRequest((geometries) => heard.push([...geometries.keys()]))
+  requestMove(new Map([[42, { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] }]]))
+  stop()
+  requestMove(new Map([[43, { type: 'Point', coordinates: [0, 0] }]]))
+  assert.deepEqual(heard, [[42]])
 })

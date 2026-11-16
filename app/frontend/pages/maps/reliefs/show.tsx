@@ -253,7 +253,7 @@ function ReliefViewer({ map, terrain, features, growingPlants, timezone, locatio
       if (instance.disposed) return
       setView({ ...instance.view })
       setZRange(instance.zRange)
-      setDesignCount(instance.designs.length + instance.strips.length)
+      setDesignCount(instance.designs.length + instance.strips.length + instance.tanks.length)
       setPlantCount(instance.plants.length)
       setReady(true)
     }).catch((error: unknown) => {
@@ -1164,6 +1164,13 @@ function RainTab({ rain, update, playing, stats, designs, designCount, soilModel
                     <span className="block tabular-nums text-loam-500">
                       {t('relief.page.rain.design_line', { capacity: formatVolume(design.capacity), water: formatVolume(design.water) })}
                     </span>
+                    {design.kind === 'water_tank' && (
+                      <span className="block text-loam-500">
+                        {design.roofArea
+                          ? t('relief.page.rain.tank_roofs', { area: formatNumber(Math.round(design.roofArea)) })
+                          : t('relief.page.rain.tank_no_roof')}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -345,9 +345,11 @@ fr:
         limits_title: "Ce que la simulation ne sait pas"
         limits: "La pluie est une illustration : une averse d'intensité constante sur un sol sans fossés ni drains. L'infiltration suit l'occupation du sol, multipliée selon le type de sol réglé sur la carte ; elle ignore la compaction, la profondeur du sol et la nappe. Les seuils, les fascines et les analogues de barrage de castor laissent passer une part de l'eau sous leur crête, une haie sur talus et une bande enherbée font boire le sol davantage : ce sont des ordres de grandeur. Pour dimensionner un ouvrage, fais un test d'infiltration sur place."
         dig: "Construire les ouvrages de l'eau de la carte"
-        dig_hint: "Mares, baissières, demi-lunes, seuils, talus et bandes enherbées entrent dans le relief simulé ; la même pluie tombe aussi sur le terrain actuel pour comparer."
-        no_designs: "Dessine une mare, une baissière, des demi-lunes, un seuil filtrant ou une haie sur talus sur la carte pour voir ce qu'ils retiennent."
+        dig_hint: "Mares, baissières, demi-lunes, seuils, talus, bandes enherbées, buttes et bacs surélevés entrent dans le relief simulé ; les citernes se remplissent de la pluie des toits qui y sont raccordés. La même pluie tombe aussi sur le terrain actuel pour comparer."
+        no_designs: "Dessine une mare, une baissière, des demi-lunes, un seuil filtrant, une haie sur talus ou une citerne sur la carte pour voir ce qu'ils retiennent."
         design_line: "%{capacity} de capacité · %{water} d'eau"
+        tank_roofs: "Remplie par %{area} m² de toits raccordés (la pluie, moins un dixième perdu dans les gouttières)."
+        tank_no_roof: "Aucun toit n'y est raccordé : trace la gouttière d'un toit jusqu'à elle pour la voir se remplir."
         kinds:
           pond: "Mare"
           swale: "Baissière"
@@ -358,6 +360,7 @@ fr:
           beaver_dam_analogue: "Analogue de barrage de castor"
           hedge_bank: "Haie sur talus"
           half_moon: "Demi-lunes"
+          water_tank: "Citerne"
         speed: "Vitesse"
         speeds:
           slow: "Lente"

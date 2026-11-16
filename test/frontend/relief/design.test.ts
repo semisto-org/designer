@@ -53,3 +53,31 @@ test('insideRing', () => {
   assert.equal(insideRing(2, 2, square), true)
   assert.equal(insideRing(5, 2, square), false)
 })
+
+test('a mound heaps soil above the ground under it, half its height on average', () => {
+  const cols = 41
+  const rows = 41
+  // Rising to the north: the top of the mound follows the slope.
+  const slope = Float32Array.from({ length: cols * rows }, (_, i) => 20 - Math.floor(i / cols) * 0.1)
+  const ring = Array.from({ length: 33 }, (_, k) => {
+    const a = (k % 32) / 32 * Math.PI * 2
+    return { x: 20 + Math.cos(a) * 8, y: 20 + Math.sin(a) * 8 }
+  })
+  const { heights, footprints } = applyDesigns(slope, cols, rows, 1, [{ id: 9, type: 'mound', ring, height: 1 }])
+  const centre = 20 * cols + 20
+  assert.ok(Math.abs(heights[centre] - (slope[centre] + 1)) < 0.05, 'the top stands 1 m above the ground')
+  assert.equal(heights[2 * cols + 2], slope[2 * cols + 2], 'outside, nothing moves')
+  let added = 0
+  for (let i = 0; i < heights.length; i++) added += heights[i] - slope[i]
+  // π R² h / 2 ≈ 100 m³, as the earthworks count a mound.
+  assert.ok(added > 80 && added < 120, `volume ${added}`)
+  assert.equal(footprints[0].capacity, 0, 'a mound holds no water')
+})
+
+test('a raised bed is filled to the brim', () => {
+  const flat = new Float32Array(20 * 20).fill(5)
+  const ring = [{ x: 4, y: 4 }, { x: 10, y: 4 }, { x: 10, y: 8 }, { x: 4, y: 8 }, { x: 4, y: 4 }]
+  const { heights } = applyDesigns(flat, 20, 20, 1, [{ id: 3, type: 'mound', ring, height: 0.4, profile: 'flat' }])
+  assert.ok(Math.abs(heights[5 * 20 + 5] - 5.4) < 1e-6)
+  assert.ok(Math.abs(heights[6 * 20 + 9] - 5.4) < 1e-6)
+})

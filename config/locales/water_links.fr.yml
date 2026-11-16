@@ -4,7 +4,7 @@ fr:
     from: "Part de"
     to: "Arrive à"
     none: "Rien"
-    snapped: "Un bout tracé à moins de 2 m d'une cuve, d'une mare ou d'un toit s'y raccorde tout seul. Redessiner la ligne relit ses bouts."
+    snapped: "Un bout tracé à moins de 2 m d'une cuve, d'une mare, d'un toit, d'une baissière ou d'un fossé s'y raccorde tout seul. Redessiner la ligne relit ses bouts."
     drop: "Chute d'eau : %{value}"
     drop_detail: "dont %{height} de hauteur au départ et %{slope} de pente"
     drop_height_only: "Sans le relief du terrain, je ne compte que la hauteur au départ."

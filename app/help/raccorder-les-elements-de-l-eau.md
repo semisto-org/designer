@@ -17,9 +17,11 @@ Une cuve IBC pleine pèse une tonne : son support doit la porter, sol compris.
 
 Dessine la ligne **d'où vient l'eau vers où elle va**, comme d'habitude. Un bout tracé à moins de 2 m d'une cuve, d'une mare, d'un toit, d'un bac, d'un parc ou d'un robinet s'y raccorde tout seul. Les tuyaux de trop-plein, les fossés, les baissières, les lignes d'irrigation et les conduites d'eau se raccordent ainsi.
 
+Une **baissière** ou un **fossé** reçoit l'eau sur toute sa longueur : le trop-plein d'une mare peut y finir, un fossé peut partir du bout d'une baissière. Si une cuve ou une mare est aussi proche, c'est elle qui l'emporte.
+
 La section **Raccordements** de la ligne montre **Part de** et **Arrive à** : choisis un autre élément dans la liste pour corriger, ou **Rien**. Si tu redessines la ligne, Terranova relit ses deux bouts.
 
-Sur une cuve ou une mare, **Raccordé à** liste les lignes qui en partent et celles qui y arrivent : touche-en une pour l'ouvrir.
+Sur une cuve, une mare ou une baissière, **Raccordé à** liste les lignes qui en partent et celles qui y arrivent : touche-en une pour l'ouvrir.
 
 ## La chute d'eau et la pression
 
@@ -28,6 +30,10 @@ Quand la ligne part d'un élément, Terranova calcule la **chute d'eau** : la ha
 Un goutte-à-goutte prévu pour la gravité marche dès 1 à 2 m de chute ; un goutte-à-goutte classique demande une dizaine de mètres (1 bar). Si l'arrivée est plus haute que le départ, l'eau n'ira pas seule : il faut une pompe.
 
 Va ensuite voir sur place : un raccord qui fuit, un tuyau pincé ou un fossé bouché changent tout le reste.
+
+## La citerne sous la pluie
+
+Dans la [vue 3D](/help/la-vue-3d-du-terrain), onglet **Pluie**, une citerne raccordée à un toit se remplit pendant l'averse : la pluie tombée sur le toit, moins un dixième perdu dans les gouttières, jusqu'à ce qu'elle soit pleine. Trace la gouttière du toit jusqu'à la citerne pour qu'elle compte.
 
 ## À quoi sert l'eau
 

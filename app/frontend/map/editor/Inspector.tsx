@@ -6,6 +6,7 @@ import { Field, Input, Textarea } from '@/components/ui/Field'
 import { formatArea, formatLength, t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { besideGeometry, duplicateInput, placesByClick } from '@/map/editor/duplicate'
+import { requestMove } from '@/map/selection/move'
 import { elementFor } from '@/map/drawing/catalog'
 import { featureName } from '@/map/earthworks/model'
 import { measure } from '@/map/editor/measure'
@@ -50,6 +51,8 @@ export function Inspector({ feature, frame = 'map', lead }: { feature: MapFeatur
       if (!placesByClick(feature)) {
         const copy = await editor.createFeature(duplicateInput(feature, besideGeometry(feature.geometry)))
         editor.select(copy.properties.id)
+        // Eric (November 2026): the copy follows the hand at once, whole, not point by point.
+        requestMove(new Map([[copy.properties.id, copy.geometry]]))
         editor.notify(t('selection.duplicate.beside'))
         return
       }
