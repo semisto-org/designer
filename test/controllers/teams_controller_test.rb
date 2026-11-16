@@ -102,6 +102,18 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "dana@example.org" ], props["invitations"].map { |i| i["email"] }
   end
 
+  test "an admin sees when each member was last active; a member does not" do
+    sign_in_as @member
+    get team_path(@team), headers: inertia_headers
+    assert props["members"].all? { |m| m["lastActiveAt"].nil? }
+
+    @member.update_column(:last_active_at, Time.zone.parse("2026-11-10 09:30"))
+    sign_in_as @admin
+    get team_path(@team), headers: inertia_headers
+    bob = props["members"].find { |m| m["name"] == "Bob" }
+    assert_equal Time.zone.parse("2026-11-10 09:30"), Time.zone.parse(bob["lastActiveAt"])
+  end
+
   test "outsiders get a 404, whether the team exists or not" do
     sign_in_as @outsider
     get team_path(@team)
