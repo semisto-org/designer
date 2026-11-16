@@ -26,12 +26,18 @@ import { buildNivaModel, nivaParts, setNivaLights, type NivaLights } from './niv
 import type { ColdAirField } from './coldAir.ts'
 import type { PlantStrata, ScenePlant } from './growth.ts'
 import { PlantLayer } from './plantModels.ts'
+import { RenderLoop } from './renderLoop.ts'
 import type { RainSimulation } from './hydro.ts'
 import type { SunPosition } from './sun.ts'
 
 /** Overlay canvas resolution, in pixels per grid cell. */
 export const OVERLAY_SCALE = 2
 const OVERLAY_MAX_PX = 4096
+/** Methods that only read the scene (or draw it): they ask for no new image. */
+const SCENE_READS = new Set([
+  'constructor', 'frame', 'dispose', 'pick', 'pickBuilding', 'pickPlant', 'heightAt',
+  'cameraView', 'heading', 'walkPosition', 'loadImageTexture', 'canvasTexture',
+])
 const PARTICLES = 5000
 // The roof of a building « En projet »: the plum of the brand, lightened.
 const PLANNED_ROOF_COLOR = '#b9a9c9'
@@ -130,7 +136,10 @@ export class ReliefScene {
   camera: THREE.PerspectiveCamera
   controls: OrbitControls
   overlayCanvas: HTMLCanvasElement
+  /** Called before each image (simulations, Niva, mist). */
   onFrame: (() => void) | null = null
+  /** Draws only when something changed (see `renderLoop.ts`). */
+  readonly loop: RenderLoop
   night = false
   cameraMode: CameraMode = 'chase'
 
@@ -198,7 +207,9 @@ export class ReliefScene {
   constructor(container: HTMLElement, grid: SceneGrid) {
     this.container = container
     this.grid = grid
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    // No `preserveDrawingBuffer`: nothing reads this canvas back, and keeping
+    // the buffer costs a full copy of the image at every frame.
+    this.renderer = new THREE.WebGLRenderer({ antialias: true })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     container.appendChild(this.renderer.domElement)
@@ -234,11 +245,30 @@ export class ReliefScene {
     this.buildParticles()
     this.resetView()
 
+    this.loop = new RenderLoop(() => this.frame())
+    // Every public method that changes the scene asks for a new image, so a
+    // new one cannot forget to; the reads below do not.
+    for (const name of Object.getOwnPropertyNames(ReliefScene.prototype)) {
+      if (SCENE_READS.has(name)) continue
+      const method = Object.getOwnPropertyDescriptor(ReliefScene.prototype, name)?.value
+      if (typeof method !== 'function') continue
+      ;(this as unknown as Record<string, unknown>)[name] = (...args: unknown[]) => {
+        const result = method.apply(this, args)
+        this.loop.invalidate()
+        return result
+      }
+    }
+    this.controls.addEventListener('change', this.onControlsChange)
+    document.addEventListener('visibilitychange', this.onVisibility)
+
     this.resizeObserver = new ResizeObserver(() => this.resize())
     this.resizeObserver.observe(container)
     this.resize()
-    this.renderer.setAnimationLoop(() => this.frame())
+    this.loop.invalidate()
   }
+
+  private onControlsChange = () => this.loop.invalidate()
+  private onVisibility = () => this.loop.resume()
 
   /** The mesh: one vertex per cell, two triangles per square. */
   private buildTerrain() {
@@ -1399,18 +1429,27 @@ ${OVERLAY_MIX}`)
     return { col: Math.round(hit.uv.x * (g.cols - 1)), row: Math.round((1 - hit.uv.y) * (g.rows - 1)) }
   }
 
-  private frame() {
+  /** One image; true while the scene keeps moving by itself (damped camera, walk). */
+  private frame(): boolean {
     const now = performance.now()
     const dt = Math.min(0.1, (now - this.lastFrame) / 1000)
     this.lastFrame = now
     this.onFrame?.()
-    if (this.walk) this.updateWalk(dt)
-    else this.controls.update()
+    let moving = false
+    if (this.walk) {
+      this.updateWalk(dt)
+      moving = true
+    } else {
+      moving = this.controls.update()
+    }
     this.renderer.render(this.scene, this.camera)
+    return moving
   }
 
   dispose() {
-    this.renderer.setAnimationLoop(null)
+    this.loop.stop()
+    this.controls.removeEventListener('change', this.onControlsChange)
+    document.removeEventListener('visibilitychange', this.onVisibility)
     this.resizeObserver.disconnect()
     this.controls.dispose()
     if (this.onWheel) this.renderer.domElement.removeEventListener('wheel', this.onWheel)
@@ -1429,6 +1468,8 @@ ${OVERLAY_MIX}`)
     this.disposeCold()
     this.coldTexture.dispose()
     this.renderer.dispose()
+    // Hand the GPU context back to Chrome now, not at the next garbage collection.
+    this.renderer.forceContextLoss()
     this.renderer.domElement.remove()
   }
 }
