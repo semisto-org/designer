@@ -1,29 +1,24 @@
+import { captureMessage } from '@sentry/react'
+import { deepMerge } from '@/lib/localeSegments'
+
 // Interface strings live in config/locales/*.yml (Rails I18n), shared by
 // the server and this frontend. Keys are English, values French. Each
 // feature area keeps its own file (config/locales/<area>.fr.yml).
+//
+// The browser does not download them all: the `rails-locales` plugin
+// (vite.config.ts) cuts them into segments (lib/localeSegments) and adds to
+// each module the segments its key strings name, so a page's strings come
+// with its code. Each segment calls `register` as it loads.
 type Dict = Record<string, unknown>
 
-const files = import.meta.glob<{ default: Dict }>('../../../config/locales/*.yml', { eager: true })
-
-function deepMerge(target: Dict, source: Dict): Dict {
-  for (const [key, value] of Object.entries(source)) {
-    const existing = target[key]
-    if (value && typeof value === 'object' && !Array.isArray(value) && existing && typeof existing === 'object') {
-      deepMerge(existing as Dict, value as Dict)
-    } else {
-      target[key] = value
-    }
-  }
-  return target
-}
-
 const locales: Record<string, Dict> = {}
-for (const file of Object.values(files)) {
-  for (const [locale, tree] of Object.entries(file.default ?? {})) {
-    locales[locale] = deepMerge(locales[locale] ?? {}, tree as Dict)
-  }
-}
+const registered = new Set<string>()
 let current = 'fr'
+
+export function register(id: string, tree: Dict) {
+  registered.add(id)
+  for (const [locale, keys] of Object.entries(tree)) locales[locale] = deepMerge(locales[locale] ?? {}, keys as Dict)
+}
 
 export function setLocale(locale: string) {
   if (locales[locale]) current = locale
@@ -36,12 +31,32 @@ function lookup(key: string): unknown {
   }, locales[current])
 }
 
+// A key the code builds from something no module spells out (a key sent by
+// the server, say) can name a segment nobody loaded: everything is then
+// fetched once, for the next renders, and the key reported so that the
+// module that uses it can name it.
+let everything: Promise<void> | null = null
+const reported = new Set<string>()
+
+function missing(key: string) {
+  const [top, second] = key.split('.')
+  if (second !== undefined && registered.has(`${top}.${second}`)) return
+  everything ??= import('virtual:rails-locale/all').then(() => undefined, () => { everything = null })
+  void everything.then(() => {
+    if (lookup(key) === undefined || reported.has(key)) return
+    reported.add(key)
+    console.warn(`[i18n] ${key} was read before its strings were loaded: name it in the module that reads it.`)
+    if (!import.meta.env.DEV) captureMessage('locale-segment-missing', { level: 'warning', fingerprint: ['locale-segment-missing'], extra: { key } })
+  })
+}
+
 /**
  * t('maps.index.title') or t('maps.count', { count: 3 }).
  * Pluralization follows Rails keys: one / other (zero optional).
  */
 export function t(key: string, vars: Record<string, string | number> = {}): string {
   let value = lookup(key)
+  if (value === undefined) missing(key)
   if (value && typeof value === 'object' && 'count' in vars) {
     const count = Number(vars.count)
     const forms = value as Dict
@@ -53,6 +68,7 @@ export function t(key: string, vars: Record<string, string | number> = {}): stri
 
 export function translations(key: string): Dict {
   const value = lookup(key)
+  if (value === undefined && !key.includes('.')) missing(key)
   return value && typeof value === 'object' ? (value as Dict) : {}
 }
 

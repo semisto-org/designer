@@ -47,6 +47,8 @@ fr:
       needs: "Ce qu'il demande"
       yields: "Ce qu'il donne"
       alone: "Seul à remplir : %{functions}."
+      serves: "Ce qu'il apporte au projet"
+      serves_hint: "Touche les fonctions de ta fiche projet que cet élément remplit."
     names:
       food: "Nourriture"
       water: "Eau"
