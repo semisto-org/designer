@@ -2,11 +2,27 @@ require "test_helper"
 require_relative "../test_helpers/collab_test_helper"
 
 class CommentTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
   setup do
     @map = maps(:ahinvaux)
     @owner = users(:michael)
     @alice = users(:alice) # viewer
     @feature = with_feature(@map)
+  end
+
+  test "Comment.importing saves quietly: no mention, follow, e-mail or live relay" do
+    map = maps(:ahinvaux)
+    assert_no_enqueued_jobs do
+      assert_no_difference -> { CommentSubscription.count } do
+        Comment.importing do
+          comment = Comment.create!(commentable: map, author: users(:michael), body: "Bonjour @Alice", created_at: 2.years.ago)
+          assert comment.imported?
+          assert_empty comment.mentioned_user_ids
+        end
+      end
+    end
+    assert_not Comment.importing?
+    assert_not Comment.new.imported?
   end
 
   test "a comment hangs on the map or on a feature and keeps the map it belongs to" do

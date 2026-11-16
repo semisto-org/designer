@@ -1,0 +1,39 @@
+# One-shot import of a My Semisto project chat into a map's discussion:
+# bin/rails imports:my_semisto_chat (lib/tasks/imports.rake,
+# app/services/imports/my_semisto).
+fr:
+  my_semisto_import:
+    reply_prefix: "↳ en réponse à %{name} : %{excerpt}"
+    attachment: "📎 Fichier : %{name} (resté dans My Semisto)"
+    attachment_unnamed: "📎 Fichier (resté dans My Semisto)"
+
+    errors:
+      map_missing: "Donne la carte à remplir : MAP_ID=… PROJECT_ID=…"
+      project_missing: "Donne le projet My Semisto : PROJECT_ID=…"
+      map_not_found: "Carte n° %{id} introuvable."
+      not_configured: "Donne le jeton de l'API My Semisto : MY_SEMISTO_API_TOKEN=… (et au besoin MY_SEMISTO_API_URL)."
+      unauthorized: "My Semisto refuse le jeton (HTTP %{status}) sur %{url} : vérifie MY_SEMISTO_API_TOKEN et que son titulaire voit le projet."
+      not_found: "My Semisto ne trouve rien sur %{url} : vérifie PROJECT_ID et RECORDING_ID."
+      unavailable: "My Semisto ne répond pas comme prévu sur %{url} (%{detail})."
+      unreadable: "Réponse illisible de My Semisto sur %{url}."
+      no_campfire: "Le projet %{project_id} n'a pas de chat dans My Semisto."
+      authors: "AUTHORS illisible : « %{value} ». Exemple : AUTHORS=\"Michael Hulet=michael@exemple.org;8=antoine@exemple.org\""
+
+    report:
+      title: "Import du chat My Semisto dans « %{map} » (carte n° %{id})"
+      dry_run: "Simulation : rien n'est écrit."
+      confirmed: "Import réel (CONFIRM=oui-importer)."
+      source: "Source : %{url}, projet %{project}, chat n° %{recording}"
+      counts: "Lignes lues : %{lines}. À importer : %{messages} messages, dont %{replies} réponses de fil et %{attachments} pièces jointes."
+      already: "Déjà importées lors d'un passage précédent : %{count}"
+      bots: "Messages de Nova (assistant) laissés de côté : %{count}"
+      matched_title: "Auteurs reconnus dans Terranova (%{count}) :"
+      matched: "  %{name} : %{email} (compte n° %{id})"
+      unmatched_title: "Auteurs sans compte Terranova, à créer comme anciens membres (%{count}) :"
+      unmatched: "  %{name} : %{email} (sans mot de passe, sans invitation, sans accès à la carte)"
+      without_email_title: "Auteurs sans e-mail connu, messages laissés de côté (ajoute-les avec AUTHORS=\"Nom=e-mail\") :"
+      without_email: "  %{name} : %{count} messages"
+      preview_title: "Les %{count} premiers messages, tels qu'ils apparaîtront :"
+      preview: "  %{at}, %{name} :"
+      next_step: "Pour importer pour de bon, relance avec CONFIRM=oui-importer."
+      done: "Fait : %{comments} messages importés, %{users} comptes d'anciens membres créés, %{reads} membres marqués comme ayant lu."
