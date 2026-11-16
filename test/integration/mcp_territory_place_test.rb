@@ -146,6 +146,15 @@ class McpTerritoryPlaceTest < ActionDispatch::IntegrationTest
     assert_equal "queued", data.dig("relief", "status")
   end
 
+  test "a relief that failed before failures said whether to retry starts again at once" do
+    configure_relief_region
+    terrain = @territory.create_terrain!(status: "failed", error: "Le service du relief n'a pas répondu correctement.")
+    assert_enqueued_with(job: ReliefImportJob) do
+      call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
+    end
+    assert_equal "pending", terrain.reload.status
+  end
+
   test "get_catchment on a territory of a region without relief says so" do
     text, error = call_tool(@token, "get_catchment", { territory_id: @territory.id, **@inside })
     assert error
