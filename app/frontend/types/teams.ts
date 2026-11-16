@@ -23,6 +23,8 @@ export type TeamMember = {
   avatarUrl: string | null
   /** Only admins see e-mail addresses. */
   email: string | null
+  /** When the member last used Terranova (web, phone, AI): admins only, null for « jamais ». */
+  lastActiveAt: string | null
   role: TeamRole
   you: boolean
   /** Maps of the team owned by this member. */
