@@ -47,3 +47,21 @@ test('the cache key follows the works, and is empty without any', () => {
   assert.notEqual(designsKey(a), designsKey(b))
   assert.equal(designsKey(a), designsKey(structuredClone(a)))
 })
+
+test('mounds and raised beds are heaped; a tank counts the roofs whose gutter reaches it', () => {
+  const roof = [[at(2, 2), at(12, 2), at(12, 7), at(2, 7), at(2, 2)]]
+  const { designs, tanks } = waterDesigns(meta, [
+    feature({ id: 1, kind: 'mound', height_m: 1.2 }, { type: 'Polygon', coordinates: [[at(2, 10), at(8, 10), at(8, 16), at(2, 10)]] }),
+    feature({ id: 2, kind: 'raised_bed' }, { type: 'Polygon', coordinates: [[at(10, 10), at(14, 10), at(14, 12), at(10, 10)]] }),
+    feature({ id: 3, kind: 'building' }, { type: 'Polygon', coordinates: roof }),
+    feature({ id: 4, kind: 'water_tank', capacity_l: 3000 }, { type: 'Point', coordinates: at(14, 4) }),
+    feature({ id: 5, kind: 'water_pipe', from_id: 3, to_id: 4 }, { type: 'LineString', coordinates: [at(12, 4), at(14, 4)] }),
+    feature({ id: 6, kind: 'water_tank' }, { type: 'Point', coordinates: at(18, 18) }),
+  ])
+  assert.deepEqual(designs.map((d) => [d.id, d.type, (d as { height?: number }).height, (d as { profile?: string }).profile]),
+    [[1, 'mound', 1.2, 'dome'], [2, 'mound', 0.4, 'flat']])
+  assert.equal(tanks.length, 2)
+  assert.equal(tanks[0].capacity, 3)
+  assert.ok(Math.abs(tanks[0].roofArea - 50) < 1, `roof ${tanks[0].roofArea}`)
+  assert.deepEqual([tanks[1].capacity, tanks[1].roofArea], [5, 0])
+})

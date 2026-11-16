@@ -3,14 +3,16 @@ import { Button } from '@/components/ui/Button'
 import { t } from '@/lib/i18n'
 import { useEditor } from '@/map/editor/EditorContext'
 import { startShapeEdit } from '@/map/drawing/store'
+import { requestMove } from '@/map/selection/move'
 import type { MapFeature } from '@/types'
 
 const EDITABLE_GEOMETRIES = ['Point', 'LineString', 'Polygon']
 
 /**
  * « Déplacer » for a point, « Modifier la forme » for a line or a surface
- * (M, see moveShortcut.ts), and for a line « Continuer le tracé », which
- * draws on from its end (a fence finished too early); nothing for viewers.
+ * (M, see moveShortcut.ts), which also gets its own « Déplacer » to drag it
+ * whole, and for a line « Continuer le tracé », which draws on from its end
+ * (a fence finished too early); nothing for viewers.
  */
 export default function ShapeEditButton({ feature }: { feature: MapFeature }) {
   const editor = useEditor()
@@ -26,9 +28,25 @@ export default function ShapeEditButton({ feature }: { feature: MapFeature }) {
       <ShortcutKey />
     </Button>
   )
-  if (feature.geometry.type !== 'LineString') return edit
+  if (point) return edit
+  const move = (
+    <Button variant="secondary" size="sm" className="w-full" disabled={editor.drawing} title={t('drawing.edit.move_whole_title')}
+      onClick={() => requestMove(new Map([[feature.properties.id, feature.geometry]]))}>
+      <Move className="h-4 w-4" />
+      {t('drawing.edit.move')}
+    </Button>
+  )
+  if (feature.geometry.type !== 'LineString') {
+    return (
+      <div className="flex flex-col gap-2">
+        {move}
+        {edit}
+      </div>
+    )
+  }
   return (
     <div className="flex flex-col gap-2">
+      {move}
       {edit}
       <Button variant="secondary" size="sm" className="w-full" disabled={editor.drawing} title={t('drawing.edit.extend_title')}
         onClick={() => startShapeEdit(feature.properties.id, 'inspector', 'extend')}>

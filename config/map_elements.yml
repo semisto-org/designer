@@ -27,6 +27,8 @@
 #   links     true when the line carries water from one element to another (pipe,
 #             ditch, swale…): its ends snap to the tank, pond or roof they touch
 #             (`properties.from_id`, `to_id`, MapFeature::WaterLinks)
+#   receives  true when water can be led INTO the line anywhere along it (a swale,
+#             a ditch): another link may start or end on it, as on a pond
 #
 # Labels are in config/locales/drawing.fr.yml: editor.kinds.<kind>,
 # drawing.fields.<field>, drawing.options.<field>.<option>.
@@ -142,6 +144,7 @@ layers:
         computed: [pond_volume]
       swale:
         geometry: LineString
+        receives: true
         functions: [water, soil_protection]
         yields: [water]
         contour: true
@@ -156,6 +159,7 @@ layers:
         computed: [swale_volume]
       keyline:
         geometry: LineString
+        receives: true
         functions: [water, soil_protection]
         yields: [water]
         contour: true
@@ -171,6 +175,7 @@ layers:
         computed: [swale_volume]
       ditch:
         geometry: LineString
+        receives: true
         functions: [water]
         yields: [water]
         links: true

@@ -69,7 +69,7 @@ Une pomme cueillie continue de mûrir. Au chaud, elle mûrit vite : à 18–20 �
 - **de l'humidité** : 85 à 95 %. Plus sec, les fruits se rident et perdent du poids ;
 - **de l'ombre et un peu d'air**, et les pommes à l'écart des légumes : elles font germer les pommes de terre.
 
-Dessine ton lieu de garde sur la carte avec l'élément **Lieu de stockage des fruits** (couche Structures) : cave, chambre froide, grange, remise ou frigo. Sur sa fiche, note de temps en temps la température et l'humidité. Terranova trace les relevés sur une bande verte, celle où les fruits se gardent le mieux, et te dit quoi faire quand c'est trop chaud, trop sec ou qu'il a gelé. Dans le verger ou à la cave, l'application mobile note aussi les relevés, même sans réseau.
+Dessine ton lieu de garde sur la carte avec l'élément **Cave ou fruitier** (couche Structures) : cave, chambre froide, grange, remise ou frigo. Sur sa fiche, note de temps en temps la température et l'humidité. Terranova trace les relevés sur une bande verte, celle où les fruits se gardent le mieux, et te dit quoi faire quand c'est trop chaud, trop sec ou qu'il a gelé. Dans le verger ou à la cave, l'application mobile note aussi les relevés, même sans réseau.
 
 C'est l'hiver qui décide : relève chaque semaine de novembre à mars, idéalement avec un thermomètre mini-maxi qui garde le plus froid et le plus chaud depuis ton dernier passage. Et si tu as plusieurs lieux, relève-les le même jour pour voir lequel garde le mieux.
 

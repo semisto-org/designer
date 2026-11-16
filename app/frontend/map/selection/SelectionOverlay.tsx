@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { saveFeature } from '@/map/drawing/save'
 import { useEditor } from '@/map/editor/EditorContext'
-import { selectionMove, translateGeometry } from '@/map/selection/move'
+import { onMoveRequest, selectionMove, translateGeometry } from '@/map/selection/move'
 import { ZoneCard } from '@/map/layout/ZoneLayer'
 import { PRIORITY } from '@/map/layout/zones'
 
@@ -29,6 +29,8 @@ export default function SelectionOverlay() {
   const [saving, setSaving] = useState(false)
   const latest = useRef(editor)
   latest.current = editor
+  // A move asked for one element (« Déplacer », a copy just made): done, the selection goes too.
+  const solo = useRef(false)
   const pointer = useMediaQuery('(pointer: fine)')
   const active = selection.length > 0 || multiSelect
   const moving = moved != null
@@ -45,6 +47,13 @@ export default function SelectionOverlay() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [active])
+
+  // « Déplacer » on a line or a surface: it becomes the selection, ready to drag.
+  useEffect(() => onMoveRequest((geometries) => {
+    solo.current = true
+    latest.current.setSelection([...geometries.keys()])
+    setMoved(new Map(geometries))
+  }), [])
 
   // An element that left the selection (deleted, taken out) leaves the move too.
   useEffect(() => {
@@ -105,6 +114,10 @@ export default function SelectionOverlay() {
     if (moving) return
     selectionMove.active = false
     removePreview(instance)
+    if (solo.current) {
+      solo.current = false
+      latest.current.setSelection([])
+    }
   }, [instance, moving])
   useEffect(() => () => {
     selectionMove.active = false
@@ -151,7 +164,7 @@ export default function SelectionOverlay() {
   }
 
   const text = moving
-    ? t('selection.move_hint')
+    ? t(moved.size === 1 ? 'selection.move_hint_one' : 'selection.move_hint')
     : [
         selection.length ? t('selection.count', { count: selection.length }) : t('selection.empty'),
         t(multiSelect ? 'selection.tap_hint' : pointer ? 'selection.shift_hint' : 'selection.tap_hint'),

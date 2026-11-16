@@ -52,7 +52,7 @@ Choisir une étape règle le mode ; tu peux basculer à tout moment, par exemple
 
 Une maison à construire, une serre prévue l'an prochain, une mare à creuser : passe en **Projet** (en haut de la carte ou de « Que veux-tu dessiner ? »). Seuls les éléments qui peuvent encore se construire sont proposés, avec les notes (dans la couche Existant, le **Bâtiment** et le **Mur ou muret**).
 
-Un élément en projet se dessine en pointillés et n'apparaît pas sur le terrain « Arrivée » de la frise du temps. Il n'est **pas montré sur la carte publique**, sauf si tu choisis d'y [montrer aussi le projet](/help/publier-sa-carte). Un bâtiment en projet (bâtiment, abri, cabane ou remise, serre, stockage des fruits, poulailler) se lève aussi dans la [vue 3D](/help/la-vue-3d-du-terrain), avec un toit mauve, à la hauteur notée dans sa fiche : son ombre compte déjà, pour concevoir autour de lui avant qu'il soit là.
+Un élément en projet se dessine en pointillés et n'apparaît pas sur le terrain « Arrivée » de la frise du temps. Il n'est **pas montré sur la carte publique**, sauf si tu choisis d'y [montrer aussi le projet](/help/publier-sa-carte). Un bâtiment en projet (bâtiment, abri, cabane ou remise, serre, cave ou fruitier, poulailler) se lève aussi dans la [vue 3D](/help/la-vue-3d-du-terrain), avec un toit mauve, à la hauteur notée dans sa fiche : son ombre compte déjà, pour concevoir autour de lui avant qu'il soit là.
 
 Une fois construit, ouvre sa fiche et touche **Marquer comme réalisé** dans la section **Sur le terrain**. Dessiné par erreur comme déjà là ? Touche **C'est un projet** dans la même section.
 
@@ -88,11 +88,11 @@ Une ligne garde au moins deux points, une surface trois.
 
 ## Déplacer une plante ou un élément
 
-Une plante n'est pas à sa place ? Clique dessus, puis appuie sur **M** (ou touche **Déplacer** dans sa carte ou sa fiche). Fais glisser le point orange où elle doit être et appuie sur **Entrée** pour enregistrer ; **Échap** la laisse où elle était. **M** marche aussi sur une ligne ou une surface sélectionnée : c'est alors **Modifier la forme**.
+Une plante n'est pas à sa place ? Clique dessus, puis appuie sur **M** (ou touche **Déplacer** dans sa carte ou sa fiche). Fais glisser le point orange où elle doit être et appuie sur **Entrée** pour enregistrer ; **Échap** la laisse où elle était. **M** marche aussi sur une ligne ou une surface sélectionnée : c'est alors **Modifier la forme**, point par point. Pour faire glisser toute une ligne ou toute une surface d'un bloc, sans toucher à sa forme, touche **Déplacer** dans sa fiche, puis **Enregistrer la position**.
 
 ## Dupliquer un élément
 
-Trente chênes déjà sur le terrain, dix nichoirs du même modèle ? Remplis la fiche du premier, puis touche **Dupliquer** au bas de sa fiche. Pour un arbre ou tout autre point, chaque clic sur la carte pose une copie, jusqu'à **Échap**. Une ligne ou une surface (une haie, un bac) se pose à côté de l'original : fais-la glisser à sa place avec **M**. La copie garde l'espèce, les mesures, les étiquettes et les notes ; une plante prend le numéro suivant. **⌘Z** retire la dernière copie posée.
+Trente chênes déjà sur le terrain, dix nichoirs du même modèle ? Remplis la fiche du premier, puis touche **Dupliquer** au bas de sa fiche. Pour un arbre ou tout autre point, chaque clic sur la carte pose une copie, jusqu'à **Échap**. Une ligne ou une surface (une haie, un bac) se pose à côté de l'original, prête à glisser : fais-la glisser d'un bloc à sa place, puis **Enregistrer la position**. La copie garde l'espèce, les mesures, les étiquettes et les notes ; une plante prend le numéro suivant. **⌘Z** retire la dernière copie posée.
 
 ## Déplacer plusieurs éléments ensemble
 

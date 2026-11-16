@@ -3,7 +3,7 @@
 // The map's water design on the relief: swales (and keylines), ponds and
 // half-moons are "dug" into a COPY of the terrain, banks and structures
 // across the flow (check dams, fascines, beaver dam analogues, hedge banks)
-// raised on it, so that the simulated rain and the flow axes take them into
+// and the soil heaped up (mounds, raised beds) raised on it, so that the simulated rain and the flow axes take them into
 // account. In Claudy they were traced on the 3D view; in
 // Designer they are the map's own features (a pond polygon, a swale line),
 // drawn in the editor and dug here with default dimensions or those of their
@@ -85,7 +85,18 @@ export type HalfMoonDesign = {
   berm?: number
 }
 
-export type Design = SwaleDesign | PondDesign | BarrierDesign | HalfMoonDesign
+export type MoundDesign = {
+  id: number | string
+  type: 'mound'
+  /** Polygon outline (grid metres). */
+  ring: GridPoint[]
+  /** Height above the ground under it (m): the top follows the terrain. */
+  height?: number
+  /** A rounded mound (the earthworks' half of footprint × height) or a box filled to the brim (a raised bed). */
+  profile?: 'dome' | 'flat'
+}
+
+export type Design = SwaleDesign | PondDesign | BarrierDesign | HalfMoonDesign | MoundDesign
 
 export type Footprint = { id: number | string; cells: number[]; capacity: number }
 
@@ -378,6 +389,43 @@ function digPond(out: Float32Array, base: ArrayLike<number>, cols: number, rows:
 }
 
 /**
+ * Heaps soil inside a mound's outline, `height` m above the ground of each
+ * cell. A dome rises as height·s·(2 − s), s being the distance to the edge
+ * over the largest one: on a round mound the mean is half the height, the
+ * volume the earthworks count (half of footprint × height). A flat one (a
+ * raised bed) stands `height` everywhere. It holds no water: no footprint.
+ */
+function raiseMound(out: Float32Array, base: ArrayLike<number>, cols: number, rows: number, cellSize: number, design: MoundDesign): number[] {
+  const ring = design.ring
+  const height = design.height ?? 0.8
+  const touched: number[] = []
+  if (!ring || ring.length < 3 || !(height > 0)) return touched
+  const cells = ringCells(cols, rows, cellSize, ring)
+  if (design.profile === 'flat') {
+    for (const i of cells) {
+      out[i] = Math.max(out[i], base[i] + height)
+      touched.push(i)
+    }
+    return touched
+  }
+  const edge = (i: number) => {
+    const x = (i % cols) * cellSize
+    const y = Math.floor(i / cols) * cellSize
+    let best = Infinity
+    for (let k = 0; k < ring.length; k++) best = Math.min(best, segmentDistance(x, y, ring[k], ring[(k + 1) % ring.length]).distance)
+    return best
+  }
+  const distances = cells.map(edge)
+  const widest = distances.reduce((a, b) => Math.max(a, b), cellSize)
+  cells.forEach((i, k) => {
+    const s = Math.min(1, distances[k] / widest)
+    out[i] = Math.max(out[i], base[i] + height * s * (2 - s))
+    touched.push(i)
+  })
+  return touched
+}
+
+/**
  * The relief with the designs dug, and for each its cells and capacity (m³
  * of water it holds before spilling). `heights` has everything (the mesh,
  * the flow axes, the capacities); `flow` is the ground the water runs on,
@@ -401,7 +449,8 @@ export function applyDesigns(base: ArrayLike<number>, cols: number, rows: number
     cellsByIndex[index] = design.type === 'pond' ? digPond(out, base, cols, rows, cellSize, design)
       : design.type === 'half_moon' ? digHalfMoons(out, base, cols, rows, cellSize, design)
         : design.type === 'barrier' ? digBarrier(out, target, crest, seep, base, cols, rows, cellSize, design)
-          : digSwale(out, base, cols, rows, cellSize, design)
+          : design.type === 'mound' ? raiseMound(out, base, cols, rows, cellSize, design)
+            : digSwale(out, base, cols, rows, cellSize, design)
   }
   designs.forEach((design, index) => footprints.push({ id: design.id, cells: cellsByIndex[index], capacity: 0 }))
   for (const footprint of footprints) footprint.capacity = capacity(out, cols, rows, cellSize, footprint.cells)

@@ -151,10 +151,14 @@ function drawingLayers(latitude: number): LayerSpecification[] {
   const crownProperties = [...new Set(crowned.map((e) => e.crown as string))]
   const crownDiameter = expr(['to-number', ['coalesce', ...crownProperties.map((p) => ['get', p]), 0], 0])
   const crownRadius = (zoom: number) => expr(['*', ['/', crownDiameter, 2], pixelsPerMeter(zoom, latitude)])
-  // The ribbon's width on screen: its width on the ground, plus `extraM` of edge.
+  // The ribbon's width on screen: its width on the ground, plus `extraM` of
+  // edge, never thinner than the kind's own line, so a path stays readable
+  // from afar and takes its true width up close (Eric, November 2026).
+  const RIBBON_ZOOMS = [12, 14, 16, 17, 18, 19, 20, 21, 22, 24]
   const ribbonWidth = (extraM: number) => {
     const widthM = expr(['+', ['to-number', ['coalesce', ['get', 'width_m'], 1.2], 1.2], extraM])
-    return expr(['interpolate', ['exponential', 2], ['zoom'], 12, ['*', widthM, pixelsPerMeter(12, latitude)], 24, ['*', widthM, pixelsPerMeter(24, latitude)]])
+    return expr(['interpolate', ['exponential', 2], ['zoom'],
+      ...RIBBON_ZOOMS.flatMap((zoom) => [zoom, ['max', ['*', widthM, pixelsPerMeter(zoom, latitude)], lineWidth]])])
   }
   return [
     {
@@ -198,8 +202,10 @@ function drawingLayers(latitude: number): LayerSpecification[] {
         'circle-pitch-alignment': 'map',
       },
     },
-    // « Rendu présentation »: paths and tracks as ribbons at their real
-    // width (width_m), a pale band with a soft edge, as on a designer's plan.
+    // Paths and tracks as ribbons at their real width (width_m), a continuous
+    // band: in the editor in the path's colour, in the « Rendu présentation »
+    // a pale band with a soft edge, as on a designer's plan. A planned path
+    // is fainter, not dashed.
     {
       id: 'drawing-path-edge',
       type: 'line',
@@ -207,9 +213,9 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       filter: ribbonFilter,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': PLAN_COLORS.pathEdge,
+        'line-color': expr(['case', inRender, PLAN_COLORS.pathEdge, featureColorExpr]),
         'line-width': ribbonWidth(0.35),
-        'line-opacity': expr(['*', ['case', inRender, 0.55, 0], visibleFactor]),
+        'line-opacity': expr(['*', ['case', inRender, 0.55, 0.45], visibleFactor]),
         'line-blur': 1,
       },
     },
@@ -220,9 +226,9 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       filter: ribbonFilter,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': PLAN_COLORS.pathFill,
+        'line-color': expr(['case', inRender, PLAN_COLORS.pathFill, featureColorExpr]),
         'line-width': ribbonWidth(0),
-        'line-opacity': expr(['*', ['case', inRender, 0.95, 0], visibleFactor]),
+        'line-opacity': expr(['*', ['case', inRender, 0.95, selected, 0.75, 0.55], visibleFactor]),
       },
     },
     {
@@ -234,7 +240,7 @@ function drawingLayers(latitude: number): LayerSpecification[] {
       paint: {
         'line-color': byKind((e) => e.line?.casing, '#ffffff', cased),
         'line-width': zoomScaled(expr(['+', lineWidth, 3]), [[14, 0.4], [18, 1], [21, 1.6]], 2),
-        'line-opacity': expr(['*', 0.9, visibleFactor, ['case', ['all', inRender, isRibbon], 0, 1]]),
+        'line-opacity': expr(['*', 0.9, visibleFactor, ['case', isRibbon, 0, 1]]),
       },
     },
     {
@@ -252,7 +258,8 @@ function drawingLayers(latitude: number): LayerSpecification[] {
           ['case', ['all', inRender, isPolygon], ['case', isWater, 1.6, 0.8],
             ['+', ['*', ['case', isPolygon, ['min', lineWidth, 2.5], lineWidth], factor], ['case', selected, 2, 0]]]])]),
         'line-blur': expr(['case', ['all', inRender, isWater, isPolygon], 0.8, ['all', inRender, isHedge], 2, 0]),
-        'line-opacity': expr(['*', lineOpacity, visibleFactor, ['case', ['all', inRender, isRibbon], 0, ['all', inRender, isPolygon, ['!', isWater]], 0.5, 1]]),
+        // A path is its ribbon; only what the project takes away keeps its dotted line on it.
+        'line-opacity': expr(['*', lineOpacity, visibleFactor, ['case', ['all', inRender, isRibbon], 0, ['all', isRibbon, ['!', isToRemove]], 0, ['all', inRender, isPolygon, ['!', isWater]], 0.5, 1]]),
         'line-dasharray': plannedDash as never,
       },
     },

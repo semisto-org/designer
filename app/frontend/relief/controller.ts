@@ -23,7 +23,7 @@ import { createNivaState, stepNiva, type NivaMessage, type NivaState, type NivaT
 import type { NivaLights } from './nivaModel.ts'
 import { GRAFT_FORMS, GROWTH_YEARS, calendarYear, managedSize, plantShade, scenePlants, sizeAt, yearsBetween, type GrowingPlantsData, type PlantStrata, type PlantTraining, type ScenePlant, type GraftForm, type RootstockVigor } from './growth.ts'
 import { drawOverlay, type OverlayFeature, type OverlayOptions } from './overlay.ts'
-import { waterDesigns, type SoilEffect } from './waterDesigns.ts'
+import { waterDesigns, type SoilEffect, type TankSummary } from './waterDesigns.ts'
 import { landcoverRoles } from './roles.ts'
 import type { CameraMode, ReliefScene, WalkKey } from './scene.ts'
 import { buildSoilMaps, calibrateRates, SOIL_STATES, UNKNOWN_CLASS, type SoilState } from './soil.ts'
@@ -130,7 +130,8 @@ export type PlantInfo = {
   indicative: boolean
 }
 
-export type DesignSummary = { id: number | string; kind: string; name: string | null; capacity: number; water: number }
+/** A work of the water design in the rain list; `roofArea` (m²) for a tank, the roofs that fill it. */
+export type DesignSummary = { id: number | string; kind: string; name: string | null; capacity: number; water: number; roofArea?: number }
 
 type Station = { slope: Float32Array; aspect: Float32Array; wetness: Float32Array; frost: Float32Array; spread: Float32Array }
 
@@ -212,6 +213,10 @@ export class ReliefController {
   strips: Array<{ id: number | string; ring: GridPoint[]; effect: SoilEffect }> = []
   /** The soil effect of a design, by id (hedge banks). */
   private designEffects = new Map<number | string, SoilEffect>()
+  /** The tanks and the roofs that fill them: the rain on those roofs, kept up to their capacity. */
+  tanks: TankSummary[] = []
+  /** Mounds and raised beds: raised on the relief, but they hold no water. */
+  private heaped = new Set<number | string>()
   /** The dug relief the water runs on (without the porous structures), and those structures. */
   private flowGround: Float32Array | null = null
   private crestFull: { crest: Float32Array; seep: Float32Array } | null = null
@@ -679,13 +684,15 @@ export class ReliefController {
   // ---- The map's water design, dug into the relief -------------------------
 
   private designsFromFeatures(): Design[] {
-    const { designs, strips, effects } = waterDesigns(this.meta, this.options.features)
+    const { designs, tanks, strips, effects } = waterDesigns(this.meta, this.options.features)
     this.strips = strips
     this.designEffects = effects
+    this.tanks = tanks
+    this.heaped = new Set(designs.filter((design) => design.type === 'mound').map((design) => design.id))
     return designs
   }
 
-  get hasDesigns() { return this.designs.length > 0 || this.strips.length > 0 }
+  get hasDesigns() { return this.designs.length > 0 || this.strips.length > 0 || this.tanks.length > 0 }
 
   /** The dug relief and all that depends on it: mesh, axes, station, simulations. */
   reshape({ keepMesh = false }: { keepMesh?: boolean } = {}) {
@@ -732,13 +739,32 @@ export class ReliefController {
 
   private emitDesigns() {
     const byId = new Map(this.options.features.map((f) => [f.properties && (f.properties as Record<string, unknown>).id, f]))
-    this.options.onDesigns?.(this.footprints.map((footprint) => {
-      const props = (byId.get(footprint.id)?.properties ?? {}) as Record<string, unknown>
-      return {
-        id: footprint.id, kind: String(props.kind ?? ''), name: (props.name as string | null) ?? null,
-        capacity: footprint.capacity, water: this.designWater(footprint.id),
-      }
+    const props = (id: number | string) => (byId.get(id)?.properties ?? {}) as Record<string, unknown>
+    const works = this.holding().map((footprint): DesignSummary => ({
+      id: footprint.id, kind: String(props(footprint.id).kind ?? ''), name: (props(footprint.id).name as string | null) ?? null,
+      capacity: footprint.capacity, water: this.designWater(footprint.id),
     }))
+    const tanks = this.rain.dig ? this.tanks.map((tank): DesignSummary => ({
+      id: tank.id, kind: 'water_tank', name: (props(tank.id).name as string | null) ?? null,
+      capacity: tank.capacity, water: this.tankWater(tank), roofArea: tank.roofArea,
+    })) : []
+    this.options.onDesigns?.([...works, ...tanks])
+  }
+
+  /** The footprints that hold water: the works dug, without the mounds. */
+  private holding(): Footprint[] {
+    return this.footprints.filter((footprint) => !this.heaped.has(footprint.id))
+  }
+
+  /**
+   * Water in a tank (m³): the rain fallen so far on its roofs, less a tenth
+   * for the first flush and the gutters, up to its capacity.
+   */
+  private tankWater(tank: TankSummary): number {
+    const sim = this.simulation
+    if (!sim || !tank.roofArea) return 0
+    const fallen = sim.rained / (sim.depth.length * sim.cellSize * sim.cellSize)
+    return Math.min(tank.capacity, fallen * tank.roofArea * 0.9)
   }
 
   // ---- The view ---------------------------------------------------------------
@@ -1123,7 +1149,7 @@ export class ReliefController {
     if (now - this.lastStats > 250) {
       this.lastStats = now
       this.emitStats()
-      if (this.footprints.length) this.emitDesigns()
+      if (this.footprints.length || this.tanks.length) this.emitDesigns()
     }
   }
 
@@ -1185,7 +1211,7 @@ export class ReliefController {
     let comparison: RainStats['comparison'] = null
     const base = this.baseline
     if (base && this.footprints.length) {
-      const held = this.footprints.reduce((sum, f) => sum + this.designWater(f.id), 0)
+      const held = this.holding().reduce((sum, f) => sum + this.designWater(f.id), 0)
       const kept = this.domainWater(sim)
       const keptBefore = this.domainWater(base)
       const gain = kept - keptBefore

@@ -56,7 +56,7 @@ class WaterLinksTest < ActiveSupport::TestCase
     refute link.reload.properties.key?("from_id")
   end
 
-  test "an end must be an element of the same map, never another line nor itself" do
+  test "an end must be an element of the same map, never a pipe nor itself" do
     other = maps(:ahinvaux).features.where.not(id: [ @tank.id, @bed.id ]).first
     outsider = MapFeature.where.not(map_id: @map.id).first
     link = pipe
@@ -66,10 +66,36 @@ class WaterLinksTest < ActiveSupport::TestCase
     end
     link.properties = link.properties.merge("to_id" => link.id)
     refute link.valid?
-    ditch = @map.features.create!(layer: "water", kind: "ditch", geometry: line([ 4.96, 50.31 ], [ 4.961, 50.311 ]))
-    link.properties = link.properties.merge("to_id" => ditch.id)
+    other_pipe = @map.features.create!(layer: "networks", kind: "water_pipe", geometry: line([ 4.96, 50.31 ], [ 4.961, 50.311 ]))
+    link.properties = link.properties.merge("to_id" => other_pipe.id)
     refute link.valid?
     assert other
+  end
+
+  test "a pipe can lead its water into a swale or a ditch, anywhere along it" do
+    swale = @map.features.create!(layer: "water", kind: "swale", geometry: line([ 4.96, 50.31 ], [ 4.962, 50.31 ]))
+    # An overflow from the tank that ends about 1 m north of the swale's middle.
+    overflow = @map.features.create!(layer: "water", kind: "overflow_pipe", geometry: line([ 4.950012, 50.3 ], [ 4.961, 50.310008 ]))
+    assert_equal @tank.id, overflow.properties["from_id"]
+    assert_equal swale.id, overflow.properties["to_id"]
+
+    ditch = @map.features.create!(layer: "water", kind: "ditch", geometry: line([ 4.962, 50.31 ], [ 4.963, 50.309 ]))
+    assert_equal swale.id, ditch.properties["from_id"], "a ditch can start from the swale's end"
+    assert ditch.valid?
+  end
+
+  test "a tank or a pond wins the snap over the swale that runs past it" do
+    @map.features.create!(layer: "water", kind: "swale", geometry: line([ 4.9495, 50.3 ], [ 4.9505, 50.3 ]))
+    assert_equal @tank.id, pipe.properties["from_id"]
+  end
+
+  test "a swale lists the pipes that reach it" do
+    swale = @map.features.create!(layer: "water", kind: "swale", geometry: line([ 4.96, 50.31 ], [ 4.962, 50.31 ]))
+    overflow = @map.features.create!(layer: "water", kind: "overflow_pipe", geometry: line([ 4.950012, 50.3 ], [ 4.961, 50.310008 ]))
+    assert_equal [ overflow.id ], WaterLinks::Report.links_of(swale, @map).pluck(:id)
+    report = WaterLinks::Report.new(@map, swale).as_json
+    assert_equal [ overflow.id ], report[:links].map { _1[:id] }
+    assert report.key?(:from), "the swale keeps its own ends"
   end
 
   test "an AI draft snaps to a draft tank proposed before it" do

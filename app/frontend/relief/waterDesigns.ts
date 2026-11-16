@@ -1,6 +1,7 @@
 // The map's water works (ponds, swales, keylines dug as swales, check
-// dams, fascines, hedge banks, half-moons, grass strips) as designs the
-// relief can be dug with (design.ts). Shared by the 3D view (controller)
+// dams, fascines, hedge banks, half-moons, grass strips) and the soil heaped
+// up (mounds, raised beds) as designs the relief can be dug with
+// (design.ts), and the tanks with the roofs that fill them. Shared by the 3D view (controller)
 // and the 2D flow overlay in « Projet » mode (mapOverlay), so both show
 // the same axes.
 import type { Feature, Geometry } from 'geojson'
@@ -24,6 +25,11 @@ const BARRIER_DEFAULTS: Record<string, { height: number; width: number; level: b
   fascine: { height: 0.3, width: 0.5, level: false, seep: 0.15, pool: 5 },
   hedge_bank: { height: 0.6, width: 1.5, level: false, seep: 0, pool: 5 },
 }
+// Soil heaped on the ground: a rounded mound, a raised bed filled to the brim.
+const MOUND_DEFAULTS: Record<string, { height: number; profile: 'dome' | 'flat' }> = {
+  mound: { height: 0.8, profile: 'dome' },
+  raised_bed: { height: 0.4, profile: 'flat' },
+}
 const CHECK_DAM_SEEP: Record<string, number> = { dry_stone: 0.05, gabion: 0.08, wood: 0.02, brush: 0.12 }
 // What a work does to the soil it covers: hedge roots open it, dense grass
 // opens it and slows the water running over it (its highest speed, m/s).
@@ -39,8 +45,17 @@ function numberProp(value: unknown, fallback: number): number {
   return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : fallback
 }
 
+/**
+ * A tank and what fills it: the roofs drawn on the map whose gutter (a
+ * pipe, MapFeature::WaterLinks) leads to it. It sits outside the relief: the
+ * rain simulation fills it with the rain on those roofs.
+ */
+export type TankSummary = { id: number | string; capacity: number; roofArea: number }
+
 export type WaterDesigns = {
   designs: Design[]
+  /** The tanks, with their capacity (m³) and the roof area (m²) that feeds them. */
+  tanks: TankSummary[]
   /** Grass strips: no earthworks, a soil that drinks more and slows the water. */
   strips: Array<{ id: number | string; ring: GridPoint[]; effect: SoilEffect }>
   /** What a work does to the soil it covers, by design id. */
@@ -54,6 +69,7 @@ export function waterDesigns(meta: GridMeta, features: readonly WaterFeature[]):
   const designs: Design[] = []
   const strips: WaterDesigns['strips'] = []
   const effects: WaterDesigns['effects'] = new Map()
+  const tanks: TankSummary[] = []
   for (const feature of features) {
     const props = (feature.properties ?? {}) as Record<string, unknown>
     if (props.status && props.status !== 'active') continue
@@ -93,8 +109,46 @@ export function waterDesigns(meta: GridMeta, features: readonly WaterFeature[]):
     } else if (kind === 'grass_strip' && geometry?.type === 'Polygon') {
       const effect = SOIL_EFFECTS[props.cover === 'lawn' ? 'grass_strip:lawn' : 'grass_strip']
       strips.push({ id, ring: geometry.coordinates[0].map((p) => toGrid(meta, p)), effect })
+    } else if (MOUND_DEFAULTS[kind] && geometry?.type === 'Polygon') {
+      const defaults = MOUND_DEFAULTS[kind]
+      designs.push({
+        id, type: 'mound', ring: geometry.coordinates[0].map((p) => toGrid(meta, p)),
+        height: numberProp(props.height_m, defaults.height), profile: defaults.profile,
+      })
+    } else if (kind === 'water_tank' && geometry?.type === 'Point') {
+      tanks.push({ id, capacity: numberProp(props.capacity_l, 5000) / 1000, roofArea: 0 })
     }
   }
-  return { designs, strips, effects }
+  if (tanks.length) addRoofs(meta, features, tanks)
+  return { designs, tanks, strips, effects }
+}
+
+/** Area (m²) of a polygon outline, on the grid. */
+function ringArea(ring: GridPoint[]): number {
+  let sum = 0
+  for (let k = 0, j = ring.length - 1; k < ring.length; j = k++) sum += (ring[j].x + ring[k].x) * (ring[j].y - ring[k].y)
+  return Math.abs(sum) / 2
+}
+
+/** Each tank's roof area: the surfaces at the start of a line that ends at the tank. */
+function addRoofs(meta: GridMeta, features: readonly WaterFeature[], tanks: TankSummary[]) {
+  const byId = new Map<unknown, WaterFeature>()
+  for (const feature of features) {
+    const id = (feature.properties as Record<string, unknown> | null)?.id
+    if (id != null) byId.set(id, feature)
+  }
+  const area = new Map<unknown, number>()
+  const counted = new Set<string>()
+  for (const feature of features) {
+    const props = (feature.properties ?? {}) as Record<string, unknown>
+    if (props.status && props.status !== 'active') continue
+    const roof = byId.get(props.from_id)
+    if (props.to_id == null || !roof || roof.geometry?.type !== 'Polygon') continue
+    const key = `${String(props.from_id)}>${String(props.to_id)}`
+    if (counted.has(key)) continue
+    counted.add(key)
+    area.set(props.to_id, (area.get(props.to_id) ?? 0) + ringArea(roof.geometry.coordinates[0].map((p) => toGrid(meta, p))))
+  }
+  for (const tank of tanks) tank.roofArea = area.get(tank.id) ?? 0
 }
 
