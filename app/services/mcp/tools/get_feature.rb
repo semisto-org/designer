@@ -13,7 +13,7 @@ module Mcp
       def perform(map_id:, feature_id:)
         map = find_map!(map_id)
         feature = map.features.where.not(status: "rejected").find_by(id: feature_id)
-        feature = nil if feature&.layer == "networks" && !editor?
+        feature = nil if feature&.layer == "networks" && !sees_networks?
         raise ToolError, t("errors.feature_not_found", id: feature_id) unless feature
         measures = feature.measure_geometry.transform_keys { |k| "#{k}_m#{k == 'area' ? '2' : ''}" }
         feature_json(feature, zone: PermacultureZones::Lookup.new(map).for_feature(feature)).merge(

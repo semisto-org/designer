@@ -11,7 +11,7 @@ class TaskBoard
 
   def as_json(*)
     done = journey_done
-    tasks = map.tasks.reload.includes(:assignee, :completed_by, :features).order(:position, :id).to_a
+    tasks = map.tasks.reload.includes(:assignee, :agent, :completed_by, :features).order(:position, :id).to_a
     labels = MapFeature.labels_for(tasks.flat_map(&:features).uniq)
     {
       lists: map.task_lists.reload.map(&:as_json),
@@ -28,7 +28,9 @@ class TaskBoard
   # account there yet (their tasks wait for them, Task#invitee_email). While
   # a team map's project team is not set, its team comes first. Each person
   # carries their `group` (crew, map, team). Michael, 2026-11-10.
-  def participants
+  # `for_user`: a member of the map's team also gets its colleague
+  # (TeamAgent), when she is switched on for this map.
+  def participants(for_user: nil)
     crew_ids = map.organization_id ? map.assignments.pluck(:user_id) : []
     team_ids = map.organization_id ? OrganizationMembership.where(organization_id: map.organization_id).pluck(:user_id) : []
     order = crew_ids.any? ? %w[crew map team] : %w[team map]
@@ -41,6 +43,8 @@ class TaskBoard
         lead: (true if user.id == map.lead_id) }.compact
     end
     people = people.sort_by.with_index { |person, i| [ order.index(person[:group]), person[:lead] ? 0 : 1, i ] }
+    colleague = map.colleague_for(for_user)
+    people.unshift({ agentId: colleague.id, name: colleague.name, role: "agent", group: "agent" }) if colleague
     people + map.invitee_emails.sort.map { |email| { email:, name: email, role: "invited" } }
   end
 

@@ -19,7 +19,7 @@ module Maps
     # phone app reads the discussion when the map opens, for its pins and
     # its unread count, before anyone has looked at it.
     def index
-      comments = @commentable.comments.visible.chronological.includes(:author, :map_photo, { map_document: { file_attachment: :blob } }, applauses: :user)
+      comments = @commentable.comments.visible.chronological.includes(:author, :agent, :map_photo, { map_document: { file_attachment: :blob } }, applauses: :user)
       last_read = CommentRead.find_by(user: Current.user, commentable: @commentable)&.last_read_at
       payload = {
         commentable: { type: @commentable.class.name, id: @commentable.id, key: @commentable.comment_key, title: @commentable.comment_title },
@@ -29,6 +29,8 @@ module Maps
         level: (CommentSubscription.chat_level(Current.user, @commentable) if @commentable.is_a?(Map)),
         lastReadAt: last_read&.iso8601,
         members: comment_serializer.mentionable(@commentable),
+        # « Collègue IA »: the team's colleague when she is switched on for this map.
+        colleague: comment_serializer.colleague,
         notified: Collab::CommentNotifier.recipients_for(@commentable, Current.user)&.map(&:display_name),
         commentEmails: Current.user.comment_emails
       }
@@ -63,7 +65,7 @@ module Maps
     end
 
     def update
-      return render json: { message: t("collab.comments.errors.author_only") }, status: :forbidden unless @comment.author_id == Current.user.id
+      return render json: { message: t("collab.comments.errors.author_only") }, status: :forbidden unless @comment.written_by?(Current.user)
       if @comment.update(body: comment_body, **pointers.slice(:feature_ids))
         render json: comment_serializer.call(@comment)
       else

@@ -14,7 +14,7 @@ module Collab
         {
           mapId: map.id, mapName: map.name, unread:, mentions:,
           lastAt: last.created_at.iso8601,
-          last: { author: last.author.display_name, avatarUrl: last.author.avatar_url, body: last.body.squish.truncate(EXCERPT) },
+          last: { author: last.author_name, avatarUrl: (last.author.avatar_url unless last.by_agent?), body: last.body.squish.truncate(EXCERPT) },
           url: "/maps/#{map.id}?discussion=#{map.comment_key}"
         }
       end
@@ -51,9 +51,9 @@ module Collab
         rows = unread_rows
         return [] if rows.empty?
         by_id = Map.where(id: rows.keys).index_by(&:id)
-        lasts = Comment.visible.where(commentable_type: "Map", map_id: rows.keys).where.not(author_id: @user.id)
+        lasts = Comment.visible.where(commentable_type: "Map", map_id: rows.keys).not_written_by(@user)
           .select("DISTINCT ON (map_id) comments.*").order(:map_id, created_at: :desc, id: :desc)
-          .includes(:author).index_by(&:map_id)
+          .includes(:author, :agent).index_by(&:map_id)
 
         rows.filter_map do |map_id, (count, mentions)|
           map = by_id[map_id]
@@ -73,7 +73,7 @@ module Collab
           LEFT JOIN comment_reads cr ON cr.user_id = ? AND cr.commentable_type = 'Map' AND cr.commentable_id = comments.map_id
         SQL
         mention = Comment.sanitize_sql_array([ "COUNT(*) FILTER (WHERE ? = ANY(comments.mentioned_user_ids))", @user.id ])
-        Comment.visible.where(commentable_type: "Map", map_id: maps.select(:id)).where.not(author_id: @user.id)
+        Comment.visible.where(commentable_type: "Map", map_id: maps.select(:id)).not_written_by(@user)
           .where(created_at: (@now - WINDOW)..)
           .joins(join).where("cr.last_read_at IS NULL OR comments.created_at > cr.last_read_at")
           .group(:map_id).pluck(:map_id, Arel.sql("COUNT(*)"), Arel.sql(mention))

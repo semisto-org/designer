@@ -1,0 +1,174 @@
+# « Collègue IA »: the AI member of a team (TeamAgent). Her page in the team
+# (teams/agent), what the admin of Semisto grants, how she shows in the
+# discussions and tasks, and the sentences she says when she cannot work
+# (Agents::Runner).
+fr:
+  agents:
+    badge: "IA"
+    money: "%{amount} $"
+    flash:
+      saved: "C'est enregistré."
+    tool_errors:
+      unknown: "L'outil %{name} n'existe pas pour toi."
+      other_map: "Tu travailles sur la carte %{id} seulement, pour cette demande."
+      missing: "Il manque : %{fields}."
+    # What she posts herself when the model did not write the answer.
+    replies:
+      task_report: "Compte rendu de la tâche « %{title} »\n\n%{report}"
+      unavailable: "Je ne peux pas répondre ici : je ne suis plus activée sur cette carte, ou la demande ne vient plus d'un membre de l'équipe."
+      budget_reached: "Le plafond du mois (%{budget}) est atteint : je ne peux pas travailler sur cette demande. Un admin de l'équipe peut le relever sur ma page, dans l'équipe."
+      budget_midway: "Je m'arrête ici : le plafond du mois (%{budget}) vient d'être atteint. Voici où j'en étais : %{done}. Je te rends la main ; un admin de l'équipe peut relever le plafond sur ma page."
+      nothing_yet: "je commençais à peine"
+      limit_reached: "J'ai atteint la limite de travail d'une demande avant d'avoir fini. Dis-moi par quoi continuer, en une demande plus ciblée."
+      cut_short: "(Ma réponse a été coupée : j'ai atteint la longueur maximale d'une réponse.)"
+      key_refused: "La clé API de l'équipe est refusée par le fournisseur. Un admin de l'équipe peut la remplacer sur ma page."
+      provider_down: "Le service d'IA ne répond pas pour l'instant. Redemande-moi dans un moment."
+      refused: "Je ne peux pas répondre à cette demande."
+      failed: "Quelque chose s'est mal passé de mon côté et je n'ai pas pu finir. L'équipe de Semisto est prévenue ; tu peux me redemander."
+      empty: "J'ai regardé, mais je n'ai rien à ajouter."
+    chat:
+      requested_by: "à la demande de %{name}"
+      working: "%{name} y travaille…"
+      active: "%{name}, la collègue IA de l'équipe, est active sur cette carte."
+      active_hint_member: "Écris « @%{name} » pour lui demander quelque chose."
+      active_hint_other: "Seule l'équipe peut lui demander quelque chose ; ses messages portent la pastille « IA »."
+      mention_hint: "Collègue IA de l'équipe"
+    tasks:
+      group: "Collègue IA"
+      working: "y travaille…"
+      hint: "Elle fait ce qu'elle peut, écrit son compte rendu dans la discussion, puis te rend la tâche. C'est toi qui la coches."
+    team_card:
+      title: "Collègue IA"
+      ready: "%{name} travaille avec l'équipe, sur les cartes où un admin l'a activée."
+      not_ready: "Une collègue IA peut rejoindre l'équipe. Il reste à la présenter et à lui donner une clé."
+      open: "Voir sa page"
+      set_up: "La présenter"
+    page:
+      title: "Collègue IA"
+      back: "L'équipe"
+      eyebrow: "Équipe %{team}"
+      heading_named: "%{name}, collègue IA"
+      heading_new: "Une collègue IA pour l'équipe"
+      intro: "Une collègue généraliste, formée à la méthode de Semisto. Elle ne travaille que quand un membre de l'équipe le lui demande : une mention dans une discussion, ou une tâche qu'on lui confie. Elle propose, vous décidez."
+      status:
+        ready: "Prête"
+        paused: "En pause"
+        no_key: "Il manque la clé de l'équipe"
+        no_agent: "Pas encore présentée"
+      how:
+        title: "Comment travailler avec elle"
+        mention: "Dans une discussion, écris « @%{name} » suivi de ta demande. Elle répond dans le même fil."
+        task: "Dans les tâches, confie-lui une tâche. Elle écrit son compte rendu dans la discussion de la carte et te rend la tâche."
+        drafts: "Sur la carte, elle ne pose que des brouillons, chacun avec son pourquoi. C'est toujours une personne qui accepte."
+        outdoors: "Elle te dit ce qu'il reste à vérifier sur le terrain avant de décider."
+      limits:
+        title: "Ce qu'elle ne fait jamais"
+        items:
+          drafts: "Accepter ses propres brouillons, cocher une tâche, supprimer un document ou une photo."
+          outside: "Écrire à quelqu'un hors de l'équipe : pas d'e-mail, pas d'offre envoyée."
+          unread: "Lire les réseaux (eau, gaz, électricité, câbles), les photos elles-mêmes, ou les données personnelles de la fiche projet."
+          hours: "Noter des heures, des kilomètres ou des dépenses."
+          alone: "Se réveiller toute seule, ou répondre à quelqu'un qui n'est pas de l'équipe."
+      identity:
+        title: "Sa fiche"
+        name: "Son prénom"
+        name_hint: "Celui qu'on écrit après « @ »."
+        instructions: "Les consignes de l'équipe"
+        instructions_hint: "Le ton, vos habitudes, ce qu'elle doit savoir de votre façon de travailler. Elles complètent la fiche de base de Semisto (son métier, ses limites), qui ne se retire pas."
+        instructions_placeholder: "Par exemple : tutoie tout le monde, réponds court, rappelle toujours la saison de plantation…"
+        active: "Elle répond aux demandes"
+        active_hint: "En pause, elle n'apparaît plus dans les mentions ni dans les tâches."
+        save: "Enregistrer"
+        create: "Accueillir la collègue"
+        base: "Fiche de base : Semisto"
+        instructions_read: "Consignes de l'équipe"
+        no_instructions: "L'équipe n'a pas ajouté de consignes."
+      key:
+        title: "La clé et le plafond"
+        intro: "Elle réfléchit avec Claude, d'Anthropic, grâce à la clé API de l'équipe : c'est l'équipe qui paie ce qu'elle consomme, directement à Anthropic. Terranova n'ajoute rien."
+        team_plan_note: "Un abonnement Claude Team ne donne pas de clé API : elle se crée sur console.anthropic.com, un compte séparé, payé à l'usage."
+        field: "Clé API Anthropic"
+        placeholder_new: "sk-ant-…"
+        placeholder_keep: "Laisser vide pour garder la clé actuelle"
+        current: "Clé enregistrée : %{hint}. Elle est chiffrée et ne sera plus jamais affichée."
+        remove: "Retirer la clé"
+        remove_confirm:
+          title: "Retirer la clé de l'équipe ?"
+          body: "La collègue ne pourra plus répondre tant qu'une nouvelle clé n'est pas enregistrée."
+        budget: "Plafond mensuel, en dollars"
+        budget_hint: "La monnaie de la facture d'Anthropic. Au plafond, elle s'arrête, le dit en clair et rend la tâche."
+        model: "Modèle : %{model}, choisi par Semisto."
+        save: "Enregistrer"
+      usage:
+        title: "Ce mois-ci"
+        label: "Dépensé ce mois-ci"
+        requests:
+          zero: "Aucune demande ce mois-ci."
+          one: "1 demande ce mois-ci."
+          other: "%{count} demandes ce mois-ci."
+      maps:
+        title: "Les cartes où elle travaille"
+        intro_admin: "Aucune par défaut : active-la carte par carte. Les personnes de la carte le voient dans sa discussion."
+        intro_member: "Un admin de l'équipe l'active carte par carte. Les personnes de la carte le voient dans sa discussion."
+        empty: "L'équipe n'a pas encore de carte."
+        on: "Active"
+        off: "Inactive"
+        toggle: "Activer %{agent} sur %{map}"
+      runs:
+        title: "Son journal"
+        intro: "Chaque demande : qui, où, ce qu'elle a utilisé, ce que ça a coûté. Le texte des échanges avec le modèle n'est pas gardé."
+        empty: "Elle n'a encore rien fait. Va voir une carte où elle est active et écris-lui dans la discussion."
+        kinds:
+          mention: "Mention"
+          task: "Tâche"
+        statuses:
+          queued: "En attente"
+          running: "En cours"
+          done: "Terminé"
+          limit: "Limite de la demande"
+          budget: "Plafond du mois"
+          failed: "Pas abouti"
+        line: "%{who} · %{map}"
+        tools:
+          zero: "aucun outil"
+          one: "1 appel d'outil"
+          other: "%{count} appels d'outils"
+  admin:
+    teams:
+      agents:
+        granted_on: "Collègue IA depuis le %{date}"
+        grant: "Ouvrir « Collègue IA »"
+        revoke: "Fermer « Collègue IA »"
+        revoke_confirm:
+          title: "Fermer « Collègue IA » pour %{name} ?"
+          body: "La collègue ne répondra plus. Sa fiche, son journal et ce qu'elle a écrit restent."
+      flash:
+        agents_granted: "« Collègue IA » est ouvert pour %{name}."
+        agents_revoked: "« Collègue IA » est fermé pour %{name}."
+    dashboard:
+      events:
+        actions:
+          agents_module_granted: "a ouvert « Collègue IA » pour"
+          agents_module_revoked: "a fermé « Collègue IA » pour"
+  activerecord:
+    models:
+      team_agent: "Collègue IA"
+    attributes:
+      team_agent:
+        name: "Le prénom"
+        instructions: "Les consignes de l'équipe"
+      organization:
+        agent_monthly_budget_cents: "Le plafond mensuel"
+      task:
+        agent: "La collègue IA"
+    errors:
+      models:
+        team_agent:
+          attributes:
+            name:
+              invalid_name: "ne contient que des lettres, des espaces, des tirets et des apostrophes"
+              taken_by_member: "est déjà celui d'un membre de l'équipe : « @ » ne saurait plus qui appeler"
+        task:
+          attributes:
+            agent:
+              not_on_map: "n'est pas activée sur cette carte"

@@ -44,7 +44,7 @@ module Collab
 
     private
       def audience
-        @audience ||= @comment.mention_pool.where(comment_emails: true).where.not(id: @comment.author_id).to_a
+        @audience ||= @comment.mention_pool.where(comment_emails: true).where.not(id: @comment.human_author_id).to_a
       end
 
       def mentioned_recipients(only_mentions)

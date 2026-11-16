@@ -21,7 +21,8 @@ module Mcp
             title: task.title, notes: task.notes, tags: task.tags.presence,
             due_on: task.due_on&.iso8601, overdue: task.overdue? || nil,
             season_step: season_step_json(task),
-            assignee: (task.assignee && { id: task.assignee.id, name: task.assignee.display_name }) ||
+            assignee: (task.agent && { name: task.agent.name, ai_colleague: true }) ||
+                      (task.assignee && { id: task.assignee.id, name: task.assignee.display_name }) ||
                       (task.invitee_email && { email: task.invitee_email, invited: true }),
             done: task.done?, completed_at: task.completed_at&.iso8601, completed_by: task.completed_by&.display_name,
             semisto_default: task.key.present? || nil,

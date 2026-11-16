@@ -23,7 +23,7 @@ module Mcp
         map = find_map!(map_id)
         raise ToolError, t("errors.discussion_closed") unless map.chat_member?(user)
 
-        scope = map.comments.visible.includes(:author, :map_photo, :map_document)
+        scope = map.comments.visible.includes(:author, :agent, :map_photo, :map_document)
         scope = scope.where(comments: { id: ...before_id }) if before_id
         scope = scope.where(created_at: Date.iso8601(since).beginning_of_day..) if since
         page = scope.order(created_at: :desc, id: :desc).limit(limit.clamp(1, MAX)).to_a
@@ -34,6 +34,9 @@ module Mcp
         {
           messages: page.reverse.map { |comment| message_json(comment, features, read) },
           members: map.chat_participants.order(:id).map(&:display_name),
+          # The team's AI colleague, when a team admin switched her on for this
+          # map: team members mention her in the app, she answers here.
+          ai_colleague: map.colleague&.name,
           # Who gets the e-mail digest without asking (on a team map, its
           # project team), and whether this user gets it.
           digest_to: map.chat_audience.order(:id).map(&:display_name),
@@ -51,12 +54,15 @@ module Mcp
         def message_json(comment, features, read)
           {
             id: comment.id,
-            author: comment.author.display_name,
-            mine: comment.author_id == user.id,
+            author: comment.author_name,
+            # Written by the team's AI colleague, at the request of a member.
+            by_ai_colleague: comment.by_agent? || nil,
+            requested_by: (comment.author.display_name if comment.by_agent?),
+            mine: comment.written_by?(user),
             body: comment.body,
             created_at: comment.created_at.iso8601,
             edited: comment.edited?,
-            unread: read.nil? || (comment.created_at > read && comment.author_id != user.id),
+            unread: read.nil? || (comment.created_at > read && !comment.written_by?(user)),
             features: comment.feature_ids.filter_map { |id| features[id] }.map do |f|
               { id: f.id, name: Collab::CommentSerializer.feature_label(f), layer: f.layer, kind: f.kind }
             end,

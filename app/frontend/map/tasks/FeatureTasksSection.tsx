@@ -66,7 +66,7 @@ export default function FeatureTasksSection({ feature }: { feature: MapFeature }
                   {(task.dueOn || task.assignee) && (
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
                       {task.dueOn && <DueBadge due={task.dueOn} today={todayIso()} />}
-                      {task.assignee && <AssigneeBadge name={assigneeName(task.assignee)} url={task.assignee.avatarUrl} withName />}
+                      {task.assignee && <AssigneeBadge name={assigneeName(task.assignee)} url={task.assignee.avatarUrl} agent={task.assignee.agent} withName />}
                     </div>
                   )}
                   {others.length > 0 && (

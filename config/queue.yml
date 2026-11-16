@@ -7,6 +7,13 @@ default: &default
       threads: 3
       processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
       polling_interval: 1
+    # « Collègue IA » (AgentRunJob): long conversations with a model, one at
+    # a time per team. Their own threads, so they do not wait behind
+    # conversions; the workers above may pick one up when idle.
+    - queues: agents
+      threads: <%= ENV.fetch("AGENT_CONCURRENCY", 2) %>
+      processes: 1
+      polling_interval: 2
 
 development:
   <<: *default

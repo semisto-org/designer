@@ -13,10 +13,14 @@ module Collab
       {
         id: comment.id,
         body: comment.body,
-        author: { id: comment.author_id, name: comment.author.display_name, avatarUrl: comment.author.avatar_url },
+        author: author_json(comment),
+        # The team's colleague wrote it, at the request of this member.
+        agent: comment.by_agent? ? { id: comment.agent_id, name: comment.agent.name, requestedBy: comment.author.display_name } : nil,
+        # She was asked something by this message: where that stands.
+        agentRun: comment.mentioned_agent_ids.any? ? agent_run_json(comment) : nil,
         createdAt: comment.created_at.iso8601,
         editedAt: comment.edited_at&.iso8601,
-        mentions: comment.mentioned_user_ids.filter_map { |id| names[id] && { id:, handle: names[id] } },
+        mentions: comment.mentioned_user_ids.filter_map { |id| names[id] && { id:, handle: names[id] } } + agent_mentions(comment),
         applause: {
           count: applauses.size,
           mine: applauses.any? { |a| a.user_id == @user.id },
@@ -26,7 +30,7 @@ module Collab
         location: comment.lnglat,
         photo: comment.map_photo && { id: comment.map_photo.id, caption: comment.map_photo.caption, video: comment.map_photo.kind == "video" },
         document: comment.map_document && document_json(comment.map_document),
-        canEdit: comment.author_id == @user.id,
+        canEdit: comment.written_by?(@user),
         canDelete: comment.author_id == @user.id || @map.manageable_by?(@user)
       }
     end
@@ -36,9 +40,20 @@ module Collab
     def mentionable(commentable = nil)
       pool = commentable.is_a?(Map) ? chat_participants : participants
       names = commentable.is_a?(Map) ? chat_handles : handles
-      pool.reject { |u| u.id == @user.id }.map do |u|
+      people = pool.reject { |u| u.id == @user.id }.map do |u|
         { id: u.id, name: u.display_name, handle: names[u.id], avatarUrl: u.avatar_url }
       end
+      # The team's colleague, for the members of her team only (a negative id
+      # keeps her apart from the people).
+      colleague = @map.colleague_for(@user)
+      people.unshift({ id: -colleague.id, name: colleague.name, handle: colleague.handle, avatarUrl: nil, agent: true }) if colleague
+      people
+    end
+
+    # The colleague on this map, as everyone in its discussion sees her.
+    def colleague
+      agent = @map.colleague
+      agent && { id: agent.id, name: agent.name, canAsk: @map.colleague_for(@user).present? }
     end
 
     # How a cited element reads in a message: its name, or its kind and number.
@@ -51,6 +66,22 @@ module Collab
     def feature_label(feature) = self.class.feature_label(feature)
 
     private
+      def author_json(comment)
+        return { id: 0, name: comment.agent.name, avatarUrl: nil } if comment.by_agent?
+        { id: comment.author_id, name: comment.author.display_name, avatarUrl: comment.author.avatar_url }
+      end
+
+      def agent_mentions(comment)
+        ids = comment.mentioned_agent_ids
+        return [] if ids.empty?
+        TeamAgent.where(id: ids).map { |agent| { id: -agent.id, handle: agent.handle } }
+      end
+
+      def agent_run_json(comment)
+        run = AgentRun.where(source: comment).order(:id).last
+        run && { status: run.status, name: run.team_agent.name }
+      end
+
       def document_json(document)
         blob = document.file.attached? ? document.file.blob : nil
         url = ->(size) { routes.file_map_document_path(@map, document, size:) }

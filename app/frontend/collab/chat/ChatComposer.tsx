@@ -267,7 +267,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, {
               className={clsx('flex cursor-pointer items-center gap-2 px-3 py-2 text-sm', i === active ? 'bg-prune-50 text-prune-800' : 'text-loam-700')}
             >
               {choice.kind === 'member' ? (
-                <><Avatar name={choice.member.name} url={choice.member.avatarUrl} className="h-6 w-6 text-sm" />{choice.member.handle}</>
+                <><Avatar name={choice.member.name} url={choice.member.avatarUrl} agent={choice.member.agent} className="h-6 w-6 text-sm" />{choice.member.handle}{choice.member.agent && <span className="text-loam-500">{t('agents.chat.mention_hint')}</span>}</>
               ) : (
                 <><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: LAYER_COLORS[choice.item.layer] ?? 'var(--color-loam-500)' }} />{choice.item.label}</>
               )}

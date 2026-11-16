@@ -6,14 +6,14 @@ class CommentMailer < ApplicationMailer
     prepare(comment, user)
     return if comment.deleted?
     show_place(@map)
-    mail to: user.email_address, subject: t(".subject", author: @author.display_name, title: @title)
+    mail to: user.email_address, subject: t(".subject", author: @author_name, title: @title)
   end
 
   def new_comment(comment, user)
     prepare(comment, user)
     return if comment.deleted?
     show_place(@map)
-    mail to: user.email_address, subject: t(".subject", author: @author.display_name, title: @title)
+    mail to: user.email_address, subject: t(".subject", author: @author_name, title: @title)
   end
 
   # The unread messages of the map's live discussion, gathered an hour after
@@ -21,7 +21,7 @@ class CommentMailer < ApplicationMailer
   def chat_digest(map, user, comment_ids)
     @map = map
     @user = user
-    @comments = map.comments.visible.where(id: comment_ids).chronological.includes(:author).to_a
+    @comments = map.comments.visible.where(id: comment_ids).chronological.includes(:author, :agent).to_a
     return if @comments.empty?
     @url = map_url(map, discussion: map.comment_key)
     show_place(map)
@@ -32,7 +32,7 @@ class CommentMailer < ApplicationMailer
     def prepare(comment, user)
       @comment = comment
       @user = user
-      @author = comment.author
+      @author_name = comment.author_name
       @map = comment.map
       @title = comment.commentable.comment_title
       @thread_title = comment.commentable.is_a?(Map) ? "« #{@map.name} »" : t("comment_mailer.on_element", title: @title, map: @map.name)

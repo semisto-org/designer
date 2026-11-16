@@ -772,6 +772,7 @@ fr:
       empty_title: "Rien n'a encore été dit ici"
       empty_body: "Écris à l'équipe depuis le terrain : « Ici » épingle ton message là où tu te tiens, l'appareil photo montre ce que tu vois, # cite un élément, @ appelle quelqu'un."
       you: "Toi"
+      by_agent: "IA · à la demande de %{name}"
       edited: "modifié"
       applause:
         one: "1 bravo"
