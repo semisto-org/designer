@@ -139,7 +139,7 @@ function MemberRow({ member, admin, base }: { member: TeamMember; admin: boolean
         <p className="truncate text-sm text-loam-500">
           {[member.email, member.mapsCount > 0 ? t('teams.show.maps_owned', { count: member.mapsCount }) : null].filter(Boolean).join(' · ')}
         </p>
-        {admin && !member.you && <LastActive iso={member.lastActiveAt} />}
+        {!member.you && <LastActive iso={member.lastActiveAt} />}
       </div>
       <div className="flex items-center gap-1">
         {canChangeRole ? (
