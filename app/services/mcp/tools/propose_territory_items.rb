@@ -11,6 +11,12 @@ module Mcp
     # with `ref`, and the other uses basin_ref, actor_ref, source_ref,
     # source_refs or expectation_refs in its properties. Drafts are created
     # in the order their references allow.
+    #
+    # A basin can name its official sectors (`paris_sector_ids`): the server
+    # attaches their outline, merged into one for a valley of several, and
+    # its area, instead of the AI copying tens of thousands of coordinates.
+    # A marker or a lead placed without basin_id gets the basin of the
+    # dossier its place falls in (`basin_id_auto` in the answer).
     class ProposeTerritoryItems < Base
       include TerritoryAccess
 
@@ -62,7 +68,12 @@ module Mcp
         resolved, failed = {}, Set.new
 
         until queue.empty?
-          ready, waiting = queue.partition { |_, raw| refs_of(raw).all? { |ref| resolved.key?(ref) || failed.include?(ref) || !declared.key?(ref) } }
+          basins_left = queue.any? { |_, raw| raw["kind"] == "basin" }
+          ready, waiting = queue.partition do |_, raw|
+            refs_of(raw).all? { |ref| resolved.key?(ref) || failed.include?(ref) || !declared.key?(ref) } &&
+              !(basins_left && raw["kind"] != "basin" && auto_basin?(raw))
+          end
+          ready.sort_by! { |_, raw| raw["kind"] == "basin" ? 0 : 1 }
           # A cycle: what is left waits on itself.
           ready, waiting = waiting, [] if ready.empty?
           ready.each do |index, raw|
@@ -70,7 +81,8 @@ module Mcp
             if result.is_a?(TerritoryItem)
               existing << result
               resolved[raw["ref"]] = result.id if raw["ref"]
-              created << { index:, id: result.id, kind: result.kind, title: result.title, ref: raw["ref"] }.compact
+              created << { index:, id: result.id, kind: result.kind, title: result.title, ref: raw["ref"],
+                           basin_id_auto: @auto_basins&.delete(result.id), outline: (@official_outlines&.delete(result.id)) }.compact
             else
               failed << raw["ref"] if raw["ref"]
               rejected << { index:, error: result }
@@ -94,6 +106,14 @@ module Mcp
           if (twin = duplicate_of(existing, raw))
             return t("errors.territory_duplicate", id: twin.id)
           end
+          official = nil
+          if raw["kind"] == "basin" && properties["paris_sector_ids"].present?
+            official, error = official_outline(territory, properties["paris_sector_ids"])
+            return error if error
+
+            raw = raw.merge("geometry" => official[:geometry])
+            properties = properties.merge("paris_sector_ids" => official[:sector_ids], "area_km2" => official[:area_km2])
+          end
           item = territory.items.new(kind: raw["kind"], status: "draft", source: "ai", created_by: user,
                                      title: raw["title"], body: raw["body"], rationale: raw["rationale"], properties:)
           begin
@@ -101,7 +121,35 @@ module Mcp
           rescue RGeo::Error::ParseError, JSON::ParserError, NoMethodError
             return t("errors.territory_geometry")
           end
-          item.save ? item : item.errors.full_messages.to_sentence
+          auto = auto_basin?(raw) && item.geometry && territory.basins_at(geometry: item.geometry).first
+          item.properties = item.properties.merge("basin_id" => auto.id) if auto
+          return item.errors.full_messages.to_sentence unless item.save
+
+          (@auto_basins ||= {})[item.id] = auto.id if auto
+          (@official_outlines ||= {})[item.id] = { sector_ids: official[:sector_ids], area_km2: official[:area_km2], inside_km2: official[:inside_km2] } if official
+          item
+        end
+
+        # A marker or a lead with a place and no sub-basin given.
+        def auto_basin?(raw)
+          return false unless %w[marker lead].include?(raw["kind"]) && raw["geometry"].present?
+
+          properties = raw["properties"].is_a?(Hash) ? raw["properties"] : {}
+          !properties.key?("basin_id") && !properties.key?("basin_ref")
+        end
+
+        # [outline, nil] or [nil, error]: the official contour of these
+        # sectors, merged, from the region's water authority.
+        def official_outline(territory, ids)
+          @hydrography ||= TerritoryHydrography.new(territory)
+          return [ nil, t("errors.hydrography_not_configured") ] unless @hydrography.available?
+
+          outline = @hydrography.outline_of(ids)
+          return [ nil, t("errors.territory_sectors_missing", ids: outline[:missing].join(", ")) ] if outline[:missing].any?
+
+          [ outline, nil ]
+        rescue TerritoryHydrography::Unavailable
+          [ nil, t("errors.hydrography_unavailable") ]
         end
 
         def refs_of(raw)

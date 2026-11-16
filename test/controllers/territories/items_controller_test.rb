@@ -18,7 +18,7 @@ class Territories::ItemsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to territory_path(@territory, tab: "marker")
     item = @territory.items.last
     assert_equal [ "marker", "active", "human", @member ], [ item.kind, item.status, item.source, item.created_by ]
-    assert_equal({ "proof" => "seen", "occurred_on" => "2021-07" }, item.properties)
+    assert_equal({ "proof" => "seen", "occurred_on" => "2021-07-01", "occurred_precision" => "month" }, item.properties)
     assert_equal "Point", item.geometry.geometry_type.type_name
   end
 

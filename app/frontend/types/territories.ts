@@ -29,6 +29,9 @@ export type TerritoryItemProperties = {
   outlet?: string
   basin_id?: number
   occurred_on?: string
+  occurred_precision?: 'day' | 'month' | 'season' | 'year'
+  paris_sector_ids?: string[]
+  area_km2?: number
   proof?: Proof
   marker_kind?: string
   rank?: LeadRank
@@ -62,6 +65,9 @@ export type TerritoryItemUpdate = {
   authorName: string | null
   changes: { field: string; before: unknown; after: unknown }[]
   createdAt: string
+  /** A removal that waits for these entries to be kept. */
+  supersededBy?: { id: number; title?: string; status: 'draft' | 'active' | 'rejected' | 'removed' }[]
+  blocked?: boolean
 }
 
 export type TerritoryItem = {
@@ -82,6 +88,7 @@ export type TerritoryItem = {
   createdAt: string
   updatedAt: string
   lockVersion: number
+  occurredLabel?: string | null
 }
 
 export type TerritoryData = {

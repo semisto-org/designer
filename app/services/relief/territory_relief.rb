@@ -31,6 +31,9 @@ module Relief
         return true if terrain.nil?
         return false if terrain.in_progress? || terrain.retry_scheduled?
         return true unless terrain.failed? # pending or running, but dead
+        # Failed before failures said whether a retry helps: the old import
+        # gave up on cells beyond the region, so start it again at once.
+        return true unless terrain.metadata.key?("retriable")
 
         force || (terrain.retriable? && terrain.updated_at < RELAUNCH_AFTER.ago)
       end

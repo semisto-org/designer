@@ -102,7 +102,7 @@ class TerritoryNotebook
     end
 
     def marker(item)
-      { id: item.id, title: item.title, body: item.body, basinId: basin_id(item), occurredOn: item.prop(:occurred_on), proof: item.prop(:proof) || "computed",
+      { id: item.id, title: item.title, body: item.body, basinId: basin_id(item), occurredOn: item.occurred_label, proof: item.prop(:proof) || "computed",
         markerKind: item.prop(:marker_kind), sources: source_refs(item.prop(:source_ids)) }
     end
 

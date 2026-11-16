@@ -45,6 +45,16 @@ module Mcp
           territory?(place) ? place.readable_layers : place.region.catalogue.enabled.to_a
         end
 
+        # Where a point of a territory falls in its water: the dossier's
+        # sub-basins holding it (drafts included) and the official sector
+        # (PARIS in Wallonia) whose basin holds it.
+        def water_context(territory, lng, lat)
+          basins = territory.basins_at(lng:, lat:).limit(3).map { |b| { id: b.id, title: b.title, status: b.status } }
+          @hydrography ||= TerritoryHydrography.new(territory)
+          sector = @hydrography.available? ? @hydrography.sector_at(lng, lat) : nil
+          { basins:, paris_sector: sector }.compact
+        end
+
         def require_region!(place)
           place.region or raise ToolError, t("errors.no_region")
         end

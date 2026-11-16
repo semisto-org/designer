@@ -52,6 +52,10 @@ class TerritoryItem < ApplicationRecord
   DECISIONS = %w[retained postponed dismissed].freeze
   REQUEST_KINDS = %w[document info].freeze
   REQUEST_STATES = %w[to_ask asked received refused].freeze
+  # How exact a marker's date is: « l'été 2025 » is a season, not a day.
+  # occurred_on then holds the first day of the period.
+  PRECISIONS = %w[day month season year].freeze
+  SEASON_STARTS = { "spring" => "03-21", "summer" => "06-21", "autumn" => "09-21", "winter" => "12-21" }.freeze
   EXCERPTS_MAX = 20
   EXCERPT_MAX_LENGTH = 1500
 
@@ -62,8 +66,9 @@ class TerritoryItem < ApplicationRecord
     "source" => { "url" => :url, "author" => :string, "published_on" => :string, "excerpts" => :texts,
                   "rights" => RIGHTS, "source_kind" => SOURCE_KINDS },
     "expectation" => { "year" => :integer, "source_ids" => :ids, "validated" => :boolean },
-    "basin" => { "order" => :integer, "outlet" => :string },
-    "marker" => { "basin_id" => :integer, "occurred_on" => :string, "proof" => PROOFS, "marker_kind" => MARKER_KINDS, "source_ids" => :ids },
+    "basin" => { "order" => :integer, "outlet" => :string, "paris_sector_ids" => :codes, "area_km2" => :number },
+    "marker" => { "basin_id" => :integer, "occurred_on" => :string, "occurred_precision" => PRECISIONS, "proof" => PROOFS,
+                  "marker_kind" => MARKER_KINDS, "source_ids" => :ids },
     "lead" => {
       "basin_id" => :integer, "rank" => RANKS, "theme" => THEMES, "land" => LANDS, "magnitude" => :string,
       "expectation_ids" => :ids, "seen_on_site" => :boolean, "seen_on" => :date,
@@ -136,6 +141,8 @@ class TerritoryItem < ApplicationRecord
     when :integer then (Integer(value.to_s, 10) rescue nil)
     when :boolean then value.nil? || value == "" ? nil : ActiveModel::Type::Boolean.new.cast(value)
     when :ids then Array(value).filter_map { |v| Integer(v.to_s, 10) rescue nil }.uniq.first(50)
+    when :codes then Array(value).filter_map { |v| v.to_s.squish.first(40).presence if v.is_a?(String) || v.is_a?(Numeric) }.uniq.first(50)
+    when :number then (Float(value.to_s) rescue nil)&.then { |n| n.finite? ? n.round(3) : nil }
     end
   end
 
@@ -168,6 +175,34 @@ class TerritoryItem < ApplicationRecord
 
   def prop(*path) = properties.dig(*path.map(&:to_s))
 
+  def self.season_of(month, day = 1)
+    return "winter" if month.zero?
+
+    key = format("%02d-%02d", month, [ day, 1 ].max)
+    case key
+    when "03-21".."06-20" then "spring"
+    when "06-21".."09-20" then "summer"
+    when "09-21".."12-20" then "autumn"
+    else "winter"
+    end
+  end
+
+  # « 14 juillet 2021 », « juillet 2021 », « été 2025 », « 2025 ».
+  def occurred_label
+    iso = prop(:occurred_on)
+    return iso unless iso.to_s.match?(/\A\d{4}-\d{2}-\d{2}\z/)
+
+    date = Date.iso8601(iso)
+    case prop(:occurred_precision)
+    when "year" then date.year.to_s
+    when "month" then I18n.l(date, format: "%B %Y")
+    when "season" then I18n.t("territories.seasons.#{self.class.season_of(date.month, date.day)}", year: date.month == 12 ? "#{date.year}-#{date.year + 1}" : date.year)
+    else I18n.l(date, format: :long)
+    end
+  rescue Date::Error
+    iso
+  end
+
   # --- leads ---
 
   # No keeper, no lead: who maintains it in year 8 is where projects die.
@@ -198,7 +233,7 @@ class TerritoryItem < ApplicationRecord
     {
       id:, kind:, status:, source:, title:, body:, rationale:,
       geometry: geometry_geojson,
-      properties:,
+      properties:, occurredLabel: (occurred_label if kind == "marker"),
       file: file.attached? ? { name: file.filename.to_s, byteSize: file.byte_size } : nil,
       orphan: orphan?, sharp: kind == "lead" ? sharp? : nil, waitingForFarmer: waiting_for_farmer?,
       pendingUpdate: pending_update&.as_review_json(self),
@@ -209,6 +244,31 @@ class TerritoryItem < ApplicationRecord
   private
     def clean_properties
       self.properties = self.class.clean(kind, properties)
+      normalize_occurrence if kind == "marker"
+    end
+
+    # occurred_on « 2025 », « 2025-07 » or a day, with its precision
+    # (guessed from the shape when none is given): stored as the first day
+    # of the period, ISO, so dates sort; a season starts on its solstice
+    # or equinox.
+    def normalize_occurrence
+      raw = properties["occurred_on"].to_s.strip
+      return if raw.empty?
+
+      precision = properties["occurred_precision"]
+      year, month, day = raw.match(/\A(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?\z/)&.captures
+      return unless year
+
+      precision ||= day ? "day" : (month ? "month" : "year")
+      value =
+        case precision
+        when "year" then "#{year}-01-01"
+        when "month" then "#{year}-#{month || '01'}-01"
+        when "season" then "#{year}-#{SEASON_STARTS.fetch(self.class.season_of(month.to_i, day.to_i))}"
+        else day ? raw : "#{year}-#{month || '01'}-01"
+        end
+      properties["occurred_on"] = value
+      properties["occurred_precision"] = precision
     end
 
     def geometry_fits_kind

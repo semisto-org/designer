@@ -17,16 +17,28 @@ module Mcp
             type: "array", items: { type: "integer", minimum: 1 }, minItems: 1,
             maxItems: ProposeTerritoryUpdates::MAX_UPDATES, uniqueItems: true, description: :territory_deletion_ids
           },
-          rationale: { type: "string", minLength: 10, maxLength: 3000, description: :territory_deletion_rationale }
+          rationale: { type: "string", minLength: 10, maxLength: 3000, description: :territory_deletion_rationale },
+          superseded_by: {
+            type: "array", items: { type: "integer", minimum: 1 }, minItems: 1, maxItems: 50, uniqueItems: true, description: :territory_superseded_by
+          }
         },
         required: %w[territory_id item_ids rationale]
       )
       hints(read_only: false, destructive: false, idempotent: true)
 
-      def perform(territory_id:, item_ids:, rationale:)
+      def perform(territory_id:, item_ids:, rationale:, superseded_by: nil)
         territory = find_territory!(territory_id)
         require_drafts_scope!
         require_territory_editor!(territory)
+        changes = TerritoryItemUpdate::DELETION
+        if superseded_by.present?
+          replacements = territory.items.not_rejected.where(id: superseded_by).pluck(:id)
+          missing = superseded_by - replacements
+          raise ToolError, t("territory_update_errors.superseded_unknown", ids: missing.join(", ")) if missing.any?
+          raise ToolError, t("territory_update_errors.superseded_self") if (superseded_by & item_ids).any?
+
+          changes = changes.merge("superseded_by" => superseded_by)
+        end
 
         items = territory.items.where(id: item_ids).index_by(&:id)
         pending = territory.item_updates.pending.where(territory_item_id: item_ids).index_by(&:territory_item_id)
@@ -37,7 +49,7 @@ module Mcp
             rejected << { item_id: id, error: t("territory_update_errors.not_found", id:) }
           elsif item.draft?
             rejected << { item_id: id, error: t("territory_update_errors.draft_deletion", id:) }
-          elsif pending[id]&.deletion?
+          elsif pending[id]&.deletion? && pending[id].proposed_changes == changes
             unchanged << { item_id: id, reason: t("territory_update_errors.already_pending", id: pending[id].id) }
           else
             valid << item
@@ -53,10 +65,10 @@ module Mcp
             replaced = pending[item.id]
             replaced&.update!(status: "withdrawn")
             update = territory.item_updates.create!(
-              territory_item: item, item_title: item.title, batch:, proposed_changes: TerritoryItemUpdate::DELETION,
+              territory_item: item, item_title: item.title, batch:, proposed_changes: changes,
               rationale: rationale.strip, created_by: user, client_name: principal.client_name&.first(100)
             )
-            { id: update.id, item_id: item.id, kind: item.kind, title: item.title, replaces: replaced&.id }.compact
+            { id: update.id, item_id: item.id, kind: item.kind, title: item.title, replaces: replaced&.id, superseded_by: }.compact
           end
         end
         {

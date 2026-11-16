@@ -84,6 +84,15 @@ class Territory < ApplicationRecord
 
   def infiltration_measurements = []
 
+  # The sub-basins of the dossier (drafts included) whose outline holds this
+  # point, or a point of this geometry: kept ones first, then the smallest.
+  def basins_at(lng: nil, lat: nil, geometry: nil)
+    ewkt = geometry ? "SRID=4326;#{geometry.as_text}" : "SRID=4326;POINT(#{lng.to_f} #{lat.to_f})"
+    items.not_rejected.of_kind("basin").where.not(geometry: nil)
+      .where("ST_Covers(geometry, ST_PointOnSurface(ST_GeomFromEWKT(?)))", ewkt)
+      .order(Arel.sql("(status = 'active') DESC, ST_Area(geometry) ASC"))
+  end
+
   def notebook_text(key) = notebook.is_a?(Hash) ? notebook[key.to_s].to_s : ""
 
   def counts
