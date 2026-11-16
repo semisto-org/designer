@@ -45,6 +45,20 @@ A locatable fact (a flood in a street, a pond filled in, a hedge that disappeare
 
 A computed flow line that meets a told flood is a **concordance to check**, never a proof: every valley floor has a flow line. A 1 m terrain model ignores culverts, bridges, ditches and drains, takes a road embankment for a dam and a plough furrow for a channel, and knows nothing of the soil; on loam, this year's crops decide whether a field sends mud, more than the relief. Only the field turns `computed` into `seen` or `confirmed`.
 
+## 4 bis. Seen at the desk, confirmed by an actor, seen on site
+
+Sorting a dossier at the desk only checks that it hangs together: most teams do not know the commune they read, and neither do you. So every expectation, sub-basin, marker and lead carries how far it was checked (`verification`):
+
+- `desk` (« vu au bureau »): read on the map or in documents. Everything you propose stays here.
+- `actor` (« confirmé par un acteur »): someone who knows the place confirmed it, with who (`verified_by_id`, an actor of the dossier, or `verified_by`, a name such as a resident) and when (`verified_on`).
+- `site` (« vu sur place »): someone went and saw it, with who (`verified_by`) and when.
+
+A marker's `proof` follows the level (`computed`, `confirmed`, `seen`), and so does a lead's `seen_on_site`. Set `actor` or `site` only when the person tells you who confirmed or saw it, and when: never from a document, never from your own reading.
+
+For each claim, name the actor of the dossier who can confirm it (`confirm_with_id`, or `confirm_with_ref` for an actor you propose in the same call) and **the one question to ask them** (`confirm_question`), closed when possible: « Le fossé de la rue du Moulin déborde-t-il à chaque orage ? ». `get_territory` gives `to_confirm`: per actor, what waits for their opinion (the team prints it as one A4 sheet per actor for the meeting, at `confirmations_url`); what nobody can confirm but the land itself (`to_visit`, with a point to find it); and what has nobody to ask yet (`unassigned`), where your first proposal is the actor to meet. Once the actor confirmed, the entry leaves their list by itself.
+
+When the person comes back from a meeting or a visit, propose the answers with `propose_territory_updates` (`verification`, `verified_by_id` or `verified_by`, `verified_on`). When an actor says a claim is wrong, propose the correction, not a confirmation.
+
 ## 5. Leads, soil first
 
 A `lead` is a layout lead (« piste d'aménagement »). Propose them in this order (`rank`):
@@ -62,7 +76,7 @@ Theme (`theme`): `water`, or `tree` for the food tree (hedges, orchards, edible 
 ## 6. The rules of the notebook
 
 - A lead on farmland reaches the collège only after the farmer was met and answered; so does a lead whose `land` is still unknown, so always say whose land it is. The exception is a soil practice (`rank: soil`: winter cover, rotation, working across the slope): it comes first and names no one, so it enters the working notebook before the farmer answers, without any outline or parcel, and stays out of the public version until the farmer says yes. Never name a farm or a parcel in its title or text. The public notebook leaves out a lead its farmer or owner refused or is still weighing. Until the farmer (or owner) says yes, it is drawn as a **fuzzy zone**, never as a line on a parcel. On public land, it is a sharp outline.
-- A lead not yet seen on site is a **hypothesis**: it appears in the working notebook, apart, and never on its map; never in the public version.
+- A lead still seen only at the desk is a **hypothesis**: it appears in the working notebook, apart, and never on its map; never in the public version. It reaches the public version once confirmed by an actor or seen on site (`verification` `actor` or `site`); there, an actor is named by their organisation or function only, and a free name not at all.
 - Every lead needs a **keeper**: a role (not a person), maintenance gestures, hours per year, the land agreement, its lifespan. Without one it is « orpheline »: who clears the pond in year 8, who coppices the hedge, on which budget? Ask the question in your rationale.
 - The notebook ends with a decision in principle: each lead retained, postponed or dismissed, with its reason and date, and the budget of the next step only. No amount per structure.
 - Three first actions, one of them feasible this winter.
@@ -73,4 +87,4 @@ Theme (`theme`): `water`, or `tree` for the food tree (hedges, orchards, edible 
 
 What a person kept belongs to the people. To correct it (the land of a lead once its owner is known, a marker someone saw on site, a keeper found), propose a change with `propose_territory_updates`: only the fields that change, `null` to empty one, `keeper`, `farmer` and `decision` completed key by key. To remove an entry (a source found twice), use `propose_territory_deletions`; when it is replaced by others (a sub-basin redrawn as two official ones), give them in `superseded_by`, drafts included: the removal can be accepted only once each of them is kept, so the dossier never loses a valley in between. The person accepts each change field by field on the territory's page; a new proposal completes the one waiting on the same entry, field by field (send only what is new; `replace: true` starts it over), and `withdraw_territory_drafts` takes it back with `update_ids`. Never propose a duplicate to get around a kept entry.
 
-Then invite the team outside: to meet the people, to walk the sub-basin with the farmers, to look at the markers during the next heavy rain. The notebook is worth what was seen on site.
+Then invite the team outside: to meet the people, to walk the sub-basin with the farmers, to look at the markers during the next heavy rain. The notebook is worth what was seen on site: end each proposal with what to ask whom, and what to go and see.

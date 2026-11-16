@@ -45,6 +45,22 @@ module Territories
       back notice: t("territories.flash.accepted")
     end
 
+    # Sets how far an entry was checked, or the actor to ask, from the
+    # « À confirmer avec… » sheet: after a meeting, one click per answer.
+    # An empty value removes it.
+    def verify
+      return back(alert: t("territories.errors.invalid")) unless @item.verifiable?
+      given = params.permit(*TerritoryItem::VERIFICATION_SCHEMA.keys).to_h
+      @item.lock_version = params[:lock_version] if params[:lock_version].present?
+      if @item.update(properties: @item.properties.merge(given))
+        redirect_back_or_to confirmations_territory_path(@territory), notice: t("territories.flash.verified"), status: :see_other
+      else
+        redirect_back_or_to confirmations_territory_path(@territory), alert: @item.errors.full_messages.to_sentence, status: :see_other
+      end
+    rescue ActiveRecord::StaleObjectError
+      redirect_back_or_to confirmations_territory_path(@territory), alert: t("territories.errors.stale"), status: :see_other
+    end
+
     def reject
       return back(alert: t("territories.errors.not_a_draft")) unless @item.draft?
       @item.reject!(Current.user)
