@@ -1,6 +1,6 @@
 // Who is signed in, the discussion's notifications on this phone, signing
 // out, and asking Semisto to delete the account (the stores require it from
-// inside the app).
+// inside the app). At the bottom, the version installed.
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Alert, Linking, ScrollView, StyleSheet, Switch, Text, View } from 'react-native'
@@ -10,8 +10,9 @@ import { API_URL } from '@/lib/config'
 import { t } from '@/lib/i18n'
 import { outbox } from '@/lib/outbox'
 import { forgetPush, pushPermission, registerForPush } from '@/lib/push'
+import { currentVersion } from '@/lib/version'
 import { Body, Button, Card, Heading, Notice, styles, Title } from '@/ui/kit'
-import { colors, fonts } from '@/ui/theme'
+import { colors, fonts, type } from '@/ui/theme'
 
 type Me = { user: { name: string | null; email: string } }
 
@@ -62,6 +63,7 @@ export default function Account() {
         ? <Notice tone={deletion.tone}>{deletion.message}</Notice>
         : null}
       {deletion?.tone !== 'info' && <Button variant="ghost" label={t('mobile.account.delete')} busy={busy} onPress={confirmDeletion} />}
+      <Text style={s.version} selectable>{currentVersion()}</Text>
     </ScrollView>
   )
 }
@@ -110,5 +112,6 @@ function PushCard() {
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 8 },
+  version: { ...type.meta, color: colors.loam500, textAlign: 'center', marginTop: 8 },
   rowLabel: { flex: 1, fontFamily: fonts.body, fontSize: 16, color: colors.loam900 },
 })

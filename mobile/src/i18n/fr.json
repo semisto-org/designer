@@ -63,7 +63,9 @@
       "delete_title": "Supprimer ton compte ?",
       "delete_body": "Tu recevras un e-mail de confirmation, puis Semisto supprimera ton compte et tes cartes. Cela ne peut pas être annulé.",
       "delete_confirm": "Demander la suppression",
-      "delete_failed": "La demande n'est pas partie. Vérifie ta connexion et réessaie."
+      "delete_failed": "La demande n'est pas partie. Vérifie ta connexion et réessaie.",
+      "version": "Version %{version} (build %{build})",
+      "version_dated": "Version %{version} (build %{build}) · mise à jour du %{date}"
     },
     "terrain": {
       "credits": "Sources de la carte (photo aérienne, fond de plan)",
