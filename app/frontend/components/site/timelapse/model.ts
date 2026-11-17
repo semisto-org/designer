@@ -1,7 +1,8 @@
-// The home page's time-lapse: an example terrain whose forest garden grows over
-// thirty years as the visitor scrolls. This file is the model (place, species,
-// seasons, growth, chapters), with no DOM so it can be tested alone; draw.ts
-// paints it and Timelapse.tsx drives it from the scroll.
+// The painted time-lapse: an example terrain whose forest garden grows over
+// thirty years. It opened the home page until November 2026; the map's tour
+// (map/tour), the public maps' garden and the pricing sketches still paint
+// with it. This file is the model (place, species, seasons, growth, chapters),
+// with no DOM so it can be tested alone; draw.ts paints it.
 
 /** World units: the terrain is drawn in a 1000 × 680 box, 1000 px = 80 m. */
 export const PX_PER_M = 12.5
